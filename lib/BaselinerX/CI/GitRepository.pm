@@ -50,13 +50,15 @@ sub create_tags_handler {
     my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
 
     if ( $self->tags_mode eq 'project' ) {
-        my @projects_names = map { $_->{name} } $self->related( where => { collection => 'project' }, docs_only => 1 );
+        my @projects =
+          map { ci->new($_->{mid}) }
+          $self->related( where => { collection => 'project' }, docs_only => 1 );
 
         _fail _loc 'Projects are required when moving baselines for repositories with tags_mode project'
-          unless @projects_names;
+          unless @projects;
 
         foreach my $bl (@bls) {
-            push @tags, map { sprintf '%s-%s', $_, $bl } @projects_names;
+            push @tags, map { $self->bl_to_tag($bl, $_) } @projects;
         }
     }
     else {
@@ -117,10 +119,7 @@ sub group_items_for_revisions {
         my $bl = $p{tag};
         my $tag = $p{tag} // _fail(_loc 'Missing parameter tag needed for top revision');
 
-        if ($self->tags_mode eq 'project') {
-            my $project = $p{project} or _fail 'project is required';
-            $tag = sprintf( '%s-%s', $project, $tag);
-        }
+        $tag = $self->bl_to_tag($tag, $p{project});
 
         my $top_rev = $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag );
         if( !$top_rev ) {
@@ -252,8 +251,7 @@ sub checkout {
     my $tag  = $p{tag} // _fail 'Missing parameter tag';
 
     if ($self->tags_mode eq 'project') {
-        my $project = $p{project} or _fail 'project required';
-        $tag = sprintf( '%s-%s', $project, $tag) ;
+        $tag = $self->bl_to_tag($tag, $p{project});
     }
 
     #my $path = $self->path;
@@ -370,7 +368,7 @@ method update_baselines( :$job=undef, :$revisions, :$bl, :$type, :$ref=undef ) {
     for my $project ( @projects ) {
         my $retval_key = $project eq '*' ? '*' : $project->mid;
 
-        my $tag = $self->tags_mode eq 'project' ? sprintf '%s-%s', $project->name, $bl : $bl;
+        my $tag = $self->bl_to_tag($bl, $project);
 
         my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
 
@@ -526,7 +524,7 @@ method commits_for_branch( :$tag=undef, :$branch, :$project=undef ) {
     my $git = $self->git;
     $tag //= [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
 
-    $tag = sprintf( '%s-%s', $project, $tag) if $self->tags_mode eq 'project';
+    $tag = $self->bl_to_tag($tag, $project);
 
     # check if tag exists
     my $bl_exists = $git->exec( 'rev-parse', $tag, { on_error_empty=>1 });
@@ -535,6 +533,16 @@ method commits_for_branch( :$tag=undef, :$branch, :$project=undef ) {
     my $commit_tag = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=1', $tag );
     push @rev_list, $commit_tag;
     return @rev_list;
+}
+
+method bl_to_tag(Str $bl, Any $project = undef) {
+    my ($bl, $project) = @_;
+
+    return $bl unless $self->tags_mode eq 'project';
+
+    _fail 'project is required' unless $project;
+
+    return sprintf( '%s-%s', $project->name, $bl);
 }
 
 1;

@@ -82,7 +82,8 @@ sub branch_commits : Local {
 
     my $err;
     my @rev_list = try {
-        $repo_ci->commits_for_branch( branch => $p->{branch}, project => $p->{project} );
+        my $project = ci->project->search_ci(name => $p->{project});
+        $repo_ci->commits_for_branch( branch => $p->{branch}, project => $project );
     }
     catch {
         $err = shift;

@@ -407,8 +407,8 @@ subtest 'update_baselines: updates tags only for project related to the reposito
 
     my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'project' );
 
-    my $project = TestUtils->create_ci( 'project', name => 'project', repositories => [ $repo->mid ] );
-    my $other_project = TestUtils->create_ci( 'project', name => 'other', repositories => [] );
+    my $project = TestUtils->create_ci( 'project', name => 'project', moniker => 'project', repositories => [ $repo->mid ] );
+    my $other_project = TestUtils->create_ci( 'project', name => 'other', moniker => 'other', repositories => [] );
 
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'project-TEST' );
@@ -647,6 +647,8 @@ subtest 'group_items_for_revisions: returns top revision items in project mode' 
 
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', tags_mode => 'project' );
 
+    my $project = TestUtils->create_ci( 'project', name => 'Project', moniker => 'project', repositories => [ $repo->mid ] );
+
     my $sha = TestGit->commit($repo);
     TestGit->tag( $repo, tag => 'Project-TEST' );
     my $sha2 = TestGit->commit($repo);
@@ -658,7 +660,7 @@ subtest 'group_items_for_revisions: returns top revision items in project mode' 
     mdb->master_rel->insert(
         { from_mid => $ci->mid, to_mid => $sha2->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
 
-    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST', project => 'Project' );
+    my @items = $repo->group_items_for_revisions( revisions => [ $sha, $sha2 ], tag => 'TEST', project => $project );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -717,7 +719,7 @@ subtest 'checkout: throws when no project passed in project tags_mode' => sub {
     TestGit->tag( $repo, tag => 'Project-TEST' );
     my $sha2 = TestGit->commit($repo);
 
-    like exception { $repo->checkout( dir => $dir, tag => 'Project-TEST' ) }, qr/project required/;
+    like exception { $repo->checkout( dir => $dir, tag => 'Project-TEST' ) }, qr/project is required/;
 };
 
 subtest 'checkout: checkouts items into directory with project tag_mode' => sub {
