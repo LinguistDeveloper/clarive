@@ -1,0 +1,72 @@
+severity        = 1
+color           = 1
+
+include = CompileTime, Pulp, Moose, More, Lokku, Lax
+
+# More
+[-Editor::RequireEmacsFileVariables]
+
+# Maybe in the future
+[-CodeLayout::RequireTidyCode]
+
+[-BuiltinFunctions::ProhibitComplexMappings]
+
+[Perlsecret]
+
+# Perl::Critic::Dynamic
+[Dynamic::ValidateAgainstSymbolTable]
+
+# Perl::Critic::StricterSubs
+[Modules::RequireExplicitInclusion]
+[-Subroutines::ProhibitCallsToUnexportedSubs]
+
+[Variables::ProhibitUselessInitialization]
+
+# Perl::Critic::Bangs
+[Bangs::ProhibitVagueNames]
+[Bangs::ProhibitCommentedOutCode]
+
+# Useless
+
+[-Modules::RequirePerlVersion]
+
+[-CodeLayout::ProhibitParensWithBuiltins]
+[-ControlStructures::ProhibitCStyleForLoops]
+[-ControlStructures::ProhibitPostfixControls]
+[-Modules::ProhibitMultiplePackages]
+[-Modules::RequireVersionVar]
+[-References::ProhibitDoubleSigils]
+[-RegularExpressions::ProhibitEscapedMetacharacters]
+[-RegularExpressions::RequireDotMatchAnything]
+[-RegularExpressions::RequireExtendedFormatting]
+[-RegularExpressions::RequireLineBoundaryMatching]
+[-Subroutines::ProhibitAmpersandSigils]
+[-Subroutines::RequireArgUnpacking]
+[-Subroutines::RequireFinalReturn]
+[-ValuesAndExpressions::ProhibitEmptyQuotes]
+[-ValuesAndExpressions::ProhibitMagicNumbers]
+[-ValuesAndExpressions::RequireInterpolationOfMetachars]
+[-InputOutput::RequireBracedFileHandleWithPrint]
+[-Variables::ProhibitPunctuationVars]
+[-TestingAndDebugging::ProhibitNoStrict]
+[-BuiltinFunctions::ProhibitStringyEval]
+[-ValuesAndExpressions::ProhibitEscapedCharacters]
+[-ClassHierarchies::ProhibitAutoloading]
+[-RegularExpressions::ProhibitEnumeratedClasses]
+[-Variables::ProhibitPackageVars]
+[-Modules::ProhibitAutomaticExportation]
+[-InputOutput::RequireCheckedClose]
+[-InputOutput::RequireCheckedSyscalls]
+[-NamingConventions::Capitalization]
+
+[-ValuesAndExpressions::RequireConstantOnLeftSideOfEquality]
+[-ErrorHandling::RequireUseOfExceptions]
+[-Lax::ProhibitEmptyQuotes::ExceptAsFallback]
+[-Lax::ProhibitEmptyQuotes::ExceptAsFallback]
+[-ValuesAndExpressions::ProhibitInterpolationOfLiterals]
+
+# Not so sure
+
+[-Subroutines::ProhibitUnusedPrivateSubroutines]
+[-ValuesAndExpressions::ProhibitNoisyQuotes]
+[-Subroutines::ProhibitBuiltinHomonyms]

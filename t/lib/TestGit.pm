@@ -11,13 +11,14 @@ my %STORE = ();
 
 sub create_repo {
     my $class = shift;
-    my ($dir) = @_;
+    my (%params) = @_;
 
-    $dir ||= tempdir();
+    my $dir = $params{dir} || tempdir();
+    my $bare = $params{bare} ? ' --bare' : '';
 
     $ENV{GIT_AUTHOR_NAME} = $ENV{GIT_COMMITTER_NAME} = 'clarive';
     $ENV{EMAIL} = $ENV{GIT_COMMITTER_EMAIL} = $ENV{GIT_AUTHOR_EMAIL} = 'clarive@localhost';
-    system(qq{mkdir $dir; cd $dir; git init});
+    system(qq{mkdir $dir; cd $dir; git init$bare});
 
     return $dir;
 }

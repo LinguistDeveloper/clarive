@@ -1,0 +1,16 @@
+{
+    "curly": true,
+    "eqeqeq": true,
+    "forin":true,
+    "latedef":true,
+    "maxcomplexity":20,
+    "maxdepth":3,
+    "maxparams":4,
+    "nonbsp": true,
+    "nocomma": true,
+//    "strict":true,
+    "unused":true,
+
+    "devel":true,
+    "jquery":true
+}
