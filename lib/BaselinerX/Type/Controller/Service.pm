@@ -25,10 +25,10 @@ sub rest : Local {
 	my $quiet_mode = exists $p->{quiet_mode};
 
 	# create a temporary logger
-	local Baseliner->app->{_thrower} = sub { 
+	local $Baseliner::_thrower = sub { 
 		die @_,"\n";
 	} if $quiet_mode;
-	local Baseliner->app->{_logger} = sub { 
+	local $Baseliner::_logger = sub { 
 		my ($cl,$li,$fi,@msg) = @_;
 		print STDERR @msg, "\n";
 	} if $quiet_mode;

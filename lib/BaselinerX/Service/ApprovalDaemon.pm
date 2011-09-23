@@ -50,7 +50,7 @@ sub daemon {
     for( 1..200 ) {
         $self->check_approvals( $c, $config );
 		# enforce pending
-		Baseliner->model('Request')->enforce_pending;
+		Baseliner->model('Request')->enforce_pending if $config->{active};
 		# make sure all requests have a project relationship
         sleep $frequency;
     }
@@ -60,7 +60,18 @@ sub daemon {
 sub check_approvals {
     my ( $self, $c, $config ) = @_;
 
-	my $inf = $c->model('ConfigStore')->get('config.approval', bl=>'PREP'); #TODO cycle thru Baselines
+	my $bl = 'PREP';
+	my $inf = $c->model('ConfigStore')->get('config.approval', bl=>$bl); #TODO cycle thru Baselines
+
+	unless( $inf->{active} ) {
+		_log _loc ">>> WARNING: Approvals are not active (config.approval.active=0) for the baseline '%1'", $bl;
+		return -1;
+	}
+
+    if( ref $inf->{cycle} ne 'HASH' ) {
+        _log "Approval Cycle variable is incorrect. Approval checking skipped.";
+        return;
+    }
 
     # now get candidate packages
     my @candidates;

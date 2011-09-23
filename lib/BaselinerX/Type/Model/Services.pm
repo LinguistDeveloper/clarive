@@ -1,9 +1,10 @@
 package BaselinerX::Type::Model::Services;
 use Moose;
 extends qw/Catalyst::Model/;
-use namespace::clean;
+use Try::Tiny;
 use Baseliner::Utils;
 use Carp;
+use namespace::autoclean;
 
 sub search_for {
     my ($self, %p) = @_;
@@ -19,6 +20,8 @@ sub launch {
     my $bl = $p{bl} || '*';
     my $data = $p{data} || {};
     my $service = $c->registry->get($service_name) || die "Could not find service '$service_name'";
+
+    # load the service's config data
 	my $config_name = $service->config;
     my $config_data;
     if( defined $config_name ) {
@@ -44,7 +47,19 @@ sub launch {
 		# just give him a logger
 		$p{logger_class} and $service->logger_class( $p{logger_class} );
 	}
-    return $service->run( $c, $config_data );
+    #
+    # ******************** RUN *****************
+    # 
+    my $ret = $service->run( $c, $config_data );
+
+    # save stash at the end -- default: no
+    ref $c->{stash}->{job} && exists $p{'stash-save'} and try {
+        _log "Saving job stash...";
+        $c->{stash}->{job}->freeze;
+    } catch {
+        _log "Warning: Could not freeze stash"
+    };
+    return $ret;
 }
 
 sub job_continue {

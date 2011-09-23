@@ -5,7 +5,6 @@ use Baseliner::Sugar;
 use Path::Class;
 use Try::Tiny;
 with 'Baseliner::Role::Service';
-with 'Baseliner::Role::Catalog';
 
 =head1 DESCRIPTION
 
@@ -14,6 +13,7 @@ is done by the user.
 
 =cut
 
+=pod
 register 'config.manual_deploy' => {
     name => 'Manual Deploy Configuration',
     metadata => [
@@ -25,6 +25,7 @@ register 'config.manual_deploy' => {
         },
     ]
 };
+=cut
 
 register 'catalog.type.manual_deploy' => {
     name        => 'Manual Deployment',
@@ -37,13 +38,25 @@ register 'catalog.type.manual_deploy' => {
 
 # register 'action.manual.
 
+register 'service.manual_deploy.request' => {
+    name => 'Check and Send Requests for Manual Deployments',
+    config=> 'config.manual_deploy',
+    handler => \&send_requests 
+};
+
 register 'service.manual_deploy' => {
     name => 'Job Service for Manual Deployments',
     config=> 'config.manual_deploy',
-    handler => \&run 
+    handler => \&run_and_suspend,
 };
 
-sub run {
+register 'service.manual_deploy.check' => {
+    name => 'Job Service for Manual Deployments',
+    config=> 'config.manual_deploy',
+    handler => \&check_paths 
+};
+
+sub run_and_suspend {
     my ($self,$c,$config) =@_;
 
     my $job = $c->stash->{job};
@@ -71,36 +84,75 @@ sub check_paths {
     my $job = $c->stash->{job};
     my $job_stash = $job->job_stash;
     my $log = $job->logger;
-    my $paths = $config->{paths} ;
 
     $log->debug( _loc('Checking Manual Deploy Paths') );
-    $log->debug( _loc('Paths'), data=>_dump( $paths ) );
 
+    my @mapping;
     my $elements = $job->job_stash->{elements};
     my %actions;
     my $rs = kv->find( provider=>'manual_deploy' );
-    for my $pe ( _array $paths ) {
-        $log->debug( _loc("Processing path %1, action %2", $pe->{path}, $pe->{action} ) ); 
+    while( my $r = $rs->next ) {
+        my $data = $r->kv;
+        push @mapping, $data;
+        my $paths = $data->{paths};
+        for my $path ( split /,/, $paths ) {
+            $log->debug( _loc("Processing path %1, action %2", $path, $data->{action} ) ); 
         # if( $elements
-        my @elements = grep { $_->{path} =~ $pe->{path} } _array($elements->elements);
+            my @checked;
+            _log "Checking regex started...";
+            my @elements = grep {
+                push @checked, "Checking " . $_ . " =~ $path";
+                $_ =~ $path
+            } map { $_->filepath } _array( $elements->elements );
+            _log "Checking regex finished. " . join "\n", @checked;
         if( @elements ) {
-            my $key = $pe->{action} ;
-            push @{ $actions{ $key }{path} }, $pe->{path};
+                my $key = $data->{action} ;
+                push @{ $actions{ $key }{path} }, $path;
             push @{ $actions{ $key }{elements} }, @elements;
-            $actions{$key}{desc} = $pe->{text};
+                $actions{$key}{data} = $data;
+                # publish file to log
+                my @files;
+                for my $elem ( @elements ) {
+                    my $file = _file( $job->root, $elem );
+                    next if $file->is_dir;
+                    next if -d "$file";
+                    if( -e "$file" ) {
+                        push @files, "$file";
+                        $log->debug( _loc("File <code>%1</code> zipped for manual deploy", "$file" ) );
+                    } else {
+                        $log->info( _loc("Could not find file <code>%1</code> for manual deploy", "$file" ),
+                            data=>"$file" );
+                    }
+                }
+                # publish zip
+                if( @files ) {
+                    my $zip = zip_files(
+                        prefix => $job->name,
+                        files  => \@files,
+                        base   => $job->root
+                    );
+                    my $zipname = $job->name . '_manualdeploy.zip';
+                    $log->info(
+                        _loc( "Publishing file %1 for manual deploy", "<b><code>$zipname</code></b>" ),
+                        data      => _slurp( $zip ),
+                        more      => 'zip',
+                        data_name => $zipname,
+                    );
+                }
+            }
         }
         #$elements = $elements->cut_to_subset( 'nature', $path );
         #$self->process_path( elements=>$elements, path=>$path );
     }
+    $log->debug( _loc('Paths'), data=>_dump( \@mapping ) );
+    if( %actions ) {
     $log->debug( _loc('Actions detected in manual deploy'), data=>_dump(\%actions) );
+        $job->stash( manual_deploy_actions => \%actions );
+    } else {
+        $log->debug( _loc('No actions detected for manual deploy') );
+    }
     return %actions; 
 }
-
-register 'service.manual_deploy.request' => {
-    name => 'Send Requests Manual Deployments',
-    config=> 'config.manual_deploy',
-    handler => \&send_requests 
-};
 
 sub send_requests {
     my ($self,$c,$config) =@_;
@@ -111,27 +163,28 @@ sub send_requests {
     my %actions = $self->check_paths( $c, $config );
     for my $key ( keys %actions ) {
         my $action = $actions{ $key };
-        my $name = $actions{$key}{name} || $key;
-        my $desc = $actions{$key}{text};
+        my $name = $action->{data}{name} || $key;
+        my $desc = $action->{data}{description};
         my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid ); 
         my $reason = _loc('Manual deploy action: %1', $name);
-        $log->info( _loc('Requesting manual deploy for job %1, baseline %2: %3', $job->name, $bl, $reason ) );
+        $log->info( _loc('Requesting manual deploy for job %1, baseline %2: %3', $job->name , $bl, '<b>' . $reason . '</b>') );
         try {
             Baseliner->model('Request')->request(
-                name            => _loc( "Manual step for %1", $job->name ),
+                name            => _loc( "Manual Deploy for %1", $job->name ),
                 action          => $key,
+                item            => $name,
                 template        => '/email/approval_manual.html',
                 template_engine => 'mason',
                 username        => $job->job_data->{username},
                 comments_job    => $job->job_data->{comments},
-                ns              => 'job/' . $job->name,
+                ns              => '/',
                 bl              => $bl,
                 id_job          => $job->jobid,
                 vars            => {
                     jobname  => $job->name,
                     url_log  => $url_log,
                     reason   => $reason,
-                    comments => $desc,
+                    comments => _textile( $desc ),
                 },
             );
             my $job_row = $c->model('Baseliner::BaliJob')->find({ id=>$job->jobid });
@@ -139,7 +192,7 @@ sub send_requests {
             $job->status('APPROVAL');
         } catch {
             my $e = shift;
-            $log->info( _loc("Job '%1' does not need approval (there are no approval users available)", $job->name ) );
+            $log->info( _loc("Error while trying to create request: %1", "$e" ) );
         };
     }
 }
@@ -155,36 +208,6 @@ sub process_path {
 
     # pause job status
 }
-
-# catalog role methods 
-
-sub catalog_add { }
-sub catalog_icon { '/static/images/icons/manual_deploy.gif' }
-sub catalog_del { 
-    my ($class, %p)=@_;
-    $p{id} or _throw 'Missing id';
-    kv->delete( ns=>$p{id} );
-}
-sub catalog_url { '/comp/catalog/manual_deploy.js' }
-sub catalog_list { 
-    my ($class, %p)=@_;
-    my @list;
-    my $rs = kv->find( provider=>'manual_deploy' );
-    while( my $r = $rs->next ) {
-        my $d = $r->kv;
-        push @list, {
-            row        =>  { $r->get_columns, %$d },
-            name        => $d->{name}, 
-            description => $d->{description}, 
-            id          => $r->ns,
-            for         =>{ paths=>$d->{paths} },
-            mapping     => { action=>$d->{action}  },
-        };
-    }
-    return wantarray ? @list : \@list;
-}
-sub catalog_name { 'Manual Deployment' }
-sub catalog_description { 'Deploy Files Manually by manual intervention' }
 
 
 1;
