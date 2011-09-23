@@ -119,6 +119,15 @@ sub list {
 	return @ns;
 }
 
+sub find {
+    my ($self,%p) = @_;
+    my $keys = delete $p{keys};
+    my $args = {};
+    $args->{prefetch} = ['keys'] if $keys;
+    my $rs = Baseliner->model('Baseliner::BaliRepo')->search( \%p, $args );
+    return wantarray ? do { rs_hashref( $rs ); $rs->all } : $rs;
+}
+
 sub search {
 	my $self = shift;
     return Baseliner->model('Baseliner::BaliRepo')->search( @_ );
@@ -136,15 +145,28 @@ sub record {
 
 =head1 DESCRIPTION
 
-Store NS data locally.
+Store any data locally.
 
 	my $repo = Baseliner->model('Repository');
 
-	$repo->set( ns=>'package/P123', data=> { ... } );
+	$repo->set( ns=>'package.data/12345', data=> { ... } );
 
-	$repo->set( backend=>'fich_backup', ns=>'package/P123', data=> { ... } );
+	for my $ns ( $repo->list( provider=>'package.data' ) ) {
+        my $data = $repo->get( ns=>$ns );
+    }
 
-	my $data = $repo->get( backend=>'fich_backup', ns=>'package/P123' );
+    $repo->delete( ns=>'package.data/12345' );
+
+    $repo->delete_all( provider=>'package.data' );
+
+    # or with some sugar...
+
+    use Baseliner::Sugar;
+
+    repo->get( ... );
+    repo->set( ... );
+    repo->list( ... );
+    repo->delete( ... );
 
 =cut
 

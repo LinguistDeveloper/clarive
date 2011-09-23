@@ -1,3 +1,4 @@
+BEGIN { print STDERR "Baseliner initializing...\n" }
 use strict;
 use warnings;
 use Pod::Usage;
@@ -19,11 +20,12 @@ $SIG{TERM} = sub { die "Baseliner process $$ stopped." };
 
 if( !@ARGV ) {
     require Baseliner;
+    my $c = Baseliner->commandline; # XXX
 
-    my $version = Baseliner->config->{About}->{version};
+    my $version = $c->config->{About}->{version};
     print "Baseliner $version\n";
     #TODO list service name, if available and perl package
-    my @serv = sort Baseliner->registry->starts_with('service');
+	my @serv = sort $c->registry->starts_with('service');
     print "===Available services===\n", join( "\n", @serv ), "\n";
     exit 0;
 }
@@ -51,7 +53,7 @@ elsif( $service_name =~ /^shut|shutdown$/i ) {
 
 print "Starting $service_name...\n";
 use Baseliner;
-#my $c = Baseliner->commandline;
+#my $c = Baseliner->commandline;   XXX
 my $c = bless { stash=>{} } => 'Baseliner';
 use Baseliner::Utils;
 

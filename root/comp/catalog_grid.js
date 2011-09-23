@@ -1,16 +1,55 @@
 // Catalog Grid
 (function(){
     var ps = 100;
-    var store=new Ext.data.JsonStore({
-        root: 'data' , 
-        remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+
+    var reader_cat = new Ext.data.JsonReader({
+            root: 'data',
+            remoteSort: true,
+            totalProperty:'totalCount',
+            id: 'id'
+        },[ 
+            { name: 'pkg' },   
+            { name: 'url' },   
+            { name: 'icon' },   
+            { name: 'project' },   
+            { name: 'id' },   
+            { name: 'ns' },   
+            { name: 'bl' },   
+            { name: 'name' },   
+            { name: 'description' },   
+            { name: 'type' },   
+            { name: 'for' },   
+            { name: 'mapping' },   
+            { name: 'row' }
+        ]
+    );
+
+    var store = new Ext.data.GroupingStore({
+        id: 'id',
+        reader: reader_cat,
+        remoteGroup: true,
         url: '/catalog/json',
-        baseParams: {  start: 0, limit: ps },
-        fields: [ 'pkg','url','icon',
-            'id', 'ns', 'bl', 'name', 'description', 'type', 'for', 'mapping', 'row' ]
+        groupField: 'type'
     });
+
+    var expanded = false;
+    store.on( 'load', function(s) {
+        if( store.getTotalCount() < 20 ) {
+            gview.toggleAllGroups( true );
+            expanded = true;
+        }
+    });
+    var button_expand = Baseliner.img_button( '/static/images/icons/expandall.gif', function(){
+            expanded = ! expanded;
+            gview.toggleAllGroups( expanded );
+            if( expanded ) {
+                button_expand.setIconClass( 'expandall' );
+            } else {
+                button_expand.setIconClass( 'collapseall' );
+            }
+        }
+    );
+
     var store_types=Baseliner.new_jsonstore({ url:'/catalog/types', fields:[ 'name', 'url', 'icon' ] });
 
     <& /comp/search_field.mas &>
@@ -18,27 +57,36 @@
     var render_for = function(value,metadata,rec,rowIndex,colIndex,store) {
         var ret = '<table>';
         for( var k in value ) {
+            if( value[k]==undefined ) value[k]='';
             ret += '<tr>'; 
-            ret += '<td style="font-weight: bold;">' + k + '</td>'
-            ret += '<td>' + value[k] + '</td>'
+            ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(k) + '</td>'
+            ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + value[k] + '</code></td>'
             ret += '</tr>'; 
         }
         ret += '</table>';
+        return ret;
+    };
+    var render_name = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var ret = Baseliner.columnWrap( value, metadata, rec, rowIndex );
+        ret = '<b>' + ret + '</b>';
         return ret;
     };
     var render_mapping = function(value,metadata,rec,rowIndex,colIndex,store) {
         var ret = '<table>';
         for( var k in value ) {
+            if( value[k]==undefined ) value[k]='';
             ret += '<tr>'; 
-            ret += '<td style="font-weight: bold;">' + k + '</td>'
-            ret += '<td>' + value[k] + '</td>'
+            ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(k) + '</td>'
+            ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + value[k] + '</code></td>'
             ret += '</tr>'; 
         }
         ret += '</table>';
         return ret;
     };
-    var close_event = function(){
-        store.load();
+    var close_event = function(win){
+        if( win.rc ) {
+            store.load();
+        }
     };
     var menu_add = new Ext.menu.Menu({ });
     store_types.on('load', function(){
@@ -62,50 +110,95 @@
             }
         );
     } ); 
-    var button_edit = Baseliner.button(_('Modify'), '/static/images/icons/write.gif', function(){
+    var edit_action = function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
+        if( sel.data.row['id'] == undefined ) sel.data.row['id'] = sel.data.id;
         Baseliner.add_wincomp( sel.data.url, _(sel.data.name), sel.data.row, { event:'close', func: close_event } );
-    } ); 
+    } ;
+    var button_edit = Baseliner.button(_('Modify'), '/static/images/icons/write.gif', edit_action ); 
     var button_clone = Baseliner.button(_('Clone'), '/static/images/icons/copy.gif', function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
-        var row = {};
-        for( var k in sel.data ) { if( k!='id') row[k] = sel.data[k] };
-        Baseliner.add_wincomp( sel.data.url, _(sel.data.name), row, { event:'close', func: close_event } );
+        if( sel.data.row['id'] != undefined ) sel.data.row['id'] = '';
+        Baseliner.add_wincomp( sel.data.url, _(sel.data.name), sel.data.row, { event:'close', func: close_event } );
     } ); 
+    var button_by_project = new Ext.Button({
+       text: _('Project'),
+       icon: '/static/images/icons/project.gif',
+       cls: 'x-btn-text-icon',
+       pressed: false,
+       toggleGroup: 'grouping',
+       enableToggle: true,
+       toggleHandler: function() {
+           store.groupBy('project');
+       } 
+    });
+    var button_by_type = new Ext.Button({
+       text: _('Type'),
+       icon: '/static/images/icons/catalog.gif',
+       cls: 'x-btn-text-icon',
+       pressed: true,
+       enableToggle: true,
+       toggleGroup: 'grouping',
+       toggleHandler: function() {
+           store.groupBy('type');
+       } 
+    });
 
     var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
-    var grid = new Ext.grid.EditorGridPanel({
+
+    var gview = new Ext.grid.GroupingView({
+        forceFit: true,
+        enableRowBody: true,
+        autoWidth: true,
+        autoSizeColumns: true,
+        deferredRender: true,
+        startCollapsed: true,
+        hideGroupedColumn: true
+        //groupTextTpl: '{[ values.rs[0].data["' + 'project' + '"] ]}'
+    });
+
+    var grid = new Ext.grid.GridPanel({
         title: _('Catalog'),
         sm: sm,
-        tbar: [ _('Search') + ': ', ' ',
+        tbar: [ 
+            button_expand,
+            _('Search') + ': ', ' ',
             new Ext.app.SearchField({
                 store: store,
                 params: {start: 0, limit: ps },
                 emptyText: _('<Enter your search string>')
             }),
-            Baseliner.button( '', '/static/images/icons/refresh.gif', function(){ store.load() } ),
-            button_add, button_del, button_edit, button_clone
+            Baseliner.img_button( '/static/images/icons/refresh.gif', function(){ store.load() } ),
+            button_add, button_del, button_edit, button_clone, 
+            '->', _('Grouping') + ':', button_by_type, button_by_project, 
         ],
+        view: gview,
         store: store,
         viewConfig: {
             forceFit: true
         },
         loadMask:'true',
         columns: [
-            { hidden: false, width: 30, dataIndex: 'icon', sortable: true, renderer: Baseliner.render_icon  },   
-            { header: _('For'), width: 200, dataIndex: 'for', sortable: true, renderer: render_for },   
-            { header: _('Name'), width: 120, dataIndex: 'name', sortable: true, renderer: Baseliner.columnWrap },   
-            { header: _('Type'), hidden: true, width: 120, dataIndex: 'type', sortable: true },   
-            { header: _('ID'), hidden: true, width: 120, dataIndex: 'id', sortable: true },   
-            { header: _('Package'), hidden: true, width: 120, dataIndex: 'pkg', sortable: true },   
-            { header: _('Description'), width: 120, dataIndex: 'description', sortable: true, renderer: Baseliner.columnWrap },   
-            { header: _('Project'), width: 80, dataIndex: 'ns', sortable: true, renderer: Baseliner.render_ns },   
+            { hidden: false, width: 30, dataIndex: 'icon', sortable: false, renderer: Baseliner.render_icon  },   
+            { header: _('Name'), width: 120, dataIndex: 'name', sortable: true, renderer: render_name },   
+            { header: _('Project'), width: 80, dataIndex: 'project', sortable: true, renderer: Baseliner.render_ns },   
             { header: _('Environment'), width: 60, dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },   
-            { header: _('Mapping'), width: 300, dataIndex: 'mapping', sortable: true, renderer: render_mapping },
+            { header: _('For'), width: 200, dataIndex: 'for', sortable: true, renderer: render_for },   
+            { header: _('Mapping'), width: 200, dataIndex: 'mapping', sortable: true, renderer: render_mapping },
+            { header: _('Type'), hidden: true, width: 120, dataIndex: 'type', sortable: true },   
+            { header: _('Catalog'), hidden: true, width: 120, dataIndex: 'catalog_name', sortable: true },   
+            { header: _('ID'), hidden: true, width: 120, dataIndex: 'id', sortable: true },   
+            { header: _('Description'), width: 120, dataIndex: 'description', sortable: true, renderer: Baseliner.columnWrap },   
+            { header: _('Package'), hidden: true, width: 120, dataIndex: 'pkg', sortable: true }
         ]
     });
-    store.load();
+    grid.on('rowdblclick', function(){ edit_action(); });
+    var activated = false;
+    grid.on('activate', function() {
+        if( !activated ) { store.load(); activated=true } } );
+    //store.load();
+    function getGrid() { return grid };
     return grid;
 })()

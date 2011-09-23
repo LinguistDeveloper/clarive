@@ -61,6 +61,8 @@ sub rename {
 	my ($self, $bl, $item) = @_;
 	my $newname = $item;
 	$newname =~ s/{$bl}//g;
+	$newname =~ s/{ALL}//g;
+	$newname =~ s/{ANY}//g;
 	return $newname;
 }
 

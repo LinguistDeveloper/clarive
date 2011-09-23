@@ -116,7 +116,6 @@
                 //TODO something
             }
         });
-
     };
 
     Baseliner.doLoginForm = function(lf, params, cb ){
@@ -412,12 +411,19 @@
 
     Baseliner.addNewTabSearch = function(purl, ptitle, params ){
             var search = new Ext.app.TextSearchField({
-                            emptyText: '<% _loc('<Enter your search string>') %>'
+							emptyText: _('<Enter your search string>')
                         });
             var tabpanel = new Ext.Panel({
                     layout: 'fit', 
                     autoLoad: {url: purl, scripts:true }, 
-                    tbar: [ search ],
+					tbar: [
+                        search, 
+                        { icon: '/static/images/icons/html.gif', style: 'width: 130px', cls: 'x-btn-icon', hidden: false,
+                            handler: function(){
+                                var win = window.open( purl );
+                            } 
+                        }
+                    ],
                     title: ptitle
             });
             search.pcom = tabpanel;
@@ -502,12 +508,19 @@
     Baseliner.add_wincomp = function( comp_url, ptitle, params, callback ){
         if( params == undefined ) params = {};
         Baseliner.ajaxEval( comp_url, params, function(comp) {
+            if( comp == undefined ) {
+                Ext.Msg.alert( _('Component Error'), _('Invalid component') );
+                return;
+            }
             var height = params.height || comp.height;
             if( height != undefined ) height += 20;
+            height = (height==undefined ? '80%' : height );
+            //if( comp.width!=undefined ) comp.width -= 10;
             var win = new Ext.Window({ 
                 title: ptitle || comp.title,
-                height: height || '80%',
-                width: comp.width,
+                //autoScroll:true,
+                height: height,
+                width: (comp.width==undefined ? '80%' : comp.width) ,
                 items: comp 
             });
             if( callback != undefined ) {
@@ -549,6 +562,9 @@
                         var comp = eval(xhr.responseText);
                             if( typeof( comp ) == 'function' ) {
                                 comp = comp(params);
+                        } else if( typeof(comp) == 'undefined' ) { //IE7
+                            eval( "comp=(" + xhr.responseText + ")" );
+                            comp = comp(params);
                             }
                             try { foo(comp); } catch(ef1) { err_foo = ef1 }
                     } catch(e1) {

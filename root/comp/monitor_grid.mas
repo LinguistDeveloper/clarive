@@ -146,6 +146,40 @@
 		autorefresh.stop(task);
 	};
 
+    var msg_cancel_delete = [ _('Cancel Job'), _('Delete Job') ];
+    var button_cancel = new Ext.Toolbar.Button({
+        text: msg_cancel_delete[0],
+        icon:'/static/images/del.gif',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            var mode;
+            if( sel.data.status_code == 'RUNNING' ) {
+                msg = '<% _loc('Killing the job will interrupt current local processing but no remote processes') %>';
+                msg += "\n" + _('Are you sure you want to %1 the job?', _('kill') );
+                mode = 'kill';
+            } else if( sel.data.status_code == 'CANCELLED' ) {
+                msg = _('Are you sure you want to %1 the job?', _('delete') );
+                mode = 'delete';
+            } else {
+                msg = _('Are you sure you want to %1 the job?', _('cancel') );
+                mode = 'cancel';
+            }
+            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
+                function(btn){ 
+                    if(btn=='yes') {
+                        var conn = new Ext.data.Connection();
+                        conn.request({
+                            url: '/job/submit',
+                            params: { action: 'delete', mode: mode, id_job: sel.data.id },
+                            success: function(resp,opt) { grid.getStore().reload(); },
+                            failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the job.') ); }
+                        }); 
+                    }
+                } );
+        }
+    });
 	//------------ Renderers
     var render_contents = function(value,metadata,rec,rowIndex,colIndex,store) {
 		if( value.length < 2 ) return value[0];
@@ -352,35 +386,7 @@
 					}
 				}),
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
-				new Ext.Toolbar.Button({
-                    text: _('Cancel Job'),
-					icon:'/static/images/del.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						var sel = sm.getSelected();
-                        if( sel.data.status_code == 'RUNNING' ) {
-                            msg = '<% _loc('Killing the job will interrupt current local processing but no remote processes') %>';
-                            msg += "\n" + _('Are you sure you want to %1 the job?', _('kill') );
-                        } else if( sel.data.status_code == 'CANCELLED' ) {
-                            msg = _('Are you sure you want to %1 the job?', _('delete') );
-                        } else {
-                            msg = _('Are you sure you want to %1 the job?', _('cancel') );
-                        }
-                        Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
-							function(btn){ 
-								if(btn=='yes') {
-									var conn = new Ext.data.Connection();
-									conn.request({
-										url: '/job/submit',
-										params: { action: 'delete', id_job: sel.data.id },
-										success: function(resp,opt) { grid.getStore().reload(); },
-										failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the job.') %>'); }
-									});	
-								}
-							} );
-					}
-				}),
+                button_cancel,
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} ) {
 				new Ext.Toolbar.Button({
@@ -541,6 +547,11 @@
     // Yellow row selection
     row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
+        if( rec.data.status_code === 'CANCELLED' ) {
+            button_cancel.setText( msg_cancel_delete[1] );
+        } else {
+            button_cancel.setText( msg_cancel_delete[0] );
+        }
     });
     row_sel.on('rowdeselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).removeClass('x-grid3-row-selected-yellow');

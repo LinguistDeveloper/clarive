@@ -13,9 +13,9 @@ sub logs_list : Path('/job/log/list') {
 	my $p = $c->req->params;
     $c->stash->{id_job} = $p->{id_job};
     $c->stash->{annotate_now} = $p->{annotate_now};
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>" . $p->{id_job};
 	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
+    $c->forward('/permissions/load_user_actions');
     $c->stash->{template} = '/comp/log_grid.mas';
 }
 
@@ -47,7 +47,7 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
 	$c->forward('View::JSON');
 }
 
-sub logs_json : Path('/job/log/json') {
+sub log_rows : Private {
 	my ( $self,$c )=@_;
     _db_setup;
 	my $p = $c->request->parameters;
@@ -79,6 +79,7 @@ sub logs_json : Path('/job/log/json') {
 	}
     $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
         if ref($filter) eq 'HASH';
+    $p->{levels} and $where->{lev} = [ _array $p->{levels} ];
 
     #TODO    store filter preferences in a session instead of a cookie, on a by id_job basis
     #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$p->{id_job} })->first;
@@ -88,12 +89,11 @@ sub logs_json : Path('/job/log/json') {
 
 	my $qre = qr/\.\w+$/;
 	while( my $r = $rs->next ) {
-        #my $data = uncompress( $r->data ) || $r->data;
-		my $data = '';
+        my $data = $p->{with_data} ? _html_escape( uncompress( $r->data ) || $r->data ) : '';
         #next if( $query && !query_array($query, $r->job->name, $r->get_column('timestamp'), $r->text, $r->provider, $r->lev, $r->data_name, $data, $r->ns ));
         #if( $filter ) { next if defined($filter->{$r->lev}) && !$filter->{$r->lev}; }
 
-        my $data_len = $r->data_length;
+        my $data_len = $r->data_length || 0;
         my $more = $r->more;
         my $data_name = $r->data_name || ''; 
         my $file = $data_name =~ $qre
@@ -106,7 +106,7 @@ sub logs_json : Path('/job/log/json') {
             id       => $r->id,
             id_job   => $r->id_job,
             job      => $r->job->name,
-            text     => $r->text,
+            text     => _markup( $r->text ),
             step     => $r->step,
             prefix   => $r->prefix,
             milestone=> $r->milestone,
@@ -118,16 +118,134 @@ sub logs_json : Path('/job/log/json') {
             ns       => $r->ns,
             provider => $r->provider,
 			datalen  => $data_len,
-            more     => { more=>$more, data_name=> $r->data_name, data=> $r->data ? \1 : \0, file=>$file },
+            data     => $data,
+            more     => { more=>$more, data_name=> $r->data_name, data=> $data_len ? \1 : \0, file=>$file },
           } #if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
 	}
+    return ( $job, @rows );
+}
+
+sub log_html : Path('/job/log/html') {
+    my ($self,$c, $log_hash ) = @_;
+    my $p = $c->request->parameters;
+
+    # load from hash
+    if( $log_hash && exists $c->session->{log_html}
+        && ( my $logd = $c->session->{log_html}->{ $log_hash }  ) ) {
+        $p->{id_job} = $logd->{id_job};
+        $p->{job_exec} = $logd->{job_exec} // 1;
+        $p->{levels} = [ 'info', 'warn', 'error' ];
+        $p->{debug} eq 1 and push @{ $p->{levels} }, 'debug';
+    }
+    # get data
+    if( defined $p->{id_job} ) {
+        my ($job, @rows ) = $self->log_rows( $c );
+        # prepare template
+        $c->stash->{rows} = \@rows;
+        $c->stash->{job_name} = $job->name;
+        $c->stash->{job_exec} = $job->exec;
+        $c->stash->{log_hash} = $log_hash;
+        $c->stash->{template} = '/comp/log.html';
+    } else {
+        $c->res->status( 404 );
+    }
+}
+
+sub logs_json : Path('/job/log/json') {
+    my ( $self,$c )=@_;
+    my $p = $c->request->parameters;
+    my ($job, @rows ) = $self->log_rows( $c );
+    my $log_hash = _md5( $p->{id_job}, $p->{job_exec} );
+    $c->session->{log_html} ||= {};
+    $c->session->{log_html}->{ $log_hash } = { id_job=>$p->{id_job}, job_exec=>$p->{job_exec} };
 	$c->stash->{json} = {
         totalCount => scalar(@rows),
         data       => \@rows,
         job        => { ref $job ? $job->get_columns : () },
+        log_hash  => $log_hash,
      };	
     # CORE::warn Dump $c->stash->{json};
 	$c->forward('View::JSON');
+}
+
+sub jesSpool : Path('/job/log/jesSpool') {
+    my ( $self, $c ) = @_;
+    _db_setup;
+    my $p = $c->req->params;
+    _log _dump $p;
+    $c->stash->{jobStore} = '/job/log/jobList?id='.$p->{id}.'&job='.$p->{job};
+    $c->stash->{jobName} = '/job/log/jesFile';
+    # $c->stash->{template} = '/comp/repl.mas';
+    $c->stash->{template} = '/comp/jes_viewer.mas';
+}
+
+sub jobList : Path('/job/log/jobList') {
+    my ( $self, $c ) = @_;
+    my (@jobs, @leaf)=((),());
+    my $p = $c->req->params;
+    # _log _dump $p;
+    my $jobIcon='/static/images/jobIcon.png';
+    my $spoolIcon='/static/images/spoolIcon.png';
+    _db_setup;
+    my $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{id} });
+    my $lastParent=undef;
+    while (my $rec=$log->next) {
+        my ($null,$parent,$file)=split /\//, $rec->name;
+        if ($parent  ne $lastParent) {
+            push @jobs,
+                {
+                id       => $lastParent,
+                cls      => 'x-tree-node',
+                icon     => $jobIcon,
+                leaf     => 0,
+                text     => $lastParent,
+                children => [@leaf]
+                } if $lastParent;
+            @leaf=();
+            $lastParent=$parent;
+            }
+        push @leaf,
+            {
+            id       => $rec->id,
+            cls      => 'x-tree-node-leaf',
+            icon     => $spoolIcon,
+            leaf     => 1,
+            needLoad => 1,
+            text     => $file,
+            data     => ''
+            };
+        }
+    push @jobs,
+      {
+      id       => $lastParent,
+      cls      => 'x-tree-node',
+      icon     => $jobIcon,
+      leaf     => 0,
+      text     => $lastParent,
+      children => [@leaf]
+      };
+
+    push my @ret,
+        {
+        id       => 'first',
+        text     => _loc('Executed JOBS for %1', $p->{job} ),
+        cls      => 'x-tree-node',
+        leaf     => 0,
+        children     => [@jobs]
+        };
+
+    $c->stash->{json} = [ @ret ];
+    $c->forward('View::JSON');
+    }
+
+sub jesFile : Path('/job/log/jesFile') {
+    my ( $self, $c ) = @_;
+    _db_setup;
+    my $p = $c->req->params;
+    my $log = $c->model('Baseliner::BaliLogData')->search({ id=>$p->{id} })->first;
+    my $data=$log->data;
+    $c->stash->{json} = {data=>$data};
+    $c->forward('View::JSON');
 }
 
 sub log_data : Path('/job/log/data') {
@@ -135,7 +253,21 @@ sub log_data : Path('/job/log/data') {
     _db_setup;
 	my $p = $c->req->params;
 	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
-	$c->res->body( "<pre>" . (uncompress($log->data) || $log->data)  . " " );
+    my $data = uncompress($log->data) || $log->data;
+    $data = _html_escape( $data );
+    $c->res->body( "<pre>" . $data  . " " );
+}
+
+sub log_delete : Path('/job/log/delete') {
+    my ( $self, $c, $id ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        my $log = $c->model('Baseliner::BaliLog')->search({ id_job=>$p->{id_job}, exec=>$p->{job_exec} })->delete;
+        { success=>\1, msg=>_loc( "Deleted" ) };
+    } catch {
+        { success=>\0, msg=>shift() };
+    };
+    $c->forward('View::JSON');
 }
 
 sub log_highlight : Path('/job/log/highlight') {

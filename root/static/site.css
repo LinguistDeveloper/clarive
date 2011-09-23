@@ -71,6 +71,91 @@ td.nopaseDesHover { background-color: #B0B0B0; }
 .job-calendar .boton {  }
 .job-calendar select { width: 160px; }
 
+.expandall { background-image: '/static/images/icons/expandall.gif' }
+.colapseall { background-image: '/static/images/icons/collapseall.gif' }
+
+/*************************************************
+
+Help File Styles
+
+*************************************************/
+
+.help-off { background-image: '/static/images/icons/lightbulb_off.gif' }
+.help-on { background-image: '/static/images/icons/lightbulb.gif' }
+
+pre { font-family: Consolas, Courier New, mono; }
+
+#baseliner-help-win .x-window-body {
+    background-color: #fff;
+    font-size: 11px;
+    font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
+    padding: 5px 5px 5px 5px;
+}
+#baseliner-help-win p {
+    font-size: 11px;
+    font-family: Verdana, Arial;
+    padding: 3px 5px 3px 10px;
+    margin: 5px 0px 5px 0px;
+    line-height: 15px;
+}
+#baseliner-help-win img {
+    margin: 3px 3px 3px 3px;
+}
+#baseliner-help-win code {
+    background-color: #f0f0f0;
+}
+#baseliner-help-win ul {
+    font-size: 11px;
+    margin: 5px 0px 5px 20px;
+    list-style: circle inside;
+    font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
+}
+#baseliner-help-win li {
+    font-size: 11px;
+    font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
+}
+#baseliner-help-win h1 {
+    background-color: #EDF3FE;
+    font-weight: bold;
+    margin: -5px -5px 0px -5px;
+    padding: 10px 3px 10px 3px;
+    font-size: 18px; font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
+}
+#baseliner-help-win h2 {
+    background-color: #FFEBBC;
+    font-weight: bold;
+    padding: 3px 3px 3px 10px;
+    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif;
+}
+#baseliner-help-win h3 {
+    color: #9F263A;
+    font-weight: bold;
+    margin: 5px 0px 5px 5px;
+    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+}
+#baseliner-help-win h4 {
+    color: #111;
+    font-style: italic;
+    margin: 5px 0px 5px 5px;
+    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+}
+#baseliner-help-win table {
+    border: 1px dashed #ccc;
+    margin: 5px 5px 5px 10px;
+}
+#baseliner-help-win td {
+    color: #222;
+    padding: 2px 2px 2px 2px;
+    border: 1px dashed #ccc;
+    font-size: 10px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+}
+#baseliner-help-win th {
+    color: #222;
+    padding: 2px 2px 2px 2px;
+    font-weight: bold;
+    font-size: 10px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+}
+
 .x-form-spinner-proxy{
         /*background-color:#ff00cc;*/
 }

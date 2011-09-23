@@ -19,7 +19,7 @@ sub run {
     $job->job_stash->{elements} = BaselinerX::Job::Elements->new;
 
 	# load the contents array
-	$log->debug( 'Job Contents cargando, path=' . $job->job_stash->{path} );
+	$log->debug( 'Job Contents loading, path=' . $job->job_stash->{path} );
 
 	# fetch contents
     $job->job_stash->{contents} = $self->contents($job->jobid);

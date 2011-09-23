@@ -28,7 +28,8 @@ then
         bali stop service.dispatcher 
         echo $message
 		ren_log
-        exec bali start service.dispatcher 
+        shift
+        exec balid service.dispatcher $*
         exit 0
 fi
 
@@ -42,7 +43,8 @@ if [ "$1" == "start" ];
 then
 		ren_log
         echo $message
-        exec balid service.dispatcher --fork
+        shift
+        exec balid service.dispatcher $*
         exit 0
 fi
 

@@ -314,7 +314,7 @@ sub store_relationship {
 	$ns = $self->get( $ns ) unless ref $ns;
 	return unless $ns;
 	return if $ns->provider eq 'namespace.job';
-	my $project_ns = $ns->application;
+    my $project_ns = try { $ns->application } catch { };
 	return unless $project_ns;
 	my $project = Baseliner->model('Projects')->add_item( project=>$project_ns, ns=>$ns->ns );
 }

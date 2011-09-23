@@ -5,7 +5,8 @@ no Moose;
 use Baseliner::Utils;
 use Digest::MD5;
 use Try::Tiny;
-use YAML::Syck;
+
+with 'Baseliner::Role::Service';
 
 sub generate_key {
     return Digest::MD5::md5_hex( _now . rand() . $$ );
@@ -26,6 +27,20 @@ register 'config.request' => {
                       { id=>'text_wiki', label=>'Comentarios del solicitante', type=>'textarea', extjs =>{width=>'250',height=>'70', readOnly=>\1} },                      
                       { id=>'text', label=>'Comentarios del aprobador', type=>'textarea', extjs =>{width=>'250',height=>'70'} },                      
           ]
+};
+
+register 'service.request.save_data' => {
+    name => 'Migrate ns data from request into data field',
+    handler=>sub{
+        my $rs = Baseliner->model('Baseliner::BaliRequest')->search;
+        my $cnt = 1;
+        my $len = $rs->count;
+        while( my $r = $rs->next ) {
+            _log sprintf "Started on request %s (%d/%d)", $r->id, $cnt++, $len;
+            $r->save_data;
+            _log sprintf "Finished request %s", $r->id;
+        }
+    }
 };
 
 =head2 request
@@ -67,7 +82,7 @@ sub request {
 	my $data;
 	if( $p{data} ) {
 		try {
-			$data = YAML::Syck::Dump( $p{data} );
+			$data = _dump( $p{data} );
 		} catch {
 			_log "Error trying to freeze request data: " . shift;
 		};
@@ -93,6 +108,7 @@ sub request {
 			data         => $data,
 			callback     => $p{callback},
 			id_wiki		 => $id_wiki,
+			item   		 => $p{item},   # item overwrite
         }
     );
 	
@@ -122,6 +138,8 @@ sub list {
     my ($self, %p ) = @_;
 
     my $where = {};
+    length $p{query} and $where = query_sql_build( query=>$p{query},
+        fields=>[ qw/id bl name requested_on requested_by finished_on finished_by data/ ] );
 	if( ref $p{filter} ) {
 		my $status = [ grep { $p{filter}->{$_} } keys %{ $p{filter} } ]; 
 		$where->{status} = $status;
@@ -140,9 +158,6 @@ sub list {
 		$from->{page} = $page;
 		$from->{rows} = $p{limit};
 	}
-	$p{query} and $where->{'lower(id||bl||name||requested_on||requested_by||finished_on||finished_by)'}
-					= { -like =>lc( '%'.$p{query}.'%' ) };
-	
 	if( $p{project} ) {
 		my @user_apps = _array $p{project};
 		unless( grep { $_ eq '/' } @user_apps ) { # if it has a global group permission, ignore
@@ -151,9 +166,16 @@ sub list {
 		}
 	}
 	#$from->{select} = [qw//];
+    #$from->{prefetch} = [ 'bali_request' ];
+    # XXX this is not really needed, clob loading is due to slow drivers (instantclient?)
+    $from->{select} = [
+        map { s/ //g; $_ } 
+            split /,/,
+            'id, ns, bl, requested_on, finished_on, status, finished_by, requested_by, action, id_parent, key, name, type, item, id_wiki, id_job, callback, id_message'
+    ] if $p{no_data};
     my $rs = Baseliner->model('Baseliner::BaliRequest')->search($where, $from);
-	#_log _dump $rs->as_query;
-	rs_hashref( $rs );
+	rs_hashref( $rs ) unless $p{row};
+    return $rs if $p{rs};
 	my @requests = $rs->all;
 
 	return @requests if wantarray;
@@ -270,7 +292,7 @@ sub notify_request {
 
     my %vars = exists $p{vars} ? %{ $p{vars} || {} } :  %p;
 
-	my $data = YAML::Syck::Load( $request->data )
+	my $data = _load( $request->data )
 		if $request->data;
 
     if( ref $data eq 'HASH' ) {
@@ -385,9 +407,9 @@ sub callback {
 	my $service = $p{service};
 	my $request = $p{request};
 	my $data;
-	$data = YAML::Syck::Load( $request->data )
+	$data = _load( $request->data )
 		if $request->data;
-	Baseliner->model('Services')->launch( $service, data=>$data, request=>$request );
+	Baseliner->model('Services')->launch( $service, data=>$data, request=>$request, quiet=>1);
 }
 
 sub cancel_for_job {
@@ -419,27 +441,51 @@ sub get_by_key {
     return (ref $rs) ? $request : undef;
 }
 
+=head2 append_ns_data( $request_row )
+
+Additional request fields from related ns.
+
+   my $request = $self->append_data( $request_row_hash );
+
+   * ns_name
+   * ns_icon
+
+Returns augmented request row.
+
+=cut
+sub append_ns_data {
+    my ($self, $request, %p ) = @_;
+	my $req = $request;
+	my $namespaces = $p{model_namespaces} || Baseliner->model('Namespaces'); # for perf
+    # get the request ns
+	my $ns = try { $namespaces->get( $request->{ns} ) } catch { };
+	unless( ref $ns ) {
+		_log _loc "Error: request %1 has an invalid namespace %2", $request->{id}, $request->{ns};
+		return;
+	}
+    # get the request ns name and icon
+	$req->{ns_name} =  $ns->ns_name . " (" . $ns->ns_type . ")";
+	$req->{ns_icon} =  try { $ns->icon } catch { '' };
+	return $req;
+}
+
 =head2 append_data
 
 Process row data and add additional fields.
 
    my $request = $self->append_data( $request_row_hash );
 
+   * localize request type
+   * app and rfc from request data
+
+Returns augmented request row.
+
 =cut
 sub append_data {
     my ($self, $request, %p ) = @_;
 	my $req = $request;
-	my $namespaces = $p{model_namespaces} || Baseliner->model('Namespaces'); # for perf
-	my $ns = try { $namespaces->get( $request->{ns} ) } catch { };
-	unless( ref $ns ) {
-		_log _loc "Error: request %1 has an invalid namespace %2", $request->{id}, $request->{ns};
-		return;
-	}
-	my $ns_icon = try { $ns->icon } catch { '' };
-	$req->{ns_name} =  $ns->ns_name . " (" . $ns->ns_type . ")";
-	$req->{ns_icon} =  try { $ns->icon } catch { '' };
-	$req->{type} =  _loc($request->{type} );
-	#my $row = Baseliner->model('Baseliner::BaliRequest')->search({ id=> $request->{id} })->first;
+	#$req->{type} =  _loc($request->{type} );
+    # get fields from data
 	if( $request->{data} ) {
 		my $data = _load( $request->{data} );
 		if( ref $data eq 'HASH' ) {

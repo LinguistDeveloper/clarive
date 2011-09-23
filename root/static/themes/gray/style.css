@@ -27,6 +27,11 @@
 background: #FF0000 !important;
 }
 
+/* overwrite standard row select ugly gray color */
+.x-grid3-row-selected {
+    background-color: #DFE8F6 !important;
+}
+
 /* .x-grid3-row-selected .x-grid3-cell-inner { */
 .x-grid3-row-selected-white {
     background: #f5f5f5 !important;

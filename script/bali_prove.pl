@@ -42,6 +42,8 @@ use lib "$FindBin::Bin/../lib";
 use File::Basename;
 use Baseliner::Utils;
 
+our $VERSION = 0.02;
+
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
 
 BEGIN {
@@ -68,21 +70,49 @@ sub pre {
     $ret;
 }
 
-my %args = _get_options( @ARGV );
+say "Baseliner Test Harness v$VERSION";
 
-say pre . "Baseliner Test Harness";
+my %args = _get_options( @ARGV );
+if( exists $args{h} ) {  # help
+    print << 'EOF';
+Usage:
+  bali prove [options]
+
+Options:
+  -h          : this help
+  -case       : run only some test cases (regex)
+                  bali prove -case sem -case job
+  -feature    : run only certain features (regex)
+                  bali prove -feature uploader
+  -die        : die on first failed test
+  -carp       : use Carp::Always to print error stacks
+  -nodeploy   : Prevents the test db creation and schema deploy. Reuse the test db, in case it exists.
+  -debug      : Activate the BASELINER_DEBUG flag for extra verbosity.
+
+EOF
+    exit 0;
+}
+
 my $cnt = 0;
+require Carp::Always if exists $args{carp};
+$ENV{BASELINER_DEBUG}=1 if exists $args{debug};
 
 # load schema
+unless( exists $args{nodeploy} ) {
 say pre . "Starting DB deploy...";
 require Config::General;
+    $Baseliner::Schema::Baseliner::DB_DRIVER = 'SQLite';
 require Baseliner::Schema::Baseliner;
 my $cfg_file = "$Bin/../baseliner_t.conf";
 my $cfg      = Config::General->new( $cfg_file );
-Baseliner::Schema::Baseliner->deploy_schema( config => { $cfg->getall } )
-    and die pre . "Errors while deploying DB. Aborted\n";
+    Baseliner::Schema::Baseliner->deploy_schema(
+        config      => { $cfg->getall },
+        drop        => 1,
+        show_config => 1,
+    ) and die pre . "Errors while deploying DB. Aborted\n";
 
 say pre . "Done Deploying DB.";
+}
 
 # startup
 say pre . "Loading Baseliner...";

@@ -13,7 +13,6 @@ Usually, the runner runs one time for each step for a given job.
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use YAML::Syck;
 use Path::Class;
 use BaselinerX::Job::Elements;
 use Capture::Tiny;
@@ -21,6 +20,7 @@ use Carp;
 use Try::Tiny;
 use Sys::Hostname;
 use utf8;
+use namespace::autoclean;
 
 has 'jobid' => ( is=>'rw', isa=>'Int' );
 has 'name' => ( is=>'rw', isa=>'Str' );
@@ -47,8 +47,10 @@ has 'job_type' => ( is=>'rw', isa=>'Str' );
 has 'job_stash' => ( is=>'rw', isa=>'HashRef', default=>sub {{}}  );
 has 'job_data' => ( is=>'rw', isa=>'HashRef', default=>sub {{}} );
 has 'job_row' => ( is=>'rw', isa=>'Any' );
+has 'exec' => ( is => 'rw', isa => 'Maybe[Int]', default => 1 );
 
 with 'Baseliner::Role::Service';
+with 'Baseliner::Role::JobRunner';
 
 register 'config.job.runner' => {
     metadata => [
@@ -62,6 +64,12 @@ register 'service.job.run' => {
     name    => 'Job Runner',
     config  => 'config.job',
     handler => \&job_run,
+};
+
+register 'service.job.stash.print' => {
+    name    => 'Job Stash Printer',
+    config  => 'config.job',
+    handler => \&stash_print,
 };
 
 register 'action.notify.job.start' => { name=>_loc('Notify when job has started') };
@@ -88,11 +96,12 @@ sub new_from_id {
     my ($class,%p)=@_;
     $p{jobid} or _throw 'Missing jobid parameter';
     $p{step} ||= $p{same_exec} ? 'POST' : 'RUN';
+    $p{exec} eq 'last' and $p{exec}=0;
     my $job = $class->new( %p );
     _log "Created job object for jobid=$p{jobid}";
     # increment the execution
     my $row = $job->row;
-    if( $p{'exec'} ne 'last' ) {
+    if( $p{'exec'} != 0 ) {
         $row->exec( $row->exec + 1);
     }
     $row->update;
@@ -101,7 +110,10 @@ sub new_from_id {
     $log->info(_loc("Job revived"));
     #thaw job stash from table
     my $stash = $job->thaw;
+    $log->info(_loc("Job revived"), data=>_dump($stash) );
+    $job->bl( $row->bl );
     $job->job_stash( $stash );
+    $job->name( $row->name );
     return $job;
 }
 
@@ -164,7 +176,12 @@ sub job_run {
 
     _log "================================| Starting JOB=" . $jobid;;
 
-    my $step = $config->{args}{step} or _throw 'Missing step value';
+    my $step = $config->{args}{step} || $config->{step} or _throw 'Missing step value';
+
+    _throw( "No job chain or service defined for job " . $config->{jobid} )
+        unless( $config->{runner} );
+
+    $c->log->debug("Running Service " . $config->{runner} . " for step=$step" ); 
 
     my $runner_output='';
     my $goto_next = 0;
@@ -178,6 +195,8 @@ sub job_run {
             $r->exec( $r->exec + 1 ) ;
             $r->update;
             $self->logger->exec( $r->exec );
+        } else {
+            $self->exec( $r->exec ); 
         }
 
         $self->name( $r->name );
@@ -204,8 +223,7 @@ sub job_run {
         $self->job_stash->{step} = $step;
 
         # send notifications  
-        Baseliner->model('Jobs')->notify( jobid=>$jobid, type=>'started' )
-            if( $step eq 'RUN' );
+        $step eq 'RUN' and Baseliner->model('Jobs')->notify( jobid=>$jobid, type=>'started' );
 
         #******************  start main runner  ******************
         # typically, a Chain runner, like SimpleChain, or a single service
@@ -259,12 +277,14 @@ sub job_run {
                 $self->logger->debug( _loc('No rollback data found in the stash') );
                 $self->status('ERROR');
                 $self->finish($self->status);
+                $self->freeze;
             }
         } else {
             # already rolling back, but failed
             $self->logger->error( _loc('Rollback failed') );
             $self->status('ERROR');
             $self->finish($self->status);
+            $self->freeze;
         }
     };
 
@@ -350,7 +370,7 @@ sub thaw {
     my $r = $self->row;
     if( $r->stash ) {
         try {
-            $stash = YAML::Syck::Load( $r->stash ); 
+            $stash = _load( $r->stash ); 
         } catch {
             $self->logger->warn( 'No he podido recuperar el stash de pase', shift );
         };
@@ -369,10 +389,12 @@ sub freeze {
     my $self = shift;
     try {
         my $r = $self->row;
-        $r->stash( YAML::Syck::Dump( $self->job_stash ) ); 
+        my $stash = _dump( $self->job_stash );
+        $r->stash( $stash ); 
         $r->update;
+        $self->logger->debug( _loc('Job stash stored ok'), data=>$stash );
     } catch {
-        $self->logger->warn( 'No he podido guardar el stash de pase', shift );
+        $self->logger->warn( _loc('Could not store job stash: %1', shift) );
     };
 }
 
@@ -418,6 +440,62 @@ sub suspend {
     $self->logger->warn( _loc('Suspending Job' ) );
     $self->job_row->status( $self->status( 'SUSPENDED' ) );
     $self->job_row->update;
+}
+
+sub stash_print {
+    my ($self,$c,$config)=@_;
+
+    my $jobid = $config->{jobid};
+    $self->jobid( $jobid );
+    my $r = $self->row;
+    print "Job stash for job id $jobid:\n";
+    length $r->stash ? print $r->stash : print "(empty)\n";
+}
+
+sub stash {  # not just an alias
+    my ($self, %hash)=@_;
+    for my $key ( keys %hash ) {
+         $self->job_stash->{$key} = $hash{$key};
+    }
+    return $self->job_stash;
+}
+
+sub root {
+    my ($self)=@_;
+    return $self->job_stash->{root} || $self->job_stash->{path} || do { 
+        require BaselinerX::Job::Service::Init;
+        BaselinerX::Job::Service::Init->new->root_path( job=>$self );
+    };
+}
+
+=head2 parse_job_vars ( $str, \%user_data )
+
+Parse a string for variables C<${variable}>, replacing it with:
+
+    1) job info 
+    2) stash data
+    3) user supplied data
+
+=cut
+sub parse_job_vars {
+    my ($self, $data, $user_vars ) = @_;
+    $user_vars ||= {};
+    my $stash = $self->job_stash->{vars} || {};
+    my $vars = {
+        job      => $self->name,
+        job_root => $self->root,
+        job_id   => $self->jobid,
+        jobid    => $self->jobid,
+        job_exec => $self->exec,
+        job_step => $self->step,
+        bl       => $self->bl,
+        # merging:
+        %$stash,
+        %$user_vars,
+    };
+
+    # substitute vars
+    Baseliner::Utils::parse_vars( $data, $vars, throw=>0 );
 }
 
 

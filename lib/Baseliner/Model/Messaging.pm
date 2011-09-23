@@ -39,12 +39,16 @@ sub create {
 
     _throw "No subject specified" unless $p{subject};
 
+    # catch onto features
+    my @features = map {
+        [ $_->id => _dir( $_->root )->stringify ]
+    } Baseliner->features->list;
     if( my $template = $p{template} ) {
 		if( $p{template_engine} eq 'mason' ) {
 			try {
 				use File::Spec;
 				use HTML::Mason::Interp;
-				my $comp_root = "". Baseliner->config->{root};
+				my $comp_root = [ [ root=>"". Baseliner->config->{root} ], @features ];
 				my $data_dir = File::Spec->catdir(
 					File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
 				my $m = HTML::Mason::Interp->new(

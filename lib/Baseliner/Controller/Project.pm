@@ -4,7 +4,7 @@ BEGIN { extends 'Catalyst::Controller' };
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
-use autobox::Core;
+use Moose::Autobox;
 use JSON::XS;
 use namespace::clean;
 

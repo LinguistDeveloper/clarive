@@ -1,6 +1,7 @@
 ﻿package BaselinerX::Job::Service::Init;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Carp;
 use Try::Tiny;
 use File::Spec;
@@ -10,7 +11,8 @@ use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.init' => { name => 'Job Runner Initializer', config => 'config.job.runner', handler => \&job_init, };
+register 'service.job.init' => { name => 'Job Runner Initializer',
+    config => 'config.job.runner', handler => \&job_init, };
 
 our %next_step = ( PRE => 'RUN',   RUN => 'POST',  POST => 'END' );
 our %next_state  = ( PRE => 'READY', RUN => 'READY', POST => 'FINISHED' );
@@ -23,14 +25,23 @@ sub job_init {
 	my $job = $c->stash->{job};
 	my $log = $job->logger;
 
-	my $job_dir = File::Spec->catdir( $config->{root}, $job->name );
+	my $job_dir = $self->root_path( job=>$job, config=>$config );
 	$log->debug( 'Creando directorio de pase ' . $job_dir );
 	unless( -e $job_dir ) {
 		mkdir $job_dir;
 	} else {
         remove_tree $job_dir, { keep_root=>1 };
     }
-	$job->job_stash->{path} = $job_dir;
+	#$job->job_stash->{path} = $job_dir;
+}
+
+sub root_path {
+    my ($self,%args) = @_;
+    _throw 'Missing parameter job'
+        unless exists $args{job};
+    $args{config} ||= config_get 'config.job.runner';
+	my $job_dir = File::Spec->catdir( $args{config}->{root}, $args{job}->name );
+	$args{job}->job_stash->{path} = $job_dir;
 }
 
 1;

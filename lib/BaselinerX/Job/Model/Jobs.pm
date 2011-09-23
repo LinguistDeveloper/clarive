@@ -84,7 +84,7 @@ sub resume {
     my ($self, %p )=@_;
     my $id = $p{id} or _throw 'Missing job id';
     my $job = bali_rs('Job')->find( $id );
-    my $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$id, same_exec=>1 );
+    my $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$id, same_exec=>1, exec=>'last' );
     $runner->logger->warn( _loc('Job resumed by user %1', $p{username} ) );
     $job->status('READY');
     $job->update;
@@ -104,7 +104,7 @@ sub rerun {
     if( $p{run_now} ) {
     my $now = DateTime->now;
     $now->set_time_zone(_tz);
-    my $end = $now->clone->add( hours => 1 );
+        my $end = $now->clone->add( hours => 5 );
     my $ora_now =  $now->strftime('%Y-%m-%d %T');
     my $ora_end =  $end->strftime('%Y-%m-%d %T');
     $job->schedtime( $ora_now );

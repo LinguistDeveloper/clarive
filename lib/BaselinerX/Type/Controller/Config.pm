@@ -6,7 +6,7 @@ use YAML::Syck;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };
 
-#register 'menu.admin.config_panel' => { label=>'Config Form', url_comp=>'/config/main', title=>'Config Form', icon=>'/static/images/config.png', active=>0 };
+register 'menu.admin.config_panel' => { label=>'Config Form', url_comp=>'/config/main', title=>'Config Form', icon=>'/static/images/config.png', active=>0 };
 
 sub generate_form : Path('/config/generate_form') {
 	my ($self,$c, $config_key )=@_;

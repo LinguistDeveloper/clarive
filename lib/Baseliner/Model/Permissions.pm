@@ -72,6 +72,22 @@ sub add_action {
     }
 }
 
+=head2 remove_action $action, $role_name
+
+Removes an action from a role.
+
+=cut
+sub remove_action {
+    my ($self, $action, $role_name, %p ) = @_;
+    my $bl = $p{bl} || '*';
+    my $role = Baseliner->model('Baseliner::BaliRole')->search({ role=>$role_name })->first;
+    if( ref $role ) {
+        my $actions = $role->bali_roleactions->search({ action=>$action })->delete;
+    } else {
+        die _loc( 'Role %1 not found', $role_name );
+    }
+}
+
 =head2 delete_role [ id=>Int or role=>Str ]
 
 Deletes a role by role id or by role name.
@@ -207,7 +223,71 @@ sub user_has_action {
     return $ret;
 }
 
+=head2 user_has_project( username=>Str, project_name=>Str | project_id )
 
+Returns an array of ns for the projects the user has access to.
+
+=cut
+sub user_has_project {
+    my ( $self, %p ) = @_;
+    _throw 'Missing username' unless exists $p{username};
+
+    # is root?
+    return 1 if $self->is_root( $p{username} );
+
+    if( my $name = delete $p{project_name} ) {
+        return scalar grep /^$name$/, $self->user_projects_names( %p );
+    } elsif( my $id = delete $p{project_id} ) {
+        return scalar grep /$id/, $self->user_projects_ids( %p );
+    }
+    return 0;
+}
+
+=head2 user_projects( username=>Str )
+
+Returns an array of ns for the projects the user has access to, 
+ie, if the user has ANY role in them.
+
+=cut
+sub user_projects {
+    my ( $self, %p ) = @_;
+    _throw 'Missing username' unless exists $p{ username };
+    _array( Baseliner->model( 'Baseliner::BaliRoleuser' )
+        ->search( { username => $p{username} }, { select => [ 'ns' ] } ) ~~ sub {
+        my $rs = shift;
+        rs_hashref( $rs );
+        [ grep { length } _unique map { $_->{ ns } } $rs->all ];
+    } );
+}
+
+=head2 user_projects_ids( username=>Str )
+
+Returns an array of project ids for the projects the user has access to.
+
+=cut
+sub user_projects_ids {
+    my ( $self, %p ) = @_;
+    _unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );
+}
+
+=head2 user_projects_names( username=>Str )
+
+Returns an array of project names to which the user has access.
+
+=cut
+sub user_projects_names {
+    my ( $self, %p ) = @_;
+    my @ns = $self->user_projects( %p );
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ ns=>\@ns }, { select=>['name'] });
+    rs_hashref( $rs );
+    _unique map { $_->{name} } $rs->all;
+}
+
+=head2 user_projects_with_action( username=>Str, action=>[ ... ] )
+
+List of projects for which a user has a given action.
+
+=cut
 #### Ricardo (21/6/2011): Listado de proyectos para los que el usuario tiene una acción
 sub user_projects_with_action {
     my ($self, %p ) = @_;
@@ -218,7 +298,7 @@ sub user_projects_with_action {
     
     my @root_users = $self->list( action=> 'action.admin.root' );
 
-	if ( grep /$username/, @root_users ) {
+    if ( grep /^$username$/i, @root_users ) {
 		@granted_projects = $self->all_projects();
 	} else {
 		my $db = new Baseliner::Core::DBI( { model => 'Baseliner' } );
@@ -227,10 +307,10 @@ sub user_projects_with_action {
 				from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra
 				WHERE   r.ID = ru.ID_ROLE AND
 	        	r.ID = ra.ID_ROLE AND 
-	        	username = '$username' AND
-	        	action = '$action'
+                username = '?' AND
+                action = '?'
 	        	ORDER BY 1
-			}
+            }, $username, $action
         );
 		if ( @data && $data[0] eq '/') {
 			@granted_projects = $self->all_projects();

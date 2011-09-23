@@ -1,61 +1,23 @@
-{
-	package Net::SCP::Port;
-	use base 'Net::SCP';
-	use IO::Handle;
-	use IPC::Open3;
-	our $scp = 'scp';
-
-	sub scp {
-		my $self = ref($_[0]) ? shift : {};
-		my($src, $dest, $interact) = @_;
-		my $port = exists $self->{port} ? '-P '. $self->{port} : '';
-		my $flags = '-p';
-		$flags .= 'r' unless &Net::SCP::_islocal($src) && ! -d $src;
-		my @cmd;
-		if ( ( defined($interact) && $interact )
-				|| ( defined($self->{interactive}) && $self->{interactive} ) ) {
-			@cmd = ( $scp, $flags, $port, $src, $dest );
-			#print join(' ', @cmd), "\n";
-			unless ( &_yesno ) {
-				$self->{errstr} = "User declined";
-				return 0;
-			}
-		} else {
-			$flags .= 'qB';
-			@cmd = ( $scp, $flags, $port, $src, $dest );
-		}
-
-		my($reader, $writer, $error ) =
-			( new IO::Handle, new IO::Handle, new IO::Handle );
-		$writer->autoflush(1);#  $error->autoflush(1);
-		local $SIG{CHLD} = 'DEFAULT';
-		warn "******** SCP> " . join ',',@cmd;
-		my $pid = open3($writer, $reader, $error, @cmd );
-		waitpid $pid, 0;
-		if ( $? >> 8 ) {
-			my $errstr = join('', <$error>);
-			#chomp(my $errstr = <$error>);
-			$self->{errstr} = $errstr;
-			0;
-		} else {
-			1;
-		}
-	}
-}
 package Baseliner::Core::Filesys::SSH;
-use strict;
+use Moose;
 use Baseliner::Utils;
-require File::Find; 
 use File::Spec;
 use Filesys::Virtual::SSH;
+require File::Find; 
 
-use base qw( Class::Accessor::Fast );
-__PACKAGE__->mk_accessors(qw( ret rc scp ssh remote));
+has ret    => qw/is rw isa Any/;
+has rc     => qw/is rw isa Any/;
+has scp    => qw/is rw isa Net::SCP::Port/;
+has ssh    => qw/is rw isa Filesys::Virtual::SSH/;
+has remote => qw/is rw isa Any/;
 
 our $VERSION='1.00';
-
 our %cache;  ## to store host details in between instances
 
+# register implementation
+with 'Baseliner::Role::Filesys';
+
+# monkey patch 
 use String::ShellQuote;
 sub Filesys::Virtual::SSH::shell_quote {
 	my $sh = String::ShellQuote::shell_quote(@_);
@@ -97,6 +59,7 @@ sub new {
         $conn= "-p $port $user\@$host";
     }
 	_log "HOST=$host";
+    _log "PORT=$port";
 	_log "HOME=$home";
 	_log "CONN=$conn";
 	my $self = {
@@ -165,11 +128,11 @@ sub _execute {
 	
 	if( $self->{remote} ) {
 		$cmd =~ s{\"(.*?)\"}{$1}g if $self->is_win;
-warn "EXEC REMOTE=$cmd\n";		
+        $ENV{BASELINER_DEBUG} and warn "EXEC REMOTE=$cmd\n";        
 		$self->{ret} = $self->{ssh}->_remotely($cmd);
 		$self->{rc} = $? >> 8;
 	} else {
-warn "EXEC LOCAL=$cmd\n";		
+        $ENV{BASELINER_DEBUG} and warn "EXEC LOCAL=$cmd\n";     
 		$self->{ret} = `$cmd`;
 		$self->{rc} = $? >> 8;
 	}	
@@ -337,7 +300,7 @@ sub get {  ## copy from somewhere else to my filesystem
 	my ($self, %P)=@_;
 	my $from = $P{from} || _throw _loc( "Invalid blank origin on put" );
 	my $to = $P{to} || $self->{home};  ## optional
-	my $origfs = ( ref $from ? $from : _PACKAGE_->new( home=>$from ) ); 
+    my $origfs = ( ref $from ? $from : __PACKAGE__->new( home=>$from ) ); 
 	if( $self->{remote} ) {
 		if( $origfs->{remote} ) {  	## from remote to remote
 			_throw _loc "put from remote destinations not implemented yet.";
@@ -362,7 +325,7 @@ sub get {  ## copy from somewhere else to my filesystem
 sub put {  ## copy from my filesystem to somewhere else
 	my ($self, %P)=@_;
 	$P{to_file} and $P{to} = $P{to_file}; # to_file - does not mkdir
-	my $to = $P{to} || _throw _loc( "Invalid blank destination 'to' on get" );
+    my $to = $P{to} || _throw _loc( "Invalid blank destination 'to' on put" );
 	my $from = $P{from} || $self->{home};  ## optional
 	my $destfs = ( ref $to ? $to : __PACKAGE__->new( home=>$to ) ); 
 	if( $self->{remote} ) {
@@ -446,7 +409,7 @@ sub chown {
 		$cmd = ( $P{recursive} 
 			? qq{cacls "$P{path}" /t /e /c /g $P{owner}} 
 			: qq{cacls "$P{path}" /e /c /g $P{owner}} 
-			);
+            ); #"
 	} else {
 		$cmd = ( $P{recursive} 
 			? qq{chown -R $P{owner} "$P{path}"} 
@@ -491,5 +454,58 @@ sub end { ## not needed, backward compatibility
 	my $self=shift;
 	$self->{scp} && $self->{scp}->quit();  ## does nothing
 }
+
+sub mkpath {
+    my ($self, $path)=@_;
+    $path = _dir( $self->{home}, $path );
+    $self->execute( qq{mkdir -p "$path"} );
+}
+
+{
+    package Net::SCP::Port;
+    use base 'Net::SCP';
+    use IO::Handle;
+    use IPC::Open3;
+    our $scp = 'scp';
+
+    sub scp {
+        my $self = ref($_[0]) ? shift : {};
+        my($src, $dest, $interact) = @_;
+        my $port = exists $self->{port} ? '-P '. $self->{port} : '';
+        my $flags = '-p';
+        $flags .= 'r' unless &Net::SCP::_islocal($src) && ! -d $src;
+        my @cmd;
+        if ( ( defined($interact) && $interact )
+                || ( defined($self->{interactive}) && $self->{interactive} ) ) {
+            @cmd = ( $scp, $flags, $port, $src, $dest );
+            #print join(' ', @cmd), "\n";
+            unless ( &_yesno ) {
+                $self->{errstr} = "User declined";
+                return 0;
+            }
+        } else {
+            $flags .= 'qB';
+            @cmd = ( $scp, $flags, $port, $src, $dest );
+        }
+
+        my($reader, $writer, $error ) =
+            ( new IO::Handle, new IO::Handle, new IO::Handle );
+        $writer->autoflush(1);#  $error->autoflush(1);
+        local $SIG{CHLD} = 'DEFAULT';
+        warn "******** SCP> " . join ',',@cmd;
+        my $pid = open3($writer, $reader, $error, @cmd );
+        waitpid $pid, 0;
+        if ( $? >> 8 ) {
+            my $errstr = join('', <$error>);
+            #chomp(my $errstr = <$error>);
+            $self->{errstr} = $errstr;
+            0;
+        } else {
+            1;
+        }
+    }
+    
+}
+
 
 1;

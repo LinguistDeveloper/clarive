@@ -54,7 +54,7 @@ sub new {
         warn ahora()
           . " - BALIX: inicio ping con timeout a $p{host}:$p{port}\n";
         local $SIG{ALRM} = sub {
-            die "Timeout. Se ha sobrapasado el tiempo fijado ($p{timeout} seg) para la conexión por agente a $p{host}:$p{port}.\n";
+            die "Timeout $p{timeout} seg while connection to agent $p{host}:$p{port}.\n";
         };
         if ( $p{timeout} ne -1 ) {
             alarm $p{timeout};
@@ -69,7 +69,7 @@ sub new {
     };
 	
     if ($@) {
-        croak "Error de conexión por agente: $@";
+        croak "Error while connecting to agent: $@";
     }
     return $balix;
 }
@@ -490,26 +490,6 @@ sub ping {
     $balix->{socket} = _open_socket( $balix->{RM}, $balix->{RPORT} );
     return ( $RC, $RET );
 }
-
-# usuario de ejecucion del Distribuidor para un entorno
-# uso: my $usuario = scm_usuario('TEST');  
-# devuelve 'vtscm'
-sub scm_usuario {
-	use strict;
-
-    my $entorno = @_;
-
-    #XXX DELME XXX
-    my $usuario;
-    #XXX DELME XXX
-
-    # entorno_usuario??????
-    #FIXME my $usuario = $entorno_usuario{$entorno}
-    #FIXME     or die "scm_usuario: error: no tengo mapeado un usuario para el entorno '$entorno'";
-
-	return $usuario;
-}
-
 
 1;
 

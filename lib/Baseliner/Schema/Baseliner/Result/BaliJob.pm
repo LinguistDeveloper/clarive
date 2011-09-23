@@ -448,7 +448,7 @@ sub last_log_message {
 # is_active means it is ready to run, or running
 sub is_active {
     my $self = shift;
-    return $self->status =~ m/^IN-EDIT|^READY|^RUNNING/ ;
+    return $self->status =~ m/^IN-EDIT|^READY|^RUNNING|^SUSPENDED/ ;
 }
 
 1;

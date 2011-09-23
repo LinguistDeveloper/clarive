@@ -154,7 +154,6 @@ __PACKAGE__->belongs_to(
   "parent",
   "Baseliner::Schema::Baseliner::Result::BaliProject",
   { id => "id_parent" },
-  { join_type => 'LEFT OUTER' }
 );
 # You can replace this text with custom content, and it will be preserved on regeneration
 1;

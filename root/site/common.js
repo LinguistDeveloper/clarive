@@ -47,6 +47,14 @@ Baseliner.messageRaw = function(params, format){
 	m.slideIn('t').pause(pause).ghost("t", {remove:true});
 };
 
+Baseliner.confirm = function( msg, foo ) {
+    Ext.Msg.confirm(_('Confirmation'),  msg , function(btn) {
+        if( btn == 'yes' ) {
+            if( foo != undefined ) foo();
+        }
+    });
+};
+
 Baseliner.now = function() {
     var now = new Date();
     return now.format( "Y-m-d H:i:s" );
@@ -71,6 +79,53 @@ Baseliner.columnWrap = function (val){
     return '<div style="white-space:normal !important;">'+ val +'</div>';
 }
 
+// open a window given a username link
+Baseliner.render_user_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
+    if( value==undefined || value=='null' || value=='' ) return '';
+    var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
+    return String.format("<a href='{0}'>{1}</a>", script, value );
+};
+
+Baseliner.render_active  = function(value,metadata,rec,rowIndex,colIndex,store) {
+    if( value==undefined || value=='null' || value=='' || value==0 || value=='0' ) return _('No');
+    return _('Yes');
+};
+
+Baseliner.quote = function(str) {
+    return str.replace( /\"/g, '\\"' );
+};
+
+Baseliner.render_job = function(value,metadata,rec,rowIndex,colIndex,store) {
+    if( value!=undefined && value!='' ) {
+        var id_job = rec.data.id_job;
+        return "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/list?id_job="+id_job+"\",\""+ _("Log") + " " +value+"\"); return false;'>" + value + "</a>" ;
+    } else {
+        return '';
+    }
+};
+
+Baseliner.render_tags = function(value,metadata,rec,rowIndex,colIndex,store) {
+    if( value==undefined ) return value;
+    var ret = '';
+    for( var i=0; i< value.length; i++ ) {
+        var color = '#ddd';
+        var bgcolor = '#333';
+        var v = value[i];
+        if( v === '__new__' ) {
+            color = '#222';
+            bgcolor = '#ffd700';
+            v = _('new');
+        }
+        ret += '<span class="curved" style="background-color: '+ bgcolor +'; ';
+        ret += ' color: ' + color + '; font-size: 9px; padding: 3 3 3 3; margin: 2 2 2 2;">&nbsp;'
+        ret += v + '&nbsp;</span>';
+    }
+    ret += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    ret += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    //return ret;
+    return Baseliner.columnWrap(ret);
+};
+
 
 var onemeg = 1024 * 1000;
 Baseliner.byte_format = function(val) {
@@ -88,14 +143,14 @@ Baseliner.byte_format = function(val) {
 
 Baseliner.render_ns = function (val){
     if( val == null || val == undefined ) return '';
-    if( val == '/' ) return _('All');
-    return String.format('<img src="{0}" />', val );
+    if( val == '/' ) val = _('All');
+    return String.format('<b>{0}</b>', val );
 }
 
 Baseliner.render_bl = function (val){
     if( val == null || val == undefined ) return '';
-    if( val == '*' ) return _('All');
-    return String.format('<img src="{0}" />', val );
+    if( val == '*' ) val = _('All');
+    return String.format('<b>{0}</b>', val );
 }
 
 Baseliner.render_icon = function (val){
@@ -184,6 +239,14 @@ Baseliner.button = function(text,icon,handler){
     });
 };
 
+Baseliner.img_button = function(icon,handler){ 
+    return new Ext.Button({
+       icon: icon || '/static/images/icons/revision_create.gif',
+       cls: 'x-btn-icon',
+       handler: handler || function(){} 
+    });
+};
+
 Baseliner.close_parent = function(comp) {
     if( comp== undefined ) return;
     try { comp.findParentByType('window').close() }
@@ -194,48 +257,106 @@ Baseliner.close_parent = function(comp) {
     }
 };
 
-/*
 
-    Baseliner.combo_project({ value:'project/11221' });
+Baseliner.array_field = function( args ) {
+    var field_name = args.name;
+    var title = args.title;
+    var label = args.label;
+    var value = args.value;
+    var description = args.description || '';
+    var default_value = args.default_value;
 
-*/
-Baseliner.combo_project = function(params) {
-    if( params==undefined) params={};
-    var store = new Ext.data.JsonStore({
-        root: 'data' , 
-        remoteSort: true,
-        autoLoad: true,
-        totalProperty:"totalCount", 
-        baseParams: params.request || {},
-        id: 'ns', 
-        url: '/project/user_projects',
-        fields: ['ns','name','description'] 
-    });
-    var valueField = params.valueField || 'ns';
-    var combo = new Ext.form.ComboBox({
-           fieldLabel: _("Project"),
-           name: params.name || 'ns',
-           hiddenName: params.hiddenName || 'ns',
-           valueField: valueField, 
-           displayField: params.displayField || 'name',
-           typeAhead: false,
-           minChars: 1,
-           mode: 'remote', 
-           store: store,
-           editable: true,
-           forceSelection: true,
-           triggerAction: 'all',
-           allowBlank: false
-    });
-    if( params.select_first ) {
-        combo.store.on('load',function(store) {
-            combo.setValue(store.getAt(0).get( valueField ));
-        });
-    } else if( params.value ) {
-        combo.store.on('load',function(store) {
-            var ix = store.find( valueField, params.value ); 
-            if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
-        });
+    var fstore = new Ext.data.SimpleStore({ fields:[ field_name ] });
+    if( value != undefined ) {
+        try {
+            // if it's an Array or Hash
+            if( typeof( value ) == 'object' ) {
+                for( var x=0; x < value.length ; x++ ) {
+                    var rr = new Ext.data.Record.create([{
+                        name: field_name,
+                        type: 'string'
+                    }]);
+                    var h = {}; h[ field_name ] = value[ x ];
+                    // put it in the grid store
+                    fstore.insert( x, new rr( h ) );
+                }
+                // save 
+                try { value =Ext.util.JSON.encode( value ); } catch(f) {} 
+            } 
+        } catch(e) {}
     }
-    return combo;
+
+    var fdata = new Ext.form.Hidden({ name: field_name, value: value, allowBlank: 1 });
+    var fgrid = new Ext.grid.EditorGridPanel({
+            name: field_name + '_grid',
+            fieldLabel: label,
+            width: 410,
+            height: 200,
+            title: title,
+            frame: true,
+            clicksToEdit: 1,
+            viewConfig: {
+                scrollOffset: 2,
+                forceFit: true
+            },
+            store: fstore,
+            cm: new Ext.grid.ColumnModel([{
+                dataIndex: field_name,
+                width: 390,
+                editor: new Ext.form.TextField({
+           allowBlank: false
+                })
+            }]),
+            sm: (function () {
+                var rsm = new Ext.grid.RowSelectionModel({
+                    singleSelect: true
+                });
+                rsm.addListener('rowselect', function () {
+                    var __record = rsm.getSelected();
+                    return __record;
+                });
+                return rsm;
+            })(),
+            tbar: [{
+                text: _('Add'),
+                icon: '/static/images/drop-add.gif',
+                cls: 'x-btn-text-icon',
+                handler: function () {
+                    var ___record = Ext.data.Record.create([{
+                        name: field_name,
+                        type: 'string'
+                    }]);
+                    var h = {};
+                    h[ field_name ] = _( default_value );
+                    var p = new ___record( h );
+                    //fgrid.stopEditing();
+                    fstore.add(p);
+                    //fgrid.startEditing(0, 0);
+                }
+            }, {
+                text: _('Delete'),
+                icon: '/static/images/del.gif',
+                cls: 'x-btn-text-icon',
+                handler: function (e) {
+                    var __selectedRecord = fgrid.getSelectionModel().getSelected();
+                    if (__selectedRecord != null) {
+                        fstore.remove(__selectedRecord);
+                    }
+                }
+            }, '->', description ]
+    });
+
+    var write_to_field = function () {
+        var arr = new Array();
+        fstore.each( function(r) {
+            arr.push( r.data[ field_name ] );
+        });
+        fdata.setValue( Ext.util.JSON.encode( arr ) );
 };
+    fstore.on('beforeaction', write_to_field );
+    fstore.on('create', write_to_field );
+    fstore.on('remove', write_to_field );
+    fstore.on('update', write_to_field );
+    return { data: fdata, grid: fgrid };
+};
+

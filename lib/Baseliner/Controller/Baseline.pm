@@ -67,7 +67,18 @@ sub list : Local {
     my @bl_list =
       map { { name => $_, description => $_, id => $_, active => 1 } }
       Baseliner::Core::Baseline->baselines();
-	$c->stash->{json} = [ @bl_list ];
+	$c->stash->{json} = \@bl_list;
+	$c->forward('View::JSON');
+}
+
+sub json : Local {
+	my ($self,$c)=@_;
+    my @bl_list =
+      map { { name => $_->{name}, description => $_->{description} || $_->{name},
+          id => $_->{bl}, bl=>$_->{bl}, active => 1 }
+      }
+      Baseliner::Core::Baseline->baselines();
+	$c->stash->{json} = { totalCount=>scalar(@bl_list), data=> \@bl_list };
 	$c->forward('View::JSON');
 }
 1;

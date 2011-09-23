@@ -123,6 +123,33 @@ sub rs_filter {
     return { data=>\@ret, skipped=>$skipped, next_start=>$curr_rec + $processed };
 }
 
+sub job_stash : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    $c->stash->{json}  = try {
+        my $stash = $job->stash;
+        $c->stash->{job_stash} = $stash;
+        { stash=>$stash, success=>\1 };
+    } catch {
+        { success=>\0 };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub job_stash_save : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    $c->stash->{json}  = try {
+        $job->stash( $p->{stash} );
+        { msg=>_loc( "Stash saved ok"), success=>\1 };
+    } catch {
+        { success=>\0, msg=>shift() };
+    };
+    $c->forward( 'View::JSON' );
+}
+
 sub monitor_json : Path('/job/monitor_json') {
     my ( $self, $c ) = @_;
 	my $p = $c->request->parameters;
@@ -491,6 +518,8 @@ sub job_submit : Path('/job/submit') {
 		if( $p->{action} eq 'delete' ) {
 			my $job = $c->model('Baseliner::BaliJob')->search({ id=> $p->{id_job} })->first;
 			if( $job->status =~ /CANCELLED|KILLED/ ) {
+                # be careful: may be cancelled already
+                $p->{mode} ne 'delete' and die _loc('Job already cancelled'); 
 				# cancel pending requests
 				$c->model('Request')->cancel_for_job( id_job=>$job->id );
 				$job->delete;

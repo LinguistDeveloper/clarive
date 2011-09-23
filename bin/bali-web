@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # starts the web server
 export LIBPATH=$BASELINER_LIBPATH:$LIBPATH
 
@@ -72,7 +72,7 @@ elif [ "$1" = "stop" ]; then
     if [ -e $PIDFILE ]; then
         SERVER_PID=`cat $PIDFILE`
         echo "Server pid: $SERVER_PID"
-        kill -s HUP $SERVER_PID 2>/dev/null
+        kill -s INT $SERVER_PID 2>/dev/null
         if [ $? = 0 ]; then
                 echo "Server stopped."
         else
@@ -83,14 +83,30 @@ elif [ "$1" = "stop" ]; then
         echo "Server was not running or no pid file. No action taken."
     fi
 elif [ "$1" = "kill" ]; then
-	ps uwwx | grep perl | grep 'baseliner_server' | grep -v grep | awk '{print $2}'| xargs kill -s 9 2>/dev/null
+    if [ -e $PIDFILE ]; then
+        SERVER_PID=`cat $PIDFILE`
+        echo "Killing Baseliner Server with pid: $SERVER_PID"
+        kill -9 $SERVER_PID 2>/dev/null
+    fi
+    COUNT1=`ps uwwx | grep perl | grep "baseliner_server.pl" | grep -v grep | wc -l`
+    COUNT2=`ps uwwx | grep perl | grep "bali server" | grep -v grep | wc -l`
+    COUNT=`perl -e '$x+=$_ for @ARGV; print $x' $COUNT1 $COUNT2`
+    if [ "$COUNT" -gt 0 ]; then
+        echo "Killing all Baseliner Web server processes..."
+        ps uwwx | grep perl | grep "baseliner_server.pl" | perl -a -n -l -e 'print join" ",">> ",$F[1]," => ",@F[10..$#F]'
+        ps uwwx | grep perl | grep "baseliner_server.pl" | perl -a -n -l -e 'kill 9,$F[1]'
+        ps uwwx | grep perl | grep "bali.server" | perl -a -n -l -e 'print join" ",">> ",$F[1]," => ",@F[10..$#F]'
+        ps uwwx | grep perl | grep "bali.server" | perl -a -n -l -e 'kill 9,$F[1]'
+        echo "Done."
+    fi
 elif [ "$1" = "restart" ]; then
-    bali_web stop
-    bali_web start
+    shift
+    bali-web stop
+    bali-web kill
+    bali-web start $*
 elif [ "$1" = "tail" ]; then
-    tail -1000f $LOGFILE
+    tail -10000f $LOGFILE
 else
     echo "Unkown operation $1"
 fi
-
 

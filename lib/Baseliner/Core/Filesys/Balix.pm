@@ -67,15 +67,17 @@ sub put {
 	return $self->balix->sendFile( $localFile, $remoteFile, $os );
 }
 
-
 sub copy {
-
     #TODO kizas no sea necesario
 }
-
 
 sub end {
 	my ($self)=@_;
 	$self->balix->end();
+}
+
+sub mkpath {
+	my ($self, $path)=@_;
+    $self->execute( qq{mkdir -p "$path"} );
 }
 1;

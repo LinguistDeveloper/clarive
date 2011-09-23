@@ -35,6 +35,10 @@ sub begin : Private {
     $c->res->headers->header( Pragma => 'no-cache');
     $c->res->headers->header( Expires => 0 );
 
+    if( ref $c->session->{user} ) {
+        $c->languages( $c->session->{user}->languages );
+    }
+
     Baseliner->app( $c );
 
     _db_setup;  # make sure LongReadLen is set after forking
@@ -206,6 +210,24 @@ sub show_comp : Local {
 sub default:Path {
     my ( $self, $c ) = @_;
     $c->stash->{template} ||= $c->request->{path} || $c->request->path;
+}
+
+sub help_load : Path('/help/load') {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    _throw 'Missing path' unless $p->{path};
+    require Text::Textile;
+    my $body;
+    my $path_lang;
+    if( my $path = $p->{path} ) {
+        $path =~ /\.\w+$/ or do {
+            $path_lang=$path.'_'.$c->language.'.textile';
+            $path .= '.textile';
+        };
+        $path_lang and $body = _textile( _mason( "". _dir( 'help', $path_lang ), c=>$c, username=>$c->username, %$p ) );
+        $body and $body!~/not found by dhandler/i or $body = _textile( _mason( "". _dir( 'help', $path ), c=>$c, username=>$c->username, %$p ) );
+    }
+    $c->response->body( $body || _loc('Help file parsing error') );
 }
 
 =head2 end

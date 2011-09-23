@@ -19,7 +19,7 @@ sub connect {
 
 sub dbi {
     my $self = shift;
-    return new Baseliner::Core::DBI->new( dbh=>$self->storage->dbh );
+    return Baseliner::Core::DBI->new( dbh=>$self->storage->dbh );
 }
 
 =head1 NAME
