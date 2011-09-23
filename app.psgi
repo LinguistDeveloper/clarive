@@ -1,4 +1,4 @@
-BEGIN {
+BEGIN { 
     use FindBin qw($Bin);
     my $home = $Bin;
     $ENV{BASELINER_HOME} ||= $home; 
