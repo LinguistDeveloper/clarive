@@ -58,6 +58,7 @@
 	});
 
     var current_job = function() { return store.reader.jsonData.job }
+    var current_hash = function() { return store.reader.jsonData.log_hash }
 
 	store.on( 'beforeload', function( obj, opt ) {
         var f = Ext.util.JSON.encode( filter_obj );
@@ -240,10 +241,17 @@
 				   datalen += 'KB';
 			   }
 		   }
-           if( value.more=='file' && value.data ) {
-               ret += "<a href='/job/log/download_data?id=" + rec.id + "' target='FrameDownload'><img border=0 src='/static/images/download.gif'/></a> " + datalen ;
+           if( value.more=='jes' ) {
+               ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+           } else if( value.more!='' && value.more!=undefined && value.data ) {
+               var img;
+               if( value.more=='zip' ) {
+                  img = '/static/images/icons/mime/file_extension_zip.png';
+               } else {
+                  img = '/static/images/download.gif';
            } 
-           else {
+               ret += "<a href='/job/log/download_data?id=" + rec.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
+           } else {
                if( value.more!='file' && value.data && xdatalen < 250000 ) {  // 250Ks max
                    var data_name = value.data_name;
                    if( data_name==undefined || data_name.length<1 ) {
@@ -307,6 +315,31 @@
         } 
     });
 
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
+        style: 'width: 130px', cls: 'x-btn-icon', hidden: false,
+        handler: function(){
+            var win = window.open( '/job/log/html/' + current_hash()  );
+            //var win = window.open( '/job/log/html?id_job=' + current_job().id + '&job_exec=' + job_exec,  _('Log'), '' );
+            //win.show();    
+        } 
+    });
+
+    var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', hidden: false,
+        handler: function(){
+            Baseliner.ajaxEval( '/job/log/delete', { id_job: current_job().id, job_exec: job_exec,
+                confirm: _('Do you wish to delete all log data for job %1, exec %2?',current_job().id, job_exec) }, function(res) {
+                    Baseliner.message( _('Delete Log'), res.msg );
+            });
+        } 
+    };
+
+    var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.gif', cls: 'x-btn-text-icon', hidden: false,
+        handler: function(){
+                    var id_job = current_job().id;
+                    Baseliner.add_tabcomp( "/comp/job_stash.js", _("Job Stash %1", id_job ), { id_job: id_job } );
+                 }
+    };
+
     var button_cancel = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', hidden: true,
         handler: function(){
             Baseliner.ajaxEval( '/job/resume', { id_job: current_job().id, confirm: _('Do you wish to resume job %1',current_job().job_name) }, function(res) {
@@ -318,7 +351,6 @@
     var row_sel = new Ext.grid.RowSelectionModel({singleSelect:true});
 		// create the grid
 		var grid = new Ext.grid.EditorGridPanel({
-			renderTo: 'main-panel',
 			title: '<% _loc('Job Log') %>',
 			header: false,
             /* stripeRows: true, */
@@ -329,6 +361,7 @@
 			clicksToEdit: 'auto',
 			store: store,
 			viewConfig: {
+                    scrollOffset: 2,
 					forceFit: true
 			},
 			selModel: row_sel, 
@@ -359,6 +392,7 @@
 					params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
                     emptyText: _('<Enter your search string>')
 				}),
+                button_html,
                 { text: _('Level'), menu: filter_menu },
                 menu_exec_left,
 				menu_exec,
@@ -370,6 +404,16 @@
 					handler: annotation
 				},
                 button_resume,
+% if( $c->stash->{user_action}->{'action.admin.default'} ) {
+                new Ext.Toolbar.Button({ 
+                    text: _('Advanced'),
+                    icon: '/static/images/icons/advanced.png', 
+                    cls: 'x-btn-text-icon',
+                    menu: { 
+                        items: [ menu_stash, menu_delete ]
+                    }
+                }),
+% }
 <%doc>
 				new Ext.Toolbar.Button({
                     text: _('View Log'),
@@ -472,7 +516,7 @@
     }; 
         
         
-	Ext.getCmp('main-panel').setActiveTab( Ext.getCmp('main-panel').add(grid) ) ;
+    //Ext.getCmp('main-panel').setActiveTab( Ext.getCmp('main-panel').add(grid) ) ;
 
     store_load();
 	return grid;
