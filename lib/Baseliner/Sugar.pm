@@ -19,6 +19,12 @@ use Exporter::Tidy default => [qw/
     relation
     user_get
     ns_get
+    set_job
+    set_logger
+    log_info
+    log_debug
+    log_warn
+    log_error
     /
 ];
 
@@ -43,5 +49,17 @@ sub user_get {
     rs_hashref( $rs );
     $rs->first;
 }
+
+# job dsl
+
+our $job;
+sub set_job { $__PACKAGE__::job = shift }
+sub set_logger { $job->logger( @_ ) }
+sub log_info { $job->log->info( @_ ) }
+sub log_debug { $job->log->debug( @_ ) }
+sub log_error { $job->log->error( @_ ) }
+sub log_warn { $job->log->warn( @_ ) }
+
+sub log_section {}
 
 1;

@@ -123,6 +123,16 @@ sub run {
     # instanciate the service
     my $instance = $module->new( log=>$logger );
 
+    # check the service implements role
+    _throw qq{Service '$key' doesn't implement Baseliner::Role::Service. Please, put:
+
+        with 'Baseliner::Role::Service'; 
+        
+    within your class.} unless $instance->does('Baseliner::Role::Service');
+
+    # set the job for the service (a Baseliner::Role::Service attribute)
+    try { $c->stash->{job} and $instance->job( $c->stash->{job} ); } catch {};
+
     if( ref($handler) eq 'CODE' ) {
         my $rc = $handler->( $instance, $c, @_ );
         $rc = 0 unless is_number $rc; # the service may return anything...

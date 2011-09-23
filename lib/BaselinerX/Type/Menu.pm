@@ -19,7 +19,7 @@ has 'url_iframe' => ( is=> 'rw', isa=> 'Str' );
 has 'title' => ( is=> 'rw', isa=> 'Str' );
 has 'level' => ( is=> 'rw', isa=> 'Int' );
 has 'handler' => ( is=> 'rw', isa=> 'Str' );
-has 'icon' => ( is=> 'rw', isa=> 'Str' );
+has 'icon' => ( is=> 'rw', isa=> 'Str', default=>'' );
 has 'cls' => ( is=> 'rw', isa=> 'Str' );
 has 'actions' => ( is=> 'rw', isa=> 'ArrayRef' );
 

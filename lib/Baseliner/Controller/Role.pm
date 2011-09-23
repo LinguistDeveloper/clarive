@@ -165,5 +165,17 @@ sub grid : Local {
     $c->stash->{template} = '/comp/role_grid.mas';
 }
 
+sub all : Local {
+    my ( $self, $c ) = @_;
+    my $rs = $c->model('Baseliner::BaliRole')->search({});
+    rs_hashref( $rs );
+    my @roles = map {
+        $_->{role_name} = "$_->{description} ($_->{role})";
+        $_
+    } $rs->all;
+    $c->stash->{json} = { data=>\@roles, totalCount=>scalar @roles };
+	$c->forward('View::JSON');	
+}
+
 
 1;

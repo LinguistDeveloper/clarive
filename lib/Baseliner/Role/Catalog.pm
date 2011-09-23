@@ -9,4 +9,6 @@ requires 'catalog_list';
 requires 'catalog_name';
 requires 'catalog_description';
 
+sub catalog_seq { 99999 }
+
 1;

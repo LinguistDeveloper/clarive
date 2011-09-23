@@ -74,6 +74,8 @@ sub common_log {
     my $module = "$package - $filename ($line)";
     my %p = ( 1 == scalar @_ ) ? ( data=>shift ) : @_; # if it's only a single param, its a data, otherwise expect param=>value,...  
 	$p{data}||='';
+    ref $p{data} and $p{data}=_dump( $p{data} );  # auto dump data if its a ref
+    $p{'dump'} and $p{data}=_dump( delete $p{'dump'} );  # auto dump data if its a ref
 	my $job_exec = $self->exec;
 	my $jobid = $self->jobid;
 	my $row;
@@ -97,7 +99,9 @@ sub common_log {
 		$p{milestone} and $row->milestone( $p{milestone} );
 
 		# print out too
-		Baseliner::Utils::_log_lev( 3, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );
+        Baseliner::Utils::_log_lev( 5, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );
+        Baseliner::Utils::_log_lev( 5, substr($p{data},0,1024*10) )
+            if $ENV{BASELINER_DEBUG} && defined $p{data} && !$p{data_name} # no files wanted!;
 
 		# store the current section
         ;

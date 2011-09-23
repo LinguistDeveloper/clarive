@@ -3,6 +3,21 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Job Log"
+msgstr "Log de Pase"
+
+msgid "new"
+msgstr "nuevo"
+
+msgid "project"
+msgstr "proyecto"
+
+msgid "public"
+msgstr "público"
+
+msgid "deprecated"
+msgstr "obsoleto"
+
 msgid "Inbox"
 msgstr "Buzón"
 
@@ -14,6 +29,15 @@ msgstr "Acerca de..."
 
 msgid "Data"
 msgstr "Datos"
+
+msgid "Repository"
+msgstr "Repositorio"
+
+msgid "Repositories"
+msgstr "Repositorios"
+
+msgid "Deprecate"
+msgstr "Marcar como Obsoleto"
 
 msgid "Text"
 msgstr "Texto"
@@ -33,6 +57,9 @@ msgstr "Etiqueta"
 msgid "Tags"
 msgstr "Etiquetas"
 
+msgid "Help"
+msgstr "Ayuda"
+
 msgid "For"
 msgstr "Para"
 
@@ -44,6 +71,9 @@ msgstr "Tamaño"
 
 msgid "Username"
 msgstr "Usuario"
+
+msgid "Group"
+msgstr "Grupo"
 
 msgid "Report"
 msgstr "Informe"
@@ -65,6 +95,36 @@ msgstr "Acerca de Distribuidor"
 
 msgid "Server communication failure. Check your connection."
 msgstr "Error de communicación con el servidor. Compruebe su conexión."
+
+msgid "Sort"
+msgstr "Ordenación"
+
+msgid "Chronological"
+msgstr "Cronológica"
+
+msgid "View Data"
+msgstr "Ver Datos"
+
+msgid "View Stash"
+msgstr "Ver el Stash"
+
+msgid "*Pushed deployment* for `%1`"
+msgstr "*Despliegue Añadido* para `%1`"
+
+msgid "Mapping to `%1` has no matching paths in elements"
+msgstr "Mapeo a `%1` no corresponde a ninguna ruta de elemento" 
+
+msgid "Publishing file `%1`"
+msgstr "Publicando fichero `%1`"
+
+msgid "No Data"
+msgstr "Ocultar Datos"
+
+msgid "Reverse"
+msgstr "Inversa"
+
+msgid "view"
+msgstr "ver"
 
 msgid "Load"
 msgstr "Cargar"
@@ -89,6 +149,42 @@ msgstr "Login Inválido"
 
 msgid "Unverified"
 msgstr "Sin verificar"
+
+msgid "From Path"
+msgstr "Ruta Origen"
+
+msgid "To Path"
+msgstr "Ruta Destino"
+
+msgid "user"
+msgstr "usuario"
+
+msgid "group"
+msgstr "grupo"
+
+msgid "host"
+msgstr "host"
+
+msgid "from"
+msgstr "origen"
+
+msgid "to"
+msgstr "destino"
+
+msgid "os"
+msgstr "s.o."
+
+msgid "File"
+msgstr "Fichero"
+
+msgid "File Deploy"
+msgstr "Despliegue de Ficheros"
+
+msgid "Mapping Description"
+msgstr "Descripción del Mapeo"
+
+msgid "%1 File Deployment Setup"
+msgstr "Mapeo de Despliegue %1"
 
 msgid "Invalid User or Password"
 msgstr "Usuario o Contraseña inválidas"
@@ -363,6 +459,9 @@ msgstr "Estado de Ejecución"
 msgid "Job"
 msgstr "Pase"
 
+msgid "Could not store job stash: %1"
+msgstr "No se ha podido guardar el stash de pase: %1"
+
 msgid "Job %1 created"
 msgstr "Pase %1 creado"
 
@@ -527,6 +626,36 @@ msgstr "acciones"
 
 msgid "Action"
 msgstr "Acción"
+
+msgid "Script"
+msgstr "Script"
+
+msgid "Deleted"
+msgstr "Borrado"
+
+msgid "Delete Log"
+msgstr "Borrar el Log"
+
+msgid "Job already cancelled"
+msgstr "Pase ya estaba cancelado"
+
+msgid "Delete Job"
+msgstr "Borrar Pase"
+
+msgid "Advanced"
+msgstr "Avanzado"
+
+msgid "Staging Scripts"
+msgstr "Scripts de Staging"
+
+msgid "Exclusions"
+msgstr "Exclusiones"
+
+msgid "Remote Dir"
+msgstr "Directorio Remoto"
+
+msgid "Staging Node"
+msgstr "Nodo de Staging"
 
 msgid "Action ID"
 msgstr "ID de Acción"
@@ -1087,7 +1216,7 @@ msgid "RESUME"
 msgstr "Reiniciado"
 
 msgid "SUSPENDED"
-msgstr "Suspenso"
+msgstr "Suspendido"
 
 msgid "DONE"
 msgstr "Finalizado"
@@ -1609,6 +1738,9 @@ msgstr "Elemento en Release"
 msgid "Run Now"
 msgstr "Ejecutar Ahora"
 
+msgid "Manual Deploy for %1"
+msgstr "Despliegue Manual para %1"
+
 msgid "Initial Step"
 msgstr "Paso Inicial"
 
@@ -1897,3 +2029,36 @@ msgstr "Error guardando datos de configuración"
 msgid "Config data exported"
 msgstr "Datos de configuración exportados"
 
+# lib/BaselinerX/Service/ManualDeploy.pm (64)
+msgid "Starting service Manual Deploy"
+msgstr "Iniciando servicio de Despliegue Manual"
+
+# lib/BaselinerX/Service/ManualDeploy.pm (68)
+msgid "No elements loaded in path"
+msgstr "No hay elementos en el path"
+
+# lib/BaselinerX/Service/ManualDeploy.pm (78)
+msgid "Manual Deploy service finished."
+msgstr "Servicio de Despliegue Manual finalizado."
+
+# lib/BaselinerX/Service/ManualDeploy.pm (88)
+msgid "Checking Manual Deploy Paths"
+msgstr "Chequeando paths de despliegue manual"
+
+# lib/BaselinerX/Service/ManualDeploy.pm (146)
+msgid "Actions detected in manual deploy"
+msgstr "Acciones detectadas en el despliegue Manual"
+
+# lib/BaselinerX/Service/ManualDeploy.pm (149)
+msgid "No actions detected for manual deploy"
+msgstr "No hay acciones de despliegue manual"
+
+# root/comp/catalog/manual_deploy.js (22)
+msgid "Enter or select the category tags"
+msgstr "Introduzca o seleccione etiquetas"
+
+msgid "Requesting manual deploy for job %1, baseline %2: %3"
+msgstr "Solicitando despliegue manual para el pase %1, línea base %2: %3"
+
+msgid "Publishing file %1 for manual deploy"
+msgstr "Publicando fichero %1 para despliegue manual"
