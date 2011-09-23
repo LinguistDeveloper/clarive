@@ -1,6 +1,6 @@
 [submodule "features/gitscm"]
 	path = features/gitscm
-	url = http://git.vasslabs.org/git/gitscm.git
+	url = http://git.vasslabs.com/git/gitscm.git
 [submodule "features/sqa"]
 	path = features/sqa
 	url = http://git.vasslabs.com/git/sqa.git
