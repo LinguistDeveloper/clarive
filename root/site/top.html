@@ -1,0 +1,36 @@
+<%args>
+    $theme_dir => ''
+</%args>
+<%perl>
+    my $debug = $c->debug ? '-debug' : '';
+</%perl>
+
+    <title><% _loc( $c->config->{name} ) %></title>
+    <meta http-equiv="Page-Enter" content="blendTrans(Duration=0.05)" />
+    <meta http-equiv="Page-Exit" content="blendTrans(Duration=0.05)" />
+% if( my $favicon = $c->config->{favicon} ) {
+    <link rel="shortcut icon" href="<% $favicon %>" mce_href="<% $favicon %>"/>
+% }
+    <!-- ExtJS -->
+    <link rel="stylesheet" href="/static/metal/metal.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="/static/ext/resources/css/ext-all.css" />
+
+    <script type="text/javascript" src="/static/ext/adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="/static/ext/ext-all<% $debug %>.js"></script>
+    <!-- script type="text/javascript" src="/static/ext/jitx<% $debug %>.js"></script -->
+
+    <script type="text/javascript" src="/static/ext/build/locale/ext-lang-es-min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/static/ext/docs/resources/docs.css" />
+    <link rel="stylesheet" type="text/css" href="/static/site.css" />
+
+% if( my $theme_dir = $c->stash->{theme_dir} ) {
+    <link rel="stylesheet" type="text/css" href="/static<% $theme_dir %>/style.css" />
+% }
+    <!--script type="text/javascript" src="/static/ext/air/ext-air.js"></script-->
+    <!-- link rel="stylesheet" type="text/css" href="/static/ext/air/resources/ext-air.css" /-->
+
+    <style type="text/css">
+    </style>
+
+    <script type="text/javascript" src="/site/common.js"></script>

@@ -1,0 +1,96 @@
+#!/bin/sh
+# starts the web server
+export LIBPATH=$BASELINER_LIBPATH:$LIBPATH
+
+if [ "$BASELINER_NLS_LANG" != "" ]; then
+	export NLS_LANG=$BASELINER_NLS_LANG
+fi
+
+if [ "$BASELINER_LANG" != "" ]; then
+	export LANG=$BASELINER_LANG
+fi
+
+if [ "$BALI_ENV" != "" ]; then
+	export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+fi
+
+if [ "$BASELINER_LOGHOME" != "" ]; then
+	LOGDIR=$BASELINER_LOGHOME
+else
+	LOGDIR=$BASELINER_HOME/tmp/log
+	mkdir -p $LOGDIR
+fi
+
+LOGFILENAME=bali_web
+NOW=`perl -MDateTime -le 'print DateTime->now()'`
+LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
+LOGFILE=$LOGDIR/$LOGFILENAME.log
+PIDFILE=$LOGDIR/bali_web.pid
+test_char=`echo "\c"`
+nonl='\c'
+echop=''
+if [ "$test_char" == '\c' ]; then
+	nonl=''	
+	echop='-n'
+fi
+
+if [ "$1" = "start" ]; then
+    if [ "$1" != "" ]; then
+        shift 
+    fi
+    if [ -e $PIDFILE ]; then
+        FILE_PID=`cat $PIDFILE`
+        kill -0 $FILE_PID 2>/dev/null
+        if [ $? = 0 ]; then
+                echo "Server is already running."
+                exit 1;
+        else
+                rm $PIDFILE
+        fi
+    fi
+    mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
+	gzip $LOGFILEOLD 2>/dev/null
+    echo "Log file: $LOGFILE"
+    cd $BASELINER_HOME
+    #nohup perl script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    CATALYST_ENGINE=HTTP::Prefork nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    SERVER_PID=$!
+    echo $SERVER_PID > $PIDFILE
+    echo "Server started with pid: $SERVER_PID"
+    echo $echop "Waiting for children to start...$nonl"
+    k=0
+    while [ $k -lt 10 ]
+    do
+        sleep 1
+        echo $echop ".$nonl"
+        let k=k+1
+    done 
+    CHILDREN=`ps -ef|grep perl|grep baseliner_|perl -n -e 'next unless /$SERVER_PID/; @a=split / /; print \$a[2]," "'`
+	echo ""
+    echo "Children started: " . $CHILDREN;
+elif [ "$1" = "stop" ]; then
+    if [ -e $PIDFILE ]; then
+        SERVER_PID=`cat $PIDFILE`
+        echo "Server pid: $SERVER_PID"
+        kill -s HUP $SERVER_PID 2>/dev/null
+        if [ $? = 0 ]; then
+                echo "Server stopped."
+        else
+                echo "Server is not running."
+        fi
+        rm "$PIDFILE"
+    else
+        echo "Server was not running or no pid file. No action taken."
+    fi
+elif [ "$1" = "kill" ]; then
+	ps uwwx | grep perl | grep 'baseliner_server' | grep -v grep | awk '{print $2}'| xargs kill -s 9 2>/dev/null
+elif [ "$1" = "restart" ]; then
+    bali_web stop
+    bali_web start
+elif [ "$1" = "tail" ]; then
+    tail -1000f $LOGFILE
+else
+    echo "Unkown operation $1"
+fi
+
+

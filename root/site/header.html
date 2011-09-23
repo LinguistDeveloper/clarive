@@ -1,0 +1,198 @@
+<%args>
+    $show_main => 0
+    $show_portal => 1
+    $show_menu => 1
+</%args>
+
+<%perl>
+    if( $c->stash->{site_raw} ) {
+        $show_portal = 0;
+        $show_menu  = 0;
+        $show_main  = 0;
+    }
+</%perl>
+<!-- DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" -->
+<html>
+ <head>
+    <& '/site/nocache.html' &>
+    <& '/site/top.html' &>
+    <script type="text/javascript" src="/site/tablegrid.js"></script>
+    <script type="text/javascript" src="/site/tabfu.js"></script>
+    <script type="text/javascript" src="/site/runner.js"></script>
+    <script type="text/javascript" src="/site/panelresizer.js"></script>
+    <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
+    <script type="text/javascript" src="/i18n/js"></script>
+
+    <script type="text/javascript" src="/site/lifecycle.js"></script>
+
+    <!-- Portal Stuff -->
+    <script type="text/javascript" src="/site/portal/Portal.js"></script>
+    <script type="text/javascript" src="/site/portal/PortalColumn.js"></script>
+    <script type="text/javascript" src="/site/portal/Portlet.js"></script>
+    <script type="text/javascript" src="/site/portal/PortalUtil.js"></script>
+    <link rel="stylesheet" type="text/css" href="/site/portal/portal.css" />
+    <link rel="stylesheet" type="text/css" href="/site/portal/sample.css" />
+
+    <link rel="stylesheet" type="text/css" href="/static/livegrid/resources/css/ext-ux-livegrid.css" /> 
+
+    <!-- Hooks -->
+% for my $include ( _array $c->stash->{header_include} ) {
+    <!-- BEGIN <% $include->{name} %> -->
+<% $include->{content} %> 
+    <!-- END   <% $include->{name} %> -->
+% }
+    <!-- Hooks End -->
+
+    <script type="text/javascript">
+Ext.onReady(function(){
+    Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
+    Ext.QuickTips.init();
+    Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+    var tb = new Ext.Toolbar({
+        id: 'mainMenu',
+        region: 'north',
+        height: 26,
+        //height: 34,
+        items: [
+            '<img src="/static<% $c->stash->{theme_dir} %>/images/logo.jpg" style="border:0px;"/>',
+            '-',
+% if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
+            ,
+            '->',
+            '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
+            '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
+            '-', 
+            <%perl>
+                my $user = $c->username;
+                if( defined $user ) {
+                    use Moose::Autobox;
+                    my $menu = [
+                         { text=>_loc('Inbox'),
+                             handler=>\'function(){ Baseliner.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.gif" } ); }',
+                             icon   =>'/static/images/icons/envelope.gif' },
+                         #FIXME { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
+                         { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
+                         { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
+                    ];
+                    $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/users.gif' } );
+                    print js_dumper { text=>$c->username , menu=> [
+            sort {
+                $a->{index}||=0;
+                $b->{index}||=0;
+                $a->{index} <=> $b->{index}
+            } _array($menu) ] };
+                }else{
+                    print js_dumper { text=>_loc('Login'), handler=>\'function(){ Baseliner.login(); }' };
+                }
+            </%perl>
+        ]
+    });
+
+    var lifecycle = Baseliner.lifecycle;
+    var viewport = new Ext.Viewport({
+        layout: 'border',
+        id: 'main-view',
+        renderTo: Ext.getBody(),
+        items: [
+% if( $c->stash->{site_raw} ) {
+            new Ext.TabPanel({ 
+                region: 'center',
+                id:'main-panel',
+                defaults: { closable: false, autoScroll: true }, 
+                resizeTabs: true,
+                enableTabScroll: true,
+                layoutOnTabChange: true,
+                //resizeTabs: true,
+                autoScroll: true,
+                activeTab: 0
+            })
+% } else {
+            tb,
+            lifecycle,
+            new Ext.TabPanel({  region: 'center', id:'main-panel',
+                defaults: { closable: true, autoScroll: true }, 
+                enableTabScroll: true,
+                layoutOnTabChange: true,
+                autoScroll: true,
+                activeTab: 0, 
+                items: 
+% if( $show_main eq '1' ) {
+                [ {title:_loc('Main'), closable: false, autoLoad: '/site/main.html', scripts: true, cls: 'tab-style' } ]
+% } elsif( $show_portal ) {
+                [ { xtype: 'panel', title:_loc('Portal'), layout: 'border', closable: false, items: Baseliner.portal } ]
+% } else { print 'null' } 
+            })
+% } # site_raw
+        ]
+    });
+
+% if( $show_portal eq '1' ) {
+    //viewport.on('show', function(){
+    //Baseliner.addNewTabComp('/site/portal/portal.mas', _('Portal') );
+%   for my $portlet ( _array $c->stash->{portlets} ) {
+%       if( my $pcomp = $portlet->url_comp ) {
+            Baseliner.portalAddCompUrl({ title: _('<% $portlet->title %>'),
+                portlet_key: '<% $portlet->key %>', url_portlet: '<% $pcomp %>', url_max: '<% $portlet->url_max %>' });
+%       } else {
+            Baseliner.portalAddUrl({ title: _('<% $portlet->title %>'), 
+                portlet_key: '<% $portlet->key %>', url_portlet: '<% $portlet->url %>', url_max: '<% $portlet->url_max %>' });
+%       }
+%   } 
+% }
+    // Start background tasks 
+    //  ----- disabled for now ---- Baseliner.startRunner();
+
+    // Check open tab
+    // setTimeout(function(){
+    var getParams = document.URL.split("?");
+    var tab_params = {};
+    if( getParams!=undefined && getParams[1] !=undefined ) {
+        tab_params = Ext.urlDecode(getParams[1]);
+    }
+    
+% foreach my $tab ( @{ $c->stash->{tab_list} || [] } ) {
+%    if( $tab->{type} eq 'page' ) {
+        Baseliner.addNewTab('<% $tab->{url} %>', undefined, { params: tab_params });
+%    } else {
+        Baseliner.addNewTabComp('<% $tab->{url} %>', undefined,  { params: tab_params });
+%    }
+% }
+
+    // useful for debugin portal load errors on /tab: }, 250);
+
+% foreach my $tab ( _array $c->stash->{alert} ) {
+    Ext.Msg.alert('<% $tab->{title} %>', '<% $tab->{message} %>');
+% }
+
+% if( $c->stash->{site_raw} ) {
+    var tabpanel = Ext.getCmp('main-panel');
+    tabpanel.header.setVisibilityMode(Ext.Element.DISPLAY);
+    tabpanel.header.hide();
+% }
+       
+});
+        
+    </script>
+
+%# <link href="/static/style2.css" type="text/css" rel="stylesheet"></link>
+<!-- TODO: No sería mala idea poder meter esto en las features -->
+<!-- Para poder incluir el Widget DatePickerPlus de Ext -->
+    <script type="text/javascript" src="/static/ext.ux.datepickerplus/ext.ux.datepickerplus.js"></script> 
+    <script type="text/javascript" src="/static/ext.ux.datepickerplus/locales/ext.ux.datepickerplus-lang-es.js"></script> 
+    <link rel="stylesheet" href="/static/ext.ux.datepickerplus/datepickerplus.css" type="text/css" />
+<!-- Para poder incluir el Widget Spinner de Ext -->
+    <script type="text/javascript" src="/static/ex.ux.form.spinner/Spinner.js"></script> 
+    <script type="text/javascript" src="/static/ex.ux.form.spinner/SpinnerStrategy.js"></script> 
+    <link rel="stylesheet" href="/static/ex.ux.form.spinner/Spinner.css" type="text/css" /> 
+<!-- SOLO PARA DEPURAR EN IE -->
+<!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->    
+</head>
+<body>
+<IFRAME id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></IFRAME>
+<div id='run-panel'></div>
+
+<!-- Preloading some images used in grids -->
+<!-- & preload_images.html & -->
+
+<%init>
+</%init>

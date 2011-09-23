@@ -1,0 +1,141 @@
+<opt>
+  <config.ca.harvest.cli.broker id="1565" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-03-17 18:00:39" value="HARVESTDES" />
+  <config.ca.harvest.cli.login id="1567" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-03-17 18:07:34" value="-eh /opt/ca/scm/UsuSrvHarvest.dfo" />
+  <config.ca.harvest.map.baseline_to_view id="1625" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-04-08 16:59:28" value="'DESA' =&gt; 'INTE',
+'PREP' =&gt; 'PREP',
+'PROD' =&gt; 'PROD'" />
+  <config.ca.harvest.map.states_for_checkin id="1987" bl="*" data="" ns="application/GBP.0188" parent_id="1" ref="" reftable="" ts="2010-06-15 13:25:30" value="'DESA' =&gt; 'Desarrollo Integrado',
+'PREP' =&gt; 'Preproducción',
+'PROD' =&gt; 'Versión TP'" />
+  <config.ca.harvest.map.states_for_job id="1869" bl="PROD" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-26 18:32:48" value="promote =&gt; [ 'Preproducción','Pruebas Sistemas' ], 
+demote =&gt; [ 'Producción' ] 
+" />
+  <config.ca.harvest.map.states_for_job id="1905" bl="PREP" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-31 18:11:44" value="promote =&gt; [ 'Desarrollo Integrado' ], 
+demote =&gt; [ 'Preproducción' ] 
+" />
+  <config.ca.harvest.map.states_for_job id="1861" bl="DESA" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-26 17:29:05" value="promote =&gt; [ 'Desarrollo', 'Desarrollo Integrado', 'Consolidación', 'Pruebas' ], 
+demote =&gt; 0" />
+  <config.ca.harvest.map.view_to_baseline id="1725" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-13 13:56:34" value="DESA =&gt; 'DESA',
+INTE =&gt; 'DESA',
+TEST=&gt;'DESA',
+PREP =&gt; 'PREP',
+PROD =&gt; 'PROD'" />
+  <config.comm.email.server id="1087" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-01-27 20:51:03" value="CLUSTEREXCH01.gbp.corp.com" />
+  <config.endevor.connection.class id="1666" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-04-29 20:07:51" value="E" />
+  <config.endevor.connection.host id="1687" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-03 17:48:28" value="SYSB" />
+  <config.endevor.connection.package id="62" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-11-27 18:11:35" value="" />
+  <config.endevor.connection.pw id="66" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-11-27 19:27:13" value="U12COAS" />
+  <config.endevor.connection.surr id="25" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-10-29 12:01:08" value="HARVEST" />
+  <config.endevor.connection.timeout id="27" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-10-29 12:01:09" value="120" />
+  <config.endevor.connection.user id="26" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-10-29 12:01:08" value="HARVEST" />
+  <config.endevor.data.cache_timeout id="1726" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-13 14:09:36" value="90" />
+  <config.gbp.carga.apl_formato id="103" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-12-07 11:27:16" value="(.)(.{3})(.{80})(.{30})(.{1,2})" />
+  <config.gbp.carga.apl_mascara id="105" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-12-07 11:27:16" value="GBP.%04d" />
+  <config.gbp.carga.apl_path id="2046" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-18 17:54:38" value="/opt/ca/datos/APLICA" />
+  <config.gbp.carga.apl_separador id="102" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-12-07 11:27:16" value="|" />
+  <config.gbp.carga.harvest id="2065" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-21 16:07:35" value="0" />
+  <config.gbp.carga.load_delete id="2066" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-21 16:09:07" value="0" />
+  <config.gbp.carga.usu_path id="2045" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-18 17:54:22" value="/opt/ca/datos/TABLAUSU" />
+  <config.gbp.carga.usu_role id="104" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-12-07 11:27:16" value="RF" />
+  <config.gbp.cc.ws.SSRS_server id="2027" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-17 15:05:14" value="b7417b76-c239-4ee7-8c3c-71d6c3fa8b49" />
+  <config.gbp.cc.ws.params id="2030" bl="PREP" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-17 15:20:05" value="'IN'=&gt;'PRE', 
+'OUT'=&gt;'Preproduction' 
+
+" />
+  <config.gbp.cc.ws.params id="2029" bl="DESA" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-17 15:19:18" value="'IN'=&gt;'DEV', 
+'OUT'=&gt;'Development' 
+
+" />
+  <config.gbp.cc.ws.params id="2031" bl="PROD" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-17 15:20:19" value="'IN'=&gt;'PRO', 
+'OUT'=&gt;'Production' 
+
+" />
+  <config.gbp.cc.ws.proxy id="2025" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-17 15:03:52" value="http://configcentral.bancopopular.es/GlbConfigService/GlbConfigService.asmx" />
+  <config.gbp.cc.ws.timeout id="2032" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-17 15:32:28" value="20" />
+  <config.gbp.datos.path id="1587" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-03-22 19:20:54" value="/opt/ca/datos/TABLAUSU" />
+  <config.gbp.pruebas.sistemas id="1454" bl="*" data="" ns="application/GBP.0000" parent_id="1" ref="" reftable="" ts="2010-03-05 15:18:02" value="1" />
+  <config.gbp.remedy.ws.activo id="1709" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-11 12:32:43" value="0" />
+  <config.gbp.ro.ws.activo id="1711" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-11 12:50:20" value="0" />
+  <config.harvest.approval.active id="1455" bl="*" data="" ns="application/GBP.0000" parent_id="1" ref="" reftable="" ts="2010-03-06 11:54:53" value="1" />
+  <config.harvest.approval.comments_table id="43" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-11-16 21:58:30" value="FORM_GBP" />
+  <config.harvest.approval.cycle id="1471" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-03-08 17:48:10" value="'Pruebas Integradas' =&gt; { promote=&gt;'Pruebas de Aceptacion', demote=&gt;0 },
+'Pruebas Aceptacion' =&gt; { promote =&gt;'Pruebas Sistemas', demote=&gt;'Pruebas Integradas' },
+'Pruebas Sistemas' =&gt; { promote=&gt;0, demote=&gt;'Pruebas Integradas' }
+" />
+  <config.harvest.approval.frequency id="1589" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-03-22 20:49:01" value="30" />
+  <config.harvest.checkout.full_checkout id="2048" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-18 19:35:23" value="^/.+/J2EE" />
+  <config.harvest.lifecycle.schema id="2009" bl="PROD" data="" ns="application/GBP.0188" parent_id="1" ref="" reftable="" ts="2010-06-16 13:54:58" value="promote =&gt; [ 'Versión TP' ], 
+demote =&gt; [ 'Producción' ]" />
+  <config.harvest.lifecycle.schema id="2005" bl="PROD" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-03-06 13:49:41" value="promote =&gt; [ 'Pruebas Sistemas', 'Preproducción' ], 
+demote =&gt; [ 'Producción' ] }, 
+" />
+  <config.harvest.lifecycle.schema id="2006" bl="DESA" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-03-06 13:49:17" value="promote =&gt; [ 'Desarrollo', 'Desarrollo Integrado', 'Consolidación', 'Pruebas' ], 
+demote =&gt; 0" />
+  <config.harvest.lifecycle.schema id="2008" bl="PREP" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-03-06 13:49:31" value="promote =&gt; [ 'Desarrollo Integrado' ], 
+demote =&gt; [ 'Pruebas Integradas', 'Pruebas de Acceptación', 'Pruebas Sistemas' ] 
+" />
+  <config.job.check_rfc id="1806" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-21 13:45:45" value="0" />
+  <config.nature.files.staging4unc id="2146" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-29 09:14:10" value="balix://scm@SWDLA027:32100=C:\\SCMDAT" />
+  <config.nature.files.types id="2145" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-28 12:31:13" value="[
+&quot;EAR&quot;,&quot;PARCIAL&quot;,&quot;FICHEROS&quot;,&quot;SSRS&quot;
+]" />
+  <config.nature.j2ee.build.build_path id="5" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-10-07 12:47:35" value="./build" />
+  <config.nature.j2ee.build.build_path id="1653" bl="DESA" data="" ns="harvest.subapplication/BP_INTEGRADOR_COMUN" parent_id="1" ref="" reftable="" ts="2010-04-27 13:28:04" value="./build" />
+  <config.nature.j2ee.build.classpath id="6" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-10-07 12:47:35" value="" />
+  <config.nature.j2ee.build.classpath id="1655" bl="DESA" data="" ns="harvest.subapplication/BP_INTEGRADOR_COMUN" parent_id="1" ref="" reftable="" ts="2010-04-27 13:28:04" value="" />
+  <config.nature.j2ee.build.host id="1107" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-01-29 11:16:09" value="harvestpro" />
+  <config.nature.j2ee.build.host id="1649" bl="DESA" data="" ns="harvest.subapplication/BP_INTEGRADOR_COMUN" parent_id="1" ref="" reftable="" ts="2010-04-27 13:28:04" value="harvestpro" />
+  <config.nature.j2ee.build.jdk id="4" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-10-07 12:47:35" value="" />
+  <config.nature.j2ee.build.jdk id="1652" bl="DESA" data="" ns="harvest.subapplication/BP_INTEGRADOR_COMUN" parent_id="1" ref="" reftable="" ts="2010-04-27 13:28:04" value="" />
+  <config.nature.j2ee.build.user id="2" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-10-07 12:47:35" value="harvest" />
+  <config.nature.j2ee.build.user id="1650" bl="DESA" data="" ns="harvest.subapplication/BP_INTEGRADOR_COMUN" parent_id="1" ref="" reftable="" ts="2010-04-27 13:28:04" value="harvest" />
+  <config.nature.j2ee.build.variables id="1108" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-01-29 11:16:09" value="" />
+  <config.nature.j2ee.build.variables id="1654" bl="DESA" data="" ns="harvest.subapplication/BP_INTEGRADOR_COMUN" parent_id="1" ref="" reftable="" ts="2010-04-27 13:28:04" value="" />
+  <config.nature.j2ee.build.was_lib id="3" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2009-10-07 12:47:35" value="/usr/lpp/WAS6/WebSphere/AppServer/lib" />
+  <config.nature.j2ee.build.was_lib id="1651" bl="DESA" data="" ns="harvest.subapplication/BP_INTEGRADOR_COMUN" parent_id="1" ref="" reftable="" ts="2010-04-27 13:28:04" value="/usr/lpp/WAS6/WebSphere/AppServer/lib" />
+  <config.nature.j2ee.deploy.was id="7" bl="DESA" data="" ns="harvest.subapplication/petstoreEAR" parent_id="1" ref="" reftable="" ts="2009-10-09 16:43:21" value="" />
+  <config.nature.j2ee.deploy.was id="13" bl="DESA" data="" ns="application/GBP.8888" parent_id="1" ref="" reftable="" ts="2009-10-16 13:06:45" value="harvestdes" />
+  <config.nature.j2ee.deploy.was id="10" bl="DESA" data="" ns="harvest.subapplication/petstore" parent_id="1" ref="" reftable="" ts="2009-10-09 16:52:46" value="" />
+  <config.nature.j2ee.deploy.was id="2085" bl="DESA" data="" ns="harvest.package/TestAppMobi" parent_id="1" ref="" reftable="" ts="2010-06-22 16:37:12" value="" />
+  <config.nature.j2ee.deploy.was id="2105" bl="*" data="" ns="harvest.subapplication/EstadisticasEAR" parent_id="1" ref="" reftable="" ts="2010-06-23 12:43:31" value="" />
+  <config.nature.j2ee.deploy.was id="2108" bl="DESA" data="" ns="harvest.subapplication/Ejemplo.ear" parent_id="1" ref="" reftable="" ts="2010-06-23 12:46:35" value="" />
+  <config.nature.j2ee.deploy.was id="2165" bl="PREP" data="" ns="harvest.subapplication/EstadisticasEAR" parent_id="1" ref="" reftable="" ts="2010-06-30 15:41:38" value="" />
+  <config.nature.j2ee.deploy.was_dir id="8" bl="DESA" data="" ns="harvest.subapplication/petstoreEAR" parent_id="1" ref="" reftable="" ts="2009-10-09 16:43:21" value="" />
+  <config.nature.j2ee.deploy.was_dir id="14" bl="DESA" data="" ns="application/GBP.8888" parent_id="1" ref="" reftable="" ts="2009-10-16 13:06:45" value="" />
+  <config.nature.j2ee.deploy.was_dir id="11" bl="DESA" data="" ns="harvest.subapplication/petstore" parent_id="1" ref="" reftable="" ts="2009-10-09 16:52:46" value="" />
+  <config.nature.j2ee.deploy.was_dir id="2086" bl="DESA" data="" ns="harvest.package/TestAppMobi" parent_id="1" ref="" reftable="" ts="2010-06-22 16:37:12" value="" />
+  <config.nature.j2ee.deploy.was_dir id="2106" bl="*" data="" ns="harvest.subapplication/EstadisticasEAR" parent_id="1" ref="" reftable="" ts="2010-06-23 12:43:32" value="" />
+  <config.nature.j2ee.deploy.was_dir id="2109" bl="DESA" data="" ns="harvest.subapplication/Ejemplo.ear" parent_id="1" ref="" reftable="" ts="2010-06-23 12:46:35" value="" />
+  <config.nature.j2ee.deploy.was_dir id="2166" bl="PREP" data="" ns="harvest.subapplication/EstadisticasEAR" parent_id="1" ref="" reftable="" ts="2010-06-30 15:41:38" value="" />
+  <config.nature.j2ee.deploy.xtype id="9" bl="DESA" data="" ns="harvest.subapplication/petstoreEAR" parent_id="1" ref="" reftable="" ts="2009-10-09 16:43:21" value="EAR" />
+  <config.nature.j2ee.deploy.xtype id="15" bl="DESA" data="" ns="application/GBP.8888" parent_id="1" ref="" reftable="" ts="2009-10-16 13:06:45" value="EAR" />
+  <config.nature.j2ee.deploy.xtype id="12" bl="DESA" data="" ns="harvest.subapplication/petstore" parent_id="1" ref="" reftable="" ts="2009-10-09 16:52:46" value="" />
+  <config.nature.j2ee.deploy.xtype id="2087" bl="DESA" data="" ns="harvest.package/TestAppMobi" parent_id="1" ref="" reftable="" ts="2010-06-22 16:37:12" value="EAR" />
+  <config.nature.j2ee.deploy.xtype id="2107" bl="*" data="" ns="harvest.subapplication/EstadisticasEAR" parent_id="1" ref="" reftable="" ts="2010-06-23 12:43:32" value="" />
+  <config.nature.j2ee.deploy.xtype id="2110" bl="DESA" data="" ns="harvest.subapplication/Ejemplo.ear" parent_id="1" ref="" reftable="" ts="2010-06-23 12:46:35" value="EAR" />
+  <config.nature.j2ee.deploy.xtype id="2167" bl="PREP" data="" ns="harvest.subapplication/EstadisticasEAR" parent_id="1" ref="" reftable="" ts="2010-06-30 15:41:38" value="" />
+  <config.nature.ssrs.mimetypes id="2012" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-16 17:45:51" value="'DAT'=&gt;'application/octet-stream',
+'PDF'=&gt;'application/pdf',
+'XML'=&gt;'application/xml',
+'ZIP'=&gt;'application/x-zip-compressed',
+'CSS'=&gt;'text/css',
+'HTM'=&gt;'text/html',
+'HTML'=&gt;'text/html',
+'TXT'=&gt;'text/plain',
+'BMP'=&gt;'image/bmp',
+'GIF'=&gt;'image/gif',
+'JPG'=&gt;'image/jpeg',
+'RDL'=&gt;'ssrs/report',
+'RDS'=&gt;'ssrs/datasource'
+" />
+  <config.nature.tp.menuid id="1747" bl="DESA" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-18 14:26:57" value="4733143691" />
+  <config.nature.tp.menuid id="1719" bl="PREP" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-11 14:26:12" value="4718135457" />
+  <config.nature.tp.notifydeletions id="1765" bl="DESA" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-18 14:26:57" value="00752554CVSGESTIONSOFTWAREENTORNOS@exchange.local;JVR3651A;JRF5355T" />
+  <config.nature.tp.notifydeletions id="1766" bl="PREP" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-18 14:26:57" value="00752554CVSGESTIONSOFTWAREENTORNOS@exchange.local;JVR3651A;JRF5355T" />
+  <config.nature.tp.notifydeletions id="1767" bl="PROD" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-05-18 14:26:57" value="00752554CVSGESTIONSOFTWAREENTORNOS@exchange.local;JVR3651A;JRF5355T" />
+  <config.nature.tp.versionTP16 id="2011" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-06-16 13:57:50" value="608" />
+  <config.nature.tpnet.stagging id="2186" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-07-05 12:21:49" value="balix://scm@D0007502554006:32100=C:\\SCMDAT" />
+  <config.nature.tpnet.vimpath id="2185" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-07-05 12:15:54" value="C:\server.tpnet.deploy\tpnetfrontend\dotNet" />
+  <config.staging.gzip id="2207" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-07-07 11:42:49" value="c:\balix\gzip.exe" />
+  <config.staging.tar id="2206" bl="*" data="" ns="/" parent_id="1" ref="" reftable="" ts="2010-07-07 11:42:30" value="c:\balix\balix_tar.exe" />
+</opt>

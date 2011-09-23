@@ -1,0 +1,478 @@
+<%perl>
+	use JavaScript::Dumper;
+</%perl>
+(function(){
+    var filter_key = 'request_filter';
+    var filter_cookie; // = Baseliner.cookie.get( filter_key );
+    var filter_obj = filter_cookie || {
+        pending   : true,
+        approved  : false,
+        rejected  : false,
+        cancelled : false
+    };
+	var _currentAction = '<% $c->flash->{current_action} %>' ;
+	var action_verb = function(act) { return act=='approve' ? _('Approve') : _('Reject') };
+	var action_gerund = function(act) { return act=='approve' ? _('Approving') : _('Rejecting') };
+	var action_noun = function(act) { return act=='approve' ? _('Approval') : _('Reject') };
+	var action_part = function(act) { return act=='approve' ? _('Approved') : _('Rejected') };
+
+    var fields = [ 
+			{  name: 'id' },
+			{  name: 'ns' },
+			{  name: 'ns_name' },
+			{  name: 'ns_icon' },
+//			{  name: 'items' },
+			{  name: 'bl' },
+			{  name: 'requested_on' },
+			{  name: 'finished_on' },
+			{  name: 'status' },
+			{  name: 'finished_by' },
+			{  name: 'requested_by' },
+			{  name: 'action' },
+			{  name: 'key' },
+			{  name: 'app' },
+			{  name: 'rfc' },
+			{  name: 'name' },
+			{  name: 'type' },
+			{  name: 'id_wiki' },
+			{  name: 'id_message' },
+			{  name: 'text_wiki' }
+    ];
+	var store=new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/request/list_json',
+		fields: fields
+	});
+
+	store.on( 'beforeload', function( obj, opt ) {
+        var f = Ext.util.JSON.encode( filter_obj );
+		obj.baseParams.filter = f;
+	});
+
+    ///////////////// Request Single Row
+	var request_data_store=new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/request/detail',
+		fields: fields		
+	});
+
+    //Filtering
+    var filter_me = function( item, checked ) {
+        filter_obj[ item.id ] = checked;
+        Baseliner.cookie.set( filter_key , filter_obj ); 
+        store.load();
+    };
+    var filter_menu = new Ext.menu.Menu({
+        items: [
+            { id: 'pending', text: _('Pending'),checked: filter_obj['pending'] , checkHandler: filter_me },
+            { id: 'approved', text: _('Approved'),checked: filter_obj['approved'] , checkHandler: filter_me },
+            { id: 'rejected', text: _('Rejected'),checked: filter_obj['rejected'] , checkHandler: filter_me },
+            { id: 'cancelled', text: _('Cancelled'),checked: filter_obj['cancelled'] , checkHandler: filter_me }
+        ]
+    });
+
+	var form_comment_field = new Ext.form.TextArea({
+		attrs_xml: {  wysiwyg: 1 },
+		name: "text",
+		fieldLabel: "Comentarios del aprobador",
+		height:  "70",
+		allowBlank: 1
+	});
+	
+	var showRequest = function(rec,action){
+		var data = rec.data;
+		if( data.status != 'pending' ) {
+			Ext.Msg.show({
+				title: _('Error'), 
+				msg:   _('Request is already in a %1 state', _(data.status) ),
+				buttons: Ext.Msg.OK,
+				icon: Ext.MessageBox.ERROR
+			});	
+			return;
+		}
+		var name = (data.ns_name != undefined )? data.ns_name : data.ns;
+		var url = ( action == 'approve' ) ? '/request/approve_request':'/request/reject_request';
+		var title = action_noun( action );
+		//alert( Ext.util.JSON.encode( data ));
+		// configure form
+		formApprove.getForm().url = url;
+		formApprove.setTitle( title + '  ' + name );
+		formApprove.getForm().loadRecord(rec);
+		formApprove.on("render", function() {
+			//formApprove.findById("text"); //.focus();
+			//formApprove.getForm().getEl("text").dom.focus();
+			//alert("voy");
+			form_comment_field.focus('',1000);
+		});
+		form_id.setValue( data.id );
+		form_key.setValue( data.key );
+		// setup and open window
+		windowApprove.setTitle( title + ' ' + name );		
+		windowApprove.show();
+		windowApprove.buttons[0].setText( title );
+	}	
+
+	var cancelRequest = function( rec ) {
+		var id = rec.data.id;
+		var name = rec.data.name;
+		var ns_name = rec.data.ns_name;
+		var msg = _("Are you sure you want to cancel the request '%1' for item '%2'?", '<b>'+name+'</b>', ns_name );
+		Ext.Msg.confirm( _('Cancel'), msg, function(btn) {
+				if (btn != 'yes') return;
+				Baseliner.requestJSON({
+					url: '/request/cancel',
+					params: { id: id },
+					success: function(res) { Baseliner.message(_('Cancel OK'), _( res.msg )); store.reload(); },
+					failure: function(res) { Baseliner.message(_('Cancel Error'), _( res.msg )); }
+				});
+		});
+	};
+
+	var request_again = function( rec ) {
+		var id = rec.data.id;
+		var name = rec.data.name;
+		var ns_name = rec.data.ns_name;
+		var msg = _("Are you sure you want request again '%1' for item '%2'?", '<b>'+name+'</b>', ns_name );
+		Ext.Msg.confirm( _('Request'), msg, function(btn) {
+				if (btn != 'yes') return;
+				Baseliner.requestJSON({
+					url: '/request/rerequest',
+					params: { id: id },
+					success: function(res) { Baseliner.message(_('Request OK'), _( res.msg )); store.reload(); },
+					failure: function(res) { Baseliner.message(_('Request Error'), _( res.msg )); }
+				});
+		});
+	};
+
+	<& show_email.js &>
+
+    var render_type = function(value,metadata,rec,rowIndex,colIndex,store) {
+		return '<b><span style=\'font-family: "Tahoma"; \'>' + value + '</span></b>';
+	};
+
+    var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
+		var icon = value; //rec.data.ns_icon;
+		return String.format( '<img border=0 src="{0}"></img>', icon );
+	};
+
+    var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
+		return "<b>" + value + "</b>";
+		//return String.format( '<div style="margin-top: 5px"><b>{0}</b></div>',value );
+	};
+
+    var render_status_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
+		var icon = value == 'pending' ? '/static/images/verify.gif' 
+			: value=='approved' ? '/static/images/drop-yes.gif'
+			: '/static/images/drop-no.gif';
+		value = _(value);
+		return String.format( '<img border=0 src="{0}"></img>', icon );
+	};
+
+	var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
+		return _(value);
+	};
+
+    <& /comp/search_field.mas &>
+
+	var ps = 30; //page_size
+
+	// create the grid
+	var grid = new Ext.grid.GridPanel({
+			layout: 'fit',
+            tab_icon: '/static/images/drop-yes.gif',
+			header: false,
+            stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			store: store,
+			viewConfig: [{
+					forceFit: true
+			}],
+			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+			loadMask:'true',
+			columns: [
+				{ header: _('Id'), width: 50, dataIndex: 'id', sortable: true },	
+				{ header: _('Request'), width: 300, dataIndex: 'name', sortable: true, renderer: render_type },	
+				{ header: '', width: 25, dataIndex: 'status', sortable: true, renderer: render_status_icon },	
+				{ header: _('Estado'), width: 100, dataIndex: 'status', sortable: true, renderer: render_status },	
+				{ header: '', width: 25, dataIndex: 'ns_icon', sortable: false, renderer: render_icon },	
+				{ header: _('Item'), width: 350, dataIndex: 'ns_name', sortable: true, renderer: render_item },	
+				//{ header: 'Elementos', width: 300, dataIndex: 'items', sortable: true },	
+				{ header: _('Application'), width: 80, dataIndex: 'app', sortable: true },	
+				{ header: _('RFC'), width: 80, dataIndex: 'rfc', sortable: true },	
+				{ header: _('Requested By'), width: 80, dataIndex: 'requested_by', sortable: true, renderer: Baseliner.render_user_field },
+				{ header: _('Requested On'), width: 130, dataIndex: 'requested_on', sortable: true },
+				{ header: _('Finished By'), width: 80, dataIndex: 'finished_by', sortable: true, renderer: Baseliner.render_user_field },
+				{ header: _('Finished On'), width: 130, dataIndex: 'finished_on', sortable: true }	
+			],
+			autoSizeColumns: true,
+			deferredRender:true,
+			bbar: new Ext.PagingToolbar({
+								store: store,
+								pageSize: ps,
+								displayInfo: true,
+								displayMsg: _('Rows {0} - {1} of {2}'),
+								emptyMsg: "No hay registros disponibles"
+						}),        
+			tbar: [ 'Buscar: ', ' ',
+				new Ext.app.SearchField({
+					store: store,
+					params: {start: 0, limit: ps},
+					emptyText: '<% _loc('<Enter your search string>') %>'
+				}),
+                { text: _('View'), menu: filter_menu },
+				new Ext.Toolbar.Button({
+					text: _('Approve'),
+					icon:'/static/images/drop-yes.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sel = Baseliner.get_selected( grid );
+						if( sel == undefined ) return;
+						_currentAction = 'approve';
+						showRequest(sel, 'approve' );
+					}
+				}),
+				new Ext.Toolbar.Button({
+					text:  _('Reject'),
+					icon:'/static/images/del.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						var sel = sm.getSelected();
+						_currentAction = 'reject';
+						if (sm.hasSelection()) {
+							var sel = sm.getSelected();							
+                            showRequest(sel, 'reject' );
+						} else {
+							Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+						};
+						
+					}
+				}),
+				new Ext.Toolbar.Button({
+					text: _('View Email'),
+					icon:'/static/images/moredata.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var row = Baseliner.get_selected( grid );
+						if( row == undefined ) return;
+						Baseliner.show_email({ id_req: row.data.id, id_message: row.data.id_message });
+					}
+				}),
+% if( $c->stash->{manage} ) {
+				new Ext.Toolbar.Button({
+					text: _('All Users'),
+					enableToggle: true,
+					pressed: false,
+					icon:'/static/images/drop-edit.gif',
+					cls: 'x-btn-text-icon',
+					handler: function(t) {
+						store.baseParams.manage = t.pressed;
+						store.load({params:{start:0 , limit: ps }}); 
+					}
+				}),
+				new Ext.Toolbar.Button({
+					text: _('Request Again'),
+					icon:'/static/images/asterisk.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						var sel = sm.getSelected();
+						if (sm.hasSelection()) {
+							var sel = sm.getSelected();							
+							request_again( sel );
+						} else {
+							Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+						};
+					}
+				}),
+				new Ext.Toolbar.Button({
+					text: _('Cancel Request'),
+					icon:'/static/images/close-small.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						var sel = sm.getSelected();
+						if (sm.hasSelection()) {
+							var sel = sm.getSelected();							
+							cancelRequest( sel );
+						} else {
+							Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+						};
+					}
+				}),
+% }
+				'->'
+				]
+		});
+
+	grid.getView().forceFit = true;
+
+	grid.on("rowdblclick", function(grid, rowIndex, e ) {
+			var row = grid.getStore().getAt(rowIndex);
+			Baseliner.show_email({ id_req: row.data.id, id_message: row.data.id_message });
+	});		
+
+	// grid initial loading mask and store load
+    var first_load = true;
+    grid.on("activate", function() {
+        if( first_load ) {
+            Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
+            first_load = false;
+        }
+    });
+    store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask(); } }); 
+
+	var form_id = new Ext.form.Hidden({ name: 'id_req' });
+	var form_key = new Ext.form.Hidden({ name: 'key' });
+
+	var formApprove = new Ext.FormPanel( {
+		 border    : false,
+		 frame     : true,
+		 url       : '',
+		 defaults  : {
+			width: 350
+		 },
+		 items     :  [ form_id, form_key,
+			{
+					xtype: 'textfield',
+					attrs_xml: {  wysiwyg: 1 },
+					fieldLabel: _('Request ID'),
+					name: 'id',
+					id: 'id',
+					readOnly: true,
+					value: '',
+					allowBlank: 1
+			},
+			{
+					xtype: 'textfield',
+					attrs_xml: {  wysiwyg: 1 },
+					fieldLabel: _('Request'),
+					name: 'name',
+					id: 'name',
+					readOnly: true,
+					value: '',
+					allowBlank: 1
+			},
+			{
+					xtype: 'textfield',
+					attrs_xml: {  wysiwyg: 1 },
+					fieldLabel: _('Application'),
+					name: 'app',
+					id: 'app',
+					readOnly: true,
+					value: '',
+					allowBlank: 1
+			},
+			{
+					xtype: 'textarea',
+					attrs_xml: {  wysiwyg: 1 },
+					fieldLabel: _('Item'),
+					name: 'item',
+					id: 'ns_name',
+					height: 70,
+					readOnly: true,
+					value: '',
+					allowBlank: 1
+			},
+			{
+					xtype: 'textfield',
+					attrs_xml: {  wysiwyg: 1 },
+					fieldLabel: _('RFC'),
+					name: 'rfc',
+					id: 'rfc',
+					readOnly: true,
+					value: '',
+					allowBlank: 1
+			}, 
+			{
+
+					xtype: 'textarea',
+					attrs_xml: {  wysiwyg: 1 },
+					name: "text_wiki",
+					fieldLabel: "Comentarios del solicitante",
+					height:  "70",
+					readOnly:  true,
+					allowBlank: 1
+			}, 
+			form_comment_field, 		
+			{  type: 'Submit', name: 'Sb' }]
+     });      
+        
+	var windowApprove = new Ext.Window({  
+		    width:500,  
+		    height:430, 
+		    autoScroll: true,
+		    closeAction: "hide",
+		    resizable: false,
+			layout: 'fit',
+		    items: formApprove, //le asignamos el formulario solamente  
+		    buttonAlign: 'right', //botones alineados a la derecha  
+		    buttons:[{
+				text: _('Approve'),
+			    handler : function() {  
+			         formApprove.getForm().submit({ 
+						 titleMsg:	'Espere por favor',
+			             waitMsg : action_gerund(_currentAction) + ' espere por favor...',  
+			             failure: function (form, action) {  
+							if (action.failureType == 'server') {
+								var data = Ext.util.JSON.decode(action.response.responseText);
+								 Ext.MessageBox.show({  
+									 title: 'Error al ' + action_verb(_currentAction) + '.',  
+									 msg: data.errors.reason,  
+									 buttons: Ext.MessageBox.OK,  
+									 icon: Ext.MessageBox.ERROR  
+								 });  
+							} else {
+								 Ext.MessageBox.show({  
+									 title: 'Error al ' + action_verb(_currentAction) + '.',  
+									 msg: 'El servidor no responde:'	+ action.response.responseText,  
+									 buttons: Ext.MessageBox.OK,  
+									 icon: Ext.MessageBox.ERROR  
+								 });  
+							}
+							windowApprove.hide();
+							store.reload(); 							
+			             },  
+			             success: function (form, request) {  
+							 Baseliner.message( action_noun(_currentAction), action_part(_currentAction) + ': realizado' ); 
+							 formApprove.getForm().reset();
+			                 store.reload();  
+			                 windowApprove.hide();
+			             }  
+			         });  
+			     }
+			    },
+		    	{
+					text:'<% _loc('Cancel') %>', 
+					handler: function(){windowApprove.hide();}
+		}] //botones del formulario  
+	}); 
+		
+% if ($c->flash->{current_request}) {
+		Ext.onReady(function(){
+			showRequest({data:<%js_dumper $c->flash->{current_request}%>},'<%$c->flash->{current_action}%>');	
+		});
+%}else{
+% 	if ($c->flash->{from_email}) {
+		Ext.MessageBox.show({  
+			                     title: 'Error',  
+			                     msg: 'La aprobacion no existe o no tiene permisos para realizarla.',  
+			                     buttons: Ext.MessageBox.OK,  
+			                     icon: Ext.MessageBox.ERROR  
+			                 });	
+
+%	}
+%}
+    grid.setTitle(_('Approvals') );		
+	return grid;
+})();
+
+
+

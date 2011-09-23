@@ -1,0 +1,4 @@
+#!/bin/sh
+
+ps uwwx | grep perl | grep "ba.*pl" | perl -n -l -e '@a=split /\s+|\t+/;kill 9,$a[1]'
+

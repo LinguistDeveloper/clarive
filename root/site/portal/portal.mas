@@ -1,0 +1,13 @@
+(function(){
+    // create some portlet tools using built in Ext tool ids
+    var panel = new Ext.Panel({
+        layout:'border',
+        items: Baseliner.portal
+    });
+
+	//Baseliner.portalAddComp({ col: 1, comp: cc });
+	return panel;
+})()
+
+
+

@@ -1,0 +1,175 @@
+(function(){
+	var store=new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/project/list',
+		fields: [ 
+			{  name: 'id' },
+			{  name: 'name' },
+			{  name: 'data' },
+			{  name: 'description' },
+			{  name: 'ns' }
+		]
+	});
+
+    <& '/comp/search_field.mas' &>
+
+    var ps = 100; //page_size
+    store.load({params:{start:0 , limit: ps}}); 
+
+    var combo_project = function() {
+        var store = new Ext.data.JsonStore({
+            root: 'data' , 
+            remoteSort: true,
+            autoLoad: true,
+            totalProperty:"totalCount", 
+            baseParams: {},
+            id: 'id', 
+            url: '/project/list',
+            fields: ['id', 'ns','name','description'] 
+        });
+        var combo = new Ext.form.ComboBox({
+               fieldLabel: _("Parent"),
+               name: 'id',
+               hiddenName: 'id',
+               valueField: 'id', 
+               displayField: 'name',
+               typeAhead: false,
+               minChars: 1,
+               mode: 'remote', 
+               store: store,
+               editable: true,
+               forceSelection: true,
+               triggerAction: 'all',
+               allowBlank: false
+        });
+        /* if( params.value ) {
+            combo.store.on('load',function(store) {
+                var ix = store.find( valueField, params.value ); 
+                if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
+            });
+        } */
+        return combo;
+    };
+
+    var add_project = function() {
+        var form_add = new Ext.FormPanel({
+            frame: true,
+            url: '/project/add',
+            bodyStyle:'padding:5px 5px 0',
+            defaults: {
+                width: 550
+            },
+            items: [
+                { xtype:'textfield', name:'name', fieldLabel:_('Name') },
+                { xtype:'textfield', name:'ns', fieldLabel:_('Identifier') },
+                combo_project(),
+                { xtype:'textarea', name:'description', fieldLabel:_('Description') }
+            ]
+        });
+        var win = new Ext.Window({
+            title: _("Add new project"),
+            width: 700,
+            height: 400,
+            items: form_add,
+            closeAction:'destroy',
+            buttons: [{
+                text: _('Submit'),
+                handler: function(){ 
+                    form_add.getForm().submit({
+                        success: function(f,a){
+                            Baseliner.message( _('New Project'), _(a.result.msg) );
+                            store.load();
+                            win.close();
+                        },
+                        failure: function(f,a){
+                            Ext.Msg.alert(_('Error'), a.result.msg );
+                        }
+                    });
+                }
+            },{
+                text: _('Close'),
+                handler: function(){ win.close() }
+            }]
+        });
+        win.show();
+    };
+
+    // create the grid
+	var grid = new Ext.grid.EditorGridPanel({
+			title: _('Projects'),
+			header: false,
+            stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			store: store,
+			clicksToEdit: 'auto',
+			viewConfig: [{
+					forceFit: true
+			}],
+			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+			loadMask:'true',
+			columns: [
+				{ header: _('Project'), width: 120, dataIndex: 'name', sortable: true },	
+				{ header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true },	
+				{ header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
+				{ header: _('Data'), width: 350, dataIndex: 'data', sortable: true, editor: new Ext.form.TextArea({ grow: true }) }
+			],
+			autoSizeColumns: true,
+			deferredRender:true,
+			bbar: new Ext.PagingToolbar({
+								store: store,
+								pageSize: ps,
+								displayInfo: true,
+								displayMsg: 'Rows {0} - {1} of {2}',
+								emptyMsg: "No hay registros disponibles"
+						}),        
+			tbar: [ 'Buscar: ', ' ',
+				new Ext.app.SearchField({
+					store: store,
+					params: {start: 0, limit: ps},
+					emptyText: _('<Enter your search string>')
+				}),
+				new Ext.Toolbar.Button({
+					text: _('Add'),
+					icon:'/static/images/drop-add.gif',
+					cls: 'x-btn-text-icon',
+					handler: add_project				}),
+				new Ext.Toolbar.Button({
+					text: _('Delete'),
+					icon:'/static/images/del.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						var sel = sm.getSelected();
+						Ext.Msg.confirm('<% _loc('Confirmation') %>', 'Are you sure you want to delete the project ' + sel.data.name + '?', 
+							function(btn){ 
+								if(btn=='yes') {
+									var conn = new Ext.data.Connection();
+									conn.request({
+										url: '/project/delete',
+										params: { action: 'delete', id: sel.data.id },
+										success: function(resp,opt) { grid.getStore().remove(sel); },
+										failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the release.')); }
+									});	
+								}
+							} );
+					}
+				}),
+				'->'
+				]
+		});
+
+		grid.on("rowdblclick", function(grid, rowIndex, e ) {
+			var r = grid.getStore().getAt(rowIndex);
+			//Baseliner.addNewTab('/endevor/pkg_data?package=' + r.get('package') , r.get('package') );
+		});		
+
+	return grid;
+})();
+
+
+
+

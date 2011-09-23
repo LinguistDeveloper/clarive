@@ -1,0 +1,123 @@
+=head1 NAME
+
+bali_deploy.pl - Baseliner DB Schema Deploy
+
+=head1 DESCRIPTION
+
+Deploy the Baseliner's schema in a database.
+
+Usage, from the command line:
+
+    $ BALI_ENV=<suffix> bali deploy
+
+=head1 OPTIONS
+
+=head2 Run limited test cases
+
+    bali deploy --case job [ --case ... ]
+
+=head2 Run only feature tests
+
+    bali deploy --feature ca.harvest [ --feature ... ]
+
+=cut
+use v5.10;
+use strict;
+use warnings;
+use FindBin '$Bin';
+use lib "$FindBin::Bin/../lib";
+use File::Basename;
+use Baseliner::Utils;
+
+our $VERSION = '1.0';
+
+use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
+
+BEGIN {
+    $ENV{ DBIC_TRACE }                   = 0;
+    $ENV{ CATALYST_CONFIG_LOCAL_SUFFIX } = 't';
+}
+
+chdir $ENV{BASELINER_HOME} if $ENV{BASELINER_HOME};
+
+my $t0 = [gettimeofday];
+
+sub now {
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+      localtime(time);
+    $year += 1900;
+    $mon  += 1;
+    sprintf "%04d/%02d/%02d %02d:%02d:%02d", ${year}, ${mon}, ${mday}, ${hour},
+      ${min}, ${sec};
+}
+
+sub pre {
+    my $ret = "==============| " . now() . " " . sprintf( "[%.04f]", tv_interval( $t0 ) ). ' ';
+    $t0 = [gettimeofday]; 
+    $ret;
+}
+
+say "Baseliner DB Schema Deploy v$VERSION";
+
+my %args = _get_options( @ARGV );
+if( exists $args{h} ) {  # help
+    print << 'EOF';
+Usage:
+  bali deploy [options]
+
+Options:
+  -h          : this help
+  -deploy     : actually execute statements in the db
+                  bali deploy --deploy
+  -quote      : quote table names
+  -drop       : add drop statements
+  -env        : sets BALI_ENV (local, test, prod, t, etc...)
+  -schema     : schemas to deploy 
+                  bali deploy --schema BaliRepo --schema BaliRepoKeys 
+
+EOF
+    exit 0;
+}
+
+require Carp::Always if exists $args{carp};
+$ENV{BASELINER_DEBUG}=1 if exists $args{debug};
+
+# deploy schema
+say pre . "Deploying schema " . join', ', _array($args{schema});
+say pre . "Starting DB deploy...";
+$Baseliner::Schema::Baseliner::DB_DRIVER = 'SQLite';
+my $env = $args{env} || $ENV{BALI_ENV} || 't';
+my $cfg_file = "$Bin/../baseliner_$env.conf";
+say pre . "Config file: $cfg_file";
+
+require Baseliner::Schema::Baseliner;
+require Config::General;
+my $cfg      = Config::General->new( $cfg_file );
+
+if( $args{schema} ) {
+    $args{schema} = [ _array $args{schema} ];
+}
+
+my $dropping= exists $args{drop} ? ' (with DROP)' : '';
+if( exists $args{drop} && ! @{ $args{schema} } ) {
+    say "\n*** Warning: Drop specified and no --schema parameter found.";
+    say "*** All tables in the schema will be dropped. Data loss will sue.";
+    print "*** Are you sure [y/N]: ";
+    unless( (my $yn = <STDIN>) =~ /^y/i ) {
+        say "Aborted.";
+        exit 1;
+    }
+}
+say pre . "Deploying started$dropping.";
+
+Baseliner::Schema::Baseliner->deploy_schema(
+    config      => { $cfg->getall },
+    show_config => !exists $args{ show_config },
+    show        => !exists $args{ deploy },
+    drop        => exists $args{ drop },
+    schema      => $args{ schema }
+) and die pre . "Errors while deploying DB. Aborted\n";
+
+say pre . "Done Deploying DB.";
+
+exit 0;

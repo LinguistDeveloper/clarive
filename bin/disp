@@ -1,0 +1,62 @@
+#!/bin/sh
+
+if [ "$BASELINER_LOGHOME" != "" ]; then
+	LOGDIR=$BASELINER_LOGHOME
+else
+	LOGDIR=$BASELINER_HOME/tmp/log
+	mkdir -p $LOGDIR
+fi
+
+if [ "$BALI_ENV" != "" ]; then
+	export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+fi
+
+LOGFILENAME=balid
+NOW=`perl -MDateTime -le 'print DateTime->now()'`
+LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
+LOGFILE=$LOGDIR/$LOGFILENAME.log
+
+ren_log() {
+	mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
+	gzip $LOGFILEOLD 2>/dev/null
+	echo "Log file: $LOGFILE"
+}
+
+message="Baseliner Dispatcher starting in background..."
+if [ "$1" == "restart" ];
+then
+        bali stop service.dispatcher 
+        echo $message
+		ren_log
+        exec bali start service.dispatcher 
+        exit 0
+fi
+
+if [ "$1" == "stop" ];
+then
+        exec bali stop service.dispatcher 
+        exit 0
+fi
+
+if [ "$1" == "start" ];
+then
+		ren_log
+        echo $message
+        exec balid service.dispatcher --fork
+        exit 0
+fi
+
+if [ "$1" == "tail" ];
+then
+        if [ "$BASELINER_LOGHOME" == "" ];
+        then
+            echo "BASELINER_LOGHOME is not set"
+            exit 1
+        fi
+        echo "Tail following Baseliner log '$BASELINER_LOGHOME/balid.log'..."
+        tail -f $BASELINER_LOGHOME/balid.log
+        exit 0
+fi
+
+exec bali service.dispatcher $*
+

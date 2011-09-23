@@ -1,0 +1,25 @@
+<%perl>
+	use Baseliner::Utils;
+	my $iid = "div-" . _nowstamp;
+</%perl>
+<script type='text/javascript'>
+Ext.onReady(function(){
+    <& /comp/search_field.mas &>
+
+	var html = Ext.get('log_data<% $iid %>');
+	var panel = new Ext.Panel({
+		layout: 'fit',
+		renderTo: 'search_top<% $iid %>',
+		tbar: [
+			new Baseliner.textSearchField({
+				emptyText: '<% _loc('<Enter your search string>') %>',
+				html: html.innerHTML
+			}),
+		]
+	});
+});
+</script>
+<div id='search_top<% $iid %>'></div>
+<div id='log_data<% $iid %>'>
+<% $c->stash->{log_data} %>
+</div>

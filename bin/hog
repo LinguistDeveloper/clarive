@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+
+my $max = shift @ARGV || 1500;
+my $t = shift @ARGV || 60;
+
+alarm $t;
+my $x;
+for( 1..$max ) {
+        $x.='a' x (1024 * 1024);
+        print $_,"MB\n";
+}
+print "Finished.\n";

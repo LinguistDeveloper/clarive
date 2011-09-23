@@ -1,0 +1,241 @@
+package Baseliner::Controller::Root;
+use strict;
+use warnings;
+use base 'Catalyst::Controller';
+use Baseliner::Utils;
+
+use Try::Tiny;
+
+## JSON stuff
+
+use JSON::XS;
+use constant js_true => JSON::XS::true;
+use constant js_false => JSON::XS::false;
+use MIME::Base64;
+
+#
+# Sets the actions in this controller to be registered with no prefix
+# so they function identically to actions created in Baseliner.pm
+#
+__PACKAGE__->config->{namespace} = '';
+
+=head1 NAME
+
+Baseliner::Controller::Root - Root Controller for Baseliner
+
+=head1 DESCRIPTION
+
+All root / urls are installed here. 
+
+=cut
+
+sub begin : Private {
+    my ( $self, $c ) = @_;
+    $c->res->headers->header( 'Cache-Control' => 'no-cache');
+    $c->res->headers->header( Pragma => 'no-cache');
+    $c->res->headers->header( Expires => 0 );
+
+    Baseliner->app( $c );
+
+    _db_setup;  # make sure LongReadLen is set after forking
+
+	$c->forward('/theme');
+
+	#my $logged_on = defined $c->username;
+	# catch invalid user object sessions
+	#try {
+		#die unless $c->session->{user} || $c->stash->{auth_skip};
+	##} catch {
+		#my $path = $c->request->{path} || $c->request->path;
+	#};
+}
+
+sub auto : Private {
+    my ( $self, $c ) = @_;
+	my $notify_valid_session = delete $c->request->params->{notify_valid_session};
+	return 1 if $c->stash->{auth_skip};
+	return 1 if $c->user_exists;
+	my $path = $c->request->{path} || $c->request->path;
+	return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
+	# saml?
+	if( $c->config->{saml_auth} eq 'on' ) {
+		my $saml_username= $c->forward('/auth/saml_check');
+		return 1 if $saml_username;
+	}
+	# reject request
+	if( $notify_valid_session ) {
+		$c->stash->{auto_stop_processing} = 1;
+		$c->stash->{json} = { success=>\0, logged_out => \1, msg => _loc("Not Logged on") };
+		$c->forward('View::JSON');
+	} elsif( $c->request->params->{fail_on_auth} ) {
+		$c->response->status( 401 );
+		$c->response->body("Unauthorized");
+	} else {
+		$c->forward('/auth/logoff');
+		$c->stash->{after_login} = '/' . $path;
+		$c->response->status( 401 );
+        $c->forward('/auth/logon');
+		#$c->detach('/end');
+	}
+	return 0;
+}
+
+sub theme : Private {
+    my ( $self, $c ) = @_;
+
+	# check if theme dir is in the session already
+	if( $c->session->{theme_dir} && !$c->config->{force_theme} ) {
+		$c->stash->{theme_dir} = $c->session->{theme_dir}; 
+		return;
+	}
+
+	# nope... so let's get the users preference
+    my $prefs = {};
+    if( defined $c->user && !defined $c->config->{force_theme} ) {
+        my $username = $c->username;
+        if( defined $username ) {
+            $prefs = $c->model('ConfigStore')->get('config.user.view', ns=>"user/$username");
+        }
+    }
+    $prefs->{theme} ||= $c->config->{force_theme} || $c->config->{default_theme}; # default
+    my $theme = $prefs->{theme} ? '_' . $prefs->{theme} : '';
+    my $theme_dir = $prefs->{theme} ? '/themes/' . $prefs->{theme} : '';
+    $c->stash->{theme_dir} = $theme_dir;
+	$c->session->{theme_dir} = $theme_dir;
+}
+
+sub whoami : Local {
+    my ( $self, $c ) = @_;
+    $c->res->body( $c->user->username  );
+
+}
+
+sub controllers : Local {
+    my ( $self, $c ) = @_;
+    $c->res->body( '<pre><li>' . join '<li>', sort $c->controllers );
+
+}
+
+sub models : Local {
+    my ( $self, $c ) = @_;
+    $c->res->body( '<pre><li>' . join '<li>', sort $c->models );
+
+}
+
+sub raw : LocalRegex( '^raw/(.*)$' ) {
+    my ( $self, $c, $arg ) = @_;
+	my $path = $c->req->captures->[0];
+	$c->stash->{site_raw} = 1;
+	push @{ $c->stash->{tab_list} }, { url=>"/$path", title=>"/$path", type=>'comp' };
+	$c->forward('/index');
+}
+
+sub tab : LocalRegex( '^tab/(.*)$' ) {
+    my ( $self, $c, $arg ) = @_;
+	my $path = $c->req->captures->[0];
+	push @{ $c->stash->{tab_list} }, { url=>"/$path", title=>"/$path", type=>'comp' };
+	$c->forward('/index');
+}
+
+sub index:Private {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    if( $p->{tab}  ) {
+        push @{ $c->stash->{tab_list} }, { url=>$p->{tab}, title=>$p->{tab}, type=>'comp' };
+    }
+    if( $p->{tab_page}  ) {
+        push @{ $c->stash->{tab_list} }, { url=>$p->{tab_page}, title=>$p->{tab_page}, type=>'page' };
+    }
+
+    # set language 
+    if( $c->user ) {
+        if( $c->user ) {
+            my $username = $c->user->username || $c->user->id;
+            if( $username ) {
+                my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
+                $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+				if( ref $c->session->{user} ) {
+					$c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+				}
+            }
+        }
+    }
+
+    # load menus
+    my @menus;
+    $c->forward('/user/can_surrogate');
+    if( $c->username ) {
+		my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
+        $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>[ @actions ]);
+        $c->stash->{portlets} = [
+			grep { $_->active }
+			$c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>[ @actions ])
+		];
+        my @features_list = Baseliner->features->list;
+        # header_include hooks
+        $c->stash->{header_include} = [
+            map { { name=>$_, content=>_slurp $_ } }
+            _unique
+            grep { -e $_ } map { "" . Path::Class::dir( $_->path, 'root', 'include', 'head.html') }
+                    @features_list 
+		];
+    } 
+    $c->stash->{template} = '/site/index.html';
+}
+
+use Encode qw( decode_utf8 encode_utf8 is_utf8 );
+sub detach: Local {
+    my ( $self, $c ) = @_;
+    my $html = $c->request->{detach_html};
+    my $type = $c->request->{type};
+    $html = decode_utf8 $html;
+    $html = decode_utf8 $html;
+    $c->stash->{detach_html} = $html;
+    #$c->stash->{detach_html} = decode_utf8 decode_utf8 $c->request->{detach_html};
+    $c->stash->{template} = '/site/detach.html';
+}
+
+sub show_comp : Local {
+    my ( $self, $c ) = @_;
+    my $url = $c->request->{url};
+    $c->stash->{url} = $url;
+    $c->stash->{template} = '/site/comp.html';
+}
+
+sub default:Path {
+    my ( $self, $c ) = @_;
+    $c->stash->{template} ||= $c->request->{path} || $c->request->path;
+}
+
+=head2 end
+
+Renders a Mason view by default, passing it all parameters as <%args>.
+
+=cut 
+
+sub end : ActionClass('RenderView') {
+    my ( $self, $c ) = @_;
+    $c->stash->{$_}=$c->request->parameters->{$_} 
+    	foreach( keys %{ $c->req->parameters || ()});
+}
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright (c) 2010 The Authors of baseliner.org
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+=cut
+
+1;

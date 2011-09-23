@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cd $BASELINER_HOME
+unset HTTP_PROXY
+unset http_proxy
+
+export BASELINER_SCRIPT=script/bali_rest.pl
+bin/bali "$@"
