@@ -3,7 +3,11 @@ use Moose;
 use Baseliner::Utils;
 use Try::Tiny;
 
-has 'elements' => ( is=>'rw', isa=>'ArrayRef', default=>sub{ [] } );
+has 'elements' => (
+               is=>'rw', isa=>'ArrayRef', default=>sub{ [] },
+               traits  => ['Array'],
+               handles => { count=>'count', all=>'elements' }
+             );
 
 =head2 push_elements [@elements|$element]
 
@@ -60,6 +64,74 @@ sub hash_by_version {
 	return %hash;
 }
 
+sub paths {
+	my $self = shift;
+    map { $_->filepath } $self->all;
+}
+
+=head2 exclude_regex
+
+Returns a new instance of elements
+that do not match a given path regex.
+
+    my $list = $elements->exclude_regex( '^/app/folder', ... );
+
+=cut
+sub exclude_regex {
+	my $self = shift;
+    my $split = $self->split_on_regex( @_ );
+    return __PACKAGE__->new( elements=>$split->{dont} );
+}
+
+sub include_regex {
+	my $self = shift;
+    my $split = $self->split_on_regex( @_ );
+    return __PACKAGE__->new( elements=>$split->{match} );
+}
+
+=head2 split_on_regex
+
+Returns 2 arrays of elements, one for
+the elements that match any of the regexes, and
+one array with elements that didn't match any.
+
+    my $res = $elements->split_on_regex( '^/app/folder', ... );
+    
+    say "Matches: "     . @{ $res->{matches} };
+    say "Don't match: " . @{ $res->{dont} };
+
+=cut
+sub split_on_regex {
+	my $self = shift;
+    my @match;
+    my @dont;
+    my @regexes = map { ref $_ eq 'Regexp' ? $_ : qr/$_/ } @_;
+    for my $e ( @{ $self->elements } ) {
+        ( grep { $e->fullpath =~ $_ } @regexes )
+            ? push( @match, $e )
+            : push( @dont , $e );
+    }
+    return { match=>\@match, dont=>\@dont };
+}
+
+=head2 cut_to_path_regex
+
+Returns an array of elements that match a given path regex.
+
+    my $list = $elements->cut_to_path_regex( '^/app/folder' );
+
+=cut
+sub cut_to_path_regex {
+	my ( $self, $regex ) = @_;
+    _throw 'Missing argument regex' unless $regex;
+    my @ok;
+    $regex = qr/$regex/ unless ref $regex eq 'Regexp';
+    for my $e ( @{ $self->elements } ) {
+        push @ok, $e if $e->fullpath =~ $regex;
+    }
+    return __PACKAGE__->new( elements=>\@ok );
+}
+
 =head2 list_part
 
 Returns an array of unique path parts based on the part name passed as argument.
@@ -111,10 +183,8 @@ sub cut_to_subset {
 Returns the number of elements.
 
 =cut
-sub count {
-    my $self = shift;
-    return scalar @{ $self->elements };
-}
+
+# count by delegation
 
 =head2 subset (part, value)
 

@@ -132,6 +132,17 @@ __PACKAGE__->config(
     );
 
 # Start the application
+if( $ENV{BALI_CMD} ) {
+    # no controllers on command line mode
+    around 'locate_components' => sub {
+        my $orig = shift;
+        my @comps = $orig->( @_ );
+        # save original
+        Baseliner->config->{ all_components } = [ @comps ];
+        @comps = grep !/Controller/, @comps;
+        return @comps;
+    };
+}
 if( $ENV{BALI_FAST} ) {
 	around 'locate_components' => sub {
 		my $orig = shift;
@@ -148,6 +159,14 @@ if( $ENV{BALI_FAST} ) {
 		return @comps;
 	};
 }
+
+#{
+#    package Baseliner::Cmd;
+#    use Moose;
+#    extends 'Baseliner';
+#    has 'stash' => qw(is rw isa HashRef), default => sub{{}};
+#    sub registry { 'Baseliner::Core::Registry' }
+#}
 
 __PACKAGE__->setup();
 # Capture Signals
@@ -259,7 +278,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 
 	our $global_app;
 	sub app {
-		__PACKAGE__->instance and return __PACKAGE__->instance;
+        Baseliner->instance and return __PACKAGE__->instance;
 		my $class = shift;
 		my $c = shift;
 		return $global_app = $c if ref $c;
@@ -274,6 +293,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 		#$meta->make_immutable( replace_constructor => 1 );
 		#Class::C3::reinitialize();
 		#return $c;	
+        #return Baseliner::Cmd->new;
 		return $c;
 		#bless {}, 'Baseliner';
 

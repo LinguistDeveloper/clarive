@@ -58,7 +58,8 @@ sub eval : Local {
                 $res = $self->sql( $sql, $code );
             }
         } else {
-            $res = eval $code;
+            $res = [ eval $code ];
+            $res = $res->[0] if @$res <= 1;
         }
         #my @arr  = eval $code;
 		#$res = @arr > 1 ? \@arr : $arr[0];

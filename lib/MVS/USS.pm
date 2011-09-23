@@ -89,5 +89,47 @@ sub tso {
 	return $self->cmd(qq{tso -t $cmd 2>&1\n});
 }
 
+=head1 NAME
+
+MVS::USS - MVS USS (OMVS) interface for running commands remotely
+
+=head1 DESCRIPTION
+
+This module extends L<Net::Telnet> and adds a few features that are
+hopefully useful for running commands on a Unix System Services (USS) 
+manfraime subsystem.
+
+=head1 METHODS
+
+=head2 new
+
+Creates a new instance of L<MVS::USS>.
+
+Parameters:
+
+    uss_tmp_dir     : remote temporary directory  (default: /tmp )
+    uss_tmp_prefix  : prefix to be added to temp files (default: mvs_uss)
+    uss_end_block   : end of file marker to identify output (default __END__)
+	uss_put_delay   : microseconds to wait before sendind data (default 1000)
+
+=head2 rexx
+
+Runs a REXX program remotely and returns the stdout 
+without any noise.
+
+    my $program = q{
+        i = 10
+        say "hello from rexx" i
+    };
+    $uss->rexx( $program );
+
+=head2 tso
+
+Runs a TSO command.
+
+    $uss->tso( q{DELETE //"'my.data.set'"} );
+
+=cut
+
 1;
 

@@ -16,6 +16,8 @@ use Exporter::Tidy default => [
     qw/_loc _loc_raw _cut _log _debug _utf8 _tz slashFwd slashBack slashSingle
 	_loc_ansi _utf8_to_ansi _guess_utf8 _loc_unaccented _loc_decoded
     _unique _throw _say _dt _now _now_ora _nowstamp parse_date parse_dt
+    _logts
+    _logt0
 	_unac
     _whereami
     _throw_stack
@@ -45,6 +47,18 @@ use Exporter::Tidy default => [
     _dir 
     _slurp
     _fail
+    _mason
+    _textile
+    _markup
+    _markdown
+    zip_files
+    hash_flatten
+    parse_vars
+    _to_json
+    _from_json
+    _repl
+    _md5
+    _html_escape
     /
 ];
 
@@ -243,7 +257,7 @@ sub _debug {
 # internal log engine used by _log and _debug
 sub _log_me {
     my ($cl,$fi,$li) = (shift,shift,shift);
-	my $logger = Baseliner->app->{_logger};
+    my $logger = try { $Baseliner::_logger } catch { '' };
 	if( ref $logger eq 'CODE' ) { # logger override
 		$logger->($cl,$fi,$li, @_);
 	} else {
@@ -252,6 +266,29 @@ sub _log_me {
 		print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
 	}
 }
+
+use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
+my $t0 = [gettimeofday];
+
+sub _logt0 {
+    $t0 = [gettimeofday]; 
+}
+
+sub _logts {
+    return unless any { $_ } @_;
+    my $inter = sprintf( "%.04f", tv_interval( $t0 ) );
+    $t0 = [gettimeofday]; 
+    my ($cl,$fi,$li) = caller(0);
+    my $logger = $Baseliner::_logger;
+    if( ref $logger eq 'CODE' ) { # logger override
+        $logger->($cl,$fi,$li, @_);
+    } else {
+        $cl =~ s{^Baseliner}{B};
+        my $pid = sprintf('%s', $$);
+        print STDERR ( _now()." $inter [$pid] [$cl:$li] ", @_, "\n" );
+    }
+}
+
 
 use JSON::XS;
 sub _decode_json {
@@ -268,7 +305,7 @@ sub _throw {
 	##Baseliner->{last_err} = { err=>$_[0], stack=>_whereami };
 	#   Carp::croak @_, Carp::longmess();
 
-	my $thower = Baseliner->app->{_thrower};
+    my $thower = try { Baseliner->app->{_thrower} } catch { '' };
 	if( ref $thower eq 'CODE' ) { # throw override
 		$thower->(@_);
 	} else {
@@ -290,7 +327,8 @@ sub _say {
 } 
 
 sub _tz {
-    return Baseliner->config->{time_zone} || 'CET';
+    my $tz = try { Baseliner->config->{time_zone} } catch {''};
+    $tz || 'CET';
 }
 
 sub _dt { DateTime->now(time_zone=>_tz);  }
@@ -510,7 +548,8 @@ sub _mkpath {
 
 # returns the official tmp dir
 sub _tmp_dir {
-    Baseliner->config->{tempdir} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir || $ENV{TEMP};
+    my $tmp_dir = try { Baseliner->config->{tempdir} } catch {};
+    $tmp_dir || $ENV{BASELINER_TEMP} || File::Spec->tmpdir || $ENV{TEMP};
 }
 
 =head2 _mktmp( suffix=>$str )
@@ -524,17 +563,25 @@ sub _mktmp {
    return _dir( _tmp_dir(), join( '_', _nowstamp, $$, int( rand( 100000 ) ), @$suffix ) );
 }
 
-# returns a temp file name 
+=head2 _tmp_file( prefix=>'myprefix', extension=>'zip' )
+
+Returns a temp file name, creating the temp directory if needed. 
+
+=cut
 sub _tmp_file {
 	my $p = _parameters(@_);
-	_check_parameters( $p, qw/prefix/ );
+    $p->{prefix} ||= [ caller(0) ]->[2];  # get the subname
+    $p->{prefix} =~ s/\W/_/g;
     my $tempdir = $p->{tempdir} || _tmp_dir();
 	$p->{dir}||='';
+    $p->{extension} ||='log';
 	my $dir  = File::Spec->catdir($tempdir, $p->{dir} );
+    unless( -d $tempdir ) {
 	warn "Creating temp dir $tempdir";
 	_mkpath( $tempdir );
-	my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$.log" );
-	warn "Returning tempfile $file";
+    }
+    my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} );
+    $ENV{BASELINER_DEBUG} and warn "Created tempfile $file\n";
 	return $file;
 }
 
@@ -588,14 +635,54 @@ sub _fail {
     die join(' ',@_) . "\n";
 }
 
+=head2 query_sql_build
+
+Returns a SQL::Abstract where statement given
+a query string and a list of fields.
+
+    $query and $where = query_sql_build( query=>$query, fields=>{
+        name     =>'me.name',
+        id       =>'to_char(me.id)',
+        user     =>'me.username',
+        comments =>'me.comments',
+        status   =>'me.status',
+        start    =>"me.starttime",
+        sched    =>"me.schedtime",
+        end      =>"me.endtime",
+        items    =>"bali_job_items.item",
+    });
+
+You can use an ARRAY for shorthand too:
+
+
+    $where = query_sql_build( query=>$query,
+        fields=>[
+            qw/id bl name requested_on requested_by finished_on finished_by/,
+            [ 'age', 'foreign.age' ]     # handles pairs also
+        ]);
+
+=cut
 sub query_sql_build {
     my %p = @_;
     return {} unless $p{query};
-    return {} unless ref $p{fields} eq 'HASH';
+    _throw 'Fields parameter should be HASH or ARRAY'
+        unless ref( $p{fields} ) =~ m/HASH|ARRAY/i;
     my @terms;
     my $where = {};
+    my $fields = $p{fields};
+    ref $fields eq 'ARRAY' and do {
+        $fields = { map {
+            my $val = $_;
+            my $col = $_;
+            if( $val eq 'ARRAY' ) {
+                $val = $val->[0]; 
+                $col = $val->[1];
+            }
+            $val => $col;
+        } @$fields };
+    };
     # build columns   -----    TODO use field:lala
-    my $col = join '||', values %{ $p{fields} };
+    my $col = join '||', values %{ $fields };
     $p{query} =~ s{\*}{%}g;
     $p{query} =~ s{\?}{_}g;
     @terms = grep { defined($_) && length($_) } split /\s+/, lc($p{query});  # TODO handle quotes "
@@ -620,6 +707,195 @@ sub _slurp {
     return unless -e $file;
     open my $f, '<', $file or _throw _loc("Could not open file %1: %2", $file, $!);
     return join'',<$f>;
+}
+
+our @mason_features;
+sub _mason {
+    my ( $template, %p ) = @_; 
+    my $body;
+    @mason_features or @mason_features = map {
+        [ $_->id => _dir( $_->root )->stringify ]
+    } Baseliner->features->list;
+    use File::Spec;
+    use HTML::Mason::Interp;
+    my $comp_root = [ [ root=>"". Baseliner->config->{root} ], @mason_features ];
+    my $data_dir = File::Spec->catdir( File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
+    my $m = HTML::Mason::Interp->new(
+        comp_root  => $comp_root,
+        data_dir   => $data_dir,
+        out_method => \$body,
+    );
+    $m->exec( "/$template", %p );
+    return $body;
+}
+
+sub _textile {
+    require Text::Textile;
+    Text::Textile::textile( shift );
+}
+
+sub _markdown {
+    require Text::Markdown;
+    my $txt = Text::Markdown::markdown( shift );
+    $txt =~ s{^\<p\>}{};
+    $txt =~ s{\</p\>\n?$}{};
+    $txt ;
+}
+
+=head2 _markup
+
+Baseliner flavored markup.
+
+=cut
+sub _markup {
+    my $txt = shift;
+    $txt =~ s{\*\*(.*?)\*\*}{<span><b>$1</b></span>}g;
+    $txt =~ s{\*(.*?)\*}{<b>$1</b>}g;
+    $txt =~ s{\`(.*?)\`}{<code>$1</code>}g;
+    $txt ;
+}
+
+sub _to_json {
+    JSON::XS::encode_json( @_ );
+}
+
+sub _from_json {
+    JSON::XS::decode_json( @_ );
+}
+
+=head2 zip_files( files=>['file.txt', ... ] [, to=>'file.zip' ] )
+
+Write a zip file.
+
+    prefix     => zipfile name prefix
+    base       => basepath to be subtracted from each file 
+    pathprefix => basepath to be appended to each file, in case they are
+                already relative
+
+=cut
+sub zip_files {
+    my %p = @_;
+    require Archive::Zip;
+    $p{to} ||= _tmp_file( extension=>'zip', prefix=>$p{prefix} || 'zipfiles' );
+    my $zip = Archive::Zip->new();
+    for my $file ( _array $p{files} ) {
+        my $filepath;
+        $p{base} and $filepath = _file($file)->relative( $p{base} ); 
+        $p{pathprefix} and do {
+            $filepath = $file;
+            $file = File::Spec->catfile( $p{pathprefix}, $file );
+        };
+        _log "ZIP ADD $file, $filepath";
+        $zip->addFile( $file, $filepath );
+    }
+    $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
+        or _throw "Error writing zip file $p{to}: $!";
+    return $p{to};
+}
+
+=head2 hash_flatten ( \%stash, $prefix )
+
+Deeply flatten the keys in a HASH. Turns arrays into comma-separated lists.
+Ignores objects.
+
+    $h->{foo}->{bar} = 10;
+    $h->{arr} = [ 1,2,3 ];
+
+    $h = hash_flatten $h;
+
+    $h->{foo.bar} == 10;
+    $h->{arr} eq '1,2,3';
+
+=cut
+sub hash_flatten {
+    my ( $stash, $prefix ) = @_;
+    ref $stash eq 'HASH' or _throw "Missing stash hashref parameter";
+    $prefix ||= '';
+    my %flat;
+    while( my ($k,$v) = each %$stash ) {
+        if( ref $v eq 'HASH') {
+            my %flat_sub = hash_flatten( $v, "$prefix$k." );
+            %flat = ( %flat, %flat_sub );
+        } elsif( ref $v eq 'ARRAY') {
+            $flat{$prefix . $k} = join ',', @$v;
+        } elsif( ! ref $v ) {
+            $flat{$prefix . $k} = $v;
+        }
+    }
+    return wantarray ? %flat : \%flat;
+}
+
+sub parse_vars {
+    my ( $data, $vars, %args ) = @_;
+
+    # flatten keys
+    $vars = hash_flatten( $vars );
+
+    parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
+}
+
+sub parse_vars_raw {
+    my %args = @_;
+    my ( $data, $vars, $throw ) = @args{ qw/data vars throw/ };
+    if( ref $data eq 'HASH' ) {
+        my %ret;
+        for my $k ( keys %$data ) {
+            my $v = $data->{$k};
+            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
+        }
+        return \%ret;
+    } elsif( ref $data eq 'ARRAY' ) {
+        my @tmp;
+        for my $i ( @$data ) {
+            push @tmp, parse_vars_raw( data=>$i, vars=>$vars, throw=>$throw );
+        }
+        return \@tmp;
+    } elsif( ! ref $data ) {
+        # string
+        return $data unless $data =~ m/\$\{.+\}/;
+        my $str = "$data";
+        for my $k ( keys %$vars ) {
+            my $v = $vars->{$k};
+            $str =~ s/\$\{$k\}/$v/g;
+        }
+        # cleanup or throw unresolved vars
+        if( $throw ) { 
+            #$str =~ s/\$\{.*?\}//g; 
+            if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {
+                _throw _loc( "Unresolved vars: '%1' in %2", join( "', '", @unresolved ), $str );
+            }
+        }
+        return $str;
+    } else {
+        return $data;
+    }
+}
+
+=head2 _repl
+
+Stops execution and opens a REPL.
+
+    ^D  - resumes execution
+    ^C  - kills baseliner
+
+=cut
+sub _repl {
+    require Carp::REPL;
+    goto &Carp::REPL::repl;
+}
+
+sub _md5 {
+    require Digest::MD5;
+    my $str = @_ ? join '#',@_ : _now . rand() . $$ ;
+    Digest::MD5::md5_hex( $str );
+}
+
+sub _html_escape {
+    my $data = shift;
+    $data =~ s/\&/&amp;/gs;
+    $data =~ s/</&lt;/gs;
+    $data =~ s/>/&gt;/gs;
+    $data
 }
 
 1;

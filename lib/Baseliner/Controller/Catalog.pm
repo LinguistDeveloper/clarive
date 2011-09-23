@@ -6,10 +6,12 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 
+register 'action.admin.catalog' => { name=>'Catalog Admin' };
 register 'menu.nature.baseline' => {
     label    => _loc('Catalog'),
     url_comp => '/catalog/grid',
     icon => '/static/images/icons/catalog.gif',
+    actions => ['action.admin.catalog'],
     title    => _loc('Catalog'),
 };
 
@@ -26,16 +28,25 @@ sub json : Local {
     my $limit = delete $p->{limit};
     my $start = delete $p->{start};
     for my $pkg ( packages_that_do( 'Baseliner::Role::Catalog' ) ) {
-        my %cat = ( pkg=>$pkg,
+        # global variables for provider
+        my %cat = (
+            pkg         => $pkg,
             url=>$pkg->catalog_url,
             icon=>$pkg->catalog_icon,
-            name=>$pkg->catalog_name,
-            description=>$pkg->catalog_description ); 
+            name        => _loc($pkg->catalog_name),
+            catalog_name=> _loc($pkg->catalog_name),
+            type        => _loc($pkg->catalog_name),
+            description => $pkg->catalog_description
+        );
+        # for each provider entry
         for my $rec ( $pkg->catalog_list( query=>$query, start=>$start, limit=>$limit ) ) {
             my $h = { %cat, %$rec };
             $h->{ns} ||= '/';
             $h->{bl} ||= '*';
-            next if $query && ! grep { $_ =~ m/$query/i } values %$h;
+            $h->{project} = try { ( ns_get $h->{ns} )->ns_name } catch { 
+                    try { ( ns_get $h->{project} )->ns_name } catch { $h->{project} };
+                } ;
+            #next if $query && !grep { $_ =~ m/$query/i } values %$h;
             push @data, $h;
         }
     }
@@ -55,7 +66,8 @@ sub types : Local {
             url  => $_->catalog_url,
             icon  => $_->catalog_icon,
         }
-    } packages_that_do( 'Baseliner::Role::Catalog' ) ;
+    } sort { $a->catalog_seq <=> $b->catalog_seq }
+        packages_that_do( 'Baseliner::Role::Catalog' ) ;
 	$c->stash->{json} = {
         totalCount => scalar(@data),
         data => \@data,

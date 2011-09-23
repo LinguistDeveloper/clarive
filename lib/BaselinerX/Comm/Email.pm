@@ -14,8 +14,8 @@ register 'config.comm.email' => {
     name => 'Email configuration',
     metadata => [
         { id=>'frequency', name=>'Email daemon frequency', default=>10 },
-        { id=>'server', name=>'Email server', default=>'CLUSTEREXCH01.gbp.corp.com' },
-        { id=>'from', name=>'Email default sender', default=>'SCM <harvest@harvestpro>' },
+        { id=>'server', name=>'Email server', default=>'smtp.example.com' },
+        { id=>'from', name=>'Email default sender', default=>'SCM' },
         { id=>'domain', name=>'Email domain', default=>'exchange.local' },
         { id=>'max_attempts', name=>'Max attempts', default=>10 },
     ]

@@ -6,8 +6,10 @@ use Try::Tiny;
 #has 'actions' => ( is=>'rw', isa=>'HashRef', default=>sub{{}} );
 has 'username' => ( is=>'rw', isa=>'Str',  );
 has 'languages' => ( is=>'rw', isa=>'ArrayRef',  );
+has 'root_user' => ( is=>'rw', isa=>'Bool' );
 
-sub BUILDARGS {
+around BUILDARGS => sub {
+	my $orig = shift;
 	my $class = shift;
     my %args = @_;
     my $out = {};
@@ -17,8 +19,8 @@ sub BUILDARGS {
 		try { $out->{username} = $user->username };
 		try { $out->{username} = $user->id };
 	}
-    return $class->SUPER::BUILDARGS($out);
-}
+    return $class->$orig($out);
+};
 
 sub email {
 #TODO find the best way to return an email address
@@ -36,8 +38,22 @@ sub actions {
     return @actions;
 }
 
+sub has_actionx {
+    my $self = shift;
+    _throw 'Missing argument action' unless @_;
+    my %p = @_ == 1 ? ( action=>shift ) : @_;
+    _log "has_action $p{action}, " . $self->username;
+    return 1 if $self->is_root;
+    return Baseliner->model('Permissions')->user_has_action( action=>$p{action}, username=>$self->username );
+}
+
 sub has_action {
-    my ($self, %p) = @_;
+    my $self = shift;
+    _throw 'Missing argument action' unless @_;
+    my %p = @_ == 1 ? ( action=>shift ) : @_;
+    _log "has_action $p{action}, " . $self->username;
+    return 1 if $self->is_root;
+    return Baseliner->model('Permissions')->user_has_action( action=>$p{action}, username=>$self->username );
     $self->authorize unless ref $self->store->{actions};
     my $actions = $self->store->{actions};
     if( ref $p{action} eq 'ARRAY' ) {
@@ -47,8 +63,6 @@ sub has_action {
     } else {
         return $actions->{$p{action}};
     }
-
-    my $has_it;
 }
 
 sub add_action {
@@ -81,6 +95,12 @@ sub authorize {
         }
     }
     #$c->session->{actions} = [ _unique @actions ];
+}
+
+sub is_root {
+    my $self = shift;
+    my $root = Baseliner->model('Permissions')->is_root( $self->username );
+    $self->root_user( $root );
 }
 
 1;

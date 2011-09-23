@@ -59,6 +59,34 @@ sub add : Local {
 	$c->forward('View::JSON');
 }
 
+sub grid : Local {
+    my ( $self, $c ) = @_;
+    $c->stash->{template} = '/comp/project_grid.mas';
+}
+
+=head2 all_projects
+
+returns all projects
+
+    include_root => 1     includes the "all prroject" or "/" namespace
+
+=cut
+sub all_projects : Local {
+    my ($self,$c) = @_;
+	my $p = $c->request->parameters;
+    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    $sort ||= 'name';
+    $dir ||= 'asc';
+    $limit ||= 100;
+    my $where = {};
+    $query and $where = query_sql_build( query=>$query, fields=>[qw/name ns/] );
+	my $rs = $c->model('Baseliner::BaliProject')->search($where);
+    rs_hashref($rs);
+    #my @rows = map { $_->{data}=_load($_->{data}); $_ } $rs->all;
+    my @rows = $rs->all;
+	$c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
+	$c->forward('View::JSON');
+}
 sub delete : Local {
     my ($self,$c) = @_;
 	my $p = $c->request->parameters;
@@ -73,11 +101,6 @@ sub delete : Local {
         $c->stash->{json} = { success=>\1, msg=>$msg };
     };
 	$c->forward('View::JSON');
-}
-
-sub grid : Local {
-    my ( $self, $c ) = @_;
-    $c->stash->{template} = '/comp/project_grid.mas';
 }
 
 sub show : Local {
