@@ -4,3 +4,6 @@
 [submodule "features/sqa"]
 	path = features/sqa
 	url = http://git.vasslabs.com/git/sqa.git
+[submodule "features/zos"]
+	path = features/zos
+	url = http://git.vasslabs.com/git/zos.git
