@@ -343,7 +343,7 @@ sub output {
 	try { File::Path::mkpath( $tmpdir ) }
 		catch { _throw _loc("Could not create path '%1': %2", $tmpdir, shift ) };
 	my $jobout = $self->opt('tempdir')."/$JobNumber.out";
-	my $JESConfig = Baseliner->model('ConfigStore')->get( 'config.endevor.JES', ns=>'/', bl=>'*' );
+	my $JESConfig = Baseliner->model('ConfigStore')->get( 'config.JES', ns=>'/', bl=>'*' );
 	use Data::Dumper; 
 	
 	for( 1..$JESConfig->{attempts} ) {  # 3 attempts to get it
