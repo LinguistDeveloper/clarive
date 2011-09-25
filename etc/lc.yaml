@@ -28,6 +28,12 @@ lifecycle:
     default:
         states:
             -
+              node: Unassigned
+              type: state
+              bl: new
+              tag: new
+              icon: /static/images/icons/lc/history.gif
+            -
               node: Development
               type: state
               bl: DEV
@@ -50,7 +56,6 @@ lifecycle:
               type: state
               bl: PROD
               icon: /static/images/icons/lc/history.gif
-
 projects:
     - 
        name: prj1
@@ -59,3 +64,4 @@ projects:
               name: aaa
               path: /Users/rod/tmp/repo/aaa/.git
            
+
