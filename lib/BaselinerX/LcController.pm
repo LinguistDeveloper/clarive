@@ -71,9 +71,10 @@ sub changeset : Local {
     for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
         #push @cs, $class;
         my $prov = $provider->new( project=>$project );
-        push @cs, $prov->list( project=>$project, bl=>$bl, id_project=>$id_project );
+        my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project );
+        _log _loc "---- provider $provider has %1 changesets", scalar @changes;
+        push @cs, @changes
     }
-
 
     for my $cs ( @cs ) {
         my $menu = [];
