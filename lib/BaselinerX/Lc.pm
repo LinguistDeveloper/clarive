@@ -11,7 +11,10 @@ has 'lc' => (
         open my $ff, '<', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
         my $lc = _load join '', <$ff>;
         close $ff;
-        $lc;
+        # now from config
+        my $ch = Baseliner->config->{lifecycle} || {};
+        _log "CH=================" . _dump $ch;
+        return +{ %$lc, %$ch };
     }
 );
 

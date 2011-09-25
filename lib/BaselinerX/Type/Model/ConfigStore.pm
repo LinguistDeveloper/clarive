@@ -176,11 +176,11 @@ Convert value data to metadata type
 sub _expand {
     my ( $self, $type, $value ) = @_;
 
+    $value = $value->() if ref $value eq 'CODE';
 	return $value unless $type;
 	return undef unless $value;
 
 	return try {
-        $value = $value->() if ref $value eq 'CODE';
 		if( $type eq 'hash' ) {
 			return { } unless $value;
 			return eval "{ $value }";
@@ -301,8 +301,7 @@ sub search {
 				try { $metadata = $config->metadata_for_key( $r->key ) or warn 'No metadata for ' . $r->key; } catch {_log $r->key;};
 			}
 			my $value = $self->get( $r->key, ns=>$r->ns, bl=>$r->bl, value=>1, long_key=>1 );
-			push @rows,
-			  {
+			my $data = {
 				$r->get_columns,
 				  resolved => $value,
 				  composed => $self->key_compose( key=>$r->key, ns=>$r->ns, bl=>$r->bl ),
@@ -312,7 +311,9 @@ sub search {
 				  config_type    => $metadata->{type} || '',
 				  config_default => $metadata->{default} || '',
 				  config_label   => _loc( $metadata->{label} ) || '',
-			  };
+            };
+            $data->{config_default} = $self->check_value_type( $data->{config_default} );
+            push @rows, $data;
 			$count++;
 	}
 
@@ -348,6 +349,12 @@ sub config_for_key {
 	return $config;
 }
 
+sub check_value_type {
+	my ($self, $value) = @_;
+    ref $value eq 'CODE' and return $value->();
+    return $value;
+}
+
 sub search_registry {
 	my $self = shift;
 	my $p = _parameters(@_);
@@ -375,6 +382,9 @@ sub search_registry {
 				config_default => $subkey->{default} || '',
 				config_label   => _loc( $subkey->{label} ) || '',
 			);
+            $parms{config_default} = $self->check_value_type( $parms{config_default} );
+            $parms{value} = $self->check_value_type( $parms{value} );
+            $parms{data} = $self->check_value_type( $parms{data} );
 			next unless query_array( $p->{query}, %parms ) || !$p->{query};
 			push @rows, \%parms;
 		}
@@ -560,3 +570,4 @@ sub export_to_file {
 }
 
 1;
+

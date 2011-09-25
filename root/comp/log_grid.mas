@@ -316,7 +316,7 @@
     });
 
     var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
-        style: 'width: 130px', cls: 'x-btn-icon', hidden: false,
+        style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
             var win = window.open( '/job/log/html/' + current_hash()  );
             //var win = window.open( '/job/log/html?id_job=' + current_job().id + '&job_exec=' + job_exec,  _('Log'), '' );

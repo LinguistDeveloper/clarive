@@ -24,6 +24,8 @@ fi
 
 if [ "$BASELINER_LANG" != "" ]; then
 	export LANG=$BASELINER_LANG
+else
+    export LANG=en_US.UTF-8
 fi
 # check if its a porcelain command
 if [ -f "script/bali_$1.pl" ]; then

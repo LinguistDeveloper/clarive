@@ -418,7 +418,7 @@
                     autoLoad: {url: purl, scripts:true }, 
 					tbar: [
                         search, 
-                        { icon: '/static/images/icons/html.gif', style: 'width: 130px', cls: 'x-btn-icon', hidden: false,
+                        { icon: '/static/images/icons/html.gif', style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
                             handler: function(){
                                 var win = window.open( purl );
                             } 
