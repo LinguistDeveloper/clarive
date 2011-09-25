@@ -15,7 +15,9 @@ use vars qw($VERSION);
 register 'config.JES' => {
     metadata => [
        { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
-       { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'}
+       { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'},
+       { id=>'jclerror', label=>'JCL error message to parse', default => '- JOB FAILED - JCL ERROR'},
+       { id=>'codeline', label=>'Message to parse for COND CODE', default => '- STEP WAS EXECUTED - COND CODE'},
     ]
 };
 
@@ -494,6 +496,7 @@ sub parse_code {
     my $self    = shift;
     my $output  = shift;
     my $jobname = shift;
+    my $config = Baseliner->model('ConfigStore')->get( 'config.JES', ns=>'/', bl=>'*' );
 
     my $MaxReturnCode;
     my $MaxStep;
@@ -504,18 +507,18 @@ sub parse_code {
 
     my @logFile = split '\n', $output;
 
-    if ( grep /JOB NOT RUN - JCL ERROR/, @logFile ) {
+    if ( grep /$config->{jclerror}/, @logFile ) {
         $MaxReturnCode = "99999";
     } else {
 
 #@Summary = grep /- STEP WAS EXECUTED - COND CODE/, @LogFile; # Lineas de resumen
 #eval '@Summary = grep /'. $JobNumber.'\s+GSDMV21I\s+.*'. $JobName.'\s+.{1,8}\s+.{1,8}\s+.*/, @LogFile';
-        my @Summary = grep /- STEP WAS EXECUTED - COND CODE/, @logFile;
+        my @Summary = grep /$config->{codeline}/, @logFile;
         _log "Lineas:".@Summary;
         foreach my $linea ( @Summary ) {
             my $exp = "";
 
-            eval '$exp = qr/^.*\s+(.*)\s+- STEP WAS EXECUTED - COND CODE\s(.*)$/';
+            eval '$exp = qr/^.*\s+(.*)\s+'.$config->{codeline}.'\s(.*)$/';
 
             #eval '$exp = qr/.*' . $JobName . '\s{1,2}(.{8})\s+(.{1,8})\s+(.{1,5})\s+\.*/';
 
