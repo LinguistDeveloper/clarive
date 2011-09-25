@@ -1,6 +1,7 @@
 package BaselinerX::Comm::MVS;
 use strict;
 use Baseliner::Utils;
+use Baseliner::Plug;
 use File::Path;
 use Try::Tiny;
 
@@ -10,6 +11,14 @@ use Carp;
 
 ## inheritance
 use vars qw($VERSION);
+
+register 'config.JES' => {
+    metadata => [
+       { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
+       { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'}
+    ]
+};
+
 $VERSION = '1.0';
 
 sub opt { $_[0]->{opts}->{$_[1]} }
@@ -478,6 +487,53 @@ sub _gen_jobname_global {
 	my $letter = substr($valid_letters, $id, 1);
 	my $letter_next = substr($valid_letters, $id_next, 1);
 	return ( $user . $letter, $letter, $letter_next );
+}
+
+sub parse_code {
+	
+    my $self    = shift;
+    my $output  = shift;
+    my $jobname = shift;
+
+    my $MaxReturnCode;
+    my $MaxStep;
+    my $ReturnCode;
+    my $linea;
+    my $Step;
+
+
+    my @logFile = split '\n', $output;
+
+    if ( grep /JOB NOT RUN - JCL ERROR/, @logFile ) {
+        $MaxReturnCode = "99999";
+    } else {
+
+#@Summary = grep /- STEP WAS EXECUTED - COND CODE/, @LogFile; # Lineas de resumen
+#eval '@Summary = grep /'. $JobNumber.'\s+GSDMV21I\s+.*'. $JobName.'\s+.{1,8}\s+.{1,8}\s+.*/, @LogFile';
+        my @Summary = grep /- STEP WAS EXECUTED - COND CODE/, @logFile;
+        _log "Lineas:".@Summary;
+        foreach my $linea ( @Summary ) {
+            my $exp = "";
+
+            eval '$exp = qr/^.*\s+(.*)\s+- STEP WAS EXECUTED - COND CODE\s(.*)$/';
+
+            #eval '$exp = qr/.*' . $JobName . '\s{1,2}(.{8})\s+(.{1,8})\s+(.{1,5})\s+\.*/';
+
+            $linea =~ $exp;
+            $Step = $1;
+            $ReturnCode = $2;
+            $Step =~ s/\s//g;
+            $ReturnCode =~ s/\s//g;
+            _log "RET: $ReturnCode, Step: $Step";
+            # Actualiza el CR y STEP máximo del JOB si no FLUSH
+            if ( $ReturnCode gt $MaxReturnCode ) {
+                $MaxReturnCode = $ReturnCode unless $ReturnCode eq "FLUSH";
+                $MaxStep       = $Step       unless $ReturnCode eq "FLUSH";
+            }
+        }
+    }
+    _log "Max: $MaxReturnCode, Step: $MaxStep";
+    return ($MaxReturnCode, $MaxStep);
 }
 
 DESTROY {
