@@ -53,9 +53,9 @@ lifecycle:
 
 projects:
     - 
-       name: prj1
+       name: AAA
        repositories:
            -
-              name: aaa
-              path: /Users/rod/tmp/repo/aaa/.git
+              name: aaa-repoa
+              path: /Users/rick/dev/samples/infocaja/.git
            

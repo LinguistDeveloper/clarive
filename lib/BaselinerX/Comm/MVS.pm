@@ -480,6 +480,53 @@ sub _gen_jobname_global {
 	return ( $user . $letter, $letter, $letter_next );
 }
 
+sub parse_code {
+	
+    my $self    = shift;
+    my $output  = shift;
+    my $jobname = shift;
+
+    my $MaxReturnCode;
+    my $MaxStep;
+    my $ReturnCode;
+    my $linea;
+    my $Step;
+
+
+    my @logFile = split '\n', $output;
+
+    if ( grep /JOB NOT RUN - JCL ERROR/, @logFile ) {
+        $MaxReturnCode = "99999";
+    } else {
+
+#@Summary = grep /- STEP WAS EXECUTED - COND CODE/, @LogFile; # Lineas de resumen
+#eval '@Summary = grep /'. $JobNumber.'\s+GSDMV21I\s+.*'. $JobName.'\s+.{1,8}\s+.{1,8}\s+.*/, @LogFile';
+        my @Summary = grep /- STEP WAS EXECUTED - COND CODE/, @logFile;
+        _log "Lineas:".@Summary;
+        foreach my $linea ( @Summary ) {
+            my $exp = "";
+
+            eval '$exp = qr/^.*\s+(.*)\s+- STEP WAS EXECUTED - COND CODE\s(.*)$/';
+
+            #eval '$exp = qr/.*' . $JobName . '\s{1,2}(.{8})\s+(.{1,8})\s+(.{1,5})\s+\.*/';
+
+            $linea =~ $exp;
+            $Step = $1;
+            $ReturnCode = $2;
+            $Step =~ s/\s//g;
+            $ReturnCode =~ s/\s//g;
+            _log "RET: $ReturnCode, Step: $Step";
+            # Actualiza el CR y STEP máximo del JOB si no FLUSH
+            if ( $ReturnCode gt $MaxReturnCode ) {
+                $MaxReturnCode = $ReturnCode unless $ReturnCode eq "FLUSH";
+                $MaxStep       = $Step       unless $ReturnCode eq "FLUSH";
+            }
+        }
+    }
+    _log "Max: $MaxReturnCode, Step: $MaxStep";
+    return ($MaxReturnCode, $MaxStep);
+}
+
 DESTROY {
 	my $self=shift;
 	$self->close();
