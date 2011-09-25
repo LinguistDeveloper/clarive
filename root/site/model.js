@@ -82,7 +82,7 @@ Baseliner.combo_baseline = function(params) {
     });
     var valueField = params.valueField || 'id';
     var combo = new Ext.form.ComboBox({
-           fieldLabel: _("Baseline"),
+           fieldLabel: params.fieldLabel || _("Baseline"),
            name: params.name || 'bl',
            hiddenName: params.hiddenName || 'bl',
            valueField: valueField, 

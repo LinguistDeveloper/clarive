@@ -37,11 +37,8 @@ sub name {
 sub baselines {
 	my $self = shift; 
 	my $rs = Baseliner->model('Baseliner::BaliBaseline')->search({}, { order_by => 'id asc' });
-	my @bls; 
-	while( my $r=$rs->next ) {
-		push @bls, { bl=>$r->bl, name=>_loc($r->name) }; 	
-	}
-	return @bls;
+    rs_hashref $rs;
+	return $rs->all;
 }
 
 sub baselines_no_root {

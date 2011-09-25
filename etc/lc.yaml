@@ -1,0 +1,61 @@
+nodes:
+    - 
+      node: Tasks
+      type: component
+      url : /task/grid
+    - 
+      node: Jobs
+      type: component
+      url : /job/monitor
+    - 
+      node: Releases
+      type: component
+      url : /release/grid
+      icon: /static/images/scm/release.gif
+    -
+      node: Branches
+      type: changeset
+      bl: *
+      icon: /static/images/icons/lc/branches_obj.gif
+      actions:
+         - 
+           name: Create New Changeset
+           action: /lc/create
+         - 
+           name: Delete Changeset
+           action: /lc/delete
+lifecycle:
+    default:
+        states:
+            -
+              node: Development
+              type: state
+              bl: DEV
+              tag: DEV-Server
+              icon: /static/images/icons/lc/history.gif
+            -
+              node: Test
+              type: state
+              tag: DEV-Server
+              bl: TEST
+              icon: /static/images/icons/lc/history.gif
+            -
+              node: Preproduction
+              type: state
+              tag: PREP-Server
+              bl: PREP
+              icon: /static/images/icons/lc/history.gif
+            -
+              node: Production
+              type: state
+              bl: PROD
+              icon: /static/images/icons/lc/history.gif
+
+projects:
+    - 
+       name: prj1
+       repositories:
+           -
+              name: sctmain-j2ee
+              path: /Users/rod/tmp/repo/aaa
+           

@@ -59,6 +59,7 @@ use Exporter::Tidy default => [
     _repl
     _md5
     _html_escape
+    case
     /
 ];
 
@@ -896,6 +897,17 @@ sub _html_escape {
     $data =~ s/</&lt;/gs;
     $data =~ s/>/&gt;/gs;
     $data
+}
+
+sub case {
+    my ($val, %opts) = @_;
+    for my $key ( keys %opts ) {
+        if( $key ~~ $val ) {
+           ref $opts{$key} eq 'CODE' and return $opts{$key}->();
+           return $opts{$key};
+        }
+    }
+    return;
 }
 
 1;

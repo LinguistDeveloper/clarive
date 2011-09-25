@@ -53,8 +53,10 @@ elsif( $service_name =~ /^shut|shutdown$/i ) {
 
 print "Starting $service_name...\n";
 use Baseliner;
-#my $c = Baseliner->commandline;   XXX
-my $c = bless { stash=>{} } => 'Baseliner';
+#my $c = Baseliner->commandline;  # XXX
+#my $c = bless { stash=>{} } => 'Baseliner';
+use Carp::Always;
+my $c = Baseliner::Cmd->new;
 use Baseliner::Utils;
 
 my $ns = '/';
@@ -69,7 +71,7 @@ $c->stash->{bl} = $bl;
 if( 1 ) { 
     $opts{ arg_list } = { map { $_ => () } keys %opts }; # so that we can differentiate between defaults and user-fed data
     $opts{ args } = \%opts;
-    my $logger = Baseliner->model('Services')->launch($service_name, %opts, data=>\%opts );
+    my $logger = $c->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
     exit $logger->rc;
 } else {  # deprecated, in favor of the Services model
     my $service = $c->registry->get($service_name) || die "Could not find service '$service_name'";

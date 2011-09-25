@@ -32,5 +32,5 @@ if [ -f "script/bali_$1.pl" ]; then
 fi
 
 # -X : no warnings for production environments
-exec perl -X $BASELINER_SCRIPT "$@"
+exec perl -I$BASELINER_HOME/lib -X $BASELINER_SCRIPT "$@"
 

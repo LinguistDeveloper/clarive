@@ -13,7 +13,9 @@ Baseliner.lc_tbar = new Ext.Toolbar({
                 var loader = Baseliner.lifecycle.getLoader();
                 loader.dataUrl = Baseliner.lc.dataUrl;
                 if( node != undefined ) {
+                    var is = node.isExpanded();
                     loader.load( node );
+                    if( is ) node.expand();
                 } else {
                     loader.load(Baseliner.lifecycle.root);
                 }
@@ -22,7 +24,7 @@ Baseliner.lc_tbar = new Ext.Toolbar({
     ]
 });
 
-var menu_items = [
+var base_menu_items = [
         {
             text: _('Add to Favorites'), handler: function(n) {
                 Baseliner.message( _('Favorite'), _('Added') );
@@ -30,7 +32,7 @@ var menu_items = [
         }
     ];
 Baseliner.lc_menu = new Ext.menu.Menu({
-    items: menu_items,
+    items: base_menu_items,
     listeners: {
         itemclick: function(item) {
             switch (item.id) {
@@ -47,7 +49,26 @@ Baseliner.lc_menu = new Ext.menu.Menu({
 
 var menu_click = function(node,event){
     node.select();
-    if( node.attributes != undefined ) {
+    if( node.attributes.menu != undefined ) {
+        var m = Baseliner.lc_menu;
+        m.removeAll(); 
+        var node_menu = node.attributes.menu;
+        // create js handlers for menu items
+        for( var i = 0; i < node_menu.length; i++ ) {
+            var menu_item = node_menu[i]; 
+            // component opener menu
+            if( menu_item.comp != undefined ) {
+                menu_item.handler = function() {
+                    Baseliner.add_tabcomp( menu_item.comp.url, _(menu_item.comp.title), node.attributes );
+                };
+            }
+        }
+        m.add( node_menu );
+        m.add( base_menu_items );
+    } else {
+        var m = Baseliner.lc_menu;
+        m.removeAll(); 
+        m.add( base_menu_items );
     }
     Baseliner.lc_menu.showAt(event.xy);
 }

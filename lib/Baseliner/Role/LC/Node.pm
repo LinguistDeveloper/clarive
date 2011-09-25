@@ -3,6 +3,7 @@ use Moose::Role;
 
 requires 'node_id';
 requires 'node_url';
+requires 'node_menu';
 
 sub serialize {
     my $self = shift;

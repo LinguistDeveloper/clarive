@@ -352,7 +352,7 @@ Baseliner.array_field = function( args ) {
             arr.push( r.data[ field_name ] );
         });
         fdata.setValue( Ext.util.JSON.encode( arr ) );
-};
+    };
     fstore.on('beforeaction', write_to_field );
     fstore.on('create', write_to_field );
     fstore.on('remove', write_to_field );

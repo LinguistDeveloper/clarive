@@ -7,3 +7,9 @@
 [submodule "features/zos"]
 	path = features/zos
 	url = http://git.vasslabs.com/git/zos.git
+[submodule "features/artifacts"]
+	path = features/artifacts
+	url = http://git.vasslabs.com/git/artifacts.git
+[submodule "features/nature.ejava"]
+	path = features/nature.ejava
+	url = http://git.vasslabs.com/git/nature.ejava.git

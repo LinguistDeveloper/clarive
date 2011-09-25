@@ -2,6 +2,7 @@
     $show_main => 0
     $show_portal => 1
     $show_menu => 1
+    $show_lifecycle => 1
 </%args>
 
 <%perl>
@@ -106,6 +107,9 @@ Ext.onReady(function(){
     });
 
     var lifecycle = Baseliner.lifecycle;
+% unless( $show_lifecycle ) {
+    lifecycle.hide();
+% }
     var viewport = new Ext.Viewport({
         layout: 'border',
         id: 'main-view',

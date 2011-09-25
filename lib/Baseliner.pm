@@ -78,6 +78,7 @@ __PACKAGE__->config( {
 if( $ENV{BALI_CMD} ) {
 	# only load the root controller, for capturing $c
 	__PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
+    require Baseliner::Cmd;
 }
 
 
@@ -159,14 +160,6 @@ if( $ENV{BALI_FAST} ) {
 		return @comps;
 	};
 }
-
-#{
-#    package Baseliner::Cmd;
-#    use Moose;
-#    extends 'Baseliner';
-#    has 'stash' => qw(is rw isa HashRef), default => sub{{}};
-#    sub registry { 'Baseliner::Core::Registry' }
-#}
 
 __PACKAGE__->setup();
 # Capture Signals
