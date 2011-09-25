@@ -1,6 +1,7 @@
 package BaselinerX::Comm::MVS;
 use strict;
 use Baseliner::Utils;
+use Baseliner::Plug;
 use File::Path;
 use Try::Tiny;
 
@@ -10,6 +11,14 @@ use Carp;
 
 ## inheritance
 use vars qw($VERSION);
+
+register 'config.JES' => {
+    metadata => [
+       { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
+       { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'}
+    ]
+};
+
 $VERSION = '1.0';
 
 sub opt { $_[0]->{opts}->{$_[1]} }
