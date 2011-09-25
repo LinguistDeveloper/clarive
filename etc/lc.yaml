@@ -56,6 +56,6 @@ projects:
        name: prj1
        repositories:
            -
-              name: sctmain-j2ee
-              path: /Users/rod/tmp/repos/aaa.git
+              name: aaa
+              path: /Users/rod/tmp/repo/aaa/.git
            

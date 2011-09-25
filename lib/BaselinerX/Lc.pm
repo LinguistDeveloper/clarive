@@ -38,5 +38,22 @@ sub project_repos {
     @ret;
 }
 
+sub repopath_for_project_repo {
+    my ($self, $prjrepo ) = @_;
+    if( my ($prj, $repo_name ) = $prjrepo =~ /^(.*)\:(.*)/ ) {
+        my $lc = $self->lc;
+        for my $assoc ( @{ $lc->{projects} } ) {
+            next unless $assoc->{name} eq $prj;
+            for my $repo ( _array $assoc->{repositories} ) {
+                next unless $repo->{name} eq $repo_name;
+                return $repo;
+            }
+        }
+        _throw "Not found $prjrepo";
+    } else {
+        _throw "Invalid project:repo name $prjrepo";
+    }
+}
+
 
 1;
