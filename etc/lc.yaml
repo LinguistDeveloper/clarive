@@ -58,10 +58,14 @@ lifecycle:
               icon: /static/images/icons/lc/history.gif
 projects:
     - 
+       name: prj1
+       repositories:
+           -
+              name: aaa
+              path: /Users/rod/tmp/repo/aaa/.git
+    - 
        name: AAA
        repositories:
            -
               name: aaa-repoa
               path: /Users/rick/dev/samples/infocaja/.git
-           
-
