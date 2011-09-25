@@ -13,7 +13,7 @@ has 'lc' => (
         close $ff;
         # now from config
         my $ch = Baseliner->config->{lifecycle} || {};
-        _log "CH=================" . _dump $ch;
+        #_log "CH=================" . _dump $ch;
         return +{ %$lc, %$ch };
     }
 );

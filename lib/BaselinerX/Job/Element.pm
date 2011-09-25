@@ -1,8 +1,10 @@
 package BaselinerX::Job::Element;
 use Moose::Role;
+use Moose::Util::TypeConstraints;
 
 has 'name' => ( is=>'rw', isa=>'Str', required=>1 );
 has 'path' => ( is=>'rw', isa=>'Str', trigger=>sub { my ($self,$val)=@_; $val=~s{\\}{\/}g; $self->{path} = $val; }  );
+has 'status' => (is=>'rw', isa=>enum([ qw(M D R) ]), default=>'m' );  # Modified, Deleted, Renamed
 has 'mask' => ( is=>'rw', isa=>'Str' );
 has 'version' => ( is=>'rw', isa=>'Str' );
 has 'modified_on' => ( is=>'rw', isa=>'DateTime' );
