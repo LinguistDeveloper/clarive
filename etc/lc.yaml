@@ -57,5 +57,5 @@ projects:
        repositories:
            -
               name: sctmain-j2ee
-              path: /Users/rod/tmp/repo/aaa
+              path: /Users/rod/tmp/repos/aaa.git
            

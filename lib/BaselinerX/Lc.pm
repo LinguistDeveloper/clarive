@@ -25,6 +25,18 @@ sub lc_for_project {
     [ @$nodes, @$states ];
 }
 
+sub project_repos {
+    my ($self, %args) = @_;
+    my $lc = $self->lc;
+    my $prj = $args{project} or _throw 'Missing project parameter';
+    return unless $lc->{projects};
+    my @ret;
+    for my $assoc ( @{ $lc->{projects} } ) {
+        next unless $assoc->{name} eq $prj;
+        push @ret, _array $assoc->{repositories}; 
+    }
+    @ret;
+}
 
 
 1;
