@@ -25,7 +25,7 @@ use Exporter::Tidy default => [qw/
     log_debug
     log_warn
     log_error
-    lc
+    lifecycle
     /
 ];
 
@@ -51,7 +51,7 @@ sub user_get {
     $rs->first;
 }
 
-sub lc { Baseliner->model('LCModel')->lc }
+sub lifecycle { Baseliner->model('LCModel')->lc }
 
 # job dsl
 
