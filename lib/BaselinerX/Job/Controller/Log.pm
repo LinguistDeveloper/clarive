@@ -13,6 +13,7 @@ sub logs_list : Path('/job/log/list') {
 	my $p = $c->req->params;
     $c->stash->{id_job} = $p->{id_job};
     $c->stash->{annotate_now} = $p->{annotate_now};
+    _log ">>>>>>>>>>>>>>>>>>>>>>>>" . $p->{id_job};
 	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $c->forward('/permissions/load_user_actions');
@@ -168,6 +169,14 @@ sub logs_json : Path('/job/log/json') {
 	$c->forward('View::JSON');
 }
 
+sub log_data : Path('/job/log/data') {
+    my ( $self, $c, $id ) = @_;
+    _db_setup;
+	my $p = $c->req->params;
+	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
+	$c->res->body( "<pre>" . (uncompress($log->data) || $log->data)  . " " );
+}
+
 sub jesSpool : Path('/job/log/jesSpool') {
     my ( $self, $c ) = @_;
     _db_setup;
@@ -187,10 +196,10 @@ sub jobList : Path('/job/log/jobList') {
     my $jobIcon='/static/images/jobIcon.png';
     my $spoolIcon='/static/images/spoolIcon.png';
     _db_setup;
-    my $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{id} });
+    my $log = $c->model('Baseliner::BaliLogData')->search({ id_job=> $p->{id} }, { order_by=>'name asc' });
     my $lastParent=undef;
     while (my $rec=$log->next) {
-        my ($null,$parent,$file)=split /\//, $rec->name;
+        my ($null,$site,$parent,$file)=split /\//, $rec->name;
         if ($parent  ne $lastParent) {
             push @jobs,
                 {

@@ -30,7 +30,7 @@ register 'service.job.dummy' => {
 register 'config.job.daemon' => {
 	metadata=> [
 		{  id=>'frequency', label=>'Job Server Frequency', type=>'int', default=>10 },
-		{  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'fork' },
+		{  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'spawn' },
 		{  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
 	]
 };
@@ -115,7 +115,8 @@ sub job_daemon {
                 } else {
                     _throw _loc("Unrecognized mode '%1'", $mode );
                 }
-                $self->reap_children if $mode =~ /fork|detach/;
+                ;
+                _log("Reaping children..."), $self->reap_children if $mode =~ /fork|detach/;
             }
         }
         $self->check_job_expired($c);
@@ -128,7 +129,7 @@ sub job_daemon {
 
 sub runner_spawn {
     my ($self, %p ) =@_;
-    my $cmd = "perl script/bali.pl job.run --runner \"". $p{runner} ."\" --step $p{step} --jobid ". $p{jobid} . " >>'$p{logfile}' 2>&1";
+    my $cmd = "bin/bali job.run --runner \"". $p{runner} ."\" --step $p{step} --jobid ". $p{jobid} . " >>'$p{logfile}' 2>&1";
     my $proc = Proc::Background->new( $cmd );
     push @{ $self->{proc_list} }, $proc;
     return $proc->pid;

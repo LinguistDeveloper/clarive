@@ -37,6 +37,7 @@ lifecycle:
               node: Development
               type: state
               bl: DEV
+              bl-from: new
               tag: DEV-Server
               icon: /static/images/icons/lc/history.gif
             -
@@ -44,17 +45,20 @@ lifecycle:
               type: state
               tag: DEV-Server
               bl: TEST
+              bl-from: DEV
               icon: /static/images/icons/lc/history.gif
             -
               node: Preproduction
               type: state
               tag: PREP-Server
               bl: PREP
+              bl-from: TEST
               icon: /static/images/icons/lc/history.gif
             -
               node: Production
               type: state
               bl: PROD
+              bl-from: PREP
               icon: /static/images/icons/lc/history.gif
 projects:
     - 

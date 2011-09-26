@@ -25,6 +25,7 @@ use Exporter::Tidy default => [qw/
     log_debug
     log_warn
     log_error
+    lc
     /
 ];
 
@@ -50,6 +51,8 @@ sub user_get {
     $rs->first;
 }
 
+sub lc { Baseliner->model('LCModel')->lc }
+
 # job dsl
 
 our $job;
@@ -61,5 +64,6 @@ sub log_error { $job->log->error( @_ ) }
 sub log_warn { $job->log->warn( @_ ) }
 
 sub log_section {}
+
 
 1;

@@ -288,6 +288,7 @@
             enableRowBody: true,
             autoWidth: true,
             autoSizeColumns: true,
+            scrollOffset: 2,
             deferredRender: true,
             startCollapsed: false,
 			hideGroupedColumn: true,

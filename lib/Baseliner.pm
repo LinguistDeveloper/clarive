@@ -186,6 +186,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     Baseliner::Schema::Baseliner::Result::BaliJob->sequence('bali_job_seq');
     Baseliner::Schema::Baseliner::Result::BaliJobStash->sequence('bali_job_stash_seq');
     Baseliner::Schema::Baseliner::Result::BaliLog->sequence('bali_log_seq');
+    Baseliner::Schema::Baseliner::Result::BaliLogData->sequence('bali_log_data_seq');
     Baseliner::Schema::Baseliner::Result::BaliMessage->sequence('bali_message_seq');
     Baseliner::Schema::Baseliner::Result::BaliMessageQueue->sequence('bali_message_queue_seq');
     Baseliner::Schema::Baseliner::Result::BaliNamespace->sequence('bali_namespace_seq');
@@ -195,6 +196,8 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     Baseliner::Schema::Baseliner::Result::BaliRelease->sequence('bali_release_seq');
     Baseliner::Schema::Baseliner::Result::BaliRequest->sequence('bali_request_seq');
     Baseliner::Schema::Baseliner::Result::BaliRole->sequence('bali_role_seq');
+    Baseliner::Schema::Baseliner::Result::BaliRepo->sequence('bali_dummy_seq');
+    Baseliner::Schema::Baseliner::Result::BaliRepoKeys->sequence('bali_dummy_seq');
     Baseliner::Schema::Baseliner::Result::BaliSemQueue->sequence('bali_sem_queue_seq');
     Baseliner::Schema::Baseliner::Result::BaliWiki->sequence('bali_wiki_seq');
     Baseliner::Schema::Baseliner::Result::BaliUser->sequence('bali_user_seq');

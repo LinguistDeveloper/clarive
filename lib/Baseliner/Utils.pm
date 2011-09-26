@@ -196,14 +196,14 @@ sub _loc {
     if( $context->{'$c'} && ref ${ $context->{'$c'} } ) {
 		return try {
 			my $c = ${ $context->{'$c'} };
-			return loc(@args) if $c->commandline_mode;
-			return loc(@args) unless defined $c->request;
+			return _loc_decoded(@args) if $c->commandline_mode;
+			return _loc_decoded(@args) unless defined $c->request;
 			if( ref $c->session->{user} ) {
 				$c->languages( $c->session->{user}->languages );
 			}
 			$c->localize( @args );
 		} catch {
-			loc(@args);
+			_loc_decoded(@args);
 		};
     } else {
         return loc( @args );

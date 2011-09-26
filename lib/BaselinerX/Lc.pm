@@ -41,6 +41,22 @@ sub project_repos {
     @ret;
 }
 
+sub all_repos {
+    my ($self, %args) = @_;
+    my $lc = $self->lc;
+    my @ret;
+    for my $assoc ( @{ $lc->{projects} } ) {
+        push @ret, { project=>$assoc->{name}, repositories=>$assoc->{repositories} } 
+    }
+    @ret;
+}
+
+sub bl_from {
+    my ($self, $bl ) = @_;
+    my %from = ( DESA=>'new', DEV=>'new', TEST=>'DEV', PREP=>'TEST', PROD=>'PREP' );
+    $from{ $bl };
+}
+
 sub repopath_for_project_repo {
     my ($self, $prjrepo ) = @_;
     if( my ($prj, $repo_name ) = $prjrepo =~ /^(.*)\:(.*)/ ) {
@@ -57,6 +73,5 @@ sub repopath_for_project_repo {
         _throw "Invalid project:repo name $prjrepo";
     }
 }
-
 
 1;
