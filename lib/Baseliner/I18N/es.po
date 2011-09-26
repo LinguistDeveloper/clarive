@@ -1861,11 +1861,29 @@ msgstr "Borrando..."
 msgid "Error during delete"
 msgstr "Error durante el borrado"
 
+msgid "Tasks"
+msgstr "Tareas"
+
 msgid "Renaming..."
 msgstr "Renombrando..."
 
+msgid "Pushed deployment for %1"
+msgstr "Preparado despliegue a `%1`"
+
+msgid "Include Elements"
+msgstr "Elementos Incluidos"
+
 msgid "Error in Rename"
 msgstr "Error en el Renombrado"
+
+msgid "Add To Favorites"
+msgstr "Añadir a Favoritos"
+
+msgid "Ignore"
+msgstr "Ignorar"
+
+msgid "Exclude"
+msgstr "Excluir"
 
 msgid "Deploy"
 msgstr "Desplegar"
