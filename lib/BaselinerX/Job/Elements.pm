@@ -107,7 +107,7 @@ sub split_on_regex {
     my @dont;
     my @regexes = map { ref $_ eq 'Regexp' ? $_ : qr/$_/ } @_;
     for my $e ( @{ $self->elements } ) {
-        ( grep { $e->fullpath =~ $_ } @regexes )
+        ( grep { $e->filepath =~ $_ } @regexes )
             ? push( @match, $e )
             : push( @dont , $e );
     }
@@ -127,7 +127,7 @@ sub cut_to_path_regex {
     my @ok;
     $regex = qr/$regex/ unless ref $regex eq 'Regexp';
     for my $e ( @{ $self->elements } ) {
-        push @ok, $e if $e->fullpath =~ $regex;
+        push @ok, $e if $e->filepath =~ $regex;
     }
     return __PACKAGE__->new( elements=>\@ok );
 }
