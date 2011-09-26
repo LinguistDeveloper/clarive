@@ -101,6 +101,8 @@
             }
         }
     });
+    var ATTEMPTS = 10;
+    var task_off_count = ATTEMPTS;
     var task = {
         run: function() {
 			if( id_job == "" ) return; 
@@ -118,9 +120,16 @@
 					} else {
 					}
                     if( data.stop_now ) {
-                        autorefresh.stop(task);
-                        button_autorefresh.toggle( false ); 
-                        Baseliner.message( _('Warning'), _('Job is not active') );
+                        if( task_off_count > 0 ) {
+                            task_off_count--;
+                        } else {
+                            task_off_count = ATTEMPTS;
+                            autorefresh.stop(task);
+                            button_autorefresh.toggle( false ); 
+                            Baseliner.message( _('Warning'), _('Job is not active') );
+                        }
+                    } else {
+                        task_off_count = ATTEMPTS;
                     }
 				},
 				failure: function(xhr) {
