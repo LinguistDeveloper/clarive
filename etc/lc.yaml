@@ -80,5 +80,5 @@ projects:
        name: AAA
        repositories:
            -
-              name: aaa-repoa
-              path: /Users/rick/dev/samples/infocaja/.git
+              name: zos
+              path: /Users/rod/dev/clarive/etc/repo/zos.git
