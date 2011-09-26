@@ -508,19 +508,15 @@ sub parse_code {
     my @logFile = split '\n', $output;
 
     if ( grep /$config->{jclerror}/, @logFile ) {
-        $MaxReturnCode = "99999";
+        $MaxReturnCode = "9999";
     } else {
 
-#@Summary = grep /- STEP WAS EXECUTED - COND CODE/, @LogFile; # Lineas de resumen
-#eval '@Summary = grep /'. $JobNumber.'\s+GSDMV21I\s+.*'. $JobName.'\s+.{1,8}\s+.{1,8}\s+.*/, @LogFile';
         my @Summary = grep /$config->{codeline}/, @logFile;
         _log "Lineas:".@Summary;
         foreach my $linea ( @Summary ) {
             my $exp = "";
 
             eval '$exp = qr/^.*\s+(.*)\s+'.$config->{codeline}.'\s(.*)$/';
-
-            #eval '$exp = qr/.*' . $JobName . '\s{1,2}(.{8})\s+(.{1,8})\s+(.{1,5})\s+\.*/';
 
             $linea =~ $exp;
             $Step = $1;
