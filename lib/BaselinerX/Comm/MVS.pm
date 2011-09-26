@@ -42,6 +42,7 @@ sub new {
 		jobs => \%jobs,
         %opts,
 	};
+
 	bless( $self, $class);
 }
 
@@ -563,5 +564,6 @@ Or just quick-and-dirty:
 //jobnameA ....		
 
 =cut 
+BaselinerX::Comm::MVS->meta->make_immutable( inline_constructor=>0 );
 
 1;
