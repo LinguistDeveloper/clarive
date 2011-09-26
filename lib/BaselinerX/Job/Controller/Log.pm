@@ -192,11 +192,11 @@ sub jobList : Path('/job/log/jobList') {
     my ( $self, $c ) = @_;
     my (@jobs, @leaf)=((),());
     my $p = $c->req->params;
-    # _log _dump $p;
+     _log _dump $p;
     my $jobIcon='/static/images/jobIcon.png';
     my $spoolIcon='/static/images/spoolIcon.png';
     _db_setup;
-    my $log = $c->model('Baseliner::BaliLogData')->search({ id_job=> $p->{id} }, { order_by=>'name asc' });
+    my $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{id} }, { order_by=>'id asc' });
     my $lastParent=undef;
     while (my $rec=$log->next) {
         my ($null,$site,$parent,$file)=split /\//, $rec->name;
