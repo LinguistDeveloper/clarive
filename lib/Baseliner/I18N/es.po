@@ -1867,6 +1867,11 @@ msgstr "Renombrando..."
 msgid "Error in Rename"
 msgstr "Error en el Renombrado"
 
+msgid "Deploy"
+msgstr "Desplegar"
+
+msgid "Deployments"
+msgstr "Despliegues"
 
 msgid "Manual Deploy"
 msgstr "Despliegue Manual"
