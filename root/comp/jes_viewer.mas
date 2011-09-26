@@ -87,6 +87,7 @@
         
     treeLoader.on('load', function(n,e) {
         tree.getRootNode().firstChild.expand();
+        tree.getRootNode().firstChild.firstChild.expand();
         });
 
     var tree = new Ext.tree.TreePanel({
