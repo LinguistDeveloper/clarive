@@ -57,23 +57,27 @@ var menu_click = function(node,event){
         // create js handlers for menu items
         for( var i = 0; i < node_menu.length; i++ ) {
             var menu_item = node_menu[i];
+            var url = "";
             // component opener menu
             if( menu_item.comp != undefined ) {
+                url = menu_item.comp.url; 
                 menu_item.handler = function(item) {
-                    Baseliner.add_tabcomp( menu_item.comp.url, _(menu_item.comp.title), item.node );
+                    Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), item.node );
                 };
             } else if( menu_item.eval != undefined ) {
+                url = menu_item.eval.url; 
                 menu_item.handler = function( item ) {
-                    console.log( item.node );
-                    Baseliner.ajaxEval( menu_item.eval.url, item.node , function(comp) {
+                    Baseliner.ajaxEval( item.url, item.node , function(comp) {
                         // no op
+                        var x = 0;
                     });
                 };
             }
             var item = new Ext.menu.Item(menu_item);
             node_menu_items.push( item );
             //item.node = node.attributes; // stash it here
-            item.node = node; // stash it here
+            item.node = node; // stash it here, otherwise things get out of scope
+            item.url  = url;
         }
         m.add( node_menu_items );
         m.add( base_menu_items );
