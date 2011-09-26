@@ -57,7 +57,7 @@ sub BUILD {
 	my ($self,$params) = @_;
 	my $job = Baseliner->model('Baseliner::BaliJob')->find( $self->jobid );
 	if( ref $job ) {
-        $self->exec( $job->exec ) unless defined $self->exec;
+        $self->exec( $job->exec ); # unless defined $self->exec;
 	}
 }
 

@@ -28,6 +28,14 @@ sub lc_for_project {
     [ @$nodes, @$states ];
 }
 
+=head2 project_repos
+
+Returns all repositories for a project:
+
+    name => 'reponame'
+    path => '/path/to/repo'
+
+=cut
 sub project_repos {
     my ($self, %args) = @_;
     my $lc = $self->lc;

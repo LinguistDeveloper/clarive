@@ -53,17 +53,29 @@ var menu_click = function(node,event){
         var m = Baseliner.lc_menu;
         m.removeAll(); 
         var node_menu = node.attributes.menu;
+        var node_menu_items = new Array(); 
         // create js handlers for menu items
         for( var i = 0; i < node_menu.length; i++ ) {
-            var menu_item = node_menu[i]; 
+            var menu_item = node_menu[i];
             // component opener menu
             if( menu_item.comp != undefined ) {
-                menu_item.handler = function() {
-                    Baseliner.add_tabcomp( menu_item.comp.url, _(menu_item.comp.title), node.attributes );
+                menu_item.handler = function(item) {
+                    Baseliner.add_tabcomp( menu_item.comp.url, _(menu_item.comp.title), item.node );
+                };
+            } else if( menu_item.eval != undefined ) {
+                menu_item.handler = function( item ) {
+                    console.log( item.node );
+                    Baseliner.ajaxEval( menu_item.eval.url, item.node , function(comp) {
+                        // no op
+                    });
                 };
             }
+            var item = new Ext.menu.Item(menu_item);
+            node_menu_items.push( item );
+            //item.node = node.attributes; // stash it here
+            item.node = node; // stash it here
         }
-        m.add( node_menu );
+        m.add( node_menu_items );
         m.add( base_menu_items );
     } else {
         var m = Baseliner.lc_menu;

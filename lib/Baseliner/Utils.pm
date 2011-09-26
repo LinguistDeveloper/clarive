@@ -14,11 +14,11 @@ Some utilities shared by different Baseliner modules and plugins.
 
 use Exporter::Tidy default => [
     qw/_loc _loc_raw _cut _log _debug _utf8 _tz slashFwd slashBack slashSingle
-	_loc_ansi _utf8_to_ansi _guess_utf8 _loc_unaccented _loc_decoded
+    _loc_ansi _utf8_to_ansi _guess_utf8 _loc_unaccented _loc_decoded
     _unique _throw _say _dt _now _now_ora _nowstamp parse_date parse_dt
     _logts
     _logt0
-	_unac
+    _unac
     _whereami
     _throw_stack
     _parse_template
@@ -26,6 +26,7 @@ use Exporter::Tidy default => [
     _decode_json
     _check_parameters 
     _mkpath
+    _rmpath
     _mktmp
     _tmp_dir
     _tmp_file
@@ -68,29 +69,29 @@ our $i18n_path;
 our $patterns;
 
 BEGIN {
-	use FindBin '$Bin';
+    use FindBin '$Bin';
     my $path = "/lib/Baseliner/I18N";
-	$Bin = "$Bin/script" if $Bin eq $ENV{BASELINER_HOME};
-	$i18n_path = File::Spec->catfile($Bin,'..',$path);
-	$i18n_path = File::Spec->catfile($ENV{BASELINER_HOME},$path) unless -d $i18n_path;
+    $Bin = "$Bin/script" if $Bin eq $ENV{BASELINER_HOME};
+    $i18n_path = File::Spec->catfile($Bin,'..',$path);
+    $i18n_path = File::Spec->catfile($ENV{BASELINER_HOME},$path) unless -d $i18n_path;
     #$pattern = File::Spec->catfile($path, '*.[pm]o');
-	eval {
-		my @patterns;
-		for( map { $_->lib } Baseliner->features->list ) {
-			my $dir = File::Spec->catfile($_, 'Baseliner', 'I18N');
-			next unless -d "$dir";
-			$pattern = File::Spec->catfile($dir, '*.[pm]o');
-			push @patterns, "Gettext => '$pattern'";
-		} 
-		$patterns = join',', @patterns;
-	};  # may fail when Baseliner is not "use" - ignore then
+    eval {
+        my @patterns;
+        for( map { $_->lib } Baseliner->features->list ) {
+            my $dir = File::Spec->catfile($_, 'Baseliner', 'I18N');
+            next unless -d "$dir";
+            $pattern = File::Spec->catfile($dir, '*.[pm]o');
+            push @patterns, "Gettext => '$pattern'";
+        } 
+        $patterns = join',', @patterns;
+    };  # may fail when Baseliner is not "use" - ignore then
 }
 
 use Locale::Maketext::Simple (
-			Style => 'gettext',
-			Path => $i18n_path,
-			Decode => 1,
-		);
+            Style => 'gettext',
+            Path => $i18n_path,
+            Decode => 1,
+        );
 
 #use Carp::Clan qw(^Baseliner:: ^BaselinerX::);
 use Carp::Tidy -clan=>['Baseliner']; #,'Catalyst'];
@@ -112,7 +113,7 @@ eval <<"";
     package Baseliner::Utils::I18N;
     Locale::Maketext::Lexicon->import({ '*' => [ $patterns ] });
 
-	loc_lang($Baseliner::locale || 'es' );
+    loc_lang($Baseliner::locale || 'es' );
 }
 
 # split a namespace resource into domain and item
@@ -154,24 +155,24 @@ sub domain_match {
 
 ## base standard utilities subs
 sub slashFwd {
-	(my $path = $_[0]) =~ s{\\}{/}g ;
-	return $path;
+    (my $path = $_[0]) =~ s{\\}{/}g ;
+    return $path;
 }
 
 sub slashBack {
-	(my $path = $_[0]) =~ s{/}{\\}g ;
-	return $path;
+    (my $path = $_[0]) =~ s{/}{\\}g ;
+    return $path;
 }
 
 sub slashSingle {
-	(my $path = $_[0]) =~ s{//}{/}g ;
-	$path =~ s{\\\\}{\\}g ;
-	return $path;	
+    (my $path = $_[0]) =~ s{//}{/}g ;
+    $path =~ s{\\\\}{\\}g ;
+    return $path;   
 }
 
 sub _unique {
     return () unless @_ > 0;
-	keys %{{ map {$_=>1} grep { defined } @_ }};
+    keys %{{ map {$_=>1} grep { defined } @_ }};
 }
 
 sub _load {
@@ -187,24 +188,24 @@ use Encode::Guess qw/utf8/;
 sub _loc {
     return unless $_[0];
     #return loc( @_ );
-	my @args = @_;
+    my @args = @_;
     my $context={};
-	for my $level (1..2) {## try to get $c with PadWalker
-		$context = try { peek_my($level); } catch { last }; 
-		last if( $context->{'$c'} && ref ${ $context->{'$c'} } );
-	}
+    for my $level (1..2) {## try to get $c with PadWalker
+        $context = try { peek_my($level); } catch { last }; 
+        last if( $context->{'$c'} && ref ${ $context->{'$c'} } );
+    }
     if( $context->{'$c'} && ref ${ $context->{'$c'} } ) {
-		return try {
-			my $c = ${ $context->{'$c'} };
-			return _loc_decoded(@args) if $c->commandline_mode;
-			return _loc_decoded(@args) unless defined $c->request;
-			if( ref $c->session->{user} ) {
-				$c->languages( $c->session->{user}->languages );
-			}
-			$c->localize( @args );
-		} catch {
-			_loc_decoded(@args);
-		};
+        return try {
+            my $c = ${ $context->{'$c'} };
+            return _loc_decoded(@args) if $c->commandline_mode;
+            return _loc_decoded(@args) unless defined $c->request;
+            if( ref $c->session->{user} ) {
+                $c->languages( $c->session->{user}->languages );
+            }
+            $c->localize( @args );
+        } catch {
+            _loc_decoded(@args);
+        };
     } else {
         return loc( @args );
     }
@@ -225,47 +226,47 @@ sub _unac { my $s = "$_[0]"; $s = unac_string( $s ); return $s }
 sub _guess_utf8 { ref guess_encoding( $_[0] ) }
 
 sub _utf8_to_ansi {
-	return $_[0] unless _guess_utf8( $_[0] );
-	my $ret = "$_[0]";
-	Encode::from_to( $ret, 'utf8', 'iso8859-1' );	
-	return $ret;
+    return $_[0] unless _guess_utf8( $_[0] );
+    my $ret = "$_[0]";
+    Encode::from_to( $ret, 'utf8', 'iso8859-1' );   
+    return $ret;
 }
 
 # Logging
 
 sub _log_lev {
-	my $lev = shift;
-	return unless any { $_ } @_;
+    my $lev = shift;
+    return unless any { $_ } @_;
     my ($cl,$fi,$li) = caller($lev);
     $cl =~ s{^Baseliner}{B};
     my $pid = sprintf('%s', $$);
-	print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
+    print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
 }
 
 sub _log {
-	return unless any { $_ } @_;
+    return unless any { $_ } @_;
     my ($cl,$fi,$li) = caller(0);
-	_log_me( $cl, $fi, $li, @_ );
+    _log_me( $cl, $fi, $li, @_ );
 }
 
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
-	return unless $ENV{BASELINER_DEBUG};
-	_log_me($cl,$fi,$li,@_);
+    return unless $ENV{BASELINER_DEBUG};
+    _log_me($cl,$fi,$li,@_);
 }
 
 # internal log engine used by _log and _debug
 sub _log_me {
     my ($cl,$fi,$li) = (shift,shift,shift);
     my $logger = try { $Baseliner::_logger } catch { '' };
-	if( ref $logger eq 'CODE' ) { # logger override
-		$logger->($cl,$fi,$li, @_);
-	} else {
-		$cl =~ s{^Baseliner}{B};
-		my $pid = sprintf('%s', $$);
-		print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
-	}
+    if( ref $logger eq 'CODE' ) { # logger override
+        $logger->($cl,$fi,$li, @_);
+    } else {
+        $cl =~ s{^Baseliner}{B};
+        my $pid = sprintf('%s', $$);
+        print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
+    }
 }
 
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
@@ -299,32 +300,32 @@ sub _decode_json {
 }
 
 sub _throw {
-	#Carp::confess(@_);
-	#die join('', @_ , "\n");
+    #Carp::confess(@_);
+    #die join('', @_ , "\n");
     #Catalyst::Exception->throw( @_ );
-	#Carp::Clan::croak @_;
-	##Baseliner->{last_err} = { err=>$_[0], stack=>_whereami };
-	#   Carp::croak @_, Carp::longmess();
+    #Carp::Clan::croak @_;
+    ##Baseliner->{last_err} = { err=>$_[0], stack=>_whereami };
+    #   Carp::croak @_, Carp::longmess();
 
     my $thower = try { Baseliner->app->{_thrower} } catch { '' };
-	if( ref $thower eq 'CODE' ) { # throw override
-		$thower->(@_);
-	} else {
-		print STDERR Carp::longmess @_;
-		die @_,"\n";
-	}
+    if( ref $thower eq 'CODE' ) { # throw override
+        $thower->(@_);
+    } else {
+        print STDERR Carp::longmess @_;
+        die @_,"\n";
+    }
 }
 
 sub _throw_stack {
-	Carp::confess(@_);
+    Carp::confess(@_);
 }
 
 sub _whereami {
-	Carp::longmess @_;
+    Carp::longmess @_;
 }
 
 sub _say {
-	print @_,"\n" if( $Baseliner::DEBUG );
+    print @_,"\n" if( $Baseliner::DEBUG );
 } 
 
 sub _tz {
@@ -375,12 +376,12 @@ sub parse_dt {
 
 # return an array with hashes of data from a resultset
 sub rs_data {
-	my $rs = shift;
-	my @data;
-	while( my $row = $rs->next ) {
-		push @data, { $row->get_columns };
-	}
-	return @data;
+    my $rs = shift;
+    my @data;
+    while( my $row = $rs->next ) {
+        push @data, { $row->get_columns };
+    }
+    return @data;
 }
 
 sub query_array {
@@ -399,7 +400,7 @@ sub _db_setup {
     if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         $dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
         $dbh->{LongReadLen} =  Baseliner->config->{LongReadLen} || 100000000; #64 * 1024;
-        $dbh->{LongTruncOk} = Baseliner->config->{LongTruncOk}; # do not accept truncated LOBs	
+        $dbh->{LongTruncOk} = Baseliner->config->{LongTruncOk}; # do not accept truncated LOBs  
     }
 }
 
@@ -409,13 +410,13 @@ sub packages_that_do {
     my %cl=Class::MOP::get_all_metaclasses;
     for my $package ( grep !/::Role/, grep /^Baseliner/, keys %cl ) {
         #my $meta = Class::MOP::get_metaclass_by_name($package);
-		my $meta = Class::MOP::Class->initialize($package);
-		eval {
-			foreach my $role ( @roles ) {
-				next unless $meta->can('does_role');
-				push @packages, $package if $meta->does_role($role);
-			}
-		};
+        my $meta = Class::MOP::Class->initialize($package);
+        eval {
+            foreach my $role ( @roles ) {
+                next unless $meta->can('does_role');
+                push @packages, $package if $meta->does_role($role);
+            }
+        };
     }
     return @packages;
 }
@@ -427,7 +428,7 @@ sub _parameters {
     } else {
         $p = { @_ };
     }
-	return $p;
+    return $p;
 }
 
 # creates an array from whatever arrays
@@ -450,31 +451,31 @@ sub is_oracle {
 }
 
 sub is_number {
-	return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
+    return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
 }
 
 sub _trim {
-	my $str = shift;
-	$str =~ s{^\s*}{}g;
-	$str =~ s{\s*$}{}g;
-	return $str;
+    my $str = shift;
+    $str =~ s{^\s*}{}g;
+    $str =~ s{\s*$}{}g;
+    return $str;
 }
 
 sub _parse_template {
     my ( $template, %vars ) = @_;
     my $type = $vars{text_template_type} || 'FILE'; # could use STRING
     use Text::Template;
-	my $tt = Text::Template->new( 
-					TYPE => "FILE",
+    my $tt = Text::Template->new( 
+                    TYPE => "FILE",
                     SOURCE => $template ) or _throw _loc("Could not open template file %1", $template);
-	my $body = $tt->fill_in( 
-		HASH=> \%vars,
-		BROKEN => sub { 
-			my %p=@_; 
-			_throw _loc("Error loading template '%1': '%2'",$p{template},$p{text} ); 
-		},
-		DELIMITERS => [ '<%','%>' ] 
-	);
+    my $body = $tt->fill_in( 
+        HASH=> \%vars,
+        BROKEN => sub { 
+            my %p=@_; 
+            _throw _loc("Error loading template '%1': '%2'",$p{template},$p{text} ); 
+        },
+        DELIMITERS => [ '<%','%>' ] 
+    );
     return $body;
 }
 
@@ -510,41 +511,45 @@ sub _get_options {
             $hash{$last_opt} = [] unless ref $hash{$last_opt};
         }
         else {
-			$opt = 	Encode::encode_utf8($opt) if Encode::is_utf8($opt);
+            $opt =  Encode::encode_utf8($opt) if Encode::is_utf8($opt);
             push @{ $hash{$last_opt} }, $opt; 
         }
     }
-	# convert single option => scalar
-	for( keys %hash ) {
-		if( @{ $hash{$_} } == 1 ) {
-			$hash{$_} = $hash{$_}->[0];	
-		}
-	}
+    # convert single option => scalar
+    for( keys %hash ) {
+        if( @{ $hash{$_} } == 1 ) {
+            $hash{$_} = $hash{$_}->[0]; 
+        }
+    }
     return %hash;
 }
 
 # change < and > for &gt; etc
 sub _replace_tags {
-	my $str = shift;
-	$str =~ s{<}{&lt;}g;
-	$str =~ s{>}{&gt;}g;
-	return $str;
+    my $str = shift;
+    $str =~ s{<}{&lt;}g;
+    $str =~ s{>}{&gt;}g;
+    return $str;
 }
 
 sub _check_parameters {
-	my $p = shift;
-	for my $param ( @_ ) {
-		exists($p->{$param}) or _throw _loc('Missing parameter %1', $param);
-	}
+    my $p = shift;
+    for my $param ( @_ ) {
+        exists($p->{$param}) or _throw _loc('Missing parameter %1', $param);
+    }
 }
 
 sub _mkpath {
-	my $dir = File::Spec->catfile( @_ );
-    
-	return if( -e $dir );
-	use File::Path;
-    
+    my $dir = File::Spec->catfile( @_ );
+    return if( -e $dir );
+    require File::Path;
     File::Path::make_path( $dir ) or _throw "Error creating directory $dir: $!";
+}
+
+sub _rmpath {
+    my $dir = _dir( @_ );
+    return unless -e $dir;
+    $dir->rmtree;
 }
 
 # returns the official tmp dir
@@ -570,52 +575,52 @@ Returns a temp file name, creating the temp directory if needed.
 
 =cut
 sub _tmp_file {
-	my $p = _parameters(@_);
+    my $p = _parameters(@_);
     $p->{prefix} ||= [ caller(0) ]->[2];  # get the subname
     $p->{prefix} =~ s/\W/_/g;
     my $tempdir = $p->{tempdir} || _tmp_dir();
-	$p->{dir}||='';
+    $p->{dir}||='';
     $p->{extension} ||='log';
-	my $dir  = File::Spec->catdir($tempdir, $p->{dir} );
+    my $dir  = File::Spec->catdir($tempdir, $p->{dir} );
     unless( -d $tempdir ) {
-	warn "Creating temp dir $tempdir";
-	_mkpath( $tempdir );
+    warn "Creating temp dir $tempdir";
+    _mkpath( $tempdir );
     }
     my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} );
     $ENV{BASELINER_DEBUG} and warn "Created tempfile $file\n";
-	return $file;
+    return $file;
 }
 
 sub _damn {
-	my $blessed = shift;
-	my $damned = $blessed;
-	try {
-		$damned = { %$blessed };
-		try {
-			# recurse
-			if( ref($damned) eq 'HASH' ) {
-				for my $k ( keys %$damned ) {
-					next unless ref($k) eq 'HASH'; 
-					$damned->{$k} = _damn( $damned->{$k} );
-				}
-			}
-		} catch {
-			my $err = shift;
-			warn 'DAMN1=' . $err;
-			exit;
-		};
-	} catch {
-		my $err = shift;
-		warn 'DAMN1=' . $err;
-		exit;
-	};
-	return $damned;
+    my $blessed = shift;
+    my $damned = $blessed;
+    try {
+        $damned = { %$blessed };
+        try {
+            # recurse
+            if( ref($damned) eq 'HASH' ) {
+                for my $k ( keys %$damned ) {
+                    next unless ref($k) eq 'HASH'; 
+                    $damned->{$k} = _damn( $damned->{$k} );
+                }
+            }
+        } catch {
+            my $err = shift;
+            warn 'DAMN1=' . $err;
+            exit;
+        };
+    } catch {
+        my $err = shift;
+        warn 'DAMN1=' . $err;
+        exit;
+    };
+    return $damned;
 }
 
 sub to_pages {
-	my %p = @_;
-	return 1 unless $p{start} && $p{limit};
-	return int( $p{start} / $p{limit} ) + 1;
+    my %p = @_;
+    return 1 unless $p{start} && $p{limit};
+    return int( $p{start} / $p{limit} ) + 1;
 }
 
 sub to_base64 {

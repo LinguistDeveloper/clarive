@@ -31,34 +31,38 @@ lifecycle:
               node: Unassigned
               type: state
               bl: new
-              tag: new
+              active: 0
               icon: /static/images/icons/lc/history.gif
             -
               node: Development
               type: state
-              bl: DEV
-              bl-from: new
-              tag: DEV-Server
+              active: 1
+              bl: DESA
+              bl_from:
+                  - DESA
+                  - new
+              bl_to: TEST
               icon: /static/images/icons/lc/history.gif
             -
               node: Test
               type: state
-              tag: DEV-Server
               bl: TEST
-              bl-from: DEV
+              bl_from: DESA
+              bl_to: TEST
               icon: /static/images/icons/lc/history.gif
             -
               node: Preproduction
               type: state
-              tag: PREP-Server
               bl: PREP
-              bl-from: TEST
+              bl_from: TEST
+              bl_to: PREP
               icon: /static/images/icons/lc/history.gif
             -
               node: Production
               type: state
               bl: PROD
-              bl-from: PREP
+              bl_from: PREP
+              bl_to: PROD
               icon: /static/images/icons/lc/history.gif
 projects:
     - 

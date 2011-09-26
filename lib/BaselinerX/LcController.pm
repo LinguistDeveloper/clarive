@@ -8,15 +8,15 @@ __PACKAGE__->config->{namespace} = 'lifecycle';
 sub tree_projects : Local {
     my ($self,$c) = @_;
     my @tree;
-    my @projects = Baseliner->model('Permissions')->all_projects();
-    for my $id (@projects) {
-        my $project = Baseliner->model('Baseliner::BaliProject')->find($id);
+    my @project_ids = Baseliner->model('Permissions')->all_projects();
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ id=>\@project_ids, id_parent=>undef }, { order_by=>'lower(name) asc'  });
+    while( my $r = $rs->next ) {
         push @tree, {
-            text       => $project->name,
+            text       => $r->name,
             url        => '/lifecycle/tree_project',
             data       => {
-                id_project => $id,
-                project    => $project->name,
+                id_project => $r->id,
+                project    => $r->name,
             },
             icon       => '/static/images/icons/project.gif',
             leaf       => \0,
@@ -38,6 +38,7 @@ sub tree_project : Local {
     require BaselinerX::Lc;
     my $lc = BaselinerX::Lc->new->lc_for_project( $id_project );
     for my $node ( @$lc ) {
+        next if exists $node->{active} && ! $node->{active};
         my $type = $node->{type};
         push @tree, {
             #id         => $node->{type} . ':' . $id,
@@ -51,6 +52,22 @@ sub tree_project : Local {
             },
             leaf       => \0,
             expandable => \0
+        };
+    }
+    # get sub projects TODO make this recurse over the previous controller (or into a model)
+    my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project });
+    while( my $r = $rs_prj->next ) {
+        my $name = $r->nature ? sprintf("%s (%s)", $r->name, $r->nature) : $r->name;
+        push @tree, {
+            text       => $name,
+            url        => '/lifecycle/tree_project',
+            data       => {
+                id_project => $r->id,
+                project    => $r->name,
+            },
+            icon       => '/static/images/icons/project.gif',
+            leaf       => \0,
+            expandable => \1
         };
     }
     $c->stash->{ json } = \@tree;
@@ -85,6 +102,7 @@ sub changeset : Local {
             #id         => $cs->node_id || rand(99999999999999999),
             url        => $cs->node_url,
             data       => $cs->node_data,
+            parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
             menu       => $menu,
             icon       => $cs->icon,
             text       => $cs->text || $cs->name,

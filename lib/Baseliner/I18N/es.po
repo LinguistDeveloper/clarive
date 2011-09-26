@@ -30,6 +30,9 @@ msgstr "Acerca de..."
 msgid "Data"
 msgstr "Datos"
 
+msgid "Unassigned"
+msgstr "Sin Assignar"
+
 msgid "Repository"
 msgstr "Repositorio"
 
