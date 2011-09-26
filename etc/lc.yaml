@@ -71,6 +71,9 @@ projects:
            -
               name: aaa
               path: /Users/rod/tmp/repo/aaa/.git
+           -
+              name: prj_j2ee
+              path: /Users/rod/dev/clarive/etc/repo/prj_j2ee.git
     - 
        name: AAA
        repositories:

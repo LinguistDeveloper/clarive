@@ -1,5 +1,7 @@
 baseliner_local.conf
 etc/bali_cache
+etc/repo
+etc/artifacts
 .DS_Store
 *.old
 *.bak

@@ -123,7 +123,7 @@ sub logoff : Global {
 
 sub logon : Global {
     my ( $self, $c ) = @_;
-	$c->stash->{template} = '/site/login.html';
+	$c->stash->{template} = $c->config->{login_page} || '/site/login.html';
 }
 
 sub saml_check : Private {

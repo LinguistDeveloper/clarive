@@ -143,8 +143,9 @@ sub select_mappings {
 
         $log->debug( "Applications detected", data=>\@applications );
 
-        $wkels = $wkels->include_regex( _array $m->{exclude} );
-        $log->info( _log("Included Elements"), dump=>[ $wkels->paths ] );
+        $log->debug( _loc("Included Elements (before)"), dump=>[ $wkels->paths ] );
+        $wkels = $wkels->include_regex( _array $m->{exclude} ) if ref $m->{exclude};
+        $log->info( _loc("Included Elements"), dump=>[ $wkels->paths ] );
 
         if( $wkels->count == 0 ) {   # if mapping matches element in job
             $log->debug( _loc( "Mapping to `%1` has no matching workspaces in elements", $m->{workspace} ) );
@@ -160,7 +161,7 @@ sub select_mappings {
             my $deployment = {
                 origin      => \@origins,
                 destination => $destination_node,
-                scripts     => $m->{scripts_multi},
+                scripts     => $m->{scripts_multi} || [],
             };
             $log->info( _loc("*Pushed deployment* for `%1`", $_ ), dump=>$deployment );
             $deployment;
