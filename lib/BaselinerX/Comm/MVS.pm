@@ -16,8 +16,6 @@ register 'config.JES' => {
     metadata => [
        { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
        { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'},
-       { id=>'jclerror', label=>'JCL error message to parse', default => '- JOB FAILED - JCL ERROR'},
-       { id=>'codeline', label=>'Message to parse for COND CODE', default => '- STEP WAS EXECUTED - COND CODE'},
     ]
 };
 
@@ -490,50 +488,6 @@ sub _gen_jobname_global {
 	my $letter = substr($valid_letters, $id, 1);
 	my $letter_next = substr($valid_letters, $id_next, 1);
 	return ( $user . $letter, $letter, $letter_next );
-}
-
-sub parse_code {
-	
-    my $self    = shift;
-    my $output  = shift;
-    my $jobname = shift;
-    my $config = Baseliner->model('ConfigStore')->get( 'config.JES', ns=>'/', bl=>'*' );
-
-    my $MaxReturnCode;
-    my $MaxStep;
-    my $ReturnCode;
-    my $linea;
-    my $Step;
-
-
-    my @logFile = split '\n', $output;
-
-    if ( grep /$config->{jclerror}/, @logFile ) {
-        $MaxReturnCode = "9999";
-    } else {
-
-        my @Summary = grep /$config->{codeline}/, @logFile;
-        _log "Lineas:".@Summary;
-        foreach my $linea ( @Summary ) {
-            my $exp = "";
-
-            eval '$exp = qr/^.*\s+(.*)\s+'.$config->{codeline}.'\s(.*)$/';
-
-            $linea =~ $exp;
-            $Step = $1;
-            $ReturnCode = $2;
-            $Step =~ s/\s//g;
-            $ReturnCode =~ s/\s//g;
-            _log "RET: $ReturnCode, Step: $Step";
-            # Actualiza el CR y STEP máximo del JOB si no FLUSH
-            if ( $ReturnCode gt $MaxReturnCode ) {
-                $MaxReturnCode = $ReturnCode unless $ReturnCode eq "FLUSH";
-                $MaxStep       = $Step       unless $ReturnCode eq "FLUSH";
-            }
-        }
-    }
-    _log "Max: $MaxReturnCode, Step: $MaxStep";
-    return ($MaxReturnCode, $MaxStep);
 }
 
 DESTROY {
