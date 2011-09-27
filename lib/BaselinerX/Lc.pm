@@ -62,7 +62,7 @@ sub all_repos {
 sub bl_from {
     my ($self, $bl ) = @_;
     # TODO XXX
-    my %from = ( DESA=>'DESA', DEV=>'new', TEST=>'DEV', PREP=>'TEST', PROD=>'PREP' );
+    my %from = ( DESA=>'DESA', DEV=>'new', TEST=>'DESA', PREP=>'TEST', PROD=>'PREP' );
     $from{ $bl };
 }
 

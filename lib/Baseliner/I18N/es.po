@@ -112,7 +112,7 @@ msgid "View Stash"
 msgstr "Ver el Stash"
 
 msgid "*Pushed deployment* for `%1`"
-msgstr "*Despliegue Añadido* para `%1`"
+msgstr "*Despliegue Incluido* para `%1`"
 
 msgid "Mapping to `%1` has no matching paths in elements"
 msgstr "Mapeo a `%1` no corresponde a ninguna ruta de elemento" 
@@ -126,8 +126,20 @@ msgstr "Ocultar Datos"
 msgid "Reverse"
 msgstr "Inversa"
 
+msgid "To Promote"
+msgstr "Promover"
+
+msgid "tree"
+msgstr "ficheros"
+
+msgid "changes"
+msgstr "cambios"
+
 msgid "view"
 msgstr "ver"
+
+msgid "Lifecycle"
+msgstr "Ciclo de Vida"
 
 msgid "Load"
 msgstr "Cargar"
@@ -1860,6 +1872,12 @@ msgstr "Borrando..."
 
 msgid "Error during delete"
 msgstr "Error durante el borrado"
+
+msgid "Create Tag"
+msgstr "Nuevo Cambio"
+
+msgid "Branches"
+msgstr "Ramas"
 
 msgid "Tasks"
 msgstr "Tareas"
