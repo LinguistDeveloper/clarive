@@ -57,6 +57,7 @@ var menu_click = function(node,event){
         // create js handlers for menu items
         for( var i = 0; i < node_menu.length; i++ ) {
             var menu_item = node_menu[i];
+            menu_item.text = _( menu_item.text ); 
             var url = "";
             // component opener menu
             if( menu_item.comp != undefined ) {

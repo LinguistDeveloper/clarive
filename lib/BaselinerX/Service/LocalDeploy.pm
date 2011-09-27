@@ -64,6 +64,10 @@ sub deployments {
             next if $self->job->rollback && ! $d->{needs_rollback} ;
 
             _debug "Deployment " . _dump $d ;
+            ref $d->{scripts} or do {
+                $d->{scripts} = [];
+                $log->debug( _loc( "*resetting* deployment scripts - they were unset" ) );
+            };
             ref $d eq 'HASH' and $d = Baseliner::Core::Deployment->new( $d );
             my $name = $d->destination->uri;
             $log->info( _loc( "Running deployment: %1", $name ), dump=>$d );

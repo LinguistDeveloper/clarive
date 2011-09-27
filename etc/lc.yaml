@@ -3,10 +3,12 @@ nodes:
       node: Tasks
       type: component
       url : /task/grid
+      icon: /static/images/icons/tasks.gif
     - 
       node: Jobs
       type: component
       url : /job/monitor
+      icon: /static/images/icons/job.png
     - 
       node: Releases
       type: component
@@ -78,5 +80,5 @@ projects:
        name: AAA
        repositories:
            -
-              name: aaa-repoa
-              path: /Users/rick/dev/samples/infocaja/.git
+              name: zos
+              path: /Users/rod/dev/clarive/etc/repo/zos.git
