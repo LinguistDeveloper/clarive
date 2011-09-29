@@ -80,3 +80,10 @@ projects:
            -
               name: zos
               path: /Users/rod/dev/clarive/etc/repo/zos.git
+
+    - 
+       name: AAD
+       repositories:
+           -
+              name: zos
+              path: /AAA
