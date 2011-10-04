@@ -8,11 +8,11 @@
         title:_('Scripts Multi'), label:_('Scripts Multi'), value: params.scripts_multi, default_value: 'ssh_script://user@host:port/path/new_script.sh'});
 
     var include = Baseliner.array_field({ name:'include',
-        title:_('Include'), label:_('Include'), description: _('Element patterns to include'), 
+        title:_('Include'), label:_('Include'), description: _('Element pattern regex to include'), 
             value: params.include, default_value: '\\.js$'});
 
     var exclude = Baseliner.array_field({ name:'exclude',
-        title:_('Exclude'), label:_('Exclude'), description: _('Element patterns to exclude'),
+        title:_('Exclude'), label:_('Exclude'), description: _('Element pattern regex to exclude'),
             value: params.exclude, default_value: '\\.ext$'});
 
     var deployments = Baseliner.array_field({ name:'deployments', description: _('List of nodes to deploy to'),
@@ -42,13 +42,18 @@
                 fieldLabel: _("Workspace Dir"),
                 value: params.workspace || '/app/path',
                 allowBlank: 0
-            }, {
+            },
+            { xtype:'container', autoEl: { tag: 'div', html: _('Use regex, forward slashes and captures: %1', '/mydir/, /(.*?)/mydir/, /(?<app>MyApp)/path/to') },
+                style: 'padding: 0 0 10px 120px' },
+            {
                 xtype: 'textfield',
                 name: "order",
                 fieldLabel: _("Mapping Order"),
                 value: params.order || 1,
                 allowBlank: 0
             },
+            { xtype: 'checkbox', name: 'no_paths', fieldLabel: _('Options'), boxLabel: _("Do not deploy paths, only files"),
+                checked: ( params.no_paths == 'on' ? true : false )  },
             deployments.data,
             scripts_single.data,
             scripts_multi.data,

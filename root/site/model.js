@@ -239,3 +239,47 @@ Baseliner.combo_project = function(params) {
     return combo;
 };
 
+// Revisions - ie. packages, etc.
+//    options:
+//            checkin : true   ( only revisions that can handle a checkin op )
+Baseliner.combo_revision = function(params) {
+    if( params == undefined ) params = {};
+    var base = {};
+    if( params.checkin ) {
+        base.checkin = true;
+        base.does    = 'Baseliner::Role::Namespace::Checkin';
+    }
+    var rev_store = new Ext.data.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'ns', 
+        url: '/revision/list_simple',
+        baseParams: base,
+        fields: [ 
+            {  name: 'item' },
+            {  name: 'ns' }
+        ]
+    });
+    var combo = new Ext.form.ComboBox({
+       name: 'ns', 
+       hiddenName: 'ns',
+       fieldLabel: _('Revision'), 
+       mode: 'remote', 
+       store: rev_store, 
+       valueField: 'ns',
+       value: params.value || '',
+       typeAhead: false,
+       minChars: 1,
+       displayField:'item', 
+       editable: true,
+       forceSelection: true,
+       triggerAction: 'all',
+       allowBlank: false,
+       width: 300
+    });
+    return combo;
+};
+
+
+

@@ -2,35 +2,128 @@ Baseliner.lc = {
     dataUrl: '/lifecycle/tree'
 };
 
+var which_tree = function() {
+    var loader = Baseliner.lifecycle.getLoader();
+    var root = Baseliner.lifecycle.root;
+    if( root.attributes.data == undefined ) root.attributes.data = {}; 
+    root.attributes.data.favorites =  button_favorites.pressed;
+    root.attributes.data.show_workspaces = button_workspaces.pressed;
+    root.attributes.data.favorites =  button_favorites.pressed;
+    Baseliner.lifecycle.getSelectionModel().clearSelections();
+    refresh_lc();
+};
+
+var show_favorites = function() {
+    which_tree();
+};
+
+var show_workspaces = function() {
+    which_tree();
+};
+
+var add_workspace = function() {
+    Baseliner.ajaxEval( '/comp/lifecycle/workspace_new.js', {}, function(){} );
+};
+
+var refresh_lc = function(){
+    var sm = Baseliner.lifecycle.getSelectionModel();
+    var node = sm.getSelectedNode();
+    var loader = Baseliner.lifecycle.getLoader();
+    loader.dataUrl = Baseliner.lc.dataUrl;
+    if( node != undefined ) {
+        var is = node.isExpanded();
+        loader.load( node );
+        if( is ) node.expand();
+    } else {
+        loader.load(Baseliner.lifecycle.root);
+    }
+};
+
+var button_favorites = new Ext.Button({
+    cls: 'x-btn-icon',
+    icon: '/static/images/icons/favorites.gif',
+    handler: show_favorites,
+    pressed: false,
+    toggleGroup: 'lc',
+    enableToggle: true
+});
+
+var button_workspaces = new Ext.Button({
+    cls: 'x-btn-icon',
+    icon: '/static/images/icons/connect.png',
+    handler: show_workspaces,
+    toggleGroup: 'lc',
+    pressed: false,
+    enableToggle: true
+});
+
+var button_menu = new Ext.Button({
+    menu: [
+        { text: _('Add Workspace'), handler: add_workspace }
+    ]
+});
+
 Baseliner.lc_tbar = new Ext.Toolbar({
     items: [
         { xtype:'button', 
             cls: 'x-btn-text-icon',
             icon: '/static/images/icons/refresh.gif',
-            handler: function(){
-                var sm = Baseliner.lifecycle.getSelectionModel();
-                var node = sm.getSelectedNode();
-                var loader = Baseliner.lifecycle.getLoader();
-                loader.dataUrl = Baseliner.lc.dataUrl;
-                if( node != undefined ) {
-                    var is = node.isExpanded();
-                    loader.load( node );
-                    if( is ) node.expand();
-                } else {
-                    loader.load(Baseliner.lifecycle.root);
-                }
-            }
-        }
+            handler: refresh_lc        },
+        button_favorites,
+        button_workspaces,
+        '->',
+        button_menu
     ]
 });
 
-var base_menu_items = [
-        {
-            text: _('Add to Favorites'), handler: function(n) {
-                Baseliner.message( _('Favorite'), _('Added') );
-            }
+var base_menu_items = [ ];
+
+var menu_favorite_add = {
+    text: _('Add to Favorites...'),
+    icon: '/static/images/icons/favorites.gif',
+    handler: function(n) {
+        var sm = Baseliner.lifecycle.getSelectionModel();
+        var node = sm.getSelectedNode();
+        if( node != undefined ) {
+            var name = new Array();
+            node.bubble( function(pnode){
+               if( pnode.text != '/' && pnode.text != undefined ) 
+                  name.unshift( pnode.text ); 
+            });
+            Baseliner.ajaxEval( '/lifecycle/favorite_add',
+                {
+                    text: name.join(':'),
+                    url: node.attributes.url,
+                    icon: node.attributes.icon,
+                    data: Ext.encode( node.attributes.data ),
+                    menu: Ext.encode( node.attributes.menu )
+                },
+                function(res) {
+                    Baseliner.message( _('Favorite'), res.msg );
+                }
+            );
         }
-    ];
+    }
+};
+
+var menu_favorite_del = {
+    text: _('Remove from Favorites'),
+    icon: '/static/images/icons/favorites.gif',
+    handler: function(n) {
+        var sm = Baseliner.lifecycle.getSelectionModel();
+        var node = sm.getSelectedNode();
+        if( node != undefined ) {
+            Baseliner.ajaxEval( '/lifecycle/favorite_del',
+                { id: node.attributes.id_favorite },
+                function(res) {
+                    Baseliner.message( _('Favorite'), res.msg );
+                    node.remove();
+                }
+            );
+        }
+    }
+};
+
 Baseliner.lc_menu = new Ext.menu.Menu({
     items: base_menu_items,
     listeners: {
@@ -47,6 +140,8 @@ Baseliner.lc_menu = new Ext.menu.Menu({
     }
 });
 
+// Main event that gets fired everytime a node is right-clicked
+//    builds the menu from node attributes and base menu
 var menu_click = function(node,event){
     node.select();
     if( node.attributes.menu != undefined ) {
@@ -81,12 +176,17 @@ var menu_click = function(node,event){
             item.url  = url;
         }
         m.add( node_menu_items );
-        m.add( base_menu_items );
+        if( node_menu_items.length > 0 ) m.add('-');
     } else {
         var m = Baseliner.lc_menu;
         m.removeAll(); 
-        m.add( base_menu_items );
     }
+    // add base menu
+    m.add( base_menu_items );
+    if( node.attributes != undefined && node.attributes.id_favorite !=undefined ) 
+        m.add( menu_favorite_del );
+    else
+        m.add( menu_favorite_add );
     Baseliner.lc_menu.showAt(event.xy);
 }
 

@@ -123,6 +123,24 @@ msgstr "Publicando fichero `%1`"
 msgid "No Data"
 msgstr "Ocultar Datos"
 
+msgid "Compile"
+msgstr "Compilar"
+
+msgid "Category"
+msgstr "Categoría"
+
+msgid "Favorite"
+msgstr "Favorito"
+
+msgid "Favorites"
+msgstr "Favoritos"
+
+msgid "Add to Favorites..."
+msgstr "Añadir a Favoritos..."
+
+msgid "Remove from Favorites"
+msgstr "Quitar de Favoritos"
+
 msgid "Reverse"
 msgstr "Inversa"
 
