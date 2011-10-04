@@ -447,7 +447,11 @@
 									{ xtype: 'hidden', name:'id_job', value: sel.data.id },
 									{ xtype: 'hidden', name:'job_name', value: sel.data.name },
 									{ xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
+% if( $c->stash->{user_action}->{'action.job.reschedule'} ) {
                                     { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
+% } else {
+                                    { xtype: 'hidden', name: 'run_now', fieldLabel : _("Run Now"), checked: false },
+% }
 									step_combo
 								],
 								buttons: [
