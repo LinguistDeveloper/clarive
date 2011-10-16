@@ -4,9 +4,17 @@
     var code = new Ext.form.TextArea({
         name: 'code',
 		style: style_cons,
+        enableKeyEvents: true,
         width: 700,
         height: 700
         });
+
+    code.on('keydown', function(ta, ev) {
+        var k = ev.keyCode;
+        if( k == 117 ) { // F7
+        } else if( k == 118 ) { // F8
+        }
+    });
 
     var find = new Ext.form.TextField({
         name: 'find',

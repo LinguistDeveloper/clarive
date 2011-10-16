@@ -1,7 +1,6 @@
 package Baseliner::Node::ssh;
 use Moose;
 use Baseliner::Utils;
-#use Carp::Always;
 use Cwd;
 use Net::OpenSSH;
 use namespace::autoclean;
@@ -87,27 +86,49 @@ sub get_dir {
     $ret;
 }
 
+=head2 put_file
+
+=cut
 sub put_file {
     my $self = shift;
     $self->put_dir( @_ );
 }
 
+
+=head2 put_dir
+
+General method to copy files.
+
+Parameters:
+    
+    local     => local file or dir
+    remote    => remote file dir
+    add_path  => path to add to remote 
+    recusive  => copy recurse ( default: 1 )
+
+=cut
 sub put_dir {
     my ($self, %p) = @_;
     my $local = delete $p{local} || $self->local || _throw "Missing local";
     my $remote = delete $p{remote} || $self->home || _throw "Missing remote";
-    $p{recursive} = 1;
-    $p{copy_attrs} = $self->copy_attrs; # copies attributes : may cause an error scp set mode: Not owner
-    $p{glob} = 1; # allows for * 
-    $p{stderr_to_stdout} = 1;
-    $p{stdout_file} = _tmp_file;  # send output to tmp file
+    length $p{add_path} and $remote = _dir( $remote, $p{add_path} );
+    delete $p{add_path};
+    $p{recursive} //= 1;
+    $p{copy_attrs} //= $self->copy_attrs; # copies attributes : may cause an error scp set mode: Not owner
+    $p{glob} //= 1; # allows for * 
+    $p{stderr_to_stdout} //= 1;
+    $p{stdout_file} //= _tmp_file;  # send output to tmp file
     ( $local, $remote ) = map { "$_" } $local, $remote;  # strigify possible Path::Class
     $self->mkpath( $remote ) if $self->mkpath_on; # create remote path
     #$self->make_writable( $remote ) if $self->overwrite_on;
     my $method = $self->_method . "_put";
 
+    # check if exists
+    _throw _loc ( "put-dir error: local file/dir not found: %1", $local)
+        if $local !~ /\*/ && ! -e $local;  # don't check if contains asterisks
+
     # run 
-    _log "L=$local, $remote";
+    _log "URI=" . $self->uri . ", L=$local, R=$remote";
     my $ret = $self->ssh->$method( \%p, $local, $remote ); 
 
     my $out = _slurp $p{stdout_file};

@@ -13,7 +13,6 @@ sub logs_list : Path('/job/log/list') {
 	my $p = $c->req->params;
     $c->stash->{id_job} = $p->{id_job};
     $c->stash->{annotate_now} = $p->{annotate_now};
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>" . $p->{id_job};
 	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $c->forward('/permissions/load_user_actions');
@@ -127,25 +126,28 @@ sub log_rows : Private {
 }
 
 sub log_html : Path('/job/log/html') {
-    my ($self,$c, $log_hash ) = @_;
+    my ($self,$c, $job_key ) = @_;
     my $p = $c->request->parameters;
 
     # load from hash
-    if( $log_hash && exists $c->session->{log_html}
-        && ( my $logd = $c->session->{log_html}->{ $log_hash }  ) ) {
-        $p->{id_job} = $logd->{id_job};
-        $p->{job_exec} = $logd->{job_exec} // 1;
+    if( $job_key ) {
+        my $job = $c->model('Baseliner::BaliJob')->search({ key=>$job_key })->first;
+        _throw "Job key not found (key=$job_key)" unless ref $job;
+        $p->{id_job} = $job->id;
+        $p->{job_exec} ||= $job->exec;
         $p->{levels} = [ 'info', 'warn', 'error' ];
         $p->{debug} eq 1 and push @{ $p->{levels} }, 'debug';
     }
     # get data
     if( defined $p->{id_job} ) {
+        # log_rows uses req->parameters ($p) 
         my ($job, @rows ) = $self->log_rows( $c );
         # prepare template
         $c->stash->{rows} = \@rows;
         $c->stash->{job_name} = $job->name;
         $c->stash->{job_exec} = $job->exec;
-        $c->stash->{log_hash} = $log_hash;
+        $c->stash->{job_exec_total} = $job->exec;
+        $c->stash->{job_key} = $job_key;
         $c->stash->{template} = '/comp/log.html';
     } else {
         $c->res->status( 404 );
@@ -156,14 +158,12 @@ sub logs_json : Path('/job/log/json') {
     my ( $self,$c )=@_;
     my $p = $c->request->parameters;
     my ($job, @rows ) = $self->log_rows( $c );
-    my $log_hash = _md5( $p->{id_job}, $p->{job_exec} );
-    $c->session->{log_html} ||= {};
-    $c->session->{log_html}->{ $log_hash } = { id_job=>$p->{id_job}, job_exec=>$p->{job_exec} };
+    my $job_key = $job->key;
 	$c->stash->{json} = {
         totalCount => scalar(@rows),
         data       => \@rows,
         job        => { ref $job ? $job->get_columns : () },
-        log_hash  => $log_hash,
+        job_key  => $job_key,
      };	
     # CORE::warn Dump $c->stash->{json};
 	$c->forward('View::JSON');
@@ -192,7 +192,7 @@ sub jobList : Path('/job/log/jobList') {
     my ( $self, $c ) = @_;
     my (@jobs, @leaf)=((),());
     my $p = $c->req->params;
-     _log _dump $p;
+    # _log _dump $p;
     my $jobIcon='/static/images/jobIcon.png';
     my $spoolIcon='/static/images/spoolIcon.png';
     _db_setup;

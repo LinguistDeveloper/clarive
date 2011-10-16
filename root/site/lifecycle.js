@@ -196,6 +196,7 @@ Baseliner.lifecycle = new Ext.tree.TreePanel({
     split: true,
     collapsible: true,
     title: _("Lifecycle"),
+    ddGroup: 'lifecycle_dd',
     width: 250,
     useArrows: true,
     autoScroll: true,

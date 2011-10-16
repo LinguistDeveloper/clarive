@@ -19,6 +19,10 @@ Options:
   -gen            generate .po file entries
   -grep <regex>   search lines that matches the regex
   -unparsed       report _loc() and _() lines that could not be parsed
+  -lang           language (es,fr,gr...) - default: all
+  -po             list .po files
+  -msgid          show .po files msgid
+  -i              interactive mode
 
 EOF
     exit 0;
@@ -30,9 +34,49 @@ my @gen;
 my %str;
 
 defined $args{grep} and $args{grep}=qr/$args{grep}/i;
+my $lang = $args{lang} || 'any';
+
+# .po file load
+say "Loading .po files for language: $lang";
+$lang eq 'any' and $lang = '\w{2}';
+my @po;
+my %ids;
+
+sub parse_po {
+    my @arr = ( $_[0] =~ m{msgid\s+"(.+?)"}gms );
+    grep { ! /\n|\r/ } @arr;
+}
+
+exists $args{try} or do {
+    for (qw/lib features/) {
+        _dir($_)->recurse(
+            callback => sub {
+                my $f = shift;
+                return if $f->is_dir || "$f" !~ /I18N.*$lang\.po/;
+                push @po, $f;
+                say $f if exists $args{po} || exists $args{msgid};
+                my @msgids = parse_po scalar $f->slurp;
+                @ids{ @msgids } = ();
+                exists $args{msgid} and say "\t$_" for @msgids;
+            }
+        );
+    }
+  };
+
+die "Error: no .po files found for lang $args{lang}\n" if exists $args{lang} && ! @po;
 
 say "Scanning localizable strings in dirs: " . join',',@search;
-say;
+
+sub interactive {
+    my $p = shift;
+    if( exists $args{i} ) {
+        print "$p\n>"; 
+        my $in = <STDIN>;
+        $in =~ s{\n|\r}{}gs;
+        return $in;
+    }
+    $p; 
+}
 
 for my $dir ( @search ) {
     dir($dir)->recurse(
@@ -46,6 +90,8 @@ for my $dir ( @search ) {
                 $lin++;
                 chomp;
                 next if exists $args{grep} && $_ !~ $args{grep};
+                next unless /_loc|_\(/;
+                say "0>>$_" if $args{debug};
                 next unless /_loc\((.+?)\)|_\((.+?)\)|_loc '(.+?)'|_loc "(.+?)"/;
                 my $p = $1 || $2 || $3 || $4;
                 say "1>>$p" if $args{debug};
@@ -55,11 +101,18 @@ for my $dir ( @search ) {
                 #return if _loc($p);
                 #say _loc($p);
                 if( $p ) {
-                    if( $p eq _loc($p) ) {
+                    if( exists $args{try} && $p eq _loc($p) ) {
                         say $p unless exists $args{gen} || exists $args{unparsed};
                         if( ! exists $str{$p} ) {
-                            push @gen, { str=>$p, file=>$f, line=>$lin };
+                            my $in = interactive $p;
+                            push @gen, { str=>$p, in=>$in || $p, file=>$f, line=>$lin };
                             $str{$p} = ();
+                        }
+                    } else {
+                        say $p unless exists $args{gen} || exists $args{unparsed};
+                        if( ! exists $ids{$p} ) {
+                            my $in = interactive $p;
+                            push @gen, { str=>$p, in=>$in || $p, file=>$f, line=>$lin };
                         }
                     }
                 } else {
@@ -77,7 +130,7 @@ exists $args{gen} and do {
         print << "EOF";
 # $r->{file} ($r->{line})
 msgid "$r->{str}"
-msgstr "$r->{str}"
+msgstr "$r->{in}"
 
 EOF
     }

@@ -22,6 +22,7 @@ This service will deploy job elements (items).
     scripts_multi:     (once for all)
         - ssh://aaa/dir/dir
     order: 1
+    remove_base: 0
 
 =cut
 use Baseliner::Plug;
@@ -106,12 +107,11 @@ sub select_mappings {
     _throw _loc( "Invalid job_root %1", $job_root ) unless -d $job_root;
     my @mappings = _array $args{mappings}; 
     my @workspaces;
+    sub files_clean { my @arr = map { "$_" } _array @_; \@arr };
     for my $m ( @mappings ) {
         next unless $m->{bl} eq '*' || $m->{bl} eq $job->bl;
 
-        #$m->{ignore} = [ split /;/, $m->{ignore} ] unless ref $m->{ignore};
-        #$m->{classpath} = [ split /;/, $m->{classpath} ] unless ref $m->{classpath};
-        #$m->{deployments} = [ split /;/, $m->{deployments} ] unless ref $m->{deployments};
+        $log->debug( _loc( "Checking if mapping for bl %1 applies", $job->bl ), dump=>$m );
 
         # parse mapping variables - undefined are left untouched
         $log->debug( "Parse vars (before)", dump=>$m );
@@ -135,17 +135,24 @@ sub select_mappings {
                 $log->info( _loc("Excluded workspace mapping %1", $m->{name} ) );
                 next;
             } else {
-                $log->debug( _loc("No exclusions for %1", $m->{name} ) );
+                # reset elements to this shorter list
+                $wkels = $all_except_excluded; 
+                $log->debug( _loc("After exclusions for %1", $m->{name} ), dump=>[ $wkels->paths ] );
             }
         }
+
+        # match variables from workspace against the element path
+        my %vars = $elements->extract_variables( $m->{workspace} ) if $m->{workspace};
+        $log->debug( "Extracted variables", dump=>\%vars );
+        $m = $job->parse_job_vars( $m, \%vars ); # reparse, now with workspace variables
 
         my @applications = $wkels->list('application');  # not used TODO
 
         $log->debug( "Applications detected", data=>\@applications );
 
         $log->debug( _loc("Included Elements (before)"), dump=>[ $wkels->paths ] );
-        $wkels = $wkels->include_regex( _array $m->{exclude} ) if ref $m->{exclude};
-        $log->info( _loc("Included Elements"), dump=>[ $wkels->paths ] );
+        $wkels = $wkels->include_regex( _array $m->{include} ) if ref $m->{include};
+        $log->info( _loc("*%1* Included Elements for Deployment"), dump=>[ $wkels->paths ] );
 
         if( $wkels->count == 0 ) {   # if mapping matches element in job
             $log->debug( _loc( "Mapping to `%1` has no matching workspaces in elements", $m->{workspace} ) );
@@ -161,13 +168,19 @@ sub select_mappings {
             my $deployment = {
                 origin      => \@origins,
                 destination => $destination_node,
-                scripts     => $m->{scripts_multi} || [],
+                scripts     => $m->{scripts_single} || [],
             };
+            # remove base path ?
+            $deployment->{base} = $m->{workspace} unless $m->{no_paths} eq 'on';
             $log->info( _loc("*Pushed deployment* for `%1`", $_ ), dump=>$deployment );
             $deployment;
         } _array $m->{deployments};
         push @{ $job_stash->{deployments}->{ DOMAIN() } }, @deploy;
 
+        push @{ $job_stash->{deployment_scripts}->{ DOMAIN() } }, 
+            map {
+                Baseliner::Node->new( $_ )
+            } _array $m->{scripts_multi};
     }
     return @workspaces;
 }

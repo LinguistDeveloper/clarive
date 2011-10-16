@@ -26,5 +26,5 @@ then
         echo "balid: killed ok."
         exit 0
 fi
-exec nohup perl -X script/bali.pl $* >$BASELINER_LOGHOME/balid.log 2>&1 &
+exec nohup bin/bali $* >$BASELINER_LOGHOME/balid.log 2>&1 &
 

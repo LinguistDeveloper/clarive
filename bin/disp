@@ -35,7 +35,8 @@ fi
 
 if [ "$1" == "stop" ];
 then
-        exec bali stop service.dispatcher 
+        shift
+        exec bali stop service.dispatcher $*
         exit 0
 fi
 

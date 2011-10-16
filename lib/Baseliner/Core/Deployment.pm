@@ -15,6 +15,7 @@ use Moose;
 use Baseliner::Node;
 use Path::Class;
 use Moose::Util::TypeConstraints;
+use Baseliner::Utils;
 use namespace::autoclean;
 
 subtype 'PathClass',
@@ -27,6 +28,12 @@ has origin  => qw/is ro isa ArrayRef[PathClass] required 1/,
                handles => { each_origin => 'map', count=>'count' };
 
 has destination => qw/is ro does Baseliner::Role::Node::Filesys required 1/;
+
+# base dir or regex to copy from origin path to destination path
+has base => qw/is ro isa Str default/ => '';
+
+has vars => qw/is rw isa HashRef/, default=>sub{{}};
+
 has scripts     => qw/is ro isa ArrayRef[Str] required 0/, default=>sub { [] },
     traits=>['Array'], handles=>{ each_script => 'map', has_scripts=>'count' };
 
@@ -54,13 +61,31 @@ sub deploy {
     my ($self, %args ) = @_;
     my $node = $self->destination;
     my $cb = $args{callback};
+    my $base = $self->base;
+    if( $base ) {
+        $base = qr{$base/?(?<base_path>.*)$} ;
+    }
     $self->each_origin( sub {
-        if( $_->is_dir ) {
-            $node->put_dir( local=>$_ );
-            ref $cb and $cb->( $node );
+        my $f = $_;
+        # capture base path ?
+        my $base_path;
+        if( $base && "$f" =~ $base ) {
+            my %captures = %+;  # named captures
+            # prepare base_path to be added to remote
+            $base_path = delete $captures{base_path};
+            $base_path = _file( $base_path )->dir;
+            $self->push_vars( %captures );
+            # now use captures as variables in the remote base path
+            my $remote = $node->home;
+            $remote = $self->parse_vars( $remote );
+            $node->home( $remote );
+        }
+        if( $f->is_dir ) {
+            $node->put_dir( local=>$f, add_path=>$base_path );
+            ref $cb and $cb->( $node, $f );
         } else {
-            $node->put_file( local=>$_ );
-            ref $cb and $cb->( $node );
+            $node->put_file( local=>$f, add_path=>$base_path );
+            ref $cb and $cb->( $node, $f );
         }
     });
 }
@@ -75,8 +100,12 @@ sub run {
     my $cb = $args{callback};
     my $node = $self->destination;
     $self->each_script( sub {
-       $node->execute( $_ ); 
-       ref $cb and $cb->( $node );
+       my $uri = $_;
+       # instanciate just in case
+       my $s = ref $uri ? $uri : Baseliner::Node->new( $uri );
+       # now run it
+       my $ret = $s->run;
+       ref $cb and $cb->( $s, $uri );
     });
 }
 
@@ -89,6 +118,16 @@ sub deploy_and_run {
     my ($self, %args ) = @_;
     $self->deploy( %args );
     $self->run( %args );
+}
+
+sub push_vars {
+    my ($self, %vars ) = @_;
+    $self->vars({  %{ $self->vars }, %vars });
+}
+
+sub parse_vars {
+    my ($self, $str ) = @_;
+    Baseliner::Utils::parse_vars( $str, $self->vars );
 }
 
 1;

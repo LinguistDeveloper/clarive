@@ -25,9 +25,6 @@ sub launch {
 	my $config_name = $service->config;
     my $config_data;
     if( defined $config_name ) {
-		#my $config = $c->registry->get( $service->config ) if( $service->config );
-        #$config_data = $config->factory( $c, ns=>$ns, bl=>$bl, getopt=>1, data=>$data );
-        #$config_data = $config->factory( $c, ns=>$ns, bl=>$bl, data=>$data );
         $config_data = Baseliner->model('ConfigStore')->get( $config_name, ns=>$ns, bl=>$bl, data=>$data );
     } else {
 		$config_data = $data;
@@ -43,19 +40,34 @@ sub launch {
 		$c->stash->{job} ||= $self->job_new( $p{'job-new'} );
 	} elsif( $p{'job-clone'} ) { # new job from a cloned row
 		$c->stash->{job} ||= $self->job_clone( $p{'job-clone'} );
+    } elsif( ref $p{logger} ) {
+        $service->logger( $p{logger} );
 	} else {
 		# just give him a logger
 		$p{logger_class} and $service->logger_class( $p{logger_class} );
 	}
+
+    #
+    # put logfile in the stash
+    #
+    if( length $data->{logfile} ) {
+        _log _loc "Service logfile '%1'", $data->{logfile};
+        $c->stash->{logfile} = $data->{logfile};
+    }
+
     #
     # ******************** RUN *****************
     # 
+    _debug "Running service $service_name...";
     my $ret = $service->run( $c, $config_data );
+    _debug "Done running service $service_name";
 
     # save stash at the end -- default: no
-    ref $c->{stash}->{job} && exists $p{'stash-save'} and try {
+    ref $c->stash->{job}
+    && ( exists $p{'stash-save'} || exists $p{'save-stash'} )
+    and try {
         _log "Saving job stash...";
-        $c->{stash}->{job}->freeze;
+        $c->stash->{job}->freeze;
     } catch {
         _log "Warning: Could not freeze stash"
     };
@@ -64,7 +76,7 @@ sub launch {
 
 sub job_continue {
 	my ($self,%p)=@_;
-	return BaselinerX::Job::Service::Runner->new_from_id( jobid=>$p{jobid}, exec=>$p{'job-exec'} );
+    return BaselinerX::Job::Service::Runner->new_from_id( jobid=>$p{jobid}, exec=>$p{exec} );
 }
 
 sub job_clone {

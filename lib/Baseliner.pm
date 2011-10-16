@@ -266,10 +266,14 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 		#exit 0;
 	}
 	
+    our $_logger;
+    our $_thrower;
+    
 	sub launch {
         my $c = shift;
+        ref $c or $c = Baseliner->app($c);
 		# Baseliner->app($c);
-        $c->model('Services')->launch(@_, c=>$c);
+        return $c->model('Services')->launch(@_, c=>$c);
 	}
 
 	our $global_app;

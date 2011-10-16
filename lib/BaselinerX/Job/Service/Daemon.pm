@@ -129,7 +129,7 @@ sub job_daemon {
 
 sub runner_spawn {
     my ($self, %p ) =@_;
-    my $cmd = "bin/bali job.run --runner \"". $p{runner} ."\" --step $p{step} --jobid ". $p{jobid} . " >>'$p{logfile}' 2>&1";
+    my $cmd = "bin/bali job.run --runner \"". $p{runner} ."\" --step $p{step} --jobid ". $p{jobid} . " --logfile '$p{logfile}' >>'$p{logfile}' 2>&1";
     my $proc = Proc::Background->new( $cmd );
     push @{ $self->{proc_list} }, $proc;
     return $proc->pid;
@@ -170,12 +170,13 @@ sub runner_fork {
             $sid > 0 or _throw "Could not detach job $p{jobid}: $!";
             _log "Detached with session id $sid";
         }
-        $0 = "perl script/bali.pl job.run --runner $p{runner} --step $p{step} --jobid $p{jobid}";
+        # change child process name for the ps command
+        $0 = "perl script/bali.pl job.run --runner $p{runner} --step $p{step} --jobid $p{jobid} --logfile '$p{logfile}'";
         unless( $p{unified_log} ) {
             open (STDOUT, ">>", $p{logfile} ) or die "Can't open STDOUT: $!";
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";
         }
-        Baseliner->model('Services')->launch( 'job.run', data=>{ runner=>$p{runner}, step=>$p{step}, jobid=>$p{jobid} } );
+        Baseliner->model('Services')->launch( 'job.run', data=>{ runner=>$p{runner}, step=>$p{step}, jobid=>$p{jobid}, logfile=>$p{logfile} } );
         exit 0;
     } else {
         _log _loc("***** ERROR: Could not fork job '%1'", $p{jobid} );

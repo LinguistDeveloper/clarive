@@ -58,7 +58,7 @@
 	});
 
     var current_job = function() { return store.reader.jsonData.job }
-    var current_hash = function() { return store.reader.jsonData.log_hash }
+    var current_hash = function() { return store.reader.jsonData.job_key }
 
 	store.on( 'beforeload', function( obj, opt ) {
         var f = Ext.util.JSON.encode( filter_obj );
@@ -327,7 +327,9 @@
     var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
-            var win = window.open( '/job/log/html/' + current_hash()  );
+            var par = '';
+            par += '&job_exec=' + job_exec;
+            var win = window.open( '/job/log/html/' + current_hash() + '?' + par  );
             //var win = window.open( '/job/log/html?id_job=' + current_job().id + '&job_exec=' + job_exec,  _('Log'), '' );
             //win.show();    
         } 
@@ -346,6 +348,13 @@
         handler: function(){
                     var id_job = current_job().id;
                     Baseliner.add_tabcomp( "/comp/job_stash.js", _("Job Stash %1", id_job ), { id_job: id_job } );
+                 }
+    };
+
+    var menu_logfile = { text : _('View Logfile'), icon: '/static/images/icons/page.gif', cls: 'x-btn-text-icon', hidden: false,
+        handler: function(){
+                    var id_job = current_job().id;
+                    Baseliner.add_tabcomp( "/comp/job_logfile.js", _("Logfile %1", id_job ), { id_job: id_job } );
                  }
     };
 
@@ -419,7 +428,7 @@
                     icon: '/static/images/icons/advanced.png', 
                     cls: 'x-btn-text-icon',
                     menu: { 
-                        items: [ menu_stash, menu_delete ]
+                        items: [ menu_stash, menu_delete, menu_logfile ]
                     }
                 }),
 % }
@@ -523,7 +532,6 @@
 
         return css;
     }; 
-        
         
     //Ext.getCmp('main-panel').setActiveTab( Ext.getCmp('main-panel').add(grid) ) ;
 

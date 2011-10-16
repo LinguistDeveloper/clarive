@@ -53,7 +53,7 @@ sub _get_args {
 }
 
 # turns option=>[]  into option=>''
-#  necessary for sending emptyness over an http request
+#    required for sending emptyness over an http request
 sub clean_empty_arrays {
 	my %opts = @_;
 	for( %opts ) {
@@ -81,11 +81,10 @@ my $res     = request(
 #print _dump( $res );
 #print _dump( \%opts );
 
-unless ( defined $res ) {
+if ( ! defined $res ) {
     print STDERR "***REST Error: " . $!;
-    exit 1;
-}
-else {
+    exit 99;
+} else {
 	print $res->{output};
     if ( $res->{rc} > 0 ) {
         print STDERR $res->{msg};

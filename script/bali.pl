@@ -57,6 +57,7 @@ use Baseliner;
 #my $c = bless { stash=>{} } => 'Baseliner';
 use Carp::Always;
 my $c = Baseliner::Cmd->new;
+Baseliner->app( $c );
 use Baseliner::Utils;
 
 my $ns = '/';
@@ -72,22 +73,7 @@ if( 1 ) {
     $opts{ arg_list } = { map { $_ => () } keys %opts }; # so that we can differentiate between defaults and user-fed data
     $opts{ args } = \%opts;
     my $logger = $c->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
-    exit $logger->rc;
-} else {  # deprecated, in favor of the Services model
-    my $service = $c->registry->get($service_name) || die "Could not find service '$service_name'";
-    my $config = $c->registry->get( $service->config ) if( $service->config );
-    my $config_data;
-    if( $config ) {
-        #$config_data = { %{$config_data||{}}, %{ $config->getopt ||{}} };
-        #$config_data = $config->factory( $c, ns=>$ns, bl=>$bl, getopt=>1 );
-        $config_data = $config->factory( $c, ns=>$ns, bl=>$bl, data=>{ %opts } );
-    } else {
-        $config_data = { %opts };
-    }
-
-    # run the service
-    my $logger = $service->run( $c, $config_data );
-    exit $logger->rc;
+	exit ref $logger ? $logger->rc : $logger;
 }
 
 #pod2usage(1) if $help;
@@ -101,6 +87,7 @@ sub ps {
     exit 0;
 }
 
+# deprecated: it's now a porcelain "bali_stop.pl"
 sub stop {
     my $mode = shift;
     $service_name = shift @ARGV;
