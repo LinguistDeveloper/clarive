@@ -16,3 +16,9 @@
 [submodule "features/clarive.core"]
 	path = features/clarive.core
 	url = http://git.vasslabs.com/git/clarive.core.git
+[submodule "features/clarive.ispf"]
+	path = features/clarive.ispf
+	url = http://git.vasslabs.com/git/zos-ispf.git
+[submodule "features/uploader"]
+	path = features/uploader
+	url = http://git.vasslabs.com/git/uploader.git
