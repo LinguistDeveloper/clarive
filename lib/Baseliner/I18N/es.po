@@ -112,7 +112,10 @@ msgid "View Stash"
 msgstr "Ver el Stash"
 
 msgid "*Pushed deployment* for `%1`"
-msgstr "*Despliegue Incluido* para `%1`"
+msgstr "*Despliegue Añadido* para `%1`"
+
+msgid "*%1* Included Elements for Deployment"
+msgstr "*%1* Items incluidos para Despliegue"
 
 msgid "Mapping to `%1` has no matching paths in elements"
 msgstr "Mapeo a `%1` no corresponde a ninguna ruta de elemento" 
@@ -122,6 +125,24 @@ msgstr "Publicando fichero `%1`"
 
 msgid "No Data"
 msgstr "Ocultar Datos"
+
+msgid "Compile"
+msgstr "Compilar"
+
+msgid "Category"
+msgstr "Categoría"
+
+msgid "Favorite"
+msgstr "Favorito"
+
+msgid "Favorites"
+msgstr "Favoritos"
+
+msgid "Add to Favorites..."
+msgstr "Añadir a Favoritos..."
+
+msgid "Remove from Favorites"
+msgstr "Quitar de Favoritos"
 
 msgid "Reverse"
 msgstr "Inversa"
@@ -2106,3 +2127,203 @@ msgstr "Solicitando despliegue manual para el pase %1, línea base %2: %3"
 
 msgid "Publishing file %1 for manual deploy"
 msgstr "Publicando fichero %1 para despliegue manual"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (56)
+msgid "Deployments detected"
+msgstr "Despliegues detectados"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (61)
+msgid "Deployment files for group %1"
+msgstr "Ficheros de Despliegue para el grupo %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (69)
+msgid "*resetting* deployment scripts - they were unset"
+msgstr "*reseteando* scripts de despliegue - sin configurar"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (73)
+msgid "Running deployment: %1"
+msgstr "Ejecutando despliegue: %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (79)
+msgid "Deployment error for %1"
+msgstr "Error de Despliegue en %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (80)
+msgid "Error during deployment %1"
+msgstr "Error durante el despliegue %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (82)
+msgid "Deployment ok for *%1* - %2"
+msgstr "Despliegue ok para *%1* - %2"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (88)
+msgid "Deployed %1 files/dirs to `%2`"
+msgstr "Desplegados %1 fichero(s)/directorio(s) en `%2`"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (100)
+msgid "Deployments Scripts detected"
+msgstr "Detectados Scripts de Despliegue"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (104)
+msgid "Deployment scripts for group *%1*"
+msgstr "Scripts de despliegue para grupo *%1*"
+
+msgid "Running Deployment script %1..."
+msgstr "*Ejecutando* script de despliegue %1..."
+
+# lib/BaselinerX/Service/DeployFromStash.pm (112)
+msgid "Error loading module %1"
+msgstr "Error cargando módulo %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (119)
+msgid "Deployment script error for %1"
+msgstr "Error en el script de despliegue `%1`"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (120)
+msgid "Error during deployment script %1"
+msgstr "Error durante el despliegue del script %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (122)
+msgid "Deployment scripts ok for *%1*"
+msgstr "Ejecución de scripts ok para *%1*"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (127)
+msgid "Finished running %1 scripts"
+msgstr "Finalizada la ejecución de %1 script(s)"
+
+# lib/BaselinerX/Service/ApprovalDaemon.pm (67)
+msgid "%1"
+msgstr "%1"
+
+# lib/BaselinerX/Service/ApprovalDaemon.pm (171)
+msgid "Request %1 created"
+msgstr "Petición %1 creada"
+
+# lib/BaselinerX/Service/ApprovalDaemon.pm (175)
+msgid "Error creating request: %1"
+msgstr "Error creating request: %1"
+
+# lib/BaselinerX/Service/ManualDeploy.pm (99)
+msgid "Processing path %1, action %2"
+msgstr "Processing path %1, action %2"
+
+# lib/BaselinerX/Service/ManualDeploy.pm (121)
+msgid "File <code>%1</code> zipped for manual deploy"
+msgstr "File <code>%1</code> zipped for manual deploy"
+
+# lib/BaselinerX/Service/ManualDeploy.pm (123)
+msgid "Could not find file <code>%1</code> for manual deploy"
+msgstr "Could not find file <code>%1</code> for manual deploy"
+
+# lib/BaselinerX/Service/ManualDeploy.pm (195)
+msgid "Error while trying to create request: %1"
+msgstr "Error while trying to create request: %1"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (62)
+msgid "Item Deploy Mappings"
+msgstr "Mapeos de Depliegue de Elementos"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (107)
+msgid "Invalid job_root %1"
+msgstr "job_root `%1` inválido"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (114)
+msgid "Checking if mapping for bl %1 applies"
+msgstr "Checking if mapping for bl %1 applies"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (127)
+msgid "Checking workspace `%1` for changes `%2` ..."
+msgstr "Checking workspace `%1` for changes `%2` ..."
+
+# lib/BaselinerX/Service/ItemDeploy.pm (135)
+msgid "Checking exclusions"
+msgstr "Checking exclusions"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (138)
+msgid "Excluded workspace mapping %1"
+msgstr "Excluded workspace mapping %1"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (143)
+msgid "After exclusions for %1"
+msgstr "After exclusions for %1"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (156)
+msgid "Mapping to `%1` has no matching workspaces in elements"
+msgstr "Mapping to `%1` has no matching workspaces in elements"
+
+# lib/BaselinerX/Service/RoleServices.pm (35)
+msgid "Role %1 created."
+msgstr "Role %1 creado."
+
+# lib/BaselinerX/Service/RoleServices.pm (38)
+msgid "Action %1 added to role %2."
+msgstr "Action %1 added to role %2."
+
+# lib/BaselinerX/Service/RoleServices.pm (78)
+msgid "Granting role %1 to user %2..."
+msgstr "Granting role %1 to user %2..."
+
+# lib/BaselinerX/Service/Sed.pm (58)
+msgid "%1"
+msgstr "%1"
+
+# lib/BaselinerX/Service/Sed.pm (107)
+msgid "Missing file parameter"
+msgstr "Missing file parameter"
+
+# lib/BaselinerX/Service/Sed.pm (113)
+msgid "Sed: failed to open file %1: %2"
+msgstr "Sed: failed to open file %1: %2"
+
+# lib/BaselinerX/Service/Sed.pm (131)
+msgid "Sed: failed to write to file %1: %2"
+msgstr "Sed: failed to write to file %1: %2"
+
+# lib/BaselinerX/Service/Sed.pm (137)
+msgid "Sed: failed to write to file %1: %2"
+msgstr "Sed: failed to write to file %1: %2"
+
+# root/comp/catalog/manual_deploy.js (82)
+msgid "Minimum %1 characters"
+msgstr "%1 caracter mínimo"
+
+# root/comp/catalog/item_deploy.js (5)
+msgid "Scripts Single"
+msgstr "Scripts Single"
+
+# root/comp/catalog/item_deploy.js (8)
+msgid "Scripts Multi"
+msgstr "Scripts Multi"
+
+# root/comp/catalog/item_deploy.js (11)
+msgid "Include"
+msgstr "Incluir"
+
+# root/comp/catalog/item_deploy.js (15)
+msgid "Exclude"
+msgstr "Excluir"
+
+# root/comp/catalog/item_deploy.js (18)
+msgid "List of nodes to deploy to"
+msgstr "Listado de recursos donde desplegar"
+
+# root/comp/catalog/item_deploy.js (19)
+msgid "Deployments"
+msgstr "Despliegues"
+
+# root/comp/catalog/item_deploy.js (42)
+msgid "Workspace Dir"
+msgstr "Workspace Dir"
+
+# root/comp/catalog/item_deploy.js (46)
+msgid "Use regex, forward slashes and captures: %1"
+msgstr "Utilice regex, barras para adelante y las capturas: %1"
+
+# root/comp/catalog/item_deploy.js (51)
+msgid "Mapping Order"
+msgstr "Orden del Mapeo"
+
+# root/comp/catalog/item_deploy.js (79)
+msgid "Eclipse Java/J2EE Mapping"
+msgstr "Mapeo Eclipse Java/J2EE"
+

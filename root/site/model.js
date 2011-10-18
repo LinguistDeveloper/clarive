@@ -239,3 +239,94 @@ Baseliner.combo_project = function(params) {
     return combo;
 };
 
+// Revisions - ie. packages, etc.
+//    options:
+//            checkin : true   ( only revisions that can handle a checkin op )
+Baseliner.combo_revision = function(params) {
+    if( params == undefined ) params = {};
+    var base = {};
+    if( params.checkin ) {
+        base.checkin = true;
+        base.does    = 'Baseliner::Role::Namespace::Checkin';
+    }
+    var rev_store = new Ext.data.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'ns', 
+        url: '/revision/list_simple',
+        baseParams: base,
+        fields: [ 
+            {  name: 'item' },
+            {  name: 'ns' }
+        ]
+    });
+    var combo = new Ext.form.ComboBox({
+       name: 'ns', 
+       hiddenName: 'ns',
+       fieldLabel: _('Revision'), 
+       mode: 'remote', 
+       store: rev_store, 
+       valueField: 'ns',
+       value: params.value || '',
+       typeAhead: false,
+       minChars: 1,
+       displayField:'item', 
+       editable: true,
+       forceSelection: true,
+       triggerAction: 'all',
+       allowBlank: false,
+       width: 300
+    });
+    return combo;
+};
+
+
+
+Baseliner.combo_tasks = function(params) {
+    if( params == undefined ) params = {};
+	var store_tasks =new Ext.data.JsonStore({
+		root: 'data', 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/tasks/json',
+		fields: [ 'name', 'category', 'assigned', 'description' ]
+	});
+    
+    var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+    var conf;
+    Ext.apply( conf, params, {
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        //emptyText: _('Enter or select the category tags'),
+        triggerAction: 'all',
+        resizable: true,
+        store: store_tasks,
+        mode: 'remote',
+        fieldLabel: _('Tasks'),
+        typeAhead: true,
+        name: 'name',
+        displayField: 'name',
+        hiddenName: 'name',
+        valueField: 'name',
+        displayFieldTpl: tpl2,
+        extraItemCls: 'x-tag',
+        listeners: {
+            newitem: function(bs,v, f){
+                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                var newObj = {
+                    id: v,
+                    name: v
+                };
+                bs.addItem(newObj);
+            }
+        }
+     });
+    var combo_tasks = new Ext.ux.form.SuperBoxSelect( conf );
+     return combo_tasks;
+};
+
+

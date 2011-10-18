@@ -18,6 +18,7 @@
 			{  name: 'type' },
 			{  name: 'bl' },
 			{  name: 'bl_text' },
+            {  name: 'key' },
 			{  name: 'starttime' },
 			{  name: 'schedtime' },
 			{  name: 'last_log' },
@@ -56,7 +57,7 @@
             store: store,
             pageSize: ps,
             displayInfo: true,
-            displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
+            displayMsg: _('Rows {0} - {1} of {2}'),
             emptyMsg: "No hay registros disponibles"
     });
 	paging.on('beforechange', function(){ refresh_stop(); });
@@ -145,6 +146,17 @@
 		refresh_menu.items.first().setChecked(true);
 		autorefresh.stop(task);
 	};
+
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
+        style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
+        handler: function(){
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            if( sel != undefined && sel.data.key != undefined ) {
+                var win = window.open( '/job/log/html/' + sel.data.key  );
+            }
+        } 
+    });
 
     var msg_cancel_delete = [ _('Cancel Job'), _('Delete Job') ];
     var button_cancel = new Ext.Toolbar.Button({
@@ -236,9 +248,12 @@
 
     var render_topic = function(value, p, record){
 		var contents = ''; record.data.contents.join('<br />');
+        var name = record.data.exec != "1"
+                ? String.format("{0} ({1})", record.data.name, record.data.exec)
+                : record.data.name;
         return String.format(
                 '<b><a href="javascript:Baseliner.openLogTab({1}, \'{2}\');" style="font-family: Tahoma;">{0}</a></b><br />',
-                value, record.id, record.data.name ); 
+                name, record.id, record.data.name ); 
     };
 
     function renderLast(value, p, r){
@@ -288,7 +303,6 @@
             enableRowBody: true,
             autoWidth: true,
             autoSizeColumns: true,
-            scrollOffset: 2,
             deferredRender: true,
             startCollapsed: false,
 			hideGroupedColumn: true,
@@ -338,7 +352,7 @@
         view: gview,
 		selModel: row_sel, 
 		columns: [
-				{ header: _('Job'), width: 130, dataIndex: 'name', sortable: true, renderer: render_topic },	
+                { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
 				{ header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
 				{ header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
 				{ header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },	
@@ -361,6 +375,7 @@
 		bbar: paging,        
 		tbar: is_portlet ? [] : [ _('Search') + ': ', ' ',
 				search_field,
+                button_html,
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
 				new Ext.Toolbar.Button({
                     text: _('New Job'),
@@ -447,7 +462,11 @@
 									{ xtype: 'hidden', name:'id_job', value: sel.data.id },
 									{ xtype: 'hidden', name:'job_name', value: sel.data.name },
 									{ xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
+% if( $c->stash->{user_action}->{'action.job.reschedule'} ) {
                                     { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
+% } else {
+                                    { xtype: 'hidden', name: 'run_now', fieldLabel : _("Run Now"), checked: false },
+% }
 									step_combo
 								],
 								buttons: [

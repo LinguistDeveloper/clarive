@@ -1,6 +1,8 @@
 package BaselinerX::LcController;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
+use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
@@ -43,12 +45,13 @@ sub tree_project : Local {
         push @tree, {
             #id         => $node->{type} . ':' . $id,
             text       => _loc( $node->{node} ),
-            url        => '/lifecycle/changeset',
+            url        => $node->{url} || '/lifecycle/changeset',
             icon       => $node->{icon},
             data       => {
                 project    => $project,
                 id_project => $id_project,
                 bl         => $node->{bl},
+                %{ $node->{data} || {} }
             },
             leaf       => \0,
             expandable => \0
@@ -116,9 +119,22 @@ sub changeset : Local {
 
 sub tree : Local {
     my ($self,$c) = @_;
+    my $p = $c->req->params;
+    if( $p->{favorites} eq 'true' ) {
+        $c->forward( 'tree_favorites' );
+    } elsif( $p->{show_workspaces} eq 'true' ) {
+        $c->forward( 'tree_workspaces' );
+    } else {
+        $c->forward( 'tree_all' );
+    }
+    $c->forward( 'View::JSON' );
+}
 
-    my $query = $c->req->params->{query};
-    my $node = $c->req->params->{node};
+sub tree_all : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    my $query = $p->{query};
+    my $node = $p->{node};
 
     if( $node eq '/' ) { 
         $c->forward('tree_projects');
@@ -135,7 +151,145 @@ sub tree : Local {
     #my @projects = Baseliner->model('Permissions')->user_projects_with_action(
         #username=>$c->username, action=>'' 
     #);
+}
+
+sub tree_favorites : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    my @tree;
+    my $favs = [ map { $_->kv } sort { $a->{ns} <=> $b->{ns} }
+        kv->find( provider => 'lifecycle.favorites.' . $c->username )->all ];
+
+    for my $node ( @$favs ) {
+        ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
+        push @tree, $node;
+    }
+    $c->stash->{json} = \@tree;
+}
+
+sub agent_ftp : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    my $dir = $p->{dir};
+
+    my @tree;
+
+    my @path;
+    push @path, $p->{curr} // '//IBMUSER';
+    push @path, $dir if $dir && $dir ne '/';
+    my $path = join '.', @path;
+    _log "FTP path $path";
+
+    use Net::FTP; 
+    my $ftp=Net::FTP->new("sysb");
+    $ftp->login("ibmuser","sys1");
+    $ftp->cwd( $path );
+    my $k = 0;
+    for my $i ( $ftp->dir ) {
+        next if $k++ == 0;
+        my @f = split /[\s|\t]+/, $i;
+        my ($vol, $unit, $ref, $ext, $used, $fmt, $lrecl, $blksz, $dsorg, $dsname ) = @f;
+        _log "FFFFFFFFFFFFFF=" . join ',', @f;
+        my $is_leaf = @f <= 5 ;
+        my $text = @f < 2 ? $vol : ( @f <= 5 ? $f[4] : $dsname );
+
+        my $node = {
+            text => $text, 
+            data => { curr=>$path, dir=>$text },
+            leaf => $is_leaf,
+        };
+        if( $is_leaf ) {
+            $node->{data}{click} = {
+                url      => '/comp/lifecycle/view_file.js',
+                repo_dir => $node->{repo_dir},
+                type     => 'comp',
+                icon     => '/static/images/icons/page.gif',
+                title    => $text,
+            };
+        }
+        push @tree, $node;
+    }
+    $c->stash->{json} = \@tree;
     $c->forward( 'View::JSON' );
 }
 
+sub view_file : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $path = $p->{curr};
+    my $remote = $p->{dir};
+    my $local = _tmp_file;
+    use Net::FTP; 
+    my $ftp=Net::FTP->new("sysb");
+    $ftp->login("ibmuser","sys1");
+    $ftp->cwd( $path );
+    $ftp->get( $remote, $local );
+    my $data = _file( $local )->slurp;
+    unlink $local;
+    $c->stash->{json} = { data=>$data };
+    $c->forward( 'View::JSON' );
+}
+
+sub list_workspaces : Private {
+    my ($self, %args) = @_;
+
+    +{
+        text => 'sysb:TSSTROG',
+        leaf => \0,
+        url  => '/lifecycle/agent_ftp',
+        data => { dir=>'/' },
+        icon => '/static/images/icons/workspace.png',
+        expandable => \1,
+    };
+}
+
+sub tree_workspaces : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    my @tree;
+    my $wks = [ map { $_->kv } sort { $a->{ns} <=> $b->{ns} }
+        kv->find( provider => 'lifecycle.workspaces.' . $c->username )->all ];
+
+    # XXX
+    push @tree, $self->list_workspaces;
+
+    for my $node ( @$wks ) {
+        push @tree, $node;
+    }
+    $c->stash->{json} = \@tree;
+}
+
+sub favorite_add : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        # create the id for the user
+        my $domain = 'lifecycle.favorites.' . $c->username;
+        my $id = time . '.' .  int rand(9999);
+        # delete empty ones
+        $p->{$_} eq 'null' and delete $p->{$_} for qw/data menu/;
+        # decode data structures
+        defined $p->{$_} and $p->{$_} = _decode_json( $p->{$_} ) for qw/data menu/;
+        $p->{id_favorite} = $id;
+        kv->set( ns=>"$domain/$id", data=>$p );
+        { success=>\1, msg=>_loc("Favorite added ok") }
+    } catch {
+        { success=>\0, msg=>shift() }
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub favorite_del : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        my $domain = 'lifecycle.favorites.' . $c->username;
+        my $ns = "$domain/" . $p->{id} ;
+        kv->delete( ns=>$ns ) if $p->{id};
+        { success=>\1, msg=>_loc("Favorite removed ok") }
+    } catch {
+        { success=>\0, msg=>shift() }
+    };
+    $c->forward( 'View::JSON' );
+}
 1;

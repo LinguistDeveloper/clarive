@@ -1,6 +1,37 @@
     Baseliner.tabInfo = {};
+    Baseliner.tabpanel = function() { return Ext.getCmp('main-panel') };
 
     Ext.Ajax.timeout = 60000;
+
+    Baseliner.keyMap = {};
+    Baseliner.eventKey = function(key) {
+        var f = Baseliner.keyMap[ key ];
+        if( f!=undefined ) {
+            return f();
+        } else {
+            //alert( key );
+        }
+    };
+
+    Baseliner.tab_switch = function(step) {
+        var tabpanel = Baseliner.tabpanel();
+        var tab = tabpanel.getActiveTab();
+        var tab_index = tabpanel.items.findIndex('id', tab.id );
+        if( step < 0 && tab_index > 0 ) {
+            var next = tabpanel.items.get( tab_index + step );
+            tabpanel.setActiveTab( next );
+        } else if( step > 0 && tab_index < tabpanel.items.getCount()-1 ) {
+            var next = tabpanel.items.get( tab_index + step );
+            tabpanel.setActiveTab( next );
+        }
+    };
+
+    // F5
+    Baseliner.keyMap[ 116 ] = function() { Baseliner.refreshCurrentTab(); return false };
+    // left arrow = 37 , F9 = 120
+    Baseliner.keyMap[ 120 ] = function() { Baseliner.tab_switch(-1); return true };
+    // right arrow = 39, F10 = 121
+    Baseliner.keyMap[ 121 ] = function() { Baseliner.tab_switch(1); return true };
 
     // Generates a pop-in message
     // User stuff
@@ -244,7 +275,12 @@
     Baseliner.addNewTabItem = function( comp, title, params ) {
         if( params == undefined ) params = { active: true };
         var tabpanel = Ext.getCmp('main-panel');
-        var tab = tabpanel.add(comp);
+		var tab;
+        if( params.tab_index != undefined ) {
+            tab = tabpanel.insert( params.tab_index, comp );
+        } else {
+            tab = tabpanel.add(comp);
+        }
         if( params.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, params.tab_icon );
         if( comp!=undefined && comp.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, comp.tab_icon );
         if( params.active==undefined ) params.active=true;
@@ -456,13 +492,17 @@
 
     Baseliner.error_parse = function( err, xhr ) {
         var str=""; 
+        var trace ="";
+        //**from stacktrace.js :
+        //trace = printStackTrace({ e: err });
+        //trace = '<li>' + trace.join('<li>');
         for(var i in err) {
             str+="<li>" + i + "=" + err[i]; 
         }
         var res = xhr.responseText;
         res.replace(/\</,'&lt;');
         res.replace(/\>/,'&gt;');
-        str += "<hr><pre>" + res;
+        str += "<hr><pre>" + trace + "\n\n" + res;
         Baseliner.errorWin("<% _loc('Error Rendering Tab Component') %>", str);
     };
 
@@ -489,6 +529,7 @@
     };
 
 
+    // deprecated : use add_wincomp( url, title, params, opts );
     Baseliner.addNewWindowComp = function( comp_url, ptitle, params ){
         //params ||= {};
         Baseliner.ajaxEval( comp_url, params, function(comp) {
@@ -556,17 +597,17 @@
             url: url,
             params: params,
             success: function(xhr) {
-                    var err_foo;
+                var err_foo;
                 try {
                     try {
                         var comp = eval(xhr.responseText);
-                            if( typeof( comp ) == 'function' ) {
-                                comp = comp(params);
+                        if( typeof( comp ) == 'function' ) {
+                            comp = comp(params);
                         } else if( typeof(comp) == 'undefined' ) { //IE7
                             eval( "comp=(" + xhr.responseText + ")" );
                             comp = comp(params);
-                            }
-                            try { foo(comp); } catch(ef1) { err_foo = ef1 }
+                        }
+                        try { foo(comp); } catch(ef1) { err_foo = ef1 }
                     } catch(e1) {
                         try {
                             var comp = eval("("+xhr.responseText+")"); //json data structs need this
@@ -631,8 +672,11 @@
     Baseliner.refreshCurrentTab = function() {
         var tabpanel = Ext.getCmp('main-panel');
         var panel = tabpanel.getActiveTab();
+        var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
+        if( info.params==undefined ) info.params={};
+        info.params.tab_index = activeTabIndex;
         if( info!=undefined ) {
             if( info.type == 'comp' ) {
                 tabpanel.remove( panel );

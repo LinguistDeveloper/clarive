@@ -1,14 +1,14 @@
-package BaselinerX::Service::LocalDeploy;
+package BaselinerX::Service::DeployFromStash;
 =head1 NAME
 
-BaselinerX::LocalDeploy - Service to deploy the deployment stash and local files
+BaselinerX::DeployFromStash - Service to deploy from the deployment stash and local files
 
 =head1 DESCRIPTION
 
 This service deploys local files or directories stashed
-in the job stash as C<deployment>. 
+in the job stash as C<deployments>. 
 
-It also runs scripts.
+It also runs scripts from C<deployment_scripts>.
 
 Usage:
 
@@ -59,44 +59,56 @@ sub deployments {
     require Baseliner::Core::Deployment;
     for my $group ( keys %{  $job_stash->{deployments} } ) {
         $log->info( _loc("Deployment files for group %1", $group ), dump=>$job_stash->{deployments}->{$group});
-        for my $d ( _array $job_stash->{deployments}->{$group} ) {
+        for my $deployment ( _array $job_stash->{deployments}->{$group} ) {
             # rollback?
-            next if $self->job->rollback && ! $d->{needs_rollback} ;
+            next if $self->job->rollback && ! $deployment->{needs_rollback} ;
 
-            _debug "Deployment " . _dump $d ;
-            ref $d->{scripts} or do {
-                $d->{scripts} = [];
+            _debug "Deployment " . _dump $deployment ;
+            ref $deployment->{scripts} or do {
+                $deployment->{scripts} = [];
                 $log->debug( _loc( "*resetting* deployment scripts - they were unset" ) );
             };
-            ref $d eq 'HASH' and $d = Baseliner::Core::Deployment->new( $d );
-            my $name = $d->destination->uri;
-            $log->info( _loc( "Running deployment: %1", $name ), dump=>$d );
-            $d->destination->throw_errors( 0 );  # I'll catch them myself
+            ref $deployment eq 'HASH' and $deployment = Baseliner::Core::Deployment->new( $deployment );
+            my $name = $deployment->destination->uri;
+            $log->info( _loc( "Running deployment: %1", $name ), dump=>$deployment );
+            $deployment->destination->throw_errors( 0 );  # I'll catch them myself
 
-            $d->deploy_and_run( callback=>sub {
-                my $ret = shift;
+            # now deploy and run scripts
+            $deployment->deploy_and_run( callback=>sub {
+                my ($ret, $f) = @_;
                 if( $ret->rc ) {
                     $log->error( _loc("Deployment error for %1", $name ), data=>$ret->output );
                     _throw _loc( "Error during deployment %1", $name );
                 } else {
-                    $log->info( _loc("Deployment ok for *%1*", $name), data=>$ret->output );
+                    my $file_or_script = ref $f =~ /Path::Class/ ? $f->basename : "$f";
+                    $log->info( _loc("Deployment ok for *%1* - %2", $name, $file_or_script ), data=>$ret->output );
                 }
             });
 
-            $d->{needs_rollback} = 1;
+            $deployment->{needs_rollback} = 1;
 
-            $log->info( _loc( 'Deployed %1 files/dirs to `%2`', $d->count, $d->destination->uri ) ); 
+            $log->info( _loc( 'Deployed %1 files/dirs to `%2`', $deployment->count, $deployment->destination->uri ) ); 
         }
     }
 }
 
+=head2 deploy_scripts
+
+Execute scripts from the stash.
+
+    push @{ $job->job_stash->{deployment_scripts}->{'my.service.domain'} }, 
+        Baseliner::Node->new( 'ssh_script://user@host:port/path/script.sh?arg=aaa&arg=bbb' );
+
+Important: entries need to be keyed from source.
+
+=cut
 sub deploy_scripts {
     my ($self, $c, $config ) = @_;
     my $log = $self->log;
     my $job_stash = $self->job->job_stash;
     my $count = 0;
 
-    ref $job_stash->{deployment_scripts} eq 'HASH'
+    ref $job_stash->{deployment_scripts} eq 'HASH' && 0 < keys %{  $job_stash->{deployment_scripts} }
         ? $log->info( _loc( "Deployments Scripts detected"), dump=>$job_stash->{deployment_scripts} )
         : do { $log->debug( _loc "No Deployments scripts detected. Skipped" ); return };
 
@@ -113,13 +125,14 @@ sub deploy_scripts {
             # get a nice name
             my $name = $d->uri;
             _debug "Deployment script $name";
+            $log->info( _loc( "Running Deployment script %1...", $name ) );
             $d->throw_errors( 0 );  # I'll catch them myself
             $d->run();
             if( $d->rc ) {
                 $log->error( _loc("Deployment script error for %1", $name ), data=>$d->output );
                 _throw _loc( "Error during deployment script %1", $name );
             } else {
-                $log->info( _loc("Deployment ok for *%1*", $name), data=>$d->output );
+                $log->info( _loc("Deployment scripts ok for *%1*", $name), data=>$d->output );
             }
             $d->{needs_rollback} = 1;
         }

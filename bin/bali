@@ -10,7 +10,9 @@ fi
 
 export LIBPATH=$BASELINER_LIBPATH:$LIBPATH
 
-if [ "$BALI_ENV" != "" ]; then
+if [ "$BASELINER_ENV" != "" ]; then
+	export CATALYST_CONFIG_LOCAL_SUFFIX=$BASELINER_ENV
+elif [ "$BALI_ENV" != "" ]; then
 	export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
 fi
 

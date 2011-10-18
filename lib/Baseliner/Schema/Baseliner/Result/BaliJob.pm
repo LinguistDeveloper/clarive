@@ -311,6 +311,13 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => 50,
   },
+  "key",
+  {
+    data_type => "VARCHAR2",
+    default_value => undef,
+    is_nullable => 1,
+    size => 1024,
+  },
 );
 __PACKAGE__->set_primary_key("id");
 
@@ -463,6 +470,14 @@ sub last_log_message {
 sub is_active {
     my $self = shift;
     return $self->status =~ m/^IN-EDIT|^READY|^RUNNING|^SUSPENDED/ ;
+}
+
+# returns the key column, if not exists then create it, commit and return
+sub hash_key {
+    my $self = shift;
+    $self->key and return $self->key;
+    $self->key( Baseliner::Utils::_md5 );
+    $self->update;
 }
 
 1;

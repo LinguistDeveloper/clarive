@@ -74,7 +74,8 @@ sub catalog_list {
                 include=>join(',', _array $d->{include}),
                 exclude=>join(',', _array $d->{exclude}),
             },
-            mapping     => { destination=>join(', ', _array $d->{deployments}) },
+            mapping     => { destination=>join(', ', _array $d->{deployments}),
+                scripts_multi=>$d->{scripts_multi}, scripts_single=>$d->{scripts_single} },
         };
     }
     return wantarray ? @list : \@list;

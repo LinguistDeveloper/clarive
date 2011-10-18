@@ -116,7 +116,7 @@ sub split_on_regex {
 
 =head2 cut_to_path_regex
 
-Returns an array of elements that match a given path regex.
+Returns a new clone of elements that match a given path regex.
 
     my $list = $elements->cut_to_path_regex( '^/app/folder' );
 
@@ -131,6 +131,19 @@ sub cut_to_path_regex {
     }
     return __PACKAGE__->new( elements=>\@ok );
 }
+
+sub extract_variables {
+	my ( $self, $regex ) = @_;
+    _throw 'Missing argument regex' unless $regex;
+    my @ok;
+    my %vars = ();
+    $regex = qr/$regex/ unless ref $regex eq 'Regexp';
+    for my $e ( @{ $self->elements } ) {
+        %vars = ( %vars, %+ ) if $e->filepath =~ $regex;
+    }
+    return %vars;
+}
+
 
 =head2 list_part
 

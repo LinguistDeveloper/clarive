@@ -3,13 +3,24 @@
     $title => 'Log'
     $job_name
     $job_exec
-    $log_hash
+    $job_exec_total
+    $job_key
     $debug => 0
     $with_data => 0
     $sort => 0
 </%args>
 <%perl>
-    
+    my $url_build = sub {
+        my %p = @_;
+        $p{debug} ||= 0;
+        $p{with_data} ||= 0;
+        $p{sort} ||= 'id asc';
+        $p{job_exec} ||= $job_exec;
+        delete $p{job_exec} if $p{job_exec} < 0 ;  
+        return "/job/log/html/${job_key}?" . join '&', 
+            map { $_ . '=' . $p{$_} } 
+            keys %p 
+    };
 </%perl>
 
 <head>
@@ -55,23 +66,32 @@
 <center>
 <div id="top">
 % if( $debug ) {
-    <a href="/job/log/html/<% $log_hash %>?sort=<% $sort %>&with_data=<% $with_data %>">No Debug</a>
+    <a href="<% $url_build->() %>">No Debug</a>
 % } else {
-    <a href="/job/log/html/<% $log_hash %>?debug=1&sort=<% $sort %>&with_data=<% $with_data %>">Debug</a>
+    <a href="<% $url_build->( debug=>1 ) %>">Debug</a>
 % }
 |
 <% _loc("Sort") %>:
 % if( $sort ) {
-    <a href="/job/log/html/<% $log_hash %>?debug=<% $debug %>"><% _loc("Chronological") %></a>
+    <a href="<% $url_build->() %>"><% _loc("Chronological") %></a>
 % } else {
-    <a href="/job/log/html/<% $log_hash %>?debug=<% $debug %>&with_data=<% $with_data %>&sort=id+desc"><% _loc("Reverse") %></a>
+    <a href="<% $url_build->( sort=>'id desc' ) %>"><% _loc("Reverse") %></a>
 % }
 |
 % if( $with_data ) {
-    <a href="/job/log/html/<% $log_hash %>?debug=<% $debug %>&sort=<% $sort %>"><% _loc("No Data") %></a>
+    <a href="<% $url_build->() %>"><% _loc("No Data") %></a>
 % } else {
-    <a href="/job/log/html/<% $log_hash %>?debug=<% $debug %>&sort=<% $sort %>&with_data=1"><% _loc("View Data") %></a>
+    <a href="<% $url_build->( with_data=>1 ) %>"><% _loc("View Data") %></a>
 % }
+% if( $job_exec_total > 1 ) {
+|
+Exec: 
+<select id="exec" onchange='window.location = "<% $url_build->( job_exec=>-1 ) %>&job_exec=" + this.value '>
+%    for my $ex ( 1..$job_exec_total ) {
+        <option value="<% $ex %>" <% $ex eq $job_exec ? 'selected' : '' %>><% $ex %></option>
+%    }
+</select>
+% } 
 </div>
 
 <div id="log-html">

@@ -5,10 +5,14 @@ if [ "$BASELINER_LOGHOME" != "" ]; then
 else
 	LOGDIR=$BASELINER_HOME/tmp/log
 	mkdir -p $LOGDIR
+        echo "Log directory set to $LOGDIR"
+        export BASELINER_LOGHOME=$LOGDIR
 fi
 
-if [ "$BALI_ENV" != "" ]; then
-	export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+if [ "$BASELINER_ENV" != "" ]; then
+        export CATALYST_CONFIG_LOCAL_SUFFIX=$BASELINER_ENV
+elif [ "$BALI_ENV" != "" ]; then
+        export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
 fi
 
 LOGFILENAME=balid
@@ -35,7 +39,8 @@ fi
 
 if [ "$1" == "stop" ];
 then
-        exec bali stop service.dispatcher 
+        shift
+        exec bali stop service.dispatcher $*
         exit 0
 fi
 

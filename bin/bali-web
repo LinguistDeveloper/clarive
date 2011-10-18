@@ -10,8 +10,10 @@ if [ "$BASELINER_LANG" != "" ]; then
 	export LANG=$BASELINER_LANG
 fi
 
-if [ "$BALI_ENV" != "" ]; then
-	export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+if [ "$BASELINER_ENV" != "" ]; then
+        export CATALYST_CONFIG_LOCAL_SUFFIX=$BASELINER_ENV
+elif [ "$BALI_ENV" != "" ]; then
+        export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
 fi
 
 if [ "$BASELINER_LOGHOME" != "" ]; then
@@ -53,7 +55,7 @@ if [ "$1" = "start" ]; then
     echo "Log file: $LOGFILE"
     cd $BASELINER_HOME
     #nohup perl script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
-    CATALYST_ENGINE=HTTP::Prefork nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    BASELINER_SERVER=prefork nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     SERVER_PID=$!
     echo $SERVER_PID > $PIDFILE
     echo "Server started with pid: $SERVER_PID"

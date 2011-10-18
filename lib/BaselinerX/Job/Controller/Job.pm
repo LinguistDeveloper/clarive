@@ -123,6 +123,21 @@ sub rs_filter {
     return { data=>\@ret, skipped=>$skipped, next_start=>$curr_rec + $processed };
 }
 
+sub job_logfile : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    $c->stash->{json}  = try {
+        my $file = _load( $job->stash )->{logfile};
+        _throw _log "Error: logfile not found or invalid: %1", $file if ! -f $file;
+        my $data = _file( $file )->slurp; 
+        { data=>$data, success=>\1 };
+    } catch {
+        { success=>\0, msg=>"".shift() };
+    };
+    $c->forward( 'View::JSON' );
+}
+
 sub job_stash : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
@@ -293,6 +308,7 @@ sub monitor_json : Path('/job/monitor_json') {
             comments     => $r->get_column('comments'),
             username     => $r->get_column('username'),
             rollback     => $r->get_column('rollback'),
+            key          => $r->get_column('key'),
 			last_log     => $last_log_message,
 			grouping     => $grouping,
 			day          => ucfirst( $day->[1] ),

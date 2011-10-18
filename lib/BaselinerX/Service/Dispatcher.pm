@@ -129,7 +129,7 @@ sub dispatcher {
                 Baseliner->model('Daemons')->kill_daemon( $daemon );
                 
             } elsif ( $daemon->active ) {
-                next if $daemon->pid && pexists( $daemon->pid );
+                next if $daemon->pid > 0 && pexists( $daemon->pid );
                 _debug "Starting daemon " . $daemon->service;
 
 				my $reg = Baseliner->model('Registry')->get( $daemon->service ) if $daemon->service;

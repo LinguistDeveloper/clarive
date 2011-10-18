@@ -2,7 +2,6 @@ package BaselinerX::Type::Controller::Service;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
-use Capture::Tiny qw/capture capture_merged/;
 BEGIN { extends 'Catalyst::Controller' };
 use utf8;
 
@@ -35,24 +34,37 @@ sub rest : Local {
 
 
 	# run the service, capturing output
-	my ($output,$stderr);
-	$output= capture_merged {
+	my ($output ,$stderr, $stdout);
+    #open(my $olderr, ">&STDERR") ;
+    #open(my $oldout, ">&STDOUT") ;
+    #close STDOUT;
+    #close STDERR;
+    #open(STDOUT, ">>", $tf) or die "Can't open STDOUT: $!";
+    #open(STDERR, ">>", $tf) or die "Can't open STDERR: $!";
+    
+	#$output= capture_merged {
+    use IO::CaptureOutput;
+    IO::CaptureOutput::capture( sub {
+    require Baseliner::Core::Logger::Quiet;
+    my $logger = Baseliner::Core::Logger::Quiet->new;
 		try {
-			my $logger;
-				$logger = Baseliner->model('Services')->launch(
+        Baseliner->model('Services')->launch(
 					$p->{service},
-					logger_class => 'Baseliner::Core::Logger::Quiet',
+                logger       => $logger,
 					quiet        => 1,
 					data         => $p
 				);
 			$c->stash->{json} = { msg=>$logger->msg, rc=>$logger->rc };
 		} catch {
 			my $err = shift;
-			my $str = "$err";
-			$c->stash->{json} = { msg=>$str, rc=>255 };
+        $c->stash->{json} = { msg=>$logger->msg . "\n$err", rc=>255 };
 		};
-	};
-	print STDERR $output;
+    }, \$output, \$output );
+	#};
+    #$output = $stdout . $stderr;
+    #open(STDOUT, ">&", $oldout);
+    #open(STDERR, ">&", $olderr);
+
 	utf8::downgrade( $output );
 	$c->stash->{json}->{output} = $output;
 	$c->forward('View::JSON');

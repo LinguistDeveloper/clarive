@@ -102,9 +102,12 @@ sub delete_all {
     my $p    = _parameters(@_);
     _check_parameters( $p, qw/provider/ );
     my $rs = Baseliner->model('Baseliner::BaliRepo')->search( { provider=>$p->{provider} } );
+    my $count;
 	while( my $row = $rs->next ) {
 		$row->delete;
+        $count++;
 	}
+    $count
 }
 
 sub bulk_replace {

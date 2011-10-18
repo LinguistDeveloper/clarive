@@ -192,6 +192,18 @@ Ext.onReady(function(){
     tabpanel.header.hide();
 % }
        
+    // global key captures
+    window.history.forward(1);
+    document.onkeydown = function disableKeys(evt) {
+        evt = (evt) ? evt : ((event) ? event : null);
+        if( evt ) {
+            try {
+                var k = evt.keyCode;
+                return Baseliner.eventKey( k );
+            } catch(e){}
+        }
+    };  
+       
 });
         
     </script>

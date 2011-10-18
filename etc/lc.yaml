@@ -2,7 +2,13 @@ nodes:
     - 
       node: Tasks
       type: component
-      url : /task/grid
+      url : /tasks/grid
+      data:
+          click: 
+            url: /tasks/grid
+            type: comp
+            icon: /static/images/icons/tasks.gif
+
       icon: /static/images/icons/tasks.gif
     - 
       node: Jobs

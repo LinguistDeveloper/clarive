@@ -342,7 +342,7 @@ sub _now {
 }
 
 sub _nowstamp {
-    (my $t = _now )=~ s{\:|\/|\\|\s}{}g;
+    (my $t = _now )=~ s{-|\:|\/|\\|\s}{}g;
     return $t;
 }
 

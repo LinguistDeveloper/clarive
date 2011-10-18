@@ -530,6 +530,7 @@ Ext.onReady(function(){
 	var jc_grid = new Ext.grid.GridPanel({
 		width: 800,
 		height: 150,
+        enableDragDrop: true,
 		style: 'margin-top: 20px',
 		name: 'jc',
 		title: '<% _loc('Job Contents') %>',

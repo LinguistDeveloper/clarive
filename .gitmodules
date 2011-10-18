@@ -19,3 +19,12 @@
 [submodule "features/bde.core"]
 	path = features/bde.core
 	url = http://git.vasslabs.com/git/bde.core.git
+[submodule "features/clarive.ispf"]
+	path = features/clarive.ispf
+	url = http://git.vasslabs.com/git/zos-ispf.git
+[submodule "features/uploader"]
+	path = features/uploader
+	url = http://git.vasslabs.com/git/uploader.git
+[submodule "features/bcv"]
+	path = features/bcv
+	url = http://git.vasslabs.com/git/bcv.git

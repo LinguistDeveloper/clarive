@@ -15,7 +15,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Path::Class;
 use BaselinerX::Job::Elements;
-use Capture::Tiny;
+use IO::CaptureOutput;
 use Carp;
 use Try::Tiny;
 use Sys::Hostname;
@@ -90,29 +90,37 @@ sub row {
 
 Allows services to execute independently afterwards
 
+    bali service.xxxx --job-continue 999 --job-exec [same|next]
+
+This special constructor is called from the Services Model.
+
 =cut
 #   TODO move this to the Jobs model?
 sub new_from_id {
     my ($class,%p)=@_;
     $p{jobid} or _throw 'Missing jobid parameter';
     $p{step} ||= $p{same_exec} ? 'POST' : 'RUN';
-    $p{exec} eq 'last' and $p{exec}=0;
+    my $exec = delete $p{exec};
+    # instantiate myself
     my $job = $class->new( %p );
-    _log "Created job object for jobid=$p{jobid}";
-    # increment the execution
     my $row = $job->row;
-    if( $p{'exec'} != 0 ) {
+    _log "Created job object for jobid=$p{jobid} exec=$exec";
+    # increment the execution in the Job row
+    if( $exec =~ m/next/i ) {
         $row->exec( $row->exec + 1);
+    } elsif( is_number $exec ) {
+        $row->exec( $exec );
     }
     $row->update;
+    $job->exec( $row->exec );
     # setup the logger
     my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid} }) );
-    $log->info(_loc("Job revived"));
     #thaw job stash from table
     my $stash = $job->thaw;
     $log->info(_loc("Job revived"), data=>_dump($stash) );
     $job->bl( $row->bl );
     $job->job_stash( $stash );
+    # initialize my job name
     $job->name( $row->name );
     return $job;
 }
@@ -227,9 +235,11 @@ sub job_run {
 
         #******************  start main runner  ******************
         # typically, a Chain runner, like SimpleChain, or a single service
-        $runner_output = Capture::Tiny::tee_merged {
+        _log "Runner launching service $runner";
+        IO::CaptureOutput::capture( sub {
             $c->launch( $runner ); 
-        };
+        }, \$runner_output, \$runner_output );
+        _log "Finished service $runner";
 
         # exit fast if suspended
         return 0 if $self->status eq 'SUSPENDED';

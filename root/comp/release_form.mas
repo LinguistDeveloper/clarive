@@ -44,7 +44,7 @@ Ext.onReady(function(){
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
-        baseParams: { mask: '^GBP' },
+        //baseParams: { mask: '^' },
         id: 'rownum', 
         url: '/user/application_json',
         fields: [ 
@@ -52,7 +52,7 @@ Ext.onReady(function(){
             {  name: 'ns' }
         ]
     });
-    var app_combo = new Ext.form.ComboBox({
+    var app_combo2 = new Ext.form.ComboBox({
            name: 'ns', 
            hiddenName: 'ns',
            fieldLabel: _('Application'), 
@@ -70,6 +70,7 @@ Ext.onReady(function(){
            width: 120 
     });
 
+    var app_combo = Baseliner.combo_project();
     app_combo.on('change', function(){
         rfc_field.markInvalid( _("Pendiente de validar") );
         rfc_field.validate();
@@ -97,20 +98,73 @@ Ext.onReady(function(){
             remoteSort: false,
             baseParams: { id: id_release },
             url: '/release/contents/json',
-            fields: [ 'item', 'provider', 'ns', 'ns_name', 'ns_type', 'provider', 'date', 'user' ]
+            fields: [ 'item', 'provider', 'ns', 'ns_name', 'ns_type', 'provider', 'date', 'user', 'icon' ]
 	});
     ds_grid.load();
 % }
+
+    var render_icon = function(v) {
+        if( v==undefined ) v="/static/images/icons/release.gif";
+        return '<img src="' + v + '" />';
+    };
+    var render_bold = function(v) {
+        return '<b>' + v + '</b>';
+    };
     var jc_grid = new Ext.grid.GridPanel({
-            width: 800,
-            height: 300,
-            style: 'margin-top: 20px',
-            name: 'jc',
-            title: _('Release Contents'),
-            border: true,
-            ds: ds_grid,
-            cm: colModel
+        width: 800,
+        height: 300,
+        style: 'margin-top: 20px',
+        name: 'jc',
+        enableDD: true, 
+        ddGroup: 'lifecycle_dd',
+        title: _('Release Contents'),
+        border: true,
+        ds: ds_grid,
+        cm: new Ext.grid.ColumnModel([
+            { width: 30, dataIndex: 'icon', renderer: render_icon },
+            {id:'item',header: _('Release Item'), width: 200, sortable: true, locked:false, dataIndex: 'item', renderer: render_bold },
+            {header: _('Item Type'), width: 125, sortable: true, dataIndex: 'ns_type'},
+            {header: _('User'), width: 75, sortable: true, dataIndex: 'user'},
+            {header: _('Location'), width: 85, sortable: true, dataIndex: 'ns' },
+            {header: _('Last Updated'), width: 85, sortable: true, dataIndex: 'date' },
+            {header: _('Description'), width: 350, sortable: true, dataIndex: 'text'}
+        ])
     });
+
+    jc_grid.on('viewready', function() {
+        var drop_target = new Ext.dd.DropTarget(jc_grid.getEl(), {
+                ddGroup    : 'lifecycle_dd',
+                notifyDrop : function(dd, e, data){
+                    var n = dd.dragData.node;
+                    var s = jc_grid.store;
+                    var add_node = function(node ) {
+                        var data = node.attributes.data;
+                        var rec = new Ext.data.Record({
+                            ns: data.ns || node.text,
+                            icon: data.icon,
+                            ns_name: data.ns || node.text,
+                            ns_type: data.ns_type || node.text,
+                            item: node.text,
+                            description: data.description
+                        });
+                        s.add(rec);
+                        Baseliner.message( _('Release'), _( "Added %1 to release", node.text ) );
+                    };
+                    add_node( n );
+                    /* if( n.leaf ) {
+                        add_node(n);
+                    } else {
+                        n.expand();
+                        n.eachChild( function(child) {
+                            if( ! child.disabled ) 
+                                add_node( child );
+                        });
+                    } */
+                    return true;
+                }
+        });
+   }); 
+
     var tb = new Ext.Toolbar({
             style: 'margin: 3px',
             items: [ 
@@ -291,6 +345,48 @@ Ext.onReady(function(){
 
     var field_id = new Ext.form.Hidden({ name: 'id_rel', value: '<% $c->stash->{id} %>' });
 
+	var store_tasks =new Ext.data.JsonStore({
+		root: 'data', 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/tasks/json',
+		fields: [ 'name', 'category', 'assigned', 'description' ]
+	});
+    
+    var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+    var conf;
+    var combo_tasks = new Ext.ux.form.SuperBoxSelect({
+        allowBlank: true,
+        width: 400,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        //emptyText: _('Enter or select the category tags'),
+        triggerAction: 'all',
+        resizable: true,
+        store: store_tasks,
+        mode: 'remote',
+        fieldLabel: _('Tasks'),
+        typeAhead: true,
+        name: 'name',
+        displayField: 'name',
+        hiddenName: 'name',
+        valueField: 'name',
+        displayFieldTpl: tpl2,
+        extraItemCls: 'x-tag',
+        listeners: {
+            newitem: function(bs,v, f){
+                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                var newObj = {
+                    id: v,
+                    name: v
+                };
+                bs.addItem(newObj);
+            }
+        }
+     });
+
     var main_form = new Ext.FormPanel({ 
              url: '/release/update', 
              renderTo: 'releaseForm<% $iid %>',
@@ -302,7 +398,7 @@ Ext.onReady(function(){
                   field_id,
                   { xtype: 'hidden', name: 'contents', value: '<% $c->stash->{contents} %>' },
                   { xtype: 'hidden', name: 'bl', value: '<% $c->stash->{bl} %>' },
-                  app_combo, rfc_field,
+                  app_combo, combo_tasks, 
                   { 
                     xtype: 'textfield', 
                     fieldLabel: _('Texto Libre'),
