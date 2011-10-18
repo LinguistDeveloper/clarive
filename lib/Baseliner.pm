@@ -75,6 +75,19 @@ __PACKAGE__->config( {
         },
     });
 
+# __decrypt( ... )__  conf definition
+__PACKAGE__->config->{ 'Plugin::ConfigLoader' }->{ substitutions } = {
+    decrypt => sub {
+        my $c = shift;
+        require Crypt::Blowfish::Mod;
+        my $key = $c->config->{decrypt_key};
+        die "Error: missing 'decrypt_key' config parameter" unless length $key;
+        #my $key = '1234567';
+        my $b = Crypt::Blowfish::Mod->new( $key );
+        $b->decrypt( @_ ); 
+    }
+};
+
 if( $ENV{BALI_CMD} ) {
 	# only load the root controller, for capturing $c
 	__PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
