@@ -1,4 +1,8 @@
 #!/bin/sh
 
-ps uwwx | grep perl | grep "ba.*pl"
+echo "--------------| Dispatcher |-----------"
+ps uwwx | grep perl | grep "ba.*pl" | grep -v bali_server
+echo "--------------|   Server   |-----------"
+ps uwwx | grep starman | grep -v grep
+ps uwwx | grep "bali_server" | grep -v grep
 
