@@ -22,3 +22,6 @@
 [submodule "features/uploader"]
 	path = features/uploader
 	url = http://git.vasslabs.com/git/uploader.git
+[submodule "features/bcv"]
+	path = features/bcv
+	url = http://git.vasslabs.com/git/bcv.git
