@@ -1,0 +1,28 @@
+use strict;
+use warnings;
+use WWW::Mechanize;
+use v5.10;
+
+#use Test::More tests => 1;                      # last test to print
+
+my $mech = WWW::Mechanize->new();
+for  ( <DATA> ) {
+	next unless /^(\w+): (.*)$/;
+	#say "$1 : $2";
+	$mech->add_header( $1 => $2 );
+}
+my $res = $mech->get( 'http://localhost:3000' );
+say $res->as_string;
+
+
+__DATA__
+accept: image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/x-shockwave-flash, application/xaml+xml, application/vnd.ms-xpsdocument, application/x-ms-xbap, application/x-ms-application, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*
+accept-encoding: gzip, deflate
+accept-language: en-GB,es;q=0.5
+content-length: 0
+host: scm-test.bde.es
+user-agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)
+via: HTTP/1.1 scm-test.bde.es
+iv_server_name: prue02-webseald-tamsvc02
+ua-cpu: x86
+samlv20: <saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="Assertion-uuide308681e-012e-1e4f-b49f-ca424009c36f" IssueInstant="2011-03-23T14:05:02Z" Version="2.0"><saml:Issuer Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">BdE</saml:Issuer><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="uuide308681f-012e-1f63-b94e-ca424009c36f"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:CanonicalizationMethod><ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"></ds:SignatureMethod><ds:Reference URI="#Assertion-uuide308681e-012e-1e4f-b49f-ca424009c36f"><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"></ds:Transform><ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"><xc14n:InclusiveNamespaces xmlns:xc14n="http://www.w3.org/2001/10/xml-exc-c14n#" PrefixList="xs saml xsi"></xc14n:InclusiveNamespaces></ds:Transform></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"></ds:DigestMethod><ds:DigestValue>WwhUZbqegv24A96Etv1ALj/k87U=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>QHmFSBqXSgw4yk8xBCwqjLq3sbUXbEy2U6CUMyrtFmgJGD7uKINoEy2+ZVIwVTw0CdogRmxO6EKZPT1QjW/rpEXOwQm9s110PSrt1l7uChrJGgox5rLlqAZtYGGPOgF/mlRjRVtwaK5mTPymDG2Z4VdhcbMxHDTZaU9N9ijuWt4=</ds:SignatureValue><ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIICBzCCAXCgAwIBAgIEQH26vjANBgkqhkiG9w0BAQQFADBIMQswCQYDVQQGEwJVUzEPMA0GA1UEChMGVGl2b2xpMQ4wDAYDVQQLEwVUQU1lQjEYMBYGA1UEAxMPZmltZGVtby5pYm0uY29tMB4XDTA0MDQxNDIyMjcxMFoXDTE3MTIyMjIyMjcxMFowSDELMAkGA1UEBhMCVVMxDzANBgNVBAoTBlRpdm9saTEOMAwGA1UECxMFVEFNZUIxGDAWBgNVBAMTD2ZpbWRlbW8uaWJtLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAiZ0D1X6rk8+ZwNBTVZt7C85m421a8A52Ksjw40t+jNvbLYDp/W66AMMYD7rB5qgniZ5K1p9W8ivM9WbPxc2u/60tFPg0e/Q/r/fxegW1K1umnay+5MaUvN3p4XUCRrfg79OvurvXQ7GZa1/wOp5vBIdXzg6i9CVAqL29JGi6GYUCAwEAATANBgkqhkiG9w0BAQQFAAOBgQBXiAhxm91I4m+g3YX+dyGc352TSKO8HvAIBkHHFFwIkzhNgO+zLhxg5UMkOg12X9ucW7leZ1IB0Z6+JXBrXIWmU3UPum+QxmlaE0OG9zhp9LEfzsE5+ff+7XpS0wpJklY6c+cqHj4aTGfOhSE6u7BLdI26cZNdzxdhikBMZPgdyQ==</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature><saml:Subject><saml:NameID>qinfmpa</saml:NameID></saml:Subject><saml:Conditions NotBefore="2011-03-23T14:04:02Z" NotOnOrAfter="2011-03-23T14:15:02Z"><saml:AudienceRestriction><saml:Audience>http://scm</saml:Audience></saml:AudienceRestriction></saml:Conditions><saml:AuthnStatement AuthnInstant="2011-03-23T14:05:02Z"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:Password</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement><saml:AttributeStatement><saml:Attribute Name="grupos"><saml:AttributeValue xsi:type="xs:string">TBTWASMonitor</saml:AttributeValue><saml:AttributeValue xsi:type="xs:string">TGGFIMSoporteAplicacion</saml:AttributeValue><saml:AttributeValue xsi:type="xs:string">iv-admin</saml:AttributeValue><saml:AttributeValue xsi:type="xs:string">TBTWAS01</saml:AttributeValue><saml:AttributeValue xsi:type="xs:string">TBTWASConfigurador</saml:AttributeValue><saml:AttributeValue xsi:type="xs:string">TGGDPWSoporteAplicacion</saml:AttributeValue><saml:AttributeValue xsi:type="xs:string">TGGTAMSoporteAplicacion</saml:AttributeValue></saml:Attribute><saml:Attribute Name="usuario"><saml:AttributeValue xsi:type="xs:string">QINFMPA - MIGUEL PASCUAL PAREJA</saml:AttributeValue></saml:Attribute></saml:AttributeStatement></saml:Assertion>

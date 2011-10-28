@@ -1,0 +1,375 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Subapplication"
+msgstr "Subaplicación"
+
+msgid "Subproject"
+msgstr "Subaplicación"
+
+msgid "Request Results"
+msgstr "Solicitar Resultados"
+
+msgid "Request analysis"
+msgstr "Solicitar análisis"
+
+msgid "Analysis requested"
+msgstr "Análisis solicitado"
+
+msgid "Result"
+msgstr "Auditoría"
+
+msgid "Grade"
+msgstr "Nota"
+
+msgid "Qualification"
+msgstr "Indicador Global"
+
+msgid "Violation"
+msgstr "Violación"
+
+msgid "Project"
+msgstr "Aplicación"
+
+msgid "Metrics"
+msgstr "Indicadores"
+
+msgid "Packages"
+msgstr "Paquetes"
+
+msgid "Level"
+msgstr "Nivel"
+
+msgid "FAILURE"
+msgstr "NO PASA"
+
+msgid "PASS"
+msgstr "PASA"
+
+msgid "ANALYSIS REQUESTED"
+msgstr "Análisis solicitado"
+
+msgid "ANALYZING RESULTS"
+msgstr "Analizando resultados"
+
+
+msgid "Analysis recalculated"
+msgstr "Análisis recalculado"
+
+msgid "Request recalc"
+msgstr "Recalcular análisis"
+
+msgid "New analysis"
+msgstr "Nuevo análisis"
+
+msgid "Send Source code"
+msgstr "Enviar código fuente"
+
+msgid "Source code sent"
+msgstr "Código fuente enviado"
+
+msgid "Accept"
+msgstr "Aceptar"
+
+msgid "Select project to analyze"
+msgstr "Seleccione un proyecto para analizar"
+
+msgid "Select a nature"
+msgstr "Seleccione una naturaleza"
+
+msgid "Could not connect to sqa server %1:%2"
+msgstr "No se ha podido conectar al servidor sqa %1:%2"
+
+msgid "Error when creating job dir RC=%1:%2"
+msgstr "Error al crear direcorio de job %1:%2"
+
+msgid "Error when sending sources tar file %1:%2"
+msgstr "Error al enviar el fichero de fuentes %1:%2"
+
+msgid "Error when untarring sources file RC=%1:%2"
+msgstr "Error al descomprimir el fichero de fuentes %1:%2"
+
+msgid "Error when sending sources builds file %1:%2"
+msgstr "Error al enviar el fichero de compilados %1:%2"
+
+msgid "Error when untarring builds file RC=%1:%2"
+msgstr "Error al descomprimir el fichero de compilados %1:%2"
+
+msgid "SUCCESS"
+msgstr "CORRECTO"
+
+msgid "ERROR"
+msgstr "ERROR"
+
+msgid "Please wait..."
+msgstr "Espere, por favor..."
+
+msgid "Loading..."
+msgstr "Cargando..."
+
+msgid "There are no projects for that application"
+msgstr "No hay proyectos Harvest para la aplicación seleccionada"
+
+msgid "NO TESTS"
+msgstr "N/A"
+
+msgid "SubapNature"
+msgstr "Subaplicación/Naturaleza"
+
+msgid "Project/Nature"
+msgstr "Aplicación/Naturaleza"
+
+msgid "%Errors"
+msgstr "%Errores pruebas"
+
+msgid "%Coverture"
+msgstr "%Cobertura"
+
+msgid "Analysis status"
+msgstr "Estado"
+
+msgid "HTML Report"
+msgstr "Detalles"
+
+msgid "Plase, confirm that you want to request the analysis of every nature of "
+msgstr "Por favor, confirme que quiere seleccionar el análisis de todas las naturalezas de "
+
+msgid "Plase, confirm that you want to request the analysis of every subproject of "
+msgstr "Por favor, confirme que quiere seleccionar el análisis de todas las subaplicaciones de "
+
+msgid "State in the life cycle of the source code for this analysis"
+msgstr "Estado en el ciclo de vida del código fuente de este análisis"
+
+msgid "Name of the project"
+msgstr "Nombre del proyecto"
+
+msgid "Name of the subproject"
+msgstr "Nombre de la subaplicación"
+
+msgid "Nature of the subproject"
+msgstr "Naturaleza del subproyecto"
+
+msgid "Summary of the results extracted from the audit report"
+msgstr "Resumen de los resultados extraídos del informe de auditoría"
+
+msgid "Date and time when the analysis started"
+msgstr "Fecha y hora en la que comenzó el análisis"
+
+msgid "Date and time when the analysis finished"
+msgstr "Fecha y hora en la que finalizó el análisis"
+
+msgid "Qualification of the analysis.  The value is the GLOBAL indicator of the report"
+msgstr "Nota del análisis.  El valor es el del indicador global del informe de auditoría"
+
+msgid "Result of the analysis"
+msgstr "Resultados del análisis"
+
+msgid "Link to the results or error report"
+msgstr "Enlaces al informe de auditoría o al informe de detalles del error"
+
+msgid "List of packages included in the analysis"
+msgstr "Lista de paquetes incluidos en el análisis"
+
+msgid "Links to the reports with the results of the analysis by programming language"
+msgstr "Enlaces a los informes con los resultados de los análisis por lenguaje de programación"
+
+msgid "Status of the last analysis"
+msgstr "Estado del último análisis"
+
+msgid "% of unit tests failed"
+msgstr "% de tests erróneos"
+
+msgid "% of code coverture of the tests"
+msgstr "% de cobertura de código de los tests realizados"
+
+msgid "The user %1 doesn't have permission to use SQA portal"
+msgstr "El usuario %1 no tiene permiso para acceder al portal de SQA"
+
+msgid "Run SQA"
+msgstr "Ejecutar SQA"
+
+msgid "Block deployment"
+msgstr "Bloquear pase"
+
+msgid "Edit config"
+msgstr "Editar"
+
+msgid "Remove config"
+msgstr "Borrar"
+
+msgid "Edit global"
+msgstr "Editar global"
+
+msgid "Trend"
+msgstr "Tendencia"
+
+msgid "Nature"
+msgstr "Naturaleza"
+
+msgid "Global configuration"
+msgstr "Configuración global"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (7)
+msgid "Access to the quality portal"
+msgstr "Acceso al portal de calidad"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (11)
+msgid "Can request a new quality analysis"
+msgstr "Puede solicitar un nuevo análisis de calidad"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (15)
+msgid "Can request a new analysis from an already calculated project"
+msgstr "Puede solicitar un nuevo análisis a partir de una aplicación previamente calculado"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (19)
+msgid "Can request the analysis of all subapp/nature of a Project"
+msgstr "Puede solicitar el análisis de todas las subaplicaciones/naturalezas de una aplicación"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (23)
+msgid "Can request the analysis of all subapp/nature of a Subproject"
+msgstr "Puede solicitar el análisis de todas las subaplicaciones/naturalezas de una subaplicación"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (27)
+msgid "Can request the recalc of an already calculated project"
+msgstr "Puede solicitar el recálculo de una apliación ya calculada"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (31)
+msgid "Can see the General branch in SQA tree"
+msgstr "Puede ver la rama general en el árbol de SQA"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (35)
+msgid "Can see the Project branch in SQA tree"
+msgstr "Puede ver la rama Aplicación en el árbol de SQA"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (39)
+msgid "Can see the subproject branch in SQA tree"
+msgstr "Puede ver la rama Subaplicación en el árbol de SQA"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (43)
+msgid "Can see the Subproject/Nature branch in SQA tree"
+msgstr "Puede ver la rama Subaplicación/Naturaleza en el árbol de SQA"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (47)
+msgid "Can see the packages branch in SQA tree"
+msgstr "Puede ver la rama de paquetes en el árbol de SQA"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (51)
+msgid "Can see the configuration branch in SQA tree"
+msgstr "Puede ver la rama de configuración en el árbol de SQA"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (55)
+msgid "Can configure a project"
+msgstr "Puede configurar una aplicación"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (59)
+msgid "Can configure the global SQA properties"
+msgstr "Puede configurar las propiedades globales de SQA"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (63)
+msgid "Can see the project in SQA grid"
+msgstr "Puede ver una aplicación en la rejilla de SQA"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (67)
+msgid "Receive a mail when an analisys finishes"
+msgstr "Recibe un mensaje de correo cuando un análisis finaliza"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (68)
+msgid "Receive a mail when a package analisys finishes"
+msgstr "Recibe un mensaje de correo cuando un análisis de paquetes finaliza"
+
+# features\sqa\lib\BaselinerX\SQAMain.pm (75)
+msgid "Receive a daily mail whith the analisys results"
+msgstr "Recibe un mensaje de correo diario con los resultados de los análisis"
+
+# features\sqa\lib\BaselinerX\Controller\SQA.pm (19)
+msgid "Portal de Calidad"
+msgstr "Portal de Calidad"
+
+# features\sqa\lib\BaselinerX\Controller\SQA.pm (773)
+msgid "The user doesn't have permission to request the analysis of a entire subproject"
+msgstr "El usuario no tiene permiso para solicitar el análisis de una subaplicación completa"
+
+# features\sqa\root\comp\sqa\grid.js (32)
+msgid "SQA Help"
+msgstr "SQA Help"
+
+# features\sqa\root\comp\sqa\grid.js (142)
+msgid "Running"
+msgstr "En ejecución"
+
+# features\sqa\lib\BaselinerX\Controller\SQA.pm (19)
+msgid "Quality portal"
+msgstr "Portal de Calidad"
+
+# features\sqa\root\comp\sqa\grid.js (32)
+msgid "SQA Help"
+msgstr "Ayuda de SQA"
+
+# features\sqa\root\comp\sqa\grid.js (257)
+msgid "ERROR"
+msgstr "ERROR"
+
+# features\sqa\root\comp\sqa\grid.js (319)
+msgid "Please, confirm that you want to remove the SQA configuration for the project"
+msgstr "Por favor, confirma que quieres borrar la configuracion para la aplicación"
+
+# features\sqa\root\comp\sqa\grid.js (751)
+msgid "Configuration of "
+msgstr "Configuración de "
+
+# features\sqa\root\comp\sqa\grid.js (913)
+msgid "Select a baseline"
+msgstr "Selecciona un entorno"
+
+# features\sqa\root\comp\sqa\grid.js (915)
+msgid "Select a project"
+msgstr "Selecciona una aplicación"
+
+# features\sqa\root\comp\sqa\grid.js (917)
+msgid "Select a subproject"
+msgstr "Selecciona una subaplicación"
+
+# features\sqa\root\comp\sqa\grid.js (1010)
+msgid "Select project"
+msgstr "Seleccionar proyecto"
+
+# features\sqa\root\comp\sqa\grid.js (1043)
+msgid "SQA"
+msgstr "SQA"
+
+# features\sqa\root\comp\sqa\grid.js (1047)
+msgid "Config"
+msgstr "Configuración"
+
+# features\sqa\root\comp\sqa\grid.js (1061)
+msgid "General"
+msgstr "General"
+
+# features\sqa\root\comp\sqa\grid.js (1085)
+msgid "Navigator"
+msgstr "Navegador"
+
+# features\sqa\root\comp\sqa\grid.js.bak (1039)
+msgid "CAM"
+msgstr "Aplicación"
+
+# features\sqa\root\comp\sqa\grid.js.bak (1039)
+msgid "WAITING FOR SLOT"
+msgstr "Esperando semáforo"
+
+msgid "Plase, confirm that you want to delete the analysis of "
+msgstr "Por favor, confirme que quiere borrar el análisis de "
+
+msgid "Delete analysis"
+msgstr "Borrar análisis"
+
+msgid "User manual"
+msgstr "Manual de usuario"
+
+msgid "Documents"
+msgstr "Documentos"
+
+msgid "Checking rules"
+msgstr "Reglas de ChecKing"

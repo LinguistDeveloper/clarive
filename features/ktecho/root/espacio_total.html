@@ -1,0 +1,13 @@
+<table width='100%'>
+    <tr><td> Tamaño total utilizado por el Repositorio (comprimido): <td><b><% $total_compress %> MB </td></tr>
+    <tr><td> Tamaño del contenido Repositorio (sin comprimir):       <td><b><% $total          %> MB </td></tr>
+	<tr><td> Total de items:                                         <td><b><% $total_item     %>    </td></tr>
+	<tr><td> Total de versiones:                                     <td><b><% $total_ver      %>    </td></tr>
+</table>
+
+<%args>
+    $total_compress => $ARGS{total_compress}
+    $total          => $ARGS{total}
+    $total_item     => $ARGS{total_item}
+    $total_ver      => $ARGS{total_ver}
+</%args>

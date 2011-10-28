@@ -1,0 +1,30 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8    \n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# Job Status Codes
+msgid "Changeman Package"
+msgstr "Changeman Package"
+
+msgid "Unknown"
+msgstr "Unknown"
+
+msgid "Changeman Batch"
+msgstr "Changeman Batch"
+
+msgid "Changeman Batch-DB2"
+msgstr "Changeman Batch-DB2"
+
+msgid "Changeman Batch-LinkList"
+msgstr "Changeman Batch-LinkList"
+
+msgid "Changeman Online"
+msgstr "Changeman Online"
+
+msgid "Changeman Force LinkList Refresh"
+msgstr "Changeman Force LinkList Refresh"
+
+msgid "Changeman Force DB2 Refresh"
+msgstr "Changeman Force DB2 Refresh"

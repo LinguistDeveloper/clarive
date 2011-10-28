@@ -1,0 +1,120 @@
+<script language="JavaScript">
+    function showWindow() {
+        var win = new Ext.Window({
+            width: 500,
+            height: 200,
+            autoScroll: true,
+            closeAction: "close",
+            resizable: true,
+            layout: "fit",
+            autoLoad: "http://prusv053:3000/consola/index?env_name=SCT&env=TEST&sub_apl=sct_edw&operator=START"
+        });
+        win.show();
+	}
+</script>
+
+<!--  autoLoad: "http://prusv053:3000/consola/test" -->
+<!--  autoLoad: "http://prusv053:3000/consola/index?env_name=SCT&env=TEST&sub_apl=sct_edw&operator=START" -->
+
+<HTML>
+  <HEAD></HEAD>
+  <BODY> <div id="modal_container">
+          <table align="center" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <th id="encabezado"> CAM </th>
+        <th id="encabezado"> Subaplicacion </th>
+% foreach my $entorno (@entornos) {
+      <th colspan= <% $columnas %> id="encabezado"> <% $entorno %> </th>
+% }
+      </tr>
+% foreach my $key ( sort keys %cam ) {
+<tr><th rowspan= <% scalar( @{ $cam{$key} } ) %> id="cam"> <% $key %> </th>
+% foreach my $value ( sort @{ $cam{$key} } ) {
+%if ( $value ne $cam{$key}[0] ) {
+      <tr>
+% }
+      <td id="valor"> <% $value %> </td>
+% foreach my $entorno (@entornos) {
+      <td width= <% $width_table %> id="valor">
+           <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=START">   Iniciar   </a> |
+           <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=STOP">    Parar     </a> | 
+           <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=RESTART"> Reiniciar </a>  
+      </td>
+      <td id="valor"> <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=LOGWAS">   Logs de WAS        </a>   </td>
+      <td id="valor"> <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=LOGAPL">   Logs de Aplicacion </a>   </td>
+      <td id="valor"> <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=CONFIG">   Config             </a> 
+                    ( <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=CONFIGLS"> ls                 </a> ) </td>
+      <td id="valor"> <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=INFOWAS">  InfoWAS            </a>   </td>
+% }
+%if ( $value ne $cam{$key}[0] ) {
+      </tr>
+% } # --- End If ---
+% } # --- End Foreach (Value) ---
+      </tr>
+% } # --- End Foreach (Key) ---
+    </table>
+  </div></BODY>
+<HTML>
+
+<%args>
+  $width_table => 180
+  %cam         => %{ $ARGS{hash} }
+  @entornos    => ( 'TEST', 'ANTE', 'PROD' )
+  $columnas    => scalar(@entornos) + 2
+</%args>
+
+<style type="text/css">
+	#modal_container {
+		background-color:#fff;
+		overflow:auto;
+		font-family:"Lucida Grande",Verdana;
+		font-size:9px;
+		color:#333;
+		text-align:left;
+	}
+
+	#modal_overlay {
+		background-color:#000;
+    }
+
+    #encabezado {
+        background-color:#D6DBEE;
+        text-align:center;
+        border-top:0;
+        border-bottom:2px solid white;
+        padding-left:7px;
+        padding-right:7px;
+        padding-bottom:2px;
+        padding-top:2px;
+        border-left:1px solid white;
+    }
+
+    #cam {
+        background-color:#E3E7F7;
+        width=70px;
+        text-align:center;
+        border-bottom:1px solid white;
+        font-size:15px;
+    }
+
+    #valor {
+        background-color:#E3E7F7;
+        border-bottom:1px solid white;
+        border-left:1px solid white;
+        text-align=center;
+        font-size:13px;
+        padding-left:5px;
+        padding-right:5px;
+        padding-top:1px;
+        padding-bottom:1px;
+    }
+
+    a:hover {
+        text-decoration:none;
+    }
+
+    a {
+        color:black;
+        text-decoration:none;
+    }
+</style>

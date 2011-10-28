@@ -1,0 +1,29 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Changeman package"
+msgstr "Paquete de Changeman"
+
+msgid "Unknown"
+msgstr "Desconocido"
+
+msgid "Changeman Batch"
+msgstr "Changeman Batch"
+
+msgid "Changeman Batch-DB2"
+msgstr "Changeman Batch-DB2"
+
+msgid "Changeman Batch-LinkList"
+msgstr "Changeman Batch-LinkList"
+
+msgid "Changeman Online"
+msgstr "Changeman Online"
+
+msgid "Changeman Force LinkList Refresh"
+msgstr "Forzar refresco LinkList"
+
+msgid "Changeman Force DB2 Refresh"
+msgstr "Forzar refresco DB2"
+

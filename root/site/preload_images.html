@@ -1,0 +1,13 @@
+<%perl>
+	my $path = $c->path_to( '/root/static/images' );
+	my @img = glob $path . '/*';
+	push @img, glob $path . '/icons/*';
+	my $path_root = $c->path_to( '/root' );
+	@img = map { s{$path_root}{}g; $_ } @img;
+	@img = grep /\.jpg$|\.gif$/, @img;
+</%perl>
+
+% foreach my $img ( @img ) {
+%      chomp $img;
+	<img style='display: none' src='<% $img %>'></img>
+% }

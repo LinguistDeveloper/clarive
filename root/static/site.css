@@ -1,0 +1,239 @@
+/*  Job Items Search */
+.ext-ie6 .tab-style, .ext-ie7 .tab-style, .ext-ie8 .tab-style {
+        padding: 10px;
+        width: 820px;
+}
+.ext-gecko .tab-style {
+        padding: 10px;
+        width: 800px;
+}
+.search-item {
+    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    padding:3px 10px 3px 10px;
+    border:1px solid #fff;
+    border-bottom:1px solid #eeeeee;
+    white-space:normal;
+    color:#555;
+}
+.search-item h3 {
+    display:block;
+    font:inherit;
+    font-weight:bold;
+    color:#222;
+}
+
+.search-item h3 span {
+    float: right;
+    font-weight:normal;
+    margin:0 0 5px 5px;
+    width:115px;
+    display:block;
+    clear:none;
+}
+
+.search-title {
+    font:bold 10px tahoma, arial, helvetica, sans-serif;
+    white-space:normal;
+    width:600px;
+}
+
+.search-r {
+    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    white-space:normal;
+    color:#555;
+    width:450px;
+}
+
+.search-l {
+    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    white-space:normal;
+    color:#555;
+    width:300px;
+}
+
+.curved {
+ -moz-border-radius:4px;
+ -webkit-border-radius:4px;
+ /* behavior:url(/static/images/border-radius.htc); */
+}
+
+.cannot-job { color: gray; }
+.cannot-job h3 { color: gray; }
+
+/* Pop-in message */
+
+.msg .x-box-mc {
+    font-size:14px;
+}
+
+#msg-div {
+    position:absolute;
+    left:35%;
+    top:10px;
+    width:350px;
+    z-index:20000;
+}
+
+.form-label-1 { font-size: 20px; font-weight: bold; } 
+.form-field-help { font-size: 10px; padding: 0px 0px 0px 100px }
+
+/* Calendar */
+.job-calendar h1 { font-size: 12pt; font-weight: bold; text-transform: capitalize }
+.job-calendar th { font-size: 12pt; font-weight: bold; text-transform: capitalize }
+.job-calendar td { font-size: 9pt; }
+td.normal { background-color: #70E080; }
+td.urgente { background-color: #F08080; }
+td.nopase { background-color: #D0D0D0; }
+td.normalHover { background-color: #80C080; }
+td.urgenteHover { background-color: #C08080; }
+td.nopaseHover { background-color: #B0B0B0; }
+td.normalDes { background-color: #A0B0A0; }
+td.urgenteDes { background-color: #B0A0A0; }
+td.nopaseDes { background-color: #E0E0E0; }
+td.normalDesHover { background-color: #80C080; }
+td.urgenteDesHover { background-color: #C08080; }
+td.nopaseDesHover { background-color: #B0B0B0; }
+.job-calendar .boton {  }
+.job-calendar select { width: 160px; }
+
+/*************************************************
+
+Help File Styles
+
+*************************************************/
+
+.help-off { background-image: '/static/images/icons/lightbulb_off.png' }
+.help-on { background-image: '/static/images/icons/lightbulb.png' }
+
+pre { font-family: Consolas, Courier New, mono; }
+
+#baseliner-help-win .x-window-body {
+    background-color: #fff;
+    font-size: 11px;
+    font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
+    padding: 5px 5px 5px 5px;
+    overflow: auto;
+}
+#baseliner-help-win p {
+    font-size: 11px;
+    font-family: Verdana, Arial;
+    padding: 3px 5px 3px 10px;
+    margin: 5px 0px 5px 0px;
+    line-height: 15px;
+}
+#baseliner-help-win img {
+    margin: 3px 3px 3px 3px;
+}
+#baseliner-help-win code {
+    background-color: #f0f0f0;
+}
+#baseliner-help-win ul {
+    font-size: 11px;
+    margin: 5px 0px 5px 20px;
+    list-style: circle inside;
+    font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
+}
+#baseliner-help-win li {
+    font-size: 11px;
+    font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
+}
+#baseliner-help-win h1 {
+    background-color: #EDF3FE;
+    font-weight: bold;
+    margin: -5px -5px 0px -5px;
+    padding: 10px 3px 10px 3px;
+    font-size: 18px; font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
+}
+#baseliner-help-win h2 {
+    background-color: #FFEBBC;
+    font-weight: bold;
+    padding: 3px 3px 3px 10px;
+    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif;
+}
+#baseliner-help-win h3 {
+    color: #9F263A;
+    font-weight: bold;
+    margin: 5px 0px 5px 5px;
+    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+}
+#baseliner-help-win h4 {
+    color: #111;
+    font-style: italic;
+    margin: 5px 0px 5px 5px;
+    font-size: 14px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+}
+#baseliner-help-win table {
+    border: 1px dashed #ccc;
+    margin: 5px 5px 5px 10px;
+}
+#baseliner-help-win td {
+    color: #222;
+    padding: 2px 2px 2px 2px;
+    border: 1px dashed #ccc;
+    font-size: 10px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+}
+#baseliner-help-win th {
+    color: #222;
+    padding: 2px 2px 2px 2px;
+    font-weight: bold;
+    font-size: 10px; font-family: "Trebuchet MS",Verdana,sans-serif; 
+}
+
+.x-form-spinner-proxy{
+        /*background-color:#ff00cc;*/
+}
+.x-form-field-wrap {
+        position: relative;
+}
+.x-form-element .x-form-field-wrap {    /* ie6 fix within ext-form */
+        position: relative !important;
+        position: absolute;     /* ie6 */
+}
+.x-form-field-wrap .x-form-spinner-trigger {
+    background:transparent url(spinner.gif) no-repeat 0 0;
+}
+
+.x-form-field-wrap .x-form-spinner-overup{
+    background-position:-17px 0;
+}
+.x-form-field-wrap .x-form-spinner-clickup{
+    background-position:-34px 0;
+}
+.x-form-field-wrap .x-form-spinner-overdown{
+    background-position:-51px 0;
+}
+.x-form-field-wrap .x-form-spinner-clickdown{
+    background-position:-68px 0;
+}
+
+
+.x-trigger-wrap-focus .x-form-spinner-trigger{
+    background-position:-85px 0;
+}
+.x-trigger-wrap-focus .x-form-spinner-overup{
+    background-position:-102px 0;
+}
+.x-trigger-wrap-focus .x-form-spinner-clickup{
+    background-position:-119px 0;
+}
+.x-trigger-wrap-focus .x-form-spinner-overdown{
+    background-position:-136px 0;
+}
+.x-trigger-wrap-focus .x-form-spinner-clickdown{
+    background-position:-153px 0;
+}
+.x-trigger-wrap-focus .x-form-trigger{
+    border-bottom: 1px solid #7eadd9;
+}
+
+.x-form-field-wrap .x-form-spinner-splitter {
+        line-height:1px;
+        font-size:1px;
+    background:transparent url(spinner-split.gif) no-repeat 0 0;
+        position:absolute;
+        cursor: n-resize;
+}
+.x-trigger-wrap-focus .x-form-spinner-splitter{
+    background-position:-14px 0;
+}
+

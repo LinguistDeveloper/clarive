@@ -1,0 +1,547 @@
+<HTML>
+<HEAD>
+<META http-equiv="Content-Language" content="es">
+<META http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<TITLE>Proyectos ORACLE</TITLE>
+<LINK rel="stylesheet" type="text/css" href="style.css">
+
+<SCRIPT TYPE="text/javascript">
+function changeEntorno(form,entorno){
+	if (form.name == "frmFolders") {
+		form.f_entorno.value=entorno;
+		form.f_red.value=form.fd_red.value;
+		form.f_folder.value="";
+		form.f_instancia.value="";
+	} else {
+		form.i_entorno.value=entorno;
+		form.i_red.value=form.in_red.value;
+		form.i_owner.value="";
+		form.i_instancia.value="";
+	}
+
+	form.submit();
+}
+
+function changeRed(form,red){
+	if (form.name == "frmFolders") {
+		form.f_entorno.value=form.fd_entorno.value;
+		form.f_red.value=red;
+		form.f_folder.value="";
+		form.f_instancia.value="";
+	} else {
+		form.i_entorno.value=form.in_entorno.value;
+		form.i_red.value=red;
+		form.i_owner.value="";
+		form.i_instancia.value="";
+	}
+	form.submit();
+}
+
+function changeOwner(form, owner){
+	form.i_entorno.value=form.in_entorno.value;
+	form.i_red.value=form.in_red.value;
+	form.i_owner.value=owner;
+	form.i_instancia.value="";
+	form.submit();
+}
+
+function changeFolder(form, folder){
+	form.f_entorno.value=form.fd_entorno.value;
+	form.f_red.value=form.fd_red.value;
+	form.f_folder.value=folder;
+	form.f_instancia.value="";
+	form.submit();
+}
+
+function changeInstancia(form,instancia){
+	if (form.name == "frmFolders") {
+		form.f_entorno.value=form.fd_entorno.value;
+		form.f_red.value=form.fd_red.value;
+		form.f_folder.value=form.fd_folder.value;
+		form.f_instancia.value=instancia;
+	} else {
+		form.i_entorno.value=form.in_entorno.value;
+		form.i_red.value=form.in_red.value;
+		form.i_owner.value=form.in_owner.value;
+		form.i_instancia.value=instancia;
+	}
+	form.submit();
+}
+
+function agregarInstancia(form){
+	form.i_entorno.value=form.in_entorno.value;
+	form.i_red.value=form.in_red.value;
+	form.i_owner.value=form.in_owner.value;
+	form.i_instancia.value=form.in_instancia.value;
+	form.accion.value="II";
+	form.submit();
+}
+
+function eliminarInstancia(form,entorno,red,owner,instancia){
+	form.i_entorno.value=entorno;
+	form.i_red.value=red;
+	form.i_owner.value=owner;
+	form.i_instancia.value=instancia;
+	form.accion.value="DI";
+	form.submit();
+}
+
+function agregarFolder(form){
+	form.f_entorno.value=form.fd_entorno.value;
+	form.f_red.value=form.fd_red.value;
+	form.f_folder.value=form.fd_folder.value;
+	form.f_instancia.value=form.fd_instancia.value;
+	form.accion.value="IF";
+	form.submit();
+}
+
+function eliminarFolder(form,entorno,red,folder,instancia){
+	form.f_entorno.value=entorno;
+	form.f_red.value=red;
+	form.f_folder.value=folder.replace(/\\/g,"\\\\");
+	form.f_instancia.value=instancia;
+	form.f_valor.value="Si";
+	form.accion.value="DF";
+	form.submit();
+}
+
+function desplegarFolder(form,entorno,red,folder,instancia,valor){
+	form.f_entorno.value=entorno;
+	form.f_red.value=red;
+	form.f_folder.value=folder.replace(/\\/g,"\\\\");
+	form.f_instancia.value=instancia;
+	form.f_valor.value=valor;
+	form.accion.value="UF";
+	form.submit();
+}
+
+function configINSTANCES() {
+	var inst = document.getElementById("configINSTANCES");
+	var fold = document.getElementById("configFOLDERS");
+	fold.style.visibility = 'hidden';
+	inst.style.visibility = 'visible';
+}
+
+function configFOLDERS() {
+	var inst = document.getElementById("configINSTANCES");
+	var fold = document.getElementById("configFOLDERS");
+	fold.style.visibility = 'visible';
+	inst.style.visibility = 'hidden';
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY>
+%if (scalar(@entornos_redes)) {
+%if (!$has_entornos) {
+    	<TABLE><TR><TD style='background-color:#B5D3EF;'>
+        <H5><IMG src='../images/log2_e.gif'><FONT color=red>
+                ERROR: No están informados los entornos de despliegue para <% $cam %> en Infraestructura.
+        </H5></TABLE><P>
+%return; 
+%}
+%if (!$has_redes) {
+    	<TABLE><TR><TD>
+        <H5><IMG src='../images/log2_e.gif'><FONT color=red>
+        ERROR: Esta aplicación no está configurada en el formulario de infraestructura para trabajar con ORACLE.
+        </H5></TABLE><P>
+%return;
+%}
+
+<DIV ID="configINSTANCES" TITLE="Instancias" STYLE="position:absolute;visibility:<% $i_visible %>">
+%if ( $usuario_potente ){
+<table WIDTH="100%" border=0>
+<tr><td width="90%"></td><td nowrap align="RIGHT"><A href="javascript:configFOLDERS()">Configurar Despliegue</A></td></tr>
+</table>
+%}
+<FORM method="POST" name="frmInstancia" id="frmInstancia" action="prueba">
+	<TABLE cellpadding="3" cellspacing="1" BORDER="0" WIDTH="100%">
+		<tr>
+			<th CLASS="cabecera" ALIGN="LEFT" COLSPAN="5"><b>Configuración de Instancias ORACLE:</b><hr></th>
+		</tr>
+		<tr>
+			<td WIDTH="10%">Entorno:</td>
+			<td WIDTH="90%"><select STYLE="width:175px" name="in_entorno" onChange="changeEntorno(this.form,this.value)" >
+			<OPTION VALUE="" SELECTED>Seleccione entorno...</OPTION>
+%for my $ref (@entornos) {
+<OPTION VALUE="<% $ref->{entorno} %>" <% ( $i_entorno =~ m/$ref->{entorno}/xi ) ? "SELECTED" : "" %> > <% $ref->{entorno} %> </OPTION>
+%}
+			</select></td>
+		</tr>
+		<tr>
+			<td>Red:</td>
+			<td><select STYLE="width:175px" name="in_red" onChange="changeRed(this.form,this.value)" >
+			<OPTION VALUE="" SELECTED>Seleccione red...</OPTION>
+%for my $ref (@redes) {
+<OPTION VALUE="<% $ref->{red} %>" <% ( $i_red =~ m/$ref->{red}/xi ) ? "SELECTED" : "" %> > <% $ref->{red} %> </OPTION>
+%}
+			</select></td>
+		</tr>
+		<tr>
+			<td>Owner:</td>
+			<td><select STYLE="width:175px" name="in_owner" <% ( !$i_entorno || !$i_red ) ? "DISABLED": "" %> onChange="changeOwner(this.form,this.value)" >
+			<OPTION VALUE="" SELECTED>Seleccione owner...</OPTION>
+
+%if ( $i_red and $i_entorno ) {
+%for my $ref (@owners) {
+            <OPTION VALUE="<% $ref->{owner} %>" <% ( $i_owner =~ m/$ref->{owner}/xi ) ? "SELECTED" : "" %> > <% $ref->{owner} %> </OPTION>
+%}
+%}
+			</select></td>
+		</tr>
+		<tr>
+			<td>Instancia:</td>
+			<td><select STYLE="width:175px" name="in_instancia" <% ( !$i_entorno || !$i_red || !$i_owner ) ? "DISABLED" : "" %> onChange="changeInstancia(this.form,this.value)" >
+			<OPTION VALUE="" SELECTED>Seleccione instancia...</OPTION>
+%foreach my $value (@instancias) {
+<OPTION VALUE="<% $value %>" <% ( $value =~ m/$i_instancia/xi ) ? "SELECTED" : "" %> > <% $value %> </OPTION>
+%}
+			</select></td>
+		</tr>
+		<tr>
+			<TD COLSPAN="5">	
+		      <A href="javascript:agregarInstancia(document.frmInstancia)">Agregar</A>
+			</TD>
+		</tr>
+		</TABLE>
+		<br>
+		<TABLE cellpadding="3" cellspacing="1" BORDER="0" WIDTH="100%">
+		<tr>
+			<th CLASS="cabecera" ALIGN="LEFT" COLSPAN="5"><b>Instancias ORACLE configuradas para <% $cam %>:</b><hr></th>
+		</tr>
+		<tr>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="20%">Entorno</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="20%">Red</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="20%">Owner</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="30%">Instancia ORACLE</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="10%">Acciones</td>
+		</tr>
+%my $clase = "impar"; 
+%for my $ref (@table_estancias) {
+		<tr>
+            <td CLASS="<% $clase %>" ALIGN="LEFT" WIDTH="30%"><% $ref->{entorno}   %></td>
+            <td CLASS="<% $clase %>" ALIGN="LEFT" WIDTH="20%"><% $ref->{red}       %></td>
+            <td CLASS="<% $clase %>" ALIGN="LEFT" WIDTH="20%"><% $ref->{owner}     %></td>
+            <td CLASS="<% $clase %>" ALIGN="LEFT" WIDTH="20%"><% $ref->{instancia} %></td>
+            <td CLASS="<% $clase %>" ALIGN="CENTER" WIDTH="10%"><IMG SRC="../images/eliminar.gif" ALT="Eliminar de la lista" ONCLICK="eliminarInstancia(document.frmInstancia, '<% $ref->{entorno} %>','<% $ref->{red} %>','<% $ref->{owner} %>','<% $ref->{instancia} %>')"></td>
+		</tr>
+        <%perl>
+if ($clase eq 'par') { 
+	$clase = "impar"; 
+} else {
+	$clase = "par";
+}
+</%perl>			
+%}
+	</TABLE>
+	<INPUT TYPE=HIDDEN NAME="fid"         VALUE="<% $fid %>">
+	<INPUT TYPE=HIDDEN NAME="cam"         VALUE="<% $cam %>">
+	<INPUT TYPE=HIDDEN NAME="env"         VALUE="<% $env %>">
+	<INPUT TYPE=HIDDEN NAME="i_entorno"   VALUE="<% $i_entorno%>">
+	<INPUT TYPE=HIDDEN NAME="i_red"       VALUE="<% $i_red %>">
+	<INPUT TYPE=HIDDEN NAME="i_owner"     VALUE="<% $i_owner %>">
+	<INPUT TYPE=HIDDEN NAME="i_instancia" VALUE="<% $i_instancia %>">
+	<INPUT TYPE=HIDDEN NAME="accion"      VALUE="INSTANCES">
+</FORM>
+</DIV>
+<DIV ID="configFOLDERS" TITLE="Despliegues" STYLE="position:absolute;visibility:<% $d_visible %>">
+%if ($usuario_potente) {
+<table WIDTH="100%" border=0>
+<tr><td width="90%"></td><td nowrap align="RIGHT"><A href="javascript:configINSTANCES()">Configurar Instancias</A></td></tr>
+</table>
+%}
+<FORM method="POST" name="frmFolders" id="frmFolders" action="prueba">
+	<TABLE cellpadding="3" cellspacing="1" BORDER="0" WIDTH="100%">
+		<tr>
+			<th CLASS="cabecera" ALIGN="LEFT" COLSPAN="5"><b>Configuración del despliegue de elementos ORACLE:</b><hr></th>
+		</tr>
+		<tr>
+			<td WIDTH="10%">Entorno:</td>
+			<td WIDTH="90%"><select STYLE="width:175px" name="fd_entorno" onChange="changeEntorno(this.form,this.value)" >
+			<OPTION VALUE="" SELECTED>Seleccione entorno...</OPTION>
+%for my $ref (@entornos) {
+<OPTION VALUE="<% $ref->{entorno} %>" <% ( $f_entorno =~ m/$ref->{entorno}/xi ) ? "SELECTED" : "" %> > <% $ref->{entorno} %> </OPTION>
+%}
+			</select></td>
+		</tr>
+		<tr>
+			<td>Red:</td>
+			<td><select STYLE="width:175px" name="fd_red" onChange="changeRed(this.form,this.value)" >
+			<OPTION VALUE="" SELECTED>Seleccione red...</OPTION>
+%for my $ref (@redes) {
+<OPTION VALUE="<% $ref->{red} %>" <% ( $f_red =~ m/$ref->{red}/xi ) ? "SELECTED" : "" %> > <% $ref->{red} %> </OPTION>
+%}
+			</select></td>
+		</tr>
+		<tr>
+			<td>Carpeta:</td>
+            <td><select STYLE="width:400px" name="fd_folder" <% ( !$f_entorno || !$f_red ) ? "DISABLED" : "" %> onChange="changeFolder(this.form,this.value)" >
+			<OPTION VALUE="" SELECTED>Seleccione carpeta...</OPTION>
+%foreach my $value (@folders) {
+            <OPTION VALUE="<% $value %>" <% ( $value =~ /$f_folder/xi ) ? "SELECTED" : "" %> > <% $value %> </OPTION>
+%}
+			</select></td>
+		</tr>
+		<tr>
+			<td>Instancia:</td>
+            <td><select STYLE="width:400px" name="fd_instancia" <% ( !$f_entorno || !$f_red || !$f_folder ) ? "DISABLED" : "" %> onChange="changeInstancia(this.form,this.value)" >
+			<OPTION VALUE="" SELECTED>Seleccione instancia...</OPTION>
+%for my $ref (@entornos_filtered) {
+            <OPTION VALUE="<% $ref->{instancia} %>" <% ( $f_instancia =~ m/$ref->{instancia}/xi ) ? "SELECTED" : "" %> > <% ref->{propietario} . " en " . $ref->{instancia} %> </OPTION>
+%}
+			</select></td>
+		</tr>
+		<tr>
+			<TD COLSPAN="5">	
+		      <A href="javascript:agregarFolder(document.frmFolders)">Agregar</A>
+			</TD>
+		</tr>
+		</TABLE>
+		<br>
+		<TABLE cellpadding="3" cellspacing="1" BORDER="0" WIDTH="100%">
+		<TR>
+			<th CLASS="cabecera" ALIGN="LEFT" COLSPAN="6"><b>Configuración del despliegue de elementos ORACLE para <% $cam %>:</b><hr></th>
+		</tr>
+		<tr>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="10%">Entorno</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="10%">Red</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="40%">Carpeta</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="20%">Instancia ORACLE</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="10%">¿Desplegar?</td>
+			<td CLASS="cabecera" ALIGN="CENTER" WIDTH="10%">Acciones</td>
+		</tr>
+<%perl>
+$clase = 'impar';
+my $image; 
+my $alt; 
+my $valor;
+my @datos = ();
+for my $ref (@tabla_despliegue) {
+if ( $ref->{ora_desplegar} =~ m/Si/xi ) {
+$image="../images/thumbup.gif";
+$alt="Desactivar Despliegue";
+$valor="No";
+} else {
+$image="../images/thumbdown.gif";
+$alt="Activar Despliegue";
+$valor="Si";
+}
+</%perl>
+		<tr>
+			<td CLASS="<% $clase %>" ALIGN="LEFT" WIDTH="10%"><% $ref->{ora_entorno} %></td>
+            <td nowrap CLASS="<% $clase %>" ALIGN="LEFT" WIDTH="10%"><% $ref->{ora_redes} %></td>
+			<td CLASS="<% $clase %>" ALIGN="LEFT" WIDTH="40%"><% $ref->{ora_fullname} %></td>
+            <td nowrap CLASS="<% $clase %>" ALIGN="LEFT" WIDTH="20%"><% $ref->{ora_instancia} %></td>
+            <td CLASS="<% $clase %>" ALIGN="CENTER" WIDTH="10%"><IMG SRC="<% $image %>" ALT="<% $alt %>" ONCLICK="desplegarFolder(document.frmFolders, '<% $ref->{ora_entorno} %>','<% $ref->{ora_redes} %>','<% $ref->{ora_fullname} %>','<% $ref->{ora_instancia} %>', '<% $valor %>')"></td>
+            <td CLASS="<% $clase %>" ALIGN="CENTER" WIDTH="10%"><IMG SRC="../images/eliminar.gif" ALT="Eliminar de la lista" ONCLICK="eliminarFolder(document.frmFolders, '<% $ref->{ora_entorno} %>','<% $ref->{ora_redes} %>','<% $ref->{ora_fullname} %>','<% $ref->{ora_instancia} %>')"></td>
+		</tr>
+        <%perl>
+if ( $clase eq 'par' ) {
+    $clase = "impar";
+}
+else {
+    $clase = "par";
+}
+}
+</%perl>			
+	</TABLE>
+	<INPUT TYPE=HIDDEN NAME="fid"         VALUE="<% $fid %>">
+	<INPUT TYPE=HIDDEN NAME="cam"         VALUE="<% $cam %>">
+	<INPUT TYPE=HIDDEN NAME="env"         VALUE="<% $env %>">
+	<INPUT TYPE=HIDDEN NAME="f_entorno"   VALUE="<% $f_entorno %>">
+	<INPUT TYPE=HIDDEN NAME="f_red"       VALUE="<% $f_red %>">
+	<INPUT TYPE=HIDDEN NAME="f_folder"    VALUE="<% $f_folder %>">
+	<INPUT TYPE=HIDDEN NAME="f_instancia" VALUE="<% $f_instancia %>">
+	<INPUT TYPE=HIDDEN NAME="f_valor"     VALUE="<% $f_valor %>">
+	<INPUT TYPE=HIDDEN NAME="accion"      VALUE="DISTRIBUTION">
+%}
+</FORM>
+</DIV>
+</BODY>
+</HTML>
+
+<%args>
+    $i_entorno         => $ARGS{i_entorno} 
+    $i_red             => $ARGS{i_red} 
+    $i_owner           => $ARGS{i_owner} 
+    $i_instancia       => $ARGS{i_instancia}
+    $f_entorno         => $ARGS{f_entorno} 
+    $f_red             => $ARGS{f_red} 
+    $f_folder          => $ARGS{f_folder} 
+    $f_instancia       => $ARGS{f_instancia} 
+    $f_valor           => $ARGS{f_valor}
+    $usuario_potente   => $ARGS{usuario_potente} 
+    $has_entornos      => $ARGS{has_entornos} 
+    $has_redes         => $ARGS{has_redes} 
+    $cam               => $ARGS{cam} 
+    $fid               => $ARGS{fid}
+    $env               => $ARGS{env}
+    $fullname          => $ARGS{fullname} 
+    $i_visible         => $ARGS{i_visible} 
+    $d_visible         => $ARGS{d_visible} 
+    @entornos_redes    => @{ $ARGS{entornos_redes} }
+    @entornos          => @{ $ARGS{entornos} } 
+    @table_estancias   => @{ $ARGS{table_estancias} } 
+    @redes             => @{ $ARGS{redes} } 
+    @instancias        => @{ $ARGS{instancias} } 
+    @folders           => @{ $ARGS{folders} } 
+    @owners            => @{ $ARGS{owners} }
+    @entornos_filtered => @{ $ARGS{entornos_filtered} }
+    @tabla_despliegue  => @{ $ARGS{tabla_despliegue} }
+</%args>
+
+<style>
+a {
+	color: #50687E;
+	font-size: 8 pt;
+	font-weight: bold;
+	vertical-align : middle;
+}
+a:hover {
+	color: maroon;
+	text-decoration: underline;
+}
+a.init  {
+	color: #EEEEEE;
+	font-size: 8 pt;
+	font-weight: bold;
+	text-transform : capitalize;
+	vertical-align : middle;
+}
+a.init:hover {
+	color: maroon;
+	text-decoration: none;
+}
+
+a.form {
+	color: #50687E;
+	font-size: 8 pt;
+	font-weight: bold;
+	vertical-align : middle;
+}
+a.form:hover {
+	color: maroon;
+	text-decoration: underline;
+}
+a.form.init  {
+	color: #EEEEEE;
+	font-size: 8 pt;
+	font-weight: bold;
+	text-transform : capitalize;
+	vertical-align : middle;
+}
+a.init:hover {
+	color: maroon;
+	text-decoration: none;
+}
+
+
+body {
+	color: #003399;
+	font-size: 8px;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td.par {
+}
+
+td.form {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+th {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+th.form {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+tr {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+table {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td.par {
+	background-color: #F4EFED;
+}
+td.impar {
+	background-color: #e1c9c8;
+}
+
+td.parInactivo {
+	background-color: #D0D0D0;
+	color: #707075;
+}
+td.imparInactivo {
+	background-color: #E0E0E0;
+	color: #707075;
+}
+
+td.cabecera {
+	color: white;
+	background-color: maroon;
+}
+
+form.generic {
+	padding: 8px 8px 8px 8px;
+}
+
+form.fundo {
+	margin: 8px 8px 8px 8px;
+}
+
+form.fundo input {
+	padding-left: 4px;
+	margin: 1px 1px 1px 1px;
+	background-image:url('input_white.gif');
+	color: #777;
+	border: 1px solid black;
+}
+
+form.fundo button {
+	padding: 0px 0px 0px 0px;
+}
+
+input {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+
+textarea {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+
+form.fundo button {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+</style>

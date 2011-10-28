@@ -1,0 +1,30 @@
+<%args>
+	$action
+	$job
+	$status
+	$subject 
+	$message
+	$username
+	$realname
+</%args>
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+	<& /email/style.css &>
+</head>
+
+<body>
+    <div class='box'>
+        <div class="error">
+            <h2>SCM: <% $subject %></h2>
+        </div>
+    </div>
+    <div class='box'>
+        <div class="trace error">
+            <p>Usuario propietario del pase: <b><% "$username ($realname)" %></b></p>
+            <p>Ultimo Mensaje de pase: <b><% $message || '<i>no disponible</i>' %></b></p>
+        </div>
+    </div>
+</body>
+

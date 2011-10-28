@@ -1,0 +1,277 @@
+<HTML>
+
+<HEAD>
+<META http-equiv="Content-Language" content="es">
+<META http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<TITLE>Proyectos Ms Reporting Services</TITLE>
+<LINK rel="stylesheet" type="text/css" href="style.css">
+
+<SCRIPT LANGUAGE="javascript">
+
+function agregarItem() {
+    if (document.frmRS.fullPath.value == "" ) {
+	   	document.frmRS.FullName.value = "\\"+document.frmRS.cam.value;
+	   }
+  else 
+     {		
+	document.frmRS.FullName.value = document.frmRS.fullPath.value;
+	   }
+  document.frmRS.Item.value = document.frmRS.Resource.value;
+  document.frmRS.submit();
+    }
+function eliminarItem(Item, fullName) {
+	document.frmItems.Item.value = Item;
+	document.frmItems.FullName.value = fullName;
+	document.frmItems.submit();
+}
+</SCRIPT>
+</HEAD>
+
+<BODY topmargin="5" leftmargin="5">
+%if( !$fid ) {
+	    <TABLE><TR><TD style='background-color:#B5D3EF;'>
+	    <H5><IMG src='images/log2_e.gif'><FONT color=red>
+	    ERROR: código de formulario inválido.
+	    </H5></TABLE><P>
+%return;
+%}
+
+%if (scalar(@elementos)) {
+			<FORM method="POST" name="frmRS" id="frmRS" action="rsProjects.jsp">
+			  <TABLE cellpadding="3" cellspacing="1" BORDER="0">
+			    <TR>
+			      <TD>Recursos: </TD>
+				  <TD><SELECT style='font-size:8pt;' NAME="Resource">
+
+%for my $ref (@elementos) {
+%if (!$cam) {
+%  $cam = $ref->{cam};
+%} # end if 
+			<OPTION VALUE="<%$ref->{item}%>"><%$ref->{item}%></OPTION>
+%} # end foreach
+			        </SELECT>
+				</TD>
+				</TR>
+				<TR>
+					<TD>Carpeta de Destino: </TD>
+					<TD><INPUT TYPE=TEXT STYLE='font-weight:bold;' NAME="fullPath" VALUE="<%$ruta%>" MAXLENGTH=4000></TD>
+				</TR>
+				<TR>
+					<TD COLSPAN="2"><A href="javascript:agregarItem()">Agregar</A></TD>
+			    </TR>
+			  </TABLE>
+			  <INPUT TYPE=HIDDEN NAME=FullName VALUE="">
+			  <INPUT TYPE=HIDDEN NAME=Item VALUE="">
+			  <INPUT TYPE=HIDDEN NAME=fid VALUE="<%$fid%>">
+			  <INPUT TYPE=HIDDEN NAME=cam VALUE="<%$cam%>">
+			  <INPUT TYPE=HIDDEN NAME=accion VALUE="A">
+			</FORM>
+%} # end inf
+	<TABLE border="0" width="100%" cellpadding="2" cellspacing="1">
+        <TR><font color=maroon>Aquellos elementos que no estén catalogados se desplegarán en el directorio <B>\<%$cam%></B>
+	</TABLE>
+	
+	<FORM method="POST" name="frmItems" id="frmItems" action="rsProjects.jsp">
+      <TABLE border="0" width="100%" cellpadding="2" cellspacing="1">
+        <TR>
+          <TD CLASS="cabecera">Aplicación</TD>
+		  <TD CLASS="cabecera">Elemento</TD>
+          <TD CLASS="cabecera">Carpeta</TD>
+		  <TD CLASS="cabecera">Acciones</TD>
+		</TR>
+%if (!scalar(@envs)) { 
+        <TR>
+            <TD class="par" colspan="4">No hay elementos</TD>
+        </TR>
+% } else {
+%for my $ref (@envs) {
+%$ref->{item}     =~ s/'\\\\\\\\'/'\\\\'/g;
+%$ref->{fullname} =~ s/'\\\\\\\\'/'\\\\'/g;
+            <TR>		
+                <TD CLASS="<%$clase%>"><%$ref->{env}%>      </TD>
+                <TD CLASS="<%$clase%>"><%$ref->{item}%>     </TD>
+                <TD CLASS="<%$clase%>"><%$ref->{fullname}%> </TD>
+                <TD CLASS="<%$clase%>"><IMG SRC="../images/eliminar.gif" ALT="Eliminar de la lista" ONCLICK="eliminarItem('<%$ref->{item}%>','<%$ref->{fullname}%>')"></TD>
+            </TR>
+%if ($clase eq 'par') { 
+%  $clase = "impar"; 
+%} else {
+% $clase = "par";
+%				}
+%			} 
+%		}
+	   </TABLE>
+	  <INPUT TYPE=HIDDEN NAME=fid         VALUE="<% $fid %>">
+	  <INPUT TYPE=HIDDEN NAME=cam         VALUE="<% $cam %>">
+	  <INPUT TYPE=HIDDEN NAME=projectType VALUE="">
+	  <INPUT TYPE=HIDDEN NAME=Item        VALUE="">
+	  <INPUT TYPE=HIDDEN NAME=FullName    VALUE="">
+	  <INPUT TYPE=HIDDEN NAME=accion      VALUE="D">		
+	</FORM>
+</BODY>
+
+</HTML>
+
+<%args>
+    $fid       => $ARGS{fid}
+    $cam       => $ARGS{cam}
+    @envs      => @{ $ARGS{envs} }
+    @elementos => @{ $ARGS{elementos} }
+    $ruta      => $ARGS{ruta}
+    $clase     => 'par'
+</%args>
+
+<style>
+a {
+	color: #50687E;
+	font-size: 8 pt;
+	font-weight: bold;
+	vertical-align : middle;
+}
+a:hover {
+	color: maroon;
+	text-decoration: underline;
+}
+a.init  {
+	color: #EEEEEE;
+	font-size: 8 pt;
+	font-weight: bold;
+	text-transform : capitalize;
+	vertical-align : middle;
+}
+a.init:hover {
+	color: maroon;
+	text-decoration: none;
+}
+
+a.form {
+	color: #50687E;
+	font-size: 8 pt;
+	font-weight: bold;
+	vertical-align : middle;
+}
+a.form:hover {
+	color: maroon;
+	text-decoration: underline;
+}
+a.form.init  {
+	color: #EEEEEE;
+	font-size: 8 pt;
+	font-weight: bold;
+	text-transform : capitalize;
+	vertical-align : middle;
+}
+a.init:hover {
+	color: maroon;
+	text-decoration: none;
+}
+
+
+body {
+	color: #003399;
+	font-size: 8px;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td.par {
+}
+
+td.form {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+th {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+th.form {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+tr {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+table {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td.par {
+	background-color: #F4EFED;
+}
+td.impar {
+	background-color: #e1c9c8;
+}
+
+td.parInactivo {
+	background-color: #D0D0D0;
+	color: #707075;
+}
+td.imparInactivo {
+	background-color: #E0E0E0;
+	color: #707075;
+}
+
+td.cabecera {
+	color: white;
+	background-color: maroon;
+}
+
+form.generic {
+	padding: 8px 8px 8px 8px;
+}
+
+form.fundo {
+	margin: 8px 8px 8px 8px;
+}
+
+form.fundo input {
+	padding-left: 4px;
+	margin: 1px 1px 1px 1px;
+	background-image:url('input_white.gif');
+	color: #777;
+	border: 1px solid black;
+}
+
+form.fundo button {
+	padding: 0px 0px 0px 0px;
+}
+
+input {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+
+textarea {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+
+form.fundo button {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+</style>

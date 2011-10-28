@@ -1,0 +1,23 @@
+(function(){
+    var username = '<% $c->stash->{username} %>' ;
+
+	var form = new Ext.FormPanel({
+		frame: true,
+		items: [
+		{ fieldLabel: _('User'), value: '<% $c->stash->{username} %>', xtype: 'field', readOnly: true, css: '', width: 350 },
+		{ fieldLabel: _('Name'), value: '<% $c->stash->{realname} %>', xtype: 'textfield', readOnly: true, css: '' , width: 350},
+		{ fieldLabel: _('Email'), value: '<% $c->stash->{email} %>', xtype: 'textfield', readOnly: true, css: '' , width: 350},
+		{ fieldLabel: _('Telephone'), value: '<% $c->stash->{phone} %>', xtype: 'textfield', readOnly: true, css: '' , width: 350}
+		]
+	});
+
+	var win = new Ext.Window({ layout: 'fit', 
+		autoScroll: true,
+		title: username,
+		height: 300,
+		width: 500, 
+		items: form
+	});
+	return win;
+})();
+

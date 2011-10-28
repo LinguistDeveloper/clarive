@@ -1,0 +1,138 @@
+BODY {
+	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; FONT-SIZE: 0.8em; PADDING-BOTTOM: 2px; MARGIN: 4px; CURSOR: default; COLOR: #333; PADDING-TOP: 2px; FONT-FAMILY: verdana,arial,helvetica,geneva,sans-serif; BACKGROUND-COLOR: #ffffff
+}
+H1 {
+	FONT-WEIGHT: normal; FONT-SIZE: 1.8em; COLOR: #069; BORDER-BOTTOM: #069 1px solid; FONT-FAMILY: courier new, serif
+}
+H3 {
+	MARGIN-TOP: 2em; FONT-WEIGHT: normal; COLOR: #069; FONT-FAMILY: courier new, serif; BACKGROUND-COLOR: #f1faff
+}
+P {
+	TEXT-INDENT: 2em
+}
+PRE {
+	MARGIN-LEFT: 20px; COLOR: #222; LINE-HEIGHT: 1.2em
+}
+LI {
+	LIST-STYLE-TYPE: none
+}
+TABLE {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; PADDING-TOP: 0px; BORDER-COLLAPSE: collapse
+}
+TR.R0 {
+	FONT-WEIGHT: bold; FONT-SIZE: 0.9em; COLOR: white; BACKGROUND-COLOR: #069
+}
+TR.R1 {
+	FONT-SIZE: 0.8em; COLOR: black; BACKGROUND-COLOR: #fff
+}
+TR.R2 {
+	FONT-SIZE: 0.8em; COLOR: black; BACKGROUND-COLOR: #f1faff
+}
+TR.suppressedViolation {
+	FONT-SIZE: 0.8em; COLOR: #a0a0a0; BACKGROUND-COLOR: white
+}
+TD {
+	PADDING-RIGHT: 3px; PADDING-LEFT: 3px; PADDING-BOTTOM: 3px; PADDING-TOP: 3px
+}
+TD.red {
+	COLOR: red
+}
+TD.violationSuppressed {
+	TEXT-ALIGN: center
+}
+TD.violation1 {
+	BACKGROUND-COLOR: #ff1111; TEXT-ALIGN: center
+}
+TD.violation2 {
+	BACKGROUND-COLOR: #ff9568; TEXT-ALIGN: center
+}
+TD.violation3 {
+	BACKGROUND-COLOR: #ffd358; TEXT-ALIGN: center
+}
+TD.violation4 {
+	BACKGROUND-COLOR: #d1ee69; TEXT-ALIGN: center
+}
+TD.violation5 {
+	BACKGROUND-COLOR: #5bde53; TEXT-ALIGN: center
+}
+TABLE.menu {
+	BORDER-RIGHT: 0px; PADDING-RIGHT: 0px; BORDER-TOP: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; BORDER-LEFT: 0px; WIDTH: 100%; COLOR: #069; PADDING-TOP: 0px; BORDER-BOTTOM: 0px; BACKGROUND-COLOR: #e6f6ff; TEXT-ALIGN: center
+}
+TD.titulotabla {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; PADDING-TOP: 0px; BACKGROUND-COLOR: #e6f6ff; border-spacing: 0px
+}
+TD.titulotablamenu {
+	PADDING-RIGHT: 4px; PADDING-LEFT: 4px; PADDING-BOTTOM: 4px; PADDING-TOP: 4px; BACKGROUND-COLOR: #e6f6ff; border-spacing: 0px
+}
+A.ancla:link {
+	FONT-SIZE: 0.8em; COLOR: #069; FONT-FAMILY: verdana; TEXT-DECORATION: underline
+}
+A.ancla:visited {
+	FONT-SIZE: 0.8em; COLOR: #069; FONT-FAMILY: verdana; TEXT-DECORATION: underline
+}
+A.ancla:hover {
+	FONT-SIZE: 0.8em; COLOR: #069; FONT-FAMILY: verdana; TEXT-DECORATION: underline
+}
+A.ancla:active {
+	FONT-SIZE: 0.8em; COLOR: #fff; FONT-FAMILY: verdana; BACKGROUND-COLOR: #069; TEXT-DECORATION: underline
+}
+A.enlaceTitulo:link {
+	COLOR: #fff; TEXT-DECORATION: none
+}
+A.enlaceTitulo:visited {
+	COLOR: #ccc; TEXT-DECORATION: none
+}
+A.enlaceTitulo:hover {
+	COLOR: #f60; TEXT-DECORATION: underline
+}
+A.enlaceTitulo:active {
+	COLOR: #ff0000; TEXT-DECORATION: underline
+}
+A.enlaceRegla:link {
+	COLOR: #069; TEXT-DECORATION: none
+}
+A.enlaceRegla:visited {
+	COLOR: #333; TEXT-DECORATION: none
+}
+A.enlaceRegla:hover {
+	COLOR: #f60; TEXT-DECORATION: underline
+}
+A.enlaceRegla:active {
+	COLOR: #ff0000; TEXT-DECORATION: underline
+}
+A.enlaceReglaSuppressed:link {
+	COLOR: #069; TEXT-DECORATION: none
+}
+A.enlaceReglaSuppressed:visited {
+	COLOR: #333; TEXT-DECORATION: none
+}
+A.enlaceReglaSuppressed:hover {
+	COLOR: #f60; TEXT-DECORATION: none
+}
+A.enlaceReglaSuppressed:active {
+	COLOR: #ff0000; TEXT-DECORATION: none
+}
+H3.collapsed {
+	BACKGROUND-POSITION: right center; BACKGROUND-ATTACHMENT: scroll; BACKGROUND-IMAGE: url(../images/collapsed.gif); BACKGROUND-REPEAT: no-repeat
+}
+TR.collapsed {
+	BACKGROUND-POSITION: right center; BACKGROUND-ATTACHMENT: scroll; BACKGROUND-IMAGE: url(../images/collapsed.gif); BACKGROUND-REPEAT: no-repeat
+}
+H3.expanded {
+	BACKGROUND-POSITION: right center; BACKGROUND-ATTACHMENT: scroll; BACKGROUND-IMAGE: url(../images/expanded.gif); BACKGROUND-REPEAT: no-repeat
+}
+TR.expanded {
+	BACKGROUND-POSITION: right center; BACKGROUND-ATTACHMENT: scroll; BACKGROUND-IMAGE: url(../images/expanded.gif); BACKGROUND-REPEAT: no-repeat
+}
+IMG {
+	BORDER-RIGHT: 0px; BORDER-TOP: 0px; MARGIN: 0px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px
+}
+#cuerpo_web {
+	MARGIN: 20px
+}
+#footer {
+	FONT-SIZE: 0.8em; BACKGROUND: none transparent scroll repeat 0% 0%; COLOR: #0af; HEIGHT: 25px; TEXT-ALIGN: center
+}
+#header {
+	Z-INDEX: 1000; RIGHT: 10px; MARGIN-BOTTOM: 0px; TOP: 5px; HEIGHT: 75px
+}

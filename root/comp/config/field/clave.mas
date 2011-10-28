@@ -1,0 +1,19 @@
+<%args>
+    $row 
+</%args>
+    xtype: "combo",
+    typeAhead: "true",
+    triggerAction: "all",
+    lazyRender: "true",
+    listClass: "x-combo-list-small",
+		emptyText:'Seleccione un valor ...',
+		displayField:"text",
+		valueField:"value",
+		mode: "local",
+		width:250,
+		listWidth:250,
+        editable:false,
+		store: new Ext.data.SimpleStore({
+			fields: ["value", "text"],
+			data :  <% js_dumper $row->{store} %>
+		}),

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE harvest_form SYSTEM "harwebForms.dtd">
+<harvest_form dbtable="form_cajasol" id="form_cajasol" name="Cajasol" numtabs="0">
+
+  <text-field cols="80" dbfield="formname" id="formname" label="Form Name" maxsize="128"/>
+
+  <text-area cols="80" dbfield="observaciones" id="observaciones" label="Observaciones" maxsize="2000" readonly="false" rows="6"/>
+  
+  <baseliner-tab url="/comp/parcom.mas" type="comp" />
+  <!-- baseliner-tab url="/comp/page.mas"   type="page" title="Parcom" / -->
+
+</harvest_form>

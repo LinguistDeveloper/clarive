@@ -1,0 +1,29 @@
+<%args>
+    $class 
+    $style => 'blacknblue'
+    $data 
+</%args>
+<style>
+	input.btn {
+	  color:#050;
+	  font: bold 84% 'trebuchet ms',helvetica,sans-serif;
+	  background-color:#fed;
+	  border:1px solid;
+	  border-color: #696 #363 #363 #696;
+	}
+</style>
+<script type="text/javascript" src="/static/shjs/sh_main.min.js"></script>
+% if( $class ) {
+<script type="text/javascript" src="/static/shjs/lang/sh_<% $class %>.js"></script>
+<link type="text/css" rel="stylesheet" href="/static/shjs/css/sh_<% $style %>.css">
+<body style="margin: 0 0 0 0; background-color: #000" onload="sh_highlightDocument();">
+<& /site/searchbox.html &>
+<pre class="sh_<% $class || 'log' %>">
+% } else {
+<body style="background-color: #000; color: #ddbb00">
+<& /site/searchbox.html &>
+<pre>
+% }
+<% $data %>
+</pre>
+</body>

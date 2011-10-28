@@ -1,0 +1,38 @@
+%# This component can be used from a Controller to create a new page and tab
+<%perl>
+	use Baseliner::Utils;
+</%perl>
+<& /site/header.html, show_main=>1 &>
+<script type="text/javascript">
+Ext.onReady(function(){
+		var tabpanel = Ext.getCmp('main-panel');
+		var title = '<% $c->stash->{title} %>';
+		var comp = new Ext.FormPanel( <% $c->stash->{form} %>);
+		var tb = new Ext.Toolbar({
+			id: 'formtb',
+			items: [ 
+			title,
+			'->',
+			{ xtype:'button', text: '<% _loc("Submit") %>', handler: function(){ Baseliner.formSubmit(comp.getForm())} },
+			{ xtype:'button',text:'<% _loc("Reset") %>', handler: function() { comp.getForm().reset() }  }
+			] 
+		});
+		comp.setTitle( title );
+		var tab = tabpanel.add({ xtype:'panel', layout: 'fit' , border: 0 , tbar: tb, items: [ comp  ] });
+		tab.setTitle( "<% $c->stash->{title} %>" );
+% foreach my $comp ( _array $c->stash->{form_tabs} ) {
+		Ext.Msg.alert( '<% $comp->{type} %>', '<% $comp->{url} || '' %>' );
+%    if( $comp->{type} eq 'comp' ) {
+		//Ext.Msg.alert( '<% $comp->{url} %>', '<% $comp->{title} || '' %>' );
+		Baseliner.addNewTabComp( '<% $comp->{url} %>', '<% $comp->{title} || '' %>', { active: false } );
+%    } elsif( $comp->{type} eq 'page' ) {
+		Baseliner.addNewTab( '<% $comp->{url} %>', '<% $comp->{title} || '' %>', { active: false } );
+%    }
+% }
+		//Baseliner.addNewTabItem({ xtype:'panel', layout: 'fit' , border: 0 , tbar: tb, items: [ comp  ] }, title, { active: true });
+		tabpanel.setActiveTab(tab);
+});
+</script>
+
+</body>
+

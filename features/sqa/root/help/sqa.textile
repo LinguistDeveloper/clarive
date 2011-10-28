@@ -1,0 +1,10 @@
+h1. Ayuda del portal de calidad
+
+Bienvenido a la ayuda para el usuario del portal de calidad.
+
+h2. Introducción
+
+La integración entre SCM y SQA permite la evaluación de la calidad del código fuente de las naturalezas gestionadas por SCM mediante el producto ChecKing de Optimyth.
+
+Se ha diseñado un portal de calidad integrado en la interfaz de SCM que permite acceder a los resultados de los análisis además de ejecutar funciones básicas de usuario como solicitar un nuevo análisis, recalcular un análisis ya existente o configurar el comportamiento de SCM en función de los resultados de la auditoría de calidad.
+

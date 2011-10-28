@@ -1,0 +1,286 @@
+<HTML>
+<HEAD>
+<META http-equiv="Content-Language" content="es">
+<META http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<TITLE>Proyectos .NET</TITLE>
+<LINK rel="stylesheet" type="text/css" href="style.css">
+
+<SCRIPT LANGUAGE="javascript">
+
+function agregarProyecto() {
+
+	var partes = document.frmProyectos.Proyecto.value.split("|");
+	document.all.frmProyectos.fullName.value = partes[0];
+	document.all.frmProyectos.subaplicacion.value = partes[1];
+	document.all.frmProyectos.item.value = partes[2];
+	document.all.frmProyectos.submit();
+}
+
+function eliminarProyecto(fullName, projectType) {
+	document.all.frmItems.fullName.value = fullName;
+	document.all.frmItems.projectType.value = projectType;
+	document.all.frmItems.submit();
+}
+</SCRIPT>
+</HEAD>
+
+<BODY topmargin="5" leftmargin="5">
+%if ( !$fid ){
+    <TABLE><TR><TD style='background-color:#B5D3EF;'>
+    <H5><IMG src='images/log2_e.gif'><FONT color=red> ERROR: código de formulario inválido.  </H5></TABLE><P>
+%}
+
+%if (scalar(@entornos)) {
+			<FORM method="POST" name="frmProyectos" id="frmProyectos" action="netProjects.jsp">
+			  <TABLE cellpadding="3" cellspacing="1" BORDER="0">
+			    <TR>
+			      <TD>Proyecto: </TD>
+				  <TD><SELECT style='font-size:8pt;' NAME="Proyecto">
+<%perl> 	
+foreach my $ref (@entornos) {
+if (!$cam) {
+    $cam = $ref->{env};
+}
+</%perl>
+                <OPTION VALUE="<% $ref->{fullname} %>|<% $ref->{subaplicacion} %>|<% $ref->{item} %>"><% $ref->{subaplicacion} . " -> " . $ref->{item} %></OPTION>
+%}
+
+			    </SELECT>
+				</TD>
+				</TR>
+				<TR>
+				<TD>
+		      		Tipo distribuci&oacute;n: 
+				</TD>
+				<TD>
+                    <SELECT INPUT style='font-size:8pt;' NAME="projectType">
+                        <OPTION VALUE="SL">Biblioteca servidor</OPTION>
+                        <OPTION VALUE="SW">Servidor IIS</OPTION>
+                        <OPTION VALUE="CO">Cliente click-once IIS</OPTION>
+                        <OPTION VALUE="CA">Cliente click-once IBM Http Server</OPTION>								
+                        <OPTION VALUE="CR">Cliente R:</OPTION>
+                        <OPTION VALUE="RS">Cliente R: sucursales</OPTION>								
+                    </SELECT>
+				</TD>
+				</TR>
+				<TR>
+				<TD COLSPAN="2">	
+			      <A href="javascript:agregarProyecto()">Agregar</A>
+				</TD>
+			    </TR>
+			  </TABLE>
+			  <INPUT TYPE=HIDDEN NAME=$fid          VALUE="<% $fid %>">
+			  <INPUT TYPE=HIDDEN NAME=cam           VALUE="<% $cam %>">
+			  <INPUT TYPE=HIDDEN NAME=fullName      VALUE="">
+			  <INPUT TYPE=HIDDEN NAME=item          VALUE="">
+			  <INPUT TYPE=HIDDEN NAME=subaplicacion VALUE="">
+			  <INPUT TYPE=HIDDEN NAME=accion        VALUE="A">
+			</FORM>
+<%perl> 
+if ($cam eq "") {
+    $cam = $cam_reserva;
+}</%perl>
+	<FORM method="POST" name="frmItems" id="frmItems" action="netProjects.jsp">
+      <TABLE border="0" width="100%" cellpadding="2" cellspacing="1">
+        <TR>
+          <TD CLASS="cabecera">APLICACION</TD>
+		  <TD CLASS="cabecera">SUBAPLICACION</TD>
+          <TD CLASS="cabecera">Proyecto</TD>
+          <TD CLASS="cabecera">Tipo</TD>
+		  <TD CLASS="cabecera">Acciones</TD>
+		</TR>
+%if (!scalar(@project_envs)) {
+    <TR>
+        <TD class="par" colspan="4">No hay elementos</TD>
+    </TR>
+%} else {
+%foreach my $ref (@project_envs) {
+				<TR>		
+	                <TD CLASS="<% $clase %>"><% $ref->{env} %></TD>
+					<TD CLASS="<% $clase %>"><% $ref->{subaplicacion} %></TD>
+					<TD CLASS="<% $clase %>"><% $ref->{proyecto} %></TD>
+                    <TD CLASS="<% $clase %>"><% $ref->{tipo} eq 'CA' ? "Cliente click-once IBM Http Server" : 
+                        $ref->{tipo} eq 'CO' ? "Cliente click-once IIS" : 
+                        $ref->{tipo} eq 'CR' ? "Cliente R:" :
+                        $ref->{tipo} eq 'SL' ? "Biblioteca servidor" :
+                        $ref->{tipo} eq 'RS' ? "Cliente R: sucursales" : "Servidor IIS" %></TD>
+					<TD CLASS="<% $clase %>"><IMG SRC="./delete.png" ALT="Eliminar de la lista" ONCLICK="eliminarProyecto('<% $ref->{fullname} %>','<% $ref->{tipo} %>')"></TD>
+				</TR>
+% } 
+	   </TABLE>
+	  <INPUT TYPE=HIDDEN NAME=fid         VALUE="<% $fid %>">
+	  <INPUT TYPE=HIDDEN NAME=cam         VALUE="<% $cam %>">
+	  <INPUT TYPE=HIDDEN NAME=projectType VALUE="">
+	  <INPUT TYPE=HIDDEN NAME=fullName    VALUE="">
+	  <INPUT TYPE=HIDDEN NAME=accion      VALUE="D">		
+	</FORM>
+% }
+%} 
+%
+</BODY>
+
+</HTML>
+
+<%args>
+    @entornos     => @{ $ARGS{entornos} }
+    @project_envs => @{ $ARGS{project_envs} }
+    $cam_reserva  => $ARGS{cam_reserva}
+    $fid          => $ARGS{fid}
+    $cam          => $ARGS{cam}
+    $clase        => 'par'
+</%args>
+
+<style>
+a {
+	color: #50687E;
+	font-size: 8 pt;
+	font-weight: bold;
+	vertical-align : middle;
+}
+a:hover {
+	color: maroon;
+	text-decoration: underline;
+}
+a.init  {
+	color: #EEEEEE;
+	font-size: 8 pt;
+	font-weight: bold;
+	text-transform : capitalize;
+	vertical-align : middle;
+}
+a.init:hover {
+	color: maroon;
+	text-decoration: none;
+}
+
+a.form {
+	color: #50687E;
+	font-size: 8 pt;
+	font-weight: bold;
+	vertical-align : middle;
+}
+a.form:hover {
+	color: maroon;
+	text-decoration: underline;
+}
+a.form.init  {
+	color: #EEEEEE;
+	font-size: 8 pt;
+	font-weight: bold;
+	text-transform : capitalize;
+	vertical-align : middle;
+}
+a.init:hover {
+	color: maroon;
+	text-decoration: none;
+}
+
+
+body {
+	color: #003399;
+	font-size: 8px;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td.par {
+}
+
+td.form {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+th {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+th.form {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+tr {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+table {
+	color: #003399;
+	font-size: 8pt;
+	font-family: Verdana;
+	font-weight: normal;
+}
+
+td.par {
+	background-color: #F4EFED;
+}
+td.impar {
+	background-color: #e1c9c8;
+}
+
+td.parInactivo {
+	background-color: #D0D0D0;
+	color: #707075;
+}
+td.imparInactivo {
+	background-color: #E0E0E0;
+	color: #707075;
+}
+
+td.cabecera {
+	color: white;
+	background-color: maroon;
+}
+
+form.generic {
+	padding: 8px 8px 8px 8px;
+}
+
+form.fundo {
+	margin: 8px 8px 8px 8px;
+}
+
+form.fundo input {
+	padding-left: 4px;
+	margin: 1px 1px 1px 1px;
+	background-image:url('input_white.gif');
+	color: #777;
+	border: 1px solid black;
+}
+
+form.fundo button {
+	padding: 0px 0px 0px 0px;
+}
+
+input {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+
+textarea {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+
+form.fundo button {
+	font-family: tahoma,verdana,arial,helvetica,sans-serif;
+	font-size: 12px;
+}
+</style>

@@ -1,0 +1,68 @@
+---
+ID: Assertion-uuide308681e-012e-1e4f-b49f-ca424009c36f
+IssueInstant: 2011-03-23T14:05:02Z
+Version: 2.0
+ds:Signature:
+  Id: uuide308681f-012e-1f63-b94e-ca424009c36f
+  ds:KeyInfo:
+    ds:X509Data:
+      ds:X509Certificate: MIICBzCCAXCgAwIBAgIEQH26vjANBgkqhkiG9w0BAQQFADBIMQswCQYDVQQGEwJVUzEPMA0GA1UEChMGVGl2b2xpMQ4wDAYDVQQLEwVUQU1lQjEYMBYGA1UEAxMPZmltZGVtby5pYm0uY29tMB4XDTA0MDQxNDIyMjcxMFoXDTE3MTIyMjIyMjcxMFowSDELMAkGA1UEBhMCVVMxDzANBgNVBAoTBlRpdm9saTEOMAwGA1UECxMFVEFNZUIxGDAWBgNVBAMTD2ZpbWRlbW8uaWJtLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAiZ0D1X6rk8+ZwNBTVZt7C85m421a8A52Ksjw40t+jNvbLYDp/W66AMMYD7rB5qgniZ5K1p9W8ivM9WbPxc2u/60tFPg0e/Q/r/fxegW1K1umnay+5MaUvN3p4XUCRrfg79OvurvXQ7GZa1/wOp5vBIdXzg6i9CVAqL29JGi6GYUCAwEAATANBgkqhkiG9w0BAQQFAAOBgQBXiAhxm91I4m+g3YX+dyGc352TSKO8HvAIBkHHFFwIkzhNgO+zLhxg5UMkOg12X9ucW7leZ1IB0Z6+JXBrXIWmU3UPum+QxmlaE0OG9zhp9LEfzsE5+ff+7XpS0wpJklY6c+cqHj4aTGfOhSE6u7BLdI26cZNdzxdhikBMZPgdyQ==
+  ds:SignatureValue: QHmFSBqXSgw4yk8xBCwqjLq3sbUXbEy2U6CUMyrtFmgJGD7uKINoEy2+ZVIwVTw0CdogRmxO6EKZPT1QjW/rpEXOwQm9s110PSrt1l7uChrJGgox5rLlqAZtYGGPOgF/mlRjRVtwaK5mTPymDG2Z4VdhcbMxHDTZaU9N9ijuWt4=
+  ds:SignedInfo:
+    ds:CanonicalizationMethod:
+      Algorithm: http://www.w3.org/2001/10/xml-exc-c14n#
+    ds:Reference:
+      URI: '#Assertion-uuide308681e-012e-1e4f-b49f-ca424009c36f'
+      ds:DigestMethod:
+        Algorithm: http://www.w3.org/2000/09/xmldsig#sha1
+      ds:DigestValue: WwhUZbqegv24A96Etv1ALj/k87U=
+      ds:Transforms:
+        ds:Transform:
+          - Algorithm: http://www.w3.org/2000/09/xmldsig#enveloped-signature
+          - Algorithm: http://www.w3.org/2001/10/xml-exc-c14n#
+            xc14n:InclusiveNamespaces:
+              PrefixList: xs saml xsi
+              xmlns:xc14n: http://www.w3.org/2001/10/xml-exc-c14n#
+    ds:SignatureMethod:
+      Algorithm: http://www.w3.org/2000/09/xmldsig#rsa-sha1
+  xmlns:ds: http://www.w3.org/2000/09/xmldsig#
+saml:AttributeStatement:
+  saml:Attribute:
+    - Name: grupos
+      saml:AttributeValue:
+        - content: TBTWASMonitor
+          xsi:type: xs:string
+        - content: TGGFIMSoporteAplicacion
+          xsi:type: xs:string
+        - content: iv-admin
+          xsi:type: xs:string
+        - content: TBTWAS01
+          xsi:type: xs:string
+        - content: TBTWASConfigurador
+          xsi:type: xs:string
+        - content: TGGDPWSoporteAplicacion
+          xsi:type: xs:string
+        - content: TGGTAMSoporteAplicacion
+          xsi:type: xs:string
+    - Name: usuario
+      saml:AttributeValue:
+        content: 'QINFMPA - MIGUEL PASCUAL PAREJA'
+        xsi:type: xs:string
+saml:AuthnStatement:
+  AuthnInstant: 2011-03-23T14:05:02Z
+  saml:AuthnContext:
+    saml:AuthnContextClassRef: urn:oasis:names:tc:SAML:2.0:ac:classes:Password
+saml:Conditions:
+  NotBefore: 2011-03-23T14:04:02Z
+  NotOnOrAfter: 2011-03-23T14:15:02Z
+  saml:AudienceRestriction:
+    saml:Audience: http://scm
+saml:Issuer:
+  Format: urn:oasis:names:tc:SAML:2.0:nameid-format:entity
+  content: BdE
+saml:Subject:
+  saml:NameID: qinfmpa
+xmlns:saml: urn:oasis:names:tc:SAML:2.0:assertion
+xmlns:xs: http://www.w3.org/2001/XMLSchema
+xmlns:xsi: http://www.w3.org/2001/XMLSchema-instance
+

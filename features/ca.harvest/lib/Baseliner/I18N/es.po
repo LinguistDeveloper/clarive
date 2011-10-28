@@ -1,0 +1,100 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "List Users Connected to Harvest"
+msgstr "Listar Usuarios Conectados a Harvest"
+
+msgid "Created job %1 of type %2 ok."
+msgstr "Creado pase %1 de tipo %2."
+
+msgid "%1 packages %2 from state %3 to state %4 in project %5"
+msgstr "%1 del estado %3 al estado %4 en el proyecto %5 de los paquetes %2"
+
+msgid "Harvest Package"
+msgstr "Paquete de Harvest"
+
+msgid "Harvest Packages"
+msgstr "Paquetes de Harvest"
+
+msgid "Package Name"
+msgstr "Nombre del Paquete"
+
+msgid "Create Harvest Package"
+msgstr "Crear Paquete de Harvest"
+
+msgid "Harvest Log"
+msgstr "Log de Harvest"
+
+msgid "Error during create package"
+msgstr "Error durante la creación del paquete"
+
+msgid "Creating Harvest Package..."
+msgstr "Creando Paquete de Harvest..."
+
+msgid "Promoting"
+msgstr "Promoción"
+
+msgid "Demoting"
+msgstr "Devolución"
+
+msgid "Package %1 is pending to approve."
+msgstr "El paquete %1 no ha sido aprobado"
+
+msgid "Package Group %1 is pending to approve."
+msgstr "El grupo de paquetes %1 no ha sido aprobado"
+
+msgid "Release %1 is pending to approve."
+msgstr "La release %1 no ha sido aprobada"
+
+msgid "String Replace %1 in files detected"
+msgstr "Detectado reemplazo <code>%1</code> en los siguientes ficheros"
+
+msgid "Harvest %1 results (rc=%2)"
+msgstr "Resultado de la %1 de Harvest (rc=%2)"
+
+msgid "State checkout ignored. Configuration value 'full_checkout' is unset."
+msgstr "Ignorado el checkout de estado. No se ha onfigurado la variable 'full_checkout'."
+
+msgid "Harvest Package checkout of %1 items in %2 packages"
+msgstr "Harvest Checkout de %1 item(s) en %2 paquete(s)..."
+
+msgid "No Harvest Package elements detected. Checkout skipped."
+msgstr "No se han detectado items en los paquetes del pase. Checkout de paquete no realizado."
+
+msgid "Harvest Checkin into Package: %1"
+msgstr "Checkin a Paquete de Harvest: %1"
+
+msgid "View Path"
+msgstr "View Path"
+
+msgid "Client Path"
+msgstr "Client Path"
+
+msgid "Files to Checkin"
+msgstr "Ficheros Seleccionados para Checkin"
+
+msgid "Error executing Harvest command"
+msgstr "Error durante la ejecución del comando de Harvest"
+
+msgid "Error creating package: "
+msgstr "Error creando paquete: "
+
+msgid "Error deleting package: "
+msgstr "Error borrando paquete: "
+
+msgid "Error checking in file: "
+msgstr "Error durante el checkin del fichero: "
+
+msgid "Error checking in file: %1"
+msgstr "Error durante el checkin del fichero. %1"
+
+msgid "Checking in files..."
+msgstr "Incorporando ficheros..."
+
+msgid "File Checkin Success"
+msgstr "Ficheros incorporados con éxito"
+
+msgid "Error during check-in"
+msgstr "Error durante el check-in"

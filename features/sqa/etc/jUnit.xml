@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="JUnit" default="ReportTests" basedir=".">
+
+
+	<property environment="env"/>
+	<property file="${basedir}/junitcfg.properties"/>
+
+	
+	<path id="checking.classpath">
+		<fileset dir="${env.CHECKING_HOME}/WEB-INF/lib">
+		  <include name="*.jar"/>
+		</fileset>
+	</path>
+	<taskdef name="projectProperties" classname="es.als.checking.framework.ant.ProjectPropertiesTask" classpathref="checking.classpath"/>
+	
+	<path id="junit.classpath" >
+		<fileset dir="${env.CHECKING_HOME}/WEB-INF/plugins/plugin-JUNIT/lib" includes="*.jar"/>
+    </path>
+	<taskdef resource="emma_ant.properties" classpathref="junit.classpath" />
+	
+	<path id="classpath.script">
+		<fileset dir="./lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="classpath.script" />
+		
+	<target name="init">
+		<projectProperties name="${project}">
+			<common path="path"/>
+			<buildInfo sourceCodePath="sourceCodePath" testSourceCodePath="testSourceCodePath" outputPath="outputPath" testOutputPath="testOutputPath" />
+		</projectProperties>
+	</target>
+	
+	<target name="build" depends="init">
+		<delete dir="${path}/${testOutputPath}/bin"/>
+		<path id="app.classpath">
+			<pathelement location="${path}/${testOutputPath}/bin"/>
+			<path refid="junit.classpath"/>
+			<pathelement location="${path}/${testSourceCodePath}/resources"/>
+			<fileset dir="${path}/${testSourceCodePath}/lib" includes="*.jar"/>
+		</path>
+		<mkdir dir="${path}/${testOutputPath}/bin"/>
+        <copy includeemptydirs="false" todir="${path}/${testOutputPath}/bin" failonerror="false">
+            <fileset dir="${path}/${testSourceCodePath}/FuentesJava" excludes="**/*.launch, **/*.java"/>
+			<fileset dir="${path}/${testSourceCodePath}/GeneradosJava" excludes="**/*.launch, **/*.java"/>
+			<fileset dir="${path}/${testSourceCodePath}/src" excludes="**/*.launch, **/*.java"/>
+			<fileset dir="${path}/${testSourceCodePath}/source" excludes="**/*.launch, **/*.java"/>
+			<fileset dir="${path}/${testSourceCodePath}/sources" excludes="**/*.launch, **/*.java"/>
+		</copy>	
+			
+		<available file="${path}/${testSourceCodePath}/GeneradosJava" property="dir1.present"/>
+		<if>
+			<equals arg1="${dir1.present}" arg2="true"/>
+			<then>
+				<javac debug="true" debuglevel="source,lines,vars" destdir="${path}/${testOutputPath}/bin" source="1.5" target="1.5">
+					<src path="${path}/${testSourceCodePath}/GeneradosJava"/>
+					<classpath refid="app.classpath"/>
+				</javac>
+			</then>
+		</if>
+		
+		<available file="${path}/${testSourceCodePath}/FuentesJava" property="dir2.present"/>
+		<if>
+			<equals arg1="${dir2.present}" arg2="true"/>
+			<then>
+				<javac debug="true" debuglevel="source,lines,vars" destdir="${path}/${testOutputPath}/bin" source="1.5" target="1.5">
+					<src path="${path}/${testSourceCodePath}/FuentesJava"/>
+					<classpath refid="app.classpath"/>
+				</javac>
+			</then>
+		</if>
+		
+		<available file="${path}/${testSourceCodePath}/src" property="dir3.present"/>
+		<if>
+			<equals arg1="${dir3.present}" arg2="true"/>
+			<then>
+				<javac debug="true" debuglevel="source,lines,vars" destdir="${path}/${testOutputPath}/bin" source="1.5" target="1.5">
+					<src path="${path}/${testSourceCodePath}/src"/>
+					<classpath refid="app.classpath"/>
+				</javac>
+			</then>
+		</if>
+		
+		<available file="${path}/${testSourceCodePath}/source" property="dir4.present"/>
+		<if>
+			<equals arg1="${dir4.present}" arg2="true"/>
+			<then>
+				<javac debug="true" debuglevel="source,lines,vars" destdir="${path}/${testOutputPath}/bin" source="1.5" target="1.5">
+					<src path="${path}/${testSourceCodePath}/source"/>
+					<classpath refid="app.classpath"/>
+				</javac>
+			</then>
+		</if>
+		
+		<available file="${path}/${testSourceCodePath}/sources" property="dir5.present"/>
+		<if>
+			<equals arg1="${dir5.present}" arg2="true"/>
+			<then>
+				<javac debug="true" debuglevel="source,lines,vars" destdir="${path}/${testOutputPath}/bin" source="1.5" target="1.5">
+					<src path="${path}/${testSourceCodePath}/sources"/>
+					<classpath refid="app.classpath"/>
+				</javac>
+			</then>
+		</if>
+        
+	</target>
+	
+	
+	<target name="AllTestsAndBuild" depends="build">
+		<delete dir="${path}/reportJUnit"/>
+        <mkdir dir="${path}/reportJUnit/html"/>
+        <junit fork="yes" printsummary="yes" haltonerror="no" haltonfailure="no" showoutput="no">
+            <formatter type="xml" usefile="true" />
+			<formatter type="plain" usefile="false"/> 
+			<batchtest todir="${path}/reportJUnit">
+				<fileset dir="${path}/${testOutputPath}/bin" includes="**/AllTests.class"/>
+			</batchtest>
+            <classpath refid="app.classpath"/>
+        </junit>
+    </target>
+	
+	<target name="AllTests" depends="init">
+		<delete dir="${path}/reportJUnit"/>
+        <mkdir dir="${path}/reportJUnit/html"/>
+        <junit fork="yes" printsummary="yes" haltonerror="no" haltonfailure="no" showoutput="no">
+            <formatter type="xml" usefile="true" />
+			<formatter type="plain" usefile="false"/> 
+			<batchtest todir="${path}/reportJUnit">
+				<fileset dir="${path}/${testOutputPath}/bin" includes="**/AllTests.class"/>
+			</batchtest>
+            <classpath refid="app.classpath"/>
+        </junit>
+    </target>
+
+
+	<target name="ReportTests" depends="AllTests">
+		<taskdef name="junitreport" classname="org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator" classpathref="junit.classpath" loaderref="junit.classpath.loader"/>
+		<junitreport todir="${path}/reportJUnit">
+		  <fileset dir="${path}/reportJUnit">
+			<include name="TEST-*.xml" />
+		  </fileset>
+		  <report format="noframes" todir="${path}/reportJUnit/html" />
+		</junitreport>
+		<rename src="${path}/reportJUnit/html/junit-noframes.html" dest="${path}/reportJUnit/html/index.html"/>
+    </target>
+	
+</project>

@@ -1,0 +1,134 @@
+(function(){
+	var store=new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/project/list',
+		fields: [ 
+			{  name: 'name' },
+			{  name: 'data' },
+			{  name: 'description' },
+			{  name: 'ns' }
+		]
+	});
+
+    <& '/comp/search_field.mas' &>
+
+    var ps = 100; //page_size
+    store.load({params:{start:0 , limit: ps}}); 
+
+    // create the grid
+	var grid = new Ext.grid.EditorGridPanel({
+			title: _('Projects'),
+			header: false,
+            stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			store: store,
+			clicksToEdit: 'auto',
+			viewConfig: [{
+					forceFit: true
+			}],
+			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+			loadMask:'true',
+			columns: [
+				{ header: _('Project'), width: 120, dataIndex: 'name', sortable: true },	
+				{ header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true },	
+				{ header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
+				{ header: _('Data'), width: 350, dataIndex: 'data', sortable: true, editor: new Ext.form.TextArea({ grow: true }) }
+			],
+			autoSizeColumns: true,
+			deferredRender:true,
+			bbar: new Ext.PagingToolbar({
+								store: store,
+								pageSize: ps,
+								displayInfo: true,
+								displayMsg: 'Rows {0} - {1} of {2}',
+								emptyMsg: "No hay registros disponibles"
+						}),        
+			tbar: [ 'Buscar: ', ' ',
+				new Ext.app.SearchField({
+					store: store,
+					params: {start: 0, limit: ps},
+					emptyText: _('<Enter your search string>')
+				}),
+<%doc>
+                {  
+                    xtype: 'button',
+					text: _('Surrogate'),
+					icon:'/static/images/project.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						if (sm.hasSelection()) {
+							var row = sm.getSelected();
+                            var project = row.data.project;
+                            Baseliner.message( _("Surrogate"), _("Surrogating as %1", project) );
+                            Ext.Ajax.request({
+                                url: '/auth/surrogate',
+                                params: { login: project },
+                                success: function(xhr) {
+                                    document.location.href = document.location.href;
+                                },
+                                failure: function(xhr) {
+                                    var err = xhr.responseText;
+                                    Baseliner.message( _("Surrogate Error"), _("Error during surrogate: %1", err ));
+                                }
+                            });
+						} 
+					}
+                },
+				new Ext.Toolbar.Button({
+					text: _('Add'),
+					icon:'/static/images/drop-add.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						if (sm.hasSelection())
+						{
+							var sel = sm.getSelected();
+							Baseliner.addNewTab('/project/create?package=' + sel.data.package , '<% _loc('New Project') %>' );
+						} else {
+							Baseliner.addNewTab('/project/create' , '<% _loc('New Project') %>' );
+						};
+						
+					}
+				}),
+				new Ext.Toolbar.Button({
+					text: _('Delete'),
+					icon:'/static/images/del.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						var sel = sm.getSelected();
+						Ext.Msg.confirm('<% _loc('Confirmation') %>', 'Are you sure you want to delete the project ' + sel.data.name + '?', 
+							function(btn){ 
+								if(btn=='yes') {
+									var conn = new Ext.data.Connection();
+									conn.request({
+										url: '/project/update',
+										params: { action: 'delete', id_rel: sel.data.id },
+										success: function(resp,opt) { grid.getStore().remove(sel); },
+										failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the release.') %>'); }
+									});	
+								}
+							} );
+					}
+				}),
+</%doc>
+				'->'
+				]
+		});
+
+		grid.on("rowdblclick", function(grid, rowIndex, e ) {
+			var r = grid.getStore().getAt(rowIndex);
+			//Baseliner.addNewTab('/endevor/pkg_data?package=' + r.get('package') , r.get('package') );
+		});		
+
+	return grid;
+})();
+
+
+
+

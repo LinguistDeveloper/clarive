@@ -1,0 +1,133 @@
+(function(){
+	var store=new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/reports/harvest/vh_json',
+		fields: [ 
+			{  name: 'id' },
+			{  name: 'itemname' },
+			{  name: 'itemtype' },
+			{  name: 'pathfullname' },
+			{  name: 'id_job' },
+			{  name: 'last_job' },
+			{  name: 'environmentname' },
+			{  name: 'statename' },
+			{  name: 'packagename' },
+			{  name: 'username' },
+			{  name: 'mappedversion' }
+		]
+	});
+
+    <& /comp/search_field.mas &>
+
+    var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
+		var icon = rec.data.icon || '/static/images/scm/release.gif';
+		return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' />";
+		//return "<div style='float: left; margin-top: 2'><img alt='"+ rec.id +"' border=0 src='"+icon+"' /></div><div style='font-family: Tahoma; font-size:10pt; margin-top: 4'><b>" + value + "</b></div>" ;
+    };
+
+    var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
+		return "<div style='font-family: Tahoma; font-size:10pt; margin-top: 4'><b>" + value + "</b></div>" ;
+    };
+
+	// Después de que cargue la página:
+	var ps = 30; //page_size
+	store.load({params:{start:0 , limit: ps}}); 
+
+	// create the grid
+	var grid = new Ext.grid.GridPanel({
+			title: _('Version History'),
+			header: false,
+            stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			store: store,
+			viewConfig: [{
+					forceFit: true
+			}],
+			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+			loadMask:'true',
+			columns: [
+				{ header: _('Project'), width: 100, dataIndex: 'environmentname', sortable: true },	
+				{ header: _('State'), width: 70, dataIndex: 'statename', sortable: true },	
+				{ header: _('Path'), width: 250, dataIndex: 'pathfullname', sortable: true },	
+				{ header: _('Item'), width: 150, dataIndex: 'itemname', sortable: true },	
+				{ header: _('Version'), width: 50, dataIndex: 'mappedversion', sortable: true },
+				{ header: _('Type'), width: 50, dataIndex: 'itemtype', sortable: true },	
+				{ header: _('Last Job'), width: 100, dataIndex: 'last_job', sortable: true, renderer: Baseliner.render_job },	
+				{ header: _('Package'), width: 250, dataIndex: 'packagename', sortable: true }
+			],
+			autoSizeColumns: true,
+			deferredRender:true,
+			bbar: new Ext.PagingToolbar({
+								store: store,
+								pageSize: ps,
+								displayInfo: true,
+								displayMsg: 'Rows {0} - {1} of {2}',
+								emptyMsg: "No hay registros disponibles"
+						}),        
+			tbar: [ _('Search') + ': ', ' ',
+				new Ext.app.SearchField({
+					store: store,
+					params: {start: 0, limit: ps},
+					emptyText: '<% _loc('<Enter your search string>') %>'
+				}),
+<%doc>
+				new Ext.Toolbar.Button({
+					text: '<% _loc('Add') %>',
+					icon:'/static/images/drop-add.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						if (sm.hasSelection())
+						{
+							var sel = sm.getSelected();
+							//Baseliner.addNewTab('/release/create?id_rel=' + sel.data.id , _loc('New Release') );
+						} else {
+							//Baseliner.addNewTab('/release/create' , _('New Release') );
+						};
+						
+					}
+				}),
+				new Ext.Toolbar.Button({
+					text: '<% _loc('Edit') %>',
+					icon:'/static/images/drop-yes.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						if (sm.hasSelection())
+						{
+							var sel = sm.getSelected();
+							//Baseliner.addNewTab('/release/edit?id_rel=' + sel.data.id , sel.data.name);
+						} else {
+							//Ext.Msg.alert('Error', 'Falta seleccionar una fila');	
+						};
+						
+					}
+				}),
+				new Ext.Toolbar.Button({
+					text: '<% _loc('Delete') %>',
+					icon:'/static/images/del.gif',
+					cls: 'x-btn-text-icon',
+					handler: function() {
+						var sm = grid.getSelectionModel();
+						var sel = sm.getSelected();
+					}
+				}),
+</%doc>
+				'->'
+				]
+		});
+
+		grid.on("rowdblclick", function(grid, rowIndex, e ) {
+			var r = grid.getStore().getAt(rowIndex);
+			Baseliner.addNewTab('/release/edit?id_rel=' + r.get('id') , r.get('name') );
+		});		
+
+	return grid;
+})();
+
+
+

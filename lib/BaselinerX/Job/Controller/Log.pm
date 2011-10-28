@@ -1,0 +1,198 @@
+package BaselinerX::Job::Controller::Log;
+use Moose;
+use Baseliner::Utils;
+use JavaScript::Dumper;
+use Compress::Zlib;
+use Try::Tiny;
+use JSON::XS;
+
+BEGIN { extends 'Catalyst::Controller' }
+
+sub logs_list : Path('/job/log/list') {
+    my ( $self, $c ) = @_;
+	my $p = $c->req->params;
+    $c->stash->{id_job} = $p->{id_job};
+    $c->stash->{annotate_now} = $p->{annotate_now};
+    _log ">>>>>>>>>>>>>>>>>>>>>>>>" . $p->{id_job};
+	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
+    $c->stash->{template} = '/comp/log_grid.mas';
+}
+
+sub _select_words {
+	my ($self,$text,$cnt)=@_;
+	my @ret=();
+	for( $text =~ /(\w+)/g ) {
+		next if length( $_ ) <= 3;
+		push @ret, $_;
+		last if @ret >= $cnt;
+	}
+	return join '_', @ret;
+}
+
+sub auto_refresh : Path('/job/log/auto_refresh') {
+	my ( $self,$c )=@_;
+	my $p = $c->request->parameters;
+    my $filter = $p->{filter};
+       $filter = decode_json( $filter ) if $filter;
+    my $where = { id_job => $p->{ id_job }, 'me.exec' => $p->{ job_exec } || 1 };
+    #_log _dump ( $filter );
+    $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
+        if ref($filter) eq 'HASH';
+    _log _dump $where;
+    my $rs = $c->model( 'Baseliner::BaliLog' )->search( $where, { order_by=>'me.id desc', join=>['job'] } );
+    my $top = $rs->first;
+    my $stop_now = $top->job->status ne 'RUNNING' ? \1 : \0;
+    $c->stash->{json} = { count => $rs->count, top_id=>$top->id, stop_now=>$stop_now };  
+	$c->forward('View::JSON');
+}
+
+sub logs_json : Path('/job/log/json') {
+	my ( $self,$c )=@_;
+    _db_setup;
+	my $p = $c->request->parameters;
+    my ($start, $limit, $query, $dir, $sort, $filter, $cnt ) = @{$p}{qw/start limit query dir sort filter/};
+    $limit||=50;
+    $filter = decode_json( $filter ) if $filter;
+	my $config = $c->registry->get( 'config.job.log' );
+	my @rows = ();
+    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+
+	my $where = $p->{id_job} ? { id_job=>$p->{id_job} } : {};
+	my $from = {   order_by=> $sort ? "$sort $dir" : 'me.id',
+					#page => to_pages( start=>$start, limit=>$limit ),  
+					#rows => $limit,
+				#	prefetch => ['job']
+                };
+	#TODO use the blob 'data' somehow .. change to clob?
+	if( $query ) {
+		$where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
+	} else {
+		my $job_exec;
+		if( exists $p->{job_exec} ) {
+			$job_exec = $p->{job_exec};
+		} else {
+			$job_exec = ref $job ? $job->exec : 1;
+		}
+		$where->{'me.exec'} = $job_exec;
+		# faster: $from->{join} = [ 'jobexec' ];
+	}
+    $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
+        if ref($filter) eq 'HASH';
+
+    #TODO    store filter preferences in a session instead of a cookie, on a by id_job basis
+    #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$p->{id_job} })->first;
+    my $rs = $c->model( 'Baseliner::BaliLog')->search( $where , $from );
+	#my $pager = $rs->pager;
+	#$cnt = $pager->total_entries;
+
+	my $qre = qr/\.\w+$/;
+	while( my $r = $rs->next ) {
+        #my $data = uncompress( $r->data ) || $r->data;
+		my $data = '';
+        #next if( $query && !query_array($query, $r->job->name, $r->get_column('timestamp'), $r->text, $r->provider, $r->lev, $r->data_name, $data, $r->ns ));
+        #if( $filter ) { next if defined($filter->{$r->lev}) && !$filter->{$r->lev}; }
+
+        my $data_len = $r->data_length;
+        my $more = $r->more;
+        my $data_name = $r->data_name || ''; 
+        my $file = $data_name =~ $qre
+            ? $data_name
+            : ( $data_len > ( 4 * 1024 ) )
+                ? ( $data_name || $self->_select_words($r->text,2) ) . ".txt"
+                : '';
+        push @rows,
+          {
+            id       => $r->id,
+            id_job   => $r->id_job,
+            job      => $r->job->name,
+            text     => $r->text,
+            step     => $r->step,
+            prefix   => $r->prefix,
+            milestone=> $r->milestone,
+            exec     => $r->exec,
+            ts       => $r->get_column('timestamp'),
+            lev      => $r->lev,
+            module   => $r->module,
+            section  => $r->section,
+            ns       => $r->ns,
+            provider => $r->provider,
+			datalen  => $data_len,
+            more     => { more=>$more, data_name=> $r->data_name, data=> $r->data ? \1 : \0, file=>$file },
+          } #if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
+	}
+	$c->stash->{json} = {
+        totalCount => scalar(@rows),
+        data       => \@rows,
+        job        => { ref $job ? $job->get_columns : () },
+     };	
+    # CORE::warn Dump $c->stash->{json};
+	$c->forward('View::JSON');
+}
+
+sub log_data : Path('/job/log/data') {
+    my ( $self, $c, $id ) = @_;
+    _db_setup;
+	my $p = $c->req->params;
+	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
+	$c->res->body( "<pre>" . (uncompress($log->data) || $log->data)  . " " );
+}
+
+sub log_highlight : Path('/job/log/highlight') {
+    my ( $self, $c, $id ) = @_;
+    _db_setup;
+	my $p = $c->req->params;
+	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
+    if( my $viewer_key = $log->provider ) {
+        if( my $viewer = $c->model('Registry')->get( $viewer_key ) ) {
+            # viewer options
+        }
+    }
+	$c->stash->{class} = $log->data_length > 1000000 ? '' : $log->{highlight_class} || 'spool';
+	$c->stash->{style} = $log->{highlight_style} || 'golden';
+	$c->stash->{data} = (uncompress($log->data) || $log->data)  . " ";
+	$c->stash->{template} = '/site/highlight.html';
+}
+
+sub log_data_search : Path('/job/log/data_search') {
+    my ( $self, $c ) = @_;
+    _db_setup;
+	my $p = $c->req->params;
+	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
+	$c->stash->{log_data} = uncompress($log->data) || $log->data;
+	$c->stash->{template} = '/comp/log_search.mas';
+}
+
+sub log_file : Path('/job/log/download_data') {
+    my ( $self, $c ) = @_;
+    _db_setup;
+	my $p = $c->req->params;
+	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
+    my $file_id = $log->id_job.'-'.$p->{id};
+    my $filename = $file_id . '-' . ( $p->{file_name} || $log->data_name || 'attachment.txt' );
+    $c->res->header('Content-Disposition', qq[attachment; filename="$filename"]);
+	#$c->res->content_type('text/plain;charset=utf-8');
+	$c->res->content_type('application-download;charset=utf-8');
+	$c->res->body( uncompress($log->data) || $log->data );
+}
+
+sub annotate : Path('/job/log/annotate') {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    my $level = $p->{level} ||= 'info';
+    try {
+        _throw 'Missing text' unless $p->{text};
+        my $text = $p->{text};
+        $text = substr($text, 0, 2048 );
+        #$text = '<b>' . $c->username . '</b>: ' . $p->{text};
+        my %args = ( jobid=>$p->{jobid} );
+        $args{job_exec} = $p->{job_exec} if $p->{job_exec} > 0;
+        Baseliner->model('Jobs')->log(  %args  )->comment( $text, data=>$p->{data}, username=>$c->username );
+        $c->stash->{json} = { success=>\1 };
+    } catch {
+        $c->stash->{json} = { success=>\0, msg=>shift };
+    };
+    $c->forward('View::JSON');
+}
+
+1;

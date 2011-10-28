@@ -1,0 +1,196 @@
+<HEAD>
+<LINK rel="stylesheet" type="text/css" href="estilo.css">
+<script language="Javascript">
+
+	window.returnValue="";
+
+	function keyHandler(e) {
+		e=window.event;
+		if( e.keyCode == 27 ) {
+			window.close();
+		}
+	}
+	document.onkeypress=keyHandler;
+</script>
+<base target="_self"></base>
+
+<%once>
+    use strict;
+    use warnings;
+    use Catalyst::Plugin::Session;
+    use APR::URI ();
+    use Try::Tiny;
+    use Perl6::Slurp;
+
+    use parent 'Catalyst::View::Mason';
+</%once>
+
+<%init>
+    $r->header_out( 'Cache-Control' => "no-cache, post-check=0, pre-check=0" );
+    $r->header_out( 'Pragma'        => "no-cache" );
+    $r->header_out( 'Expires'       => "Tues, 01 Jan 1980 00:00:00 GMT" );
+
+    # Saca los datos de $usuario de la sesion 
+    my $usuario  = BaselinerX::Ktecho::Harvest::Usuario->new;
+    my $username = $c->session->{username};
+
+    # no tengo login, le echo
+    if ( !$username ) {
+        $c->session( 'redirect' => "consola_do.html" . ( !$r->args ? q{} : "?$r->args" );
+        $m->redirect('Logon');
+		return;
+	}
+	else {
+		$username = $usuario->get_harvest_user();
+	}
+
+    my $filtro1 = $ARGS{filtro1} || q{};
+    my $filtro2 = $ARGS{filtro2} || q{};
+
+    my $interno = undef;
+
+    $interno = true if ( $ARGS{interno} and $ARGS{interno} ne 'false' );
+
+    my $cam     = $ARGS{cam};
+    my $env     = $ARGS{env};
+    my $sub_apl = $ARGS{sub_apl};
+    my $op      = $ARGS{op};
+
+    # Parto la URL por componentes y me quedo con todo hasta el rpath.
+    my $url = $r->uri;
+    my $parsed = APR::URI->parse( $r->pool, $url );
+    $parsed->fragment(undef);
+    $parsed->query(undef);
+    my $servlet_url = pased->unparse;
+
+    my $scripts = q{};
+    my $usuario_consola = BaselinerX::Ktecho::Harvest::UsuarioConsola->new;
+
+    if ( $cam && length($cam) > 0 ) {
+        if ( $op =~ /START/i || $op =~ /STOP/i || $op =~ /RESTART/i ) {
+            if ( !$usuario_consola->start_stop( $cam, $env ) ) {
+                $m->redirect('autherror.jsp');
+            }
+        }
+        if ( $op =~ /CONFIG/i || $op =~ /CONFIGLS/i ) {
+            if ( !$usuario_consola->view_config( $cam, $env ) ) {
+                $m->redirect('autherror.jsp');
+            }
+        }
+        if ( $op =~ /LOGWAS/i || $op =~ /LOGAPL/i ) {
+            if ( !$usuario_consola->view_logs( $cam, $env ) ) {
+                $m->redirect('autherror.jsp');
+            }
+        }
+    }
+<%/init>
+
+</HEAD>
+<BODY style="overflow:hidden;" topmargin=0 leftmargin=0 rightmargin=0 bottommargin=0 marginwidth=0 marginheight=0>
+<%--DIV id="reloj" STYLE="position:relative;visibility:visible;">
+	<table width="100%" height="100%" style="height:expression(this.offsetParent.scrollBottom)" border=0>
+	<tr><td align="middle" valign="center" height="50%"><img src="images/rotation.gif"></img></td></tr>
+	</table>
+</DIV>
+<DIV id="results" STYLE="position:absolute;top:0;left:0;visibility:hidden;">
+--%>
+
+<TABLE width="100%" cellpadding="2" style="overflow:auto; border-all:1; border-color:#000000;">
+<TR style="background-color:#EEEEEE"> <%-- style="width:700px; position:relative; top:expression(this.offsetParent.scrollTop-2); background-color:#EEEEEE" --%>
+	<td id="barra" style="background-color:white; width:100%" align="right" >
+	</td>
+</TR>
+</TABLE>
+
+<DIV style="overflow:auto; width:100%; height:420px; border-top:0; border-left:0; border-right:0; border-bottom:0; border-style:solid; background-color:" class=scrollchulo>
+		
+<%perl>
+	try {
+        my $log_text = q{};
+        my $cmd_text = q{};
+        my $exit_code;
+
+        try {
+            my $config_bde  = Baseliner->model('ConfigStore')->get('config.bde');
+            my $broker      = $config_bde->{broker};
+            my $udp_home    = $config_bde->{udp_home};
+            my $fichero_dfo = $config_bde->{fichero_dfo};
+            my $temp_dir    = $config_bde->{temp_dir};
+
+            $log_file = "$tempdir/hudpHardist.20350429201005.log";
+            #TODO  Lo que hace es pillar la hora, me invento una de momento...
+            #FIXME $log_file = "$tempdir/hudpHardist." + HUtil.now() + ".log";
+
+            my @cmd = (
+                'hudp', '-b', $broker, '-eh', $fichero_dfo, '-en', 'SCM', '-st', 'Control', '-pn',
+                'ConsolaJ2EE', '-o', $log_file, '-ap', '$cam $env $sub_apl $username $op'
+            );
+
+            foreach (@cmd) { $cmd_text .= $_; }
+        }
+        #TODO
+#        catch(IOException e) {
+#            $log_text = "<br><b>Error: no he podido ejecutar el ConsolaJ2EE:</b> " + e;
+#            e.printStackTrace();
+#        }
+#        catch(InterruptedException e) {
+#            $log_text = "<br><b>Error: no he podido ejecutar el ConsolaJ2EE:</b> " + e;
+#            e.printStackTrace();
+#        }
+#        catch(Exception e) {
+#            $log_text = "<br><b>Error: no he podido ejecutar ConsolaJ2EE:</b> " + e;
+#            $log_text = "<br>CMD=" + $cmd_text;
+#            e.printStackTrace();
+#        }
+
+        try {
+</%perl>
+    <xPRE>
+<%perl>
+            my $file_id;
+
+            open( my $FILE, '<', $log_file );
+
+            while ( my $line = <> ) {
+                if ( $line ~~ 'CONSOLAID' ) {
+                    my $file_id = split( /=/, $line );
+                }
+            }
+</%perl>
+    <br></xPRE>
+</perl>
+            $log_text = slurp $FILE;
+
+            if ( $file_id && ( length($file_id) > 0 ) ) {
+                #TODO 
+#				$file_id=HUtil.subs($file_id,"\n","").trim();
+#				$file_id=HUtil.subs($file_id,".","").trim();
+#                # response.sendRedirect("log_binary_data.jsp?tipo=logdata&seq="+$file_id);
+#                # out.println("<script>\nwindow.returnValue="+$file_id+"\nwindow.close()\n</script>");
+#				$scripts+="\n<script>\ndocument.all.dataFrame.src='log_binary_data.jsp?tipo=logdata&del=1&seq="+$file_id+"';\n</script>\n";
+#                # $scripts+="\n<script>\nwindow.open('"+servlet_url+"/log_binary_data.jsp?tipo=logdata&del=1&seq="+$file_id+"');\n</script>\n";
+            }
+        }
+        catch(Exception e)
+        {
+            $log_text += "<p><b>Error: no he podido leer el fichero de log '" + $log_file + "':</b>" + e;
+        }
+
+		$scripts="\n<script>\ndocument.all.barra.innerHTML='<img src=\"images/close.gif\" style=\"cursor:hand;\" onclick=\"javascript:parent.Control.Modal.close();\" />';\n</script>\n" + $scripts;
+    }
+    catch(Exception ex) {
+        #TODO
+#        out.println( ex.getMessage());
+#        ex.printStackTrace();
+    }
+</%perl>
+		
+</DIV>
+
+<%-- SCRIPT>
+	parent.document.getElementById("reloj").style.visibility="hidden";
+	parent.document.getElementById("results").style.visibility="visible";
+</SCRIPT --%>
+<IFRAME id="dataFrame" NAME="dataFrame" HEIGHT="0px" WIDTH="0%" BORDER="0"></IFRAME>
+<% $scripts %>
+</HTML>

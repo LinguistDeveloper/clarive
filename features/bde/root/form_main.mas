@@ -1,0 +1,11 @@
+(function(){
+    
+    Baseliner.addNewTab('/form_oracle.mas', 'Oracle');
+    var panel = new Ext.FormPanel({
+        title: 'hoool',
+        items: [    {    xtype : "textfield",      fieldLabel : "Text",      name : "textvalue"  },    {      xtype : "textfield",      fieldLabel : "Text",      name : "textvalue"  },    {      xtype : "textarea",      fieldLabel : "Text",      name : "textarea",      width : 266,      height : 165 }, 
+                 { xtype: 'label', text: 'Configurar: Oracle, <a href="">PrepPOst</a>' }]
+    });
+    return panel;
+
+})();

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project name="InformeRO" resourceRoot="" soapui-version="2.5.1" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="ProjectSettings@projectRoot">F:\dev\baseliner\t</con:setting></con:settings><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="InformeBind" type="wsdl" bindingName="{http://localhost:3000/ro/informe}InformeBind" soapVersion="1_1" anonymous="optional" definition="file:/F:/dev/baseliner/wsdl/scm_report.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/F:/dev/baseliner/wsdl/scm_report.wsdl"><con:part><con:url>file:/F:/dev/baseliner/wsdl/scm_report.wsdl</con:url><con:content><![CDATA[<wsdl:definitions targetNamespace="http://localhost:3000/ro/informe" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns="http://localhost:3000/ro/informe">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://localhost:3000/ro/informe">
+      <s:element minOccurs="0" maxOccurs="1" name="rfc" type="s:string"/>
+      <s:element name="pases">
+        <s:complexType>
+          <s:sequence>
+            <s:sequence minOccurs="0" maxOccurs="unbounded">
+              <s:element name="pase" type="Pase"/>
+            </s:sequence>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="paquetes">
+        <s:complexType>
+          <s:sequence>
+            <s:sequence minOccurs="0" maxOccurs="unbounded">
+              <s:element name="paquete" type="Paquete"/>
+            </s:sequence>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="elementos">
+        <s:complexType>
+          <s:sequence>
+            <s:sequence minOccurs="0" maxOccurs="unbounded">
+              <s:element name="elemento" type="Elemento"/>
+            </s:sequence>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="Pase">
+        <s:attribute name="codigo" type="s:string"/>
+        <s:attribute name="usuario" type="s:string"/>
+        <s:attribute name="fechaInicio" type="s:dateTime"/>
+      </s:complexType>
+      <s:complexType name="Paquete">
+        <s:attribute name="codigo" type="s:string"/>
+        <s:attribute name="lineaBase" type="s:string"/>
+        <s:attribute name="usuario" type="s:string"/>
+        <s:attribute name="fechaCreacion" type="s:dateTime"/>
+      </s:complexType>
+      <s:complexType name="Elemento">
+        <s:attribute name="programa" type="s:string"/>
+        <s:attribute name="nombre" type="s:string"/>
+        <s:attribute name="usuario" type="s:string"/>
+        <s:attribute name="fechaModificacion" type="s:dateTime"/>
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="AskInforme">
+    <wsdl:part name="rfc" element="rfc"/>
+  </wsdl:message>
+  <wsdl:message name="GiveInforme">
+    <wsdl:part name="listado_pases" element="pases"/>
+    <wsdl:part name="listado_paquetes" element="paquetes"/>
+    <wsdl:part name="listado_elementos" element="elementos"/>
+  </wsdl:message>
+  <wsdl:portType name="InformePort">
+    <wsdl:operation name="informe">
+      <wsdl:input message="AskInforme"/>
+      <wsdl:output message="GiveInforme"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="InformeBind" type="InformePort">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
+    <wsdl:operation name="informe">
+      <soap:operation soapAction="http://localhost:3000/"/>
+      <wsdl:input>
+        <soap:body use="literal" namespace="http://localhost:3000/ro/informe"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" namespace="http://localhost:3000/ro/informe"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="InformeService">
+    <wsdl:port name="InformePort" binding="InformeBind">
+      <soap:address location="http://localhost:3000/ro/informe"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:3000/ro/informe</con:endpoint><con:endpoint>http://harvestdes:3000/ro/informe</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://localhost:3000/" name="informe" bindingOperationName="informe" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://harvestdes:3000/ro/informe</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:inf="http://localhost:3000/ro/informe">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <inf:informe>
+         <inf:rfc>091234</inf:rfc>
+      </inf:informe>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://localhost:3000/ro/informe/InformePort/informeRequest"/></con:call></con:operation></con:interface><con:properties/><con:wssContainer/></con:soapui-project>

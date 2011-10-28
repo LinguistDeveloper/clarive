@@ -1,0 +1,42 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8    \n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# Job Status Codes
+msgid "IN EDIT"
+msgstr "In Edit"
+
+msgid "IN-EDIT"
+msgstr "In Edit"
+
+msgid "READY"
+msgstr "Ready"
+
+msgid "APPROVAL"
+msgstr "Waiting for Approval"
+
+msgid "EXPIRED"
+msgstr "Expired"
+
+msgid "KILLED"
+msgstr "Abend"
+
+msgid "ROLLBACK"
+msgstr "Rollback"
+
+msgid "RUNNING"
+msgstr "Running"
+
+msgid "FINISHED"
+msgstr "Finished"
+
+msgid "ERROR"
+msgstr "Error"
+
+msgid "CANCELLED"
+msgstr "Cancelled"
+
+msgid "DONE"
+msgstr "Finished"

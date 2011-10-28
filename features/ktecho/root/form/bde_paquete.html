@@ -1,0 +1,563 @@
+<HTML>
+<HEAD>
+<META http-equiv="Page-Enter" content="blendtrans(duration=0.1)">
+<link REL=StyleSheet HREF="/scmdist/tabs.css" TYPE="text/css" />
+
+<STYLE>
+	.readonly {
+		background-color:#E0E0E0;
+		font-weight:bold;
+	}
+	input {
+		font-family:Tahoma; font-size:8pt;
+		width: 290px;
+	}
+	select {
+		font-family:Tahoma; font-size:8pt;
+		width: 290px;
+	}
+	textarea {
+		font-family:Tahoma;font-size:8pt;
+		width: 290px;
+	}
+</STYLE>
+
+<script type="text/javascript" src="/scmdist/forms/VB/OpenWeb.js"></script>
+
+<script type="text/javascript">
+	var CurrUser = "<% $username %>";
+	var CurrState = "<% $my_state %>";
+	var FormName  = "<% $my_form_name %>";
+
+	String.prototype.trim = function() {
+		return this.replace(/^\s*/, "").replace(/\s*$/, "");
+	}
+
+	function abrirproy() {
+		var HarvestForm = document.getElementById("HarvestForm");
+
+		var url = "/scmdist/forms/hsp.jsp?links=true&user=" + CurrUser + "&tipo=PRO" ;
+		var ret = window.showModalDialog( url, "","status: No; help: No; dialogHeight: 210px;dialogWidth=642px;dialogTop=300;dialogLeft=600;");
+		if( ret!=undefined && ret != "" ) {
+			var arr;
+			ret = ret.replace( "·", 10 );
+			arr= ret.split('$&$');
+			HarvestForm.PAQ_PRO.value = arr[0];
+			HarvestForm.PAQ_DESC.value = arr[1];
+			HarvestForm.PAQ_DESC.readonly="readonly";
+		}
+		return( false );
+	}
+
+	function abrirpet() {
+		var HarvestForm = document.getElementById("HarvestForm");
+		var url = "/scmdist/forms/hsp.jsp?links=true&user=" + CurrUser + "&tipo=PET" ;
+		var ret = window.showModalDialog( url,"","status: No; help: No; dialogHeight: 210px;dialogWidth=642px;dialogTop=300;dialogLeft=600;");
+		if( ret!=undefined && ret != "" ) {
+			var arr;
+			ret = ret.replace( "·", 10 );
+			arr = ret.split('$&$');
+			HarvestForm.PAQ_PET.value = arr[0];
+			HarvestForm.PAQ_DESC.value = arr[1];
+			HarvestForm.PAQ_DESC.readonly="readonly";
+		}
+		return false;
+	}
+
+	function abririnc() {
+		var HarvestForm = document.getElementById("HarvestForm");
+		FormName  = "<% $my_form_name %>";
+		
+		var url = "/scmdist/forms/usd.jsp?links=true&user=" + CurrUser + "&formname=" + FormName;
+		var ret = window.showModalDialog(url ,"","status: No; help: No; dialogHeight: 210px;dialogWidth=642px;dialogTop=300;dialogLeft=600;");
+		if( ret!=undefined && ret != "" ) {
+			var arr;
+			ret = ret.replace( "·", 10 );
+			arr= ret.split('$&$');
+			HarvestForm.PAQ_INC.value = arr[0];
+			HarvestForm.PAQ_DESC.value = arr[1];
+			HarvestForm.PAQ_DESC.readonly="readonly";
+		}
+		return false;
+	}
+
+	function refrescaForm(obj) {
+		//''If HarvestForm.PAQ_CICLO.value="E" Then 
+		//''	HarvestForm.PAQ_TIPO.value="INC"
+		//''	HarvestForm.PAQ_CAMBIO.value="E"
+		//''End If
+		var HarvestForm = document.getElementById("HarvestForm");
+		var paqTipo = HarvestForm.PAQ_TIPO.value.substring(0,3).toUpperCase();
+		var esSistemas = <% $tiene_sis_projects %>;
+		if( paqTipo=="MAN" || esSistemas ) {
+			document.all.trMantenimiento.style.display="block";
+			document.all.trINC.style.display="none";
+			document.all.trPET.style.display="none";
+			document.all.trPRO.style.display="none";
+			//''HarvestForm.PAQ_PRO.value = ""
+			//''HarvestForm.PAQ_INC.value = ""
+			//''HarvestForm.PAQ_PET.value = ""
+		} else if ( paqTipo=="PET" ) {
+			document.all.trMantenimiento.style.display="none";
+			document.all.trINC.style.display="none";
+			document.all.trPET.style.display="block";
+			document.all.trPRO.style.display="none";
+			//''HarvestForm.PAQ_PRO.value = "";
+			//''HarvestForm.PAQ_INC.value = "";
+			//''HarvestForm.PAQ_MANT.value = "";
+		} else if ( paqTipo=="INC" ) {
+			document.all.trMantenimiento.style.display="none";
+			document.all.trINC.style.display="block";
+			document.all.trPET.style.display="none";
+			document.all.trPRO.style.display="none";
+			//'''HarvestForm.PAQ_PRO.value = "";
+			//''HarvestForm.PAQ_MANT.value = "";
+			//''HarvestForm.PAQ_PET.value = "";
+		} else if( paqTipo=="PRO" ) {
+			document.all.trMantenimiento.style.display="none";
+			document.all.trINC.style.display="none";
+			document.all.trPET.style.display="none";
+			document.all.trPRO.style.display="block";
+			//''HarvestForm.PAQ_MANT.value = "";
+			//''HarvestForm.PAQ_INC.value = "";
+			//''HarvestForm.PAQ_PET.value = "";
+		}
+		return(true);
+	}
+
+	function winonload() {
+		var HarvestForm = document.getElementById("HarvestForm");
+
+%if( $tiene_net_projects && !$es_analisis) { 
+		document.getElementById("IFRM_NET").src="/scmdist/forms/loading.html";
+%	} 
+		//HarvestForm.PAQ_MODIFIEDTIME.value = "<% $my_mod_time %>" ;
+/*
+%if( $tiene_net_projects && !es_analisis) {
+		document.getElementById("IFRM_NET").src="/scmdist/forms/netProjects.jsp?fid=" + FormName + "&user=" + jHarEncode(CurrUser);
+%} 
+%if( $tiene_bts_projects && !es_analisis ) { 
+    	document.getElementById("IFRM_BTS").src="/scmdist/forms/btsProjects.jsp?fid=" + FormName + "&user=" + jHarEncode(CurrUser);
+%} 
+%if( !es_analisis ) { 
+		document.getElementById("IFRM_PREPOST").src="/scmdist/forms/prepost.jsp?fid=" + FormName + "&par1=" + jHarEncode(CurrUser) + "&cam=<% $my_cam_uc %>" ;
+%}
+%if( $tiene_ora_projects && !es_analisis ) {
+		document.getElementById("IFRM_ORA").src="/scmdist/forms/oraProjects.jsp?fid=" + FormName + "&user=" + jHarEncode(CurrUser) + "&cam=<% $my_cam_uc %>&env=<% $my_env %>";
+%} 
+%if( $tiene_vig_projects && !es_analisis ) { 
+		document.getElementById("IFRM_VIG").src="/scmdist/forms/vignette.jsp?fid=" + FormName + "&par1=" + jHarEncode(CurrUser) + "&cam=<% $my_cam_uc %>";
+%} 
+%if( $tiene_sis_projects && !es_analisis ) { 
+		document.getElementById("IFRM_SIS").height = document.body.offsetHeight - ( document.body.offsetHeight * 0.3);
+		document.getElementById("IFRM_SIS").src="/scmdist/forms/sistemas.jsp?fid=" + FormName + "&par1=" + jHarEncode(CurrUser) + "&cam=<% $my_cam_uc %>&envname=<% $my_env %>&state=<%$my_state%>";
+		document.getElementById("HarvestForm).PAQ_TIPO.value="Mantenimiento Técnico";
+%} 
+%if( $tiene_rs_projects && !es_analisis ) {
+		document.getElementById("IFRM_RS").src="/scmdist/forms/rsProjects.jsp?fid=" + FormName + "&par1=" + jHarEncode(CurrUser) + "&cam=<% $my_cam_uc %>";
+%}
+*/
+
+		try {
+			document.all.logLinkPaquete.target = "_blank";
+			document.all.logLinkPaquete.href= "<% $jserver %>" + "/scmdist/Logon?par1=" + jHarEncode(CurrUser) + "&url=log.jsp?paquete=" + FormName;
+		} catch(e) { }
+		
+		if( CurrState != "Análisis y Diseño" ) {
+			HarvestForm.PAQ_TIPO.readonly="readonly";
+			HarvestForm.PAQ_TIPO.classname="readonly";
+			HarvestForm.PAQ_PET.readonly="readonly";
+			HarvestForm.PAQ_PET.classname="readonly";
+			if( HarvestForm.PAS_CODIGO!=undefined ) {
+				if( HarvestForm.PAS_CODIGO.value.trim() != "" ) {
+					document.all.logLinkPase.target = "_blank"
+					document.all.logLinkPase.href= "<% $jserver %>" + "/scmdist/Logon?par1=" + jHarEncode(CurrUser) + "&url=log.jsp?pase=" + HarvestForm.PAS_CODIGO.value;
+					document.all.MonitorLink.target = "_blank";
+					document.all.MonitorLink.href= "<% $jserver %>" + "/scmdist/Logon?par1=" + jHarEncode(CurrUser) + "&url=monitor.jsp?fpase=" + HarvestForm.PAS_CODIGO.value ;
+				} else {
+					document.all.logLinkPase.style.visibility = "hidden";
+					document.all.MonitorLink.style.visibility = "hidden";
+				}
+			}
+		}
+
+		refrescaForm("");
+	}
+
+	/*  ***  divs *** */
+	var last_tab = 'divPETICION';
+	var ifrm_loaded = {};
+
+	function setTabTdClass( divname, is_selected ) {
+		var tabname = 'tab_' + divname.substring(3);
+		var tabtd = document.getElementById( tabname );
+		tabtd.className = is_selected ? 'selected' : 'none';
+	}
+
+	function changeDiv( div_name ) {
+		if( div_name == last_tab ) return;
+		var tnew = document.getElementById( div_name );
+		if( last_tab == undefined ) last_tab = 'divPETICION';
+		var told = document.getElementById( last_tab );
+		told.style.visibility = 'hidden';
+		tnew.style.visibility = 'visible';
+		// tab tds
+		setTabTdClass( div_name, true );
+		setTabTdClass( last_tab, false );
+		last_tab = div_name;
+		
+		// activa IFRAME
+		var div_id = div_name.substring(3);
+		var frm = 'IFRM_' + div_id ;
+		if( ifrm_loaded[ frm ] ) return;
+		if( div_name == 'divPETICION' ) return;
+		if( div_name == 'divPASE' ) return;
+		var frm_map = { 'BTS': 'btsProjects.jsp', 'VIG': 'vignette.jsp', 'NET': 'netProjects.jsp', 'ORA': 'oraProjects.jsp', 'RS': 'rsProjects.jsp', 'PREPOST': 'prepost.jsp' }; 
+		var frm_src = frm_map[ div_id ]; 
+		document.getElementById( frm ).src="/scmdist/forms/"+frm_src + "?fid=" + FormName + "&par1=" + jHarEncode(CurrUser) + "&cam=<% $my_cam_uc %>&env=<% $my_env %>&envname=<% $my_env %>&state=<%$my_state%>";
+		ifrm_loaded[ frm ] = true;
+	}
+
+	function ValidateFormData() {
+		var HarvestForm = document.getElementById("HarvestForm");
+		if( CurrState != "Análisis y Diseño" ) {
+			//HarvestForm.PAS_CODIGO.value = GetForm().ColumnValue("PAS_CODIGO")
+		}
+		HarvestForm.PAQ_USUARIO.value = CurrUser; 
+		var msg="";
+
+		if( HarvestForm.PAQ_TIPO.value.substring(0,3) == "Pet" && HarvestForm.PAQ_PET.value.trim() == "" ) {
+			msg="Falta asignar el código de petición";
+		} else if( HarvestForm.PAQ_TIPO.value.substring(0,3) == "Inc" && HarvestForm.PAQ_INC.value.trim() =="" ) { 
+			msg="Falta asignar el código de incidencia";
+		} else if( HarvestForm.PAQ_TIPO.value.substring(0,3) == "Pro" && HarvestForm.PAQ_PRO.value.trim() == "" ) {
+			msg="Falta asignar el código de proyecto";
+		}
+
+		if( msg != "" ) {
+			//MsgBox( msg, 0,"Error en el formulario" );
+			alert( msg );
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	function recargar() {
+		document.location.href = document.location.protocol + "//"
+			+ document.location.host 
+			+ document.location.pathname
+			+ "?ID=<% $p_id %>&USER_ID=<% $p_user_id %>&PROJECT_ID=<% $p_project_id %>&PACKAGE_ID=<% $p_package_id %>" ;
+	}
+
+	function guardar() {
+		//document.all.loading.style.display = 'inline';
+		var HarvestForm = document.getElementById("HarvestForm");
+		if( ! ValidateFormData() ) return;
+		//alert( HarvestForm.query.value );
+		HarvestForm.submit();
+	}
+</script>
+<style>
+ td.header { background-color: #50498e; color: white; font-family: Verdana; font-size: 18px; font-weight: bold }
+ button.header { width: 70px; }
+</style>
+
+</HEAD>
+<BODY onload="winonload()" style="overflow: auto;">
+
+<FORM NAME=HarvestForm id="HarvestForm" method="get" action="/scmdist/forms/BDE_PAQUETE_save.jsp">
+<input type="hidden" name="query" value="ID=<% $p_id %>&USER_ID=<% $p_user_id %>&PROJECT_ID=<% $p_project_id %>&PACKAGE_ID=<% $p_package_id %>"></input>
+<input type="hidden" name="formobjid" value="<% $p_id %>"></input>
+<input type="hidden" name="userid" value="<% $p_user_id %>"></input>
+
+<TABLE border=0 cellpadding=8 cellspacing=0 WIDTH="100%">
+<TR>
+	<TD class='header'><% $my_form_name %></TD>
+	<td class='header' style="width: 1%">
+		<button class='header' onclick="guardar()">Guardar</button>&nbsp;<button class='header' onclick="recargar()">Recargar</button></td>
+</TR>
+%if( p_saved!=null && p_saved.equals("ok") ) { 
+	<tr>
+	<td colspan=2 style="background-color: white; height: 4px;"></td>
+	</tr>
+	<tr>
+	<td colspan=2 style="background-color: #caeaa0; font-weight: bold; height: 5px;"><img src="/scmdist/images/log2_i.gif" />Formulario guardado ok.</td>
+	</tr>
+% } 
+%if( p_saved!=null && p_saved.equals("error") ) { 
+	<tr>
+	<td colspan=2 style="background-color: white; height: 4px;"></td>
+	</tr>
+	<tr>
+	<td colspan=2 style="background-color: #eab0b0; font-weight: bold; height: 5px;"><img src="/scmdist/images/log2_e.gif" />Error al guardar el formulario. Por favor, inténtelo de nuevo.</td>
+	</tr>
+% }
+</TABLE>
+
+<div id="divTab" style="visibility: visible; margin-top:3px">
+<table class="shadetabs" border="0" cellspacing="0" cellpadding="0" id="tabs" style="position: relative;">
+  <tr>
+	<td id="tab_PETICION" class="selected">&nbsp;<a href="javascript:changeDiv('divPETICION');" title="Información General de Aplicación">Petición</a></td>
+%if( !es_analisis ) {
+	<td id="tab_PASE" >&nbsp;<a href="javascript:changeDiv('divPASE');" title="Información de Pases">Pase</a></td>
+	<td id="tab_PREPOST" >&nbsp;<a href="javascript:changeDiv('divPREPOST');" title="">PrePost</a></td>
+% } 
+%if( $tiene_net_projects && !es_analisis ) { 
+	<td id="tab_NET" >&nbsp;<a href="javascript:changeDiv('divNET');" title="">.NET</a></td>
+% } 
+%if( $tiene_bts_projects && !es_analisis ) { 
+	<td id="tab_BTS" >&nbsp;<a href="javascript:changeDiv('divBTS');" title="">BizTalk</a></td>
+% }
+%if( $tiene_ora_projects && !es_analisis ) { 
+	<td id="tab_ORA" >&nbsp;<a href="javascript:changeDiv('divORA');" title="">Oracle</a></td>
+% } 
+%if( $tiene_vig_projects && !es_analisis ) { 
+	<td id="tab_VIG" >&nbsp;<a href="javascript:changeDiv('divVIG');" title="">Vignette</a></td>
+% } 
+%if( $tiene_rs_projects && !es_analisis ) { 
+	<td id="tab_RS" >&nbsp;<a href="javascript:changeDiv('divRS');" title="">ReportingServices</a></td>
+% } 
+%if( $tiene_sis_projects && !es_analisis ) { 
+	<td id="tab_SIS" >&nbsp;<a href="javascript:changeDiv('divSIS');" title="">Sistemas</a></td>
+% }
+	<td id="tab_fill" style="width:100%;">&nbsp;</td>
+
+  </tr>
+</table>
+</div>
+
+<DIV TITLE="Petición" ID="divPETICION" STYLE="position:absolute;visibility:visible">
+<TABLE>
+  <TR>
+  <TR>
+  <TR>
+  <TH NOWRAP ALIGN=LEFT>Tipo de Ciclo de Vida:</TH>
+  <TH NOWRAP ALIGN=LEFT>
+%if( $tiene_sis_projects ) { 
+  	<INPUT NAME="PAQ_CICLO_ESPECIAL" TYPE=TEXT READONLY STYLE='font-weight:bold;' CLASS="readonly" VALUE="Sistemas">
+  	<INPUT NAME="PAQ_CICLO" VALUE="Normal" TYPE=HIDDEN READONLY STYLE='font-weight:bold;' CLASS="readonly">
+% } else if(es_analisis  || ( $tiene_sis_projects && my_state.equalsIgnoreCase("Desarrollo"))) {
+  	<SELECT NAME="PAQ_CICLO" onchange="javascript:refrescaForm(this)">
+%if($tiene_ante || es_publica) {
+  		<OPTION VALUE='N' <% ( substr( $f_paq_ciclo, 0, 1) == "N") ? "selected" : "" %>>Normal (Con Preproducción)</OPTION>
+% }
+%if(!es_publica) { %>
+  		<OPTION VALUE='R' <% ( substr( $f_paq_ciclo, 0, 1) == "R") ? "selected" : "" %>>Rápido (Sin Preproducción)</OPTION>
+% } 
+  		<OPTION VALUE='C' <% ( substr( $f_paq_ciclo, 0, 1) == "C") ? "selected" : "" %>>Correctivo</OPTION>
+%if ( !es_publica ) { 
+  		<OPTION VALUE='E' <% ( substr( $f_paq_ciclo, 0, 1) == "E") ? "selected" : "" %>>Emergencia</OPTION>
+  		<%} %>
+  	</SELECT>	
+<% } else if((my_state.equalsIgnoreCase("Desarrollo") || my_state.equalsIgnoreCase("Pruebas")) && !es_publica ) { %>
+  	<SELECT NAME="PAQ_CICLO" onchange="javascript:refrescaForm(this)" value="<% $f_paq_ciclo %>">
+%if($tiene_ante) { 
+  		<OPTION VALUE='N'  <% ( substr( $f_paq_ciclo, 0, 1) == "N") ? "selected" : "" %>>Normal (Con Preproducción)</OPTION>
+% } 
+  		<OPTION VALUE='R'  <% ( substr( $f_paq_ciclo, 0, 1) == "R") ? "selected" : "" %>>Rápido (Sin Preproducción)</OPTION>
+%if (my_ciclo.equals("Emergencia")) {
+  		<OPTION VALUE='E'   <% ( substr( $f_paq_ciclo, 0, 1) == "E") ? "selected" : "" %>>Emergencia</OPTION>
+% }
+  	</SELECT>	
+% } else { 
+  	<INPUT NAME="PAQ_CICLO" TYPE=TEXT READONLY STYLE='font-weight:bold;' CLASS="readonly">
+% } 
+  </TH></TR>
+  <TR>
+  <TH NOWRAP ALIGN=LEFT>Tipo de Cambio:</TH>
+  <TH NOWRAP ALIGN=LEFT>
+  	<SELECT NAME="PAQ_CAMBIO" onchange="javascript:refrescaForm(this)">
+  		<OPTION VALUE='N' <% (substr( $f_paq_cambio, 0, 1 ) == "N") ? "selected" : "" %>>Nuevo Desarrollo      </OPTION>
+  		<OPTION VALUE='E' <% (substr( $f_paq_cambio, 0, 1 ) == "E") ? "selected" : "" %>>Desarrollo Evolutivo  </OPTION>
+  		<OPTION VALUE='P' <% (substr( $f_paq_cambio, 0, 1 ) == "P") ? "selected" : "" %>>Pequeño Mantenimiento </OPTION>
+  	</SELECT>
+  </TH></TR>
+  <TR>
+  <TH NOWRAP ALIGN=LEFT>Tipología de entrada:
+  <TH NOWRAP ALIGN=LEFT>
+%if( $tiene_sis_projects ) { 
+	<INPUT NAME="PAQ_TIPO" READONLY STYLE='font-weight:bold;' CLASS="readonly" value="<% $f_paq_tipo %>" />
+% } else if( es_analisis  ) { 
+  	<SELECT NAME="PAQ_TIPO" onchange="javascript:refrescaForm(this)">
+  		<OPTION value="Incidencia"            <%  (substr( $f_paq_tipo, 0, 3) == "Inc") ? "selected" : "" %>> Incidencia            </OPTION>
+  		<OPTION value="Petición"              <%  (substr( $f_paq_tipo, 0, 3) == "Pet") ? "selected" : "" %>> Petición              </OPTION>
+  		<OPTION value="Proyecto"              <%  (substr( $f_paq_tipo, 0, 3) == "Pro") ? "selected" : "" %>> Proyecto              </OPTION>
+  		<OPTION value="Mantenimiento técnico" <%  (substr( $f_paq_tipo, 0, 3) == "Man") ? "selected" : "" %>> Mantenimiento técnico </OPTION>
+  	</SELECT>
+% } else { 
+	<INPUT NAME="PAQ_TIPO" READONLY STYLE='font-weight:bold;' CLASS="readonly" value="<% $f_paq_tipo %>" />
+% } 
+   </TH></TR>
+
+  <TR ID="trINC" style="display:none">	
+  <TH NOWRAP ALIGN=LEFT>Código de Incidencia:
+  <TH NOWRAP ALIGN=LEFT>
+	<INPUT TYPE=TEXT STYLE='font-weight:bold;' NAME="PAQ_INC" value="<% $f_paq_inc %>" MAXLENGTH=20>
+	<A HREF='' ONCLICK='javascript:return abririnc();' STYLE='color: darkblue;' TITLE='Consulta incidencias disponibles'><B>Incidencias</A>
+  </TH></TR>
+  <TR ID="trPET" style="display:none">
+  <TH NOWRAP ALIGN=LEFT>Código de Petición:
+  <TH NOWRAP ALIGN=LEFT>
+	<INPUT TYPE=TEXT STYLE='font-weight:bold;' NAME="PAQ_PET" value="<% $f_paq_pet %>" MAXLENGTH=20>
+	<A HREF='' ONCLICK='javascript:return abrirpet();' STYLE='color: darkblue;' TITLE='Consulta de peticiones disponibles'><B>Peticiones</A>
+  </TH></TR>
+  <TR ID="trPRO" style="display:none">
+  <TH NOWRAP ALIGN=LEFT>Código de Proyecto:
+  <TH NOWRAP ALIGN=LEFT>
+	<INPUT TYPE=TEXT NAME="PAQ_PRO" value="<% $f_paq_pro %>" STYLE='font-weight:bold;' MAXLENGTH=20>
+	<A HREF='' ONCLICK='javascript:return abrirproy();' STYLE='color: darkblue;' TITLE='Consulta de proyectos disponibles'><B>Proyectos</A>
+  </TH></TR>
+  <TR>
+  <TR ID="trMantenimiento" style="display:none">
+	<TH NOWRAP ALIGN=LEFT>Motivo del mantenimiento:</TH>
+	<TH NOWRAP ALIGN=LEFT>
+			<TEXTAREA NAME="PAQ_MANT" ROWS=4 COLS=80 MAXLENGTH=100><% $f_paq_mant %></TEXTAREA>
+	</TH></TR>
+  <TR>
+  <TH NOWRAP ALIGN=LEFT>Descripción Interna:
+  <TH NOWRAP ALIGN=LEFT>
+		<TEXTAREA NAME="PAQ_DESC" ROWS=4 COLS=80 MAXLENGTH=200><% $f_paq_desc %></TEXTAREA>
+	</TH>
+  </TR>
+  <TR>
+  <TH NOWRAP ALIGN=LEFT>Comentarios:
+  <TH NOWRAP ALIGN=LEFT>
+		<TEXTAREA NAME="PAQ_COMENTARIO" ROWS=4 COLS=80 MAXLENGTH=200><% $f_paq_comentario %></TEXTAREA>
+	</TH>
+  </TR>
+  <TR>
+  <TH NOWRAP ALIGN=LEFT>Última modificación:
+  <TH NOWRAP ALIGN=LEFT>
+  	<INPUT TYPE="TEXT" ID="PAQ_MODIFIEDTIME" value="<% $f_paq_modified_time %>" SIZE=20 class=readonly READONLY>
+  </TH></TR>
+  <TR>
+  <TH NOWRAP ALIGN=LEFT>Modificado por:
+  <TH NOWRAP ALIGN=LEFT>
+  	<INPUT TYPE="TEXT" NAME="PAQ_USUARIO" value="<% $f_paq_usuario %>" SIZE=30 class=readonly READONLY>
+  </TH></TR>
+
+</TABLE>
+</DIV>
+
+%if( !$es_analisis  ) {
+<DIV ID="divPASE" TITLE="Pase" STYLE="position:absolute;visibility:hidden">
+
+<TABLE>
+   <TR>
+   <TH COLSPAN=2 NOWRAP ALIGN=LEFT>Código de Pase:
+   <TR><TH ROWSPAN=6 ALIGN=LEFT ID=TD_PAS_CODIGO><INPUT STYLE="background-color:#B5D3EF;font-weight:bold;" value="<% $my_pase %>" TYPE=TEXT NAME=PAS_CODIGO SIZE=25 MAXLENGTH=20 READONLY>
+   <TR><TH ALIGN=LEFT><A id='logLinkPase'    HREF="javascript:alert('Mientras no se da de alta el pase, no es posible consultar el log.')" TARGET='_blank'>Ver Log de Pase</A></TH>
+   <TR><TH ALIGN=LEFT><A id='logLinkPaquete' HREF="javascript:alert('Mientras no se da de alta el pase, no es posible consultar el log.')" TARGET='_blank'>Ver Log de Paquete</A></TH>
+   <TR><TH ALIGN=LEFT><A id='MonitorLink'    HREF="javascript:alert('Mientras no se da de alta el pase, no es posible consultar el monitor.')" TARGET='_blank'>Ver Monitor de Pase</A></TH>
+   <TR><TH ALIGN=LEFT><A id='infLink'        HREF="<% $jserver %>/scmdist/inf/infForm.jsp?CAM=<% $my_cam_uc %>&ROLE=ALL" TARGET='_blank'>Ver Infraestructura de <% $my_cam_uc %></A></TH>
+   <TR><TH ALIGN=LEFT><A id='consLink'       HREF="<% $jserver %>/scmdist/consola.jsp" TARGET='_blank'>Consola de aplicaciones J2EE</A></TH>
+</TABLE>
+
+<TABLE>
+   <TR>
+   <TH NOWRAP ALIGN=LEFT>Observaciones:
+   <TR>
+   <TH ALIGN=LEFT ID=TD_PAQ_OBSERVACIONES><TEXTAREA STYLE="WIDTH: 400px" NAME=PAQ_OBSERVACIONES ROWS=5 COLS=20><% $f_paq_observaciones %></TEXTAREA>
+	<TR>
+	<TD>
+	<B>Código del Pase</B>: código de referencia del último pase al que pertenece este paquete.
+	</TD>
+	</TR>
+</TABLE>
+
+</DIV>
+
+%if(  !$es_analisis ) {
+<DIV ID="divPREPOST" TITLE="Pre/Post" STYLE="position:absolute;visibility:hidden">
+<TABLE WIDTH="100%">
+   <TR>
+	<TD WIDTH="100%">
+		<IFRAME NAME="IFRM_PREPOST" src="/scmdist/forms/loading.html" id="IFRM_PREPOST" frameborder=0 width="100%" height=1000 marginheight=0 marginwidth=0 scrolling=auto ALLOWTRANSPARENCY=true></IFRAME>
+	</TD>
+   </TR>
+</TABLE>
+
+</DIV>
+% }
+
+%if( $tiene_net_projects ) { 
+<DIV ID="divNET" TITLE=".NET" STYLE="position:absolute;visibility:hidden">
+<TABLE WIDTH="100%">
+   <TR>
+	<TD WIDTH="100%">
+		<IFRAME NAME="IFRM_NET" id="IFRM_NET" src="/scmdist/forms/loading.html" frameborder=0 width="100%" height=1000 marginheight=0 marginwidth=0 scrolling=auto ALLOWTRANSPARENCY=true></IFRAME>
+	</TD>
+   </TR>
+</TABLE>
+</DIV>
+%} # if $tiene_net_projects
+
+%if( $tiene_bts_projects ) {
+<DIV ID="divBTS" TITLE="Biztalk" STYLE="position:absolute;visibility:hidden">
+<TABLE WIDTH="100%">
+   <TR>
+	<TD WIDTH="100%">
+		<IFRAME NAME="IFRM_BTS" id="IFRM_BTS" src="/scmdist/forms/loading.html" frameborder=0 width="100%" height=1000 marginheight=0 marginwidth=0 scrolling=auto ALLOWTRANSPARENCY=true></IFRAME>
+	</TD>
+   </TR>
+</TABLE>
+</DIV>
+%} # if $tiene_bts_projects
+
+%if( $tiene_ora_projects ) { 
+<DIV ID="divORA" TITLE="ORACLE" STYLE="position:absolute;visibility:hidden">
+<TABLE WIDTH="100%">
+   <TR>
+	<TD WIDTH="100%">
+		<IFRAME NAME="IFRM_ORA" id="IFRM_ORA" src="/scmdist/forms/loading.html" frameborder=0 width="100%" height=1000 marginheight=0 marginwidth=0 scrolling=auto ALLOWTRANSPARENCY=true></IFRAME>
+	</TD>
+   </TR>
+</TABLE>
+</DIV>
+%} # if tieneOARAProjs
+
+%if( $tiene_vig_projects ) { 
+<DIV ID="divVIG" TITLE="Vignette" STYLE="position:absolute;visibility:hidden">
+<TABLE WIDTH="100%">
+   <TR>
+	<TD WIDTH="100%">
+		<IFRAME NAME="IFRM_VIG" id="IFRM_VIG" src="/scmdist/forms/loading.html" frameborder=0 width="100%" height=1000 marginheight=0 marginwidth=0 scrolling=auto ALLOWTRANSPARENCY=true></IFRAME>
+	</TD>
+   </TR>
+</TABLE>
+</DIV>
+%} # if $tiene_vig_projects
+
+%if( $tiene_sis_projects ) { 
+<DIV ID="divSIS" TITLE="Sistemas" STYLE="position:absolute;visibility:hidden">
+<TABLE WIDTH="100%">
+   <TR>
+	<TD WIDTH="100%">
+		<IFRAME NAME="IFRM_SIS" id="IFRM_SIS" src="/scmdist/forms/loading.html" frameborder=0 width="100%" height="1000" marginheight=0 marginwidth=0 scrolling=auto ALLOWTRANSPARENCY=true></IFRAME>
+	</TD>
+   </TR>
+</TABLE>
+</DIV>
+%} # if $tiene_sis_projects
+
+%if( $tiene_rs_projects ) { 
+<DIV ID="divRS" TITLE="Reporting Services" STYLE="position:absolute;visibility:hidden">
+<TABLE WIDTH="100%">
+   <TR>
+	<TD WIDTH="100%">
+		<IFRAME NAME="IFRM_RS" id="IFRM_RS" src="/scmdist/forms/loading.html" frameborder=0 width="100%" height=1000 marginheight=0 marginwidth=0 scrolling=auto ALLOWTRANSPARENCY=true></IFRAME>
+	</TD>
+   </TR>
+</TABLE>
+</DIV>
+%} # if $tiene_rs_projects
+%} # if state<>Analisis
+
+</FORM>
+</BODY>
+</HTML>
+
+<%args>
+    
+</%args>
