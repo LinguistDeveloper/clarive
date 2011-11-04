@@ -373,3 +373,12 @@ msgstr "Documentos"
 
 msgid "Checking rules"
 msgstr "Reglas de ChecKing"
+
+msgid "Daily SQA summary"
+msgstr "Resumen diario análisis calidad técnica sqa"
+
+msgid "SQA Package analysis finished"
+msgstr "Análisis de calidad de paquetes finalizado"
+
+msgid "SQA analysis finished"
+msgstr "Análisis de calidad finalizado"

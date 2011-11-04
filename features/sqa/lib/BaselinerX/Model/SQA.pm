@@ -1,10 +1,10 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000053033
-#	Fecha de pase .................... 2011/10/28 18:21:19
+#	Pase ............................. N.PROD0000053438
+#	Fecha de pase .................... 2011/11/04 20:01:12
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
-#	Versión del elemento ............. 49
+#	Versión del elemento ............. 52
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Model::SQA;
@@ -228,14 +228,16 @@ sub update_status {    # actualiza el status de una fila en el portal
 			my $value   = shift @date;
 			my $sysdate = $value->{sysdate};
 
-			$job_row->tsend($sysdate) if $tsend;
 			if ($tsstart) {
 				$job_row->tsstart($sysdate);
 				$job_row->tsend(undef);
 				$job_row->data(undef);
-
-				#$job_row->qualification(' ');
 			}
+			if ($tsend) {
+				$job_row->tsend($sysdate);
+				$job_row->pid(undef);
+				$job_row->path(undef);
+			}			
 		}
 
 		if ( $packages ) {
@@ -1301,11 +1303,11 @@ sub getProjectConfigAll {
 		  ->first;
 		if ($row_subnat_config) {    # Si hay configuraci—n, la uso
 			$return = $row_subnat_config->value;
-			_log "************ CONFIGURACIîN DE SUBAPLICACIîN/NATURALEZA";
+			_log "************ CONFIGURACION DE SUBAPLICACION/NATURALEZA";
 		}
 		else
 		{   # No hay configuraci—n, busco la configuraci—n de CAM/naturaleza
-			_log "************ NO HAY SUBAPLICACIîN/NATURALEZA";
+			_log "************ NO HAY SUBAPLICACION/NATURALEZA";
 			$row_camnat_config =
 			  Baseliner->model('Baseliner::BaliConfig')->search(
 				{
@@ -1317,7 +1319,7 @@ sub getProjectConfigAll {
 			if ($row_camnat_config)
 			{    # Hay configuraci—n CAM/Naturaleza.  La uso
 				$return = $row_camnat_config->value;
-				_log "************ CONFIGURACIîN DE CAM/NATURALEZA";
+				_log "************ CONFIGURACION DE CAM/NATURALEZA";
 			}
 			else
 			{ # No hay configuraci—n de CAM/Naturaleza.  Uso la de subaplicaci—n
@@ -1335,7 +1337,7 @@ sub getProjectConfigAll {
 					if ($row_subproject_config)
 					{    #Hay configuraci—n de subproyecto.  La uso
 						$return = $row_subproject_config->value;
-						_log "************ CONFIGURACIîN DE SUBAPLICACIîN";
+						_log "************ CONFIGURACION DE SUBAPLICACION";
 					}
 					else
 					{  #No hay configuraci—n de subproyecto.  Busco la del CAM
@@ -1351,7 +1353,7 @@ sub getProjectConfigAll {
 						if ($row_project_config)
 						{    # Hay configuraci—n del CAM.  La uso
 							$return = $row_project_config->value;
-							_log "************ CONFIGURACIîN DE CAM";
+							_log "************ CONFIGURACION DE CAM";
 						}
 						else
 						{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
@@ -1371,7 +1373,7 @@ sub getProjectConfigAll {
 							{    # Hay configuraci—n del CAM.  La uso
 								$return = $row_global_nature->value;
 								_log
-"************ CONFIGURACIîN GLOBAL DE NATURALEZA";
+"************ CONFIGURACION GLOBAL DE NATURALEZA";
 							}
 							else
 							{ # No hay configuraci—n global de naturaleza.  Uso la global.
@@ -1384,7 +1386,7 @@ sub getProjectConfigAll {
 								if ($row_global)
 								{    # Hay configuraci—n del CAM.  La uso
 									$return = $row_global->value;
-									_log "************ CONFIGURACIîN GLOBAL";
+									_log "************ CONFIGURACION GLOBAL";
 								}
 							}
 						}
@@ -1403,7 +1405,7 @@ sub getProjectConfigAll {
 					if ($row_project_config)
 					{    # Hay configuraci—n del CAM.  La uso
 						$return = $row_project_config->value;
-						_log "************ CONFIGURACIîN DE CAM";
+						_log "************ CONFIGURACION DE CAM";
 					}
 					else
 					{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
@@ -1419,7 +1421,7 @@ sub getProjectConfigAll {
 						{    # Hay configuraci—n del CAM.  La uso
 							$return = $row_global_nature->value;
 							_log
-"************ CONFIGURACIîN GLOBAL DE NATURALEZA";
+"************ CONFIGURACION GLOBAL DE NATURALEZA";
 						}
 						else
 						{ # No hay configuraci—n global de naturaleza.  Uso la global.
@@ -1431,7 +1433,7 @@ sub getProjectConfigAll {
 							if ($row_global)
 							{    # Hay configuraci—n del CAM.  La uso
 								$return = $row_global->value;
-								_log "************ CONFIGURACIîN GLOBAL";
+								_log "************ CONFIGURACION GLOBAL";
 							}
 						}
 					}
@@ -1450,7 +1452,7 @@ sub getProjectConfigAll {
 		)->first;
 		if ($row_camnat_config) {  # Hay configuraci—n CAM/Naturaleza.  La uso
 			$return = $row_camnat_config->value;
-			_log "************ CONFIGURACIîN DE CAM/NATURALEZA";
+			_log "************ CONFIGURACION DE CAM/NATURALEZA";
 		}
 		else
 		{ # No hay configuraci—n de CAM/Naturaleza.  Uso la de subaplicaci—n
@@ -1467,7 +1469,7 @@ sub getProjectConfigAll {
 				if ($row_subproject_config)
 				{    #Hay configuraci—n de subproyecto.  La uso
 					$return = $row_subproject_config->value;
-					_log "************ CONFIGURACIîN DE SUBAPLICACIîN";
+					_log "************ CONFIGURACION DE SUBAPLICACION";
 				}
 				else { #No hay configuraci—n de subproyecto.  Busco la del CAM
 					$row_project_config =
@@ -1481,7 +1483,7 @@ sub getProjectConfigAll {
 					if ($row_project_config)
 					{    # Hay configuraci—n del CAM.  La uso
 						$return = $row_project_config->value;
-						_log "************ CONFIGURACIîN DE CAM";
+						_log "************ CONFIGURACION DE CAM";
 					}
 					else
 					{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
@@ -1497,7 +1499,7 @@ sub getProjectConfigAll {
 						{    # Hay configuraci—n del CAM.  La uso
 							$return = $row_global_nature->value;
 							_log
-"************ CONFIGURACIîN GLOBAL DE NATURALEZA";
+"************ CONFIGURACION GLOBAL DE NATURALEZA";
 						}
 						else
 						{ # No hay configuraci—n global de naturaleza.  Uso la global.
@@ -1509,7 +1511,7 @@ sub getProjectConfigAll {
 							if ($row_global)
 							{    # Hay configuraci—n global.  La uso
 								$return = $row_global->value;
-								_log "************ CONFIGURACIîN GLOBAL";
+								_log "************ CONFIGURACION GLOBAL";
 							}
 						}
 					}
@@ -1527,7 +1529,7 @@ sub getProjectConfigAll {
 				if ($row_project_config)
 				{    # Hay configuraci—n del CAM.  La uso
 					$return = $row_project_config->value;
-					_log "************ CONFIGURACIîN DE CAM";
+					_log "************ CONFIGURACION DE CAM";
 				}
 				else
 				{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
@@ -1539,7 +1541,7 @@ sub getProjectConfigAll {
 					if ($row_global_nature)
 					{    # Hay configuraci—n del CAM.  La uso
 						$return = $row_global_nature->value;
-						_log "************ CONFIGURACIîN GLOBAL DE NATURALEZA";
+						_log "************ CONFIGURACION GLOBAL DE NATURALEZA";
 					}
 					else
 					{ # No hay configuraci—n global de naturaleza.  Uso la global.
@@ -1549,7 +1551,7 @@ sub getProjectConfigAll {
 						  ->first;
 						if ($row_global) { # Hay configuraci—n global.  La uso
 							$return = $row_global->value;
-							_log "************ CONFIGURACIîN GLOBAL";
+							_log "************ CONFIGURACION GLOBAL";
 						}
 					}
 				}
@@ -1749,15 +1751,15 @@ sub end_pkg_analisys_mail {
 
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
-		subject         => "Analisis de calidad de paquetes finalizado",
+		subject         => _("SQA Package analysis finished"),
 		from            => $config->{from},
 		carrier         => 'email',
 		template        => 'email/pkg_analisys_finished.html',
 		template_engine => 'mason',
 		vars            => {
-			subject => "Analisis de calidad de paquetes finalizado",
+			subject => "An&aacute;lisis de calidad de paquetes finalizado",
 			message =>
-"Finalizado analisis de calidad de $project solicitado por el usuario $username",
+"Finalizado An&aacute;lisis de calidad de $project solicitado por el usuario $username",
 			project  => $project,
 			username => $username,
 			packages => $packages,
@@ -1805,15 +1807,15 @@ sub start_pkg_analisys_mail {
 
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
-		subject         => "Analisis de calidad de paquetes iniciado",
+		subject         => "An&aacute;lisis de calidad de paquetes iniciado",
 		from            => $config->{from},
 		carrier         => 'email',
 		template        => 'email/pkg_analisys_started.html',
 		template_engine => 'mason',
 		vars            => {
-			subject => "Analisis de calidad de paquetes iniciado",
+			subject => "An&aacute;lisis de calidad de paquetes iniciado",
 			message =>
-"Iniciado analisis de calidad de $project solicitado por el usuario $username",
+"Iniciado An&aacute;lisis de calidad de $project solicitado por el usuario $username",
 			project  => $project,
 			username => $username,
 			packages => $packages,
@@ -1842,7 +1844,7 @@ sub start_analisys_mail {
 	my $url = $config->{baseliner_url};
 
 	my @regulars = Baseliner->model('Permissions')->list(
-		action => 'action.sqa.pkg_analisys_mail',
+		action => 'action.sqa.analisys_mail',
 		ns     => 'project/' . $project_id
 	);
 	
@@ -1856,21 +1858,6 @@ sub start_analisys_mail {
 	my $project_row =
 	  Baseliner->model('Baseliner::BaliProject')->find($project_id);
 
-	if ($project_row) {
-
-		push @users, Baseliner->model('Permissions')->list(
-			action => 'action.sqa.analisys_mail',
-			ns     => 'project/' . $project_row->parent->id,
-			bl     => $bl,
-		) if $project_row->parent;
-		push @users, Baseliner->model('Permissions')->list(
-			action => 'action.sqa.analisys_mail',
-			ns     => 'project/' . $project_row->parent->parent->id,
-			bl     => $bl,
-		) if $project_row->parent && $project_row->parent->parent;
-
-	}
-
 	push @users, $username;
 
 	_log "Usuarios" . \@users;
@@ -1879,15 +1866,15 @@ sub start_analisys_mail {
 
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
-		subject         => "Analisis de calidad iniciado",
+		subject         => "An&aacute;lisis de calidad iniciado",
 		from            => $config->{from},
 		carrier         => 'email',
 		template        => 'email/analisys_started.html',
 		template_engine => 'mason',
 		vars            => {
-			subject => "Analisis de calidad iniciado",
+			subject => "An&aacute;lisis de calidad iniciado",
 			message =>
-"Iniciado analisis de calidad de $bl/$project/$subproject/$nature por el usuario $username",
+"Iniciado An&aacute;lisis de calidad de $bl/$project/$subproject/$nature por el usuario $username",
 			project    => $project,
 			bl         => $bl,
 			subproject => $subproject,
@@ -1917,7 +1904,7 @@ sub error_analisys_mail {
 	my $url = $config->{baseliner_url};
 
 	my @regulars = Baseliner->model('Permissions')->list(
-		action => 'action.sqa.pkg_analisys_mail',
+		action => 'action.sqa.analisys_mail',
 		ns     => 'project/' . $project_id
 	);
 	
@@ -1933,21 +1920,6 @@ sub error_analisys_mail {
 
 	my $subproject = '';
 
-	if ($project_row) {
-		$subproject = $project_row->name;
-		push @users, Baseliner->model('Permissions')->list(
-			action => 'action.sqa.analisys_mail',
-			ns     => 'project/' . $project_row->parent->id,
-			bl     => $bl,
-		) if $project_row->parent;
-		push @users, Baseliner->model('Permissions')->list(
-			action => 'action.sqa.analisys_mail',
-			ns     => 'project/' . $project_row->parent->parent->id,
-			bl     => $bl,
-		) if $project_row->parent && $project_row->parent->parent;
-
-	}
-
 	push @users, $username;
 
 	_log "Usuarios" . \@users;
@@ -1962,9 +1934,9 @@ sub error_analisys_mail {
 		template        => 'email/analisys_error.html',
 		template_engine => 'mason',
 		vars            => {
-			subject => "Analisis de calidad finalizado con error",
+			subject => "An&aacute;lisis de calidad finalizado con error",
 			message =>
-"Analisis de calidad de $bl/$project/$subproject/$nature por el usuario $username ha finalizado con error",
+"An&aacute;lisis de calidad de $bl/$project/$subproject/$nature por el usuario $username ha finalizado con error",
 			url => $url,
 			to  => $to
 		}
@@ -1994,7 +1966,7 @@ sub end_analisys_mail {
 	my $url = $config->{baseliner_url};
 
 	my @regulars = Baseliner->model('Permissions')->list(
-		action => 'action.sqa.pkg_analisys_mail',
+		action => 'action.sqa.analisys_mail',
 		ns     => 'project/' . $project_id
 	);
 	
@@ -2007,21 +1979,6 @@ sub end_analisys_mail {
 
 	my $project_row =
 	  Baseliner->model('Baseliner::BaliProject')->find($project_id);
-
-	if ($project_row) {
-
-		push @users, Baseliner->model('Permissions')->list(
-			action => 'action.sqa.analisys_mail',
-			ns     => 'project/' . $project_row->parent->id,
-			bl     => $bl,
-		) if $project_row->parent;
-		push @users, Baseliner->model('Permissions')->list(
-			action => 'action.sqa.analisys_mail',
-			ns     => 'project/' . $project_row->parent->parent->id,
-			bl     => $bl,
-		) if $project_row->parent && $project_row->parent->parent;
-
-	}
 
 	push @users, $username;
 
@@ -2037,15 +1994,15 @@ sub end_analisys_mail {
 
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
-		subject         => "Analisis de calidad finalizado correctamente",
+		subject         => _loc("SQA analysis finished"),
 		from            => $config->{from},
 		carrier         => 'email',
 		template        => 'email/analisys_finished.html',
 		template_engine => 'mason',
 		vars            => {
-			subject => "Analisis de calidad finalizado correctamente",
+			subject => "An&aacute;lisis de calidad finalizado",
 			message =>
-"Analisis de calidad de $bl/$project/$subproject/$nature ha finalizado correctamente",
+"An&aacute;lisis de calidad de $bl/$project/$subproject/$nature ha finalizado",
 			project       => $project,
 			bl            => $bl,
 			subproject    => $subproject,
@@ -2093,21 +2050,6 @@ sub send_ju_email {
 
 	my $project_row =
 	  Baseliner->model('Baseliner::BaliProject')->find($project_id);
-
-	if ($project_row) {
-
-		push @users, Baseliner->model('Permissions')->list(
-			action => 'action.sqa.ju_mail',
-			ns     => 'project/' . $project_row->parent->id,
-			bl     => $bl,
-		) if $project_row->parent;
-		push @users, Baseliner->model('Permissions')->list(
-			action => 'action.sqa.ju_mail',
-			ns     => 'project/' . $project_row->parent->parent->id,
-			bl     => $bl,
-		) if $project_row->parent && $project_row->parent->parent;
-
-	}
 
 	_log "Usuarios: " . join ",", @users;
 

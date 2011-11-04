@@ -1,10 +1,10 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
+#INFORMACIN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000053033
-#	Fecha de pase .................... 2011/10/28 18:21:19
-#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
-#	Versión del elemento ............. 49
+#	Pase ............................. N.PROD0000053438
+#	Fecha de pase .................... 2011/11/04 20:01:12
+#	Ubicacin del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
+#	Versin del elemento ............. 50
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Controller::SQA;
@@ -642,6 +642,7 @@ sub harvest_projects : Local {
     my $subproject = $p->{subapp};
     my $nature     = $p->{nature};
     my $query      = $p->{query};
+    my $bl 		   = $p->{bl};
 
 #my $db = new Baseliner::Core::DBI( { connection => ['dbi:Oracle:host=prusv059;sid=TISO;port=1521','wtscm1','wtscm1'] } );
     my $db = Baseliner::Core::DBI->new( {model => 'Harvest'} );
@@ -657,12 +658,14 @@ sub harvest_projects : Local {
     my $filter = "AND e.environmentname like '${query}%'" if $query;
     my $SQL = "
 		select e.envobjid AS id, e.environmentname AS project, e.envisactive, e.isarchive
-				   from harpackage p, harenvironment e, haritems i, harversions iv, harpathfullname pf
-				   where p.envobjid = e.envobjid AND
+				   from harpackage p, harenvironment e, haritems i, harversions iv, harpathfullname pf, HARVIEW v
+				   where p.VIEWOBJID = v.VIEWOBJID AND
+                         p.envobjid = e.envobjid AND
 				   		 p.packageobjid = iv.packageobjid AND
 				   		 iv.itemobjid = i.itemobjid AND
 				   		 i.parentobjid = pf.itemobjid AND
-				   		 (pf.pathfullnameupper LIKE UPPER( '%\\$project\\$nature\\%' ) OR pf.pathfullnameupper LIKE UPPER( '%\\$project\\$nature' ))
+				   		 (pf.pathfullnameupper LIKE UPPER( '%\\$project\\$nature\\%' ) OR pf.pathfullnameupper LIKE UPPER( '%\\$project\\$nature' )) AND
+				   		 trim(v.VIEWNAME) = '$bl' 
 				   		 $checkSubapp 
 				   GROUP BY e.envobjid, e.environmentname, e.envisactive, e.isarchive
 				   HAVING e.environmentname like '${project}\%' AND
@@ -852,7 +855,7 @@ sub request_subapp_projects : Local {
 
 				my $nature_work = $row->nature;
                 if ( grep /$nature_work/, @filters ) {
-	                _log "Solicitando análisis de " . $row->name . "/" . $row->nature;
+	                _log "Solicitando anlisis de " . $row->name . "/" . $row->nature;
 	                ( $return, $out ) = BaselinerX::Model::SQA->request_analysis(
 	                    bl         => $bl,
 	                    project    => $project,
@@ -860,14 +863,14 @@ sub request_subapp_projects : Local {
 	                    nature     => $row->nature,
 	                    user       => $user
 	                );
-	                _log "Análisis de " . $row->name . "/" . $row->nature . " solicitado\n";
+	                _log "Anlisis de " . $row->name . "/" . $row->nature . " solicitado\n";
 	                $cont++;
 				} else {
 					_log $row->name."/".$row->nature." ignorada.";
 				}
             }
 
-            _log "$cont análisis solicitados";
+            _log "$cont anlisis solicitados";
         } else {
             $err =
                 "The user doesn't have permission to request the analysis of a entire subproject";
@@ -913,7 +916,7 @@ sub request_cam_projects : Local {
                     try {
                     	my $nature_work = $row2->nature;
                     	if ( grep /$nature_work/, @filters ) {
-	                    	_log "Solicitando análisis de " . $row2->name . "/" . $row2->nature;
+	                    	_log "Solicitando anlisis de " . $row2->name . "/" . $row2->nature;
 		                    ( $return, $out ) = BaselinerX::Model::SQA->request_analysis(
 		                        bl         => $bl,
 		                        project    => $project,
@@ -921,18 +924,18 @@ sub request_cam_projects : Local {
 		                        nature     => $row2->nature,
 		                        user       => $user
 		                    );
-		                    _log "Análisis de " . $row2->name . "/" . $row2->nature . " solicitado\n";
+		                    _log "Anlisis de " . $row2->name . "/" . $row2->nature . " solicitado\n";
 	                    	$cont++;
                     	} else {
 							_log $row2->name."/".$row2->nature." ignorada.";
 						}
                     } catch {
-                    	_log "Error al solicitar el análisis de " . $row2->name . "/" . $row2->nature;
+                    	_log "Error al solicitar el anlisis de " . $row2->name . "/" . $row2->nature;
                     };
                 }
             }
 
-            _log "$cont análisis solicitados";
+            _log "$cont anlisis solicitados";
         } else {
             $err = _loc(
                 "The user doesn't have permission to request the analysis of a entire subproject" );

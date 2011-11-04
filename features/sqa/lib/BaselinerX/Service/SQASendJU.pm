@@ -1,10 +1,10 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
+#INFORMACIÃ“N DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000052933
-#	Fecha de pase .................... 2011/10/27 18:56:10
-#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Service/SQASendJU.pm
-#	Versión del elemento ............. 9
+#	Pase ............................. N.PROD0000053337
+#	Fecha de pase .................... 2011/11/03 20:21:11
+#	UbicaciÃ³n del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Service/SQASendJU.pm
+#	VersiÃ³n del elemento ............. 10
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Service::SQASendJU;
@@ -65,7 +65,7 @@ sub send_mail {
     my $config = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email', ns => 'feature/SQA' );
     my $url    = $config->{baseliner_url};
 	
-	_log "Looking for ju_mails to send";
+	_log "Looking for ju_mails(sqa) to send";
     for ( Baseliner->model( 'Repository' )->list( provider => 'sqa.ju_email' ) ) {
         my $data = Baseliner->model( 'Repository' )->get( ns => $_ );
         my $ns = $_;
@@ -79,7 +79,7 @@ sub send_mail {
 		
         Baseliner->model( 'Messaging' )->notify(
             to              => { users => $to },
-            subject         => "Resumen diario",
+            subject         => _loc("Daily SQA summary"),
             sender          => "$config->{from}",
             carrier         => 'email',
             template        => 'email/analisys_ju.html',

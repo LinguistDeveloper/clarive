@@ -197,35 +197,168 @@ sub deny_role {
     return $denied;
 }
 
+
+=head2 user_baselines_for_action username=>Str, action=>Str
+
+Returns a list of baslines for a username and action.
+
+=cut
+sub user_baselines_for_action  {
+    my ($self, %p ) = @_;
+    _check_parameters( \%p, qw/username action/ ); 
+	my @bl_arr = ();
+	my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
+	my $is_root = $self->is_root( $p{username} );
+    foreach my $n ( @bl_list ) {
+        next unless $is_root or $self->user_has_action( username=>$p{username}, action=>$p{action}, bl=>$n->{bl} );
+        my $arr = [ $n->{bl}, $n->{name} ];
+        push @bl_arr, $arr;
+    }
+	return @bl_arr;
+    }
+
 =head2 user_has_action username=>Str, action=>Str
 
 Returns true if a user has a given action.
 
 =cut
+#TODO Que pasa con NS (recursividad hacia arriba para recuperar acciones)
 sub user_has_action {
     my ($self, %p ) = @_;
     _check_parameters( \%p, qw/username action/ ); 
     my $username = $p{username};
-    my $action   = $p{action};
+    my $action = $p{action};
+    push my @bl, _array $p{bl}, '*';
+    
     return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
-    my @users = $self->list( action=> $action, ns=>$p{ns}, bl=>$p{bl} );
 
-    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$username }, { prefetch=>['role'] } );
-    rs_hashref( $rs );
-	my $mail="";
-	if ( my $r=$rs->next ) {
-		$mail = $r->{role}->{mailbox} ;
-    }
-
-	my $ret = 0;
-    $ret = scalar grep(/$mail/, @users) if $mail;
-	$ret += scalar grep /$username/, @users;
-    return $ret;
+	return Baseliner->model('Baseliner')->dbi->value(qq{
+		select count(*)
+        from bali_roleuser ru, bali_roleaction ra
+        where ru.USERNAME = ?
+          and ru.ID_ROLE = ra.ID_ROLE
+          and ra.ACTION = ?
+          and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
+	},$username, $p{action}, @bl);
 }
 
+# sub user_has_action {
+    # my ($self, %p ) = @_;
+    # _check_parameters( \%p, qw/username action/ ); 
+    # my $username = $p{username};
+    # my $action   = $p{action};
+    # return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
+    # my @users = $self->list( action=> $action, ns=>$p{ns}, bl=>$p{bl} );
 
-#### Ricardo (21/6/2011): Listado de proyectos para los que el usuario tiene una acción 
-#### Javi (6/7/2011): Añado filtro por bl [opcional] -- Puede no tener una acción en algún entorno p.ej action.job.create 
+    # my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$username }, { prefetch=>['role'] } );
+    # rs_hashref( $rs );
+	# my $mail="";
+	# if ( my $r=$rs->next ) {
+		# $mail = $r->{role}->{mailbox} ;
+    # }
+
+	# my $ret = 0;
+    # $ret = scalar grep(/$mail/, @users) if $mail;
+	# $ret += scalar grep /$username/, @users;
+    # return $ret;
+# }
+
+=head2 user_has_project( username=>Str, project_name=>Str | project_id )
+
+Returns an array of ns for the projects the user has access to.
+
+=cut
+sub user_has_project {
+    my ( $self, %p ) = @_;
+    _throw 'Missing username' unless exists $p{username};
+
+    # is root?
+    return 1 if $self->is_root( $p{username} );
+
+    if( my $name = delete $p{project_name} ) {
+        return scalar grep /^$name$/, $self->user_projects_names( %p );
+    } elsif( my $id = delete $p{project_id} ) {
+        return scalar grep /$id/, $self->user_projects_ids( %p );
+    }
+    return 0;
+}
+
+=head2 user_projects( username=>Str )
+
+Returns an array of ns for the projects the user has access to, 
+ie, if the user has ANY role in them.
+
+=cut
+sub user_projects {
+    my ( $self, %p ) = @_;
+    _throw 'Missing username' unless exists $p{ username };
+    _array( Baseliner->model( 'Baseliner::BaliRoleuser' )
+        ->search( { username => $p{username} }, { select => [ 'ns' ] } ) ~~ sub {
+        my $rs = shift;
+        rs_hashref( $rs );
+        [ grep { length } _unique map { $_->{ ns } } $rs->all ];
+    } );
+}
+
+=head2 user_projects_ids( username=>Str )
+
+Returns an array of project ids for the projects the user has access to.
+
+=cut
+sub user_projects_ids {
+    my ( $self, %p ) = @_;
+    _unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );
+}
+
+=head2 user_projects_names( username=>Str )
+
+Returns an array of project names to which the user has access.
+
+=cut
+sub user_projects_names {
+    my ( $self, %p ) = @_;
+    my @ns = $self->user_projects( %p );
+    my @ids=map{ my ($d,$it)=ns_split($_); $it } _array @ns;
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ id=>\@ids });
+    rs_hashref( $rs );
+    my $parentcache;
+    my @ret;
+    while( my $r = $rs->next ) {
+    if (! $r->{id_parent} ) {
+        push @ret, qq{application/$r->{name}};
+    } else {
+        if ( ! $parentcache->{$r->{id_parent}} ) {
+            my $parent = Baseliner->model('Baseliner::BaliProject')->search( { id=>$r->{id_parent} } )->first;
+            $parent and $parentcache->{$parent->id}={
+                name=>$parent->name,
+                parent=>$parent->id_parent,
+                id=>$parent->id
+                };
+            }
+        if ($r->{nature}) {
+            if ( ! $parentcache->{$parentcache->{$r->{id_parent}}->{parent}} ) {
+                my $cam = Baseliner->model('Baseliner::BaliProject')->search( { id=>$parentcache->{$r->{id_parent}}->{parent} } )->first;
+                $cam and $parentcache->{$cam->id}={
+                    name=>$cam->name,
+                    parent=>$cam->id_parent,
+                    id=>$cam->id
+                    };
+                }
+            push @ret, qq{nature/$parentcache->{$parentcache->{$r->{id_parent}}->{parent}}->{name}/$parentcache->{$r->{id_parent}}->{name}/$r->{nature}} ;
+        } elsif ($r->{id_parent}) {
+            push @ret, qq{subapplication/$parentcache->{$r->{id_parent}}->{name}/$r->{name}};
+            }
+        }
+    }
+    return sort { $a cmp $b } _unique( @ret );
+    # _unique map { $_->{name} } $rs->all;
+}
+
+=head2 user_projects_with_action( username=>Str, action=>[ ... ] )
+
+List of projects for which a user has a given action.
+
+=cut
 
 sub user_projects_with_action {
     my ($self, %p ) = @_;
@@ -233,12 +366,10 @@ sub user_projects_with_action {
     my $username = $p{username};
     my $action   = $p{action};
     my $bl       = $p{bl}||'*';
-	my $bl_filter=qq{ AND bl = '$bl' } if $bl ne '*';
+	my $bl_filter=qq{ AND bl in ('$bl','*') } if $bl ne '*';
     my @granted_projects = [];
     
-    my @root_users = $self->list( action=> 'action.admin.root' );
-
-	if ( grep /$username/, @root_users ) {
+    if ($self->is_root($username)) {
 		@granted_projects = $self->all_projects();
 	} else {
 		my $db = new Baseliner::Core::DBI( { model => 'Baseliner' } );
@@ -247,11 +378,11 @@ sub user_projects_with_action {
 				from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra
 				WHERE   r.ID = ru.ID_ROLE AND
 	        	r.ID = ra.ID_ROLE AND 
-	        	username = '$username' AND
-	        	action = '$action'
+                username = ? AND
+                action = ?
 				$bl_filter
 	        	ORDER BY 1
-			}
+            }, $username, $action
         );
 		if ( @data && $data[0] eq '/') {
 			@granted_projects = $self->all_projects();
@@ -274,8 +405,6 @@ sub all_projects {
 	
 	return @projects;
 }
-
-
 
 =head2 user_grants $username [ action=>Str, ns=>Str ]
 
@@ -315,6 +444,56 @@ sub user_namespaces {
     my ($self, $username ) = @_;
     my @perms = Baseliner->model('Permissions')->user_grants( $username );
 	return sort { $a cmp $b } _unique( map { $_->{ns} } @perms );
+}
+
+=head2 user_namespaces_name
+
+Returns a list of applications from roleuser,
+which means that there's some role in there
+
+=cut
+sub user_namespaces_name {
+    my ($self, $username ) = @_;
+    my @perms = Baseliner->model('Permissions')->user_grants( $username );
+    my @appId;
+
+    foreach (@perms) {
+        push @appId, $1 if ($_->{ns} =~ m{project/(.+)});
+        }
+        
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search( { id=>{ 'in' => [ _unique @appId ] } } );
+	rs_hashref( $rs );
+    my @ret;
+    my $parentcache;
+    while( my $r = $rs->next ) {
+        if (! $r->{id_parent} ) {
+            push @ret, qq{application/$r->{name}};
+        } else {
+            if ( ! $parentcache->{$r->{id_parent}} ) {
+                my $parent = Baseliner->model('Baseliner::BaliProject')->search( { id=>$r->{id_parent} } )->first;
+                $parent and $parentcache->{$parent->id}={
+                    name=>$parent->name,
+                    parent=>$parent->id_parent,
+                    id=>$parent->id
+                    };
+                }
+            if ($r->{nature}) {
+                if ( ! $parentcache->{$parentcache->{$r->{id_parent}}->{parent}} ) {
+                    my $cam = Baseliner->model('Baseliner::BaliProject')->search( { id=>$parentcache->{$r->{id_parent}}->{parent} } )->first;
+                    $cam and $parentcache->{$cam->id}={
+                        name=>$cam->name,
+                        parent=>$cam->id_parent,
+                        id=>$cam->id
+                        };
+                    }
+                push @ret, qq{nature/$parentcache->{$parentcache->{$r->{id_parent}}->{parent}}->{name}/$parentcache->{$r->{id_parent}}->{name}/$r->{nature}} ;
+            } elsif ($r->{id_parent}) {
+                push @ret, qq{subapplication/$parentcache->{$r->{id_parent}}->{name}/$r->{name}};
+                }
+            }
+        }
+
+	return sort { $a cmp $b } _unique( @ret );
 }
 
 =head2 list
@@ -374,10 +553,17 @@ sub list {
         push @list,
 			# map { $p{action} ? $_->{username} : $_->{action} }
             map { $p{action} ? ( $role->{mailbox} ? $role->{mailbox} : $_->{username} ) : $_->{action} }
-            grep { $p{username} ? 1 : $ns eq 'any' ? 1 : ns_match( $_->{ns}, $ns) }
+            
+            ####
+            #Comentado por Ricardo 2011/11/03 ... no hace falta quitar los ns.  Ya están filtrados en la query
+            #
+            #grep { $p{username} ? 1 : $ns eq 'any' || $ns eq '/' ? 1 : ns_match( $_->{ns}, $ns) }
+            #####
+            
             _array( $data );
     }
 
+	_log "He salido";
     # recurse $self->list on parents
     if( $p{recurse} && $ns ne 'any' ) {
         my $item = Baseliner->model('Namespaces')->get( $ns );
@@ -494,6 +680,7 @@ sub all_users {
 Checks a user has an action... only faster. 
 
 =cut
+
 sub user_has_action_fast {
     my ( $self, %p ) = @_;
 	my $username = delete $p{username};
