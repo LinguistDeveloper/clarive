@@ -1,10 +1,10 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
+#INFORMACIN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
 #	Pase ............................. N.PROD0000053438
 #	Fecha de pase .................... 2011/11/04 20:01:12
-#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
-#	Versión del elemento ............. 52
+#	Ubicacin del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
+#	Versin del elemento ............. 52
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Model::SQA;
@@ -298,7 +298,7 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 	#	}
 
 	_log "CAM: $project";
-	_log "Subaplicación: $subproject";
+	_log "Subaplicacin: $subproject";
 	_log "Naturaleza: $nature";
 
 	$compileTests = 0;
@@ -378,7 +378,7 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 	_log "cd $path/$CAMPath/$natureFinal;jar cvf $tarfile $prjs";
 	my $RET = `cd "$path/$CAMPath/$natureFinal";jar cvf "$tarfile" $prjs`;
 
-	#Enviamos el tar al directorio de trabajo del job en la máquina de SQA
+	#Enviamos el tar al directorio de trabajo del job en la mquina de SQA
 	_log "Sending file $dir_pase\\src.jar";
 	$rc = 1;
 	( $rc, $ret ) = $bx->sendFile( $tarfile, "$dir_pase\\src.jar" );
@@ -482,24 +482,24 @@ qq{ mkdir "$dir_pase"\\$config->{builds_dir} & cd /D "$dir_pase"\\$config->{buil
 		_log "$exe_file DOES NOT exists";
 	}
 
-	# Hay que compilar la aplicación de tests para J2EE?
+	# Hay que compilar la aplicacin de tests para J2EE?
 
 	if ($compileTests) {
 
 		my $compileScript =
 qq{ call ant -f $config->{compile_script} -DTestProjectDir=$dir_pase\\$config->{source_dir}\\${subproject}_TEST };
 		_log
-"Ejecutando script de compilación del proyecto de tests $dir_pase\\$config->{source_dir}\\${subproject}_TEST";
+"Ejecutando script de compilacin del proyecto de tests $dir_pase\\$config->{source_dir}\\${subproject}_TEST";
 		$rc = 1;
 		( $rc, $ret ) = $bx->execute($compileScript);
 
 		if ( $rc ne 0 ) {
-			_log "Ha habido un error en la compilación del proyecto de TEST";
+			_log "Ha habido un error en la compilacin del proyecto de TEST";
 		}
 		_log "$ret";
 	}
 
-	#Ejecución del script
+	#Ejecucin del script
 	my $recalc = '';
 	$recalc = "Recalc" if $config->{debug} eq 1;
 
@@ -652,7 +652,7 @@ sub ship_packages_project {    # envia un proyecto (subapl+nature) a SQA
 	my $prjs    = ${CAMPath};
 	my $RET     = `cd "$path";jar cvf "$tarfile" $prjs`;
 
-	#Enviamos el tar al directorio de trabajo del job en la máquina de SQA
+	#Enviamos el tar al directorio de trabajo del job en la mquina de SQA
 	_log "Sending file $dir_pase\\src.jar";
 	( $rc, $ret ) = $bx->sendFile( $tarfile, "$dir_pase\\src.jar" );
 	if ( $rc ne 0 ) {
@@ -692,7 +692,7 @@ qq{ mkdir "$dir_pase"\\$config->{source_dir} & cd /D $dir_pase\\$config->{source
 		_log "Fichero src.jar borrado";
 	}
 
-	#Ejecución del script
+	#Ejecucin del script
 	my $recalc = '';
 	$recalc = "paquete";
 
@@ -749,7 +749,7 @@ sub calculate_aggregates {
 	my $config = Baseliner->model('ConfigStore')->get('config.sqa');
 	my $job_id = $p{job_id};
 
-	#Calculamos el agregado por subaplicación
+	#Calculamos el agregado por subaplicacin
 	my $script =
 qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} Subaplicacion -Dsubapp="$subproject" -Dentorno=$bl -DCAM="$CAM" -Dproyecto="$project" -DinputDir="$dir_pase"};
 	_log "Ejecutando ... " . $script;
@@ -833,7 +833,7 @@ sub calculate_aggregate {
 	my ( $rc, $ret, $xml, $html, $return, $mstestResults, $junitResults );
 	_log "**************************** Empiezo el calculate_aggregate ";
 	my $config = Baseliner->model('ConfigStore')->get('config.sqa');
-	_log "**************************** Después del config ";
+	_log "**************************** Despus del config ";
 	my $dir_pase = $config->{dir_pase} . "\\" . $CAM . "_PACKAGES_" . _nowstamp;
 
 	_log "************ DIRECTORIO DE PASE: $dir_pase";
@@ -1184,7 +1184,7 @@ sub grab_package_results {    # recupera resultados
 			  . $fields[1]
 			  . "/report"
 			  . $fields[2] . ".html";
-			_log "****************************** añadido "
+			_log "****************************** aadido "
 			  . $config->{url_reports}
 			  . $fields[1]
 			  . "/report"
@@ -1295,18 +1295,18 @@ sub getProjectConfigAll {
 	my $row_global_nature;
 	my $row_global;
 
-	if ($row_subnat) {    # Hay fila de proyecto busco su configuraci—n
+	if ($row_subnat) {    # Hay fila de proyecto busco su configuracin
 		$row_subnat_config =
 		  Baseliner->model('Baseliner::BaliConfig')
 		  ->search(
 			{ bl => $bl, ns => 'project/' . $row_subnat->id, key => $value } )
 		  ->first;
-		if ($row_subnat_config) {    # Si hay configuraci—n, la uso
+		if ($row_subnat_config) {    # Si hay configuracin, la uso
 			$return = $row_subnat_config->value;
 			_log "************ CONFIGURACION DE SUBAPLICACION/NATURALEZA";
 		}
 		else
-		{   # No hay configuraci—n, busco la configuraci—n de CAM/naturaleza
+		{   # No hay configuracin, busco la configuracin de CAM/naturaleza
 			_log "************ NO HAY SUBAPLICACION/NATURALEZA";
 			$row_camnat_config =
 			  Baseliner->model('Baseliner::BaliConfig')->search(
@@ -1317,15 +1317,15 @@ sub getProjectConfigAll {
 				}
 			  )->first;
 			if ($row_camnat_config)
-			{    # Hay configuraci—n CAM/Naturaleza.  La uso
+			{    # Hay configuracin CAM/Naturaleza.  La uso
 				$return = $row_camnat_config->value;
 				_log "************ CONFIGURACION DE CAM/NATURALEZA";
 			}
 			else
-			{ # No hay configuraci—n de CAM/Naturaleza.  Uso la de subaplicaci—n
+			{ # No hay configuracin de CAM/Naturaleza.  Uso la de subaplicacin
 				_log "************ NO HAY DE CAM/NATURALEZA";
 				if ($row_subproject)
-				{    # Hay fila de subproyecto. Busco su configuraci—n
+				{    # Hay fila de subproyecto. Busco su configuracin
 					$row_subproject_config =
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
@@ -1335,12 +1335,12 @@ sub getProjectConfigAll {
 						}
 					  )->first;
 					if ($row_subproject_config)
-					{    #Hay configuraci—n de subproyecto.  La uso
+					{    #Hay configuracin de subproyecto.  La uso
 						$return = $row_subproject_config->value;
 						_log "************ CONFIGURACION DE SUBAPLICACION";
 					}
 					else
-					{  #No hay configuraci—n de subproyecto.  Busco la del CAM
+					{  #No hay configuracin de subproyecto.  Busco la del CAM
 						_log "************ NO HAY DE SUBAPLICACION";
 						$row_project_config =
 						  Baseliner->model('Baseliner::BaliConfig')->search(
@@ -1351,12 +1351,12 @@ sub getProjectConfigAll {
 							}
 						  )->first;
 						if ($row_project_config)
-						{    # Hay configuraci—n del CAM.  La uso
+						{    # Hay configuracin del CAM.  La uso
 							$return = $row_project_config->value;
 							_log "************ CONFIGURACION DE CAM";
 						}
 						else
-						{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
+						{ # No hay configuracin del CAM.  Uso de de la naturaleza global.  Si no hay se usar la global
 
 #							$config = Baseliner->model('ConfigStore')->get('config.sqa',ns =>'nature/'.$nature, bl => $bl);
 #							$return = $config->{$value};
@@ -1370,13 +1370,13 @@ sub getProjectConfigAll {
 								}
 							  )->first;
 							if ($row_global_nature)
-							{    # Hay configuraci—n del CAM.  La uso
+							{    # Hay configuracin del CAM.  La uso
 								$return = $row_global_nature->value;
 								_log
 "************ CONFIGURACION GLOBAL DE NATURALEZA";
 							}
 							else
-							{ # No hay configuraci—n global de naturaleza.  Uso la global.
+							{ # No hay configuracin global de naturaleza.  Uso la global.
 								_log "************ NO HAY GLOBAL DE NATURALEZA";
 								$row_global =
 								  Baseliner->model('Baseliner::BaliConfig')
@@ -1384,7 +1384,7 @@ sub getProjectConfigAll {
 									{ bl => $bl, ns => '/', key => $value } )
 								  ->first;
 								if ($row_global)
-								{    # Hay configuraci—n del CAM.  La uso
+								{    # Hay configuracin del CAM.  La uso
 									$return = $row_global->value;
 									_log "************ CONFIGURACION GLOBAL";
 								}
@@ -1393,7 +1393,7 @@ sub getProjectConfigAll {
 					}
 				}
 				else
-				{   # No hay fila de subproyecto. Uso la configuraci—n del CAM
+				{   # No hay fila de subproyecto. Uso la configuracin del CAM
 					$row_project_config =
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
@@ -1403,12 +1403,12 @@ sub getProjectConfigAll {
 						}
 					  )->first;
 					if ($row_project_config)
-					{    # Hay configuraci—n del CAM.  La uso
+					{    # Hay configuracin del CAM.  La uso
 						$return = $row_project_config->value;
 						_log "************ CONFIGURACION DE CAM";
 					}
 					else
-					{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
+					{ # No hay configuracin del CAM.  Uso de de la naturaleza global.  Si no hay se usar la global
 						$row_global_nature =
 						  Baseliner->model('Baseliner::BaliConfig')->search(
 							{
@@ -1418,20 +1418,20 @@ sub getProjectConfigAll {
 							}
 						  )->first;
 						if ($row_global_nature)
-						{    # Hay configuraci—n del CAM.  La uso
+						{    # Hay configuracin del CAM.  La uso
 							$return = $row_global_nature->value;
 							_log
 "************ CONFIGURACION GLOBAL DE NATURALEZA";
 						}
 						else
-						{ # No hay configuraci—n global de naturaleza.  Uso la global.
+						{ # No hay configuracin global de naturaleza.  Uso la global.
 							$row_global =
 							  Baseliner->model('Baseliner::BaliConfig')
 							  ->search(
 								{ bl => $bl, ns => '/', key => $value } )
 							  ->first;
 							if ($row_global)
-							{    # Hay configuraci—n del CAM.  La uso
+							{    # Hay configuracin del CAM.  La uso
 								$return = $row_global->value;
 								_log "************ CONFIGURACION GLOBAL";
 							}
@@ -1442,7 +1442,7 @@ sub getProjectConfigAll {
 		}
 	}
 	else
-	{ # No hay fila de subaplicaci—n/naturaleza, busco la configuraci—n de CAM/naturaleza
+	{ # No hay fila de subaplicacin/naturaleza, busco la configuracin de CAM/naturaleza
 		$row_camnat_config = Baseliner->model('Baseliner::BaliConfig')->search(
 			{
 				bl  => $bl,
@@ -1450,14 +1450,14 @@ sub getProjectConfigAll {
 				key => $value
 			}
 		)->first;
-		if ($row_camnat_config) {  # Hay configuraci—n CAM/Naturaleza.  La uso
+		if ($row_camnat_config) {  # Hay configuracin CAM/Naturaleza.  La uso
 			$return = $row_camnat_config->value;
 			_log "************ CONFIGURACION DE CAM/NATURALEZA";
 		}
 		else
-		{ # No hay configuraci—n de CAM/Naturaleza.  Uso la de subaplicaci—n
+		{ # No hay configuracin de CAM/Naturaleza.  Uso la de subaplicacin
 			if ($row_subproject)
-			{    # Hay fila de subproyecto. Busco su configuraci—n
+			{    # Hay fila de subproyecto. Busco su configuracin
 				$row_subproject_config =
 				  Baseliner->model('Baseliner::BaliConfig')->search(
 					{
@@ -1467,11 +1467,11 @@ sub getProjectConfigAll {
 					}
 				  )->first;
 				if ($row_subproject_config)
-				{    #Hay configuraci—n de subproyecto.  La uso
+				{    #Hay configuracin de subproyecto.  La uso
 					$return = $row_subproject_config->value;
 					_log "************ CONFIGURACION DE SUBAPLICACION";
 				}
-				else { #No hay configuraci—n de subproyecto.  Busco la del CAM
+				else { #No hay configuracin de subproyecto.  Busco la del CAM
 					$row_project_config =
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
@@ -1481,12 +1481,12 @@ sub getProjectConfigAll {
 						}
 					  )->first;
 					if ($row_project_config)
-					{    # Hay configuraci—n del CAM.  La uso
+					{    # Hay configuracin del CAM.  La uso
 						$return = $row_project_config->value;
 						_log "************ CONFIGURACION DE CAM";
 					}
 					else
-					{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
+					{ # No hay configuracin del CAM.  Uso de de la naturaleza global.  Si no hay se usar la global
 						$row_global_nature =
 						  Baseliner->model('Baseliner::BaliConfig')->search(
 							{
@@ -1496,20 +1496,20 @@ sub getProjectConfigAll {
 							}
 						  )->first;
 						if ($row_global_nature)
-						{    # Hay configuraci—n del CAM.  La uso
+						{    # Hay configuracin del CAM.  La uso
 							$return = $row_global_nature->value;
 							_log
 "************ CONFIGURACION GLOBAL DE NATURALEZA";
 						}
 						else
-						{ # No hay configuraci—n global de naturaleza.  Uso la global.
+						{ # No hay configuracin global de naturaleza.  Uso la global.
 							$row_global =
 							  Baseliner->model('Baseliner::BaliConfig')
 							  ->search(
 								{ bl => $bl, ns => '/', key => $value } )
 							  ->first;
 							if ($row_global)
-							{    # Hay configuraci—n global.  La uso
+							{    # Hay configuracin global.  La uso
 								$return = $row_global->value;
 								_log "************ CONFIGURACION GLOBAL";
 							}
@@ -1517,7 +1517,7 @@ sub getProjectConfigAll {
 					}
 				}
 			}
-			else {  # No hay fila de subproyecto. Uso la configuraci—n del CAM
+			else {  # No hay fila de subproyecto. Uso la configuracin del CAM
 				$row_project_config =
 				  Baseliner->model('Baseliner::BaliConfig')->search(
 					{
@@ -1527,29 +1527,29 @@ sub getProjectConfigAll {
 					}
 				  )->first;
 				if ($row_project_config)
-				{    # Hay configuraci—n del CAM.  La uso
+				{    # Hay configuracin del CAM.  La uso
 					$return = $row_project_config->value;
 					_log "************ CONFIGURACION DE CAM";
 				}
 				else
-				{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
+				{ # No hay configuracin del CAM.  Uso de de la naturaleza global.  Si no hay se usar la global
 					$row_global_nature =
 					  Baseliner->model('Baseliner::BaliConfig')
 					  ->search(
 						{ bl => $bl, ns => 'nature/' . $nature, key => $value }
 					  )->first;
 					if ($row_global_nature)
-					{    # Hay configuraci—n del CAM.  La uso
+					{    # Hay configuracin del CAM.  La uso
 						$return = $row_global_nature->value;
 						_log "************ CONFIGURACION GLOBAL DE NATURALEZA";
 					}
 					else
-					{ # No hay configuraci—n global de naturaleza.  Uso la global.
+					{ # No hay configuracin global de naturaleza.  Uso la global.
 						$row_global =
 						  Baseliner->model('Baseliner::BaliConfig')
 						  ->search( { bl => $bl, ns => '/', key => $value } )
 						  ->first;
-						if ($row_global) { # Hay configuraci—n global.  La uso
+						if ($row_global) { # Hay configuracin global.  La uso
 							$return = $row_global->value;
 							_log "************ CONFIGURACION GLOBAL";
 						}
@@ -1588,7 +1588,7 @@ sub getProjectConfigAll_old {
 		  ->get( 'config.sqa', ns => 'project/' . $row->id, bl => $bl );
 		if ( $config->{$value} ) {
 			$return = $config->{$value};
-			_log "****** Nivel: subaplicaci—n/naturaleza";
+			_log "****** Nivel: subaplicacin/naturaleza";
 			_dump $config;
 		}
 		elsif ( $row->parent && $row->parent->parent ) {
@@ -1675,10 +1675,10 @@ sub getProjectLastStatus {
 			  Baseliner->model('Baseliner::BaliSqa')
 			  ->search( { id_prj => $row->id, bl => $bl->{$bl_dest} } )->first;
 			if ($row_sqa) {
-				_log "Último status en "
+				_log "ltimo status en "
 				  . $bl->{$bl_dest} . ": "
 				  . $row_sqa->status;
-				_log "Última auditoría en "
+				_log "ltima auditora en "
 				  . $bl->{$bl_dest} . ": "
 				  . $row_sqa->qualification;
 				my $config =
@@ -1752,7 +1752,7 @@ sub end_pkg_analisys_mail {
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
 		subject         => _("SQA Package analysis finished"),
-		from            => $config->{from},
+		sender => $config->{from},
 		carrier         => 'email',
 		template        => 'email/pkg_analisys_finished.html',
 		template_engine => 'mason',
@@ -1808,7 +1808,7 @@ sub start_pkg_analisys_mail {
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
 		subject         => "An&aacute;lisis de calidad de paquetes iniciado",
-		from            => $config->{from},
+		sender => $config->{from},
 		carrier         => 'email',
 		template        => 'email/pkg_analisys_started.html',
 		template_engine => 'mason',
@@ -1867,7 +1867,7 @@ sub start_analisys_mail {
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
 		subject         => "An&aacute;lisis de calidad iniciado",
-		from            => $config->{from},
+		sender => $config->{from},
 		carrier         => 'email',
 		template        => 'email/analisys_started.html',
 		template_engine => 'mason',
@@ -1929,7 +1929,7 @@ sub error_analisys_mail {
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
 		subject         => "Analisis de calidad finalizado con error",
-		from            => $config->{from},
+		sender => $config->{from},
 		carrier         => 'email',
 		template        => 'email/analisys_error.html',
 		template_engine => 'mason',
@@ -1995,7 +1995,7 @@ sub end_analisys_mail {
 	Baseliner->model('Messaging')->notify(
 		to              => { users => $to },
 		subject         => _loc("SQA analysis finished"),
-		from            => $config->{from},
+		sender => $config->{from},
 		carrier         => 'email',
 		template        => 'email/analisys_finished.html',
 		template_engine => 'mason',
@@ -2057,7 +2057,7 @@ sub send_ju_email {
 		my $corr = \%p;
 		my $ns   = 'sqa.ju_email/' . $_;
 		my $data = Baseliner->model('Repository')->get( ns => $ns );
-		$data ||= {};    # inicializa si está vacio
+		$data ||= {};    # inicializa si est vacio
 		push @{ $data->{correos} }, $corr;
 		Baseliner->model('Repository')->set( ns => $ns, data => $data );
 		_log "dando de alta para $_";
