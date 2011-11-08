@@ -23,6 +23,10 @@ else
 	mkdir -p $LOGDIR
 fi
 
+if [ "$BASELINER_TRACE" != "" ]; then
+    BASELINER_TRACE_MODULE="-d:Trace::More" 
+fi
+
 LOGFILENAME=bali_web
 NOW=`perl -MDateTime -le 'print DateTime->now()'`
 LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
@@ -55,7 +59,7 @@ if [ "$1" = "start" ]; then
     echo "Log file: $LOGFILE"
     cd $BASELINER_HOME
     #nohup perl script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
-    BASELINER_SERVER=prefork nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    BASELINER_SERVER=prefork nohup perl $BASELINER_TRACE_MODULE $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     SERVER_PID=$!
     echo $SERVER_PID > $PIDFILE
     echo "Server started with pid: $SERVER_PID"
