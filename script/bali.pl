@@ -1,4 +1,7 @@
+#!/usr/bin/env perl
+
 BEGIN { print STDERR "Baseliner initializing...\n" }
+use Baseliner::Trace;
 use strict;
 use warnings;
 use Pod::Usage;

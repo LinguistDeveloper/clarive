@@ -220,11 +220,15 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 		# make immutable for speed
 		my %cl=Class::MOP::get_all_metaclasses;
 
-		for my $package ( grep /^Baseliner/, keys %cl ) {
+		for my $package (
+            grep !/Baseliner$/, grep !/Baseliner::View/, grep /^Baseliner/,
+            keys %cl )
+        {
 		    next if $package =~ /Baseliner$/;
-		    next if $package =~ /Baseliner::View/;
-			next unless $package->can('meta');
-			eval { $package->meta->make_immutable; };
+            my $meta = $cl{ $package };
+            next if ref $meta eq 'Moose::Meta::Role';
+			#eval { $package->meta->make_immutable; };
+			$meta->make_immutable;
 		}
 
 		#my %pkgs;

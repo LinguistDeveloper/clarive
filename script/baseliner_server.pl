@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+use lib 'lib';
+use Baseliner::Trace;
 BEGIN {
     $ENV{CATALYST_SCRIPT_GEN} = 99;
 }
