@@ -110,5 +110,6 @@ elif [ "$1" = "tail" ]; then
     tail -10000f $LOGFILE
 else
     echo "Unkown operation $1"
+    echo "Available: bali-web start|stop|restart|kill|tail [-d] [-r]"
 fi
 
