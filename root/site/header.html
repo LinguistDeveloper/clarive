@@ -68,10 +68,10 @@ Ext.onReady(function(){
     var tb = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
-        height: 26,
-        //height: 34,
+        //height: 26,
+        height: <% $c->config->{toolbar_height} %>,
         items: [
-            '<img src="/static<% $c->stash->{theme_dir} %>/images/logo.jpg" style="border:0px;"/>',
+            '<img src="/static<% $c->stash->{theme_dir} %>/images/logo.jpg" style="border-style:outset;border-width:1px;padding:0px;"/>',
             '-',
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
             ,
@@ -108,6 +108,7 @@ Ext.onReady(function(){
 
     var lifecycle = Baseliner.lifecycle;
 % unless( $show_lifecycle ) {
+
     lifecycle.hide();
 % }
     var viewport = new Ext.Viewport({

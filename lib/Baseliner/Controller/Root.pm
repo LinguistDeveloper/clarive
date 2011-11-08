@@ -184,7 +184,9 @@ sub index:Private {
             grep { -e $_ } map { "" . Path::Class::dir( $_->path, 'root', 'include', 'head.html') }
                     @features_list 
 		];
-    } 
+    }
+    $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
+
     $c->stash->{template} = '/site/index.html';
 }
 
