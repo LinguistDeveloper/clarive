@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
 
 BEGIN { print STDERR "Baseliner initializing...\n" }
-use Baseliner::Trace;
 use strict;
 use warnings;
-use Pod::Usage;
 use FindBin;
 use lib "$FindBin::Bin/../lib"; 
+use Baseliner::Trace;
+use Pod::Usage;
 use Hash::Merge::Simple qw/merge/;
 
 chdir "$FindBin::Bin/..";
