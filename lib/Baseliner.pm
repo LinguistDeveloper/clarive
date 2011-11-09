@@ -189,31 +189,31 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs	
 	#TODO probably not necessary anymore...
     # set sequences for oracle tables - avoid checking triggers for content
-    Baseliner::Schema::Baseliner::Result::BaliBaseline->sequence('bali_baseline_seq');
-    Baseliner::Schema::Baseliner::Result::BaliCalendar->sequence('bali_calendar_seq');
-    Baseliner::Schema::Baseliner::Result::BaliCalendarWindow->sequence('bali_calendar_window_seq');
-    Baseliner::Schema::Baseliner::Result::BaliChainedService->sequence('bali_chained_service_seq');
-    Baseliner::Schema::Baseliner::Result::BaliChain->sequence('bali_chain_seq');
-    Baseliner::Schema::Baseliner::Result::BaliConfig->sequence('bali_config_seq');
-    Baseliner::Schema::Baseliner::Result::BaliJobItems->sequence('bali_job_items_seq');
-    Baseliner::Schema::Baseliner::Result::BaliJob->sequence('bali_job_seq');
-    Baseliner::Schema::Baseliner::Result::BaliJobStash->sequence('bali_job_stash_seq');
-    Baseliner::Schema::Baseliner::Result::BaliLog->sequence('bali_log_seq');
-    Baseliner::Schema::Baseliner::Result::BaliLogData->sequence('bali_log_data_seq');
-    Baseliner::Schema::Baseliner::Result::BaliMessage->sequence('bali_message_seq');
-    Baseliner::Schema::Baseliner::Result::BaliMessageQueue->sequence('bali_message_queue_seq');
-    Baseliner::Schema::Baseliner::Result::BaliNamespace->sequence('bali_namespace_seq');
-    Baseliner::Schema::Baseliner::Result::BaliProject->sequence('bali_project_seq');
-    Baseliner::Schema::Baseliner::Result::BaliProjectItems->sequence('bali_project_items_seq');
-    Baseliner::Schema::Baseliner::Result::BaliReleaseItems->sequence('bali_release_items_seq');
-    Baseliner::Schema::Baseliner::Result::BaliRelease->sequence('bali_release_seq');
-    Baseliner::Schema::Baseliner::Result::BaliRequest->sequence('bali_request_seq');
-    Baseliner::Schema::Baseliner::Result::BaliRole->sequence('bali_role_seq');
-    Baseliner::Schema::Baseliner::Result::BaliRepo->sequence('bali_dummy_seq');
-    Baseliner::Schema::Baseliner::Result::BaliRepoKeys->sequence('bali_dummy_seq');
-    Baseliner::Schema::Baseliner::Result::BaliSemQueue->sequence('bali_sem_queue_seq');
-    Baseliner::Schema::Baseliner::Result::BaliWiki->sequence('bali_wiki_seq');
-    Baseliner::Schema::Baseliner::Result::BaliUser->sequence('bali_user_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliBaseline->sequence('bali_baseline_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliCalendar->sequence('bali_calendar_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliCalendarWindow->sequence('bali_calendar_window_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliChainedService->sequence('bali_chained_service_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliChain->sequence('bali_chain_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliConfig->sequence('bali_config_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliJobItems->sequence('bali_job_items_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliJob->sequence('bali_job_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliJobStash->sequence('bali_job_stash_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliLog->sequence('bali_log_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliLogData->sequence('bali_log_data_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliMessage->sequence('bali_message_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliMessageQueue->sequence('bali_message_queue_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliNamespace->sequence('bali_namespace_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliProject->sequence('bali_project_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliProjectItems->sequence('bali_project_items_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliReleaseItems->sequence('bali_release_items_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliRelease->sequence('bali_release_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliRequest->sequence('bali_request_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliRole->sequence('bali_role_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliRepo->sequence('bali_dummy_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliRepoKeys->sequence('bali_dummy_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliSemQueue->sequence('bali_sem_queue_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliWiki->sequence('bali_wiki_seq');
+    # Baseliner::Schema::Baseliner::Result::BaliUser->sequence('bali_user_seq');
 }
 
 	
