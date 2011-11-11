@@ -68,6 +68,7 @@ Ext.onReady(function(){
     var tb = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
+        //height: 26,
         height: <% $c->config->{toolbar_height} // 26 %>,
         items: [
             '<img src="/static<% $c->stash->{theme_dir} %>/images/logo.jpg" style="border-style:outset;border-width:1px;padding:0px;"/>',

@@ -21,7 +21,7 @@ given( $ENV{BASELINER_SERVER} ) {
         extends 'CatalystX::Script::Server::Starman';
     }
     default {
-        extends 'CatalystX::Script::Server';
+        extends 'Catalyst::Script::Server';
     }
 }
 
