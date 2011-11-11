@@ -4,6 +4,9 @@ use Baseliner::Utils;
 use Baseliner::Core::Baseline;
 use JSON::XS;
 use Try::Tiny;
+use utf8;
+use Encode;
+use 5.010;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
@@ -28,7 +31,7 @@ sub role_detail_json : Local {
                 }; 
                 push @actions,{ action=>$ra->action, description=>$desc, bl=>$ra->bl };
             }
-            $c->stash->{json} = { data=>[{  id=>$r->id, name=>$r->role, description=>$r->description, mailbox=>$r->mailbox, actions=>[ @actions ] }]  };
+            $c->stash->{json} = { data=>[{  id=>$r->id, name=>$r->role, description=>$r->description, actions=>[ @actions ] }]  };
             $c->forward('View::JSON');
         }
     }
@@ -67,7 +70,7 @@ sub json : Local {
 #        }
 #        my $users_txt = @users ? join(', ', sort(unique(@users))) : '-';
         # produce the grid
-        next if( $query && !query_array($query, $r->role, $r->description, $r->mailbox, $actions_txt
+        next if( $query && !query_array($query, $r->role, $r->description, $actions_txt
 #            , $users_txt 
           ));
 #        _log $users_txt;
@@ -78,7 +81,6 @@ sub json : Local {
             actions     => $actions_txt,
 #            users       => $users_txt,
             description => $r->description,
-			mailbox => $r->mailbox
           } if( ($cnt++>=$start) && ( defined $limit ? scalar(@rows) < $limit : 1 ) );
     }
     $c->stash->{json} = { data => \@rows };     
@@ -102,11 +104,10 @@ sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     eval {
-        my $role_actions = decode_json $p->{role_actions};
-        my $role = $c->model('Baseliner::BaliRole')->find_or_create({ id=>$p->{id}>=0 ? $p->{id} : undef, role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox} });
+        my $role_actions = decode_json(encode('UTF-8', $p->{role_actions}));
+        my $role = $c->model('Baseliner::BaliRole')->find_or_create({ id=>$p->{id}>=0 ? $p->{id} : undef, role=>$p->{name}, description=>$p->{description} });
         $role->role( $p->{name} );
         $role->description( $p->{description} );
-		$role->mailbox( $p->{mailbox} );
         $role->bali_roleactions->delete_all;
         foreach my $action ( @{ $role_actions || [] } ) {
             $role->bali_roleactions->find_or_create({ action=> $action->{action}, bl=>$action->{bl} || '*' });  #TODO bl from action list
