@@ -7,10 +7,11 @@
 		url: '/user/list',
 		fields: [ 
 			{  name: 'username' },
-			{  name: 'role' },
+			//{  name: 'role' },
 			{  name: 'realname' },
-			{  name: 'ns' },
-			{  name: 'actions' }
+			{  name: 'alias' },			
+			//{  name: 'ns' },
+			//{  name: 'actions' }
 		]
 	});
 
@@ -33,11 +34,14 @@
 			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 			loadMask:'true',
 			columns: [
-				{ header: '<% _loc('User') %>', width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },	
-				{ header: '<% _loc('Namespace') %>', width: 150, dataIndex: 'ns', sortable: true },	
-				{ header: '<% _loc('Role') %>', width: 250, dataIndex: 'role', sortable: true },	
-				{ header: '<% _loc('Actions') %>', width: 250, dataIndex: 'actions', sortable: true },
-				{ header: '<% _loc('Name') %>', width: 250, dataIndex: 'realname', sortable: true }
+				{ header: _loc('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },	
+				//{ header: '<% _loc('Namespace') %>', width: 150, dataIndex: 'ns', sortable: true },
+				//{ header: '<% _loc('Role') %>', width: 250, dataIndex: 'role', sortable: true },	
+				//{ header: '<% _loc('Actions') %>', width: 250, dataIndex: 'actions', sortable: true },
+				{ header: _loc('Name'), width: 350, dataIndex: 'realname', sortable: true },
+				//Prueba
+				{ header: _loc('Alias'), width: 150, dataIndex: 'alias', sortable: true }
+				//Fin prueba
 			],
 			autoSizeColumns: true,
 			deferredRender:true,

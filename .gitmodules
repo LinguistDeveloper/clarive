@@ -28,3 +28,6 @@
 [submodule "features/bcv"]
 	path = features/bcv
 	url = http://git.vasslabs.com/git/bcv.git
+[submodule "features/powercenter"]
+	path = features/powercenter
+	url = http://git.vasslabs.com/git/powercenter.git

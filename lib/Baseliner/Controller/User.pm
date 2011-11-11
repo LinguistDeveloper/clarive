@@ -173,37 +173,46 @@ sub list : Local {
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $sort ||= 'me.username';
     $dir ||= 'asc';
+    $start||= 0;
     $limit ||= 100;
 
     my $page = to_pages( start=>$start, limit=>$limit );
-    my $where = $query
-        ? { 'lower(me.username||role||description||ns||realname)' => { -like => "%".lc($query)."%" } } 
-        : undef;
-	my $rs = $c->model('Baseliner::BaliRoleuser')->search(
-       $where,
-    {
-        prefetch => ['role','bali_user'],
-		join => ['bali_user'],
-        page => $page,
-        rows => $limit,
-        order_by => $sort ? "$sort $dir" : undef
-    });
+####    my $where = $query
+####        ? { 'lower(me.username||role||description||ns||realname)' => { -like => "%".lc($query)."%" } } 
+####        : undef;
+####	my $rs = $c->model('Baseliner::BaliRoleuser')->search(
+####       $where,
+####    {
+####        prefetch => ['role','bali_user'],
+####		join => ['bali_user'],
+####        page => $page,
+####        rows => $limit,
+####        order_by => $sort ? "$sort $dir" : undef
+####    });
+	my $rs = $c->model('Baseliner::BaliUser')->search(undef,
+							  { page => $page,
+							    rows => $limit,
+							    order_by => $sort ? "$sort $dir" : undef
+							  });
+	
 	my @rows;
 	while( my $r = $rs->next ) {
         # produce the grid
         #my $rs_roles = $r->roles;
-        my $role = $r->role;
-		my $realname = $r->bali_user->realname;
-        #while( my $ro = $rs_roles->next ) {
+	    ####my $role = $r->role;
+	    ####my $realname = $r->bali_user->realname;
+	    my $realname = $r->realname;
+	    #while( my $ro = $rs_roles->next ) {
             #my $role = $ro->role;
             #my $ns = $ro->ns;
             push @rows,
               {
                 id          => $cnt++,
                 username    => $r->username,
-				realname    => $realname,
-                role        => $role->name . "(" . $role->description . ")",
-                ns          => $r->ns,
+		realname    => $realname,
+		alias	    => $r->alias
+                ####role        => $role->name . "(" . $role->description . ")",
+                ####ns          => $r->ns,
               };
         #}
     }
