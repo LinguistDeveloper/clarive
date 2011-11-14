@@ -31,8 +31,8 @@ sub tasks_list {
         _log "Evaluating task ".$task->{description};
         if ( $self->needs_execution( $task ) ) {
             my $task_to_run = {};
-            for ( keys $task ) {
-                #_log $_.":".$task->{$_};
+            for ( keys %{$task} ) {
+                _log $_.":".$task->{$_};
                 $task_to_run->{$_} = $task->{$_};
             }
             push @tasks_to_return, $task_to_run;

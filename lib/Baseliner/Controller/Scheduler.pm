@@ -136,6 +136,9 @@ sub save_schedule : Local {
     my $parameters = $p->{parameters};
     my $frequency = $p->{frequency};
     my $description = $p->{description};
+    my $workdays = $p->{workdays} && $p->{workdays} eq 'on'?1:0;
+
+    _log "Valor de workdays: $workdays";
 
     _log _dump $p;
 
@@ -147,7 +150,8 @@ sub save_schedule : Local {
                 next_exec => $next_exec,
                 parameters => $parameters,
                 frequency => $frequency,
-                description => $description
+                description => $description,
+                workdays => $workdays
             } );
         } else {
             my $row = $c->model('Baseliner::BaliSchedule')->find($id);
@@ -157,6 +161,7 @@ sub save_schedule : Local {
             $row->parameters($parameters);
             $row->frequency($frequency);
             $row->description($description);
+            $row->workdays($workdays);
             $row->update;
         }
 

@@ -143,7 +143,8 @@
             { header: _('Last execution'), width: 200, dataIndex: 'last_exec', sortable: true },
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
 			{ header: _('Frequency'), width: 200, dataIndex: 'frequency', sortable: true },
-            { header: _('State'), width: 200, dataIndex: 'status', sortable: true }
+            { header: _('State'), width: 200, dataIndex: 'status', sortable: true },
+            { header: _('Workdays'), width: 200, dataIndex: 'workdays', sortable: true }
 		],
 		autoSizeColumns: true,
 		deferredRender:true,      
@@ -155,24 +156,29 @@
 
     var schedule_id = new Ext.form.Hidden({
         name: 'id',
+        id: 'id-<% $iid %>'
+
     });
 
     var schedule_name = new Ext.form.TextField({
         name: 'name',
         fieldLabel: _('Name'),
         width: 150,
-        labelWidth: 250
+        labelWidth: 250,
+        id: 'name-<% $iid %>'
     });
 
     var schedule_service = new Ext.form.TextField({
         name: 'service',
         fieldLabel: _('Service'),
         width: 150,
-        labelWidth: 250
+        labelWidth: 250,
+        id: 'service-<% $iid %>'
     });
 
     var schedule_parameters = new Ext.form.TextArea({
-        name: 'parameters'
+        name: 'parameters',
+        id: 'parameters-<% $iid %>'
     });
 
     var _datePicker = null;
@@ -224,7 +230,13 @@
         labelWidth: 250,
         fieldLabel: _('Frequency')
     });
-        
+
+    var chk_schedule_workdays = new Ext.form.Checkbox({
+        id: 'workdays-<% $iid %>',
+        name: 'workdays',
+        fieldLabel: _('Workdays only')
+    });
+           
     var schedule_form = new Ext.FormPanel({
         frame: true,
         url:'/scheduler/save_schedule',
@@ -258,7 +270,7 @@
                 }
             }
         ],
-        items: [ schedule_id, schedule_name, schedule_service, schedule_date, schedule_time, schedule_frequency ]
+        items: [ schedule_id, schedule_name, schedule_service, schedule_date, schedule_time, schedule_frequency, chk_schedule_workdays ]
     });
 
     var win = new Ext.Window({
@@ -276,6 +288,7 @@
         schedule_date.setValue('<% $today %>');
         schedule_time.setValue('<% $hm %>');
         schedule_frequency.setValue(undefined);
+        chk_schedule_workdays.checked = false;
 
         win.show();
         myMask.hide();
@@ -297,6 +310,7 @@
                 schedule_time.setValue(undefined);                
             }
             schedule_frequency.setValue(r.data.frequency);
+            chk_schedule_workdays.checked = r.data.workdays ==1?true:false;
             win.show();
         } else {
             alert(_('Select a row'));
