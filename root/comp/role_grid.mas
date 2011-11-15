@@ -15,7 +15,7 @@
 		]
 	});
     
-    //////////////// Role Single Row
+    ////////// Role Single Row
 	var role_data_store=new Ext.data.JsonStore({
 		root: 'data' , 
 		remoteSort: true,
@@ -32,14 +32,14 @@
 		]
 	});
 
-    //////////////// Single Role Data Load
+    ////////// Single Role Data Load
     var role_detail_edit = function(id_role) {
        if( id_role!=undefined ) {
            role_data_store.load({ params:{ id: id_role } }); 
        }
     };
 
-    //////////////// Single Role Data Load Event
+    ///////// Single Role Data Load Event
     role_data_store.on('load', function(obj, rec, options ) {
         try {
             var rec = role_data_store.getAt(0);
