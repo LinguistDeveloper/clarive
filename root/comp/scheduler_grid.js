@@ -24,7 +24,8 @@
             {name: 'description'},
             {name: 'frequency'},
             {name: 'workdays'},
-            {name: 'status'}
+            {name: 'status'},
+            {name: 'pid'}
 		]
 	});
 
@@ -38,6 +39,17 @@
         store: store,
         params: {start: 0, limit: ps },
         emptyText: '<% _loc('<Enter your search string>') %>'
+    });
+
+
+    var button_toggle_activation = new Ext.Toolbar.Button({
+        text: _('New task'),
+        hidden: true,
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            myMask.show();
+            toggle_activation();
+        }
     });
 
     var button_new_schedule = new Ext.Toolbar.Button({
@@ -54,7 +66,7 @@
 
     var button_edit_schedule = new Ext.Toolbar.Button({
         text: _('Edit task'),
-        hidden: false,
+        hidden: true,
         icon:'/static/images/silk/clock_edit.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -66,7 +78,7 @@
 
     var button_delete_schedule = new Ext.Toolbar.Button({
         text: _('Delete task'),
-        hidden: false,
+        hidden: true,
         icon:'/static/images/silk/clock_delete.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -78,7 +90,7 @@
 
     var button_duplicate_schedule = new Ext.Toolbar.Button({
         text: _('Duplicate task'),
-        hidden: false,
+        hidden: true,
         icon:'/static/images/silk/clock_red.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -90,7 +102,7 @@
 
     var button_run_schedule = new Ext.Toolbar.Button({
         text: _('Run now'),
-        hidden: false,
+        hidden: true,
         icon:'/static/images/silk/clock_play.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -100,13 +112,25 @@
         }
     });
 
+    var button_kill_schedule = new Ext.Toolbar.Button({
+        text: _('Kill'),
+        hidden: true,
+        icon:'/static/images/silk/clock_stop.png',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            kill_schedule();
+        }
+    });
+
     var tbar = new Ext.Toolbar({ items: [ _('Search') + ': ', ' ',
                     search_field,
                     button_new_schedule,
                     button_edit_schedule,
                     button_delete_schedule,
                     button_duplicate_schedule,
-                    button_run_schedule
+                    button_toggle_activation,
+                    button_run_schedule,
+                    button_kill_schedule
                 ]
     });
 
@@ -141,6 +165,7 @@
             { header: _('Parameters'), width: 200, dataIndex: 'parameters', sortable: true },   
             { header: _('Next execution'), width: 200, dataIndex: 'next_exec', sortable: true },   
             { header: _('Last execution'), width: 200, dataIndex: 'last_exec', sortable: true },
+            { header: _('PID'), width: 200, dataIndex: 'pid', sortable: true },
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
 			{ header: _('Frequency'), width: 200, dataIndex: 'frequency', sortable: true },
             { header: _('State'), width: 200, dataIndex: 'status', sortable: true },
@@ -153,6 +178,40 @@
 	});
 
 	grid.getView().forceFit = true;
+
+    grid.on("rowclick", function(grid, rowIndex, e ) {
+        var r = grid.getStore().getAt(rowIndex);
+        show_buttons();        
+    });
+
+    var show_buttons = function () {
+        var sm = grid.getSelectionModel();
+        var r = sm.getSelected();
+
+        if ( r.data.status == 'IDLE' || r.data.status == 'KILLED' ) {
+            button_run_schedule.show();
+            button_toggle_activation.setText( _('Deactivate') );
+            button_toggle_activation.setIcon( '/static/images/silk/clock_pause.png');
+            button_delete_schedule.show();
+            button_toggle_activation.show();
+            button_kill_schedule.hide();
+        } else if ( r.data.status == 'INACTIVE') {
+            button_toggle_activation.setText( _('Activate') );
+            button_toggle_activation.setIcon( '/static/images/silk/clock_go.png');
+            button_toggle_activation.show();
+            button_delete_schedule.show();
+            button_run_schedule.hide();
+            button_kill_schedule.hide();
+        } else if ( r.data.status == 'RUNNING' ) {
+            button_toggle_activation.hide();
+            button_delete_schedule.hide();
+            button_run_schedule.hide();
+            button_kill_schedule.show();
+        }
+        button_edit_schedule.show();
+        button_duplicate_schedule.show();
+        tbar.doLayout();
+    };
 
     var schedule_id = new Ext.form.Hidden({
         name: 'id',
@@ -180,10 +239,6 @@
         name: 'parameters',
         id: 'parameters-<% $iid %>'
     });
-
-    var _datePicker = null;
-
-    function _setDatePicker(picker){_datePicker = picker;};
 
     var schedule_date = new Ext.ux.form.DateFieldPlus({
         id: 'date-<% $iid %>',
@@ -332,14 +387,36 @@
                         } else {
                             Baseliner.message( _('ERROR'), _('Scheduled task not deleted') );
                         }
+                        myMask.hide();
                     }
             );
 
-        } else {
-            alert(_('Select a row'));
         }     
-        myMask.hide();
     };
+
+    var toggle_activation = function () {
+        var sm = grid.getSelectionModel();
+        var r;
+        if ( sm.hasSelection() ){
+            r = sm.getSelected();
+            Baseliner.ajaxEval( '/scheduler/toggle_activation', 
+                    { id: r.data.id, status: r.data.status }, 
+                    function(response) {
+                        if ( response.success ) {
+                            Baseliner.message( _('SUCCESS'), _(response.msg) );
+                            store.load({params:{ limit: ps }});
+                        } else {
+                            Baseliner.message( _('ERROR'), _(response.msg) );
+                        }
+                        myMask.hide();
+                    }
+            ); 
+        }     
+    };
+
+    store.on("load", function () {
+        show_buttons();
+    });
 
     var duplicate_schedule = function () {
         var sm = grid.getSelectionModel();
@@ -358,8 +435,6 @@
             }
             schedule_frequency.setValue(r.data.frequency);
             win.show();
-        } else {
-            alert(_('Select a row'));
         }     
         myMask.hide();
     };
@@ -385,6 +460,32 @@
             alert(_('Select a row'));
         }     
         myMask.hide();
+    };
+
+    var kill_schedule = function () {
+        var sm = grid.getSelectionModel();
+        var r;
+        if ( sm.hasSelection() ){
+            Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text){
+              if (btn == 'Yes'){
+                alert('go ahead');
+                } else {
+                    r = sm.getSelected();
+                    Baseliner.ajaxEval( '/scheduler/kill_schedule', 
+                            { id: r.data.id }, 
+                            function(response) {
+                                if ( response.success ) {
+                                    Baseliner.message( _('SUCCESS'), _('Task killed') );
+                                    store.load({params:{ limit: ps }});
+                                } else {
+                                    Baseliner.message( _('ERROR'), _('Could not kill task') );
+                                }
+                                myMask.hide();
+                            }
+                    );
+                }
+            });
+        }
     };
 
     var valida_hora = function (time) {

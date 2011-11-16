@@ -51,6 +51,7 @@ sub json : Local {
             frequency   => 'frequency',
             workdays    => 'workdays',
             status      => 'status',
+            pid         => 'pid'
         }
     );
 
@@ -76,6 +77,7 @@ sub json : Local {
             frequency   => $r->frequency,
             workdays    => $r->workdays,
             status      => $r->status,
+            pid         => $r->pid
             }
     }
     $c->stash->{json} = { data => \@rows, totalCount=>$cnt };     
@@ -169,6 +171,46 @@ sub save_schedule : Local {
     } catch {
         my $err = shift;
         $c->stash->{json} = {msg => _loc( "Error saving configuration schedule: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );    
+
+}
+
+sub toggle_activation : Local {
+    my ( $self, $c ) = @_;
+    my $p                     = $c->request->params;
+
+    my $id = $p->{id};
+    my $status = $p->{status};
+    my $new_status;
+
+    try{
+        if ( $id ) {
+            $new_status = BaselinerX::Model::SchedulerModel->toggle_activation( taskid=>$id, status=>$status );
+        }
+        $c->stash->{json} = {msg => 'Task is now '.$new_status, success => \1};  
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error changing activation: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );    
+
+}
+
+sub kill_schedule : Local {
+    my ( $self, $c ) = @_;
+    my $p                     = $c->request->params;
+
+    my $id = $p->{id};
+
+    try{
+        if ( $id ) {
+            BaselinerX::Model::SchedulerModel->kill_schedule( taskid=>$id );
+        }
+        $c->stash->{json} = {msg => 'Task killed', success => \1};  
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error killing task: %1", $err ), success => \0};
     };
     $c->forward( 'View::JSON' );    
 

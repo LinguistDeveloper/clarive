@@ -23,7 +23,7 @@ sub tasks_list {
 
     my @tasks_to_return = ();
     #Looking for tasks to run
-    my $tasks = Baseliner->model('Baseliner::BaliScheduler')->search( {status => $status, next_exec => {'!=',undef} } );
+    my $tasks = Baseliner->model('Baseliner::BaliScheduler')->search( {status => ['IDLE','KILLED'] , next_exec => {'!=',undef} } );
 
     rs_hashref($tasks);
 
@@ -197,4 +197,38 @@ sub is_workday {
     return $date->day_of_weekname ~~ @workdays;
 }
 
+sub toggle_activation {
+    my ( $self, %p ) = @_;
+
+    my $taskid = $p{taskid};
+    my $status = $p{status};
+    my $new_status;
+
+    if ( $status =~ /IDLE|KILLED/ ) {
+    	$self->set_task_data( taskid => $taskid, status => 'INACTIVE');
+    	$new_status = 'inactive';
+    } else {
+    	$new_status = 'active';
+    	$self->set_task_data( taskid => $taskid, status => 'IDLE');
+    }
+    return $new_status;
+}
+
+sub kill_schedule {
+    my ( $self, %p ) = @_;
+
+    my $taskid = $p{taskid};
+ 	my $rs = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
+ 	my $pid = $rs->pid;
+
+ 	_log "Killing PID $pid";
+
+	if ( pexists( $pid ) ) {
+		kill 9,$pid;
+		$self->schedule_task( taskid=>$taskid, when=>$self->next_from_last_schedule( taskid=>$taskid )); 
+	};
+
+
+   	$self->set_task_data( taskid => $taskid, status => 'KILLED');
+}
 1;

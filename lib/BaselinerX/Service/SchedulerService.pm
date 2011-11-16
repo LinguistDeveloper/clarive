@@ -72,7 +72,7 @@ sub scheduler_test {
     my ( $self, $c, $config ) = @_;
     
     _log "Service.scheduler.test is now running";
-    sleep 15;
+    sleep 60;
     return 0;
 
 }
