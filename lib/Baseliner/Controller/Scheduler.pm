@@ -11,6 +11,7 @@ use 5.010;
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.admin.scheduler' => { name=>'Admin Scheduler' };
+
 register 'menu.admin.scheduler' => {
     label    => 'Scheduler',
     url_comp => '/scheduler/grid',

@@ -53,8 +53,8 @@ sub road_kill {
         _log _loc("Checking if process $pid exists");
         next if pexists( $pid );
         _log _loc("Process $pid does not exist");
-		$self->set_task_data( taskid=>$rs->id, status=>'IDLE');
-		$self->schedule_task( taskid=>$rs->id, when=>$self->next_from_last_schedule( taskid=>$rs->id ));
+		$self->set_task_data( taskid=>$r->id, status=>'IDLE');
+		$self->schedule_task( taskid=>$r->id, when=>$self->next_from_last_schedule( taskid=>$r->id ));
     }
 }
 

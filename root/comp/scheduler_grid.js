@@ -235,6 +235,14 @@
         id: 'service-<% $iid %>'
     });
 
+    var schedule_description = new Ext.form.TextField({
+        name: 'description',
+        fieldLabel: _('Description'),
+        width: 150,
+        labelWidth: 250,
+        id: 'description-<% $iid %>'
+    });
+
     var schedule_parameters = new Ext.form.TextArea({
         name: 'parameters',
         id: 'parameters-<% $iid %>'
@@ -325,7 +333,7 @@
                 }
             }
         ],
-        items: [ schedule_id, schedule_name, schedule_service, schedule_date, schedule_time, schedule_frequency, chk_schedule_workdays ]
+        items: [ schedule_id, schedule_name, schedule_service, schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
     });
 
     var win = new Ext.Window({
@@ -498,7 +506,7 @@
         } else {
             returnvalue = true;
         }
-        return returnvalue;
+        return true;
     };
 	
 	return grid;
