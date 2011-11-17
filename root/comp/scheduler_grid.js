@@ -1,3 +1,4 @@
+
 <%perl>
     use Baseliner::Utils;
     use utf8;
@@ -340,7 +341,7 @@
         layout: 'fit', 
         autoScroll: true,
         title: _("Schedule information"),
-        height: 230, width: 300, 
+        height: 270, width: 300, 
         items: [ schedule_form ]
     });
 
@@ -374,6 +375,7 @@
             }
             schedule_frequency.setValue(r.data.frequency);
             chk_schedule_workdays.checked = r.data.workdays ==1?true:false;
+            schedule_description.setValue(r.data.description);
             win.show();
         } else {
             alert(_('Select a row'));
