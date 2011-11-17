@@ -33,8 +33,13 @@ register 'config.changeman.connection' => {
     name => 'Changeman Connection Data',
 	metadata => [
 		{ id=>'host', label=>'Changeman Host', type=>'text', default=>'prue' },
-		{ id=>'port', label=>'Changeman Port', type=>'text', default=>'24' },
-		{ id=>'user', label=>'Changeman User', type=>'text', default=>'vpchm' },
+		{ id=>'port', label=>'Changeman Port', type=>'text', default=>'58765' },
+		{ id=>'key', label=>'Changeman Key', type=>'text', default=>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=' },
+		{ id=>'workdir', label=>'Changeman workdir', type=>'text', default=>'/u/aps/chm/scm/tmp' },
+        { id=>'stateMap', label=>'Map states between Changeman and Baseliner', type=>'hash', default=>qq{{TEST=>'TEST', PREP=>'ANTE', FORM=>'PROD', ALFA=>'PROD', EXPL=>'PROD', PRUE=>'PROD', CINF=>'PROD', XXXX=>'PROD'}} },
+        { id=>'frequency', label=>'Jes spool daemon frequency', type=>'text', default=>'15' },
+        { id=>'iterations', label=>'Jes spool daemon iterations', type=>'text', default=>'100' },
+        { id=>'clean', label=>'Clean command', type=>'text', default=>'RENAME' },
 		# { id=>'role', label=>'Changeman role for test', type=>'hash', default=>"Z=>['AZ','PZ'], T=>['AN','PR'] "},
 	]
 };
@@ -64,12 +69,85 @@ sub find {
     return BaselinerX::Changeman::Namespace::Package->new($pkg_data);
     }
 
-sub get { find(@_) }
+sub get { find (@_) };
+
+sub getPkg { 
+    my ($self, $c, $p) = @_;
+    _log _dump $p;
+    my $pkg      = $p->{query};
+    my $job_type = $p->{job_type};
+    my $bl       = $p->{bl};
+
+    my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
+    my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
+    my $pkgs = $chm->xml_getPkg( filter=>$pkg );
+    
+    foreach my $pkg ( $pkgs->{PackList}->{Package} ) {
+        foreach (sort keys %$pkg) {
+            my $pkgInfo=$$pkg{$_};
+
+            my $related     = "application/$1" if $_ =~ m{^(...).+};
+            my $user        = $pkgInfo->{creator} || _loc('Unknown');
+            my $circuito    = $pkgInfo->{circuito} || _loc('Unknown');
+            my $codigo      = $pkgInfo->{codigo} || _loc('Unknown');
+            my $audit       = ref $pkgInfo->{audit} ne 'HASH'?$pkgInfo->{audit}:_loc('Unknown');
+            my $db2         = $pkgInfo->{db2}  || _loc('Unknown');
+            my $linklist    = $pkgInfo->{linklist} || _loc('Unknown');
+            my $motivo      = ref $pkgInfo->{motivo} ne 'HASH'?$pkgInfo->{motivo}:_loc('Unknown');
+            my $promote     = $job_type eq 'promote'?$pkgInfo->{promote} || _loc('Unknown'):join (', ', _array $pkgInfo->{site});
+            my $urgente     = ref $pkgInfo->{urgente} ne 'HASH'?$pkgInfo->{urgente}:_loc('Unknown');
+            my $descripcion = $pkgInfo->{descripcion}|| _loc('Unknown');
+            my $site        = $job_type eq 'promote'?join (', ', _array $pkgInfo->{site}):$pkgInfo->{promote} || _loc('Unknown');
+            my $incidencia  = $motivo eq 'INC'?$codigo:undef;
+            my $tipoPkg     = 'Changeman';
+            $tipoPkg.='/DB2' if $db2 eq 'SI';
+            $tipoPkg.='/linkList' if $linklist eq 'SI';
+            my $label=$motivo eq 'PRO'?'Proyecto: ':$motivo eq 'PET'?'Petición: ':$motivo eq 'MTO'?'Mantenimiento: ':'Incidencia: ';
+            
+            my $data={  icon_on  => '/static/images/changeman/package.gif',
+                        icon_off => '/static/images/changeman/package_off.gif',
+                        provider => 'namespace.changeman.package',
+                        ns_type  => _loc('Changeman package'),
+                        ns_name  => $_,
+                        item     => $_,
+                        ns       => "changeman.package/$_",
+                        id       => "changemanpackage$_",
+                        inc_id      => [ {codigo=>$incidencia} ], 
+                        ns_data  => {
+                                     circuito    => $circuito,
+                                     codigo      => $codigo,
+                                     audit       => $audit,
+                                     motivo      => $motivo,
+                                     promoteFrom => $promote,
+                                     urgente     => $urgente,
+                                     site        => $site,
+                                     db2         => $db2,
+                                     linklist    => $linklist,
+                                     },
+                        ns_info  =>$descripcion,
+                        moreInfo => qq{<b>Tipo: </b>$tipoPkg<br><b>RC Audit: </b>$audit<br><b>Entorno Origen: </b>$promote<br><b>Entorno Destino: </b>$site<br><b>$label</b>$codigo},
+                        user     => $user,
+                        service  => 'service.changeman.runner.package',
+                        can_job  => 1,
+                        related  => [ $related ],
+                        why_not  => ""
+                    };
+
+            # Añadimos al repositorio el paquete...
+            try {
+                Baseliner->model('Repository')->set( ns=>"changeman.package/$_", data=>$data );
+            } catch {
+                my $error = shift;
+                # _log $error;
+                };
+            }
+        }
+    }
 
 sub list {
     my ($self, $c, $p) = @_;
 
-    _log "Changeman provider list started...";
+    # _log "Changeman provider list started...";
     my $bl = $p->{bl};
     return if $bl eq 'TEST';  ## En changeman no hay pases a TEST
     my $rfc = $p->{rfc};
@@ -82,18 +160,21 @@ sub list {
     if ($c->model('Permissions')->user_has_action(username=>$p->{username}, action=>'action.admin.root')) {
         push @projects, '*';
     } else {
-        foreach my $id (_array $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create', bl=>$bl, cam=>'S')) {
-               push @projects, $c->model('Baseliner::BaliProject')->find({id=>$id})->name . "T";
-               }
-        foreach my $id (_array $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create.Z', bl=>$bl, cam=>'S')) {
-               push @projects, $c->model('Baseliner::BaliProject')->find({id=>$id})->name . "Z";
-               }
+        foreach my $id (_array $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create', bl=>$bl)) {
+            my $project=$c->model('Baseliner::BaliProject')->search({id=>$id, id_parent=>undef, nature=>undef})->first;
+            push @projects, $project->name . 'T' if $project;
+            }
+        foreach my $id (_array $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create.Z', bl=>$bl)) {
+            my $project=$c->model('Baseliner::BaliProject')->search({id=>$id, id_parent=>undef, nature=>undef})->first;
+            push @projects, $project->name . 'Z' if $project;
+            }
         }
+    
     _log "Looking for Changeman packages in : " . join(" ", @projects);
 
     my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
-    my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, user=>$cfgChangeman->{user}, password=>sub{ require BaselinerX::BdeUtils; BaselinerX::BdeUtils->chm_token } );
-    my $pkgs = $chm->xml_pkgs( filter=>$query, to_env=>$bl, job_type=>$job_type eq 'promote'?'P':'M', projects=>@projects );
+    my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
+    my $pkgs = $chm->xml_pkgs( filter=>$query, to_env=>$bl, job_type=>$job_type eq 'promote'?'P':'M', projects=>[@projects] );
 
     my @ns;
     my ($cnt,$total)=(0,0);
@@ -120,18 +201,18 @@ sub list {
             my $descripcion = $pkgInfo->{descripcion}|| _loc('Unknown');
             my $site        = $job_type eq 'promote'?join (', ', _array $pkgInfo->{site}):$pkgInfo->{promote} || _loc('Unknown');
             my $incidencia  = $motivo eq 'INC'?$codigo:undef;
-            _log "\nCODIGO: #$codigo#\nMOTIVO: #$motivo#\nINCIDENCIA: #$incidencia#";
+            # _log "\nCODIGO: #$codigo#\nMOTIVO: #$motivo#\nINCIDENCIA: #$incidencia#";
             my $tipoPkg     = 'Changeman';
             $tipoPkg.='/DB2' if $db2 eq 'SI';
             $tipoPkg.='/linkList' if $linklist eq 'SI';
-            my $label=$motivo eq 'PRO'?'Proyecto: ':$motivo eq 'PET'?'Petición: ':'Incidencia: ';
+            my $label=$motivo eq 'PRO'?'Proyecto: ':$motivo eq 'PET'?'Petición: ':$motivo eq 'MTO'?'Mantenimiento: ':'Incidencia: ';
             
             # searching 
             if( $rfc ) {
                 }
 
             if ( $pattern ) {
-                my $search     = uc($user.$circuito.$codigo.$audit.$tipoPkg.$motivo.$promote.$urgente.$descripcion.$site);
+                my $search     = uc($_.$user.$circuito.$codigo.$audit.$tipoPkg.$motivo.$promote.$urgente.$descripcion.$site);
                 if ($search !~ m{$pattern}) {
                     $cnt--;
                     next;
@@ -172,7 +253,7 @@ sub list {
                                           # <tr><td class="search-l">Código: $motivo</td><td class="search-r">Motivo: $codigo</td></tr>
                                        # </table>}, # $pkgInfo->{$_}->{descripcion},
 
-                    _log Dumper $data;
+                    # _log Dumper $data;
             push @ns, BaselinerX::Changeman::Namespace::Package->new($data);
 
             # Añadimos al repositorio el paquete...
@@ -180,12 +261,12 @@ sub list {
                 Baseliner->model('Repository')->set( ns=>"changeman.package/$_", data=>$data );
             } catch {
                 my $error = shift;
-                _log $error;
-                }
+                # _log $error;
+                };
             }
         }
 
-    _log "provider list finished (records=".scalar (@ns)."/$total).";
+    # _log "provider list finished (records=".scalar (@ns)."/$total).";
     return { data=>\@ns, total=>$total, count=>scalar(@ns) };
     }
 

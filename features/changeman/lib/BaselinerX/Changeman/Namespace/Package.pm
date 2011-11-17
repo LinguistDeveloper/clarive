@@ -113,7 +113,7 @@ sub viewpaths {
 	#TODO get log for tag
 }
 
-sub checkout { 
+sub checkout {
     my $self = shift;
     _throw 'not implemented';
 	}
@@ -135,23 +135,23 @@ sub nature {
     return $self->{ns_data}->{linklist} eq 'SI'?'changeman.nature/changeman_batch_linklist':$self->{ns_data}->{db2} eq 'SI'?'changeman.nature/changeman_batch_db2':'changeman.nature/changeman_batch',
 	}
 
-sub approve { 
+sub approve {
     my $self = shift;
     _throw 'not implemented';
 	}
-sub reject  { 
+sub reject  {
     my $self = shift;
     _throw 'not implemented';
 	}
-sub is_approved  { 
+sub is_approved  {
     my $self = shift;
     _throw 'not implemented';
 	}
-sub is_rejected  { 
+sub is_rejected  {
     my $self = shift;
     _throw 'not implemented';
 	}
-sub user_can_approve  { 
+sub user_can_approve  {
     my $self = shift;
     _throw 'not implemented';
 	}
@@ -186,7 +186,7 @@ sub application {
 
 sub rfc {
 	my $self = shift;
-    _throw 'not implemented';  
+    _throw 'not implemented';
 	# my $pkgname = $self->ns_name;
 	# my $rfc = $pkgname;
 	# $rfc =~ s{^.{5}(.*?)\@.*$}{$1}g;

@@ -125,7 +125,7 @@
   };
   button_remove_proyectos = new Ext.Button({
     text: 'Borrar',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: handler_remove_proyectos
   });
   toolbar_proyectos_top = new Ext.Toolbar({
@@ -201,7 +201,7 @@
   };
   button_agregar_proyectos = new Ext.Button({
     text: 'Agregar',
-    icon: 'static/images/icons/add.png',
+    icon: '/static/images/icons/add.png',
     handler: handler_agregar_proyectos
   });
   column_aplicacion = new Ext.grid.Column({

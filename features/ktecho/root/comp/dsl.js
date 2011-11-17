@@ -35,7 +35,7 @@
   };
   button_clear = new Ext.Button({
     text: 'Clear',
-    icon: 'static/images/icons/application.png',
+    icon: '/static/images/icons/application.png',
     handler: function() {
       textarea_code.setValue('');
       return button_save.show();
@@ -43,7 +43,7 @@
   });
   button_save = new Ext.Button({
     text: 'Save',
-    icon: 'static/images/icons/application_edit.png',
+    icon: '/static/images/icons/application_edit.png',
     handler: function() {
       ajax.request({
         url: '/chain/save_dsl',
@@ -59,7 +59,7 @@
   });
   button_restore = new Ext.Button({
     text: 'Restore',
-    icon: 'static/images/icons/arrow_undo.png',
+    icon: '/static/images/icons/arrow_undo.png',
     handler: function() {
       textarea_code.setValue(code);
       button_restore.hide();
@@ -73,14 +73,14 @@
   });
   button_activate = new Ext.Button({
     text: 'Activate',
-    icon: 'static/images/yes.png',
+    icon: '/static/images/yes.png',
     handler: function() {
       return show_disable();
     }
   });
   button_disable = new Ext.Button({
     text: 'Disable',
-    icon: 'static/images/no.png',
+    icon: '/static/images/no.png',
     handler: function() {
       return show_activate();
     }

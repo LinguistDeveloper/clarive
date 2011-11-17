@@ -4,9 +4,17 @@ use warnings;
 use 5.010;
 use Baseliner::Utils;
 use Moose;
+use utf8;
 
 has 'bali_project', is => 'ro', isa => 'Object', lazy_build => 1;
 has 'table',        is => 'ro', isa => 'Str',    lazy_build => 1;
+
+sub update {
+  my $self = shift;
+  $self->populate_second_level;
+  $self->populate_third_level;
+  return;
+}
 
 sub roles_for_lvl {
   my ($self, $lvl) = @_;
@@ -59,8 +67,7 @@ sub _decompose {
   return;
 }
 
-# clone : HashRef Int -> new-record?
-sub clone {
+sub clone { # HashRef Int -> new-record?
   my ($self, $href, $id) = @_;
   unless ($self->already_exists($href, $id)) {
     $href->{ns} = "project/$id";
@@ -68,8 +75,7 @@ sub clone {
   }
 }
 
-# already_exists : HashRef Int -> Bool
-sub already_exists {
+sub already_exists { # HashRef Int -> Bool
   my ($self, $href, $id) = @_;
   $href->{ns} = "project/$id";
   my $rs = Baseliner->model($self->table)->search($href);
@@ -107,6 +113,12 @@ Searchs in the model table with a given where clause (hashref). Returns all colu
 
   $model->ns_id('project/72')
   #=> 72
+
+=head2 update
+
+Runs the update of both 2nd and 3rd level.
+
+  $model->update
 
 =head2 populate_second_level
 

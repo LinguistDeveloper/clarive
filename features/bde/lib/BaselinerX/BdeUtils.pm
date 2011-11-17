@@ -4,14 +4,12 @@ use warnings;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use utf8;
-
 use Exporter::Tidy default => [
-qw( get_package_dependencies list_package_dependencies
-    check_package_state check_package_state_do_or_die get_cam_uc
-    envia_correo_pase paquetes_html get_token lifecycle_for_packagename
-    _cam _cam_from store_backup bl_statename ahora _projects_from_elements
-    hardistXML _bde_conf get_backups inf)
-];
+  qw(get_package_dependencies list_package_dependencies check_package_state
+  check_package_state_do_or_die get_cam_uc envia_correo_pase paquetes_html
+  get_token lifecycle_for_packagename _cam _cam_from store_backup bl_statename
+  ahora _projects_from_elements hardistXML _bde_conf get_backups inf fix_net
+  net_version clickonce_version)];
 
 sub get_package_dependencies {
     my ( $proyecto, $tipo_pase, $paquetes_ref ) = @_;
@@ -433,7 +431,14 @@ sub hardistXML {
     $op_msg = "inclusiones/exclusiones";
   }
   $Project = "/$Project" if ($Project);
-  my @HARDIST = `find "$PaseDir/$CAM/${Sufijo}${Project}" -name "scm.xml"`;
+  _log "PaseDir: $PaseDir";
+  _log "CAM:     $CAM";
+  _log "Sufijo:  $Sufijo";
+  _log "Project: $Project";
+  my $cmd = qq| find "$PaseDir/$CAM/${Sufijo}${Project}" -name "scm.xml" |;
+  _log "\nObteniendo \@HARDIST ...\n cmd: $cmd";
+  my @HARDIST = `$cmd`;
+  _log "\n\@HARDIST:" . Data::Dumper::Dumper \@HARDIST;
   my $INEXLOG = "";
   foreach my $hardistxml (@HARDIST) {
     chop $hardistxml;
@@ -471,7 +476,7 @@ sub hardistXML {
             my ($nada, $inapl, $intipo, $inpro) = split(/\\/, $inruta);
             $Inclusiones{"$PaseDir/$CAM/$Sufijo/$inpro"} = "$PaseDir/$inapl/$intipo";
             my $ret = checkOutState($inapl, $EstadoEntorno->{$Entorno}, $intipo, $inpro, "$PaseDir/$CAM/$Sufijo/$inpro");
-            hardistXML("EX", $PaseDir, $Entorno, $EnvironmentName, $Sufijo, $inpro) if ($op_ex);
+            hardistXML($log, "EX", $PaseDir, $Entorno, $EnvironmentName, $Sufijo, $inpro) if ($op_ex);
           }
         }    #fin inclusiones
 
@@ -546,6 +551,8 @@ sub hardistXML {
     }
   }
   $log->info("Inclusiones/Exclusiones finalizado.\n" . join("\n", @INRUTA), $INEXLOG) if ($INEXLOG);
+  
+  _log "\n inclusiones en hardistXML => " . Data::Dumper::Dumper \%Inclusiones;
 
   ##### fin scm.xml
   return %Inclusiones;
@@ -603,6 +610,61 @@ sub get_backups {
 }
 
 sub inf { BaselinerX::Model::InfUtil->new(cam => shift) }
+
+sub fix_net {
+  my $net = shift;
+  my $ver = Baseliner->config->{'Model::Harvest'}->{db_version} || 7;
+  if ($ver == 7) {
+    $net = 'LN' if $net eq 'I';
+    $net = 'W3' if $net eq 'W';
+  }
+  $net;
+}
+
+sub net_version {
+  my $fileName    = shift @_;
+  my @fileContent = ();
+  my $version     = "";
+
+  open(SLN, "<$fileName");
+  @fileContent = <SLN>;
+  close(SLN);
+
+  if (grep(/Microsoft Visual Studio Solution File, Format Version 8.00/, @fileContent)) {
+    $version = "2003";
+  }
+  else {
+    $version = "20XX";
+  }
+  return $version;
+}
+
+sub clickonce_version {
+  my $fileName    = shift @_;
+  my @fileContent = ();
+  my $version     = "";
+  my $incremento  = "";
+
+  open(PRJ, "<$fileName");
+  my $linea = "";
+  foreach $linea (<PRJ>) {
+    if ($linea =~ /<ApplicationVersion>(.*)\.(.*)\.(.*)\.(.*)<\/ApplicationVersion>/) {
+      $version = $1 . "_" . $2 . "_" . $3;
+      if ($4 =~ /^\%.*/) {
+        $incremento = "si";
+        _log "Detectado incremento de version en el fichero de proyecto";
+      }
+      else {
+        $incremento = "no";
+        $version .= "_" . $4;
+        _log "Detectada version fija en el fichero de proyecto";
+      }
+      last;
+    }
+  }
+  close(PRJ);
+  return ($version, $incremento);
+}
 
 1;
 

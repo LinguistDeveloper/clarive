@@ -1,18 +1,18 @@
 //INFORMACIÓN DEL CONTROL DE VERSIONES
 //
 //	CAM .............................. SCM
-//	Pase ............................. N.PROD0000053033
-//	Fecha de pase .................... 2011/10/28 18:21:20
+//	Pase ............................. N.PROD0000054129
+//	Fecha de pase .................... 2011/11/17 20:29:43
 //	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/root/comp/sqa/grid.js
-//	Versión del elemento ............. 49
-//	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
+//	Versión del elemento ............. 1
+//	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
 <%args>
 	$action_view_general
-	$action_request_analysis
 	$action_new_analysis
 	$action_project_config
 	$action_global_config
 	$action_request_recalc
+	$action_request_analysis
 	$action_sqa_config
 	$action_sqa_project
 	$action_sqa_subproject
@@ -26,6 +26,7 @@
 	$global_block_deployment_ante
 	$global_block_deployment_prod
 	$sqa_url
+	$scm_url
 </%args>
 (function(){
 	//Cargamos la página de checking para crear la cookie de acceso a la interfaz de producto y no pida login al acceder a los informes
@@ -34,6 +35,7 @@
 	Baseliner.help_push( { title:_("SQA Help"), path: "sqa" } );
 	
 	document.title = "SCM_SQA - Baseliner";
+	var ps = 25;
 	
 	String.prototype.startsWith = function(str) 
 	{return (this.match("^"+str)==str)}
@@ -93,18 +95,39 @@
 		autoload: false,
         reader: reader,
         remoteGroup: true,
-        //remoteSort: true,
+        baseParams: { limit: ps },
+        remoteSort: true,
         url: '/sqa/grid_json',
         groupField: 'project'
     //    groupOnSort: true
     });
 
-	store.on("load", function (){
+    var paging = new Ext.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        displayInfo: true,
+        displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
+        emptyMsg: "No hay registros disponibles"
+    });
+
+	paging.on('beforechange', function(){ refresh_stop(); });
+
+    var next_start = 0;
+    
+    store.on('load', function(s,recs,opt) {
+        //console.log( s );
+        next_start = s.reader.jsonData.next_start;
+        //store.baseParams.next_start = next_start;
+        //alert(next_start);
 		gridType = store.reader.jsonData.gridType;
 		//alert("Tipo: " + gridType);
-		myMask.hide();
-	});
-	
+		myMask.hide();        
+    });
+
+    paging.on("beforechange", function(p,opts) {
+        opts.next_start = next_start;
+    });
+    
     var first_load = true;
     
 	store.on("beforeload", function (s){
@@ -121,7 +144,7 @@
 
     var search_field = new Ext.app.SearchField({
 		store: store,
-		params: {start: 0, type: gridType },
+		params: {start: 0, limit: ps, type: gridType },
 		emptyText: '<% _loc('<Enter your search string>') %>'
 	});
     var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -154,9 +177,13 @@
     };
 
     var render_qual = function(value,metadata,rec,rowIndex,colIndex,store) {
-		if( rec.data.status == 'running' ) value = _('Running');
-		if ( !value || value == '' || value.len == 0) value = ' ';
-		return "<div style='font-family: Tahoma; font-size:8pt; margin-top: 0'><b>" + value + "</b></div>" ;
+
+		if( rec.data.status != 'OK' && rec.data.status != 'FAILURE' ) {
+			return " ";
+		} else {
+			if ( !value || value == '' || value.len == 0) value = ' ';
+			return "<div style='font-family: Tahoma; font-size:8pt; margin-top: 0'><b>" + value + "</b></div>" ;
+		}
     };
 
     var render_result = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -263,7 +290,7 @@
 								function(response) {
 									if ( response.success ) {
 										Baseliner.message( _('SUCCESS'), _('analysis requested') );
-										store.load({params:{type: gridType }});
+										store.load({params:{type: gridType, limit: ps }});
 									} else {
 										Baseliner.message( _('ERROR'), _('analysis not requested') );
 									}
@@ -277,7 +304,7 @@
 								{ bl: rec.data.bl, project: rec.data.project, project_id: rec.data.id_project }, 
 								function(response) {
 									Baseliner.message( _('SUCCESS'), _('analysis requested') );
-									store.load({params:{type: gridType }});
+									store.load({params:{type: gridType, limit: ps }});
 								}
 						);					
 					}
@@ -298,7 +325,7 @@
 			{ project_id: gId, project_name: project_name, bl: gBl, nature: gNature, project: gProject, subapp: gSubapp }, 
 			function(response) {
 				Baseliner.message( _('SUCCESS'), _('analysis requested') );
-				store.load({params:{type: gridType }});
+				store.load({params:{type: gridType, limit: ps }});
 				myMask.hide();
 			}
 		);
@@ -325,7 +352,7 @@
 				
 					function(response) {
 						Baseliner.message( _('SUCCESS'), _('Analysis deleted') );
-						store.load({params:{type: gridType }});
+						store.load({params:{type: gridType, limit: ps }});
 						myMask.hide();
 					}
 			);
@@ -374,7 +401,7 @@
 			{ project_id: selected.data.id }, 
 			function(response) {
 				Baseliner.message( _('SUCCESS'), _('Configuration deleted') );
-				store.load({params:{type: gridType }});
+				store.load({params:{type: gridType, limit: ps }});
 				myMask.hide();
 			}
 		);
@@ -458,7 +485,7 @@
 			{ project_id: selected.data.id, bl: selected.data.bl, nature: nature, project: selected.data.project, subapp: subapp, level: level }, 
 			function(response) {
 				Baseliner.message( _('SUCCESS'), _('analysis recalculated') );
-				store.load({params:{type: gridType }});
+				store.load({params:{type: gridType, limit: ps }});
 				myMask.hide();
 			}
 		);
@@ -480,11 +507,27 @@
 			window.open('<% $sqa_url %>/reglas', 'SCM_SQA');
 		}
 	};
+	
+	var checking_portal = {
+			text: _('Checking portal'),
+			icon:'/static/images/silk/link.png',
+			handler: function () {
+				window.open('<% $sqa_url %>', 'SCM_SQA');
+			}
+	};
+	
+	var scm_portal = {
+			text: _('SCM Portal'),
+			icon:'/static/images/silk/link.png',
+			handler: function () {
+				window.open('<% $scm_url %>', 'SCM_SQA');
+			}
+	};
 
 	var docs_menu = new Ext.Toolbar.Button({
 	    text: _('Documents'),
 	    icon: '/static/images/silk/help.png',
-	    menu: [user_manual, sqa_rules]
+	    menu: [user_manual, sqa_rules, checking_portal, scm_portal]
     });
 
 	//---------- Refreshments
@@ -492,13 +535,13 @@
         run: function() {
 				refresh_button_off();
 				try {
-					store.load({params:{type: gridType }});
+					store.load({params:{type: gridType, limit: ps }});
 				} catch(e) { }
 		},
         interval: 30000
     };
     var autorefresh = new Ext.util.TaskRunner();
-	var refresh_set = function( item ) {
+	var refresh_set = function( item, checked  ) {
 		if( checked && item.value>0 ) {
 			task.interval = item.value * 1000;
 			autorefresh.start(task); 
@@ -534,7 +577,7 @@
 //					status_combo,
 					{ xtype:'button', icon:'/static/images/silk/action_refresh.gif', text:_('Refresh'), handler:function()
 						{
-							store.load({ params: { query: search_field.getRawValue(), type: gridType } }); 
+							store.load({ params: { query: search_field.getRawValue(), type: gridType, limit: ps } }); 
 							gview.refresh();
 						}
 					},
@@ -635,11 +678,13 @@
 			{ header: _('Trend'), id: 'trend', width: 50, dataIndex: 'trend' , align: 'center', renderer: render_trend, hidden: false, menuDisabled: false, tooltip: _("Trend respect to the previous analysis") },
 			{ header: _('Namespace'), id: 'ns', width: 80, dataIndex: 'ns', hidden: true }
 		],     
-		tbar: tbar 
+		tbar: tbar,
+		bbar: paging
 	});
 	
 	
 	grid.on("rowclick", function(grid, rowIndex, e ) {
+		
 		var r = grid.getStore().getAt(rowIndex);
 
 		var actions = r.data.actions;
@@ -648,8 +693,7 @@
 
 		hide_all_buttons();
 		
-		Baseliner.ajaxEval( '/sqa/get_row_permissions', 
-			{ project_id: r.data.id_project, type: gridType }, 
+		Baseliner.ajaxEval( '/sqa/get_row_permissions', { project_id: r.data.id_project, type: gridType }, 
 			function(response) {
 				if ( response.success ) {
 					//Baseliner.message( _('HELLO'), _('The value is %1', response.permissions.edit_config ) );
@@ -838,7 +882,7 @@
         								global_block_deployment_ante = chk_block_deployment_ante.checked?'Y':'N';
         								global_block_deployment_prod = chk_block_deployment_prod.checked?'Y':'N';
         							}
-        							store.load({params:{type: gridType }});
+        							store.load({params:{type: gridType, limit: ps }});
         							win.close(); 
         						},
         						failure: function(form, action) { 
@@ -1017,7 +1061,7 @@
                     handler: function(){
                         var bl = bl_combo.getValue();
                         var project = project_combo.getRawValue();
-                        var subapp = nature_combo.getValue();
+                        var subapp = subproject_combo.getValue();
                         var nature = nature_combo.getRawValue();
                         subapp = subapp.replace('(' + nature + ')','');
 
@@ -1096,7 +1140,10 @@
 					alert(_("There are no projects for that application"));
 				}
 				else if( cnt == 1 ) {
-					request_analysis();
+					var miProject;
+					store_projects.each( function(record) { miProject=record.data.project; });
+					//alert(miProject);
+					request_analysis( miProject );
 				}
 				else {
 					var rel_combo = new Ext.form.ComboBox({
@@ -1309,7 +1356,7 @@
 			gridType = 'CFGSNA';
 			
 		}
-		store.load({params:{start:0 , type: gridType }});
+		store.load({params:{start:0 , type: gridType, limit: ps }});
 		//alert(gridType);
     });
 
@@ -1322,8 +1369,8 @@
         }
     });
 	// After page load
-	var ps = 10000; //page_size
-	store.load({params:{start:0 , type: gridType },callback: function(){
+
+	store.load({params:{start:0 , type: gridType, limit: ps },callback: function(){
 		myMask.hide();
 	} }); 
     

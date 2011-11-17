@@ -5,7 +5,8 @@
     root: 'data',
     remoteSort: true,
     totalProperty: 'totalCount',
-    url: 'form/netprojects/combo_proyectos',
+    //url: 'form/netprojects/combo_proyectos',
+    url: '/form/netprojects/combo_proyectos',
     fields: [
       {
         name: 'show'
@@ -72,13 +73,13 @@
   });
   button_agregar = new Ext.Button({
     text: 'Agregar',
-    icon: 'static/images/icons/add.png'
+    icon: '/static/images/icons/add.png'
   });
   button_delete_handler = function() {
     alert('click');
     alert('hola');
     conn.request({
-      url: 'form/netprojects/delete_row',
+      url: '/form/netprojects/delete_row',
       method: 'POST',
       params: {
         env: delete_env,
@@ -92,7 +93,7 @@
   button_delete = new Ext.Button({
     text: 'Borrar',
     handler: button_delete_handler,
-    icon: 'static/images/icons/delete.png'
+    icon: '/static/images/icons/delete.png'
   });
   toolbar = new Ext.Toolbar({
     autoWidth: true,
@@ -157,11 +158,20 @@
   });
   grid_net_store.load();
   combo_tipo_dist_store.load();
-  combo_proyectos_store.load({
-    params: {
-      fid: "<% $fid %>"
-    }
+  combo_proyectos_store.load();
+  combo_proyectos_store.on('load', function() {
+    combo_proyectos.setValue(this.getAt(0).get('show'));
+    return;
   });
+//  loadProjects = function() {
+//    alert("estoy dentro de la funcion loadProjects"); // XXX
+//    combo_proyectos_store.load({
+//      params: {
+//        fid: "<% $fid %>"
+//      }
+//    });
+//  };
+//  loadProjects();
   return form;
 }).call(this);
 

@@ -99,7 +99,7 @@ sub list {
     $where->{'envisactive'} = 'Y';
 
     if( $rfc ) {
-        $where->{packagename} = { -like => "%$rfc%" };
+        $where->{packagename} = { -like => "\%$rfc%" };
     }
 
     _log _dump $where;
@@ -132,21 +132,25 @@ sub list {
 
         my $inc_id = BaselinerX::CA::Harvest::DB->package_inc_id(id => $item->{ns_id}) || 0;
         $item->{inc_id} = $inc_id if $inc_id;
-        # _log("item => " . Data::Dumper::Dumper $item);
 
         $item->{moreInfo} .= "<b>Código de Incidencia: </b>" 
                           .  $item->{inc_id} 
                           .  "<br>" if exists $item->{inc_id};
-        $item->{moreInfo} .= "<b>Subaplicaciones:&nbsp;</b>" 
-                          .  join('&nbsp;', @{$item->ns_data->{subapps}}) 
-                          .  '<br>' if exists $item->ns_data->{subapps} && scalar @{$item->ns_data->{subapps}};
- 
-        $item->ns_data->{statename} eq 'Pruebas'
-          ? do { push @ns, $item 
-                   # TODO: Get the env somehow to filter Pruebas.
-                   # if substr($item->ns_data->{packagename}, 4, 1) eq 'R' 
-               }
-          : do { push @ns, $item };
+
+        my $subapps_text = join('&nbsp;', @{$item->ns_data->{subapps}}) 
+                         . '<br>' if exists $item->ns_data->{subapps} 
+                                  && scalar @{$item->ns_data->{subapps}};
+
+        $item->{moreInfo} .= "<b>Subaplicaciones:&nbsp;</b>$subapps_text" if $subapps_text;
+
+        $item->{subapps} = "Subaplicaciones:&nbsp;$subapps_text" || q{};
+
+        if (($item->ns_data->{statename} eq 'Pruebas') && ($bl eq 'PROD')) {
+          push @ns, $item if substr($item->ns_data->{packagename}, 4, 1) eq 'R';
+        }
+        else {
+          push @ns, $item;
+        }
         $repo->set( ns=>$item->{ns}, provider=>$domain, data=>$item->{ns_data} ); #TODO bulk set this outside
     }
     my $cnt = scalar @ns;

@@ -12,7 +12,7 @@
     root: 'data',
     remoteSort: true,
     totalProperty: 'totalCount',
-    url: 'form/reportingservices/combo_recursos_data',
+    url: '/form/reportingservices/combo_recursos_data',
     fields: [
       {
         name: 'item'
@@ -25,7 +25,7 @@
     root: 'data',
     remoteSort: true,
     totalProperty: 'totalCount',
-    url: 'form/reportingservices/grid_data',
+    url: '/form/reportingservices/grid_data',
     fields: [
       {
         name: 'env'
@@ -62,7 +62,7 @@
     var insert_fullname;
     insert_fullname = textfield_carpeta_destino.getValue();
     conn.request({
-      url: 'form/reportingservices/add_row',
+      url: '/form/reportingservices/add_row',
       method: 'POST',
       params: {
         item: insert_item,
@@ -78,12 +78,12 @@
   };
   boton_agregar = new Ext.Button({
     text: 'Agregar',
-    icon: 'static/images/icons/add.png',
+    icon: '/static/images/icons/add.png',
     handler: boton_agregar_handler
   });
   boton_delete_handler = function() {
     conn.request({
-      url: 'form/reportingservices/delete_row',
+      url: '/form/reportingservices/delete_row',
       method: 'POST',
       params: {
         env: delete_env,
@@ -99,7 +99,7 @@
   };
   boton_delete = new Ext.Button({
     text: 'Borrar',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: boton_delete_handler
   });
   column_aplicacion = new Ext.grid.Column({

@@ -69,6 +69,7 @@ sub add_row : Local {
   my $cam = $p->{cam};
   $p->{vig_cam}  = $cam;
   $p->{vig_user} = $c->username;
+  delete $p->{cam};
   $c->model('Form::Vignette')->add_row($p);
   return;
 }
@@ -77,6 +78,7 @@ sub delete_row : Local {
   my ($self, $c) = @_;
   my $p   = $c->request->parameters;
   my $cam = $p->{cam};
+  delete $p->{cam};
   $c->model('Form::Vignette')->delete_row($cam, $p);
   return;
 }

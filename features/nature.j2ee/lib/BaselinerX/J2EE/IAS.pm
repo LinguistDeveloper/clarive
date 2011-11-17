@@ -34,7 +34,7 @@ sub ias_batch_build {
   foreach my $vid (keys %{$elements || {}}) {
     my $e = $elements->{$vid};
     if ($e->{ElementPath} =~ m/_BATCH\//i) {
-      my $sa = $e->{subapl};
+      my $sa = $1 if $e->{subapl} =~ /(\w+)_BATCH/;
       $subapl{$sa} = $e->{project};
 
       # Guardo estos datos en el 'stash', para luego...
@@ -92,6 +92,8 @@ sub ias_batch_build {
       $log->info("No se ha podido detectar la estructura IAS-Batch para la subaplicación $sa (no output)");
       next;
     }
+
+    _log "llamo a buildme";
 
     #logdebug "IAS-BATCH salida esperada para $sa: ", join ',', map { $_->{file} } @OUTPUT;
     $log->debug("IAS-BATCH salida esperada para $sa: ", YAML::Dump(\@OUTPUT));
@@ -295,7 +297,7 @@ sub buildme {
                "ant $param $buildxml");
 
     $executeString = qq[cd "$STA{buildhome}" ; $pathChange ant $param -buildfile $buildxml 2>&1];
-    $log->debug("cmd: $executeString");
+    _log "\ncmd: $executeString\nhost: $STA{maq}";
 
     ($RC, $RET) = $balix->executeas($STA{user}, $executeString);
     if ($RC ne 0) {
@@ -540,10 +542,13 @@ sub copy_publico {
   my %p      = @_;
   my $pubver = $p{pubver};
   $p{pubname} ||= config_get('config.bde')->{pubname};
-  $p{home}        or die "Missing parameter home";
-  $p{buildhome}   or die "Missing parameter buildhome";
-  ref $p{folders} or die "Missing parameter folders";
-  my $subapl = $p{subapl} or die "Missing parameter subapl";
+  _log "pubname: $p{pubname}";
+  $p{home}        or _throw "Missing parameter home";
+  _log "home: $p{home}";
+  $p{buildhome}   or _throw "Missing parameter buildhome";
+  _log "buildhome: $p{buildhome}";
+  ref $p{folders} or _throw "Missing parameter folders";
+  my $subapl = $p{subapl} or _throw "Missing parameter subapl";
   $log->warn("No hay versión de elementos publicos disponible", return)
     unless $pubver;
 
@@ -554,7 +559,7 @@ sub copy_publico {
 
   for my $dir (@{$p{folders}}) {
     ($RC, $RET) = $p{harax}->executeas($p{user},
-      qq{for i in $p{buildhome}/${subapl}*$dir ; do cp -Rf $p{pubhome}/$dir/. \\\$i ; if [ \\\$? != 0 ] ; then exit 99 ; fi ; echo "Copiado $p{pubhome}/$dir/. a \\\$i "; done}
+      qq#for i in $p{buildhome}/${subapl}*$dir ; do cp -Rf $p{pubhome}/$dir/. \\\$i ; if [ \\\$? != 0 ] ; then exit 99 ; fi ; echo "Copiado $p{pubhome}/$dir/. a \\\$i "; done#
     );    ##'"
     $RCALL += $RC;
     $RETALL .= $RET . "\n";    ##'"
@@ -586,9 +591,9 @@ sub ias_version_publico {
 
   # Busca ias.jar: El sort asegura que las subapl más cortas vengan primero
   # que las largas, para evitar que se lea el ias.jar de otra subapl
-  my $cmd = qq{find "$buildhome" -name "$jarfile" | sort -f -A | grep "/$subapl"};
+  my $cmd = qq{find "$buildhome" -name "$jarfile" | sort -f | grep "/$subapl"};
   $log->debug("cmd: $cmd");
-  my @RET = `cmd`; 
+  my @RET = `$cmd`; 
 
   # Con "/$subapl\\(_*EAR\\)" también filtra, pero es más restrictivo; si hace
   # falta se utilizará.
@@ -603,14 +608,15 @@ sub ias_version_publico {
 
   for my $iasjar (@RET) {
     chomp $iasjar;
-    my ($VERXML) =
-      `jar tf "$iasjar" 2>/dev/null | grep VERSION-RUNTIME | grep xml`;
+    my $cmd = qq{ jar tf "$iasjar" 2>/dev/null | grep VERSION-RUNTIME | grep xml };
+    _log "cmd: $cmd";
+    my ($VERXML) = `$cmd`;
     chomp $VERXML;
+    _log ">> $VERXML";
     if ($VERXML) {
       $log->debug("IAS: inspeccionando '$iasjar':", `jar xvf "$iasjar" '$VERXML' 2>/dev/null`);
       open FXML, "<$VERXML"
         or die "Error al abrir fichero de versión de IAS: $VERXML";
-
       while (<FXML>) {
         if (/<version>(.*)<\/version>/) {
           $iasversion = $1;    # bingo!

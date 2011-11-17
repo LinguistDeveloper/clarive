@@ -53,34 +53,30 @@ sub _balix { # :host :port & :os :timeout -> Object
   BaselinerX::Comm::Balix->new(%p);
 }
 
-### balix : Str Str -> Object
-sub balix {
+sub balix { # Str Str -> Object
   my ($host, $os) = @_;
   _balix(host => $host, port => get_port($host, $os));
 }
 
-### balix_win : Str -> Object
-sub balix_win {
+sub balix_win { # Str -> Object
   my $host = shift;
   balix($host, 'win');
 }
   
-### balix_unix : Str -> Object
-sub balix_unix {
+sub balix_unix { # Str -> Object
   my $host = shift;
   balix($host, 'unix');
 }
 
-### key_from_port : Str -> Str
-sub key_from_port {
+sub key_from_port { # Str -> Str
   my $port = shift;
   my $key = Baseliner->model('ConfigStore')->get('config.harax')->{$port};
   $key;
 }
 
-### get_port : Str Str -> Int
-sub get_port {
+sub get_port { # Str Str -> Int
   my ($host, $os) = @_;
+  _log "Getting port for host: '$host' in os: '$os'";
   return 49164 if $os eq 'win';    # TODO
   my $table = $os eq 'win'  ? 'Inf::InfServerWin'
             : $os eq 'unix' ? 'Inf::InfServerUnix'
@@ -91,11 +87,11 @@ sub get_port {
   rs_hashref($rs);
   _throw "ERROR: No data for $host in $table" unless scalar $rs->all;
   my $port = $rs->next->{harax_port};
+  _log "port: $port";
   $port;
 }
 
-### kill_duplicates : ArrayRef[Str] -> Defined|ArrayRef[Str]
-sub kill_duplicates {
+sub kill_duplicates { # ArrayRef[Str] -> Defined|ArrayRef[Str]
   # [peanut butter jelly with peanut flavour]
   # => (peanut butter jelly with flavour)
   my $list = shift;
@@ -106,14 +102,12 @@ sub kill_duplicates {
   wantarray ? @data : \@data;
 }
 
-### windir : Undef -> Str|Array
-sub windir {
+sub windir { # Undef -> Str|Array
   return (LIST   { map   { $_ =~ s/\//\\/g; $_ } @_ }
           SCALAR { first { $_ =~ s/\//\\/g; $_ } @_ });
 }
 
-### filter_elements : HashRef[Str] -> Defined|ArrayRef[HashRef]
-sub filter_elements {
+sub filter_elements { # HashRef[Str] -> Defined|ArrayRef[HashRef]
   my %p = @_;
   my @ls = grep(_pathxs($_->{fullpath}, 2) eq $p{suffix}, 
                 @{$p{elements}});

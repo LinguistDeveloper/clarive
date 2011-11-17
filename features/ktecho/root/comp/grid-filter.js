@@ -37,7 +37,7 @@
   };
   button_show_active = new Ext.Button({
     text: 'Show active',
-    icon: 'static/images/icons/arrow_redo.png',
+    icon: '/static/images/icons/arrow_redo.png',
     handler: function() {
       show_all = 0;
       load_grid_store();
@@ -46,7 +46,7 @@
   });
   button_show_all = new Ext.Button({
     text: 'Show all',
-    icon: 'static/images/icons/arrow_redo.png',
+    icon: '/static/images/icons/arrow_redo.png',
     handler: function() {
       show_all = 1;
       load_grid_store();
@@ -55,7 +55,7 @@
   });
   button_delete = new Ext.Button({
     text: 'Delete',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: function() {
       return ajax.request({
         url: '/chain/delete_row',
@@ -68,12 +68,12 @@
   });
   button_view = new Ext.Button({
     text: 'View',
-    icon: 'static/images/values.png',
+    icon: '/static/images/values.png',
     handler: view_dsl
   });
   button_refresh = new Ext.Button({
     text: 'Refresh',
-    icon: 'static/images/icons/arrow_refresh.png',
+    icon: '/static/images/icons/arrow_refresh.png',
     handler: load_grid_store
   });
   toolbar_filter = new Ext.Toolbar({

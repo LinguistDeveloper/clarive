@@ -27,3 +27,58 @@ msgstr "Forzar refresco LinkList"
 msgid "Changeman Force DB2 Refresh"
 msgstr "Forzar refresco DB2"
 
+msgid "Execution for changeman package %1 correctly submitted"
+msgstr "Aprobación del paquete Changeman %1 solicitada correctamente"
+
+msgid "Can't execute changeman package %1"
+msgstr "Se ha producido un error durante la solicitud de la aprobación del paquete Changeman %1"
+
+msgid "Linklist refresh correctly submitted"
+msgstr "Refresco de LinkList solicitado correctamente"
+
+msgid "Can't execute Linklist refresh"
+msgstr "Se ha producido un error durante la solicitud del refresco de la LinkList"
+
+msgid "Recovered output for job %1 in PDS %2"
+msgstr "Recuperada salida del job %1 en el particionado %2"
+
+msgid "Changeman job for package %1 in site %2 finished successfully"
+msgstr "Instalación del paquete Changeman %1 en el site %2 finalizó correctamente"
+
+msgid "Changeman job for package %1 in site %2 finished with error"
+msgstr "Se ha producido un error durante la instalación del paquete Changeman %1 en el site %2"
+
+msgid "Changeman job for package %1 finished successfully"
+msgstr "Instalación del paquete Changeman %1 finalizó correctamente"
+
+msgid "Error during execution of changeman package %1"
+msgstr "Se ha producido un error durante la ejecución del paquete Changeman %1"
+
+msgid "With the next options:"
+msgstr "El pase se ha creado con las siguientes opciones:"
+
+msgid "chm_rf_ll"
+msgstr "Forzar refresco de Linklist"
+
+msgid "chm_rf_db2"
+msgstr "Hay componentes con DB2"
+
+msgid "Waiting for JES spool outputs"
+msgstr "Esperando salidas en la cola JES"
+
+msgid "Job %1 needs to restart the LinkList"
+msgstr "Job %1 necesita refrescar la LinkList"
+
+msgid "Needs to restart the LinkList"
+msgstr "Necesita refrescar la LinkList"
+
+msgid "Jobname %1 with the package(s):"
+msgstr "El job %1 que contiene el(los) paquete(s):"
+
+msgid "Notify when job needs to refresh the linklist"
+msgstr "Notificar cuando un job necesite refrescar la linklist"
+
+
+
+
+

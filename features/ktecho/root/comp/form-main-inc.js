@@ -26,7 +26,7 @@
     dataIndex: 'inc_estado'
   });
   column_activa = new Ext.grid.Column({
-    header: 'Activa?',
+    header: '¿Activa?',
     width: column_width,
     sortable: true,
     dataIndex: 'inc_activa'

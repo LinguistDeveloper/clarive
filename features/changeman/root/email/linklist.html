@@ -1,0 +1,43 @@
+<%args>
+	$subject 
+	$requested_by
+	$realname => ''
+	$requested_to => []
+	$reason => '(vacio)'
+	$jobname 
+	$items => [] 
+</%args>
+<%init>
+    use Baseliner::Utils;
+</%init>
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+	<& /email/style.css &>
+</head>
+
+<body>
+    <div class='box'>
+        <div class="error">
+            <h2>SCM: <% $subject %></h2>
+        </div>
+    </div>
+    <div class='box'>
+        <div class="trace error">
+            <li><b><% _loc("Requested by") %>: </b> <% $requested_by %> (<% $realname %>)
+            <li><b><% _loc("Requested to") %>: </b>
+				<ul>
+					<li><% join '<li>', @{ $requested_to } %>
+				</ul>
+        </div>
+        <div class="trace error">
+            <% _loc("Jobname %1 with the package(s):", $jobname) %>
+            <ul>
+                <li><% join '<li>', @{ $items } %>
+            </ul>
+            <% $reason %>
+        </div>
+    </div>
+</body>
+

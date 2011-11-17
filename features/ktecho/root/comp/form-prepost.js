@@ -42,7 +42,7 @@
   function delete_row(text) {
     btn_entorno = text;
     conn.request({
-      url: 'form/prepost/delete_row',
+      url: '/form/prepost/delete_row',
       method: 'POST',
       params: {
         p_entorno: btn_entorno,
@@ -453,25 +453,25 @@
   var button_delete_test = new Ext.Button({
     text: 'Borrar',
     handler: delete_handler_test,
-    icon: 'static/images/icons/delete.png'
+    icon: '/static/images/icons/delete.png'
   });
 
   var button_delete_ante = new Ext.Button({
     text: 'Borrar',
     handler: delete_handler_ante,
-    icon: 'static/images/icons/delete.png'
+    icon: '/static/images/icons/delete.png'
   });
 
   var button_delete_prod = new Ext.Button({
     text: 'Borrar',
     handler: delete_handler_prod,
-    icon: 'static/images/icons/delete.png'
+    icon: '/static/images/icons/delete.png'
   });
 
   var button_agregar = new Ext.Button({
     text: 'Agregar',
     handler: handler_add,
-    icon: 'static/images/icons/add.png'
+    icon: '/static/images/icons/add.png'
   });
 
   // Toolbar de test

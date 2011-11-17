@@ -353,7 +353,7 @@
   });
   button_delete = new Ext.Button({
     text: 'Borrar',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: function() {
       return ajax_sist.request({
         url: '/form/sistemas/delete_row',

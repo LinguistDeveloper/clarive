@@ -21,81 +21,77 @@ sub main {
   my $log      = $job->logger;
   my $tar_list = $job->job_stash->{tar_list};
 
+  my @data;    # The AoH to be inserted into the job stash.
+
   for my $ref (@{$tar_list}) {
     next if $ref->{os} =~ /win/;    # Permissions in Windows do not apply here
+
+    my %files_for_host;
 
     my $balix = balix_unix $ref->{host};
     my $from  = $ref->{path_from};
     my $to    = $ref->{path_to};
-    my @lines = @{$self->_read_file("${from}/new_elements")};
+    my @relative_paths = map { chomp($_); $_ } @{$self->_read_file("$from/new_elements")};
+    my @absolute_paths = map { my $d = "$to/$_"; $d =~ s/\/\//\//g; $d } @relative_paths;
 
-    my @paths = unique map { $_ =~ m/(.+)\// } @lines;
-
-    my @data;    # The AoH to be inserted into the job stash.
-
-    # Create the folders that will be distributed so the permissions apply.
-    for my $path (@paths) {
-      $path = "${to}/${path}";
-      # $path =~ s/\/\//\//g;
-      my $command = "mkdir -p $path";
-      $log->debug($command);
-      my ($rc, $ret) = $balix->executeas($ref->{user}, $command);
-      if ($rc) {
-        $log->debug("cmd output: $ret");
-        my $err_msg = "Error during $command";
-        $log->error($err_msg);
-        _throw($err_msg);
-      }
+    # Build the hash dir_file, where the key is the directory and its values
+    # are the files contained in an ArrayRef.
+    my %dir_file;
+    for my $path (@absolute_paths) {
+      $path =~ m/(.+)\/(.+)/g;
+      push @{$dir_file{$1}}, $2;
     }
-    my @black_list = map { $_ =~ m/$to\/(.+)/ } @paths;
 
-    for my $dir (@black_list) {
-      if ($dir =~ m/\S/xi) {  # Don't do this for whitespace...
-        my $command = "ls -la ${to}/${dir}";
-        $log->debug("exec: $command");
+    # For every directory contained in the hash (which is unique), let's
+    # create it on host so the permissions are applied.
+    $balix->executeas($ref->{user}, "mkdir -p $_") for keys %dir_file;
 
-        my ($rc, $ret) = $balix->executeas($ref->{user}, $command);
+    # Now, iterate every directory and check whether it has this sticky bit
+    # thingy...
+    for my $dir (keys %dir_file) {
+      my $cmd = qq|ls -la $dir|;
+      my ($rc, $ret) = $balix->executeas($ref->{user}, $cmd);
 
-        #_throw("Something went wrong: $ret") if $rc;
-        my @result = split('\n', $ret);
+      # Build a list out of the result.
+      my @list = split('\n', $ret);
 
-        for my $line (@result) {
-          my ($permissions, $element) = 
-            $line =~ m{
-                       (.+?)     # Capture first element
-                       \s.+\s    # Ignore everything in between
-                       (.+)      # Capture last element
-                      }x;
-          # If it doesn't have 's' byte and is the father '.' ...
-          if ($permissions !~ /'s'/ and $element eq '.') { 
-            # my $cmd = "find $dir -type f";
-            my $cmd = "find $to$dir -type f";
-            $log->debug("exec: $cmd");
-            ($rc, $ret) = q{};
-            ($rc, $ret) = $balix->executeas($ref->{user}, $cmd);
+      my $href;
+      for my $element (@list) {
+        # Pick the permissions and the element name (either a directory or a
+        # file).
+        my ($permissions, $element) = 
+          $element =~ m{
+                        (.+?)     # Capture first element
+                        \s.+\s    # Ignore everything in between
+                        (.+)      # Capture last element
+                       }x;
 
-            my @files = split('\n', $ret);
- 
-            my $href;
-            for my $file (@files) {            # For every file
-              if ($file =~ m/$dir\/(.+)/i) {   # | check if is being distributed
-                unless ($1 =~ m/\//) {         # | and is not in a subfolder
-                  $href->{user}  = $ref->{user};
-                  $href->{group} = $ref->{group};
-                  $href->{host}  = $ref->{host};
-                  $href->{mask}  = $ref->{mask};
-                  push @{$href->{files}}, "${to}${dir}/${1}";
-                }
-              }
-            }
-            push @data, $href;
+        # Check if the element is root '.' (the only one that matters) and
+        # whether it has sticky bit...
+        if ($element eq '.') {  # Less expensive than using &&.
+          unless ($permissions =~ m/s|t/i) {  # It can be [s, S, t, T].
+
+            # This means this directory doesn't have the sticky bit, therefore
+            # we shall change its permissions.
+            push @{$files_for_host{$dir}}, @{$dir_file{$dir}};
           }
         }
       }
     }
-    $log->debug('@data => ' . Dumper \@data);    # XXX
-    $job->job_stash->{permission_files} = \@data;
+
+    # At the end of all this, if we have some files whose attributes are to be
+    # changed, this means we can push onto the array of hashes (with as many
+    # hashes as hosts) that the service for applying permissions will use.
+    if (scalar keys %files_for_host) {
+      push @data, {user  => $ref->{user},
+                   group => $ref->{group},
+                   host  => $ref->{host},
+                   mask  => $ref->{mask},
+                   files => \%files_for_host};
+    }
   }
+  $job->job_stash->{permission_files} = \@data;
+
   return;
 }
 
@@ -108,3 +104,43 @@ sub _read_file {
 }
 
 1;
+
+__DATA__
+
+=head2 Ejemplo de Output
+
+  $VAR1 = [
+            {
+              'group' => 'gtsct',
+              'files' => {
+                           '/tmp/prueba' => [
+                                              'RESTORE_UNIX_9.txt',
+                                              'RESTORE_UNIX_8.txt',
+                                              'RESTORE_UNIX_7.txt',
+                                              'RESTORE_UNIX_6.txt',
+                                              'RESTORE_UNIX_5.txt'
+                                            ]
+                         },
+              'user' => 'vtsct',
+              'mask' => '755',
+              'host' => 'PRUSVC61'
+            },
+            {
+              'group' => 'gtsct',
+              'files' => {
+                           '/home/grpt/sct/pruebaSINherencia' => [
+                                                                   'RESTORE_UNIX_9.txt',
+                                                                   'RESTORE_UNIX_8.txt',
+                                                                   'RESTORE_UNIX_7.txt',
+                                                                   'RESTORE_UNIX_6.txt',
+                                                                   'RESTORE_UNIX_5.txt'
+                                                                 ]
+                         },
+              'user' => 'vtsct',
+              'mask' => '755',
+              'host' => 'PRUSVC61'
+            }
+          ];
+
+=cut
+

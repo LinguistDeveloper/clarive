@@ -366,7 +366,8 @@ sub user_projects_with_action {
     my $username = $p{username};
     my $action   = $p{action};
     my $bl       = $p{bl}||'*';
-	my $bl_filter=qq{ AND bl in ('$bl','*') } if $bl ne '*';
+	my $bl_filter= '';
+	$bl_filter = qq{ AND bl in ('$bl','*') } if $bl ne '*';
     my @granted_projects = [];
     
     if ($self->is_root($username)) {
@@ -374,20 +375,34 @@ sub user_projects_with_action {
 	} else {
 		my $db = new Baseliner::Core::DBI( { model => 'Baseliner' } );
 		my @data = $db->array( qq{ 
-				select distinct replace(NS, 'project/','')
-				from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra
-				WHERE   r.ID = ru.ID_ROLE AND
+				select distinct p.id
+				from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra, BALI_PROJECT p
+				WHERE  r.ID = ru.ID_ROLE AND
 	        	r.ID = ra.ID_ROLE AND 
                 username = ? AND
-                action = ?
+                action = ? AND
+                 ( 
+                       ( ru.NS like 'project/%' AND p.id = to_number( replace( ru.NS, 'project/','' ) ) )
+                       OR
+                       ( ru.NS = '/' )
+                    ) AND 
+                p.id_parent IS NULL 
 				$bl_filter
 	        	ORDER BY 1
             }, $username, $action
         );
 		if ( @data && $data[0] eq '/') {
+			# XXX does not apply anymore in any case
 			@granted_projects = $self->all_projects();
 		} else {
-			@granted_projects = @data;
+			sub parent_ids {
+				my $rs = shift;
+				rs_hashref( $rs );
+				map { $_->{id} }$rs->all;				
+			};
+			my @subapls = parent_ids( scalar Baseliner->model('Baseliner::BaliProject')->search({ id_parent=>\@data, nature=>{ '=', undef } }, { select=>[qw/id/] }) );
+			my @natures = parent_ids( scalar Baseliner->model('Baseliner::BaliProject')->search({ id_parent=>\@subapls, nature=>{ '!=', undef } }, { select=>[qw/id/] }) );
+			@granted_projects = _unique @data, @subapls, @natures;
 		}
 	}
 	return wantarray?@granted_projects:\@granted_projects;
@@ -552,7 +567,7 @@ sub list {
 		
         push @list,
 			# map { $p{action} ? $_->{username} : $_->{action} }
-            map { $p{action} ? ( $role->{mailbox} ? $role->{mailbox} : $_->{username} ) : $_->{action} }
+            map { $p{action} ? ( $role->{mailbox} ? split ",",$role->{mailbox} : $_->{username} ) : $_->{action} }
             
             ####
             #Comentado por Ricardo 2011/11/03 ... no hace falta quitar los ns.  Ya están filtrados en la query
@@ -563,7 +578,6 @@ sub list {
             _array( $data );
     }
 
-	_log "He salido";
     # recurse $self->list on parents
     if( $p{recurse} && $ns ne 'any' ) {
         my $item = Baseliner->model('Namespaces')->get( $ns );

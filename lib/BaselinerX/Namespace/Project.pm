@@ -27,6 +27,14 @@ sub BUILDARGS {
 
 sub checkout { }
 
+sub parents {
+	my ($self) = @_;
+	my $dad = $self->{ns_data}->{id_parent} ;
+	return unless defined $dad;
+	#return ns_get( 'project/' . $dad );
+	return 'project/' . $dad;
+}
+
 =head1 DESCRIPTION
 
 A project object.

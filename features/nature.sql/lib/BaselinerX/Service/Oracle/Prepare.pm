@@ -4,10 +4,10 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use BaselinerX::Dist::Utils;
-use BaselinerX::Ktecho::CamUtils;
 use Data::Dumper;
 use Moose;
 use Try::Tiny;
+use utf8;
 
 has 'suffix',  is => 'ro', isa => 'Str', default => 'ORACLE';
 has 'release', is => 'rw', isa => 'Str', default => q{};

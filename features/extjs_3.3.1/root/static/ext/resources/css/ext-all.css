@@ -901,7 +901,10 @@ textarea.x-form-field {
 }
 
 .ext-ie6 .x-form-text, .ext-ie7 .x-form-text {
-    margin:-1px 0; /* ie bogus margin bug */
+    margin: -1px 0;  /* ie bogus margin bug */
+    /*margin:-1px 0 0 3px;
+    margin-left: 3px;
+    margin-right: -2px; */
     height:22px; /* ie quirks */
     line-height:18px;
 }

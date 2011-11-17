@@ -71,6 +71,14 @@ __PACKAGE__->table("bali_log_data");
   is_nullable: 1
   size: 38
 
+=head2 id_log
+
+  data_type: NUMBER
+  default_value: undef
+  is_foreign_key: 1
+  is_nullable: 0
+  size: 38
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -119,7 +127,21 @@ __PACKAGE__->add_columns(
     size => 255,
   },
   "len",
-  { data_type => "NUMBER", default_value => undef, is_nullable => 1, size => 38 },
+  { 
+    data_type => "NUMBER", 
+    default_value => undef, 
+    is_nullable => 1, 
+    size => 38 
+  },
+  "id_job",
+  {
+    data_type => "NUMBER",
+    default_value => undef,
+    is_foreign_key => 1,
+    is_nullable => 1,
+    size => 38,
+  },
+  
 );
 __PACKAGE__->set_primary_key("id");
 
@@ -137,6 +159,20 @@ __PACKAGE__->belongs_to(
   "id_log",
   "Baseliner::Schema::Baseliner::Result::BaliLog",
   { id => "id_log" },
+);
+
+=head2 id_job
+
+Type: belongs_to
+
+Related object: L<Baseliner::Schema::Baseliner::Result::BaliJob>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "id_job",
+  "Baseliner::Schema::Baseliner::Result::BaliJob",
+  { id => "id_job" },
 );
 
 

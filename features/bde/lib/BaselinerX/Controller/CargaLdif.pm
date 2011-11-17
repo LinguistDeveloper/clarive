@@ -10,34 +10,42 @@ use Net::FTP;
 use Try::Tiny;
 use utf8;
 BEGIN { extends 'Catalyst::Controller' }
-
-register 'menu.admin.updateusers_a' => {
-  label => 'Update users',
-  url   => 'cargaldif/run_service',
-  title => 'Update users',
-  icon  => 'static/images/scm/icons/approve_16.png'
+ 
+register 'menu.admin.cargaldif' => {
+  label  => 'Update users and roles',
+  url    => 'cargaldif/init',
+  title  => 'Update users and roles',
+  icon   => 'static/images/scm/icons/approve_16.png',
+  action => 'action.admin.root'
 };
 
-register 'menu.admin.updateusers_b' => {
-  label => 'Update users (without cargaldif)',
-  url   => 'cargaldif/run_service_noldif',
-  title => 'Update users (without cargaldif)',
-  icon  => 'static/images/scm/icons/approve_16.png'
-};
+# register 'menu.admin.updateusers_a' => {
+#   label => 'Update users',
+#   url   => 'cargaldif/run_service',
+#   title => 'Update users',
+#   icon  => 'static/images/scm/icons/approve_16.png'
+# };
 
-# A shortcut for running the service.
-sub run_service : Local { # Undef -> Undef
-  my ($self, $c) = @_;
-  $c->launch('service.update.users.now');
-  return;
-}
+# register 'menu.admin.updateusers_b' => {
+#   label => 'Update users (without cargaldif)',
+#   url   => 'cargaldif/run_service_noldif',
+#   title => 'Update users (without cargaldif)',
+#   icon  => 'static/images/scm/icons/approve_16.png'
+# };
 
-# And this run the service without the ldif.
-sub run_service_noldif : Local { # Undef -> Undef
-  my ($self, $c) = @_;
-  $c->launch('service.update.users.now.noldif');
-  return;
-}
+# # A shortcut for running the service.
+# sub run_service : Local { # Undef -> Undef
+#   my ($self, $c) = @_;
+#   $c->launch('service.update.users.now');
+#   return;
+# }
+
+# # And this run the service without the ldif.
+# sub run_service_noldif : Local { # Undef -> Undef
+#   my ($self, $c) = @_;
+#   $c->launch('service.update.users.now.noldif');
+#   return;
+# }
 
 sub init : Path {
   my ($self, $c) = @_;
@@ -61,7 +69,6 @@ sub init : Path {
   my $harvest_user = $config_harvest->{user};
   _log "harvest_user: $harvest_user";
 
-# my $harvest_password = $config_harvest->{harpwd};
   my $harvest_password = q{};
   
   my %initial_users = $c->model('CargaLdif')->all_users();
@@ -137,7 +144,8 @@ sub init : Path {
       my $wingrp = uc $1;
       my $usu    = $2;
       for my $grp (keys %grp_inf_rpt) {
-        my $wgrp = @{$grp_inf_rpt{$grp}}[0];
+        # my $wgrp = @{$grp_inf_rpt{$grp}}[0];
+        my $wgrp = $grp_inf_rpt{$grp};
         if ($wgrp eq $wingrp) {
           $group{$grp} = $grp;
           push @{$user_group{$usu}},  "$grp";
@@ -147,10 +155,19 @@ sub init : Path {
     }
   }
   _log(BaselinerX::Comm::Balix->ahora() . " Finished file parsing.");
+
+  # Update Baseliner.
+  $c->launch('service.baseliner.update.ldif',
+             data => {group => \%group, user_groups => \%user_group});
+
+  # ldif_updates_harvest is a config variable that controls whether we also
+  # want to update harvest when loading ldif files.
+  return unless _bde_conf 'ldif_updates_harvest';
+
   _log(BaselinerX::Comm::Balix->ahora() . " Creating groups...");
 
   for my $grp (keys %group) {
-    my $cnt = $c->model('CargaLdif')->group_count($grp);  # Do not memoize!
+    my $cnt = $c->model('CargaLdif')->group_count($grp);
     if ($cnt == 0) {
       _log(BaselinerX::Comm::Balix->ahora() . " New group: $grp"); 
       my $group_id = $c->model('CargaLdif')->group_id();
@@ -202,12 +219,12 @@ sub init : Path {
   $c->model('CargaLdif')->add_users_to_group2();
 
   if (-s $fusr) {
-    _log(BaselinerX::Comm::Balix->ahora() . " husrmgr of users for file: $fusr");
-	my $cmd = "husrmgr -b $broker $harvest_user $harvest_password -dlm '\|' -o ${udp_home}/husrmgr.log $fusr";
-	_log "cmd: $cmd";
-	my @RET = `$cmd`;
+    _log( BaselinerX::Comm::Balix->ahora() . " husrmgr of users for file: $fusr" );
+    my $cmd = "husrmgr -b $broker $harvest_user $harvest_password -dlm '\|' -o ${udp_home}/husrmgr.log $fusr";
+    _log "cmd: $cmd";
+    my @RET = `$cmd`;
     if ($? ne 0) {
-	  # TODO
+      # TODO
       # my $ret = $c->model('CargaLdif')->capture_log("${udp_home}/husrmgr.log");
       # _log(BaselinerX::Comm::Balix->ahora() . " New user load: $ret");
     }

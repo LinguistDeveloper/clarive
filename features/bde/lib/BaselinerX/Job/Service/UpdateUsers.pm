@@ -4,6 +4,7 @@ use warnings;
 use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use BaselinerX::BdeUtils;
 use Class::Date qw/date now/;
 use Data::Dumper;
 use Try::Tiny;
@@ -27,7 +28,7 @@ sub run {
   my $self = shift;
   while (1) {
     my $date = now;
-    $self->init(1) if $date->hour == 2;    # Launch between 2 and 3 AM.
+    $self->init(1) if $date->hour == _bde_conf('update_user_hour');
     sleep 3600;
   }
 }

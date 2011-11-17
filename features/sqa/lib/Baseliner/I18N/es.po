@@ -369,10 +369,16 @@ msgid "User manual"
 msgstr "Manual de usuario"
 
 msgid "Documents"
-msgstr "Documentos"
+msgstr "Enlaces"
 
 msgid "Checking rules"
 msgstr "Reglas de ChecKing"
+
+msgid "Checking portal"
+msgstr "Portal de ChecKing"
+
+msgid "SCM portal"
+msgstr "Portal de SCM"
 
 msgid "Daily SQA summary"
 msgstr "Resumen diario análisis calidad técnica sqa"

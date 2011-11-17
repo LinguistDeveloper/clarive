@@ -4,12 +4,15 @@ use warnings;
 use 5.010;
 use Baseliner::Utils;
 use Moose;
+use Try::Tiny;
+use utf8;
 
 # Either ID or USERNAME must be provided.
-has 'id',       is => 'ro', isa => 'Int', lazy_build => 1;
-has 'harid',    is => 'ro', isa => 'Str', lazy_build => 1;
-has 'username', is => 'ro', isa => 'Str', lazy_build => 1;
-has 'realname', is => 'ro', isa => 'Str', lazy_build => 1;
+has 'id',           is => 'ro', isa => 'Int', lazy_build => 1;
+has 'harid',        is => 'ro', isa => 'Str', lazy_build => 1;
+has 'username',     is => 'ro', isa => 'Str', lazy_build => 1;
+has 'realname',     is => 'ro', isa => 'Str', lazy_build => 1;
+has 'har_realname', is => 'ro', isa => 'Str', lazy_build => 1;
 
 sub table { 'Baseliner::BaliUser' }
 
@@ -23,7 +26,14 @@ sub _get {
 sub _build_id {
   my $self = shift;
   my $rs = $self->_get({username => $self->username}, {select => 'id'});
-  $rs->next->{id};
+  try {
+    my $id = $rs->next->{id};
+    return $id;
+  }
+  catch {
+    $self->insert;
+    $self->id;  # Call the builder again.
+  };
 }
 
 sub _build_realname {
@@ -76,5 +86,56 @@ sub hargroups {
   my @groups = $har_db->db->array($query);
   wantarray ? @groups : \@groups;
 }
+
+sub _build_har_realname {
+  my $self     = shift;
+  my $username = $self->username;
+  my $query    = qq{
+    SELECT realname
+      FROM haruser
+     WHERE username = '$username'
+  };
+  my $har_db = BaselinerX::CA::Harvest::DB->new;
+  $har_db->db->value($query) || uc($username) . " - JOHN DOE";
+}
+
+sub insert {
+  my $self  = shift;
+  my $model = Baseliner->model('Baseliner::BaliUser');
+  $model->create({username => $self->username,
+                  password => '~',
+                  realname => $self->har_realname});
+}
+
+sub desc_roles {
+  my $self = shift;
+
+  my $rs = Baseliner->model('Baseliner::BaliRoleUser')
+             ->search({username => $self->username});
+  rs_hashref($rs);
+  my @data = $rs->all;
+
+  for my $href (@data) {
+    my $project_id = $1 if $href->{ns} =~ /\/(.+)/;
+    my $project = BaselinerX::Model::BaliProject->new(id => $project_id);
+
+    next unless $project->is_first_level();
+
+    $rs = Baseliner->model('Baseliner::BaliRole')
+            ->search({id     => $href->{id_role}}, 
+                     {select => [qw/role description/]});
+    rs_hashref($rs);
+    my $roleref = $rs->next;
+    my $role    = $roleref->{role};
+    my $desc    = $roleref->{description};
+
+    my $str = $self->username . " is $role";
+    $str .= " ($desc)" if $desc;
+    $str .= " in " . $project->name . ".";
+    say $str;
+  }
+
+  return;
+} 
 
 1;

@@ -22,11 +22,80 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use MVS::USS;
+use Encode;
 
 has 'host' => ( is=>'rw', isa=>'Str', required=>1 );
-has 'port' => ( is=>'rw', isa=>'Str', required=>1, default=>623 );
-has 'user' => ( is=>'rw', isa=>'Str', required=>1 );
-has 'password' => ( is=>'rw', isa=>'Str|CodeRef' );
+has 'port' => ( is=>'rw', isa=>'Str', required=>1, default=>58765 );
+has 'key' => ( is=>'rw', isa=>'Str|CodeRef', default=>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
+
+
+=head2 list_pkgs ( filter=>Str, job_type=> p|m, to_env=> 'PROD|PREP...', projects=>Array )
+
+Get a package using a USS REXX routine.
+
+=cut
+sub get_pkg {
+	my ($self, %args) = @_;
+    my $host = $self->host; #'prue';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
+    my $timeout;
+    my $prompt;
+
+    _log _dump %args;
+    
+    # critical section
+    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
+    #$sem->release;
+
+    my $filter = $args{filter} || '*';
+    # my $job_type = $args{job_type} || 'p';
+    # my $to = $args{to_env} eq 'ANTE'?'PREP':$args{to_env};
+
+    my $cmd = '/u/aps/chm/llpackage' . ' ' . $filter;
+
+    _log 'get_pkg' . $cmd;
+    
+    my $flag=0;
+    my ($RC,$RET)=$bx->execute( $cmd );
+
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+
+    my $out = join '', grep { 
+		$flag = 1 if !$flag && /^\</; 
+		$flag;
+		} map { s{\n}{}g; $_ } $RET;
+}
+
+=head2 xml_getPkg
+
+Wrapper for list_pkgs to return the generated xml 
+as a Hash with the following structure:
+
+   Name: "Changeman service name"
+   PackList: 
+     Package: 
+        - pkg1
+        - pkg2 
+        - ...
+   ReasonCode: 00
+   ReturnCode: 00
+   Xmlserv: {}
+
+=cut
+sub xml_getPkg {
+    my ($self, %args) = @_;
+    my $xml_str = $self->get_pkg( %args );
+    # _log $xml_str;
+    require XML::Simple;
+    my $xml = XML::Simple::XMLin( $xml_str, ForceArray => [qw(Package)] );
+
+    # _log "list_pkgs: " . _dump $xml;
+
+    $xml
+}
 
 =head2 list_pkgs ( filter=>Str, job_type=> p|m, to_env=> 'PROD|PREP...', projects=>Array )
 
@@ -36,20 +105,16 @@ List packages using a USS REXX routine.
 sub list_pkgs {
 	my ($self, %args) = @_;
     my $host = $self->host; #'prue';
-    my $user = $self->user; #'vpchm';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
     my $timeout;
     my $prompt;
-    my $port = $self->port; #24;
 
-    _log _dump %args;
+    # _log _dump %args;
     
     # critical section
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $pw = ref($self->password) eq 'CODE'
-        ? $self->password->()
-        : $self->password;
-
-    my $uss = MVS::USS->new( host=>$host, port=>$port||623, user=>$user, password=>$pw, Timeout => $timeout || 60, Prompt  => $prompt || '/\$/' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
 
     # *,p|m,PREP|FORM|PROD,CAM1 CAM2
@@ -64,10 +129,15 @@ sub list_pkgs {
     _log  "list_pkgs: " . $cmd;
     
     my $flag=0;
+    my ($RC,$RET)=$bx->execute( $cmd );
+
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+
     my $out = join '', grep { 
 		$flag = 1 if !$flag && /^\</; 
 		$flag;
-		} map { s{\n}{}g; $_ } $uss->cmd( $cmd );
+		} map { s{\n}{}g; $_ } $RET;
 }
 
 =head2 xml_pkgs
@@ -89,10 +159,11 @@ as a Hash with the following structure:
 sub xml_pkgs {
     my ($self, %args) = @_;
     my $xml_str = $self->list_pkgs( %args );
+    # _log $xml_str;
     require XML::Simple;
     my $xml = XML::Simple::XMLin( $xml_str, ForceArray => [qw(Package)] );
 
-    _log "list_pkgs: " . _dump $xml;
+    # _log "list_pkgs: " . _dump $xml;
 
     $xml
 }
@@ -105,26 +176,22 @@ Associates packages to SCM job
 sub addToJob {
     my ($self, %args) = @_;
     my $host = $self->host; #'prue';
-    my $user = $self->user; #'vpchm';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
     my $timeout;
     my $prompt;
-    my $port = $self->port; #24;
 
     my $job = Baseliner->model('Baseliner::BaliJob')->search({ name=>$args{job} })->first;
     
     # critical section
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $pw = ref($self->password) eq 'CODE'
-        ? $self->password->()
-        : $self->password;
-
-    my $uss = MVS::USS->new( host=>$host, port=>$port||623, user=>$user, password=>$pw, Timeout => $timeout || 60, Prompt  => $prompt || '/\$/' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
     
     # N.TEST-00000250,p|m,PREP|FORM|PROD,S|N, YYYYMMDDHHMISS, PACKAGE_1, PACKAGE_2,... PACKAGE_N
     my $pase = $job->name;
     my $date = $job->starttime->strftime("%Y%m%d%H%M%S");
-    my $job_type = $job->type eq 'promote'?'p':'d';
+    my $job_type = $job->type eq 'promote'?'p':'m';
     my $to = $job->bl eq 'ANTE'?'PREP':$job->bl;
     my $refresh='N';
     my $items=undef;
@@ -146,11 +213,16 @@ sub addToJob {
     
     _log "AddToJob: $cmd";
     
+    my ($RC,$RET)=$bx->execute( $cmd );
+   
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+    
     my $flag=0;
     my $out = join '', grep { 
 		$flag = 1 if !$flag && /^\</; 
 		$flag;
-		} map { s{\n}{}g; $_ } $uss->cmd( $cmd );
+		} map { s{\n}{}g; $_ } $RET;
 }
 
 =head2 xml_addToJob
@@ -170,7 +242,7 @@ sub xml_addToJob {
     require XML::Simple;
     my $xml = XML::Simple::XMLin( $xml_str );
 
-    _log "addToJob: " . _dump $xml;
+    # _log "addToJob: " . _dump $xml;
     
     $xml
 }
@@ -183,36 +255,36 @@ Removes association betwen job and packages
 sub cancelJob {
     my ($self, %args) = @_;
     my $host = $self->host; #'prue';
-    my $user = $self->user; #'vpchm';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
     my $timeout;
     my $prompt;
-    my $port = $self->port; #24;
 
     my $job = Baseliner->model('Baseliner::BaliJob')->search({ name=>$args{job} })->first;
     
     # critical section
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $pw = ref($self->password) eq 'CODE'
-        ? $self->password->()
-        : $self->password;
-
-    my $uss = MVS::USS->new( host=>$host, port=>$port||623, user=>$user, password=>$pw, Timeout => $timeout || 60, Prompt  => $prompt || '/\$/' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
     
     # N.TEST-00000250, PACKAGE_1, PACKAGE_2,... PACKAGE_N
     my $pase = $job->name;
-    my $job_type = $job->type eq 'promote'?'p':'d';
+    my $job_type = $job->type eq 'promote'?'p':'m';
     my $to = $job->bl eq 'ANTE'?'PREP':$job->bl;
 
-    my $cmd = '/u/aps/chm/ll05' . ' ' . join(',', $pase, $args{items} ) ;
+    my $cmd = '/u/aps/chm/ll05' . ' ' . join(',', $job_type, $to, $pase, $args{items} ) ;
 
     _log "cancelJob: $cmd";
-
+    
+    my ($RC,$RET)=$bx->execute( $cmd );
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+    
     my $flag=0;
     my $out = join '', grep { 
 		$flag = 1 if !$flag && /^\</; 
 		$flag;
-		} map { s{\n}{}g; $_ } $uss->cmd( $cmd );
+		} map { s{\n}{}g; $_ } $RET;
 }
 
 =head2 xml_addToJob
@@ -232,8 +304,122 @@ sub xml_cancelJob {
     require XML::Simple;
     my $xml = XML::Simple::XMLin( $xml_str );
 
-    _log "cancelJob: " . _dump $xml;
+    # _log "cancelJob: " . _dump $xml;
 
+    $xml
+}
+
+=head2 $chm->runPackageInJob(job=>$job_name, package=>$package, job_type=>$job_type, bl=>$job_bl) ;
+
+Execute a Changeman Package
+
+=cut
+sub runPackageInJob {
+    my ($self, %args) = @_;
+    my $host = $self->host; #'prue';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
+
+    # critical section
+    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
+    #$sem->release;
+    
+    # p|m, PREP|FORM|PROD, PACKAGE_1, N.TEST-00000250 
+    my $job_type = $args{job_type};
+    my $job = $args{job};
+    my $to = $args{bl};
+    my $package = $args{package};
+    
+    my $cmd = '/u/aps/chm/ll03' . ' ' . join(',', $job_type, $to, $package, $job ) ;
+    
+    _log "runPackageInJob: $cmd";
+    
+    my ($RC,$RET)=$bx->execute( $cmd );
+   
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+    
+    my $flag=0;
+    my $out = join '', grep { 
+		$flag = 1 if !$flag && /^\</; 
+		$flag;
+		} map { s{\n}{}g; $_ } $RET;
+}
+
+=head2 xml_runPackageInJob
+
+Wrapper for runPackageInJob to return the generated xml 
+as a Hash with the following structure:
+
+   Name: "Changeman service name"
+   ReasonCode: 00
+   ReturnCode: 00
+   Xmlserv: {}
+
+=cut
+sub xml_runPackageInJob {
+    my ($self, %args) = @_;
+    my $xml_str = $self->runPackageInJob( %args );
+    require XML::Simple;
+    my $xml = XML::Simple::XMLin( $xml_str );
+
+    # _log "runPackageInJob: " . _dump $xml;
+    
+    $xml
+}
+
+=head2 $chm->refreshLLA() ;
+
+Refresh LLA
+
+=cut
+sub refreshLLA {
+    my ($self, %args) = @_;
+    my $host = $self->host; #'prue';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
+
+    # critical section
+    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
+    #$sem->release;
+    
+    my $cmd = '/u/aps/chm/llreflla' ;
+    
+    _log "refreshLLA: $cmd";
+    
+    my ($RC,$RET)=$bx->execute( $cmd );
+   
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+    
+    my $flag=0;
+    my $out = join '', grep { 
+		$flag = 1 if !$flag && /^\</; 
+		$flag;
+		} map { s{\n}{}g; $_ } $RET;
+}
+
+=head2 xml_refreshLLA
+
+Wrapper for refreshLLA to return the generated xml 
+as a Hash with the following structure:
+
+   Name: "Changeman service name"
+   ReasonCode: 00
+   ReturnCode: 00
+   Xmlserv: {}
+
+=cut
+sub xml_refreshLLA {
+    my ($self, %args) = @_;
+    my $xml_str = $self->refreshLLA( %args );
+    require XML::Simple;
+    my $xml = XML::Simple::XMLin( $xml_str );
+
+    # _log "refreshLLA: " . _dump $xml;
+    
     $xml
 }
 
@@ -246,29 +432,26 @@ Recover Changeman cache
 sub cache {
     my ($self) = @_;
     my $host = $self->host; #'prue';
-    my $user = $self->user; #'vpchm';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
     my $timeout;
     my $prompt;
-    my $port = $self->port; #24;
 
     # critical section
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $pw = ref($self->password) eq 'CODE'
-        ? $self->password->()
-        : $self->password;
-
-    my $uss = MVS::USS->new( host=>$host, port=>$port||623, user=>$user, password=>$pw, Timeout => $timeout || 60, Prompt  => $prompt || '/\$/' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
     
     my $cmd = '/u/aps/chm/llcache' ;
-
-    _log "cache: $cmd";
-
+    my ($RC,$RET)=$bx->execute( $cmd );
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+    
     my $flag=0;
     my $out = join '', grep { 
 		$flag = 1 if !$flag && /^\</; 
 		$flag;
-		} map { s{\n}{}g; $_ } $uss->cmd( $cmd );
+		} map { s{\n}{}g; $_ } $RET;
 }
 
 =head2 xml_cache
@@ -285,12 +468,12 @@ as a Hash with the following structure:
 sub xml_cache {
     my ($self, %args) = @_;
     my $xml_str = $self->cache();
-    _log "cache: " . _dump $xml_str;
+    # _log "cache: " . _dump $xml_str;
     require XML::Simple;
     # my $xml = XML::Simple::XMLin( $xml_str );
     my $xml = XML::Simple::XMLin( $xml_str, ForceArray => [qw(Package MarchaAtras Promote content)] );
 
-    # _log "cache: " . _dump $xml;
+    # # _log "cache: " . _dump $xml;
 
     $xml
 }
@@ -303,31 +486,29 @@ Recover Changeman applications
 sub listApplications {
     my ($self) = @_;
     my $host = $self->host; #'prue';
-    my $user = $self->user; #'vpchm';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
     my $timeout;
     my $prompt;
-    my $port = $self->port; #24;
 
     # critical section
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $pw = ref($self->password) eq 'CODE'
-        ? $self->password->()
-        : $self->password;
-
-    my $uss = MVS::USS->new( host=>$host, port=>$port||623, user=>$user, password=>$pw, Timeout => $timeout || 60, Prompt  => $prompt || '/\$/' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
     
     my $cmd = '/u/aps/chm/llaplics' ;
 
-    _log "aplications: $cmd";
-
+    # _log "aplications: $cmd";
+    my ($RC,$RET)=$bx->execute( $cmd );
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+    
     my $flag=0;
     my $out = join '', grep { 
 		$flag = 1 if !$flag && /^\</; 
 		$flag;
-		} map { s{\n}{}g; $_ } $uss->cmd( $cmd );
+		} map { s{\n}{}g; $_ } $RET;
 }
-
 =head2 xml_applications
 
 Wrapper for cache to return the generated xml 
@@ -342,11 +523,11 @@ as a Hash with the following structure:
 sub xml_applications {
     my ($self, %args) = @_;
     my $xml_str = $self->listApplications();
-    _log "applications: " . _dump $xml_str;
+    # _log "applications: " . _dump $xml_str;
     require XML::Simple;
     my $xml = XML::Simple::XMLin( $xml_str );
 
-    _log "applications: " . _dump $xml;
+    # _log "applications: " . _dump $xml;
 
     $xml
 }

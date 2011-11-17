@@ -576,7 +576,7 @@ sub set_subapl {
 
 sub dist_entornos_write {
     my ($self, %dist) = @_;
-    my $sql = qq{
+    my $sql = qq!
       INSERT INTO distentornos
                   (cam, entorno, environmentname,
                    ciclo, vista_co, nivel
@@ -584,8 +584,35 @@ sub dist_entornos_write {
            VALUES ('$dist{cam}', '$dist{entorno}', '$dist{envname}',
                    '$dist{ciclo}', '$dist{vista_co}', '$dist{nivel}'
                   )        
-    };
+    !;
     $self->db->do($sql);
+    return;
+}
+
+sub get_package_groups {
+    my ($self, $package_name) = @_;
+    my $sql = qq{
+      SELECT TRIM (pkggrpname)
+        FROM harpackage p, harpkgsinpkggrp pp, harpackagegroup g
+       WHERE p.packageobjid = pp.packageobjid
+         AND pp.pkggrpobjid = g.pkggrpobjid
+         AND TRIM (p.packagename) = TRIM ('$package_name')
+    };
+    $self->db->array($sql);
+}
+
+sub set_nature {
+    my ($self, $pass, $nature) = @_;
+    $nature = substr($nature, 0, 4);
+    my $query = qq{
+      UPDATE distpase
+         SET pas_naturaleza = TRIM (pas_naturaleza) || ' ' || '$nature'
+       WHERE TRIM (pas_codigo) = '$pass'
+         AND (   INSTR (pas_naturaleza, '$nature') IS NULL
+              OR INSTR (pas_naturaleza, '$nature') = 0
+             )
+    };
+    $self->db->do($query);
     return;
 }
 

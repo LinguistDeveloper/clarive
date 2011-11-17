@@ -85,7 +85,7 @@ sub resume {
     my $id = $p{id} or _throw 'Missing job id';
     my $job = bali_rs('Job')->find( $id );
     my $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$id, same_exec=>1 );
-    $runner->logger->warn( _loc('Job resumed by user %1', $p{username} ) );
+    $runner->logger->warn( _loc('Job resumed by user %1', $p{username} ) ) if $p{username};
     $job->status('READY');
     $job->update;
 }
@@ -260,6 +260,9 @@ sub _create {
         # approval request executed by runner service
         $job->stash_key( approval_needed => $p{approval} );
     }
+    if ( exists $p{options} ) {
+        $job->stash_key( job_options => _array $p{options} );
+        }
     $job->status( 'READY' );
     $job->update;
     return $job;

@@ -108,6 +108,8 @@ sub main {
   my @subapls;
 
   my %projects  = _projects_from_elements(\%data, $env_name);
+  
+  _log "\nprojects => " . Data::Dumper::Dumper \%projects;
 
   $log->debug("Inicio de verificación de subapls j2ee en '$build_home' para los proyectos: " . join ', ', keys %projects);
 
@@ -128,8 +130,10 @@ sub main {
   if ($is_checkeable) {
     $log->debug("SUBAPL_CHECK = (" . $self->subapl_check . "): Se verificará si las subaplicaciones del pase están definidas en el formulario de inf. de la aplicación '$env_name'");
     %inf_subapl = map { $_ => 1 } (sub { my $cam = shift; my $inf = BaselinerX::Model::InfUtil->new(cam => $cam); ($inf->get_inf_sub_apl('J2EE'), $inf->get_inf_sub_apl('IASBATCH')) })->($env_name);
-    $log->debug("inf_subapl: " . Dumper \%inf_subapl);  # XXX
-    $log->debug("Subaplicaciones definidas en el formulario de infraestructura para '$env_name' ", YAML::Dump(\%inf_subapl));
+    
+    _log "\ninf_subapl:" . Data::Dumper::Dumper \%inf_subapl;
+    
+    $log->debug("Subaplicaciones definidas en el formulario de infraestructura para '$env_name': " . (join ', ', keys %inf_subapl));
     for my $ref (@subapl_j2ee_java) {
       if ($ref && $inf_subapl{$ref}) {
         $log->debug("Subaplicación $ref definida en el formulario de infraestructura.");
@@ -144,14 +148,26 @@ sub main {
     $log->debug("Se incorporarán todas las subaplicaciones de este pase (variable SUBAPL_CHECK nula)");
     @subapls = @subapl_j2ee_java;
     $harvest_db->set_subapl($pass, $_) foreach @subapls;
+    
+    _log "\n\nparams antes de comprobaci�n IAS: " . Data::Dumper::Dumper \%params;
 
     # Is it defined as IAS?
+    my $inf = BaselinerX::Model::InfUtil->new(cam => $env_name);
     for my $ref (@subapls) {
-      do { $params{ias} = 1; last } if (sub { BaselinerX::Model::InfUtil->new(cam => shift)->inf_es_IAS })->($env_name);
+      if ($inf->inf_es_IAS($env_name, $ref)) {
+      	$params{IAS} = 1;
+      	last;
+      }
     }
+    
+    _log "\n\nparams despu�s de comprobaci�n IAS: " . Data::Dumper::Dumper \%params;
 
     # Batch?
     $params{IAS} ||= grep /_BATCH$/, keys %projects;
+    
+    _log "\n\nparams tras hacer grep: " . Data::Dumper::Dumper \%params;
+    _log "\n\ndump de projects: " . Data::Dumper::Dumper \%projects;
+    
     $log->info("Atributos especiales de aplicación: " . join(', ', keys %params)) if keys %params;
   }
 
@@ -183,18 +199,24 @@ sub main {
   }
 
   # Files
-  my %inclusions = hardistXML("IN-EX", $path, $env, $env_name, $self->suffix);
+  _log "\nLlamando a hardistXML ...\n";
+  my %inclusions = hardistXML($log, "IN-EX", $path, $env, $env_name, $self->suffix);
+  _log "\n\ninclusions: " . Data::Dumper::Dumper \%inclusions;
   my $precompilacion = 'N';
 
   # footprintElements already done!
   # renameElements already done!
 
-  if (exists $params{IAS}) {
-    my $IAS_dir_pass = "'$path/$env_name/" . $self->suffix . "/???*_SCM";
+  if ($params{IAS}) {
+    my $IAS_dir_pass = "'$path/$env_name/" . $self->suffix . "'/???*_SCM";
     $log->debug("Directorio pase IAS => $IAS_dir_pass");
     my $IAS_dir_dest = "$path/$env_name/$env/" . $self->suffix . "/.";
     $log->debug("Directorio destino IAS => $IAS_dir_dest");
-    if ((my @iaspase = `ls $IAS_dir_pass 2>/dev/null`) > 0) {
+    my $cmd = "ls $IAS_dir_pass 2>/dev/null";
+    _log "\ncmd: $cmd\n";
+    if ((my @iaspase = `$cmd`) > 0) {
+      my $cmd_ret = "cp -Rf $IAS_dir_pass/" . "$IAS_dir_dest" . " 2>&1";
+      _log "\ncmd: $cmd_ret\n";
       my @RET = `cp -Rf $IAS_dir_pass/. "$IAS_dir_dest" 2>&1`;
       if ($? ne 0) {
         $log->warn("IAS: no ha sido posible copiar los ficheros del directorio '$IAS_dir_pass' a '$IAS_dir_dest'", join('', @RET));
@@ -205,6 +227,7 @@ sub main {
       $log->warn("IAS: directorio de pase no existe o está vacío '$IAS_dir_pass'. Copia ignorada");
     }
 
+    # TODO
     # PONGO EL SEMAFORO PARA QUE NO HAYA DISTRIBUCION PLUGIN ECLIPSE
     #  semUp($Pase, "$Entorno-ECLIPSE");  NO
     ## GENERAR proyecto de pase - parte de eclipseDist.pm

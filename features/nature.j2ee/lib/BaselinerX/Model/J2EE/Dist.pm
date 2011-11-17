@@ -7,7 +7,6 @@ use Baseliner::Sugar;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use BaselinerX::Dist::Utils;
-use BaselinerX::Ktecho::CamUtils;
 use Data::Dumper;
 use Try::Tiny;
 use utf8;
@@ -130,8 +129,12 @@ sub webBuild {
   # haya.
   # hash de build.xml que corresponden a las subapls de este pase...
   my %buildfilesSUBAPL = ();
-  my @buildfound       = `find "$PaseDir/$CAM/$Sufijo" -name "build.xml"`;
+  my $cmd = qq| find "$PaseDir/$CAM/$Sufijo" -name "build.xml |;
+  _log "\nInvestigando si hay build.xml ...\ncmd: $cmd\n"; 
+  my @buildfound = `$cmd`;
   @buildfound = unique @buildfound;
+  
+  _log "\n\nbuilfound:" . Data::Dumper::Dumper \@buildfound;
 
   # El build.xml tiene que estar entre las subapl de los proyectos:
   foreach my $proy (@PROYECTOS) {
@@ -139,7 +142,7 @@ sub webBuild {
     foreach (@buildfound) {
       if (/$PaseDir\/$CAM\/$Sufijo\/${subapl}_*[A-Z]+/) {
         if (!exists $buildfilesSUBAPL{$_}) {
-          $log->info("Se utilizará el build.xml definido por el usuario (subaplicación '$subapl'): $_");
+          $log->info("Se utilizar� el build.xml definido por el usuario (subaplicación '$subapl'): $_");
           $buildfilesSUBAPL{$_} = 1;
         }
       }
@@ -150,6 +153,7 @@ sub webBuild {
   }
 
   if ((keys %buildfilesSUBAPL) > 0) {
+  	_log "\nBuild proporcionado por el usuario.\n";
     $buildtype = "B";    # Build proporcionado por el usuario.
 
     foreach (keys %buildfilesSUBAPL) {
@@ -172,9 +176,12 @@ sub webBuild {
     }
     foreach my $prj (keys %BUILDFILES) {    # Separado para que se envíe a staging todo de golpe
       my $subapl = $self->_subapl($prj);  # Check if this is okay!
+      _log "\nsubapl: $subapl\n";
       foreach my $buildhome (@{$BUILDFILES{$prj}}) {
         $self->antBuild(\%Dist, "$buildhome/build.xml", "", $subapl, "clean build package", $buildtype);
-        if (!$PARAMS{PUB}) {                # En las publicas no trabajo con ficheros .ear
+        
+        # En las publicas no trabajo con ficheros .ear
+        if (!$PARAMS{PUB}) {
           my @EARANTPRJ = ();
           if ($Dist{earant}) {
 
@@ -207,6 +214,7 @@ sub webBuild {
     }
   }
   else {    # build.xml generado por Baseliner
+    _log "\nTENGO QUE GENERAR EL BUILD.XML!\n";
     my $Workspace;
     try {
       $Workspace = BaselinerX::Eclipse::J2EE->parse(workspace => $Dist{buildhome});
@@ -215,18 +223,29 @@ sub webBuild {
       my $Workerr = shift();
       $log->error("Fallo al intentar parsear en los METADATOS. ", $Workerr);
       _throw "Error durante el parse del build.xml de J2EE.";
-    }
+    };
+    
+    _log "\nDatos parseados.\n";
+    
     my %SUBAPL;
     my @ANT              = ();
+    
     my @related_projects = $Workspace->getRelatedProjects(@PROYECTOS);
 
+	_log "\nLlamo a cutToSubset para " . join ', ', @related_projects;
     $Workspace->cutToSubset(@related_projects);
 
+	_log "\nObteniendo EARS, WARS y EJBS...\n";
     my @EARS = $Workspace->getEarProjects();
     my @WARS = $Workspace->getWebProjects();
     my @EJBS = $Workspace->getEjbProjects();
+    
+    _log "\nLlamando a nivelDist...\n";
     my $nivel = $self->nivelDist(\%Dist, \%Elements, $Workspace, \@EARS, \@WARS,
                                  \@EJBS, @PROYECTOS);
+
+    _log "\nnivel: $nivel\n";
+    _log "\neraObligatorio: " . $self->earObligatorio($Entorno) . "\n";
 
     $log->info(  "Nivel de despliegue detectado: $nivel" 
                . ($nivel ne 'EAR' && $self->earObligatorio($Entorno) 
@@ -253,8 +272,7 @@ sub webBuild {
         my $earprj     = $SUBAPL{$subapl};
         my @SUBAPL_PRJ = $Workspace->getChildren($earprj);
 
-        $log->info(  "Subaplicacion $subapl, Proyecto Ear=$earprj, Proyectos incluidos en el Ear= "
-                   . join ', ', sort @SUBAPL_PRJ);
+        $log->info("Subaplicacion $subapl, Proyecto Ear=$earprj, Proyectos incluidos en el Ear= " .  (join ', ', sort @SUBAPL_PRJ));
 
         my $buildxml = $Workspace->getBuildXML(
           mode             => 'ear',
@@ -411,10 +429,8 @@ sub webBuild {
         # BUILD.XML
         my $buildfileBaseliner = "build_$subapl.xml";
         $buildxml->save($Dist{buildhome} . "/" . $buildfileBaseliner);
-        $log->info(  "Fichero build.xml para la subaplicacion $subapl y los proyectos: "
-                   . (join ', ', @EJBS), $buildxml->data);
-        $log->info(  "Ficheros que se generarán en la construcción: " 
-                   . join ', ', $Workspace->genfiles());
+        $log->info("Fichero build.xml para la subaplicacion $subapl y los proyectos: " . (join ', ', @EJBS), $buildxml->data);
+        $log->info("Ficheros que se generarán en la construcción: " . (join ', ', $Workspace->genfiles()));
 
         # BUILD
         my @OUTPUT = $Workspace->output();
@@ -476,9 +492,16 @@ sub nivelDist {
   my @EJBS      = @{$pEJBS} if $pEJBS;
 
   my $nivel = '';
-  $log->debug(  "Inicio reglas de nivel de despliegue para: " 
-              . join ', ', ('EARS=', @EARS, 'WARS=', @WARS, 'EJBS=', @EJBS));
-
+  
+  my $fn = sub { # Array -> Str
+    join ', ', @_;
+  };
+  my $ears_str = $fn->(@EARS);
+  my $wars_str = $fn->(@WARS);
+  my $ejbs_str = $fn->(@EJBS);
+    
+  $log->debug("Inicio reglas de nivel de despliegue para: EARS=$ears_str, WARS=$wars_str, EJBS=$ejbs_str");
+  
   # REGLAS por ciclo de vida
   my %control_env;
   my $bde_conf = $self->bde_conf;
@@ -520,47 +543,63 @@ sub nivelDist {
     if ($Workspace->isClass($_, 'EJB')) { $kEJB++; }
   }
   $log->debug("Resultado de la regla de número de módulos=$nivel (EAR=$kEAR, WAR=$kWAR, EJB=$kEJB)");
-
-  if ($nivel ne 'EAR') {
-    if ($kEJB == 1 && $kWAR == 0) { 
-      $nivel = 'EJB'; 
+  
+if ( $nivel ne 'EAR' ) {
+    if ( $kEJB == 1 && $kWAR == 0 ) {
+        $nivel = 'EJB';
     }
-    elsif ($kEJB == 0 && $kWAR == 1) {
-      $nivel = 'WAR'; 
+    elsif ( ( $kEJB == 0 ) && ( $kWAR == 1 ) ) {
+        $nivel = 'WAR';
     }
 
-    if (@EARS) {
-        ELEM: 
+    _log "\n\nnivel: $nivel\n\n";
+
+    if ( scalar @EARS ) {
+        _log "\nElements: " . Data::Dumper::Dumper \%Elements;
+
         # Preparo un listado de proyectos
-        foreach my $VersionId (keys %Elements) {    
-        my $ElementPath = @{$Elements{$VersionId}}[10];
-        # EAR - si hay cosas en META-INF, es EAR
-        foreach my $earprj (@EARS) {
+        ELEM:
+        foreach my $VersionId ( keys %Elements ) {
+        	
+        	my $ElementPath = $Elements{$VersionId}->{ElementPath};
+                       
+            _log "elpath: $ElementPath";
 
-          if ( $ElementPath =~ m{$earprj/META-INF/application.xml}
-            || $ElementPath =~ m{$earprj/META-INF/ibm})
-          {
-            $nivel = 'EAR';
-            last ELEM;
-          }
+            # EAR - si hay cosas en META-INF, es EAR
+            foreach my $earprj (@EARS) {
+
+                if (   $ElementPath =~ m{$earprj/META-INF/application.xml}
+                    || $ElementPath =~ m{$earprj/META-INF/ibm} )
+                {
+                    $nivel = 'EAR';
+                    _log "\nsalgo\n";
+                    last ELEM;
+                }
+            }
         }
-      }
     }
-  }
+}
 
   # PASES públicos con varios EJBs caen aquí y PASES de aplicaciones WEB
   # sin EAR caen aquí (sólo WARs y librerías)
   if ($nivel eq '') {
+  	_log "entro en cond1";
     do { $log->debug("RETURN 4"); return 'EJB' } if (@EJBS  && !@WARS);
     do { $log->debug("RETURN 5"); return 'WAR' } if (!@EJBS && @WARS);
     do { $log->debug("RETURN 6"); return 'EAR' } if (@EARS);    # Si hay EAR, hay EAR
   }
+  
+  _log "nivel: $nivel";
 
   # WAR - a lo mejor es sólo config...
   my %CONFWARS = ();
   if ($nivel eq 'WAR') {
-  ELEM: foreach my $VersionId (keys %Elements) {    # Preparo un listado de proyectos
-      my $ElementPath = @{$Elements{$VersionId}}[10];
+  	_log "\nentro en el otro bucle\n";
+  
+    ELEM: 
+    foreach my $VersionId (keys %Elements) {    # Preparo un listado de proyectos
+      my $ElementPath = $Elements{$VersionId}->{ElementPath};
+      # my $ElementPath = @{$Elements{$VersionId}}[10];
       foreach my $warprj (@WARS) {
         if ($ElementPath !~ m{$warprj/Config}) {
           # last ELEM; 
@@ -663,15 +702,15 @@ sub webDist {
       # La subapl es parte del nombre del TAR: subaplWEB.tar
       my $subapl = $self->_subapl($prj);                        
 
-      my $Red = $inf->get_inf_subred($Entorno, $subapl);
-
+      my $Red = $inf->get_inf_subred(substr($Entorno, 0, 1), $subapl);
+      
       my $destinoEstatico =
        $inf->get_inf({sub_apl => $subapl},
                      [{column_name => 'WAS_STATIC_CONTENT',
                        idred       => $Red,
                        ident       => $Entorno}]);
 
-      $log->debug("$inf->get_inf({sub_apl => '$subapl'}, [{column_name => 'WAS_STATIC_CONTENT', idred => '$Red', ident => '$Entorno'}])");  # XXX
+      $log->debug("\$inf->get_inf({sub_apl => '$subapl'}, [{column_name => 'WAS_STATIC_CONTENT', idred => '$Red', ident => '$Entorno'}])");  # XXX
 
       # TODO Falta por leer nuevo campo con el directorio de contenido estático "${Entorno}_${Red}_xxxxxxxx"
 
@@ -1547,7 +1586,6 @@ sub wasLogFiles {
           $log->info("Fichero de log (stderr) de was para '$CAM' ($dest_maq:$ultimo_stderr)", $RET);
         }
       }
-
     }
   }
 
@@ -2151,6 +2189,12 @@ sub getClasspathWAS {
                                  [{column_name => "WAS_SERVER_VERSION",
                                    ident       => substr($Entorno, 0, 1),
                                    idred       => $red}]);
+  _log qq{
+  	  my \$wasVersion = \$inf->get_inf({subapl => '$subapl'},
+                                 [{column_name => "WAS_SERVER_VERSION",
+                                   ident       => substr('$Entorno', 0, 1),
+                                   idred       => '$red'}]);
+  };
   $log->debug("\$wasVersion en getClasspathWAS => $wasVersion");
 
   my $resolver =

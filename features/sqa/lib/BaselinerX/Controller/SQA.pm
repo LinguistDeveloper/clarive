@@ -1,11 +1,11 @@
-#INFORMACIN DEL CONTROL DE VERSIONES
+#INFORMACIÓN DEL CONTROL DE VERSIONES
 #
-#	CAM .............................. SCM
-#	Pase ............................. N.PROD0000053438
-#	Fecha de pase .................... 2011/11/04 20:01:12
-#	Ubicacin del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
-#	Versin del elemento ............. 50
-#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
+#	CAM .............................. @(#)[project]
+#	Pase ............................. @(#)[pase]
+#	Fecha de pase .................... @(#)[pasefechahora]
+#	Ubicación del elemento ........... @(#)[item]
+#	Versión del elemento ............. @(#)[version]
+#	Propietario de la version ........ @(#)[user]
 
 package BaselinerX::Controller::SQA;
 use Baseliner::Plug;
@@ -62,6 +62,7 @@ sub grid : Local {
         
         $config = $c->model( 'ConfigStore' )->get( 'config.sqa' );
         $c->stash->{sqa_url} = $config->{url_checking};
+        $c->stash->{scm_url} = $config->{url_scm};
 
         $c->stash->{template} = '/comp/sqa/grid.js';
     } else {
@@ -84,14 +85,14 @@ sub grid_json : Local {
     my ( $self, $c ) = @_;
     my $p        = $c->request->parameters;
     my $username = $c->username;
-    my ( $start, $limit, $query, $dir, $sort, $query_status, $type, $groupBy, $groupDir ) =
-        ( '', '', '', '', '', '', '' );
+    my ( $start, $limit, $query, $dir, $sort, $query_status, $type, $groupBy, $groupDir, $cnt ) =
+        ( '', '', '', '', '', '', '', '' );
 
     # sent by ExtJS
     ( $start, $limit, $query, $dir, $sort, $query_status, $type, $groupBy, $groupDir ) =
         @{$p}{qw/start limit query dir sort query_status type groupBy groupDir/};
     $start ||= 0;
-    $limit ||= 10000;
+    $limit ||= 25;
 
     my $page = to_pages( start => $start, limit => $limit );
     my ( $post_sort, $post_sort_type ) = ( '', '' );
@@ -137,7 +138,12 @@ sub grid_json : Local {
 
     my $table = 'Baseliner::BaliSqa';
 
-    if ( $type && $type =~ /^CFG/ ) {
+	if ( $type && $type =~ /CFGNAT/ ) {
+        $table = 'Baseliner::BaliProjectNatureConfig';
+        $args = {page => $page, rows => $limit};
+        $args->{order_by} = $sort ? "$sort $dir" : 'project_name asc';
+        $groupBy eq 'project' and $groupBy = '';
+    } elsif ( $type && $type =~ /^CFG/ ) {
         $table = 'Baseliner::BaliProjectTree';
         $args = {page => $page, rows => $limit};
         $args->{order_by} = $sort ? "$sort $dir" : 'project_name asc';
@@ -183,6 +189,8 @@ sub grid_json : Local {
 
     my @data;
     my $rs = Baseliner->model( $table )->search( $where, $args );
+    my $pager = $rs->pager;
+    $cnt = $pager->total_entries;
     #_log _dump $rs->as_query;
     _log "************** ARGUMENTOS: " . _dump $args;
 
@@ -218,45 +226,6 @@ sub grid_json : Local {
 
             if ( $type eq 'CFGNAT' ) {
 
-                foreach ( @filters ) {
-                    $run_sqa_test          = '';
-                    $run_sqa_ante          = '';
-                    $run_sqa_prod          = '';
-                    $block_deployment_test = '';
-                    $block_deployment_ante = '';
-                    $block_deployment_prod = '';
-
-                    #_log "*************** FILTRO: ".$_;
-                    $ns     = "nature/$_/" . $row->id;
-                    $nature = $_;
-                    my $rs_config =
-                        Baseliner->model( 'Baseliner::BaliConfig' )
-                        ->search(
-                        {ns => $ns, key => [ 'config.sqa.run_sqa', 'config.sqa.block_deployment' ]}
-                        );
-
-                    while ( my $row_config = $rs_config->next ) {
-
-                        if ( $row_config->bl eq 'TEST' ) {
-                            if ( $row_config->key eq 'config.sqa.run_sqa' ) {
-                                $run_sqa_test = $row_config->value;
-                            } else {
-                                $block_deployment_test = $row_config->value;
-                            }
-                        } elsif ( $row_config->bl eq 'ANTE' ) {
-                            if ( $row_config->key eq 'config.sqa.run_sqa' ) {
-                                $run_sqa_ante = $row_config->value;
-                            } else {
-                                $block_deployment_ante = $row_config->value;
-                            }
-                        } elsif ( $row_config->bl eq 'PROD' ) {
-                            if ( $row_config->key eq 'config.sqa.run_sqa' ) {
-                                $run_sqa_prod = $row_config->value;
-                            } else {
-                                $block_deployment_prod = $row_config->value;
-                            }
-                        }
-                    }
 
                     #### OPTIMIZACI?N ACCESOS FIN
 
@@ -267,21 +236,20 @@ sub grid_json : Local {
 
                     push @data,
                         {
-                        id                    => $nature . "/" . $row->id,
+                        id                    => $row->nature . "/" . $row->id,
                         project               => $project_name,
-                        nature                => $nature,
+                        nature                => $row->nature,
                         type                  => $row_type,
                         subapp                => $subproject,
-                        run_sqa_test          => $run_sqa_test,
-                        run_sqa_ante          => $run_sqa_ante,
-                        run_sqa_prod          => $run_sqa_prod,
+                        run_sqa_test          => $row->run_sqa_test,
+                        run_sqa_ante          => $row->run_sqa_ante,
+                        run_sqa_prod          => $row->run_sqa_prod,
                         id_project            => $row->id,
-                        block_deployment_test => $block_deployment_test,
-                        block_deployment_ante => $block_deployment_ante,
-                        block_deployment_prod => $block_deployment_prod
+                        block_deployment_test => $row->block_deployment_test,
+                        block_deployment_ante => $row->block_deployment_ante,
+                        block_deployment_prod => $row->block_deployment_prod
                         };
-
-                }
+                    _log '********************** REGISTRO AÑADIDO';
             } else {
                 $ns = 'project/' . $row->id;
 
@@ -370,7 +338,7 @@ sub grid_json : Local {
                 my $packagesHTML = "";
 
                 if ( $clobdata->{PACKAGES} ) {
-                    @packages = @{$clobdata->{PACKAGES}};
+                    @packages = _array $clobdata->{PACKAGES};
 
                     foreach my $package ( @packages ) {
                         $packagesHTML .= "<li>$package</li>";
@@ -424,7 +392,7 @@ sub grid_json : Local {
                 } else {
 
                     #_log "Versi?n nueva";
-                    for my $linea ( @{$clobdata->{scores}} ) {
+                    for my $linea ( _array $clobdata->{scores} ) {
 
                         #$linea =~ s/\"| |\n|.$//g;
 
@@ -500,7 +468,7 @@ sub grid_json : Local {
 
     #_log _dump \@data;
     $c->stash->{json} = {
-        totalCount => scalar( @data ),
+        totalCount => $cnt,
         data       => \@data,
         gridType   => $type
     };
@@ -643,6 +611,17 @@ sub harvest_projects : Local {
     my $nature     = $p->{nature};
     my $query      = $p->{query};
     my $bl 		   = $p->{bl};
+    my $blcond	   = '';
+    
+    if ($bl eq 'DESA') {
+    	$blcond = " AND ( trim(v.VIEWNAME) = 'DESA' OR trim(v.VIEWNAME) = 'TEST' OR trim(v.VIEWNAME) = 'ANTE' OR trim(v.VIEWNAME) = 'PROD')"
+    } elsif ($bl eq 'TEST') {
+    	$blcond = " AND ( trim(v.VIEWNAME) = 'TEST' OR trim(v.VIEWNAME) = 'ANTE' OR trim(v.VIEWNAME) = 'PROD')"
+    } elsif ($bl eq 'ANTE') {
+    	$blcond = " AND ( trim(v.VIEWNAME) = 'ANTE' OR trim(v.VIEWNAME) = 'PROD')"
+    } elsif ($bl eq 'PROD') {
+    	$blcond = " AND ( trim(v.VIEWNAME) = 'PROD')"
+    }
 
 #my $db = new Baseliner::Core::DBI( { connection => ['dbi:Oracle:host=prusv059;sid=TISO;port=1521','wtscm1','wtscm1'] } );
     my $db = Baseliner::Core::DBI->new( {model => 'Harvest'} );
@@ -664,8 +643,8 @@ sub harvest_projects : Local {
 				   		 p.packageobjid = iv.packageobjid AND
 				   		 iv.itemobjid = i.itemobjid AND
 				   		 i.parentobjid = pf.itemobjid AND
-				   		 (pf.pathfullnameupper LIKE UPPER( '%\\$project\\$nature\\%' ) OR pf.pathfullnameupper LIKE UPPER( '%\\$project\\$nature' )) AND
-				   		 trim(v.VIEWNAME) = '$bl' 
+				   		 (pf.pathfullnameupper LIKE UPPER( '%\\$project\\$nature\\%' ) OR pf.pathfullnameupper LIKE UPPER( '%\\$project\\$nature' ))
+						 $blcond 
 				   		 $checkSubapp 
 				   GROUP BY e.envobjid, e.environmentname, e.envisactive, e.isarchive
 				   HAVING e.environmentname like '${project}\%' AND
@@ -855,7 +834,7 @@ sub request_subapp_projects : Local {
 
 				my $nature_work = $row->nature;
                 if ( grep /$nature_work/, @filters ) {
-	                _log "Solicitando anlisis de " . $row->name . "/" . $row->nature;
+	                _log "Solicitando análisis de " . $row->name . "/" . $row->nature;
 	                ( $return, $out ) = BaselinerX::Model::SQA->request_analysis(
 	                    bl         => $bl,
 	                    project    => $project,
@@ -863,14 +842,14 @@ sub request_subapp_projects : Local {
 	                    nature     => $row->nature,
 	                    user       => $user
 	                );
-	                _log "Anlisis de " . $row->name . "/" . $row->nature . " solicitado\n";
+	                _log "Análisis de " . $row->name . "/" . $row->nature . " solicitado\n";
 	                $cont++;
 				} else {
 					_log $row->name."/".$row->nature." ignorada.";
 				}
             }
 
-            _log "$cont anlisis solicitados";
+            _log "$cont análisis solicitados";
         } else {
             $err =
                 "The user doesn't have permission to request the analysis of a entire subproject";
@@ -916,7 +895,7 @@ sub request_cam_projects : Local {
                     try {
                     	my $nature_work = $row2->nature;
                     	if ( grep /$nature_work/, @filters ) {
-	                    	_log "Solicitando anlisis de " . $row2->name . "/" . $row2->nature;
+	                    	_log "Solicitando análisis de " . $row2->name . "/" . $row2->nature;
 		                    ( $return, $out ) = BaselinerX::Model::SQA->request_analysis(
 		                        bl         => $bl,
 		                        project    => $project,
@@ -924,18 +903,18 @@ sub request_cam_projects : Local {
 		                        nature     => $row2->nature,
 		                        user       => $user
 		                    );
-		                    _log "Anlisis de " . $row2->name . "/" . $row2->nature . " solicitado\n";
+		                    _log "Análisis de " . $row2->name . "/" . $row2->nature . " solicitado\n";
 	                    	$cont++;
                     	} else {
 							_log $row2->name."/".$row2->nature." ignorada.";
 						}
                     } catch {
-                    	_log "Error al solicitar el anlisis de " . $row2->name . "/" . $row2->nature;
+                    	_log "Error al solicitar el análisis de " . $row2->name . "/" . $row2->nature;
                     };
                 }
             }
 
-            _log "$cont anlisis solicitados";
+            _log "$cont análisis solicitados";
         } else {
             $err = _loc(
                 "The user doesn't have permission to request the analysis of a entire subproject" );

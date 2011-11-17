@@ -64,7 +64,7 @@ body {
 		<td class="backGroundPrimeraFila">P.Control</td>
 	</tr>
 % my $literalesControl = {OK=>'S&iacute; cumple', FAILURE=>'No cumple'};
-% my $literalesBl = {TEST=>'Pruebas', ANTE=>'Preproducci&oacute;n', PROD=>'Producci&oacute;n'};
+% my $literalesBl = { DESA=>'Desarrollo', TEST=>'Pruebas', ANTE=>'Preproducci&oacute;n', PROD=>'Producci&oacute;n'};
 % for my $fila ( @{ $filas } ) {
 	<tr class="backGroundFilaDatos">
 		<td class="backGroundFilaDatos"><% $literalesBl->{$fila->{bl}} %></td>
@@ -81,4 +81,11 @@ body {
 <p>
 <A HREF="<% $url %>/raw/sqa/grid" TARGET=_blank>Consulte el portal de calidad aqu&iacute;</A>.
 </p>
+
+<p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+Enviado a: <% join ",",@$to %>
+%}
+</p>
+
 </body>

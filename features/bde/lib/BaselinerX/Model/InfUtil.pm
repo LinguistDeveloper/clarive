@@ -240,6 +240,20 @@ sub solve_mv {
   wantarray ? @array : \@array;
 }
 
+sub solve_mv_single {
+  my ($self, $str) = @_;
+  if ($str =~ m/^\@\#(.+)/x) {
+    my $sql = qq{
+      SELECT mv_valor
+        FROM inf_data_mv
+       WHERE ID = $1
+    };
+    my @data = $self->db->array($sql);
+    return wantarray ? @data : \@data;
+  }
+  return;
+}
+
 # Gets:  Array  de hashes con el  column_name,  idred e idenv de  cada campo a
 # mostrar
 # Returns: Array con la condicion where
@@ -253,9 +267,26 @@ sub get_where_f2 {
     # Por defecto es 'General'...
     $ref->{idred} = 'G' unless $ref->{idred};
     $ref->{ident} = 'G' unless $ref->{ident};
+    
+    # Column names are always UC.
+    $ref->{column_name} = uc($ref->{column_name});
+
+    # Filter the NET just in case.
+    # $ref->{idred} = $ref->{idred} eq 'LN'
+    #                   ? 'I'
+    #                   : $ref->{idred} eq 'W3'
+    #                       ? 'W'
+    #                       : 'G';
+
+    # The environment should be a char.
+    $ref->{ident} = substr($ref->{ident}, 0, 1);
 
     my $string = $count != 0 ? "or " : q{};
-    $string .= "( column_name = '$ref->{column_name}' and ident = '$ref->{ident}' and idred = '$ref->{idred}' )";
+    $string .= qq((
+          column_name = '$ref->{column_name}' 
+      and ident       = '$ref->{ident}' 
+      and idred       = '$ref->{idred}' 
+    ));
     push @array, $string;
     $count++;
   }
@@ -284,6 +315,8 @@ sub get_inf {
   };
   $query .= " AND subaplicacion = '$sub_apl' " if $sub_apl;
   $query .= " ORDER BY 1 ";
+  
+  # _log "\nQuery:\n $query";
 
   my @array_inf_data = $self->db->array_hash($query);
   @array_inf_data = $self->solve_mv(@array_inf_data);
@@ -361,39 +394,50 @@ sub inf_report {
 
 sub inf_es_ {
   my ($self, $env_name, $string, $sub_apl) = @_;
-  my ($cam, $cam_uc) = get_cam_uc($env_name);
-  my @data = ({column_name => $string, idred => 'G', ident => 'G'});
-  $self->get_inf({cam => $cam, sub_apl => $sub_apl}, \@data);
+  my $cam = uc($env_name);
+  my $ret = $self->get_inf({cam => $cam, sub_apl => $sub_apl}, 
+                           [{column_name => $string}]);
+  $ret;
 }
 
 sub inf_es_publica {
   my ($self, $env_name) = @_;
   my $value = $self->inf_es_($env_name, 'SCM_APL_PUBLICA', q{});
-  $value ? 'Si' : 'No';
+  $value
+    ? do { _log "\nApplication $env_name is public.";      return 'Si' }
+    : do { _log "\nApplication $env_name is not public. "; return 'No' }
+    ; 
 }
 
 sub inf_es_IAS {
   my ($self, $env_name, $sub_apl) = @_;
   my $value = $self->inf_es_($env_name, 'JAVA_APPL_TECH', $sub_apl);
-  $value =~ m/IAS/ix ? 1 : 0;
+  $value =~ m/IAS/ix 
+    ? do { _log "\n$sub_apl ($env_name) is IAS.";     return 1 }
+    : do { _log "\n$sub_apl ($env_name) is not IAS."; return 0 }
+    ;
 }
 
 sub inf_es_EDW4J {    #JAVA_APPL_TECH
   my ($self, $env_name, $sub_apl) = @_;
   my $value = $self->inf_es_($env_name, 'JAVA_APPL_TECH', $sub_apl);
-  $value =~ m/EDW4J/ix ? 1 : 0;
+  $value =~ m/EDW4J/ix 
+    ? do { _log "\n$sub_apl ($env_name) is EDW4J.";     return 1 }
+    : do { _log "\n$sub_apl ($env_name) is not EDW4J."; return 0 }
+    ;
 }
 
 # Retorna un array de campos con los datos de un servidor Windows
 sub get_win_server_info {
   my ($self, $server, $array_ref) = @_;
-  my @fields = @{$array_ref};
+  my $str = join ', ', @{$array_ref};
   my $sql = qq{
-    SELECT " . join(',', @fields) . "
+    SELECT $str
       FROM inf_server_win
      WHERE server = '$server'
   };
-  $self->db->array($sql);
+  my @ls = $self->db->array($sql);
+  wantarray ? @ls : \@ls;
 }
 
 # Retorna un array de campos con los datos de un servidor Unix
@@ -477,8 +521,12 @@ sub get_inf_sub_apl {
       FROM $inf_data
      WHERE cam = '$cam' AND column_name = '$campo' AND idform = $max_idform
   };
-  my $rawsub_apl = $self->db->array($sql);
-  my @SA = split /\|/, $rawsub_apl;
+  my $rawsub_apl = $self->db->value($sql);
+
+  my @SA = $rawsub_apl =~ m/^\@#/x 
+    ? $self->solve_mv_single($rawsub_apl) 
+    : split(/\|/, $rawsub_apl);
+
   my %RET = ();
   foreach my $sa (@SA) {
     my ($sa_name, $sa_activa) = split /\;/, $sa;  # <sub_apl>;1|0
@@ -535,11 +583,17 @@ sub get_inf_destinos {
                                                 ident       => $env,
                                                 idred       => $red}]));
 
-  $destino{server_cluster} =
-   $self->get_unix_server_info({sub_apl => $sub_apl,
-                                env     => $env,
-                                server  => $destino{maq}},
-                               qw{ SERVER_CLUSTER });
+#  $destino{server_cluster} =
+#   $self->get_unix_server_info({sub_apl => $sub_apl,
+#                                env     => $env,
+#                                server  => $destino{maq}},
+#                               qw{ SERVER_CLUSTER });
+                               
+  $destino{server_cluster} = 
+   $resolver->get_solved_value($self->get_inf(undef,
+                                              [{column_name => 'WAS_CLUSTER',
+                                                ident       => $env,
+                                                idred       => $red}]));                       
 
   warn "No tengo el servidor WAS para el entorno $env ($red_txt) en el formulario de Infraestructura (campo WAS_SERVER, pesta#a AIX)" unless ($destino{maq});
 
@@ -686,8 +740,8 @@ sub get_inf_destinos {
                                  sub_apl => $sub_apl,
                                  env     => $env},
                                  'DESPLEGAR_FLAG');
-
-  _log Data::Dumper::Dumper \%destino;
+                                 
+  _log Data::Dumper::Dumper \%destino;                                
 
   %destino;
 }
@@ -757,7 +811,7 @@ sub get_inf_unix_server {
               :                      'N\A'
               ;
 
-  print "\nBuscando servidor de tipo '$tipo' para '$cam' en el entorno '$entorno'\n";
+  # print "\nBuscando servidor de tipo '$tipo' para '$cam' en el entorno '$entorno'\n";
 
   my @campo = ({column_name => 'AIX_SERVER', ident => $ent, idred => $red});
   my @data = @{$self->get_inf(undef, \@campo)};
@@ -938,7 +992,50 @@ sub _get_inf_subapl_hash {
                      @{$self->get_inf(undef, 
                                       [{column_name => $column_name}])};
   return $h{$sub_apl} if exists $h{$sub_apl};
-  _throw 'Undefined value for $sub_apl in $column_name';
+  _throw
+    "Valor no definido para subapl: '$sub_apl' en column_name: '$column_name'."
+    . "\nPor favor, compruebe el formulario de infraestructura.";
+}
+
+sub get_net_project_types {
+  my ($self, $env, $sub_apl) = @_;
+  my %ret    = ();
+  my $har_db = BaselinerX::CA::Harvest::DB->new;
+  my $sql    = qq{
+    SELECT prj_proyecto, prj_tipo
+      FROM bde_paquete_proyectos_net
+     WHERE prj_env = '$env' AND prj_subaplicacion = '$sub_apl'
+  };
+  my @ls = $har_db->db->array($sql);
+  while (@ls) {
+    my ($pro, $tipo) = (shift @ls, shift @ls);
+    push @{$ret{$pro}}, $tipo;
+  }
+  %ret;
+}
+
+sub get_aplicaciones_publicas_net {
+  my $self         = shift;
+  my $cam          = $self->cam;
+  my %aplicaciones = ();
+  my $apl_publicas =
+    $self->get_inf(undef, [{column_name => 'WIN_SCM_APL_PUB'}]);
+  foreach (@{$apl_publicas}) {
+    $aplicaciones{substr($_, 0, 3)} = ($_);
+  }
+  %aplicaciones;
+}
+
+sub get_aplicaciones_publicas_net_form {
+  my $self         = shift;
+  my $cam          = $self->cam;
+  my %aplicaciones = ();
+  my $apl_publicas =
+    $self->get_inf(undef, [{column_name => 'WIN_SCM_APL_PUB'}]);
+  foreach (@{$apl_publicas}) {
+    $aplicaciones{substr($_, 0, 50)} = ($_);
+  }
+  %aplicaciones;
 }
 
 1;

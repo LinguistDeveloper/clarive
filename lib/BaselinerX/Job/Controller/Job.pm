@@ -22,9 +22,13 @@ sub job_create : Path('/job/create')  {
     my ( $self, $c ) = @_;
     #$c->stash->{ns_query} = { does=> 'Baseliner::Role::JobItem' };
     #$c->forward('/namespace/load_namespaces'); # all namespaces
-    $c->stash->{action} = 'action.job.create';
-    $c->forward('/baseline/load_baselines_for_action');
-
+    
+    push my @baselines, $c->model('Permissions')->user_baselines_for_action(username=>$c->username, action=>'action.job.create');
+    push @baselines, $c->model('Permissions')->user_baselines_for_action(username=>$c->username, action=>'action.job.create.Z');
+    
+    # @baselines=_unique @baselines;
+    _log _dump @baselines;
+    $c->stash->{baselines} =  \@baselines;
     $c->stash->{template} = '/comp/job_new.mas';
 }
 
@@ -64,8 +68,7 @@ sub job_items_json : Path('/job/items/json') {
 
         my $packages_text;
         my $package_join = "<img src=\"static/images/package.gif\"/>";
-        $packages_text = "Packages:<br>"
-                       . $package_join
+        $packages_text = $package_join
                        . join("<br>${package_join}", @{$n->{packages}})
                        . '<br>' if exists $n->{packages};
 
@@ -80,7 +83,8 @@ sub job_items_json : Path('/job/items/json') {
             ns_type            => $n->ns_type,
             icon               => $n->icon_job,
             item               => $n->ns_name,
-            packages           => $packages_text,
+            packages           => $packages_text ? $packages_text : q{},
+            subapps            => $n->{subapps},
             inc_id             => exists $n->{inc_id} ? $n->{inc_id} : q{},
             ns                 => $n->ns, 
             job_options        => $job_options,
@@ -163,7 +167,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     # user content
     if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-        my @user_apps = $perm->user_namespaces( $username ); # user apps
+        my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
         $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
         # username can view jobs where the user has access to view the jobcontents corresponding app
         # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
@@ -207,7 +211,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     # Job items cache
     _log "Items cache start...";
-    my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>\@ids },{ select=>[qw/id id_job application item/] } );
+    my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>\@ids},{ select=>[qw/id id_job application item/] } );
     rs_hashref( $rs_items );
     my %job_items;
     for( $rs_items->all ) {
@@ -228,8 +232,8 @@ sub monitor_json : Path('/job/monitor_json') {
     my @rows;
     #while( my $r = $rs->next ) {
     my $now = _dt();
-    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0 ) ; 
-    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute ) ; 
+    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ; 
+    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ; 
 
     #foreach my $r ( _array $results->{data} ) {
     while( my $r = $rs->next ) {
@@ -599,10 +603,18 @@ sub job_submit : Path('/job/submit') {
 			my $end = $start->clone->add( hours => 1 );
 			my $ora_start =  $start->strftime('%Y-%m-%d %T');
 			my $ora_end =  $end->strftime('%Y-%m-%d %T');
-
+            my $approval = undef;
+            
             # not in an authorized calendar
-            my $approval = { reason=>_loc('Pase fuera de ventana') }
-                if $p->{window_check} eq 'on';
+            if ($p->{window_check} eq 'on') {
+                $approval = { reason=>_loc('Pase fuera de ventana') };
+                if ($job_options) {
+                    $approval->{reason}.='<br><dl><dt>' . _loc('With the next options:') . '</dt>';
+                    $approval->{reason}.='<dd><li type="square">'._loc($_).'</li></dd>' foreach (_array $job_options);
+                    $approval->{reason}.='</dl>';
+                    }
+                }
+                
             my $job = $c->model('Jobs')->create( 
                     starttime    => $start,
                     maxstarttime => $end,
@@ -615,20 +627,21 @@ sub job_submit : Path('/job/submit') {
                     username     => $username,
 					runner       => $runner,
 					comments     => $comments,
-					items        => $contents
+					items        => $contents, 
+                    options      => [$job_options]
 			);
             $job_name = $job->name;
 
             #Procesamos items de Changeman
             if ($p->{job_contents} =~ m{namespace.changeman.package}g) {
                 my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
-                my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, user=>$cfgChangeman->{user}, password=>sub{ require BaselinerX::BdeUtils; BaselinerX::BdeUtils->chm_token } );
+                my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port} );
                 my $ret= $chm->xml_addToJob(job=>$job_name, items=>$contents, options=>$job_options) ;
                 if ($ret->{ReturnCode} ne '00') {
                     $c->stash->{json} = { success => \0, msg => _loc("Error creating Changeman Job:<br>%1",$ret->{Message}) };
                     $job->delete;
                 } else {
-                    ##TODO: Si requiere aprobación de host por refresco de linklist crear la aprobacion
+                    ##TODO: Si requiere aprobaciÃ³n de host por refresco de linklist crear la aprobacion
                     $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
                     }
             } else {

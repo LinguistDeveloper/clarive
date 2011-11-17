@@ -38,10 +38,7 @@
   store_tiene_java.on('load', function() {
     var has_java;
     has_java = this.getAt(0).get('value');
-    // The program doesn't enter here even if {alert(has_java)} => 1
-    // Consider the use of '==' instead of '===' and / or '1' instead of 1.
-    // (Can't test now, as Baseliner is not picking up any changes)
-    if (has_java === 1) {
+    if (has_java === "1" || has_java === 1) {
       show_all();
       tiene_java = true;
       store_grid_consola.load({
@@ -203,7 +200,7 @@
   });
   button_start = new Ext.Button({
     text: 'Iniciar',
-    icon: 'static/images/start.gif',
+    icon: '/static/images/start.gif',
     handler: function() {
       var op, title;
       op = 'START';
@@ -213,7 +210,7 @@
   });
   button_stop = new Ext.Button({
     text: 'Parar',
-    icon: 'static/images/stop.gif',
+    icon: '/static/images/stop.gif',
     handler: function() {
       var op, title;
       op = 'STOP';
@@ -223,7 +220,7 @@
   });
   button_reset = new Ext.Button({
     text: 'Reiniciar',
-    icon: 'static/images/reload.gif',
+    icon: '/static/images/reload.gif',
     handler: function() {
       var op, title;
       op = 'RESTART';
@@ -233,7 +230,7 @@
   });
   logs_was = {
     text: 'Logs de WAS',
-    icon: 'static/images/icons/television.png',
+    icon: '/static/images/icons/television.png',
     handler: function() {
       var op, title;
       op = 'LOGWAS';
@@ -243,7 +240,7 @@
   };
   logs_aplicacion = {
     text: 'Logs de Aplicacion',
-    icon: 'static/images/icons/television.png',
+    icon: '/static/images/icons/television.png',
     handler: function() {
       var op, title;
       op = 'LOGAPL';
@@ -253,7 +250,7 @@
   };
   config_ls = {
     text: 'LS',
-    icon: 'static/images/icons/television.png',
+    icon: '/static/images/icons/television.png',
     handler: function() {
       var op, title;
       op = 'CONFIGLS';
@@ -263,7 +260,7 @@
   };
   config = {
     text: 'Configuracion',
-    icon: 'static/images/icons/television.png',
+    icon: '/static/images/icons/television.png',
     menu: {
       showSeparator: false,
       items: config_ls

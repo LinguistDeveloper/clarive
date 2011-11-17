@@ -279,7 +279,7 @@
   });
   agregar = function() {
     ajax_vignette.request({
-      url: 'form/vignette/add_row',
+      url: '/form/vignette/add_row',
       method: 'POST',
       params: {
         vig_env: c_entorno,
@@ -355,37 +355,37 @@
   };
   button_delete_test = new Ext.Button({
     text: 'Borrar',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: handler_delete_test
   });
   button_delete_ante = new Ext.Button({
     text: 'Borrar',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: handler_delete_ante
   });
   button_delete_prod = new Ext.Button({
     text: 'Borrar',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: handler_delete_prod
   });
   button_agregar = new Ext.Button({
     text: 'Agregar',
-    icon: 'static/images/icons/add.png',
+    icon: '/static/images/icons/add.png',
     handler: handler_agregar
   });
   button_upgrade_test = new Ext.Button({
     text: 'Subir orden',
-    icon: 'static/images/silk/arrow_up.gif',
+    icon: '/static/images/silk/arrow_up.gif',
     handler: handler_upgrade_test
   });
   button_upgrade_ante = new Ext.Button({
     text: 'Subir orden',
-    icon: 'static/images/silk/arrow_up.gif',
+    icon: '/static/images/silk/arrow_up.gif',
     handler: handler_upgrade_ante
   });
   button_upgrade_prod = new Ext.Button({
     text: 'Subir orden',
-    icon: 'static/images/silk/arrow_up.gif',
+    icon: '/static/images/silk/arrow_up.gif',
     handler: handler_upgrade_prod
   });
   toolbar_grid_test = new Ext.Toolbar({

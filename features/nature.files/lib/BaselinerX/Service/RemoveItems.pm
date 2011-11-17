@@ -19,20 +19,6 @@ sub main {
   my ($self, $c, $config) = @_;
   my $job = $c->stash->{job};
   my $log = $job->logger;
-  # my @del_unix_elements;
-  # my @del_win_elements;
-
-  # $log->debug("Checking if job has deleted UNIX elements...");
-  # my @unix_elements = @{$self->unix_elements($job->{jobid})};
-  # @unix_elements
-  #   ? @del_unix_elements = @{$self->get_map(\@unix_elements)}
-  #   : $log->debug("There are no deleted UNIX elements");
-
-  # $log->debug("Checking if job has deleted WIN elements...");
-  # my @win_elements = @{$self->win_elements($job->{jobid})};
-  # @win_elements
-  #   ? @del_win_elements = @{$self->get_map(\@win_elements)}
-  #   : $log->debug("There are no deleted WIN elements");
 
   exists $job->stash->{win_del_elements}
     ? $self->rem_win($job->stash->{win_del_elements}, $log)

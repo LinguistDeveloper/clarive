@@ -357,10 +357,15 @@
   button_incidencia = new Ext.Button({
     text: 'Despliegue Incidencias',
     style: 'margin-bottom: 10px; margin-left: 105px',
-    icon: 'static/images/scm/icons/list_16.png',
+    icon: '/static/images/scm/icons/list_16.png',
     hidden: true,
     handler: function() {
-      return Baseliner.addNewWindowComp("/form/main/load_inc", "Incidencias", {params: {cam: "<% $cam %>"}});
+	  var dummy = "<% $cam %>";
+      var params = {
+        cam: dummy
+      };
+      // return Baseliner.addNewWindowComp("/form/main/load_inc", "Incidencias", {params: {cam: dummy.valueOf('cam')}});
+      return Baseliner.addNewWindowComp("/form/main/load_inc", "Incidencias", params);
     }
   });
   txtfield_incidencia = new Ext.form.TextField({
@@ -390,11 +395,11 @@
   button_peticion = new Ext.Button({
     text: 'Despliegue Peticiones',
     style: 'margin-bottom: 10px; margin-left: 105px',
-    icon: 'static/images/scm/icons/list_16.png',
+    icon: '/static/images/scm/icons/list_16.png',
     hidden: true,
     handler: function() {
       var comp_url, params, ptitle;
-      comp_url = 'form/main/load_hsp';
+      comp_url = '/form/main/load_hsp';
       ptitle = titulo;
       params = {
         tipo: '3'
@@ -417,11 +422,11 @@
   button_proyecto = new Ext.Button({
     text: 'Despliegue Proyectos',
     style: 'margin-bottom: 10px; margin-left: 105px',
-    icon: 'static/images/scm/icons/list_16.png',
+    icon: '/static/images/scm/icons/list_16.png',
     hidden: true,
     handler: function() {
       var comp_url, params, ptitle;
-      comp_url = 'form/main/load_hsp';
+      comp_url = '/form/main/load_hsp';
       ptitle = titulo;
       params = {
         tipo: "1,2"
@@ -487,7 +492,7 @@
   };
   button_save = new Ext.Button({
     text: 'Guardar cambios',
-    icon: 'static/images/icons/database_refresh.png',
+    icon: '/static/images/icons/database_refresh.png',
     handler: save_changes,
     style: 'float: right; padding-right: 5px; padding-top: 10px'
   });
@@ -558,13 +563,13 @@
   };
   button_observaciones = new Ext.Button({
     text: 'Guardar cambios',
-    icon: 'static/images/icons/database_refresh.png',
+    icon: '/static/images/icons/database_refresh.png',
     handler: handler_observaciones
   });
   weeeeee = new Ext.Toolbar.Separator;
   menu_log_paquete = {
     text: 'Ver log de Paquete',
-    icon: 'static/images/package.gif',
+    icon: '/static/images/package.gif',
     handler: function() {
       return alert('clicked!');
     }
@@ -577,21 +582,21 @@
   };
   menu_consola_j2ee = {
     text: 'Consola de Aplicaciones J2EE',
-    icon: 'static/images/icons/application_double.png',
+    icon: '/static/images/icons/application_double.png',
     handler: function() {
       return alert('click!');
     }
   };
   menu_log_pase = {
     text: 'Ver Log de Pase',
-    icon: 'static/images/log_i.gif',
+    icon: '/static/images/log_i.gif',
     handler: function() {
       return alert('click!');
     }
   };
   menu_monitor_pase = {
     text: 'Ver Monitor de Pase',
-    icon: 'static/images/icons/television.png',
+    icon: '/static/images/icons/television.png',
     handler: function() {
       return alert('click!');
     }

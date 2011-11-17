@@ -358,6 +358,20 @@ __PACKAGE__->has_many(
   { "foreign.id_job" => "self.id" },
 );
 
+=head2 bali_log_datas
+
+Type: has_many
+
+Related object: L<Baseliner::Schema::Baseliner::Result::BaliLogData>
+
+=cut
+
+__PACKAGE__->has_many(
+  "bali_log_datas",
+  "Baseliner::Schema::Baseliner::Result::BaliLogData",
+  { "foreign.id_job" => "self.id" },
+);
+
 
 sub is_not_running {
     my $self = shift;
@@ -448,7 +462,7 @@ sub last_log_message {
 # is_active means it is ready to run, or running
 sub is_active {
     my $self = shift;
-    return $self->status =~ m/^IN-EDIT|^READY|^RUNNING/ ;
+    return $self->status =~ m/^IN-EDIT|^READY|^RUNNING|^PAUSED|^SUSPENDED|^WAITING/ ;
 }
 
 1;

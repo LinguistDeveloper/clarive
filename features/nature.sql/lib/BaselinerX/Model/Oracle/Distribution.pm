@@ -232,7 +232,11 @@ sub GenerarScriptBackup {
 
   # _log "FILES => " . Dumper \%Files;
 
-  my ($FileName, $ObjectName, $PackageName, $SystemName, $SubSystemName, $DSName, $Extension, $ElementState, $ElementVersion, $ElementPriority, $carpeta, $ElementID, $ParCompIni, $NewID, $HarvestProject, $HarvestState, $HarvestUser, $ModifiedTime, $Instancias, %DESPLIEGUES);
+  my ($FileName,       $ObjectName,      $PackageName,    $SystemName,
+      $SubSystemName,  $DSName,          $Extension,      $ElementState,
+      $ElementVersion, $ElementPriority, $carpeta,        $ElementID,
+      $ParCompIni,     $NewID,           $HarvestProject, $HarvestState,
+      $HarvestUser,    $ModifiedTime,    $Instancias,     %DESPLIEGUES);
 
   $log->info("Generando script para realizar BACKUP del pase\n");
   mkdir "$PaseDir/BackUp";
@@ -278,7 +282,7 @@ sub GenerarScriptBackup {
       }
       else {
         my @Despliegues = ();
-        for my $dato (keys %$Instancias) {
+        for my $dato (keys %{$Instancias}) {
           if ($dato =~ m/^(.*)\_(.*)\_(.*)$/) {
             $self->OraNetCode($1);
             $self->OraOwner($2);
@@ -295,6 +299,8 @@ sub GenerarScriptBackup {
       }
     }
 
+    _log 'Instancias: ' . Dumper $Instancias; # XXX
+
     for my $dato (keys %$Instancias) {
       if ($dato =~ m/^(.*)\_(.*)\_(.*)$/) {
         $self->OraNetCode($1);
@@ -305,6 +311,10 @@ sub GenerarScriptBackup {
       $self->OraInstancia($self->resolver->get_solved_value($self->OraOID));
       $self->OraServer($self->resolver->get_solved_value($$Instancias{$dato}));
       $self->PREFIX($self->OraServer. "\_" . substr($self->resolver->get_solved_value($dato), 3));
+      _log 'instancias_dato: ' . $$Instancias{$dato};    # XXX
+      _log 'OraServer: ' . $self->OraServer;             # XXX
+      _log 'Dato: ' . $dato;                             # XXX
+      _log 'PREFIX: ' . $self->PREFIX;                   # XXX
       $self->OraOwner(uc($self->OraOwner));
 
       if ($Tratado{$self->PREFIX . "\_$FileName"} ne "T") {
@@ -384,9 +394,10 @@ sub GenerarScriptBackup {
 
     try {
       $log->debug("Intentando conexión a " . $self->OraServer . " por el puerto $puerto.\nInstancia ORACLE: " . $self->OraInstancia . "\nUsuario: " . $self->OraUser);
-      $balix_pool->conn($self->OraServer);
-
+      # $balix_pool->conn($self->OraServer);
+      _log "aaa";
       ($RC, $RET) = $balix_pool->conn($self->OraServer)->executeas($self->OraUser, qq{ echo "Testing sudo..." });
+      _log "bbb";
       if ($RC ne 0) {
         $UserExists = undef;
         $log->error("Error al hacer sudo al usuario " . $self->OraUser . " en la máquina " . $self->OraServer . ".\n¿Está correctamente creado el usuario?", $RET);
@@ -660,7 +671,9 @@ sub GenerarScriptDeploy {
   my $EnvironmentName = shift @_;
   my $haraxDir        = "/tmp/$Pase";
   my ($harax, $puerto);
-  my (@RET, $RET, $RC, $OraRed, @redes, $carpetaAnt, $ObjectNameX, $Servidor, $Instancia, $Owner, %redesatratar, $OraRedES);
+  my (@RET,       $RET,        $RC,           $OraRed,
+      @redes,     $carpetaAnt, $ObjectNameX,  $Servidor,
+      $Instancia, $Owner,      %redesatratar, $OraRedES);
   my %Tratado;
   my ($Element, $Server, %RETFINAL);
   my $BeginCnt    = 0;
@@ -674,7 +687,11 @@ sub GenerarScriptDeploy {
   my $msg;
   my %DESPLIEGUES;
   my %Types = %{$self->Types};
-  my ($FileName, $ObjectName, $PackageName, $SystemName, $SubSystemName, $DSName, $Extension, $ElementState, $ElementVersion, $ElementPriority, $carpeta, $ElementID, $ParCompIni, $NewID, $HarvestProject, $HarvestState, $HarvestUser, $ModifiedTime);
+  my ($FileName,       $ObjectName,      $PackageName,    $SystemName,
+      $SubSystemName,  $DSName,          $Extension,      $ElementState,
+      $ElementVersion, $ElementPriority, $carpeta,        $ElementID,
+      $ParCompIni,     $NewID,           $HarvestProject, $HarvestState,
+      $HarvestUser,    $ModifiedTime);
   $log->info("Generando script para realizar DEPLOY del pase\n");
 
   ## Ordeno por estado y por extension para primero borrar los objetos que haya que borrar y luego recuperar los elementos en el orden de compilación.
@@ -875,6 +892,8 @@ sub GenerarScriptDeploy {
 
   foreach $Element (keys %RETFINAL) {    
     ($Servidor, $Owner, $Instancia) = split /\_/, $Element;
+    _log "Servidor: $Servidor";    # XXX
+    _log "Element: $Element";      # XXX
     my $OWNER = uc($Owner);
     #($puerto) = getUnixServerInfo($Servidor, "HARAX_PORT");
     $puerto = $self->inf->get_unix_server_info({server => $Servidor, env => $self->env}, 'HARAX_PORT');
@@ -1145,15 +1164,16 @@ sub restoreSQL {
   my $PaseDir         = shift @_;
   my %Types           = %{$self->Types};
 
-  my (@ObjectName, $ObjectName, $Extension, $FileName, $RC, @RET, $RET, $RETFINAL, @Files, $File);
+  my (@ObjectName, $ObjectName, $Extension, $FileName, $RC,
+      @RET,        $RET,        $RETFINAL,  @Files,    $File);
   my ($BeginCnt, $Retorno, $Cerrado, $Warn);
-  my $ObjectName = "";
+  $ObjectName = "";
   my ($Puerto, $Servidor, $Instancia, $Owner, $harax);
   my $localdir = $PaseDir . "/restore";
-  my ($cadena, $cad, $Extension);
+  my ($cadena, $cad);
   my $haraxDir    = "/tmp/$Pase/restore";
   my $StartTMSTMP = ahora();
-  my ($_log, $_log, $LOGPRE, $LOGPOS);
+  my ($_log, $LOGPRE, $LOGPOS);
 
   $log->info("Generando script para realizar RESTORE del pase\n");
   mkdir $localdir;
@@ -1560,7 +1580,8 @@ sub _build_inf {
 
 sub _build_resolver {
   my $self = shift;
-  BaselinerX::Ktecho::Inf::Resolver->new({entorno => $self->env,
+  BaselinerX::Ktecho::Inf::Resolver->new({sub_apl => 'foo',
+                                          entorno => $self->env,
                                           cam     => $self->cam});
 }
 

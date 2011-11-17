@@ -64,6 +64,7 @@ Ext.onReady(function(){
     var label_orig = _('Origin Baseline');
     var baselines = new Ext.data.SimpleStore({
         fields: ['bl', 'name'],
+        id: 0,
         data : <% js_dumper( $c->stash->{baselines} ) %>
         });
 
@@ -210,6 +211,7 @@ Ext.onReady(function(){
         Ext.getCmp('joboptionsglobal<% $iid %>').hide();
         Ext.getCmp('jobincidencias<% $iid %>').killItems();
         Ext.getCmp('jobincidencias<% $iid %>').hide();
+        button_submit.disable();
         };
 
     var _datePicker = null;
@@ -537,7 +539,28 @@ Ext.onReady(function(){
             _datePicker.allowedDates = false;
             _datePicker.update(_datePicker.activeDate, true, false);
             job_time.setDisabled(true);
+            combo_joboptionsglobal.clearValue(true);
+            if (combo_joboptionsglobal.store.data.length > 0) {
+                text=combo_joboptionsglobal.store.data.items[0].data.id;
+                for (var i=1;i<combo_joboptionsglobal.store.data.length;i++) {
+                    if (text.indexOf(combo_joboptionsglobal.store.data.items[i].data.id) < 0 ) {
+                        text=text + "," + combo_joboptionsglobal.store.data.items[i].data.id;
+                        }
+                    }
+                combo_joboptionsglobal.setValue(text);
+                }
             combo_joboptionsglobal.show();
+            // combo_incidencias.clearValue(combo_incidencias.getValue());
+            combo_incidencias.clearValue(true);
+            if (combo_incidencias.store.data.length > 0) {
+                text=combo_incidencias.store.data.items[0].data.codigo;
+                for (var i=1;i<combo_incidencias.store.data.length;i++) {
+                    if (text.indexOf(combo_incidencias.store.data.items[i].data.id) < 0 ) {
+                        text=text + "," + combo_incidencias.store.data.items[i].data.codigo;
+                        }
+                    }
+                combo_incidencias.setValue(text);
+                }
             combo_incidencias.show();
             txtComment.validate();
         } else {
@@ -582,6 +605,7 @@ Ext.onReady(function(){
                     var sm = jc_grid.getSelectionModel();
                     var sel = sm.getSelected();
                     jc_grid.getStore().remove(sel);
+                    if (jc_grid.getStore().data.length == 0) { button_submit.disable(); }
                     Baseliner.calendar_reload();
                     }
                 }]
@@ -683,7 +707,7 @@ Ext.onReady(function(){
             ]
         });
 
-    var store_joboptionsglobal = new Ext.data.SimpleStore({
+    var store_joboptionsglobal = new Ext.data.ArrayStore({
         fields: ['id', 'name'],
         data: [],
         sortInfo: {field: 'name', direction: 'ASC'}
@@ -723,23 +747,33 @@ Ext.onReady(function(){
                 bs.addItem(newObj);
                 },
             beforeremoveitem: function(bs,v, f){
-                console.log(bs,v, f);
-                if (window_check.checked && ( v == 'chm_rf_ll' || v== 'chm_rf_db2')) return false;
+                // if (window_check.checked && ( v == 'chm_rf_ll' || v== 'chm_rf_db2')) return false;
                 }
             }
         });
         
     var add_joboptionsglobal = function (rec) {
+        if (rec.data.job_options_global == undefined) return;
         var arr=rec.data.job_options_global;
-        // console.log (arr);
         if (arr.length==0) return;
-        // if (combo_joboptionsglobal.hidden) combo_joboptionsglobal.show();
+        if (arr == undefined) return;
+
         for (var i=0;i<arr.length;i++) {
-            var ix=store_joboptionsglobal.find('id',arr[i].id);
+            var ix=store_joboptionsglobal.find('id',arr[i].id, 0, true, false);
             if (ix == -1) {
                 arr[i].name=_(arr[i].name);
                 store_joboptionsglobal.add(new Ext.data.Record(arr[i]));
                 }
+            }
+        combo_joboptionsglobal.clearValue(true);
+        if (combo_joboptionsglobal.store.data.length > 0) {
+            text=combo_joboptionsglobal.store.data.items[0].data.id;
+            for (var i=1;i<combo_joboptionsglobal.store.data.length;i++) {
+                if (text.indexOf(combo_joboptionsglobal.store.data.items[i].data.id) < 0 ) {
+                    text=text + "," + combo_joboptionsglobal.store.data.items[i].data.id;
+                    }
+                }
+            combo_joboptionsglobal.setValue(text);
             }
         };
 
@@ -782,17 +816,28 @@ Ext.onReady(function(){
         });
         
     var add_incidencia = function (rec) {
-        // console.log (rec);
         var arr=rec.data.inc_id;
         if (rec.data.inc_id == undefined) return;
         if (arr.length == 0) return;
+        if (arr == undefined) return;
         if (arr[0].codigo == null) return;
+
         for (var i=0;i<arr.length;i++) {
             var ix=store_incidencias.find('codigo',arr[i].codigo);
             if (ix == -1) {
                 store_incidencias.add(new Ext.data.Record(arr[i]));
                 // console.log (store_incidencias);
                 }
+            }
+        combo_incidencias.clearValue(true);
+        if (combo_incidencias.store.data.length > 0) {
+            text=combo_incidencias.store.data.items[0].data.codigo;
+            for (var i=1;i<combo_incidencias.store.data.length;i++) {
+                if (text.indexOf(combo_incidencias.store.data.items[i].data.codigo) < 0 ) {
+                    text=text + "," + combo_incidencias.store.data.items[i].data.codigo;
+                    }
+                }
+            combo_incidencias.setValue(text);
             }
         };
 
@@ -839,6 +884,7 @@ Ext.onReady(function(){
             {name: 'data',               mapping: 'data'},
             {name: 'text',               mapping: 'text'},
             {name: 'packages',           mapping: 'packages'},
+            {name: 'subapps',            mapping: 'subapps'},
             {name: 'job_options',        mapping: 'job_options'},
             {name: 'job_options_global', mapping: 'job_options_global'},
             {name: 'inc_id',             mapping: 'inc_id'},
@@ -857,34 +903,20 @@ Ext.onReady(function(){
     var resultTpl = new Ext.XTemplate(
         '<tpl for="."><div ext:qtip="{moreInfo}" qtitle="<% _loc('More Info...') %><hr>" class="search-item {recordCls}">',
         '<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{item}</h3>',
+        '{packages}',
         '{text}',
+        '{subapps}',
         '<tpl if="why_not">',
         '<br />{why_not}',
         '</tpl>',
         '</div></tpl>'
         );
 
-    var add_joboptionsglobal = function (rec) {
-        // console.log (rec);
-        if (rec.data.job_options_global == undefined) return;
-        var arr=rec.data.job_options_global;
-        if (arr.length == 0) return;
-        if (arr == undefined) return;
-        if (combo_joboptionsglobal.hidden) combo_joboptionsglobal.show();
-        for (var i=0;i<arr.length;i++) {
-            var ix=store_joboptionsglobal.find('id',arr[i].id);
-            if (ix == -1) {
-                arr[i].name=_(arr[i].name);
-                store_joboptionsglobal.add(new Ext.data.Record(arr[i]));
-            }
-        }
-    };
-
     var search = new Ext.form.ComboBox({
         fieldLabel: _('Add Job Items'),
         store: ds_combo,
         minChars :3,
-        style: 'margin-left: 7px; margin-top: 5px',
+        style: 'margin-left: 7px',
         displayField:'item',
         typeAhead: false,
         loadingText: '<% _loc('Searching...') %>',
@@ -893,7 +925,7 @@ Ext.onReady(function(){
         lazyRender: true,
         queryDelay: 1500,
         pageSize:20,
-        hideTrigger:true,
+        // hideTrigger:true,
         tpl: resultTpl,
         // applyTo: 'search<% $iid %>',
         itemSelector: 'div.search-item',

@@ -242,19 +242,34 @@ sub update_textareas {
 
 sub load_grid_inc {
   my ($self, $cam, $username, $link_USD) = @_;
-  my $descripcion = utf8::upgrade('Descripción');
-  my $query = qq{      
+#  my $query = qq{      
+#      SELECT "Id Incidencia" AS inc_codigo, "CAM" AS inc_cam,
+#             "Descripción" AS inc_descripcion, "Tipo incidencia" AS inc_tipo,
+#             "Activa?" AS inc_activa, "Estado" AS inc_estado, "Clase" AS inc_clase,
+#             "Solicitante apellidos" AS inc_apellidos_sol,
+#             "Solicitante nombre" AS inc_nombre_sol,
+#             "Usr afectado apellidos" AS inc_apellidos_afe,
+#             "Usr afectado nombre" AS inc_nombre_afe, "Prioridad" AS inc_prioridad,
+#             "Impacto" AS inc_impacto, "Analista Asignado" AS inc_analista
+#        FROM $link_USD
+#       WHERE "Activa?" = 'SI' AND "Analista Asignado" = '$username'
+#             AND "CAM" = '$cam'
+#  };
+  my $query = qq{
       SELECT "Id Incidencia" AS inc_codigo, "CAM" AS inc_cam,
-             $descripcion AS inc_descripcion, "Tipo incidencia" AS inc_tipo,
+             "Descripción" AS inc_descripcion, "Tipo incidencia" AS inc_tipo,
              "Activa?" AS inc_activa, "Estado" AS inc_estado, "Clase" AS inc_clase,
              "Solicitante apellidos" AS inc_apellidos_sol,
              "Solicitante nombre" AS inc_nombre_sol,
              "Usr afectado apellidos" AS inc_apellidos_afe,
              "Usr afectado nombre" AS inc_nombre_afe, "Prioridad" AS inc_prioridad,
              "Impacto" AS inc_impacto, "Analista Asignado" AS inc_analista
-        FROM $link_USD
-       WHERE "Activa?" = 'SI' AND "Analista Asignado" = '$username'
-             AND "CAM" = '$cam'
+     FROM bde_scm_usd\@usd usd
+    WHERE (   UPPER (TRIM (cam)) LIKE UPPER (TRIM ('$cam'))
+           OR UPPER (TRIM (usd."Analista Asignado")) = UPPER ('$username')
+          )
+    AND TRIM (usd."Tipo incidencia") = 'APP'
+    ORDER BY TO_NUMBER (usd."Id Incidencia") DESC, 2
   };
   my $har_db = BaselinerX::Ktecho::Harvest::DB->new;
   my @data   = $har_db->db->array_hash($query);

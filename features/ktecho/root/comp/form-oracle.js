@@ -423,27 +423,27 @@
   };
   button_agregar_des = new Ext.Button({
     text: 'Agregar',
-    icon: 'static/images/icons/add.png',
+    icon: '/static/images/icons/add.png',
     handler: handler_agregar_des
   });
   button_agregar_ins = new Ext.Button({
     text: 'Agregar',
-    icon: 'static/images/icons/add.png',
+    icon: '/static/images/icons/add.png',
     handler: handler_agregar_ins
   });
   button_delete_des = new Ext.Button({
     text: 'Borrar',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: handler_delete_des
   });
   button_delete_ins = new Ext.Button({
     text: 'Borrar',
-    icon: 'static/images/icons/delete.png',
+    icon: '/static/images/icons/delete.png',
     handler: handler_delete_ins
   });
   button_desplegar = new Ext.Button({
     text: 'Desplegar',
-    icon: 'static/images/icons/step_run.png',
+    icon: '/static/images/icons/step_run.png',
     handler: handler_button_desplegar
   });
   toolbar_des = new Ext.Toolbar({

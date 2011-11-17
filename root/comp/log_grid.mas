@@ -73,6 +73,7 @@
     };
 
     var filter_menu = new Ext.menu.Menu({
+        id: 'menu_pocho',
         items: [
             { id: 'info', text: _('Information'),checked: filter_obj['info'] , checkHandler: filter_me },
             { id: 'comment', text: _('Comments'),checked: filter_obj['comment'] , checkHandler: filter_me },
@@ -240,7 +241,9 @@
 				   datalen += 'KB';
 			   }
 		   }
-           if( value.more!='' && value.more!=undefined && value.data ) {
+           if( value.more=='jes' ) {
+               ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&jobId=" + rec.data.id_job + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/host.gif'/></a> " ;
+           } else if ( value.more!='' && value.more!=undefined && value.data ) {
                var img;
                if( value.more=='zip' ) {
                   img = '/static/images/icons/mime/file_extension_zip.png';
@@ -248,8 +251,7 @@
                   img = '/static/images/download.gif';
                }
                ret += "<a href='/job/log/download_data?id=" + rec.id + "' target='FrameDownload'><img border=0 src="+img+"/></a> " + datalen ;
-           } 
-           else {
+           } else {
                if( value.more!='file' && value.data && xdatalen < 250000 ) {  // 250Ks max
                    var data_name = value.data_name;
                    if( data_name==undefined || data_name.length<1 ) {
@@ -375,8 +377,9 @@
                 cls: 'x-btn-text-icon',
                 handler: annotation
             },
-            button_resume,
 <%doc>
+            button_resume,
+            button_cancel,
             new Ext.Toolbar.Button({
                 text: _('View Log'),
                 icon:'/static/ext/resources/images/default/dd/drop-yes.gif',
@@ -430,7 +433,7 @@
 		}
         var job = current_job();
         if( job != undefined ) {
-            if( job.status == 'PAUSED' || job.status == 'SUSPENDED' ) {
+            if( job.status == 'PAUSED' || job.status == 'SUSPENDED' || job.status == 'WAITING' ) {
                 button_resume.show();
             }
             job_exec_max = job.exec;

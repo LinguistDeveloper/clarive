@@ -94,19 +94,22 @@ sub new_from_id {
     my ($class,%p)=@_;
     $p{jobid} or _throw 'Missing jobid parameter';
     $p{step} ||= $p{same_exec} ? 'POST' : 'RUN';
+    $p{exec} eq 'last' and $p{exec}=0;
+    my $msg=$p{message} || "Job revived";
+    
     my $job = $class->new( %p );
     _log "Created job object for jobid=$p{jobid}";
     # increment the execution
-    my $row = $job->row;
-    if( $p{'exec'} ne 'last' ) {
+    my $row = $job->row ;
+    if( $p{'exec'} != 0 ) {
         $row->exec( $row->exec + 1);
-    }
+        }
     $row->update;
     # setup the logger
     my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid} }) );
     #thaw job stash from table
     my $stash = $job->thaw;
-    $log->info(_loc("Job revived"), data=>_dump($stash) );
+    $log->info(_loc($msg), data=>_dump($stash) ) if ! $p{silent};
     $job->job_stash( $stash );
     $job->name( $row->name );
     return $job;
@@ -190,7 +193,9 @@ sub job_run {
             $r->exec( $r->exec + 1 ) ;
             $r->update;
             $self->logger->exec( $r->exec );
-        }
+        } else {
+            $self->exec( $r->exec );
+        }        # increment the execution
 
         $self->name( $r->name );
         $self->job_type( $r->type );
@@ -225,8 +230,9 @@ sub job_run {
             $c->launch( $runner ); 
         };
 
-        # exit fast if suspended
-        return 0 if $self->status eq 'SUSPENDED';
+        # exit fast if suspended or waiting
+        _log "Hay que salir? " . $self->status;
+        return 0 if $self->status =~ m{SUSPENDED|WAITING};
 
         # finish it if ok
         $self->logger->debug( _loc('Step %1 finished', _loc( $step ) ) );
@@ -282,19 +288,21 @@ sub job_run {
         }
     };
 
-    # get out now
-    return if $self->status eq 'SUSPENDED';
+    # get out now is SUSPENDED or WAITING
+    _log "Hay que salir? " . $self->status;
+    return if $self->status =~ m{SUSPENDED|WAITING};
 
     # log debug all output
     $self->logger->debug(_loc("Job execution output"), data=>$runner_output );
 
     # last message on log
+    my $logprerunlevel = $self->status =~ /ERROR/ ? 'error' : 'debug';
     my $loglevel = $self->status =~ /ERROR/ ? 'error' : 'info';
     my $log_status = $self->status =~ /ERROR/i ? 'ERROR' : 'OK'; 
 
     # finish up step
     if( $step eq 'PRE' ) {
-        $self->logger->$loglevel( _loc("Job prerun finished with status %1", _loc( $log_status ) ), milestone=>1 );
+        $self->logger->$logprerunlevel( _loc("Job prerun finished with status %1", _loc( $log_status ) ), milestone=>1 );
     } elsif( $step eq 'RUN' ) {
         $self->logger->$loglevel( _loc("Job run finished with status %1", _loc( $log_status ) ), milestone=>1);
         $self->finish($self->status);
@@ -430,8 +438,10 @@ sub pause {
 sub suspend {
     my ($self, %p ) = @_;
     $self->freeze;
-    $self->logger->warn( _loc('Suspending Job' ) );
-    $self->job_row->status( $self->status( 'SUSPENDED' ) );
+    my $msg = $p{message} || 'Suspending Job';
+    my $status = $p{status} || 'SUSPENDED';
+    $self->logger->warn( _loc( $msg ) ) if ! $p{silent};
+    $self->job_row->status( $self->status( $status ) );
     $self->job_row->update;
 }
 

@@ -1,18 +1,12 @@
 package BaselinerX::Controller::Form::BizProjects;
+use 5.010;
 use strict;
 use warnings;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
-use 5.010;
+use Data::Dumper;
 BEGIN { extends 'Catalyst::Controller' }
-
-# register 'menu.admin.formulariobiztalk' => {
-#   label    => 'Formulario Biztalk',
-#   url_comp => '/form/bizprojects/',
-#   title    => 'Formulario Biztalk',
-#   icon     => 'static/images/icons/drive_disk.png'
-# };
 
 # Default subroutine:
 # Loads the .js component...

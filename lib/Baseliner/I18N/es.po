@@ -1,4 +1,4 @@
-msgid ""
+﻿msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1132,7 +1132,10 @@ msgid "RESUME"
 msgstr "Reiniciado"
 
 msgid "SUSPENDED"
-msgstr "Suspenso"
+msgstr "Suspendido"
+
+msgid "WAITING"
+msgstr "Esperando CHM"
 
 msgid "DONE"
 msgstr "Finalizado"
@@ -1149,6 +1152,13 @@ msgstr "iniciado"
 
 msgid "finished"
 msgstr "finalizado"
+
+# Job actions
+msgid "Job revived"
+msgstr "Continuando la ejecución del Job"
+
+msgid "Job stash stored ok"
+msgstr "Almacenada correctamente la información del Job"
 
 # Job Types
 
@@ -1792,6 +1802,9 @@ msgstr "Catálogo"
 
 msgid "Error while writing to catalog"
 msgstr "Error de escritura al catálogo"
+
+msgid "Mailbox"
+msgstr "Buzón"
 
 # lib/BaselinerX/Type/Model/ConfigStore.pm (127)
 msgid "Could not find metadata for the key '%1' in the registry."

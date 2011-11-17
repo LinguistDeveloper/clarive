@@ -1,10 +1,11 @@
 package BaselinerX::Model::ConsolaJ2EE;
 use strict;
 use warnings;
+use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::Ktecho::CamUtils;
-use 5.010;
+use utf8;
 BEGIN { extends 'Catalyst::Model' }
 
 ### get_list_of_cams : -> ArrayRef[Str]
@@ -27,11 +28,9 @@ sub get_sub_appl {
 sub get_entornos {
   my ($self, $cam) = @_;
   my $inf = inf $cam;
-  [ { test => $inf->tiene_test
-    , ante => $inf->tiene_ante
-    , prod => $inf->tiene_prod
-    }
-  ];
+  [{test => $inf->tiene_test,
+    ante => $inf->tiene_ante,
+    prod => $inf->tiene_prod}];
 }
 
 1;

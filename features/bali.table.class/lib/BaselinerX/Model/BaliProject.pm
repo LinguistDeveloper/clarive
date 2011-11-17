@@ -4,12 +4,54 @@ use warnings;
 use 5.010;
 use Baseliner::Utils;
 use Moose;
+use Try::Tiny;
+use utf8;
 
+has 'id',              is => 'ro', isa => 'Int',      lazy_build => 1;
+has 'name',            is => 'ro', isa => 'Str',      lazy_build => 1;
+has 'table',           is => 'ro', isa => 'Str',      lazy_build => 1;
 has 'first_level',     is => 'ro', isa => 'ArrayRef', lazy_build => 1;
 has 'second_level',    is => 'ro', isa => 'ArrayRef', lazy_build => 1;
 has 'third_level',     is => 'ro', isa => 'ArrayRef', lazy_build => 1;
 has 'first_to_second', is => 'ro', isa => 'HashRef',  lazy_build => 1;
 has 'second_to_third', is => 'ro', isa => 'HashRef',  lazy_build => 1;
+
+sub _build_table { 'Baseliner::BaliProject' }
+
+sub _build_id {
+  my $self  = shift;
+  my $model = Baseliner->model($self->table);
+  my $rs = $model->search({name      => $self->name,
+                           id_parent => {is => undef},
+                           nature    => {is => undef}},
+                          {select => 'id'});
+  rs_hashref($rs);
+  try {
+    my $id = $rs->next->{id};
+    return $id;
+  }
+  catch {
+    $self->insert;
+    $self->id;
+  };
+}
+
+sub _build_name {
+  my $self  = shift;
+  my $model = Baseliner->model($self->table);
+  my $rs = $model->search({id        => $self->id,
+                           id_parent => {is => undef},
+                           nature    => {is => undef}});
+  rs_hashref($rs);
+  $rs->next->{name};
+}
+
+sub insert {
+  my $self  = shift;
+  _log "Adding project " . $self->name;
+  my $model = Baseliner->model($self->table);
+  $model->create({name => uc($self->name)});
+}
 
 sub _build_first_level { shift->search_in_projects({id_parent => undef}) }
 
@@ -70,6 +112,19 @@ sub filter_relationship {
   my ($self, %dummy) = @_;
   do { delete $dummy{$_} unless scalar @{$dummy{$_}} } for keys %dummy;
   %dummy;
+}
+
+sub is_first_level {
+  my $self  = shift;
+  my $id    = $self->id;
+  my $model = Baseliner->model($self->table);
+  my $rs = $model->search({id        => $self->id,
+                           id_parent => {is => undef},
+                           nature    => {is => undef}});
+  rs_hashref($rs);
+  my @data = $rs->all;
+
+  scalar @data ? 1 : 0;
 }
 
 1;

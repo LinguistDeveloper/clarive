@@ -1,10 +1,10 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000053337
-#	Fecha de pase .................... 2011/11/03 20:21:11
+#	Pase ............................. N.PROD0000053765
+#	Fecha de pase .................... 2011/11/11 15:46:24
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Service/SQASendJU.pm
-#	Versión del elemento ............. 10
+#	Versión del elemento ............. 12
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Service::SQASendJU;
@@ -69,12 +69,20 @@ sub send_mail {
     for ( Baseliner->model( 'Repository' )->list( provider => 'sqa.ju_email' ) ) {
         my $data = Baseliner->model( 'Repository' )->get( ns => $_ );
         my $ns = $_;
+        
+        my $lista = {};
+        
         $_ =~ s{sqa.ju_email/}{}g;
         _log "Correo: $_";
-        _log join ",", @{$data->{correos}} if $data->{correos};
-        _log _dump($data->{correos});
-        next if !$data->{correos};
+        #_log join ",", @{$data->{correos}} if $data->{correos};
+        #_log _dump($data->{correos});
+        for ( keys %{$data->{hcorreos} }) {
+        	push @{$lista->{correos}}, $data->{hcorreos}->{$_};
+        }
+        _log _dump($lista->{correos});
+        next if !$data->{hcorreos};
 
+			
 		my $to = [$_];
 		
         Baseliner->model( 'Messaging' )->notify(
@@ -86,8 +94,9 @@ sub send_mail {
             template_engine => 'mason',
             vars            => {
                 message => "Resumen de an&aacute;lisis de calidad t&eacute;cnico",
-                filas => $data->{correos},
-                url => "$url"
+                filas => $lista->{correos},
+                url => "$url",
+                to => $to
             }
         );
         

@@ -5,6 +5,7 @@ use 5.010;
 use Baseliner::Utils;
 use Baseliner::Plug;
 use Try::Tiny;
+use utf8;
 BEGIN { extends 'Catalyst::Model' }
 
 sub db { BaselinerX::CA::Harvest::DB->new }
@@ -26,13 +27,12 @@ sub all_users {
 
 sub groups_inf_rpt {
   my $self  = shift;
-  my $query = qq{
-    SELECT usergroupname, wingroupname
-      FROM inf_rpt
-     WHERE SUBSTR (usergroupname, 1, 1) <> '\$' AND wingroupname IS NOT NULL
-  };
-  my $db = $self->db();
-  $db->db->hash($query);
+  my $model = Baseliner->model('Inf::InfRpt');
+  my $rs = $model->search({'substr (usergroupname, 1, 1)' => {'<>' => '\$'},
+                           wingroupname                   => {'!=' => undef}},
+                          {select => [qw/usergroupname wingroupname/]});
+  rs_hashref($rs);
+  map { $_->{usergroupname} => $_->{wingroupname} } $rs->all;
 }
 
 sub group_count {

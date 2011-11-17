@@ -61,7 +61,6 @@ sub catalog : Local {
   my $cam      = 'SCT';
   my $env      = 'TEST';
   my $username = $c->username;
-  my $username = 'q74613x';
   my $params   = $c->request->parameters;
   $params->{sis_cam}         = $cam;
   $params->{environmentname} = $env;

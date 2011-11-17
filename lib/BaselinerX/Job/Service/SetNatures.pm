@@ -18,7 +18,8 @@ sub run {
   my $log      = $job->logger;
   my $elements = $job->job_stash->{elements}->{elements};
   $job->job_stash->{natures} =
-   [keys %{{map { $_->{path} =~ /\/\w+\/(\w+)/ => 1 } @{$elements}}}];
+    [keys %{{map { $_->{path} =~ /\/\w+\/(.\w+)/ => 1 } @{$elements}}}];
+  $log->debug("Naturalezas del pase: " . join ', ', @{$job->job_stash->{natures}});
   return;
 }
 

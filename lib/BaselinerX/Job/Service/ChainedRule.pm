@@ -38,9 +38,10 @@ sub exists_chain {
   ref $ref ? 1 : 0;
 }
 
+sub cdr { shift; @_ }
+
 sub proper_ns { # Str -> Maybe[Str]
-  my $ns = shift;
-  $ns =~ /(\w+)/ ? $1 : q{};
+  join '', cdr split '', $_[0];
 }
 
 sub launch {
@@ -49,6 +50,10 @@ sub launch {
   my $log  = $job->logger;
   my $data = $job->job_data;
   $log->debug("Initializing Rule-Chain Runner with PID: $data->{pid}");
+
+  # This identifies whether every step in the chain will generate a semaphore
+  # request.
+  my $sem_chain = _bde_conf 'chain.sem';
 
   my $chain_id = 3;  # FIXME
 
@@ -59,23 +64,28 @@ sub launch {
   my $chain = chain_dsl($chain_id, $step);
 
   sub stash {
+    no warnings;
     # Lets state change during chain iteration passing parameters to the
     # current job stash.  Usage: stash var => 'value'
     @_ > 0 ? $job->job_stash({%{$job->job_stash}, @_})
            : $job->job_stash;
   }
 
-  sub run { $c->launch($_[0]) }
+  sub run { no warnings; $c->launch($_[0]) }
 
   sub eval_row {
+    no warnings;
     my $row = shift;
-    my $sem = Baseliner->model('Semaphores')->request(
-                                              sem => $row->{service},
-                                              bl  => $job->{job_data}->{bl},
-                                              who => $job->{job_data}->{name},
-                                              active => 0);
+    my $sem_model = Baseliner->model('Semaphores');
+    my $sem = $sem_chain
+      ? $sem_model->request(sem    => $row->{service},
+                            bl     => $job->{job_data}->{bl},
+                            who    => $job->{job_data}->{name},
+                            active => 0)
+      : q{};
+
     eval qq| sub service { \$row->{service} } $row->{dsl_code}; |;
-    $sem->release;
+    $sem->release if $sem;
     _throw $@ if $@ && _bde_conf('kill_chain');
   }
 

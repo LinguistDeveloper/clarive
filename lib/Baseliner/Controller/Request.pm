@@ -140,7 +140,7 @@ sub list_json : Path('/request/list_json') {
         my $list = $c->model('Request')->list(
                 pending =>$p->{all} ? 0 : 1,
                 action  =>$p->{manage} ? '' : [ $c->model('Permissions')->list( username=>$username, ns=>"any" ) ],
-                project =>$p->{manage} ? '' : [ $c->model('Permissions')->user_namespaces( $username ) ],
+                project =>$p->{manage} ? '' : [ $c->model('Permissions')->user_projects( username=>$username ) ],
                 start   =>$start, limit=>999999,
                 query   =>'',
                 sort    =>"$sort $dir",
