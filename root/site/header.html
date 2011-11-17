@@ -71,7 +71,7 @@ Ext.onReady(function(){
         //height: 26,
         height: <% $c->config->{toolbar_height} // 26 %>,
         items: [
-            '<img src="/static<% $c->stash->{theme_dir} %>/images/logo.jpg" style="border-style:outset;border-width:1px;padding:0px;"/>',
+            '<img src="/static<% $c->stash->{theme_dir} %>/images/logo.jpg" style="border:0px;"/>',
             '-',
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
             ,
