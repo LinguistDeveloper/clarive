@@ -23,7 +23,7 @@ $SIG{TERM} = sub { die "Baseliner process $$ stopped." };
 
 if( !@ARGV ) {
     require Baseliner;
-    my $c = Baseliner->commandline; # XXX
+    my $c = Baseliner::Cmd->new;
 
     my $version = $c->config->{About}->{version};
     print "Baseliner $version\n";
