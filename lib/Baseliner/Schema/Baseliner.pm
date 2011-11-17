@@ -11,17 +11,27 @@ use Baseliner::Utils;
 sub deploy_schema {
     my ( $self, %p ) = @_;
     my $config = delete $p{ config };
-    warn _dump $config;
+    warn _dump $config unless $p{show_config};
     $config ||= eval "Baseliner->config";
     die "Could not connect to db: no config loaded" unless $config;
     my ( $dsn, $user, $pass ) = @{ $config->{ 'Model::Baseliner' }->{ 'connect_info' } };
     $self->db_driver( $dsn );
     my $schema = __PACKAGE__->connect( $dsn, $user, $pass, { RaiseError=>1 } )
         or die "Failed to connect to db";
-    $schema->deploy(
-        {
-            add_drop_table    => 1,
+    if( $p{show} ) {
+        my $sqlt_opts = {
+            add_drop_table => $p{drop}, 
+            quote_table_names => exists $p{quote},
+            sources => $p{schema},
+        };
+        print join ";\n\n",$schema->deployment_statements(undef, undef, undef, $sqlt_opts );
+        print ";\n";
+        return 0;
+    } else {
+        $schema->deploy({
+            add_drop_table    => $p{drop},
             quote_table_names => 0,
+            sources           => $p{schema},
             quote_field_names => 0,
             trace             => 1,
             filters           => [
@@ -45,9 +55,9 @@ sub deploy_schema {
                 }
             ],
             %p
-        }
-    );
-    #$schema->storage->debug(1);
+        });
+        #$schema->storage->debug(1);
+    }
 }
 
 sub db_driver {
@@ -68,3 +78,4 @@ sub db_driver {
 }
 
 1;
+

@@ -21,6 +21,7 @@ Usage, from the command line:
     bali deploy --feature ca.harvest [ --feature ... ]
 
 =cut
+
 use v5.10;
 use strict;
 use warnings;
@@ -87,6 +88,7 @@ say pre . "Deploying schema " . join', ', _array($args{schema});
 say pre . "Starting DB deploy...";
 $Baseliner::Schema::Baseliner::DB_DRIVER = 'SQLite';
 my $env = $args{env} || $ENV{BALI_ENV} || 't';
+$env = @$env if ref $env eq 'ARRAY';
 my $cfg_file = "$Bin/../baseliner_$env.conf";
 say pre . "Config file: $cfg_file";
 
