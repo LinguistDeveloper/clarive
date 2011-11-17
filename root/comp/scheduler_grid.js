@@ -8,13 +8,13 @@
     my $hm =  $now->strftime('%H:%M');
 </%perl>
 (function(){
-	var store=new Ext.data.JsonStore({
-		root: 'data', 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/scheduler/json',
-		fields: [ 
+    var store=new Ext.data.JsonStore({
+        root: 'data', 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id', 
+        url: '/scheduler/json',
+        fields: [ 
             {name: 'id'},
             {name: 'name'},
             {name: 'service'},
@@ -26,8 +26,8 @@
             {name: 'workdays'},
             {name: 'status'},
             {name: 'pid'}
-		]
-	});
+        ]
+    });
 
     var myMask = new Ext.LoadMask(Ext.getBody(), {msg:_("Please wait...")});
 
@@ -43,7 +43,7 @@
 
 
     var button_toggle_activation = new Ext.Toolbar.Button({
-        text: _('New task'),
+        text: _('Activate'),
         hidden: true,
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -142,24 +142,24 @@
         emptyMsg: "No hay registros disponibles"
     });
         
-	
+    
     store.load({params:{start:0 , limit: ps}}); 
 
-	// create the grid
-	var grid = new Ext.grid.GridPanel({
-		renderTo: 'main-panel',
-		title: '<% _loc('Roles') %>',
-		header: false,
+    // create the grid
+    var grid = new Ext.grid.GridPanel({
+        renderTo: 'main-panel',
+        title: '<% _loc('Roles') %>',
+        header: false,
         stripeRows: true,
-		autoScroll: true,
-		autoWidth: true,
-		store: store,
-		viewConfig: [{
-				forceFit: true
-		}],
-		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		loadMask:'true',
-		columns: [
+        autoScroll: true,
+        autoWidth: true,
+        store: store,
+        viewConfig: {
+                forceFit: true
+        },
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        loadMask:'true',
+        columns: [
             { header: _('Name'), width: 200, dataIndex: 'name', sortable: true },   
             { header: _('Service'), width: 200, dataIndex: 'service', sortable: true },   
             { header: _('Parameters'), width: 200, dataIndex: 'parameters', sortable: true },   
@@ -167,17 +167,17 @@
             { header: _('Last execution'), width: 200, dataIndex: 'last_exec', sortable: true },
             { header: _('PID'), width: 200, dataIndex: 'pid', sortable: true },
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
-			{ header: _('Frequency'), width: 200, dataIndex: 'frequency', sortable: true },
+            { header: _('Frequency'), width: 200, dataIndex: 'frequency', sortable: true },
             { header: _('State'), width: 200, dataIndex: 'status', sortable: true },
             { header: _('Workdays'), width: 200, dataIndex: 'workdays', sortable: true }
-		],
-		autoSizeColumns: true,
-		deferredRender:true,      
-		bbar: paging,
+        ],
+        autoSizeColumns: true,
+        deferredRender:true,      
+        bbar: paging,
         tbar: tbar
-	});
+    });
 
-	grid.getView().forceFit = true;
+    grid.getView().forceFit = true;
 
     grid.on("rowclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
@@ -187,6 +187,7 @@
     var show_buttons = function () {
         var sm = grid.getSelectionModel();
         var r = sm.getSelected();
+        if( r == undefined ) return;
 
         if ( r.data.status == 'IDLE' || r.data.status == 'KILLED' ) {
             button_run_schedule.show();
@@ -214,46 +215,35 @@
     };
 
     var schedule_id = new Ext.form.Hidden({
-        name: 'id',
-        id: 'id-<% $iid %>'
-
+        name: 'id'
     });
 
     var schedule_name = new Ext.form.TextField({
         name: 'name',
         fieldLabel: _('Name'),
         width: 150,
-        labelWidth: 250,
-        id: 'name-<% $iid %>'
+        labelWidth: 250
     });
 
-    var schedule_service = new Ext.form.TextField({
-        name: 'service',
-        fieldLabel: _('Service'),
-        width: 150,
-        labelWidth: 250,
-        id: 'service-<% $iid %>'
-    });
+    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
 
-    var schedule_description = new Ext.form.TextField({
+    var schedule_description = new Ext.form.TextArea({
         name: 'description',
         fieldLabel: _('Description'),
         width: 150,
-        labelWidth: 250,
-        id: 'description-<% $iid %>'
+        height: 60,
+        labelWidth: 250
     });
 
     var schedule_parameters = new Ext.form.TextArea({
-        name: 'parameters',
-        id: 'parameters-<% $iid %>'
+        name: 'parameters'
     });
 
     var schedule_date = new Ext.ux.form.DateFieldPlus({
-        id: 'date-<% $iid %>',
         name: 'date',
         disabled: false,
         readOnly: false,
-        fieldLabel: '<% _loc('Date') %>',
+        fieldLabel: _('Date'),
         allowBlank: false,
         format: 'Y-m-d',
         value: '<% $today %>',
@@ -273,10 +263,9 @@
     });
 
     var schedule_time = new Ext.ux.form.Spinner({
-        id:   'time-<% $iid %>',
         name: 'time',
         format : "H:i",
-        fieldLabel: '<% _loc('Time') %>',
+        fieldLabel: _('Time'),
         allowBlank: false,
         disabled:false,
         value: '<% $hm %>',
@@ -287,7 +276,6 @@
     });
 
     var schedule_frequency = new Ext.form.TextField({
-        id:   'frequency-<% $iid %>',
         name: 'frequency',
         width: 150,
         labelWidth: 250,
@@ -295,7 +283,6 @@
     });
 
     var chk_schedule_workdays = new Ext.form.Checkbox({
-        id: 'workdays-<% $iid %>',
         name: 'workdays',
         fieldLabel: _('Workdays only')
     });
@@ -333,14 +320,16 @@
                 }
             }
         ],
-        items: [ schedule_id, schedule_name, schedule_service, schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
+        defaults: { width: 400 },
+        items: [ schedule_id, schedule_name, schedule_service,
+            schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
     });
 
     var win = new Ext.Window({
-        layout: 'fit', 
         autoScroll: true,
         title: _("Schedule information"),
-        height: 230, width: 300, 
+        width: 550, 
+        closeAction: 'hide',
         items: [ schedule_form ]
     });
 
@@ -359,9 +348,8 @@
 
     var edit_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             schedule_id.setValue(r.data.id);
             schedule_name.setValue(r.data.name);
             schedule_service.setValue(r.data.service);
@@ -383,9 +371,8 @@
 
     var delete_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             Baseliner.ajaxEval( '/scheduler/delete_schedule', 
                     { id: r.data.id }, 
                     function(response) {
@@ -404,9 +391,8 @@
 
     var toggle_activation = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             Baseliner.ajaxEval( '/scheduler/toggle_activation', 
                     { id: r.data.id, status: r.data.status }, 
                     function(response) {
@@ -428,9 +414,8 @@
 
     var duplicate_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             schedule_id.setValue(undefined);
             schedule_name.setValue(r.data.name+'_copy');
             schedule_service.setValue(r.data.service);
@@ -449,9 +434,8 @@
 
     var run_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             Baseliner.ajaxEval( '/scheduler/run_schedule', 
                     { id: r.data.id }, 
                     function(response) {
@@ -472,13 +456,12 @@
 
     var kill_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
             Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text){
               if (btn == 'Yes'){
                 alert('go ahead');
                 } else {
-                    r = sm.getSelected();
+                    var r = sm.getSelected();
                     Baseliner.ajaxEval( '/scheduler/kill_schedule', 
                             { id: r.data.id }, 
                             function(response) {
@@ -508,8 +491,8 @@
         }
         return true;
     };
-	
-	return grid;
+    
+    return grid;
 })();
 
 

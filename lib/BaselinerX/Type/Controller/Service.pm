@@ -95,7 +95,7 @@ sub tree : Local {
     my $field = $p->{field} || 'name';
     foreach my $key ( $c->registry->starts_with( 'service' ) ) {
         my $service = Baseliner::Core::Registry->get( $key );
-        _log _dump $service;
+        _debug _dump $service;
         push @tree,
           {
             id   => $key,
@@ -104,7 +104,44 @@ sub tree : Local {
             attributes => { key => $key, name=>$service->{name}, id=>$service->{id} }
           };
     }
-    $c->stash->{json} = [ sort { $a->{text} cmp $b->{text} } @tree ];
+    $c->stash->{json} = { data => [ sort { $a->{text} cmp $b->{text} } @tree ], totalCount=>scalar @tree };
+    $c->forward("View::JSON");
+}
+
+sub tree : Local {
+	my ($self,$c)=@_;
+    my $list = $c->registry->starts_with( 'service' ) ;
+    my $p = $c->req->params;
+    my @tree;
+    my $field = $p->{field} || 'name';
+    foreach my $key ( $c->registry->starts_with( 'service' ) ) {
+        my $service = Baseliner::Core::Registry->get( $key );
+        _debug _dump $service;
+        push @tree,
+          {
+            id   => $key,
+            leaf => \1,
+            text => ( $field eq 'key' ? $key : $service->{$field} ) || $key,
+            attributes => { key => $key, name=>$service->{name}, id=>$service->{id} }
+          };
+    }
+    $c->stash->{json} = { data => [ sort { $a->{text} cmp $b->{text} } @tree ], totalCount=>scalar @tree };
+    $c->forward("View::JSON");
+}
+
+sub combo : Local {
+	my ($self,$c)=@_;
+    my $list = $c->registry->starts_with( 'service' ) ;
+    my $p = $c->req->params;
+    my $query = qr/$p->{query}/ if defined $p->{query};
+    my @data;
+    foreach my $key ( $c->registry->starts_with( 'service' ) ) {
+        my $service = Baseliner::Core::Registry->get( $key );
+        my $name = length $service->{name} ? "$key - $service->{name}" : $key;
+        next if defined $query && $name !~ $query;
+        push @data, { id=>$key, name=>$name };
+    }
+    $c->stash->{json} = { data => [ sort { $a->{id} cmp $b->{id} } @data ], totalCount=>scalar @data };
     $c->forward("View::JSON");
 }
 

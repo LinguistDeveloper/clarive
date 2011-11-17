@@ -105,7 +105,7 @@ sub set_task_data {
     my $status = $p{status};
     my $pid = $p{pid};
 
-    my $task = Baseliner->model('BaliScheduler')->find($taskid);
+    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
 
 	$task->status($status) if $status;
 	$task->pid($pid) if $pid;
@@ -119,7 +119,7 @@ sub schedule_task {
     my $taskid = $p{taskid};
     my $when = $p{when};
 
-    my $task = Baseliner->model('BaliScheduler')->find($taskid);
+    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
     my $next_exec;
 
 	if ( $when eq 'now') {
@@ -138,7 +138,7 @@ sub set_last_execution {
     my $taskid = $p{taskid};
     my $when = $p{when};
 
-    my $task = Baseliner->model('BaliScheduler')->find($taskid);
+    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
 
 	$task->last_exec($when);
 	$task->update;
@@ -164,7 +164,7 @@ sub next_from_last_schedule {
     my ( $self, %p ) = @_;
 
     my $taskid = $p{taskid};
-    my $task = Baseliner->model('BaliScheduler')->find($taskid);
+    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
 
 	my $now = $self->now;
 	my $last_schedule = Class::Date->new($task->next_exec);

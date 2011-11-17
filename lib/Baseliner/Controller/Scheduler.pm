@@ -94,7 +94,7 @@ sub delete_schedule : Local {
 
     try{
         if ( $id ) {
-            my $row = $c->model('Baseliner::BaliSchedule')->find($id);
+            my $row = $c->model('Baseliner::BaliScheduler')->find($id);
             $row->delete;
         }
         $c->stash->{json} = {msg => 'ok', success => \1};  
@@ -147,7 +147,7 @@ sub save_schedule : Local {
 
     try{
         if ( !$id ) {
-            $c->model('Baseliner::BaliSchedule')->create( { 
+            $c->model('Baseliner::BaliScheduler')->create( { 
                 name => $name, 
                 service => $service,
                 next_exec => $next_exec,
@@ -157,7 +157,7 @@ sub save_schedule : Local {
                 workdays => $workdays
             } );
         } else {
-            my $row = $c->model('Baseliner::BaliSchedule')->find($id);
+            my $row = $c->model('Baseliner::BaliScheduler')->find($id);
             $row->name($name); 
             $row->service($service);
             $row->next_exec($next_exec);
