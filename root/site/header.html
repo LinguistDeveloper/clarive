@@ -37,6 +37,9 @@
     <script type="text/javascript" src="/static/superbox/superbox.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/superbox/superbox.css" /> 
 
+    <!-- model depends on superbox -->
+    <script type="text/javascript" src="/site/model.js"></script>
+
     <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
     <!-- BEGIN <% $include->{name} %> -->

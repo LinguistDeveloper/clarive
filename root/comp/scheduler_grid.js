@@ -1,20 +1,21 @@
+
 <%perl>
     use Baseliner::Utils;
     use utf8;
     my $now = DateTime->now;
     my $iid = "div-" . _nowstamp;
     $now->set_time_zone(_tz);
-    my $today =  $now->strftime('%Y-%m-%d');
+    my $today =  $now->strftime('%d/%m/%Y');
     my $hm =  $now->strftime('%H:%M');
 </%perl>
 (function(){
-	var store=new Ext.data.JsonStore({
-		root: 'data', 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/scheduler/json',
-		fields: [ 
+    var store=new Ext.data.JsonStore({
+        root: 'data', 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id', 
+        url: '/scheduler/json',
+        fields: [ 
             {name: 'id'},
             {name: 'name'},
             {name: 'service'},
@@ -24,9 +25,10 @@
             {name: 'description'},
             {name: 'frequency'},
             {name: 'workdays'},
-            {name: 'status'}
-		]
-	});
+            {name: 'status'},
+            {name: 'pid'}
+        ]
+    });
 
     var myMask = new Ext.LoadMask(Ext.getBody(), {msg:_("Please wait...")});
 
@@ -38,6 +40,17 @@
         store: store,
         params: {start: 0, limit: ps },
         emptyText: '<% _loc('<Enter your search string>') %>'
+    });
+
+
+    var button_toggle_activation = new Ext.Toolbar.Button({
+        text: _('Activate'),
+        hidden: true,
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            myMask.show();
+            toggle_activation();
+        }
     });
 
     var button_new_schedule = new Ext.Toolbar.Button({
@@ -54,7 +67,7 @@
 
     var button_edit_schedule = new Ext.Toolbar.Button({
         text: _('Edit task'),
-        hidden: false,
+        hidden: true,
         icon:'/static/images/silk/clock_edit.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -66,7 +79,7 @@
 
     var button_delete_schedule = new Ext.Toolbar.Button({
         text: _('Delete task'),
-        hidden: false,
+        hidden: true,
         icon:'/static/images/silk/clock_delete.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -78,7 +91,7 @@
 
     var button_duplicate_schedule = new Ext.Toolbar.Button({
         text: _('Duplicate task'),
-        hidden: false,
+        hidden: true,
         icon:'/static/images/silk/clock_red.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -90,7 +103,7 @@
 
     var button_run_schedule = new Ext.Toolbar.Button({
         text: _('Run now'),
-        hidden: false,
+        hidden: true,
         icon:'/static/images/silk/clock_play.png',
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -100,13 +113,25 @@
         }
     });
 
+    var button_kill_schedule = new Ext.Toolbar.Button({
+        text: _('Kill'),
+        hidden: true,
+        icon:'/static/images/silk/clock_stop.png',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            kill_schedule();
+        }
+    });
+
     var tbar = new Ext.Toolbar({ items: [ _('Search') + ': ', ' ',
                     search_field,
                     button_new_schedule,
                     button_edit_schedule,
                     button_delete_schedule,
                     button_duplicate_schedule,
-                    button_run_schedule
+                    button_toggle_activation,
+                    button_run_schedule,
+                    button_kill_schedule
                 ]
     });
 
@@ -118,79 +143,108 @@
         emptyMsg: "No hay registros disponibles"
     });
         
-	
+    
     store.load({params:{start:0 , limit: ps}}); 
 
-	// create the grid
-	var grid = new Ext.grid.GridPanel({
-		renderTo: 'main-panel',
-		title: '<% _loc('Roles') %>',
-		header: false,
+    // create the grid
+    var grid = new Ext.grid.GridPanel({
+        renderTo: 'main-panel',
+        title: '<% _loc('Roles') %>',
+        header: false,
         stripeRows: true,
-		autoScroll: true,
-		autoWidth: true,
-		store: store,
-		viewConfig: [{
-				forceFit: true
-		}],
-		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		loadMask:'true',
-		columns: [
+        autoScroll: true,
+        autoWidth: true,
+        store: store,
+        viewConfig: {
+                forceFit: true
+        },
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        loadMask:'true',
+        columns: [
             { header: _('Name'), width: 200, dataIndex: 'name', sortable: true },   
             { header: _('Service'), width: 200, dataIndex: 'service', sortable: true },   
             { header: _('Parameters'), width: 200, dataIndex: 'parameters', sortable: true },   
             { header: _('Next execution'), width: 200, dataIndex: 'next_exec', sortable: true },   
             { header: _('Last execution'), width: 200, dataIndex: 'last_exec', sortable: true },
+            { header: _('PID'), width: 200, dataIndex: 'pid', sortable: true },
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
-			{ header: _('Frequency'), width: 200, dataIndex: 'frequency', sortable: true },
+            { header: _('Frequency'), width: 200, dataIndex: 'frequency', sortable: true },
             { header: _('State'), width: 200, dataIndex: 'status', sortable: true },
             { header: _('Workdays'), width: 200, dataIndex: 'workdays', sortable: true }
-		],
-		autoSizeColumns: true,
-		deferredRender:true,      
-		bbar: paging,
+        ],
+        autoSizeColumns: true,
+        deferredRender:true,      
+        bbar: paging,
         tbar: tbar
-	});
+    });
 
-	grid.getView().forceFit = true;
+    grid.getView().forceFit = true;
+
+    grid.on("rowclick", function(grid, rowIndex, e ) {
+        var r = grid.getStore().getAt(rowIndex);
+        show_buttons();        
+    });
+
+    var show_buttons = function () {
+        var sm = grid.getSelectionModel();
+        var r = sm.getSelected();
+        if( r == undefined ) return;
+
+        if ( r.data.status == 'IDLE' || r.data.status == 'KILLED' ) {
+            button_run_schedule.show();
+            button_toggle_activation.setText( _('Deactivate') );
+            button_toggle_activation.setIcon( '/static/images/silk/clock_pause.png');
+            button_delete_schedule.show();
+            button_toggle_activation.show();
+            button_kill_schedule.hide();
+        } else if ( r.data.status == 'INACTIVE') {
+            button_toggle_activation.setText( _('Activate') );
+            button_toggle_activation.setIcon( '/static/images/silk/clock_go.png');
+            button_toggle_activation.show();
+            button_delete_schedule.show();
+            button_run_schedule.hide();
+            button_kill_schedule.hide();
+        } else if ( r.data.status == 'RUNNING' ) {
+            button_toggle_activation.hide();
+            button_delete_schedule.hide();
+            button_run_schedule.hide();
+            button_kill_schedule.show();
+        }
+        button_edit_schedule.show();
+        button_duplicate_schedule.show();
+        tbar.doLayout();
+    };
 
     var schedule_id = new Ext.form.Hidden({
-        name: 'id',
-        id: 'id-<% $iid %>'
-
+        name: 'id'
     });
 
     var schedule_name = new Ext.form.TextField({
         name: 'name',
         fieldLabel: _('Name'),
         width: 150,
-        labelWidth: 250,
-        id: 'name-<% $iid %>'
+        labelWidth: 250
     });
 
-    var schedule_service = new Ext.form.TextField({
-        name: 'service',
-        fieldLabel: _('Service'),
+    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
+
+    var schedule_description = new Ext.form.TextArea({
+        name: 'description',
+        fieldLabel: _('Description'),
         width: 150,
-        labelWidth: 250,
-        id: 'service-<% $iid %>'
+        height: 60,
+        labelWidth: 250
     });
 
     var schedule_parameters = new Ext.form.TextArea({
-        name: 'parameters',
-        id: 'parameters-<% $iid %>'
+        name: 'parameters'
     });
 
-    var _datePicker = null;
-
-    function _setDatePicker(picker){_datePicker = picker;};
-
     var schedule_date = new Ext.ux.form.DateFieldPlus({
-        id: 'date-<% $iid %>',
         name: 'date',
         disabled: false,
         readOnly: false,
-        fieldLabel: '<% _loc('Date') %>',
+        fieldLabel: _('Date'),
         allowBlank: false,
         format: 'Y-m-d',
         value: '<% $today %>',
@@ -210,10 +264,9 @@
     });
 
     var schedule_time = new Ext.ux.form.Spinner({
-        id:   'time-<% $iid %>',
         name: 'time',
         format : "H:i",
-        fieldLabel: '<% _loc('Time') %>',
+        fieldLabel: _('Time'),
         allowBlank: false,
         disabled:false,
         value: '<% $hm %>',
@@ -224,7 +277,6 @@
     });
 
     var schedule_frequency = new Ext.form.TextField({
-        id:   'frequency-<% $iid %>',
         name: 'frequency',
         width: 150,
         labelWidth: 250,
@@ -232,7 +284,6 @@
     });
 
     var chk_schedule_workdays = new Ext.form.Checkbox({
-        id: 'workdays-<% $iid %>',
         name: 'workdays',
         fieldLabel: _('Workdays only')
     });
@@ -270,14 +321,16 @@
                 }
             }
         ],
-        items: [ schedule_id, schedule_name, schedule_service, schedule_date, schedule_time, schedule_frequency, chk_schedule_workdays ]
+        defaults: { width: 400 },
+        items: [ schedule_id, schedule_name, schedule_service,
+            schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
     });
 
     var win = new Ext.Window({
-        layout: 'fit', 
         autoScroll: true,
         title: _("Schedule information"),
-        height: 230, width: 300, 
+        width: 550, 
+        closeAction: 'hide',
         items: [ schedule_form ]
     });
 
@@ -296,9 +349,8 @@
 
     var edit_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             schedule_id.setValue(r.data.id);
             schedule_name.setValue(r.data.name);
             schedule_service.setValue(r.data.service);
@@ -311,6 +363,7 @@
             }
             schedule_frequency.setValue(r.data.frequency);
             chk_schedule_workdays.checked = r.data.workdays ==1?true:false;
+            schedule_description.setValue(r.data.description);
             win.show();
         } else {
             alert(_('Select a row'));
@@ -320,9 +373,8 @@
 
     var delete_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             Baseliner.ajaxEval( '/scheduler/delete_schedule', 
                     { id: r.data.id }, 
                     function(response) {
@@ -332,20 +384,40 @@
                         } else {
                             Baseliner.message( _('ERROR'), _('Scheduled task not deleted') );
                         }
+                        myMask.hide();
                     }
             );
 
-        } else {
-            alert(_('Select a row'));
         }     
-        myMask.hide();
     };
+
+    var toggle_activation = function () {
+        var sm = grid.getSelectionModel();
+        if ( sm.hasSelection() ){
+            var r = sm.getSelected();
+            Baseliner.ajaxEval( '/scheduler/toggle_activation', 
+                    { id: r.data.id, status: r.data.status }, 
+                    function(response) {
+                        if ( response.success ) {
+                            Baseliner.message( _('SUCCESS'), _(response.msg) );
+                            store.load({params:{ limit: ps }});
+                        } else {
+                            Baseliner.message( _('ERROR'), _(response.msg) );
+                        }
+                        myMask.hide();
+                    }
+            ); 
+        }     
+    };
+
+    store.on("load", function () {
+        show_buttons();
+    });
 
     var duplicate_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             schedule_id.setValue(undefined);
             schedule_name.setValue(r.data.name+'_copy');
             schedule_service.setValue(r.data.service);
@@ -358,17 +430,14 @@
             }
             schedule_frequency.setValue(r.data.frequency);
             win.show();
-        } else {
-            alert(_('Select a row'));
         }     
         myMask.hide();
     };
 
     var run_schedule = function () {
         var sm = grid.getSelectionModel();
-        var r;
         if ( sm.hasSelection() ){
-            r = sm.getSelected();
+            var r = sm.getSelected();
             Baseliner.ajaxEval( '/scheduler/run_schedule', 
                     { id: r.data.id }, 
                     function(response) {
@@ -387,6 +456,31 @@
         myMask.hide();
     };
 
+    var kill_schedule = function () {
+        var sm = grid.getSelectionModel();
+        if ( sm.hasSelection() ){
+            Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text){
+              if (btn == 'Yes'){
+                alert('go ahead');
+                } else {
+                    var r = sm.getSelected();
+                    Baseliner.ajaxEval( '/scheduler/kill_schedule', 
+                            { id: r.data.id }, 
+                            function(response) {
+                                if ( response.success ) {
+                                    Baseliner.message( _('SUCCESS'), _('Task killed') );
+                                    store.load({params:{ limit: ps }});
+                                } else {
+                                    Baseliner.message( _('ERROR'), _('Could not kill task') );
+                                }
+                                myMask.hide();
+                            }
+                    );
+                }
+            });
+        }
+    };
+
     var valida_hora = function (time) {
         //var regexp = /^([0-1][0-9]|[2][0-3]):([0-5][0-9])$/;
         var regexp = /^(([0]?[1-9]|1[0-2])(:)([0-5][0-9]))$/;
@@ -397,11 +491,10 @@
         } else {
             returnvalue = true;
         }
-        //return returnvalue;
         return true;
     };
-	
-	return grid;
+    
+    return grid;
 })();
 
 

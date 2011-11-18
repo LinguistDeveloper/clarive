@@ -52,7 +52,6 @@
 
 		// create the grid
 		var grid = new Ext.grid.GridPanel({
-			title: '<% _loc('Config') %>',
 			header: false,
             stripeRows: true,
 			autoScroll: true,
@@ -171,20 +170,15 @@
 			// Baseliner.addNewTabComp('/job/log/list?id_job=' + r.get('id') , '<% _loc('Log') %>' + ' ' + r.get('name') );
 		});		
 
-
-        grid.on("activate", function(){
-            grid.setTitle("<% _loc('Config') %>");
-        });
-
         var first_load = true;
-        grid.on("activate", function() {
+        /* grid.on("activate", function() {
             if( first_load ) {
                 Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
                 first_load = false;
             }
         });
         store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask(); } }); 
-
+		*/
 	return grid;
 })();
 

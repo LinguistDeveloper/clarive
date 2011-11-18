@@ -8,6 +8,8 @@ use BaselinerX::BdeUtils;
 use Class::Date qw/date now/;
 use utf8;
 
+with 'Baseliner::Role::Service';
+
 register 'service.baseliner.update.ldif' => {
   name    => 'Update Baseliner from Ldif files',
   handler => \&init
@@ -50,7 +52,7 @@ sub init {
   if (scalar @added_projects) {
     _log "Projects updated: " . join ', ', @added_projects;
   }
-
+  
 #  # It's not a bad idea to update the projects now.
 #  _log "Applying changes...";
 #  $c->launch('service.load.bali.project_once');
@@ -60,7 +62,8 @@ sub init {
   # ldif files. Meaning that they shouldn't exist in the database.
   _log "Deleting users and their roles...";
   Baseliner->model('Baseliner::BaliUser')->delete;
-  Baseliner->model('Baseliner::BaliRoleUser')->delete;
+  $self->delete_non_immutable_data;
+  # Baseliner->model('Baseliner::BaliRoleUser')->delete;
   _log "Users and roles deleted.";
 
   _log "Getting JU users...";
@@ -157,10 +160,25 @@ sub insert_project { # Str -> ResultSet
 sub _ju_usernames { # Undef -> Array
   my $har_db = BaselinerX::CA::Harvest::DB->new;
   my $query = qq{
-    SELECT DISTINCT codigo_ju
+    SELECT DISTINCT(codigo_ju)
                FROM inf_ju
   };
   $har_db->db->array($query);
+}
+
+sub delete_non_immutable_data {
+  sub _immutable_role_ids { # -> Array
+    my $b_role = Baseliner->model('Baseliner::BaliRole');
+    my $rs = $b_role->search({'substr(role, 0, 1)' => '#'}, {select => 'id'});
+    rs_hashref($rs);
+    map { $_->{id} } $rs->all;
+  }
+  my $rs_roleuser = do { # -> Object
+    my @immutable_role_ids = _immutable_role_ids();
+    my $b_roleuser = Baseliner->model('Baseliner::BaliRoleuser');
+    $b_roleuser->search({id_role => {'!=' => \@immutable_role_ids}});
+  };
+  $rs_roleuser->delete;
 }
 
 1;

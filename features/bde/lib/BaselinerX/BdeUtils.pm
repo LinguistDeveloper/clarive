@@ -9,7 +9,7 @@ use Exporter::Tidy default => [
   check_package_state_do_or_die get_cam_uc envia_correo_pase paquetes_html
   get_token lifecycle_for_packagename _cam _cam_from store_backup bl_statename
   ahora _projects_from_elements hardistXML _bde_conf get_backups inf fix_net
-  net_version clickonce_version)];
+  net_version clickonce_version insert_aoh)];
 
 sub get_package_dependencies {
     my ( $proyecto, $tipo_pase, $paquetes_ref ) = @_;
@@ -664,6 +664,12 @@ sub clickonce_version {
   }
   close(PRJ);
   return ($version, $incremento);
+}
+
+sub insert_aoh {
+  my $m = shift;
+  Baseliner->model($m)->create($_) for @_;
+  return;
 }
 
 1;

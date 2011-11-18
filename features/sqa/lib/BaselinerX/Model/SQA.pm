@@ -1,10 +1,10 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054129
-#	Fecha de pase .................... 2011/11/17 20:29:43
+#	Pase ............................. N.PROD0000054132
+#	Fecha de pase .................... 2011/11/18 07:01:32
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
-#	Versión del elemento ............. 1
+#	Versión del elemento ............. 2
 #	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
 
 package BaselinerX::Model::SQA;
@@ -249,7 +249,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 
 		_log "Miro si hay paquetes";
 		if ( $packages ) {
-			$hash_data->{PACKAGES} = \@{$packages};
+			$hash_data->{PACKAGES} = [ _array $packages ];
 		}
 				
 		$job_row->data( _dump $hash_data ) if $hash_data;
@@ -313,13 +313,13 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 
 	$compileTests = 0;
 
-	for my $source ( @{ $sp->{sources} || [] } ) {
+	for my $source ( _array $sp->{sources} ) {
 		_log "Source: $source";
 		$compileTests = 1
 		  if $nature =~ /J2EE|JAVABATCH/ && $source eq $subproject . "_TEST";
 	}
 
-	for my $output ( @{ $sp->{output} || [] } ) {
+	for my $output ( _array $sp->{output} ) {
 		_log "Output: $output";
 	}
 
@@ -383,7 +383,7 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 	}
 
 	my $tarfile = "$path/$CAMPath/${subproject}_${nature}_src.jar";
-	my $prjs = join " ", _unique @{ $sp->{sources} };
+	my $prjs = join " ", _unique _array $sp->{sources};
 	_log "cd $path/$CAMPath/$natureFinal;jar cvf $tarfile $prjs";
 	my $RET = `cd "$path/$CAMPath/$natureFinal";jar cvf "$tarfile" $prjs`;
 
@@ -1073,7 +1073,7 @@ sub grab_results {    # recupera resultados
 			$global = $data->{category}{checkpoint}{$checkpoint}{violation};
 		}
 
-		for my $linea ( @{$global} ) {
+		for my $linea ( _array $global ) {
 			$linea =~ s/\"| |\n|.$//g;
 
 			my ( $indicador, $valor ) = split ":", $linea;
@@ -1225,7 +1225,7 @@ sub grab_package_results {    # recupera resultados
 		$cnt++;
 	}
 
-	$hash_data->{PACKAGES} = \@{$packages};
+	$hash_data->{PACKAGES} = [ _array $packages ];
 
 	$hash_data->{harvest_project} = $project;
 	
@@ -1796,7 +1796,7 @@ sub end_pkg_analisys_mail {
 	push @users, $username;
 
 	_log "Usuarios: " . join ",", @users;
-	_log "Paquetes: " . join ",", @{$packages};
+	_log "Paquetes: " . join ",", _array $packages;
 
 	my $to = [ _unique(@users) ];
 
@@ -1852,7 +1852,7 @@ sub start_pkg_analisys_mail {
 	push @users, $username;
 
 	_log "Usuarios: " . join ",", @users;
-	_log "Paquetes: " . join ",", @{$packages};
+	_log "Paquetes: " . join ",", _array $packages;
 
 	my $to = [ _unique(@users) ];
 

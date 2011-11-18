@@ -11,6 +11,7 @@ use 5.010;
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.admin.scheduler' => { name=>'Admin Scheduler' };
+
 register 'menu.admin.scheduler' => {
     label    => 'Scheduler',
     url_comp => '/scheduler/grid',
@@ -51,6 +52,7 @@ sub json : Local {
             frequency   => 'frequency',
             workdays    => 'workdays',
             status      => 'status',
+            pid         => 'pid'
         }
     );
 
@@ -60,7 +62,7 @@ sub json : Local {
     my $rs = $c->model('Baseliner::BaliScheduler')->search($where, $args);
 
     my $pager = $rs->pager;
-    $cnt = $pager->total_entries;
+    my $cnt = $pager->total_entries;
 
     my @rows;
     while ( my $r = $rs->next ) {
@@ -76,6 +78,7 @@ sub json : Local {
             frequency   => $r->frequency,
             workdays    => $r->workdays,
             status      => $r->status,
+            pid         => $r->pid
             }
     }
     $c->stash->{json} = { data => \@rows, totalCount=>$cnt };     
@@ -91,7 +94,7 @@ sub delete_schedule : Local {
 
     try{
         if ( $id ) {
-            my $row = $c->model( 'Baseliner::BaliSchedule' )->find($id);
+            my $row = $c->model('Baseliner::BaliScheduler')->find($id);
             $row->delete;
         }
         $c->stash->{json} = {msg => 'ok', success => \1};  
@@ -136,13 +139,15 @@ sub save_schedule : Local {
     my $parameters = $p->{parameters};
     my $frequency = $p->{frequency};
     my $description = $p->{description};
-    my $workdays = $p->{workdays} eq 'on'?1:0;
+    my $workdays = $p->{workdays} && $p->{workdays} eq 'on'?1:0;
+
+    _log "Valor de workdays: $workdays";
 
     _log _dump $p;
 
     try{
         if ( !$id ) {
-            $c->model( {'Baseliner::BaliSchedule'} )->create( { 
+            $c->model('Baseliner::BaliScheduler')->create( { 
                 name => $name, 
                 service => $service,
                 next_exec => $next_exec,
@@ -152,7 +157,7 @@ sub save_schedule : Local {
                 workdays => $workdays
             } );
         } else {
-            my $row = $c->model( 'Baseliner::BaliSchedule' )->find($id);
+            my $row = $c->model('Baseliner::BaliScheduler')->find($id);
             $row->name($name); 
             $row->service($service);
             $row->next_exec($next_exec);
@@ -167,6 +172,46 @@ sub save_schedule : Local {
     } catch {
         my $err = shift;
         $c->stash->{json} = {msg => _loc( "Error saving configuration schedule: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );    
+
+}
+
+sub toggle_activation : Local {
+    my ( $self, $c ) = @_;
+    my $p                     = $c->request->params;
+
+    my $id = $p->{id};
+    my $status = $p->{status};
+    my $new_status;
+
+    try{
+        if ( $id ) {
+            $new_status = BaselinerX::Model::SchedulerModel->toggle_activation( taskid=>$id, status=>$status );
+        }
+        $c->stash->{json} = {msg => 'Task is now '.$new_status, success => \1};  
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error changing activation: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );    
+
+}
+
+sub kill_schedule : Local {
+    my ( $self, $c ) = @_;
+    my $p                     = $c->request->params;
+
+    my $id = $p->{id};
+
+    try{
+        if ( $id ) {
+            BaselinerX::Model::SchedulerModel->kill_schedule( taskid=>$id );
+        }
+        $c->stash->{json} = {msg => 'Task killed', success => \1};  
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error killing task: %1", $err ), success => \0};
     };
     $c->forward( 'View::JSON' );    
 

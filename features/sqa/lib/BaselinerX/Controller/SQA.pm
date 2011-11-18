@@ -1,11 +1,11 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
-#	CAM .............................. @(#)[project]
-#	Pase ............................. @(#)[pase]
-#	Fecha de pase .................... @(#)[pasefechahora]
-#	Ubicación del elemento ........... @(#)[item]
-#	Versión del elemento ............. @(#)[version]
-#	Propietario de la version ........ @(#)[user]
+#	CAM .............................. SCM
+#	Pase ............................. N.PROD0000054132
+#	Fecha de pase .................... 2011/11/18 07:01:32
+#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
+#	Versión del elemento ............. 1
+#	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
 
 package BaselinerX::Controller::SQA;
 use Baseliner::Plug;

@@ -1,10 +1,10 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054129
-#	Fecha de pase .................... 2011/11/17 20:29:43
+#	Pase ............................. N.PROD0000054132
+#	Fecha de pase .................... 2011/11/18 07:01:32
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/lib/BaselinerX/Model/SchedulerModel.pm
-#	Versión del elemento ............. 0
+#	Versión del elemento ............. 1
 #	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
 
 package BaselinerX::Model::SchedulerModel;
@@ -23,7 +23,7 @@ sub tasks_list {
 
     my @tasks_to_return = ();
     #Looking for tasks to run
-    my $tasks = Baseliner->model('Baseliner::BaliScheduler')->search( {status => $status, next_exec => {'!=',undef} } );
+    my $tasks = Baseliner->model('Baseliner::BaliScheduler')->search( {status => ['IDLE','KILLED'] , next_exec => {'!=',undef} } );
 
     rs_hashref($tasks);
 
@@ -53,8 +53,8 @@ sub road_kill {
         _log _loc("Checking if process $pid exists");
         next if pexists( $pid );
         _log _loc("Process $pid does not exist");
-		$self->set_task_data( taskid=>$rs->id, status=>'IDLE');
-		$self->schedule_task( taskid=>$rs->id, when=>$self->next_from_last_schedule( taskid=>$rs->id ));
+		$self->set_task_data( taskid=>$r->id, status=>'IDLE');
+		$self->schedule_task( taskid=>$r->id, when=>$self->next_from_last_schedule( taskid=>$r->id ));
     }
 }
 
@@ -105,7 +105,7 @@ sub set_task_data {
     my $status = $p{status};
     my $pid = $p{pid};
 
-    my $task = Baseliner->model('BaliScheduler')->find($taskid);
+    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
 
 	$task->status($status) if $status;
 	$task->pid($pid) if $pid;
@@ -119,7 +119,7 @@ sub schedule_task {
     my $taskid = $p{taskid};
     my $when = $p{when};
 
-    my $task = Baseliner->model('BaliScheduler')->find($taskid);
+    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
     my $next_exec;
 
 	if ( $when eq 'now') {
@@ -138,7 +138,7 @@ sub set_last_execution {
     my $taskid = $p{taskid};
     my $when = $p{when};
 
-    my $task = Baseliner->model('BaliScheduler')->find($taskid);
+    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
 
 	$task->last_exec($when);
 	$task->update;
@@ -164,7 +164,7 @@ sub next_from_last_schedule {
     my ( $self, %p ) = @_;
 
     my $taskid = $p{taskid};
-    my $task = Baseliner->model('BaliScheduler')->find($taskid);
+    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
 
 	my $now = $self->now;
 	my $last_schedule = Class::Date->new($task->next_exec);
@@ -197,4 +197,38 @@ sub is_workday {
     return $date->day_of_weekname ~~ @workdays;
 }
 
+sub toggle_activation {
+    my ( $self, %p ) = @_;
+
+    my $taskid = $p{taskid};
+    my $status = $p{status};
+    my $new_status;
+
+    if ( $status =~ /IDLE|KILLED/ ) {
+    	$self->set_task_data( taskid => $taskid, status => 'INACTIVE');
+    	$new_status = 'inactive';
+    } else {
+    	$new_status = 'active';
+    	$self->set_task_data( taskid => $taskid, status => 'IDLE');
+    }
+    return $new_status;
+}
+
+sub kill_schedule {
+    my ( $self, %p ) = @_;
+
+    my $taskid = $p{taskid};
+ 	my $rs = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
+ 	my $pid = $rs->pid;
+
+ 	_log "Killing PID $pid";
+
+	if ( pexists( $pid ) ) {
+		kill 9,$pid;
+		$self->schedule_task( taskid=>$taskid, when=>$self->next_from_last_schedule( taskid=>$taskid )); 
+	};
+
+
+   	$self->set_task_data( taskid => $taskid, status => 'KILLED');
+}
 1;

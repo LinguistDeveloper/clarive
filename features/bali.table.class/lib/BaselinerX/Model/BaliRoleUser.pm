@@ -6,6 +6,15 @@ use Baseliner::Utils;
 use Moose;
 use utf8;
 
+##########################################################################
+## WARNING                                                              ##
+##########################################################################
+## There is a bug updating from the first, to the second level of       ##
+## BALI_ROLE_USER, as I didn't consider that the ns would be other than ##
+## project/$id. If you see this message, this is still to be fixed and  ##
+## therefore it is not advisable at all to use this module.             ##
+##########################################################################
+
 has 'bali_project', is => 'ro', isa => 'Object', lazy_build => 1;
 has 'table',        is => 'ro', isa => 'Str',    lazy_build => 1;
 
@@ -77,6 +86,7 @@ sub clone { # HashRef Int -> new-record?
 
 sub already_exists { # HashRef Int -> Bool
   my ($self, $href, $id) = @_;
+  # return !!1 unless $id;
   $href->{ns} = "project/$id";
   my $rs = Baseliner->model($self->table)->search($href);
   rs_hashref($rs);

@@ -1,10 +1,10 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054129
-#	Fecha de pase .................... 2011/11/17 20:29:43
+#	Pase ............................. N.PROD0000054132
+#	Fecha de pase .................... 2011/11/18 07:01:32
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/lib/BaselinerX/Service/SchedulerService.pm
-#	Versión del elemento ............. 0
+#	Versión del elemento ............. 1
 #	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
 
 package BaselinerX::Service::SchedulerService;
@@ -72,7 +72,7 @@ sub scheduler_test {
     my ( $self, $c, $config ) = @_;
     
     _log "Service.scheduler.test is now running";
-    sleep 15;
+    sleep 60;
     return 0;
 
 }

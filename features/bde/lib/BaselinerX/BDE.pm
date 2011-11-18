@@ -218,6 +218,10 @@ register 'config.bde' => {
             description => 'Directorio de datos donde se dejarán los ficheros LDIF importados'
                 . ' para su tratamiento'
         },
+        {   id          => 'ldif_updates_harvest',
+            default     => 0,
+            label       => 'Actualizar Harvest ademas de Baseliner?',
+        },
         {   id          => 'harpwd',
             default     => '0211rucu',
             label       => 'Password TAM',
