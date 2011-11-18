@@ -5,7 +5,7 @@
     my $now = DateTime->now;
     my $iid = "div-" . _nowstamp;
     $now->set_time_zone(_tz);
-    my $today =  $now->strftime('%d/%m/%Y');
+    my $today =  $now->strftime('%Y-%m-%d');
     my $hm =  $now->strftime('%H:%M');
 </%perl>
 (function(){
