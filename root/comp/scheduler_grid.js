@@ -341,6 +341,7 @@
         schedule_date.setValue('<% $today %>');
         schedule_time.setValue('<% $hm %>');
         schedule_frequency.setValue(undefined);
+        schedule_description.setValue(undefined);
         chk_schedule_workdays.checked = false;
 
         win.show();
