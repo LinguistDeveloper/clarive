@@ -23,7 +23,7 @@ sub tasks_list {
 
     my @tasks_to_return = ();
     #Looking for tasks to run
-    my $tasks = Baseliner->model('Baseliner::BaliScheduler')->search( {status => ['IDLE','KILLED'] , next_exec => {'!=',undef} } );
+    my $tasks = Baseliner->model('Baseliner::BaliScheduler')->search( {status => ['IDLE','KILLED','RUNNOW'] } );
 
     rs_hashref($tasks);
 
@@ -63,18 +63,25 @@ sub needs_execution {
 
     use Class::Date;
 	
-	my $nextDate = Class::Date->new( $task->{next_exec} );
-	
-	my ($Second, $Minute, $Hour, $Day, $Month, $Year, $WeekDay, $DayOfYear, $IsDST) = localtime(time);
-	$Year += 1900;
-	$Month +=1;
-	
-	my $now= Class::Date->new([$Year,$Month,$Day,$Hour,$Minute]);
-	
-	_log "Next date is: $nextDate";
-	_log "Now is $now";	
+	my $exec_now = 0;
 
-	return $nextDate <= $now;
+	if ( $task->{status} eq 'RUNNOW' ) {
+		$exec_now = 1;
+	} else {
+		my $nextDate = Class::Date->new( $task->{next_exec} );
+		
+		my ($Second, $Minute, $Hour, $Day, $Month, $Year, $WeekDay, $DayOfYear, $IsDST) = localtime(time);
+		$Year += 1900;
+		$Month +=1;
+		
+		my $now= Class::Date->new([$Year,$Month,$Day,$Hour,$Minute]);
+		
+		_log "Next date is: $nextDate";
+		_log "Now is $now";			
+		$exec_now = $nextDate <= $now;
+	}
+
+	return $exec_now ;
 }
 
 sub run_task {
@@ -83,8 +90,10 @@ sub run_task {
     my $taskid = $p{taskid};
     my $pid = $p{pid};
     my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
+    my $status = $task->status;
 
     _log "Running task ".$task->description;
+
     $self->set_last_execution( taskid=>$taskid, when=>$self->now );
     $self->set_task_data( taskid=>$taskid, status=>'RUNNING', pid=>$pid );
     my $out = Baseliner->launch( $task->service, data=>$task->parameters );
@@ -92,7 +101,7 @@ sub run_task {
     if ( $task->frequency eq 'ONCE') {
     	$task->next_exec(undef);
     	$task->update;
-    } else {
+    } elsif ( $status ne 'RUNNOW') {
     	$self->schedule_task( taskid=>$taskid, when=>$self->next_from_last_schedule( taskid=>$taskid ));
     }
     $self->set_task_data( taskid=>$taskid, status=>'IDLE', pid=>0 );
@@ -120,15 +129,15 @@ sub schedule_task {
     my $when = $p{when};
 
     my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
-    my $next_exec;
 
 	if ( $when eq 'now') {
-		$next_exec = $self->now;		
+		$task->status( 'RUNNOW' );		
+		_log "Task will run now";
 	} else {
-		$next_exec = $when;
+		$task->next_exec( $when );
+		_log "New next exec is ".$when;
 	}
-    _log "New next exec is ".$next_exec;
-	$task->next_exec($next_exec);
+
 	$task->update;
 }
 
@@ -166,13 +175,17 @@ sub next_from_last_schedule {
     my $taskid = $p{taskid};
     my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
 
-	my $now = $self->now;
 	my $last_schedule = Class::Date->new($task->next_exec);
 
 	my $next_exec = $last_schedule+$task->frequency;
 
+	my $now = Class::Date->new($self->now);
+
 	if ( $next_exec < $now ) {
 		$next_exec = $now+$task->frequency;
+	}
+	if ( $task->{workdays} ) {
+		$next_exec = next_workday( date => $next_exec);	
 	}
 	return $next_exec;
 }
@@ -180,7 +193,7 @@ sub next_from_last_schedule {
 sub next_workday {
     my ( $self, %p ) = @_;
 
-    my $date = $p{date};
+    my $date = Class::Date->new($p{date});	
 
     while ( !is_workday( date=>$date ) ) {
         $date = $date+"1D";
@@ -193,7 +206,7 @@ sub is_workday {
 
 	my @workdays = ('Monday','Tuesday','Wednesday','Thursday','Friday');
 
-    my $date = $p{date};
+    my $date = Class::Date->new($p{date});
     return $date->day_of_weekname ~~ @workdays;
 }
 
