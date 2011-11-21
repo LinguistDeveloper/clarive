@@ -5,7 +5,7 @@
     my $now = DateTime->now;
     my $iid = "div-" . _nowstamp;
     $now->set_time_zone(_tz);
-    my $today =  $now->strftime('%d/%m/%Y');
+    my $today =  $now->strftime('%Y-%m-%d');
     my $hm =  $now->strftime('%H:%M');
 </%perl>
 (function(){
@@ -341,6 +341,7 @@
         schedule_date.setValue('<% $today %>');
         schedule_time.setValue('<% $hm %>');
         schedule_frequency.setValue(undefined);
+        schedule_description.setValue(undefined);
         chk_schedule_workdays.checked = false;
 
         win.show();

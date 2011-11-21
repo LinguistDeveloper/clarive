@@ -64,16 +64,16 @@ register 'action.sqa.view_project' => {
 	name => "Can see the project in SQA grid"
 };
 
-register 'action.sqa.analisys_mail' => {
-	name => "Receive a mail when an analisys finishes"
+register 'action.sqa.analysis_mail' => {
+	name => "Receive a mail when an analysis finishes"
 };
 
-register 'action.sqa.pkg_analisys_mail' => {
-	name => "Receive a mail when a package analisys finishes"
+register 'action.sqa.pkg_analysis_mail' => {
+	name => "Receive a mail when a package analysis finishes"
 };
 
 register 'action.sqa.ju_mail' => {
-	name => "Receive a daily mail whith the analisys results"
+	name => "Receive a daily mail whith the analysis results"
 };
 
 register 'action.sqa.delete_analysis' => {
@@ -104,6 +104,13 @@ register 'config.sqa.send_ju' => {
     ]
 };
 
+##Configuración del daemon
+register 'config.sqa.purge' => {
+	metadata => [
+       { id=>'days_to_keep', label=>'Days to keep a package analysis', default => 7 }
+    ]
+};
+
 #Configuración del servicio
 register 'config.sqa' => {
     metadata => [
@@ -123,6 +130,7 @@ register 'config.sqa' => {
         { id => 'source_dir', label => 'Directorio de fuentes para SQA', default => 'src', },
         { id => 'builds_dir', label => 'Directorio de compilados para SQA', default => 'build', },
         { id => 'script_name', label => 'Nombre del script', default => 'Analyze.xml', },
+        { id => 'purge_script_name', label => 'Nombre del script de purga', default => 'Purge.xml', },
         { id => 'plugin',      label => 'Nombre del plugin Checking', default => 'auditrep', },
         { id => 'extensiones', label => 'Extensiones de objetos compilados', default => 'exe,dll,ocx,class,pdb'},
         { id => 'exclusiones', label => 'Directorios excluidos en el tar de compilados', default => '\\PAC\\'},

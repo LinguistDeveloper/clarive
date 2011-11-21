@@ -109,7 +109,7 @@ sub error : Private {
     my ( $self, $c, $username ) = @_;
     $c->stash->{error_msg} = _loc( 'Invalid User.' );
     $c->stash->{error_msg} .= ' '._loc( "User '%1' not found", $username ) if( $username );
-    $c->stash->{template} = '/site/error.html';
+    $c->stash->{template} = $c->config->{error_page} || '/site/error.html';
 }
 
 sub logout : Global {
@@ -126,17 +126,14 @@ sub logoff : Global {
 
 sub logon : Global {
     my ( $self, $c ) = @_;
-	$c->stash->{template} = '/site/login.html';
+	$c->stash->{template} = $c->config->{login_page} || '/site/login.html';
 }
 
 sub saml_check : Private {
     my ( $self, $c ) = @_;
         my $header = $c->config->{saml_header} || 'samlv20';
-        _log _dump $c->req->headers;
         _log _loc('SAML header: %1', $header );
-	_log "LA BUENA";
         _log _loc('Current user: %1', $c->username );
-        _log _loc('User exists: %1', $c->user_exists );
         use XML::Simple;
         return try {
                 my $saml = $c->req->headers->{$header};
@@ -158,4 +155,3 @@ sub saml_check : Private {
 
 
 1;
-

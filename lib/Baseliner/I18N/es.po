@@ -63,11 +63,14 @@ msgstr "Proyecto"
 msgid "Projects"
 msgstr "Proyectos"
 
+msgid "Scheduler"
+msgstr "Planificador"
+
 msgid "New Name"
 msgstr "Nuevo Nombre"
 
 msgid "About Baseliner"
-msgstr "Acerca de Distribuidor"
+msgstr "Acerca del Baseliner"
 
 msgid "Server communication failure. Check your connection."
 msgstr "Error de communicación con el servidor. Compruebe su conexión."

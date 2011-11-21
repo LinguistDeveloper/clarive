@@ -206,17 +206,27 @@ sub is_enabled {
 
 Search for registered objs with matching attributes
 
+Configuration:
+
+    <registry>
+        <disabled_keys>
+              menu.admin.users
+              menu.admin.files
+        </disabled_keys>
+    </registry>
+
 =cut
 sub search_for_node {
 	my ($self,%query)=@_;
 	my @found = ();
 
     # query parameters
-    my $check_enabled = delete $query{check_enabled};
+    my $check_enabled = delete $query{check_enabled} // 1;
     my $has_attribute = delete $query{has_attribute};
 	my $key_prefix = delete $query{key} || '';
 	my $q_depth = delete $query{depth};
 	my $allowed_actions = delete $query{allowed_actions};
+    my $disabled_keys = Baseliner->config->{registry}->{disabled_keys} if $check_enabled; 
 
 	my @allowed;
 	foreach my $action ( _array $allowed_actions ) {
@@ -232,11 +242,7 @@ sub search_for_node {
 	OUTER: for my $key ( $self->starts_with( $key_prefix ) ) {
 		my $depth = ( my @ss = split /\./,$key ) -1 ;
 		next if( $depth gt $q_depth );
-        if( $allowed_actions && ref $self->registrar->{$key}->actions ) {
-            #warn "..............ref ($key): " . join ',', @{ $self->registrar->{$key}->actions || [] } ;
-            #warn "..............all ($key): " . join ',', @{ $allowed_actions || [] } ;
-            #warn ".............GREP ($key): " . grep { my $a=$_; grep /^$a$/,@{$allowed_actions||[]} } @{ $self->registrar->{$key}->actions || [] };
-        }
+		next if $check_enabled && exists $disabled_keys->{ $key };
 
         # skip nodes that the user has no access to
         next if( $allowed_actions

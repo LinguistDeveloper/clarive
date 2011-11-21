@@ -1,10 +1,10 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054132
-#	Fecha de pase .................... 2011/11/18 07:01:32
+#	Pase ............................. N.PROD0000054289
+#	Fecha de pase .................... 2011/11/21 20:21:22
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
-#	Versión del elemento ............. 1
+#	Versión del elemento ............. 2
 #	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
 
 package BaselinerX::Controller::SQA;
@@ -712,7 +712,11 @@ sub harvest_subprojects : Local {
             {order_by => 'name asc'} );
  
 
+        my $har_items = Baseliner->model('Harvest::Haritems');  # avoid repeating his call
+
         while ( my $row = $rs->next ) {
+            # check if it still exists GDF #71547
+            next unless $har_items->search({ itemnameupper => uc( $row->name ), itemtype=>0 })->count;
             push @data,
                 {
                 id      => $row->id,

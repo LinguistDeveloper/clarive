@@ -33,7 +33,14 @@ sub list : Local {
         order_by => $sort ? "$sort $dir" : undef
     });
 	rs_hashref( $rs );
-	my @rows = $rs->all;
+	sub dump_join {
+		join ', ', map { sprintf "%s: %s", $_, ( $_[0]->{$_} || "''" ) } sort keys %{ $_[0] };
+	};
+	my @rows = map { 
+		$_->{ns} = 'project/' . $_->{id};
+		$_->{data} = dump_join( $_ ); 
+		$_ }
+		 $rs->all;
 	$c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
 	$c->forward('View::JSON');
 }

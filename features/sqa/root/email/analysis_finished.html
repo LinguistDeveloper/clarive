@@ -61,6 +61,16 @@ body {
 	</tr>
 </table>
 
+% if( $status =~ /NOT.EXEC/i ) {
+
+<table border=1 cellspacing=1 cellpadding="2">
+	<tr class="backGroundFilaDatos">
+		<td class="backGroundFilaDatos">No se ha ejecutado porque no había código que analizar.</td>
+	</tr>
+</table>
+
+% } else {
+
 <table border=1 cellspacing=1 cellpadding="2">
 
 	<tr>
@@ -86,6 +96,7 @@ body {
 
 </table>
 
+% }
 
 <p>
 <A HREF="<% $url %>/raw/sqa/grid" TARGET=_blank>Consulte el portal de calidad aqu&iacute;</A>.

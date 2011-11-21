@@ -1,10 +1,10 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000053765
-#	Fecha de pase .................... 2011/11/11 15:46:24
+#	Pase ............................. N.PROD0000054289
+#	Fecha de pase .................... 2011/11/21 20:21:23
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Service/SQASendJU.pm
-#	Versión del elemento ............. 12
+#	Versión del elemento ............. 1
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Service::SQASendJU;
@@ -90,7 +90,7 @@ sub send_mail {
             subject         => _loc("Daily SQA summary"),
             sender          => "$config->{from}",
             carrier         => 'email',
-            template        => 'email/analisys_ju.html',
+            template        => 'email/analysis_ju.html',
             template_engine => 'mason',
             vars            => {
                 message => "Resumen de an&aacute;lisis de calidad t&eacute;cnico",

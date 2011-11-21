@@ -1,11 +1,11 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054132
-#	Fecha de pase .................... 2011/11/18 07:01:32
+#	Pase ............................. N.PROD0000054289
+#	Fecha de pase .................... 2011/11/21 20:21:22
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
-#	Versión del elemento ............. 2
-#	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
+#	Versión del elemento ............. 4
+#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Model::SQA;
 use Moose;
@@ -297,7 +297,7 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 	$self->update_status( job_id => $job_id, status => 'RUNNING', pid => $$, path => $config->{dir_pase} . "\\" . $job_name . $subproject . $nature, job_name => $job_name );
 
 	#	if ($nature) {
-	#		$self->start_analisys_mail(
+	#		$self->start_analysis_mail(
 	#			bl         => $bl,
 	#			project    => $project,
 	#			subproject => $subproject,
@@ -606,7 +606,7 @@ sub ship_packages_project {    # envia un proyecto (subapl+nature) a SQA
 
 	$self->update_status( job_id => $job_id, status => 'RUNNING', pid => $$, path => $config->{dir_pase} . "\\" . $job_name . "-packages", packages => $packages, job_name => $job_name );
 
-	#	$self->start_pkg_analisys_mail(
+	#	$self->start_pkg_analysis_mail(
 	#		project  => $project,
 	#		username => $username,
 	#		job_id   => $job_id,
@@ -1014,7 +1014,7 @@ sub write_sqa_error {
 	$row->update;
 
 	if ( !$pass ) {
-		$self->error_analisys_mail( job_id => $job_id );
+		$self->error_analysis_mail( job_id => $job_id );
 	}
 }
 
@@ -1150,7 +1150,7 @@ sub grab_results {    # recupera resultados
 		$qualification = $global_hash->{GLOBAL};
 
 		if ( $level && $level eq 'NAT' ) {
-			$self->end_analisys_mail(
+			$self->end_analysis_mail(
 				bl            => $bl,
 				project       => $project,
 				subproject    => $subproject,
@@ -1234,7 +1234,7 @@ sub grab_package_results {    # recupera resultados
 
 	$self->update_status( job_id => $job_id, status => "OK", tsend => 1 );
 
-	$self->end_pkg_analisys_mail(
+	$self->end_pkg_analysis_mail(
 		project  => $project,
 		job_id   => $job_id,
 		packages => $packages,
@@ -1764,7 +1764,7 @@ sub getProjectConfig {
 	return $return;
 }
 
-sub end_pkg_analisys_mail {
+sub end_pkg_analysis_mail {
 	my ( $self, %p ) = @_;
 
 	my $project  = $p{project};
@@ -1782,7 +1782,7 @@ sub end_pkg_analisys_mail {
 	my $url = $config->{baseliner_url};
 
 	my @regulars = Baseliner->model('Permissions')->list(
-		action => 'action.sqa.pkg_analisys_mail',
+		action => 'action.sqa.pkg_analysis_mail',
 		ns     => 'project/' . $project_id
 	);
 	
@@ -1805,7 +1805,7 @@ sub end_pkg_analisys_mail {
 		subject         => _("SQA Package analysis finished"),
 		sender            => $config->{from},
 		carrier         => 'email',
-		template        => 'email/pkg_analisys_finished.html',
+		template        => 'email/pkg_analysis_finished.html',
 		template_engine => 'mason',
 		vars            => {
 			subject => "An&aacute;lisis de calidad de paquetes finalizado",
@@ -1821,7 +1821,7 @@ sub end_pkg_analisys_mail {
 	);
 }
 
-sub start_pkg_analisys_mail {
+sub start_pkg_analysis_mail {
 	my ( $self, %p ) = @_;
 
 	my $project  = $p{project};
@@ -1838,7 +1838,7 @@ sub start_pkg_analisys_mail {
 	my $url = $config->{baseliner_url};
 
 	my @regulars = Baseliner->model('Permissions')->list(
-		action => 'action.sqa.pkg_analisys_mail',
+		action => 'action.sqa.pkg_analysis_mail',
 		ns     => 'project/' . $project_id
 	);
 	
@@ -1861,7 +1861,7 @@ sub start_pkg_analisys_mail {
 		subject         => "An&aacute;lisis de calidad de paquetes iniciado",
 		sender            => $config->{from},
 		carrier         => 'email',
-		template        => 'email/pkg_analisys_started.html',
+		template        => 'email/pkg_analysis_started.html',
 		template_engine => 'mason',
 		vars            => {
 			subject => "An&aacute;lisis de calidad de paquetes iniciado",
@@ -1876,7 +1876,7 @@ sub start_pkg_analisys_mail {
 	);
 }
 
-sub start_analisys_mail {
+sub start_analysis_mail {
 	my ( $self, %p ) = @_;
 
 	my $bl         = $p{bl};
@@ -1895,7 +1895,7 @@ sub start_analisys_mail {
 	my $url = $config->{baseliner_url};
 
 	my @regulars = Baseliner->model('Permissions')->list(
-		action => 'action.sqa.analisys_mail',
+		action => 'action.sqa.analysis_mail',
 		ns     => 'project/' . $project_id,
 		bl	   => $bl
 	);
@@ -1922,7 +1922,7 @@ sub start_analisys_mail {
 		subject         => "An&aacute;lisis de calidad iniciado",
 		sender            => $config->{from},
 		carrier         => 'email',
-		template        => 'email/analisys_started.html',
+		template        => 'email/analysis_started.html',
 		template_engine => 'mason',
 		vars            => {
 			subject => "An&aacute;lisis de calidad iniciado",
@@ -1939,7 +1939,7 @@ sub start_analisys_mail {
 	);
 }
 
-sub error_analisys_mail {
+sub error_analysis_mail {
 	my ( $self, %p ) = @_;
 
 	my $job_id = $p{job_id};
@@ -1957,7 +1957,7 @@ sub error_analisys_mail {
 	my $url = $config->{baseliner_url};
 
 	my @regulars = Baseliner->model('Permissions')->list(
-		action => 'action.sqa.analisys_mail',
+		action => 'action.sqa.analysis_mail',
 		ns     => 'project/' . $project_id,
 		bl	   => $bl
 	);
@@ -1986,7 +1986,7 @@ sub error_analisys_mail {
 		subject         => "Analisis de calidad finalizado con error",
 		sender            => $config->{from},
 		carrier         => 'email',
-		template        => 'email/analisys_error.html',
+		template        => 'email/analysis_error.html',
 		template_engine => 'mason',
 		vars            => {
 			subject => "An&aacute;lisis de calidad finalizado con error",
@@ -1998,7 +1998,7 @@ sub error_analisys_mail {
 	);
 }
 
-sub end_analisys_mail {
+sub end_analysis_mail {
 	my ( $self, %p ) = @_;
 
 	my $bl            = $p{bl};
@@ -2021,7 +2021,7 @@ sub end_analisys_mail {
 	my $url = $config->{baseliner_url};
 
 	my @regulars = Baseliner->model('Permissions')->list(
-		action => 'action.sqa.analisys_mail',
+		action => 'action.sqa.analysis_mail',
 		ns     => 'project/' . $project_id,
 		bl	   => $bl
 	);
@@ -2054,7 +2054,7 @@ sub end_analisys_mail {
 		subject         => _loc("SQA analysis finished"),
 		sender            => $config->{from},
 		carrier         => 'email',
-		template        => 'email/analisys_finished.html',
+		template        => 'email/analysis_finished.html',
 		template_engine => 'mason',
 		vars            => {
 			subject => "An&aacute;lisis de calidad finalizado",
@@ -2236,12 +2236,44 @@ sub road_kill {
 }
 
 sub delete {
-	my ($ self, %p ) = @_;
+	my ($self, %p ) = @_;
 	
 	my $id = $p{id};
 	_log "VOY A BORRAR EL ID: $id";
 	my $row = Baseliner->model('Baseliner::BaliSqa')->find( $id );
 	$row->delete;
+}
+
+sub purge_job {
+	my ($self, %p) = @_;
+	my $id = $p{id};
+	my $job_name = $p{job_name};
+	my $CAM = $p{CAM};
+
+	my $config     = Baseliner->model('ConfigStore')->get('config.sqa');
+	
+	$self->delete( id => $id );
+	
+	my $bx;
+	try {
+		$bx = BaselinerX::Comm::Balix->new(
+			host => $config->{server},
+			port => $config->{port},
+			key  => $config->{key}
+		);
+	} catch {
+		die _loc( "Could not connect to sqa server %1",
+			$config->{server} )
+		  . "\n";		
+	};
+	
+	#Ejecutamos el script de purga
+	my $script = qq{cd /D $config->{script_dir} & call ant -f $config->{purge_script_name} -DCAM="$CAM" -Dpaquete="$job_name" };
+	_log "Ejecutando ... " . $script;
+	my ( $rc, $ret ) = $bx->execute($script);	
+	
+	_log "Job $job_name purgado (RC=$rc)";
+	_log "Output:\n".$ret;	
 }
 
 1;

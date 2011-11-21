@@ -272,15 +272,15 @@ msgid "Can see the project in SQA grid"
 msgstr "Puede ver una aplicación en la rejilla de SQA"
 
 # features\sqa\lib\BaselinerX\SQAMain.pm (67)
-msgid "Receive a mail when an analisys finishes"
+msgid "Receive a mail when an analysis finishes"
 msgstr "Recibe un mensaje de correo cuando un análisis finaliza"
 
 # features\sqa\lib\BaselinerX\SQAMain.pm (68)
-msgid "Receive a mail when a package analisys finishes"
+msgid "Receive a mail when a package analysis finishes"
 msgstr "Recibe un mensaje de correo cuando un análisis de paquetes finaliza"
 
 # features\sqa\lib\BaselinerX\SQAMain.pm (75)
-msgid "Receive a daily mail whith the analisys results"
+msgid "Receive a daily mail whith the analysis results"
 msgstr "Recibe un mensaje de correo diario con los resultados de los análisis"
 
 # features\sqa\lib\BaselinerX\Controller\SQA.pm (19)
