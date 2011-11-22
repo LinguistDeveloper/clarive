@@ -52,12 +52,12 @@ sub deploy_schema {
                             }
                         }
                     }
-                    }
+                }
             ],
             %p
         });
         #$schema->storage->debug(1);
-        }
+    }
 }
 
 sub db_driver {
@@ -78,3 +78,4 @@ sub db_driver {
 }
 
 1;
+

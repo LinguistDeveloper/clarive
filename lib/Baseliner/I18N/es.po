@@ -1955,3 +1955,74 @@ msgstr "Datos de configuración exportados"
 msgid "Error creating Changeman Job:<br>%1"
 msgstr "Error creando pase Changeman<br>%1"
 
+# root/comp/scheduler_grid.js (57)
+msgid "New task"
+msgstr "Nueva"
+
+# root/comp/scheduler_grid.js (69)
+msgid "Edit task"
+msgstr "Editar"
+
+# root/comp/scheduler_grid.js (81)
+msgid "Delete task"
+msgstr "Borrar"
+
+# root/comp/scheduler_grid.js (93)
+msgid "Duplicate task"
+msgstr "Duplicar"
+
+# root/comp/scheduler_grid.js (105)
+msgid "Run now"
+msgstr "Ejecutar ahora"
+
+# root/comp/scheduler_grid.js (117)
+msgid "Kill"
+msgstr "Cancelar"
+
+# root/comp/scheduler_grid.js (166)
+msgid "Parameters"
+msgstr "Parametros"
+
+# root/comp/scheduler_grid.js (167)
+msgid "Next execution"
+msgstr "Siguiente ejecución"
+
+# root/comp/scheduler_grid.js (168)
+msgid "Last execution"
+msgstr "Última ejecución"
+
+# root/comp/scheduler_grid.js (169)
+msgid "PID"
+msgstr "PID"
+
+# root/comp/scheduler_grid.js (171)
+msgid "Frequency"
+msgstr "Frequencia"
+
+# root/comp/scheduler_grid.js (173)
+msgid "Workdays"
+msgstr "Días de diario"
+
+# root/comp/scheduler_grid.js (288)
+msgid "Workdays only"
+msgstr "Sólo días de diario"
+
+# root/comp/scheduler_grid.js (300)
+msgid "Time not valid"
+msgstr "Hora no válida"
+
+# root/comp/scheduler_grid.js (331)
+msgid "Schedule information"
+msgstr "Información de la planificación"
+
+# root/comp/scheduler_grid.js (370)
+msgid "Select a row"
+msgstr "Seleccione una fila"
+
+# root/comp/scheduler_grid.js (463)
+msgid "Confirm"
+msgstr "Confirmar"
+
+# root/comp/scheduler_grid.js (463)
+msgid "Scheduler"
+msgstr "Planificador"

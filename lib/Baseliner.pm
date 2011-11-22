@@ -25,7 +25,6 @@ BEGIN {
             +CatalystX::Features
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
-            Cache
             +CatalystX::Features::Plugin::I18N/;
     } else {
         @modules = qw/
@@ -35,7 +34,6 @@ BEGIN {
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
 			Unicode 
-            Cache
             Session		Session::Store::DBIC	Session::State::Cookie
             Singleton           
             +CatalystX::Features::Plugin::I18N
@@ -95,14 +93,6 @@ if( $ENV{BALI_CMD} ) {
 }
 
 
-use Cache::FastMmap;
-{
-	no warnings;
-	no strict;
-	sub Cache::FastMmap::CLONE {} ## to avoid the no threads die 
-}
-#__PACKAGE__->config->{cache}->{storage} = 'bali_cache';
-#__PACKAGE__->config->{cache}->{expires} = 60;  ## 60 seconds
 #__PACKAGE__->config->{authentication}{dbic} = {
 #    user_class     => 'Bali::BaliUser',
 #    user_field     => 'username',

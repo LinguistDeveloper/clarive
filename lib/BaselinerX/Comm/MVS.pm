@@ -1,10 +1,8 @@
 package BaselinerX::Comm::MVS;
 use strict;
 use Baseliner::Utils;
-use Baseliner::Plug;
 use File::Path;
 use Try::Tiny;
-
 use MVS::JESFTP;
 use Carp;
 #use Error qw(:try);
@@ -12,12 +10,16 @@ use Carp;
 ## inheritance
 use vars qw($VERSION);
 
-register 'config.JES' => {
-    metadata => [
-       { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
-       { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'},
-    ]
-};
+{
+    package BaselinerX::Comm::MVS::Config;
+    use Baseliner::Plug;
+    register 'config.JES' => {
+        metadata => [
+           { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
+           { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'},
+        ]
+    };
+}
 
 $VERSION = '1.0';
 
@@ -518,6 +520,5 @@ Or just quick-and-dirty:
 //jobnameA ....		
 
 =cut 
-BaselinerX::Comm::MVS->meta->make_immutable( inline_constructor=>0 );
 
 1;
