@@ -5,7 +5,8 @@
 		totalProperty:"totalCount", 
 		id: 'id', 
 		url: '/user/list',
-		fields: [ 
+		fields: [
+			{  name: 'id' },
 			{  name: 'username' },
 			{  name: 'realname' },
 			{  name: 'alias' },
@@ -96,16 +97,22 @@
 			handler: function() {
 				var sm = grid.getSelectionModel();
 				var sel = sm.getSelected();
-				Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the baseline') %>' + ' <b>' + sel.data.subject + '</b>?', 
+				Ext.Msg.confirm( _loc('Confirmation'), _loc('Are you sure you want to delete the user') + ' <b>' + sel.data.username + '</b>?', 
 				function(btn){ 
 					if(btn=='yes') {
-						var conn = new Ext.data.Connection();
-						conn.request({
-							url: '/baseline/update?action=delete',
-							params: { id: sel.data.id },
-							success: function(resp,opt) { grid.getStore().remove(sel); },
-							failure: function(resp,opt) { Ext.Msg.alert(_('Error'), '<% _loc('Could not delete the baseline') %>'); }
-						}); 
+						Baseliner.ajaxEval( '/user/update?action=delete',
+							{ id: sel.data.id },
+							function(response) {
+								if ( response.success ) {
+									grid.getStore().remove(sel);
+									alert(response.msg);
+									Baseliner.message(_('Success'), _(response.msg));
+								} else {
+									Baseliner.message( _('ERROR'), _(response.msg) );
+								}
+							}
+						
+						);
 					}
 				} );
 			}
@@ -177,7 +184,8 @@
 			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 			loadMask:'true',
 			columns: [
-				{ header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },	
+				{ header: _('Id'), hidden: true, dataIndex: 'id' },
+				{ header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },
 				{ header: _('Name'), width: 350, dataIndex: 'realname', sortable: true },
 				{ header: _('Alias'), width: 150, dataIndex: 'alias', sortable: true }
 			],

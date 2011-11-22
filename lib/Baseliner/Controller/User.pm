@@ -174,14 +174,24 @@ sub update : Local {
 			    email=> $p->{email},
 			    phone=> $p->{phone}
 			    });
-			    $c->stash->{json} = { msg=>_loc('User updated'), success=>\1 };
+			    $c->stash->{json} = { msg=>_loc('User added'), success=>\1 };
 		    }
 		    catch{
-			$c->stash->{json} = { msg=>_loc('Error updating User: %1', shift()), success=>\1 }
+			$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
 		    }
 		}
 		case 'edit' { _log 'edit'; }
-		case 'delete' { _log 'delete'; }
+		case 'delete' {
+		    try{
+			my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+			$row->active(0);
+			$row->update();
+			$c->stash->{json} = {  success => 1, msg=>_loc('User deleted') };
+		    }
+		    catch{
+			$c->stash->{json} = {  success => 0, msg=>_loc('Error deleting User') };
+		    }
+		}
             }
     $c->forward('View::JSON');
 }
@@ -332,6 +342,7 @@ sub list : Local {
     # produce the grid
 	push @rows,
 	  {
+	    id 		=> $r->id,
 	    username	=> $r->username,
 	    realname	=> $r->realname,
 	    alias	=> $r->alias
