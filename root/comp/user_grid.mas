@@ -7,24 +7,167 @@
 		url: '/user/list',
 		fields: [ 
 			{  name: 'username' },
-			//{  name: 'role' },
 			{  name: 'realname' },
-			{  name: 'alias' },			
-			//{  name: 'ns' },
-			//{  name: 'actions' }
+			{  name: 'alias' },
+			{  name: 'email' },
+			{  name: 'phone' }
 		]
 	});
 
-    <& '/comp/search_field.mas' &>
+	<& '/comp/search_field.mas' &>
 
-    var ps = 100; //page_size
-    store.load({params:{start:0 , limit: ps}}); 
+	var ps = 100; //page_size
+	store.load({params:{start:0 , limit: ps}}); 
 
-    // create the grid
-    var grid = new Ext.grid.GridPanel({
+	var Surrogate = new Ext.Toolbar.Button({
+		text: _('Surrogate'),
+		icon:'/static/images/users.gif',
+		cls: 'x-btn-text-icon',
+		disabled: true,
+		handler: function() {
+			var sm = grid.getSelectionModel();
+			if (sm.hasSelection()) {
+				var row = sm.getSelected();
+				var username = row.data.username;
+				Baseliner.message( _("Surrogate"), _("Surrogating as %1", username) );
+				Ext.Ajax.request({
+					url: '/auth/surrogate',
+					params: { login: username },
+					success: function(xhr) {
+						document.location.href = document.location.href;
+					},
+					failure: function(xhr) {
+						var err = xhr.responseText;
+						Baseliner.message( _("Surrogate Error"), _("Error during surrogate: %1", err ));
+					}
+				});
+			} 
+		}
+	});
+				
+	var Buzon = new Ext.Toolbar.Button({
+		text: _('Inbox'),
+		icon:'/static/images/icons/envelope.gif',
+		cls: 'x-btn-text-icon',
+		disabled: true,
+		handler: function(){
+			var sm = grid.getSelectionModel();
+			if (sm.hasSelection()) {
+				var row = sm.getSelected();
+				var username = row.data.username;
+				var title = _("Inbox for %1", username)
+				Baseliner.addNewTabComp("/message/inbox?username=" + username, title );
+			}
+		}
+
+	});
+
+
+        var New = new Ext.Toolbar.Button({
+                text: _('New'),
+                icon:'/static/images/icons/add.gif',
+                cls: 'x-btn-text-icon',
+        	handler: function() {
+				add_new();
+			}
+        });
+	
+        var Edit = new Ext.Toolbar.Button({
+		text: _('Edit'),
+                icon:'/static/images/icons/edit.gif',
+                cls: 'x-btn-text-icon',
+		disabled: true,
+                handler: function() {
+				var sm = grid.getSelectionModel();
+				if (sm.hasSelection()) {
+					var sel = sm.getSelected();
+					baseline_view(sel);
+				} else {
+					Baseliner.message('Error', _('Select at least one row'));    
+				};
+			}
+        });
+	
+        var Delete = new Ext.Toolbar.Button({
+			text: _('Delete'),
+			icon:'/static/images/icons/delete.gif',
+			cls: 'x-btn-text-icon',
+			disabled: true,
+			handler: function() {
+				var sm = grid.getSelectionModel();
+				var sel = sm.getSelected();
+				Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the baseline') %>' + ' <b>' + sel.data.subject + '</b>?', 
+				function(btn){ 
+					if(btn=='yes') {
+						var conn = new Ext.data.Connection();
+						conn.request({
+							url: '/baseline/update?action=delete',
+							params: { id: sel.data.id },
+							success: function(resp,opt) { grid.getStore().remove(sel); },
+							failure: function(resp,opt) { Ext.Msg.alert(_('Error'), '<% _loc('Could not delete the baseline') %>'); }
+						}); 
+					}
+				} );
+			}
+        });
+
+	
+	var add_new = function() {
+		var win;
+	    	var form = new Ext.FormPanel({
+			url: '/user/update',
+			resizeable: true,
+			height: 350,
+			labelWidth: 100, 
+			buttonAlign: 'left',
+			bodyStyle:'padding: 5px 5px 5px 5px; background: none; border: none;',
+			defaults: { width: 650 },
+			items: [
+			    { xtype: 'hidden', name: 'id', value: -1 }, 
+			    { fieldLabel: _('User'), name: 'username', value: '', xtype: 'field', css: '', width: 350 },
+			    { fieldLabel: _('Name'), name: 'realname', value: '', xtype: 'textfield', css: '' , width: 350},
+			    { fieldLabel: _('Alias'), name: 'alias', value: '', xtype: 'textfield', css: '' , width: 350},
+			    { fieldLabel: _('Email'), name: 'email', value: '', vtype: 'email', xtype: 'textfield', css: '' , width: 350},
+			    { fieldLabel: _('Telephone'), name: 'phone', value: '', xtype: 'textfield', css: '' , width: 350},
+			],
+			fbar: {
+			    items: [
+				{
+				    text: _('Save'), handler: function(){
+					var action = form.getForm().getValues()['id'] >= 0 ? 'update' : 'add';
+					form.getForm().submit({
+					    params: { action: action },
+					    success: function(f,a){
+						Baseliner.message('Success', a.result.msg );
+						win.close();
+						store.load();
+					    },
+					    failure: function(f,a){
+						Ext.Msg.alert('Warning', a.result.msg);
+					    }
+					});
+				    }
+				}
+				//{ text: 'Reset', handler: function(){ form.getForm().reset(); } }
+			    ]
+			}
+		    });
+
+		win = new Ext.Window({
+		    title: _('Create User'),
+		    closeAction: 'close',
+		    //modal: true,
+		    items: form
+		});
+		 win.show();
+	};
+    
+
+	// create the grid
+	var grid = new Ext.grid.GridPanel({
 			title: _('Users'),
 			header: false,
-            stripeRows: true,
+			stripeRows: true,
 			autoScroll: true,
 			autoWidth: true,
 			store: store,
@@ -34,14 +177,9 @@
 			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 			loadMask:'true',
 			columns: [
-				{ header: _loc('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },	
-				//{ header: '<% _loc('Namespace') %>', width: 150, dataIndex: 'ns', sortable: true },
-				//{ header: '<% _loc('Role') %>', width: 250, dataIndex: 'role', sortable: true },	
-				//{ header: '<% _loc('Actions') %>', width: 250, dataIndex: 'actions', sortable: true },
-				{ header: _loc('Name'), width: 350, dataIndex: 'realname', sortable: true },
-				//Prueba
-				{ header: _loc('Alias'), width: 150, dataIndex: 'alias', sortable: true }
-				//Fin prueba
+				{ header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },	
+				{ header: _('Name'), width: 350, dataIndex: 'realname', sortable: true },
+				{ header: _('Alias'), width: 150, dataIndex: 'alias', sortable: true }
 			],
 			autoSizeColumns: true,
 			deferredRender:true,
@@ -49,131 +187,31 @@
 								store: store,
 								pageSize: ps,
 								displayInfo: true,
-								displayMsg: 'Rows {0} - {1} de {2}',
-								emptyMsg: "No hay registros disponibles"
+								displayMsg: _('Rows {0} - {1} of {2}'),
+								emptyMsg: _('There are no rows available')
 						}),        
-			tbar: [ 'Buscar: ', ' ',
+			tbar: [ _('Search') + ': ', ' ',
 				new Ext.app.SearchField({
 					store: store,
 					params: {start: 0, limit: ps},
-					emptyText: '<% _loc('<Enter your search string>') %>'
+					emptyText: _('<Enter your search string>')
 				}),
-                {  
-                    xtype: 'button',
-					text: _('Surrogate'),
-					icon:'/static/images/users.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection()) {
-							var row = sm.getSelected();
-                            var username = row.data.username;
-                            Baseliner.message( _("Surrogate"), _("Surrogating as %1", username) );
-                            Ext.Ajax.request({
-                                url: '/auth/surrogate',
-                                params: { login: username },
-                                success: function(xhr) {
-                                    document.location.href = document.location.href;
-                                },
-                                failure: function(xhr) {
-                                    var err = xhr.responseText;
-                                    Baseliner.message( _("Surrogate Error"), _("Error during surrogate: %1", err ));
-                                }
-                            });
-						} 
-					}
-                },
-				{
-					xtype: 'button',
-					text: _('Inbox'),
-					icon:'/static/images/icons/envelope.gif',
-					cls: 'x-btn-text-icon',
-					handler: function(){
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection()) {
-							var row = sm.getSelected();
-                            var username = row.data.username;
-							var title = _("Inbox for %1", username)
-							Baseliner.addNewTabComp("/message/inbox?username=" + username, title );
-						}
-					}
-
-				},
-<%doc>
-				new Ext.Toolbar.Button({
-					text: '<% _loc('Add') %>',
-					icon:'/static/images/drop-add.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection())
-						{
-							var sel = sm.getSelected();
-							Baseliner.addNewTab('/release/create?package=' + sel.data.package , '<% _loc('New Release') %>' );
-						} else {
-							Baseliner.addNewTab('/release/create' , '<% _loc('New Release') %>' );
-						};
-						
-					}
-				}),
-				new Ext.Toolbar.Button({
-					text: '<% _loc('Approve') %>',
-					icon:'/static/images/drop-yes.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection())
-						{
-							var sel = sm.getSelected();
-                            Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to approve') %> ' + sel.data.package + '?', 
-                                function(btn){ 
-                                    if(btn=='yes') {
-                                        var conn = new Ext.data.Connection();
-                                        conn.request({
-                                            url: '/endevor/approve',
-                                            params: { action: 'delete', package: sel.data.package },
-                                            success: function(resp,opt) { grid.getStore().remove(sel); },
-                                            failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not approve the package.') %>'); }
-                                        });	
-                                    }
-                                } );
-						} else {
-							Ext.Msg.alert('Error', 'Falta seleccionar una fila');	
-						};
-						
-					}
-				}),
-				new Ext.Toolbar.Button({
-					text: '<% _loc('Delete') %>',
-					icon:'/static/images/del.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						var sel = sm.getSelected();
-						Ext.Msg.confirm('<% _loc('Confirmation') %>', 'Are you sure you want to delete the release ' + sel.data.name + '?', 
-							function(btn){ 
-								if(btn=='yes') {
-									var conn = new Ext.data.Connection();
-									conn.request({
-										url: '/release/update',
-										params: { action: 'delete', id_rel: sel.data.id },
-										success: function(resp,opt) { grid.getStore().remove(sel); },
-										failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the release.') %>'); }
-									});	
-								}
-							} );
-					}
-				}),
-</%doc>
+				Surrogate,
+				Buzon,
+				New,
+				Edit,
+				Delete,
 				'->'
 				]
 		});
 
-		grid.on("rowdblclick", function(grid, rowIndex, e ) {
-			var r = grid.getStore().getAt(rowIndex);
-			//Baseliner.addNewTab('/endevor/pkg_data?package=' + r.get('package') , r.get('package') );
-		});		
-
+		grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+			Surrogate.enable();
+			Buzon.enable();
+			Edit.enable();
+			Delete.enable();
+		});
+			
 	return grid;
 })();
 

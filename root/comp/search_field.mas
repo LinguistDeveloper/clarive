@@ -4,6 +4,12 @@
 			this.on('specialkey', function(f, e){
 				if(e.getKey() == e.ENTER){
 					this.onTrigger2Click();
+					if(Surrogate && Buzon && Edit && Delete){
+						Surrogate.disable();
+						Buzon.disable();
+						Edit.disable();
+						Delete.disable();
+					}
 				}
 			}, this);
 		},
@@ -26,6 +32,12 @@
 				this.store.reload({params:o});
 				this.triggers[0].hide();
 				this.hasSearch = false;
+				if(Surrogate && Buzon && Edit && Delete){
+					Surrogate.disable();
+					Buzon.disable();
+					Edit.disable();
+					Delete.disable();
+				}
 			}
 		},
 
@@ -41,6 +53,12 @@
 			this.store.reload({params:o});
 			this.hasSearch = true;
 			this.triggers[0].show();
+			if(Surrogate && Buzon && Edit && Delete){
+				Surrogate.disable();
+				Buzon.disable();
+				Edit.disable();
+				Delete.disable();
+			}			
 		}
 	});
 

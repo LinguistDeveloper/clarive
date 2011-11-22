@@ -1,6 +1,8 @@
 package Baseliner::Controller::User;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Switch;
+use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'config.user.global' => {
@@ -27,7 +29,7 @@ sub preferences : Local {
     $c->stash->{title} = _loc 'User Preferences';
     if( @config ) {
         $c->stash->{metadata} = [ map { $_->metadata } @config ];
-		$c->stash->{ns_query} = { does=>'Baseliner::Role::Namespace::User' }; 
+	$c->stash->{ns_query} = { does=>'Baseliner::Role::Namespace::User' }; 
         $c->forward('/config/form_render'); 
     }
 }
@@ -41,15 +43,147 @@ sub actions : Local {
 
 sub info : Local {
     my ($self, $c, $username) = @_;
+   
+    my $u = $c->model('Users')->get( $username );
+    if( ref $u ) {
+	my $user_data = $u->{data} || {};
+	$c->stash->{username}  = $username;
+	$c->stash->{realname}  = $u->{realname};
+	$c->stash->{alias} = $u->{alias};
+	$c->stash->{email}  = $u->{email};
+	$c->stash->{phone}  = $u->{phone};	
+	
+	# Data from LDAP, or other user data providers:
+        $c->stash->{$_} ||= $user_data->{$_} for keys %$user_data;
+    }
+    $c->stash->{template} = '/comp/user_info.mas';
+}
 
-	my $u = $c->model('Users')->get( $username );
-	if( ref $u ) {
-        my $user_data = $u->{data} || {};
-		$c->stash->{username}  = $username;
-		$c->stash->{realname}  = $u->{realname};
-        $c->stash->{$_} = $user_data->{$_} for keys %$user_data;
+sub infodetail : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $username = $p->{username};
+    
+    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    $sort ||= 'me.role';
+    $dir ||= 'asc';
+
+    my @rows;
+    my $roles = $c->model('Baseliner::BaliRole')->search(
+						    {'bali_roleusers.username' => $username},
+						    {
+							select=>[qw/id role description/],
+							join=>['bali_roleusers'],
+							group_by=>[qw/id role description/], 
+							order_by=> $sort ? "$sort $dir" : undef
+						    }
+						);
+    rs_hashref($roles);
+    
+    while( my $r = $roles->next ) {
+	my $rs_userprojects = $c->model('Baseliner::BaliRoleUser')->search( { username => $username ,  id_role => $r->{id}} );
+	rs_hashref($rs_userprojects);
+	my @projects;
+	while( my $rs = $rs_userprojects->next ) {
+	    my ($ns, $prjid) = split "/", $rs->{ns};
+	    my $str;
+	    my $parent;
+	    my $allpath;
+	    my $nature;
+	    if($prjid){
+		my @path;
+		my $project = $c->model('Baseliner::BaliProject')->find($prjid);
+		push @path, $project->name;
+		$parent = $project->id_parent;
+		while($parent){
+		    my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
+		    push @path, $projectparent->name . '/';
+		    $parent = $projectparent->id_parent;
+		}
+		while(@path){
+		    $allpath .= pop (@path)
+		}
+		if($project->nature){ $nature= ' (' . $project->nature . ')';}
+		$str = $allpath . $nature;
+	    }
+	    else{
+		$str = '';
+	    }
+	    push @projects, $str;
+ 	}
+	@projects = sort(@projects);
+	my @jsonprojects;
+	foreach my $project (@projects){
+	    my $str = { name=>$project };
+	    push @jsonprojects, $str;
 	}
-	$c->stash->{template} = '/comp/user_info.mas';
+        my $projects_txt = \@jsonprojects;
+
+	push @rows,
+		    {
+		      role		=> $r->{role},
+		      description	=> $r->{description},
+		      projects		=> $projects_txt
+		    };
+    }
+    $c->stash->{json} = { data=>\@rows};		
+    $c->forward('View::JSON');    
+}
+
+sub infoactions : Local {
+    my ($self, $c, $role) = @_;
+    $c->stash->{role}  = $role;
+    $c->stash->{template} = '/comp/user_infoactions.mas';
+}
+
+sub infodetailactions : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $role = $p->{role};
+    if( defined $role ) {
+        my $r = $c->model('Baseliner::BaliRole')->search({ role=>$role })->first;
+        if( $r ) {
+            my @actions;
+            my $rs_actions = $r->bali_roleactions;
+            while( my $ra = $rs_actions->next ) {
+                my $desc = $ra->action;
+                eval { # it may fail for keys that are not in the registry
+                    my $action = $c->model('Registry')->get( $ra->action );
+                    $desc = $action->name;
+                }; 
+                push @actions,{ action=>$ra->action, description=>$desc, bl=>$ra->bl };
+            }
+            $c->stash->{json} =  { data=>\@actions};
+            $c->forward('View::JSON');
+        }
+    }
+}
+
+sub update : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $action = $p->{action};
+
+            switch ($action) {
+                case 'add' {
+		    try{
+			$c->model('Baseliner::BaliUser')->create({
+			    username    => $p->{username},
+			    realname  => $p->{realname},
+			    alias=> $p->{alias},
+			    email=> $p->{email},
+			    phone=> $p->{phone}
+			    });
+			    $c->stash->{json} = { msg=>_loc('User updated'), success=>\1 };
+		    }
+		    catch{
+			$c->stash->{json} = { msg=>_loc('Error updating User: %1', shift()), success=>\1 }
+		    }
+		}
+		case 'edit' { _log 'edit'; }
+		case 'delete' { _log 'delete'; }
+            }
+    $c->forward('View::JSON');
 }
 
 sub actions_list : Local {
@@ -156,7 +290,7 @@ sub grid : Local {
     my ( $self, $c ) = @_;
 	#$c->forward('/namespace/load_namespaces');
     $c->forward('/user/can_surrogate');
-	$c->forward('/baseline/load_baselines');
+    $c->forward('/baseline/load_baselines');
     $c->stash->{template} = '/comp/user_grid.mas';
 }
 sub can_surrogate : Local {
@@ -169,7 +303,7 @@ sub can_surrogate : Local {
 
 sub list : Local {
     my ($self,$c) = @_;
-	my $p = $c->request->parameters;
+    my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $sort ||= 'me.username';
     $dir ||= 'asc';
@@ -177,46 +311,33 @@ sub list : Local {
     $limit ||= 100;
 
     my $page = to_pages( start=>$start, limit=>$limit );
-####    my $where = $query
-####        ? { 'lower(me.username||role||description||ns||realname)' => { -like => "%".lc($query)."%" } } 
-####        : undef;
-####	my $rs = $c->model('Baseliner::BaliRoleuser')->search(
-####       $where,
-####    {
-####        prefetch => ['role','bali_user'],
-####		join => ['bali_user'],
-####        page => $page,
-####        rows => $limit,
-####        order_by => $sort ? "$sort $dir" : undef
-####    });
-	my $rs = $c->model('Baseliner::BaliUser')->search(undef,
-							  { page => $page,
-							    rows => $limit,
-							    order_by => $sort ? "$sort $dir" : undef
-							  });
+    
+    my $where = $query
+        ? { 'lower(username||realname||alias)' => { -like => "%".lc($query)."%" } } 
+        : undef;   
+    
+    my $rs = $c->model('Baseliner::BaliUser')->search(
+	$where,
+	{ page => $page,
+	  rows => $limit,
+	  order_by => $sort ? "$sort $dir" : undef
+	}
+    );
 	
-	my @rows;
-	while( my $r = $rs->next ) {
-        # produce the grid
-        #my $rs_roles = $r->roles;
-	    ####my $role = $r->role;
-	    ####my $realname = $r->bali_user->realname;
-	    my $realname = $r->realname;
-	    #while( my $ro = $rs_roles->next ) {
-            #my $role = $ro->role;
-            #my $ns = $ro->ns;
-            push @rows,
-              {
-                id          => $cnt++,
-                username    => $r->username,
-		realname    => $realname,
-		alias	    => $r->alias
-                ####role        => $role->name . "(" . $role->description . ")",
-                ####ns          => $r->ns,
-              };
-        #}
+    my $pager = $rs->pager;
+    $cnt = $pager->total_entries;	
+	
+    my @rows;
+    while( my $r = $rs->next ) {
+    # produce the grid
+	push @rows,
+	  {
+	    username	=> $r->username,
+	    realname	=> $r->realname,
+	    alias	=> $r->alias
+	  };
     }
-	$c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows) };		
-	$c->forward('View::JSON');
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
+    $c->forward('View::JSON');
 }
 1;
