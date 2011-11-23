@@ -167,20 +167,28 @@ sub update : Local {
             switch ($action) {
                 case 'add' {
 		    try{
-			$c->model('Baseliner::BaliUser')->create({
-			    username    => $p->{username},
-			    realname  => $p->{realname},
-			    alias=> $p->{alias},
-			    email=> $p->{email},
-			    phone=> $p->{phone}
-			    });
+			my $row = $c->model('Baseliner::BaliUser')->search( username => $p->{username}, active => 1)->first;
+			if(!$row){
+			    $c->model('Baseliner::BaliUser')->create(
+								{
+								    username    => $p->{username},
+								    realname  	=> $p->{realname},
+								    alias	=> $p->{alias},
+								    email	=> $p->{email},
+								    phone	=> $p->{phone}
+								});
 			    $c->stash->{json} = { msg=>_loc('User added'), success=>\1 };
+			}else{
+			    $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
+			}
 		    }
 		    catch{
 			$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
 		    }
 		}
-		case 'edit' { _log 'edit'; }
+		case 'edit' {
+		
+		}
 		case 'delete' {
 		    try{
 			my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
@@ -322,9 +330,10 @@ sub list : Local {
 
     my $page = to_pages( start=>$start, limit=>$limit );
     
+    
     my $where = $query
-        ? { 'lower(username||realname||alias)' => { -like => "%".lc($query)."%" } } 
-        : undef;   
+        ? { 'lower(username||realname||alias)' => { -like => "%".lc($query)."%" }, active => 1 }
+        : { active => 1 };   
     
     my $rs = $c->model('Baseliner::BaliUser')->search(
 	$where,
@@ -345,7 +354,9 @@ sub list : Local {
 	    id 		=> $r->id,
 	    username	=> $r->username,
 	    realname	=> $r->realname,
-	    alias	=> $r->alias
+	    alias	=> $r->alias,
+	    email	=> $r->email,
+	    phone	=> $r->phone
 	  };
     }
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
