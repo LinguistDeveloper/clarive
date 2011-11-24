@@ -21,10 +21,10 @@
 	});
 
 
-	<& '/comp/search_field.mas' &>
-
 	var ps = 100; //page_size
 	store.load({params:{start:0 , limit: ps}});
+
+	<& /comp/search_field.mas &>
 	
 	var init_buttons = function(action) {
 		eval('btn_surrogate.' + action + '()');
@@ -107,12 +107,28 @@
 				}
 			],
 			items: [
-			    { xtype: 'hidden', name: 'id', value: -1 }, 
-			    { fieldLabel: _('User'), name: 'username', value: '', xtype: 'field', css: '', width: 350 },
-			    { fieldLabel: _('Name'), name: 'realname', value: '', xtype: 'textfield', css: '' , width: 350},
-			    { fieldLabel: _('Alias'), name: 'alias', value: '', xtype: 'textfield', css: '' , width: 350},
-			    { fieldLabel: _('Email'), name: 'email', value: '', vtype: 'email', xtype: 'textfield', css: '' , width: 350},
-			    { fieldLabel: _('Telephone'), name: 'phone', value: '', xtype: 'textfield', css: '' , width: 350}
+				{ xtype: 'hidden', name: 'id', value: -1 }, 
+				{ fieldLabel: _('User'), name: 'username', emptyText: 'Usuario', xtype: 'textfield', width: 350 },
+				{ fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield', width: 350},		    
+				{ fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield', width: 350},
+				{
+					fieldLabel: _('Email'),
+					name: 'email',
+					emptyText: 'usuario@dominio.com',
+					vtype: 'email',
+					xtype: 'textfield',
+					width: 350
+				},
+				{
+					fieldLabel: _('Telephone'),
+					name: 'phone',
+					emptyText: 'xx-xxx-xx-xx',
+					maskRe: /[\d\-]/,
+					regex: /^\d{2}-\d{3}-\d{2}-\d{2}$/,
+					regexText: 'Must be in the format xxx-xxx-xxxx',
+					xtype: 'textfield',
+					width: 350
+				}
 			]
 		});
 		
@@ -121,8 +137,11 @@
 			ff.loadRecord( rec );
 		}
 
+		var title = 'Create user';
+		if(rec) title = 'Edit user';
+		
 		win = new Ext.Window({
-		    title: _('Create User'),
+		    title: _(title),
 		    autoHeight: true,
 		    width: 550,
 		    closeAction: 'close',
@@ -229,11 +248,15 @@
 					params: {start: 0, limit: ps},
 					emptyText: _('<Enter your search string>')
 				}),
-				btn_surrogate,
+% if ($c->stash->{can_surrogate}) { 
+					btn_surrogate,
+%}
 				btn_buzon,
+% if ($c->stash->{can_maintenance}) {
 				btn_add,
 				btn_edit,
 				btn_delete,
+%}
 				'->'
 			]
 		});

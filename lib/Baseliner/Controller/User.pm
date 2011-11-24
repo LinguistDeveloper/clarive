@@ -20,6 +20,9 @@ register 'config.user.view' => {
     ]
 };
 register 'menu.admin.users' => { label => 'Users', url_comp=>'/user/grid', actions=>['action.admin.role'], title=>'Users', index=>80, icon=>'/static/images/icons/user.gif' };
+register 'action.maintenance.users' => {
+	name => 'User maintenance',
+};
 
 sub preferences : Local {
     my ($self, $c) = @_;
@@ -308,15 +311,20 @@ sub grid : Local {
     my ( $self, $c ) = @_;
 	#$c->forward('/namespace/load_namespaces');
     $c->forward('/user/can_surrogate');
+    $c->forward('/user/can_maintenance');
     $c->forward('/baseline/load_baselines');
     $c->stash->{template} = '/comp/user_grid.mas';
 }
 sub can_surrogate : Local {
     my ( $self, $c ) = @_;
     return 0 unless $c->username;
-	$c->stash->{can_surrogate} =
-		$c->model('Permissions')
-			->user_has_action( username=> $c->username, action=>'action.surrogate' );
+    $c->stash->{can_surrogate} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.surrogate' );
+}
+
+sub can_maintenance : Local {
+    my ( $self, $c ) = @_;
+    return 0 unless $c->username;
+    $c->stash->{can_maintenance} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.maintenance.users' );
 }
 
 sub list : Local {
