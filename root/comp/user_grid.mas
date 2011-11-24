@@ -76,7 +76,7 @@
 
 	});
 
-	var add_new = function(rec) {
+	var add_edit = function(rec) {
 		var win;
 	    	var form_user = new Ext.FormPanel({
 			url: '/user/update',
@@ -86,33 +86,36 @@
 			buttons: [
 				{
 				    text: _('Save'), handler: function(){
-					var action = form_user.getForm().getValues()['id'] >= 0 ? 'update' : 'add';
-					form_user.getForm().submit({
-					    params: { action: action },
-					    success: function(f,a){
-						Baseliner.message('Success', a.result.msg );
-						win.close();
-						store.load();
-					    },
-					    failure: function(f,a){
-						Ext.Msg.show({  
-						    title: 'Information', 
-						    msg: a.result.msg , 
-						    buttons: Ext.Msg.OK, 
-						    icon: Ext.Msg.INFO
-						}); 						
-					    }
-					});
+					var form = form_user.getForm();
+					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+					 if (form.isValid()) {
+						form.submit({
+						    params: { action: action },
+						    success: function(f,a){
+							Baseliner.message('Success', a.result.msg );
+							win.close();
+							store.load();
+						    },
+						    failure: function(f,a){
+							Ext.Msg.show({  
+							    title: 'Information', 
+							    msg: a.result.msg , 
+							    buttons: Ext.Msg.OK, 
+							    icon: Ext.Msg.INFO
+							}); 						
+						    }
+						});
+					 }
 				    }
 				}
 			],
 			items: [
 				{ xtype: 'hidden', name: 'id', value: -1 }, 
-				{ fieldLabel: _('User'), name: 'username', emptyText: 'Usuario', xtype: 'textfield', width: 350 },
+				{ fieldLabel: _('User'), name: 'username', emptyText: 'Usuario', allowBlank:false, xtype: 'textfield', width: 350 },
 				{ fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield', width: 350},		    
 				{ fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield', width: 350},
 				{
-					fieldLabel: _('Email'),
+					fieldLabel: _('Email address'),
 					name: 'email',
 					emptyText: 'usuario@dominio.com',
 					vtype: 'email',
@@ -120,7 +123,7 @@
 					width: 350
 				},
 				{
-					fieldLabel: _('Telephone'),
+					fieldLabel: _('Phone Number'),
 					name: 'phone',
 					emptyText: 'xx-xxx-xx-xx',
 					maskRe: /[\d\-]/,
@@ -162,7 +165,7 @@
                 icon:'/static/images/icons/add.gif',
                 cls: 'x-btn-text-icon',
         	handler: function() {
-			add_new();
+			add_edit();
 		}
         });
 	
@@ -176,7 +179,7 @@
 			if (sm.hasSelection()) {
 				var sel = sm.getSelected();
 				//user_view(sel);
-				add_new(sel);
+				add_edit(sel);
 			} else {
 				Baseliner.message( _('ERROR'), _('Select at least one row'));    
 			};
