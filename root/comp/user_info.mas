@@ -1,7 +1,7 @@
 (function(){
     var username = '<% $c->stash->{username} %>' ;
 
-    var storeusers=new Ext.data.JsonStore({
+    var store_users=new Ext.data.JsonStore({
 	root: 'data' , 
 	remoteSort: true,
 	totalProperty:"totalCount", 
@@ -42,7 +42,7 @@
 	stripeRows: true,
 	autoScroll: true,
 	autoWidth: true,
-	store: storeusers,
+	store: store_users,
 	viewConfig: [{
 	    forceFit: true
 	}],
@@ -79,7 +79,7 @@
 	    items: form
     });
     
-    storeusers.load({ params: {username: username} }); 
+    store_users.load({ params: {username: username} }); 
     return win;
 })();
 
