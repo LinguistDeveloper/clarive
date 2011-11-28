@@ -1,11 +1,11 @@
 //INFORMACIÓN DEL CONTROL DE VERSIONES
 //
 //	CAM .............................. SCM
-//	Pase ............................. N.PROD0000054129
-//	Fecha de pase .................... 2011/11/17 20:29:43
+//	Pase ............................. N.PROD0000054352
+//	Fecha de pase .................... 2011/11/22 17:13:35
 //	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/root/comp/sqa/grid.js
-//	Versión del elemento ............. 1
-//	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
+//	Versión del elemento ............. 2
+//	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 <%args>
 	$action_view_general
 	$action_new_analysis
@@ -1061,7 +1061,7 @@
                     handler: function(){
                         var bl = bl_combo.getValue();
                         var project = project_combo.getRawValue();
-                        var subapp = subproject_combo.getValue();
+                        var subapp = nature_combo.getValue();
                         var nature = nature_combo.getRawValue();
                         subapp = subapp.replace('(' + nature + ')','');
 

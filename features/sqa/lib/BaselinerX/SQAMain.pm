@@ -153,6 +153,8 @@ register 'config.sqa' => {
         { id => 'file_mstest_coverage', label => 'Fichero de salida de resultados MSTEST coverage', default => 'data.html', },
         { id => 'file_junit_errors', label => 'Fichero de salida de resultados JUNIT', default => 'junit/index.html', },
         { id => 'file_junit_coverage', label => 'Fichero de salida de resultados JUnit', default => 'coverage/coverage.html', },       
+        { id => 'run_sqa', label=>'Ejecutar analisis de SQA despues del pase', default=>'N'},
+        { id => 'block_deployment', label=>'Bloquar pase si la ultima auditoria de SQA no esta aprobada (estado:OK)', default=>'N'},
         { id => 'url_scm', label=>'URL del servidor de scm', default=>'http://wbetest.bde.es/scm_inf'},
    ]
 };
