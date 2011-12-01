@@ -1,6 +1,7 @@
 package Baseliner::Controller::User;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Core::DBI;
 use Switch;
 use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
@@ -164,8 +165,16 @@ sub infodetailactions : Local {
 
 sub update : Local {
     my ($self,$c)=@_;
-    my $p = $c->req->params;
+    my $p = $c->request->parameters;
     my $action = $p->{action};
+    my $projects_checked = $p->{projects_checked};
+    my $roles_checked = $p->{roles_checked};
+    my $project;
+    
+    foreach $project(@$roles_checked){
+	_log "########projects1: " . $project . "\n";
+    }
+    
 
             switch ($action) {
                 case 'add' {
@@ -325,6 +334,73 @@ sub can_maintenance : Local {
     my ( $self, $c ) = @_;
     return 0 unless $c->username;
     $c->stash->{can_maintenance} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.maintenance.users' );
+}
+
+sub projects_list : Local {
+    my ($self,$c) = @_;
+    my $id = $c->req->params->{node};
+    my $project = $c->req->params->{project} ;
+    my $id_project = $c->req->params->{id_project} ;
+    my $parent_checked = $c->req->params->{parent_checked} || 0 ;
+    
+    _log "############1: " . $c->req->params->{parent_checked} . "\n";
+    _log "############2: " . $parent_checked . "\n";
+   
+    my @tree;
+    my $rsprojects;
+    my $rsprojects_parent;
+   
+    my @datas;
+    my $data;
+    my $SQL;  
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my $param;
+    
+    if($id_project){
+	$param = " = $id_project ";
+    }else{
+	$param = " is null";
+    }
+	
+    $SQL = "SELECT b.id, b.NAME, 1 as leaf, b.nature 
+	    FROM BALI_PROJECT b
+	    WHERE b.ID_PARENT $param
+		    and b.id not in (SELECT distinct a.ID_PARENT
+					FROM BALI_PROJECT a
+					where a.id_parent is not null) 
+	    UNION
+	    SELECT distinct d.ID, d.name, 0 as leaf, d.nature
+	    FROM BALI_PROJECT d,  
+	    BALI_PROJECT C
+	    WHERE d.ID_PARENT $param and
+	    d.id = c.ID_PARENT";
+   
+    @datas = $db->array_hash( "$SQL" );
+    my $nature;
+    
+    foreach $data(@datas){
+	if($data->{nature}){
+	    $nature = " ($data->{nature})";
+	}
+	else{
+	    $nature = "";
+	}
+        push @tree, {
+            text       => $data->{name} . $nature,
+            url        => 'user/projects_list',
+            data       => {
+                id_project => $data->{id},
+                project    => $data->{name},
+		parent_checked => 0,
+            },	    
+            icon       => '/static/images/icons/project.gif',
+            leaf       => \$data->{leaf},
+	    checked    => \$parent_checked
+        };	
+    }
+    
+    $c->stash->{json} = \@tree;
+    $c->forward('View::JSON');
 }
 
 sub list : Local {

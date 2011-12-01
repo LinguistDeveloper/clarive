@@ -36,21 +36,6 @@
 		]
 	});
 	
-	var store_projects = new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/project/list',
-		fields: [ 
-			{  name: 'id' },
-			{  name: 'name' },
-			{  name: 'data' },
-			{  name: 'description' },
-			{  name: 'ns' }
-		]
-	});
-	
 	var store_user_roles_projects = new Ext.data.JsonStore({
 	    root: 'data' , 
 	    remoteSort: true,
@@ -67,9 +52,9 @@
 	var ps = 100; //page_size
 	store.load({params:{start:0 , limit: ps}});
 	
-	store_roles.load({params:{start:0 , limit: ps}});
-	store_projects.load({params:{start:0 , limit: ps}});
-	store_user_roles_projects.load({ params: {username: 'infagax'} }); 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 	var render_rol_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
 	    if( value==undefined || value=='null' || value=='' ) return '';
@@ -89,8 +74,10 @@
 		}
 	    }
 	    return str;
-	}  	
-
+	}
+	
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	<& /comp/search_field.mas &>
 	
@@ -147,101 +134,207 @@
 	var add_edit = function(rec) {
 		var win;
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		var check_roles_sm = new Ext.grid.CheckboxSelectionModel({
-		    singleSelect: false,
-		    sortable: false,
-		    checkOnly: true
+			singleSelect: false,
+			sortable: false,
+			checkOnly: true
 		});
 
 		var grid_roles = new Ext.grid.GridPanel({
-		    title: _('Roles'),
-		    sm: check_roles_sm,
-		    store: store_roles,
-		    stripeRows: true,
-		    autoScroll: true,
-		    height:200,
-		    autoSizeColumns: true,
-		    columns: [
-			check_roles_sm,
-			{ header: _('Role'), width: 100, dataIndex: 'role', sortable: true },
-			//{ header: _('Description'), width: 250, dataIndex: 'description', sortable: true }
-		    ]
+			title: _('Available Roles'),
+			sm: check_roles_sm,
+			store: store_roles,
+			stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			viewConfig: {
+				forceFit: true
+			},		    
+			height:200,
+			columns: [
+				check_roles_sm,
+				{ hidden: true, dataIndex:'id' }, 
+				{ header: _('All'), width:250, dataIndex: 'role', sortable: true }
+			],
+			autoSizeColumns: true,
+			deferredRender:true
 		});
 		
-		var check_projects_sm = new Ext.grid.CheckboxSelectionModel({
-		    singleSelect: false,
-		    sortable: false,
-		    checkOnly: true
-		});
-
-		var grid_projects = new Ext.grid.GridPanel({
-		    title: _('Projects'),
-		    sm: check_projects_sm,
-		    store: store_projects,
-		    stripeRows: true,
-		    autoScroll: true,
-		    height:200,
-		    autoSizeColumns: true,
-		    columns: [
-			check_projects_sm,
-			{ header: _('Name'), width: 100, dataIndex: 'name', sortable: true },
-			//{ header: _('Ns'), width: 250, dataIndex: 'ns', sortable: true }
-		    ]
-		});		
-
+		var btn_delete_role = new Ext.Toolbar.Button({
+				text: _('Delete Role'),
+				icon:'/static/images/del.gif',
+				cls: 'x-btn-text-icon',
+				disabled: true,
+				handler: function() {
+				    var sm = grid_role.getSelectionModel();							
+				    if (sm.hasSelection()) {
+					var sel = sm.getSelected();
+					grid_role.getStore().remove(sel);
+					tree_check( treeRoot );
+				    }
+				}
+		})
+		
+		var btn_delete_project = new Ext.Toolbar.Button({
+			text: _('Delete Project'),
+			icon:'/static/images/del.gif',
+			cls: 'x-btn-text-icon',
+			disabled: true,
+			handler: function() {
+			    var sm = grid_role.getSelectionModel();							
+			    if (sm.hasSelection()) {
+				var sel = sm.getSelected();
+				grid_role.getStore().remove(sel);
+				tree_check( treeRoot );
+			    }
+			}
+		}) 
+		
 		var grid_user_roles_projects = new Ext.grid.GridPanel({
-		    title: _('Roles/Projects User '),
-		    stripeRows: true,
-		    autoScroll: true,
-		    autoWidth: true,
-		    store: store_user_roles_projects,
-		    viewConfig: [{
-			forceFit: true
-		    }],
-		    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		    loadMask:'true',
-		    columns: [
-			{ header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },	
-			{ header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
-			{ header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
-		    ],
-		    autoSizeColumns: true,
-		    deferredRender:true,
-		    height:200
+			title: _('Roles/Projects User '),
+			stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			store: store_user_roles_projects,
+			viewConfig: {
+				forceFit: true
+			},
+			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+			loadMask:'true',
+			columns: [
+				{ header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },	
+				{ header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
+				{ header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
+			],
+			autoSizeColumns: true,
+			deferredRender:true,
+			bbar: [
+			       btn_delete_role,
+			       btn_delete_project,
+			    new Ext.Toolbar.Button({
+				text: _('Delete All'),
+				icon:'/static/images/del.gif',
+				cls: 'x-btn-text-icon',
+				disabled: true,
+				handler: function() {
+				    grid_role.getStore().removeAll();
+				    tree_check( treeRoot );
+				}
+			    })
+			],		    
+			height:200
 		});
 		
+		grid_user_roles_projects.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+			btn_delete_role.enable();
+		});		
+	
 		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}});
+		
+	
+		var tree_check_folder_enabled = function(root) { // checks if parent folder has children
+			var flag= grid_role.store.getCount()<1 ? false : true;
+			root.eachChild( function(child) {
+			    if( ! child.disabled ) {
+				flag = false;
+			    }
+			});
+			if( flag )  root.disable();
+			else        root.enable();
+		};
+		
+		var tree_check_in_grid = function(node) {
+			var ff = grid_role.store.find('action', node.id );
+			if( ff  >=0 ) { // check if its in the grid already
+			    node.disable();
+			} else {
+			    node.enable();
+			}
+		};
+	
+		var tree_check = function(node) {
+			if( node.isLeaf() ) {
+			    //TODO: activar cuando metamos metodo que compruebe todas las bl
+						//tree_check_in_grid( node );
+			    //#########tree_check_folder_enabled(node.parentNode);
+			} else {
+			    node.eachChild( function(child) {
+				if( child.isLeaf() ) {
+				    tree_check( child );
+				} else {
+				    tree_check( child );
+				    child.removeListener('expand', tree_check );
+				    child.on({ 'expand': { fn: tree_check } });
+				    if( child.hasChildNodes() )  {
+					//##########tree_check_folder_enabled(child);
+				    }
+				}
+			    });
+			}
+		};
+		
+
+		var tree_projects = new Ext.tree.TreePanel({
+		    title: _('Available Projects'),
+		    dataUrl: "user/projects_list",
+		    split: true,
+		    colapsible: true,
+		    useArrows: true,
+		    ddGroup: 'secondGridDDGroup',
+		    animate: true,
+		    enableDrag: true,
+		    containerScroll: true,
+		    autoScroll: true,
+		    height:200,		    
+		    rootVisible: true,
+		    preloadChildren: true,
+		    root: {
+			nodeType: 'async',
+			text: _('All'),
+			draggable:false,
+			checked: false,
+			id: 'All'
+		    }
+		});
+		
+		tree_projects.getLoader().on("beforeload", function(treeLoader, node) {
+			var loader = tree_projects.getLoader();
+			//if( node.attributes.url != undefined ) {
+			//	loader.dataUrl = node.attributes.url;
+			//}
+			
+			loader.baseParams = node.attributes.data;
+			if(node.attributes.data){
+				node.attributes.data.parent_checked = (node.attributes.checked)?1:0;
+			}
+		});
+		
+		tree_projects.on('checkchange', function(node, checked) {
+			//node.attributes.data.parent_checked = checked;
+			node.eachChild(function(n) {
+				n.getUI().toggleCheck(checked);
+			});
+		});
+		
+		tree_projects.on('click', function(node, event){
+			node.getUI().toggleCheck(!node.attributes.checked);
+			//node.attributes.data.parent_checked = (!node.attributes.checked)?1:0;
+			//node.attributes.data.parent_checked = 1;
+				//alert(node.attributes.data.parent_checked);
+		});
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	
 	    	var form_user = new Ext.FormPanel({
 			url: '/user/update',
 			frame: true,
 			labelWidth: 100,
-			buttons: [
-				{
-				    text: _('Save'), handler: function(){
-					var form = form_user.getForm();
-					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-					 if (form.isValid()) {
-						form.submit({
-						    params: { action: action },
-						    success: function(f,a){
-							Baseliner.message('Success', a.result.msg );
-							win.close();
-							store.load();
-						    },
-						    failure: function(f,a){
-							Ext.Msg.show({  
-							    title: 'Information', 
-							    msg: a.result.msg , 
-							    buttons: Ext.Msg.OK, 
-							    icon: Ext.Msg.INFO
-							}); 						
-						    }
-						});
-					 }
-				    }
-				}
-			],
 			items: [
 				{ xtype: 'hidden', name: 'id', value: -1 }, 
 				{ fieldLabel: _('User'), name: 'username', emptyText: 'Usuario', allowBlank:false, xtype: 'textfield', width: 350 },
@@ -268,11 +361,10 @@
 				{
 					xtype: 'panel',
 					layout: 'column',
-					width: 700,
 					items:  [
 						{  
 						columnWidth: .49,
-						items: grid_roles
+						items:  grid_roles
 						},
 						{
 						columnWidth: .02,
@@ -280,22 +372,62 @@
 						},
 						{  
 						columnWidth: .49,
-						items: grid_projects
+						items: tree_projects
 					}]  
 				},
+				new Ext.Toolbar.Button({
+				        text: _('Save'), handler: function(){
+					var form = form_user.getForm();
+					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+					var projects_checked = new Array();
+					var roles_checked = new Array();
+					check_roles_sm.each(function(rec){
+						roles_checked.push(rec.get('role'));
+					});							
+					
+					
+					selNodes = tree_projects.getChecked();
+					Ext.each(selNodes, function(node){
+						projects_checked.push(node.attributes.data.id_project);
+					});
+					 if (form.isValid()) {
+						form.submit({
+						    params: { action: action,
+							      projects_checked: projects_checked,
+							      roles_checked: roles_checked
+						    },
+						    success: function(f,a){
+							Baseliner.message('Success', a.result.msg );
+							win.close();
+							store.load();
+						    },
+						    failure: function(f,a){
+							Ext.Msg.show({  
+							    title: 'Information', 
+							    msg: a.result.msg , 
+							    buttons: Ext.Msg.OK, 
+							    icon: Ext.Msg.INFO
+							}); 						
+						    }
+						});
+					 }
+				    }
+				}),
 				grid_user_roles_projects	
 				
 			]
 		});
 		
+		var username = '';
+		var title = 'Create user';
+		
 		if(rec){
 			var ff = form_user.getForm();
 			ff.loadRecord( rec );
+			username = rec.get('username');
+			title = 'Edit user';
 		}
 
-		var title = 'Create user';
-		if(rec) title = 'Edit user';
-		
 		win = new Ext.Window({
 		    title: _(title),
 		    autoHeight: true,
@@ -305,8 +437,9 @@
 			    form_user
 		    ]
 		});
-		
-		 win.show();
+		store_roles.load({params:{start:0 , limit: ps}});
+		store_user_roles_projects.load({ params: {username: username} });		
+		win.show();
 	};
 	
  
@@ -373,9 +506,9 @@
 			autoScroll: true,
 			autoWidth: true,
 			store: store,
-			viewConfig: [{
-					forceFit: true
-			}],
+			viewConfig: {
+				forceFit: true
+			},
 			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 			loadMask:'true',
 			columns: [
