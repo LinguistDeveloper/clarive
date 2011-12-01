@@ -27,6 +27,10 @@ sub BUILD {
     if( ref $self->connection eq 'ARRAY' ) {
         $self->dbi( DBI->connect( @{ $self->connection } ) ); 
     }
+    # delete the model name Baseliner
+    if( ref $self->dbi ) {
+        $self->model('');
+    }
 	# set params, if any
 	my %dbh_params = %{ $self->dbh_params || {} };
 	for my $param ( %dbh_params ) {
