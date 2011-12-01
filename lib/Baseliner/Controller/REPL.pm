@@ -53,7 +53,7 @@ sub eval : Local {
     # save history
     my @hist;
     if( @hist = @{ $c->session->{repl_hist} || [] } > 20 ) {
-        @hist = unshift @hist; 
+        @hist = shift @hist; 
     }
     push @hist, { text=>_now(), code=>$eval };
     $c->session->{repl_hist} = \@hist;
