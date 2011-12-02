@@ -62,7 +62,7 @@ sub json : Local {
     my $rs = $c->model('Baseliner::BaliScheduler')->search($where, $args);
 
     my $pager = $rs->pager;
-    my $cnt = $pager->total_entries;
+    $cnt = $pager->total_entries;
 
     my @rows;
     while ( my $r = $rs->next ) {
