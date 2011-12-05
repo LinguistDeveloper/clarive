@@ -24,6 +24,10 @@ if [ "$BASELINER_SCRIPT" == "" ]; then
     export BASELINER_SCRIPT=script/bali.pl
 fi
 
+if [ "$BASELINER_TRACE" != "" ]; then
+    BASELINER_TRACE_MODULE="-d:Trace::More" 
+fi
+
 if [ "$BASELINER_LANG" != "" ]; then
 	export LANG=$BASELINER_LANG
 else
@@ -36,5 +40,5 @@ if [ -f "script/bali_$1.pl" ]; then
 fi
 
 # -X : no warnings for production environments
-exec perl -I$BASELINER_HOME/lib -X $BASELINER_SCRIPT "$@"
+exec perl $BASELINER_TRACE_MODULE -I$BASELINER_HOME/lib -X $BASELINER_SCRIPT "$@"
 

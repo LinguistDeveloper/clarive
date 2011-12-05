@@ -402,7 +402,6 @@ __PACKAGE__->has_many(
 #  and still maintain ref integrity 
 use Try::Tiny;
 use Baseliner::Utils;
-use namespace::autoclean;
 
 sub stash {
     my ( $self, $data ) = @_;
