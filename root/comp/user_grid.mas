@@ -159,8 +159,8 @@
 				{ hidden: true, dataIndex:'id' }, 
 				{ header: _('All'), width:250, dataIndex: 'role', sortable: true }
 			],
-			autoSizeColumns: true,
-			deferredRender:true
+			autoSizeColumns: true
+			//deferredRender:true
 		});
 		
 		var btn_delete_role = new Ext.Toolbar.Button({
@@ -294,9 +294,14 @@
 		    root: {
 			nodeType: 'async',
 			text: _('All'),
-			draggable:false,
+			draggable: false,
 			checked: false,
-			id: 'All'
+			id: 'All',
+			data: {
+				project: '',
+				id_project: 'todos',
+				parent_checked: ''
+			}
 		    }
 		});
 		
@@ -307,9 +312,9 @@
 			//}
 			
 			loader.baseParams = node.attributes.data;
-			if(node.attributes.data){
+			//if(node.attributes.data){
 				node.attributes.data.parent_checked = (node.attributes.checked)?1:0;
-			}
+			//}
 		});
 		
 		tree_projects.on('checkchange', function(node, checked) {
@@ -332,6 +337,7 @@
 
 	
 	    	var form_user = new Ext.FormPanel({
+			name: form_user,
 			url: '/user/update',
 			frame: true,
 			labelWidth: 100,
@@ -382,7 +388,7 @@
 					var projects_checked = new Array();
 					var roles_checked = new Array();
 					check_roles_sm.each(function(rec){
-						roles_checked.push(rec.get('role'));
+						roles_checked.push(rec.get('id'));
 					});							
 					
 					
@@ -398,8 +404,15 @@
 						    },
 						    success: function(f,a){
 							Baseliner.message('Success', a.result.msg );
-							win.close();
-							store.load();
+							store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
+							//store_roles.load({params:{start:0 , limit: ps}});
+							//tree_projects.root.reload();
+							form.findField("id").setValue(a.result.user_id);
+							
+							//grid_roles.reload();
+							//win.title = _"Edit user"
+							//win.close();
+							//store.load();
 						    },
 						    failure: function(f,a){
 							Ext.Msg.show({  
@@ -480,7 +493,9 @@
 				function(btn){ 
 					if(btn=='yes') {
 						Baseliner.ajaxEval( '/user/update?action=delete',
-							{ id: sel.data.id },
+							{ id: sel.data.id,
+							  username: sel.data.username
+							},
 							function(response) {
 								if ( response.success ) {
 									grid.getStore().remove(sel);

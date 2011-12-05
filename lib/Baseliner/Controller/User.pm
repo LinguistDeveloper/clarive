@@ -170,50 +170,176 @@ sub update : Local {
     my $projects_checked = $p->{projects_checked};
     my $roles_checked = $p->{roles_checked};
     my $project;
-    
-    foreach $project(@$roles_checked){
-	_log "########projects1: " . $project . "\n";
-    }
-    
 
-            switch ($action) {
-                case 'add' {
-		    try{
-			my $row = $c->model('Baseliner::BaliUser')->search( username => $p->{username}, active => 1)->first;
-			if(!$row){
-			    $c->model('Baseliner::BaliUser')->create(
-								{
-								    username    => $p->{username},
-								    realname  	=> $p->{realname},
-								    alias	=> $p->{alias},
-								    email	=> $p->{email},
-								    phone	=> $p->{phone}
-								});
-			    $c->stash->{json} = { msg=>_loc('User added'), success=>\1 };
-			}else{
-			    $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
-			}
+    switch ($action) {
+	case 'add' {
+	    try{
+		my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
+		if(!$row){
+		    my $user = $c->model('Baseliner::BaliUser')->create(
+							{
+							    username    => $p->{username},
+							    realname  	=> $p->{realname},
+							    alias	=> $p->{alias},
+							    email	=> $p->{email},
+							    phone	=> $p->{phone}
+							});
+		    
+		    _log "########usuario: " . $user->username . "\n";
+		    _log "########id: " . $user->id . "\n";
+		    
+		    foreach $project (_array $projects_checked){
+			_log "########usuario: " . $project . "\n";			
 		    }
-		    catch{
-			$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
-		    }
-		}
-		case 'edit' {
+		    
+		    tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);	
 		
+		##    my $user_name = $p->{username};
+		##    my $role;
+		##    foreach $role (_array $roles_checked){
+		##	foreach $project (_array $projects_checked){
+		##	    if ($project eq 'todos'){
+		##		#Borrar los demas proyectos si los hubiese.
+		##		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+		##								    {	username => $user_name,
+		##									    id_role => $role,
+		##									    ns => '/'
+		##								    },
+		##								    { key => 'primary' });
+		##		$role_user->update();
+		##		last				
+		##	    }else{
+		##		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+		##								    {	username => $user_name,
+		##									    id_role => $role,
+		##									    ns => 'project/' . $project
+		##								    },
+		##								    { key => 'primary' });
+		##		$role_user->update();
+		##	    }
+		##	}
+		##    }
+		
+		    $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
+		}else{
+		    $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
 		}
-		case 'delete' {
-		    try{
-			my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
-			$row->active(0);
-			$row->update();
-			$c->stash->{json} = {  success => 1, msg=>_loc('User deleted') };
-		    }
-		    catch{
-			$c->stash->{json} = {  success => 0, msg=>_loc('Error deleting User') };
-		    }
-		}
-            }
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
+	    }
+	}
+	case 'update' {
+	    try{
+		my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+	        $user->username( $p->{username} );
+		$user->realname( $p->{realname} );
+		$user->alias( $p->{alias} );
+		$user->email( $p->{email} );
+		$user->phone( $p->{phone} );
+		$user->update();
+
+		tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
+
+	##        my $user_name = $p->{username};
+	##	my $role;
+	##	foreach $role (_array $roles_checked){
+	##	    foreach $project (_array $projects_checked){
+	##		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+	##									{	username => $user_name,
+	##										id_role => $role,
+	##										ns => 'project/' . $project
+	##									},
+	##									{ key => 'primary' });
+	##		$role_user->update();
+	##	    }
+	##	}
+		
+		$c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $user->id };
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
+	    }
+	}
+	case 'delete' {
+	    try{
+		my $SQL;
+		my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+		$row->active(0);
+		$row->update();
+		
+		#$row->roles->delete_all;
+		###############################################################
+		my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+		my $param;
+    
+	        $param = $p->{username};
+
+		#Cambiar parametros, no seguro SQL injection, utilar parametros por defecto del dbi "?"
+		$SQL = "DELETE FROM BALI_ROLEUSER WHERE username = '$param' ";
+		$db->do( "$SQL" );
+		###############################################################
+		
+		$c->stash->{json} = {  success => 1, msg=>_loc('User deleted') };
+	    }
+	    catch{
+		$c->stash->{json} = {  success => 0, msg=>_loc('Error deleting User') };
+	    }
+	}
+    }
     $c->forward('View::JSON');
+}
+
+sub tratar_proyectos{
+    my $c = shift;
+    my $user_name = shift;
+    my $roles_checked = shift;
+    my $projects_checked = shift;
+    my $role;
+    my $project;
+    my $SQL;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
+    foreach $role (_array $roles_checked){
+	foreach $project (_array $projects_checked){
+	    if ($project eq 'todos'){
+		#Borrar los demas proyectos si los hubiese.
+		###############################################################
+		#Cambiar parametros, no seguro SQL injection, utilar parametros por defecto del dbi "?"
+		$SQL = "DELETE FROM BALI_ROLEUSER WHERE USERNAME = '$user_name' AND ID_ROLE = $role";
+		$db->do( "$SQL" );
+		###############################################################
+		
+		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+								    {	username => $user_name,
+									    id_role => $role,
+									    ns => '/'
+								    },
+								    { key => 'primary' });
+		$role_user->update();
+		last				
+	    }else{
+		#Comprobar si tiene acceso a todos los proyectos.
+		my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
+										 id_role => $role,
+										 ns => '/'
+										},
+										{ key => 'primary' });
+		if($all_projects){
+		    $SQL = "DELETE FROM BALI_ROLEUSER WHERE USERNAME = '$user_name' AND ID_ROLE = $role AND NS = '/'";
+		    $db->do( "$SQL" );
+		}
+		
+		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+								    {	username => $user_name,
+									    id_role => $role,
+									    ns => 'project/' . $project
+								    },
+								    { key => 'primary' });
+		$role_user->update();
+	    }
+	}
+    }
 }
 
 sub actions_list : Local {
@@ -342,9 +468,12 @@ sub projects_list : Local {
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
     my $parent_checked = $c->req->params->{parent_checked} || 0 ;
-    
-    _log "############1: " . $c->req->params->{parent_checked} . "\n";
-    _log "############2: " . $parent_checked . "\n";
+
+
+    #_log "############1: " . $c->req->params->{project} . "\n";
+    #_log "############2: " . $c->req->params->{id_project} . "\n";
+    #_log "############3: " . $c->req->params->{parent_checked} . "\n";
+
    
     my @tree;
     my $rsprojects;
@@ -356,12 +485,14 @@ sub projects_list : Local {
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my $param;
     
-    if($id_project){
+    if($id_project && $id_project ne 'todos'){
 	$param = " = $id_project ";
     }else{
 	$param = " is null";
     }
-	
+
+
+    #Cambiar parametros, no seguro SQL injection, utilar parametros por defecto del dbi "?"
     $SQL = "SELECT b.id, b.NAME, 1 as leaf, b.nature 
 	    FROM BALI_PROJECT b
 	    WHERE b.ID_PARENT $param
