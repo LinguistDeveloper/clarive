@@ -135,8 +135,8 @@
 		var win;
 		var username_readonly = false;
 		
-		var btn_grabar_roles_projects = new Ext.Toolbar.Button({
-				text: _('Save'),
+		var btn_asignar_roles_projects = new Ext.Toolbar.Button({
+				text: _('Assign roles/projects'),
 				icon:'/static/images/del.gif',
 				cls: 'x-btn-text-icon',
 				disabled: false,
@@ -151,7 +151,11 @@
 				
 					selNodes = tree_projects.getChecked();
 					Ext.each(selNodes, function(node){
-						projects_checked.push(node.attributes.data.id_project);
+						if(node.attributes.data.parent_checked){
+							projects_checked.push(node.attributes.data.id_project + 'x');
+						}else{
+							projects_checked.push(node.attributes.data.id_project);
+						}
 					});
 	
 					////////////////////////////////////////////////////////////////////
@@ -165,14 +169,8 @@
 						   success: function(f,a){
 						       Baseliner.message('Success', a.result.msg );
 						       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-						       //store_roles.load({params:{start:0 , limit: ps}});
-						       //tree_projects.root.reload();
 						       form.findField("id").setValue(a.result.user_id);
 						       form.findField("username").getEl().dom.setAttribute('readOnly', true);
-						       						       
-						       //grid_roles.reload();
-						       //win.title = _"Edit user"
-						       //win.close();
 						   },
 						   failure: function(f,a){
 						       Ext.Msg.show({  
@@ -195,18 +193,19 @@
 				}
 		})
 		
-		var btn_borrar = new Ext.Toolbar.Button({
-			text: _('Delete'),
+		var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
+			text: _('Unassign roles/projects'),
 			icon:'/static/images/del.gif',
 			cls: 'x-btn-text-icon',
 			disabled: false,
 			handler: function() {
+				var form = form_user.getForm();
+				var action = 'delete_roles_projects';					
 				var projects_checked = new Array();
 				var roles_checked = new Array();
 				check_roles_sm.each(function(rec){
 					roles_checked.push(rec.get('id'));
 				});							
-			
 			
 				selNodes = tree_projects.getChecked();
 				Ext.each(selNodes, function(node){
@@ -214,7 +213,44 @@
 				});
 
 				////////////////////////////////////////////////////////////////////
-				if (form.isValid()) {
+				if (form.getValues()['id'] > 0) {
+					if (form.getValues()['id'] > 0) {
+					       form.submit({
+						   params: { action: action,
+							     type: 'roles_projects',
+							     projects_checked: projects_checked,
+							     roles_checked: roles_checked
+						   },
+						   success: function(f,a){
+						       Baseliner.message('Success', a.result.msg );
+						       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
+						       //store_roles.load({params:{start:0 , limit: ps}});
+						       //tree_projects.root.reload();
+						       //form.findField("id").setValue(a.result.user_id);
+						       form.findField("username").getEl().dom.setAttribute('readOnly', true);
+						       						       
+						       //grid_roles.reload();
+						       //win.title = _"Edit user"
+						       //win.close();
+						   },
+						   failure: function(f,a){
+						       Ext.Msg.show({  
+							   title: _('Information'), 
+							   msg: a.result.msg , 
+							   buttons: Ext.Msg.OK, 
+							   icon: Ext.Msg.INFO
+						       }); 						
+						   }
+					       });
+					}
+					else{
+						Ext.Msg.show({  
+						    title: _('Information'), 
+						    msg: _('No existe el usuario.'), 
+						    buttons: Ext.Msg.OK, 
+						    icon: Ext.Msg.INFO
+						}); 						
+					}
 				}
 				//////////////////////////////////////////////////////////////////////////
 
@@ -254,7 +290,7 @@
 					       btn_grabar_user.disable();
 					       
 					       //grid_roles.reload();
-					       //win.title = _"Edit user"
+					       win.setTitle(_('Edit user'));
 					       //win.close();
 					   },
 					   failure: function(f,a){
@@ -506,8 +542,8 @@
 			xtype: 'panel',
 			layout: 'column',
 			bbar: [
-			       btn_grabar_roles_projects,
-			       btn_borrar
+			       btn_asignar_roles_projects,
+			       btn_desasignar_roles_projects
 			],			
 			items:  [
 				{  

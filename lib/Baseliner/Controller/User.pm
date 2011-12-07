@@ -231,22 +231,39 @@ sub update : Local {
 		$row->active(0);
 		$row->update();
 		
-		#$row->roles->delete_all;
-		###############################################################
-		my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-		my $param;
-    
-	        $param = $p->{username};
-
-		#Cambiar parametros, no seguro SQL injection, utilar parametros por defecto del dbi "?"
-		$SQL = "DELETE FROM BALI_ROLEUSER WHERE username = '$param' ";
-		$db->do( "$SQL" );
-		###############################################################
-		
+		my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$p->{username} });
+		$rs->delete;
 		$c->stash->{json} = {  success => 1, msg=>_loc('User deleted') };
 	    }
 	    catch{
 		$c->stash->{json} = {  success => 0, msg=>_loc('Error deleting User') };
+	    }
+	}
+	case 'delete_roles_projects' {
+	    try{
+		my $user_name = $p->{username};
+		my $rs;
+		
+		foreach my $role (_array $roles_checked){
+		    if ($projects_checked){
+			my @ns_projects =
+			    _unique
+			    map { $_ eq 'todos'?'/':'project/' . $_ }
+			    _array $projects_checked;
+			    
+			my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
+			$rs->delete;
+
+		    }
+		    else{
+			my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
+			$rs->delete;
+		    }
+		}	    
+		$c->stash->{json} = { msg=>_loc('User modified'), success=>\1};
+	    }
+	    catch{
+		$c->stash->{json} = {  success => 0, msg=>_loc('Error modifying User: %1', shift()) };
 	    }
 	}
     }
@@ -260,19 +277,13 @@ sub tratar_proyectos{
     my $projects_checked = shift;
     my $role;
     my $project;
-    my $SQL;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my $rs;
 
     foreach $role (_array $roles_checked){
 	foreach $project (_array $projects_checked){
 	    if ($project eq 'todos'){
-		#Borrar los demas proyectos si los hubiese.
-		###############################################################
-		#Cambiar parametros, no seguro SQL injection, utilar parametros por defecto del dbi "?"
-		$SQL = "DELETE FROM BALI_ROLEUSER WHERE USERNAME = '$user_name' AND ID_ROLE = $role";
-		$db->do( "$SQL" );
-		###############################################################
-		
+		my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
+		$rs->delete;
 		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
 								    {	username => $user_name,
 									    id_role => $role,
@@ -282,15 +293,14 @@ sub tratar_proyectos{
 		$role_user->update();
 		last				
 	    }else{
-		#Comprobar si tiene acceso a todos los proyectos.
 		my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
 										 id_role => $role,
 										 ns => '/'
 										},
 										{ key => 'primary' });
 		if($all_projects){
-		    $SQL = "DELETE FROM BALI_ROLEUSER WHERE USERNAME = '$user_name' AND ID_ROLE = $role AND NS = '/'";
-		    $db->do( "$SQL" );
+		    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>'/'});
+		    $rs->delete;
 		}
 		
 		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
