@@ -185,40 +185,14 @@ sub update : Local {
 							    phone	=> $p->{phone}
 							});
 		    
-		    _log "########usuario: " . $user->username . "\n";
-		    _log "########id: " . $user->id . "\n";
-		    
-		    foreach $project (_array $projects_checked){
-			_log "########usuario: " . $project . "\n";			
-		    }
+		##    _log "########usuario: " . $user->username . "\n";
+		##    _log "########id: " . $user->id . "\n";
+		##    
+		##    foreach $project (_array $projects_checked){
+		##	_log "########usuario: " . $project . "\n";			
+		##    }
 		    
 		    tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);	
-		
-		##    my $user_name = $p->{username};
-		##    my $role;
-		##    foreach $role (_array $roles_checked){
-		##	foreach $project (_array $projects_checked){
-		##	    if ($project eq 'todos'){
-		##		#Borrar los demas proyectos si los hubiese.
-		##		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-		##								    {	username => $user_name,
-		##									    id_role => $role,
-		##									    ns => '/'
-		##								    },
-		##								    { key => 'primary' });
-		##		$role_user->update();
-		##		last				
-		##	    }else{
-		##		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-		##								    {	username => $user_name,
-		##									    id_role => $role,
-		##									    ns => 'project/' . $project
-		##								    },
-		##								    { key => 'primary' });
-		##		$role_user->update();
-		##	    }
-		##	}
-		##    }
 		
 		    $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
 		}else{
@@ -231,31 +205,20 @@ sub update : Local {
 	}
 	case 'update' {
 	    try{
-		my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
-	        $user->username( $p->{username} );
-		$user->realname( $p->{realname} );
-		$user->alias( $p->{alias} );
-		$user->email( $p->{email} );
-		$user->phone( $p->{phone} );
-		$user->update();
-
-		tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
-
-	##        my $user_name = $p->{username};
-	##	my $role;
-	##	foreach $role (_array $roles_checked){
-	##	    foreach $project (_array $projects_checked){
-	##		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-	##									{	username => $user_name,
-	##										id_role => $role,
-	##										ns => 'project/' . $project
-	##									},
-	##									{ key => 'primary' });
-	##		$role_user->update();
-	##	    }
-	##	}
-		
-		$c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $user->id };
+		my $type_save = $p ->{type};
+		if ($type_save eq 'user') {
+		    my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+		    $user->username( $p->{username} );
+		    $user->realname( $p->{realname} );
+		    $user->alias( $p->{alias} );
+		    $user->email( $p->{email} );
+		    $user->phone( $p->{phone} );
+		    $user->update();
+		}
+		else{
+		    tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);    
+		}
+		$c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
 	    }
 	    catch{
 		$c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
