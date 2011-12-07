@@ -1,24 +1,15 @@
 (function(){
 	var username = '<% $c->stash->{username} %>';
-    var fields = [ 
-			{  name: 'id' },
-			{  name: 'id_message' },
-			{  name: 'subject' },
-			{  name: 'body' },
-			{  name: 'sender' },
-			{  name: 'to' },
-			{  name: 'cc' },
-			{  name: 'sent' },
-			{  name: 'received' },
-			{  name: 'type' }
+    var fields = [ 'id', 'id_message', 'subject',
+        'body', 'sender', 'to', 'cc', 'sent', 'received', 'type' 
     ];
 	var store=new Ext.data.JsonStore({
+		url: '/message/inbox_json',
 		root: 'data' , 
 		remoteSort: true,
-		totalProperty:"totalCount", 
+		totalProperty: 'totalCount', 
 		id: 'id', 
 		baseParams: { username: username },
-		url: '/message/inbox_json',
 		fields: fields
 	});
 
@@ -110,8 +101,26 @@ Ext.override(Ext.form.HtmlEditor, {
     }
 });
 	
+    var message_body = new Ext.Component({
+       fieldLabel: _('Message'),
+        autoEl: {
+            tag:'iframe',
+            width: 850,
+            height: 250,
+            border: '0px',
+            frameborder: 0,
+            style: { 'background-color': '#fff' },
+            src: '' 
+        }
+     });
+    
+    var show_message_body = function(id_message) {
+        var iframe = Ext.getDom( message_body.getId() );
+        iframe.src = '/message/body/' + id_message;
+        iframe.height = 280;
+    };
     var message_form = new Ext.FormPanel({
-        url: '/role/update',
+        //url: '/role/update',
         title: _('Message'),
         region: 'south',
         collapsible: true,
@@ -123,12 +132,13 @@ Ext.override(Ext.form.HtmlEditor, {
         defaults: { width: 850 },
         items: [
             {  xtype: 'hidden', name: 'id', value: -1 }, 
-            {  xtype: 'textfield', name: 'subject', fieldLabel: '<% _loc('Subject') %>' }, 
-            {  xtype: 'htmleditor', name: 'body', readOnly: true, height: 220, fieldLabel: '<% _loc('Message') %>' }
+            {  xtype: 'textfield', name: 'subject', fieldLabel: _('Subject'), readOnly: true }, 
+            message_body
+            //{  xtype: 'htmleditor', name: 'body', readOnly: true, height: 220, fieldLabel: _('Message') }
         ]
     });
 
-    var message_view = function(id) {
+    var message_view = function(id, id_message) {
         //////////////// Single message Data Load Event
         message_data_store.on('load', function(obj, rec, options ) {
             try {
@@ -136,10 +146,11 @@ Ext.override(Ext.form.HtmlEditor, {
                 var ff = message_form.getForm();
                 ff.loadRecord( rec );
             } catch(e) {
-                Ext.Msg.alert("<% _loc('Error') %>", "<% _loc('Could not load message form data') %>: " + e.description );
+                Ext.Msg.alert(_('Error'), _('Could not load message form data: %1', e.description ) );
             }
         });
         message_data_store.load({ params:{ id: id }});
+        show_message_body( id_message );
     };
 
     <& /comp/search_field.mas &>
@@ -150,7 +161,7 @@ Ext.override(Ext.form.HtmlEditor, {
 		// create the grid
 		var grid = new Ext.grid.GridPanel({
             region: 'center',
-			title: '<% _loc('Inbox') %>',
+			title: _('Inbox'),
 			header: false,
             stripeRows: true,
 			autoScroll: true,
@@ -163,12 +174,14 @@ Ext.override(Ext.form.HtmlEditor, {
 			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 			loadMask:'true',
 			columns: [
-				{ header: '<% _loc('From') %>', width: 200, dataIndex: 'sender', sortable: true },	
-				{ header: '<% _loc('Subject') %>', width: 300, dataIndex: 'subject', sortable: true },	
-				{ header: '<% _loc('To') %>', width: 150, dataIndex: 'to', sortable: true, hidden: true },	
-				{ header: '<% _loc('Message') %>', width: 300, dataIndex: 'body', sortable: true },	
-				{ header: '<% _loc('Sent') %>', width: 150, dataIndex: 'sent', sortable: true } ,
-				{ header: '<% _loc('Received') %>', width: 150, dataIndex: 'received', sortable: true, hidden: true }	
+				{ header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	
+				{ header: _('Message Id'), width: 80, dataIndex: 'id_message', hidden: true, sortable: true },	
+				{ header: _('From'), width: 200, dataIndex: 'sender', sortable: true },	
+				{ header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true },	
+				{ header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },	
+				{ header: _('Message'), width: 300, dataIndex: 'body', sortable: true },	
+				{ header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
+				{ header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }	
 			],
 			autoSizeColumns: true,
 			deferredRender:true,
@@ -176,26 +189,26 @@ Ext.override(Ext.form.HtmlEditor, {
 								store: store,
 								pageSize: ps,
 								displayInfo: true,
-								displayMsg: '<% _loc('Rows {0} - {1} de {2}') %>',
+								displayMsg: _('Rows {0} - {1} de {2}'),
 								emptyMsg: "No hay registros disponibles"
 						}),        
 			tbar: [ 'Buscar: ', ' ',
 				new Ext.app.SearchField({
 					store: store,
 					params: {start: 0, limit: ps},
-					emptyText: '<% _loc('<Enter your search string>') %>'
+					emptyText: _('<Enter your search string>')
 				}),
 				new Ext.Toolbar.Button({
-					text: '<% _loc('View') %>',
+					text: _('View'),
 					icon:'/static/images/drop-yes.gif',
 					cls: 'x-btn-text-icon',
 					handler: function() {
 						var sm = grid.getSelectionModel();
 						if (sm.hasSelection()) {
 							var sel = sm.getSelected();
-                            message_view(sel.data.id);
+                            message_view(sel.data.id, sel.data.id_message);
 						} else {
-							Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+							Ext.Msg.alert('Error', _('Select at least one row'));	
 						};
 					}
 				}),
@@ -206,7 +219,7 @@ Ext.override(Ext.form.HtmlEditor, {
 					handler: function() {
 						var sm = grid.getSelectionModel();
 						var sel = sm.getSelected();
-						Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the message') %>' + ' <b>' + sel.data.subject + '</b>?', 
+						Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the message') + ' <b>' + sel.data.subject + '</b>?', 
 							function(btn){ 
 								if(btn=='yes') {
 									var conn = new Ext.data.Connection();
@@ -214,7 +227,7 @@ Ext.override(Ext.form.HtmlEditor, {
 										url: '/message/delete',
 										params: { id_message: sel.data.id_message },
 										success: function(resp,opt) { grid.getStore().remove(sel); },
-										failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the message') %>'); }
+										failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the message')); }
 									});	
 								}
 							} );
@@ -228,7 +241,7 @@ Ext.override(Ext.form.HtmlEditor, {
 
 	grid.on("rowclick", function(grid, rowIndex, e ) {
 			var row = grid.getStore().getAt(rowIndex);
-            message_view( row.get('id') );
+            message_view( row.get('id'), row.get('id_message') );
 		});		
 	
     var panel = new Ext.Panel({
