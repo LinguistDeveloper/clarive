@@ -10,12 +10,14 @@
         },[ 
             { name: 'pkg' },   
             { name: 'url' },   
+            { name: 'url_save' },   
             { name: 'icon' },   
             { name: 'project' },   
             { name: 'id' },   
             { name: 'ns' },   
             { name: 'bl' },   
             { name: 'name' },   
+            { name: 'active' },   
             { name: 'description' },   
             { name: 'type' },   
             { name: 'for' },   
@@ -66,7 +68,18 @@
         ret += '</table>';
         return ret;
     };
+    var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var active = rec.data.active;
+        if( active!=undefined && !active ) {
+            value = '/static/images/icons/inactive.gif';
+        }
+        return Baseliner.render_icon( value, metadata, rec, rowIndex, colIndex, store );
+    }
     var render_name = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var active = rec.data.active;
+        if( ! active ) {
+            return '<del>' + value + '</del>';
+        }
         var ret = Baseliner.columnWrap( value, metadata, rec, rowIndex );
         ret = '<b>' + ret + '</b>';
         return ret;
@@ -114,6 +127,8 @@
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
         if( sel.data.row['id'] == undefined ) sel.data.row['id'] = sel.data.id;
+        // TODO get a fresh row to edit
+        if( sel.data.row.active == undefined ) sel.data.row.active = true;
         Baseliner.add_wincomp( sel.data.url, _(sel.data.name), sel.data.row, { event:'close', func: close_event } );
     } ;
     var button_edit = Baseliner.button(_('Modify'), '/static/images/icons/write.gif', edit_action ); 
@@ -122,6 +137,51 @@
         if( sel == undefined ) return ; 
         if( sel.data.row['id'] != undefined ) sel.data.row['id'] = '';
         Baseliner.add_wincomp( sel.data.url, _(sel.data.name), sel.data.row, { event:'close', func: close_event } );
+    } ); 
+
+    // YAML editor
+    var button_raw = Baseliner.button(_('YAML'), '/static/images/icons/yaml.gif', function(){
+        var sel = sm.getSelected();
+        if( sel == undefined ) return ; 
+        var sel_save_url = sel.data.url_save;
+        Baseliner.ajaxEval( '/to_yaml', sel.data.row, function(res) {
+            var ta = new Ext.form.TextArea({
+                height: 500,
+                width: 600,
+                style: { 'font-family': 'Consolas, Courier, monotype' },
+                value: res.yaml
+            });
+            var win = new Ext.Window({
+                title: _("YAML"),
+                tbar: [ 
+                    { xtype:'button', text: _('Save'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/write.gif',
+                        handler: function(){
+                            // convert the yaml text to a json object
+                            Baseliner.ajaxEval('/from_yaml', { yaml: ta.getValue() }, function(res) {
+                                if( ! res.success ) {
+                                    Baseliner.error( _('YAML'), res.msg );
+                                } else if( res.json != undefined ) {
+                                    // save obj to its original controller
+                                    Baseliner.ajaxEval( sel_save_url, res.json, function(res) {
+                                        if( !res.success ) {
+                                            Baseliner.error( _('YAML'), res.msg );
+                                        } else {
+                                            // saved ok
+                                            Baseliner.message( _('YAML'), res.msg );
+                                            store.load();
+                                        }
+                                    });
+                                } else {
+                                    Baseliner.error( _('YAML'), _('Generated JSON not available') );
+                                }
+                            });
+                        }
+                    }
+                ],
+                items: ta
+            });
+            win.show();
+        });
     } ); 
     var button_by_project = new Ext.Button({
        text: _('Project'),
@@ -161,7 +221,13 @@
 
     var grid = new Ext.grid.GridPanel({
         title: _('Catalog'),
+        view: gview,
+        store: store,
         sm: sm,
+        loadMask:'true',
+        viewConfig: {
+            forceFit: true
+        },
         tbar: [ 
             button_expand,
             _('Search') + ': ', ' ',
@@ -171,17 +237,11 @@
                 emptyText: _('<Enter your search string>')
             }),
             Baseliner.img_button( '/static/images/icons/refresh.gif', function(){ store.load() } ),
-            button_add, button_del, button_edit, button_clone, 
-            '->', _('Grouping') + ':', button_by_type, button_by_project, 
+            button_add, button_del, button_edit, button_clone, button_raw,
+            '->', _('Grouping') + ':', button_by_type, button_by_project 
         ],
-        view: gview,
-        store: store,
-        viewConfig: {
-            forceFit: true
-        },
-        loadMask:'true',
         columns: [
-            { hidden: false, width: 30, dataIndex: 'icon', sortable: false, renderer: Baseliner.render_icon  },   
+            { hidden: false, width: 30, dataIndex: 'icon', sortable: false, renderer: render_icon  },   
             { header: _('Name'), width: 120, dataIndex: 'name', sortable: true, renderer: render_name },   
             { header: _('Project'), width: 80, dataIndex: 'project', sortable: true, renderer: Baseliner.render_ns },   
             { header: _('Environment'), width: 60, dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },   

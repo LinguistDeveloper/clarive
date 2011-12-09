@@ -19,7 +19,7 @@
         title:_('Deployments'), label:_('Deployments'), value: params.deployments, default_value: 'new_deployment'});
     
     var tabs = new Ext.TabPanel({ width: '705', height: '200',
-                items: [ deployments.grid, include.grid, exclude.grid, scripts_single.grid, scripts_multi.grid ] });
+                items: [ include.grid, exclude.grid, deployments.grid, scripts_single.grid, scripts_multi.grid ] });
 
     tabs.setActiveTab( deployments.grid );
 
@@ -33,13 +33,20 @@
          items  : [
             { xtype: 'hidden', name: "id", fieldLabel: "id", allowBlank: 1, value: params.id },
             //new Baseliner.model.Projects({ value: params.projects || params.project }),
+            {
+                xtype: 'checkbox',
+                name: "active",
+                fieldLabel: _("Active"),
+                checked: params.active == undefined ? true : params.active,
+                allowBlank: 1
+            },
             { xtype: 'textfield', name: "name", fieldLabel: _("Name"), allowBlank: 1, value: params.name, style:'font-weight:bold' },
             { xtype: 'textfield', name: "project", fieldLabel: _("Project"), allowBlank: 1, value: params.project },
             Baseliner.combo_baseline({ value: params.bl || '*' }) ,
             {
                 xtype: 'textfield',
                 name: "workspace",
-                fieldLabel: _("Workspace Dir"),
+                fieldLabel: _("Directory"),
                 value: params.workspace || '/app/path',
                 allowBlank: 0
             },
@@ -53,7 +60,11 @@
                 allowBlank: 0
             },
             { xtype: 'checkbox', name: 'no_paths', fieldLabel: _('Options'), boxLabel: _("Do not deploy paths, only files"),
-                checked: ( params.no_paths == 'on' ? true : false )  },
+                checked: params.no_paths == undefined ? true : params.no_paths
+            },
+            { xtype: 'checkbox', name: 'path_deploy', fieldLabel: _('Path'), boxLabel: _("Deploy full workspace path"),
+                checked: params.path_deploy == undefined ? false : params.path_deploy
+            },
             deployments.data,
             scripts_single.data,
             scripts_multi.data,
