@@ -144,6 +144,7 @@
 					var form = form_user.getForm();
 					var action = 'update';					
 					var projects_checked = new Array();
+					var projects_parents_checked = new Array();
 					var roles_checked = new Array();
 					check_roles_sm.each(function(rec){
 						roles_checked.push(rec.get('id'));
@@ -151,10 +152,15 @@
 				
 					selNodes = tree_projects.getChecked();
 					Ext.each(selNodes, function(node){
-						if(node.attributes.data.parent_checked){
-							projects_checked.push(node.attributes.data.id_project + 'x');
-						}else{
+						if(node.attributes.leaf){
 							projects_checked.push(node.attributes.data.id_project);
+						}else{
+							if(node.childNodes.length > 0){
+								projects_checked.push(node.attributes.data.id_project);
+							}
+							else{
+								projects_parents_checked.push(node.attributes.data.id_project);
+							}
 						}
 					});
 	
@@ -164,6 +170,7 @@
 						   params: { action: action,
 							     type: 'roles_projects',
 							     projects_checked: projects_checked,
+							     projects_parents_checked: projects_parents_checked,
 							     roles_checked: roles_checked
 						   },
 						   success: function(f,a){
@@ -202,6 +209,7 @@
 				var form = form_user.getForm();
 				var action = 'delete_roles_projects';					
 				var projects_checked = new Array();
+				var projects_parents_checked = new Array();
 				var roles_checked = new Array();
 				check_roles_sm.each(function(rec){
 					roles_checked.push(rec.get('id'));
@@ -209,7 +217,16 @@
 			
 				selNodes = tree_projects.getChecked();
 				Ext.each(selNodes, function(node){
-					projects_checked.push(node.attributes.data.id_project);
+						if(node.attributes.leaf){
+							projects_checked.push(node.attributes.data.id_project);
+						}else{
+							if(node.childNodes.length > 0){
+								projects_checked.push(node.attributes.data.id_project);
+							}
+							else{
+								projects_parents_checked.push(node.attributes.data.id_project);
+							}
+						}
 				});
 
 				////////////////////////////////////////////////////////////////////
@@ -219,6 +236,7 @@
 						   params: { action: action,
 							     type: 'roles_projects',
 							     projects_checked: projects_checked,
+							     projects_parents_checked: projects_parents_checked,
 							     roles_checked: roles_checked
 						   },
 						   success: function(f,a){
