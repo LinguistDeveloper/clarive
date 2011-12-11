@@ -253,24 +253,37 @@ sub update : Local {
 		my $user_name = $p->{username};
 		my $rs;
 		
-		foreach my $role (_array $roles_checked){
-		    if ($projects_checked || $projects_parents_checked){
+		if ($roles_checked){
+		    foreach my $role (_array $roles_checked){
+			if ($projects_checked || $projects_parents_checked){
+			    my @ns_projects =
+				_unique
+				map { $_ eq 'todos'?'/':'project/' . $_ }
+				_array $projects_checked;
+				
+			    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
+			    $rs->delete;
+			    
+			    tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'delete');
+	
+			}
+			else{
+			    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
+			    $rs->delete;
+			}
+		    }		    
+		}
+		else{
 			my @ns_projects =
 			    _unique
 			    map { $_ eq 'todos'?'/':'project/' . $_ }
 			    _array $projects_checked;
 			    
-			my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
+			my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, ns=>\@ns_projects });
 			$rs->delete;
 			
 			tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'delete');
-
-		    }
-		    else{
-			my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
-			$rs->delete;
-		    }
-		}	    
+		}
 		$c->stash->{json} = { msg=>_loc('User modified'), success=>\1};
 	    }
 	    catch{
@@ -289,8 +302,23 @@ sub tratar_proyectos{
     my $role;
     my $project;
     my $rs;
+    my @roles_checked;
 
-    foreach $role (_array $roles_checked){
+    if(!$roles_checked){
+        my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+        my $dbh = $db->dbh;
+        my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
+	$sth->bind_param( 1, $user_name );
+	$sth->execute();
+	@roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
+    }
+    else{
+	foreach $role (_array $roles_checked){
+	    push @roles_checked, $role;
+	}
+    }
+
+    foreach $role ( @roles_checked ){
 	foreach $project (_array $projects_checked){
 	    if ($project eq 'todos'){
 		my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
@@ -316,8 +344,8 @@ sub tratar_proyectos{
 		
 		my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
 								    {	username => $user_name,
-									    id_role => $role,
-									    ns => 'project/' . $project
+									id_role => $role,
+									ns => 'project/' . $project
 								    },
 								    { key => 'primary' });
 		$role_user->update();
@@ -339,24 +367,61 @@ sub tratar_proyectos_padres(){
 		   
     switch ($accion) {
 	case 'update' {
-	    foreach my $role (_array $roles_checked){   
-		foreach my $project (_array $projects_parents_checked){
-		    $sth->bind_param( 1, $project );
-		    $sth->execute();
-		    while(my @row = $sth->fetchrow_array){
-			my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-								   {	username => $user_name,
-									   id_role => $role,
-									   ns => 'project/' . $row[0]
-								   },
-								   { key => 'primary' });
-			$role_user->update();
-		    }
-	       }
+	    my @roles_checked;
+	    if(!$roles_checked){
+		my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+		my $dbh = $db->dbh;
+		my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
+		$sth->bind_param( 1, $user_name );
+		$sth->execute();
+		@roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
+	    }
+	    else{
+		foreach my $role (_array $roles_checked){
+		    push @roles_checked, $role;
+		}
+	    }
+	    foreach my $role ( @roles_checked){
+		my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
+								 id_role => $role,
+								 ns => '/'
+								},
+								{ key => 'primary' });
+		if(!$all_projects){
+		    foreach my $project (_array $projects_parents_checked){
+			$sth->bind_param( 1, $project );
+			$sth->execute();
+			while(my @row = $sth->fetchrow_array){
+			    my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+								       {	username => $user_name,
+									       id_role => $role,
+									       ns => 'project/' . $row[0]
+								       },
+								       { key => 'primary' });
+			    $role_user->update();
+			}
+		   }
+		}
+		
 	    }
 	}
 	case 'delete' {
-	    foreach my $role (_array $roles_checked){
+	    my $rs;
+	    if($roles_checked){
+		foreach my $role (_array $roles_checked){
+		    foreach my $project (_array $projects_parents_checked){
+			$sth->bind_param( 1, $project );
+			$sth->execute();
+			my @ns_projects = _unique
+					  map { 'project/' . $_->[0] }
+					  _array $sth->fetchall_arrayref;
+					  
+			$rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
+			$rs->delete;
+		    }
+		}
+	    }
+	    else{
 		foreach my $project (_array $projects_parents_checked){
 		    $sth->bind_param( 1, $project );
 		    $sth->execute();
@@ -364,7 +429,7 @@ sub tratar_proyectos_padres(){
 				      map { 'project/' . $_->[0] }
 				      _array $sth->fetchall_arrayref;
 				      
-		    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
+		    $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, ns=>\@ns_projects });
 		    $rs->delete;
 		}
 	    }

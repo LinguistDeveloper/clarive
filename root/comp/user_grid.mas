@@ -36,19 +36,6 @@
 		]
 	});
 	
-	var store_user_roles_projects = new Ext.data.JsonStore({
-	    root: 'data' , 
-	    remoteSort: true,
-	    totalProperty:"totalCount", 
-	    id: 'id', 
-	    url: '/user/infodetail',
-	    fields: [ 
-		{name: 'role' },
-		{name: 'description' },
-		{name: 'projects' }			
-		]
-	});	
-
 	var ps = 100; //page_size
 	store.load({params:{start:0 , limit: ps}});
 	
@@ -87,6 +74,7 @@
 		eval('btn_edit.' + action + '()');
 		eval('btn_delete.' + action + '()');
 	}
+
 
 	var btn_surrogate = new Ext.Toolbar.Button({
 		text: _('Surrogate'),
@@ -135,11 +123,29 @@
 		var win;
 		var username_readonly = false;
 		
+		var store_user_roles_projects = new Ext.data.JsonStore({
+		    root: 'data' , 
+		    remoteSort: true,
+		    totalProperty:"totalCount", 
+		    id: 'id', 
+		    url: '/user/infodetail',
+		    fields: [ 
+			{name: 'role' },
+			{name: 'description' },
+			{name: 'projects' }			
+			],
+			listeners: {
+				'load': function(){
+					control_buttons();
+					}
+				}	    
+		});
+
 		var btn_asignar_roles_projects = new Ext.Toolbar.Button({
 				text: _('Assign roles/projects'),
-				icon:'/static/images/del.gif',
+				icon:'/static/images/key_add.png',
 				cls: 'x-btn-text-icon',
-				disabled: false,
+				disabled: true,
 				handler: function() {
 					var form = form_user.getForm();
 					var action = 'update';					
@@ -155,7 +161,7 @@
 						if(node.attributes.leaf){
 							projects_checked.push(node.attributes.data.id_project);
 						}else{
-							if(node.childNodes.length > 0){
+							if(node.childNodes.length > 0 || node.attributes.data.id_project == 'todos'){
 								projects_checked.push(node.attributes.data.id_project);
 							}
 							else{
@@ -176,6 +182,7 @@
 						   success: function(f,a){
 						       Baseliner.message('Success', a.result.msg );
 						       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
+						       //control_buttons();
 						       form.findField("id").setValue(a.result.user_id);
 						       form.findField("username").getEl().dom.setAttribute('readOnly', true);
 						   },
@@ -202,9 +209,9 @@
 		
 		var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
 			text: _('Unassign roles/projects'),
-			icon:'/static/images/del.gif',
+			icon:'/static/images/key_delete.png',
 			cls: 'x-btn-text-icon',
-			disabled: false,
+			disabled: true,
 			handler: function() {
 				var form = form_user.getForm();
 				var action = 'delete_roles_projects';					
@@ -220,7 +227,7 @@
 						if(node.attributes.leaf){
 							projects_checked.push(node.attributes.data.id_project);
 						}else{
-							if(node.childNodes.length > 0){
+							if(node.childNodes.length > 0 || node.attributes.data.id_project == 'todos'){
 								projects_checked.push(node.attributes.data.id_project);
 							}
 							else{
@@ -242,14 +249,8 @@
 						   success: function(f,a){
 						       Baseliner.message('Success', a.result.msg );
 						       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-						       //store_roles.load({params:{start:0 , limit: ps}});
-						       //tree_projects.root.reload();
-						       //form.findField("id").setValue(a.result.user_id);
+						       //control_buttons();
 						       form.findField("username").getEl().dom.setAttribute('readOnly', true);
-						       						       
-						       //grid_roles.reload();
-						       //win.title = _"Edit user"
-						       //win.close();
 						   },
 						   failure: function(f,a){
 						       Ext.Msg.show({  
@@ -370,8 +371,32 @@
 			height:200
 		});
 		
-		grid_user_roles_projects.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-			//btn_delete_role.enable();
+		grid_roles.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+			control_buttons();
+			//var projects_nodes = tree_projects.getChecked().length;
+			//var roles_nodes = check_roles_sm.getCount();
+			//
+			//if(roles_nodes > 0){
+			//	store_user_roles_projects.getCount() < 1 ? btn_desasignar_roles_projects.disable():btn_desasignar_roles_projects.enable();
+			//	if(projects_nodes > 0){
+			//		btn_asignar_roles_projects.enable();
+			//	}else{
+			//		btn_asignar_roles_projects.disable();
+			//	}
+			//}
+			//else{
+			//	if(projects_nodes > 0){
+			//		if(store_user_roles_projects.getCount() < 1){
+			//			btn_asignar_roles_projects.disable();
+			//		}
+			//		else{
+			//			btn_asignar_roles_projects.enable();
+			//		}
+			//	}else{
+			//		btn_asignar_roles_projects.disable();
+			//		btn_desasignar_roles_projects.disable();
+			//	}
+			//}
 		});		
 	
 		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
@@ -423,14 +448,52 @@
 			node.eachChild(function(n) {
 				n.getUI().toggleCheck(checked);
 			});
+			
+			control_buttons();		
 		});
 		
 		//tree_projects.on('click', function(node, event){
-		//	node.getUI().toggleCheck(!node.attributes.checked);
+		//	//node.getUI().toggleCheck(!node.attributes.checked);
 		//	//node.attributes.data.parent_checked = (!node.attributes.checked)?1:0;
 		//	//node.attributes.data.parent_checked = 1;
-		//		//alert(node.attributes.data.parent_checked);
+		//	//alert(node.attributes.data.parent_checked);
 		//});
+
+		var control_buttons = function (){
+			var projects_nodes = tree_projects.getChecked().length;
+			var roles_nodes = check_roles_sm.getCount();
+			var rows_roles_projects = store_user_roles_projects.getCount();
+			
+			if(roles_nodes < 1 && projects_nodes < 1){
+				btn_desasignar_roles_projects.disable();
+				btn_asignar_roles_projects.disable();
+			}
+			else{
+				if(projects_nodes < 1){
+					btn_asignar_roles_projects.disable();
+					rows_roles_projects < 1 ? btn_desasignar_roles_projects.disable():btn_desasignar_roles_projects.enable();
+				}
+				else{
+					if(roles_nodes < 1){
+						if(rows_roles_projects < 1){
+							btn_desasignar_roles_projects.disable()
+							btn_asignar_roles_projects.disable();
+						}
+						else{
+							btn_desasignar_roles_projects.enable()
+							btn_asignar_roles_projects.enable();
+						}
+					}
+					else{
+						//alert('1');
+						rows_roles_projects < 1 ? btn_desasignar_roles_projects.disable():btn_desasignar_roles_projects.enable();
+						btn_asignar_roles_projects.enable();
+					}
+					
+				}
+			}
+		}	
+
 
 
 		Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
