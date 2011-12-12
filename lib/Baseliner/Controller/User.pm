@@ -136,8 +136,40 @@ sub infodetail : Local {
 
 sub infoactions : Local {
     my ($self, $c, $role) = @_;
-    $c->stash->{role}  = $role;
-    $c->stash->{template} = '/comp/user_infoactions.mas';
+    my $p = $c->request->parameters;
+    my $username = $p->{username};
+    
+    my @actions;
+    my @datas;
+    my $data;
+    my $SQL;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
+    $SQL = "SELECT ACTION
+	    FROM BALI_ROLEUSER A, BALI_ROLEACTION B
+	    WHERE A.USERNAME = ? AND A.ID_ROLE = B.ID_ROLE
+	    GROUP BY B.ACTION
+	    ORDER BY ACTION ASC";
+	
+	
+    _log "#######################Pasa: " . $SQL . "\n";	
+	
+    @datas = $db->array_hash( "$SQL" , $username);
+    foreach $data (@datas){
+	_log "#######################Pasa: \n";
+        my $desc = $data->{action};
+	eval { # it may fail for keys that are not in the registry
+	    my $action = $c->model('Registry')->get( $data->{action} );
+	    $desc = $action->name;
+	}; 
+        push @actions,{ action=>$data->{action}, description=>$desc, bl=>'1' };
+    }
+    
+    $c->stash->{json} =  { data=>\@actions};
+    $c->forward('View::JSON');   
+    
+    ##$c->stash->{role}  = $role;
+    ##$c->stash->{template} = '/comp/user_infoactions.mas';
 }
 
 sub infodetailactions : Local {
@@ -185,12 +217,6 @@ sub update : Local {
 							    email	=> $p->{email},
 							    phone	=> $p->{phone}
 							});
-		    
-		##    _log "########usuario: " . $user->username . "\n";
-		##    _log "########id: " . $user->id . "\n";
-		##    
-		    
-		    ##tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);	
 		
 		    $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
 		}else{
@@ -214,17 +240,8 @@ sub update : Local {
 		    $user->update();
 		}
 		else{
-		    
-		#    foreach $project (_array $projects_checked){
-		#	_log "########project: " . $project . "\n";			
-		#    }
-		#
-		#    foreach $project (_array $projects_parents_checked){
-		#	_log "########project_parent: " . $project . "\n";			
-		#    }
 		    tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
 		    tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
-	    
 		}
 		$c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
 	    }
@@ -382,7 +399,8 @@ sub tratar_proyectos_padres(){
 		}
 	    }
 	    foreach my $role ( @roles_checked){
-		my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
+		my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(
+								{username => $user_name,
 								 id_role => $role,
 								 ns => '/'
 								},
@@ -393,9 +411,10 @@ sub tratar_proyectos_padres(){
 			$sth->execute();
 			while(my @row = $sth->fetchrow_array){
 			    my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-								       {	username => $user_name,
-									       id_role => $role,
-									       ns => 'project/' . $row[0]
+								       {
+									username => $user_name,
+									id_role => $role,
+									ns => 'project/' . $row[0]
 								       },
 								       { key => 'primary' });
 			    $role_user->update();
