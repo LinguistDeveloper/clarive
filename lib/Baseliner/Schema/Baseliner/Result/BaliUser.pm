@@ -87,6 +87,12 @@ __PACKAGE__->add_columns(
   { data_type => "clob", is_nullable => 1 },
   "alias",
   { data_type => "varchar2", is_nullable => 1, size => 512 },
+  "email",
+  { data_type => "varchar2", is_nullable => 1, size => 45 },
+  "phone",
+  { data_type => "varchar2", is_nullable => 1, size => 10 },
+  "active",
+  { data_type => "char", is_nullable => 1, size => 1, default => 1 },  
 );
 __PACKAGE__->set_primary_key("id");
 

@@ -1796,6 +1796,9 @@ msgstr "Error de escritura al catálogo"
 msgid "Mailbox"
 msgstr "Buzón"
 
+msgid "There are no rows available"
+msgstr "No hay registros disponibles"
+
 # lib/BaselinerX/Type/Model/ConfigStore.pm (127)
 msgid "Could not find metadata for the key '%1' in the registry."
 msgstr "Metadatos para la clave '%1' no localizados en el registry."
