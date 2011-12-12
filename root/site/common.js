@@ -268,21 +268,26 @@ Baseliner.array_field = function( args ) {
 
     var fstore = new Ext.data.SimpleStore({ fields:[ field_name ] });
     if( value != undefined ) {
+        var push_item = function(f, v ) {
+            var rr = new Ext.data.Record.create([{
+                name: f,
+                type: 'string'
+            }]);
+            var h = {}; h[ field_name ] = v;
+            // put it in the grid store
+            fstore.insert( x, new rr( h ) );
+        };
         try {
             // if it's an Array or Hash
             if( typeof( value ) == 'object' ) {
                 for( var x=0; x < value.length ; x++ ) {
-                    var rr = new Ext.data.Record.create([{
-                        name: field_name,
-                        type: 'string'
-                    }]);
-                    var h = {}; h[ field_name ] = value[ x ];
-                    // put it in the grid store
-                    fstore.insert( x, new rr( h ) );
+                    push_item( field_name, value[ x ] ); 
                 }
                 // save 
                 try { value =Ext.util.JSON.encode( value ); } catch(f) {} 
-            } 
+            } else if( value.length > 0 ) {  // just one element
+                push_item( field_name, value ); 
+            }
         } catch(e) {}
     }
 
@@ -304,7 +309,8 @@ Baseliner.array_field = function( args ) {
                 dataIndex: field_name,
                 width: 390,
                 editor: new Ext.form.TextField({
-           allowBlank: false
+                    allowBlank: false, 
+                    renderer: function(v) {  return "a" }
                 })
             }]),
             sm: (function () {

@@ -157,6 +157,27 @@
 		});
         var field_annotate = new Ext.form.HtmlEditor({ width: 450, height: 200, title:_('Text')});
         var field_data = new Ext.form.TextArea({ width: 450, height: 200, title:_('Data') });
+        var severity = new Ext.form.ComboBox ({
+                editable: false,
+                forceSelection: true,
+                mode: "local",
+                triggerAction: "all",
+                value: "info",
+                allowBlank: false,
+                valueField: "value",
+                displayField: "text",
+                hiddenName: 'bl',
+                listWidth:90,
+                width:90,
+                lazyRender: true,
+                name: "severity",
+                allowBlank: 0,
+                listClass: "x-combo-list-small",
+                store: new Ext.data.SimpleStore({
+                    fields: ['value', 'text'],
+                    data :  [["info",_('Information')],["warn",_('Warning')],["error",_('Error')]]
+                    })
+                });
 
         var win = new Ext.Window({
             layout: 'fit',
@@ -179,14 +200,14 @@
                         }
                         Baseliner.ajaxEval('/job/log/annotate',
                             { text: field_annotate.getValue(), data: field_data.getValue(),
-                                jobid: id_job, job_exec: store.baseParams.job_exec || job_exec },
+                                jobid: id_job, job_exec: store.baseParams.job_exec || job_exec, level: severity.getValue() },
                             function(res){
                                 Baseliner.message(_('Annotation'), _('Submitted') );
                                     win.close();
                                 store_load();
                         });
 				}
-				}
+                }, '->', new Ext.Toolbar.TextItem (_("Severity")), severity
             ],
             items : [ { xtype:'tabpanel', activeTab:0, items: [ field_annotate, field_data ] } ] 
         });
@@ -203,7 +224,7 @@
         var div2   = '</div>';
 		var milestone = rec.data.milestone;
         var section = rec.data.section;
-        if( section != undefined && rec.data.lev == 'comment' ) value = '<b>' + section + '</b>: ' + value;
+        if( ( section != undefined && section != 'general') && (rec.data.lev == 'comment' || rec.data.lev == 'warn' || rec.data.lev == 'error') ) value = '<b>' + section + '</b>: ' + value;
 		if( prefix!=undefined && prefix!='' ) {
 			return div1 + '<b>'+prefix+'</b>: ' + value + div2; 
 		} else {
