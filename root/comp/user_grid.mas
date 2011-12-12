@@ -282,6 +282,7 @@
 			handler: function() {
 				win.close();
 				store.load();
+				grid.getSelectionModel().clearSelections();
 			}
 		})
 		
@@ -296,21 +297,14 @@
 				       form.submit({
 					   params: { action: action,
 						     type: 'user'
-						     //projects_checked: projects_checked,
-						     //roles_checked: roles_checked
 					   },
 					   success: function(f,a){
 					       Baseliner.message('Success', a.result.msg );
 					       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-					       //store_roles.load({params:{start:0 , limit: ps}});
-					       //tree_projects.root.reload();
 					       form.findField("id").setValue(a.result.user_id);
 					       form.findField("username").getEl().dom.setAttribute('readOnly', true);
 					       btn_grabar_user.disable();
-					       
-					       //grid_roles.reload();
 					       win.setTitle(_('Edit user'));
-					       //win.close();
 					   },
 					   failure: function(f,a){
 					       Ext.Msg.show({  
@@ -373,30 +367,6 @@
 		
 		grid_roles.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 			control_buttons();
-			//var projects_nodes = tree_projects.getChecked().length;
-			//var roles_nodes = check_roles_sm.getCount();
-			//
-			//if(roles_nodes > 0){
-			//	store_user_roles_projects.getCount() < 1 ? btn_desasignar_roles_projects.disable():btn_desasignar_roles_projects.enable();
-			//	if(projects_nodes > 0){
-			//		btn_asignar_roles_projects.enable();
-			//	}else{
-			//		btn_asignar_roles_projects.disable();
-			//	}
-			//}
-			//else{
-			//	if(projects_nodes > 0){
-			//		if(store_user_roles_projects.getCount() < 1){
-			//			btn_asignar_roles_projects.disable();
-			//		}
-			//		else{
-			//			btn_asignar_roles_projects.enable();
-			//		}
-			//	}else{
-			//		btn_asignar_roles_projects.disable();
-			//		btn_desasignar_roles_projects.disable();
-			//	}
-			//}
 		});		
 	
 		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
@@ -485,7 +455,6 @@
 						}
 					}
 					else{
-						//alert('1');
 						rows_roles_projects < 1 ? btn_desasignar_roles_projects.disable():btn_desasignar_roles_projects.enable();
 						btn_asignar_roles_projects.enable();
 					}
@@ -515,7 +484,6 @@
  
 			// defaults for columns
 			,defaults:{
-				//columnWidth:0.75
 				layout:'form'
 				,border:false
 				,xtype:'panel'
@@ -525,7 +493,6 @@
 				// left column
 				// defaults for fields
 				columnWidth:0.90,
-				//defaults:{anchor:'90%'},
 				items:[
 					{ xtype: 'hidden', name: 'id', value: -1 },
 					////////////////////////////////////
