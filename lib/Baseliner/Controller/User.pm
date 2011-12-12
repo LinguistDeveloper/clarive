@@ -563,12 +563,6 @@ sub projects_list : Local {
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
     my $parent_checked = $c->req->params->{parent_checked} || 0 ;
-
-
-    #_log "############1: " . $c->req->params->{project} . "\n";
-    #_log "############2: " . $c->req->params->{id_project} . "\n";
-    #_log "############3: " . $c->req->params->{parent_checked} . "\n";
-
    
     my @tree;
     my $rsprojects;
@@ -576,32 +570,42 @@ sub projects_list : Local {
    
     my @datas;
     my $data;
-    my $SQL;  
+    my $SQL;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    my $param;
-    
+
     if($id_project && $id_project ne 'todos'){
-	$param = " = $id_project ";
-    }else{
-	$param = " is null";
+	$SQL = "SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE 
+				 FROM BALI_PROJECT B
+				 WHERE B.ID_PARENT = ?
+				 AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+						  FROM BALI_PROJECT A
+						  WHERE A.ID_PARENT IS NOT NULL) 
+				 UNION
+				 SELECT DISTINCT D.ID, D.NAME, 0 AS LEAF, D.NATURE
+				 FROM BALI_PROJECT D,  
+				 BALI_PROJECT C
+				 WHERE D.ID_PARENT = ? AND
+				 D.ID = C.ID_PARENT";
+	
+	@datas = $db->array_hash( "$SQL" , $id_project, $id_project);					 
     }
-
-
-    #Cambiar parametros, no seguro SQL injection, utilar parametros por defecto del dbi "?"
-    $SQL = "SELECT b.id, b.NAME, 1 as leaf, b.nature 
-	    FROM BALI_PROJECT b
-	    WHERE b.ID_PARENT $param
-		    and b.id not in (SELECT distinct a.ID_PARENT
-					FROM BALI_PROJECT a
-					where a.id_parent is not null) 
-	    UNION
-	    SELECT distinct d.ID, d.name, 0 as leaf, d.nature
-	    FROM BALI_PROJECT d,  
-	    BALI_PROJECT C
-	    WHERE d.ID_PARENT $param and
-	    d.id = c.ID_PARENT";
-   
-    @datas = $db->array_hash( "$SQL" );
+    else{
+	$SQL = "SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE 
+					 FROM BALI_PROJECT B
+					 WHERE B.ID_PARENT IS NULL
+					 AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+							  FROM BALI_PROJECT A
+							  WHERE A.ID_PARENT IS NOT NULL) 
+					 UNION
+					 SELECT DISTINCT D.ID, D.NAME, 0 AS LEAF, D.NATURE
+					 FROM BALI_PROJECT D,  
+					 BALI_PROJECT C
+					 WHERE D.ID_PARENT IS NULL AND
+					 D.ID = C.ID_PARENT";
+	
+	@datas = $db->array_hash( "$SQL" );					 
+    }
+    
     my $nature;
     
     foreach $data(@datas){
