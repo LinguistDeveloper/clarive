@@ -232,6 +232,48 @@ sub help_load : Path('/help/load') {
     $c->response->body( $body || _loc('Help file parsing error') );
 }
 
+=head2 to_yaml
+
+Turns the parameters into a beautiful YAML.
+
+=cut
+sub to_yaml : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        { success=>\1, msg=>'ok', yaml=>_dump($p) };
+    } catch {
+        { success=>\0, msg=>"" . shift() };
+    };
+    $c->forward('View::JSON');
+}
+
+=head2 from_yaml
+
+Turns YAML encoded text parameter C<yaml>
+into a JSON response:
+
+    { 
+        success: true|false,
+        msg: <error message>,
+        json: the json object 
+    }
+
+=cut
+sub from_yaml : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        $p->{yaml} or _fail "Missing parameter 'yaml'";
+        my $data = _load $p->{yaml};
+        { success=>\1, msg=>'ok', json=>$data };
+    } catch {
+        { success=>\0, msg=>"" . shift() };
+    };
+    $c->forward('View::JSON');
+}
+
+
 =head2 end
 
 Renders a Mason view by default, passing it all parameters as <%args>.
