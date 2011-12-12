@@ -1,6 +1,8 @@
 package Baseliner::Node;
 use strict;
 use Baseliner::Utils;
+use Module::Loaded;
+use namespace::autoclean;
 
 sub new {
     my $class = shift;
@@ -28,8 +30,10 @@ sub new {
     );
     # load agent class
     my $agent_class =  "Baseliner::Node::" . $args{resource}->agent;
+    unless ( is_loaded $agent_class ) {
     eval "require $agent_class"; 
     _throw _loc "Error loading node class %1: %2", $agent_class, $@ if $@;
+    }
     # instantiate agent
     $agent_class->new( %args );
 }

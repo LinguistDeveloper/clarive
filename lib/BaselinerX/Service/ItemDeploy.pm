@@ -190,9 +190,9 @@ sub select_mappings {
                     $ret
                 } @scripts_single;
             my $deployment = {
-                    origin      => [$origin],
-                    destination => $destination_node,
-                    scripts     => \@scripts_single_parsed,
+                origin      => [$origin],
+                destination => $destination_node,
+                scripts     => \@scripts_single_parsed,
             };
             # remove base path ?
                 $deployment->{base} = $m->{workspace} unless $m->{no_paths} eq 'true';

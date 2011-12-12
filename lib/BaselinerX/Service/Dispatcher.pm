@@ -120,7 +120,14 @@ sub dispatcher {
 
     while( 1 ) {
         _log _loc('Checking for daemons started/stopped');
-        for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
+        my @daemons=();
+        try {
+            # in case o DB failure
+            @daemons = Baseliner->model('Daemons')->list( all => 1 )
+        } catch {
+            _log _loc "Error trying to read daemon list from DB: %1", shift();
+        };
+        for my $daemon ( @daemons ) {
             if ( !$daemon->active ) {
                 next unless $daemon->pid;
                 next unless pexists( $daemon->pid );
@@ -149,7 +156,7 @@ sub dispatcher {
 						service => $daemon->service,
 						params  => $params
 					);
-				} elsif( exists $config->{fork} ) {
+				} elsif( exists $config->{fork} || exists $config->{forked} ) {
 					# forked
 					@started = Baseliner->model('Daemons')->service_start_forked(
                         id      => $daemon->id,
