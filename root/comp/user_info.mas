@@ -1,11 +1,10 @@
 (function(){
     var username = '<% $c->stash->{username} %>' ;
 
-    var store_users=new Ext.data.JsonStore({
+    var store_roles_projects_user = new Ext.data.JsonStore({
 	root: 'data' , 
 	remoteSort: true,
 	totalProperty:"totalCount", 
-	id: 'id', 
 	url: '/user/infodetail',
 	fields: [ 
 	    {name: 'role' },
@@ -13,6 +12,16 @@
 	    {name: 'projects' }			
 	    ]
     });
+  
+    var store_actions_user = new Ext.data.JsonStore({
+	root: 'data' , 
+	remoteSort: true,
+	totalProperty:"totalCount", 
+	url: '/user/infoaction',
+	fields: [ 
+	    {name: 'action' }
+	    ]
+    });  
     
     var ps = 100; //page_size
     
@@ -36,16 +45,15 @@
         return str;
     }    
     
-    var grid = new Ext.grid.GridPanel({
-	title: _('Users'),
-	header: false,
+    var grid_roles_projects_user = new Ext.grid.GridPanel({
+	title: _('Roles/Projects User'),
 	stripeRows: true,
 	autoScroll: true,
 	autoWidth: true,
-	store: store_users,
-	viewConfig: [{
+	store: store_roles_projects_user,
+	viewConfig: {
 	    forceFit: true
-	}],
+	},
 	selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 	loadMask:'true',
 	columns: [
@@ -55,31 +63,163 @@
 	],
 	autoSizeColumns: true,
 	deferredRender:true,
-	height:325
+	height:200
     });
  
-    var form = new Ext.FormPanel({
-	frame: true,
-	items: [
-		{ fieldLabel: _('User'), value: '<% $c->stash->{username} %>', xtype: 'field', readOnly: true, css: '', width: 350 },
-		{ fieldLabel: _('Name'), value: '<% $c->stash->{realname} %>', xtype: 'textfield', readOnly: true, css: '' , width: 350},
-		{ fieldLabel: _('Alias'), value: '<% $c->stash->{alias} %>', xtype: 'textfield', readOnly: true, css: '' , width: 350},
-		{ fieldLabel: _('Email'), value: '<% $c->stash->{email} %>', xtype: 'textfield', readOnly: true, css: '' , width: 350},
-		{ fieldLabel: _('Telephone'), value: '<% $c->stash->{phone} %>', xtype: 'textfield', readOnly: true, css: '' , width: 350},		
-		grid
-	    ]
+    var grid_actions_user = new Ext.grid.GridPanel({
+	title: _('Actions User'),
+	stripeRows: true,
+	autoScroll: true,
+	autoWidth: true,
+	store: store_roles_projects_user,
+	viewConfig: {
+	    forceFit: true
+	},
+	selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+	loadMask:'true',
+	columns: [
+	    { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },	
+	    { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
+	    { header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
+	],
+	autoSizeColumns: true,
+	deferredRender:true,
+	height:200
     });
 
+    var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+    
+    var btn_cerrar = new Ext.Toolbar.Button({
+	    text: _('Close'),
+	    width: 50,
+	    handler: function() {
+		    win.close();
+	    }
+    })
 
-    var win = new Ext.Window({ layout: 'fit', 
-	    autoScroll: true,
+    var form = new Ext.FormPanel({
+	frame: true,
+			items   : [
+			{
+			// column layout with 2 columns
+			layout:'column'
+ 
+			// defaults for columns
+			,defaults:{
+				layout:'form'
+				,border:false
+				,xtype:'panel'
+				,bodyStyle:'padding:0 18px 0 0'
+			}
+			,items:[{
+				// left column
+				// defaults for fields
+				columnWidth:0.90,
+				items:[
+					{
+					// column layout with 2 columns
+					layout:'column'
+					// defaults for columns
+					,defaults:{
+						columnWidth:0.5
+						,layout:'form'
+						,border:false
+						,xtype:'panel'
+						,bodyStyle:'padding:0 18px 0 0'
+					}
+					,items:[{
+						// left column
+						// defaults for fields
+						defaults:{anchor:'100%'}
+						,items:[
+							{ fieldLabel: _('User'), name: 'username', value: '<% $c->stash->{username} %>', xtype: 'textfield', readOnly: true}
+							]
+						},
+						{
+						// right column
+						// defaults for fields
+						defaults:{anchor:'100%'}
+						,items:[
+							{ fieldLabel: _('Alias'), name: 'alias', value: '<% $c->stash->{alias} %>', xtype: 'textfield', readOnly: true}
+							]
+						}
+					]
+					},					
+					///////////////////////////////////
+					{ anchor:'97%', fieldLabel: _('Name'), name: 'realname', value: '<% $c->stash->{realname} %>', xtype: 'textfield', readOnly: true},					
+					{
+					// column layout with 2 columns
+					layout:'column'
+					// defaults for columns
+					,defaults:{
+						columnWidth:0.5
+						,layout:'form'
+						,border:false
+						,xtype:'panel'
+						,bodyStyle:'padding:0 18px 0 0'
+					}
+					,items:[{
+						// left column
+						// defaults for fields
+						defaults:{anchor:'100%'}
+						,items:[
+							{
+							fieldLabel: _('Email address'),
+							name: 'email',
+							value: '<% $c->stash->{email} %>',
+							xtype: 'textfield',
+							readOnly: true
+							}
+							]
+						},
+						{
+						// right column
+						// defaults for fields
+						defaults:{anchor:'100%'}
+						,items:[
+							{
+							fieldLabel: _('Phone Number'),
+							name: 'phone',
+							value: '<% $c->stash->{phone} %>',
+							xtype: 'textfield',
+							readOnly: true
+							}
+							]
+						}
+					]
+					}
+					]
+				},
+				{
+				columnWidth:0.10,
+				// defaults for fields
+				//defaults:{anchor:'100%'}
+				items:[
+					btn_cerrar
+					]
+				}
+			]
+			},
+			blank_image	
+			,
+			grid_roles_projects_user
+			,
+			blank_image	
+			,
+			grid_actions_user
+		]
+		
+    });
+
+    var win = new Ext.Window({
 	    title: username,
-	    height: 500,
-	    width: 675, 
+	    autoHeight: true,
+	    width: 730,
+	    closeAction: 'close',	    
 	    items: form
     });
     
-    store_users.load({ params: {username: username} }); 
+    store_roles_projects_user.load({ params: {username: username} }); 
     return win;
 })();
 
