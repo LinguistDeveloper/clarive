@@ -173,7 +173,7 @@ sub agent_ftp : Local {
     my $dir = $p->{dir};
 
     # TODO : from user workspace repo
-    my ($user, $pass, $host) = ( 'ICDMPA0', 'ENER12A', '192.168.107.2' );
+    my ($user, $pass, $host) = ( 'ICDMPA0', 'FEB01FEB', '192.168.107.2' );
 
     my @tree;
 
@@ -225,7 +225,7 @@ sub view_file : Local {
     my $local = _tmp_file;
 
     # TODO : from user workspace repo
-    my ($user, $pass, $host) = ( 'ICDMPA0', 'ENER12A', '192.168.107.2' );
+    my ($user, $pass, $host) = ( 'ICDMPA0', 'FEB01FEB', '192.168.107.2' );
 
     use Net::FTP; 
     my $ftp=Net::FTP->new( $host );

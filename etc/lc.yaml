@@ -77,3 +77,9 @@ projects:
            -
               name: TEST_IC_REPO
               path: /home/clarive/clarive/etc/repo/EJEMPLOS_IC.git
+    - 
+       name: TEST_COBOL
+       repositories:
+           -
+              name: TEST_COBOL_REPO
+              path: /home/clarive/clarive/etc/repo/IC_COBOL.git

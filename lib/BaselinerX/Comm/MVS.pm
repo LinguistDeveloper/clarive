@@ -107,6 +107,7 @@ sub submit {
 		CORE::open JF, ">$jobfile";
 		print JF $jobtxt;
 		close JF;
+		$self->reopen;
 		$self->{jes}->submit($jobfile) || confess _loc("Could not submit job '%1': %2", $jobname, $!);
 		unlink $jobfile;
 			
@@ -231,7 +232,7 @@ sub wait_for_dir {
 	my $JobNumber = shift;
 
 WW:	while( 1 ) {
-		for ( $self->finished_jobs ) {
+		for ( $self->finished_jobs->{dir} ) {
 			my $num = $self->_jobnumber( $_ );
 			$self->{jobs}{$num}{status}='Finished';
 			last WW if $num eq $JobNumber;   			
@@ -356,12 +357,16 @@ sub output {
 	my $JobNumber = shift;
 	my $tmpdir = $self->opt('tempdir');
 	my $output;
+	my $summary;
+
 	try { File::Path::mkpath( $tmpdir ) }
 		catch { _throw _loc("Could not create path '%1': %2", $tmpdir, shift ) };
 	my $jobout = $self->opt('tempdir')."/$JobNumber.out";
 	my $JESConfig = Baseliner->model('ConfigStore')->get( 'config.JES', ns=>'/', bl=>'*' );
 	use Data::Dumper; 
-	
+
+	$self->reopen;
+	my @summary = grep /^\s+(\d{3})\s(\S*)\s+\S\s(.*)\s+(\d+).*$/, $self->{jes}->dir($JobNumber) ;
 	for( 1..$JESConfig->{attempts} ) {  # 3 attempts to get it
 		_log _loc "Attempt %1 to get job %2 output", $_, $JobNumber;
 		my $JESOUT=$self->{jes}->get($JobNumber,$jobout);
@@ -383,8 +388,9 @@ sub output {
 	# unlink $jobout;
 	
 	_log _loc("Unable to retrieve the output for Job %1. Check QE>Q>1>H (Display Promotion History) to see the result", $JobNumber ) unless $output;
+	#sleep(20);
 	$self->{jes}->delete($JobNumber) unless( $ENV{MVS_NOPURGE} );;
-	return $output;	
+	return $output, @summary;	
 }
 
 =head2 codepage( from_codepage, to_codepage )
