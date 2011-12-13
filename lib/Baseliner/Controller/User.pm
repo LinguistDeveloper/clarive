@@ -181,28 +181,29 @@ sub infoactions : Local {
     $c->forward('View::JSON');   
 }
 
-sub infodetailactions : Local {
-    my ($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my $role = $p->{role};
-    if( defined $role ) {
-        my $r = $c->model('Baseliner::BaliRole')->search({ role=>$role })->first;
-        if( $r ) {
-            my @actions;
-            my $rs_actions = $r->bali_roleactions;
-            while( my $ra = $rs_actions->next ) {
-                my $desc = $ra->action;
-                eval { # it may fail for keys that are not in the registry
-                    my $action = $c->model('Registry')->get( $ra->action );
-                    $desc = $action->name;
-                }; 
-                push @actions,{ action=>$ra->action, description=>$desc, bl=>$ra->bl };
-            }
-            $c->stash->{json} =  { data=>\@actions};
-            $c->forward('View::JSON');
-        }
-    }
-}
+##sub infodetailactions : Local {
+##    my ($self, $c) = @_;
+##    my $p = $c->request->parameters;
+##    my $role = $p->{role};
+##
+##    if( defined $role ) {
+##        my $r = $c->model('Baseliner::BaliRole')->search({ role=>$role })->first;
+##        if( $r ) {
+##            my @actions;
+##            my $rs_actions = $r->bali_roleactions;
+##            while( my $ra = $rs_actions->next ) {
+##                my $desc = $ra->action;
+##                eval { # it may fail for keys that are not in the registry
+##                    my $action = $c->model('Registry')->get( $ra->action );
+##                    $desc = $action->name;
+##                }; 
+##                push @actions,{ action=>$ra->action, description=>$desc, bl=>$ra->bl };
+##            }
+##            $c->stash->{json} =  { data=>\@actions};
+##            $c->forward('View::JSON');
+##        }
+##    }
+##}
 
 sub update : Local {
     my ($self,$c)=@_;
@@ -573,6 +574,7 @@ sub grid : Local {
     $c->forward('/baseline/load_baselines');
     $c->stash->{template} = '/comp/user_grid.mas';
 }
+
 sub can_surrogate : Local {
     my ( $self, $c ) = @_;
     return 0 unless $c->username;

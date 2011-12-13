@@ -37,11 +37,11 @@
 	return str;
     }
 
-    var render_rol_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( value==undefined || value=='null' || value=='' ) return '';
-        var script = String.format('javascript:Baseliner.showAjaxComp("/user/infoactions/{0}")', value);
-        return String.format("<a href='{0}'>{1}</a>", script, value );
-    };
+    //var render_rol_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
+    //    if( value==undefined || value=='null' || value=='' ) return '';
+    //    var script = String.format('javascript:Baseliner.showAjaxComp("/user/inforole/{0}")', value);
+    //    return String.format("<a href='{0}'>{1}</a>", script, value );
+    //};
 
     var render_projects = function (val){
         if( val == null || val == undefined ) return '';
@@ -70,7 +70,8 @@
 	loadMask:'true',
 	columns: [
 	    { hidden: true, dataIndex:'id_role' }, 
-	    { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },	
+	    //{ header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },
+	    { header: _('Role'), width: 120, dataIndex: 'role', sortable: true },	    
 	    { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
 	    { header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
 	],

@@ -1,6 +1,25 @@
 (function(){
     var role = '<% $c->stash->{role} %>' ;
 
+//    var role_data_store=new Ext.data.JsonStore({
+//	    root: 'data' , 
+//	    remoteSort: true,
+//	    totalProperty:"totalCount", 
+//	    id: 'rownum', 
+//	    url: '/role/role_detail_json',
+//	    fields: [ 
+//		    {  name: 'id' },
+//		    {  name: 'name' },
+//		    {  name: 'actions' },
+//		    {  name: 'bl' },
+//		    {  name: 'description' },
+//		    {  name: 'mailbox' }
+//	    ]
+//    });
+
+    //role_data_store.load({ params:{ id: id_role } });
+
+
     var action_store=new Ext.data.JsonStore({
 	root: 'data' , 
 	remoteSort: true,
@@ -50,7 +69,7 @@
     });
  
 
-    var win = new Ext.Window({ layout: 'fit', 
+    var win = new Ext.Window({  
 	    autoScroll: true,
 	    title: role,
 	    height: 300,
