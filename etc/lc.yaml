@@ -59,7 +59,7 @@ lifecycle:
             -
               node: Preproduction
               type: state
-              bl: ANTE
+              bl: PREP
               bl_from: TEST
               bl_to: PROD
               icon: /static/images/icons/lc/history.gif
@@ -67,29 +67,19 @@ lifecycle:
               node: Production
               type: state
               bl: PROD
-              bl_from: ANTE
+              bl_from: PREP
               bl_to: PROD
               icon: /static/images/icons/lc/history.gif
 projects:
     - 
-       name: prj1
+       name: XXX
        repositories:
            -
-              name: aaa
-              path: /Users/rod/tmp/repo/aaa/.git
-           -
-              name: prj_j2ee
-              path: /Users/rod/dev/clarive/etc/repo/prj_j2ee.git
+              name: xxx_repo
+              path: /Users/Rick/dev/repo/XXX/.git
     - 
-       name: AAA
+       name: YYY
        repositories:
            -
-              name: zos
-              path: /Users/rod/dev/clarive/etc/repo/zos.git
-
-    - 
-       name: AAD
-       repositories:
-           -
-              name: zos
-              path: /AAA
+              name: yyy_repo 
+              path: /Users/Rick/dev/repo/YYY/.git
