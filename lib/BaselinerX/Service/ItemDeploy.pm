@@ -111,6 +111,11 @@ sub select_mappings {
     for my $m ( @mappings ) {
         next unless $m->{bl} eq '*' || $m->{bl} eq $job->bl;
 
+        if( defined $m->{active} && !$m->{active} ) {
+            $log->debug( _loc("Mapping name %1 not active. Ignored", $m->{name} ) );
+            next;
+        }
+
         $log->debug( _loc( "Checking if mapping for bl %1 applies", $job->bl ), dump=>$m );
 
         # parse mapping variables - undefined are left untouched
@@ -144,6 +149,7 @@ sub select_mappings {
         # match variables from workspace against the element path
         my %vars = $elements->extract_variables( $m->{workspace} ) if $m->{workspace};
         $log->debug( "Extracted variables", dump=>\%vars );
+        my @scripts_single = map { "$_" } _array $m->{scripts_single};
         $m = $job->parse_job_vars( $m, \%vars ); # reparse, now with workspace variables
 
         my @applications = $wkels->list('application');  # not used TODO
@@ -160,20 +166,40 @@ sub select_mappings {
         }
 
         # all elements as Path::Class and appended to jobroot
-        my @origins = map { _file( $job_root, $_->filepath ) } $wkels->all;
+        $log->debug( "path_deploy = " . $m->{path_deploy} );
+        my @origins = $m->{path_deploy}  # path_deploy = deploy paths that match workspace
+            ? $self->_unique_paths( elements=>$wkels, workspace=>$m->{workspace}, job_root=>$job_root )
+            : map { _file( $job_root, $_->filepath ) } $wkels->all;
 
         # prepare and push deployments into the stash
         my @deploy = map {
+            my @deployments;
             my $destination_node = $_;
+            for my $origin ( @origins ) {
+                my $re_wks = qr/$m->{workspace}/;
+                # parse vars again for single scripts
+                my @scripts_single_parsed = map {
+                    my $script = $_;
+                    my $ret;
+                    if( "$origin" =~ $re_wks ) {  # if there's matching
+                        my $vars_origin = { %+ };
+                        $ret = parse_vars( $script, $vars_origin );
+                    } else {
+                        $ret = $script;
+                    }
+                    $ret
+                } @scripts_single;
             my $deployment = {
-                origin      => \@origins,
+                origin      => [$origin],
                 destination => $destination_node,
-                scripts     => $m->{scripts_single} || [],
+                scripts     => \@scripts_single_parsed,
             };
             # remove base path ?
-            $deployment->{base} = $m->{workspace} unless $m->{no_paths} eq 'on';
+                $deployment->{base} = $m->{workspace} unless $m->{no_paths} eq 'true';
             $log->info( _loc("*Pushed deployment* for `%1`", $_ ), dump=>$deployment );
-            $deployment;
+                push @deployments, $deployment;
+            }
+            @deployments;
         } _array $m->{deployments};
         push @{ $job_stash->{deployments}->{ DOMAIN() } }, @deploy;
 
@@ -183,6 +209,24 @@ sub select_mappings {
             } _array $m->{scripts_multi};
     }
     return @workspaces;
+}
+
+sub _unique_paths {
+    my ($self,%p) = @_;
+    my $log = $self->log;
+    my $elems = $p{elements} or _throw "Missing parameter elements";
+    my $workspace = $p{workspace} or _throw "Missing parameter workspace";
+    my $job_root = $p{job_root} or _throw "Missing parameter job_root";
+
+    my %paths;
+    for my $e ( map { $_->filepath } $elems->all )  {
+        if( $e =~ m/(.*$workspace)/ ) {
+            my $path = $1;
+            $paths{ $path } = ();
+        }
+    }
+    $log->info( "Unique paths", dump=>[keys %paths] );
+    return map { _dir( $job_root, $_ ) } keys %paths;
 }
 
 1;

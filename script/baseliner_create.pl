@@ -1,4 +1,4 @@
-#!C:\strawberry\perl\bin\perl.exe -w
+#!/usr/bin/env perl
 
 use strict;
 use warnings;

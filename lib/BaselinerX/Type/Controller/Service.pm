@@ -108,26 +108,26 @@ sub tree : Local {
     $c->forward("View::JSON");
 }
 
-sub tree : Local {
-	my ($self,$c)=@_;
-    my $list = $c->registry->starts_with( 'service' ) ;
-    my $p = $c->req->params;
-    my @tree;
-    my $field = $p->{field} || 'name';
-    foreach my $key ( $c->registry->starts_with( 'service' ) ) {
-        my $service = Baseliner::Core::Registry->get( $key );
-        _debug _dump $service;
-        push @tree,
-          {
-            id   => $key,
-            leaf => \1,
-            text => ( $field eq 'key' ? $key : $service->{$field} ) || $key,
-            attributes => { key => $key, name=>$service->{name}, id=>$service->{id} }
-          };
-    }
-    $c->stash->{json} = { data => [ sort { $a->{text} cmp $b->{text} } @tree ], totalCount=>scalar @tree };
-    $c->forward("View::JSON");
-}
+# sub tree : Local {
+# 	my ($self,$c)=@_;
+#     my $list = $c->registry->starts_with( 'service' ) ;
+#     my $p = $c->req->params;
+#     my @tree;
+#     my $field = $p->{field} || 'name';
+#     foreach my $key ( $c->registry->starts_with( 'service' ) ) {
+#         my $service = Baseliner::Core::Registry->get( $key );
+#         _debug _dump $service;
+#         push @tree,
+#           {
+#             id   => $key,
+#             leaf => \1,
+#             text => ( $field eq 'key' ? $key : $service->{$field} ) || $key,
+#             attributes => { key => $key, name=>$service->{name}, id=>$service->{id} }
+#           };
+#     }
+#     $c->stash->{json} = { data => [ sort { $a->{text} cmp $b->{text} } @tree ], totalCount=>scalar @tree };
+#     $c->forward("View::JSON");
+# }
 
 sub combo : Local {
 	my ($self,$c)=@_;

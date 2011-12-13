@@ -1,12 +1,14 @@
 (function(){
     var username = '<% $c->stash->{username} %>' ;
+    //var role;
 
     var store_roles_projects_user = new Ext.data.JsonStore({
 	root: 'data' , 
 	remoteSort: true,
 	totalProperty:"totalCount", 
 	url: '/user/infodetail',
-	fields: [ 
+	fields: [
+	    {name: 'id_role'},
 	    {name: 'role' },
 	    {name: 'description' },
 	    {name: 'projects' }			
@@ -66,6 +68,7 @@
 	selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 	loadMask:'true',
 	columns: [
+	    { hidden: true, dataIndex:'id_role' }, 
 	    { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },	
 	    { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
 	    { header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
@@ -74,6 +77,12 @@
 	deferredRender:true,
 	height:200
     });
+    
+    grid_roles_projects_user.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+	var row = grid.getStore().getAt(rowIndex);
+	store_actions_user.load({ params: {username: username, id_role: row.get('id_role')} });
+	//alert( row.get('id_role') );
+    });		
  
     var grid_actions_user = new Ext.grid.GridPanel({
 	title: _('Actions User'),
@@ -229,7 +238,7 @@
     });
     
     store_roles_projects_user.load({ params: {username: username} });
-    store_actions_user.load({ params: {username: username} });
+    store_actions_user.load({ params: {username: username, role: ''} });
     return win;
 })();
 

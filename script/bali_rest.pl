@@ -72,9 +72,16 @@ my $port   = $ENV{BASELINER_PORT}   || $ENV{CATALYST_PORT}   || 3000;
 my $service = shift @ARGV;
 my %opts    = _get_options(@ARGV);
 %opts = clean_empty_arrays( %opts );
+# check if there's any STDIN
+use IO::Select;
+my $s = IO::Select->new();
+$s->add(\*STDIN);
+if( $s->can_read(.1) ) {
+    $opts{STDIN} = join '',<STDIN>;
+}
 my $res     = request(
     "http://$server:$port/service/rest",
-    service => $service || 'service.dummy',
+    service => $service || 'service.job.dummy',
     %opts
 );
 

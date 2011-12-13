@@ -60,6 +60,7 @@ use Exporter::Tidy default => [
     _repl
     _md5
     _html_escape
+    _join_quoted
     case
     /
 ];
@@ -831,6 +832,19 @@ sub hash_flatten {
     return wantarray ? %flat : \%flat;
 }
 
+=head2 parse_vars
+
+Parse vars in a string. Replace them if we can. Return
+the replaced string.
+
+Options:
+
+    throw    => die on missing variables
+    cleanup  => remove unresolved variables
+
+Default action for unresolved variables is to leave them in.
+
+=cut
 sub parse_vars {
     my ( $data, $vars, %args ) = @_;
 
@@ -842,7 +856,7 @@ sub parse_vars {
 
 sub parse_vars_raw {
     my %args = @_;
-    my ( $data, $vars, $throw ) = @args{ qw/data vars throw/ };
+    my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
     if( ref $data eq 'HASH' ) {
         my %ret;
         for my $k ( keys %$data ) {
@@ -866,10 +880,11 @@ sub parse_vars_raw {
         }
         # cleanup or throw unresolved vars
         if( $throw ) { 
-            #$str =~ s/\$\{.*?\}//g; 
             if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {
                 _throw _loc( "Unresolved vars: '%1' in %2", join( "', '", @unresolved ), $str );
             }
+        } elsif( $cleanup ) {
+            $str =~ s/\$\{.*?\}//g; 
         }
         return $str;
     } else {
@@ -903,6 +918,12 @@ sub _html_escape {
     $data =~ s/>/&gt;/gs;
     $data
 }
+
+sub _join_quoted {
+    return '' unless @_;
+    return '"' . join( '" "', @_ ) . '"';
+}
+
 
 sub case {
     my ($val, %opts) = @_;

@@ -32,11 +32,13 @@ sub json : Local {
         my %cat = (
             pkg         => $pkg,
             url=>$pkg->catalog_url,
+            url_save    => $pkg->catalog_url_save,
             icon=>$pkg->catalog_icon,
             name        => _loc($pkg->catalog_name),
             catalog_name=> _loc($pkg->catalog_name),
             type        => _loc($pkg->catalog_name),
-            description => $pkg->catalog_description
+            active      => \1,
+            description => $pkg->catalog_description,
         );
         # for each provider entry
         for my $rec ( $pkg->catalog_list( query=>$query, start=>$start, limit=>$limit ) ) {

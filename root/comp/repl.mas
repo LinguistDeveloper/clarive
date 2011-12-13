@@ -25,7 +25,8 @@ To do:
         });
         tsave.expand();
     });
-    //saved_store.load();
+
+    // Multiple provider search
 	Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
 		initComponent : function(){
 			Ext.app.SearchField.superclass.initComponent.call(this);
@@ -275,7 +276,6 @@ To do:
     }
 
     function save(params) {
-      return;
         var dt = new Date();
         var short = params.c.substring(0,20);
         var node_name = params.tx || dt.format("Y-m-d H:i:s") + ": " + short;
@@ -286,7 +286,7 @@ To do:
             f.submit({ url:'/repl/save', params: { id: params.tx, output: params.o } });
         }
         params.t.appendChild( child );
-        tree.expandAll();
+        tsave.expand();
     }
 
     function submit(parms) {

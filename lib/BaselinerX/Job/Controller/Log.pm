@@ -169,13 +169,13 @@ sub logs_json : Path('/job/log/json') {
 	$c->forward('View::JSON');
 }
 
-sub log_data : Path('/job/log/data') {
-    my ( $self, $c, $id ) = @_;
-    _db_setup;
-	my $p = $c->req->params;
-	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
-	$c->res->body( "<pre>" . (uncompress($log->data) || $log->data)  . " " );
-}
+# sub log_data : Path('/job/log/data') {
+#     my ( $self, $c, $id ) = @_;
+#     _db_setup;
+# 	my $p = $c->req->params;
+# 	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
+# 	$c->res->body( "<pre>" . (uncompress($log->data) || $log->data)  . " " );
+# }
 
 sub jesSpool : Path('/job/log/jesSpool') {
     my ( $self, $c ) = @_;

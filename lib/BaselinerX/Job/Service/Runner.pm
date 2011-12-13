@@ -113,6 +113,8 @@ sub new_from_id {
     }
     $row->update;
     $job->exec( $row->exec );
+    $job->job_type( $row->type );
+    $job->job_data( { $row->get_columns } );
     # setup the logger
     my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid} }) );
     #thaw job stash from table

@@ -1,5 +1,10 @@
 #!/usr/bin/env perl
 
+# configure trace
+use FindBin;
+use lib "$FindBin::Bin/../lib"; 
+use Baseliner::Trace;
+
 BEGIN {
     $ENV{CATALYST_SCRIPT_GEN} = 99;
 }

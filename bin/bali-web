@@ -23,6 +23,10 @@ else
 	mkdir -p $LOGDIR
 fi
 
+if [ "$BASELINER_TRACE" != "" ]; then
+    BASELINER_TRACE_MODULE="-d:Trace::More" 
+fi
+
 LOGFILENAME=bali_web
 NOW=`perl -MDateTime -le 'print DateTime->now()'`
 LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
@@ -55,7 +59,7 @@ if [ "$1" = "start" ]; then
     echo "Log file: $LOGFILE"
     cd $BASELINER_HOME
     #nohup perl script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
-    BASELINER_SERVER=prefork nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    BASELINER_SERVER=prefork nohup perl $BASELINER_TRACE_MODULE $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     SERVER_PID=$!
     echo $SERVER_PID > $PIDFILE
     echo "Server started with pid: $SERVER_PID"
@@ -92,14 +96,20 @@ elif [ "$1" = "kill" ]; then
     fi
     COUNT1=`ps uwwx | grep perl | grep "baseliner_server.pl" | grep -v grep | wc -l`
     COUNT2=`ps uwwx | grep perl | grep "bali server" | grep -v grep | wc -l`
-    COUNT=`perl -e '$x+=$_ for @ARGV; print $x' $COUNT1 $COUNT2`
+    COUNT3=`ps uwwx | grep "starman" | grep -v grep | wc -l`
+    COUNT=`perl -e '$x+=$_ for @ARGV; print $x' $COUNT1 $COUNT2 $COUNT3`
     if [ "$COUNT" -gt 0 ]; then
         echo "Killing all Baseliner Web server processes..."
         ps uwwx | grep perl | grep "baseliner_server.pl" | perl -a -n -l -e 'print join" ",">> ",$F[1]," => ",@F[10..$#F]'
         ps uwwx | grep perl | grep "baseliner_server.pl" | perl -a -n -l -e 'kill 9,$F[1]'
         ps uwwx | grep perl | grep "bali.server" | perl -a -n -l -e 'print join" ",">> ",$F[1]," => ",@F[10..$#F]'
         ps uwwx | grep perl | grep "bali.server" | perl -a -n -l -e 'kill 9,$F[1]'
+        ps uwwx | grep starman | grep -v grep | perl -a -n -l -e 'print join" ",">> ",$F[1]," => ",@F[10..$#F]'
+        ps uwwx | grep starman | grep -v grep | perl -a -n -l -e 'kill 9,$F[1]'
         echo "Done."
+    else
+        echo "No serviceable Baseliner processes found."
+        exit 1
     fi
 elif [ "$1" = "restart" ]; then
     shift
@@ -110,5 +120,6 @@ elif [ "$1" = "tail" ]; then
     tail -10000f $LOGFILE
 else
     echo "Unkown operation $1"
+    echo "Available: bali-web start|stop|restart|kill|tail [-d] [-r]"
 fi
 

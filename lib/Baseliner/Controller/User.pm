@@ -125,6 +125,7 @@ sub infodetail : Local {
 
 	push @rows,
 		    {
+		      id_role		=> $r->{id},
 		      role		=> $r->{role},
 		      description	=> $r->{description},
 		      projects		=> $projects_txt
@@ -135,41 +136,49 @@ sub infodetail : Local {
 }
 
 sub infoactions : Local {
-    my ($self, $c, $role) = @_;
+    my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $username = $p->{username};
+    my $id_role = $p->{id_role};
     
     my @actions;
     my @datas;
     my $data;
     my $SQL;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-
-    $SQL = "SELECT ACTION
-	    FROM BALI_ROLEUSER A, BALI_ROLEACTION B
-	    WHERE A.USERNAME = ? AND A.ID_ROLE = B.ID_ROLE
-	    GROUP BY B.ACTION
-	    ORDER BY ACTION ASC";
+    
+    if ($id_role) {
+	my $rs_actions = $c->model('Baseliner::BaliRoleAction')->search( { id_role => $id_role} );
+	while( my $rs = $rs_actions->next ) {
+	    my $desc = $rs->action;
+	    eval { # it may fail for keys that are not in the registry
+		my $action = $c->model('Registry')->get( $rs->action );
+		$desc = $action->name;
+	    }; 
+	    push @actions,{ action=>$rs->action, description=>$desc, bl=>$rs->bl };
+	}
+    }
+    else{
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
+	$SQL = "SELECT ACTION, BL
+		FROM BALI_ROLEUSER A, BALI_ROLEACTION B
+		WHERE A.USERNAME = ? AND A.ID_ROLE = B.ID_ROLE
+		GROUP BY ACTION, BL
+		ORDER BY ACTION ASC";
 	
-    _log "#######################Pasa: " . $SQL . "\n";	
-	
-    @datas = $db->array_hash( "$SQL" , $username);
-    foreach $data (@datas){
-	_log "#######################Pasa: \n";
-        my $desc = $data->{action};
-	eval { # it may fail for keys that are not in the registry
-	    my $action = $c->model('Registry')->get( $data->{action} );
-	    $desc = $action->name;
-	}; 
-        push @actions,{ action=>$data->{action}, description=>$desc, bl=>'1' };
+	@datas = $db->array_hash( "$SQL" , $username);
+	foreach $data (@datas){
+	    my $desc = $data->{action};
+	    eval { # it may fail for keys that are not in the registry
+		my $action = $c->model('Registry')->get( $data->{action} );
+		$desc = $action->name;
+	    }; 
+	    push @actions,{ action=>$data->{action}, description=>$desc, bl=>$data->{bl} };
+	}
     }
     
     $c->stash->{json} =  { data=>\@actions};
     $c->forward('View::JSON');   
-    
-    ##$c->stash->{role}  = $role;
-    ##$c->stash->{template} = '/comp/user_infoactions.mas';
 }
 
 sub infodetailactions : Local {
