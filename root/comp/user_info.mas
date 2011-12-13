@@ -1,6 +1,7 @@
 (function(){
     var username = '<% $c->stash->{username} %>' ;
-    //var role;
+    var title_action_grid = _('Actions User');
+    var action_role = ' ( ' + _('All roles') + ' )';
 
     var store_roles_projects_user = new Ext.data.JsonStore({
 	root: 'data' , 
@@ -81,11 +82,25 @@
     grid_roles_projects_user.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 	var row = grid.getStore().getAt(rowIndex);
 	store_actions_user.load({ params: {username: username, id_role: row.get('id_role')} });
-	//alert( row.get('id_role') );
+	btn_watch_all_actions.enable();
+	grid_actions_user.setTitle(title_action_grid + ' ( ' + row.get('role') + ' )');
     });		
  
+    var btn_watch_all_actions = new Ext.Toolbar.Button({
+		    text: _('Watch all actions'),
+		    icon:'/static/images/key.png',
+		    cls: 'x-btn-text-icon',
+		    disabled: true,
+		    handler: function() {
+			grid_roles_projects_user.getSelectionModel().clearSelections();
+			store_actions_user.load({ params: {username: username, role: ''} });
+			grid_actions_user.setTitle(title_action_grid + action_role);
+			btn_watch_all_actions.disable();
+		    }
+    });
+
     var grid_actions_user = new Ext.grid.GridPanel({
-	title: _('Actions User'),
+	title: title_action_grid + action_role,
 	stripeRows: true,
 	autoScroll: true,
 	autoWidth: true,
@@ -99,6 +114,8 @@
 	    { header: _('Action'), width: 150, dataIndex: 'action', sortable: false },	
 	    { header: _('Description'), width: 350, dataIndex: 'description', sortable: false, renderer: render_descriptions },
 	    { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: false}
+	],
+	bbar: [ btn_watch_all_actions
 	],
 	autoSizeColumns: true,
 	deferredRender:true,
