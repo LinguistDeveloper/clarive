@@ -71,9 +71,9 @@
 	columns: [
 	    { hidden: true, dataIndex:'id_role' }, 
 	    //{ header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },
-	    { header: _('Role'), width: 120, dataIndex: 'role', sortable: true },	    
+	    { header: _('Role'), width: 150, dataIndex: 'role', sortable: true },	    
 	    { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
-	    { header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
+	    { header: _('Namespace'), width: 100, dataIndex: 'projects', sortable: false, renderer: render_projects }
 	],
 	autoSizeColumns: true,
 	deferredRender:true,
@@ -114,7 +114,7 @@
 	columns: [
 	    { header: _('Action'), width: 150, dataIndex: 'action', sortable: false },	
 	    { header: _('Description'), width: 350, dataIndex: 'description', sortable: false, renderer: render_descriptions },
-	    { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: false}
+	    { header: _('Baseline'), width: 100, dataIndex: 'bl', sortable: false}
 	],
 	bbar: [ btn_watch_all_actions
 	],
