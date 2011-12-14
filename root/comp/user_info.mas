@@ -2,7 +2,7 @@
     var username = '<% $c->stash->{username} %>' ;
     var swAsistentePermisos = '<% $c->stash->{swAsistentePermisos} %>' ;
     var title_action_grid = _('Actions User');
-    var action_role = ' ( ' + _('All roles') + ' )';
+    var action_role = ' ( ' + _('All') + ' )';
 
     var store_roles_projects_user = new Ext.data.JsonStore({
 	root: 'data' , 

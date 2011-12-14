@@ -199,7 +199,7 @@
 					else{
 						Ext.Msg.show({  
 						    title: _('Information'), 
-						    msg: _('Tienes que grabar el usuario primero'), 
+						    msg: _('You must save the user before'), 
 						    buttons: Ext.Msg.OK, 
 						    icon: Ext.Msg.INFO
 						}); 						
@@ -247,7 +247,7 @@
 							     roles_checked: roles_checked
 						   },
 						   success: function(f,a){
-						       Baseliner.message('Success', a.result.msg );
+						       Baseliner.message(_('Success'), a.result.msg );
 						       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
 						       //control_buttons();
 						       form.findField("username").getEl().dom.setAttribute('readOnly', true);
@@ -265,7 +265,7 @@
 					else{
 						Ext.Msg.show({  
 						    title: _('Information'), 
-						    msg: _('No existe el usuario.'), 
+						    msg: _("User doesn't exist"), 
 						    buttons: Ext.Msg.OK, 
 						    icon: Ext.Msg.INFO
 						}); 						
@@ -345,7 +345,7 @@
 		});
 		
 		var grid_user_roles_projects = new Ext.grid.GridPanel({
-			title: _('Roles/Projects User '),
+			title: _('Roles/Projects User'),
 			stripeRows: true,
 			autoScroll: true,
 			autoWidth: true,
@@ -561,9 +561,9 @@
 							fieldLabel: _('Phone Number'),
 							name: 'phone',
 							emptyText: 'xx-xxx-xx-xx',
-							maskRe: /[\d\-]/,
-							regex: /^\d{2}-\d{3}-\d{2}-\d{2}$/,
-							regexText: 'Must be in the format xxx-xxx-xxxx',
+							//maskRe: /[\d\-]/,
+							//regex: /^\d{2}-\d{3}-\d{2}-\d{2}$/,
+							//regexText: 'Must be in the format xxx-xxx-xxxx',
 							xtype: 'textfield'
 							}
 							]

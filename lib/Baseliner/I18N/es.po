@@ -2026,3 +2026,97 @@ msgstr "Confirmar"
 # root/comp/scheduler_grid.js (463)
 msgid "Scheduler"
 msgstr "Planificador"
+
+# root/comp/user_info.mas (4)
+msgid "Actions User"
+msgstr "Acciones de usuario"
+
+# root/comp/user_info.mas (62)
+msgid "Roles/Projects User"
+msgstr "Roles/Proyectos de usuario"
+
+# root/comp/user_info.mas (92)
+msgid "Watch all actions"
+msgstr "Ver todas las acciones"
+
+# root/comp/user_info.mas (205)
+msgid "Email address"
+msgstr "Correo electrónico"
+
+# root/comp/user_info.mas (219)
+msgid "Phone Number"
+msgstr "Teléfono"
+
+# root/comp/user_grid.mas (145)
+msgid "Assign roles/projects"
+msgstr "Asignar roles/proyectos"
+
+# root/comp/user_grid.mas (202)
+msgid "You must save the user before"
+msgstr "Tienes que grabar el usuario primero"
+
+# root/comp/user_grid.mas (211)
+msgid "Unassign roles/projects"
+msgstr "Desasignar roles/proyectos"
+
+# root/comp/user_grid.mas (268)
+msgid "User doesn't exist"
+msgstr "El usuario no existe"
+
+# root/comp/user_grid.mas (307)
+msgid "Edit user"
+msgstr "Editar usuario"
+
+# root/comp/user_grid.mas (329)
+msgid "Available Roles"
+msgstr "Roles disponibles"
+
+# root/comp/user_grid.mas (388)
+msgid "Available Projects"
+msgstr "Proyectos disponibles"
+
+# root/comp/user_grid.mas (617)
+msgid "Create user"
+msgstr "Crear usuario"
+
+# root/comp/user_grid.mas (717)
+msgid "Email"
+msgstr "Correo electrónico"
+
+# root/comp/user_grid.mas (718)
+msgid "Phone"
+msgstr "Teléfono"
+
+# root/comp/user_grid.mas (675)
+msgid "Are you sure you want to delete the user"
+msgstr "¿Está seguro de que quiere borrar el usuario"
+
+# lib/Baseliner/Controller/User.pm (236)
+msgid "User added"
+msgstr "Usuario grabado"
+
+# lib/Baseliner/Controller/User.pm (238)
+msgid "User name already exists, introduce another user name"
+msgstr "El usuario ya existe, intoduce otro usuario"
+
+# lib/Baseliner/Controller/User.pm (242)
+msgid "Error adding User: %1"
+msgstr "Error grabando usuario: %1"
+
+# lib/Baseliner/Controller/User.pm (261)
+msgid "User modified"
+msgstr "Usuario modificado: %1"
+
+# lib/Baseliner/Controller/User.pm (264)
+msgid "Error modifying User: %1"
+msgstr "Error modificando usuario: %1"
+
+# lib/Baseliner/Controller/User.pm (276)
+msgid "User deleted"
+msgstr "Usuario borrado"
+
+# lib/Baseliner/Controller/User.pm (279)
+msgid "Error deleting User"
+msgstr "Error borrando usuario1"
+
+
