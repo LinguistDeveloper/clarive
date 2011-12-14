@@ -102,18 +102,20 @@ sub infodetail : Local {
 	    if($prjid){
 		my @path;
 		my $project = $c->model('Baseliner::BaliProject')->find($prjid);
-		push @path, $project->name;
-		$parent = $project->id_parent;
-		while($parent){
-		    my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
-		    push @path, $projectparent->name . '/';
-		    $parent = $projectparent->id_parent;
+		if($project){
+		    push @path, $project->name;
+		    $parent = $project->id_parent;
+		    while($parent){
+			my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
+			push @path, $projectparent->name . '/';
+			$parent = $projectparent->id_parent;
+		    }
+		    while(@path){
+			$allpath .= pop (@path)
+		    }
+		    if($project->nature){ $nature= ' (' . $project->nature . ')';}
+		    $str = $allpath . $nature;
 		}
-		while(@path){
-		    $allpath .= pop (@path)
-		}
-		if($project->nature){ $nature= ' (' . $project->nature . ')';}
-		$str = $allpath . $nature;
 	    }
 	    else{
 		$str = '';
