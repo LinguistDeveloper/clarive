@@ -40,14 +40,19 @@ sub preferences : Local {
 
 sub actions : Local {
     my ($self, $c) = @_;
-
-	$c->stash->{username} = $c->username;
-	$c->stash->{template} = '/comp/user_actions.mas';
+    $c->stash->{username} = $c->username;
+    $c->stash->{template} = '/comp/user_actions.mas';
 }
 
 sub info : Local {
     my ($self, $c, $username) = @_;
-   
+    $c->stash->{swAsistentePermisos} = 0;
+
+    if($username eq ''){
+	$username = $c->username;
+	$c->stash->{swAsistentePermisos} = 1;
+    }
+    
     my $u = $c->model('Users')->get( $username );
     if( ref $u ) {
 	my $user_data = $u->{data} || {};

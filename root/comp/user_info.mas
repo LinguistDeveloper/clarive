@@ -1,5 +1,6 @@
 (function(){
     var username = '<% $c->stash->{username} %>' ;
+    var swAsistentePermisos = '<% $c->stash->{swAsistentePermisos} %>' ;
     var title_action_grid = _('Actions User');
     var action_role = ' ( ' + _('All roles') + ' )';
 
@@ -136,6 +137,7 @@
     var form = new Ext.FormPanel({
 	frame: true,
 			items   : [
+% if ($c->stash->{swAsistentePermisos} != 1){ 			
 			{
 			// column layout with 2 columns
 			layout:'column'
@@ -238,6 +240,7 @@
 			},
 			blank_image	
 			,
+%}
 			grid_roles_projects_user
 			,
 			blank_image	
@@ -257,6 +260,13 @@
     
     store_roles_projects_user.load({ params: {username: username} });
     store_actions_user.load({ params: {username: username, role: ''} });
-    return win;
+
+    
+    if(swAsistentePermisos != 1){
+	return win;	
+    }
+    else{
+	return form;
+    }
 })();
 
