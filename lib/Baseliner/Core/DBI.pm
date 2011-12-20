@@ -25,7 +25,7 @@ has 'dbh_params' => ( is=>'rw', isa=>'HashRef' );
 sub BUILD {
     my $self = shift;
     if( ref $self->connection eq 'ARRAY' ) {
-        $self->dbi( DBI->connect( @{ $self->connection } ) ); 
+       $self->dbi( DBI->connect( @{ $self->connection } ) ); 
     }
     # delete the model name Baseliner
     if( ref $self->dbi ) {
