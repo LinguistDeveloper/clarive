@@ -11,4 +11,6 @@ requires 'catalog_description';
 
 sub catalog_seq { 99999 }
 
+use constant catalog_url_save => '/catalog/save';
+
 1;
