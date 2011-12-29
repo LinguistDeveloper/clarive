@@ -268,7 +268,6 @@ sub update : Local {
 	}
 	case 'delete' {
 	    try{
-		my $SQL;
 		my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
 		$row->active(0);
 		$row->update();
@@ -397,7 +396,7 @@ sub tratar_proyectos_padres(){
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my $dbh = $db->dbh;
-    my $sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? CONNECT BY PRIOR ID = ID_PARENT");
+    my $sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1");
 		   
     switch ($accion) {
 	case 'update' {
@@ -610,62 +609,61 @@ sub projects_list : Local {
     my $SQL;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
-    if($id_project && $id_project ne 'todos'){
-	$SQL = "SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE 
-				 FROM BALI_PROJECT B
-				 WHERE B.ID_PARENT = ?
-				 AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
-						  FROM BALI_PROJECT A
-						  WHERE A.ID_PARENT IS NOT NULL) 
-				 UNION
-				 SELECT DISTINCT D.ID, D.NAME, 0 AS LEAF, D.NATURE
-				 FROM BALI_PROJECT D,  
-				 BALI_PROJECT C
-				 WHERE D.ID_PARENT = ? AND
-				 D.ID = C.ID_PARENT";
-	
+    if($id_project ne 'todos'){
+	$SQL = "SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
+			       FROM BALI_PROJECT B
+			       WHERE B.ID_PARENT = ? AND B.ACTIVE = 1
+                                     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+                                                      FROM BALI_PROJECT A
+                                                      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+                               UNION ALL
+                               SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
+                               FROM BALI_PROJECT E
+                               WHERE E.ID IN (SELECT DISTINCT D.ID 
+                                              FROM BALI_PROJECT D,  
+                                              BALI_PROJECT C
+                                              WHERE D.ID_PARENT = ? AND C.ACTIVE = 1 AND
+                                                    D.ID = C.ID_PARENT)) RESULT
+	       ORDER BY NAME ASC";
 	@datas = $db->array_hash( "$SQL" , $id_project, $id_project);					 
     }
     else{
-	$SQL = "SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE 
-					 FROM BALI_PROJECT B
-					 WHERE B.ID_PARENT IS NULL
-					 AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
-							  FROM BALI_PROJECT A
-							  WHERE A.ID_PARENT IS NOT NULL) 
-					 UNION
-					 SELECT DISTINCT D.ID, D.NAME, 0 AS LEAF, D.NATURE
-					 FROM BALI_PROJECT D,  
-					 BALI_PROJECT C
-					 WHERE D.ID_PARENT IS NULL AND
-					 D.ID = C.ID_PARENT";
+	$SQL = "SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
+			       FROM BALI_PROJECT B
+			       WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
+                                     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+                                                      FROM BALI_PROJECT A
+                                                      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+                               UNION ALL
+                               SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
+                               FROM BALI_PROJECT E
+                               WHERE E.id in (SELECT DISTINCT D.ID 
+                                              FROM BALI_PROJECT D,  
+                                              BALI_PROJECT C
+                                              WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
+                                                    D.ID = C.ID_PARENT)) RESULT
+	       ORDER BY NAME ASC";
 	
 	@datas = $db->array_hash( "$SQL" );					 
     }
-    
-    my $nature;
-    
+
     foreach $data(@datas){
-	if($data->{nature}){
-	    $nature = " ($data->{nature})";
-	}
-	else{
-	    $nature = "";
-	}
-        push @tree, {
-            text       => $data->{name} . $nature,
-            url        => 'user/projects_list',
-            data       => {
-                id_project => $data->{id},
-                project    => $data->{name},
+	push @tree, {
+	    text        => $data->{name} . ($data->{nature}?" (" . $data->{nature} . ")":''),
+	    nature	=> $data->{nature}?$data->{nature}:"",
+	    description => $data->{description}?$data->{description}:"",
+	    url         => 'user/projects_list',
+	    data        => {
+		id_project => $data->{id},
+		project    => $data->{name},
 		parent_checked => 0,
-            },	    
-            icon       => '/static/images/icons/project.gif',
-            leaf       => \$data->{leaf},
+	    },	    
+	    icon       => '/static/images/icons/project.gif',
+	    leaf       => \$data->{leaf},
 	    checked    => \$parent_checked
-        };	
+	};	
     }
-    
+
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }

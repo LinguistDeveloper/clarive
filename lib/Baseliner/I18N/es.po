@@ -2105,7 +2105,7 @@ msgstr "Error grabando usuario: %1"
 
 # lib/Baseliner/Controller/User.pm (261)
 msgid "User modified"
-msgstr "Usuario modificado: %1"
+msgstr "Usuario modificado"
 
 # lib/Baseliner/Controller/User.pm (264)
 msgid "Error modifying User: %1"
