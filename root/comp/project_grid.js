@@ -1,6 +1,6 @@
 (function(){
 
-	var ps = 10;
+	var ps = 100;
 	
 	<& /comp/search_field.mas &>
 	

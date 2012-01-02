@@ -29,7 +29,7 @@ sub list : Local {
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
         my ($start, $limit, $query) = ( @{$p}{qw/start limit query/});
 	$start ||= 0;
-        $limit ||= 10;
+        $limit ||= 100;
     
         my $page = to_pages( start=>$start, limit=>$limit );
 
