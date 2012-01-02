@@ -2119,4 +2119,79 @@ msgstr "Usuario borrado"
 msgid "Error deleting User"
 msgstr "Error borrando usuario1"
 
+# lib/Baseliner/Controller/Project.pm (158)
+msgid "Root (/)"
+msgstr "Raíz (/)"
+
+# lib/Baseliner/Controller/Project.pm (252)
+msgid "Project added"
+msgstr "Proyecto grabado"
+
+# lib/Baseliner/Controller/Project.pm (254)
+msgid "Project name already exists, introduce another project name"
+msgstr "El proyecto ya existe, intoduce otro proyecto"
+
+# lib/Baseliner/Controller/Project.pm (258)
+msgid "Error adding Project: %1"
+msgstr "Error grabando proyecto: %1"
+
+# lib/Baseliner/Controller/Project.pm (279)
+msgid "Project deleted"
+msgstr "Proyecto borrado"
+
+# lib/Baseliner/Controller/Project.pm (282)
+msgid "Error deleting Project"
+msgstr "Error borrando proyecto"
+
+# root/comp/Project_grid.js (90)
+msgid "Are you sure you want to delete the project"
+msgstr "¿Está seguro de que quiere borrar el proyecto"
+
+# root/comp/Project_grid.js (131)
+msgid "List of projects"
+msgstr "Lista de proyectos"
+
+# root/comp/Project_grid.js (131)
+msgid "Edit proyecto"
+msgstr "Editar proyecto"
+
+# root/comp/Project_grid.js (205)
+msgid "Project name"
+msgstr "Nombre del proyecto"
+
+# root/comp/Project_grid.js (206)
+msgid "Parent"
+msgstr "Raíz"
+
+# root/comp/Project_grid.js (206)
+msgid "Select a parent from the list of projects"
+msgstr "Selecciona la raíz de la lista de proyectos"
+
+# root/comp/Project_grid.js (208)
+msgid "Nature of the project (Examples: J2EE, .NET)"
+msgstr "Naturaleza del proyecto (Ejemplos: J2EE, .NET)"
+
+# root/comp/Project_grid.js (209)
+msgid "A brief description of the project"
+msgstr "A breve descripción del proyecto"
+
+# root/comp/Project_grid.js (247)
+msgid "Create new project"
+msgstr "Crear nuevo proyecto"
+
+# root/comp/Project_grid.js (269)
+msgid "Projects"
+msgstr "Proyectos"
+
+
+
+
+
+
+
+
+
+
+
+
 

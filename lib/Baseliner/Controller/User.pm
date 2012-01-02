@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Core::DBI;
 use Switch;
 use Try::Tiny;
+
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'config.user.global' => {

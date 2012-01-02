@@ -78,7 +78,7 @@
 
 	var btn_surrogate = new Ext.Toolbar.Button({
 		text: _('Surrogate'),
-		icon:'/static/images/users.gif',
+		icon:'/static/images/icons/users.gif',
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
@@ -143,7 +143,7 @@
 
 		var btn_asignar_roles_projects = new Ext.Toolbar.Button({
 				text: _('Assign roles/projects'),
-				icon:'/static/images/key_add.png',
+				icon:'/static/images/icons/key_add.png',
 				cls: 'x-btn-text-icon',
 				disabled: true,
 				handler: function() {
@@ -208,7 +208,7 @@
 		
 		var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
 			text: _('Unassign roles/projects'),
-			icon:'/static/images/key_delete.png',
+			icon:'/static/images/icons/key_delete.png',
 			cls: 'x-btn-text-icon',
 			disabled: true,
 			handler: function() {
@@ -469,7 +469,6 @@
 		    });
 		});
 
-	
 	    	var form_user = new Ext.FormPanel({
 			name: form_user,
 			url: '/user/update',

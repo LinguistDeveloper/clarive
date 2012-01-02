@@ -12,7 +12,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.admin.role' => { name=>'Admin Roles' };
 register 'menu.admin.role' => { label => 'Roles', url_comp=>'/role/grid', actions=>['action.admin.role'], title=>'Roles', index=>81,
-    icon=>'/static/images/users.gif' };
+    icon=>'/static/images/icons/users.gif' };
 
 sub role_detail_json : Local {
     my ($self,$c) = @_;
