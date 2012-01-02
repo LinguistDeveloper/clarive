@@ -245,7 +245,7 @@
 					]
 		});		
 
-		var title = 'Create new project';
+		var title = 'Create project';
 		
 		if(rec){
 			var ff = form_proyecto.getForm();

@@ -2176,8 +2176,8 @@ msgid "A brief description of the project"
 msgstr "A breve descripción del proyecto"
 
 # root/comp/Project_grid.js (247)
-msgid "Create new project"
-msgstr "Crear nuevo proyecto"
+msgid "Create project"
+msgstr "Crear proyecto"
 
 # root/comp/Project_grid.js (269)
 msgid "Projects"
