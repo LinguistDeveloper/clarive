@@ -171,7 +171,6 @@
 			text: _('Save'),
 			handler: function(){
 				var form = form_proyecto.getForm();
-				alert(form.getValues()['_id']);
 				var action = form.getValues()['_id'] >= 0 ? 'update' : 'add';
 
 				if (form.isValid()) {
