@@ -2152,7 +2152,7 @@ msgid "List of projects"
 msgstr "Lista de proyectos"
 
 # root/comp/Project_grid.js (131)
-msgid "Edit proyecto"
+msgid "Edit project"
 msgstr "Editar proyecto"
 
 # root/comp/Project_grid.js (205)
