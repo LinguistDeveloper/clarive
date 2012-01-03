@@ -12,48 +12,69 @@ register 'menu.admin.daemon' => { label => 'Daemons', url_comp=>'/daemon/grid', 
 
 sub grid : Local {
     my ( $self, $c ) = @_;
-	$c->stash->{template} = '/comp/daemon_grid.mas';
+	$c->stash->{template} = '/comp/daemon_grid.js';
 }
 
 sub list : Local {
     my ( $self, $c ) = @_;
-	my $p = $c->request->parameters;
+    my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
-	$sort||='service';
-	$dir||='';
-	my @rows;
-	my $rs = $c->model('Baseliner::BaliDaemon')->search( undef, { order_by=>"$sort $dir" } );
-	$rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
-	while( my $r = $rs->next ) {
-        next if( $query && !query_array($query, $r->id, $r->service, $r->hostname ));
-        $r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
-        $r->{exists} = -1 if $r->{pid} == -1 ;
-        $r->{exists} = 1 if $r->{pid} > 0 ;
-		push @rows, $r
-            if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
-	}
-	#@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
-	$c->stash->{json} = {
-		totalCount=>scalar @rows,
-		data=>\@rows
-	};
-	$c->forward('View::JSON');
+    $sort||='service';
+    $dir||='';
+    my @rows;
+    my $rs = $c->model('Baseliner::BaliDaemon')->search( undef, { order_by=>"$sort $dir" } );
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    while( my $r = $rs->next ) {
+    next if( $query && !query_array($query, $r->id, $r->service, $r->hostname ));
+    $r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
+    $r->{exists} = -1 if $r->{pid} == -1 ;
+    $r->{exists} = 1 if $r->{pid} > 0 ;
+	    push @rows, $r
+	if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
+    }
+    #@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
+    $c->stash->{json} = {
+	    totalCount=>scalar @rows,
+	    data=>\@rows
+    };
+    $c->forward('View::JSON');
 }
 
 sub start : Local {
     my ( $self, $c ) = @_;
-	my $p = $c->request->parameters;
+    my $p = $c->request->parameters;
     $c->model('Daemons')->request_start_stop( action=>'start', id=>$p->{id} );
     $c->stash->{json} = { success => \1, msg => _loc("Service started") };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 sub stop : Local {
     my ( $self, $c ) = @_;
-	my $p = $c->request->parameters;
+    my $p = $c->request->parameters;
     $c->model('Daemons')->request_start_stop( action=>'stop', id=>$p->{id} );
     $c->stash->{json} = { success => \1, msg => _loc("Service stopped") };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
+}
+
+sub delete : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $id_daemon = $p->{id};
+    
+    try{
+	##Paramos el servicio antes de borrar en tabla.            ##########################                   
+	##En principio no hace nada, solo modifica el campo de la tabla ACTIVE            ###
+	##$c->model('Daemons')->request_start_stop( action=>'stop', id=>$p->{id} );       ###
+	#####################################################################################
+	my $row = $c->model('Baseliner::BaliDaemon')->find( $id_daemon );
+	$row->delete;
+
+	$c->stash->{json} = {  success => 1, msg=>_loc('Daemon deleted')};
+    }
+    catch{
+	$c->stash->{json} = {  success => 0, msg=>_loc('Error deleting Daemon') };
+    }
+    $c->forward('View::JSON');
 }
 
 sub dispatcher : Local {
