@@ -19,12 +19,26 @@ sub grid : Local {
 sub list : Local {
 	my ( $self, $c ) = @_;
 	my $p = $c->request->parameters;
-	my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
+	my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+	$start ||= 0;
+	$limit ||= 100;
 	$sort||='service';
-	$dir||='';
+	$dir||='asc';
 	
+	my $page = to_pages( start=>$start, limit=>$limit );
 	my @rows;
-	my $rs = $c->model('Baseliner::BaliDaemon')->search( undef, { order_by=>"$sort $dir" } );
+	my $where = $query
+        ? { 'lower(service||hostname)' => { -like => "%".lc($query)."%" } }
+        : undef;
+	
+	my $rs = $c->model('Baseliner::BaliDaemon')->search(  $where,
+							    { page => $page,
+							      rows => $limit,
+							      order_by => $sort ? "$sort $dir" : undef
+							    }
+							    );
+        my $pager = $rs->pager;
+	$cnt = $pager->total_entries;
 	$rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
 	while( my $r = $rs->next ) {
 	    #next if( $query && !query_array($query, $r->id, $r->service, $r->hostname ));
@@ -32,10 +46,10 @@ sub list : Local {
 	    $r->{exists} = -1 if $r->{pid} == -1 ;
 	    $r->{exists} = 1 if $r->{pid} > 0 ;
 	    push @rows, $r
-	    if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
+	    #if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
 	}
 	#@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
-	$c->stash->{json} = { totalCount=>scalar @rows, data=>\@rows };
+	$c->stash->{json} = { totalCount=>$cnt, data=>\@rows };
 	$c->forward('View::JSON');
 }
 
