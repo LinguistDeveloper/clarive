@@ -61,13 +61,13 @@
 				var rec = sm.getSelected();
 				var id = rec.data.id;
 				Baseliner.ajaxEval( '/daemon/start', { id: id },
-					function(res){
-						Baseliner.message(_('Daemons'), _('Service daemon %1 started', rec.data.service ) );
+					function(resp){
+						Baseliner.message( _('Success'), resp.msg );
 						store.load();
 					}
 				);
 			} else {
-				Ext.Msg.alert('Error', 'Falta seleccionar una fila');	
+				Baseliner.message( _('ERROR'), _('Select at least one row'));	
 			};
 		}
         });
@@ -80,20 +80,15 @@
 		handler: function() {
 			var sm = grid.getSelectionModel();
 			var sel = sm.getSelected();
-			var service = sel.data.service;
-			Ext.Msg.confirm( _('Confirmation'), '<% _loc('Are you sure you want to turn off the daemon') %> ' + service + '?', 
+			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to turn off the daemon') + ' <b>' + sel.data.service  + '</b>?', 
 				function(btn){ 
 					if(btn=='yes') {
-						var conn = new Ext.data.Connection();
-						conn.request({
-							url: '/daemon/stop',
-							params: { action: 'stop', id: sel.data.id },
-							success: function(resp,opt) {
-								Baseliner.message( _('Daemons'), _('Service %1 stopped.', service ) );
+						Baseliner.ajaxEval( '/daemon/stop', { id: sel.data.id },
+							function(resp){
+								Baseliner.message( _('Success'), resp.msg );
 								store.load();
-							}, 
-							failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', _('Could not stop the daemon.') ); }
-						});	
+							}
+						);
 					}
 				}
 			);

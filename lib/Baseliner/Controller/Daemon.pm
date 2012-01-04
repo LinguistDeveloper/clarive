@@ -17,47 +17,44 @@ sub grid : Local {
 }
 
 sub list : Local {
-	my ( $self, $c ) = @_;
-	my $p = $c->request->parameters;
-	my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-	$start ||= 0;
-	$limit ||= 100;
-	$sort||='service';
-	$dir||='asc';
-	
-	my $page = to_pages( start=>$start, limit=>$limit );
-	my @rows;
-	my $where = $query
-        ? { 'lower(service||hostname)' => { -like => "%".lc($query)."%" } }
-        : undef;
-	
-	my $rs = $c->model('Baseliner::BaliDaemon')->search(  $where,
-							    { page => $page,
-							      rows => $limit,
-							      order_by => $sort ? "$sort $dir" : undef
-							    }
-							    );
-        my $pager = $rs->pager;
-	$cnt = $pager->total_entries;
-	$rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
-	while( my $r = $rs->next ) {
-	    #next if( $query && !query_array($query, $r->id, $r->service, $r->hostname ));
-	    $r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
-	    $r->{exists} = -1 if $r->{pid} == -1 ;
-	    $r->{exists} = 1 if $r->{pid} > 0 ;
-	    push @rows, $r
-	    #if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
-	}
-	#@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
-	$c->stash->{json} = { totalCount=>$cnt, data=>\@rows };
-	$c->forward('View::JSON');
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    $start ||= 0;
+    $limit ||= 100;
+    $sort||='service';
+    $dir||='asc';
+    
+    my $page = to_pages( start=>$start, limit=>$limit );
+    my @rows;
+    my $where = $query
+    ? { 'lower(service||hostname)' => { -like => "%".lc($query)."%" } }
+    : undef;
+    
+    my $rs = $c->model('Baseliner::BaliDaemon')->search(  $where,
+							{ page => $page,
+							  rows => $limit,
+							  order_by => $sort ? "$sort $dir" : undef
+							}
+							);
+    my $pager = $rs->pager;
+    $cnt = $pager->total_entries;
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    while( my $r = $rs->next ) {
+	$r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
+	$r->{exists} = -1 if $r->{pid} == -1 ;
+	$r->{exists} = 1 if $r->{pid} > 0 ;
+	push @rows, $r
+    }
+    $c->stash->{json} = { totalCount=>$cnt, data=>\@rows };
+    $c->forward('View::JSON');
 }
 
 sub start : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     $c->model('Daemons')->request_start_stop( action=>'start', id=>$p->{id} );
-    $c->stash->{json} = { success => \1, msg => _loc("Service started") };
+    $c->stash->{json} = { success => \1, msg => _loc('Daemon started') };
     $c->forward('View::JSON');
 }
 
@@ -65,7 +62,7 @@ sub stop : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     $c->model('Daemons')->request_start_stop( action=>'stop', id=>$p->{id} );
-    $c->stash->{json} = { success => \1, msg => _loc("Service stopped") };
+    $c->stash->{json} = { success => \1, msg => _loc('Daemon stopped') };
     $c->forward('View::JSON');
 }
 
