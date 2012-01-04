@@ -40,9 +40,9 @@ sub list : Local {
 	}
 
 	
-	if($query ne ''){ #ENTRA CUANDO TIENE ALGO EN EL FILTRO DE BÚSQUEDA 
-	    my $SQL = "SELECT ROWNUM, LEVEL, ID, NAME, DESCRIPTION, NATURE FROM BALI_PROJECT A START WITH ID_PARENT IS NULL AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1";
-	    my @datas = $db->array_hash( "$SQL" );
+	if($query ne ''){ #ENTRA CUANDO TIENE ALGO EN EL FILTRO DE BÚSQUEDA
+	    my $SQL = 'SELECT FILA, NIVEL, B.ID, B.NAME, A.NAME AS NAME_PARENT, B.DESCRIPTION, B.NATURE FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE FROM BALI_PROJECT A START WITH ID_PARENT IS NULL AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1) B  LEFT JOIN BALI_PROJECT A ON A.ID = B.ID_PARENT';
+	    my @datas = $db->array_hash( $SQL );
 	     
 	    @datas = grep { lc($_->{name}) =~ $query } @datas if $query;
      
@@ -51,6 +51,7 @@ sub list : Local {
 		    name => $data->{name},
 		    description => $data->{description},
 		    nature => $data->{nature},
+		    parent => $data->{name_parent}?$data->{name_parent}:'/',
 		    _id => $data->{id},
 		    _parent => undef,
 		    _level => 1,
@@ -167,7 +168,7 @@ sub list : Local {
 sub ObtenerNodosPrincipalesPrimerNivel(){
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     
-    my $SQL = "SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+    my $SQL = 'SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
 			   FROM BALI_PROJECT B
 			   WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
 				 AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
@@ -183,7 +184,7 @@ sub ObtenerNodosPrincipalesPrimerNivel(){
 						D.ID = C.ID_PARENT)) RESULT, 
 		    (SELECT FILA, NIVEL, F.ID, F.NAME, A.NAME AS NAME_PARENT FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, ID, ID_PARENT, NAME FROM BALI_PROJECT A START WITH ID_PARENT IS NULL CONNECT BY PRIOR ID = ID_PARENT) F LEFT JOIN BALI_PROJECT A ON A.ID = F.ID_PARENT) RESULT1
 		     WHERE RESULT.ID = RESULT1.ID
-	    ORDER BY FILA ASC";
+	    ORDER BY FILA ASC';
     
     my @datas = $db->array_hash( $SQL );
     
@@ -194,7 +195,7 @@ sub ObtenerNodosHijosPrimerNivel(){
     my $id_project = shift;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     
-    my $SQL = "SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+    my $SQL = 'SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
 			    FROM BALI_PROJECT B
 			    WHERE B.ID_PARENT = ? AND B.ACTIVE = 1
 				  AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
@@ -210,9 +211,9 @@ sub ObtenerNodosHijosPrimerNivel(){
 						 D.ID = C.ID_PARENT)) RESULT, 
 		      (SELECT FILA, NIVEL, F.ID, F.NAME, A.NAME AS NAME_PARENT FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, ID, ID_PARENT, NAME FROM BALI_PROJECT A START WITH ID_PARENT IS NULL CONNECT BY PRIOR ID = ID_PARENT) F LEFT JOIN BALI_PROJECT A ON A.ID = F.ID_PARENT) RESULT1
 		      WHERE RESULT.ID = RESULT1.ID
-	     ORDER BY FILA ASC";
+	     ORDER BY FILA ASC';
 	     
-    my @datas = $db->array_hash( "$SQL" , $id_project, $id_project);
+    my @datas = $db->array_hash( $SQL , $id_project, $id_project);
     
     return @datas;
 }

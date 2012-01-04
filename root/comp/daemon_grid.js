@@ -106,7 +106,7 @@
                 icon:'/static/images/icons/add.gif',
                 cls: 'x-btn-text-icon',
         	handler: function() {
-			//add_edit()
+			add_edit()
 		}
         });
 	
@@ -157,6 +157,87 @@
         });
 
 
+	var add_edit = function(rec) {
+		var win;
+		
+		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
+		
+		var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
+
+		var title = 'Create daemon';
+		
+		if(rec){
+			var ff = form_daemon.getForm();
+			ff.loadRecord( rec );
+			title = 'Edit daemon';
+		}
+
+		var form_daemon = new Ext.FormPanel({
+			frame: true,
+			url:'/daemon/update',
+			buttons: [
+				{
+				text: _('Accept'),
+				type: 'submit',
+				handler: function() {
+					var form = form_daemon.getForm();
+					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+	
+					if (form.isValid()) {
+					       form.submit({
+						   params: {action: action},
+						   success: function(f,a){
+						       Baseliner.message(_('Success'), a.result.msg );
+						       form.findField("id").setValue(a.result.daemon_id);
+						       schedule_service.disable();
+						       store.load();
+						       win.setTitle(_('Edit daemon'));
+						   },
+						   failure: function(f,a){
+						       Ext.Msg.show({  
+							   title: _('Information'), 
+							   msg: a.result.msg , 
+							   buttons: Ext.Msg.OK, 
+							   icon: Ext.Msg.INFO
+						       }); 						
+						   }
+					       });
+					}
+
+				}
+				},
+				{
+				text: _('Close'),
+				handler: function(){ 
+						win.close();
+					}
+				}
+			],
+			defaults: { width: 400 },
+			items: [
+				{ xtype: 'hidden', name: 'id', value: -1 },
+				schedule_service,
+				{
+				xtype: 'radiogroup',
+				fieldLabel: _('State'),
+				items: [
+					{boxLabel: _('Not Active'), name: 'rb_state', inputValue: '1', checked: true},
+					{boxLabel: _('Active'), name: 'rb_state', inputValue: '2'}
+				]
+				}
+			]
+		});
+
+		win = new Ext.Window({
+			title: _(title),
+			width: 550,
+			autoHeight: true,
+			items: form_daemon
+			//closeAction:'destroy'
+		});
+		win.show();		
+	};
+	
 	// create the grid
 	var grid = new Ext.grid.GridPanel({
 		title: _('Daemons'),

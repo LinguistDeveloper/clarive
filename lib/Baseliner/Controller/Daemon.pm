@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use DateTime;
 use Carp;
 use Try::Tiny;
+use Switch;
 use Proc::Exists qw(pexists);
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -73,6 +74,46 @@ sub delete : Local {
     }
     catch{
 	$c->stash->{json} = {  success => 0, msg=>_loc('Error deleting Daemon') };
+    }
+    $c->forward('View::JSON');
+}
+
+sub update : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $action = $p->{action};
+    #my $id_daemon = $p->{id};
+    
+    switch ($action) {
+	case 'add' {
+	    try{
+	        my $daemon = $c->model('Baseliner::BaliDaemon')->create(
+						    {
+							service	=> $p->{service},
+							active 	=> $p->{rb_state} - 1,
+						    });
+		    
+		$c->stash->{json} = { msg=>_loc('Daemon added'), success=>\1, daemon_id=> $daemon->id };
+
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error adding Daemon: %1', shift()), failure=>\1 }
+	    }
+	}
+	case 'update' {
+	    try{
+		#my $project = $c->model('Baseliner::BaliProject')->find( $id_project );
+		#$project->name( $p->{name} );
+		#$project->id_parent( $p->{id_parent} eq '/'?'':$p->{id_parent} );
+		#$project->nature( $p->{nature} );
+		#$project->description( $p->{description} );
+		#$project->update();
+		#$c->stash->{json} = { msg=>_loc('Project modified'), success=>\1, project_id=> $id_project };
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error modifying Project: %1', shift()), failure=>\1 };
+	    }
+	}
     }
     $c->forward('View::JSON');
 }
