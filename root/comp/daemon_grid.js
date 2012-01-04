@@ -116,13 +116,13 @@
                 cls: 'x-btn-text-icon',
 		disabled: true,
                 handler: function() {
-			//var sm = grid_proyectos.getSelectionModel();
-			//if (sm.hasSelection()) {
-			//	var sel = sm.getSelected();
-			//	add_edit(sel);
-			//} else {
-			//	Baseliner.message( _('ERROR'), _('Select at least one row'));    
-			//};
+			var sm = grid.getSelectionModel();
+			if (sm.hasSelection()) {
+				var sel = sm.getSelected();
+				add_edit(sel);
+			} else {
+				Baseliner.message( _('ERROR'), _('Select at least one row'));    
+			};
 		}
         });
 	
@@ -137,9 +137,7 @@
 				Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the daemon') + ' <b>' + sel.data.service + '</b>?', 
 				function(btn){ 
 					if(btn=='yes') {
-						Baseliner.ajaxEval( '/daemon/delete',
-							{ id: sel.data.id
-							},
+						Baseliner.ajaxEval( '/daemon/update?action=delete',{ id: sel.data.id },
 							function(response) {
 								if ( response.success ) {
 									grid.getStore().remove(sel);
@@ -166,12 +164,6 @@
 
 		var title = 'Create daemon';
 		
-		if(rec){
-			var ff = form_daemon.getForm();
-			ff.loadRecord( rec );
-			title = 'Edit daemon';
-		}
-
 		var form_daemon = new Ext.FormPanel({
 			frame: true,
 			url:'/daemon/update',
@@ -219,21 +211,31 @@
 				schedule_service,
 				{
 				xtype: 'radiogroup',
+				id: 'stategroup',
 				fieldLabel: _('State'),
+				defaults: {xtype: "radio",name: "state"},
 				items: [
-					{boxLabel: _('Not Active'), name: 'rb_state', inputValue: '1', checked: true},
-					{boxLabel: _('Active'), name: 'rb_state', inputValue: '2'}
+					{boxLabel: _('Not Active'), inputValue: 0, checked: true},
+					{boxLabel: _('Active'), inputValue: 1}
 				]
 				}
 			]
 		});
 
+		if(rec){
+			var ff = form_daemon.getForm();
+			ff.loadRecord( rec );
+			var rb_state = Ext.getCmp("stategroup");
+			rb_state.items[rec.data.active].checked='true';
+			title = 'Edit daemon';
+			schedule_service.disable();
+		}
+		
 		win = new Ext.Window({
 			title: _(title),
 			width: 550,
 			autoHeight: true,
 			items: form_daemon
-			//closeAction:'destroy'
 		});
 		win.show();		
 	};
