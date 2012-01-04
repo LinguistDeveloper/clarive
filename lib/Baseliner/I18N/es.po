@@ -2135,6 +2135,14 @@ msgstr "El proyecto ya existe, intoduce otro proyecto"
 msgid "Error adding Project: %1"
 msgstr "Error grabando proyecto: %1"
 
+# lib/Baseliner/Controller/Project.pm (261)
+msgid "Project modified"
+msgstr "Proyecto modificado"
+
+# lib/Baseliner/Controller/Project.pm (264)
+msgid "Error modifying Project: %1"
+msgstr "Error modificando proyecto: %1"
+
 # lib/Baseliner/Controller/Project.pm (279)
 msgid "Project deleted"
 msgstr "Proyecto borrado"
