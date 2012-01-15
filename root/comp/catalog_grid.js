@@ -108,6 +108,7 @@
             menu_add.add({ text: _(rec.data.name), icon: rec.data.icon, url: rec.data.url, handler: function(m){
                 Baseliner.add_wincomp( m.url, _(m.text), { }, { event:'close', func: close_event } );
             } });
+           
         });
     });
     store_types.load();

@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Core::DBI;
 use Switch;
 use Try::Tiny;
+
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'config.user.global' => {
@@ -40,14 +41,19 @@ sub preferences : Local {
 
 sub actions : Local {
     my ($self, $c) = @_;
-
-	$c->stash->{username} = $c->username;
-	$c->stash->{template} = '/comp/user_actions.mas';
+    $c->stash->{username} = $c->username;
+    $c->stash->{template} = '/comp/user_actions.mas';
 }
 
 sub info : Local {
     my ($self, $c, $username) = @_;
-   
+    $c->stash->{swAsistentePermisos} = 0;
+
+    if($username eq ''){
+	$username = $c->username;
+	$c->stash->{swAsistentePermisos} = 1;
+    }
+    
     my $u = $c->model('Users')->get( $username );
     if( ref $u ) {
 	my $user_data = $u->{data} || {};
@@ -97,18 +103,20 @@ sub infodetail : Local {
 	    if($prjid){
 		my @path;
 		my $project = $c->model('Baseliner::BaliProject')->find($prjid);
-		push @path, $project->name;
-		$parent = $project->id_parent;
-		while($parent){
-		    my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
-		    push @path, $projectparent->name . '/';
-		    $parent = $projectparent->id_parent;
+		if($project){
+		    push @path, $project->name;
+		    $parent = $project->id_parent;
+		    while($parent){
+			my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
+			push @path, $projectparent->name . '/';
+			$parent = $projectparent->id_parent;
+		    }
+		    while(@path){
+			$allpath .= pop (@path)
+		    }
+		    if($project->nature){ $nature= ' (' . $project->nature . ')';}
+		    $str = $allpath . $nature;
 		}
-		while(@path){
-		    $allpath .= pop (@path)
-		}
-		if($project->nature){ $nature= ' (' . $project->nature . ')';}
-		$str = $allpath . $nature;
 	    }
 	    else{
 		$str = '';
@@ -125,6 +133,7 @@ sub infodetail : Local {
 
 	push @rows,
 		    {
+		      id_role		=> $r->{id},
 		      role		=> $r->{role},
 		      description	=> $r->{description},
 		      projects		=> $projects_txt
@@ -135,33 +144,74 @@ sub infodetail : Local {
 }
 
 sub infoactions : Local {
-    my ($self, $c, $role) = @_;
-    $c->stash->{role}  = $role;
-    $c->stash->{template} = '/comp/user_infoactions.mas';
-}
-
-sub infodetailactions : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $role = $p->{role};
-    if( defined $role ) {
-        my $r = $c->model('Baseliner::BaliRole')->search({ role=>$role })->first;
-        if( $r ) {
-            my @actions;
-            my $rs_actions = $r->bali_roleactions;
-            while( my $ra = $rs_actions->next ) {
-                my $desc = $ra->action;
-                eval { # it may fail for keys that are not in the registry
-                    my $action = $c->model('Registry')->get( $ra->action );
-                    $desc = $action->name;
-                }; 
-                push @actions,{ action=>$ra->action, description=>$desc, bl=>$ra->bl };
-            }
-            $c->stash->{json} =  { data=>\@actions};
-            $c->forward('View::JSON');
-        }
+    my $username = $p->{username};
+    my $id_role = $p->{id_role};
+    
+    my @actions;
+    my @datas;
+    my $data;
+    my $SQL;
+    
+    if ($id_role) {
+	my $rs_actions = $c->model('Baseliner::BaliRoleAction')->search( { id_role => $id_role} );
+	while( my $rs = $rs_actions->next ) {
+	    my $desc = $rs->action;
+	    eval { # it may fail for keys that are not in the registry
+		my $action = $c->model('Registry')->get( $rs->action );
+		$desc = $action->name;
+	    }; 
+	    push @actions,{ action=>$rs->action, description=>$desc, bl=>$rs->bl };
+	}
     }
+    else{
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
+	$SQL = "SELECT ACTION, BL
+		FROM BALI_ROLEUSER A, BALI_ROLEACTION B
+		WHERE A.USERNAME = ? AND A.ID_ROLE = B.ID_ROLE
+		GROUP BY ACTION, BL
+		ORDER BY ACTION ASC";
+	
+	@datas = $db->array_hash( "$SQL" , $username);
+	foreach $data (@datas){
+	    my $desc = $data->{action};
+	    eval { # it may fail for keys that are not in the registry
+		my $action = $c->model('Registry')->get( $data->{action} );
+		$desc = $action->name;
+	    }; 
+	    push @actions,{ action=>$data->{action}, description=>$desc, bl=>$data->{bl} };
+	}
+    }
+    
+    $c->stash->{json} =  { data=>\@actions};
+    $c->forward('View::JSON');   
 }
+
+##sub infodetailactions : Local {
+##    my ($self, $c) = @_;
+##    my $p = $c->request->parameters;
+##    my $role = $p->{role};
+##
+##    if( defined $role ) {
+##        my $r = $c->model('Baseliner::BaliRole')->search({ role=>$role })->first;
+##        if( $r ) {
+##            my @actions;
+##            my $rs_actions = $r->bali_roleactions;
+##            while( my $ra = $rs_actions->next ) {
+##                my $desc = $ra->action;
+##                eval { # it may fail for keys that are not in the registry
+##                    my $action = $c->model('Registry')->get( $ra->action );
+##                    $desc = $action->name;
+##                }; 
+##                push @actions,{ action=>$ra->action, description=>$desc, bl=>$ra->bl };
+##            }
+##            $c->stash->{json} =  { data=>\@actions};
+##            $c->forward('View::JSON');
+##        }
+##    }
+##}
 
 sub update : Local {
     my ($self,$c)=@_;
@@ -185,12 +235,6 @@ sub update : Local {
 							    email	=> $p->{email},
 							    phone	=> $p->{phone}
 							});
-		    
-		##    _log "########usuario: " . $user->username . "\n";
-		##    _log "########id: " . $user->id . "\n";
-		##    
-		    
-		    ##tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);	
 		
 		    $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
 		}else{
@@ -214,17 +258,8 @@ sub update : Local {
 		    $user->update();
 		}
 		else{
-		    
-		#    foreach $project (_array $projects_checked){
-		#	_log "########project: " . $project . "\n";			
-		#    }
-		#
-		#    foreach $project (_array $projects_parents_checked){
-		#	_log "########project_parent: " . $project . "\n";			
-		#    }
 		    tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
 		    tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
-	    
 		}
 		$c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
 	    }
@@ -234,7 +269,6 @@ sub update : Local {
 	}
 	case 'delete' {
 	    try{
-		my $SQL;
 		my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
 		$row->active(0);
 		$row->update();
@@ -363,7 +397,7 @@ sub tratar_proyectos_padres(){
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my $dbh = $db->dbh;
-    my $sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? CONNECT BY PRIOR ID = ID_PARENT");
+    my $sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1");
 		   
     switch ($accion) {
 	case 'update' {
@@ -382,7 +416,8 @@ sub tratar_proyectos_padres(){
 		}
 	    }
 	    foreach my $role ( @roles_checked){
-		my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
+		my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(
+								{username => $user_name,
 								 id_role => $role,
 								 ns => '/'
 								},
@@ -393,9 +428,10 @@ sub tratar_proyectos_padres(){
 			$sth->execute();
 			while(my @row = $sth->fetchrow_array){
 			    my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-								       {	username => $user_name,
-									       id_role => $role,
-									       ns => 'project/' . $row[0]
+								       {
+									username => $user_name,
+									id_role => $role,
+									ns => 'project/' . $row[0]
 								       },
 								       { key => 'primary' });
 			    $role_user->update();
@@ -545,6 +581,7 @@ sub grid : Local {
     $c->forward('/baseline/load_baselines');
     $c->stash->{template} = '/comp/user_grid.mas';
 }
+
 sub can_surrogate : Local {
     my ( $self, $c ) = @_;
     return 0 unless $c->username;
@@ -573,62 +610,61 @@ sub projects_list : Local {
     my $SQL;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
-    if($id_project && $id_project ne 'todos'){
-	$SQL = "SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE 
-				 FROM BALI_PROJECT B
-				 WHERE B.ID_PARENT = ?
-				 AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
-						  FROM BALI_PROJECT A
-						  WHERE A.ID_PARENT IS NOT NULL) 
-				 UNION
-				 SELECT DISTINCT D.ID, D.NAME, 0 AS LEAF, D.NATURE
-				 FROM BALI_PROJECT D,  
-				 BALI_PROJECT C
-				 WHERE D.ID_PARENT = ? AND
-				 D.ID = C.ID_PARENT";
-	
+    if($id_project ne 'todos'){
+	$SQL = "SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
+			       FROM BALI_PROJECT B
+			       WHERE B.ID_PARENT = ? AND B.ACTIVE = 1
+                                     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+                                                      FROM BALI_PROJECT A
+                                                      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+                               UNION ALL
+                               SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
+                               FROM BALI_PROJECT E
+                               WHERE E.ID IN (SELECT DISTINCT D.ID 
+                                              FROM BALI_PROJECT D,  
+                                              BALI_PROJECT C
+                                              WHERE D.ID_PARENT = ? AND C.ACTIVE = 1 AND
+                                                    D.ID = C.ID_PARENT)) RESULT
+	       ORDER BY NAME ASC";
 	@datas = $db->array_hash( "$SQL" , $id_project, $id_project);					 
     }
     else{
-	$SQL = "SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE 
-					 FROM BALI_PROJECT B
-					 WHERE B.ID_PARENT IS NULL
-					 AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
-							  FROM BALI_PROJECT A
-							  WHERE A.ID_PARENT IS NOT NULL) 
-					 UNION
-					 SELECT DISTINCT D.ID, D.NAME, 0 AS LEAF, D.NATURE
-					 FROM BALI_PROJECT D,  
-					 BALI_PROJECT C
-					 WHERE D.ID_PARENT IS NULL AND
-					 D.ID = C.ID_PARENT";
+	$SQL = "SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
+			       FROM BALI_PROJECT B
+			       WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
+                                     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+                                                      FROM BALI_PROJECT A
+                                                      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+                               UNION ALL
+                               SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
+                               FROM BALI_PROJECT E
+                               WHERE E.id in (SELECT DISTINCT D.ID 
+                                              FROM BALI_PROJECT D,  
+                                              BALI_PROJECT C
+                                              WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
+                                                    D.ID = C.ID_PARENT)) RESULT
+	       ORDER BY NAME ASC";
 	
 	@datas = $db->array_hash( "$SQL" );					 
     }
-    
-    my $nature;
-    
+
     foreach $data(@datas){
-	if($data->{nature}){
-	    $nature = " ($data->{nature})";
-	}
-	else{
-	    $nature = "";
-	}
-        push @tree, {
-            text       => $data->{name} . $nature,
-            url        => 'user/projects_list',
-            data       => {
-                id_project => $data->{id},
-                project    => $data->{name},
+	push @tree, {
+	    text        => $data->{name} . ($data->{nature}?" (" . $data->{nature} . ")":''),
+	    nature	=> $data->{nature}?$data->{nature}:"",
+	    description => $data->{description}?$data->{description}:"",
+	    url         => 'user/projects_list',
+	    data        => {
+		id_project => $data->{id},
+		project    => $data->{name},
 		parent_checked => 0,
-            },	    
-            icon       => '/static/images/icons/project.gif',
-            leaf       => \$data->{leaf},
+	    },	    
+	    icon       => '/static/images/icons/project.gif',
+	    leaf       => \$data->{leaf},
 	    checked    => \$parent_checked
-        };	
+	};	
     }
-    
+
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }

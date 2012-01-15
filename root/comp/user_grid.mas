@@ -78,7 +78,7 @@
 
 	var btn_surrogate = new Ext.Toolbar.Button({
 		text: _('Surrogate'),
-		icon:'/static/images/users.gif',
+		icon:'/static/images/icons/users.gif',
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
@@ -143,7 +143,7 @@
 
 		var btn_asignar_roles_projects = new Ext.Toolbar.Button({
 				text: _('Assign roles/projects'),
-				icon:'/static/images/key_add.png',
+				icon:'/static/images/icons/key_add.png',
 				cls: 'x-btn-text-icon',
 				disabled: true,
 				handler: function() {
@@ -180,9 +180,8 @@
 							     roles_checked: roles_checked
 						   },
 						   success: function(f,a){
-						       Baseliner.message('Success', a.result.msg );
+						       Baseliner.message(_('Success'), a.result.msg );
 						       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-						       //control_buttons();
 						       form.findField("id").setValue(a.result.user_id);
 						       form.findField("username").getEl().dom.setAttribute('readOnly', true);
 						   },
@@ -199,7 +198,7 @@
 					else{
 						Ext.Msg.show({  
 						    title: _('Information'), 
-						    msg: _('Tienes que grabar el usuario primero'), 
+						    msg: _('You must save the user before'), 
 						    buttons: Ext.Msg.OK, 
 						    icon: Ext.Msg.INFO
 						}); 						
@@ -209,7 +208,7 @@
 		
 		var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
 			text: _('Unassign roles/projects'),
-			icon:'/static/images/key_delete.png',
+			icon:'/static/images/icons/key_delete.png',
 			cls: 'x-btn-text-icon',
 			disabled: true,
 			handler: function() {
@@ -247,9 +246,8 @@
 							     roles_checked: roles_checked
 						   },
 						   success: function(f,a){
-						       Baseliner.message('Success', a.result.msg );
+						       Baseliner.message(_('Success'), a.result.msg );
 						       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-						       //control_buttons();
 						       form.findField("username").getEl().dom.setAttribute('readOnly', true);
 						   },
 						   failure: function(f,a){
@@ -265,7 +263,7 @@
 					else{
 						Ext.Msg.show({  
 						    title: _('Information'), 
-						    msg: _('No existe el usuario.'), 
+						    msg: _("User doesn't exist"), 
 						    buttons: Ext.Msg.OK, 
 						    icon: Ext.Msg.INFO
 						}); 						
@@ -299,7 +297,7 @@
 						     type: 'user'
 					   },
 					   success: function(f,a){
-					       Baseliner.message('Success', a.result.msg );
+					       Baseliner.message(_('Success'), a.result.msg );
 					       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
 					       form.findField("id").setValue(a.result.user_id);
 					       form.findField("username").getEl().dom.setAttribute('readOnly', true);
@@ -308,7 +306,7 @@
 					   },
 					   failure: function(f,a){
 					       Ext.Msg.show({  
-						   title: 'Information', 
+						   title: _('Information'), 
 						   msg: a.result.msg , 
 						   buttons: Ext.Msg.OK, 
 						   icon: Ext.Msg.INFO
@@ -345,7 +343,7 @@
 		});
 		
 		var grid_user_roles_projects = new Ext.grid.GridPanel({
-			title: _('Roles/Projects User '),
+			title: _('Roles/Projects User'),
 			stripeRows: true,
 			autoScroll: true,
 			autoWidth: true,
@@ -464,14 +462,13 @@
 		}	
 
 
-
+		//Para cuando se envia el formulario no coja el atributo emptytext de los textfields
 		Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
 		    Ext.applyIf(this.options, {
 			submitEmptyText:false
 		    });
 		});
 
-	
 	    	var form_user = new Ext.FormPanel({
 			name: form_user,
 			url: '/user/update',
@@ -479,10 +476,7 @@
 			
 			items   : [
 			{
-			// column layout with 2 columns
 			layout:'column'
- 
-			// defaults for columns
 			,defaults:{
 				layout:'form'
 				,border:false
@@ -490,16 +484,12 @@
 				,bodyStyle:'padding:0 18px 0 0'
 			}
 			,items:[{
-				// left column
-				// defaults for fields
 				columnWidth:0.90,
 				items:[
 					{ xtype: 'hidden', name: 'id', value: -1 },
-					////////////////////////////////////
 					{
 					// column layout with 2 columns
 					layout:'column'
-					// defaults for columns
 					,defaults:{
 						columnWidth:0.5
 						,layout:'form'
@@ -509,7 +499,6 @@
 					}
 					,items:[{
 						// left column
-						// defaults for fields
 						defaults:{anchor:'100%'}
 						,items:[
 							{ fieldLabel: _('User'), name: 'username', emptyText: 'Usuario', allowBlank:false, xtype: 'textfield', readOnly: rec?true:false}
@@ -517,7 +506,6 @@
 						},
 						{
 						// right column
-						// defaults for fields
 						defaults:{anchor:'100%'}
 						,items:[
 							{ fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'}
@@ -525,12 +513,10 @@
 						}
 					]
 					},					
-					///////////////////////////////////
 					{ anchor:'97%', fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield'},					
 					{
 					// column layout with 2 columns
 					layout:'column'
-					// defaults for columns
 					,defaults:{
 						columnWidth:0.5
 						,layout:'form'
@@ -540,7 +526,6 @@
 					}
 					,items:[{
 						// left column
-						// defaults for fields
 						defaults:{anchor:'100%'}
 						,items:[
 							{
@@ -554,16 +539,15 @@
 						},
 						{
 						// right column
-						// defaults for fields
 						defaults:{anchor:'100%'}
 						,items:[
 							{
 							fieldLabel: _('Phone Number'),
 							name: 'phone',
 							emptyText: 'xx-xxx-xx-xx',
-							maskRe: /[\d\-]/,
-							regex: /^\d{2}-\d{3}-\d{2}-\d{2}$/,
-							regexText: 'Must be in the format xxx-xxx-xxxx',
+							//maskRe: /[\d\-]/,
+							//regex: /^\d{2}-\d{3}-\d{2}-\d{2}$/,
+							//regexText: 'Must be in the format xxx-xxx-xxxx',
 							xtype: 'textfield'
 							}
 							]
@@ -574,8 +558,6 @@
 				},
 				{
 				columnWidth:0.10,
-				// defaults for fields
-				//defaults:{anchor:'100%'}
 				items:[
 					btn_grabar_user,
 					blank_image,
@@ -750,5 +732,5 @@
 		});
 			
 	return grid;
-})();
+})
 

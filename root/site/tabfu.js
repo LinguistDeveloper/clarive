@@ -37,18 +37,21 @@
     // User stuff
     Baseliner.user_actions = function() {
         Ext.Ajax.request({
-            url: '/user/actions',
+            //url: '/user/actions',
+	    url: '/user/info',
             success: function(xhr) {
                 try {
                     var comp = eval(xhr.responseText);
                     var win = new Ext.Window({
-                        layout: 'fit', 
+                        //layout: 'fit', 
                         autoScroll: true,
                         title: "<% _loc('User Actions') %>",
-                        height: 400, width: 700, 
+                        //height: 400,
+			autoHeight: true,
+			width: 730, 
                         items: [ { 
-                                xtype: 'panel', 
-                                layout: 'fit', 
+                                //xtype: 'panel', 
+                                //layout: 'fit', 
                                 items: comp
                         }]
                     });

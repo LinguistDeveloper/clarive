@@ -203,6 +203,7 @@
                         text: _('Add to Release'),
                         type: 'submit',
                         handler: function(){
+			     
                             var id_rel_combo = rel_combo.getValue();
 							if( id_rel_combo == undefined || id_rel_combo == '' ) {
 								return;
@@ -294,6 +295,7 @@
         } ] });
         var win = new Ext.Window({
             title: _('Create Revision'),
+	    width: 450,
             items: form_create
         });
         win.on('show',function(){

@@ -2026,3 +2026,221 @@ msgstr "Confirmar"
 # root/comp/scheduler_grid.js (463)
 msgid "Scheduler"
 msgstr "Planificador"
+
+# root/comp/user_info.mas (4)
+msgid "Actions User"
+msgstr "Acciones de usuario"
+
+# root/comp/user_info.mas (62)
+msgid "Roles/Projects User"
+msgstr "Roles/Proyectos de usuario"
+
+# root/comp/user_info.mas (92)
+msgid "Watch all actions"
+msgstr "Ver todas las acciones"
+
+# root/comp/user_info.mas (205)
+msgid "Email address"
+msgstr "Correo electrónico"
+
+# root/comp/user_info.mas (219)
+msgid "Phone Number"
+msgstr "Teléfono"
+
+# root/comp/user_grid.mas (145)
+msgid "Assign roles/projects"
+msgstr "Asignar roles/proyectos"
+
+# root/comp/user_grid.mas (202)
+msgid "You must save the user before"
+msgstr "Tienes que grabar el usuario primero"
+
+# root/comp/user_grid.mas (211)
+msgid "Unassign roles/projects"
+msgstr "Desasignar roles/proyectos"
+
+# root/comp/user_grid.mas (268)
+msgid "User doesn't exist"
+msgstr "El usuario no existe"
+
+# root/comp/user_grid.mas (307)
+msgid "Edit user"
+msgstr "Editar usuario"
+
+# root/comp/user_grid.mas (329)
+msgid "Available Roles"
+msgstr "Roles disponibles"
+
+# root/comp/user_grid.mas (388)
+msgid "Available Projects"
+msgstr "Proyectos disponibles"
+
+# root/comp/user_grid.mas (617)
+msgid "Create user"
+msgstr "Crear usuario"
+
+# root/comp/user_grid.mas (717)
+msgid "Email"
+msgstr "Correo electrónico"
+
+# root/comp/user_grid.mas (718)
+msgid "Phone"
+msgstr "Teléfono"
+
+# root/comp/user_grid.mas (675)
+msgid "Are you sure you want to delete the user"
+msgstr "¿Está seguro de que quiere borrar el usuario"
+
+# lib/Baseliner/Controller/User.pm (236)
+msgid "User added"
+msgstr "Usuario grabado"
+
+# lib/Baseliner/Controller/User.pm (238)
+msgid "User name already exists, introduce another user name"
+msgstr "El usuario ya existe, intoduce otro usuario"
+
+# lib/Baseliner/Controller/User.pm (242)
+msgid "Error adding User: %1"
+msgstr "Error grabando usuario: %1"
+
+# lib/Baseliner/Controller/User.pm (261)
+msgid "User modified"
+msgstr "Usuario modificado"
+
+# lib/Baseliner/Controller/User.pm (264)
+msgid "Error modifying User: %1"
+msgstr "Error modificando usuario: %1"
+
+# lib/Baseliner/Controller/User.pm (276)
+msgid "User deleted"
+msgstr "Usuario borrado"
+
+# lib/Baseliner/Controller/User.pm (279)
+msgid "Error deleting User"
+msgstr "Error borrando usuario1"
+
+# lib/Baseliner/Controller/Project.pm (158)
+msgid "Root (/)"
+msgstr "Raíz (/)"
+
+# lib/Baseliner/Controller/Project.pm (252)
+msgid "Project added"
+msgstr "Proyecto grabado"
+
+# lib/Baseliner/Controller/Project.pm (254)
+msgid "Project name already exists, introduce another project name"
+msgstr "El proyecto ya existe, intoduce otro proyecto"
+
+# lib/Baseliner/Controller/Project.pm (258)
+msgid "Error adding Project: %1"
+msgstr "Error grabando proyecto: %1"
+
+# lib/Baseliner/Controller/Project.pm (261)
+msgid "Project modified"
+msgstr "Proyecto modificado"
+
+# lib/Baseliner/Controller/Project.pm (264)
+msgid "Error modifying Project: %1"
+msgstr "Error modificando proyecto: %1"
+
+# lib/Baseliner/Controller/Project.pm (279)
+msgid "Project deleted"
+msgstr "Proyecto borrado"
+
+# lib/Baseliner/Controller/Project.pm (282)
+msgid "Error deleting Project"
+msgstr "Error borrando proyecto"
+
+# root/comp/Project_grid.js (90)
+msgid "Are you sure you want to delete the project"
+msgstr "¿Está seguro de que quiere borrar el proyecto"
+
+# root/comp/Project_grid.js (131)
+msgid "List of projects"
+msgstr "Lista de proyectos"
+
+# root/comp/Project_grid.js (131)
+msgid "Edit project"
+msgstr "Editar proyecto"
+
+# root/comp/Project_grid.js (205)
+msgid "Project name"
+msgstr "Nombre del proyecto"
+
+# root/comp/Project_grid.js (206)
+msgid "Parent"
+msgstr "Raíz"
+
+# root/comp/Project_grid.js (206)
+msgid "Select a parent from the list of projects"
+msgstr "Selecciona la raíz de la lista de proyectos"
+
+# root/comp/Project_grid.js (208)
+msgid "Nature of the project (Examples: J2EE, .NET)"
+msgstr "Naturaleza del proyecto (Ejemplos: J2EE, .NET)"
+
+# root/comp/Project_grid.js (209)
+msgid "A brief description of the project"
+msgstr "A breve descripción del proyecto"
+
+# root/comp/Project_grid.js (247)
+msgid "Create project"
+msgstr "Crear proyecto"
+
+# root/comp/Project_grid.js (269)
+msgid "Projects"
+msgstr "Proyectos"
+
+# lib/Baseliner/Controller/Daemon.pm (57)
+msgid "Daemon started"
+msgstr "Demonio iniciado"
+
+# lib/Baseliner/Controller/Daemon.pm (65)
+msgid "Daemon stopped"
+msgstr "Demonio parado"
+
+# lib/Baseliner/Controller/Daemon.pm (85)
+msgid "Daemon added"
+msgstr "Demonio añadido"
+
+# lib/Baseliner/Controller/Daemon.pm (89)
+msgid "Error adding Daemon: %1"
+msgstr "Error añadiendo Demonio"
+
+# lib/Baseliner/Controller/Daemon.pm (98)
+msgid "Daemon modified"
+msgstr "Demonio modificado"
+
+# lib/Baseliner/Controller/Daemon.pm (101)
+msgid "Error modifying Daemon: %1"
+msgstr "Error modificando Demonio"
+
+# lib/Baseliner/Controller/Daemon.pm (115)
+msgid "Daemon deleted"
+msgstr "Demonio borrado"
+
+# lib/Baseliner/Controller/Daemon.pm (118)
+msgid "Error deleting Daemon"
+msgstr "Error borrando Demonio"
+
+# root/comp/daemon_grid.js (85)
+msgid "Are you sure you want to turn off the daemon"
+msgstr "¿Está seguro de que quiere parar el demonio"
+
+# root/comp/daemon_grid.js (85)
+msgid "Are you sure you want to delete the daemon"
+msgstr "¿Está seguro de que quiere borrar el demonio"
+
+# root/comp/daemon_grid.js (167)
+msgid "Create daemon"
+msgstr "Crear demonio"
+
+# root/comp/daemon_grid.js (188)
+msgid "Edit daemon"
+msgstr "Editar demonio"
+
+# root/comp/daemon_grid.js (220)
+msgid "Not Active"
+msgstr "Desactivado"
+
+
