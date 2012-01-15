@@ -18,7 +18,7 @@ use Baseliner::Utils;
 use DBI;
 
 has 'model' => ( is=>'rw', isa=>'Str', default=>'Baseliner' );
-has 'dbi' => ( is=>'rw', isa=>'Any' );
+has 'dbi' => ( is=>'rw', isa=>'DBI::db' );
 has 'connection' => ( is=>'rw', isa=>'ArrayRef' );
 has 'dbh_params' => ( is=>'rw', isa=>'HashRef' );
 
@@ -33,8 +33,8 @@ sub BUILD {
     }
 	# set params, if any
 	my %dbh_params = %{ $self->dbh_params || {} };
-	for my $param ( %dbh_params ) {
-		$self->dbh->{$param} =  $dbh_params{$param};
+ 	for my $param ( %dbh_params ) {
+ 		$self->dbh->{$param} =  $dbh_params{$param};
 	}
 }
 

@@ -458,7 +458,7 @@ sub last_log {
 sub last_log_message {
 	my $self = shift;
 	use Baseliner::Core::DBI;
-	my $db = new Baseliner::Core::DBI( dbi=>$self->result_source->storage );
+	my $db = Baseliner::Core::DBI->new( dbi=>$self->result_source->storage->dbh );
 	my $id = $self->id;
 	return $db->value("select trim(text) from bali_log
 		where id=(select max(id) from bali_log bl where bl.id_job=$id and bl.lev<>'debug')");
