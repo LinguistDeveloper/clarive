@@ -307,10 +307,17 @@
     };
 
     //adds a new fragment component with html or <script>...</script>
-    Baseliner.addNewTab = function(purl, ptitle, params ){
+    Baseliner.addNewTab = function(purl, ptitle, params, obj_tab ){
         //Baseliner.
+	    var tabpanel;
             var newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
-            var tabpanel = Ext.getCmp('main-panel');
+	    if(obj_tab) {
+		tabpanel = obj_tab;
+	    }
+	    else{
+		tabpanel = Ext.getCmp('main-panel');
+	    }
+            //var tabpanel = Ext.getCmp('main-panel');
             var tab = tabpanel.add( newpanel );
             tabpanel.setActiveTab(tab); 
             if( params == undefined ) params={};
