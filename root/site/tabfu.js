@@ -310,11 +310,13 @@
     Baseliner.addNewTab = function(purl, ptitle, params, obj_tab ){
         //Baseliner.
 	    var tabpanel;
-            var newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
+            var newpanel; 
 	    if(obj_tab) {
+		newpanel = new Ext.Panel({ layout: 'fit', title: ptitle, closable:true });
 		tabpanel = obj_tab;
 	    }
 	    else{
+		newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
 		tabpanel = Ext.getCmp('main-panel');
 	    }
             //var tabpanel = Ext.getCmp('main-panel');

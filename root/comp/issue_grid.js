@@ -11,7 +11,10 @@
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'title' },
-			{  name: 'description' }
+			{  name: 'description' },
+			{  name: 'created_on' },
+			{  name: 'created_by' },
+			{  name: 'numcomment' }			
 		]
 	});
 
@@ -24,7 +27,9 @@
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'title' },
-			{  name: 'description' }
+			{  name: 'description' },
+			{  name: 'created_on' },		
+			{  name: 'created_by' }			
 		]
 	});
 	
@@ -237,7 +242,7 @@
 	};
 
 	var grid_opened = new Ext.grid.GridPanel({
-		title: _('Daemons'),
+		title: _('Issues'),
 		header: false,
 		stripeRows: true,
 		autoScroll: true,
@@ -247,19 +252,23 @@
 		viewConfig: {	forceFit: true,
 				enableRowBody: true,
 				getRowClass: function(record, rowIndex, p, store){
-					p.body = "<div style='margin-left: 7em'><font color='808080'>by </font><b>root</b> <font color='808080'>January 02, 2012 </font ><span style='text-align: right;white-space: pre;color: #808080'>                               																<img border=0 src='/static/images/icons/comment_blue.gif' /> 21 comments</span></div>";
+					tag_comment_html='';
+					if(record.data.numcomment){
+						tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + record.data.numcomment + " comments</span>";
+					}
+					p.body = "<div style='margin-left: 6em'><table><tr><td></td><td width='600px'><font color='808080'>by </font><b>" + record.data.created_by + "</b> <font color='808080'>" + record.data.created_on + "</font ></td><td>" + tag_comment_html + "</td></tr></table></div>";
 					return 'x-grid3-row-expanded';
 				}
 		},
 		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 		loadMask:'true',
 		columns: [
-			{ header: _('Issue'), dataIndex: 'id', width: 40, sortable: false, renderer: render_id },	
+			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: false, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 400, sortable: true, renderer: render_title },
 			{ header: _('Description'), hidden: true, dataIndex: 'description' },
 		],
 		autoSizeColumns: true,
-		deferredRender:true,	
+		deferredRender:true,
 		bbar: new Ext.PagingToolbar({
 			store: store_opened,
 			pageSize: ps,
@@ -285,17 +294,27 @@
 	
 
 	var grid_closed = new Ext.grid.GridPanel({
-		title: _('Daemons'),
+		title: _('Issues'),
 		header: false,
 		stripeRows: true,
 		autoScroll: true,
 		height: 400,
 		store: store_closed,
-		viewConfig: {forceFit: true},
+		viewConfig: {	forceFit: true,
+				enableRowBody: true,
+				getRowClass: function(record, rowIndex, p, store){
+					tag_comment_html='';
+					if(record.data.numcomment){
+						tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + record.data.numcomment + " comments</span>";
+					}
+					p.body = "<div style='margin-left: 6em'><table><tr><td></td><td width='600px'><font color='808080'>by </font><b>" + record.data.created_by + "</b> <font color='808080'>" + record.data.created_on + "</font ></td><td>" + tag_comment_html + "</td></tr></table></div>";
+					return 'x-grid3-row-expanded';
+				}
+		},
 		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 		loadMask:'true',
 		columns: [
-			{ header: _('Issue'), dataIndex: 'id', width: 40, sortable: false, renderer: render_id },	
+			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: false, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 400, sortable: true, renderer: render_title },
 			{ header: _('Description'), hidden: true, dataIndex: 'description' },
 		],

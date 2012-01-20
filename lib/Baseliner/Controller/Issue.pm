@@ -2,10 +2,13 @@ package Baseliner::Controller::Issue;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::DBI;
+use DateTime;
 use Try::Tiny;
 use Switch;
 BEGIN {  extends 'Catalyst::Controller' }
 
+$ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
+  
 register 'menu.tools.issues' => {
     label    => 'Issues',
     title    => 'Issues',
@@ -31,37 +34,78 @@ sub list : Local {
     $start||= 0;
     $limit ||= 100;
 
-    my $page = to_pages( start=>$start, limit=>$limit );
+    #my $page = to_pages( start=>$start, limit=>$limit );
+    #
+    #my $where = $query
+    #    ? { 'lower(id||title)' => { -like => "%".lc($query)."%" }, status => $filter}
+    #    : { status => $filter };   
+    #
+    #
+#    $query and $where = query_sql_build(
+#       query  => $query,
+#       fields => {
+#	   id           => 'me.id',
+#	   title	=> 'me.title',
+#	   description	=> 'me.description',
+#	   created_on	=> "to_char(me.created_on,'DD/MM/YYYY HH24:MI:SS')",
+#	   created_by	=> 'me.created_by',
+#       }
+#   );
+# 
+# 
+#    my $rs = $c->model('Baseliner::BaliIssue')->search(
+#	$where,
+#	{ page => $page,
+#	  rows => $limit,
+#	  order_by => $sort ? "$sort $dir" : undef
+#	}
+#    );
+#	
+#	
+#    my $pager = $rs->pager;
+#    $cnt = $pager->total_entries;	
+#	
+#    my @rows;
+#    while( my $r = $rs->next ) {
+#    # produce the grid
+#	push @rows,
+#	  {
+#	    id 		=> $r->id,
+#	    title	=> $r->title,
+#	    description	=> $r->description,
+#	    created_on => defined $r->created_on
+#	    ? $r->created_on->dmy('/') . ' ' . $r->created_on->hms
+#	    : '',	    
+#	    created_by 	=> $r->created_by
+#	  };
+#
+#    }
     
-    _log ">>>>>>>>>>>>>>>>>>>>" . $filter . "\n";
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     
-    my $where = $query
-        ? { 'lower(id||title)' => { -like => "%".lc($query)."%" }, status => $filter}
-        : { status => $filter };   
-    
-    my $rs = $c->model('Baseliner::BaliIssue')->search(
-	$where,
-	{ page => $page,
-	  rows => $limit,
-	  order_by => $sort ? "$sort $dir" : undef
-	}
-    );
-	
-    my $pager = $rs->pager;
-    $cnt = $pager->total_entries;	
-	
-    $c->stash->{total_opened} = $cnt;	
-	
+    my $SQL = "SELECT C.ID, TITLE, DESCRIPTION, to_char(created_on,'DD/MM/YYYY HH24:MI:SS') AS CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT
+			FROM  BALI_ISSUE C
+			      LEFT JOIN
+			      (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
+			      ON C.ID = D.ID ORDER BY C.ID ASC";
+   
+    my @datas = $db->array_hash( $SQL );
+    @datas = grep { uc($_->{status}) =~ $filter } @datas;
+    @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
     my @rows;
-    while( my $r = $rs->next ) {
-    # produce the grid
-	push @rows,
-	  {
-	    id 		=> $r->id,
-	    title	=> $r->title,
-	    description	=> $r->description
-	  };
+          
+    foreach my $data (@datas){
+	push @rows, {
+	    id 		=> $data->{id},
+	    title	=> $data->{title},
+	    description	=> $data->{description},
+	    created_on 	=> $data->{created_on},
+	    created_by 	=> $data->{created_by},
+	    numcomment 	=> $data->{numcomment}
+	};
     }
+    $cnt = $#rows + 1 ;	
+    
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
     $c->forward('View::JSON');
 }
@@ -130,4 +174,23 @@ sub update : Local {
     $c->forward('View::JSON');
 }
 
+sub view : Local {
+    my ($self, $c) = @_;
+    my $rs = $c->model('Baseliner::BaliIssue')->search();
+	
+    my @rows;
+    while( my $r = $rs->next ) {
+    # produce the grid
+	push @rows,
+	  {
+	    id 		=> $r->id,
+	    title	=> $r->title,
+	    description	=> $r->description
+	  };
+    }
+    ##$c->stash->{data} = { data=>\@rows };
+    $c->stash->{data} = [ @rows ];
+    ##$c->forward('View::JSON');
+    $c->stash->{template} = '/comp/prueba.js';
+}
 1;
