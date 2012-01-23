@@ -45,6 +45,7 @@ __PACKAGE__->table("bali_project_items");
 __PACKAGE__->add_columns(
   "id",
   {
+    data_type => "numeric",
     is_auto_increment => 1,
     is_nullable => 0,
     sequence => "bali_project_items_seq",

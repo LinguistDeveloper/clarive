@@ -72,6 +72,7 @@ Options:
                   bali deploy --deploy
   -quote      : quote table names
   -drop       : add drop statements
+  -producer   : force sql syntax instead of autodetect (ie --producer SQLServer)
   -env        : sets BALI_ENV (local, test, prod, t, etc...)
   -schema     : schemas to deploy 
                   bali deploy --schema BaliRepo --schema BaliRepoKeys 
@@ -101,9 +102,9 @@ if( $args{schema} ) {
 }
 
 my $dropping= exists $args{drop} ? ' (with DROP)' : '';
-if( exists $args{drop} && ! @{ $args{schema} } ) {
+if( exists $args{drop} && ! _array( $args{schema} ) ) {
     say "\n*** Warning: Drop specified and no --schema parameter found.";
-    say "*** All tables in the schema will be dropped. Data loss will sue.";
+    say "*** All tables in the schema will be dropped. Data loss will ensue.";
     print "*** Are you sure [y/N]: ";
     unless( (my $yn = <STDIN>) =~ /^y/i ) {
         say "Aborted.";
@@ -117,7 +118,9 @@ Baseliner::Schema::Baseliner->deploy_schema(
     show_config => !exists $args{ show_config },
     show        => !exists $args{ deploy },
     drop        => exists $args{ drop },
-    schema      => $args{ schema }
+    schema      => $args{ schema },
+    # SQL::Translator specifics:
+    (exists $args{producer} ? ( producer    => $args{ producer } ) : () ) ,
 ) and die pre . "Errors while deploying DB. Aborted\n";
 
 say pre . "Done Deploying DB.";
