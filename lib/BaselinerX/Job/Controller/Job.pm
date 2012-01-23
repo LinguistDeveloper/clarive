@@ -176,8 +176,8 @@ sub monitor_json : Path('/job/monitor_json') {
     $limit||=50;
 	defined $query and $query =~ s/\*/%/g;
 	my ($select,$order_by, $as) = $sort
-		? ([{ distinct=>'me.id'} ,$sort]         , "$sort $dir, me.starttime desc", ['id'])
-		: ([{ distinct=>'me.id'} ,'me.starttime'], "me.starttime desc"            , ['id', 'starttime']);
+		? ([{ distinct=>'me.id'} ,$sort]         , { "-$dir" => $sort, -desc => 'me.starttime' }, ['id'])
+		: ([{ distinct=>'me.id'} ,'me.starttime'], { -desc => "me.starttime" }, ['id', 'starttime']);
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
 
@@ -375,14 +375,14 @@ sub refresh_now : Local {
 			}
 			$where->{'me.id'} = { '>' => $p->{top} };
 			delete $where->{id} if defined $where->{id}; # leftover from seesion object
-			my $row = $c->model('Baseliner::BaliJob')->search( $where, { join=>['bali_job_items'], order_by=>'me.id desc' })->first;
+			my $row = $c->model('Baseliner::BaliJob')->search( $where, { join=>['bali_job_items'], order_by=>{ -desc =>'me.id' } })->first;
 			if( ref $row ) {
 				$need_refresh = 1;
 			}
 		}
 		if( $p->{ids} ) {
 			# are there more info for current jobs?
-			my $rs = $c->model('Baseliner::BaliJob')->search({ id=>$p->{ids} }, { order_by=>'id desc' });
+			my $rs = $c->model('Baseliner::BaliJob')->search({ id=>$p->{ids} }, { order_by=>{ -desc =>'id' } });
 			my $data ='';
 			while( my $r = $rs->next ) {
 				$data.=$r->status . $r->last_log_message; 
