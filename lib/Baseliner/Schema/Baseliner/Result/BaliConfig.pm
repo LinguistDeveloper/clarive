@@ -29,7 +29,7 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
     size => 100,
   },
-  "key",
+  "config_key",
   {
     data_type => "VARCHAR2",
     default_value => undef,

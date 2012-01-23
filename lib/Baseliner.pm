@@ -40,6 +40,7 @@ BEGIN {
             +CatalystX::Features::Plugin::Static::Simple/;
 		push @modules, 'Log::Colorful' if eval "require Catalyst::Plugin::Log::Colorful";
     }
+    #unshift @modules, '-Debug' if $ENV{BASELINER_DEBUG};
 }
 
 use Catalyst @modules;
@@ -231,7 +232,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
             my $meta = $cl{ $package };
             next if ref $meta eq 'Moose::Meta::Role';
 			#eval { $package->meta->make_immutable; };
-			$meta->make_immutable;
+			$meta->make_immutable unless $meta->is_immutable;
 		}
 
 		#my %pkgs;
@@ -318,37 +319,14 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 		}
 		print "KEY==$p{domain}\n";
 		my %data;
-		my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
+		my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, config_key=>$p{key} });
 		while( my $r = $rs->next  ) {
-			(my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
+			(my $var = $r->config_key) =~ s{^(.*)\.(.*?)$}{$2}g;
 			$c->stash->{$var} = $r->value;
 			$data{$var} = $r->value;
 		}
 		return \%data;
 	}
-
-    #TODO deprecated:
-                sub inf_bl {
-                    my $c=shift;
-                    $c->stash->{bl};
-                }
-                sub inf_search {
-                    my ($c, %p ) = @_;
-                    $p{ns} ||= '%';
-                    $p{bl} ||= '%';
-                    $p{key} ||= '%';
-                    my $bl = $p{bl} eq '*' ? '%' : $p{bl};
-                    my $ns = $p{ns} ? $p{ns}.'/%' : '%';
-                    $ns =~ s{//}{/}g;
-                    warn "------------SEARCH: $ns,$bl,$p{key}"; 
-                    return $c->model('Baseliner::Bigtable')->search({ ns=>{ -like => $ns },bl=>{ -like =>$bl },key=>{ -like =>$p{key} }}); 
-                }
-                sub inf_write {
-                    my ($c,%p) = @_;
-                    $p{ns} ||= '/';
-                    $p{bl} ||= '*';
-                    $c->model('Baseliner::Bigtable')->create({ ns=>$p{ns},bl=>$p{bl}, key=>$p{key}, value=>$p{value} }); 
-                }
 
 # user shortcut
 use Try::Tiny;
