@@ -179,9 +179,9 @@ sub dump_yaml {
 
 sub load_enabled_list {
     my ( $self ) = @_;
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', key=>{ -like => '%.enabled' } });
+    my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', config_key=>{ -like => '%.enabled' } });
     while( my $row = $rs->next ) {
-        my $key = $row->key;
+        my $key = $row->config_key;
         my $enabled = $row->value;
         $self->keys_enabled->{ $key } = $enabled;
     }
