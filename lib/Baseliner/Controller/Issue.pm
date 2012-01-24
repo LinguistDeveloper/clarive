@@ -106,7 +106,7 @@ sub list : Local {
     }
     $cnt = $#rows + 1 ;	
     
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
 
@@ -176,21 +176,53 @@ sub update : Local {
 
 sub view : Local {
     my ($self, $c) = @_;
-    my $rs = $c->model('Baseliner::BaliIssue')->search();
-	
-    my @rows;
-    while( my $r = $rs->next ) {
-    # produce the grid
-	push @rows,
-	  {
-	    id 		=> $r->id,
-	    title	=> $r->title,
-	    description	=> $r->description
-	  };
+    my $p = $c->request->parameters;
+    my $id_issue = $p->{id_rel};
+    
+    $c->stash->{id_rel} = $id_issue;
+    $c->stash->{template} = '/comp/issue_msg.js';
+}
+
+sub viewdetail: Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $id_issue = $p->{id_rel};
+    
+    if ($p->{action}){
+	$id_issue = $p->{action};
+
+	    try{
+	        my $issue = $c->model('Baseliner::BaliIssueMsg')->create(
+						    {
+							id_issue	=> $id_issue,
+							text => $p->{text},
+							created_by => $c->username
+						    });
+		    
+		$c->stash->{json} = { msg=>_loc('Issue added'), success=>\1, issue_id=> $issue->id };
+
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error adding Issue: %1', shift()), failure=>\1 }
+	    }
     }
-    ##$c->stash->{data} = { data=>\@rows };
-    $c->stash->{data} = [ @rows ];
-    ##$c->forward('View::JSON');
-    $c->stash->{template} = '/comp/prueba.js';
+    else{
+	my $rs = $c->model('Baseliner::BaliIssueMsg')->search( {id_issue=>$id_issue},	    
+							{
+							    order_by=> 'created_on desc'
+							}
+							);
+	my @rows;
+	while( my $r = $rs->next ) {
+	# produce the grid
+	    push @rows,
+	      {
+		created_by	=> $r->created_by,
+		text		=> $r->text
+	      };
+	}
+	$c->stash->{json} = { data=>\@rows, success => \1 };
+    }
+    $c->forward('View::JSON');    
 }
 1;

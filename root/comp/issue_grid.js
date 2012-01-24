@@ -39,11 +39,12 @@
 	var init_buttons = function(action) {
 		eval('btn_edit.' + action + '()');
 		eval('btn_delete.' + action + '()');
-		eval('btn_comment.' + action + '()');		
+		//eval('btn_comment.' + action + '()');
 		eval('btn_close.' + action + '()');
 	}
 	
         var btn_add = new Ext.Toolbar.Button({
+		id: 'btn_add',
                 text: _('New'),
                 icon:'/static/images/icons/add.gif',
                 cls: 'x-btn-text-icon',
@@ -53,6 +54,7 @@
         });
 	
         var btn_edit = new Ext.Toolbar.Button({
+		id: 'btn_edit',
 		text: _('Edit'),
                 icon:'/static/images/icons/edit.gif',
                 cls: 'x-btn-text-icon',
@@ -69,6 +71,7 @@
         });
 	
         var btn_delete = new Ext.Toolbar.Button({
+			id: 'btn_delete',
 			text: _('Delete'),
 			icon:'/static/images/icons/delete.gif',
 			cls: 'x-btn-text-icon',
@@ -97,34 +100,18 @@
         });
 	
         var btn_comment = new Ext.Toolbar.Button({
+			id: 'btn_comment',
 			text: _('Comment'),
 			icon:'/static/images/icons/comment_new.gif',
 			cls: 'x-btn-text-icon',
 			disabled: true,
 			handler: function() {
-				//var sm = grid.getSelectionModel();
-				//var sel = sm.getSelected();
-				//Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the daemon') + ' <b>' + sel.data.service + '</b>?', 
-				//function(btn){ 
-				//	if(btn=='yes') {
-				//		Baseliner.ajaxEval( '/daemon/update?action=delete',{ id: sel.data.id },
-				//			function(response) {
-				//				if ( response.success ) {
-				//					grid.getStore().remove(sel);
-				//					Baseliner.message( _('Success'), response.msg );
-				//					init_buttons('disable');
-				//				} else {
-				//					Baseliner.message( _('ERROR'), response.msg );
-				//				}
-				//			}
-				//		
-				//		);
-				//	}
-				//} );
+				add_comment()
 			}
         });
 
         var btn_close = new Ext.Toolbar.Button({
+			id: 'btn_close',
 			text: _('Close'),
 			icon:'/static/images/icons/cerrar.png',
 			cls: 'x-btn-text-icon',
@@ -233,6 +220,77 @@
 		win.show();		
 	};
 
+	var add_comment = function() {
+		var win;
+		
+		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
+		
+		var title = 'Create comment';
+		
+		var form_issue_comment = new Ext.FormPanel({
+			frame: true,
+			url:'/issue/viewdetail',
+			labelAlign: 'top',
+			bodyStyle:'padding:10px 10px 0',
+			buttons: [
+				{
+				text: _('Accept'),
+				type: 'submit',
+				handler: function() {
+					var form = form_issue_comment.getForm();
+					var obj_tab = Ext.getCmp('tabs_issues');
+					var obj_tab_active = obj_tab.getActiveTab();
+					var title = obj_tab_active.title;
+					cad = title.split('#');
+					var action = cad[1]; 
+					if (form.isValid()) {
+					       form.submit({
+						   params: {action: action},
+						   success: function(f,a){
+						       Baseliner.message(_('Success'), a.result.msg );
+						       store_issue_comments.load({ params: {id_rel: cad[1]} });
+						       win.close();
+						   },
+						   failure: function(f,a){
+						       Ext.Msg.show({  
+							   title: _('Information'), 
+							   msg: a.result.msg , 
+							   buttons: Ext.Msg.OK, 
+							   icon: Ext.Msg.INFO
+						       }); 						
+						   }
+					       });
+					}
+				}
+				},
+				{
+				text: _('Close'),
+				handler: function(){ 
+						win.close();
+					}
+				}
+			],
+			defaults: { width: 650 },
+			items: [
+				{
+				xtype:'htmleditor',
+				name:'text',
+				fieldLabel: _('Text'),
+				height:350
+				}
+			]
+		});
+
+		win = new Ext.Window({
+			title: _(title),
+			width: 700,
+			autoHeight: true,
+			items: form_issue_comment
+		});
+		win.show();		
+	};
+
+
 	var render_id = function(value,metadata,rec,rowIndex,colIndex,store) {
 		return "<div style='font-weight:bold; font-size: 14px; color: #808080'> #" + value + "</div>" ;
 	};
@@ -285,11 +343,7 @@
 	grid_opened.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
 	    Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , 'Issue #' + r.get('id'),{},config_tabs );
-                                    //config_tabs.add     // this function works incorrectly
-                                    //({
-                                    //title: 'why this tab whithout grid?',
-                                    //items: grid_opened
-                                    //}).show();	    
+	    btn_comment.enable();
 	});	
 	
 
@@ -329,11 +383,8 @@
 		})
 	});
 	
-	grid_closed.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-		init_buttons('enable');
-	});
-	
 	var config_tabs = new Ext.TabPanel({
+		id: 'tabs_issues',
 		region: 'center',
 		layoutOnTabChange:true,
 		deferredRender: false,
@@ -353,19 +404,70 @@
 		], 
 		items : [
 			{
+			  id: 'open_tab',
 			  xtype : 'panel',
 			  title : _('Open'),
+			  //listeners: {activate: handleActivate},
 			  items: [ grid_opened ]
 			},
 			{
+			  id: 'closed_tab',
 			  xtype : 'panel',
 			  title : _('Closed'),
+			  //listeners: {activate: handleActivate},
 			  items: [ grid_closed ]
 			},		 
 		],
-		activeTab : 0
+		activeTab : 0,
+		listeners: {
+		    'tabchange': function(tabPanel, tab){
+			if(tab.id == 'open_tab'){
+			    var sm = grid_opened.getSelectionModel();
+			    var sel = sm.getSelected();
+			    if(sel){
+				    btn_add.enable();
+				    init_buttons('enable');
+			    }else{
+				    init_buttons('disable');
+				    btn_add.enable();
+			    }
+			    btn_comment.disable();
+			}
+			else{
+			    if(tab.id == 'closed_tab'){ 	
+				init_buttons('disable');
+				btn_add.disable();
+				btn_comment.disable();
+			    }
+			     else{
+				init_buttons('disable');
+				btn_add.disable();				
+				btn_comment.enable();
+			     }
+			}
+		    }
+		}		
 	});
 
+	//function handleActivate(tab){
+	//    if(tab.id == 'open_tab'){
+	//	var sm = grid_opened.getSelectionModel();
+	//	var sel = sm.getSelected();
+	//	if(sel){
+	//		init_buttons('enable');
+	//	}else{
+	//		init_buttons('disable');
+	//		btn_add.enable();
+	//	}
+	//    }
+	//    else{
+	//	init_buttons('disable');
+	//	btn_add.disable();
+	//	//btn_comment.disable();
+	//    }
+	//    btn_comment.disable();
+	//}
+    
 	var labels = new Ext.Panel({});
 
 	var panel = new Ext.Panel({
