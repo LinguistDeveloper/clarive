@@ -34,6 +34,8 @@ sub list : Local {
     $start||= 0;
     $limit ||= 100;
 
+    _log ">>>>>>>>>>>>>>>>>>>>>Filter: " . $filter . "\n";
+     
     #my $page = to_pages( start=>$start, limit=>$limit );
     #
     #my $where = $query
@@ -91,6 +93,9 @@ sub list : Local {
    
     my @datas = $db->array_hash( $SQL );
     @datas = grep { uc($_->{status}) =~ $filter } @datas;
+    
+    _log ">>>>>>>>>>>>><<Query: " . $query . "\n";
+    
     @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
     my @rows;
           
@@ -199,11 +204,11 @@ sub viewdetail: Local {
 							created_by => $c->username
 						    });
 		    
-		$c->stash->{json} = { msg=>_loc('Issue added'), success=>\1, issue_id=> $issue->id };
+		$c->stash->{json} = { msg=>_loc('Comment added'), success=>\1, issue_id=> $issue->id };
 
 	    }
 	    catch{
-		$c->stash->{json} = { msg=>_loc('Error adding Issue: %1', shift()), failure=>\1 }
+		$c->stash->{json} = { msg=>_loc('Error adding Comment: %1', shift()), failure=>\1 }
 	    }
     }
     else{

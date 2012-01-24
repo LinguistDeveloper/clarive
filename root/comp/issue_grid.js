@@ -15,7 +15,12 @@
 			{  name: 'created_on' },
 			{  name: 'created_by' },
 			{  name: 'numcomment' }			
-		]
+		],
+		listeners: {
+			'beforeload': function( obj, opt ) {
+				obj.baseParams.filter = 'O';
+				}
+			}			
 	});
 
 	var store_closed = new Ext.data.JsonStore({
@@ -30,7 +35,13 @@
 			{  name: 'description' },
 			{  name: 'created_on' },		
 			{  name: 'created_by' }			
-		]
+		],
+		listeners: {
+			'beforeload': function( obj, opt ) {
+				obj.baseParams.filter = 'C';
+				}
+			}			
+
 	});
 	
 	store_opened.load({params:{start:0 , limit: ps, filter:'O'}});
@@ -383,6 +394,12 @@
 		})
 	});
 	
+	var search_field = new Ext.app.SearchField({
+				store: store_opened,
+				params: {start: 0, limit: ps},
+				emptyText: _('<Enter your search string>')
+			});
+	
 	var config_tabs = new Ext.TabPanel({
 		id: 'tabs_issues',
 		region: 'center',
@@ -390,11 +407,7 @@
 		deferredRender: false,
 		defaults: {layout:'fit'},
 		tbar: [ _('Search') + ' ', ' ',
-				new Ext.app.SearchField({
-				store: store_opened,
-				params: {start: 0, limit: ps},
-				emptyText: _('<Enter your search string>')
-			}),
+			search_field,
 			btn_add,
 			btn_edit,
 			btn_delete,
@@ -407,14 +420,12 @@
 			  id: 'open_tab',
 			  xtype : 'panel',
 			  title : _('Open'),
-			  //listeners: {activate: handleActivate},
 			  items: [ grid_opened ]
 			},
 			{
 			  id: 'closed_tab',
 			  xtype : 'panel',
 			  title : _('Closed'),
-			  //listeners: {activate: handleActivate},
 			  items: [ grid_closed ]
 			},		 
 		],
@@ -422,6 +433,7 @@
 		listeners: {
 		    'tabchange': function(tabPanel, tab){
 			if(tab.id == 'open_tab'){
+			    search_field.store = store_opened;
 			    var sm = grid_opened.getSelectionModel();
 			    var sel = sm.getSelected();
 			    if(sel){
@@ -434,7 +446,8 @@
 			    btn_comment.disable();
 			}
 			else{
-			    if(tab.id == 'closed_tab'){ 	
+			    if(tab.id == 'closed_tab'){
+				search_field.store = store_closed;
 				init_buttons('disable');
 				btn_add.disable();
 				btn_comment.disable();
@@ -449,25 +462,6 @@
 		}		
 	});
 
-	//function handleActivate(tab){
-	//    if(tab.id == 'open_tab'){
-	//	var sm = grid_opened.getSelectionModel();
-	//	var sel = sm.getSelected();
-	//	if(sel){
-	//		init_buttons('enable');
-	//	}else{
-	//		init_buttons('disable');
-	//		btn_add.enable();
-	//	}
-	//    }
-	//    else{
-	//	init_buttons('disable');
-	//	btn_add.disable();
-	//	//btn_comment.disable();
-	//    }
-	//    btn_comment.disable();
-	//}
-    
 	var labels = new Ext.Panel({});
 
 	var panel = new Ext.Panel({
