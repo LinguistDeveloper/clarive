@@ -353,8 +353,10 @@
 
 	grid_opened.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
-	    Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , 'Issue #' + r.get('id'),{},config_tabs );
-	    btn_comment.enable();
+	    if(r.get('numcomment')>0){
+		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , 'Issue #' + r.get('id'),{},config_tabs );
+	    }
+	    //btn_comment.enable();
 	});	
 	
 
