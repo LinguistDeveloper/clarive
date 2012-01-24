@@ -348,7 +348,7 @@ sub status_by_key {
     my ( $self, %p ) = @_;
 
 	# order by id desc just in the remote case there is duplicate 'keys'
-    my $rs = Baseliner->model('Baseliner::BaliRequest')->search({ key => $p{key} }, { order_by=>'me.id desc' });
+    my $rs = Baseliner->model('Baseliner::BaliRequest')->search({ key => $p{key} }, { order_by=>{ -desc => 'me.id' } });
 	my $request = $rs->first;
 
     _throw _loc('Could not find a request for %1', $p{key} ) unless ref $request;

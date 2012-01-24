@@ -196,7 +196,10 @@ sub inbox {
     my @messages;
 
     my $search = {};
-    my $opts = $p{sort} ? { order_by => "$p{sort} $p{dir}" } : { order_by => 'id desc' };
+    $p{dir} ||= 'asc';
+    my $opts = $p{sort}
+        ? { order_by => { "-$p{dir}" => $p{sort} } }
+        : { order_by => { -desc=>'id' } };
     if( defined $p{start} && defined $p{limit} ) {
         $opts->{page} = to_pages( start=>$p{start}, limit=>$p{limit} );
 		$opts->{rows} = $p{limit} || 30;

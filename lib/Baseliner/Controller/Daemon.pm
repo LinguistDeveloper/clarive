@@ -34,7 +34,7 @@ sub list : Local {
     my $rs = $c->model('Baseliner::BaliDaemon')->search(  $where,
 							{ page => $page,
 							  rows => $limit,
-							  order_by => $sort ? "$sort $dir" : undef
+							  order_by => $sort ? { "-$dir" => "$sort" } : undef
 							}
 							);
     my $pager = $rs->pager;

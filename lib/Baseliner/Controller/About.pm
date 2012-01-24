@@ -41,4 +41,14 @@ sub show : Local {
     $c->stash->{about} = [ @about ];
     $c->stash->{template} = '/site/about.html';
 }
+
+sub page : Local {
+    my ( $self, $c ) = @_;
+    $c->stash->{name} = { aa=>11 };
+    $c->stash->{template} = '/aaa.html';
+}
+
+
+
+
 1;

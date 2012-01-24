@@ -40,7 +40,7 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
     $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
         if ref($filter) eq 'HASH';
     _log _dump $where;
-    my $rs = $c->model( 'Baseliner::BaliLog' )->search( $where, { order_by=>'me.id desc', join=>['job'] } );
+    my $rs = $c->model( 'Baseliner::BaliLog' )->search( $where, { order_by=>{ '-desc' => 'me.id' }, join=>['job'] } );
     my $top = $rs->first;
     my $stop_now = $top->job->status ne 'RUNNING' ? \1 : \0;
     $c->stash->{json} = { count => $rs->count, top_id=>$top->id, stop_now=>$stop_now };  
@@ -59,7 +59,7 @@ sub log_rows : Private {
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 
 	my $where = $p->{id_job} ? { id_job=>$p->{id_job} } : {};
-	my $from = {   order_by=> $sort ? "$sort $dir" : 'me.id',
+	my $from = {   order_by=> $sort ? { "-$dir" => $sort } : { -asc => 'me.id' },
 					#page => to_pages( start=>$start, limit=>$limit ),  
 					#rows => $limit,
 				#	prefetch => ['job']
@@ -196,7 +196,7 @@ sub jobList : Path('/job/log/jobList') {
     my $jobIcon='/static/images/jobIcon.png';
     my $spoolIcon='/static/images/spoolIcon.png';
     _db_setup;
-    my $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{id} }, { order_by=>'id asc' });
+    my $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{id} }, { order_by=> { -asc => 'id' } });
     my $lastParent=undef;
     while (my $rec=$log->next) {
         my ($null,$site,$parent,$file)=split /\//, $rec->name;
