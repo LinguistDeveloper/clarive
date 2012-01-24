@@ -43,12 +43,14 @@ use File::Basename;
 use Baseliner::Utils;
 
 our $VERSION = 0.02;
+our $env;
 
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
 
 BEGIN {
+    $env = $ENV{BALI_ENV} ? lc( $ENV{BALI_ENV} ) : 't';
     $ENV{ DBIC_TRACE }                   = 0;
-    $ENV{ CATALYST_CONFIG_LOCAL_SUFFIX } = 't';
+    $ENV{ CATALYST_CONFIG_LOCAL_SUFFIX } = $ENV{BALI_ENV} || 't';
 }
 
 chdir $ENV{BASELINER_HOME} if $ENV{BASELINER_HOME};
@@ -103,11 +105,12 @@ say pre . "Starting DB deploy...";
 require Config::General;
     $Baseliner::Schema::Baseliner::DB_DRIVER = 'SQLite';
 require Baseliner::Schema::Baseliner;
-my $cfg_file = "$Bin/../baseliner_t.conf";
+my $cfg_file = "$Bin/../baseliner_${env}.conf";
+say pre . "Test Environment: $env (config: $cfg_file)";
 my $cfg      = Config::General->new( $cfg_file );
     Baseliner::Schema::Baseliner->deploy_schema(
         config      => { $cfg->getall },
-        drop        => 1,
+        drop        => $env eq 't' ? 1 : 0,
         show_config => 1,
     ) and die pre . "Errors while deploying DB. Aborted\n";
 
