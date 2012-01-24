@@ -79,6 +79,7 @@ sub update : Local {
 	        my $daemon = $c->model('Baseliner::BaliDaemon')->create(
 						    {
 							service	=> $p->{service},
+							hostname => $p->{hostname},
 							active 	=> $p->{state},
 						    });
 		    
@@ -93,7 +94,8 @@ sub update : Local {
 	    try{
 		my $id_daemon = $p->{id};
 		my $daemon = $c->model('Baseliner::BaliDaemon')->find( $id_daemon );
-		$daemon->active( $p->{state});
+		$daemon->hostname( $p->{hostname} );
+		$daemon->active( $p->{state} );
 		$daemon->update();
 		$c->stash->{json} = { msg=>_loc('Daemon modified'), success=>\1, daemon_id=> $id_daemon };
 	    }
@@ -105,10 +107,6 @@ sub update : Local {
 	    my $id_daemon = $p->{id};
 	    
 	    try{
-		##Paramos el servicio antes de borrar en tabla.            ##########################                   
-		##En principio no hace nada, solo modifica el campo de la tabla ACTIVE  ¿?        ###
-		##$c->model('Daemons')->request_start_stop( action=>'stop', id=>$p->{id} );       ###
-		#####################################################################################
 		my $row = $c->model('Baseliner::BaliDaemon')->find( $id_daemon );
 		$row->delete;
 	

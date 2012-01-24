@@ -1,12 +1,12 @@
+use utf8;
 package Baseliner::Schema::Baseliner;
+
 use strict;
 use warnings;
 
 use base 'DBIx::Class::Schema';
 
-__PACKAGE__->load_namespaces( default_resultset_class => '+Baseliner::Schema::Baseliner::Base::ResultSet' );
-
-use Baseliner::Utils;
+__PACKAGE__->load_namespaces;
 
 sub connection {
      my $self = shift;
@@ -75,23 +75,6 @@ sub deploy_schema {
         });
         #$schema->storage->debug(1);
     }
-}
-
-sub db_driver {
-    my ($self, $dsn ) = @_;
-    use Try::Tiny;
-    return $__PACKAGE__::DB_DRIVER if defined $__PACKAGE__::DB_DRIVER;
-    return do { 
-        ($__PACKAGE__::DB_DRIVER) = $dsn =~ m{dbi:(\w+):};
-    } if defined $dsn;
-    return try {
-        my $conn = Baseliner->config->{'Model::Baseliner'}->{connect_info};
-        my ($lin) = $conn->[0] =~ m{dbi:(\w+):};
-        $__PACKAGE__::DB_DRIVER = $lin;
-    } catch {
-        my $dbh = $self->storage->dbh;
-        $__PACKAGE__::DB_DRIVER = $dbh->{Driver}->{Name}; # Oracle SQLite mysql ...
-    };
 }
 
 1;
