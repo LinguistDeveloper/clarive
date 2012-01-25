@@ -4,6 +4,22 @@
 </%perl>
 
 <style type="text/css">
+    #tabla2{
+    border: 1px solid #165480;
+    width: 100%;
+    background-color: #e6e6e6;
+    }
+    #cabtab2{
+    background-color: #5fa6d7;
+    font-weight: bold;
+    font-size: 8pt;
+    padding: 2 2 2 2px;
+    }
+    #cuerpotab2{
+    font-size: 8pt;
+    padding: 4 4 4 4px;
+    background-color: #ffffcc;
+    }
     .calloutUp  
     {  
     height: 0;  
@@ -59,101 +75,89 @@
         ]
     });
 
-var init_buttons = function(action) {
-        var obj_btn = Ext.getCmp('btn_add');
-        obj_btn.disable();
-        obj_btn = Ext.getCmp('btn_edit');
-        obj_btn.disable();
-        obj_btn = Ext.getCmp('btn_delete');
-        obj_btn.disable();
-        obj_btn = Ext.getCmp('btn_close');
-        obj_btn.disable();
-}
+    //var init_buttons = function(action) {
+    //        var obj_btn = Ext.getCmp('btn_add');
+    //        obj_btn.disable();
+    //        obj_btn = Ext.getCmp('btn_edit');
+    //        obj_btn.disable();
+    //        obj_btn = Ext.getCmp('btn_delete');
+    //        obj_btn.disable();
+    //        obj_btn = Ext.getCmp('btn_close');
+    //        obj_btn.disable();
+    //}
 
-var id_rel = '<% $c->stash->{id_rel} %>' ;
-store_issue_comments.load({ params: {id_rel: id_rel} });
+    var id_rel = '<% $c->stash->{id_rel} %>' ;
+    store_issue_comments.load({ params: {id_rel: id_rel} });
 
-Ext.onReady(function(){
-    init_buttons();
-   
-    //var data = {
-    //    name: 'Jack Slocum',
-    //    company: 'Ext JS, LLC',
-    //    address: '4 Red Bulls Drive',
-    //    city: 'Cleveland',
-    //    state: 'Ohio',
-    //    zip: '44102',
-    //    kids: [{
-    //        name: 'Sara Grace',
-    //        age:3
-    //    },{
-    //        name: 'Zachary',
-    //        age:2
-    //    },{
-    //        name: 'John James',
-    //        age:0
-    //    }]
-    //};
+    Ext.onReady(function(){
+        //init_buttons();
 
+        //var data = {
+        //        title: '<% $c->stash->{title} %>',
+        //        description: '<% $c->stash->{description} %>'
+        //};
+        //
+        //var tpl1 = new Ext.XTemplate(
+        //    '<div id=tabla2>',
+        //    '<div id=cabtab2>',
+        //    '{title}',
+        //    '</div>',
+        //    '<div id=cuerpotab2>', 
+        //    '{description}',  
+        //    '</div>',  
+        //    '</div>' 
+        //);
+        //tpl1.overwrite('zz<% $iid %>', data);
 
-    //var tpl = new Ext.Template(
-    //    '<p>Name: {created_by}</p>',
-    //    '<p>Company: {text}</p>'        
-    //);
+        var tpl = new Ext.XTemplate(
+            '<tpl for=".">',
+                '<div style="margin-left: 40px;">',
+                '<div>',
+                '<br />',
+                '{created_by} commented:',
+                '</div>', 
+                '<div class="calloutUp">',  
+                '<div class="calloutUp2"></div>',  
+                '</div>', 
+                '<div class="divContainerUp">',  
+                '{text}',
+                '<br />',  
+                '<br />',
+                '</div>',
+                '</div>',        
+            '</tpl>',
+            '<div class="x-clear"></div>'
+        );   
 
-        //'<div class="thumb-wrap">{created_by}</div>',
+        var panel = new Ext.Panel({
+            frame:true,
+            layout:'fit',
+            items: new Ext.DataView({
+                store: store_issue_comments,
+                tpl: tpl
+            })
+        });
 
-var tpl = new Ext.XTemplate(
-    '<tpl for=".">',
-        '<div style="margin-left: 40px;">',
-        '<div>',
-        '<br />',
-        '{created_by} commented:',
-        '</div>', 
-        '<div class="calloutUp">',  
-        '<div class="calloutUp2"></div>',  
-        '</div>', 
-        '<div class="divContainerUp">',  
-        '{text}',
-        '<br />',  
-        '<br />',
-        '</div>',
-        '</div>',        
-    '</tpl>',
-    '<div class="x-clear"></div>'
-);   
+        //var panel1 = new Ext.Panel({
+        //    frame:true,
+        //    layout:'fit',
+        //    data: data,
+        //    tpl: tpl1
+        //});
+        
+        panel.render('prueba<% $iid %>');
+        //panel1.render('zz<% $iid %>');
 
-var panel = new Ext.Panel({
-    id:'images-view',
-    frame:true,
-    layout:'fit',
-
-    items: new Ext.DataView({
-    store: store_issue_comments,
-    tpl: tpl
-    }),
-});
-
-panel.render('prueba<% $iid %>');
-
-    //var p = new Ext.Panel({
-    //    title: 'Basic Template',
-    //    width: 300,
-    //    html: '<p><i>Apply the template to see results here</i></p>',
-    //    tbar: [{
-    //        text: 'Apply Template',
-    //        handler: function(){
-    //
-    //
-    //
-    //            tpl.overwrite(p.body, store_issue_comments);
-    //            p.body.highlight('#c3daf9', {block:true});
-    //        }
-    //    }],
-    //
-    //    renderTo: 'prueba<% $iid %>'
-    //});
-});
+    });
 </script>  
+
+<div id=tabla2>
+<div id=cabtab2>
+<% $c->stash->{title} %>
+</div>
+<div id=cuerpotab2>
+<% $c->stash->{description} %>
+</div>
+</div>
 
 <div class="divContainerMain" id='prueba<% $iid %>'></div>

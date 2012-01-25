@@ -94,8 +94,6 @@ sub list : Local {
     my @datas = $db->array_hash( $SQL );
     @datas = grep { uc($_->{status}) =~ $filter } @datas;
     
-    _log ">>>>>>>>>>>>><<Query: " . $query . "\n";
-    
     @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
     my @rows;
           
@@ -183,6 +181,10 @@ sub view : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $id_issue = $p->{id_rel};
+
+    my $issue = $c->model('Baseliner::BaliIssue')->find( $id_issue );
+    $c->stash->{title} = $issue->title;
+    $c->stash->{description} = $issue->description;
     
     $c->stash->{id_rel} = $id_issue;
     $c->stash->{template} = '/comp/issue_msg.js';
