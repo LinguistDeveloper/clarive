@@ -80,14 +80,13 @@ sub infodetail : Local {
 
     my @rows;
     my $roles = $c->model('Baseliner::BaliRole')->search(
-						    {'bali_roleusers.username' => $username},
-						    {
-							select=>[qw/id role description/],
-							join=>['bali_roleusers'],
-							group_by=>[qw/id role description/], 
-							order_by=> $sort ? "$sort $dir" : undef
-						    }
-						);
+        { 'bali_roleusers.username' => $username },
+        {   select   => [qw/id role description/],
+            join     => ['bali_roleusers'],
+            group_by => [qw/id role description/],
+            order_by => $sort ? { "-$dir" => "$sort" } : undef
+        }
+    );
     rs_hashref($roles);
     
     while( my $r = $roles->next ) {
@@ -689,7 +688,7 @@ sub list : Local {
 	$where,
 	{ page => $page,
 	  rows => $limit,
-	  order_by => $sort ? "$sort $dir" : undef
+	  order_by => $sort ? { "-$dir" => $sort } : undef
 	}
     );
 	
