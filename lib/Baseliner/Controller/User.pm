@@ -396,8 +396,18 @@ sub tratar_proyectos_padres(){
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my $dbh = $db->dbh;
-    my $sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1");
-		   
+    my $sth;
+    
+    if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
+	$sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1");
+    }
+    else{
+	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
+	$sth = $dbh->prepare("WITH N(ID) AS (SELECT ID FROM BALI_PROJECT WHERE ID = ? AND ACTIVE = 1
+					    UNION ALL
+					    SELECT NPLUS1.ID FROM BALI_PROJECT AS NPLUS1, N WHERE N.ID = NPLUS1.ID_PARENT AND ACTIVE = 1)
+					    SELECT N.ID FROM N ");
+    }
     switch ($accion) {
 	case 'update' {
 	    my @roles_checked;
