@@ -206,7 +206,7 @@ sub viewdetail: Local {
 							created_by => $c->username
 						    });
 		    
-		$c->stash->{json} = { msg=>_loc('Comment added'), success=>\1, issue_id=> $issue->id };
+	    $c->stash->{json} = { msg=>_loc('Comment added'), success=>\1, issue_id=> $issue->id };
 
 	    }
 	    catch{
