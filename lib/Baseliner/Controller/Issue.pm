@@ -4,7 +4,8 @@ use Baseliner::Utils;
 use Baseliner::Core::DBI;
 use DateTime;
 use Try::Tiny;
-use Switch;
+use v5.10;
+
 BEGIN {  extends 'Catalyst::Controller' }
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
@@ -118,8 +119,8 @@ sub update : Local {
     my $p = $c->request->parameters;
     my $action = $p->{action};
     
-    switch ($action) {
-	case 'add' {
+    given ($action) {
+	when ('add') {
 	    try{
 	        my $issue = $c->model('Baseliner::BaliIssue')->create(
 						    {
@@ -135,7 +136,7 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error adding Issue: %1', shift()), failure=>\1 }
 	    }
 	}
-	case 'update' {
+	when ('update') {
 	    try{
 		my $id_issue = $p->{id};
 		my $issue = $c->model('Baseliner::BaliIssue')->find( $id_issue );
@@ -148,7 +149,7 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error modifying Issue: %1', shift()), failure=>\1 };
 	    }
 	}
-	case 'delete'{
+	when ('delete') {
 	    my $id_issue = $p->{id};
 	    
 	    try{
@@ -161,7 +162,7 @@ sub update : Local {
 		$c->stash->{json} = { success => \0, msg=>_loc('Error deleting issue') };
 	    }
 	}
-	case 'close' {
+	when ('close') {
 	    try{
 		my $id_issue = $p->{id};
 		my $issue = $c->model('Baseliner::BaliIssue')->find( $id_issue );
@@ -174,6 +175,7 @@ sub update : Local {
 	    }
 	}
     }
+
     $c->forward('View::JSON');
 }
 

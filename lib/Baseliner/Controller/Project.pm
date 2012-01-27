@@ -3,11 +3,11 @@ use Baseliner::Plug;
 BEGIN { extends 'Catalyst::Controller' };
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Switch;
 use Try::Tiny;
 use Moose::Autobox;
 use JSON::XS;
 use namespace::clean;
+use v5.10;
 
 register 'menu.admin.project' => {
 	label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.role'],
@@ -49,7 +49,7 @@ sub list : Local {
 	    else{
 		##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
 		$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-			(SELECT 0 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+			(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
 			FROM BALI_PROJECT
 			WHERE ID_PARENT IS NULL AND ACTIVE = 1
 			UNION ALL
@@ -224,7 +224,7 @@ sub ObtenerNodosPrincipalesPrimerNivel(){
     else{
 	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
 	$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-		(SELECT 0 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+		(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
 		FROM BALI_PROJECT
 		WHERE ID_PARENT IS NULL AND ACTIVE = 1
 		UNION ALL
@@ -282,7 +282,7 @@ sub ObtenerNodosHijosPrimerNivel(){
     else{
 	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
 	$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-		(SELECT 0 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+		(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
 		FROM BALI_PROJECT
 		WHERE ID_PARENT IS NULL AND ACTIVE = 1
 		UNION ALL
@@ -323,8 +323,8 @@ sub update : Local {
     my $SQL;
     my @datas;
     
-    switch ($action) {
-	case 'add' {
+    given ($action) {
+	when ('add') {
 	    try{
 		my $row = $c->model('Baseliner::BaliProject')->search({name => $p->{name}, active => 1})->first;
 		if(!$row){
@@ -345,7 +345,7 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error adding Project: %1', shift()), failure=>\1 }
 	    }
 	}
-	case 'update' {
+	when ('update') {
 	    try{
 		my $project = $c->model('Baseliner::BaliProject')->find( $id_project );
 		$project->name( $p->{name} );
@@ -359,7 +359,7 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error modifying Project: %1', shift()), failure=>\1 };
 	    }
 	}
-	case 'delete' {
+	when ('delete') {
 	    try{
 		my $row = $c->model('Baseliner::BaliProject')->find( $id_project );
 		$row->active(0);
@@ -371,7 +371,7 @@ sub update : Local {
 		else{
 		    ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
 		    $SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-			    (SELECT 0 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+			    (SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
 			    FROM BALI_PROJECT
 			    WHERE ID_PARENT IS NULL AND ACTIVE = 1
 			    UNION ALL
@@ -400,6 +400,7 @@ sub update : Local {
 	    }
 	}
     }
+
     $c->forward('View::JSON');
 }
 
