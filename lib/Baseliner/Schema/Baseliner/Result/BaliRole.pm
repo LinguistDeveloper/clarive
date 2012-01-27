@@ -54,11 +54,9 @@ __PACKAGE__->table("bali_role");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "NUMBER",
-    default_value => undef,
+    data_type => "integer",
     is_auto_increment => 1,
     is_nullable => 0,
-    size => 38,
   },
   "role",
   {
