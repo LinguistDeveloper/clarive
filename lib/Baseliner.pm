@@ -319,9 +319,9 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 		}
 		print "KEY==$p{domain}\n";
 		my %data;
-		my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, config_key=>$p{key} });
+		my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
 		while( my $r = $rs->next  ) {
-			(my $var = $r->config_key) =~ s{^(.*)\.(.*?)$}{$2}g;
+			(my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
 			$c->stash->{$var} = $r->value;
 			$data{$var} = $r->value;
 		}
