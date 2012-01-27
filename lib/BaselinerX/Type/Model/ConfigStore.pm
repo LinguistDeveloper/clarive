@@ -96,12 +96,12 @@ sub get {
     my $data = $p{data} || {};
     my $enforce_metadata = delete $p{enforce_metadata};
     my $long_key = $p{long_key};
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search( { -or => [ config_key=>{-like=>"$key.%" },  config_key=>{-like=>"$key" } ] });
+    my $rs = Baseliner->model('Baseliner::BaliConfig')->search( { -or => [ key=>{-like=>"$key.%" },  key=>{-like=>"$key" } ] });
     my %values;
 
     # load all values for the keyinto a temp hash
 	while( my $r = $rs->next  ) {
-        push @{ $values{$r->config_key} }, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
+        push @{ $values{$r->key} }, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
 	}	
 
     # now find the best_match
@@ -247,7 +247,7 @@ sub filter_ns {
     my $rs = Baseliner->model('Baseliner::BaliConfig')->search($search);
     my %keys;
     while( my $r = $rs->next ) {
-        $keys{ $r->config_key } = ();
+        $keys{ $r->key } = ();
     }
     return keys %keys;
 }
@@ -288,23 +288,23 @@ sub search {
 		$filter->{rows} = $p->{limit};
 	}
     # sorting
-	$filter->{order_by} = $p->{"sort"} ? "$p->{sort} $p->{dir}" : "me.key asc"
+	$filter->{order_by} = $p->{"sort"} ? { "-$p->{dir}" => $p->{sort} } : { -asc =>"me.key" }
 		unless $p->{sort} =~ /^config_/i;
 	
     my $rs = Baseliner->model('Baseliner::BaliConfig')->search($where,$filter);
 	my $count = 0;
 	my @rows;
 	while( my $r = $rs->next ) {
-			my $config = $self->config_for_key( $r->config_key ) or warn 'No config for ' . $r->config_key;
-			my $metadata = { type=>'?', default=>'', label=>$r->config_key };  # default values
+			my $config = $self->config_for_key( $r->key ) or warn 'No config for ' . $r->key;
+			my $metadata = { type=>'?', default=>'', label=>$r->key };  # default values
 			if( $config ) {
-				try { $metadata = $config->metadata_for_key( $r->config_key ) or warn 'No metadata for ' . $r->config_key; } catch {_log $r->config_key;};
+				try { $metadata = $config->metadata_for_key( $r->key ) or warn 'No metadata for ' . $r->key; } catch {_log $r->key;};
 			}
-			my $value = $self->get( $r->config_key, ns=>$r->ns, bl=>$r->bl, value=>1, long_key=>1 );
+			my $value = $self->get( $r->key, ns=>$r->ns, bl=>$r->bl, value=>1, long_key=>1 );
 			my $data = {
 				$r->get_columns,
 				  resolved => $value,
-				  composed => $self->key_compose( key=>$r->config_key, ns=>$r->ns, bl=>$r->bl ),
+				  composed => $self->key_compose( key=>$r->key, ns=>$r->ns, bl=>$r->bl ),
 				  config_name    => $config->{name} || '',
 				  config_key     => $config->{key} || '',
 				  config_module  => $config->{module} || '',

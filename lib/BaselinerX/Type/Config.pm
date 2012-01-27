@@ -143,7 +143,7 @@ sub factory {
 	for( @{$self->metadata} ) {
 		next if defined $data->{ $_->{id} }; 
 		## load missing from table
-			my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ config_key=>$self->key.'.'.$_->{id} }) or die $!;
+			my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ key=>$self->key.'.'.$_->{id} }) or die $!;
 	        my @values;
 			while( my $r = $rs->next ) {
 	            push @values, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
@@ -177,7 +177,7 @@ sub data {
 	my $data = $p{data} || {};
 	for( @{$self->metadata} ) {
 		next if defined $data->{ $_->{id} };  ## data=> params have priority
-		my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, config_key=>$self->key.'.'.$_->{id} })
+		my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$self->key.'.'.$_->{id} })
 			or die $!;			
 		while( my $r = $rs->next ) {
 			$data->{ $_->{id} } = $r->value;
@@ -213,7 +213,7 @@ sub factory_from_metadata{
 		next if defined $data->{ $_->{id} }; 
 		## load missing from table
 		if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){		
-			my $rs = $c->model('Baseliner::BaliConfig')->search({ config_key=>$self->key.'.'.$_->{id} }) or die $!;
+			my $rs = $c->model('Baseliner::BaliConfig')->search({ key=>$self->key.'.'.$_->{id} }) or die $!;
 	        my @values;
 			while( my $r = $rs->next ) {
 	            push @values, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
@@ -246,7 +246,7 @@ sub store {
 		next unless defined $data->{ $_->{id} };
 		if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){
             my $key = $p{long_key} ? $_->{id} : $self->key.'.'.$_->{id} ;
-			my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, config_key=>$key })
+			my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$key })
 				or die $!;	
 			my $exist = 0;		
 			while( my $r = $rs->next ) {
@@ -260,7 +260,7 @@ sub store {
 					{
 						ns => $p{ns},
 						bl => $p{bl},
-						config_key => $key,
+						key => $key,
 						value => $data->{ $_->{id}},					
 						
 					}
@@ -330,7 +330,7 @@ sub rows {
 	my ($self,%p) = @_;
 	my $config_set = $self->key;
 	## order_by is not effective in this query
-	my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ config_key=>{-in=> [ $self->get_keys ] } }, { order_by => [qw/ns/] });
+	my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ key=>{-in=> [ $self->get_keys ] } }, { order_by => [qw/ns/] });
 	my $last_ns = '';
 	my @rows=();
 	my @packed_data=();
@@ -369,9 +369,9 @@ sub rows {
 sub load_inf {  #TODO deprecated
 	my ($self,$c, $config_set) = @_;
 	my $data = {};
-	my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', config_key=>{-like=>"$config_set.%" } });
+	my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', key=>{-like=>"$config_set.%" } });
 	while( my $r = $rs->next  ) {
-		(my $var = $r->config_key) =~ s{^(.*)\.(.*?)$}{$2}g;
+		(my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
 		$data->{$var} = $r->value;
 	}	
 	return $data;
@@ -384,9 +384,9 @@ sub load_stash {
 	for my $config_set ( @config_list ) {
 		my $config = $c->registry->get( $config_set );
 		## read config from the table
-		my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', config_key=>{-like=>"$config_set.%" } });
+		my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', key=>{-like=>"$config_set.%" } });
 		while( my $r = $rs->next  ) {
-			(my $var = $r->config_key) =~ s{^(.*)\.(.*?)$}{$2}g;
+			(my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
 			$c->stash->{$var} = $r->value;
 		}
 		## read config from the command-line arguments
@@ -412,8 +412,8 @@ sub metadata_for_key {
 	my $key = shift;
 	my $metadata;
 	for ( _array $self->metadata ) {
-		my $config_key = $self->key . '.' . $_->{id};
-		if( $config_key eq $key ) {
+		my $key = $self->key . '.' . $_->{id};
+		if( $key eq $key ) {
 			return $_;
 		}
 	}
@@ -479,7 +479,7 @@ sub getRowValueById {
 	$ns ||= '/';
 	$bl ||= '*';
 
-	my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$ns, bl=>$bl, config_key=>$self->key.'.'.$id })
+	my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$ns, bl=>$bl, key=>$self->key.'.'.$id })
 		or die $!;			
 	while( my $r = $rs->next ) {
 		return $r->value
