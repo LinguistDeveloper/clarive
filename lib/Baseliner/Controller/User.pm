@@ -230,9 +230,11 @@ sub update : Local {
 							{
 							    username    => $p->{username},
 							    realname  	=> $p->{realname},
+                                password    => $p->{password} || '',
 							    alias	=> $p->{alias},
 							    email	=> $p->{email},
-							    phone	=> $p->{phone}
+							    phone	=> $p->{phone},
+                                active  => 1,
 							});
 		
 		    $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };

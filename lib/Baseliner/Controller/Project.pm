@@ -49,7 +49,7 @@ sub list : Local {
 	    else{
 		##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
 		$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-			(SELECT 0 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+			(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
 			FROM BALI_PROJECT
 			WHERE ID_PARENT IS NULL AND ACTIVE = 1
 			UNION ALL
@@ -224,7 +224,7 @@ sub ObtenerNodosPrincipalesPrimerNivel(){
     else{
 	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
 	$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-		(SELECT 0 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+		(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
 		FROM BALI_PROJECT
 		WHERE ID_PARENT IS NULL AND ACTIVE = 1
 		UNION ALL
@@ -282,7 +282,7 @@ sub ObtenerNodosHijosPrimerNivel(){
     else{
 	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
 	$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-		(SELECT 0 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+		(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
 		FROM BALI_PROJECT
 		WHERE ID_PARENT IS NULL AND ACTIVE = 1
 		UNION ALL
@@ -322,6 +322,8 @@ sub update : Local {
     my $dbh = $db->dbh;
     my $SQL;
     my @datas;
+
+    $p->{id_parent} eq '' and $p->{id_parent} = undef;
     
     switch ($action) {
 	case 'add' {
@@ -330,10 +332,11 @@ sub update : Local {
 		if(!$row){
 		    my $project = $c->model('Baseliner::BaliProject')->create(
 							{
-							    name   	=> $p->{name},
-							    id_parent  	=> $p->{id_parent} eq '/'?'':$p->{id_parent},
-							    nature	=> $p->{nature},
-							    description	=> $p->{description},
+                                name        => $p->{name},
+                                id_parent   => $p->{id_parent} eq '/' ? undef : $p->{id_parent},
+                                nature      => $p->{nature},
+                                description => $p->{description},
+                                active      => '1',
 							});
 		    
 		    $c->stash->{json} = { msg=>_loc('Project added'), success=>\1, project_id=> $project->id };
@@ -349,7 +352,7 @@ sub update : Local {
 	    try{
 		my $project = $c->model('Baseliner::BaliProject')->find( $id_project );
 		$project->name( $p->{name} );
-		$project->id_parent( $p->{id_parent} eq '/'?'':$p->{id_parent} );
+		$project->id_parent( $p->{id_parent} eq '/'? undef : $p->{id_parent} );
 		$project->nature( $p->{nature} );
 		$project->description( $p->{description} );
 		$project->update();
@@ -371,7 +374,7 @@ sub update : Local {
 		else{
 		    ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
 		    $SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-			    (SELECT 0 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+			    (SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
 			    FROM BALI_PROJECT
 			    WHERE ID_PARENT IS NULL AND ACTIVE = 1
 			    UNION ALL
