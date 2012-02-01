@@ -253,7 +253,9 @@ sub update : Local {
 		    my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
 		    $user->username( $p->{username} );
 		    $user->realname( $p->{realname} );
-		    $user->password( Digest::MD5::md5_hex( $p->{pass} ));
+		    if($p->{pass} ne ''){
+			$user->password( Digest::MD5::md5_hex( $p->{pass} ));
+		    }
 		    $user->alias( $p->{alias} );
 		    $user->email( $p->{email} );
 		    $user->phone( $p->{phone} );

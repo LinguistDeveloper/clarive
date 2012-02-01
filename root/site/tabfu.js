@@ -237,6 +237,7 @@
 	    id: 'win_change',
             title: _('Change password'),
             width: 350,
+	    modal: true,
 	    autoHeight: true,
             items: [ change_pass_form ]
          });

@@ -1,5 +1,4 @@
 (function(){
-
 	var store = new Ext.data.JsonStore({
 		root: 'data' , 
 		remoteSort: true,
@@ -291,29 +290,42 @@
 				var form = form_user.getForm();
 				var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
 				
-				
 				if (form.isValid()) {
-				       form.submit({
-					   params: { action: action,
-						     type: 'user'
-					   },
-					   success: function(f,a){
-					       Baseliner.message(_('Success'), a.result.msg );
-					       store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-					       form.findField("id").setValue(a.result.user_id);
-					       form.findField("username").getEl().dom.setAttribute('readOnly', true);
-					       btn_grabar_user.disable();
-					       win.setTitle(_('Edit user'));
-					   },
-					   failure: function(f,a){
-					       Ext.Msg.show({  
-						   title: _('Information'), 
-						   msg: a.result.msg , 
-						   buttons: Ext.Msg.OK, 
-						   icon: Ext.Msg.INFO
-					       }); 						
-					   }
-				       });
+					var swDo = true;
+					if (form.findField('pass').emptyText != form.getValues()['pass'] && form.getValues()['pass'] !='' ){
+						if(form.getValues()['pass_cfrm'] != form.getValues()['pass']){
+								       Ext.Msg.show({  
+									   title: _('Information'), 
+									   msg: _('Passwords do not match'), 
+									   buttons: Ext.Msg.OK, 
+									   icon: Ext.Msg.INFO
+								       });
+							swDo = false;
+						};					
+					}
+					if (swDo){
+						form.submit({
+						    params: { action: action,
+							      type: 'user'
+						    },
+						    success: function(f,a){
+							Baseliner.message(_('Success'), a.result.msg );
+							store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
+							form.findField("id").setValue(a.result.user_id);
+							form.findField("username").getEl().dom.setAttribute('readOnly', true);
+							btn_grabar_user.disable();
+							win.setTitle(_('Edit user'));
+						    },
+						    failure: function(f,a){
+							Ext.Msg.show({  
+							    title: _('Information'), 
+							    msg: a.result.msg , 
+							    buttons: Ext.Msg.OK, 
+							    icon: Ext.Msg.INFO
+							}); 						
+						    }
+						});
+					}
 				}
 			}
 		}) 		
@@ -560,6 +572,7 @@
 							{
 							fieldLabel: _('Confirm Password'),
 							name: 'pass_cfrm',
+							emptyText: '********',
 							inputType: 'password',
 							vtype: 'password',
 							initialPassField: 'pass',
@@ -662,7 +675,7 @@
 			return true;
 		    },
 		
-		    passwordText : 'Passwords do not match'
+		    passwordText : _('Passwords do not match')
 		});		
 		
 		var username = '';
@@ -681,6 +694,7 @@
 		    autoHeight: true,
 		    width: 730,
 		    closeAction: 'close',
+		    modal: true,
 		    items: [
 			    form_user
 		    ]
