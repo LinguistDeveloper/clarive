@@ -176,6 +176,87 @@
         });
    };
 
+
+    Baseliner.change_password = function() {
+       var change_pass_form = new Ext.FormPanel({
+            url: '/user/change_pass',
+            frame: true,
+            labelWidth: 100, 
+            timeout: 120,
+            defaults: { width: 175,
+			inputType:'password'
+	    },
+	    defaultType: 'textfield',	    
+	    items: [
+	    {
+	      fieldLabel: _('Old Password'),
+	      name: 'oldpass',
+	    },		
+	    {
+	      fieldLabel: _('New Password'),
+	      name: 'newpass',
+	      id: 'newpass'
+	    },{
+	      fieldLabel: _('Confirm Password'),
+	      name: 'pass-cfrm',
+	      vtype: 'password',
+	      initialPassField: 'newpass'
+	    }],
+            buttons: [
+                { text: _('Aceptar'),
+                  handler: function() {
+			var form = change_pass_form.getForm();
+			
+			if (form.isValid()) {
+			       form.submit({
+				   success: function(f,a){
+					Baseliner.message(_('Success'), a.result.msg );
+					win_change.close(); 
+				   },
+				   failure: function(f,a){
+				       Ext.Msg.show({  
+					   title: _('Information'), 
+					   msg: a.result.msg , 
+					   buttons: Ext.Msg.OK, 
+					   icon: Ext.Msg.INFO
+				       }); 						
+				   }
+			       });
+			}
+		  }
+                },
+                { text: _('Cancelar'),
+                  handler: function() {
+			    win_change.close();  
+                           }
+                }
+            ]	    
+        });
+       
+        var win_change = new Ext.Window({
+	    id: 'win_change',
+            title: _('Change password'),
+            width: 350,
+	    autoHeight: true,
+            items: [ change_pass_form ]
+         });
+	
+        win_change.show();       
+    }
+    
+    Ext.apply(Ext.form.VTypes, {
+	password : function(val, field) {
+	    if (field.initialPassField) {
+		var pwd = Ext.getCmp(field.initialPassField);
+		return (val == pwd.getValue());
+	    }
+	    return true;
+	},
+    
+	passwordText : 'Passwords do not match'
+    });    
+
+
     Baseliner.surrogate = function() {
        var login_form = new Ext.FormPanel({
             url: '/auth/surrogate',

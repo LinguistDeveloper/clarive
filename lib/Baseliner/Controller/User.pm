@@ -222,7 +222,6 @@ sub update : Local {
     my $roles_checked = $p->{roles_checked};
     my $project;
 
-
     given ($action) {
 	when ('add') {
 	    try{
@@ -232,6 +231,7 @@ sub update : Local {
 							{
 							    username    => $p->{username},
 							    realname  	=> $p->{realname},
+							    password	=> Digest::MD5::md5_hex( $p->{pass} ),
 							    alias	=> $p->{alias},
 							    email	=> $p->{email},
 							    phone	=> $p->{phone}
@@ -243,7 +243,7 @@ sub update : Local {
 		}
 	    }
 	    catch{
-		$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
+	    	$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
 	    }
 	}
 	when ('update') {
@@ -253,6 +253,7 @@ sub update : Local {
 		    my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
 		    $user->username( $p->{username} );
 		    $user->realname( $p->{realname} );
+		    $user->password( Digest::MD5::md5_hex( $p->{pass} ));
 		    $user->alias( $p->{alias} );
 		    $user->email( $p->{email} );
 		    $user->phone( $p->{phone} );
@@ -726,4 +727,31 @@ sub list : Local {
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
     $c->forward('View::JSON');
 }
+
+sub change_pass : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+
+    my $row = $c->model('Baseliner::BaliUser')->search({username => $c->username, active => 1})->first;
+    
+    if($row){
+	if( Digest::MD5::md5_hex( $p->{oldpass} ) eq $row->password ){
+	    if($p->{newpass}){
+		$row->password( Digest::MD5::md5_hex( $p->{newpass} ));
+		$row->update();
+		$c->stash->{json} = { msg=>_loc('Password changed'), success=>\1 };
+	    }else{
+		$c->stash->{json} = { msg=>_loc('You must introduce a new password'), failure=>\1 }
+	    }
+	}else{
+	    $c->stash->{json} = { msg=>_loc('Password incorrect'), failure=>\1 }
+	}
+    }
+    else{
+	$c->stash->{json} = { msg=>_loc('Error changing Password %1', shift()), failure=>\1 }
+    }
+
+    $c->forward('View::JSON');
+}
+
 1;

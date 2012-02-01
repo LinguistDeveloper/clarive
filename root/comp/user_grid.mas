@@ -290,7 +290,8 @@
 			handler: function(){
 				var form = form_user.getForm();
 				var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-
+				
+				
 				if (form.isValid()) {
 				       form.submit({
 					   params: { action: action,
@@ -469,7 +470,28 @@
 		    });
 		});
 
-	    	var form_user = new Ext.FormPanel({
+		var combo_language = new Ext.form.ComboBox({
+			mode: 'local',
+			value: 'spanish',
+			triggerAction: 'all',
+			forceSelection: true,
+			editable: false,
+			fieldLabel: _('Language'),
+			name: 'cmb_language',
+			hiddenName: 'language',
+			displayField: 'name',
+			valueField: 'value',
+			//En un futuro se cargaran los distintos Host
+			store: 	new Ext.data.JsonStore({
+					fields : ['name', 'value'],
+					data   : [
+						  {name : 'spanish',   value: 'localhost'},
+						  {name : 'english',   value: 'localhost'}
+						  ]
+				})
+		});	    	
+		
+		var form_user = new Ext.FormPanel({
 			name: form_user,
 			url: '/user/update',
 			frame: true,
@@ -508,11 +530,46 @@
 						// right column
 						defaults:{anchor:'100%'}
 						,items:[
-							{ fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'}
+							//{ fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'}
+							{ fieldLabel: _('Password'), name: 'pass', id:'pass', emptyText: '********', xtype: 'textfield',  inputType: 'password'}
 							]
 						}
 					]
-					},					
+					},
+					{
+					// column layout with 2 columns
+					layout:'column'
+					,defaults:{
+						columnWidth:0.5
+						,layout:'form'
+						,border:false
+						,xtype:'panel'
+						,bodyStyle:'padding:0 18px 0 0'
+					}
+					,items:[{
+						// left column
+						defaults:{anchor:'100%'}
+						,items:[
+							{ fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'}
+							]
+						},
+						{
+						// right column
+						defaults:{anchor:'100%'}
+						,items:[
+							{
+							fieldLabel: _('Confirm Password'),
+							name: 'pass_cfrm',
+							inputType: 'password',
+							vtype: 'password',
+							initialPassField: 'pass',
+							xtype: 'textfield'
+							}
+							]
+						}
+					]
+					},
+					
 					{ anchor:'97%', fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield'},					
 					{
 					// column layout with 2 columns
@@ -528,13 +585,8 @@
 						// left column
 						defaults:{anchor:'100%'}
 						,items:[
-							{
-							fieldLabel: _('Email address'),
-							name: 'email',
-							emptyText: 'usuario@dominio.com',
-							vtype: 'email',
-							xtype: 'textfield'
-							}
+							combo_language							
+							//{ fieldLabel: _('Alias'), name: 'alias1', emptyText: 'Alias', xtype: 'textfield'}
 							]
 						},
 						{
@@ -553,6 +605,14 @@
 							]
 						}
 					]
+					},
+					{
+					anchor:'97%',
+					fieldLabel: _('Email address'),
+					name: 'email',
+					emptyText: 'usuario@dominio.com',
+					vtype: 'email',
+					xtype: 'textfield'
 					}
 					]
 				},
@@ -591,9 +651,19 @@
 			},
 			grid_user_roles_projects
 		]
-
-			
 		});
+		
+		Ext.apply(Ext.form.VTypes, {
+		    password : function(val, field) {
+			if (field.initialPassField) {
+			    var pwd = Ext.getCmp(field.initialPassField);
+			    return (val == pwd.getValue());
+			}
+			return true;
+		    },
+		
+		    passwordText : 'Passwords do not match'
+		});		
 		
 		var username = '';
 		var title = 'Create user';
@@ -676,6 +746,17 @@
 				} );
 			}
         });
+	
+        var btn_change_password = new Ext.Toolbar.Button({
+			text: _('Change password'),
+			icon:'/static/images/icons/delete.gif',
+			cls: 'x-btn-text-icon',
+			disabled: true,
+			handler: function() {
+				
+			}
+        });
+	
 
 
 	// create the grid

@@ -38,14 +38,31 @@ sub login_from_url : Local {
 sub login_local : Local {
     my ( $self, $c, $login, $password ) = @_;
     my $p = $c->req->params;
-	my $auth = $c->authenticate({ id=>$c->stash->{login}, password=>$c->stash->{password} }, 'local');
-	if( ref $auth ) {
-		$c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-		$c->session->{username} = $c->stash->{login};
-		$c->stash->{json} = { success => \1, msg => _loc("OK") };
-	} else {
-		$c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
+    
+    my $auth;
+    if(lc($c->stash->{login}) eq 'root'){
+	$auth = $c->authenticate({ id=>$c->stash->{login}, password=> Digest::MD5::md5_hex( $c->stash->{password} ) }, 'local');
+    }
+    else{
+	$auth = $c->authenticate({ id=>$c->stash->{login}, password=> Digest::MD5::md5_hex( $c->stash->{password} ) }, 'none');
+	my $row = $c->model('Baseliner::BaliUser')->search({username => $c->stash->{login}, active => 1})->first;
+	if($row){
+	    if( Digest::MD5::md5_hex( $c->stash->{password} ) ne $row->password ){
+		$auth = undef;
+	    }
 	}
+	else{
+	    $auth = undef;
+	}	    
+    }
+	
+    if( ref $auth ) {
+	$c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+	$c->session->{username} = $c->stash->{login};
+	$c->stash->{json} = { success => \1, msg => _loc("OK") };
+    } else {
+        $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
+    }
 }
 
 sub surrogate : Local {
