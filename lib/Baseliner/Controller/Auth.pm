@@ -84,13 +84,15 @@ sub login : Global {
 			$c->stash->{password} = $password;
 			$c->forward('/auth/login_local');
 		} else {
-			my $auth = $c->authenticate({ id=>$login, password=> Digest::MD5::md5_hex( $password ) });
+			my $auth = $c->authenticate({ id=>$login, password=> $password });
 			
 			if(lc($c->config->{authentication}->{default_realm}) eq 'none'){
+			    my $user_key; # (Public key + Username al revés)
+			    $user_key = $c->config->{decrypt_key}.reverse ($login);
 			    #Validamos contra BaliUser si el realm es none
 			    my $row = $c->model('Baseliner::BaliUser')->search({username => $login, active => 1})->first;
 			    if($row){
-				if( Digest::MD5::md5_hex( $password ) ne $row->password ){
+				if( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password ){
 				    $auth = undef;
 				}
 			    }

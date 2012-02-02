@@ -2,6 +2,7 @@ package Baseliner::Model::Users;
 use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
+use Crypt::Blowfish::Mod;
 
 sub get {
     my ($self, $username ) = @_;
@@ -39,6 +40,12 @@ sub populate_from_ldap {
 		$r->realname( $u->{realname} );
 		$r->update;
 	}
+}
+
+sub encriptar_password{
+    my ($self, $string, $key) = @_;
+    my $b = Crypt::Blowfish::Mod->new( $key );
+    return Digest::MD5::md5_hex($b->encrypt($string));    
 }
 
 1;

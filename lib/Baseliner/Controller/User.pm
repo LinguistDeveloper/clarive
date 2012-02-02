@@ -221,6 +221,9 @@ sub update : Local {
     my $projects_parents_checked = $p->{projects_parents_checked};
     my $roles_checked = $p->{roles_checked};
     my $project;
+    
+    my $user_key; # (Public key + Username al revés)
+    $user_key = $c->config->{decrypt_key}.reverse ($p->{username});
 
     given ($action) {
 	when ('add') {
@@ -231,7 +234,7 @@ sub update : Local {
 							{
 							    username    => $p->{username},
 							    realname  	=> $p->{realname},
-							    password	=> Digest::MD5::md5_hex( $p->{pass} ),
+							    password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
 							    alias	=> $p->{alias},
 							    email	=> $p->{email},
 							    phone	=> $p->{phone}
@@ -254,7 +257,7 @@ sub update : Local {
 		    $user->username( $p->{username} );
 		    $user->realname( $p->{realname} );
 		    if($p->{pass} ne ''){
-			$user->password( Digest::MD5::md5_hex( $p->{pass} ));
+			$user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
 		    }
 		    $user->alias( $p->{alias} );
 		    $user->email( $p->{email} );
@@ -733,13 +736,16 @@ sub list : Local {
 sub change_pass : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    my $username = lc $c->username;
+    my $user_key; # (Public key + Username al revés)
+    $user_key = $c->config->{decrypt_key}.reverse ($username);
 
-    my $row = $c->model('Baseliner::BaliUser')->search({username => $c->username, active => 1})->first;
+    my $row = $c->model('Baseliner::BaliUser')->search({username => $username, active => 1})->first;
     
     if($row){
-	if( Digest::MD5::md5_hex( $p->{oldpass} ) eq $row->password ){
+	if( $c->model('Users')->encriptar_password( $p->{oldpass}, $user_key ) eq $row->password ){
 	    if($p->{newpass}){
-		$row->password( Digest::MD5::md5_hex( $p->{newpass} ));
+		$row->password( $c->model('Users')->encriptar_password( $p->{newpass}, $user_key));
 		$row->update();
 		$c->stash->{json} = { msg=>_loc('Password changed'), success=>\1 };
 	    }else{
