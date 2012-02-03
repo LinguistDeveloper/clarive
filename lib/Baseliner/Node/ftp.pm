@@ -8,28 +8,41 @@ has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
     default => sub {
         my $self = shift;
         require Net::FTP;
-        Net::FTP->new( $self->_build_uri ) or die $!;
+        my $ftp = Net::FTP->new( $self->resource->host )
+            or _fail _loc "FTP: Could not connect to host %1", $self->resource->host;
+        $ftp->login( $self->resource->user, $self->resource->password )
+            or _fail $ftp->message;
+        $ftp;
     }
 );
 
+sub error { 
+    return shift->ftp->message;
+}
+
+sub chmod { }
+sub mkpath { }
+sub rmpath { }
+sub rc { }
+
 sub put_file {
     my ($self, %p) = @_;
-    $self->ftp->put( $p{remote}, $p{local} );
-}
-
-sub get_file {
-    my ($self, %p) = @_;
-    $self->ftp->get( $p{local}, $p{remote} );
-}
-
-sub get_dir {
-    my ($self, %p) = @_;
-    $self->ftp->get( $p{local}, $p{remote} );
+    $self->ftp->put( $p{local}, $p{remote} );
 }
 
 sub put_dir {
     my ($self, %p) = @_;
-    $self->ftp->put( $p{remote}, $p{local} );
+    $self->ftp->put( $p{local}, $p{remote} );
+}
+
+sub get_file {
+    my ($self, %p) = @_;
+    $self->ftp->get( $p{remote}, $p{local} );
+}
+
+sub get_dir {
+    my ($self, %p) = @_;
+    $self->ftp->get( $p{remote}, $p{local} );
 }
 
 sub execute {
@@ -37,6 +50,7 @@ sub execute {
     _throw "FTP execute not implemented yet.";
 }
 
+# not used:
 sub _build_uri {
     my ($self) = @_;
     my $uri = $self->uri;
