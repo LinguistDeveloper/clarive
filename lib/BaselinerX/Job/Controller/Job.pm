@@ -210,7 +210,8 @@ sub monitor_json : Path('/job/monitor_json') {
 			select => $select,
 			as => $as,
 			join => [ 'bali_job_items' ],	
-			page=>0, rows=>$query_limit,
+			page=>0, 
+		#	rows=>$query_limit,
 			order_by => $order_by,
 		}
 	);
