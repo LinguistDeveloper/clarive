@@ -11,7 +11,8 @@ use Baseliner::Utils;
 sub connection {
      my $self = shift;
      my $rv = $self->next::method( @_ );
-     my $dbd = $self->db_driver;
+     #my $dbd = $self->db_driver;
+     my $dbd = "Oracle";
      # MSSQL quote chars
      if( $dbd eq 'ODBC' ) {
          $rv->storage->sql_maker->quote_char([ qw/[ ]/ ]);
@@ -22,7 +23,8 @@ sub connection {
 
 my $filter =  sub {
     my $s = shift;
-    my $dbd = $s->db_driver;
+    #my $dbd = $s->db_driver;
+    my $dbd = "Oracle";
     # replace default (Oracle) for equivalents
     for my $table_name ( $s->get_tables ) { 
         my $table = $s->get_table( $table_name );
@@ -35,6 +37,9 @@ my $filter =  sub {
             if( $col_name eq 'id' && $col->data_type =~ m/^num/i && $dbd eq 'SQLite' ) {
                 $col->data_type( 'integer' );
             }
+            if( $col_name eq 'desc' ) {
+                $col->name( 'description' );
+            }
             if( $dbd eq 'ODBC' ) {
                 $col->data_type('VARCHAR') if $col->data_type =~ /VARCHAR2/i;
                 $col->size(8000) if $col->data_type =~ /VARCHAR/i && $col->size > 8000;
@@ -43,6 +48,9 @@ my $filter =  sub {
                 $col->data_type( 'VARCHAR(max)' ) if $col->data_type =~ /.LOB/i;
                 $col->default_value( \'GETDATE()') if ref($def) eq 'SCALAR' && $$def =~ /SYSDATE/i;
             }
+	    if( $dbd eq 'Oracle') {
+                $col->size( 0 ) if $col->data_type =~ /.LOB/i;
+	    }
         }
     }
 };
@@ -54,7 +62,7 @@ sub deploy_schema {
     $config ||= eval "Baseliner->config";
     die "Could not connect to db: no config loaded" unless $config;
     my ( $dsn, $user, $pass ) = @{ $config->{ 'Model::Baseliner' }->{ 'connect_info' } };
-    $self->db_driver( $dsn );
+    #$self->db_driver( $dsn );
     my $schema = __PACKAGE__->connect( $dsn, $user, $pass, { RaiseError=>1 } )
         or die "Failed to connect to db";
     if( $p{show} ) {

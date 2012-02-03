@@ -53,13 +53,15 @@ sub log_rows : Private {
 	my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $filter, $cnt ) = @{$p}{qw/start limit query dir sort filter/};
     $limit||=50;
+    ($sort, $dir) = split /\s+/, $sort if $sort =~ /\s/; # sort may have dir in it, ie: "id asc"
+    $dir ||= 'asc';
     $filter = decode_json( $filter ) if $filter;
 	my $config = $c->registry->get( 'config.job.log' );
 	my @rows = ();
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 
 	my $where = $p->{id_job} ? { id_job=>$p->{id_job} } : {};
-	my $from = {   order_by=> $sort ? { "-$dir" => $sort } : { -asc => 'me.id' },
+	my $from = {   order_by=> ( $sort ? { "-$dir" => $sort } : { -asc => 'me.id' } ),
 					#page => to_pages( start=>$start, limit=>$limit ),  
 					#rows => $limit,
 				#	prefetch => ['job']

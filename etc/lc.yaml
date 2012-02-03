@@ -72,24 +72,8 @@ lifecycle:
               icon: /static/images/icons/lc/history.gif
 projects:
     - 
-       name: prj1
+       name: TEST_IC
        repositories:
            -
-              name: aaa
-              path: /Users/rod/tmp/repo/aaa/.git
-           -
-              name: prj_j2ee
-              path: /Users/rod/dev/clarive/etc/repo/prj_j2ee.git
-    - 
-       name: AAA
-       repositories:
-           -
-              name: zos
-              path: /Users/rod/dev/clarive/etc/repo/zos.git
-
-    - 
-       name: AAD
-       repositories:
-           -
-              name: zos
-              path: /AAA
+              name: TEST_IC_REPO
+              path: /home/clarive/clarive/etc/repo/EJEMPLOS_IC.git
