@@ -10,8 +10,20 @@ has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
         require Net::FTP;
         my $ftp = Net::FTP->new( $self->resource->host )
             or _fail _loc "FTP: Could not connect to host %1", $self->resource->host;
-        $ftp->login( $self->resource->user, $self->resource->password )
-            or _fail $ftp->message;
+        my ( $user, $password );
+        if( defined $self->resource->user && defined $self->resource->password ) { 
+            ( $user, $password )  = ( $self->resource->user, $self->resource->password );
+        } else {
+            require Net::Netrc;
+            if( defined $self->resource->user ) {
+                my $machine = Net::Netrc->lookup( $self->resource->host, $self->resource->user );
+                ( $user, $password )  = ( $self->resource->user, $machine->password );
+            } else {
+                my $machine = Net::Netrc->lookup( $self->resource->host );
+                ( $user, $password )  = ( $machine->login, $machine->password );
+            }
+        }
+        $ftp->login( $user, $password ) or _fail $ftp->message;
         $ftp;
     }
 );
