@@ -27,22 +27,27 @@ sub rc { }
 
 sub put_file {
     my ($self, %p) = @_;
-    $self->ftp->put( $p{local}, $p{remote} );
+    $self->ftp->cd( $p{remote} );
+    $self->ftp->put( $p{local} );
+    $self->ftp->message;
 }
 
 sub put_dir {
     my ($self, %p) = @_;
     $self->ftp->put( $p{local}, $p{remote} );
+    $self->ftp->message;
 }
 
 sub get_file {
     my ($self, %p) = @_;
     $self->ftp->get( $p{remote}, $p{local} );
+    $self->ftp->message;
 }
 
 sub get_dir {
     my ($self, %p) = @_;
     $self->ftp->get( $p{remote}, $p{local} );
+    $self->ftp->message;
 }
 
 sub execute {
