@@ -39,7 +39,7 @@ sub rc { }
 
 sub put_file {
     my ($self, %p) = @_;
-    $self->ftp->cd( $p{remote} );
+    $self->ftp->cwd( $p{remote} );
     $self->ftp->put( $p{local} );
     $self->ftp->message;
 }
