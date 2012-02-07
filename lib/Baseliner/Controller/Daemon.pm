@@ -4,8 +4,8 @@ use Baseliner::Utils;
 use DateTime;
 use Carp;
 use Try::Tiny;
-use Switch;
 use Proc::Exists qw(pexists);
+use v5.10;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -72,13 +72,14 @@ sub update : Local {
     my $p = $c->request->parameters;
     my $action = $p->{action};
     #my $id_daemon = $p->{id};
-    
-    switch ($action) {
-	case 'add' {
+
+    given ($action) {
+	when ('add') {
 	    try{
 	        my $daemon = $c->model('Baseliner::BaliDaemon')->create(
 						    {
 							service	=> $p->{service},
+							hostname => $p->{hostname},
 							active 	=> $p->{state},
 						    });
 		    
@@ -89,11 +90,12 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error adding Daemon: %1', shift()), failure=>\1 }
 	    }
 	}
-	case 'update' {
+	when ('update') {
 	    try{
 		my $id_daemon = $p->{id};
 		my $daemon = $c->model('Baseliner::BaliDaemon')->find( $id_daemon );
-		$daemon->active( $p->{state});
+		$daemon->hostname( $p->{hostname} );
+		$daemon->active( $p->{state} );
 		$daemon->update();
 		$c->stash->{json} = { msg=>_loc('Daemon modified'), success=>\1, daemon_id=> $id_daemon };
 	    }
@@ -101,14 +103,10 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error modifying Daemon: %1', shift()), failure=>\1 };
 	    }
 	}
-	case 'delete'{
+	when ('delete') {
 	    my $id_daemon = $p->{id};
 	    
 	    try{
-		##Paramos el servicio antes de borrar en tabla.            ##########################                   
-		##En principio no hace nada, solo modifica el campo de la tabla ACTIVE  ¿?        ###
-		##$c->model('Daemons')->request_start_stop( action=>'stop', id=>$p->{id} );       ###
-		#####################################################################################
 		my $row = $c->model('Baseliner::BaliDaemon')->find( $id_daemon );
 		$row->delete;
 	
@@ -119,6 +117,7 @@ sub update : Local {
 	    }
 	}
     }
+    
     $c->forward('View::JSON');
 }
 

@@ -2,8 +2,8 @@ package Baseliner::Controller::User;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::DBI;
-use Switch;
 use Try::Tiny;
+use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
@@ -221,9 +221,12 @@ sub update : Local {
     my $projects_parents_checked = $p->{projects_parents_checked};
     my $roles_checked = $p->{roles_checked};
     my $project;
+    
+    my $user_key; # (Public key + Username al revés)
+    $user_key = $c->config->{decrypt_key}.reverse ($p->{username});
 
-    switch ($action) {
-	case 'add' {
+    given ($action) {
+	when ('add') {
 	    try{
 		my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
 		if(!$row){
@@ -231,6 +234,7 @@ sub update : Local {
 							{
 							    username    => $p->{username},
 							    realname  	=> $p->{realname},
+							    password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
 							    alias	=> $p->{alias},
 							    email	=> $p->{email},
 							    phone	=> $p->{phone}
@@ -242,16 +246,19 @@ sub update : Local {
 		}
 	    }
 	    catch{
-		$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
+	    	$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
 	    }
 	}
-	case 'update' {
+	when ('update') {
 	    try{
 		my $type_save = $p ->{type};
 		if ($type_save eq 'user') {
 		    my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
 		    $user->username( $p->{username} );
 		    $user->realname( $p->{realname} );
+		    if($p->{pass} ne ''){
+			$user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
+		    }
 		    $user->alias( $p->{alias} );
 		    $user->email( $p->{email} );
 		    $user->phone( $p->{phone} );
@@ -267,7 +274,7 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
 	    }
 	}
-	case 'delete' {
+	when ('delete') {
 	    try{
 		my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
 		$row->active(0);
@@ -281,7 +288,7 @@ sub update : Local {
 		$c->stash->{json} = {  success => 0, msg=>_loc('Error deleting User') };
 	    }
 	}
-	case 'delete_roles_projects' {
+	when ('delete_roles_projects') {
 	    try{
 		
 		my $user_name = $p->{username};
@@ -325,6 +332,7 @@ sub update : Local {
 	    }
 	}
     }
+
     $c->forward('View::JSON');
 }
 
@@ -397,10 +405,21 @@ sub tratar_proyectos_padres(){
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my $dbh = $db->dbh;
-    my $sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1");
-		   
-    switch ($accion) {
-	case 'update' {
+    my $sth;
+    
+    if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
+	$sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1");
+    }
+    else{
+	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
+	$sth = $dbh->prepare("WITH N(ID) AS (SELECT ID FROM BALI_PROJECT WHERE ID = ? AND ACTIVE = 1
+					    UNION ALL
+					    SELECT NPLUS1.ID FROM BALI_PROJECT AS NPLUS1, N WHERE N.ID = NPLUS1.ID_PARENT AND ACTIVE = 1)
+					    SELECT N.ID FROM N ");
+    }
+    
+    given ($accion) {
+	when ('update') {
 	    my @roles_checked;
 	    if(!$roles_checked){
 		my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
@@ -441,7 +460,7 @@ sub tratar_proyectos_padres(){
 		
 	    }
 	}
-	case 'delete' {
+	when ('delete') {
 	    my $rs;
 	    if($roles_checked){
 		foreach my $role (_array $roles_checked){
@@ -471,6 +490,7 @@ sub tratar_proyectos_padres(){
 	    }
 	}
     }
+
 }
 
 sub actions_list : Local {
@@ -712,4 +732,34 @@ sub list : Local {
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
     $c->forward('View::JSON');
 }
+
+sub change_pass : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $username = lc $c->username;
+    my $user_key; # (Public key + Username al revés)
+    $user_key = $c->config->{decrypt_key}.reverse ($username);
+
+    my $row = $c->model('Baseliner::BaliUser')->search({username => $username, active => 1})->first;
+    
+    if($row){
+	if( $c->model('Users')->encriptar_password( $p->{oldpass}, $user_key ) eq $row->password ){
+	    if($p->{newpass}){
+		$row->password( $c->model('Users')->encriptar_password( $p->{newpass}, $user_key));
+		$row->update();
+		$c->stash->{json} = { msg=>_loc('Password changed'), success=>\1 };
+	    }else{
+		$c->stash->{json} = { msg=>_loc('You must introduce a new password'), failure=>\1 }
+	    }
+	}else{
+	    $c->stash->{json} = { msg=>_loc('Password incorrect'), failure=>\1 }
+	}
+    }
+    else{
+	$c->stash->{json} = { msg=>_loc('Error changing Password %1', shift()), failure=>\1 }
+    }
+
+    $c->forward('View::JSON');
+}
+
 1;

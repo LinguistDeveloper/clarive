@@ -157,6 +157,24 @@
 		
 		var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
 
+		var combo_host = new Ext.form.ComboBox({
+			mode: 'local',
+			value: 'localhost',
+			triggerAction: 'all',
+			forceSelection: true,
+			editable: false,
+			fieldLabel: _('Host'),
+			name: 'hostname',
+			hiddenName: 'hostname',
+			displayField: 'name',
+			valueField: 'value',
+			//En un futuro se cargaran los distintos Host
+			store: 	new Ext.data.JsonStore({
+					fields : ['name', 'value'],
+					data   : [{name : 'localhost',   value: 'localhost'}]
+				})
+		});
+
 		var title = 'Create daemon';
 		
 		var form_daemon = new Ext.FormPanel({
@@ -204,14 +222,15 @@
 			items: [
 				{ xtype: 'hidden', name: 'id', value: -1 },
 				schedule_service,
+				combo_host,
 				{
 				xtype: 'radiogroup',
 				id: 'stategroup',
 				fieldLabel: _('State'),
 				defaults: {xtype: "radio",name: "state"},
 				items: [
-					{boxLabel: _('Not Active'), inputValue: 0, checked: true},
-					{boxLabel: _('Active'), inputValue: 1}
+					{boxLabel: _('Active'), inputValue: 1},
+					{boxLabel: _('Not Active'), inputValue: 0, checked: true}
 				]
 				}
 			]
@@ -301,10 +320,10 @@
 		init_buttons('enable');
 	});
 
-	grid.on("rowdblclick", function(grid, rowIndex, e ) {
-	    var r = grid.getStore().getAt(rowIndex);
-	    Baseliner.addNewTab('/daemon/edit?id_rel=' + r.get('id') , r.get('name') );
-	});		
+	//grid.on("rowdblclick", function(grid, rowIndex, e ) {
+	//    var r = grid.getStore().getAt(rowIndex);
+	//    Baseliner.addNewTab('/daemon/edit?id_rel=' + r.get('id') , r.get('name') );
+	//});		
     
 	// Después de que cargue la página:
 	store.load({params:{start:0 , limit: ps}}); 

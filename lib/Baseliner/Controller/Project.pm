@@ -3,11 +3,11 @@ use Baseliner::Plug;
 BEGIN { extends 'Catalyst::Controller' };
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Switch;
 use Try::Tiny;
 use Moose::Autobox;
 use JSON::XS;
 use namespace::clean;
+use v5.10;
 
 register 'menu.admin.project' => {
 	label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.role'],
@@ -27,6 +27,7 @@ sub list : Local {
     if($sw_crear_editar ne 'true'){
 	my $id_project;
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	my $dbh = $db->dbh;
         my ($start, $limit, $query) = ( @{$p}{qw/start limit query/});
 	$start ||= 0;
         $limit ||= 100;
@@ -41,7 +42,24 @@ sub list : Local {
 
 	
 	if($query ne ''){ #ENTRA CUANDO TIENE ALGO EN EL FILTRO DE BÚSQUEDA
-	    my $SQL = 'SELECT FILA, NIVEL, B.ID, B.NAME, A.NAME AS NAME_PARENT, B.DESCRIPTION, B.NATURE FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE FROM BALI_PROJECT A START WITH ID_PARENT IS NULL AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1) B  LEFT JOIN BALI_PROJECT A ON A.ID = B.ID_PARENT';
+	    my $SQL;
+	    if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
+		$SQL = 'SELECT FILA, NIVEL, B.ID, B.NAME, A.NAME AS NAME_PARENT, B.DESCRIPTION, B.NATURE FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE FROM BALI_PROJECT A START WITH ID_PARENT IS NULL AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1) B  LEFT JOIN BALI_PROJECT A ON A.ID = B.ID_PARENT';
+	    }
+	    else{
+		##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
+		$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
+			(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+			FROM BALI_PROJECT
+			WHERE ID_PARENT IS NULL AND ACTIVE = 1
+			UNION ALL
+			SELECT LEVEL + 1, NPLUS1.ID, NPLUS1.ID_PARENT, NPLUS1.NAME, NPLUS1.DESCRIPTION, NPLUS1.NATURE
+			FROM BALI_PROJECT AS NPLUS1, N
+			WHERE N.ID = NPLUS1.ID_PARENT AND NPLUS1.ACTIVE = 1)
+			SELECT ROW_NUMBER() OVER(ORDER BY N.ID ASC) AS FILA, LEVEL AS NIVEL, N.ID, N.NAME, Z.NAME AS NAME_PARENT,
+				N.DESCRIPTION, N.NATURE FROM N LEFT JOIN BALI_PROJECT Z ON Z.ID = N.ID_PARENT ';
+	    }
+	    
 	    my @datas = $db->array_hash( $SQL );
 	     
 	    @datas = grep { lc($_->{name}) =~ $query } @datas if $query;
@@ -97,8 +115,23 @@ sub list : Local {
 			if(_array $tree[$_]->{_is_leaf} == 1){
 			    $tree[$_]->{_rgt} = $tree[$_]->{_lft} + 1;
 			}else{
-			    my $SQL = "SELECT COUNT(*) AS NUMHIJOS FROM BALI_PROJECT A START WITH ID_PARENT = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1";
-			    my @datas = $db->array_hash( "$SQL", $tree[$_]->{_id} );
+			    my $SQL;
+			    if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
+				$SQL = 'SELECT COUNT(*) AS NUMHIJOS FROM BALI_PROJECT A START WITH ID_PARENT = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1';
+			    }
+			    else{
+				##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
+				$SQL = 'WITH N AS
+					(SELECT ID, ID_PARENT
+					FROM BALI_PROJECT
+					WHERE ID_PARENT = ? AND ACTIVE = 1
+					UNION ALL
+					SELECT NPLUS1.ID, NPLUS1.ID_PARENT
+					FROM BALI_PROJECT AS NPLUS1, N
+					WHERE N.ID = NPLUS1.ID_PARENT AND NPLUS1.ACTIVE = 1)
+					SELECT COUNT(*) FROM N ';
+			    }
+			    my @datas = $db->array_hash( $SQL, $tree[$_]->{_id} );
 			    $tree[$_]->{_rgt} = $tree[$_]->{_lft} + ($datas[0]->{numhijos}*2+1);
 			}
 		    }else{
@@ -167,25 +200,55 @@ sub list : Local {
 
 sub ObtenerNodosPrincipalesPrimerNivel(){
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    my $SQL = 'SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
-			   FROM BALI_PROJECT B
-			   WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
-				 AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
-						  FROM BALI_PROJECT A
-						  WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
-			   UNION ALL
-			   SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION, E.ID_PARENT
-			   FROM BALI_PROJECT E
-			   WHERE E.ID IN (SELECT DISTINCT D.ID 
-					  FROM BALI_PROJECT D,  
-					  BALI_PROJECT C
-					  WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
-						D.ID = C.ID_PARENT)) RESULT, 
-		    (SELECT FILA, NIVEL, F.ID, F.NAME, A.NAME AS NAME_PARENT FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, ID, ID_PARENT, NAME FROM BALI_PROJECT A START WITH ID_PARENT IS NULL CONNECT BY PRIOR ID = ID_PARENT) F LEFT JOIN BALI_PROJECT A ON A.ID = F.ID_PARENT) RESULT1
-		     WHERE RESULT.ID = RESULT1.ID
-	    ORDER BY FILA ASC';
-    
+    my $dbh = $db->dbh;
+    my $SQL;
+    if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
+	$SQL = 'SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+			       FROM BALI_PROJECT B
+			       WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
+				     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+						      FROM BALI_PROJECT A
+						      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+			       UNION ALL
+			       SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION, E.ID_PARENT
+			       FROM BALI_PROJECT E
+			       WHERE E.ID IN (SELECT DISTINCT D.ID 
+					      FROM BALI_PROJECT D,  
+					      BALI_PROJECT C
+					      WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
+						    D.ID = C.ID_PARENT)) RESULT, 
+			(SELECT FILA, NIVEL, F.ID, F.NAME, A.NAME AS NAME_PARENT FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, ID, ID_PARENT, NAME FROM BALI_PROJECT A START WITH ID_PARENT IS NULL CONNECT BY PRIOR ID = ID_PARENT) F LEFT JOIN BALI_PROJECT A ON A.ID = F.ID_PARENT) RESULT1
+			 WHERE RESULT.ID = RESULT1.ID
+		ORDER BY FILA ASC';
+    }
+    else{
+	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
+	$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
+		(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+		FROM BALI_PROJECT
+		WHERE ID_PARENT IS NULL AND ACTIVE = 1
+		UNION ALL
+		SELECT LEVEL + 1, NPLUS1.ID, NPLUS1.ID_PARENT, NPLUS1.NAME, NPLUS1.DESCRIPTION, NPLUS1.NATURE
+		FROM BALI_PROJECT AS NPLUS1, N
+		WHERE N.ID = NPLUS1.ID_PARENT AND NPLUS1.ACTIVE = 1)
+		SELECT W.LEAF, ROW_NUMBER() OVER(ORDER BY N.ID ASC) AS FILA, LEVEL AS NIVEL, N.ID, N.NAME, Z.NAME AS NAME_PARENT,
+			N.DESCRIPTION, N.NATURE FROM N LEFT JOIN BALI_PROJECT Z ON Z.ID = N.ID_PARENT,
+		(SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+			       FROM BALI_PROJECT B
+			       WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
+				     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+						      FROM BALI_PROJECT A
+						      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+			       UNION ALL
+			       SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION, E.ID_PARENT
+			       FROM BALI_PROJECT E
+			       WHERE E.ID IN (SELECT DISTINCT D.ID 
+					      FROM BALI_PROJECT D,  
+					      BALI_PROJECT C
+					      WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
+						    D.ID = C.ID_PARENT)) W WHERE N.ID = W.ID ORDER BY FILA ASC ';
+    }
+
     my @datas = $db->array_hash( $SQL );
     
     return @datas;
@@ -194,8 +257,11 @@ sub ObtenerNodosPrincipalesPrimerNivel(){
 sub ObtenerNodosHijosPrimerNivel(){
     my $id_project = shift;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    my $SQL = 'SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+    my $dbh = $db->dbh;
+    my $SQL;
+
+    if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
+        $SQL = 'SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
 			    FROM BALI_PROJECT B
 			    WHERE B.ID_PARENT = ? AND B.ACTIVE = 1
 				  AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
@@ -212,6 +278,34 @@ sub ObtenerNodosHijosPrimerNivel(){
 		      (SELECT FILA, NIVEL, F.ID, F.NAME, A.NAME AS NAME_PARENT FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, ID, ID_PARENT, NAME FROM BALI_PROJECT A START WITH ID_PARENT IS NULL CONNECT BY PRIOR ID = ID_PARENT) F LEFT JOIN BALI_PROJECT A ON A.ID = F.ID_PARENT) RESULT1
 		      WHERE RESULT.ID = RESULT1.ID
 	     ORDER BY FILA ASC';
+    }
+    else{
+	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
+	$SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
+		(SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+		FROM BALI_PROJECT
+		WHERE ID_PARENT IS NULL AND ACTIVE = 1
+		UNION ALL
+		SELECT LEVEL + 1, NPLUS1.ID, NPLUS1.ID_PARENT, NPLUS1.NAME, NPLUS1.DESCRIPTION, NPLUS1.NATURE
+		FROM BALI_PROJECT AS NPLUS1, N
+		WHERE N.ID = NPLUS1.ID_PARENT AND NPLUS1.ACTIVE = 1)
+		SELECT W.LEAF, ROW_NUMBER() OVER(ORDER BY N.ID ASC) AS FILA, LEVEL AS NIVEL, N.ID, N.NAME, Z.NAME AS NAME_PARENT,
+			N.DESCRIPTION, N.NATURE FROM N LEFT JOIN BALI_PROJECT Z ON Z.ID = N.ID_PARENT,
+		(SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+			       FROM BALI_PROJECT B
+			       WHERE B.ID_PARENT = ? AND B.ACTIVE = 1
+				     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+						      FROM BALI_PROJECT A
+						      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+			       UNION ALL
+			       SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION, E.ID_PARENT
+			       FROM BALI_PROJECT E
+			       WHERE E.ID IN (SELECT DISTINCT D.ID 
+					      FROM BALI_PROJECT D,  
+					      BALI_PROJECT C
+					      WHERE D.ID_PARENT = ? AND C.ACTIVE = 1 AND
+						    D.ID = C.ID_PARENT)) W WHERE N.ID = W.ID ORDER BY FILA ASC ';
+    }
 	     
     my @datas = $db->array_hash( $SQL , $id_project, $id_project);
     
@@ -225,11 +319,12 @@ sub update : Local {
     my $id_project = $p->{_id};
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my $dbh = $db->dbh;
     my $SQL;
     my @datas;
     
-    switch ($action) {
-	case 'add' {
+    given ($action) {
+	when ('add') {
 	    try{
 		my $row = $c->model('Baseliner::BaliProject')->search({name => $p->{name}, active => 1})->first;
 		if(!$row){
@@ -250,7 +345,7 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error adding Project: %1', shift()), failure=>\1 }
 	    }
 	}
-	case 'update' {
+	when ('update') {
 	    try{
 		my $project = $c->model('Baseliner::BaliProject')->find( $id_project );
 		$project->name( $p->{name} );
@@ -264,14 +359,30 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error modifying Project: %1', shift()), failure=>\1 };
 	    }
 	}
-	case 'delete' {
+	when ('delete') {
 	    try{
 		my $row = $c->model('Baseliner::BaliProject')->find( $id_project );
 		$row->active(0);
 		$row->update();
 		
-		$SQL = "SELECT ROWNUM, LEVEL, ID, NAME, DESCRIPTION, NATURE FROM BALI_PROJECT A START WITH ID_PARENT = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1";
-		@datas = $db->array_hash( "$SQL", $id_project );
+		if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
+		    $SQL = 'SELECT ROWNUM, LEVEL, ID, NAME, DESCRIPTION, NATURE FROM BALI_PROJECT A START WITH ID_PARENT = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1';
+		}
+		else{
+		    ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
+		    $SQL = 'WITH N(LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
+			    (SELECT 1 AS LEVEL, ID, ID_PARENT, NAME, DESCRIPTION, NATURE
+			    FROM BALI_PROJECT
+			    WHERE ID_PARENT IS NULL AND ACTIVE = 1
+			    UNION ALL
+			    SELECT LEVEL + 1, NPLUS1.ID, NPLUS1.ID_PARENT, NPLUS1.NAME, NPLUS1.DESCRIPTION, NPLUS1.NATURE
+			    FROM BALI_PROJECT AS NPLUS1, N
+			    WHERE N.ID = NPLUS1.ID_PARENT AND NPLUS1.ACTIVE = 1)
+			    SELECT ROW_NUMBER() OVER(ORDER BY N.ID ASC) AS FILA, LEVEL AS NIVEL, N.ID, N.NAME,
+				    N.DESCRIPTION, N.NATURE FROM N ';		    
+		    
+		}
+		@datas = $db->array_hash( $SQL, $id_project );
 		my @ids_projects_hijos = map $_->{id}, @datas;
 		
 		my $rs = $c->model('Baseliner::BaliProject')->search({ id=>\@ids_projects_hijos});
@@ -289,6 +400,7 @@ sub update : Local {
 	    }
 	}
     }
+
     $c->forward('View::JSON');
 }
 
