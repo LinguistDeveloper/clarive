@@ -113,6 +113,21 @@ __PACKAGE__->config(
 );
 
 ## Authentication
+  
+#    __PACKAGE__->config(
+#        'authentication' => {
+#            realms => {
+#                local => {
+#                    store => {
+#                        class               => "DBIx::Class",
+#                        user_class          => "Baseliner::BaliUser",
+#			password_type => 'clear',
+#                    },
+#                },
+#            },
+#        },
+#    );
+    
     __PACKAGE__->config(
         'authentication' => {
             realms => {

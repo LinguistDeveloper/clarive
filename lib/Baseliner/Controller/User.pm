@@ -2,8 +2,8 @@ package Baseliner::Controller::User;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::DBI;
-use Switch;
 use Try::Tiny;
+use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
@@ -221,8 +221,8 @@ sub update : Local {
     my $roles_checked = $p->{roles_checked};
     my $project;
 
-    switch ($action) {
-	case 'add' {
+    given ($action) {
+	when ('add') {
 	    try{
 		my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
 		if(!$row){
@@ -230,7 +230,7 @@ sub update : Local {
 							{
 							    username    => $p->{username},
 							    realname  	=> $p->{realname},
-                                password    => $p->{password} || '',
+							    password	=> Digest::MD5::md5_hex( $p->{pass} ),
 							    alias	=> $p->{alias},
 							    email	=> $p->{email},
 							    phone	=> $p->{phone},
@@ -243,16 +243,19 @@ sub update : Local {
 		}
 	    }
 	    catch{
-		$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
+	    	$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
 	    }
 	}
-	case 'update' {
+	when ('update') {
 	    try{
 		my $type_save = $p ->{type};
 		if ($type_save eq 'user') {
 		    my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
 		    $user->username( $p->{username} );
 		    $user->realname( $p->{realname} );
+		    if($p->{pass} ne ''){
+			$user->password( Digest::MD5::md5_hex( $p->{pass} ));
+		    }
 		    $user->alias( $p->{alias} );
 		    $user->email( $p->{email} );
 		    $user->phone( $p->{phone} );
@@ -268,7 +271,7 @@ sub update : Local {
 		$c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
 	    }
 	}
-	case 'delete' {
+	when ('delete') {
 	    try{
 		my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
 		$row->active(0);
@@ -282,7 +285,7 @@ sub update : Local {
 		$c->stash->{json} = {  success => 0, msg=>_loc('Error deleting User') };
 	    }
 	}
-	case 'delete_roles_projects' {
+	when ('delete_roles_projects') {
 	    try{
 		
 		my $user_name = $p->{username};
@@ -326,6 +329,7 @@ sub update : Local {
 	    }
 	}
     }
+
     $c->forward('View::JSON');
 }
 
@@ -410,8 +414,9 @@ sub tratar_proyectos_padres(){
 					    SELECT NPLUS1.ID FROM BALI_PROJECT AS NPLUS1, N WHERE N.ID = NPLUS1.ID_PARENT AND ACTIVE = 1)
 					    SELECT N.ID FROM N ");
     }
-    switch ($accion) {
-	case 'update' {
+    
+    given ($accion) {
+	when ('update') {
 	    my @roles_checked;
 	    if(!$roles_checked){
 		my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
@@ -452,7 +457,7 @@ sub tratar_proyectos_padres(){
 		
 	    }
 	}
-	case 'delete' {
+	when ('delete') {
 	    my $rs;
 	    if($roles_checked){
 		foreach my $role (_array $roles_checked){
@@ -482,6 +487,7 @@ sub tratar_proyectos_padres(){
 	    }
 	}
     }
+
 }
 
 sub actions_list : Local {
@@ -723,4 +729,31 @@ sub list : Local {
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
     $c->forward('View::JSON');
 }
+
+sub change_pass : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+
+    my $row = $c->model('Baseliner::BaliUser')->search({username => $c->username, active => 1})->first;
+    
+    if($row){
+	if( Digest::MD5::md5_hex( $p->{oldpass} ) eq $row->password ){
+	    if($p->{newpass}){
+		$row->password( Digest::MD5::md5_hex( $p->{newpass} ));
+		$row->update();
+		$c->stash->{json} = { msg=>_loc('Password changed'), success=>\1 };
+	    }else{
+		$c->stash->{json} = { msg=>_loc('You must introduce a new password'), failure=>\1 }
+	    }
+	}else{
+	    $c->stash->{json} = { msg=>_loc('Password incorrect'), failure=>\1 }
+	}
+    }
+    else{
+	$c->stash->{json} = { msg=>_loc('Error changing Password %1', shift()), failure=>\1 }
+    }
+
+    $c->forward('View::JSON');
+}
+
 1;

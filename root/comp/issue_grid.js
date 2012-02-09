@@ -14,7 +14,7 @@
 			{  name: 'description' },
 			{  name: 'created_on' },
 			{  name: 'created_by' },
-			{  name: 'numcomment' }			
+			{  name: 'numcomment' }
 		],
 		listeners: {
 			'beforeload': function( obj, opt ) {
@@ -34,7 +34,8 @@
 			{  name: 'title' },
 			{  name: 'description' },
 			{  name: 'created_on' },		
-			{  name: 'created_by' }			
+			{  name: 'created_by' },
+			{  name: 'numcomment' }			
 		],
 		listeners: {
 			'beforeload': function( obj, opt ) {
@@ -353,13 +354,12 @@
 
 	grid_opened.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
-	    if(r.get('numcomment')>0){
+	    //if(r.get('numcomment')>0){
 		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , 'Issue #' + r.get('id'),{},config_tabs );
-	    }
+	    //}
 	    //btn_comment.enable();
 	});	
 	
-
 	var grid_closed = new Ext.grid.GridPanel({
 		title: _('Issues'),
 		header: false,
@@ -372,6 +372,7 @@
 				getRowClass: function(record, rowIndex, p, store){
 					tag_comment_html='';
 					if(record.data.numcomment){
+
 						tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + record.data.numcomment + " comments</span>";
 					}
 					p.body = "<div style='margin-left: 6em'><table><tr><td></td><td width='600px'><font color='808080'>by </font><b>" + record.data.created_by + "</b> <font color='808080'>" + record.data.created_on + "</font ></td><td>" + tag_comment_html + "</td></tr></table></div>";
@@ -395,6 +396,15 @@
 			emptyMsg: "No hay registros disponibles"
 		})
 	});
+	
+	grid_closed.on("rowdblclick", function(grid, rowIndex, e ) {
+	    var r = grid.getStore().getAt(rowIndex);
+	    //if(r.get('numcomment')>0){
+		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , 'Issue #' + r.get('id'),{},config_tabs );
+	    //}
+	    //btn_comment.enable();
+	});
+	
 	
 	var search_field = new Ext.app.SearchField({
 				store: store_opened,

@@ -92,6 +92,9 @@ Ext.onReady(function(){
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
                          { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
                     ];
+                    if($user ne 'root'){
+                     $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
+                    }
                     $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/users.gif' } );
                     print js_dumper { text=>$c->username , menu=> [
             sort {
