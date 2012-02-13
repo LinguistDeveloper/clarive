@@ -14,6 +14,7 @@ __PACKAGE__->add_columns(
     default_value => undef,
     is_nullable => 0,
     size => 126,
+    sequence => "bali_chain_service_seq",    
   },
   "chain_id",
   {

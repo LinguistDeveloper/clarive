@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Try::Tiny;
 use DateTime;
 use Carp;
+use v5.10;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -22,18 +23,19 @@ register 'menu.admin.chain' => { label    => 'Job Chains',
 sub list : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my ( $start, $limit, $query, $dir, $sort, $cnt ) =
-      @{$p}{qw/start limit query dir sort/};
+    my ( $start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/,0};
     my $where = {};
     $sort ||= 'id';
     $limit ||= 50;
-    $query and $where = { 'lower(name||job_type||description)' => { -like => "%$query%" } };
+    $query and $where = { 'lower(name||job_type||description)' => { -like => "%".lc($query)."%" } };
     my $page = to_pages( start => $start, limit => $limit );
-	my $rs = $c->model('Baseliner::BaliChain')->search( $where, { order_by=>"$sort $dir", page=>$page, rows=>$limit });
+    my $rs = $c->model('Baseliner::BaliChain')->search( $where, { order_by=>"$sort $dir", page=>$page, rows=>$limit });
     rs_hashref($rs);
+    my $pager = $rs->pager;
+    $cnt = $pager->total_entries;	
     my @rows = $rs->all;
-	$c->stash->{json} = { totalCount=>scalar @rows, data=>\@rows };
-	$c->forward('View::JSON');
+    $c->stash->{json} = { totalCount=>$cnt, data=>\@rows };
+    $c->forward('View::JSON');
 }
 
 sub edit : Local {
@@ -165,7 +167,7 @@ sub modify_active : Local {
 
 sub grid : Local {
     my ( $self, $c ) = @_;
-	$c->stash->{template} = '/comp/chain_grid.mas';
+    $c->stash->{template} = '/comp/chain_grid.js';
 }
 
 sub detail : Local {
@@ -226,6 +228,164 @@ sub create : Local {
 sub add : Local {
     my ( $self, $c ) = @_;
     $c->stash->{template} = 'comp/chain_edit.mas';
+}
+
+#***********************************************************************************************************************
+#METODOS NUEVOS
+#***********************************************************************************************************************
+sub change_active : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $id = $p->{id};
+    my $action = $p->{action};
+    my $msg_active = $action eq 'start' ? 'started' : 'stopped';
+    
+    my $chain = Baseliner->model('Baseliner::BaliChain')->find( $id );
+    if( ref $chain ) {
+	$chain->active( $action eq 'start' ? 1 : 0 );
+	$chain->update;
+	$c->stash->{json} = { success => \1, msg => _loc("Chain $msg_active") };
+    }
+    else{
+	$c->stash->{json} = { success => \0, msg => _loc('Error changing the chain') };
+    }
+    $c->forward('View::JSON');
+}
+
+
+sub update : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $action = $p->{action};
+
+    given ($action) {
+	when ('add') {
+	    try{
+	        my $chain = $c->model('Baseliner::BaliChain')->create(
+						    {
+							name	=> $p->{name},
+							description => $p->{description},
+							job_type => $p->{job_type},
+							active 	=> $p->{state},
+						    });
+		    
+		$c->stash->{json} = { msg=>_loc('Chain added'), success=>\1, chain_id=> $chain->id };
+
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error adding Chain: %1', shift()), failure=>\1 }
+	    }
+	}
+	when ('update') {
+	    try{
+		my $id_chain = $p->{id};
+		my $chain = $c->model('Baseliner::BaliChain')->find( $id_chain );
+		$chain->name( $p->{name} );
+		$chain->description( $p->{description} );
+		$chain->job_type( $p->{job_type} );
+		$chain->active( $p->{state});
+		
+		$chain->update();
+		$c->stash->{json} = { msg=>_loc('Chain modified'), success=>\1, chain_id=> $id_chain };
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error modifying Chain: %1', shift()), failure=>\1 };
+	    }
+	}
+	when ('delete') {
+	    my $id_chain = $p->{id};
+	    
+	    try{
+		my $row = $c->model('Baseliner::BaliChain')->find( $id_chain );
+		$row->delete;
+	
+		$c->stash->{json} = { success => \1, msg=>_loc('Chain deleted') };
+	    }
+	    catch{
+		$c->stash->{json} = { success => \0, msg=>_loc('Error deleting Chain') };
+	    }
+	}
+    }
+    
+    $c->forward('View::JSON');
+}
+
+sub update_service : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $action = $p->{action};
+
+    given ($action) {
+	when ('add') {
+	    try{
+	        my $service = $c->model('Baseliner::BaliChainedService')->create(
+						    {
+							key	=> $p->{service},
+							chain_id => $p->{id_chain},
+							description => $p->{description},
+							seq => 1,
+							step => $p->{step},
+							active 	=> $p->{state},
+						    });
+		    
+		$c->stash->{json} = { msg=>_loc('Service added'), success=>\1, service_id=> $service->id };
+
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error adding Service: %1', shift()), failure=>\1 }
+	    }
+	}
+	when ('update') {
+	    try{
+		my $id = $p->{id};
+		my $service = $c->model('Baseliner::BaliChainedService')->find( $id );
+		$service->description( $p->{description} );
+		$service->step( $p->{step} );
+		$service->active( $p->{state});
+		
+		$service->update();
+		$c->stash->{json} = { msg=>_loc('Service modified'), success=>\1, service_id=> $service->id };
+	    }
+	    catch{
+		$c->stash->{json} = { msg=>_loc('Error modifying Service: %1', shift()), failure=>\1 };
+	    }
+	}
+	when ('delete') {
+	    my $id_chain = $p->{id};
+	    
+	    try{
+		my $row = $c->model('Baseliner::BaliChain')->find( $id_chain );
+		$row->delete;
+	
+		$c->stash->{json} = { success => \1, msg=>_loc('Chain deleted') };
+	    }
+	    catch{
+		$c->stash->{json} = { success => \0, msg=>_loc('Error deleting Chain') };
+	    }
+	}
+    }
+    
+    $c->forward('View::JSON');
+}
+
+sub list_services : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my ( $start, $limit, $id_chain, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit id_chain query dir sort/,0};
+    my $where = {};
+    $sort ||= 'id';
+    $limit ||= 50;
+    my $where = $query
+        ? { 'lower(key||step||description)' => { -like => "%".lc($query)."%" }, chain_id => $id_chain }
+        : { chain_id => $id_chain };       
+    my $page = to_pages( start => $start, limit => $limit );
+    my $rs = $c->model('Baseliner::BaliChainedService')->search( $where, { order_by=>"$sort $dir", page=>$page, rows=>$limit });
+    rs_hashref($rs);
+    my $pager = $rs->pager;
+    $cnt = $pager->total_entries;	
+    my @rows = $rs->all;
+    $c->stash->{json} = { totalCount=>$cnt, data=>\@rows };
+    $c->forward('View::JSON');
 }
 
 1;
