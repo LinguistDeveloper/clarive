@@ -172,18 +172,21 @@ sub agent_ftp : Local {
     my $p = $c->req->params;
     my $dir = $p->{dir};
 
+    # TODO : from user workspace repo
+    my ($user, $pass, $host) = ( 'ICDMPA0', 'ENER12A', '192.168.107.2' );
+
     my @tree;
 
     my @path;
-    push @path, $p->{curr} // '//IBMUSER';
+    push @path, $p->{curr} // '//' . $user;
     push @path, $dir if $dir && $dir ne '/';
     my $path = join '.', @path;
     _log "FTP path $path";
 
     use Net::FTP; 
-    my $ftp=Net::FTP->new("sysb");
-    $ftp->login("ibmuser","sys1");
-    $ftp->cwd( $path );
+    my $ftp=Net::FTP->new( $host );
+    $ftp->login( $user, $pass );
+    $ftp->cwd( $path ); 
     my $k = 0;
     for my $i ( $ftp->dir ) {
         next if $k++ == 0;
@@ -195,6 +198,7 @@ sub agent_ftp : Local {
 
         my $node = {
             text => $text, 
+            url => 'lifecycle/agent_ftp',
             data => { curr=>$path, dir=>$text },
             leaf => $is_leaf,
         };
@@ -219,9 +223,13 @@ sub view_file : Local {
     my $path = $p->{curr};
     my $remote = $p->{dir};
     my $local = _tmp_file;
+
+    # TODO : from user workspace repo
+    my ($user, $pass, $host) = ( 'ICDMPA0', 'ENER12A', '192.168.107.2' );
+
     use Net::FTP; 
-    my $ftp=Net::FTP->new("sysb");
-    $ftp->login("ibmuser","sys1");
+    my $ftp=Net::FTP->new( $host );
+    $ftp->login( $user, $pass );
     $ftp->cwd( $path );
     $ftp->get( $remote, $local );
     my $data = _file( $local )->slurp;
@@ -234,7 +242,7 @@ sub list_workspaces : Private {
     my ($self, %args) = @_;
 
     +{
-        text => 'sysb:TSSTROG',
+        text => '192.168.107.2:ICDMPA0',
         leaf => \0,
         url  => '/lifecycle/agent_ftp',
         data => { dir=>'/' },
