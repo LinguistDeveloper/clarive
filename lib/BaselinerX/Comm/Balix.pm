@@ -1,84 +1,105 @@
-#############################################################
-#
-# Balix
-#
-#
-#    my $balix = Balix->new( host=>'pruxxx', port=>58765, key=>'...base64_key...' [ os=>'win' , ] [timeout=>99 ] );
-#      timeout de -1 desactiva el timeout
-#
+=head1 NAME
+
+BaselinerX::Comm::Balix - Baseliner Agent Client Library
+
+=head1 SYNOPSIS
+
+    my $balix = Balix->new( host=>'pruxxx', port=>58765, key=>'...base64_key...' [ os=>'win' , ] [timeout=>99 ] );
+      timeout de -1 desactiva el timeout
+
+    my $balix = Baseliner::Comm::Balix->new( host=>'pruxxx', port=>58765, key=>'...base64_key...' [ os=>'win' , ] [timeout=>99 ] );
+      timeout de -1 desactiva el timeout
+
+=cut
 package BaselinerX::Comm::Balix;
 use strict;
+use warnings;
 use IO::Socket;
 use Carp;
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
+use Time::HiRes qw/gettimeofday tv_interval/;
 use Crypt::Blowfish::Mod;
 use String::CRC32;
-use Convert::EBCDIC qw/ascii2ebcdic ebcdic2ascii/;
 
 @ISA     = qw();
 @EXPORT  = qw();
 $VERSION = '1.0';
 
-my ( $RM, $RPORT, $RUSR, $RPWD ) = ();
-my %PARAMS = ();
-
 sub blow { shift->{blow}; }
+sub os { shift->{os} }
 
-# new_timeout: lo mismo que ->open, pero con timeout
-#     problema: el timeout con threads es peligroso - volatiza la ejecucion
+=head2 new
+
+The same as ->open, but with a ping + timeout.
+
+    my $balix = Balix->new( host=>'pruxxx', port=>58765, [ os=>'win' , ] [ croak=>1 ] );
+
+Options:
+
+     croak=>1 (throws an exception instead of returning)
+
+Do not use this with threads. A timeout throws an interpreter alarm.  
+
+=cut
 sub new {
     my $class = shift @_;
     my %p     = @_;
     $p{timeout} ||= $ENV{BALIX_TIMEOUT} || 10;
-    my $balix = {};
-    $balix->{debug}  = $p{debug} || 0;
-	$balix->{os}     = $p{os};
-    $balix->{blow}   = Crypt::Blowfish::Mod->new( $p{key} );
-    warn ahora() . " - BALIX: conectando a $p{host}:$p{port} (timeout=$p{timeout})\n" if $balix->{debug};
-    $balix->{socket} = IO::Socket::INET->new(
+    my $self = { %p };
+    $self->{debug}  = $p{debug} || 0;
+    $self->{os}     = $p{os} || '';
+    $self->{blow}   = Crypt::Blowfish::Mod->new( $p{key} );
+    warn ts() . " - BALIX: connecting to $p{host}:$p{port} (timeout=$p{timeout})\n" if $self->{debug};
+    $self->{socket} = IO::Socket::INET->new(
         PeerAddr => $p{host},
         PeerPort => $p{port},
         Proto    => "tcp",
         Type     => SOCK_STREAM
-    ) or die "Error al abrir el socket: $!";
-    if( $p{os} eq 'mvs' ) {
-        $balix->{mvs} = 1;
-        $balix->{ebc} = Convert::EBCDIC->new($Convert::EBCDIC::ccsid1047);
-        binmode $balix->{socket};
-        #$balix->{ebc} = Convert::EBCDIC->new($Convert::EBCDIC::ccsid819);
+    ) or die "BALIX: Error opening socket: $!";
+    if( $self->{verbose} ) {
+        require Term::ReadKey;
     }
-    if ( ref $balix->{socket} ) {
-        warn ahora() . " - BALIX: conectado a $p{host}:$p{port}\n" if $balix->{debug};
+    if( $self->{os} eq 'mvs' ) {
+        $self->{mvs} = 1;
+        require Convert::EBCDIC;
+        $self->{ebc} = Convert::EBCDIC->new($Convert::EBCDIC::ccsid1047);
+        binmode $self->{socket};
+        #$self->{ebc} = Convert::EBCDIC->new($Convert::EBCDIC::ccsid819);
+    }
+    if ( ref $self->{socket} ) {
+        warn ts() . " - BALIX: connected to $p{host}:$p{port}\n" if $self->{debug};
     }
     else {
-        warn ahora() . " - BALIX: ERROR: no se ha podido conectar a $p{host}:$p{port}\n" if $balix->{debug};
+        warn ts() . " - BALIX: ERROR: could not connect to $p{host}:$p{port}\n" if $self->{debug};
         return undef;
     }
-    $balix = bless( $balix, $class );
-    eval {
-        warn ahora() . " - BALIX: inicio ping con timeout a $p{host}:$p{port}\n" if $balix->{debug};
-        local $SIG{ALRM} = sub {
-            die "Timeout. Se ha sobrapasado el tiempo fijado ($p{timeout} seg) para la conexión por agente a $p{host}:$p{port}.\n";
+    $self = bless( $self, $class );
+    unless( $self->{mvs} ) {
+        eval {
+            warn ts() . " - BALIX: ping started with timeout to $p{host}:$p{port}\n" if $self->{debug};
+            local $SIG{ALRM} = sub {
+                die "BALIX: Timeout. Max response time exceeded ($p{timeout} sec) while connecting to $p{host}:$p{port}.\n";
+            };
+            if ( $p{timeout} ne -1 ) {
+                alarm $p{timeout};
+            }
+            my ( $rc, $ret ) = $self->execute("set");
+            if( $ret =~ m/OS=(Win.*)$/i ) {
+                print "BALIX OS detected: $1\n";
+            }
+            warn ts() . " - BALIX: end ping ok (rc=$rc) con timeout a $p{host}:$p{port}\n" if $self->{debug};
+            alarm 0;
         };
-        if ( $p{timeout} ne -1 ) {
-            alarm $p{timeout};
+        
+        if ($@) {
+            croak "Error on agent connection: $@";
         }
-        my ( $rc, $ret ) = $balix->execute("set");
-		if( $ret =~ m/OS=(Win.*)$/i ) {
-			print "OS detectado: $1\n";
-		}
-        warn ahora() . " - BALIX: fin ping ok (rc=$rc) con timeout a $p{host}:$p{port}\n" if $balix->{debug};
-        alarm 0;
-    };
-	
-    if ($@) {
-        croak "Error de conexión por agente: $@";
     }
-    return $balix;
+    return $self;
 }
 
-sub ahora {
+sub ts {
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
       localtime(time);
     $year += 1900;
@@ -87,12 +108,7 @@ sub ahora {
       ${min}, ${sec};
 }
 
-sub ahora_log {
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-    $year += 1900;
-    $mon  += 1;
-    sprintf "%04d%02d%02d%02d%02d%02d", ${year},${mon},${mday},${hour},${min},${sec};
-};          # NUEVO
+*ahora = \&ts;
 
 sub encodeCMD {
     my ( $self, $cmd ) = @_;
@@ -126,7 +142,7 @@ sub _open_socket {
     my $conn;
     my $timeout = $ENV{TIMEOUT_BALIX_OPEN} || 20;
     eval {
-        $SIG{ALRM} = sub { die "Timeout de conexion a agente $rm:$rport" };
+        $SIG{ALRM} = sub { die "Timeout (${timeout} s) while connecting to agent $rm:$rport" };
         alarm $timeout;
         $conn = IO::Socket::INET->new(
             PeerAddr => $rm,
@@ -139,7 +155,7 @@ sub _open_socket {
     };
     if ($@) {
         alarm 0;    # desactiva
-        croak "Error de conexion a $rm:$rport: $@";
+        croak "Error connecting to $rm:$rport: $@";
     }
     return $conn;
 }
@@ -148,38 +164,30 @@ sub open {
     my $class = shift @_;
     my $rm    = shift @_;
     my $rport = shift @_;
-    $PARAMS{OS} = shift @_;
+    my $os = shift @_;
 
-    # foreach (keys %PARAMS) {
-    #  print "DespuÃ©s -> $_=$PARAMS{$_}\n";
-    # }
-
-    my $balix;
-    $balix->{RM}    = $rm;
-    $balix->{RPORT} = $rport;
-    $balix->{blow}  = Crypt::Blowfish::Mod->new( $ENV{BLOWFISH_KEY} );
+    my $self;
+    $self->{RM}    = $rm;
+    $self->{RPORT} = $rport;
+    $self->{blow}  = Crypt::Blowfish::Mod->new( $ENV{BLOWFISH_KEY} );
     my $socket = _open_socket( $rm, $rport )
       or croak
-      "Balix: Error: no he podido conectarme a la maquina $rm:$rport : $@\n";
+      "Balix: Error: connection to $rm:$rport failed: $@\n";
 
     #select($socket); $| = 1; select(stdout);
-    $balix->{socket} = $socket;
-    bless( $balix, $class );
+    $self->{socket} = $socket;
+    bless( $self, $class );
 }
 
 sub create {
     my $class = shift @_;
     my $rm    = shift @_;
     my $rport = shift @_;
-    $PARAMS{OS} = shift @_;
+    my $os = shift @_;
 
-    # foreach (keys %PARAMS) {
-    #  print "DespuÃ©s -> $_=$PARAMS{$_}\n";
-    # }
-
-    my $balix;
-    $balix->{RM}    = $rm;
-    $balix->{RPORT} = $rport;
+    my $self;
+    $self->{RM}    = $rm;
+    $self->{RPORT} = $rport;
 
     my $socket = IO::Socket::INET->new(
         PeerAddr => $rm,
@@ -188,54 +196,22 @@ sub create {
         Type     => SOCK_STREAM
     );
 
-#or croak "Balix: Error: no he podido conectarme a la mÃ¡quina $rm:$rport : $@\n";
-#select($socket); $| = 1; select(stdout);
     if ($socket) {
         $socket->autoflush(1);
         binmode $socket;
-        $balix->{socket} = $socket;
-        $balix->{os}     = $PARAMS{OS};
-        bless( $balix, $class );
+        $self->{socket} = $socket;
+        $self->{os}     = $os;
+        bless( $self, $class );
     }
-}
-
-=head2 new
-
-Lo mismo que ->open, pero con ping posterior
-
-    my $balix = Balix->new( host=>'pruxxx', port=>58765, [ os=>'win' , ] [ croak=>1 ] );
-
-Opciones:
-
- croak=>1 (lanza una excepcion en lugar de retornar un $self vacio)
- 
-=cut
-
-sub new_old {
-    my $class = shift @_;
-    my %p     = @_;
-    my $self  = $class->open( $p{host}, $p{port}, $p{os} );
-    if ($self) {
-        my ( $rc, $ret ) = $self->ping('test');
-        if ($rc) {
-            warn ahora() . " - BALIX ERROR: ping a $p{host}:$p{port} ha fallado\n" if $self->{debug};
-            if ( $p{croak} ) {
-                croak "Error de conexion al agente en $p{host}:$p{port}";
-            }
-            else {
-                return undef;
-            }
-        }
-    }
-    return $self;
 }
 
 sub key {
-	my ($self,$key) = @_;	
-	$self->{key} = $key;
+    my ($self,$key) = @_;   
+    $self->{key} = $key;
 }
 
 sub checkRC {
+    use Baseliner::Utils; # XXX
     my ($self) = @_;
     my ($buf,$ret); 
     my $socket = $self->{socket};
@@ -257,7 +233,10 @@ sub checkRC {
         $rc = $1;
         $ret =~ s/[\n]*HARAXE=([0-9]*)//g;
     }
-    ( $rc, parseReturn($ret) );
+    my $ret_parsed = parseReturn($ret);
+    return wantarray
+        ? ( $rc, $ret_parsed )
+        : { rc=>$rc, ret=>$ret_parsed };
 }
 
 sub createDir {
@@ -267,17 +246,19 @@ sub createDir {
     print $socket $self->encodeCMD("M $dirname") . $self->EOL;
 }
 
+*send_file = \&sendFile;
 sub sendFile {
     my ( $self, $localfile, $rfile ) = @_;
 
     $rfile = $localfile unless ($rfile);
     if ( !-e $localfile ) {
-        croak "sendFile: el fichero '$localfile' no existe.";
+        croak "sendFile: the local file '$localfile' doesn't exist";
     }
-    CORE::open FF, "<$localfile"
+    my $fin; 
+    CORE::open $fin, "<$localfile"
       or croak
-      "sendFile: Error: No he podido abrir el fichero $localfile: $!\n";
-    binmode FF;
+      "sendFile: Error: could not open local file $localfile: $!\n";
+    binmode $fin;
     my $data = "";
     my $socket = $self->{socket};
     print $socket $self->encodeCMD("F $rfile") . $self->EOL;
@@ -285,24 +266,25 @@ sub sendFile {
 
     print $socket $self->encodeCMD("D") . $self->EOL;
 
-    while (<FF>) {
+    while (<$fin>) {
         print $socket $self->encodeDATA($_);
     }
     print $socket $self->EOL;
-    close FF;
+    close $fin;
     my ( $RC, $RET ) = $self->checkRC();
     print $socket $self->encodeCMD("C") . $self->EOL;
     ( $RC, $RET );
 }
 
+*send_file_check = \&sendFileCheck;
 sub sendFileCheck {
     my ( $self, $localfile, $rfile ) = @_;
-	my ($rc,$ret) = $self->sendFile( $localfile, $rfile );
-	unless( $rc ) {
-		my $comp = $self->crc_match( $localfile, $rfile );
-		$rc = 229 if !$comp;
-	}
-	return ($rc,$ret);
+    my ($rc,$ret) = $self->sendFile( $localfile, $rfile );
+    unless( $rc ) {
+        my $comp = $self->crc_match( $localfile, $rfile );
+        $rc = 229 if !$comp;
+    }
+    return ($rc,$ret);
 }
 
 sub sendData {
@@ -324,14 +306,14 @@ sub sendData {
 sub getFile {
     my ( $self, $rfile, $localfile, $os ) = @_;
     my $socket = $self->{socket};
-	$os ||= $self->{os};
+    $os ||= $self->{os};
 
     if ( $os eq "win" ) {
         $rfile =~ s{\/}{\\}g;      ## subs de las barras palante
         $rfile =~ s{\\\\}{\\}g;    ## normalizo las barras dobles, por si acaso
         print $socket $self->encodeCMD("X dir $rfile") . $self->EOL;
     }
-    elsif( $os eq 'mvs' ) {
+    elsif( $self->{mvs} ) {
         print $socket $self->encodeCMD("X /bin/ls $rfile") . $self->EOL;
     }
     else {
@@ -341,7 +323,7 @@ sub getFile {
     my ( $RC, $RET ) = $self->checkRC();
     if ( $RC ne 0 ) {
         chop $RET;
-        croak "Error de lectura del fichero '$rfile' en la mÃ¡quina '$self->{RM}': $RET";
+        croak "Error reading file '$rfile' from '$self->{RM}': $RET";
     }
 
     print $socket $self->encodeCMD("R $rfile") . $self->EOL;
@@ -366,15 +348,24 @@ sub getFile {
     }
     my @bytes = ();
 
+        my $fout;
     if ($localfile) {
-        CORE::open FOUT, ">$localfile"
+        CORE::open $fout, ">$localfile"
           or croak "Balix: getFile: no he podido abrir el fichero local '$localfile': $@\n";
-        binmode FOUT;
+        binmode $fout;
     }
 
-    my %hh;
-    $hh{ sprintf( '%02x', $_ ) } = chr($_)
-      for ( 0 .. 255 );    ##creo tabla de hex->char
+        # status bar prepare
+        my $show_status = $self->{verbose};
+        my ( $start, $totalsize, $fan, $width );
+
+        if( $show_status ) {
+                $start = [ gettimeofday() ];
+                ($width) = Term::ReadKey::GetTerminalSize();
+                $totalsize = $filesize * 2;
+                $width-=20;
+                $fan = '/';
+    }
 
     while ( !$socket->eof() ) {    ##LEO LOS DATOS
         $blocksize =
@@ -389,13 +380,25 @@ sub getFile {
         #print "Y otro ".($jj/1024)." KB (len=".length($file).", remaining=$remaining)\n";
 
         my $pos = 0;
-        $block =~ s/(..)/$hh{$1}/g;
+        $block = pack 'H*', $block;
         $block = $self->{ebc}->toascii( $block ) if $self->{mvs};
         if ($localfile) {
-            print FOUT $block;
+            print $fout $block;
         }
         else {
             $datos .= $block;
+        }
+
+        # status bar
+        if ( $show_status && $width ) {
+            unless ( $jj % 1048576 ) {
+                my $pct   = int( ( $jj / $totalsize ) * $width );
+                my $fil   = '=' x $pct;
+                my $spa   = ' ' x ( $width - $pct - 1 );
+                my $inter = tv_interval($start);
+                $fan = $fan eq '/' ? '\\' : '/';
+                print "\r[Speed " . int( $jj / $inter / 1024 ) . " KB/s $fil>$spa]$fan";
+            }
         }
 
         if ( $remaining < 0 ) {    ##hemos acabado
@@ -406,7 +409,7 @@ sub getFile {
     }
 
     if ($localfile) {
-        close FOUT;
+        close $fout;
         return ( 0, "" );
     }
     else {
@@ -416,31 +419,40 @@ sub getFile {
 
 sub execute {
     my ( $self, $rcmd ) = @_;
+
     my $socket = $self->{socket};
     #print join',', map { ord } split //, $self->encodeCMD("X $rcmd") . $self->EOL;
     print $socket $self->encodeCMD("X $rcmd") . $self->EOL;
-    #warn "RET!!!!";
     $self->checkRC();
 }
 
-sub executeas {
-####IMPRESCINDIBLE QUE BALIX SE EJECUTE COMO ROOT.  SI NO, PIDE PASSWORD.
+
+=head2 execute_as
+
+Executes a command as a sudo user.
+
+Does not work on Windows - but will try it anyway.
+
+=cut
+*executeas = \&execute_as;
+sub execute_as {
     my ( $self, $user, $rcmd ) = @_;
     if ( $user eq "" ) {
         return ( 99,
-            "ERROR DE BALIX: usuario de ejecucion remota esta en blanco!" );
+            "BALIX ERROR: empty remote user!" );
     }
     my $socket = $self->{socket};
     ## con el su -c hace falta escapar las comillas
     $rcmd =~ s/\"/\\\"/g;
     print $socket $self->encodeCMD(qq{X su - $user -c "$rcmd"}) . $self->EOL;
-
     $self->checkRC();
 }
 
+*close = \&end;
 sub end {
     my ($self) = @_;
     my $socket = $self->{socket};
+    no warnings; # print() on closed filehandle GEN0 
     print $socket $self->encodeCMD("Q") . $self->EOL;
     close($socket) if ($socket);
 }
@@ -458,27 +470,27 @@ sub parseReturn {
 
 # returns the crc, or 0 if failed
 sub crc {
-	my ($self, $file ) = @_;
+    my ($self, $file ) = @_;
     my $socket = $self->{socket};
     print $socket $self->encodeCMD("Y $file") . $self->EOL;
-	my ($crc, $ret ) = $self->checkRC();
-	return $crc;
+    my ($crc, $ret ) = $self->checkRC();
+    return $crc;
 }
 
 sub crc_local {
-	my ($self, $file ) = @_;
-	CORE::open( my $F,'<', $file ) or die $!;
-	my $crc = String::CRC32::crc32( $F ) or die $!;
-	close $F;
-	return $crc;
+    my ($self, $file ) = @_;
+    CORE::open( my $F,'<', $file ) or die $!;
+    my $crc = String::CRC32::crc32( $F ) or die $!;
+    close $F;
+    return $crc;
 }
 
 # returns 1 if equal, 0 if different
 sub crc_match {
-	my ($self, $local, $remote ) = @_;
-	my $crc_local = $self->crc_local( $local );
-	my $crc_remote = $self->crc( $remote );
-	return $crc_local eq $crc_remote;
+    my ($self, $local, $remote ) = @_;
+    my $crc_local = $self->crc_local( $local );
+    my $crc_remote = $self->crc( $remote );
+    return $crc_local eq $crc_remote;
 }
 
 sub EOL {
@@ -508,8 +520,7 @@ sub ping {
     read( $socket, $buffer, 1 );
     my $byte = substr( $buffer, 0, 1 );
     if ( $byte ne substr( $hostname, 0, 1 ) ) {
-        $RET =
-"El servidor no responde correctamente.  Verifique la versiÃ³n de balix instalada";
+        $RET = "Incorrect response from Balix Agent. Please check installed version.";
         $RC = 1;
     }
 
@@ -519,25 +530,92 @@ sub ping {
     return ( $RC, $RET );
 }
 
-# usuario de ejecucion del Distribuidor para un entorno
-# uso: my $usuario = scm_usuario('TEST');  
-# devuelve 'vtscm'
-sub scm_usuario {
-	use strict;
+sub ping_timeout {
+        my ($self) = @_;
+        return unless $self->{timeout};
+    eval {
+        warn ts() . " - BALIX: ping started with timeout to $self->{host}:$self->{port}\n";
+        local $SIG{ALRM} = sub {
+            die "Timeout. Se ha sobrapasado el tiempo fijado ($self->{timeout} seg) para la conexión por agente a $self->{host}:$self->{port}.\n";
+        };
+        if ( $self->{timeout} ne -1 ) {
+            alarm $self->{timeout};
+        }
+                my $os = $self->find_os_name;
+        warn ts() . " - BALIX: end ping ok (os=$self->{os}) con timeout a $self->{host}:$self->{port}\n";
+        alarm 0;
+    };
+        croak "BALIX: Error while connecting to agent: " . $@ if ($@);
+}
 
-    my $entorno = @_;
+sub find_os_name {
+        my ($self)  = @_;
+        my @a = $self->execute('echo %OS%'); # catch a windows os
+        if( $a[1] =~ m/\%OS%/ ) {
+                @a = $self->execute('uname -s'); # tipical unix
+        }
+        $self->{os} = $a[1];
+        $self->{os} =~ s{\n|\r|\t}{}g;
+        return $self->{os};
+}
 
-    #XXX DELME XXX
-    my $usuario;
-    #XXX DELME XXX
+sub is_windows {
+        my ($self, $force)  = @_;
+        return $self->os =~ /win/i
+                if !$force && defined $self->os;
+        my @a = $self->execute('echo %OS%');
+        my $os = $self->find_os_name;
+                # alternative implementation
+        #my ( $rc, $ret ) = $self->execute("set");
+                #if( $ret =~ m/OS=(Win.*)$/i ) {
+                #       print "OS detectado: $1\n";
+                #}
+        return $os =~ /win/i;
+}
 
-    # entorno_usuario??????
-    #FIXME my $usuario = $entorno_usuario{$entorno}
-    #FIXME     or die "scm_usuario: error: no tengo mapeado un usuario para el entorno '$entorno'";
-
-	return $usuario;
+sub file_exists {
+        my ($self, $path, $user )  = @_;
+        my ( $RC, $RET );
+        my $cmd = $self->is_windows ? 'dir' : 'ls';
+        if( $user ) {
+                ( $RC, $RET ) = $self->executeas( $user, qq{ $cmd '$path' } );
+        } else {
+                ( $RC, $RET ) = $self->execute( qq{ $cmd '$path' } );
+        }
+        return ! $RC;
 }
 
 
 1;
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright (c) 2010 The Authors of Baseliner.org. All rights reserved.
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 DISCLAIMER OF WARRANTY
+
+BECAUSE THIS SOFTWARE IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE SOFTWARE, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE SOFTWARE "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE
+ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE SOFTWARE IS WITH
+YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL
+NECESSARY SERVICING, REPAIR, OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE SOFTWARE AS PERMITTED BY THE ABOVE LICENCE, BE
+LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL,
+OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE
+THE SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
+RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
+FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
+SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+=cut
 
