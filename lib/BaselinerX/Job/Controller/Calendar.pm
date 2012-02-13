@@ -5,6 +5,7 @@ use JavaScript::Dumper;
 use Baseliner::Utils;
 use DateTime;
 use Try::Tiny;
+use v5.10;
 
 {
     package BaselinerX::Calendar::Window;
@@ -571,7 +572,7 @@ sub date_range : Private {
     my @only;
     my %fechas;
     my $lastType = CALENDAR_UNION;
-    use Switch;
+
 
     for my $ns ( $c->model( 'Namespaces' )->sort_ns( { asc => 1 }, @ns ) ) {
         my $ns_desc = $c->model( 'Namespaces' )->find_text( $ns );
@@ -603,11 +604,11 @@ sub date_range : Private {
                         if ( $r2->active == 1 ) {
 
                     #_log "------CREADO-----FECHA : " . $self->parseJSON($currentDate) . " DIA_SEMANA: $week_day ID_ENCONTRADO: " . $r2->id;
-                            switch ( $calendar_type ) {
-                                case ( CALENDAR_UNION ) { push @include, $jsDateObject; }
-                                case ( CALENDAR_INTERSEC ) { $exclude{ $jsDateObject } = $ns; }
-                                case ( CALENDAR_UNIQUE ) { push @only,    $jsDateObject; }
-                                else                     { push @include, $jsDateObject; }
+                            given ( $calendar_type ) {
+                                when ( CALENDAR_UNION ) { push @include, $jsDateObject; }
+                                when ( CALENDAR_INTERSEC ) { $exclude{ $jsDateObject } = $ns; }
+                                when ( CALENDAR_UNIQUE ) { push @only,    $jsDateObject; }
+                                default                     { push @include, $jsDateObject; }
                             }
 
                             #push @range_enabled,$jsDateObject;
@@ -625,11 +626,11 @@ sub date_range : Private {
     $lastType = CALENDAR_INTERSEC if ( keys %exclude );
     $lastType = CALENDAR_UNIQUE   if ( scalar( @only ) > 0 );
 
-    switch ( $lastType ) {
-        case ( CALENDAR_UNIQUE ) {
+    given ( $lastType ) {
+        when ( CALENDAR_UNIQUE ) {
             push @range_enabled, @only;
         }
-        case ( CALENDAR_UNIQUE ) {
+        when ( CALENDAR_UNIQUE ) {
             for my $val ( @include ) {
                 if ( $exclude{ $val } ne '' ) {
                     my $idx = -1;
@@ -645,7 +646,7 @@ sub date_range : Private {
                 }
             }
         }
-        else {
+        default {
             push @range_enabled, keys %exclude;
             push @range_enabled, @only;
             push @range_enabled, @include;
@@ -825,7 +826,6 @@ sub time_range : Private {
     my $date = $c->stash->{ date_selected };
     my @ns = @{ $c->stash->{ ns } || [] };
     use Calendar::Slots;
-    use Switch;
     my @range_enabled;
     my @range_disabled;
     my @include;
@@ -864,11 +864,11 @@ sub time_range : Private {
                             . $r2->id;
 
                        #$cal->slot( date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type );
-                        switch ( $calendar_type ) {
-                            case ( CALENDAR_UNION ) { push @include, $slot; }
-                            case ( CALENDAR_INTERSEC ) { $exclude{ $slot->{ date } } = $ns; push @excludes, $slot; }
-                            case ( CALENDAR_UNIQUE ) { push @only,    $slot; }
-                            else                     { push @include, $slot; }
+                        given ( $calendar_type ) {
+                            when ( CALENDAR_UNION ) { push @include, $slot; }
+                            when ( CALENDAR_INTERSEC ) { $exclude{ $slot->{ date } } = $ns; push @excludes, $slot; }
+                            when ( CALENDAR_UNIQUE ) { push @only,    $slot; }
+                            default                     { push @include, $slot; }
                         }
                     }
                     else {
@@ -883,12 +883,12 @@ sub time_range : Private {
     $lastType = CALENDAR_UNIQUE   if ( scalar( @only ) > 0 );
     my @finalDates = ();
 
-    switch ( $lastType ) {
-        case ( CALENDAR_UNIQUE ) {
+    given ( $lastType ) {
+        when ( CALENDAR_UNIQUE ) {
             #addSlots($cal, @only);
             @finalDates = @only;
         }
-        case ( CALENDAR_INTERSEC ) {
+        when ( CALENDAR_INTERSEC ) {
             for my $val ( @include ) {
                 if ( $exclude{ $val->{ date } } ne '' ) {
                     my $idx = -1;
@@ -903,7 +903,7 @@ sub time_range : Private {
                 }
             }
         }
-        else {
+        default {
             @finalDates = ( @excludes, @only, @include );
             #addSlots($cal, @excludes);
             #addSlots($cal, @only);

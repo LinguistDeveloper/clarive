@@ -38,14 +38,16 @@ sub login_from_url : Local {
 sub login_local : Local {
     my ( $self, $c, $login, $password ) = @_;
     my $p = $c->req->params;
-	my $auth = $c->authenticate({ id=>$c->stash->{login}, password=>$c->stash->{password} }, 'local');
-	if( ref $auth ) {
-		$c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-		$c->session->{username} = $c->stash->{login};
-		$c->stash->{json} = { success => \1, msg => _loc("OK") };
-	} else {
-		$c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
-	}
+
+    my $auth = $c->authenticate({ id=>$c->stash->{login}, password=> Digest::MD5::md5_hex( $c->stash->{password} ) }, 'local');
+    
+    if( ref $auth ) {
+	$c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+	$c->session->{username} = $c->stash->{login};
+	$c->stash->{json} = { success => \1, msg => _loc("OK") };
+    } else {
+        $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
+    }
 }
 
 sub surrogate : Local {
@@ -75,16 +77,30 @@ sub login : Global {
     _log "LOGIN: " . $p->{login};
     #_log "PW   : " . $p->{password}; #TODO only for testing!
 
-	if( $login && $password ) {
+    #if( $login && $password ) {
+    if( $login ) {
 		if( $login =~ /^local\/(.*)$/i ) {
 			$c->stash->{login} = $1;
 			$c->stash->{password} = $password;
 			$c->forward('/auth/login_local');
 		} else {
-			my $auth = $c->authenticate({
-					id          => $login, 
-					password    => $password,
-					});
+			my $auth = $c->authenticate({ id=>$login, password=> $password });
+			
+			if(lc($c->config->{authentication}->{default_realm}) eq 'none'){
+			    my $user_key; # (Public key + Username al revés)
+			    $user_key = $c->config->{decrypt_key}.reverse ($login);
+			    #Validamos contra BaliUser si el realm es none
+			    my $row = $c->model('Baseliner::BaliUser')->search({username => $login, active => 1})->first;
+			    if($row){
+				if( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password ){
+				    $auth = undef;
+				}
+			    }
+			    else{
+				$auth = undef;
+			    }
+			}
+			
 			if( ref $auth ) {
 				$c->stash->{json} = { success => \1, msg => _loc("OK") };
 				$c->session->{username} = uc $login;
@@ -95,10 +111,11 @@ sub login : Global {
 		}
     } else {
         # invalid form input
-		$c->stash->{json} = { success => \0, msg => _loc("Missing User or Password") };
-	}
-	_log '------Login in: '  . $c->username ;
-	$c->forward('View::JSON');	
+	# $c->stash->{json} = { success => \0, msg => _loc("Missing User or Password") };
+	$c->stash->{json} = { success => \0, msg => _loc("Missing User") };
+    }
+    _log '------Login in: '  . $c->username ;
+    $c->forward('View::JSON');	
     #$c->res->body("Welcome " . $c->user->username || $c->user->id . "!");
 }
 
