@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Try::Tiny;
 use DateTime;
 use Carp;
+use Baseliner::Sugar;
 use v5.10;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -388,4 +389,18 @@ sub list_services : Local {
     $c->forward('View::JSON');
 }
 
+sub getconfig : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $id = $p->{id};
+    my $txtconfig;
+    my $config_key = try { $c->model('Registry')->get( $id )->{registry_node}->{param}->{config} };
+    if( $config_key ) {
+	$txtconfig = config_get( $config_key );
+    } else { '' };
+    
+    
+    $c->stash->{json} = { success => \1, msg => _loc("Chain txtconfig"), yaml => _dump($txtconfig) };
+    $c->forward('View::JSON');
+}
 1;
