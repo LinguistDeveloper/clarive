@@ -59,7 +59,7 @@ lifecycle:
             -
               node: Preproduction
               type: state
-              bl: ANTE
+              bl: PREP
               bl_from: TEST
               bl_to: PROD
               icon: /static/images/icons/lc/history.gif
@@ -67,7 +67,7 @@ lifecycle:
               node: Production
               type: state
               bl: PROD
-              bl_from: ANTE
+              bl_from: PREP
               bl_to: PROD
               icon: /static/images/icons/lc/history.gif
 projects:
