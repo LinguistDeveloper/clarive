@@ -54,6 +54,8 @@ sub open {
 	$self->{jes} = MVS::JESFTP->open($self->opts->{'host'}, $self->opts->{'user'}, $self->opts->{'pw'}) 
 		or confess _loc("Could not logon to host %1, user: %2: %3", $self->opts->{'host'}, $self->opts->{'user'}, $! );
 
+	$self->{jes}->quot('SITE', 'SBD=(IBM-1145,IBM-1252)');
+
 	mkpath $self->opt('tempdir')
 		if( ! -d $self->opt('tempdir') );
 	confess _loc("Could not find a temporary job directory '%1'", $self->opt('tempdir') ) 
@@ -73,6 +75,7 @@ sub reopen {
 	# open
 	$self->{jes} = MVS::JESFTP->open($self->opts->{'host'}, $self->opts->{'user'}, $self->opts->{'pw'}) 
 		or confess _loc("Reopen: Could not logon to host %1, user: %2: %3", $self->opts->{'host'}, $self->opts->{'user'}, $! );
+	$self->{jes}->quot('SITE', 'SBD=(IBM-1145,IBM-1252)');
 }
 
 sub loginfo {
