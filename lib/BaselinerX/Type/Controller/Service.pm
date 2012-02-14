@@ -7,7 +7,14 @@ use utf8;
 
 sub begin : Private {
 	my ($self,$c)=@_;
-	$c->stash->{auth_skip} = 1;
+    my $api_key = $ENV{BASELINER_API_KEY};
+    if( defined $api_key ) {
+        if( $c->req->params->{api_key} eq $api_key ) {
+            $c->stash->{auth_skip} = 1;
+        }
+    } else {
+        $c->stash->{auth_skip} = 1;
+    }
 }
 
 sub list_services : Path('/admin/type/service/list_services') {
