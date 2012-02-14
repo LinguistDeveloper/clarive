@@ -12,10 +12,10 @@
                 { name: 'name' },
                 { name: 'description' },
                 { name: 'job_type' },
-                { name: 'active' },
-                { name: 'ns' },
-                { name: 'action' },
-                { name: 'bl'}
+                { name: 'active' }
+                //{ name: 'ns' },
+                //{ name: 'action' },
+                //{ name: 'bl'}
 		],
 		listeners: {
 			'load': function(){
@@ -35,7 +35,8 @@
                 { name: 'key' },
                 { name: 'description' },
                 { name: 'step' },
-                { name: 'active' }
+                { name: 'active' },
+		{ name: 'data' }		
 		]
     });
 
@@ -238,6 +239,7 @@
 	var btn_config_service = new Ext.Toolbar.Button({
 	    icon:'/static/images/icons/cog_edit.png',
 	    cls: 'x-btn-text-icon',
+	    disabled: true,
 	    handler: function() {
     
 		var ta = new Ext.form.TextArea({
@@ -261,29 +263,6 @@
 	    }
 	});
     
-	//var btn_config_service = Baseliner.button(_('YAML'), '/static/images/icons/cog_edit.png', function(){
-	//    // YAML editor
-	//    var ta = new Ext.form.TextArea({
-	//	height: 500,
-	//	width: 600,
-	//	style: { 'font-family': 'Consolas, Courier, monotype' },
-	//	value: txtconfig
-	//    });
-	//    
-	//    var winYaml = new Ext.Window({
-	//	title: _("YAML"),
-	//	tbar: [ 
-	//	    { xtype:'button', text: _('Save'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/write.gif',
-	//		handler: function(){
-	//		    winYaml.hide();
-	//		}
-	//	    }
-	//	],
-	//	items: ta
-	//    });
-	//    winYaml.show();
-	//} );	
-
 	var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
 	
 	schedule_service.on('select', function(field, newValue, oldValue) {
@@ -293,7 +272,14 @@
 		} else {
 		    // saved ok
 		    //Baseliner.message( _('YAML'), res.msg );
-		    txtconfig = res.yaml;
+		    if(res.yaml){
+			txtconfig = res.yaml;
+			btn_config_service.enable();
+		    }
+		    else{
+			btn_config_service.disable();
+		    }
+		    
 		}
 	    });
 	});	
@@ -325,23 +311,23 @@
 		if( checked ) {
 		    menu_mode.setText(item.text);
 		    if(item.value == 'crear'){
-			schedule_service.enable();
 			grid_services.disable();
 			var form = form_services.getForm();
-			form.findField("key").hide();
 			schedule_service.show();
 			schedule_service.enable();
+			btn_config_service.disable();
 			form.reset();
 		    }else{
-			schedule_service.hide();
+			schedule_service.disable();
 			grid_services.enable();
 			grid_services.getSelectionModel().selectFirstRow();
 			var sm = grid_services.getSelectionModel();
 			var rec = sm.getSelected();			    
 			var ff = form_services.getForm();
-			ff.findField("key").show();
 			if(rec){
 			    ff.loadRecord( rec );
+			    rec.data.data ? btn_config_service.enable(): btn_config_service.disable();
+			    txtconfig = rec.data.data;
 			    schedule_service.setValue(rec.data.key);
 			    var rb_state = Ext.getCmp("stategroup_services");
 			    rb_state.setValue(rec.data.active);
@@ -389,9 +375,8 @@
 						}
 					]
 					},
-			
 			//schedule_service, 
-			{ fieldLabel: _('Service'), name: 'key', xtype: 'textfield', readOnly: 'true', hidden: 'true'},
+			//{ fieldLabel: _('Service'), name: 'key', xtype: 'textfield', readOnly: 'true', hidden: 'true'},
 			{ xtype:'textarea', name:'description', fieldLabel:_('Description'), emptyText:_('A brief description of the service') },
 			combo_steps,
 			{
@@ -428,9 +413,7 @@
 				   form.submit({
 				       params: {action: action},
 				       success: function(f,a){
-					   if(action == 'update'){
-
-					   }else{
+					   if(action == 'add'){
 						form.reset();
 					   }
 					   Baseliner.message(_('Success'), a.result.msg );
@@ -500,7 +483,7 @@
 			{ header: _('Servicio'), width: 280, dataIndex: 'key', sortable: true },
 			{ header: _('Description'), width: 300, dataIndex: 'description', sortable: true },
 			{ header: _('Step'), width: 100, dataIndex: 'step', sortable: true },
-			{ header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },                    
+			{ header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active }
 		],
 		autoSizeColumns: true,
 		deferredRender:true,
@@ -517,6 +500,9 @@
 	    //init_buttons('enable');
 	    var row = grid.getStore().getAt(rowIndex);
 	    var ff = form_services.getForm();
+	    row.data.data ? btn_config_service.enable(): btn_config_service.disable();
+	    txtconfig = row.data.data;
+	    
 	    ff.loadRecord( row );
 	    var rb_state = Ext.getCmp("stategroup_services");
 	    rb_state.setValue(row.data.active);

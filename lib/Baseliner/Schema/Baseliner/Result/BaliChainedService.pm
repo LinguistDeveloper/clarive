@@ -53,6 +53,8 @@ __PACKAGE__->add_columns(
   },
   "active",
   { data_type => "NUMBER", default_value => 1, is_nullable => 1, size => 126 },
+  "data",
+  { data_type => "clob", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("id");
 

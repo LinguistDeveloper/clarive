@@ -397,10 +397,11 @@ sub getconfig : Local {
     my $config_key = try { $c->model('Registry')->get( $id )->{registry_node}->{param}->{config} };
     if( $config_key ) {
 	$txtconfig = config_get( $config_key );
-    } else { '' };
-    
-    
-    $c->stash->{json} = { success => \1, msg => _loc("Chain txtconfig"), yaml => _dump($txtconfig) };
+    } else {
+	$txtconfig = undef ;
+    };
+     
+    $c->stash->{json} = { success => \1, msg => _loc("Chain txtconfig"), yaml => $txtconfig?_dump($txtconfig):undef };
     $c->forward('View::JSON');
 }
 1;
