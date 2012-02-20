@@ -8,7 +8,7 @@ has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
     default => sub {
         my $self = shift;
         require Net::FTP;
-        my $ftp = Net::FTP->new( $self->resource->host, Timeout => 5000 )
+        my $ftp = Net::FTP->new( $self->resource->host )
             or _fail _loc "FTP: Could not connect to host %1", $self->resource->host;
         my ( $user, $password );
         if( defined $self->resource->user && defined $self->resource->password ) { 
