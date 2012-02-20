@@ -53,8 +53,9 @@ sub open {
 	}
 	$self->{jes} = MVS::JESFTP->open($self->opts->{'host'}, $self->opts->{'user'}, $self->opts->{'pw'}) 
 		or confess _loc("Could not logon to host %1, user: %2: %3", $self->opts->{'host'}, $self->opts->{'user'}, $! );
-
+	$self->{jes}->quot('SITE', 'FILETYPE=JES');
 	$self->{jes}->quot('SITE', 'SBD=(IBM-1145,IBM-1252)');
+	$self->{jes}->quot('SITE', 'JESOWNER='.$self->opts->{'owner'}) if $self->opts->{'owner'};
 
 	mkpath $self->opt('tempdir')
 		if( ! -d $self->opt('tempdir') );
@@ -73,30 +74,25 @@ sub reopen {
 	};
 
 	# open
-	$self->{jes} = MVS::JESFTP->open($self->opts->{'host'}, $self->opts->{'user'}, $self->opts->{'pw'}) 
+	$self->{jes} = MVS::JESFTP->open($self->opts->{'host'}, $self->opts->{'user'}, $self->opts->{'pw'}, Timeout => 5000) 
 		or confess _loc("Reopen: Could not logon to host %1, user: %2: %3", $self->opts->{'host'}, $self->opts->{'user'}, $! );
+	$self->{jes}->quot('SITE', 'FILETYPE=JES');
 	$self->{jes}->quot('SITE', 'SBD=(IBM-1145,IBM-1252)');
-}
-
-sub loginfo {
-	my $self=shift;
-    my $logger = $self->{opts}->{logger} || $self->{logger};
-    if( defined $logger ) {
-        $logger->info( @_ );
-    } else {
-        warn @_;
-    }
+	$self->{jes}->quot('SITE', 'JESOWNER='.$self->opts->{'owner'}) if $self->opts->{'owner'};
+	return $self->{jes};
 }
 
 sub submit {
 	my $self=shift;
+	my $log = shift;
 	my @jobs;
 	while ( my $jobtxt = shift @_ ) {
 		my $tempdir = $self->opt('tempdir');
 		# my $jobfile = $tempdir."/pkg".sprintf('%05d',$self->{jobcount}++).".$$.jcl";
 		my $jobfile = $tempdir."/pk".sprintf('%06d',$$).".jcl";
 		my ($jobname, $letter, $letter_next) = $self->_gen_jobname_global(); 
-		warn "MVS Submitted JOBNAME=$jobname";
+		$log->debug( "MVS Submitting JOBNAME=$jobname");
+		_log  "MVS Submitting JOBNAME=$jobname";
 		if( ! $self->opt('keep_name') ) {
 			$jobtxt =~ s{^//[A-Z]*}{//$jobname}s;  ## replace job code with generated job code
 			$jobtxt =~ s{\$\{LETTER\}}{$letter}s;
@@ -116,12 +112,12 @@ sub submit {
 			
 		my $msg = $self->{jes}->message;
 		my $JobNumber = $self->_jobnumber($msg);
-		$self->{jobs}{$JobNumber}{status} = 'Submitted';
-		$self->{jobs}{$JobNumber}{name} = $jobname;
-		$self->{jobs}{$JobNumber}{job} = $jobtxt;
-		push @jobs, $JobNumber;
-		warn "MVS Submitted $JobNumber";
-		$self->loginfo( "MVS Submitted $jobname $JobNumber" );
+		$self->{jobs}{$JobNumber}{status} = 'Submitted'; 
+		$self->{jobs}{$JobNumber}{name} = $jobname; 
+		$self->{jobs}{$JobNumber}{job} = $jobtxt; 
+		push @jobs, $JobNumber; 
+		_log "MVS Submitted $jobname/$JobNumber"; 
+		$log->info( "MVS Submitted $jobname $JobNumber" );
 	}
 	
 	return wantarray ? @jobs : shift @jobs;
@@ -199,21 +195,26 @@ sub do_recurse {
 
 sub wait {
 	my $self=shift;
+	my $log=shift;
 
-WW:	while( $self->pending ) {
-		for ( $self->finished_jobs ) {
+WW:	while( $self->pending( $log ) ) {
+		for ( $self->finished_jobs($log) ) {
 			my $num = $self->_jobnumber( $_ );
 			$self->{jobs}{$num}{status}='Finished';			
 		}
+		# $log->debug("Jobs contents", data => _dump $self->{jobs});
 	}
 }
 
 sub pending {
 	my $self=shift;
+	my $log = shift;
+
 	my @ret;
 	for( $self->jobs ){
 		push @ret, $_ if $self->{jobs}{$_}{status} eq 'Submitted';
 	} 
+	# $log->debug("Jobs pending ....", data => _dump @ret) if ref $log;
 	return @ret; 
 }
 
@@ -429,13 +430,24 @@ sub finished_jobs
 {
 	my $self=shift;
 	my $JES = $self->{jes};
+	my $log = shift;
 	my $i = 0;
 	my @Dir = "";
 
 	while (++$i <= $self->opt('timeout') )			# Espera el tiempo especificado en TIMEOUT
 	{
-		last if (@Dir = grep /OUTPUT/,$JES->dir); # Solo los JOBS en OUTPUT
-		sleep(1);
+		$JES = $self->reopen();
+		for ( $self->pending( $log ) ) {
+			my @tempdir = $JES->dir( $self->_jobnumber( $_ ));
+			# $log->debug("Jobs output", data => _dump @tempdir );
+			push @Dir, grep /OUTPUT/, @tempdir ;
+		}
+
+		# if (ref $log) {
+		# 	$log->debug("Jobs returned", data => join "\n", @Dir);
+		# }
+		last if (@Dir); # Solo los JOBS en OUTPUT
+		sleep(3);
 	}
 	return @Dir;					# Devuelve lista de JOBs en OUTPUT
 }
@@ -454,12 +466,7 @@ sub _queuesize {
 		$k++ if $self->{jobs}{$_}{status} eq 'Submitted';
 	}
 	return $k;
-}
-
-use Data::Random qw(rand_chars);
-sub _genjobname_random {
-	my $self=shift;
-	my $user = substr( $self->opt('user') , 0, 3 );
+} use Data::Random qw(rand_chars); sub _genjobname_random {my $self=shift; my $user = substr( $self->opt('user') , 0, 3 );
     my $id = join '', rand_chars( set => 'alphanumeric', min => 5, max => 5 );
     return uc( $user . $id );
 }
