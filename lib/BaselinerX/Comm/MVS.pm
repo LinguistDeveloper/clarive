@@ -447,7 +447,7 @@ sub finished_jobs
 		# 	$log->debug("Jobs returned", data => join "\n", @Dir);
 		# }
 		last if (@Dir); # Solo los JOBS en OUTPUT
-		sleep(3);
+		sleep(15);
 	}
 	return @Dir;					# Devuelve lista de JOBs en OUTPUT
 }
