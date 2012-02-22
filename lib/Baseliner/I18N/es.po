@@ -2331,6 +2331,10 @@ msgstr "Editar cadena"
 msgid "Apply"
 msgstr "Aplicar"
 
+# root/comp/chain_grid.js (279)
+msgid "Configuration"
+msgstr "Configuración"
+
 # root/comp/chain_grid.js (395)
 msgid "Mode create"
 msgstr "Modo crear"
