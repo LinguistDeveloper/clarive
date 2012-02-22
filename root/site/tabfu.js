@@ -190,7 +190,7 @@
 	    items: [
 	    {
 	      fieldLabel: _('Old Password'),
-	      name: 'oldpass',
+	      name: 'oldpass'
 	    },		
 	    {
 	      fieldLabel: _('New Password'),
