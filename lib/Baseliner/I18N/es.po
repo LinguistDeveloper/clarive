@@ -1999,7 +1999,7 @@ msgstr "Cancelar"
 
 # root/comp/scheduler_grid.js (166)
 msgid "Parameters"
-msgstr "Parametros"
+msgstr "Parámetros"
 
 # root/comp/scheduler_grid.js (167)
 msgid "Next execution"
