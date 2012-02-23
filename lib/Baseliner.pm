@@ -33,7 +33,7 @@ BEGIN {
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
-			Unicode 
+			Unicode::Encoding
             Session		Session::Store::DBIC	Session::State::Cookie
             Singleton           
             +CatalystX::Features::Plugin::I18N
@@ -65,6 +65,8 @@ __PACKAGE__->config->{static}->{dirs} = [
     ];
 __PACKAGE__->config->{static}->{ignore_extensions} 
         = [ qw/mas html js json css/ ];    
+
+__PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
 
 __PACKAGE__->config( {
         'View::JSON' => {

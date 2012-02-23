@@ -450,8 +450,26 @@ msgstr "Ubicación"
 msgid "Last Updated"
 msgstr "Última Actualización"
 
+msgid "Add to Favorites..."
+msgstr "Añadir a Favoritos..."
+
+msgid "Tasks"
+msgstr "Tareas"
+
+msgid "Branch"
+msgstr "Rama"
+
+msgid "Branches"
+msgstr "Ramas"
+
+msgid "Deploy"
+msgstr "Desplegar"
+
 msgid "Promote"
 msgstr "Promoción"
+
+msgid "To Promote"
+msgstr "Promover"
 
 msgid "Development"
 msgstr "Desarrollo"
@@ -2242,5 +2260,3 @@ msgstr "Editar demonio"
 # root/comp/daemon_grid.js (220)
 msgid "Not Active"
 msgstr "Desactivado"
-
-

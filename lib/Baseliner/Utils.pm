@@ -62,6 +62,7 @@ use Exporter::Tidy default => [
     _html_escape
     _join_quoted
     case
+    _utf8_on_all
     /
 ];
 
@@ -763,7 +764,7 @@ sub _markup {
 }
 
 sub _to_json {
-    JSON::XS::encode_json( @_ );
+    goto &JSON::XS::encode_json;
 }
 
 sub _from_json {
@@ -934,6 +935,11 @@ sub case {
         }
     }
     return;
+}
+
+sub _utf8_on_all {
+    my $self = shift;
+    return map { Encode::_utf8_on( $_ ); $_ } @_;
 }
 
 1;

@@ -38,7 +38,7 @@ sub parse_po {
     my $c = shift;
     my $file = $c->path_to( @_ );
     return try {
-        open my $fh,'<',$file or die $@;
+        open my $fh,'<:encoding(UTF-8)',$file or die $@;
         my ($key,$val,@po);
         while( <$fh> ) {
             s{\r|\n}{}g;
