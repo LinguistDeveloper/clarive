@@ -15,8 +15,8 @@ register 'menu.tools.issues' => {
     title    => 'Issues',
     action   => 'action.issues.view',
     url_comp => '/issue/grid',
-    icon     => '/static/images/icons/pencil.png',
-    tab_icon => '/static/images/icons/pencil.png'
+    icon     => '/static/images/icons/tasks.gif',
+    tab_icon => '/static/images/icons/tasks.gif'
 };
 
 register 'action.issues.view' => { name=>'View and Admin issues' };
