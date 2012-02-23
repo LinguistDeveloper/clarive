@@ -65,6 +65,16 @@ Ext.onReady(function(){
        hidden: true,
        menu: Baseliner.help_menu
     });
+    var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
+    search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
+    search_box.on('keydown', function(f, e){ search_box.setSize( 300 ); });
+    search_box.on('specialkey', function(f, e){
+        if(e.getKey() == e.ENTER){
+            Baseliner.add_tabcomp('/comp/search_results.js', undefined,
+                { query: search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+            search_box.setSize( 120 );
+        }
+    });
     Baseliner.help_button.on('click', Baseliner.help_off );
     var tb = new Ext.Toolbar({
         id: 'mainMenu',
@@ -77,6 +87,7 @@ Ext.onReady(function(){
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
             ,
             '->',
+            search_box,
             Baseliner.help_button,
             '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
             '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',

@@ -74,6 +74,17 @@ td.nopaseDesHover { background-color: #B0B0B0; }
 .expandall { background-image: '/static/images/icons/expandall.gif' }
 .colapseall { background-image: '/static/images/icons/collapseall.gif' }
 
+/*****************   Search box ********************/
+
+#search-result-block {
+    padding: 5px 5px 5px 5px;
+}
+
+#search-result-block-title {
+    font-size: 20px;
+    color: #0033e0;
+}
+
 /*************************************************
 
 Help File Styles
