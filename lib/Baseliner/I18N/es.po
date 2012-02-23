@@ -2260,3 +2260,127 @@ msgstr "Editar demonio"
 # root/comp/daemon_grid.js (220)
 msgid "Not Active"
 msgstr "Desactivado"
+
+# lib/Baseliner/Controller/Chain.pm (248)
+msgid "Chain started"
+msgstr "Cadena iniciada"
+
+# lib/Baseliner/Controller/Chain.pm (248)
+msgid "Chain stopped"
+msgstr "Cadena parada"
+
+# lib/Baseliner/Controller/Chain.pm (252)
+msgid "Error starting/stopping the chain"
+msgstr "Error iniciando/parando la cadena"
+
+# lib/Baseliner/Controller/Chain.pm (275)
+msgid "Chain added"
+msgstr "Cadena añadida"
+
+# lib/Baseliner/Controller/Chain.pm (279)
+msgid "Error adding Chain: %1"
+msgstr "Error añadiendo Cadena: %1"
+
+# lib/Baseliner/Controller/Chain.pm (294)
+msgid "Chain modified"
+msgstr "Cadena modificada"
+
+# lib/Baseliner/Controller/Chain.pm (297)
+msgid "Error modifying Chain: %1"
+msgstr "Error modificando Cadena"
+
+# lib/Baseliner/Controller/Chain.pm (307)
+msgid "Chain deleted"
+msgstr "Cadena borrada"
+
+# lib/Baseliner/Controller/Chain.pm (310)
+msgid "Error deleting Chain"
+msgstr "Error borrando Cadena"
+
+# lib/Baseliner/Controller/Chain.pm (347)
+msgid "Service added"
+msgstr "Servicio añadido"
+
+# lib/Baseliner/Controller/Chain.pm (351)
+msgid "Error adding Service: %1"
+msgstr "Error añadiendo Servicio: %1"
+
+# lib/Baseliner/Controller/Chain.pm (363)
+msgid "Service modified"
+msgstr "Servicio modificado"
+
+# lib/Baseliner/Controller/Chain.pm (366)
+msgid "Error modifying Service: %1"
+msgstr "Error modificando Servicio: %1"
+
+# lib/Baseliner/Controller/Chain.pm (375)
+msgid "Chain deleted"
+msgstr "Cadena borrada"
+
+# lib/Baseliner/Controller/Chain.pm (378)
+msgid "Error deleting Chain"
+msgstr "Error borrando cadena"
+
+# lib/Baseliner/Controller/Chain.pm (433)
+msgid "Configuration changed"
+msgstr "Configuración cambiada"
+
+# lib/Baseliner/Controller/Chain.pm (436)
+msgid "Error changing the configuration"
+msgstr "Error cambiando configuración"
+
+# lib/Baseliner/Controller/Chain.pm (378)
+msgid "Sequence changed"
+msgstr "Secuencia cambiada"
+
+# root/comp/chain_grid.js (128)
+msgid "Are you sure you want to turn off the chain"
+msgstr "¿Está seguro de que quiere parar la cadena"
+
+# root/comp/chain_grid.js (177)
+msgid "Create chain"
+msgstr "Crear cadena"
+
+# root/comp/chain_grid.js (204)
+msgid "Edit chain"
+msgstr "Editar cadena"
+
+# root/comp/chain_grid.js (264)
+msgid "Apply"
+msgstr "Aplicar"
+
+# root/comp/chain_grid.js (279)
+msgid "Configuration"
+msgstr "Configuración"
+
+# root/comp/chain_grid.js (395)
+msgid "Mode create"
+msgstr "Modo crear"
+
+# root/comp/chain_grid.js (395)
+msgid "Mode edit"
+msgstr "Modo editar"
+
+# root/comp/chain_grid.js (438)
+msgid "You must save a chain first"
+msgstr "Debes salvar una cadea primero"
+
+# root/comp/chain_grid.js (548)
+msgid "A brief description of the service"
+msgstr "A breve descripcion del servicio"
+
+# root/comp/chain_grid.js (621)
+msgid "Do you want to save changes?"
+msgstr "¿Quiere salvar cambios?"
+
+# root/comp/chain_grid.js (683)
+msgid "Sequence"
+msgstr "Secuencia"
+
+# root/comp/chain_grid.js (700)
+msgid "Drag and drop the rows to change the sequence."
+msgstr "Arrastra y suelta las filas para cambiar la secuencia."
+
+# root/comp/chain_grid.js (805)
+msgid "Are you sure you want to delete the chain"
+msgstr "¿Está seguro de que quiere borrar la cadena"

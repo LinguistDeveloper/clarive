@@ -240,7 +240,7 @@
 			var ff = form_daemon.getForm();
 			ff.loadRecord( rec );
 			var rb_state = Ext.getCmp("stategroup");
-			rb_state.items[rec.data.active].checked='true';
+			rb_state.setValue(rec.data.active);
 			title = 'Edit daemon';
 			schedule_service.disable();
 		}

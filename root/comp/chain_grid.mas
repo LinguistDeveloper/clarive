@@ -265,25 +265,45 @@
                         } );
   grid = new Ext.grid.GridPanel({
     header: false,
+    //id:'mygrid-dd',
     stripeRows: true,
     autoScroll: true,
     autoWidth: true,
     store: store,
+	    enableDragDrop : true,
+	    ddGroup : 'mygrid-dd',  
+	    ddText : 'Place this row.',	    
     viewConfig: [
       {
         forceFit: 'true'
                 }
     ],
-    selModel: new Ext.grid.RowSelectionModel({
-      singleSelect: true
-            }),
+    //selModel: new Ext.grid.RowSelectionModel({
+    //  singleSelect: true
+    //        }),
     loadMask: 'true',
     columns: [column_init, column_chain, column_desc, column_active, column_job, column_action, column_ns, column_bl],
+			sm: new Ext.grid.RowSelectionModel({  
+			    singleSelect:true,  
+			    listeners: {  
+			        beforerowselect: function(sm,i,ke,row){  
+			            //grid.ddText = title_img(row.data.title, null, row);  
+			        }  
+			    }  
+			}),
     autoSizeColumns: true,
     deferredRender: true,
     bbar: el_paging_tb,
     tbar: [el_searchfield, el_text, toolbar_details, toolbar_switch, toolbar_delete, '->']
   });
+  
+  		var ddrow = new Ext.dd.DropTarget(grid.getView().mainBody, {  
+		    ddGroup : 'mygrid-dd',  
+		    notifyDrop : function(){  
+		      return true;
+		    }  
+		});
+		
   grid.on('rowdblclick', function(grid, rowIndex, e) {
     var r;
     r = grid.getStore().getAt(rowIndex);

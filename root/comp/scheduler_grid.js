@@ -9,6 +9,8 @@
     my $hm =  $now->strftime('%H:%M');
 </%perl>
 (function(){
+    var bl_edit;
+    
     var store=new Ext.data.JsonStore({
         root: 'data', 
         remoteSort: true,
@@ -226,8 +228,6 @@
         labelWidth: 250
     });
 
-    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
-
     var schedule_description = new Ext.form.TextArea({
         name: 'description',
         fieldLabel: _('Description'),
@@ -287,7 +287,105 @@
         name: 'workdays',
         fieldLabel: _('Workdays only')
     });
-           
+
+
+    var txtconfig;
+    
+    var btn_config_service = new Ext.Toolbar.Button({
+        text: _('Setting'),
+        icon:'/static/images/icons/cog_edit.png',
+        cls: 'x-btn-text-icon',
+        disabled: true,
+        handler: function() {
+            var ta = new Ext.form.TextArea({
+                height: 300,
+                width: 500,
+                style: { 'font-family': 'Consolas, Courier, monotype' },
+                value: txtconfig
+            });
+            
+            var title;
+            var img_icon;
+            var bl_save = false;
+            title = 'Apply';
+            img_icon = '/static/images/icons/cog_edit.png';		
+            
+            form = schedule_form.getForm();
+            var id = form.findField('id').value;
+
+            if (bl_edit){
+                title = 'Save';
+                img_icon = '/static/images/icons/database_save.png';
+                bl_save = true;
+            }
+    
+            var btn_save_config = new Ext.Toolbar.Button({
+                text: _(title),
+                icon: img_icon,
+                cls: 'x-btn-text-icon',
+                handler: function() {
+                    if(bl_save){
+                       Baseliner.ajaxEval( '/scheduler/update_conf', { id: id, conf: ta.getValue() },
+                           function(resp){
+                                   Baseliner.message( _('Success'), resp.msg );
+                                   store.load({params:{ limit: ps }});
+                                    form = schedule_form.getForm();
+                                    form.findField("txt_conf").setValue(ta.getValue());                                   
+                           }
+                       );
+                    }else{
+                       form = schedule_form.getForm();
+                       form.findField("txt_conf").setValue(ta.getValue());
+                       btn_save_config.disable();
+                       
+                    }                   
+                }
+            });
+
+            var winYaml = new Ext.Window({
+                modal: true,
+                title: _("Configuration"),
+                tbar: [ 
+                    btn_save_config,
+                    { xtype:'button', text: _('Close'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/door_out.png',
+                        handler: function(){
+                            winYaml.close();
+                        }
+                    }			
+                ],
+                items: ta
+            });
+            winYaml.show();
+        }
+    });
+      
+    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
+    
+    function check_configuration(id_service){
+        Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
+            if( !res.success ) {
+                //Baseliner.error( _('YAML'), res.msg );
+            } else {
+                // saved ok
+                //Baseliner.message( _('YAML'), res.msg );
+                if(res.yaml){
+                    txtconfig = res.yaml;
+                    btn_config_service.enable();
+                }
+                else{
+                    btn_config_service.disable();
+                }
+                
+            }
+        });
+    };
+
+    schedule_service.on('select', function(field, newValue, oldValue) {
+        form = schedule_form.getForm();
+        form.findField("txt_conf").setValue('');       
+        check_configuration(newValue.data.id);
+    });
+    
     var schedule_form = new Ext.FormPanel({
         frame: true,
         url:'/scheduler/save_schedule',
@@ -304,6 +402,7 @@
                         ff.submit({
                                 success: function(form, action) { 
                                     store.load({params:{ limit: ps }});
+                                    ff.reset();
                                 },
                                 failure: function(form, action) { 
                                     Ext.Msg.alert(_('Failure'), action.result.msg);
@@ -321,20 +420,51 @@
                 }
             }
         ],
-        defaults: { width: 400 },
-        items: [ schedule_id, schedule_name, schedule_service,
-            schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
+        defaults:{anchor:'100%'},
+        items: [ schedule_id, schedule_name,
+                 //schedule_service,
+                { name: 'txt_conf', xtype: 'textarea', hidden: 'true' },
+                {
+                // column layout with 2 columns
+                layout:'column'
+                ,defaults:{
+                        //columnWidth:0.5
+                        layout:'form'
+                        ,border:false
+                        ,xtype:'panel'
+                        ,bodyStyle:'padding:0 2px 0 0'
+                }
+                ,items:[{
+                        // left column
+                        columnWidth:0.88,
+                        defaults:{anchor:'100%'}
+                        ,items:[
+                                schedule_service
+                                ]
+                        },
+                        {
+                        columnWidth:0.12,
+                        // right column
+                        defaults:{anchor:'100%'},
+                        items:[
+                                btn_config_service
+                        ]
+                        }
+                ]
+                },                 
+                 schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
     });
 
     var win = new Ext.Window({
         autoScroll: true,
         title: _("Schedule information"),
-        width: 550, 
+        width: 600, 
         closeAction: 'hide',
         items: [ schedule_form ]
     });
 
     var new_schedule = function () {
+        bl_edit = false;
         schedule_id.setValue(undefined);
         schedule_name.setValue(undefined);
         schedule_service.setValue(undefined);
@@ -349,12 +479,24 @@
     };
 
     var edit_schedule = function () {
+        bl_edit = true;
         var sm = grid.getSelectionModel();
         if ( sm.hasSelection() ){
             var r = sm.getSelected();
             schedule_id.setValue(r.data.id);
             schedule_name.setValue(r.data.name);
             schedule_service.setValue(r.data.service);
+            
+            form = schedule_form.getForm();
+            if(r.data.parameters){
+                txtconfig = r.data.parameters;
+                form.findField("txt_conf").setValue(r.data.parameters);                
+                btn_config_service.enable();
+            }else{
+                form.findField("txt_conf").setValue('');
+                check_configuration(r.data.service);
+            }			    
+            
             if ( r.data.next_exec ) {
                 schedule_date.setValue(r.data.next_exec.substring(0,10));
                 schedule_time.setValue(r.data.next_exec.substring(11,16));
@@ -422,6 +564,17 @@
             schedule_id.setValue(undefined);
             schedule_name.setValue(r.data.name+'_copy');
             schedule_service.setValue(r.data.service);
+            
+            form = schedule_form.getForm();
+            if(r.data.parameters){
+                txtconfig = r.data.parameters;
+                form.findField("txt_conf").setValue(r.data.parameters);                
+                btn_config_service.enable();
+            }else{
+                form.findField("txt_conf").setValue('');
+                check_configuration(r.data.service);
+            }	            
+            
             if ( r.data.next_exec ) {
                 schedule_date.setValue(r.data.next_exec.substring(0,10));
                 schedule_time.setValue(r.data.next_exec.substring(11,16));
