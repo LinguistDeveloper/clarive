@@ -133,7 +133,7 @@ sub save_schedule : Local {
 
     _log "Ejecutando save_schedule";
     my $id = $p->{id};
-    my $name = $p->{name};
+    my $name = $p->{name} || $p->{service};
     my $service = $p->{service};
     my $next_exec = $p->{date}." ".$p->{time};
     my $parameters = $p->{txt_conf};
