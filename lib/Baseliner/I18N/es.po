@@ -2262,16 +2262,12 @@ msgid "Not Active"
 msgstr "Desactivado"
 
 # lib/Baseliner/Controller/Chain.pm (248)
-msgid "Chain started"
-msgstr "Cadena iniciada"
-
-# lib/Baseliner/Controller/Chain.pm (248)
-msgid "Chain stopped"
-msgstr "Cadena parada"
+msgid "Chain activated"
+msgstr "Cadena activada"
 
 # lib/Baseliner/Controller/Chain.pm (252)
-msgid "Error starting/stopping the chain"
-msgstr "Error iniciando/parando la cadena"
+msgid "Error changing the chain"
+msgstr "Error modificando la cadena"
 
 # lib/Baseliner/Controller/Chain.pm (275)
 msgid "Chain added"
@@ -2334,8 +2330,8 @@ msgid "Sequence changed"
 msgstr "Secuencia cambiada"
 
 # root/comp/chain_grid.js (128)
-msgid "Are you sure you want to turn off the chain"
-msgstr "¿Está seguro de que quiere parar la cadena"
+msgid "Are you sure you want to deactivate the chain"
+msgstr "¿Está seguro de que quiere desactivar la cadena"
 
 # root/comp/chain_grid.js (177)
 msgid "Create chain"

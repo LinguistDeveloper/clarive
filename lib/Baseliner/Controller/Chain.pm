@@ -249,7 +249,7 @@ sub change_active : Local {
     }
     else{
 	
-	$c->stash->{json} = { success => \0, msg => _loc('Error starting/stopping the chain') };
+	$c->stash->{json} = { success => \0, msg => _loc('Error modifying the chain') };
     }
     $c->forward('View::JSON');
 }

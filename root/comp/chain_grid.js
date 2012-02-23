@@ -5,11 +5,11 @@
     
     var store = new Ext.data.JsonStore({
         root: 'data' , 
-    remoteSort: true,
+        remoteSort: true,
         totalProperty: 'totalCount',
-    id: 'rownum', 
-    url: '/chain/list',
-    fields: [
+        id: 'rownum', 
+        url: '/chain/list',
+        fields: [
                 { name: 'id' },
                 { name: 'name' },
                 { name: 'description' },
@@ -22,50 +22,50 @@
         listeners: {
             'load': function(){
                 init_buttons('disable');
-                }
-            }       
+            }
+        }       
     });
     
     var store_services = new Ext.data.JsonStore({
         root: 'rows' , 
-    remoteSort: true,
+        remoteSort: true,
         totalProperty: 'totalCount',
-    id: 'rownum', 
-    url: '/chain/list_services',
-    fields: [
-        { name: 'id' },
-                { name: 'key' },
-                { name: 'description' },
-                { name: 'step' },
-                { name: 'active' },
-        { name: 'data' }        
+        id: 'rownum', 
+        url: '/chain/list_services',
+        fields: [
+            { name: 'id' },
+                    { name: 'key' },
+                    { name: 'description' },
+                    { name: 'step' },
+                    { name: 'active' },
+            { name: 'data' }        
         ],
-    listeners: {
-        'beforeload': function( obj, opt ) {
-            obj.baseParams.id_chain = id_chain;
-            }
+        listeners: {
+            'beforeload': function( obj, opt ) {
+                obj.baseParams.id_chain = id_chain;
+                }
         }   
     });
     
     var store_sequence = new Ext.data.JsonStore({
         root: 'rows' , 
-    remoteSort: true,
+        remoteSort: true,
         totalProperty: 'totalCount',
-    id: 'id', 
-    url: '/chain/list_services',
-    fields: [
-        { name: 'id' },
-                { name: 'key' },
-                { name: 'description' },
-                { name: 'step' },
-                { name: 'active' },
-        { name: 'data' }        
+        id: 'id', 
+        url: '/chain/list_services',
+        fields: [
+            { name: 'id' },
+                    { name: 'key' },
+                    { name: 'description' },
+                    { name: 'step' },
+                    { name: 'active' },
+            { name: 'data' }        
         ],
-    listeners: {
-        'beforeload': function( obj, opt ) {
-            obj.baseParams.id_chain = id_chain;
-            obj.baseParams.step = step;
-            obj.baseParams.sort = 'seq';
+        listeners: {
+            'beforeload': function( obj, opt ) {
+                obj.baseParams.id_chain = id_chain;
+                obj.baseParams.step = step;
+                obj.baseParams.sort = 'seq';
             }
         }   
     });    
@@ -77,7 +77,7 @@
     };
     
     var render_plugin = function(value, metadata, rec, rowIndex, colIndex, store) {
-    return "<img alt='" + value + "' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/chain.gif' />" ;
+        return "<img alt='" + value + "' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/chain.gif' />" ;
     };
     
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -89,64 +89,64 @@
     store.load({ params: {start: 0, limit: ps}});
 
     var init_buttons = function(action) {
-    eval('btn_start.' + action + '()');
-    eval('btn_stop.' + action + '()');
-    eval('btn_edit.' + action + '()');
-    eval('btn_delete.' + action + '()');
+        eval('btn_start.' + action + '()');
+        eval('btn_stop.' + action + '()');
+        eval('btn_edit.' + action + '()');
+        eval('btn_delete.' + action + '()');
     };
 
     var btn_start = new Ext.Toolbar.Button({
-    text: _('Start'),
-    icon:'/static/images/start.gif',
-    disabled: true,
-    cls: 'x-btn-text-icon',
-    handler: function() {
-        var sm = grid.getSelectionModel();
-        if (sm.hasSelection()) {
-            var rec = sm.getSelected();
-            var id = rec.data.id;
-            Baseliner.ajaxEval( '/chain/change_active', { id: id, action: 'start' },
-                function(resp){
-                    Baseliner.message( _('Success'), resp.msg );
-                    store.load();
-                }
-            );
-        } else {
-            Baseliner.message( _('ERROR'), _('Select at least one row'));   
-        };
-    }
+        text: _('Activate'),
+        icon:'/static/images/start.gif',
+        disabled: true,
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var rec = sm.getSelected();
+                var id = rec.data.id;
+                Baseliner.ajaxEval( '/chain/change_active', { id: id, action: 'start' },
+                    function(resp){
+                        Baseliner.message( _('Success'), resp.msg );
+                        store.load();
+                    }
+                );
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));   
+            };
+        }
     });
 
     var btn_stop = new Ext.Toolbar.Button({
-    text: _('Stop'),
-    icon:'/static/images/stop.gif',
-    disabled: true,
-    cls: 'x-btn-text-icon',
-    handler: function() {
-        var sm = grid.getSelectionModel();
-        var sel = sm.getSelected();
-        Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to turn off the chain') + ' <b>' + sel.data.name  + '</b>?', 
-            function(btn){ 
-                if(btn=='yes') {
-                    Baseliner.ajaxEval( '/chain/change_active', { id: sel.data.id, action: 'stop' },
-                        function(resp){
-                            Baseliner.message( _('Success'), resp.msg );
-                            store.load();
-                        }
-                    );
+        text: _('Deactivate'),
+        icon:'/static/images/stop.gif',
+        disabled: true,
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to deactivate the chain') + ' <b>' + sel.data.name  + '</b>?', 
+                function(btn){ 
+                    if(btn=='yes') {
+                        Baseliner.ajaxEval( '/chain/change_active', { id: sel.data.id, action: 'stop' },
+                            function(resp){
+                                Baseliner.message( _('Success'), resp.msg );
+                                store.load();
+                            }
+                        );
+                    }
                 }
-            }
-        );
-    }
+            );
+        }
     });    
     
     var btn_add = new Ext.Toolbar.Button({
-    text: _('New'),
-    icon:'/static/images/icons/add.gif',
-    cls: 'x-btn-text-icon',
-    handler: function() {
-        add_edit()
-    }
+        text: _('New'),
+        icon:'/static/images/icons/add.gif',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            add_edit()
+        }
     });
     
     
@@ -187,8 +187,7 @@
         frame: true,
         title: _('Chain'),
         url:'/chain/update',
-        buttons: [
-            {
+        buttons: [{
             text: _('Save'),
             type: 'submit',
             handler: function() {
@@ -215,13 +214,13 @@
                        });
                 }
             }
-            },
-            {
+        },
+        {
             text: _('Close'),
             handler: function(){ 
                     win.close();
                 }
-            }
+        }
         ],
         defaults: { width: 400 },
         items: [
@@ -485,15 +484,15 @@
     });
 
     grid_services.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-        //init_buttons('enable');
-        var row = grid.getStore().getAt(rowIndex);
-        var ff = form_services.getForm();
-        schedule_service.setValue(row.data.key);
-        if(row.data.data){
-        txtconfig = row.data.data;
-        btn_config_service.enable();
+            //init_buttons('enable');
+            var row = grid.getStore().getAt(rowIndex);
+            var ff = form_services.getForm();
+            schedule_service.setValue(row.data.key);
+            if(row.data.data){
+            txtconfig = row.data.data;
+            btn_config_service.enable();
         }else{
-        check_configuration(row.data.key);
+            check_configuration(row.data.key);
         }
         //row.data.data ? btn_config_service.enable(): btn_config_service.disable();
         ff.loadRecord( row );
@@ -706,48 +705,47 @@
     var tabs = new Ext.FormPanel({
         border: false,
         items: {
-        xtype: 'tabpanel',
-        activeTab: 0,
-        defaults:{autoHeight:true, bodyStyle:'padding:10px'},
-        items:[ form_chain,
-            form_services,
-            form_sequence
-        ],
-        listeners: {
-            'tabchange': function(tabPanel, tab){
-            if(tab.id == 'tab_services'){
-                if(store_services.getCount() > 0){
-                step = combo_steps_service.value;
-                store_sequence.load();
-                step = null;
-                form_sequence.enable();
+            xtype: 'tabpanel',
+            activeTab: 0,
+            defaults:{autoHeight:true, bodyStyle:'padding:10px'},
+            items:[ form_chain,
+                form_services,
+                form_sequence
+            ],
+            listeners: {
+                'tabchange': function(tabPanel, tab){
+                if(tab.id == 'tab_services'){
+                    if(store_services.getCount() > 0){
+                    step = combo_steps_service.value;
+                    store_sequence.load();
+                    step = null;
+                    form_sequence.enable();
 
+                    }
+                    else{
+                    form_sequence.disable();
+                    }
                 }
-                else{
-                form_sequence.disable();
-                }
-            }
-            if(tab.id == 'tab_sequence'){
-                var ddrow = new Ext.dd.DropTarget(grid_sequence.getView().mainBody, {  
-                ddGroup : 'mygrid-dd',  
-                notifyDrop : function(dd, e, data){  
-                    var sm = grid_sequence.getSelectionModel();  
-                    var rows = sm.getSelections();  
-                    var cindex = dd.getDragData(e).rowIndex;  
-                    if (sm.hasSelection()) {  
-                    for (i = 0; i < rows.length; i++) {  
-                        store_sequence.remove(store_sequence.getById(rows[i].id));  
-                        store_sequence.insert(cindex,rows[i]);  
+                if(tab.id == 'tab_sequence'){
+                    var ddrow = new Ext.dd.DropTarget(grid_sequence.getView().mainBody, {  
+                    ddGroup : 'mygrid-dd',  
+                    notifyDrop : function(dd, e, data){  
+                        var sm = grid_sequence.getSelectionModel();  
+                        var rows = sm.getSelections();  
+                        var cindex = dd.getDragData(e).rowIndex;  
+                        if (sm.hasSelection()) {  
+                        for (i = 0; i < rows.length; i++) {  
+                            store_sequence.remove(store_sequence.getById(rows[i].id));  
+                            store_sequence.insert(cindex,rows[i]);  
+                        }  
+                        sm.selectRecords(rows);
+                        btn_grabar_sequence.enable();
+                        }    
                     }  
-                    sm.selectRecords(rows);
-                    btn_grabar_sequence.enable();
-                    }    
-                }  
-                });             
-            }
-            }
-        }       
-        
+                    });             
+                }
+                }
+            }       
         }
     });
     
@@ -758,9 +756,6 @@
         var rb_state = Ext.getCmp("stategroup");
         rb_state.setValue(rec.data.active);
         store_services.load({ params: {start: 0, limit: ps, id_chain: id_chain}});
-        
-        
-    
         form_services.enable();
         schedule_service.enable();
         grid_services.disable();
@@ -825,49 +820,49 @@
 
     //create the grid
     var grid = new Ext.grid.GridPanel({
-    title: _('Chains'),
-    header: false,
-    stripeRows: true,
-    autoScroll: true,
-    autoWidth: true,
-    store: store,
-    viewConfig: {
-        forceFit: true
-    },
-    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-    loadMask:'true',
-    columns: [
-        { width: 40, sortable: false, renderer: render_plugin },
-        { header: _('Chain'), width: 280, dataIndex: 'name', sortable: true, renderer: render_name },
-        { header: _('Description'), width: 300, dataIndex: 'description', sortable: true },
-        { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },                    
-        { header: _('Job Type'), width: 100, dataIndex: 'job_type', sortable: true },
-        { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },
-        //{ header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true },
-        //{ header: _('Baseline'), width: 200, dataIndex: 'bl', sortable: true }
-    ],
-    autoSizeColumns: true,
-    deferredRender:true,
-    bbar: new Ext.PagingToolbar({
+        title: _('Chains'),
+        header: false,
+        stripeRows: true,
+        autoScroll: true,
+        autoWidth: true,
         store: store,
-        pageSize: ps,
-        displayInfo: true,
-        displayMsg: _('Rows {0} - {1} of {2}'),
-        emptyMsg: _('There are no rows available')
-    }),
-    tbar: [ _('Search') + ': ', ' ',
-            new Ext.app.SearchField({
+        viewConfig: {
+            forceFit: true
+        },
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        loadMask:'true',
+        columns: [
+            { width: 40, sortable: false, renderer: render_plugin },
+            { header: _('Chain'), width: 280, dataIndex: 'name', sortable: true, renderer: render_name },
+            { header: _('Description'), width: 300, dataIndex: 'description', sortable: true },
+            { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },                    
+            { header: _('Job Type'), width: 100, dataIndex: 'job_type', sortable: true },
+            { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },
+            //{ header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true },
+            //{ header: _('Baseline'), width: 200, dataIndex: 'bl', sortable: true }
+        ],
+        autoSizeColumns: true,
+        deferredRender:true,
+        bbar: new Ext.PagingToolbar({
             store: store,
-            params: {start: 0, limit: ps},
-            emptyText: _('<Enter your search string>')
+            pageSize: ps,
+            displayInfo: true,
+            displayMsg: _('Rows {0} - {1} of {2}'),
+            emptyMsg: _('There are no rows available')
         }),
-        btn_start,
-        btn_stop,
-        btn_add,
-        btn_edit,
-        btn_delete,
-        '->'
-    ]
+        tbar: [ _('Search') + ': ', ' ',
+                new Ext.app.SearchField({
+                store: store,
+                params: {start: 0, limit: ps},
+                emptyText: _('<Enter your search string>')
+            }),
+            btn_start,
+            btn_stop,
+            btn_add,
+            btn_edit,
+            btn_delete,
+            '->'
+        ]
     });
     
     grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
