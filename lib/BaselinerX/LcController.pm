@@ -61,7 +61,7 @@ sub tree_project : Local {
         };
     }
     # get sub projects TODO make this recurse over the previous controller (or into a model)
-    my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project });
+    my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project, active=>1 });
     while( my $r = $rs_prj->next ) {
         my $name = $r->nature ? sprintf("%s (%s)", $r->name, $r->nature) : $r->name;
         push @tree, {
