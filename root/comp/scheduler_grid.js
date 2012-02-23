@@ -148,31 +148,45 @@
     
     store.load({params:{start:0 , limit: ps}}); 
 
+    var render_name = function(value, metadata, rec, rowIndex, colIndex, store) {
+        return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
+    };
+
     // create the grid
     var grid = new Ext.grid.GridPanel({
-        renderTo: 'main-panel',
-        title: '<% _loc('Roles') %>',
         header: false,
         stripeRows: true,
         autoScroll: true,
         autoWidth: true,
         store: store,
         viewConfig: {
-                forceFit: true
+            enableRowBody: true,
+            getRowClass: function(record, index, p, store){
+                var css='';
+                p.body='';
+                var parms = record.data.parameters;
+                if( parms != undefined ) {
+                    p.body +='<p><div style="color: #333; font-weight: bold; margin: 0 0 5 30;">';
+                    p.body += '<pre>' + parms + '</pre></div></p>';
+                    css += ' x-grid3-row-expanded '; 
+                }
+                //css += index % 2 > 0 ? ' level-row info-odd ' : ' level-row info-even ' ;
+                return css;
+            },
+            forceFit: true
         },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _('Name'), width: 200, dataIndex: 'name', sortable: true },   
-            { header: _('Service'), width: 200, dataIndex: 'service', sortable: true },   
-            { header: _('Parameters'), width: 200, dataIndex: 'parameters', sortable: true },   
-            { header: _('Next execution'), width: 200, dataIndex: 'next_exec', sortable: true },   
-            { header: _('Last execution'), width: 200, dataIndex: 'last_exec', sortable: true },
-            { header: _('PID'), width: 200, dataIndex: 'pid', sortable: true },
+            { header: _('Name'), width: 300, dataIndex: 'name', sortable: true, renderer: render_name },   
+            { header: _('Service'), width: 100, dataIndex: 'service', sortable: true },   
+            { header: _('Next execution'), width: 100, dataIndex: 'next_exec', sortable: true },   
+            { header: _('Last execution'), width: 100, dataIndex: 'last_exec', sortable: true },
+            { header: _('PID'), width: 60, dataIndex: 'pid', sortable: true },
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
-            { header: _('Frequency'), width: 200, dataIndex: 'frequency', sortable: true },
-            { header: _('State'), width: 200, dataIndex: 'status', sortable: true },
-            { header: _('Workdays'), width: 200, dataIndex: 'workdays', sortable: true }
+            { header: _('Frequency'), width: 60, dataIndex: 'frequency', sortable: true },
+            { header: _('State'), width: 60, dataIndex: 'status', sortable: true },
+            { header: _('Workdays'), width: 60, dataIndex: 'workdays', sortable: true }
         ],
         autoSizeColumns: true,
         deferredRender:true,      
@@ -292,7 +306,7 @@
     var txtconfig;
     
     var btn_config_service = new Ext.Toolbar.Button({
-        text: _('Setting'),
+        text: _('Parameters'),
         icon:'/static/images/icons/cog_edit.png',
         cls: 'x-btn-text-icon',
         disabled: true,
@@ -344,7 +358,7 @@
 
             var winYaml = new Ext.Window({
                 modal: true,
-                title: _("Configuration"),
+                title: _("Parameters"),
                 tbar: [ 
                     btn_save_config,
                     { xtype:'button', text: _('Close'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/door_out.png',
@@ -436,14 +450,14 @@
                 }
                 ,items:[{
                         // left column
-                        columnWidth:0.88,
+                        columnWidth:0.86,
                         defaults:{anchor:'100%'}
                         ,items:[
                                 schedule_service
                                 ]
                         },
                         {
-                        columnWidth:0.12,
+                        columnWidth:0.14,
                         // right column
                         defaults:{anchor:'100%'},
                         items:[
@@ -458,7 +472,7 @@
     var win = new Ext.Window({
         autoScroll: true,
         title: _("Schedule information"),
-        width: 600, 
+        width: 800, 
         closeAction: 'hide',
         items: [ schedule_form ]
     });
@@ -647,6 +661,10 @@
         }
         return true;
     };
+    
+    grid.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
+        edit_schedule();
+    });
     
     return grid;
 })();
