@@ -11,10 +11,19 @@
                     var results = res_query.results;
                     for( var ir=0; ir < results.length; ir++ ) {
                         var r = results[ir];
+                        var url;
+                        if( r.type == 'log' ) {
+                            url = 'javascript:Baseliner.openLogTab(' + r.url[0] + ", '" + r.url[1] + "' )";
+                        }
                         var block = '<div id="search-result-block">'
-                            + '<div id="search-result-block-title">'
-                            +  r.title
-                            + '</div>'
+                            + '<div id="search-result-block-title">';
+                        if( url != undefined ) {
+                            block += res_query.name + ": " +  '<a href="' + url + '">' + r.title + '</a>';
+                        } else {
+                            block += res_query.name + ": " +  r.title;
+                        }
+
+                        block += '</div>'
                             +  r.text
                             + '</div>'
                             ;

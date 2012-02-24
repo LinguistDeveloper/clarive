@@ -15,13 +15,18 @@ sub providers : Local {
 }
 
 sub query : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
+    my ( $self, $c ) = @_;
+    my $p        = $c->request->parameters;
     my $provider = $p->{provider} or _throw _loc('Missing provider');
-    my $query = $p->{query} or _throw _loc('Missing query');
-    my @results = $provider->query( query=>$query );
-    $c->stash->{json} = { results=> \@results };
+    my $query    = $p->{query} or _throw _loc('Missing query');
+    my @results  = $provider->search_query( query => $query );
+    $c->stash->{json} = {
+        results  => \@results,
+        type     => $provider->search_provider_type,
+        name     => $provider->search_provider_name,
+        provider => $provider
+    };
     $c->forward('View::JSON');
-}
+} 
 
 1;

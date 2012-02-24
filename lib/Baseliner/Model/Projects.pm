@@ -3,15 +3,6 @@ use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 
-with 'Baseliner::Role::Search';
-
-sub query {
-    my ($self, %p) = @_;
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ name=>{ -like => '%' . $p{query} . '%' } });
-    my @res = map { +{ title=>$_->name, text=>$_->description, url=>'/' } } $rs->all;
-    return @res;
-}
-
 sub create {
     my ($self, %p) = @_;
     $p{data} = _dump( $p{data} );
