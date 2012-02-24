@@ -358,6 +358,7 @@
 
             var winYaml = new Ext.Window({
                 modal: true,
+                width: 500,
                 title: _("Parameters"),
                 tbar: [ 
                     btn_save_config,
