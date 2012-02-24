@@ -116,7 +116,7 @@ sub process_queue {
         my $slots = $sem->slots;
         my $occupied = $sem->occupied;
         my $free_slots = $slots - $occupied;
-        _log sprintf "SEM=%s, slots=%s, occ=%s" , $sem->sem, $sem->slots, $sem->occupied;
+        #_log sprintf "SEM=%s, slots=%s, occ=%s" , $sem->sem, $sem->slots, $sem->occupied;
         next if $occupied >= $slots && $sem->queue_mode ne 'free';
 
         # grant to queue

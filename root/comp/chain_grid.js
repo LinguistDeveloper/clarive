@@ -275,6 +275,7 @@
 
         var winYaml = new Ext.Window({
             modal: true,
+            width: 500,
             title: _("Configuration"),
             tbar: [ 
             { xtype:'button', text: _(title), iconCls:'x-btn-text-icon', icon: img_icon,
@@ -837,7 +838,7 @@
             { header: _('Description'), width: 300, dataIndex: 'description', sortable: true },
             { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },                    
             { header: _('Job Type'), width: 100, dataIndex: 'job_type', sortable: true },
-            { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },
+            { header: _('Action'), width: 200, dataIndex: 'action', sortable: true }
             //{ header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true },
             //{ header: _('Baseline'), width: 200, dataIndex: 'bl', sortable: true }
         ],

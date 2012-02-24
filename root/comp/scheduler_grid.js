@@ -341,10 +341,11 @@
                     if(bl_save){
                        Baseliner.ajaxEval( '/scheduler/update_conf', { id: id, conf: ta.getValue() },
                            function(resp){
-                                   Baseliner.message( _('Success'), resp.msg );
-                                   store.load({params:{ limit: ps }});
+                                    Baseliner.message( _('Success'), resp.msg );
+                                    store.load({params:{ limit: ps }});
                                     form = schedule_form.getForm();
-                                    form.findField("txt_conf").setValue(ta.getValue());                                   
+                                    form.findField("txt_conf").setValue(ta.getValue());
+                                    txtconfig = ta.getValue();
                            }
                        );
                     }else{
@@ -358,6 +359,7 @@
 
             var winYaml = new Ext.Window({
                 modal: true,
+                width: 500,
                 title: _("Parameters"),
                 tbar: [ 
                     btn_save_config,
