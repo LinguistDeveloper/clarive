@@ -71,7 +71,7 @@ sub tree_project : Local {
                 id_project => $r->id,
                 project    => $r->name,
             },
-            icon       => '/static/images/icons/project.gif',
+            icon       => '/static/images/icons/project_small_child.gif',
             leaf       => \0,
             expandable => \1
         };

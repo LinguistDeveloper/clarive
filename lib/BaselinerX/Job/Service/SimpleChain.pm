@@ -25,7 +25,7 @@ sub job_simple_chain {
     $log->debug( _loc('Starting Simple Chain Runner, STEP=%1, PID=%2', $step, $job->job_data->{pid} ) );
 
     my $chain = $job->job_stash->{chain};
-    my $chain_id = try { $job->job_stash->{runner_data}->{chain_id} } catch { 1 };
+    my $chain_id = try { $job->job_stash->{runner_data}->{chain_id} // 1 } catch { 1 };
     if( !ref($chain) || $chain->step ne $step || $job->exec != $chain->{job_exec} ) {
         # reload chain 1) first time 2) job changed steps 3) reloaded job
         $chain = $self->init_chain( chain_id=>$chain_id, step=>$step, job=>$job ); 
