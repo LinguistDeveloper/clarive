@@ -768,6 +768,7 @@
         var rb_state = Ext.getCmp("stategroup");
         rb_state.setValue(rec.data.active);
         store_services.load({ params: {start: 0, limit: ps, id_chain: id_chain}});
+        form_sequence.enable();
         form_services.enable();
         schedule_service.enable();
         grid_services.disable();
