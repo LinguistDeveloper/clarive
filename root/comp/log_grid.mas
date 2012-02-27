@@ -74,6 +74,7 @@
     };
 
     var filter_menu = new Ext.menu.Menu({
+        id: 'filter_menu',
         items: [
             { id: 'info', text: _('Information'),checked: filter_obj['info'] , checkHandler: filter_me },
             { id: 'comment', text: _('Comments'),checked: filter_obj['comment'] , checkHandler: filter_me },
