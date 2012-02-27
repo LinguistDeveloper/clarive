@@ -81,11 +81,11 @@ projects:
               name: prj_j2ee
               path: /Users/rod/dev/clarive/etc/repo/prj_j2ee.git
     - 
-       name: AAA
+       name: AA
        repositories:
            -
-              name: zos
-              path: /Users/rod/dev/clarive/etc/repo/zos.git
+              name: aaa
+              path: /scm/clarive/etc/repo/aaa.git
 
     - 
        name: AAD

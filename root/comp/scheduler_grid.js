@@ -314,9 +314,14 @@
             var ta = new Ext.form.TextArea({
                 height: 300,
                 width: 500,
+                enableKeyEvents: true,
                 style: { 'font-family': 'Consolas, Courier, monotype' },
                 value: txtconfig
             });
+            
+            ta.on('keypress', function(TextField, e) {
+                btn_save_config.enable();
+            });             
             
             var title;
             var img_icon;
@@ -346,6 +351,7 @@
                                     form = schedule_form.getForm();
                                     form.findField("txt_conf").setValue(ta.getValue());
                                     txtconfig = ta.getValue();
+                                    btn_save_config.disable();
                            }
                        );
                     }else{
@@ -474,7 +480,7 @@
     var win = new Ext.Window({
         autoScroll: true,
         title: _("Schedule information"),
-        width: 800, 
+        width: 650, 
         closeAction: 'hide',
         items: [ schedule_form ]
     });
