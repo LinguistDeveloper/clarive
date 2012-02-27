@@ -636,9 +636,9 @@
         var sm = grid.getSelectionModel();
         if ( sm.hasSelection() ){
             Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text){
-              if (btn == 'Yes'){
-                alert('go ahead');
-                } else {
+                if (btn == 'Yes'){
+                //alert('go ahead');
+                //} else {
                     var r = sm.getSelected();
                     Baseliner.ajaxEval( '/scheduler/kill_schedule', 
                             { id: r.data.id }, 
