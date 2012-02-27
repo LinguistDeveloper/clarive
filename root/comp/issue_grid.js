@@ -335,7 +335,7 @@
 		columns: [
 			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: false, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 400, sortable: true, renderer: render_title },
-			{ header: _('Description'), hidden: true, dataIndex: 'description' },
+			{ header: _('Description'), hidden: true, dataIndex: 'description' }
 		],
 		autoSizeColumns: true,
 		deferredRender:true,
@@ -384,7 +384,7 @@
 		columns: [
 			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: false, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 400, sortable: true, renderer: render_title },
-			{ header: _('Description'), hidden: true, dataIndex: 'description' },
+			{ header: _('Description'), hidden: true, dataIndex: 'description' }
 		],
 		autoSizeColumns: true,
 		deferredRender:true,	

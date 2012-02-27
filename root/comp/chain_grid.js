@@ -245,62 +245,78 @@
     var txtconfig;
     
     var btn_config_service = new Ext.Toolbar.Button({
-        text: _('Setting'),
+        text: _('Parameters'),
         icon:'/static/images/icons/cog_edit.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
-        var ta = new Ext.form.TextArea({
-            height: 300,
-            width: 500,
-            style: { 'font-family': 'Consolas, Courier, monotype' },
-            value: txtconfig
-        });
-        
-        var title;
-        var img_icon;
-        var bl_save = false;
-        title = 'Apply';
-        img_icon = '/static/images/icons/cog_edit.png';     
-        
-        form = form_services.getForm();
-        var disabled = form.findField('service').disabled;
-        var id = form.findField('id').value;
-        
-        if (disabled){
-            title = 'Save';
-            img_icon = '/static/images/icons/database_save.png';
-            bl_save = true;
-        }
-
-        var winYaml = new Ext.Window({
-            modal: true,
-            title: _("Configuration"),
-            tbar: [ 
-            { xtype:'button', text: _(title), iconCls:'x-btn-text-icon', icon: img_icon,
+            var ta = new Ext.form.TextArea({
+                height: 300,
+                width: 500,
+                enableKeyEvents: true,
+                style: { 'font-family': 'Consolas, Courier, monotype' },
+                value: txtconfig
+            });
+            
+            ta.on('keypress', function(TextField, e) {
+                btn_grabar_config.enable();
+            }); 
+            
+            var title;
+            var img_icon;
+            var bl_save = false;
+            title = 'Apply';
+            img_icon = '/static/images/icons/cog_edit.png';     
+            
+            form = form_services.getForm();
+            var disabled = form.findField('service').disabled;
+            var id = form.findField('id').value;
+            
+            if (disabled){
+                title = 'Save';
+                img_icon = '/static/images/icons/database_save.png';
+                bl_save = true;
+            }
+    
+            var btn_grabar_config = new Ext.Toolbar.Button({
+                text: _(title),
+                icon: img_icon,
+                cls: 'x-btn-text-icon',
                 handler: function(){
-                if(bl_save){
-                    Baseliner.ajaxEval( '/chain/update_conf', { id: id, conf: ta.getValue() },
-                        function(resp){
-                            Baseliner.message( _('Success'), resp.msg );
-                            store_services.load();
-                        }
-                    );
-                }else{
-                    form = form_services.getForm();
-                    form.findField("txt_conf").setValue(ta.getValue());
+                    if(bl_save){
+                        Baseliner.ajaxEval( '/chain/update_conf', { id: id, conf: ta.getValue() },
+                            function(resp){
+                                Baseliner.message( _('Success'), resp.msg );
+                                store_services.load();
+                                btn_grabar_config.disable();
+                            }
+                        );
+                    }else{
+                        form = form_services.getForm();
+                        form.findField("txt_conf").setValue(ta.getValue());
+                        btn_grabar_config.disable();
+                    }
                 }
-                }
-            },
-            { xtype:'button', text: _('Close'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/door_out.png',
-                handler: function(){
-                winYaml.close();
-                }
-            }           
-            ],
-            items: ta
-        });
-        winYaml.show();
+            });
+            
+            var winYaml = new Ext.Window({
+                modal: true,
+                width: 500,
+                title: _('Parameters'),
+                tbar: [
+                        btn_grabar_config,
+                        {   xtype:'button',
+                            text: _('Close'),
+                            iconCls:'x-btn-text-icon',
+                            icon:'/static/images/icons/door_out.png',
+                            handler: function(){
+                                winYaml.close();
+                            }
+                        }           
+                ],
+                items: ta
+            });
+            winYaml.show();
         }
     });
     
@@ -308,20 +324,20 @@
     
     function check_configuration(id_service){
         Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
-        if( !res.success ) {
-            //Baseliner.error( _('YAML'), res.msg );
-        } else {
-            // saved ok
-            //Baseliner.message( _('YAML'), res.msg );
-            if(res.yaml){
-            txtconfig = res.yaml;
-            btn_config_service.enable();
+            if( !res.success ) {
+                //Baseliner.error( _('YAML'), res.msg );
+            } else {
+                // saved ok
+                //Baseliner.message( _('YAML'), res.msg );
+                if(res.yaml){
+                    txtconfig = res.yaml;
+                    btn_config_service.enable();
+                }
+                else{
+                    btn_config_service.disable();
+                }
+                
             }
-            else{
-            btn_config_service.disable();
-            }
-            
-        }
         });
     }
     
@@ -528,14 +544,14 @@
             }
             ,items:[{
                 // left column
-                columnWidth:0.90,
+                columnWidth:0.86,
                 defaults:{anchor:'100%'}
                 ,items:[
                     schedule_service
                     ]
                 },
                 {
-                columnWidth:0.10,
+                columnWidth:0.14,
                 // right column
                 defaults:{anchor:'100%'},
                 items:[
@@ -702,50 +718,46 @@
         ]                   
     });
     
-    var tabs = new Ext.FormPanel({
-        border: false,
-        items: {
-            xtype: 'tabpanel',
-            activeTab: 0,
-            defaults:{autoHeight:true, bodyStyle:'padding:10px'},
-            items:[ form_chain,
+    var tabs = new Ext.TabPanel({
+        xtype: 'tabpanel',
+        activeTab: 0,
+        defaults:{autoHeight:true, bodyStyle:'padding:10px'},
+        items:[ form_chain,
                 form_services,
                 form_sequence
-            ],
-            listeners: {
-                'tabchange': function(tabPanel, tab){
+        ],
+        listeners: {
+            'tabchange': function(tabPanel, tab){
                 if(tab.id == 'tab_services'){
                     if(store_services.getCount() > 0){
-                    step = combo_steps_service.value;
-                    store_sequence.load();
-                    step = null;
-                    form_sequence.enable();
-
+                        step = combo_steps_service.value;
+                        store_sequence.load();
+                        step = null;
+                        form_sequence.enable();
                     }
                     else{
-                    form_sequence.disable();
+                        form_sequence.disable();
                     }
                 }
                 if(tab.id == 'tab_sequence'){
                     var ddrow = new Ext.dd.DropTarget(grid_sequence.getView().mainBody, {  
-                    ddGroup : 'mygrid-dd',  
-                    notifyDrop : function(dd, e, data){  
-                        var sm = grid_sequence.getSelectionModel();  
-                        var rows = sm.getSelections();  
-                        var cindex = dd.getDragData(e).rowIndex;  
-                        if (sm.hasSelection()) {  
-                        for (i = 0; i < rows.length; i++) {  
-                            store_sequence.remove(store_sequence.getById(rows[i].id));  
-                            store_sequence.insert(cindex,rows[i]);  
-                        }  
-                        sm.selectRecords(rows);
-                        btn_grabar_sequence.enable();
-                        }    
-                    }  
+                        ddGroup : 'mygrid-dd',  
+                        notifyDrop : function(dd, e, data){  
+                            var sm = grid_sequence.getSelectionModel();  
+                            var rows = sm.getSelections();  
+                            var cindex = dd.getDragData(e).rowIndex;  
+                            if (sm.hasSelection()) {  
+                                for (i = 0; i < rows.length; i++) {  
+                                    store_sequence.remove(store_sequence.getById(rows[i].id));  
+                                    store_sequence.insert(cindex,rows[i]);  
+                                }  
+                                sm.selectRecords(rows);
+                                btn_grabar_sequence.enable();
+                            }
+                        }
                     });             
                 }
-                }
-            }       
+            }
         }
     });
     
@@ -756,6 +768,7 @@
         var rb_state = Ext.getCmp("stategroup");
         rb_state.setValue(rec.data.active);
         store_services.load({ params: {start: 0, limit: ps, id_chain: id_chain}});
+        form_sequence.enable();
         form_services.enable();
         schedule_service.enable();
         grid_services.disable();
@@ -837,7 +850,7 @@
             { header: _('Description'), width: 300, dataIndex: 'description', sortable: true },
             { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },                    
             { header: _('Job Type'), width: 100, dataIndex: 'job_type', sortable: true },
-            { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },
+            { header: _('Action'), width: 200, dataIndex: 'action', sortable: true }
             //{ header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true },
             //{ header: _('Baseline'), width: 200, dataIndex: 'bl', sortable: true }
         ],
