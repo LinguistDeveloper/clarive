@@ -158,6 +158,13 @@ Ext.override(Ext.form.HtmlEditor, {
 		var ps = 30; //page_size
 		store.load({params:{start:0 , limit: ps}}); 
 
+
+		var render_subject = function(value, metadata, rec, rowIndex, colIndex, store) {
+			return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;
+		};
+
+
+
 		// create the grid
 		var grid = new Ext.grid.GridPanel({
             region: 'center',
@@ -177,7 +184,7 @@ Ext.override(Ext.form.HtmlEditor, {
 				{ header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	
 				{ header: _('Message Id'), width: 80, dataIndex: 'id_message', hidden: true, sortable: true },	
 				{ header: _('From'), width: 200, dataIndex: 'sender', sortable: true },	
-				{ header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true },	
+				{ header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true, renderer: render_subject },	
 				{ header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },	
 				{ header: _('Message'), width: 300, dataIndex: 'body', sortable: true },	
 				{ header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
@@ -241,6 +248,7 @@ Ext.override(Ext.form.HtmlEditor, {
 
 	grid.on("rowclick", function(grid, rowIndex, e ) {
 			var row = grid.getStore().getAt(rowIndex);
+			
             message_view( row.get('id'), row.get('id_message') );
 		});		
 	
