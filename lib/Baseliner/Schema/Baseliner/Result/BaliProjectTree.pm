@@ -15,7 +15,8 @@ __PACKAGE__->result_source_instance->view_definition(q{
 	from bali_project spn, bali_project sp, bali_project p
 	where spn.nature is not null and  
 		  spn.id_parent = sp.id and 
-          sp.id_parent = p.id
+          sp.id_parent = p.id and
+          p.active = 1
           
     UNION
      
@@ -23,13 +24,15 @@ __PACKAGE__->result_source_instance->view_definition(q{
 	from bali_project sp, bali_project p
 	where sp.nature is null and
 	      sp.id_parent is not null and  
-          sp.id_parent = p.id
+          sp.id_parent = p.id and
+          p.active = 1
     
     UNION
      
     select p.id as id, p.name AS project_name, NULL as sp_name, NULL as spn_name, NULL as nature, 'CAM' as tree_level
 	from bali_project p
-	where p.id_parent is null
+	where p.id_parent is null and
+          p.active = 1
 });
 
 __PACKAGE__->add_columns(
