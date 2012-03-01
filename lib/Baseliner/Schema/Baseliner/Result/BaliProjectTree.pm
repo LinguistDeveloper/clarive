@@ -16,7 +16,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
 	where spn.nature is not null and  
 		  spn.id_parent = sp.id and 
           sp.id_parent = p.id and
-          p.active = 1
+          p.active = 1 and sp.active = 1 and spn.active = 1 
           
     UNION
      
@@ -25,7 +25,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
 	where sp.nature is null and
 	      sp.id_parent is not null and  
           sp.id_parent = p.id and
-          p.active = 1
+          p.active = 1 and sp.active = 1 
     
     UNION
      
