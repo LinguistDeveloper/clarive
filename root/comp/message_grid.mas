@@ -257,7 +257,7 @@ Ext.override(Ext.form.HtmlEditor, {
             message_view( row.get('id'), row.get('id_message') );
 			var cell = grid.getView().getCell(rowIndex,3);
 			if(row.get('swreaded') == '0'){
-				Ext.fly(cell).update('<div style="padding-left: 5px">' + row.get('subject') + '</div>', false);				
+				Ext.fly(cell).update('<div style="padding-left: 5px;padding-top: 2px">' + row.get('subject') + '</div>', false);				
 			}
 	});
 	
