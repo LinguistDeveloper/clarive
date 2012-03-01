@@ -1,7 +1,8 @@
+
 (function(){
 	var username = '<% $c->stash->{username} %>';
     var fields = [ 'id', 'id_message', 'subject',
-        'body', 'sender', 'to', 'cc', 'sent', 'received', 'type' 
+        'body', 'sender', 'to', 'cc', 'sent', 'received', 'type', 'swreaded'
     ];
 	var store=new Ext.data.JsonStore({
 		url: '/message/inbox_json',
@@ -158,6 +159,18 @@ Ext.override(Ext.form.HtmlEditor, {
 		var ps = 30; //page_size
 		store.load({params:{start:0 , limit: ps}}); 
 
+
+		var render_subject = function(value, metadata, rec, rowIndex, colIndex, store) {
+			if(rec.get('swreaded') == '1'){
+				return value;
+			}else{
+				return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;				
+			}
+
+		};
+
+
+
 		// create the grid
 		var grid = new Ext.grid.GridPanel({
             region: 'center',
@@ -177,7 +190,7 @@ Ext.override(Ext.form.HtmlEditor, {
 				{ header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	
 				{ header: _('Message Id'), width: 80, dataIndex: 'id_message', hidden: true, sortable: true },	
 				{ header: _('From'), width: 200, dataIndex: 'sender', sortable: true },	
-				{ header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true },	
+				{ header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true, renderer: render_subject },	
 				{ header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },	
 				{ header: _('Message'), width: 300, dataIndex: 'body', sortable: true },	
 				{ header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
@@ -242,7 +255,34 @@ Ext.override(Ext.form.HtmlEditor, {
 	grid.on("rowclick", function(grid, rowIndex, e ) {
 			var row = grid.getStore().getAt(rowIndex);
             message_view( row.get('id'), row.get('id_message') );
-		});		
+			
+			var cell = grid.getView().getCell(rowIndex,3);
+			//alert(row.get('id'));
+			//alert(cell.getValue());
+			//alert(cell.id);
+			//alert(row.get('subject'));
+			
+			Ext.fly(cell).update('<div style="padding-left: 5px">' + row.get('subject') + '</div>', false);
+
+			//Ext.fly(cell).highlight("CCFF33", {attr: "background-color",duration: 5});
+			//Ext.fly(cell).setStyle({
+			//						'font-size': '34px !important',
+			//						'font-weight':'normal',
+			//						 'background-color':'CCFF33'
+			//
+			//						});
+			//var changecss = Ext.get(cell);
+			//changecss.removeClass('x-custgrid3-row');
+			//changecss.addClass('x-custgrid4-row');
+			//alert(changecss);
+			//alert(cell.getValue());
+	});
+	
+	//grid.on("cellclick", function(grid, rowIndex, columnIndex, e ) {
+	//	alert('Click on celda');
+	//	alert(columnIndex);
+	//});	
+	
 	
     var panel = new Ext.Panel({
         layout: 'border',

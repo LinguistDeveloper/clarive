@@ -215,7 +215,8 @@ sub inbox {
         my $message = new Baseliner::Core::Message(
             {
                 $r->id_message->get_columns, $r->get_columns,
-                id_message => $r->id_message->id
+                id_message => $r->id_message->id,
+				swreaded => $r->swreaded,
             }
         );
         push @messages, $message;
