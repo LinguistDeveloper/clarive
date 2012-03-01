@@ -1,3 +1,4 @@
+
 (function(){
 	var username = '<% $c->stash->{username} %>';
     var fields = [ 'id', 'id_message', 'subject',
@@ -248,9 +249,35 @@ Ext.override(Ext.form.HtmlEditor, {
 
 	grid.on("rowclick", function(grid, rowIndex, e ) {
 			var row = grid.getStore().getAt(rowIndex);
-			
             message_view( row.get('id'), row.get('id_message') );
-		});		
+			
+			var cell = grid.getView().getCell(rowIndex,3);
+			//alert(row.get('id'));
+			//alert(cell.getValue());
+			//alert(cell.id);
+			//alert(row.get('subject'));
+			
+			Ext.fly(cell).update(row.get('subject'), false);
+
+			//Ext.fly(cell).highlight("CCFF33", {attr: "background-color",duration: 5});
+			//Ext.fly(cell).setStyle({
+			//						'font-size': '34px !important',
+			//						'font-weight':'normal',
+			//						 'background-color':'CCFF33'
+			//
+			//						});
+			//var changecss = Ext.get(cell);
+			//changecss.removeClass('x-custgrid3-row');
+			//changecss.addClass('x-custgrid4-row');
+			//alert(changecss);
+			//alert(cell.getValue());
+	});
+	
+	//grid.on("cellclick", function(grid, rowIndex, columnIndex, e ) {
+	//	alert('Click on celda');
+	//	alert(columnIndex);
+	//});	
+	
 	
     var panel = new Ext.Panel({
         layout: 'border',
