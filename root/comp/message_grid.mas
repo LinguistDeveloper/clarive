@@ -2,7 +2,7 @@
 (function(){
 	var username = '<% $c->stash->{username} %>';
     var fields = [ 'id', 'id_message', 'subject',
-        'body', 'sender', 'to', 'cc', 'sent', 'received', 'type' 
+        'body', 'sender', 'to', 'cc', 'sent', 'received', 'type', 'swreaded'
     ];
 	var store=new Ext.data.JsonStore({
 		url: '/message/inbox_json',
@@ -161,7 +161,12 @@ Ext.override(Ext.form.HtmlEditor, {
 
 
 		var render_subject = function(value, metadata, rec, rowIndex, colIndex, store) {
-			return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;
+			if(rec.get('swreaded') == '1'){
+				return value;
+			}else{
+				return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;				
+			}
+
 		};
 
 
@@ -257,7 +262,7 @@ Ext.override(Ext.form.HtmlEditor, {
 			//alert(cell.id);
 			//alert(row.get('subject'));
 			
-			Ext.fly(cell).update(row.get('subject'), false);
+			Ext.fly(cell).update('<div style="padding-left: 5px">' + row.get('subject') + '</div>', false);
 
 			//Ext.fly(cell).highlight("CCFF33", {attr: "background-color",duration: 5});
 			//Ext.fly(cell).setStyle({
