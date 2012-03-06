@@ -157,13 +157,7 @@ Ext.override(Ext.form.HtmlEditor, {
     <& /comp/search_field.mas &>
 
 		var ps = 30; //page_size
-		//var query_id = '<%$c->stash->{query_id}%>';
 		store.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>' }});
-		//if(query_id){
-		//	alert('pasa');
-		//}else{
-		// store.load({params:{start:0 , limit: ps }}); 
-		//}
 
 		var render_subject = function(value, metadata, rec, rowIndex, colIndex, store) {
 			if(rec.get('swreaded') == '1'){
@@ -171,7 +165,6 @@ Ext.override(Ext.form.HtmlEditor, {
 			}else{
 				return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;				
 			}
-
 		};
 
 
@@ -210,7 +203,7 @@ Ext.override(Ext.form.HtmlEditor, {
 								displayMsg: _('Rows {0} - {1} de {2}'),
 								emptyMsg: _('There are no rows available')
 						}),        
-			tbar: [ 'Buscar: ', ' ',
+			tbar: [ _('Search') + ': ', ' ',
 				new Ext.app.SearchField({
 					store: store,
 					params: {start: 0, limit: ps},

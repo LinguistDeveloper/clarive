@@ -207,10 +207,7 @@ sub inbox {
     exists $p{username} and $search->{username} = delete $p{username} if $p{username};
     exists $p{carrier} and $search->{carrier} = delete $p{carrier};
 	
-	_log ">>>>>>>>>>>>>>query_id: " . $p{query_id} . "\n";
-	
 	if($p{query_id}){
-		_log "wewewewew\n";
 		$p{query_id} and $search->{"lower(sender||body||subject||id_message)"} = { -like => '%'.lc($p{query_id}).'%' };	
 	}else{
 		$p{query} and $search->{"lower(sender||body||subject)"} = { -like => '%'.lc($p{query}).'%' };	

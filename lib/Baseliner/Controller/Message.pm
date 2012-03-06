@@ -42,10 +42,6 @@ sub inbox_json : Local {
 	my $p = $c->request->parameters;
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
 	
-	
-	_log ">>>>>>>>>>>>>>QUERY: " . $query_id . "\n";
-	
-	
     $sort ||= 'sent';
     $dir ||='desc';
     return unless $c->user;
@@ -82,7 +78,6 @@ sub json : Local {
              }
     }
 	$c->stash->{json} = { totalCount=>$c->stash->{messages}->{total}, data => \@rows };
-	#$c->stash->{template} = '/comp/message_grid.mas';
 	$c->forward('View::JSON');
 }
 
@@ -106,9 +101,6 @@ sub inbox : Local {
 	my $p = $c->req->params;
 	$c->stash->{username} = $c->username;
 	$c->stash->{query_id} = $p->{query};	
-	
-	_log ">>>>>>>>>>>>query: " . $c->stash->{query_id} . "\n";
-	#$c->forward('/message/inbox_json');
  	$c->stash->{template} = '/comp/message_grid.mas';
 	
 }
