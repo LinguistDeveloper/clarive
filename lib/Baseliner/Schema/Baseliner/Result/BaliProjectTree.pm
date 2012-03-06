@@ -15,7 +15,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
 	from bali_project spn, bali_project sp, bali_project p
 	where spn.nature is not null and  
 		  spn.id_parent = sp.id and 
-          sp.id_parent = p.id
+          sp.id_parent = p.id 
           
     UNION
      
@@ -23,7 +23,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
 	from bali_project sp, bali_project p
 	where sp.nature is null and
 	      sp.id_parent is not null and  
-          sp.id_parent = p.id
+          sp.id_parent = p.id 
     
     UNION
      

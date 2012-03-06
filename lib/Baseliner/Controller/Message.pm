@@ -7,6 +7,11 @@ sub detail : Local {
     my ($self,$c) = @_;
 	my $p = $c->request->parameters;
     my $message = $c->model('Messaging')->get( id=>$p->{id} );
+		    
+	my $r = $c->model('Baseliner::BaliMessageQueue')->find({ id=>$p->{id}, username=> $c->username });
+	$r->swreaded( '1' );
+	$r->update();		
+	
 	$c->stash->{json} = { data => [ $message ] };		
 	$c->forward('View::JSON');
 }
@@ -67,6 +72,7 @@ sub json : Local {
                  received    => $message->received,
                  body    => substr( $message->body, 0, 100 ),
                  sent       => $message->sent,
+				 swreaded	=> $message->swreaded
              }
     }
 	$c->stash->{json} = { totalCount=>$c->stash->{messages}->{total}, data => \@rows };		
