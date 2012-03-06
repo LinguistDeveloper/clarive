@@ -3,6 +3,7 @@
     my $idjob = '';
     my @emails = $c->stash->{emails};
     my $style = '';
+    my @issues = $c->stash->{issues};
 </%perl>
 
 <link rel="stylesheet" type="text/css" href="/site/project/project.css" />
@@ -540,6 +541,48 @@ ul.errors li {
 
 </table>
 </div>
+
+
+    <div id="body">
+    <h2>Últimas issues abiertas</h2>
+
+<table class="summary-table" width="500px" cellspacing="0">
+    <thead>
+        <tr>
+            <th colspan="2" class="first-child section-name">Título</th>
+            <th class="last-child section-name">Comentarios</th>            
+            <th class="section-description">Usuario</th>
+            <th class="last-child section-name">Creada</th>
+        </tr>
+    </thead>
+
+<!--    <tfoot>
+        <tr>
+            <td colspan="4">
+                Baseliner 5.0.2 for AIX 5.3 64-bit gcc
+            </td>
+        </tr>
+    </tfoot>-->
+
+    <tbody>
+
+%foreach my $issue (_array @issues){
+% my $numcomment = $issue->{numcomment} ? $issue->{numcomment}:'&nbsp';
+        <tr class='last-child'>
+        <td class='data_table' colspan='2'><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$issue->{id}%>', _('Issues'));" style="font-family: Tahoma;"><%$issue->{title}%></a></b></td>
+        <td class='section-score'><%$numcomment%></td>
+        <td class='section-description'><%$issue->{created_by}%></td>
+        <td class='section-description'><%$issue->{created_on}%></td>
+        </tr>
+%}
+
+
+   </tbody>
+        
+
+</table>
+</div>
+
 
 </div>
 </div>

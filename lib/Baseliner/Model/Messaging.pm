@@ -208,7 +208,7 @@ sub inbox {
     exists $p{carrier} and $search->{carrier} = delete $p{carrier};
 	
 	if($p{query_id}){
-		$p{query_id} and $search->{"lower(sender||body||subject||id_message)"} = { -like => '%'.lc($p{query_id}).'%' };	
+		$p{query_id} and $search->{"(id_message)"} = $p{query_id};	
 	}else{
 		$p{query} and $search->{"lower(sender||body||subject)"} = { -like => '%'.lc($p{query}).'%' };	
 	}

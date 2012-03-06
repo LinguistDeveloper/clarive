@@ -23,20 +23,20 @@ register 'action.issues.view' => { name=>'View and Admin issues' };
 
 sub grid : Local {
     my ($self, $c) = @_;
+	my $p = $c->req->params;
+	$c->stash->{query_id} = $p->{query};	
     $c->stash->{template} = '/comp/issue_grid.js';
 }
 
 sub list : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my ($start, $limit, $query, $dir, $sort, $filter, $cnt) = ( @{$p}{qw/start limit query dir sort filter/}, 0 );
+    my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $cnt) = ( @{$p}{qw/start limit query query_id dir sort filter/}, 0 );
     $sort ||= 'me.id';
     $dir ||= 'asc';
     $start||= 0;
     $limit ||= 100;
 
-    _log ">>>>>>>>>>>>>>>>>>>>>Filter: " . $filter . "\n";
-     
     #my $page = to_pages( start=>$start, limit=>$limit );
     #
     #my $where = $query
@@ -93,9 +93,15 @@ sub list : Local {
 			      ON C.ID = D.ID ORDER BY C.ID ASC";
    
     my @datas = $db->array_hash( $SQL );
-    @datas = grep { uc($_->{status}) =~ $filter } @datas;
-    
-    @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
+	
+	
+	if($query_id){ #Viene por la parte de dashboard
+		@datas = grep { ($_->{id}) =~ $query_id } @datas if $query_id;
+	}else{
+		@datas = grep { uc($_->{status}) =~ $filter } @datas;
+		
+		@datas = grep { lc($_->{title}) =~ $query } @datas if $query;
+	}
     my @rows;
           
     foreach my $data (@datas){
