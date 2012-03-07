@@ -4,6 +4,7 @@
     my @emails = $c->stash->{emails};
     my $style = '';
     my @issues = $c->stash->{issues};
+    my @sqas = $c->stash->{sqas};
 </%perl>
 
 <link rel="stylesheet" type="text/css" href="/site/project/project.css" />
@@ -582,6 +583,54 @@ ul.errors li {
 
 </table>
 </div>
+
+
+    <div id="body">
+    <h2>Últimos análisis de proyectos</h2>
+
+<table class="summary-table" width="500px" cellspacing="0">
+    <thead>
+        <tr>
+            <th class="first-child section-name">Entorno</th>
+            <th class="section-description">Proyecto</th>
+            <th class="section-description">Subproyecto</th>            
+            <th class="section-description">Naturaleza</th>
+            <th class="section-description">Auditoría</th>
+            <th class="last-child section-name">Calificación</th>
+        </tr>
+    </thead>
+
+<!--    <tfoot>
+        <tr>
+            <td colspan="4">
+                Baseliner 5.0.2 for AIX 5.3 64-bit gcc
+            </td>
+        </tr>
+    </tfoot>-->
+
+    <tbody>
+
+%foreach my $sqa (_array @sqas){
+% my $subapp = $sqa->{subapp} ? $sqa->{subapp}:'&nbsp';
+% my $nature = $sqa->{nature} ? $sqa->{nature}:'&nbsp';
+        <tr class='last-child'>
+        <td class='data_table'><%$sqa->{bl}%></td>
+        <td class='section-score'><%$sqa->{project}%></td>
+        <td class='section-description'><%$subapp%></td>
+        <td class='section-description'><%$nature%></td>
+        <td class='section-description'><%$sqa->{result}%></td>
+        <td class='section-score'><%$sqa->{qualification}%></td>
+        </tr>
+%}
+
+
+   </tbody>
+        
+
+</table>
+</div>
+
+
 
 
 </div>

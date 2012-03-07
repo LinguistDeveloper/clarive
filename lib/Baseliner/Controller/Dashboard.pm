@@ -12,7 +12,7 @@ sub list : Local {
     my ($self, $c) = @_;
     ##$c->stash->{username} = $c->username;
     $c->forward('/dashboard/list_jobs');
-    ##$c->forward('/dashboard/list_sqa');
+    $c->forward('/dashboard/list_sqa');
     $c->forward('/dashboard/list_emails');
 	$c->forward('/dashboard/list_issues');
     $c->stash->{template} = '/comp/dashboard.js';
@@ -67,7 +67,6 @@ sub list_emails: Private{
 }
 
 sub list_issues: Private{
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ( $self, $c ) = @_;
 	my $username = $c->username;
 	my (@issues, $issue, @datas, $SQL);
@@ -90,6 +89,12 @@ sub list_issues: Private{
 		
 	$c->stash->{issues} =\@datas;
 
+}
+
+sub list_sqa: Private{
+	my ( $self, $c ) = @_;
+	$c->forward('/sqa/grid_json/Dashboard');
+	_log "sdad>>>>>>>>>>>>>>>>>>>>>>>>>" . _dump($c->stash->{sqas}) . "\n";
 }
 
 1;
