@@ -33,7 +33,7 @@ sub new {
 	
 	$opts{timeout} ||= 20;
 	my $temp = $ENV{BASELINER_TEMP} || $ENV{TEMP};
-	$opts{tempdir} ||=  $temp ? "$temp/mvsjobs" : "./mvsjobs"  ;
+	$opts{tempdir} ||=  $temp ? "$temp/mvsjobs" : "./mvsjobs";
 	
 	my $self = {
 		opts=> \%opts,
