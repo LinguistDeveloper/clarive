@@ -53,6 +53,7 @@
 			{  name: 'ns' },
 			{  name: 'provider' },
 			{  name: 'file' },
+			{  name: 'data' },
 			{  name: 'more' }
 		]
 	});
@@ -274,6 +275,8 @@
 		   }
            if( value.more=='jes' ) {
                ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+           } else if( value.more=='link'  ) {
+               ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", rec.data.data );
            } else if( value.more!='' && value.more!=undefined && value.data ) {
                var img;
                if( value.more=='zip' ) {
