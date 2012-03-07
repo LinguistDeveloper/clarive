@@ -314,9 +314,14 @@
             var ta = new Ext.form.TextArea({
                 height: 300,
                 width: 500,
+                enableKeyEvents: true,
                 style: { 'font-family': 'Consolas, Courier, monotype' },
                 value: txtconfig
             });
+            
+            ta.on('keypress', function(TextField, e) {
+                btn_save_config.enable();
+            });             
             
             var title;
             var img_icon;
@@ -341,10 +346,12 @@
                     if(bl_save){
                        Baseliner.ajaxEval( '/scheduler/update_conf', { id: id, conf: ta.getValue() },
                            function(resp){
-                                   Baseliner.message( _('Success'), resp.msg );
-                                   store.load({params:{ limit: ps }});
+                                    Baseliner.message( _('Success'), resp.msg );
+                                    store.load({params:{ limit: ps }});
                                     form = schedule_form.getForm();
-                                    form.findField("txt_conf").setValue(ta.getValue());                                   
+                                    form.findField("txt_conf").setValue(ta.getValue());
+                                    txtconfig = ta.getValue();
+                                    btn_save_config.disable();
                            }
                        );
                     }else{
@@ -358,6 +365,7 @@
 
             var winYaml = new Ext.Window({
                 modal: true,
+                width: 500,
                 title: _("Parameters"),
                 tbar: [ 
                     btn_save_config,
@@ -472,7 +480,7 @@
     var win = new Ext.Window({
         autoScroll: true,
         title: _("Schedule information"),
-        width: 800, 
+        width: 650, 
         closeAction: 'hide',
         items: [ schedule_form ]
     });
@@ -628,10 +636,11 @@
         var sm = grid.getSelectionModel();
         if ( sm.hasSelection() ){
             Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text){
-              if (btn == 'Yes'){
-                alert('go ahead');
-                } else {
+                if (btn == 'yes'){
+                //alert('go ahead');
+                //} else {
                     var r = sm.getSelected();
+                    //alert(r.data.id);
                     Baseliner.ajaxEval( '/scheduler/kill_schedule', 
                             { id: r.data.id }, 
                             function(response) {

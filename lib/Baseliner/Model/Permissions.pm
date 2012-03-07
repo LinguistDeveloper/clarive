@@ -290,36 +290,62 @@ List of projects for which a user has a given action.
 =cut
 #### Ricardo (21/6/2011): Listado de proyectos para los que el usuario tiene una acción
 sub user_projects_with_action {
-    my ($self, %p ) = @_;
-    _check_parameters( \%p, qw/username action/ ); 
-    my $username = $p{username};
-    my $action   = $p{action};
+    my ( $self, %p ) = @_;
+    _check_parameters( \%p, qw/username action/ );
+    my $username  = $p{username};
+    my $action    = $p{action};
+    my $bl        = $p{bl} || '*';
+    my $bl_filter = '';
+    $bl_filter = qq{ AND bl in ('$bl','*') } if $bl ne '*';
     my @granted_projects = [];
-    
-    my @root_users = $self->list( action=> 'action.admin.root' );
 
-    if ( grep /^$username$/i, @root_users ) {
-		@granted_projects = $self->all_projects();
-	} else {
-		my $db = new Baseliner::Core::DBI( { model => 'Baseliner' } );
-		my @data = $db->array( qq{ 
-				select replace(NS, 'project/','')
-				from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra
-				WHERE   r.ID = ru.ID_ROLE AND
-	        	r.ID = ra.ID_ROLE AND 
-                username = '?' AND
-                action = '?'
+    if ( $self->is_root($username) ) {
+        @granted_projects = $self->all_projects();
+    } else {
+        my $db = new Baseliner::Core::DBI( { model => 'Baseliner' } );
+        my @data = $db->array(
+            qq{
+				select distinct p.id
+				from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra, BALI_PROJECT p
+				WHERE  r.ID = ru.ID_ROLE AND
+	        	r.ID = ra.ID_ROLE AND
+                username = ? AND
+                action = ? AND
+                 (
+                       ( ru.NS like 'project/%' AND p.id = to_number( replace( ru.NS, 'project/','' ) ) )
+                       OR
+                       ( ru.NS = '/' )
+                    ) AND
+                p.id_parent IS NULL
+				$bl_filter
 	        	ORDER BY 1
             }, $username, $action
         );
-		if ( @data && $data[0] eq '/') {
-			@granted_projects = $self->all_projects();
-		} else {
-			@granted_projects = @data;
-		}
-	}
-	return wantarray?@granted_projects:\@granted_projects;
+        if ( @data && $data[0] eq '/' ) {
+
+            # XXX does not apply anymore in any case
+            @granted_projects = $self->all_projects();
+        } else {
+
+            sub parent_ids {
+                my $rs = shift;
+                rs_hashref($rs);
+                map { $_->{id} } $rs->all;
+            }
+            my @subapls
+                = parent_ids(
+                scalar Baseliner->model('Baseliner::BaliProject')
+                    ->search( { id_parent => \@data, nature => { '=', undef } }, { select => [qw/id/] } ) );
+            my @natures
+                = parent_ids(
+                scalar Baseliner->model('Baseliner::BaliProject')
+                    ->search( { id_parent => \@subapls, nature => { '!=', undef } }, { select => [qw/id/] } ) );
+            @granted_projects = _unique @data, @subapls, @natures;
+        }
+    }
+    return wantarray ? @granted_projects : \@granted_projects;
 }
+
 
 #### Ricardo (21/6/2011): Listado de todos los proyectos
 sub all_projects {
