@@ -11,6 +11,54 @@ use Try::Tiny;
 use Data::Dumper;
 use utf8;
 
+with 'Baseliner::Role::Search';
+
+sub search_provider_name { 'Jobs' };
+sub search_provider_type { 'Job' };
+sub search_query {
+    my ($self, %p ) = @_;
+    my $where = query_sql_build( query=>$p{query}, fields=>{
+        name     =>'me.name',
+        id       =>'to_char(me.id)',
+        user     =>'me.username',
+        comments =>'me.comments',
+        status   =>'me.status',
+        start    =>"me.starttime",
+        sched    =>"me.schedtime",
+        end      =>"me.endtime",
+        items    =>"bali_job_items.item",
+    });
+	my $rs_search = Baseliner->model('Baseliner::BaliJob')->search(
+        $where,
+		{
+			select => [ { distinct=>'me.id'}, 'starttime' ],
+			as => [ 'id', 'starttime' ],
+			join => [ 'bali_job_items' ],	
+			page=>0, rows=>$p{query_limit} || 20,
+			order_by => { -desc => 'me.starttime' },
+		}
+	);
+	rs_hashref( $rs_search );
+	my @ids = map { $_->{id} } $rs_search->all; 
+	my $rs = Baseliner->model('Baseliner::BaliJob')->search(
+        { 'me.id'=>{ -in =>\@ids } },
+		{
+			page=>$p{page} // 1, rows=>$p{limit} // 20,
+			order_by => { -desc => 'me.starttime' },
+		}
+	);
+	my $pager = $rs->pager;
+	my $cnt = $pager->total_entries;
+    return map { 
+        my %res = $_->get_columns;
+        my $text = join ', ', 
+        map {
+            "$_: $res{$_}" 
+        } keys %res;
+        +{ title=>$_->name, text=>$text, url=>[ $_->id, $_->name ], type=>'log' }
+    } $rs->all;
+}
+
 sub get {
     my ($self, $id ) = @_;
     return Baseliner->model('Baseliner::BaliJob')->find($id) if $id =~ /^[0-9]+$/;
