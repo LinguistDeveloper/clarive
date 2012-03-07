@@ -133,10 +133,10 @@ sub save_schedule : Local {
 
     _log "Ejecutando save_schedule";
     my $id = $p->{id};
-    my $name = $p->{name};
+    my $name = $p->{name} || $p->{service};
     my $service = $p->{service};
     my $next_exec = $p->{date}." ".$p->{time};
-    my $parameters = $p->{parameters};
+    my $parameters = $p->{txt_conf};
     my $frequency = $p->{frequency};
     my $description = $p->{description};
     my $workdays = $p->{workdays} && $p->{workdays} eq 'on'?1:0;
@@ -215,6 +215,24 @@ sub kill_schedule : Local {
     };
     $c->forward( 'View::JSON' );    
 
+}
+
+sub update_conf : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $id = $p->{id};
+    my $conf = $p->{conf};
+    
+    my $service = Baseliner->model('Baseliner::BaliScheduler')->find( $id );
+    if( ref $service ) {
+	$service->parameters( $p->{conf} );
+	$service->update;
+	$c->stash->{json} = { success => \1, msg => _loc("Configuration changed") };
+    }
+    else{
+	$c->stash->{json} = { success => \0, msg => _loc('Error changing the configuration') };
+    }
+    $c->forward('View::JSON');
 }
 
 1;

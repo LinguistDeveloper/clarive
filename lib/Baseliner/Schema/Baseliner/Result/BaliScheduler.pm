@@ -103,7 +103,7 @@ __PACKAGE__->add_columns(
   "service",
   { data_type => "varchar2", is_nullable => 1, size => 1024 },
   "parameters",
-  { data_type => "varchar2", is_nullable => 1, size => 1024 },
+  { data_type => "clob", is_nullable => 1 },
   "next_exec",
   { data_type => "varchar2", is_nullable => 1, size => 20 },
   "last_exec",

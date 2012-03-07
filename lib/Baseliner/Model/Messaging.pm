@@ -207,16 +207,8 @@ sub inbox {
 
     $search->{active} = 1 unless $p{all};
 
+    exists $p{username} and $search->{username} = delete $p{username} if $p{username};
     exists $p{carrier} and $search->{carrier} = delete $p{carrier};
-    my @users;
-     
-    if ( $p{username} ) {
-        push @users, $p{username};
-        my $row_user = Baseliner->model('Baseliner::BaliUser')->search( username => $p{username})->first;
-        if ( $row_user ) {
-          push @users, $row_user->email;
-        }
-    }
 
     $p{query} and $search->{"lower(sender||body||subject)"} = { -like => '%'.lc($p{query}).'%' };
     $opts->{prefetch} = ['id_message']; 
@@ -226,7 +218,8 @@ sub inbox {
         my $message = new Baseliner::Core::Message(
             {
                 $r->id_message->get_columns, $r->get_columns,
-                id_message => $r->id_message->id
+                id_message => $r->id_message->id,
+				swreaded => $r->swreaded,
             }
         );
         push @messages, $message;

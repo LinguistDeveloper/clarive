@@ -14,7 +14,6 @@ use XML::Smart;
 use Try::Tiny;
 use Encode;
 use Encode::Guess qw/utf8/;
-use Baseliner::Legacy;
 
 with 'Baseliner::Role::Service';
 

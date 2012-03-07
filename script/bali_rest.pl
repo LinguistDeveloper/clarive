@@ -81,6 +81,7 @@ if( $s->can_read(.1) ) {
 }
 my $res     = request(
     "http://$server:$port/service/rest",
+    api_key => $ENV{BASELINER_API_KEY},
     service => $service || 'service.job.dummy',
     %opts
 );

@@ -1,10 +1,9 @@
 <%args>
 	$id
-	$prj
 </%args>
 <%perl>
 
-	
+    my $prj =Baseliner->model('Baseliner::BaliProject')->find( $id );
 	my $name = $prj->name;
 	my $appname = 'application/' . $name;
 
@@ -774,7 +773,7 @@ ul.errors li {
 	<tbody>	
 			
 % my $cnt = 0;
-% for my $job ( @jobs ) {
+% for my $job ( keys %jobs ) {
 %    my $alt = $cnt % 2;
 				<tr class="<% $alt ? 'alt' : '' %>">
 					<td class="benchmark-name">Mandelbrot<br />

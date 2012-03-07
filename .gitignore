@@ -3,6 +3,7 @@ etc/bali_cache
 etc/repo
 etc/export
 etc/artifacts
+etc/lc.yaml
 .DS_Store
 *.old
 *.bak

@@ -536,7 +536,7 @@ sub ping_timeout {
     eval {
         warn ts() . " - BALIX: ping started with timeout to $self->{host}:$self->{port}\n";
         local $SIG{ALRM} = sub {
-            die "Timeout. Se ha sobrapasado el tiempo fijado ($self->{timeout} seg) para la conexión por agente a $self->{host}:$self->{port}.\n";
+            die "Timeout. Se ha sobrapasado el tiempo fijado ($self->{timeout} seg) para la conexiÃ³n por agente a $self->{host}:$self->{port}.\n";
         };
         if ( $self->{timeout} ne -1 ) {
             alarm $self->{timeout};

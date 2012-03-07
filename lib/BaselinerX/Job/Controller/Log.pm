@@ -91,12 +91,13 @@ sub log_rows : Private {
 
 	my $qre = qr/\.\w+$/;
 	while( my $r = $rs->next ) {
-        my $data = $p->{with_data} ? _html_escape( uncompress( $r->data ) || $r->data ) : '';
+        my $more = $r->more;
+        my $data = $p->{with_data} || $more eq 'link'
+            ? _html_escape( uncompress( $r->data ) || $r->data ) : '';
         #next if( $query && !query_array($query, $r->job->name, $r->get_column('timestamp'), $r->text, $r->provider, $r->lev, $r->data_name, $data, $r->ns ));
         #if( $filter ) { next if defined($filter->{$r->lev}) && !$filter->{$r->lev}; }
 
         my $data_len = $r->data_length || 0;
-        my $more = $r->more;
         my $data_name = $r->data_name || ''; 
         my $file = $data_name =~ $qre
             ? $data_name

@@ -8,7 +8,7 @@ BEGIN { extends 'Catalyst::Controller' };
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
 sub tree_projects : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
     my @tree;
     my @project_ids = Baseliner->model('Permissions')->all_projects();
     my $rs = Baseliner->model('Baseliner::BaliProject')->search({ id=>\@project_ids, id_parent=>undef }, { order_by=>{ -asc => \'lower(name)' }  });
@@ -17,17 +17,17 @@ sub tree_projects : Local {
             text       => $r->name,
             url        => '/lifecycle/tree_project',
             data       => {
-                id_project => $r->id,
-                project    => $r->name,
+               id_project => $r->id,
+               project    => $r->name,
             },
-            icon       => '/static/images/icons/project.gif',
+            icon       => '/static/images/icons/project_small.gif',
             leaf       => \0,
             expandable => \1
-        };
-    } 
+            };
+    }
     $c->stash->{json} = \@tree;
-    $c->forward( 'View::JSON' );
-}
+    $c->forward('View::JSON');
+} 
 
 sub tree_project : Local {
     my ($self,$c) = @_;
@@ -58,7 +58,7 @@ sub tree_project : Local {
         };
     }
     # get sub projects TODO make this recurse over the previous controller (or into a model)
-    my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project });
+    my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project, active=>1 });
     while( my $r = $rs_prj->next ) {
         my $name = $r->nature ? sprintf("%s (%s)", $r->name, $r->nature) : $r->name;
         push @tree, {
@@ -68,7 +68,7 @@ sub tree_project : Local {
                 id_project => $r->id,
                 project    => $r->name,
             },
-            icon       => '/static/images/icons/project.gif',
+            icon       => '/static/images/icons/project_small_child.gif',
             leaf       => \0,
             expandable => \1
         };

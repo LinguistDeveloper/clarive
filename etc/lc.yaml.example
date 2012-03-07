@@ -72,14 +72,14 @@ lifecycle:
               icon: /static/images/icons/lc/history.gif
 projects:
     - 
-       name: TEST_IC
+      name: XXX
        repositories:
            -
-              name: TEST_IC_REPO
-              path: /home/clarive/clarive/etc/repo/EJEMPLOS_IC.git
+              name: xxx_repo
+              path: /Users/Rick/dev/repo/XXX/.git
     - 
-       name: TEST_COBOL
+       name: YYY
        repositories:
            -
-              name: TEST_COBOL_REPO
-              path: /home/clarive/clarive/etc/repo/IC_COBOL.git
+              name: yyy_repo 
+              path: /Users/Rick/dev/repo/YYY/.git
