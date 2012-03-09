@@ -51,7 +51,7 @@ sub list_emails: Private{
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	$SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
 				FROM BALI_MESSAGE A,
-					(SELECT * FROM ( SELECT ID_MESSAGE, to_char(SENT,'DD/MM/YYYY HH24:MI:SS') AS SENT
+					(SELECT * FROM ( SELECT ID_MESSAGE,  SENT
 										FROM BALI_MESSAGE_QUEUE
 										WHERE USERNAME = ? AND SWREADED = 0
 										ORDER BY SENT DESC ) WHERE ROWNUM < 6) B
