@@ -1,7 +1,7 @@
 <%args>
     $show_main => 0
-    $show_portal => 1
-    $show_dashboard => 0
+    $show_portal => 0
+    $show_dashboard => 1
     $show_menu => 1
     $show_lifecycle => 1
 </%args>
@@ -160,7 +160,8 @@ Ext.onReady(function(){
 % } else { print '' } 
 
 % if( $show_dashboard ) {
-                ,{title:_loc('Dashboard'), closable: false, autoLoad: '/site/dashboard.html', scripts: true, cls: 'tab-style' } 
+                //,{title:_loc('Dashboard'), closable: false, autoLoad: '/site/dashboard.html', scripts: true, cls: 'tab-style' }
+                ,{title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style' }
 % }
             ]
             })

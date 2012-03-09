@@ -45,8 +45,9 @@
 
 	});
 	
-	store_opened.load({params:{start:0 , limit: ps, filter:'O'}});
-	store_closed.load({params:{start:0 , limit: ps, filter:'C'}});
+	var query_id = '<% $c->stash->{query_id} %>';
+		store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>'}});
+		store_closed.load({params:{start:0 , limit: ps, filter:'C'}});	
 	
 	var init_buttons = function(action) {
 		eval('btn_edit.' + action + '()');
@@ -491,7 +492,7 @@
 		]
 	});
 	return panel;
-})()
+})();
 
 
 
