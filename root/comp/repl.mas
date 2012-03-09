@@ -87,6 +87,9 @@ To do:
    
     var tsave_delete_all = function() { var delNode; while (delNode = tsave.childNodes[0]) tsave.removeChild(delNode); }
 
+    // this is needed to load the Baseliner.SearchField class XXX
+    <& /comp/search_field.mas &>
+
     var search = new Baseliner.SearchField({
         width: 180,
         params: {start: 0, limit: 100 },
