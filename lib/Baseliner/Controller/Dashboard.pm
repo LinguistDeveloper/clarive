@@ -51,7 +51,7 @@ sub list_emails: Private{
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	$SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
 				FROM BALI_MESSAGE A,
-					(SELECT * FROM ( SELECT ID_MESSAGE, to_char(SENT,'DD/MM/YYYY HH24:MI:SS') AS SENT
+					(SELECT * FROM ( SELECT ID_MESSAGE,  SENT
 										FROM BALI_MESSAGE_QUEUE
 										WHERE USERNAME = ? AND SWREADED = 0
 										ORDER BY SENT DESC ) WHERE ROWNUM < 6) B
@@ -73,7 +73,7 @@ sub list_issues: Private{
 	
 	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-	$SQL = "SELECT * FROM (SELECT C.ID, TITLE, DESCRIPTION, to_char(created_on,'DD/MM/YYYY HH24:MI:SS') AS CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT
+	$SQL = "SELECT * FROM (SELECT C.ID, TITLE, DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT
 								FROM  BALI_ISSUE C
 								LEFT JOIN
 										(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
