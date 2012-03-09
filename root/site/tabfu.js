@@ -781,13 +781,15 @@
                 Baseliner.addNewTab( info.url, info.title, info.params );
             }
         } else {
+            // non-components: portal, dashboard, etc.
             var closable = panel.initialConfig.closable;
             var p = panel.cloneConfig();
             var conf = p.initialConfig;
             conf.xtype = 'panel';
             tabpanel.remove( panel );
-            var x = tabpanel.add( conf );
-            tabpanel.setActiveTab( x );
+            var new_comp = tabpanel.add( conf );
+            if( conf.tab_icon != undefined ) tabpanel.changeTabIcon( new_comp, conf.tab_icon );
+            tabpanel.setActiveTab( new_comp );
         }
     };
 

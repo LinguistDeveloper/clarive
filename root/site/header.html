@@ -121,6 +121,8 @@ Ext.onReady(function(){
         ]
     });
 
+    var icon_home = '/static/images/icons/home.gif';
+
     var lifecycle = Baseliner.lifecycle;
 % unless( $show_lifecycle ) {
 
@@ -161,13 +163,20 @@ Ext.onReady(function(){
 
 % if( $show_dashboard ) {
 %    $show_portal and print ',';
-                {title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style' }
+                {title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, 
+                    cls: 'tab-style', tab_icon: icon_home }
 % }
             ]
             })
 % } # site_raw
         ]
     });
+
+    var tabpanel = Ext.getCmp('main-panel');
+    var first_comp = tabpanel.getComponent( 0 );
+    if( first_comp != undefined ) {
+        tabpanel.changeTabIcon( first_comp, icon_home );
+    }
 
 % if( $show_portal eq '1' ) {
     //viewport.on('show', function(){
