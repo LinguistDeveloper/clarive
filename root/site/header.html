@@ -160,8 +160,9 @@ Ext.onReady(function(){
 % } else { print '' } 
 
 % if( $show_dashboard ) {
+% $show_portal and print ',';
                 //,{title:_loc('Dashboard'), closable: false, autoLoad: '/site/dashboard.html', scripts: true, cls: 'tab-style' }
-                ,{title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style' }
+                {title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style' }
 % }
             ]
             })
