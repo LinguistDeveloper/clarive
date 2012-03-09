@@ -208,13 +208,13 @@ ul.errors li {
 #project .data-bar {
     background-color: #33cc00;
     #background-image: url(/static/images/project/graph-background.png);
-    height: 30px;
+    height: 20px;
 }
 
 #project .data-bar-error {
     background-color: #ff0000;
     #background-image: url(/static/images/project/graph-background.png);
-    height: 30px;
+    height: 20px;
 }
 
 #project .alt .data-bar {
@@ -244,6 +244,362 @@ ul.errors li {
 .browse_table, .summary-table, .system-table, .data-table {
     width: 480px;  /* bali table */
 }
+
+/*#Estilos tabla de entornos###################################################################*/
+.summary-table-entornos {
+  width: 480px;
+}
+
+.summary-table-entornos * {
+  height: 16px;
+}
+
+.summary-table-entornos * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-entornos * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-entornos * .section-name {
+    width: 15%;
+}
+
+.summary-table-entornos * .section-description {
+    width: 70%;
+}
+
+.summary-table-entornos * .section-score {
+  width: 7%;
+}
+
+.summary-table-entornos * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-entornos * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-entornos * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-entornos * tr.last-child td {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-entornos * tr.first-child td {
+    border-top: #ccc 1px solid;
+}
+
+.summary-table-entornos * td.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-entornos * td.section-name {
+  width: 15%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.summary-table-entornos * td.section-graph {
+    width: 70%;
+}
+
+.summary-table-entornos * td.section-score {
+  width: 7%;
+  text-align: center;
+  font-size: 12px;
+}
+
+.summary-table-entornos * td.overall-score {
+  width: 15%;
+  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  text-align: center;
+  vertical-align: middle;
+  border-right: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+/*##########################################################################################*/
+
+
+/*#Estilos tabla de pases###################################################################*/
+.summary-table-pases {
+  width: 480px;
+}
+
+.summary-table-pases * {
+  height: 16px;
+}
+
+.summary-table-pases * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-pases * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-pases * .section-name {
+    width: 45%;
+}
+
+.summary-table-pases * .section-description {
+    width: 40%;
+}
+
+.summary-table-pases * .section-score {
+  width: 7%;
+}
+
+.summary-table-pases * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-pases * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-pases * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-pases * tr.last-child td {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-pases * tr.first-child td {
+    border-top: #ccc 1px solid;
+}
+
+.summary-table-pases * td.section-name {
+  width: 15%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.summary-table-pases * td.section-exito {
+
+
+}
+
+.summary-table-pases * td.section-score {
+  width: 7%;
+  text-align: center;
+  font-size: 12px;
+}
+
+.summary-table-pases * td.overall-score {
+  width: 15%;
+  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  text-align: center;
+  vertical-align: middle;
+  border-right: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+/*##########################################################################################*/
+
+
+
+/*#Estilos tabla de mensajes################################################################*/
+.summary-table-mensajes {
+  width: 500px;
+  margin-bottom: 9px;
+}
+
+.summary-table-mensajes * {
+  height: 16px;
+}
+
+.summary-table-mensajes * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-mensajes * .section-titulo {
+    width: 55%;
+}
+
+.summary-table-mensajes * .section-emisor {
+    width: 20%;
+}
+
+.summary-table-mensajes * .section-comentario {
+    width: 20%;
+}
+
+.summary-table-mensajes * .section-fecha {
+  width: 25%;
+}
+
+.summary-table-mensajes * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-mensajes * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-mensajes * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-pases * tr.last-child td {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-pases * tr.first-child td {
+    border-top: #ccc 1px solid;
+}
+
+.summary-table-pases * td.section-name {
+  width: 15%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.summary-table-pases * td.section-graph {
+    width: 70%;
+}
+
+.summary-table-pases * td.section-score {
+  width: 7%;
+  text-align: center;
+  font-size: 12px;
+}
+
+.summary-table-pases * td.overall-score {
+  width: 15%;
+  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  text-align: center;
+  vertical-align: middle;
+  border-right: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+/*##########################################################################################*/
+
+
+/*#Estilos tabla de sqa###################################################################*/
+.summary-table-sqa {
+  width: 500px;
+}
+
+.summary-table-sqa * a, .summary-table-mensajes * a {
+    color: #1E4176;
+    font-family: Tahoma;
+    text-decoration: none;
+}
+
+.summary-table-sqa * a:hover, .summary-table-mensajes * a:hover {
+    text-decoration: underline;
+}
+
+.summary-table-sqa * {
+  height: 16px;
+}
+
+.summary-table-sqa * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-sqa * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-pases * .section-name {
+    width: 45%;
+}
+
+.summary-table-pases * .section-description {
+    width: 40%;
+}
+
+.summary-table-pases * .section-score {
+  width: 7%;
+}
+
+.summary-table-sqa * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-sqa * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-sqa * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-sqa * tr.last-child td {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-pases * tr.first-child td {
+    border-top: #ccc 1px solid;
+}
+
+.summary-table-pases * td.section-name {
+  width: 15%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.summary-table-pases * td.section-exito {
+
+
+}
+
+.summary-table-sqa * td.section-calificacion {
+  width: 7%;
+  text-align: right;
+  font-size: 12px;
+}
+
+.summary-table-pases * td.overall-score {
+  width: 15%;
+  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  text-align: center;
+  vertical-align: middle;
+  border-right: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+/*##########################################################################################*/
+
+
+
+
 
 .browse_table {
   margin-bottom: 9px;
@@ -461,226 +817,238 @@ ul.errors li {
 
 <div id="project" style="width: 98%; padding: 2px 2px 2px 2px;">
   <div class="container body">
-  
     <div id="body" class="span-24" width="100%">
-    <!--######INICIO TABLA PASES ###################################################################################-->
-    <div id="body" class="span-12 colborder append-bottom">
-      <h2>Pases</h2>
-      <table class="summary-table" width="100%" cellspacing="0">
-        <thead>
-          <tr>
-            <th class="first-child section-name">Entorno</th>
-            <th colspan="4" class="section-description">Finalizado</th>
-            <th class="last-child section-name">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class='last-child'>
-            <td class='section-name' rowspan='2'>TEST</td>
-            <td class="data-graph" colspan='2'>
-                <div class="data-bar" style="width:50%">&nbsp;</div>
-            </td>
-            <td class="section-score">12</td>
-            <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-            <td class='overall-score' rowspan='2'>24</td>
-          </tr>
-          <tr class='last-child'>
-            <td class="data-graph" colspan='2'>
-                <div class="data-bar-error" style="width:50%">&nbsp;</div>
-            </td>
-            <td class="section-score">12</td>
-            <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-          </tr>
-          <tr class='last-child'>
-            <td class='section-name' rowspan='2'>ANTE</td>
-            <td class="data-graph" colspan='2'>
-                <div class="data-bar" style="width:75%">&nbsp;</div>
-            </td>
-            <td class="section-score">60</td>
-            <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-            <td class='overall-score' rowspan='2'>80</td>
-          </tr>
-          <tr class='last-child'>
-            <td class="data-graph" colspan='2'>
-                <div class="data-bar-error" style="width:25%">&nbsp;</div>
-            </td>
-            <td class="section-score">20</td>
-            <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-          </tr>
-          <tr class='last-child'>
-            <td class='section-name' rowspan='2'>PROD</td>
-            <td class="data-graph" colspan='2'>
-                <div class="data-bar" style="width:85%">&nbsp;</div>
-            </td>
-            <td class="section-score">105</td>
-            <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-            <td class='overall-score' rowspan='2'>123</td>
-          </tr>
-          <tr class='last-child'>
-            <td class="data-graph" colspan='2'>
-                <div class="data-bar-error" style="width:15%">&nbsp;</div>
-            </td>
-            <td class="section-score">18</td>
-            <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-          </tr>         
-          
-        </tbody>    
-      </table>
-    </div>
-    <!--######FIN TABLA PASES #######################################################################################-->
-
-    <!--######INICIO TABLA MENSAJES #################################################################################-->
-    <div id="body" class="span-12">
-      <h2>Mensajes no leídos</h2>
-      <table class="summary-table" width="100%" cellspacing="0">
-        <thead>
-          <tr>
-            <th colspan="3" class="first-child section-name">Asunto</th>
-            <th class="section-description">De</th>
-            <th class="last-child section-name">Enviado</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div id="body" class="span-12 colborder append-bottom">
+        <h2>Entornos</h2>
+        <!--######INICIO TABLA ENTORNOS ###################################################################################-->      
+        <table class="summary-table-entornos" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th class="first-child section-name">Entorno</th>
+              <th colspan="4" class="section-description">Finalizado</th>
+              <th class="last-child section-name">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class='last-child'>
+              <td class='first-child section-name' rowspan='2'>TEST</td>
+              <td class="section-graph" colspan='2'>
+                  <div class="data-bar" style="width:50%">&nbsp;</div>
+              </td>
+              <td class="section-score">12</td>
+              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
+              <td class='overall-score' rowspan='2'>24</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="data-graph" colspan='2'>
+                  <div class="data-bar-error" style="width:50%">&nbsp;</div>
+              </td>
+              <td class="section-score">12</td>
+              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
+            </tr>
+            <tr class='last-child'>
+              <td class='first-child section-name' rowspan='2'>ANTE</td>
+              <td class="data-graph" colspan='2'>
+                  <div class="data-bar" style="width:75%">&nbsp;</div>
+              </td>
+              <td class="section-score">60</td>
+              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
+              <td class='overall-score' rowspan='2'>80</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="data-graph" colspan='2'>
+                  <div class="data-bar-error" style="width:25%">&nbsp;</div>
+              </td>
+              <td class="section-score">20</td>
+              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
+            </tr>
+            <tr class='last-child'>
+              <td class='first-child section-name' rowspan='2'>PROD</td>
+              <td class="data-graph" colspan='2'>
+                  <div class="data-bar" style="width:85%">&nbsp;</div>
+              </td>
+              <td class="section-score">105</td>
+              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
+              <td class='overall-score' rowspan='2'>123</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="data-graph" colspan='2'>
+                  <div class="data-bar-error" style="width:15%">&nbsp;</div>
+              </td>
+              <td class="section-score">18</td>
+              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
+            </tr>         
+            
+          </tbody>    
+        </table>
+        <!--######FIN TABLA ENTORNOS #######################################################################################-->
+      </div>
+      
+      <div id="body" class="span-12">
+        <h2>Mensajes / Issues</h2>
+        <!--######INICIO TABLA MENSAJES #################################################################################-->
+        <table class="summary-table-mensajes" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th colspan="3" class="first-child section-titulo">Asunto</th>
+              <th class="section-emisor">De</th>
+              <th class="last-child section-fecha">Enviado</th>
+            </tr>
+          </thead>
+          <tbody>
 %foreach my $email (_array @emails){
-          <tr class='last-child'>
-            <td class='data_table' colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );" style="font-family: Tahoma;"><%$email->{subject}%></a></b></td>
-            <td class='section-description'><%$email->{sender}%></td>
-            <td class='section-description'><%$email->{sent}%></td>
-          </tr>
+            <tr class='last-child'>
+              <td class='section-name' colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );"><%$email->{subject}%></a></b></td>
+              <td class='section-description'><%$email->{sender}%></td>
+              <td class='section-fecha'><%$email->{sent}%></td>
+            </tr>
 %}
-        </tbody>
-      </table>
-    </div>
-    <!--######FIN TABLA MENSAJES ####################################################################################-->
-    </div>
+          </tbody>
+        </table>
+        <!--######FIN TABLA MENSAJES ####################################################################################-->
   
-    <div id="body" class="span-24" width="100%">
-    <!--######INICIO TABLA PASES ###################################################################################-->
-    <div id="body" class="span-12 colborder append-bottom">
-      <h2>Pases</h2>
-      <table class="summary-table" width="100%" cellspacing="0">
-        <thead>
-          <tr>
-            <th colspan="2" class="first-child section-name">Código de pase</th>
-            <th class="section-description">Aplicación</th>
-            <th class="section-description">Estado</th>
-            <th class="last-child section-name">Entorno</th>
-          </tr>
-        </thead>
-        <tbody>
-
-%foreach my $job (_array @jobs){
-% if ($idjob != $job->{id_job}){
-          <tr class='<%$style%>'>
-            <td class='data_table' colspan='2'><b><a href='javascript:Baseliner.openLogTab(<%$job->{id_job}%>, "<%$job->{name}%>")' style="font-family: Tahoma;"><%$job->{name}%></a></b></td>
-            <td class='section-description'><%$job->{project}%></td>
-            <td class='section-description'><%$job->{status}%></td>
-            <td class='section-description'><%$job->{bl}%></td>
-          </tr>
-% }else{
-          <tr>
-            <td class='data_table' colspan='2'></td>
-            <td class='section-description'><%$job->{project}%></td>
-            <td class='section-description'></td>
-            <td class='section-description'></td>
-          </tr>
+        <!--######INICIO TABLA ISSUES ###################################################################################-->
+        <table class="summary-table-mensajes" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th colspan="3" class="first-child section-titulo">Título</th>
+              <th class="section-comentario">Comentarios</th>            
+              <th class="last-child section-fecha">Creada</th>
+            </tr>
+          </thead>
+          <tbody>
+%foreach my $issue (_array @issues){
+% my $numcomment = $issue->{numcomment} ? $issue->{numcomment}:'&nbsp';
+            <tr class='last-child'>
+              <td class='section-titulo' colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$issue->{id}%>', _('Issues'));"><%$issue->{title}%></a></b></td>
+              <td class='section-comentario'><%$numcomment%></td>
+              <td class='section-fecha'><%$issue->{created_on}%></td>
+            </tr>
 %}
-% $idjob = $job->{id_job};
-% $style = 'first-child'
-%}
-          <tr class='first-child'>
-            <td class='data_table' colspan='5'>&nbsp;</td>
-          </tr>
-        </tbody>    
-      </table>
-    </div>
-    <!--######FIN TABLA PASES #######################################################################################-->
-
-    <!--######INICIO TABLA MENSAJES #################################################################################-->
-    <div id="body" class="span-12">
-      <h2>Mensajes no leídos</h2>
-      <table class="summary-table" width="100%" cellspacing="0">
-        <thead>
-          <tr>
-            <th colspan="3" class="first-child section-name">Asunto</th>
-            <th class="section-description">De</th>
-            <th class="last-child section-name">Enviado</th>
-          </tr>
-        </thead>
-        <tbody>
-%foreach my $email (_array @emails){
-          <tr class='last-child'>
-            <td class='data_table' colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );" style="font-family: Tahoma;"><%$email->{subject}%></a></b></td>
-            <td class='section-description'><%$email->{sender}%></td>
-            <td class='section-description'><%$email->{sent}%></td>
-          </tr>
-%}
-        </tbody>
-      </table>
-    </div>
-    <!--######FIN TABLA MENSAJES ####################################################################################-->
+          </tbody>
+        </table>
+        <!--######FIN TABLA ISSUES ######################################################################################-->
+      </div>
     </div>
     
     <div id="body" class="span-24" width="100%">
-    <!--######INICIO TABLA ISSUES ###################################################################################-->
-    <div id="body" class="span-12 colborder append-bottom">
-      <h2>Issues abiertas</h2>
-      <table class="summary-table" width="100%" cellspacing="0">
-        <thead>
-          <tr>
-            <th colspan="2" class="first-child section-name">Título</th>
-            <th class="last-child section-name">Comentarios</th>            
-            <th class="section-description">Usuario</th>
-            <th class="last-child section-name">Creada</th>
-          </tr>
-        </thead>
-        <tbody>
-%foreach my $issue (_array @issues){
-% my $numcomment = $issue->{numcomment} ? $issue->{numcomment}:'&nbsp';
-          <tr class='last-child'>
-            <td class='data_table' colspan='2'><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$issue->{id}%>', _('Issues'));" style="font-family: Tahoma;"><%$issue->{title}%></a></b></td>
-            <td class='section-score'><%$numcomment%></td>
-            <td class='section-description'><%$issue->{created_by}%></td>
-            <td class='section-description'><%$issue->{created_on}%></td>
-          </tr>
-%}
-        </tbody>
-      </table>
-    </div>   
-    <!--######FIN TABLA ISSUES ######################################################################################-->
-
-    <!--######INICIO TABLA SQA ######################################################################################-->
-    <div id="body" class="span-12">
-      <h2>Análisis de proyectos</h2>
-      <table class="summary-table" width="490px" cellspacing="0">
-        <thead>
-          <tr>
-            <th class="first-child section-name">Entorno</th>
-            <th class="section-description">Proyecto</th>
-            <th class="section-description">Subproyecto</th>            
-            <th class="section-description">Naturaleza</th>
-            <th class="section-description">Auditoría</th>
-            <th class="last-child section-name">Calificación</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div id="body" class="span-12 colborder append-bottom">
+        <h2>Pases</h2>
+        <!--######INICIO TABLA PASES ###################################################################################-->
+        <table class="summary-table-pases" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th class="first-child section-entorno">Entorno</th>
+              <th class="section-proyecto">Proyecto</th>
+              <th class="section-ultimo-exito">Ult. Exito</th>
+              <th class="section-ultimo-fallo">Ult. Fallo</th>
+              <th class="last-child section-duracion">Ult. Duración</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class='last-child'>
+              <td class='section-name' rowspan='3'>TEST</td>
+              <td class="section-proyecto">SCT</td>
+              <td class="section-exito">9 días 9 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
+              <td class="section-fallo">3 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#145</a></b>)</td>
+              <td class="section-duracion">15 min</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="section-proyecto">ACM</td>
+              <td class="section-exito"> 3 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#121</a></b>)</td>
+              <td class="section-fallo">2 días (<b><a href="#" style="font-family: Tahoma; color:red;">#90</a></b>)</td>
+              <td class="section-duracion">1h 15 min</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="section-proyecto">AIA</td>
+              <td class="section-exito">15 días (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
+              <td class="section-fallo">6 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#185</a></b>)</td>
+              <td class="section-duracion">15 min</td>
+            </tr>
+            <tr class='last-child'>
+              <td class='section-name' rowspan='3'>ANTE</td>
+              <td class="section-proyecto">LSD</td>
+              <td class="section-exito">9 días 9 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
+              <td class="section-fallo">3 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#145</a></b>)</td>
+              <td class="section-duracion">15 min</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="section-proyecto">PKR</td>
+              <td class="section-exito"> 3 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#121</a></b>)</td>
+              <td class="section-fallo">2 días (<b><a href="#" style="font-family: Tahoma; color:red;">#90</a></b>)</td>
+              <td class="section-duracion">1h 15 min</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="section-proyecto">ZIP</td>
+              <td class="section-exito">15 días (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
+              <td class="section-fallo">6 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#185</a></b>)</td>
+              <td class="section-duracion">15 min</td>
+            </tr>
+            <tr class='last-child'>
+              <td class='section-name' rowspan='3'>PROD</td>
+              <td class="section-proyecto">DER</td>
+              <td class="section-exito">9 días 9 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
+              <td class="section-fallo">3 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#145</a></b>)</td>
+              <td class="section-duracion">15 min</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="section-proyecto">SCM</td>
+              <td class="section-exito"> 3 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#121</a></b>)</td>
+              <td class="section-fallo">2 días (<b><a href="#" style="font-family: Tahoma; color:red;">#90</a></b>)</td>
+              <td class="section-duracion">1h 15 min</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="section-proyecto">RDE</td>
+              <td class="section-exito">15 días (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
+              <td class="section-fallo">6 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#185</a></b>)</td>
+              <td class="section-duracion">15 min</td>
+            </tr>
+          </tbody>    
+        </table>
+        <!--######FIN TABLA PASES #######################################################################################-->
+      </div>
+  
+      <div id="body" class="span-12">
+        <h2>Calidad</h2>
+        <!--######INICIO TABLA SQA ######################################################################################-->
+        <table class="summary-table-sqa"  cellspacing="0">
+          <thead>
+            <tr>
+              <th class="first-child section-entorno">Entorno</th>
+              <th class="section-proyecto">Proyecto</th>
+              <th class="section-subproyecto">Subproyecto</th>            
+              <th class="section-naturaleza">Naturaleza</th>
+              <th class="section-auditoria">Auditoría</th>
+              <th class="last-child section-calificacion">Calificación</th>
+            </tr>          
+          </thead>
+          <tbody>
 %foreach my $sqa (_array @sqas){
 % my $subapp = $sqa->{subapp} ? $sqa->{subapp}:'&nbsp';
 % my $nature = $sqa->{nature} ? $sqa->{nature}:'&nbsp';
-          <tr class='last-child'>
-            <td class='data_table'><%$sqa->{bl}%></td>
-            <td class='section-score'><%$sqa->{project}%></td>
-            <td class='section-description'><%$subapp%></td>
-            <td class='section-description'><%$nature%></td>
-            <td class='section-description'><%$sqa->{result}%></td>
-            <td class='section-score'><%$sqa->{qualification}%></td>
-          </tr>
+% my ($image, $color);
+% if($sqa->{result} eq 'OK'){
+% $image = 'flag_green.png';
+% $color = '#000';
+% }else{
+% $image = 'flag_red.png';
+% $color = 'red';
 %}
-        </tbody>
-      </table>
+            <tr class='last-child'>
+              <td class='section-entorno'><%$sqa->{bl}%></td>
+              <td class="section-proyecto"><b><a target="_blank" href="/sqa/view_html/<%$sqa->{id}%>"><%$sqa->{project}%></a></b></td>
+              <td class="section-subproyecto"><%$subapp%></td>
+              <td class="section-naturaleza"><%$nature%></td>
+              <td class="section-auditoria"><img src="/static/images/silk/<%$image%>"/></td>
+              <td class="section-calificacion" style="font-size:12px;color:<%$color%>"><b><%$sqa->{qualification}%></b></td>
+            </tr>
+%}
+          </tbody>
+        </table>
+        <!--######FIN TABLA SQA #########################################################################################-->                      
+      </div>
     </div>
-    <!--######FIN TABLA SQA #########################################################################################-->    
+      
     </div>
-    
   </div>
 </div>
