@@ -1,11 +1,13 @@
 package BaselinerX::Lc;
 use Moose;
 use Baseliner::Utils;
+use Try::Tiny;
 
 has 'lc' => (
     is      => 'rw',
     isa     => 'Any',
     default => sub {
+        # loads the lc.yaml file on initialization
         my $feature = Baseliner->features->find( file => __FILE__ );
         my $file = _file( $feature->root, '..', 'etc', 'lc.yaml' );    # TODO to config
         open my $ff, '<', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
@@ -17,6 +19,21 @@ has 'lc' => (
         return +{ %$lc, %$ch };
     }
 );
+
+has 'state_data' => qw(is rw isa HashRef lazy 1), 
+    default => sub{
+        my $self = shift;
+        my $lc = $self->lc;
+        my $states = $lc->{lifecycle}->{default}->{states};
+        my $state_data = {};
+        for my $state ( _array $states ) {
+            my $state_name = $state->{name} // $state->{node}  ;
+            $state_data->{ $state_name }->{to} = $state->{bl_to};
+            $state_data->{ $state_name }->{from} = $state->{bl_from};
+            $state_data->{ $state_name }->{show_branch} = $state->{show_branch};
+        }
+        return $state_data;
+    };
 
 sub lc_for_project {
     my ($self, $id_prj) = @_;
@@ -60,10 +77,21 @@ sub all_repos {
 }
 
 sub bl_from {
-    my ($self, $bl ) = @_;
-    # TODO XXX
-    my %from = ( DESA=>'DESA', DEV=>'new', TEST=>'DESA', PREP=>'TEST', PROD=>'PREP' );
-    $from{ $bl };
+    my ($self, $state_name ) = @_;
+    my $state_data = $self->state_data;
+    return try { $state_data->{ $state_name }->{from} } catch { undef };
+}
+
+sub bl_to {
+    my ($self, $state_name ) = @_;
+    my $state_data = $self->state_data;
+    return try { $state_data->{ $state_name }->{to} } catch { undef };
+}
+
+sub show_branch {
+    my ($self, $state_name ) = @_;
+    my $state_data = $self->state_data;
+    return try { $state_data->{ $state_name }->{show_branch} } catch { undef };
 }
 
 sub repopath_for_project_repo {
