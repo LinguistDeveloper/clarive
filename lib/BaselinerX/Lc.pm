@@ -1,11 +1,13 @@
 package BaselinerX::Lc;
 use Moose;
 use Baseliner::Utils;
+use Try::Tiny;
 
 has 'lc' => (
     is      => 'rw',
     isa     => 'Any',
     default => sub {
+        # loads the lc.yaml file on initialization
         my $feature = Baseliner->features->find( file => __FILE__ );
         my $file = _file( $feature->root, '..', 'etc', 'lc.yaml' );    # TODO to config
         open my $ff, '<', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
@@ -17,6 +19,19 @@ has 'lc' => (
         return +{ %$lc, %$ch };
     }
 );
+
+has 'baselines' => qw(is rw isa HashRef lazy 1), 
+    default => sub{
+        my $self = shift;
+        my $lc = $self->lc;
+        my $states = $lc->{lifecycle}->{default}->{states};
+        my $baselines = {};
+        for my $state ( _array $states ) {
+           $baselines->{ $state->{bl} }->{to} = $state->{bl_to};
+           $baselines->{ $state->{bl} }->{from} = $state->{bl_from};
+        }
+        return $baselines;
+    };
 
 sub lc_for_project {
     my ($self, $id_prj) = @_;
@@ -64,6 +79,13 @@ sub bl_from {
     # TODO XXX
     my %from = ( DESA=>'DESA', DEV=>'new', TEST=>'DESA', PREP=>'TEST', PROD=>'PREP' );
     $from{ $bl };
+}
+
+sub bl_to {
+    my ($self, $bl ) = @_;
+    my $baselines = $self->baselines;
+    # TODO XXX
+    return try { $baselines->{ $bl }->{to} } catch { undef };
 }
 
 sub repopath_for_project_repo {
