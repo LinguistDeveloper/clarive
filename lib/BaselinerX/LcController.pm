@@ -191,10 +191,15 @@ sub agent_ftp : Local {
     for my $i ( $ftp->dir ) {
         next if $k++ == 0;
         my @f = split /[\s|\t]+/, $i;
+        my $vol = $f[0];
+        
+        next if ($vol eq 'Migrated');
+
         my ($vol, $unit, $ref, $ext, $used, $fmt, $lrecl, $blksz, $dsorg, $dsname ) = @f;
         _log "FFFFFFFFFFFFFF=" . join ',', @f;
-        my $is_leaf = @f <= 5 ;
-        my $text = @f < 2 ? $vol : ( @f <= 5 ? $f[4] : $dsname );
+        
+        my $is_leaf = @f <= 5 || $unit ne '3390' ;
+        my $text = @f < 2 || $unit ne '3390' ? $vol : ( @f <= 5 ? $f[4] : $dsname );
 
         my $node = {
             text => $text, 
