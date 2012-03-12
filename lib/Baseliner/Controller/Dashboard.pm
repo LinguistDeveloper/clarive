@@ -21,24 +21,57 @@ sub list : Local {
 sub list_jobs: Private{
     my ( $self, $c ) = @_;
 	my $username = $c->username;
-	my (@jobs, $job, @datas, $SQL);
+	my (@jobs, $job, @datas, @temps, $SQL);
 	
 	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-	$SQL = "SELECT DISTINCT A.ID_JOB, NAME, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, STATUS, BL
-				FROM BALI_JOB_ITEMS A,
-					(SELECT * FROM ( SELECT ID, NAME, STATUS, BL
-										FROM BALI_JOB
-										WHERE USERNAME = ?
-										ORDER BY MAXSTARTTIME DESC ) WHERE ROWNUM < 6) B
-				WHERE A.ID_JOB = B.ID
-				ORDER BY A.ID_JOB";
+	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+				WHERE TO_NUMBER(SYSDATE - STARTTIME) <= 7 AND STATUS = 'FINISHED' AND USERNAME = ?
+				GROUP BY BL
+			UNION
+			SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+				WHERE TO_NUMBER(SYSDATE - STARTTIME) <= 7 AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?
+				GROUP BY BL";
 
-	@jobs = $db->array_hash( $SQL , $username);
-	foreach $job (@jobs){
-	    push @datas, $job;
-	}	
+	#$SQL = "SELECT DISTINCT A.ID_JOB, NAME, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, STATUS, BL
+	#			FROM BALI_JOB_ITEMS A,
+	#				(SELECT * FROM ( SELECT ID, NAME, STATUS, BL
+	#									FROM BALI_JOB
+	#									WHERE USERNAME = ?
+	#									ORDER BY MAXSTARTTIME DESC ) WHERE ROWNUM < 6) B
+	#			WHERE A.ID_JOB = B.ID
+	#			ORDER BY A.ID_JOB";
+
+	@jobs = $db->array_hash( $SQL, $username, $username );
+	
+	my @entornos = ('TEST', 'ANTE', 'PROD');
+	my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
+	
+	foreach my $entorno (@entornos){
+		@temps = grep { ($_->{bl}) =~ $entorno } @jobs;
+		foreach my $temp (@temps){
+			$bl = $temp->{bl};
+			if($temp->{result} eq 'OK'){
+				$totOk = $temp->{tot};
+			}else{
+				$totError = $temp->{tot};
+			}
+		}
 		
+		$total = $totOk + $totError;
+		$porcentOk = $totOk * 100/$total;
+		$porcentError = $totError * 100/$total;
+		
+		push @datas, {
+						bl 				=> $bl,
+						porcentOk		=> $porcentOk,
+						totOk			=> $totOk,
+						total			=> $total,
+						totError		=> $totError,
+						porcentError	=> $porcentError
+					};
+	}
+	
 	$c->stash->{jobs} =\@datas;
 }
 
@@ -94,7 +127,39 @@ sub list_issues: Private{
 sub list_sqa: Private{
 	my ( $self, $c ) = @_;
 	$c->forward('/sqa/grid_json/Dashboard');
-	_log "sdad>>>>>>>>>>>>>>>>>>>>>>>>>" . _dump($c->stash->{sqas}) . "\n";
 }
+
+sub viewjobs: Local{
+	my ( $self, $c ) = @_;
+	my $p = $c->request->parameters;
+	my $username = $c->username;
+	my ($status, @jobs, $job, $jobsid, $SQL);
+	
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
+	#ERROR, CANCELLED, KILLED 
+	#$status = $p->{swOk} ? "FINISHED" : "('ERROR', 'CANCELLED', 'KILLED')";
+	#$SQL = "SELECT ID FROM BALI_JOB
+	#			WHERE TO_NUMBER(SYSDATE - STARTTIME) <= 7 AND BL = ? AND STATUS IN ? AND USERNAME = ?";
+	#
+	#@jobs = $db->array_hash( $SQL, $p->{ent}, $status, $username );
+	if($p->{ent} eq 'All'){
+		$SQL = "SELECT ID FROM BALI_JOB WHERE STATUS = 'RUNNING' AND USERNAME = ?";
+		@jobs = $db->array_hash( $SQL, $username );
+	}else{
+		$SQL = $p->{swOk} ?
+				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - STARTTIME) <= 7 AND BL = ? AND STATUS = 'FINISHED' AND USERNAME = ?" :
+				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - STARTTIME) <= 7 AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?";	
+		@jobs = $db->array_hash( $SQL, $p->{ent}, $username );
+	}
+	
+	foreach $job (@jobs){
+	    $jobsid .= $job->{id} . ",";
+ 	}
+	$c->stash->{jobs} =$jobsid;
+	$c->forward('/job/monitor/Dashboard');
+	
+}
+
 
 1;

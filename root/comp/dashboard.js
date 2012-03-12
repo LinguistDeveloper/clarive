@@ -820,6 +820,13 @@ ul.errors li {
     <div id="body" class="span-24" width="100%">
       <div id="body" class="span-12 colborder append-bottom">
         <h2>Entornos</h2>
+        <table width="480px">
+          <tr>
+            <td align="right">
+              <b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=All', _('Running jobs'));">Ver en ejecución</a></b>
+            </td>
+          </tr>
+        </table>
         <!--######INICIO TABLA ENTORNOS ###################################################################################-->      
         <table class="summary-table-entornos" width="100%" cellspacing="0">
           <thead>
@@ -830,55 +837,24 @@ ul.errors li {
             </tr>
           </thead>
           <tbody>
+%foreach my $job (_array @jobs){
             <tr class='last-child'>
-              <td class='first-child section-name' rowspan='2'>TEST</td>
+              <td class='first-child section-name' rowspan='2'><%$job->{bl}%></td>
               <td class="section-graph" colspan='2'>
-                  <div class="data-bar" style="width:50%">&nbsp;</div>
+                  <div class="data-bar" style="width:<%$job->{porcentOk}%>%">&nbsp;</div>
               </td>
-              <td class="section-score">12</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-              <td class='overall-score' rowspan='2'>24</td>
+              <td class="section-score"><%$job->{totOk}%></td>
+              <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$job->{bl}%>&swOk=1', _('<%$job->{bl}%> - <%$job->{totOk}%>/<%$job->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
+              <td class='overall-score' rowspan='2'><%$job->{total}%></td>
             </tr>
             <tr class='last-child'>
               <td class="data-graph" colspan='2'>
-                  <div class="data-bar-error" style="width:50%">&nbsp;</div>
+                  <div class="data-bar-error" style="width:<%$job->{porcentError}%>%">&nbsp;</div>
               </td>
-              <td class="section-score">12</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
+              <td class="section-score"><%$job->{totError}%></td>
+              <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$job->{bl}%>&swOk=0', _('<%$job->{bl}%> - <%$job->{totError}%>/<%$job->{total}%> ERROR'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
             </tr>
-            <tr class='last-child'>
-              <td class='first-child section-name' rowspan='2'>ANTE</td>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar" style="width:75%">&nbsp;</div>
-              </td>
-              <td class="section-score">60</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-              <td class='overall-score' rowspan='2'>80</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar-error" style="width:25%">&nbsp;</div>
-              </td>
-              <td class="section-score">20</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-            </tr>
-            <tr class='last-child'>
-              <td class='first-child section-name' rowspan='2'>PROD</td>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar" style="width:85%">&nbsp;</div>
-              </td>
-              <td class="section-score">105</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-              <td class='overall-score' rowspan='2'>123</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar-error" style="width:15%">&nbsp;</div>
-              </td>
-              <td class="section-score">18</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-            </tr>         
-            
+%}
           </tbody>    
         </table>
         <!--######FIN TABLA ENTORNOS #######################################################################################-->
@@ -1014,8 +990,8 @@ ul.errors li {
         <table class="summary-table-sqa"  cellspacing="0">
           <thead>
             <tr>
+              <th class="section-proyecto">Proyecto</th>            
               <th class="first-child section-entorno">Entorno</th>
-              <th class="section-proyecto">Proyecto</th>
               <th class="section-subproyecto">Subproyecto</th>            
               <th class="section-naturaleza">Naturaleza</th>
               <th class="section-auditoria">Auditoría</th>
@@ -1035,11 +1011,11 @@ ul.errors li {
 % $color = 'red';
 %}
             <tr class='last-child'>
+              <td class="section-proyecto"><b><a target="_blank" href="/sqa/view_html/<%$sqa->{id}%>"><%$sqa->{project}%></a></b></td>            
               <td class='section-entorno'><%$sqa->{bl}%></td>
-              <td class="section-proyecto"><b><a target="_blank" href="/sqa/view_html/<%$sqa->{id}%>"><%$sqa->{project}%></a></b></td>
               <td class="section-subproyecto"><%$subapp%></td>
               <td class="section-naturaleza"><%$nature%></td>
-              <td class="section-auditoria"><img src="/static/images/silk/<%$image%>"/></td>
+              <td class="section-auditoria" align="center"><img src="/static/images/silk/<%$image%>"/></td>
               <td class="section-calificacion" style="font-size:12px;color:<%$color%>"><b><%$sqa->{qualification}%></b></td>
             </tr>
 %}
