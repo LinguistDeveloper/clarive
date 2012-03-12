@@ -11,18 +11,13 @@ sub grid : Local {
 
 sub json : Local {
     my ($self, $c) = @_;
-    my @tasks = (
-        {
-            name=>'cambiar pantalla de login', description=>'', assigned=>'infroox', category=>'Incidencia'
-        },
-        {
-            name=>'modificar cuentas cliente', description=>'', assigned=>'infroox', category=>'Mejora'
-        },
-        {
-            name=>'error apellidos erroneos', description=>'', assigned=>'infroox', category=>'Incidencia'
-        },
+    # name=>'cambiar pantalla de login', description=>'', assigned=>'infroox', category=>'Incidencia'
 
-    );
+    my $rs = $c->model('Baseliner::BaliIssue')->search( status => 'O');
+    my @tasks;
+    while ( my $row = $rs->next ) {
+        push @tasks, { id => $row->id, name => $row->title, description => $row->description, assigned => $row->created_by, category => 'Incidencia'}
+    }
 
     $c->stash->{json} = {
         data=>\@tasks,
