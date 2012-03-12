@@ -45,16 +45,16 @@ lifecycle:
               node: Development
               type: state
               active: 1
-              bl: DESA
-              bl_from: DESA
+              show_branch: master
+              bl: TEST
               bl_to: TEST
               icon: /static/images/icons/lc/history.gif
             -
               node: Test
               type: state
               bl: TEST
-              bl_from: DESA
-              bl_to: TEST
+              bl_from: master
+              bl_to: PREP
               icon: /static/images/icons/lc/history.gif
             -
               node: Preproduction
@@ -68,7 +68,6 @@ lifecycle:
               type: state
               bl: PROD
               bl_from: PREP
-              bl_to: PROD
               icon: /static/images/icons/lc/history.gif
 projects:
     - 

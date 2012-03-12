@@ -20,17 +20,19 @@ has 'lc' => (
     }
 );
 
-has 'baselines' => qw(is rw isa HashRef lazy 1), 
+has 'state_data' => qw(is rw isa HashRef lazy 1), 
     default => sub{
         my $self = shift;
         my $lc = $self->lc;
         my $states = $lc->{lifecycle}->{default}->{states};
-        my $baselines = {};
+        my $state_data = {};
         for my $state ( _array $states ) {
-           $baselines->{ $state->{bl} }->{to} = $state->{bl_to};
-           $baselines->{ $state->{bl} }->{from} = $state->{bl_from};
+            my $state_name = $state->{name} // $state->{node}  ;
+            $state_data->{ $state_name }->{to} = $state->{bl_to};
+            $state_data->{ $state_name }->{from} = $state->{bl_from};
+            $state_data->{ $state_name }->{show_branch} = $state->{show_branch};
         }
-        return $baselines;
+        return $state_data;
     };
 
 sub lc_for_project {
@@ -75,17 +77,21 @@ sub all_repos {
 }
 
 sub bl_from {
-    my ($self, $bl ) = @_;
-    # TODO XXX
-    my %from = ( DESA=>'DESA', DEV=>'new', TEST=>'DESA', PREP=>'TEST', PROD=>'PREP' );
-    $from{ $bl };
+    my ($self, $state_name ) = @_;
+    my $state_data = $self->state_data;
+    return try { $state_data->{ $state_name }->{from} } catch { undef };
 }
 
 sub bl_to {
-    my ($self, $bl ) = @_;
-    my $baselines = $self->baselines;
-    # TODO XXX
-    return try { $baselines->{ $bl }->{to} } catch { undef };
+    my ($self, $state_name ) = @_;
+    my $state_data = $self->state_data;
+    return try { $state_data->{ $state_name }->{to} } catch { undef };
+}
+
+sub show_branch {
+    my ($self, $state_name ) = @_;
+    my $state_data = $self->state_data;
+    return try { $state_data->{ $state_name }->{show_branch} } catch { undef };
 }
 
 sub repopath_for_project_repo {

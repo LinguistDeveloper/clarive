@@ -47,13 +47,14 @@ sub tree_project : Local {
         my $type = $node->{type};
         push @tree, {
             #id         => $node->{type} . ':' . $id,
-            text       => _loc( $node->{node} ),
+            text       => _loc( $node->{name} // $node->{node} ),  # name is official, node is deprecated
             url        => $node->{url} || '/lifecycle/changeset',
             icon       => $node->{icon},
             data       => {
                 project    => $project,
                 id_project => $id_project,
                 bl         => $node->{bl},
+                state_name => $node->{name} // $node->{node},
                 %{ $node->{data} || {} }
             },
             leaf       => \0,
@@ -87,25 +88,27 @@ sub changeset : Local {
     my $p = $c->req->params;
     my $bl = $p->{bl} or _throw "Missing bl";
     my $project = $p->{project} or _throw 'missing project';
+    my $state_name = $p->{state_name} or _throw 'missing state name';
     my $id_project = $p->{id_project} or _throw 'missing project id';
 
+    # provider-by-provider:
     # get all the changes for this project + baseline
     my @cs;
     for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
         #push @cs, $class;
         my $prov = $provider->new( project=>$project );
-        my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project );
+        my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
         _log _loc "---- provider $provider has %1 changesets", scalar @changes;
         push @cs, @changes
     }
 
+    # loop through the changeset objects (such as BaselinerX::GitChangeset)
     for my $cs ( @cs ) {
         my $menu = [];
         # get menu extensions (find packages that do)
         # get node menu
         ref $cs->node_menu and push @$menu, _array $cs->node_menu;
         push @tree, {
-            #id         => $cs->node_id || rand(99999999999999999),
             url        => $cs->node_url,
             data       => $cs->node_data,
             parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
@@ -116,6 +119,20 @@ sub changeset : Local {
             expandable => \0
         };
     }
+
+    ## add what's in this baseline 
+    push @tree, {
+        url        => '/gittree/branch_tree',
+        icon       => '/static/images/icons/lc/tree.gif',
+        text       => $bl,
+        data => {
+            branch   => $bl,
+            repo_dir => '/',
+            folder   => '/',
+            sha      => $bl,
+        },
+        leaf       => \0,
+    };
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
