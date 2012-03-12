@@ -820,13 +820,6 @@ ul.errors li {
     <div id="body" class="span-24" width="100%">
       <div id="body" class="span-12 colborder append-bottom">
         <h2>Entornos</h2>
-        <table width="480px">
-          <tr>
-            <td align="right">
-              <b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=All', _('Running jobs'));">Ver en ejecución</a></b>
-            </td>
-          </tr>
-        </table>
         <!--######INICIO TABLA ENTORNOS ###################################################################################-->      
         <table class="summary-table-entornos" width="100%" cellspacing="0">
           <thead>
@@ -857,6 +850,13 @@ ul.errors li {
 %}
           </tbody>    
         </table>
+        <table width="480px">
+          <tr>
+            <td align="right">
+              <b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=All', _('Running jobs'));">Ver en ejecución</a></b>
+            </td>
+          </tr>
+        </table>        
         <!--######FIN TABLA ENTORNOS #######################################################################################-->
       </div>
       
