@@ -60,16 +60,16 @@ register 'service.job.footprint' => {
 			my $pase_date;
 
 			for ( @eltos ) {
-				if ( $path.$_->fullpath eq $filename) {
+				if ( $path.$_->path eq $filename) {
 					$_->path =~ /^\/(.*?)\//;
 					$EnvironmentName = $1;
 					$elto_state = $job->bl;
 					$elto_name = $_->name;
-					$elto_version = $_->version;
+					# $elto_version = $_->version;
 					$elto_path = $_->path;
-					$elto_package = $_->package;
-					$elto_user = $_->modifier;
-					$elto_date = $_->modified_on;
+					# $elto_package = $_->package;
+					# $elto_user = $_->modifier;
+					# $elto_date = $_->modified_on;
 					$elto_pase = $job->job_data->{name};
 					$pase_date = $now;
 					$elto_found = 1;
@@ -111,7 +111,7 @@ register 'service.job.footprint' => {
 					}
 				}
 			} else {
-				$log->warn("No se han encontrado datos para footprinting del fichero $filename");
+				$log->debug("No se han encontrado datos para footprinting del fichero $filename");
 			}
 		}
 		$log->info("Footprinting terminado. Listado de ".scalar(keys(%MODIFICADOS))." elemento(s) modificado(s):", data => join("\n",keys(%MODIFICADOS)));
