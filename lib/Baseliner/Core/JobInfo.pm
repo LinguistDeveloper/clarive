@@ -16,6 +16,7 @@ has 'type' => (is=>'rw', isa=>'Str');
 has 'bl' => (is=>'rw', isa=>'Str');
 has 'path' => (is=>'rw', isa=>'Str');
 has 'projects' => (is=>'rw', isa=>'ArrayRef');
+has 'user' => (is=>'rw', isa=>'Str');
 
 sub add_subproject {
 	my ($self, %p) = @_;

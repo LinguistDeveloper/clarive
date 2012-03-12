@@ -769,9 +769,9 @@
         var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
-        if( info.params==undefined ) info.params={};
-        info.params.tab_index = activeTabIndex;
         if( info!=undefined ) {
+            if( info.params==undefined ) info.params={};
+            info.params.tab_index = activeTabIndex;
             if( info.type == 'comp' ) {
                 tabpanel.remove( panel );
                 Baseliner.addNewTabComp( info.url, info.title, info.params );
@@ -780,6 +780,16 @@
                 tabpanel.remove( panel );
                 Baseliner.addNewTab( info.url, info.title, info.params );
             }
+        } else {
+            // non-components: portal, dashboard, etc.
+            var closable = panel.initialConfig.closable;
+            var p = panel.cloneConfig();
+            var conf = p.initialConfig;
+            conf.xtype = 'panel';
+            tabpanel.remove( panel );
+            var new_comp = tabpanel.add( conf );
+            if( conf.tab_icon != undefined ) tabpanel.changeTabIcon( new_comp, conf.tab_icon );
+            tabpanel.setActiveTab( new_comp );
         }
     };
 
