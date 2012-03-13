@@ -7,6 +7,12 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
+##Configuración del dashboard
+register 'config.dashboard' => {
+	metadata => [
+	       { id=>'states', label=>'States for job statistics', default => 'DESA,TEST,PREP,PROD' }
+	    ]
+};
 
 sub list : Local {
     my ($self, $c) = @_;
@@ -44,7 +50,10 @@ sub list_jobs: Private{
 
 	@jobs = $db->array_hash( $SQL, $username, $username );
 	
-	my @entornos = ('TEST', 'ANTE', 'PROD');
+	#my @entornos = ('TEST', 'PREP', 'PROD');
+        my $config     = Baseliner->model('ConfigStore')->get('config.dashboard');
+	my @entornos = split ",", $config->{states};
+
 	my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
 	
 	foreach my $entorno (@entornos){
