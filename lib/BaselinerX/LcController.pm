@@ -132,7 +132,7 @@ sub changeset : Local {
             sha      => $bl,
         },
         leaf       => \0,
-    };
+    } unless $bl eq '*';
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
