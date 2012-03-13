@@ -531,13 +531,77 @@ Ext.onReady(function(){
         width: 800,
         height: 150,
         enableDragDrop: true,
+        ddGroup: 'lifecycle_dd',
         style: 'margin-top: 20px',
         name: 'jc',
         title: _('Job Contents'),
         border: true,
         ds: ds_grid,
         cm: colModel
+    });
+    jc_grid.on( 'render', function(){
+        var el = jc_grid.getView().el.dom.childNodes[0].childNodes[1];
+        var jc_grid_dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyDrop: function(dd, e, data) {
+                var n = dd.dragData.node;
+                var s = jc_grid.store;
+                var add_node = function(node) {
+                    var data = node.attributes.data;
+                    var rec = new Ext.data.Record({
+                        ns: data.ns,
+                        icon: node.icon,
+                        item: data.name,
+                        text: node.text 
+                    });
+                       /* {name: 'provider', mapping: 'provider'},
+                        {name: 'related', mapping: 'related'},
+                        {name: 'ns_type', mapping: 'ns_type'},
+                        {name: 'recordCls', mapping: 'recordCls'},
+                        {name: 'why_not', mapping: 'why_not'},
+                        {name: 'can_job', mapping: 'can_job'},
+                        {name: 'item', mapping: 'item'},
+                        {name: 'user', mapping: 'user'},
+                        {name: 'service', mapping: 'service'},
+                        {name: 'ns', mapping: 'ns'},
+                        {name: 'date', mapping: 'date'},
+                        {name: 'icon', mapping: 'icon'},
+                        {name: 'data', mapping: 'data'},
+                        {name: 'text', mapping: 'text'}
+                        */
+                    s.add(rec);
+                    //s.sort('action', 'ASC');
+                    var parent_node = node.parentNode;
+                    // node.disable();
+                    enableAll();
+                    main_form.getForm().findField('job_date').setRawValue('<% $today %>');
+                    Baseliner.calendar_reload();
+                    button_submit.enable();
+                    //tree_check_folder_enabled(parent_node);
+                }
+                var attr = n.attributes;
+                if( attr.data.promotable == 1 ) {
+                    var bl = combo_baseline.getValue();
+                    var job_type = main_form.getForm().getValues()['job_type'];
+                    var bl_item = ( job_type == 'promote' ) ? attr.data.bl_to : attr.data.bl_from;
+                    if( bl_item == undefined ) {
+                        Baseliner.message( _('Error'),
+                            _("Cannot promote/demote revision %1 or missing baseline (job type %2)", attr.data.name, job_type ) );
+                    } else if( bl != bl_item ) {
+                        Baseliner.message( _('Error'),
+                            _("Revision baseline '%1' does not match the job baseline '%2'", bl_item, bl ) );
+                    } else {
+                        add_node(n);
+                    }
+                } else {
+                    Baseliner.message( _('Error'), _("Not promotable") );
+                }
+                // multiple? Ext.each(dd.dragData.selections, add_node );
+                return (true); 
+             }
         });
+    });
         
     var button_submit = new Ext.Button({
             xtype:'button', text: _('Create'),
@@ -678,20 +742,20 @@ Ext.onReady(function(){
             id: 'id'
             }, 
         [
-        {name: 'provider', mapping: 'provider'},
-        {name: 'related', mapping: 'related'},
-        {name: 'ns_type', mapping: 'ns_type'},
-        {name: 'recordCls', mapping: 'recordCls'},
-        {name: 'why_not', mapping: 'why_not'},
-        {name: 'can_job', mapping: 'can_job'},
-        {name: 'item', mapping: 'item'},
-        {name: 'user', mapping: 'user'},
-        {name: 'service', mapping: 'service'},
-        {name: 'ns', mapping: 'ns'},
-        {name: 'date', mapping: 'date'},
-        {name: 'icon', mapping: 'icon'},
-        {name: 'data', mapping: 'data'},
-        {name: 'text', mapping: 'text'}
+            {name: 'provider', mapping: 'provider'},
+            {name: 'related', mapping: 'related'},
+            {name: 'ns_type', mapping: 'ns_type'},
+            {name: 'recordCls', mapping: 'recordCls'},
+            {name: 'why_not', mapping: 'why_not'},
+            {name: 'can_job', mapping: 'can_job'},
+            {name: 'item', mapping: 'item'},
+            {name: 'user', mapping: 'user'},
+            {name: 'service', mapping: 'service'},
+            {name: 'ns', mapping: 'ns'},
+            {name: 'date', mapping: 'date'},
+            {name: 'icon', mapping: 'icon'},
+            {name: 'data', mapping: 'data'},
+            {name: 'text', mapping: 'text'}
         ])
     });
 

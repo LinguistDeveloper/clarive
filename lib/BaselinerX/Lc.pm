@@ -45,7 +45,7 @@ sub lc_for_project {
     [ @$nodes, @$states ];
 }
 
-=head2 project_repos
+=head2 project_repos project=>'...'
 
 Returns all repositories for a project:
 
