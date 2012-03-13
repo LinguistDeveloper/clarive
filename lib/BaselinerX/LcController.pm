@@ -121,20 +121,30 @@ sub changeset : Local {
     }
 
     ## add what's in this baseline 
+    my @repos = BaselinerX::Lc->new->project_repos( project=>$project );
+    # ( Girl::Repo->new( path=>"$path" ), $rev, $project );
+
     push @tree, {
-        url        => '/gittree/branch_tree',
-        icon       => '/static/images/icons/lc/tree.gif',
-        text       => $bl,
+        url        => '/lifecycle/data_view',
+        icon       => '/static/images/icons/repo.gif',
+        text       => $_->{name},
+        leaf       => \1,
         data => {
-            branch   => $bl,
-            repo_dir => '/',
-            folder   => '/',
-            sha      => $bl,
+             click=>{ 
+                url   => '/repo/view',
+                type  => 'comp',
+                icon  => '/static/images/icons/repo.gif',
+                title => "$_->{name} - $bl" ,
+             }
         },
-        leaf       => \0,
-    } unless $bl eq '*';
+    } for @repos;
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
+}
+
+sub data_view : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
 }
 
 sub tree : Local {
