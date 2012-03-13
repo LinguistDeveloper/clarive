@@ -783,11 +783,12 @@
         } else {
             // non-components: portal, dashboard, etc.
             var closable = panel.initialConfig.closable;
+            var tab_index = tabpanel.items.findIndex('id', panel.id );
             var p = panel.cloneConfig();
             var conf = p.initialConfig;
             conf.xtype = 'panel';
             tabpanel.remove( panel );
-            var new_comp = tabpanel.add( conf );
+            var new_comp = tabpanel.insert( tab_index, conf );
             if( conf.tab_icon != undefined ) tabpanel.changeTabIcon( new_comp, conf.tab_icon );
             tabpanel.setActiveTab( new_comp );
         }
