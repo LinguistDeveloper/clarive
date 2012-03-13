@@ -928,8 +928,16 @@ ul.errors li {
             <tr class='last-child'>
               <td class="section-proyecto"><%$job->{project}%></td>
               <td class='section-entorno'><%$job->{bl}%></td>
-              <td class="section-exito"><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>
-              <td class="section-fallo"><%$job->{lastError}%> dias (<b><a href="#" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>
+%if($job->{idOk}){
+              <td class="section-exito"><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$job->{idOk}%>', _('Log <%$job->{nameOk}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>
+%}else{
+              <td class="section-exito"> ------------- </td>  
+%}
+%if($job->{idError}){
+              <td class="section-fallo"><%$job->{lastError}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$job->{idError}%>', _('Log <%$job->{nameError}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>
+%}else{
+              <td class="section-fallo"> ------------- </td>  
+%}
               <td class="section-duracion"> - </td>
             </tr>
 %}

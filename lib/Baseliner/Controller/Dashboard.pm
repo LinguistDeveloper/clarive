@@ -134,10 +134,10 @@ sub list_jobs: Private {
     my ( $self, $c ) = @_;
 	my $username = $c->username;
 	my @datas;	
-
+	my $SQL;
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
-	my $SQL = "SELECT E.ID, E.PROJECT1, F.BL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(F.ENDTIME) - TRUNC(STARTTIME) AS DIAS
+	$SQL = "SELECT E.ID, E.PROJECT1, F.BL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME
 					FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
 						FROM BALI_JOB_ITEMS A, BALI_JOB B
 						WHERE A.ID_JOB = B.ID
@@ -158,17 +158,75 @@ sub list_jobs: Private {
 						WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F WHERE E.ID = F.ID";
 	my @jobs = $db->array_hash( $SQL, $username, $username );
 	foreach my $job (@jobs){
-		my ($lastError, $lastOk, $idError, $idOk);
+		my ($lastError, $lastOk, $idError, $idOk, $nameOk, $nameError);
 		given ($job->{status}) {
 			when ('RUNNING') {
+				my @jobError = get_last_jobError($job->{project1},$job->{bl},$username);
+				
+				if(@jobError){
+					foreach my $jobError (@jobError){
+						$idError = $jobError->{id};
+						$lastError = $jobError->{dias};
+						$nameError = $jobError->{name};
+					}
+				}
+				my @jobOk = get_last_jobOk($job->{project1},$job->{bl},$username);
+				
+				if(@jobOk){
+					foreach my $jobOk (@jobOk){
+						$idOk = $jobOk->{id};
+						$lastOk = $jobOk->{dias};
+						$nameOk = $jobOk->{name};
+					}
+				}				
+				
 			}
 			when ('FINISHED') {
 				$idOk = $job->{id};
 				$lastOk = $job->{dias};
+				$nameOk = $job->{name};
+				
+				#$SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS 
+				#							FROM BALI_JOB_ITEMS A, BALI_JOB B 
+				#							WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
+				#									AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND ENDTIME IS NOT NULL
+				#									AND USERNAME = ?)
+				#				WHERE MY_ROW_NUM < 2";
+				#my @jobError = $db->array_hash( $SQL, $job->{project1},$job->{bl}, $username );
+				
+				my @jobError = get_last_jobError($job->{project1},$job->{bl},$username);
+				
+				if(@jobError){
+					foreach my $jobError (@jobError){
+						$idError = $jobError->{id};
+						$lastError = $jobError->{dias};
+						$nameError = $jobError->{name};
+					}
+				}
+				
 			}
 			when ('ERROR' || 'CANCELLED' || 'KILLED') {
 				$idError = $job->{id};
 				$lastError = $job->{dias};
+				$nameError = $job->{name};
+				
+				#$SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS 
+				#							FROM BALI_JOB_ITEMS A, BALI_JOB B 
+				#							WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
+				#									AND BL = ? AND STATUS = 'FINISHED' AND ENDTIME IS NOT NULL
+				#									AND USERNAME = ?)
+				#				WHERE MY_ROW_NUM < 2";
+				#my @jobOk = $db->array_hash( $SQL, $job->{project1},$job->{bl}, $username );
+				
+				my @jobOk = get_last_jobOk($job->{project1},$job->{bl},$username);
+				
+				if(@jobOk){
+					foreach my $jobOk (@jobOk){
+						$idOk = $jobOk->{id};
+						$lastOk = $jobOk->{dias};
+						$nameOk = $jobOk->{name};
+					}
+				}
 			}
 		}
 			
@@ -177,11 +235,42 @@ sub list_jobs: Private {
 					bl			=> $job->{bl},
 					lastOk		=> $lastOk,
 					idOk		=> $idOk,
-					lastError	=> $lastError
+					nameOk		=> $nameOk,
+					idError		=> $idError,
+					lastError	=> $lastError,
+					nameError	=> $nameError
 				};	
 	}	
 	
 	$c->stash->{jobs} =\@datas;	
+}
+
+sub get_last_jobOk: Private{
+	my $project = shift;
+	my $bl = shift;
+	my $username = shift;
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	my $SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS 
+								FROM BALI_JOB_ITEMS A, BALI_JOB B 
+								WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
+										AND BL = ? AND STATUS = 'FINISHED' AND ENDTIME IS NOT NULL
+										AND USERNAME = ?)
+					WHERE MY_ROW_NUM < 2";
+	return $db->array_hash( $SQL, $project, $bl , $username );
+}
+
+sub get_last_jobError: Private{
+	my $project = shift;
+	my $bl = shift;
+	my $username = shift;
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	my $SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS 
+								FROM BALI_JOB_ITEMS A, BALI_JOB B 
+								WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
+										AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND ENDTIME IS NOT NULL
+										AND USERNAME = ?)
+					WHERE MY_ROW_NUM < 2";
+	return $db->array_hash( $SQL, $project, $bl , $username );
 }
 
 sub list_sqa: Private{
