@@ -1,13 +1,14 @@
 nodes:
     - 
-      node: Tasks
+      node: Issues
       type: component
-      url : /tasks/grid
+      url : /issue/grid
       data:
-          click: 
-            url: /tasks/grid
+          click:
+            url: /issue/grid
             type: comp
             icon: /static/images/icons/tasks.gif
+            title: Issues
 
       icon: /static/images/icons/tasks.gif
     - 

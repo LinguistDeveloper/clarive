@@ -137,25 +137,50 @@ sub list_jobs: Private {
 
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
-	my $SQL = "SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
-					FROM BALI_JOB_ITEMS A,
-						(SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
-											FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
-													FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
-																FROM BALI_JOB
-																WHERE STATUS = 'RUNNING' AND USERNAME = ?)
-												  UNION
-												  SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
-																			WHERE ENDTIME IS NOT NULL AND USERNAME = ?
-												 )
-									   )
-						) B
-					WHERE A.ID_JOB = B.ID";
+	my $SQL = "SELECT E.ID, E.PROJECT1, F.BL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(F.ENDTIME) - TRUNC(STARTTIME) AS DIAS
+					FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
+						FROM BALI_JOB_ITEMS A, BALI_JOB B
+						WHERE A.ID_JOB = B.ID
+						GROUP BY  SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))), BL) C,
+					(SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
+						FROM BALI_JOB_ITEMS A,
+							(SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
+												FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
+														FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
+																	FROM BALI_JOB
+																	WHERE STATUS = 'RUNNING' AND USERNAME = ?)
+													  UNION
+													  SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
+																				WHERE ENDTIME IS NOT NULL AND USERNAME = ?
+													 )
+										   )
+							) B
+						WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F WHERE E.ID = F.ID";
 	my @jobs = $db->array_hash( $SQL, $username, $username );
 	foreach my $job (@jobs){
-	    push @datas, $job;
+		my ($lastError, $lastOk, $idError, $idOk);
+		given ($job->{status}) {
+			when ('RUNNING') {
+			}
+			when ('FINISHED') {
+				$idOk = $job->{id};
+				$lastOk = $job->{dias};
+			}
+			when ('ERROR' || 'CANCELLED' || 'KILLED') {
+				$idError = $job->{id};
+				$lastError = $job->{dias};
+			}
+		}
+			
+		push @datas, {
+					project 	=> $job->{project1},
+					bl			=> $job->{bl},
+					lastOk		=> $lastOk,
+					idOk		=> $idOk,
+					lastError	=> $lastError
+				};	
 	}	
-		
+	
 	$c->stash->{jobs} =\@datas;	
 }
 

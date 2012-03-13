@@ -45,7 +45,7 @@ sub lc_for_project {
     [ @$nodes, @$states ];
 }
 
-=head2 project_repos
+=head2 project_repos project=>'...'
 
 Returns all repositories for a project:
 
@@ -102,6 +102,7 @@ sub repopath_for_project_repo {
             next unless $assoc->{name} eq $prj;
             for my $repo ( _array $assoc->{repositories} ) {
                 next unless $repo->{name} eq $repo_name;
+                $repo->{project} = $prj;
                 return $repo;
             }
         }
