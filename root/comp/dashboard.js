@@ -928,8 +928,8 @@ ul.errors li {
             <tr class='last-child'>
               <td class="section-proyecto"><%$job->{project}%></td>
               <td class='section-entorno'><%$job->{bl}%></td>
-              <td class="section-exito"> - (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#</a></b>)</td>
-              <td class="section-fallo"> - (<b><a href="#" style="font-family: Tahoma; color:red;">#</a></b>)</td>
+              <td class="section-exito"><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>
+              <td class="section-fallo"><%$job->{lastError}%> dias (<b><a href="#" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>
               <td class="section-duracion"> - </td>
             </tr>
 %}
