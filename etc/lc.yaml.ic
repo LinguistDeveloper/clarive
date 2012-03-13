@@ -47,7 +47,6 @@ lifecycle:
               active: 1
               bl: DESA
               bl_from: DESA
-              bl_to: TEST
               icon: /static/images/icons/lc/history.gif
             -
               node: Test
