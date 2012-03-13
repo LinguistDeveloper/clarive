@@ -171,7 +171,7 @@ sub monitor_json : Path('/job/monitor_json') {
 	my $username = $c->username;
 	my $perm = $c->model('Permissions');
 
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
+    my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = @{$p}{qw/start limit query query_id dir sort/};
     $start||=0;
     $limit||=50;
 	defined $query and $query =~ s/\*/%/g;
@@ -192,6 +192,14 @@ sub monitor_json : Path('/job/monitor_json') {
 		# username can view jobs where the user has access to view the jobcontents corresponding app
 		# username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
 	}
+	
+	#Cuando viene por el dashboard
+	if($query_id){
+		my @arreglo = split(",",$query_id);
+		$where->{'me.id'} = \@arreglo;
+	}
+	
+	
 	_log "Job search...";
     $query and $where = query_sql_build( query=>$query, fields=>{
         name     =>'me.name',
@@ -627,10 +635,13 @@ sub restart : Local {
 }
 
 sub monitor : Path('/job/monitor') {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $dashboard ) = @_;
     $c->languages( ['es'] );
 	my $config = $c->registry->get( 'config.job' );
 	$c->forward('/permissions/load_user_actions');
+	if($dashboard){
+		$c->stash->{query_id} = $c->stash->{jobs};
+	}
     $c->stash->{template} = '/comp/monitor_grid.mas';
 }
 

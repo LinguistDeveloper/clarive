@@ -1,9 +1,10 @@
 <%perl>
-    my @jobs = $c->stash->{jobs};
+    my @entornos = $c->stash->{entornos};
     my $idjob = '';
     my @emails = $c->stash->{emails};
     my $style = '';
     my @issues = $c->stash->{issues};
+    my @jobs = $c->stash->{jobs};    
     my @sqas = $c->stash->{sqas};
 </%perl>
 
@@ -830,57 +831,33 @@ ul.errors li {
             </tr>
           </thead>
           <tbody>
+%foreach my $entorno (_array @entornos){
             <tr class='last-child'>
-              <td class='first-child section-name' rowspan='2'>TEST</td>
+              <td class='first-child section-name' rowspan='2'><%$entorno->{bl}%></td>
               <td class="section-graph" colspan='2'>
-                  <div class="data-bar" style="width:50%">&nbsp;</div>
+                  <div class="data-bar" style="width:<%$entorno->{porcentOk}%>%">&nbsp;</div>
               </td>
-              <td class="section-score">12</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-              <td class='overall-score' rowspan='2'>24</td>
+              <td class="section-score"><%$entorno->{totOk}%></td>
+              <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
+              <td class='overall-score' rowspan='2'><%$entorno->{total}%></td>
             </tr>
             <tr class='last-child'>
               <td class="data-graph" colspan='2'>
-                  <div class="data-bar-error" style="width:50%">&nbsp;</div>
+                  <div class="data-bar-error" style="width:<%$entorno->{porcentError}%>%">&nbsp;</div>
               </td>
-              <td class="section-score">12</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
+              <td class="section-score"><%$entorno->{totError}%></td>
+              <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=0', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
             </tr>
-            <tr class='last-child'>
-              <td class='first-child section-name' rowspan='2'>ANTE</td>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar" style="width:75%">&nbsp;</div>
-              </td>
-              <td class="section-score">60</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-              <td class='overall-score' rowspan='2'>80</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar-error" style="width:25%">&nbsp;</div>
-              </td>
-              <td class="section-score">20</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-            </tr>
-            <tr class='last-child'>
-              <td class='first-child section-name' rowspan='2'>PROD</td>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar" style="width:85%">&nbsp;</div>
-              </td>
-              <td class="section-score">105</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-              <td class='overall-score' rowspan='2'>123</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar-error" style="width:15%">&nbsp;</div>
-              </td>
-              <td class="section-score">18</td>
-              <td class="section-score"><img src="/static/images/preview.png" width="16px" height="12px" /></td>
-            </tr>         
-            
+%}
           </tbody>    
         </table>
+        <table width="480px">
+          <tr>
+            <td align="right">
+              <b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=All', _('Running jobs'));">Ver en ejecución</a></b>
+            </td>
+          </tr>
+        </table>        
         <!--######FIN TABLA ENTORNOS #######################################################################################-->
       </div>
       
@@ -938,71 +915,23 @@ ul.errors li {
         <table class="summary-table-pases" width="100%" cellspacing="0">
           <thead>
             <tr>
-              <th class="first-child section-entorno">Entorno</th>
-              <th class="section-proyecto">Proyecto</th>
+              <th class="first-child section-proyecto">Proyecto</th>
+              <th class="section-entorno">Entorno</th>
               <th class="section-ultimo-exito">Ult. Exito</th>
               <th class="section-ultimo-fallo">Ult. Fallo</th>
               <th class="last-child section-duracion">Ult. Duración</th>
             </tr>
           </thead>
           <tbody>
+%foreach my $job (_array @jobs){          
             <tr class='last-child'>
-              <td class='section-name' rowspan='3'>TEST</td>
-              <td class="section-proyecto">SCT</td>
-              <td class="section-exito">9 días 9 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
-              <td class="section-fallo">3 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#145</a></b>)</td>
-              <td class="section-duracion">15 min</td>
+              <td class="section-proyecto"><%$job->{project}%></td>
+              <td class='section-entorno'><%$job->{bl}%></td>
+              <td class="section-exito"> - (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#</a></b>)</td>
+              <td class="section-fallo"> - (<b><a href="#" style="font-family: Tahoma; color:red;">#</a></b>)</td>
+              <td class="section-duracion"> - </td>
             </tr>
-            <tr class='last-child'>
-              <td class="section-proyecto">ACM</td>
-              <td class="section-exito"> 3 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#121</a></b>)</td>
-              <td class="section-fallo">2 días (<b><a href="#" style="font-family: Tahoma; color:red;">#90</a></b>)</td>
-              <td class="section-duracion">1h 15 min</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="section-proyecto">AIA</td>
-              <td class="section-exito">15 días (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
-              <td class="section-fallo">6 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#185</a></b>)</td>
-              <td class="section-duracion">15 min</td>
-            </tr>
-            <tr class='last-child'>
-              <td class='section-name' rowspan='3'>ANTE</td>
-              <td class="section-proyecto">LSD</td>
-              <td class="section-exito">9 días 9 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
-              <td class="section-fallo">3 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#145</a></b>)</td>
-              <td class="section-duracion">15 min</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="section-proyecto">PKR</td>
-              <td class="section-exito"> 3 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#121</a></b>)</td>
-              <td class="section-fallo">2 días (<b><a href="#" style="font-family: Tahoma; color:red;">#90</a></b>)</td>
-              <td class="section-duracion">1h 15 min</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="section-proyecto">ZIP</td>
-              <td class="section-exito">15 días (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
-              <td class="section-fallo">6 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#185</a></b>)</td>
-              <td class="section-duracion">15 min</td>
-            </tr>
-            <tr class='last-child'>
-              <td class='section-name' rowspan='3'>PROD</td>
-              <td class="section-proyecto">DER</td>
-              <td class="section-exito">9 días 9 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
-              <td class="section-fallo">3 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#145</a></b>)</td>
-              <td class="section-duracion">15 min</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="section-proyecto">SCM</td>
-              <td class="section-exito"> 3 horas (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#121</a></b>)</td>
-              <td class="section-fallo">2 días (<b><a href="#" style="font-family: Tahoma; color:red;">#90</a></b>)</td>
-              <td class="section-duracion">1h 15 min</td>
-            </tr>
-            <tr class='last-child'>
-              <td class="section-proyecto">RDE</td>
-              <td class="section-exito">15 días (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#345</a></b>)</td>
-              <td class="section-fallo">6 meses (<b><a href="#" style="font-family: Tahoma; color:red;">#185</a></b>)</td>
-              <td class="section-duracion">15 min</td>
-            </tr>
+%}
           </tbody>    
         </table>
         <!--######FIN TABLA PASES #######################################################################################-->
@@ -1014,8 +943,8 @@ ul.errors li {
         <table class="summary-table-sqa"  cellspacing="0">
           <thead>
             <tr>
-              <th class="first-child section-entorno">Entorno</th>
-              <th class="section-proyecto">Proyecto</th>
+              <th class="first-child section-proyecto">Proyecto</th>            
+              <th class="section-entorno">Entorno</th>
               <th class="section-subproyecto">Subproyecto</th>            
               <th class="section-naturaleza">Naturaleza</th>
               <th class="section-auditoria">Auditoría</th>
@@ -1035,11 +964,11 @@ ul.errors li {
 % $color = 'red';
 %}
             <tr class='last-child'>
+              <td class="section-proyecto"><b><a target="_blank" href="/sqa/view_html/<%$sqa->{id}%>"><%$sqa->{project}%></a></b></td>            
               <td class='section-entorno'><%$sqa->{bl}%></td>
-              <td class="section-proyecto"><b><a target="_blank" href="/sqa/view_html/<%$sqa->{id}%>"><%$sqa->{project}%></a></b></td>
               <td class="section-subproyecto"><%$subapp%></td>
               <td class="section-naturaleza"><%$nature%></td>
-              <td class="section-auditoria"><img src="/static/images/silk/<%$image%>"/></td>
+              <td class="section-auditoria" align="center"><img src="/static/images/silk/<%$image%>"/></td>
               <td class="section-calificacion" style="font-size:12px;color:<%$color%>"><b><%$sqa->{qualification}%></b></td>
             </tr>
 %}

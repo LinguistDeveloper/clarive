@@ -583,7 +583,8 @@
             first_load = false;
         }
     });
-    store.load({params:{start:0 , limit: ps }, callback: function(){
+	
+    store.load({params:{start:0 , limit: ps, query_id:'<% $c->stash->{query_id} %>' }, callback: function(){
 		Baseliner.hideLoadingMaskFade(grid.getEl());
 	} }); 
 

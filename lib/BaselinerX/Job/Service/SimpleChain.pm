@@ -60,8 +60,9 @@ sub job_simple_chain {
             if( $error =~ m/^Could not find key/ ) {  #TODO should throw-catch an exception class type
                 $log->warn( _loc("Warning while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ) ); 
             } else {
-            $log->error( _loc("Error while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ) ); 
-            _throw $error;
+                $job->failing( 1 );
+                $log->error( _loc("Error while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ) ); 
+                _throw $error;
             }
             return 1;
         };

@@ -7,39 +7,79 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
+##Configuración del dashboard
+register 'config.dashboard' => {
+	metadata => [
+	       { id=>'states', label=>'States for job statistics', default => 'DESA,TEST,PREP,PROD' }
+	    ]
+};
 
 sub list : Local {
     my ($self, $c) = @_;
-    ##$c->stash->{username} = $c->username;
-    $c->forward('/dashboard/list_jobs');
-    $c->forward('/dashboard/list_sqa');
+    $c->forward('/dashboard/list_entornos');
     $c->forward('/dashboard/list_emails');
-	$c->forward('/dashboard/list_issues');
+	$c->forward('/dashboard/list_issues');	
+	$c->forward('/dashboard/list_jobs');	
+    $c->forward('/dashboard/list_sqa');
     $c->stash->{template} = '/comp/dashboard.js';
 }
 
-sub list_jobs: Private{
+sub list_entornos: Private{
     my ( $self, $c ) = @_;
 	my $username = $c->username;
-	my (@jobs, $job, @datas, $SQL);
+	my (@jobs, $job, @datas, @temps, $SQL);
 	
 	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-	$SQL = "SELECT DISTINCT A.ID_JOB, NAME, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, STATUS, BL
-				FROM BALI_JOB_ITEMS A,
-					(SELECT * FROM ( SELECT ID, NAME, STATUS, BL
-										FROM BALI_JOB
-										WHERE USERNAME = ?
-										ORDER BY MAXSTARTTIME DESC ) WHERE ROWNUM < 6) B
-				WHERE A.ID_JOB = B.ID
-				ORDER BY A.ID_JOB";
+	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+				WHERE TO_NUMBER(SYSDATE - ENDTIME) <= 7 AND STATUS = 'FINISHED' AND USERNAME = ?
+				GROUP BY BL
+			UNION
+			SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+				WHERE TO_NUMBER(SYSDATE - ENDTIME) <= 7 AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?
+				GROUP BY BL";
 
-	@jobs = $db->array_hash( $SQL , $username);
-	foreach $job (@jobs){
-	    push @datas, $job;
-	}	
-		
-	$c->stash->{jobs} =\@datas;
+	#$SQL = "SELECT DISTINCT A.ID_JOB, NAME, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, STATUS, BL
+	#			FROM BALI_JOB_ITEMS A,
+	#				(SELECT * FROM ( SELECT ID, NAME, STATUS, BL
+	#									FROM BALI_JOB
+	#									WHERE USERNAME = ?
+	#									ORDER BY MAXSTARTTIME DESC ) WHERE ROWNUM < 6) B
+	#			WHERE A.ID_JOB = B.ID
+	#			ORDER BY A.ID_JOB";
+
+	@jobs = $db->array_hash( $SQL, $username, $username );
+	
+	#my @entornos = ('TEST', 'PREP', 'PROD');
+    my $config     = Baseliner->model('ConfigStore')->get('config.dashboard');
+	my @entornos = split ",", $config->{states};
+	
+	foreach my $entorno (@entornos){
+		my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
+		@temps = grep { ($_->{bl}) =~ $entorno } @jobs;
+		foreach my $temp (@temps){
+			$bl = $temp->{bl};
+			if($temp->{result} eq 'OK'){
+				$totOk = $temp->{tot};
+			}else{
+				$totError = $temp->{tot};
+			}
+		}
+		$total = $totOk + $totError;
+		if($total){
+			$porcentOk = $totOk * 100/$total;
+			$porcentError = $totError * 100/$total;
+			push @datas, {
+							bl 				=> $bl,
+							porcentOk		=> $porcentOk,
+							totOk			=> $totOk,
+							total			=> $total,
+							totError		=> $totError,
+							porcentError	=> $porcentError
+						};			
+		}
+	}
+	$c->stash->{entornos} =\@datas;
 }
 
 sub list_emails: Private{
@@ -88,13 +128,74 @@ sub list_issues: Private{
 	}	
 		
 	$c->stash->{issues} =\@datas;
+}
 
+sub list_jobs: Private {
+    my ( $self, $c ) = @_;
+	my $username = $c->username;
+	my @datas;	
+
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
+	my $SQL = "SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
+					FROM BALI_JOB_ITEMS A,
+						(SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
+											FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
+													FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
+																FROM BALI_JOB
+																WHERE STATUS = 'RUNNING' AND USERNAME = ?)
+												  UNION
+												  SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
+																			WHERE ENDTIME IS NOT NULL AND USERNAME = ?
+												 )
+									   )
+						) B
+					WHERE A.ID_JOB = B.ID";
+	my @jobs = $db->array_hash( $SQL, $username, $username );
+	foreach my $job (@jobs){
+	    push @datas, $job;
+	}	
+		
+	$c->stash->{jobs} =\@datas;	
 }
 
 sub list_sqa: Private{
 	my ( $self, $c ) = @_;
 	$c->forward('/sqa/grid_json/Dashboard');
-	_log "sdad>>>>>>>>>>>>>>>>>>>>>>>>>" . _dump($c->stash->{sqas}) . "\n";
 }
+
+sub viewjobs: Local{
+	my ( $self, $c ) = @_;
+	my $p = $c->request->parameters;
+	my $username = $c->username;
+	my ($status, @jobs, $job, $jobsid, $SQL);
+	
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
+	#ERROR, CANCELLED, KILLED 
+	#$status = $p->{swOk} ? "FINISHED" : "('ERROR', 'CANCELLED', 'KILLED')";
+	#$SQL = "SELECT ID FROM BALI_JOB
+	#			WHERE TO_NUMBER(SYSDATE - STARTTIME) <= 7 AND BL = ? AND STATUS IN ? AND USERNAME = ?";
+	#
+	#@jobs = $db->array_hash( $SQL, $p->{ent}, $status, $username );
+	
+	if($p->{ent} eq 'All'){
+		$SQL = "SELECT ID FROM BALI_JOB WHERE STATUS = 'RUNNING' AND USERNAME = ?";
+		@jobs = $db->array_hash( $SQL, $username );
+	}else{
+		$SQL = $p->{swOk} ?
+				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= 7 AND BL = ? AND STATUS = 'FINISHED' AND USERNAME = ?" :
+				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= 7 AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?";	
+		@jobs = $db->array_hash( $SQL, $p->{ent}, $username );
+	}
+	
+	foreach $job (@jobs){
+	    $jobsid .= $job->{id} . ",";
+ 	}
+	$c->stash->{jobs} =$jobsid;
+	$c->forward('/job/monitor/Dashboard');
+	
+}
+
 
 1;

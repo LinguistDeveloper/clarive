@@ -43,6 +43,7 @@ has 'status' => ( is=>'rw', isa=>'Str',
     }
 );
 has 'rollback' => ( is=>'rw', isa=>'Bool', default=>0 );
+has 'failing' => ( is=>'rw', isa=>'Bool', default=>0 );
 has 'job_type' => ( is=>'rw', isa=>'Str' );
 has 'job_stash' => ( is=>'rw', isa=>'HashRef', default=>sub {{}}  );
 has 'job_data' => ( is=>'rw', isa=>'HashRef', default=>sub {{}} );
