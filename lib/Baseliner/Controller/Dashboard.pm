@@ -16,15 +16,15 @@ register 'config.dashboard' => {
 
 sub list : Local {
     my ($self, $c) = @_;
-    ##$c->stash->{username} = $c->username;
-    $c->forward('/dashboard/list_jobs');
-    $c->forward('/dashboard/list_sqa');
+    $c->forward('/dashboard/list_entornos');
     $c->forward('/dashboard/list_emails');
-	$c->forward('/dashboard/list_issues');
+	$c->forward('/dashboard/list_issues');	
+	$c->forward('/dashboard/list_jobs');	
+    $c->forward('/dashboard/list_sqa');
     $c->stash->{template} = '/comp/dashboard.js';
 }
 
-sub list_jobs: Private{
+sub list_entornos: Private{
     my ( $self, $c ) = @_;
 	my $username = $c->username;
 	my (@jobs, $job, @datas, @temps, $SQL);
@@ -53,8 +53,6 @@ sub list_jobs: Private{
 	#my @entornos = ('TEST', 'PREP', 'PROD');
     my $config     = Baseliner->model('ConfigStore')->get('config.dashboard');
 	my @entornos = split ",", $config->{states};
-
-	
 	
 	foreach my $entorno (@entornos){
 		my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
@@ -81,7 +79,7 @@ sub list_jobs: Private{
 						};			
 		}
 	}
-	$c->stash->{jobs} =\@datas;
+	$c->stash->{entornos} =\@datas;
 }
 
 sub list_emails: Private{
@@ -130,7 +128,35 @@ sub list_issues: Private{
 	}	
 		
 	$c->stash->{issues} =\@datas;
+}
 
+sub list_jobs: Private {
+    my ( $self, $c ) = @_;
+	my $username = $c->username;
+	my @datas;	
+
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
+	my $SQL = "SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
+					FROM BALI_JOB_ITEMS A,
+						(SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
+											FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
+													FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
+																FROM BALI_JOB
+																WHERE STATUS = 'RUNNING' AND USERNAME = ?)
+												  UNION
+												  SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
+																			WHERE ENDTIME IS NOT NULL AND USERNAME = ?
+												 )
+									   )
+						) B
+					WHERE A.ID_JOB = B.ID";
+	my @jobs = $db->array_hash( $SQL, $username, $username );
+	foreach my $job (@jobs){
+	    push @datas, $job;
+	}	
+		
+	$c->stash->{jobs} =\@datas;	
 }
 
 sub list_sqa: Private{
@@ -152,6 +178,7 @@ sub viewjobs: Local{
 	#			WHERE TO_NUMBER(SYSDATE - STARTTIME) <= 7 AND BL = ? AND STATUS IN ? AND USERNAME = ?";
 	#
 	#@jobs = $db->array_hash( $SQL, $p->{ent}, $status, $username );
+	
 	if($p->{ent} eq 'All'){
 		$SQL = "SELECT ID FROM BALI_JOB WHERE STATUS = 'RUNNING' AND USERNAME = ?";
 		@jobs = $db->array_hash( $SQL, $username );
