@@ -51,12 +51,13 @@ sub list_jobs: Private{
 	@jobs = $db->array_hash( $SQL, $username, $username );
 	
 	#my @entornos = ('TEST', 'PREP', 'PROD');
-        my $config     = Baseliner->model('ConfigStore')->get('config.dashboard');
+    my $config     = Baseliner->model('ConfigStore')->get('config.dashboard');
 	my @entornos = split ",", $config->{states};
 
-	my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
+	
 	
 	foreach my $entorno (@entornos){
+		my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
 		@temps = grep { ($_->{bl}) =~ $entorno } @jobs;
 		foreach my $temp (@temps){
 			$bl = $temp->{bl};
@@ -66,21 +67,20 @@ sub list_jobs: Private{
 				$totError = $temp->{tot};
 			}
 		}
-		
 		$total = $totOk + $totError;
-		$porcentOk = $totOk * 100/$total;
-		$porcentError = $totError * 100/$total;
-		
-		push @datas, {
-						bl 				=> $bl,
-						porcentOk		=> $porcentOk,
-						totOk			=> $totOk,
-						total			=> $total,
-						totError		=> $totError,
-						porcentError	=> $porcentError
-					};
+		if($total){
+			$porcentOk = $totOk * 100/$total;
+			$porcentError = $totError * 100/$total;
+			push @datas, {
+							bl 				=> $bl,
+							porcentOk		=> $porcentOk,
+							totOk			=> $totOk,
+							total			=> $total,
+							totError		=> $totError,
+							porcentError	=> $porcentError
+						};			
+		}
 	}
-	
 	$c->stash->{jobs} =\@datas;
 }
 
