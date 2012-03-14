@@ -64,7 +64,7 @@ sub bl_list : Path('/core/baselines') {
 
 sub grid : Local {
     my ($self,$c)=@_;
-    $c->stash->{template} = '/comp/baseline_grid.mas';
+    $c->stash->{template} = '/comp/baseline_grid.js';
 }
 
 sub list : Local {
