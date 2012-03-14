@@ -1,6 +1,7 @@
 package Baseliner::Controller::Dashboard;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Baseliner::Core::DBI;
 use Try::Tiny;
 use v5.10;
@@ -10,7 +11,9 @@ BEGIN {  extends 'Catalyst::Controller' }
 ##Configuración del dashboard
 register 'config.dashboard' => {
 	metadata => [
-	       { id=>'states', label=>'States for job statistics', default => 'DESA,TEST,PREP,PROD' }
+	       { id=>'states', label=>'States for job statistics', default => 'DESA,TEST,PREP,PROD' },
+	       { id=>'job_days', label=>'Days for job statistics', default => 7 },
+	       { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
 	    ]
 };
 
@@ -29,14 +32,15 @@ sub list_entornos: Private{
 	my $username = $c->username;
 	my (@jobs, $job, @datas, @temps, $SQL);
 	
-	
+    my $bl_days = config_get('config.dashboard')->{bl_days} // 7;
+
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-				WHERE TO_NUMBER(SYSDATE - ENDTIME) <= 7 AND STATUS = 'FINISHED' AND USERNAME = ?
+				WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED' AND USERNAME = ?
 				GROUP BY BL
 			UNION
 			SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-				WHERE TO_NUMBER(SYSDATE - ENDTIME) <= 7 AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?
+				WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?
 				GROUP BY BL";
 
 	#$SQL = "SELECT DISTINCT A.ID_JOB, NAME, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, STATUS, BL
@@ -48,7 +52,7 @@ sub list_entornos: Private{
 	#			WHERE A.ID_JOB = B.ID
 	#			ORDER BY A.ID_JOB";
 
-	@jobs = $db->array_hash( $SQL, $username, $username );
+	@jobs = $db->array_hash( $SQL, $bl_days, $username, $bl_days, $username );
 	
 	#my @entornos = ('TEST', 'PREP', 'PROD');
     my $config     = Baseliner->model('ConfigStore')->get('config.dashboard');
@@ -306,10 +310,11 @@ sub viewjobs: Local{
 		$SQL = "SELECT ID FROM BALI_JOB WHERE STATUS = 'RUNNING' AND USERNAME = ?";
 		@jobs = $db->array_hash( $SQL, $username );
 	}else{
+        my $job_days = config_get('config.dashboard')->{job_days};
 		$SQL = $p->{swOk} ?
-				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= 7 AND BL = ? AND STATUS = 'FINISHED' AND USERNAME = ?" :
-				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= 7 AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?";	
-		@jobs = $db->array_hash( $SQL, $p->{ent}, $username );
+				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND BL = ? AND STATUS = 'FINISHED' AND USERNAME = ?" :
+				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?";	
+		@jobs = $db->array_hash( $SQL, $job_days, $p->{ent}, $username );
 	}
 	
 	foreach $job (@jobs){
