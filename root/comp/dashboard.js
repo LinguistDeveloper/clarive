@@ -938,7 +938,7 @@ ul.errors li {
 %}else{
               <td class="section-fallo"> ------------- </td>  
 %}
-              <td class="section-duracion"> - </td>
+              <td class="section-duracion"><%$job->{lastDuration}%> min</td>
             </tr>
 %}
           </tbody>    
