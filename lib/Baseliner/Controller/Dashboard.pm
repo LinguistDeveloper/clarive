@@ -155,7 +155,8 @@ sub list_jobs: Private {
 													 )
 										   )
 							) B
-						WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F WHERE E.ID = F.ID";
+						WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F WHERE E.ID = F.ID
+						ORDER BY PROJECT1";
 	my @jobs = $db->array_hash( $SQL, $username, $username );
 	
 	
