@@ -59,16 +59,18 @@ register 'service.job.footprint' => {
 			my $elto_pase;
 			my $pase_date;
 
-			for ( @eltos ) {
-				if ( $path.$_->path eq $filename) {
-					$_->path =~ /^\/(.*?)\//;
+			for my $elto ( @eltos ) {
+				$log->debug( '$path='.$path.' $_='._dump $_.' $filename='.$filename);
+				my $elem_complete_path = _file($path,$elto->path,$elto->name);
+				if ( $elem_complete_path eq $filename) {
+					$elto->path =~ /^\/(.*?)\//;
 					$EnvironmentName = $1;
 					$elto_state = $job->bl;
-					$elto_name = $_->name;
+					$elto_name = $elto->name;
 					# $elto_version = $_->version;
-					$elto_path = $_->path;
+					$elto_path = $elto->path;
 					# $elto_package = $_->package;
-					# $elto_user = $_->modifier;
+					$elto_user = $job->job_data->{username};
 					# $elto_date = $_->modified_on;
 					$elto_pase = $job->job_data->{name};
 					$pase_date = $now;
