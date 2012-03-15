@@ -6,6 +6,7 @@
             {  name: 'description' },
             {  name: 'active' }
     ];
+    
     var store=new Ext.data.JsonStore({
         root: 'data' , 
         remoteSort: true,
@@ -27,19 +28,39 @@
 
     var form = new Ext.FormPanel({
         url: '/baseline/update',
-        resizeable: true,
-        height: 350,
         frame: true,
-        labelWidth: 100, 
-        buttonAlign: 'left',
-        bodyStyle:'padding: 5px 5px 5px 5px; background: none; border: none;',
-        defaults: { width: 650 },
         items: [
-            { xtype: 'hidden', name: 'id', value: -1 }, 
-            { xtype: 'textfield', name: 'bl', fieldLabel: _('Baseline') },
-            Baseliner.combo_baseline({ fieldLabel: _('Parent') }),
-            { xtype: 'textfield', name: 'name', fieldLabel: _('Name') },
-            { xtype: 'textarea', name: 'description', height: 200, fieldLabel: _('Description') }
+            { xtype: 'hidden', name: 'id', value: -1 },
+            //{ xtype: 'textfield', name: 'bl', fieldLabel: _('Baseline') },
+            //{ xtype: 'textfield', name: 'name', fieldLabel: _('Name') },
+           {
+            // column layout with 2 columns
+            layout:'column'
+            ,defaults:{
+                //columnWidth:0.5
+                layout:'form'
+                ,xtype:'panel'
+                ,bodyStyle:'padding:0 15px 0 0'
+            }
+            ,items:[{
+                // left column
+                columnWidth:0.40,
+                defaults:{anchor:'100%'}
+                ,items:[
+                    { xtype: 'textfield', name: 'bl', fieldLabel: _('Baseline') }
+                    ]
+                },
+                {
+                columnWidth:0.60,
+                // right column
+                defaults:{anchor:'100%'},
+                items:[
+                    { xtype: 'textfield', name: 'name', fieldLabel: _('Name') }
+                ]
+                }
+            ]
+            },            
+            { xtype: 'textarea', anchor: '98%', name: 'description', height: 100, fieldLabel: _('Description') }
         ],
         fbar: {
             items: [
@@ -64,11 +85,82 @@
         }
     });
 
+  
+    var btn_cerrar = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/door_out.png',
+        cls: 'x-btn-text-icon',
+        text: _('Close'),
+        handler: function() {
+
+        }
+    })
+    
+    var btn_grabar_baseline = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/database_save.png',
+        cls: 'x-btn-text-icon',
+        text: _('Save'),
+        handler: function(){
+
+        }
+    }) 		
+
+    var column1 = {
+        xtype:'panel',
+        flex: 2,
+        layout:'form',
+        defaults:{anchor:'100%'},
+        items:[
+            { xtype: 'hidden', name: '_id', value: -1 },
+            { xtype:'textfield', name:'bl', fieldLabel:_('Baseline'), allowBlank:false, emptyText:_('Key baseline') },
+            { xtype:'textfield', name:'name', fieldLabel:_('Name'), emptyText:_('Name of the baseline') },
+            { xtype:'textarea', name:'description', fieldLabel:_('Description'), emptyText:_('A brief description of the baseline'), height:130 }
+        ]
+    };
+
+    var column2 = {
+        xtype:'panel',
+        flex: 1//,
+        //items: grid_baseline
+    };
+ 
+    var form_baseline = new Ext.FormPanel({
+                url: '/baseline/update',
+                frame: true,
+                layout: {
+                    type: 'hbox',
+                    padding: '5'
+                },
+                bbar: [
+                    btn_grabar_baseline,
+                    btn_cerrar
+                ]				    
+                ,
+                defaults:{
+                    margins: '0 5 0 0'
+                },
+                items:[
+                    column1,
+                    column2
+                ]
+    });	  
+  
     var win = new Ext.Window({
         title: _('Baseline'),
+        width: 600,
+        autoHeight: true,
         closeAction: 'hide',
-        items: form
+        items: form_baseline
+        //items: form
     });
+
+
+
+
+
+
+
+
+
 
     var add_new = function() {
         win.show();
