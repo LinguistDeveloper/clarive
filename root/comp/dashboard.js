@@ -62,189 +62,18 @@
   font-style: normal;
 }
 
-
-ul.errors {
-    color: #000;
-    background: #fff url(/images/information.png) center no-repeat;
-    background-position: 15px 50%;
-    float: right;
-    width: 580px;
-    text-align: left;
-    padding: 5px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    margin: 0px;
-    margin-bottom: 20px;
-    list-style: none;
-    border: 2px solid #2a6fb5;
-}
-
-ul.errors li {
-    padding-left: 40px;
-}
-
-/*
-    Pagination Styles 
-*/
-
-#project .pagination {
-    font-size: 100%;
-    text-align: center;
-    padding: 3px;
-    margin: 3px;
-}
-#project .pagination a {
-    padding: 2px 5px 2px 5px;
-    margin: 2px;
-    text-decoration: none;
-    color: #44a4f0;
-}
-#project .pagination a:hover, .pagination a:active {
-    background-color: #44a4f0;
-    color: #fff;
-}
-#project .pagination span.current {
-    font-size: 100%;
-    padding: 2px 5px 2px 5px;
-    margin: 2px;
-    font-weight: bold;
-    padding: 2px 5px 2px 5px;
-    background-color: #fff;
-    color: #000;
-}
-#project .pagination span.disabled {
-    font-size: 100%;
-    padding: 2px 5px 2px 5px;
-    margin: 2px;
-    color: #ccc;
-}
-
-#reset {
-    clear: both;
-    margin: 0;
-    padding: 0;
-}
-
-
-
-#project .data-desc {
-    font-size: 10px;
-}
-
-#project .data-desc, .submit-time {
-  font-weight: normal;
-    color: #777;
-}
-
-#project .submit-time {
-  text-align: right;
-}
-
-#project .user-icon {
-  padding: 8px;
-  padding-right: 12px;
-  background: url('/images/simplebits/black/user.gif') no-repeat 50% 50%;
-}
-
-#project .flag-icon {
-  padding: 8px;
-  background: url('/images/simplebits/red/flag.gif') no-repeat 50% 50%;
-}
-
-#project .info-icon {
-  padding: 8px;
-  background: url('/images/simplebits/blue/info.gif') no-repeat 50% 50%;
-}
-
-#project .delete-icon {
-  padding: 8px;
-  background: url('/images/simplebits/black/trash.gif') no-repeat 50% 50%;  
-}
-
-#project .export-icon {
-  padding: 8px;
-  background: url('/images/simplebits/black/disk.gif') no-repeat 50% 50%;  
-}
-
-#project .black-flag-icon {
-  padding: 8px;
-  background: url('/images/simplebits/black/flag.gif') no-repeat 50% 50%;  
-}
-
-#project .chart-icon {
-  padding: 8px;
-  background: url('/images/simplebits/black/bargraph.gif') no-repeat 50% 50%;  
-}
-
-#project .camera-icon {
-  padding: 8px;
-  background: url('/images/simplebits/black/camera.gif') no-repeat 50% 50%;  
-}
-
-#project .lock-icon {
-  padding: 8px;
-  background: url('/images/simplebits/black/locked.gif') no-repeat 50% 50%;  
-}
-
-#project .lock-red-icon {
-  padding: 8px;
-  padding-right: 12px;
-  background: url('/images/simplebits/red/locked.gif') no-repeat 50% 50%;
-}
-
-#project .unlock-icon {
-  padding: 8px;
-  background: url('/images/simplebits/black/unlocked.gif') no-repeat 50% 50%;  
-}
-
-#project .facebook-icon {
-  padding: 8px;
-  background: url('/images/social/facebook.png') no-repeat 50% 50%;  
-}
-
-#project .twitter-icon {
-  padding: 8px;
-  background: url('/images/social/twitter.png') no-repeat 50% 50%;  
-}
-
 #project .data-bar {
     background-color: #33cc00;
-    #background-image: url(/static/images/project/graph-background.png);
     height: 20px;
 }
 
 #project .data-bar-error {
     background-color: #ff0000;
-    #background-image: url(/static/images/project/graph-background.png);
     height: 20px;
-}
-
-#project .alt .data-bar {
-    background-color: #c0fd6b;
-    background-image: url(/static/images/project/graph-background2.png);
-}
-
-#project .error .data-bar {
-    background-color: #ff0000;
-    background-image: url(/static/images/project/graph-background-red.png);
-    height: 30px;
-}
-
-#project .warn .data-bar {
-    background-color: #c0fd6b;
-    background-image: url(/static/images/project/graph-background-yellow.png);
 }
 
 #project .summary-table * {
   height:20px;
-}
-
-/*
-    Table Styles
-*/
-
-.browse_table, .summary-table, .system-table, .data-table {
-    width: 480px;  /* bali table */
 }
 
 /*#Estilos tabla de entornos###################################################################*/
@@ -396,11 +225,6 @@ ul.errors li {
   font-size: 14px;
 }
 
-.summary-table-pases * td.section-exito {
-
-
-}
-
 .summary-table-pases * td.section-score {
   width: 7%;
   text-align: center;
@@ -418,8 +242,6 @@ ul.errors li {
 }
 
 /*##########################################################################################*/
-
-
 
 /*#Estilos tabla de mensajes################################################################*/
 .summary-table-mensajes {
@@ -467,41 +289,6 @@ ul.errors li {
 .summary-table-mensajes * th.last-child {
     border-right: #ccc 1px solid;
 }
-
-.summary-table-pases * tr.last-child td {
-    border-bottom: #ccc 1px solid;
-}
-
-.summary-table-pases * tr.first-child td {
-    border-top: #ccc 1px solid;
-}
-
-.summary-table-pases * td.section-name {
-  width: 15%;
-  text-align: center;
-  font-size: 14px;
-}
-
-.summary-table-pases * td.section-graph {
-    width: 70%;
-}
-
-.summary-table-pases * td.section-score {
-  width: 7%;
-  text-align: center;
-  font-size: 12px;
-}
-
-.summary-table-pases * td.overall-score {
-  width: 15%;
-  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
-  font-size: 32px;
-  text-align: center;
-  vertical-align: middle;
-  border-right: #ccc 1px solid;
-  border-bottom: #ccc 1px solid;
-}
-
 /*##########################################################################################*/
 
 
@@ -537,18 +324,6 @@ ul.errors li {
     line-height: 1.2em;
 }
 
-.summary-table-pases * .section-name {
-    width: 45%;
-}
-
-.summary-table-pases * .section-description {
-    width: 40%;
-}
-
-.summary-table-pases * .section-score {
-  width: 7%;
-}
-
 .summary-table-sqa * th {
   border-top: #ccc 1px solid;
   border-bottom: #ccc 1px solid;
@@ -566,255 +341,12 @@ ul.errors li {
     border-bottom: #ccc 1px solid;
 }
 
-.summary-table-pases * tr.first-child td {
-    border-top: #ccc 1px solid;
-}
-
-.summary-table-pases * td.section-name {
-  width: 15%;
-  text-align: center;
-  font-size: 14px;
-}
-
-.summary-table-pases * td.section-exito {
-
-
-}
-
 .summary-table-sqa * td.section-calificacion {
   width: 7%;
   text-align: right;
   font-size: 12px;
 }
-
-.summary-table-pases * td.overall-score {
-  width: 15%;
-  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
-  font-size: 32px;
-  text-align: center;
-  vertical-align: middle;
-  border-right: #ccc 1px solid;
-  border-bottom: #ccc 1px solid;
-}
-
 /*##########################################################################################*/
-
-
-
-
-
-.browse_table {
-  margin-bottom: 9px;
-}
-
-.system-table, .data-table {
-    margin-bottom: 9px;
-}
-
-.summary-table {
-  margin-bottom: 9px;
-}
-
-.summary-explanation {
-  font-size: 120px;
-  text-align: right;
-  margin-bottom: 10px;
-}
-
-.browse_table * th, .summary-table * th, .system-table * th, .data-table * th {
-    padding: 8px;
-    line-height: 1.5em;
-    text-align: left;
-    font-weight: bold;
-}
-
-.browse_table * td, .summary-table * td, .system-table * td, .data-table * td {
-    padding: 6px;
-    line-height: 1.2em;
-}
-
-.browse_table * td {
-  line-height: 1.1em;
-}
-
-/*
-    Summary Table
-*/
-
-.summary-table * th {
-  background-color: #f0f0f0;
-}
-
-.summary-table * .section-name {
-    width: 15%;
-}
-
-.summary-table * .section-graph {
-    width: 70%;
-}
-
-.summary-table * .section-score {
-  width: 7%;
-}
-
-.summary-table * th {
-  border-top: #ccc 1px solid;
-  border-bottom: #ccc 1px solid;
-}
-
-.summary-table * th.first-child {
-    border-left: #ccc 1px solid;
-}
-
-.summary-table * th.last-child {
-    border-right: #ccc 1px solid;
-}
-
-.summary-table * td.first-child, .summary-table * td.last-child {
-    border-left: #ccc 1px solid;
-    border-right: #ccc 1px solid;
-}
-
-.summary-table * tr.last-child td {
-    border-bottom: #ccc 1px solid;
-}
-
-.summary-table * tr.first-child td {
-    border-top: #ccc 1px solid;
-}
-
-.summary-table * td.section-name {
-  width: 15%;
-  text-align: center;
-  font-size: 14px;
-}
-
-.summary-table * td.section-description {
-  width: 70%;
-}
-
-.summary-table * td.section-score {
-  width: 7%;
-  text-align: center;
-  font-size: 12px;
-}
-
-.browse_table * td.overall-score, .summary-table * td.overall-score {
-  width: 15%;
-  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
-    font-size: 32px;
-    text-align: center;
-    vertical-align: middle;
-    border-right: #ccc 1px solid;
-    border-bottom: #ccc 1px solid;
-}
-
-.browse_table * td.overall-score {
-  font-size: 18px;
-}
-
-.summary-table tfoot * td {
-    border-left: #ccc 1px solid;
-    border-right: #ccc 1px solid;
-    border-bottom: #ccc 1px solid;
-}
-
-/*
-    Browse Table and System Table
-*/
-
-.browse_table, .system-table {
-    border-collapse: collapse;
-    border: #ccc 1px solid;
-}
-
-.system-table * td {
-}
-
-.browse_table * .system-name, .browse_table * .header, .system-table * .system-name {
-    background-color: #f0f0f0;
-}
-
-
-.browse_table * th {
-  font-weight: bold;
-  background-color: #f0f0f0;
-  border-bottom: #ccc 1px solid;
-}
-
-.browse_table * .overall-score {
-  border-left: #ccc 1px solid;
-}
-
-.browse_table * .header {
-  font-weight: bold;
-  border: #ccc 1px solid;
-}
-
-.browse_table * .system-name, .browse_table * .overall-score {
-  width: 15%;
-} 
-
-.browse_table * .system-information-header {
-  border-right-width: 0px;
-  width: 75%;
-} 
-
-.browse_table * .overall-score-header {
-  border-left-width: 0px;
-}
-
-.system-table * .system-name {
-  width: 20%;
-}
-
-.system-table * .system-value {
-  border: #ccc 1px solid;
-}
-
-.browse_table * .last-child  {
-  border-bottom: #ccc 1px solid;
-}
-
-.browse_table * .system-link {
-  font-weight: bold;
-}
-
-/* 
-    data Table
-*/
-
-.data-table {
-    border-collapse: collapse;
-    border: #ccc 1px solid;                 
-}
-
-.data-table * th {
-    background-color: #fff !important;
-    border-width: 0px 0px 1px 0px !important; 
-    border-bottom: #ccc 1px solid !important;
-    font-size: 125%;
-}
-
-.data-table * .data-name {
-    width: 15%;
-    font-size: 34px;
-    background-color: #f0f0f0;
-}
-
-.data-table * .data-score {
-    border-top: #ccc 1px solid;
-    border-left: #ccc 1px solid;                                        
-    border-bottom: #ccc 1px solid;                  
-    width: 15%;
-}
-
-.data-table * .data-graph {
-    border-top: #ccc 1px solid;
-    border-right: #ccc 1px solid;                                       
-    border-bottom: #ccc 1px solid;                                      
-    width: 70%;
-}
 </style>
 
 <div id="project" style="width: 98%; padding: 2px 2px 2px 2px;">
@@ -928,9 +460,17 @@ ul.errors li {
             <tr class='last-child'>
               <td class="section-proyecto"><%$job->{project}%></td>
               <td class='section-entorno'><%$job->{bl}%></td>
-              <td class="section-exito"><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('', ''));" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>
-              <td class="section-fallo"><%$job->{lastError}%> dias (<b><a href="#" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>
-              <td class="section-duracion"> - </td>
+%if($job->{idOk}){
+              <td class="section-exito"><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$job->{idOk}%>', _('Log <%$job->{nameOk}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>
+%}else{
+              <td class="section-exito"> ------------- </td>  
+%}
+%if($job->{idError}){
+              <td class="section-fallo"><%$job->{lastError}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$job->{idError}%>', _('Log <%$job->{nameError}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>
+%}else{
+              <td class="section-fallo"> ------------- </td>  
+%}
+              <td class="section-duracion"><%$job->{lastDuration}%> min</td>
             </tr>
 %}
           </tbody>    

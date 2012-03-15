@@ -123,65 +123,16 @@ sub list : Local {
 sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $action = $p->{action};
-    
-    given ($action) {
-	when ('add') {
-	    try{
-	        my $issue = $c->model('Baseliner::BaliIssue')->create(
-						    {
-							title	=> $p->{title},
-							description => $p->{description},
-							created_by => $c->username
-						    });
-		    
-		$c->stash->{json} = { msg=>_loc('Issue added'), success=>\1, issue_id=> $issue->id };
 
-	    }
-	    catch{
-		$c->stash->{json} = { msg=>_loc('Error adding Issue: %1', shift()), failure=>\1 }
-	    }
-	}
-	when ('update') {
-	    try{
-		my $id_issue = $p->{id};
-		my $issue = $c->model('Baseliner::BaliIssue')->find( $id_issue );
-		$issue->title( $p->{title} );
-		$issue->description( $p->{description} );
-		$issue->update();
-		$c->stash->{json} = { msg=>_loc('Issue modified'), success=>\1, issue_id=> $id_issue };
-	    }
-	    catch{
-		$c->stash->{json} = { msg=>_loc('Error modifying Issue: %1', shift()), failure=>\1 };
-	    }
-	}
-	when ('delete') {
-	    my $id_issue = $p->{id};
-	    
-	    try{
-		my $row = $c->model('Baseliner::BaliIssue')->find( $id_issue );
-		$row->delete;
-	
-		$c->stash->{json} = { success => \1, msg=>_loc('Issue deleted') };
-	    }
-	    catch{
-		$c->stash->{json} = { success => \0, msg=>_loc('Error deleting issue') };
-	    }
-	}
-	when ('close') {
-	    try{
-		my $id_issue = $p->{id};
-		my $issue = $c->model('Baseliner::BaliIssue')->find( $id_issue );
-		$issue->status( 'C' );
-		$issue->update();
-		$c->stash->{json} = { msg=>_loc('Issue closed'), success=>\1, issue_id=> $id_issue };
-	    }
-	    catch{
-		$c->stash->{json} = { msg=>_loc('Error closing Issue: %1', shift()), failure=>\1 };
-	    }
-	}
-    }
+    $p->{username} = $c->username;
 
+	try  {    
+	    my ($msg, $id) = Baseliner::Model::Issue->update( $p );
+	    $c->stash->{json} = { success => \1, msg=>_loc($msg), issue_id => $id };
+	} catch {
+		my $e = shift;
+		$c->stash->{json} = { success => \0, msg=>_loc($e) };
+	};
     $c->forward('View::JSON');
 }
 
