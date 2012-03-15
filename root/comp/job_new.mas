@@ -595,7 +595,8 @@ Ext.onReady(function(){
                         add_node(n);
                     }
                 } else {
-                    Baseliner.message( _('Error'), _("Not promotable") );
+                    var msg = ( job_type == 'promote' ) ? _("Not promotable") : _("Not demotable") ;
+                    Baseliner.message( _('Error'), msg );
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
                 return (true); 
