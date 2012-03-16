@@ -193,6 +193,7 @@ sub check_job_expired {
     while( my $row = $rs->next ) {
         _log( _loc("Job %1 expired (maxstartime=%2)" , $row->name, $row->maxstarttime ) );
         $row->status('EXPIRED');
+	$row->endtime( _now );
         $row->update;
     }
     $rs = $c->model('Baseliner::BaliJob')->search({ status => 'RUNNING', pid=>{'>', 0} });
@@ -207,6 +208,7 @@ sub check_job_expired {
                 next unless $job->status eq 'RUNNING';
                 _log _loc("Detected killed job %1 (status %2, pid %3)", $row->name, $row->status, $row->pid ); 
                 $row->status('KILLED');
+                $row->endtime( _now );
                 $row->update;
             } else {
                 #if( $^O eq 'MSWin32' ) {
