@@ -138,6 +138,7 @@
                                 btn_grabar_baseline.disable();
                                 win.setTitle(_('Edit baseline'));
                                 store.load();
+                                store_baseline.load();
                             },
                             failure: function(f,a){
                                 Ext.Msg.show({  
