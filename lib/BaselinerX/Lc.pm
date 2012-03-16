@@ -88,6 +88,25 @@ sub bl_to {
     return try { $state_data->{ $state_name }->{to} } catch { undef };
 }
 
+=head2 state_names_for_bl
+
+    state_names_for_bl( bl_to => 'PROD' )
+    state_names_for_bl( bl_from => 'PROD' )
+    state_names_for_bl( bl => 'PROD' )
+
+=cut
+sub state_names_for_bl {
+    my ($self, $type, $bl ) = @_;
+    my @state_names;
+    my $state_data = $self->state_data;
+    for my $state_name ( keys %{ $state_data || {} } ) {
+        if( $state_data->{$state_name}->{ $type } eq $bl ) {
+            push @state_names, $state_name;
+        }
+    }
+    return @state_names;
+}
+
 sub show_branch {
     my ($self, $state_name ) = @_;
     my $state_data = $self->state_data;
