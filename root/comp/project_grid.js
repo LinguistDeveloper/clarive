@@ -180,7 +180,7 @@
 					       Baseliner.message(_('Success'), a.result.msg );
 					       form.findField("_id").setValue(a.result.project_id);
 					       //btn_grabar_proyecto.disable();
-					       win.setTitle(_('Edit proyecto'));
+					       win.setTitle(_('Edit project'));
 					   },
 					   failure: function(f,a){
 					       Ext.Msg.show({  

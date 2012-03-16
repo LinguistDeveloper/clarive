@@ -262,9 +262,7 @@
 		autoScroll: true,
 		autoWidth: true,
 		store: store,
-		viewConfig: [{
-			forceFit: true
-		}],
+		viewConfig: {forceFit: true	},
 		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 		loadMask:'true',
 		columns: [
@@ -283,30 +281,14 @@
 			pageSize: ps,
 			displayInfo: true,
 			displayMsg: _('Rows {0} - {1} of {2}'),
-			emptyMsg: "No hay registros disponibles"
+			emptyMsg: _('There are no rows available')
 		}),
-		tbar: [ '<% _loc('Search') %>: ', ' ',
+		tbar: [ _('Search') + ': ', ' ',
 				new Ext.app.SearchField({
 				store: store,
 				params: {start: 0, limit: ps},
-				emptyText: '<% _loc('<Enter your search string>') %>'
+				emptyText: _('<Enter your search string>')
 			}),
-<%doc>
-			{
-			text: _('Verify'),
-			icon:'/static/images/verify.gif',
-			cls: 'x-btn-text-icon',
-			handler: function() {
-				var sm = grid.getSelectionModel();
-				if (sm.hasSelection()) {
-					var sel = sm.getSelected();
-					Baseliner.addNewTab('/daemon/new?id_rel=' + sel.data.id , '<% _loc('New Daemon') %>' );
-				} else {
-					Baseliner.addNewTab('/daemon/new' , '<% _loc('New Daemon') %>' );
-				};
-			}
-			},
-</%doc>
 			btn_start,
 			btn_stop,
 			btn_add,
