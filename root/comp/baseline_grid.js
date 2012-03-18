@@ -1,6 +1,6 @@
 (function(){
     var ps = 30; //page_size
-    
+   
     var fields = [ 
             {  name: 'id' },
             {  name: 'bl' },
@@ -83,9 +83,33 @@
                }
             }); 
         });
+
+ 
+        var txtname = new Ext.form.TextField({
+            name: 'name',
+            enableKeyEvents: true,
+            fieldLabel: _('Name'),
+            allowBlank:false,
+            emptyText: _('Name of the baseline')
+        });
         
-        
-        
+        txtname.on('keypress', function(TextField, e) {
+            btn_grabar_baseline.enable();
+        });                 
+
+        var ta = new Ext.form.TextArea({
+            name: 'desciption',
+            height: 130,
+            enableKeyEvents: true,
+            fieldLabel: _('Description'),
+            emptyText: _('A brief description of the baseline')
+        });
+
+        ta.on('keypress', function(TextField, e) {
+            btn_grabar_baseline.enable();
+        }); 
+
+       
         var column1 = {
            xtype:'panel',
            flex: 2,
@@ -94,8 +118,8 @@
            items:[
                { xtype: 'hidden', name: 'id', value: -1 },
                { xtype:'textfield', name:'bl', fieldLabel:_('Baseline'), allowBlank:false, emptyText:_('Key baseline') },
-               { xtype:'textfield', name:'name', fieldLabel:_('Name'), emptyText:_('Name of the baseline') },
-               { xtype:'textarea', name:'description', fieldLabel:_('Description'), emptyText:_('A brief description of the baseline'), height:130 }
+               txtname,
+               ta
            ]
         };
    
@@ -135,6 +159,7 @@
                             success: function(f,a){
                                 Baseliner.message(_('Success'), a.result.msg );
                                 form.findField("id").setValue(a.result.baseline_id);
+                                form.findField("bl").getEl().dom.setAttribute('readOnly', true);
                                 btn_grabar_baseline.disable();
                                 win.setTitle(_('Edit baseline'));
                                 store.load();
@@ -152,6 +177,13 @@
 				}    
             }
         });
+
+		//Para cuando se envia el formulario no coja el atributo emptytext de los textfields
+		Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+		    Ext.applyIf(this.options, {
+			submitEmptyText:false
+		    });
+		});
 
         var form_baseline = new Ext.FormPanel({
             url: '/baseline/update',
@@ -260,7 +292,7 @@
 		columns: [
             { header: _('Baseline'), width: 200, dataIndex: 'bl', sortable: true },    
             { header: _('Name'), width: 200, dataIndex: 'name', sortable: true },    
-            { header: _('Description'), width: 300, dataIndex: 'description', sortable: true },  
+            { header: _('Description'), width: 300, dataIndex: 'description', sortable: true }  
 		],
 		autoSizeColumns: true,
 		deferredRender:true,

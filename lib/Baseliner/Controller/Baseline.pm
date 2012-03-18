@@ -97,7 +97,7 @@ sub list : Local {
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $start ||= 0;
     $limit ||= 100;
-    $sort ||= 'bl';
+    $sort ||= 'seq';
     $dir ||= 'asc';
     
     my $page = to_pages( start=>$start, limit=>$limit );
