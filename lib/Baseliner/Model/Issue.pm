@@ -24,7 +24,8 @@ sub update {
                     {
                         title       => $p->{title},
                         description => $p->{description},
-                        created_by  => $p->{created_by}
+                        created_by  => $p->{username},
+                        id_category  => $p->{category}
                     }
                 );
                 $id     = $issue->id;
@@ -41,6 +42,7 @@ sub update {
                 my $issue    = Baseliner->model( 'Baseliner::BaliIssue' )->find( $id_issue );
                 $issue->title( $p->{title} );
                 $issue->description( $p->{description} );
+                $issue->id_category( $p->{category} );
                 $issue->update();
                 $id     = $id_issue;
                 $return = _loc( 'Issue modified' );
