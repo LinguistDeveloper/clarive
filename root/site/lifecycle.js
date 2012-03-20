@@ -229,7 +229,6 @@ Baseliner.lifecycle.getLoader().on("beforeload", function(treeLoader, node) {
 
 Baseliner.lifecycle.on('dblclick', function(n, ev){ 
     //alert( JSON.stringify( n ) );
-    console.log( n.attributes.data );
     if( n.attributes.data == undefined ) return;
     var c = n.attributes.data.click;
     if( c==undefined || c.url==undefined ) return;
