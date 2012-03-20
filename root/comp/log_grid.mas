@@ -354,9 +354,12 @@
         handler: function(){
             var par = '';
             par += '&job_exec=' + job_exec;
-            var win = window.open( '/job/log/html/' + current_hash() + '?' + par  );
-            //var win = window.open( '/job/log/html?id_job=' + current_job().id + '&job_exec=' + job_exec,  _('Log'), '' );
-            //win.show();    
+            var hash = current_hash();
+            if( hash != undefined ) {
+                var win = window.open( '/job/log/html/' + hash + '?' + par  );
+            } else {
+                Baseliner.message( _('Error'), _('Html page has not been generated for this log') );
+            }
         } 
     });
 
