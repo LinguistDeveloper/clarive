@@ -102,7 +102,7 @@ for my $dir ( @search ) {
                 #say _loc($p);
                 if( $p ) {
                     if( exists $args{try} && $p eq _loc($p) ) {
-                        say $p unless exists $args{gen} || exists $args{unparsed};
+                        say $p unless exists $args{gen} || exists $args{unparsed} || exists $str{$p};
                         if( ! exists $str{$p} ) {
                             my $in = interactive $p;
                             push @gen, { str=>$p, in=>$in || $p, file=>$f, line=>$lin };
