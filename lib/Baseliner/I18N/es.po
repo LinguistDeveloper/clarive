@@ -2380,3 +2380,28 @@ msgstr "Arrastra y suelta las filas para cambiar la secuencia."
 # root/comp/chain_grid.js (805)
 msgid "Are you sure you want to delete the chain"
 msgstr "¿Está seguro de que quiere borrar la cadena"
+
+msgid "Not promotable"
+msgstr "No se puede promover"
+
+msgid "Not demotable"
+msgstr "No se puede devolver"
+
+msgid "Cannot promote/demote revision %1 or missing baseline (job type %2)"
+msgstr "No puedo promover/devolver revision %1 o falta el entorno (tipo de job %2)"
+
+msgid "Revision baseline '%1' does not match the job baseline '%2'"
+msgstr "El entorno de '%1' no coincide con el entorno de pase '%2'"
+
+msgid "Running jobs"
+msgstr "Pases en Ejecución"
+
+msgid "Collapse"
+msgstr "Ocultar"
+
+msgid "Close All"
+msgstr "Cerrar Todos"
+
+msgid "Maximize"
+msgstr "Maximizar"
+
