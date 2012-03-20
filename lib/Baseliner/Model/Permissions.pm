@@ -295,6 +295,7 @@ sub user_projects_with_action {
     my $username  = $p{username};
     my $action    = $p{action};
     my $bl        = $p{bl} || '*';
+    my $level     = $p{level} || 'all';
     my $bl_filter = '';
     $bl_filter = qq{ AND bl in ('$bl','*') } if $bl ne '*';
     my @granted_projects = [];
@@ -332,15 +333,22 @@ sub user_projects_with_action {
                 rs_hashref($rs);
                 map { $_->{id} } $rs->all;
             }
-            my @subapls
-                = parent_ids(
-                scalar Baseliner->model('Baseliner::BaliProject')
-                    ->search( { id_parent => \@data, nature => { '=', undef } }, { select => [qw/id/] } ) );
-            my @natures
-                = parent_ids(
-                scalar Baseliner->model('Baseliner::BaliProject')
-                    ->search( { id_parent => \@subapls, nature => { '!=', undef } }, { select => [qw/id/] } ) );
-            @granted_projects = _unique @data, @subapls, @natures;
+            my @natures;
+            my @subapls;
+            if ( $level eq 'all' || $level ge 2 ) {
+                @natures    = parent_ids(
+                    scalar Baseliner->model('Baseliner::BaliProject')
+                        ->search( { id_parent => \@data, nature => { '=', undef } }, { select => [qw/id/] } ) );
+                push @granted_projects, @subapls
+            }
+
+            if ( $level eq 'all' || $level ge 3 ) {
+                @subapls    = parent_ids(
+                    scalar Baseliner->model('Baseliner::BaliProject')
+                        ->search( { id_parent => \@subapls, nature => { '!=', undef } }, { select => [qw/id/] } ) );
+                push @granted_projects, @natures
+            }
+            @granted_projects =_unique @granted_projects;
         }
     }
     return wantarray ? @granted_projects : \@granted_projects;
