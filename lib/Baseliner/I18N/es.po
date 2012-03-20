@@ -2381,6 +2381,30 @@ msgstr "Arrastra y suelta las filas para cambiar la secuencia."
 msgid "Are you sure you want to delete the chain"
 msgstr "¿Está seguro de que quiere borrar la cadena"
 
+msgid "Not promotable"
+msgstr "No se puede promover"
+
+msgid "Not demotable"
+msgstr "No se puede devolver"
+
+msgid "Cannot promote/demote revision %1 or missing baseline (job type %2)"
+msgstr "No puedo promover/devolver revision %1 o falta el entorno (tipo de job %2)"
+
+msgid "Revision baseline '%1' does not match the job baseline '%2'"
+msgstr "El entorno de '%1' no coincide con el entorno de pase '%2'"
+
+msgid "Running jobs"
+msgstr "Pases en Ejecución"
+
+msgid "Collapse"
+msgstr "Ocultar"
+
+msgid "Close All"
+msgstr "Cerrar Todos"
+
+msgid "Maximize"
+msgstr "Maximizar"
+
 # lib/Baseliner/Controller/Baseline.pm (161)
 msgid "Baseline added"
 msgstr "Entorno añadido"
@@ -2449,7 +2473,6 @@ msgstr "Editar entorno"
 # root/comp/baseline_grid.js (235)
 msgid "Are you sure you want to delete the baseline"
 msgstr "¿Seguro que quiere borrar el entorno"
-
 
 # lib/Baseliner/Controller/Issue.pm (171)
 msgid "Comment added"
