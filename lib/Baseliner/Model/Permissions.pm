@@ -335,18 +335,19 @@ sub user_projects_with_action {
             }
             my @natures;
             my @subapls;
+            @granted_projects = @data;
             if ( $level eq 'all' || $level ge 2 ) {
                 @natures    = parent_ids(
                     scalar Baseliner->model('Baseliner::BaliProject')
                         ->search( { id_parent => \@data, nature => { '=', undef } }, { select => [qw/id/] } ) );
-                push @granted_projects, @subapls
+                @granted_projects = _unique @granted_projects, @subapls
             }
 
             if ( $level eq 'all' || $level ge 3 ) {
                 @subapls    = parent_ids(
                     scalar Baseliner->model('Baseliner::BaliProject')
                         ->search( { id_parent => \@subapls, nature => { '!=', undef } }, { select => [qw/id/] } ) );
-                push @granted_projects, @natures
+                @granted_projects = _unique @granted_projects, @natures
             }
             @granted_projects =_unique @granted_projects;
         }
