@@ -124,27 +124,98 @@ sub changeset : Local {
     my @repos = BaselinerX::Lc->new->project_repos( project=>$project );
     # ( Girl::Repo->new( path=>"$path" ), $rev, $project );
 
-    push @tree, {
-        url        => '/lifecycle/data_view',
-        icon       => '/static/images/icons/repo.gif',
-        text       => $_->{name},
-        leaf       => \1,
-        data => {
-             click=>{ 
-                url   => '/repo/view',
-                type  => 'comp',
-                icon  => '/static/images/icons/repo.gif',
-                title => "$_->{name} - $bl" ,
-             }
-        },
-    } for @repos;
+    if ( $bl ne '*' ) {
+        push @tree, {
+            url  => '/lifecycle/repo',
+            icon => '/static/images/icons/repo.gif',
+            text => $_->{name},
+            leaf => \1,
+            data => {
+                bl    => $bl,
+                name  => $_->{name},
+                repo_path  => $_->{path},
+                click => {
+                    url   => '/lifecycle/repo',
+                    type  => 'comp',
+                    icon  => '/static/images/icons/repo.gif',
+                    title => "$_->{name} - $bl",
+                }
+              },
+        } for @repos;
+    }
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
 
-sub data_view : Local {
+sub repo : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
+    $c->stash->{ repo } = $p;
+    $c->stash->{ template } = '/comp/lifecycle/repo.js' ;
+}
+
+sub repo_data : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    my $repo_path = $p->{repo_path};
+    my $path = $p->{path} // '';
+    length $path and $path = "$path/";
+    my $g = Girl::Repo->new( path=>"$repo_path" );
+    my @ls = $g->git->exec( 'ls-tree', '-l', $p->{bl}, $path );
+    my $cnt = 100;
+    $c->stash->{json} = [
+        grep { defined }
+        map { 
+            my ($attr, $type, $sha, $size, @f) = split /\s+/, $_;
+            my $f = join ' ',@f;
+            my $file = _file($f);
+            $sha = substr( $sha, 0, 8 );
+            my $basename = $file->basename;
+            $cnt-- > 0
+                ? +{
+                    path    => "$f",
+                    item    => "$basename",
+                    size    => $size,
+                    version => $sha,
+                    leaf    => ( $type eq 'blob' ? \1 : \0 )
+                }
+                : undef
+        } @ls 
+    ];
+    $c->forward('View::JSON');
+}
+
+sub file : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    my $ref = $p->{ref};
+    my $path = $p->{path};
+    my $version = $p->{version};
+    my $repo_path = $p->{repo_path};
+    my $pane = $p->{pane} || 'hist'; # hist, diff, source, blame
+
+    my $res = { pane => $pane };
+
+    # TODO separate concerns, put this in Git Repo provider
+    #      Baseliner::Repo->new( 'git:repo@tag:file' )
+    if( $pane eq 'hist' ) {
+        my $g = Girl::Repo->new( path=>"$repo_path" );
+        my @log = $g->git->exec( 'log', '--decorate', $ref, '--', $path );
+        $res->{info} = \@log;
+    }
+    elsif( $pane eq 'diff' ) {
+        my $g = Girl::Repo->new( path=>"$repo_path" );
+        my @log = $g->git->exec( 'diff', '--decorate', $ref, '--', $path );
+        $res->{info} = \@log;
+    }
+    elsif( $pane eq 'source' ) {
+        my $g = Girl::Repo->new( path=>"$repo_path" );
+        my @log = $g->git->exec( 'cat-file', '-p', $version );
+        $res->{info} = \@log;
+    }
+    
+    $c->stash->{json} = $res;
+    $c->forward('View::JSON');
 }
 
 sub tree : Local {

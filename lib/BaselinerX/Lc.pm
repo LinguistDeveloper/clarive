@@ -96,7 +96,7 @@ sub bl_to {
 
 =cut
 sub state_names_for_bl {
-    my ($self, $type, $bl ) = @_;
+    my ( $self, $type, $bl ) = @_;
     my @state_names;
     my $state_data = $self->state_data;
     for my $state_name ( keys %{ $state_data || {} } ) {
