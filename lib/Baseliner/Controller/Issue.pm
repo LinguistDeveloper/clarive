@@ -86,11 +86,11 @@ sub list : Local {
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     
-    my $SQL = "SELECT C.ID, TITLE, DESCRIPTION, to_char(created_on,'DD/MM/YYYY HH24:MI:SS') AS CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT
-			FROM  BALI_ISSUE C
-			      LEFT JOIN
-			      (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
-			      ON C.ID = D.ID ORDER BY C.ID ASC";
+    my $SQL = "SELECT C.ID, TITLE, C.DESCRIPTION, to_char(created_on,'DD/MM/YYYY HH24:MI:SS') AS CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS CATEGORY
+					FROM  (BALI_ISSUE C LEFT JOIN BALI_ISSUE_CATEGORIES F ON C.ID_CATEGORY = F.ID)
+					LEFT JOIN
+						(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
+					ON C.ID = D.ID ORDER BY C.ID ASC";
    
     my @datas = $db->array_hash( $SQL );
 	
@@ -111,7 +111,8 @@ sub list : Local {
 	    description	=> $data->{description},
 	    created_on 	=> $data->{created_on},
 	    created_by 	=> $data->{created_by},
-	    numcomment 	=> $data->{numcomment}
+	    numcomment 	=> $data->{numcomment},
+		category	=> $data->{category}
 	};
     }
     $cnt = $#rows + 1 ;	
@@ -125,6 +126,8 @@ sub update : Local {
     my $p = $c->request->parameters;
 
     $p->{username} = $c->username;
+	
+	_log ">>>>>>>>Parametros: " . _dump $p . "\n";
 
 	try  {    
 	    my ($msg, $id) = Baseliner::Model::Issue->update( $p );
@@ -191,4 +194,80 @@ sub viewdetail: Local {
     }
     $c->forward('View::JSON');    
 }
+
+sub list_category : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+	my $cnt;
+	my $row;
+	my @rows;
+	$row = $c->model('Baseliner::BaliIssueCategories')->search();
+	
+	if($row){
+		while( my $r = $row->next ) {
+			push @rows,
+			  {
+				id          => $r->id,
+				name	    => $r->name,
+				description	=> $r->description,
+			  };
+		}  
+	}
+    $cnt = $#rows + 1 ;	
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->forward('View::JSON');
+}
+
+sub update_category : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $action = $p->{action};
+
+    given ($action) {
+        when ('add') {
+            try{
+                my $category = $c->model('Baseliner::BaliIssueCategories')->create(
+                                    {
+                                        name  => $p->{name},
+                                        description=> $p->{description},
+                                    });
+                $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, baseline_id=> $category->id };
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error adding Category: %1', shift()), failure=>\1 }
+            }
+        }
+        when ('update') {
+            try{
+                my $id_category = $p->{id};
+                my $category = $c->model('Baseliner::BaliIssueCategories')->find( $id_category );
+                $category->name( $p->{name} );
+                $category->description( $p->{description} );
+                $category->update();
+                
+                $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, baseline_id=> $id_category };
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error modifying Category: %1', shift()), failure=>\1 };
+            }
+        }
+        when ('delete') {
+            my $id_category = $p->{id};
+            
+            try{
+                my $row = $c->model('Baseliner::BaliIssueCategories')->find( $id_category );
+                $row->delete;
+                
+                $c->stash->{json} = { success => \1, msg=>_loc('Category deleted') };
+            }
+            catch{
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Category') };
+            }
+        }
+    }
+    
+    $c->forward('View::JSON');    
+}
+
 1;
