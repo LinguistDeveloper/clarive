@@ -52,7 +52,7 @@
 
 		// create the grid
 		var grid = new Ext.grid.GridPanel({
-			title: '<% _loc('Config') %>',
+			title: _('Config'),
 			header: false,
             stripeRows: true,
 			autoScroll: true,
@@ -83,18 +83,18 @@
 								store: store,
 								pageSize: ps,
 								displayInfo: true,
-								displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
+								displayMsg: _('Rows {0} - {1} of {2}'),
 								emptyMsg: "No hay registros disponibles"
 						}),        
-			tbar: [ '<% _loc('Search') %>: ', ' ',
+			tbar: [ _('Search') + ': ', ' ',
 				new Ext.app.SearchField({
 					store: store,
 					params: {start: 0, limit: ps},
-					emptyText: '<% _loc('<Enter your search string>') %>'
+					emptyText: _('<Enter your search string>')
 				}),
                 menu_view,
 				new Ext.Toolbar.Button({
-					text: '<% _loc('Add') %>',
+					text: _('Add'),
 					icon:'/static/images/drop-add.gif',
 					cls: 'x-btn-text-icon',
 					handler: function() {
@@ -102,7 +102,7 @@
 					}
 				}),
 				new Ext.Toolbar.Button({
-					text: '<% _loc('Edit') %>',
+					text: _('Edit'),
 					icon:'/static/images/drop-edit2.gif',
 					cls: 'x-btn-text-icon',
 					handler: function() {
@@ -115,13 +115,13 @@
 				}
 				}),
 				new Ext.Toolbar.Button({
-					text: '<% _loc('Delete') %>',
+					text: _('Delete'),
 					icon:'/static/images/del.gif',
 					cls: 'x-btn-text-icon',
 					handler: function() {
 						var sm = grid.getSelectionModel();						
 						var row = sm.getSelected();
-						Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the config entry') %>' + ' ' + row.data.key + '?', 
+						Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config entry') + ' ' + row.data.key + '?', 
 							function(btn){ 
 								if(btn=='yes') {
 									var conn = new Ext.data.Connection();
@@ -129,7 +129,7 @@
 										url: '/configlist/delete',
 										params: { id: row.data.id, key: row.data.key },
 										success: function(resp,opt) { grid.getStore().remove(row); },
-										failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the config key') %>'); }
+										failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the config key')); }
 									});	
 								}
 							} );
@@ -173,10 +173,12 @@
 
 
         grid.on("activate", function(){
-            grid.setTitle("<% _loc('Config') %>");
+            grid.setTitle( _('Config') );
         });
 
         var first_load = true;
+        /*
+        load store is slow
         grid.on("activate", function() {
             if( first_load ) {
                 Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
@@ -184,6 +186,7 @@
             }
         });
         store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask(); } }); 
+        */
 
 	return grid;
 })();
