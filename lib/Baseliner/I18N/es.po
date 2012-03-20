@@ -2421,7 +2421,7 @@ msgstr "Código ya existe, introduce otro"
 
 # lib/Baseliner/Controller/Baseline.pm (170)
 msgid "Error adding Baseline: %1"
-msgstr "Error añadiendo entorno"
+msgstr "Error añadiendo entorno: %1"
 
 
 # lib/Baseliner/Controller/Baseline.pm (183)
@@ -2430,7 +2430,7 @@ msgstr "Entorno modificado"
 
 # lib/Baseliner/Controller/Baseline.pm (186)
 msgid "Error modifying Baseline: %1"
-msgstr "Error modificanco entorno"
+msgstr "Error modificanco entorno: %1"
 
 
 # lib/Baseliner/Controller/Baseline.pm (196)
@@ -2473,3 +2473,144 @@ msgstr "Editar entorno"
 # root/comp/baseline_grid.js (235)
 msgid "Are you sure you want to delete the baseline"
 msgstr "¿Seguro que quiere borrar el entorno"
+
+# lib/Baseliner/Controller/Issue.pm (171)
+msgid "Comment added"
+msgstr "Observación añadida"
+
+
+# lib/Baseliner/Controller/Issue.pm (175)
+msgid "Error adding Comment: %1"
+msgstr "Error añadiendo observación: %1"
+
+
+# lib/Baseliner/Controller/Issue.pm (235)
+msgid "Category added"
+msgstr "Categoría añadida"
+
+# lib/Baseliner/Controller/Issue.pm (238)
+msgid "Error adding Category: %1"
+msgstr "Error añadiendo categoría: %1"
+
+# lib/Baseliner/Controller/Issue.pm (249)
+msgid "Category modified"
+msgstr "Categoría modificada"
+
+
+# lib/Baseliner/Controller/Issue.pm (252)
+msgid "Error modifying Category: %1"
+msgstr "Error modificando categoría: %1"
+
+
+# lib/Baseliner/Controller/Issue.pm (262)
+msgid "Category deleted"
+msgstr "Categoría borrada"
+
+
+# lib/Baseliner/Controller/Issue.pm (265)
+msgid "Error deleting Category"
+msgstr "Error borrando categoría"
+
+
+# lib/Baseliner/Model/Issue.pm (32)
+msgid "Issue added"
+msgstr "Issue añadida"
+
+
+# lib/Baseliner/Model/Issue.pm (32)
+msgid "Error adding Issue: %1"
+msgstr "Error añadiendo issue: %1"
+
+
+# lib/Baseliner/Model/Issue.pm (48)
+msgid "Issue modified"
+msgstr "Issue modificada"
+
+
+# lib/Baseliner/Model/Issue.pm (51)
+msgid "Error modifying Issue: %1"
+msgstr "Error modificando issue: %1"
+
+
+# lib/Baseliner/Model/Issue.pm (63)
+msgid "Issue deleted"
+msgstr "Issue borrada"
+
+
+# lib/Baseliner/Model/Issue.pm (66)
+msgid "Error deleting issue: %1"
+msgstr "Error borrando issue: %1"
+
+
+# lib/Baseliner/Model/Issue.pm (77)
+msgid "Issue closed"
+msgstr "Issue cerrada"
+
+
+# lib/Baseliner/Model/Issue.pm (80)
+msgid "Error closing Issue: %1"
+msgstr "Error cerrando issue: %1"
+
+
+# root/comp/issue_grid.js (116)
+msgid "Are you sure you want to delete the issue"
+msgstr "¿Seguro que quiere borrar la issue"
+
+
+# root/comp/issue_grid.js (156)
+msgid "Are you sure you want to close the issue"
+msgstr "¿Seguro que quiere cerrar la issue"
+
+
+# root/comp/issue_grid.js (181)
+msgid "Create issue"
+msgstr "Crear issue"
+
+
+# root/comp/issue_grid.js (187)
+msgid "Category"
+msgstr "Categoría"
+
+
+# root/comp/issue_grid.js (241)
+msgid "Title"
+msgstr "Título"
+
+# root/comp/issue_grid.js (258)
+msgid "Edit issue"
+msgstr "Editar issue"
+
+
+# root/comp/issue_grid.js (275)
+msgid "Create comment"
+msgstr "Crear observación"
+
+
+# root/comp/issue_grid.js (537)
+msgid "Create category"
+msgstr "Crear categoría"
+
+# root/comp/issue_grid.js (545)
+msgid "A brief description of the category"
+msgstr "Una breve descripción de la categoría"
+
+
+# root/comp/issue_grid.js (568)
+msgid "Edit category"
+msgstr "Editar categoría"
+
+
+# root/comp/issue_grid.js (592)
+msgid "Name of category"
+msgstr "Nombre de categoría"
+
+
+# root/comp/issue_grid.js (648)
+msgid "Are you sure you want to delete the category"
+msgstr "¿Seguro que quiere borrar la issue"
+
+
+# root/comp/issue_grid.js (669)
+msgid "Categories"
+msgstr "Categorías"
+
