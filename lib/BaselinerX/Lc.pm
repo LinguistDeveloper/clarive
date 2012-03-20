@@ -105,9 +105,6 @@ sub bl_to {
 sub state_names_for_bl {
     my ($self, $type, $bl ) = @_;
 
-    # _log '%%%%%%%%%%%'.$type;
-    # _log '%%%%%%%%%%%'.$bl;
-
     my @state_names;
     my $state_data = $self->state_data;
     for my $state_name ( keys %{ $state_data || {} } ) {
