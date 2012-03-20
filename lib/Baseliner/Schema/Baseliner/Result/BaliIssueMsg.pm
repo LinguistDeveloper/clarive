@@ -27,11 +27,11 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<BALI_ISSUE_MSG>
+=head1 TABLE: C<bali_issue_msg>
 
 =cut
 
-__PACKAGE__->table("BALI_ISSUE_MSG");
+__PACKAGE__->table("bali_issue_msg");
 
 =head1 ACCESSORS
 

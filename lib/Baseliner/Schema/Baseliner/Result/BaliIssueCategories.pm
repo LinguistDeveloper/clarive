@@ -1,12 +1,12 @@
 use utf8;
-package Baseliner::Schema::Baseliner::Result::BaliIssue;
+package Baseliner::Schema::Baseliner::Result::BaliIssueCategories;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Baseliner::Schema::Baseliner::Result::BaliIssue
+Baseliner::Schema::Baseliner::Result::BaliIssueCategories
 
 =cut
 
@@ -27,11 +27,11 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<bali_issue>
+=head1 TABLE: C<bali_issue_categories>
 
 =cut
 
-__PACKAGE__->table("bali_issue");
+__PACKAGE__->table("bali_issue_categories");
 
 =head1 ACCESSORS
 
@@ -41,39 +41,21 @@ __PACKAGE__->table("bali_issue");
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
-  sequence: 'bali_issue_seq'
+  sequence: 'bali_issue_categories_seq'
   size: 126
 
-=head2 title
+=head2 name
 
   data_type: 'varchar2'
-  is_nullable: 0
+  is_nullable: 1
   size: 1024
 
 =head2 description
-
-  data_type: 'clob'
-  is_nullable: 0
-
-=head2 created_on
-
-  data_type: 'datetime'
-  default_value: current_timestamp
-  is_nullable: 0
-  original: {data_type => "date",default_value => \"sysdate"}
-
-=head2 created_by
 
   data_type: 'varchar2'
   is_nullable: 0
   size: 255
 
-=head2 status
-
-  data_type: 'char'
-  default_value: 'O'
-  is_nullable: 0
-  size: 1
 
 =cut
 
@@ -84,30 +66,14 @@ __PACKAGE__->add_columns(
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },
-    sequence => "bali_issue_seq",
+    sequence => "bali_issue_categories_seq",
     size => 126,
   },
-  "title",
-  { data_type => "varchar2", is_nullable => 0, size => 1024 },
-  "description",
-  { data_type => "clob", is_nullable => 0 },
-  "created_on",
-  {
-    data_type     => "datetime",
-    default_value => \"current_timestamp",
-    is_nullable   => 0,
-    original      => { data_type => "date", default_value => \"sysdate" },
-  },
-  "created_by",
+  "name",
   { data_type => "varchar2", is_nullable => 0, size => 255 },
-  "status",
-  { data_type => "char", default_value => "O", is_nullable => 0, size => 1 },
-  "id_category",
-  {
-    data_type => "numeric",
-    is_nullable => 0,
-    size => 126,
-  },  
+  "description",
+  { data_type => "varchar2", is_nullable => 1, size => 1024 },
+
 );
 
 =head1 PRIMARY KEY

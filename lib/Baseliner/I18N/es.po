@@ -2380,3 +2380,96 @@ msgstr "Arrastra y suelta las filas para cambiar la secuencia."
 # root/comp/chain_grid.js (805)
 msgid "Are you sure you want to delete the chain"
 msgstr "¿Está seguro de que quiere borrar la cadena"
+
+msgid "Not promotable"
+msgstr "No se puede promover"
+
+msgid "Not demotable"
+msgstr "No se puede devolver"
+
+msgid "Cannot promote/demote revision %1 or missing baseline (job type %2)"
+msgstr "No puedo promover/devolver revision %1 o falta el entorno (tipo de job %2)"
+
+msgid "Revision baseline '%1' does not match the job baseline '%2'"
+msgstr "El entorno de '%1' no coincide con el entorno de pase '%2'"
+
+msgid "Running jobs"
+msgstr "Pases en Ejecución"
+
+msgid "Collapse"
+msgstr "Ocultar"
+
+msgid "Close All"
+msgstr "Cerrar Todos"
+
+msgid "Maximize"
+msgstr "Maximizar"
+
+# lib/Baseliner/Controller/Baseline.pm (161)
+msgid "Baseline added"
+msgstr "Entorno añadido"
+
+
+# lib/Baseliner/Controller/Baseline.pm (161)
+msgid "Baseline added"
+msgstr "Entorno añadido"
+
+# lib/Baseliner/Controller/Baseline.pm (166)
+msgid "Baseline key already exists, introduce another baseline key"
+msgstr "Código ya existe, introduce otro"
+
+
+# lib/Baseliner/Controller/Baseline.pm (170)
+msgid "Error adding Baseline: %1"
+msgstr "Error añadiendo entorno"
+
+
+# lib/Baseliner/Controller/Baseline.pm (183)
+msgid "Baseline modified"
+msgstr "Entorno modificado"
+
+# lib/Baseliner/Controller/Baseline.pm (186)
+msgid "Error modifying Baseline: %1"
+msgstr "Error modificanco entorno"
+
+
+# lib/Baseliner/Controller/Baseline.pm (196)
+msgid "Baseline deleted"
+msgstr "Entorno borrado"
+
+
+# lib/Baseliner/Controller/Baseline.pm (199)
+msgid "Error deleting Baseline"
+msgstr "Error borrando entorno"
+
+# root/comp/baseline_grid.js (41)
+msgid "Create baseline"
+msgstr "Crear entorno"
+
+# root/comp/baseline_grid.js (63)
+msgid "Order (Drag & Drop)"
+msgstr "Orden (Arrastra & Suelta)"
+
+
+# root/comp/baseline_grid.js (94)
+msgid "Key baseline"
+msgstr "Código entorno"
+
+# root/comp/baseline_grid.js (95)
+msgid "Name of the baseline"
+msgstr "Nombre de entorno"
+
+
+# root/comp/baseline_grid.js (96)
+msgid "A brief description of the baseline"
+msgstr "Una breve descripción del entorno"
+
+
+# root/comp/baseline_grid.js (137)
+msgid "Edit baseline"
+msgstr "Editar entorno"
+
+
+# root/comp/baseline_grid.js (235)
+msgid "Are you sure you want to delete the baseline"
+msgstr "¿Seguro que quiere borrar el entorno"
