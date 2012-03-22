@@ -32,94 +32,43 @@ sub list : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $cnt) = ( @{$p}{qw/start limit query query_id dir sort filter/}, 0 );
-    $sort ||= 'me.id';
+    $sort ||= 'id';
     $dir ||= 'asc';
     $start||= 0;
     $limit ||= 100;
 
-    #my $page = to_pages( start=>$start, limit=>$limit );
-    #
-    #my $where = $query
-    #    ? { 'lower(id||title)' => { -like => "%".lc($query)."%" }, status => $filter}
-    #    : { status => $filter };   
-    #
-    #
-#    $query and $where = query_sql_build(
-#       query  => $query,
-#       fields => {
-#	   id           => 'me.id',
-#	   title	=> 'me.title',
-#	   description	=> 'me.description',
-#	   created_on	=> "to_char(me.created_on,'DD/MM/YYYY HH24:MI:SS')",
-#	   created_by	=> 'me.created_by',
-#       }
-#   );
-# 
-# 
-#    my $rs = $c->model('Baseliner::BaliIssue')->search(
-#	$where,
-#	{ page => $page,
-#	  rows => $limit,
-#	  order_by => $sort ? "$sort $dir" : undef
-#	}
-#    );
-#	
-#	
-#    my $pager = $rs->pager;
-#    $cnt = $pager->total_entries;	
-#	
-#    my @rows;
-#    while( my $r = $rs->next ) {
-#    # produce the grid
-#	push @rows,
-#	  {
-#	    id 		=> $r->id,
-#	    title	=> $r->title,
-#	    description	=> $r->description,
-#	    created_on => defined $r->created_on
-#	    ? $r->created_on->dmy('/') . ' ' . $r->created_on->hms
-#	    : '',	    
-#	    created_by 	=> $r->created_by
-#	  };
-#
-#    }
-    
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    my $SQL = "SELECT C.ID, TITLE, C.DESCRIPTION, to_char(created_on,'DD/MM/YYYY HH24:MI:SS') AS CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS CATEGORY
-					FROM  (BALI_ISSUE C LEFT JOIN BALI_ISSUE_CATEGORIES F ON C.ID_CATEGORY = F.ID)
-					LEFT JOIN
-						(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
-					ON C.ID = D.ID ORDER BY C.ID ASC";
-   
-    my @datas = $db->array_hash( $SQL );
+	my @datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"});
 	
-	
-	if($query_id){ #Viene por la parte de dashboard
+	#Viene por la parte de dashboard, y realiza el filtrado por ids.
+	if($query_id){ 
 		@datas = grep { ($_->{id}) =~ $query_id } @datas if $query_id;
+	#Comportamiento normal.
 	}else{
+		#Filtramos por el estado de las issues, abiertas 'O' o cerradas 'C'.
 		@datas = grep { uc($_->{status}) =~ $filter } @datas;
-		
+		#Filtramos por lo que han introducido en el campo de búsqueda.
 		@datas = grep { lc($_->{title}) =~ $query } @datas if $query;
 	}
     my @rows;
           
-    foreach my $data (@datas){
-	push @rows, {
-	    id 		=> $data->{id},
-	    title	=> $data->{title},
-	    description	=> $data->{description},
-	    created_on 	=> $data->{created_on},
-	    created_by 	=> $data->{created_by},
-	    numcomment 	=> $data->{numcomment},
-		category	=> $data->{category}
-	};
+    #Creamos el json para la carga del grid de issues.
+	foreach my $data (@datas){
+		push @rows, {
+			id 		=> $data->{id},
+			title	=> $data->{title},
+			description	=> $data->{description},
+			created_on 	=> $data->{created_on},
+			created_by 	=> $data->{created_by},
+			numcomment 	=> $data->{numcomment},
+			category	=> $data->{category}
+		};
     }
     $cnt = $#rows + 1 ;	
     
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
+
 
 sub update : Local {
     my ( $self, $c ) = @_;

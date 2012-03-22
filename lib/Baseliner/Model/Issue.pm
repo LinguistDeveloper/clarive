@@ -84,4 +84,18 @@ sub update {
     return ( $return, $id );
 } ## end sub update
 
+sub GetIssues {
+    my ( $self, $p ) = @_;
+    my $orderby = $p->{orderby} || 'ID ASC';
+    
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my $SQL = "SELECT C.ID AS ID, TITLE, C.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS CATEGORY
+        			FROM  (BALI_ISSUE C LEFT JOIN BALI_ISSUE_CATEGORIES F ON C.ID_CATEGORY = F.ID)
+					LEFT JOIN
+						(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
+					ON C.ID = D.ID ORDER BY $orderby ";
+   
+    return $db->array_hash( $SQL );
+}
+
 1;
