@@ -814,7 +814,7 @@
         Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the chain') + ' <b>' + sel.data.name + '</b>?', 
         function(btn){ 
             if(btn=='yes') {
-                Baseliner.ajaxEval( '/chain/update?action=delete',{ id: sel.data.id },
+                Baseliner.ajaxEval( '/chain/update?opt=delete',{ id: sel.data.id },
                     function(response) {
                         if ( response.success ) {
                             grid.getStore().remove(sel);
