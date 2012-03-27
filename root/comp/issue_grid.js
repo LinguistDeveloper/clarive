@@ -20,8 +20,13 @@
 		listeners: {
 			'beforeload': function( obj, opt ) {
 				obj.baseParams.filter = 'O';
-				}
-			}			
+				var labels_checked = new Array();
+				check_labels_sm.each(function(rec){
+					labels_checked.push(rec.get('id'));
+				});				
+				obj.baseParams.labels = labels_checked;
+			}
+		}			
 	});
 
 	var store_closed = new Ext.data.JsonStore({
@@ -42,6 +47,11 @@
 		listeners: {
 			'beforeload': function( obj, opt ) {
 				obj.baseParams.filter = 'C';
+				var labels_checked = new Array();
+				check_labels_sm.each(function(rec){
+					labels_checked.push(rec.get('id'));
+				});				
+				obj.baseParams.labels = labels_checked;				
 				}
 			}			
 
@@ -66,23 +76,18 @@
 		remoteSort: true,
 		totalProperty:"totalCount", 
 		id: 'id', 
-		url: '/issue/list_category',
+		url: '/issue/list_label',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
-			{  name: 'description' }
+			{  name: 'color' }
 		]
 	});
-	
-	var query_id = '<% $c->stash->{query_id} %>';
-	store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>'}});
-	store_closed.load({params:{start:0 , limit: ps, filter:'C'}});
-	store_category.load();
 	
 	var init_buttons = function(action) {
 		eval('btn_edit.' + action + '()');
 		eval('btn_delete.' + action + '()');
-		//eval('btn_comment.' + action + '()');
+		eval('btn_labels.' + action + '()');
 		eval('btn_close.' + action + '()');
 	}
 	
@@ -90,6 +95,10 @@
 		eval('btn_edit_category.' + action + '()');
 		eval('btn_delete_category.' + action + '()');
 	}	
+	
+	var init_buttons_label = function(action) {
+		eval('btn_delete_label.' + action + '()');
+	}
 	
 	var btn_add = new Ext.Toolbar.Button({
 			id: 'btn_add',
@@ -147,6 +156,21 @@
 		}
 	});
 	
+	var btn_labels = new Ext.Toolbar.Button({
+		id: 'btn_labels',
+		text: _('Labels'),
+		icon:'/static/images/icons/color_swatch.png',
+		cls: 'x-btn-text-icon',
+		disabled: true,
+		handler: function() {
+			var sm = grid_opened.getSelectionModel();
+			if (sm.hasSelection()) {
+				var sel = sm.getSelected();
+				add_labels(sel);
+			}
+		}
+	});	
+	
 	var btn_comment = new Ext.Toolbar.Button({
 		id: 'btn_comment',
 		text: _('Comment'),
@@ -186,6 +210,86 @@
 			} );
 		}
 	});
+
+	var add_labels = function(rec) {
+		var win;
+		var title = 'Labels';
+		
+        var btn_cerrar_labels = new Ext.Toolbar.Button({
+            icon:'/static/images/icons/door_out.png',
+            cls: 'x-btn-text-icon',
+            text: _('Close'),
+			handler: function() {
+				win.close();
+            }
+        });
+        
+        var btn_grabar_labels = new Ext.Toolbar.Button({
+            icon:'/static/images/icons/database_save.png',
+            cls: 'x-btn-text-icon',
+            text: _('Save'),
+            handler: function(){
+				var labels_checked = new Array();
+				check_ast_labels_sm.each(function(rec){
+					labels_checked.push(rec.get('id'));
+				});
+				Baseliner.ajaxEval( '/issue/update_issuelabels',{ idissue: rec.data.id, idslabel: labels_checked },
+					function(response) {
+						if ( response.success ) {
+							Baseliner.message( _('Success'), response.msg );
+						} else {
+							Baseliner.message( _('ERROR'), response.msg );
+						}
+					}
+					
+				);			
+            }
+        });
+
+		var check_ast_labels_sm = new Ext.grid.CheckboxSelectionModel({
+			singleSelect: false,
+			sortable: false,
+			checkOnly: true
+		});
+	
+		
+		var grid_ast_labels = new Ext.grid.GridPanel({
+			title : _('Labels'),
+			sm: check_ast_labels_sm,
+			autoScroll: true,
+			header: false,
+			stripeRows: true,
+			autoScroll: true,
+			height: 300,
+			enableHdMenu: false,
+			store: store_label,
+			viewConfig: {forceFit: true},
+			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+			loadMask:'true',
+			columns: [
+				{ hidden: true, dataIndex:'id' },
+				check_ast_labels_sm,
+				{ header: _('Color'), dataIndex: 'color', width:15, sortable: false, renderer: render_color },
+				{ header: _('Label'), dataIndex: 'name', sortable: false }
+			],
+			autoSizeColumns: true,
+			deferredRender:true,
+            bbar: [
+                btn_grabar_labels,
+                btn_cerrar_labels
+            ]		
+		});
+	
+		win = new Ext.Window({
+			title: _(title),
+			width: 400,
+			modal: true,
+			autoHeight: true,
+			items: grid_ast_labels
+		});
+		win.show();		
+	};
+
 
 	var add_edit = function(rec) {
 		var win;
@@ -465,6 +569,7 @@
 			btn_add,
 			btn_edit,
 			btn_delete,
+			btn_labels,
 			'->',
 			btn_comment,
 			btn_close
@@ -594,13 +699,13 @@
 	};
 	
 	var btn_add_category = new Ext.Toolbar.Button({
-			id: 'btn_add_category',
-			text: _('New'),
-			icon:'/static/images/icons/add.gif',
-			cls: 'x-btn-text-icon',
-			handler: function() {
-						add_edit_category()
-			}
+		id: 'btn_add_category',
+		text: _('New'),
+		icon:'/static/images/icons/add.gif',
+		cls: 'x-btn-text-icon',
+		handler: function() {
+					add_edit_category()
+		}
 	});
 	
 	var btn_edit_category = new Ext.Toolbar.Button({
@@ -792,17 +897,20 @@
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
-			var sm = grid_labels.getSelectionModel();
-			var sel = sm.getSelected();
-			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the label') + ' <b>' + sel.data.name + '</b>?', 
+			var labels_checked = new Array();
+			check_labels_sm.each(function(rec){
+				labels_checked.push(rec.get('id'));
+			});	
+			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the labels selected?'), 
 			function(btn){ 
 				if(btn=='yes') {
-					Baseliner.ajaxEval( '/issue/update_label?action=delete',{ id: sel.data.id },
+					Baseliner.ajaxEval( '/issue/update_label?action=delete',{ idslabel: labels_checked },
 						function(response) {
 							if ( response.success ) {
-								grid_labels.getStore().remove(sel);
+								//grid_labels.getStore().remove(sel);
 								Baseliner.message( _('Success'), response.msg );
-								init_buttons('disable');
+								init_buttons_label('disable');
+								store_label.load();
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -813,10 +921,72 @@
 			} );
 		}
 	});
+
+	var color_lbl = '#000000';
+	var color_label = new Ext.form.TextField({
+		id:'color_label',
+		width: 25,
+		readOnly: true,
+		style:'background:#000000'
+	});
+	
+	var colorMenu = new Ext.menu.ColorMenu({
+		handler: function(cm, color) {
+		  eval("Ext.get('color_label').setStyle('background','#" + color + "')");
+		  color_lbl = '#' + color ;
+		}
+	});
+
+	var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}});
+	
+	var label_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
+    label_box.on('specialkey', function(f, e){
+        if(e.getKey() == e.ENTER){
+			Baseliner.ajaxEval( '/issue/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+				function(response) {
+					if ( response.success ) {
+						store_label.load();
+						Baseliner.message( _('Success'), response.msg );
+						//init_buttons('disable');
+					} else {
+						Baseliner.message( _('ERROR'), response.msg );
+					}
+				}
+			
+			);
+        }
+    });
+	
+	var tb = new Ext.Toolbar({
+		items: [{
+				text: 	_('Pick a Color'),
+				menu: 	colorMenu
+				},
+				color_label,
+				blank_image,
+				label_box,
+				btn_add_label,
+				btn_delete_label
+		]
+	});
+
+	
+	var render_color = function(value,metadata,rec,rowIndex,colIndex,store) {
+		return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
+	};	
+	
+	
+	var check_labels_sm = new Ext.grid.CheckboxSelectionModel({
+		singleSelect: false,
+		sortable: false,
+		checkOnly: true
+	});
+
 	
 	var grid_labels = new Ext.grid.GridPanel({
 		region : 'center',
 		title : _('Labels'),
+		sm: check_labels_sm,
 		autoScroll: true,
 		split : true,
 		collapsible : true,
@@ -830,18 +1000,41 @@
 		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 		loadMask:'true',
 		columns: [
-			{ header: _('Label'), dataIndex: 'name', width:50, sortable: false },
-			{ header: _('Description'), dataIndex: 'description', sortable: false },	
+			{ hidden: true, dataIndex:'id' },
+			check_labels_sm,
+			{ header: _('Color'), dataIndex: 'color', width:15, sortable: false, renderer: render_color },
+			{ header: _('Label'), dataIndex: 'name', sortable: false },
+			{ hidden: true, dataIndex:'active' }
 		],
 		autoSizeColumns: true,
-		deferredRender:true,	
-		tbar: [ 
-				btn_add_label,
-				btn_edit_label,
-				btn_delete_label,
-				'->'
-		]		
-	});	
+		deferredRender:true,
+		tbar: tb
+	});
+
+	function filtrar_labels(){
+		var labels_checked = new Array();
+		check_labels_sm.each(function(rec){
+			labels_checked.push(rec.get('id'));
+		});	
+
+		var query_id = '<% $c->stash->{query_id} %>';
+		store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked}});
+		store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked}});		
+	};
+
+	grid_labels.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+		if(columnIndex == 1){
+			filtrar_labels();
+			init_buttons_label('enable');
+		}
+	});
+	
+	grid_labels.on('headerclick', function(grid, columnIndex, e) {
+		if(columnIndex == 1){
+			filtrar_labels();
+			init_buttons_label('enable');
+		}
+	});
 
 	var panel = new Ext.Panel({
 		layout : "border",
@@ -858,7 +1051,14 @@
 					]
 				}
 		]
-	});	
+	});
+	
+	var query_id = '<% $c->stash->{query_id} %>';
+	store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>'}});
+	store_closed.load({params:{start:0 , limit: ps, filter:'C'}});
+	store_category.load();
+	store_label.load();
+	
 	return panel;
 })();
 

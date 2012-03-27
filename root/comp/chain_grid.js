@@ -622,12 +622,12 @@
         //Tipos de pase
         store: new Ext.data.JsonStore({
             fields : ['name', 'value'],
-            data   : [{name : 'CHECK',   value: 'CHECK'},
-                  {name : 'INIT',   value: 'INIT'},
-                  {name : 'PRE',   value: 'PRE'},
-                  {name : 'RUN',   value: 'RUN'},
-                  {name : 'POST',   value: 'POST'},
-                  {name : 'END',   value: 'END'}]
+            data   : [  {name : 'CHECK',   value: 'CHECK'},
+                        {name : 'INIT',   value: 'INIT'},
+                        {name : 'PRE',   value: 'PRE'},
+                        {name : 'RUN',   value: 'RUN'},
+                        {name : 'POST',   value: 'POST'},
+                        {name : 'END',   value: 'END'}]
         })
     });
     
