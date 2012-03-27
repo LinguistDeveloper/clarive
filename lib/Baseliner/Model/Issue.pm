@@ -85,15 +85,26 @@ sub update {
 } ## end sub update
 
 sub GetIssues {
-    my ( $self, $p ) = @_;
+    my ( $self, $p, @labels ) = @_;
     my $orderby = $p->{orderby} || 'ID ASC';
+    my $SQL;
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    my $SQL = "SELECT C.ID AS ID, TITLE, C.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS CATEGORY
-        			FROM  (BALI_ISSUE C LEFT JOIN BALI_ISSUE_CATEGORIES F ON C.ID_CATEGORY = F.ID)
-					LEFT JOIN
-						(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
-					ON C.ID = D.ID ORDER BY $orderby ";
+    if (@labels){
+        my $ids_labels =  'BALI_ISSUE_LABEL.ID_LABEL = ' . join (' OR BALI_ISSUE_LABEL.ID_LABEL = ', @labels);
+
+        $SQL = "SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS CATEGORY
+                        FROM  (BALI_ISSUE INNER JOIN BALI_ISSUE_LABEL ON BALI_ISSUE.ID = BALI_ISSUE_LABEL.ID_ISSUE)  LEFT JOIN BALI_ISSUE_CATEGORIES F ON ID_CATEGORY = F.ID
+                        LEFT JOIN
+                            (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
+                        ON BALI_ISSUE.ID = D.ID WHERE $ids_labels";       
+    }else{
+        $SQL = "SELECT C.ID AS ID, TITLE, C.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS CATEGORY
+                        FROM  (BALI_ISSUE C LEFT JOIN BALI_ISSUE_CATEGORIES F ON C.ID_CATEGORY = F.ID)
+                        LEFT JOIN
+                            (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
+                        ON C.ID = D.ID ORDER BY $orderby ";     
+    }
    
     return $db->array_hash( $SQL );
 }

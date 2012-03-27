@@ -37,7 +37,20 @@ sub list : Local {
     $start||= 0;
     $limit ||= 100;
 
-	my @datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"});
+	my @labels;
+	my @datas;
+	
+	if($p->{labels}){
+		foreach my $label (_array $p->{labels}){
+			push @labels, $label;
+		}
+		@datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"}, @labels);
+		
+	}else{
+		@datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"});	
+	}
+	
+	#my @datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir", labels => @labels});
 	
 	#Viene por la parte de dashboard, y realiza el filtrado por ids.
 	if($query_id){ 
@@ -63,7 +76,7 @@ sub list : Local {
 			category	=> $data->{category}
 		};
     }
-    $cnt = $#rows + 1 ;	
+    $cnt = $#rows + 1 ;
     
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
@@ -134,10 +147,10 @@ sub viewdetail: Local {
 	while( my $r = $rs->next ) {
 	# produce the grid
 	    push @rows,
-	      {
-		created_by	=> $r->created_by,
-		text		=> $r->text
-	      };
+					{
+						created_by	=> $r->created_by,
+						text		=> $r->text
+					};
 	}
 	$c->stash->{json} = { data=>\@rows, success => \1 };
     }
@@ -218,5 +231,114 @@ sub update_category : Local {
     
     $c->forward('View::JSON');    
 }
+
+
+sub update_label : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+	
+    my $action = $p->{action};
+	my $label = $p->{label};
+	my $color = $p->{color};
+	
+    given ($action) {
+        when ('add') {
+            try{
+                my $label = $c->model('Baseliner::BaliLabel')->create(
+                                    {
+                                        name  	=> $label,
+                                        color	=> $color
+                                    });
+                $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=> $label->id };
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error adding Label: %1', shift()), failure=>\1 }
+            }
+        }
+        when ('update') {
+            #try{
+
+            #}
+            #catch{
+
+            #}
+        }
+        when ('delete') {
+            my $ids_label = $p->{idslabel};
+
+            try{
+				my @ids_label;
+				foreach my $id_label (_array $ids_label){
+					push @ids_label, $id_label;
+				}
+				  
+				my $rs = Baseliner->model('Baseliner::BaliLabel')->search({ id => \@ids_label });
+				$rs->delete;
+                
+                $c->stash->{json} = { success => \1, msg=>_loc('Labels deleted') };
+            }
+            catch{
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Labels') };
+            }
+        }
+    }
+    
+    $c->forward('View::JSON');    
+}
+
+sub list_label : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+	my $cnt;
+	my $row;
+	my @rows;
+	$row = $c->model('Baseliner::BaliLabel')->search();
+	
+	if($row){
+		while( my $r = $row->next ) {
+			push @rows,
+			  {
+				id          => $r->id,
+				name	    => $r->name,
+				color		=> $r->color
+			  };
+		}  
+	}
+    $cnt = $#rows + 1 ;	
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->forward('View::JSON');
+}
+
+sub update_issuelabels : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+	my $idissue = $p->{idissue};
+	my $idslabel = $p->{idslabel};
+	my $issuelabels;
+	
+	try{
+		my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+		my $dbh = $db->dbh;
+        my $sth = $dbh->prepare('DELETE FROM BALI_ISSUE_LABEL WHERE ID_ISSUE = ?');
+		$sth->bind_param( 1, $idissue );
+		$sth->execute();		
+		
+		foreach my $id_label (_array $idslabel){
+			$issuelabels = $c->model('Baseliner::BaliIssueLabel')->create(
+																			{
+																				id_issue    => $idissue,
+																				id_label  	=> $id_label,
+																			});		
+		}
+		$c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
+	}
+	catch{
+		$c->stash->{json} = { msg=>_loc('Error assigning Labels: %1', shift()), failure=>\1 }
+	};
+     
+    $c->forward('View::JSON');    
+}
+
 
 1;

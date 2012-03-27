@@ -39,7 +39,6 @@ sub list_entornos: Private{
 																			action => 'action.job.viewall',
 																			level => 1);
 	my $ids_project =  'ID=' . join (' OR ID=', @ids_project);
-
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
 	#$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
