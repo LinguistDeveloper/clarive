@@ -240,7 +240,11 @@
 					function(response) {
 						if ( response.success ) {
 							Baseliner.message( _('Success'), response.msg );
-							filtrar_labels();
+							var labels_checked = new Array();
+							check_labels_sm.each(function(rec){
+								labels_checked.push(rec.get('id'));
+							});
+							filtrar_labels(labels_checked);
 							
 						} else {
 							Baseliner.message( _('ERROR'), response.msg );
@@ -985,6 +989,8 @@
 								Baseliner.message( _('Success'), response.msg );
 								init_buttons_label('disable');
 								store_label.load();
+								var labels_checked = new Array();
+								filtrar_labels(labels_checked);
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -1085,12 +1091,7 @@
 		tbar: tb
 	});
 
-	function filtrar_labels(){
-		var labels_checked = new Array();
-		check_labels_sm.each(function(rec){
-			labels_checked.push(rec.get('id'));
-		});	
-
+	function filtrar_labels(labels_checked){
 		var query_id = '<% $c->stash->{query_id} %>';
 		store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked}});
 		store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked}});		
@@ -1098,14 +1099,22 @@
 
 	grid_labels.on('cellclick', function(grid, rowIndex, columnIndex, e) {
 		if(columnIndex == 1){
-			filtrar_labels();
+			var labels_checked = new Array();
+			check_labels_sm.each(function(rec){
+				labels_checked.push(rec.get('id'));
+			});
+			filtrar_labels(labels_checked);
 			init_buttons_label('enable');
 		}
 	});
 	
 	grid_labels.on('headerclick', function(grid, columnIndex, e) {
 		if(columnIndex == 1){
-			filtrar_labels();
+			var labels_checked = new Array();
+			check_labels_sm.each(function(rec){
+				labels_checked.push(rec.get('id'));
+			});
+			filtrar_labels(labels_checked);
 			init_buttons_label('enable');
 		}
 	});
