@@ -288,28 +288,22 @@
 					
 					var datas = me.getStore();
 					var recs = [];
-					datas.each(function(rec, index){
-						alert(rec.get('id'));
-						alert(index);
-							//recs.push(index);
+					datas.each(function(row, index){
+						if(rec.data.labels){
+							for(i=0;i<rec.data.labels.length;i++){
+								if(row.get('id') == rec.data.labels[i].label){
+									recs.push(index);	
+								}
+							}
+						}						
 					});
-					var rows = new Array('0','1','2','3');
-					me.getSelectionModel().selectRows(rows);					
+					me.getSelectionModel().selectRows(recs);					
 				
 				}
-			}			
+			}		
 		});
+		
 		//Ext.util.Observable.capture(grid_ast_labels, console.info);
-//		grid_ast_labels.on('viewready', function() {
-//			var datas = grid_ast_labels.getStore();
-//			alert(datas);
-//                datas.each(function(rec, index){
-//                    alert(rec.get('id'));
-//					alert(index);
-//                });
-//					var rows = new Array('0','1','2','3');
-//					grid_ast_labels.getSelectionModel().selectRows(rows);
-//		});		
 	
 		win = new Ext.Window({
 			title: _(title),
