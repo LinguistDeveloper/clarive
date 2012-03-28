@@ -865,81 +865,81 @@
 		init_buttons_category('enable');
 	});
 
-	var add_edit_label = function(rec) {
-		var win;
-		var title = 'Create label';
-		
-        var ta = new Ext.form.TextArea({
-            name: 'description',
-            height: 130,
-            enableKeyEvents: true,
-            fieldLabel: _('Description'),
-            emptyText: _('A brief description of the label')
-        });		
-		
-		var form_label = new Ext.FormPanel({
-			frame: true,
-			url:'/issue/update_label',
-			labelAlign: 'top',
-			bodyStyle:'padding:10px 10px 0',
-			buttons: [
-				{
-				text: _('Accept'),
-				type: 'submit',
-				handler: function() {
-					var form = form_label.getForm();
-					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-					
-					if (form.isValid()) {
-					       form.submit({
-						   params: {action: action},
-						   success: function(f,a){
-						       Baseliner.message(_('Success'), a.result.msg );
-						       form.findField("id").setValue(a.result.label_id);
-						       store_label.load();
-						       win.setTitle(_('Edit label'));
-						   },
-						   failure: function(f,a){
-						       Ext.Msg.show({  
-							   title: _('Information'), 
-							   msg: a.result.msg , 
-							   buttons: Ext.Msg.OK, 
-							   icon: Ext.Msg.INFO
-						       }); 						
-						   }
-					       });
-					}
-				}
-				},
-				{
-				text: _('Close'),
-				handler: function(){ 
-						win.close();
-					}
-				}
-			],
-			defaults: { anchor:'100%'},
-			items: [
-				{ xtype: 'hidden', name: 'id', value: -1 },
-				{ xtype:'textfield', name:'name', fieldLabel:_('Label'), allowBlank:false, emptyText:_('Name of label') },
-				ta
-			]
-		});
-
-		if(rec){
-			var ff = form_label.getForm();
-			ff.loadRecord( rec );
-			title = 'Edit label';
-		}
-		
-		win = new Ext.Window({
-			title: _(title),
-			width: 400,
-			autoHeight: true,
-			items: form_label
-		});
-		win.show();		
-	};
+//	var add_edit_label = function(rec) {
+//		var win;
+//		var title = 'Create label';
+//		
+//        var ta = new Ext.form.TextArea({
+//            name: 'description',
+//            height: 130,
+//            enableKeyEvents: true,
+//            fieldLabel: _('Description'),
+//            emptyText: _('A brief description of the label')
+//        });		
+//		
+//		var form_label = new Ext.FormPanel({
+//			frame: true,
+//			url:'/issue/update_label',
+//			labelAlign: 'top',
+//			bodyStyle:'padding:10px 10px 0',
+//			buttons: [
+//				{
+//				text: _('Accept'),
+//				type: 'submit',
+//				handler: function() {
+//					var form = form_label.getForm();
+//					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+//					
+//					if (form.isValid()) {
+//					       form.submit({
+//						   params: {action: action},
+//						   success: function(f,a){
+//						       Baseliner.message(_('Success'), a.result.msg );
+//						       form.findField("id").setValue(a.result.label_id);
+//						       store_label.load();
+//						       win.setTitle(_('Edit label'));
+//						   },
+//						   failure: function(f,a){
+//						       Ext.Msg.show({  
+//							   title: _('Information'), 
+//							   msg: a.result.msg , 
+//							   buttons: Ext.Msg.OK, 
+//							   icon: Ext.Msg.INFO
+//						       }); 						
+//						   }
+//					       });
+//					}
+//				}
+//				},
+//				{
+//				text: _('Close'),
+//				handler: function(){ 
+//						win.close();
+//					}
+//				}
+//			],
+//			defaults: { anchor:'100%'},
+//			items: [
+//				{ xtype: 'hidden', name: 'id', value: -1 },
+//				{ xtype:'textfield', name:'name', fieldLabel:_('Label'), allowBlank:false, emptyText:_('Name of label') },
+//				ta
+//			]
+//		});
+//
+//		if(rec){
+//			var ff = form_label.getForm();
+//			ff.loadRecord( rec );
+//			title = 'Edit label';
+//		}
+//		
+//		win = new Ext.Window({
+//			title: _(title),
+//			width: 400,
+//			autoHeight: true,
+//			items: form_label
+//		});
+//		win.show();		
+//	};
 	
 	var btn_add_label = new Ext.Toolbar.Button({
 			id: 'btn_add_label',
@@ -947,7 +947,19 @@
 			icon:'/static/images/icons/add.gif',
 			cls: 'x-btn-text-icon',
 			handler: function() {
-						add_edit_label()
+				Baseliner.ajaxEval( '/issue/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+					function(response) {
+						if ( response.success ) {
+							store_label.load();
+							Baseliner.message( _('Success'), response.msg );
+							//init_buttons('disable');
+						} else {
+							Baseliner.message( _('ERROR'), response.msg );
+						}
+					}
+				
+				);				
+			//add_edit_label()
 			}
 	});
 	
