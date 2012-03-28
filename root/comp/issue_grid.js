@@ -15,7 +15,9 @@
 			{  name: 'created_on' },
 			{  name: 'created_by' },
 			{  name: 'numcomment' },
-			{  name: 'category' }
+			{  name: 'category' },
+			{  name: 'projects' },
+			{  name: 'labels' }
 		],
 		listeners: {
 			'beforeload': function( obj, opt ) {
@@ -42,7 +44,8 @@
 			{  name: 'created_on' },		
 			{  name: 'created_by' },
 			{  name: 'numcomment' },
-			{  name: 'category' }
+			{  name: 'category' },
+			{  name: 'labels' }
 		],
 		listeners: {
 			'beforeload': function( obj, opt ) {
@@ -237,12 +240,13 @@
 					function(response) {
 						if ( response.success ) {
 							Baseliner.message( _('Success'), response.msg );
+							filtrar_labels();
+							
 						} else {
 							Baseliner.message( _('ERROR'), response.msg );
 						}
 					}
-					
-				);			
+				);
             }
         });
 
@@ -273,12 +277,39 @@
 				{ header: _('Label'), dataIndex: 'name', sortable: false }
 			],
 			autoSizeColumns: true,
-			deferredRender:true,
+			deferredRender:false,
             bbar: [
                 btn_grabar_labels,
                 btn_cerrar_labels
-            ]		
+            ],
+			listeners: {
+				viewready: function() {
+					var me = this;
+					
+					var datas = me.getStore();
+					var recs = [];
+					datas.each(function(rec, index){
+						alert(rec.get('id'));
+						alert(index);
+							//recs.push(index);
+					});
+					var rows = new Array('0','1','2','3');
+					me.getSelectionModel().selectRows(rows);					
+				
+				}
+			}			
 		});
+		//Ext.util.Observable.capture(grid_ast_labels, console.info);
+//		grid_ast_labels.on('viewready', function() {
+//			var datas = grid_ast_labels.getStore();
+//			alert(datas);
+//                datas.each(function(rec, index){
+//                    alert(rec.get('id'));
+//					alert(index);
+//                });
+//					var rows = new Array('0','1','2','3');
+//					grid_ast_labels.getSelectionModel().selectRows(rows);
+//		});		
 	
 		win = new Ext.Window({
 			title: _(title),
@@ -287,7 +318,8 @@
 			autoHeight: true,
 			items: grid_ast_labels
 		});
-		win.show();		
+		
+		win.show();
 	};
 
 
@@ -455,19 +487,24 @@
 		win.show();		
 	};
 
-
 	var render_id = function(value,metadata,rec,rowIndex,colIndex,store) {
 		return "<div style='font-weight:bold; font-size: 14px; color: #808080'> #" + value + "</div>" ;
 	};
 
 	var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
-		//return "<div style='font-weight:bold; font-size: 14px;'> " + value + "</div>" ;
 		var tag_comment_html;
-		tag_comment_html='';
+		var tag_color_html;
+		tag_comment_html = '';
+		tag_color_html = '';
+		if(rec.data.labels){
+			for(i=0;i<rec.data.labels.length;i++){
+				tag_color_html = tag_color_html + "<span style='width:35;float:left;border:1px solid #cccccc;background-color:" + rec.data.labels[i].color + "'>&nbsp;</span>";
+			}
+		}
 		if(rec.data.numcomment){
 			tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + " comments</span>";
 		}		
-		return "<div width='500px'><div style='font-weight:bold; font-size: 14px;' >" + value + "</div><br><div><font color='808080'>by </font><b>" + rec.data.created_by + "</b> <font color='808080'>" + rec.data.created_on + "</font ></div></div>";
+		return "<div style='font-weight:bold; font-size: 14px;' >" + value + "</div><br><div><font color='808080'>by </font><b>" + rec.data.created_by + "</b> <font color='808080'>" + rec.data.created_on + "</font ></div>" + tag_color_html;
 	};
 	
 	var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -487,6 +524,7 @@
 		height: 400,
 		enableHdMenu: false,
 		store: store_opened,
+		enableDragDrop: true,
 		viewConfig: {forceFit: true},
 		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 		loadMask:'true',
@@ -494,7 +532,8 @@
 			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
 			{ header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
-			{ header: _('Category'), dataIndex: 'category', width: 50, sortable: true },
+			{ header: _('Projects'), dataIndex: 'projects', width: 60, sortable: true, renderer: Baseliner.render_tags },
+			{ header: _('Category'), dataIndex: 'category', width: 50, sortable: true, renderer: Baseliner.render_tags },
 			{ header: _('Description'), hidden: true, dataIndex: 'description' }
 		],
 		autoSizeColumns: true,
@@ -515,7 +554,48 @@
 	grid_opened.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
 		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , 'Issue #' + r.get('id'),{},config_tabs );
-	});	
+	});
+	
+    grid_opened.on( 'render', function(){
+        var el = grid_opened.getView().el.dom.childNodes[0].childNodes[1];
+        var grid_opened_dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyDrop: function(dd, e, id) {
+                var n = dd.dragData.node;
+                var s = grid_opened.store;
+                var add_node = function(node) {
+                    var data = node.attributes.data;
+					// determine the row
+					var t = Ext.lib.Event.getTarget(e);
+					var rindex = grid_opened.getView().findRowIndex(t);
+					if (rindex === false ) return false;
+					var row = s.getAt( rindex );
+					var projects = row.get('projects');
+					if( typeof projects != 'object' ) projects = new Array();
+					if( projects.indexOf( data.project ) == -1 ) {
+						row.beginEdit();
+						projects.push( data.project );
+						row.set('projects', projects );
+						row.endEdit();
+						row.commit();
+						Baseliner.message( _('Info'), _('Project %1 added', data.project) );
+					} else {
+						Baseliner.message( _('Warning'), _('Project %1 is already assigned', data.project));
+					}
+					
+                };
+                var attr = n.attributes;
+                if( typeof attr.data.id_project == 'undefined' ) {  // is a project?
+					Baseliner.message( _('Error'), _('Node is not a project'));
+			    } else {
+					add_node(n);
+				}
+                // multiple? Ext.each(dd.dragData.selections, add_node );
+                return (true); 
+             }
+        });
+    });	
 	
 	var grid_closed = new Ext.grid.GridPanel({
 		title: _('Issues'),
@@ -974,12 +1054,12 @@
 	var render_color = function(value,metadata,rec,rowIndex,colIndex,store) {
 		return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
 	};	
-	
+
 	
 	var check_labels_sm = new Ext.grid.CheckboxSelectionModel({
 		singleSelect: false,
 		sortable: false,
-		checkOnly: true
+		checkOnly: true,
 	});
 
 	

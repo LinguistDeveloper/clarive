@@ -50,6 +50,7 @@ sub list : Local {
 		@datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"});	
 	}
 	
+	
 	#my @datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir", labels => @labels});
 	
 	#Viene por la parte de dashboard, y realiza el filtrado por ids.
@@ -65,7 +66,16 @@ sub list : Local {
     my @rows;
           
     #Creamos el json para la carga del grid de issues.
+
+
 	foreach my $data (@datas){
+		my @labels;
+		my $issuelabels = $c->model('Baseliner::BaliIssueLabel')->search({id_issue => $data->{id}});
+		while( my $issuelabel = $issuelabels->next ) {
+			my $str = { label => $issuelabel->id_label,  color => $issuelabel->label->color  };
+			push @labels, $str
+		}
+		
 		push @rows, {
 			id 		=> $data->{id},
 			title	=> $data->{title},
@@ -73,9 +83,12 @@ sub list : Local {
 			created_on 	=> $data->{created_on},
 			created_by 	=> $data->{created_by},
 			numcomment 	=> $data->{numcomment},
-			category	=> $data->{category}
+			category	=> $data->{category} ? [$data->{category}] : '',
+			labels		=> \@labels
 		};
-    }
+    }	
+
+
     $cnt = $#rows + 1 ;
     
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};

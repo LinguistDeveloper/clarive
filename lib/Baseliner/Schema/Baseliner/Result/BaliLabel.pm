@@ -91,5 +91,19 @@ __PACKAGE__->set_primary_key("id");
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kPypxdTqp7bcXeLkSRdC7A
 
 
+=head2 bali_issuelabels
+
+Type: has_many
+
+Related object: L<Baseliner::Schema::Baseliner::Result::BaliIssueLabel>
+
+=cut
+
+__PACKAGE__->has_many(
+  "bali_issuelabels",
+  "Baseliner::Schema::Baseliner::Result::BaliIssueLabel",
+  { "foreign.id_label" => "self.id" },
+);
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
