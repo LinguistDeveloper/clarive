@@ -22,11 +22,10 @@
 		listeners: {
 			'beforeload': function( obj, opt ) {
 				obj.baseParams.filter = 'O';
-				var labels_checked = new Array();
-				check_labels_sm.each(function(rec){
-					labels_checked.push(rec.get('id'));
-				});				
+				var labels_checked = getLabels();
 				obj.baseParams.labels = labels_checked;
+				var categories_checked = getCategories();
+				obj.baseParams.categories = categories_checked;					
 			}
 		}			
 	});
@@ -50,11 +49,10 @@
 		listeners: {
 			'beforeload': function( obj, opt ) {
 				obj.baseParams.filter = 'C';
-				var labels_checked = new Array();
-				check_labels_sm.each(function(rec){
-					labels_checked.push(rec.get('id'));
-				});				
-				obj.baseParams.labels = labels_checked;				
+				var labels_checked = getLabels();
+				obj.baseParams.labels = labels_checked;
+				var categories_checked = getCategories();
+				obj.baseParams.categories = categories_checked;				
 				}
 			}			
 
@@ -240,11 +238,8 @@
 					function(response) {
 						if ( response.success ) {
 							Baseliner.message( _('Success'), response.msg );
-							var labels_checked = new Array();
-							check_labels_sm.each(function(rec){
-								labels_checked.push(rec.get('id'));
-							});
-							filtrar_labels(labels_checked);
+							var labels_checked = getLabels();
+							filtrar_issues(labels_checked);
 							
 						} else {
 							Baseliner.message( _('ERROR'), response.msg );
@@ -832,10 +827,17 @@
 		}
 	});
 
+	var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
+		singleSelect: false,
+		sortable: false,
+		checkOnly: true,
+	});
+	
 	var grid_categories = new Ext.grid.GridPanel({
 		region : 'north',
 		title : _('Categories'),
 		autoScroll: true,
+		sm: check_categories_sm,
 		split : true,
 		collapsible : true,
 		header: true,
@@ -848,6 +850,8 @@
 		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 		loadMask:'true',
 		columns: [
+			{ hidden: true, dataIndex:'id' },
+			check_categories_sm,
 			{ header: _('Category'), dataIndex: 'name', width:50, sortable: false },
 			{ header: _('Description'), dataIndex: 'description', sortable: false },	
 		],
@@ -861,105 +865,48 @@
 		]		
 	});	
 	
-	grid_categories.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-		init_buttons_category('enable');
+	grid_categories.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+		if(columnIndex == 1){
+			var categories_checked = getCategories();
+			var labels_checked = getLabels();
+			filtrar_issues(labels_checked, categories_checked);
+			init_buttons_category('enable');
+		}
 	});
-
-//	var add_edit_label = function(rec) {
-//		var win;
-//		var title = 'Create label';
-//		
-//        var ta = new Ext.form.TextArea({
-//            name: 'description',
-//            height: 130,
-//            enableKeyEvents: true,
-//            fieldLabel: _('Description'),
-//            emptyText: _('A brief description of the label')
-//        });		
-//		
-//		var form_label = new Ext.FormPanel({
-//			frame: true,
-//			url:'/issue/update_label',
-//			labelAlign: 'top',
-//			bodyStyle:'padding:10px 10px 0',
-//			buttons: [
-//				{
-//				text: _('Accept'),
-//				type: 'submit',
-//				handler: function() {
-//					var form = form_label.getForm();
-//					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-//					
-//					if (form.isValid()) {
-//					       form.submit({
-//						   params: {action: action},
-//						   success: function(f,a){
-//						       Baseliner.message(_('Success'), a.result.msg );
-//						       form.findField("id").setValue(a.result.label_id);
-//						       store_label.load();
-//						       win.setTitle(_('Edit label'));
-//						   },
-//						   failure: function(f,a){
-//						       Ext.Msg.show({  
-//							   title: _('Information'), 
-//							   msg: a.result.msg , 
-//							   buttons: Ext.Msg.OK, 
-//							   icon: Ext.Msg.INFO
-//						       }); 						
-//						   }
-//					       });
-//					}
-//				}
-//				},
-//				{
-//				text: _('Close'),
-//				handler: function(){ 
-//						win.close();
-//					}
-//				}
-//			],
-//			defaults: { anchor:'100%'},
-//			items: [
-//				{ xtype: 'hidden', name: 'id', value: -1 },
-//				{ xtype:'textfield', name:'name', fieldLabel:_('Label'), allowBlank:false, emptyText:_('Name of label') },
-//				ta
-//			]
-//		});
-//
-//		if(rec){
-//			var ff = form_label.getForm();
-//			ff.loadRecord( rec );
-//			title = 'Edit label';
-//		}
-//		
-//		win = new Ext.Window({
-//			title: _(title),
-//			width: 400,
-//			autoHeight: true,
-//			items: form_label
-//		});
-//		win.show();		
-//	};
 	
+	grid_categories.on('headerclick', function(grid, columnIndex, e) {
+		if(columnIndex == 1){
+			var categories_checked = getCategories();
+			var labels_checked = getLabels();
+			filtrar_issues(labels_checked, categories_checked);
+			init_buttons_category('enable');
+		}
+	});	
+
 	var btn_add_label = new Ext.Toolbar.Button({
 			id: 'btn_add_label',
 			text: _('New'),
 			icon:'/static/images/icons/add.gif',
 			cls: 'x-btn-text-icon',
 			handler: function() {
-				Baseliner.ajaxEval( '/issue/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
-					function(response) {
-						if ( response.success ) {
-							store_label.load();
-							Baseliner.message( _('Success'), response.msg );
-							//init_buttons('disable');
-						} else {
-							Baseliner.message( _('ERROR'), response.msg );
+				if(label_box.getValue() != ''){
+					Baseliner.ajaxEval( '/issue/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+						function(response) {
+							if ( response.success ) {
+								store_label.load();
+								Baseliner.message( _('Success'), response.msg );
+							} else {
+								//Baseliner.message( _('ERROR'), response.msg );
+								Ext.Msg.show({
+									title: _('Information'), 
+									msg: response.msg , 
+									buttons: Ext.Msg.OK, 
+									icon: Ext.Msg.INFO
+								}); 	
+							}
 						}
-					}
-				
-				);				
-			//add_edit_label()
+					);
+				}
 			}
 	});
 	
@@ -987,10 +934,7 @@
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
-			var labels_checked = new Array();
-			check_labels_sm.each(function(rec){
-				labels_checked.push(rec.get('id'));
-			});	
+			var labels_checked = getLabels();
 			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the labels selected?'), 
 			function(btn){ 
 				if(btn=='yes') {
@@ -1001,8 +945,8 @@
 								Baseliner.message( _('Success'), response.msg );
 								init_buttons_label('disable');
 								store_label.load();
-								var labels_checked = new Array();
-								filtrar_labels(labels_checked);
+								var categories_checked = getCategories();
+								filtrar_issues(null, categories_checked);
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -1034,18 +978,26 @@
 	var label_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
     label_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
-			Baseliner.ajaxEval( '/issue/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
-				function(response) {
-					if ( response.success ) {
-						store_label.load();
-						Baseliner.message( _('Success'), response.msg );
-						//init_buttons('disable');
-					} else {
-						Baseliner.message( _('ERROR'), response.msg );
+			if(f.getValue() != ''){
+				Baseliner.ajaxEval( '/issue/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+					function(response) {
+						if ( response.success ) {
+							store_label.load();
+							Baseliner.message( _('Success'), response.msg );
+							//init_buttons('disable');
+						} else {
+							//Baseliner.message( _('ERROR'), response.msg );
+							Ext.Msg.show({
+								title: _('Information'), 
+								msg: response.msg , 
+								buttons: Ext.Msg.OK, 
+								icon: Ext.Msg.INFO
+							});
+						}
 					}
-				}
-			
-			);
+				
+				);
+			}
         }
     });
 	
@@ -1103,30 +1055,42 @@
 		tbar: tb
 	});
 
-	function filtrar_labels(labels_checked){
+	function getCategories(){
+		var categories_checked = new Array();
+		check_categories_sm.each(function(rec){
+			categories_checked.push(rec.get('id'));
+		});
+		return categories_checked
+	}
+	
+	function getLabels(){
+		var labels_checked = new Array();
+		check_labels_sm.each(function(rec){
+			labels_checked.push(rec.get('id'));
+		});
+		return labels_checked
+	}
+	
+	function filtrar_issues(labels_checked, categories_checked){
 		var query_id = '<% $c->stash->{query_id} %>';
-		store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked}});
-		store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked}});		
+		store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked}});
+		store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked, categories: categories_checked}});		
 	};
 
 	grid_labels.on('cellclick', function(grid, rowIndex, columnIndex, e) {
 		if(columnIndex == 1){
-			var labels_checked = new Array();
-			check_labels_sm.each(function(rec){
-				labels_checked.push(rec.get('id'));
-			});
-			filtrar_labels(labels_checked);
+			var labels_checked = getLabels();
+			var categories_checked = getCategories();
+			filtrar_issues(labels_checked, categories_checked);
 			init_buttons_label('enable');
 		}
 	});
 	
 	grid_labels.on('headerclick', function(grid, columnIndex, e) {
 		if(columnIndex == 1){
-			var labels_checked = new Array();
-			check_labels_sm.each(function(rec){
-				labels_checked.push(rec.get('id'));
-			});
-			filtrar_labels(labels_checked);
+			var labels_checked = getLabels();
+			var categories_checked = getCategories();
+			filtrar_issues(labels_checked, categories_checked);
 			init_buttons_label('enable');
 		}
 	});

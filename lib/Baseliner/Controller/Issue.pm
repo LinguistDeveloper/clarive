@@ -12,7 +12,7 @@ $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'menu.tools.issues' => {
     label    => 'Issues',
-    title    => 'Issues',
+    title    => _loc ('Issues'),
     action   => 'action.issues.view',
     url_comp => '/issue/grid',
     icon     => '/static/images/icons/tasks.gif',
@@ -37,20 +37,23 @@ sub list : Local {
     $start||= 0;
     $limit ||= 100;
 
-	my @labels;
+	my @labels = ();
+	my @categories = ();
 	my @datas;
+	
+	if($p->{categories}){
+		foreach my $category (_array $p->{categories}){
+			push @categories, $category;
+		}
+	}
 	
 	if($p->{labels}){
 		foreach my $label (_array $p->{labels}){
 			push @labels, $label;
 		}
-		@datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"}, @labels);
-		
-	}else{
-		@datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"});	
 	}
 	
-	
+	@datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"}, \@labels, \@categories);
 	#my @datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir", labels => @labels});
 	
 	#Viene por la parte de dashboard, y realiza el filtrado por ids.
@@ -202,12 +205,14 @@ sub update_category : Local {
     given ($action) {
         when ('add') {
             try{
-                my $category = $c->model('Baseliner::BaliIssueCategories')->create(
-                                    {
-                                        name  => $p->{name},
-                                        description=> $p->{description},
-                                    });
-                $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, baseline_id=> $category->id };
+				my $row = $c->model('Baseliner::BaliIssueCategories')->search({name => $p->{name}})->first;
+				if(!$row){
+					my $category = $c->model('Baseliner::BaliIssueCategories')->create({name  => $p->{name}, description=> $p->{description}});
+	                $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, baseline_id=> $category->id };
+				}
+				else{
+					$c->stash->{json} = { msg=>_loc('Category name already exists, introduce another category name'), failure=>\1 };
+				}
             }
             catch{
                 $c->stash->{json} = { msg=>_loc('Error adding Category: %1', shift()), failure=>\1 }
@@ -257,12 +262,14 @@ sub update_label : Local {
     given ($action) {
         when ('add') {
             try{
-                my $label = $c->model('Baseliner::BaliLabel')->create(
-                                    {
-                                        name  	=> $label,
-                                        color	=> $color
-                                    });
-                $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=> $label->id };
+				my $row = $c->model('Baseliner::BaliLabel')->search({name => $p->{label}})->first;
+				if(!$row){
+					my $label = $c->model('Baseliner::BaliLabel')->create({name => $label, color => $color});
+					$c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=> $label->id };
+				}
+				else{
+					$c->stash->{json} = { msg=>_loc('Label name already exists, introduce another label name'), failure=>\1 };
+				}
             }
             catch{
                 $c->stash->{json} = { msg=>_loc('Error adding Label: %1', shift()), failure=>\1 }
