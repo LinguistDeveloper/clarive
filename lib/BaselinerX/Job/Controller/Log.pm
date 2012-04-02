@@ -312,10 +312,9 @@ sub log_file : Path('/job/log/download_data') {
 	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
     my $file_id = $log->id_job.'-'.$p->{id};
     my $filename = $file_id . '-' . ( $p->{file_name} || $log->data_name || 'attachment.txt' );
-    $c->res->header('Content-Disposition', qq[attachment; filename="$filename"]);
-	#$c->res->content_type('text/plain;charset=utf-8');
-	$c->res->content_type('application-download;charset=utf-8');
-	$c->res->body( uncompress($log->data) || $log->data );
+    $c->stash->{serve_filename} = $filename;
+    $c->stash->{serve_body} = uncompress($log->data) || $log->data;
+	$c->forward('/serve_file');
 }
 
 sub annotate : Path('/job/log/annotate') {

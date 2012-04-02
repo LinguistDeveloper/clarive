@@ -84,6 +84,26 @@ sub auto : Private {
 	return 0;
 }
 
+sub serve_file : Private {
+    my ( $self, $c ) = @_;
+    my $filename = $c->stash->{serve_filename} or _throw 'Missing filename on stash';
+    my $file= $c->stash->{serve_file};
+    my $body= $c->stash->{serve_body};
+    if( defined $file ) {
+        $c->serve_static_file( $file );
+    } 
+    elsif( defined $body ) {
+        $c->res->body( $body );
+    }
+    else {
+        _throw 'Missing serve_file or serve_body on stash';
+    }
+    $c->res->headers->remove_header('Cache-Control');
+    $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
+    $c->res->headers->remove_header('Pragma');
+	$c->res->content_type('application-download;charset=utf-8');
+}
+
 sub theme : Private {
     my ( $self, $c ) = @_;
 

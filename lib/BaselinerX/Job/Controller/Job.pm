@@ -660,11 +660,9 @@ sub export : Local {
 
 	my $filename = $p->{filename} || "job-$p->{id_job}.tar.gz";
 
-    $c->res->headers->remove_header('Cache-Control');
-    $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
-	$c->res->content_type('application-download;charset=utf-8');
-	$c->serve_static_file( $file );
-	#$c->res->body( $data );
+    $c->stash->{serve_filename} = $filename;
+    $c->stash->{serve_file} = $file;
+	$c->forward('/serve_file');
 }
 
 sub resume : Local {
