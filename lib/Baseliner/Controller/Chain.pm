@@ -261,55 +261,55 @@ sub update : Local {
     my $action = $p->{opt};
 
     given ($action) {
-	when ('add') {
-	    try{
-	        my $chain = $c->model('Baseliner::BaliChain')->create(
-						    {
-							name	=> $p->{name},
-							description => $p->{description},
-							job_type => $p->{job_type},
-							active 	=> $p->{state},
-							action => $p->{action}
-						    });
-		    
-		$c->stash->{json} = { msg=>_loc('Chain added'), success=>\1, chain_id=> $chain->id };
-
-	    }
-	    catch{
-		$c->stash->{json} = { msg=>_loc('Error adding Chain: %1', shift()), failure=>\1 }
-	    }
-	}
-	when ('update') {
-	    try{
-		my $id_chain = $p->{id};
-		my $chain = $c->model('Baseliner::BaliChain')->find( $id_chain );
-		$chain->name( $p->{name} );
-		$chain->description( $p->{description} );
-		$chain->job_type( $p->{job_type} );
-		$chain->active( $p->{state});
-		$chain->action( $p->{action});
-		
-		
-		$chain->update();
-		$c->stash->{json} = { msg=>_loc('Chain modified'), success=>\1, chain_id=> $id_chain };
-	    }
-	    catch{
-		$c->stash->{json} = { msg=>_loc('Error modifying Chain: %1', shift()), failure=>\1 };
-	    }
-	}
-	when ('delete') {
-	    my $id_chain = $p->{id};
-	    
-	    try{
-		my $row = $c->model('Baseliner::BaliChain')->find( $id_chain );
-		$row->delete;
-	
-		$c->stash->{json} = { success => \1, msg=>_loc('Chain deleted') };
-	    }
-	    catch{
-		$c->stash->{json} = { success => \0, msg=>_loc('Error deleting Chain') };
-	    }
-	}
+        when ('add') {
+            try{
+                my $chain = $c->model('Baseliner::BaliChain')->create(
+                                {
+                                name	=> $p->{name},
+                                description => $p->{description},
+                                job_type => $p->{job_type},
+                                active 	=> $p->{state},
+                                action => $p->{action}
+                                });
+                
+                $c->stash->{json} = { msg=>_loc('Chain added'), success=>\1, chain_id=> $chain->id };
+    
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error adding Chain: %1', shift()), failure=>\1 }
+            };
+        }
+        when ('update') {
+            try{
+                my $id_chain = $p->{id};
+                my $chain = $c->model('Baseliner::BaliChain')->find( $id_chain );
+                $chain->name( $p->{name} );
+                $chain->description( $p->{description} );
+                $chain->job_type( $p->{job_type} );
+                $chain->active( $p->{state});
+                $chain->action( $p->{action});
+            
+            
+                $chain->update();
+                $c->stash->{json} = { msg=>_loc('Chain modified'), success=>\1, chain_id=> $id_chain };
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error modifying Chain: %1', shift()), failure=>\1 };
+            };
+        }
+        when ('delete') {
+            my $id_chain = $p->{id};
+            
+            try{
+                my $row = $c->model('Baseliner::BaliChain')->find( $id_chain );
+                $row->delete;
+            
+                $c->stash->{json} = { success => \1, msg=>_loc('Chain deleted') };
+            }
+            catch{
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Chain') };
+            };
+        }
     }
     
     $c->forward('View::JSON');

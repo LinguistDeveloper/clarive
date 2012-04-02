@@ -28,7 +28,7 @@
 				frame: true,
 				title: '<% _loc('Calendar Info') %>',
 				autoHeight: true,
-				autoWidth: true,
+				//autoWidth: true,
 				defaults: { width: 300 },
 				buttons: [					
 					/*{  text: '<% _loc('Ayuda') %>',
@@ -177,7 +177,9 @@
 				layout: 'border',
 				title: '<% _loc('Calendar Windows') %>',
 				style: 'margin-top: 20px',
-				height: 450,
+				height: 480,
+				width: 1150,
+				//autoHeight: true,
 				frame: true,
 /*				items: [{  xtype: 'panel', id: '<% $id %>', layout: 'fit',
 					autoLoad: { url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  }
@@ -190,7 +192,7 @@
 				region:'west',
 				width:720,				
 				autoLoad: { url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  },
-				split: true,
+				//split: true,
 				frame: true
 			},
 			{			
