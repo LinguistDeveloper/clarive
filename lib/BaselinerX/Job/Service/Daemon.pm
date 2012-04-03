@@ -23,7 +23,8 @@ register 'service.job.dummy' => {
     handler => sub {
         my ($self,$c)=@_;
         _log "DUMMY";
-        $c->log->info("A dummy job is running");
+        my $job = $c->stash->{job};
+        $job->logger->info("A dummy job is running");
     }
 };
 
