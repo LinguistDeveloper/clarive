@@ -46,18 +46,28 @@ A file:
 
 =cut
 
-has 'jobid' => ( is=>'rw', isa=>'Int' );
-has 'exec' => ( is=>'rw', isa=>'Int', default=>1 );
-has 'current_section' => ( is=>'rw', isa=>'Str', default=>'general' );
-has 'rc_config' => ( is=>'rw', isa=>'HashRef', default=>sub { { 0=>'info', 1=>'warn', 2=>'error' } } );
-has 'last_log' => ( is=>'rw', isa=>'Any', default=>sub {{}} );
+has jobid           => ( is => 'rw', isa => 'Int' );
+has job             => ( is => 'rw', isa => 'BaselinerX::Job::Service::Runner', weak_ref=>1 );
+has exec            => ( is => 'rw', isa => 'Int', default => 1 );
+has current_section => ( is => 'rw', isa => 'Str', default => 'general' );
+has current_service => ( is => 'rw', isa => 'Maybe[Str]', default => '' );
+has rc_config       => ( is => 'rw', isa => 'HashRef', default => sub { { 0 => 'info', 1 => 'warn', 2 => 'error' } } );
+has last_log        => ( is => 'rw', isa => 'Any', default => sub { {} } );
+
+sub log_levels { +{ warn => 3, error => 4, debug => 2, info => 2 } }
+has max_service_level => ( is => 'rw', isa => 'Int', default => 2 );
+has max_step_level    => ( is => 'rw', isa => 'Int', default => 2 );
 
 # set the execution number for this log roll
 sub BUILD {
 	my ($self,$params) = @_;
-	my $job = Baseliner->model('Baseliner::BaliJob')->find( $self->jobid );
-	if( ref $job ) {
-        $self->exec( $job->exec ); # unless defined $self->exec;
+    my $jobid = $self->jobid;
+	my $job_row = Baseliner->model('Baseliner::BaliJob')->find( $jobid );
+    if( my $job = $self->job ) {
+        $self->current_service( $job->current_service ); 
+    }
+	if( ref $job_row ) {
+        $self->exec( $job_row->exec ); # unless defined $self->exec;
 	}
 }
 
@@ -79,6 +89,11 @@ sub common_log {
 	my $job_exec = $self->exec;
 	my $jobid = $self->jobid;
 	my $row;
+    # set max level
+    if( my $log_level = $self->log_levels->{ $lev } ) {
+        $self->max_service_level( $log_level ) if $log_level > $self->max_service_level;
+        $self->max_step_level( $log_level ) if $log_level > $self->max_step_level;
+    }
 	if( length($text) > 2000 ) {
 		# publish exceeding log to data
 		$p{data}.= '=' x 50;
@@ -97,6 +112,7 @@ sub common_log {
 		$p{data} && $row->data_length( length( $p{data} ) );
 		$p{prefix} and $row->prefix( $p{prefix} );
 		$p{milestone} and $row->milestone( $p{milestone} );
+		$row->service_key( $self->current_service );
 
 		# print out too
         Baseliner::Utils::_log_lev( 5, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );

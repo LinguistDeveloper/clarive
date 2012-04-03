@@ -2,11 +2,11 @@ package BaselinerX::Job::Chain;
 use Moose;
 use Baseliner::Utils;
 
-has 'id' => ( is=>'rw', isa=>'Int', required=>1 );
+has 'id'            => ( is => 'rw', isa => 'Int',      required => 1 );
 has 'step'          => ( is => 'rw', isa => 'Str',      required => 1 );
-has 'chain' => ( is=>'rw', isa=>'HashRef', required=>1 );
-has 'services' => ( is=>'rw', isa=>'ArrayRef', required=>1 );
-has 'current_index' => ( is=>'rw', isa=>'Int', default=>0 );
+has 'chain'         => ( is => 'rw', isa => 'HashRef',  required => 1 );
+has 'services'      => ( is => 'rw', isa => 'ArrayRef', required => 1 );
+has 'current_index' => ( is => 'rw', isa => 'Int',      default  => 0 );
 has 'job_exec'      => ( is => 'rw', isa => 'Int',      default  => 1 );
 
 sub next_service {

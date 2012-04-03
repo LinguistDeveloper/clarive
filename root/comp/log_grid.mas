@@ -52,6 +52,7 @@
 			{  name: 'module' },
 			{  name: 'ns' },
 			{  name: 'provider' },
+			{  name: 'service_key' },
 			{  name: 'file' },
 			{  name: 'data' },
 			{  name: 'more' }
@@ -69,7 +70,10 @@
     //Filtering
     var filter_me = function( item, checked ) {
         filter_obj[ item.id ] = checked;
-		grid.getColumnModel().setHidden( 8, !filter_obj['debug'] );
+        var cm = grid.getColumnModel();
+		cm.setHidden( cm.getIndexById('module'), !filter_obj['debug'] );
+		cm.setHidden( cm.getIndexById('service_key'), !filter_obj['debug'] );
+		cm.setHidden( cm.getIndexById('milestone'), !filter_obj['debug'] );
         Baseliner.cookie.set( filter_key , filter_obj ); 
         store_load();
     };
@@ -421,7 +425,9 @@
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid', renderer: render_msg  },
                 { header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true, hidden: true },   
                 { header: _('Provider'), width: 100, dataIndex: 'provider', sortable: true, hidden: true },
-                { header: _('Module'), width: 280, dataIndex: 'module', sortable: true, hidden: true, editor: new Ext.form.TextArea() },
+                { header: _('Module'), width: 280, id: 'module', dataIndex: 'module', sortable: true, hidden: true, editor: new Ext.form.TextArea() },
+                { header: _('Service'), width: 120, id:'service_key', dataIndex: 'service_key', sortable: true, hidden: true },
+                { header: _('Milestone'), width: 40, id: 'milestone', dataIndex: 'milestone', sortable: true, hidden: true },
                 { header: _('Log Id'), width: 80, dataIndex: 'id', sortable: true, hidden: true },
                 { header: _('Actions'), width: 100, dataIndex: 'more', renderer: Baseliner.actionsRenderer, sortable: true } 
             ],

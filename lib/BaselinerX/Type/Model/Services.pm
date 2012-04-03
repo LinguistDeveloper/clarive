@@ -34,7 +34,7 @@ sub launch {
 
 	# create the job environment for the service
 	if( $p{'job-continue'} ) {  # creates a new job exec
-		$c->stash->{job} ||= $self->job_continue( jobid=>$p{'job-continue'}, exec=>$p{'job-exec'} );
+		$c->stash->{job} ||= $self->job_continue( jobid=>$p{'job-continue'}, exec=>$p{'job-exec'}, service_name=>$service_name );
 		_log "Job continue ok." . $c->stash->{job};
 	} elsif( $p{'job-new'} ) { # creates a new job
 		$c->stash->{job} ||= $self->job_new( $p{'job-new'} );
@@ -76,7 +76,7 @@ sub launch {
 
 sub job_continue {
 	my ($self,%p)=@_;
-    return BaselinerX::Job::Service::Runner->new_from_id( jobid=>$p{jobid}, exec=>$p{exec} );
+    return BaselinerX::Job::Service::Runner->new_from_id( jobid=>$p{jobid}, exec=>$p{exec}, service_name=>$p{service_name} );
 }
 
 sub job_clone {

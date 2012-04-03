@@ -46,22 +46,27 @@ sub job_simple_chain {
         my $continue = try {
             # get the next service in the chain
             my $service = $chain->next_service or last;
+            $job->current_service( $service->{key} );
             $service_desc = $service->{name} || $service->{key};
+            # load row data for service
+            my $data = try { _load( $service->{data} ) } catch { +{} };
 
-            $log->debug( _loc("Starting chained service '%1' for step %2" , $service_desc, $step ) );
-            $c->launch( $service->{key} );
+            $log->debug( _loc("Starting chained service '%1' for step %2" , $service_desc, $step ), dump=>$data );
+            # ********** run the service ************
+            $c->launch( $service->{key}, $data );
+            # ***************************************
             if( $job->status eq 'SUSPENDED' ) {
                 return 0;
             }
-            $log->debug( _loc("Finished chained service '%1' for step %2" , $service_desc, $step ) );
+            $log->debug( _loc("Finished chained service '%1' for step %2" , $service_desc, $step ), milestone=>$log->max_service_level );
             return 1;
         } catch {
             my $error = shift;
             if( $error =~ m/^Could not find key/ ) {  #TODO should throw-catch an exception class type
-                $log->warn( _loc("Warning while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ) ); 
+                $log->warn( _loc("Warning while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ), milestone=>4 ); 
             } else {
                 $job->failing( 1 );
-                $log->error( _loc("Error while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ) ); 
+                $log->error( _loc("Error while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ), milestone=>4 ); 
                 _throw $error;
             }
             return 1;

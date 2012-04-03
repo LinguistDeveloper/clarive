@@ -28,8 +28,18 @@ has 'logger' => ( is=>'rw', isa=>'Object' );
 has 'ns' => ( is=>'rw', isa=>'Str' );
 has 'bl' => ( is=>'rw', isa=>'Str' );
 has 'config' => ( is=>'rw', isa=>'Any', default=>sub{{}} );
-has 'step' => ( is=>'rw', isa=>'Str' );
+has 'step' => ( is=>'rw', isa=>'Str', trigger=>sub { 
+    my ($self) = @_;
+    my $logger = $self->logger;
+    $logger->max_step_level( 2 );
+});
 has 'step_status' => ( is=>'rw', isa=>'HashRef[Str]', default=>sub{{}} );
+has 'current_service' => ( is=>'rw', isa=>'Maybe[Str]', trigger=>sub { 
+    my ($self, $val) = @_;
+    my $logger = $self->logger;
+    $logger->current_service( $val );
+    $logger->max_service_level( 2 );
+});
 has 'status' => ( is=>'rw', isa=>'Str', 
     trigger=>sub {
         my ($self, $status)=@_;
@@ -101,6 +111,7 @@ sub new_from_id {
     my ($class,%p)=@_;
     $p{jobid} or _throw 'Missing jobid parameter';
     $p{step} ||= $p{same_exec} ? 'POST' : 'RUN';
+    my $service_name = $p{service_name} || '';
     my $exec = delete $p{exec};
     # instantiate myself
     my $job = $class->new( %p );
@@ -116,8 +127,9 @@ sub new_from_id {
     $job->exec( $row->exec );
     $job->job_type( $row->type );
     $job->job_data( { $row->get_columns } );
+    $job->current_service( $service_name );
     # setup the logger
-    my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid} }) );
+    my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid}, job=>$job }) );
     #thaw job stash from table
     my $stash = $job->thaw;
     $log->info(_loc("Job revived"), data=>_dump($stash) );
@@ -147,7 +159,7 @@ sub clone_from_id {
     $row->exec( $row->exec + 1);
     $row->update;
     # setup the logger
-    my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid} }) );
+    my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid}, job=>$job }) );
     $log->info(_loc("Job revived"));
     #thaw job stash from table
     my $stash = $job->thaw;
@@ -178,7 +190,7 @@ sub job_run {
     $self->status('RUNNING');
     $c->stash->{job} = $self;
     $self->jobid( $jobid );
-    $self->logger( new BaselinerX::Job::Log({ jobid=>$jobid }) );
+    $self->logger( new BaselinerX::Job::Log({ jobid=>$jobid, job=>$self }) );
     $self->report_pid;
     $self->config( $config );
 
@@ -313,12 +325,12 @@ sub job_run {
 
     # finish up step
     if( $step eq 'PRE' ) {
-        $self->logger->$loglevel( _loc("Job prerun finished with status %1", _loc( $log_status ) ), milestone=>1 );
+        $self->logger->$loglevel( _loc("Job prerun finished with status %1", _loc( $log_status ) ), milestone=>$self->logger->max_step_level );
     } elsif( $step eq 'RUN' ) {
-        $self->logger->$loglevel( _loc("Job run finished with status %1", _loc( $log_status ) ), milestone=>1);
+        $self->logger->$loglevel( _loc("Job run finished with status %1", _loc( $log_status ) ), milestone=>$self->logger->max_step_level);
         $self->finish($self->status);
     } else {
-        $self->logger->$loglevel( _loc("Job finished with status %1", _loc( $log_status ) ), milestone=>1 );
+        $self->logger->$loglevel( _loc("Job finished with status %1", _loc( $log_status ) ), milestone=>$self->logger->max_step_level );
         $self->finish($self->status);
     }
 

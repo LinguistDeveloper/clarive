@@ -111,6 +111,7 @@ sub log_rows : Private {
             step     => $r->step,
             prefix   => $r->prefix,
             milestone=> $r->milestone,
+            service_key=> $r->service_key,
             exec     => $r->exec,
             ts       => $r->get_column('timestamp'),
             lev      => $r->lev,
