@@ -10,6 +10,7 @@ use Path::Class;
 use Try::Tiny;
 use Data::Dumper;
 use utf8;
+use Class::Date;
 
 with 'Baseliner::Role::Search';
 
@@ -468,4 +469,144 @@ sub log {
     $args->{exec} = $p{job_exec} if $p{job_exec} > 0;
     return new BaselinerX::Job::Log( $args );
 }
+
+sub get_summary {
+    my ($self, %p) = @_;
+    my $row = Baseliner->model( 'Baseliner::BaliJob' )->search( {id => $p{jobid}} )->first;
+    my $result = {};
+
+    if ( $row ) {
+        my $execution_time;
+        my $endtime;
+        my $starttime;
+        $starttime = Class::Date->new( $row->starttime);
+        if ($row->endtime){
+            $endtime = Class::Date->new( $row->endtime);
+            $execution_time = $endtime - $starttime;
+        } else {
+            my $now = Class::Date->new( _now);
+            $execution_time = $now - $row->starttime;
+        }
+        $result = {
+            bl => $row->bl,
+            status => $row->status,
+            starttime => $starttime,
+            execution_time => $execution_time,
+            endtime => $endtime,
+            type => $row->type,
+            owner => $row->owner,
+            last_step => $row->step
+        }
+    }
+    return $result;
+}
+
+sub get_services_status {
+    my ( $self, %p ) = @_;
+    my $rs =
+        Baseliner->model( 'Baseliner::BaliLog' )
+        ->search( {id_job => $p{jobid}, lev => 'debug', milestone => {'>', 1}}, {order_by => 'id'} );
+
+    my $service_statuses = {2 => 'Success', 3 => 'Warning', 4 => 'Error'};
+    my $result;
+    while ( my $row = $rs->next ) {
+        push @{$result->{$row->step}}, 
+            { service=>$row->service_key, status => $service_statuses->{$row->milestone}, id => $row->id};
+    } ## end while ( my $row = $rs->next)
+
+    return $result;
+} ## end sub get_services_status
+
+sub get_contents {
+    my ( $self, %p ) = @_;
+    my $result;
+
+    my $rs = Baseliner->model( 'Baseliner::BaliJobItems' )->search( {id_job => $p{jobid}} );
+    my $row_stash =
+        Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
+
+    my $job_stash     = _load $row_stash->stash;
+    my $elements      = $job_stash->{elements};
+    my @elements_list = $elements->list( '' );
+
+    my $result = {};
+    my %topics;
+    my %technologies;
+
+    while ( my $row = $rs->next ) {
+        my $ns = ns_get( $row->item );
+        push @{$result->{packages}->{$ns->{ns_data}->{project}}}, $ns->{ns_name};
+        push @{$result->{elements}},
+            map { 
+                $_->path =~ /^\/.*\/.*\/(.*)\/.*?/;
+                my $tech = $1;
+                $technologies{$tech} = '';
+                {name => $_->name, status => $_->status, path => $_->path} 
+            } @elements_list;
+
+        my $rs_topics =
+            Baseliner->model( 'Baseliner::BaliRelationship' )->search( {from_ns => $ns->{ns_type}.'/'.$ns->{ns_name}} );
+
+        while ( my $topic = $rs_topics->next ) {
+            # _log _dump $topic;
+            my $row_topics =
+                Baseliner->model( 'Baseliner::BaliIssue' )->search( {id => $topic->to_id} )->first;
+            $topics{$topic->to_id} = $row_topics->title;
+        }
+    } ## end while ( my $row = $rs->next)
+
+    push @{$result->{topics}}, map { {id => $_, title => $topics{$_}} } keys %topics;
+    push @{$result->{technologies}}, keys %technologies;
+    return $result;
+
+} ## end sub get_contents
+
+sub get_outputs {
+    my ( $self, %p ) = @_;
+    my $rs =
+        Baseliner->model( 'Baseliner::BaliLog' )
+        ->search( {id_job => $p{jobid}, lev => {'<>', 'debug'}, more => {'<>', undef}},
+        {order_by => 'id'} );
+    my $result;
+    my $qre = qr/\.\w+$/;
+
+    while ( my $r = $rs->next ) {
+        my $more = $r->more;
+        my $data = _html_escape( uncompress( $r->data ) || $r->data );
+
+        my $data_len  = $r->data_length || 0;
+        my $data_name = $r->data_name   || '';
+        my $file =
+            $data_name =~ $qre ? $data_name
+            : ( $data_len > ( 4 * 1024 ) )
+            ? ( $data_name || $self->_select_words( $r->text, 2 ) ) . ".txt"
+            : '';
+        push @{$result->{outputs}},
+            {
+            id          => $r->id,
+            datalen     => $data_len,
+            data        => $data,
+            more        => {
+                more      => $more,
+                data_name => $r->data_name,
+                data      => $data_len ? \1 : \0,
+                file      => $file
+            },
+            }
+
+    } ## end while ( my $r = $rs->next)
+    return $result;
+} ## end sub get_outputs
+
+sub _select_words {
+    my ( $self, $text, $cnt ) = @_;
+    my @ret = ();
+    for ( $text =~ /(\w+)/g ) {
+        next if length( $_ ) <= 3;
+        push @ret, $_;
+        last if @ret >= $cnt;
+    }
+    return join '_', @ret;
+} ## end sub _select_words
+
 1;
