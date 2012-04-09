@@ -37,8 +37,11 @@ sub update {
             }
         } ## end when ( 'add' )
         when ( 'update' ) {
-            try {
+            ##try {
+            _log ">>>>>>>>>>>>>>>>>>>PASA: \n";
+             
                 my $id_issue = $p->{id};
+                _log ">>>>>>>>>>>>>>>>>>>PASA1: " . $id_issue . "\n";
                 my $issue    = Baseliner->model( 'Baseliner::BaliIssue' )->find( $id_issue );
                 $issue->title( $p->{title} );
                 $issue->description( $p->{description} );
@@ -46,10 +49,10 @@ sub update {
                 $issue->update();
                 $id     = $id_issue;
                 $return = _loc( 'Issue modified' );
-            } ## end try
-            catch {
-                _throw _loc( 'Error modifying Issue: %1', shift() );
-            }
+            ##} ## end try
+            ##catch {
+            ##    _throw _loc( 'Error modifying Issue: %1', shift() );
+            ##}
         } ## end when ( 'update' )
         when ( 'delete' ) {
             my $id_issue = $p->{id};
@@ -102,13 +105,13 @@ sub GetIssues {
     if (@labels){
         my $ids_labels =  '(BALI_ISSUE_LABEL.ID_LABEL = ' . join (' OR BALI_ISSUE_LABEL.ID_LABEL = ', @labels) . ')';
 
-        $SQL = "SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS CATEGORY
+        $SQL = "SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY
                         FROM  (BALI_ISSUE INNER JOIN BALI_ISSUE_LABEL ON BALI_ISSUE.ID = BALI_ISSUE_LABEL.ID_ISSUE)  LEFT JOIN BALI_ISSUE_CATEGORIES F ON ID_CATEGORY = F.ID
                         LEFT JOIN
                             (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
                         ON BALI_ISSUE.ID = D.ID WHERE $ids_labels AND $ids_categories";
     }else{
-        $SQL = "SELECT C.ID AS ID, TITLE, C.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS CATEGORY
+        $SQL = "SELECT C.ID AS ID, TITLE, C.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY
                         FROM  (BALI_ISSUE C LEFT JOIN BALI_ISSUE_CATEGORIES F ON C.ID_CATEGORY = F.ID)
                         LEFT JOIN
                             (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D

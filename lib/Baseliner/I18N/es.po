@@ -2603,9 +2603,9 @@ msgstr "Editar categoría"
 msgid "Name of category"
 msgstr "Nombre de categoría"
 
-# root/comp/issue_grid.js (648)
-msgid "Are you sure you want to delete the category"
-msgstr "¿Seguro que quiere borrar la issue"
+# root/comp/issue_grid.js (829)
+msgid "Are you sure you want to delete the categories selected?"
+msgstr "¿Seguro que quiere borrar las categorias seleccionadas?"
 
 # root/comp/issue_grid.js (669)
 msgid "Categories"
@@ -2665,7 +2665,7 @@ msgstr "Cerradas"
 
 # root/comp/issue_grid.js (938)
 msgid "Are you sure you want to delete the labels selected?"
-msgstr "¿Seguro que quiere borrar le etiqueta seleccionada"
+msgstr "¿Seguro que quiere borrar le etiqueta seleccionada?"
 
 # root/comp/issue_grid.js (1006)
 msgid "Pick a Color"
@@ -2687,4 +2687,14 @@ msgstr "Proyecto %1 añadido"
 msgid "Project %1 is already assigned"
 msgstr "Proyecto ya esta asignado"
 
+# root/comp/issue_grid.js (624)
+msgid "Issue #"
+msgstr "Tópico #"
 
+# lib/Baseliner/Controller/Issue.pm (247)
+msgid "Categories deleted"
+msgstr "Categorías borradas"
+
+# lib/Baseliner/Controller/Issue.pm (250)
+msgid "Error deleting Categories"
+msgstr "Error borrando categorías"
