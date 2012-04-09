@@ -75,8 +75,15 @@ sub list : Local {
 		my @labels;
 		my $issuelabels = $c->model('Baseliner::BaliIssueLabel')->search({id_issue => $data->{id}});
 		while( my $issuelabel = $issuelabels->next ) {
-			my $str = { label => $issuelabel->id_label,  color => $issuelabel->label->color  };
+			my $str = { label => $issuelabel->id_label,  color => $issuelabel->label->color, name => $issuelabel->label->name  };
 			push @labels, $str
+		}
+		
+		my @projects;
+		my $issueprojects = $c->model('Baseliner::BaliIssueProject')->search({id_issue => $data->{id}});
+		while( my $issueproject = $issueprojects->next ) {
+			my $str = { project => $issueproject->project->name,  id_project => $issueproject->id_project };
+			push @projects, $str
 		}
 		
 		push @rows, {
@@ -87,7 +94,9 @@ sub list : Local {
 			created_by 	=> $data->{created_by},
 			numcomment 	=> $data->{numcomment},
 			category	=> $data->{category} ? [$data->{category}] : '',
-			labels		=> \@labels
+			namecategory	=> $data->{namecategory} ? [$data->{namecategory}] : '',
+			labels		=> \@labels,
+			projects	=> \@projects
 		};
     }	
 
@@ -105,15 +114,16 @@ sub update : Local {
 
     $p->{username} = $c->username;
 	
+	
 	_log ">>>>>>>>Parametros: " . _dump $p . "\n";
 
-	try  {    
+	##try  {    
 	    my ($msg, $id) = Baseliner::Model::Issue->update( $p );
 	    $c->stash->{json} = { success => \1, msg=>_loc($msg), issue_id => $id };
-	} catch {
-		my $e = shift;
-		$c->stash->{json} = { success => \0, msg=>_loc($e) };
-	};
+	##} catch {
+	##	my $e = shift;
+	##	$c->stash->{json} = { success => \0, msg=>_loc($e) };
+	##};
     $c->forward('View::JSON');
 }
 
@@ -136,7 +146,7 @@ sub viewdetail: Local {
     my $id_issue = $p->{id_rel};
     
     if ($p->{action}){
-	$id_issue = $p->{action};
+		$id_issue = $p->{action};
 
 	    try{
 	        my $issue = $c->model('Baseliner::BaliIssueMsg')->create(
@@ -146,29 +156,29 @@ sub viewdetail: Local {
 							created_by => $c->username
 						    });
 		    
-	    $c->stash->{json} = { msg=>_loc('Comment added'), success=>\1, issue_id=> $issue->id };
+			$c->stash->{json} = { msg=>_loc('Comment added'), success=>\1, issue_id=> $issue->id };
 
 	    }
 	    catch{
-		$c->stash->{json} = { msg=>_loc('Error adding Comment: %1', shift()), failure=>\1 }
+			$c->stash->{json} = { msg=>_loc('Error adding Comment: %1', shift()), failure=>\1 }
 	    }
     }
     else{
-	my $rs = $c->model('Baseliner::BaliIssueMsg')->search( {id_issue=>$id_issue},	    
+		my $rs = $c->model('Baseliner::BaliIssueMsg')->search( {id_issue=>$id_issue},	    
 							{
 							    order_by=> 'created_on desc'
 							}
 							);
-	my @rows;
-	while( my $r = $rs->next ) {
-	# produce the grid
-	    push @rows,
-					{
-						created_by	=> $r->created_by,
-						text		=> $r->text
-					};
-	}
-	$c->stash->{json} = { data=>\@rows, success => \1 };
+		my @rows;
+		while( my $r = $rs->next ) {
+		# produce the grid
+			push @rows,
+						{
+							created_by	=> $r->created_by,
+							text		=> $r->text
+						};
+		}
+		$c->stash->{json} = { data=>\@rows, success => \1 };
     }
     $c->forward('View::JSON');    
 }
@@ -208,7 +218,7 @@ sub update_category : Local {
 				my $row = $c->model('Baseliner::BaliIssueCategories')->search({name => $p->{name}})->first;
 				if(!$row){
 					my $category = $c->model('Baseliner::BaliIssueCategories')->create({name  => $p->{name}, description=> $p->{description}});
-	                $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, baseline_id=> $category->id };
+	                $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=> $category->id };
 				}
 				else{
 					$c->stash->{json} = { msg=>_loc('Category name already exists, introduce another category name'), failure=>\1 };
@@ -226,23 +236,27 @@ sub update_category : Local {
                 $category->description( $p->{description} );
                 $category->update();
                 
-                $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, baseline_id=> $id_category };
+                $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, category_id=> $id_category };
             }
             catch{
                 $c->stash->{json} = { msg=>_loc('Error modifying Category: %1', shift()), failure=>\1 };
             }
         }
         when ('delete') {
-            my $id_category = $p->{id};
-            
+            my $ids_category = $p->{idscategory};
             try{
-                my $row = $c->model('Baseliner::BaliIssueCategories')->find( $id_category );
-                $row->delete;
-                
-                $c->stash->{json} = { success => \1, msg=>_loc('Category deleted') };
+				my @ids_category;
+				foreach my $id_category (_array $ids_category){
+					push @ids_category, $id_category;
+				}
+				  
+				my $rs = Baseliner->model('Baseliner::BaliIssueCategories')->search({ id => \@ids_category });
+				$rs->delete;
+				
+                $c->stash->{json} = { success => \1, msg=>_loc('Categories deleted') };
             }
             catch{
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Category') };
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Categories') };
             }
         }
     }
@@ -363,5 +377,50 @@ sub update_issuelabels : Local {
     $c->forward('View::JSON');    
 }
 
+sub update_project : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+	my $id_issue = $p->{id_issue};
+	my $id_project = $p->{id_project};
 
+	try{
+		my $project = $c->model('Baseliner::BaliIssueProject')->create({id_issue => $id_issue, id_project => $id_project});
+		$c->stash->{json} = { msg=>_loc('Project added'), success=>\1 };
+	}
+	catch{
+		$c->stash->{json} = { msg=>_loc('Error adding project: %1', shift()), failure=>\1 }
+	};
+     
+    $c->forward('View::JSON');    
+}
+
+sub unassign_projects : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+	my $idissue = $p->{idissue};
+	my $idsproject = $p->{idsproject};
+	my $issueprojects;
+	
+	try{
+		my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+		my $dbh = $db->dbh;
+        my $sth = $dbh->prepare('DELETE FROM BALI_ISSUE_PROJECT WHERE ID_ISSUE = ?');
+		$sth->bind_param( 1, $idissue );
+		$sth->execute();		
+		
+		foreach my $id_project (_array $idsproject){
+			$issueprojects = $c->model('Baseliner::BaliIssueProject')->create(
+																			{
+																				id_issue    => $idissue,
+																				id_project 	=> $id_project
+																			});		
+		}
+		$c->stash->{json} = { msg=>_loc('Projects unassigned'), success=>\1 };
+	}
+	catch{
+		$c->stash->{json} = { msg=>_loc('Error unassigning Projects: %1', shift()), failure=>\1 }
+	};
+     
+    $c->forward('View::JSON');    
+}
 1;

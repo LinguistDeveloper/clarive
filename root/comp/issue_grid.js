@@ -16,6 +16,7 @@
 			{  name: 'created_by' },
 			{  name: 'numcomment' },
 			{  name: 'category' },
+			{  name: 'namecategory' },
 			{  name: 'projects' },
 			{  name: 'labels' }
 		],
@@ -44,6 +45,8 @@
 			{  name: 'created_by' },
 			{  name: 'numcomment' },
 			{  name: 'category' },
+			{  name: 'namecategory' },
+			{  name: 'projects' },			
 			{  name: 'labels' }
 		],
 		listeners: {
@@ -85,6 +88,21 @@
 		]
 	});
 	
+	var rt = Ext.data.Record.create([
+		{name: 'id_project'},
+		{name: 'project'}
+	]);
+	
+	var store_project = new Ext.data.Store({
+		// explicitly create reader
+		reader: new Ext.data.ArrayReader(
+			{
+				idIndex: 0  // id for each record will be the first element
+			},
+			rt // recordType
+		)
+	});
+	
 	var init_buttons = function(action) {
 		eval('btn_edit.' + action + '()');
 		eval('btn_delete.' + action + '()');
@@ -102,13 +120,13 @@
 	}
 	
 	var btn_add = new Ext.Toolbar.Button({
-			id: 'btn_add',
-			text: _('New'),
-			icon:'/static/images/icons/add.gif',
-			cls: 'x-btn-text-icon',
-			handler: function() {
-						add_edit()
-			}
+		id: 'btn_add',
+		text: _('New'),
+		icon:'/static/images/icons/add.gif',
+		cls: 'x-btn-text-icon',
+		handler: function() {
+					add_edit()
+		}
 	});
 	
 	var btn_edit = new Ext.Toolbar.Button({
@@ -333,12 +351,138 @@
 			displayField: 'name',
 			valueField: 'id',
 			store: store_category
+		});
+		
+		var show_projects = function(rec) {
+			var win_project;
+			var title = 'Projects';
+
+			function getProjects(names_checked){
+				var projects_checked = new Array();
+				check_ast_projects_sm.each(function(rec){
+					projects_checked.push(rec.get('id_project'));
+					names_checked.push(rec.get('project'));
+				});
+				return projects_checked
+			}
+
+
+			var btn_cerrar_projects = new Ext.Toolbar.Button({
+				icon:'/static/images/icons/door_out.png',
+				cls: 'x-btn-text-icon',
+				text: _('Close'),
+				handler: function() {
+					win_project.close();
+				}
+			});
+			
+			var btn_grabar_projects = new Ext.Toolbar.Button({
+				icon:'/static/images/icons/database_save.png',
+				cls: 'x-btn-text-icon',
+				text: _('Save'),
+				handler: function(){
+					var names_checked = new Array();
+					var projects_checked = getProjects(names_checked);
+					var form = form_issue.getForm();
+					var projects = '';
+					if(names_checked){
+						for(i=0;i<names_checked.length;i++){
+							projects = projects ? projects + ',' + names_checked[i]: names_checked[i];
+						}
+						ff.findField("txtprojects").setValue(projects);						
+					}
+					
+					Baseliner.ajaxEval( '/issue/unassign_projects',{ idissue: rec.data.id, idsproject: projects_checked },
+						function(response) {
+							if ( response.success ) {
+								Baseliner.message( _('Success'), response.msg );
+								var categories_checked = getCategories();
+								var labels_checked = getLabels();
+								form.findField("id").setValue(rec.data.id);
+								filtrar_issues(labels_checked, categories_checked);								
+							} else {
+								Baseliner.message( _('ERROR'), response.msg );
+							}
+						}
+					);
+				}
+			});
+	
+			var check_ast_projects_sm = new Ext.grid.CheckboxSelectionModel({
+				singleSelect: false,
+				sortable: false,
+				checkOnly: true
+			});
+		
+			
+			var grid_ast_projects = new Ext.grid.GridPanel({
+				title : _('Projects'),
+				sm: check_ast_projects_sm,
+				autoScroll: true,
+				header: false,
+				stripeRows: true,
+				autoScroll: true,
+				height: 300,
+				enableHdMenu: false,
+				store: store_project,
+				viewConfig: {forceFit: true},
+				selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+				loadMask:'true',
+				columns: [
+					{ hidden: true, dataIndex:'id_project' },
+					check_ast_projects_sm,
+					{ header: _('Project'), dataIndex: 'project', sortable: false }
+				],
+				autoSizeColumns: true,
+				deferredRender:false,
+				bbar: [
+					btn_grabar_projects,
+					btn_cerrar_projects
+				],
+				listeners: {		
+					viewready: function() {
+						var me = this;
+						var myDatas = [];
+						var recs = [];
+						if(rec.data.projects){
+							for(i=0;i<rec.data.projects.length;i++){
+								var myData = new Array();
+								myData[0] = rec.data.projects[i].id_project;
+								myData[1] = rec.data.projects[i].project;
+								myDatas.push(myData);
+								recs.push(i);
+							}
+						}
+						store_project.loadData(myDatas);
+						me.getSelectionModel().selectRows(recs);
+					}
+				}		
+			});
+			
+			//Ext.util.Observable.capture(grid_ast_labels, console.info);
+		
+			win_project = new Ext.Window({
+				title: _(title),
+				width: 400,
+				modal: true,
+				autoHeight: true,
+				items: grid_ast_projects
+			});
+			
+			win_project.show();
+		};
+		
+		var btn_unassign_project = new Ext.Toolbar.Button({
+			text: _('Unassign projects'),
+			handler: function() {
+				show_projects(rec);
+			}
 		});		
 		
 		var form_issue = new Ext.FormPanel({
 			frame: true,
 			url:'/issue/update',
-			labelAlign: 'top',
+			//labelAlign: 'top',
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
 				{
@@ -376,7 +520,7 @@
 					}
 				}
 			],
-			defaults: { width: 650 },
+			defaults: { anchor:'100%'},
 			items: [
 				{ xtype: 'hidden', name: 'id', value: -1 },
 				{
@@ -386,6 +530,38 @@
 				    allowBlank: false
 				},
 				combo_category,
+				{
+				// column layout with 2 columns
+				layout:'column'
+				,defaults:{
+					layout:'form'
+					,border:false
+					,xtype:'panel'
+					,bodyStyle:'padding:0 2px 0 0'
+				}
+				,items:[{
+					// left column
+					columnWidth:0.84,
+					defaults:{anchor:'100%'}
+					,items:[
+						{
+							xtype:'textfield',
+							fieldLabel: _('Projects'),
+							name: 'txtprojects',
+							readOnly: true
+						}
+					]
+					},
+					{
+					columnWidth:0.16,
+					// right column
+					defaults:{anchor:'100%'},
+					items:[
+						btn_unassign_project
+					]
+					}
+				]
+				},
 				{
 				xtype:'htmleditor',
 				name:'description',
@@ -398,6 +574,17 @@
 		if(rec){
 			var ff = form_issue.getForm();
 			ff.loadRecord( rec );
+			
+			//combo_category.setValue(rec.data.key);
+			
+			
+			var projects = '';
+			if(rec.data.projects){
+				for(i=0;i<rec.data.projects.length;i++){
+					projects = projects ? projects + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
+				}
+				ff.findField("txtprojects").setValue(projects);
+			}			
 			title = 'Edit issue';
 		}
 		
@@ -484,20 +671,30 @@
 		return "<div style='font-weight:bold; font-size: 14px; color: #808080'> #" + value + "</div>" ;
 	};
 
+	function decimalToHex(decimal) {
+	  var hex = decimal.toString(16);
+	  if (hex.length == 1) hex = '0' + hex;
+	  return hex;
+	}
+	function hexToDecimal(hex) {return parseInt(hex,16);}
+	 
+	function returnOpposite(colour) {
+	  return decimalToHex(255 - hexToDecimal(colour.substr(0,2))) 
+		+ decimalToHex(255 - hexToDecimal(colour.substr(2,2))) 
+		+ decimalToHex(255 -  hexToDecimal(colour.substr(4,2)));
+	}
+
 	var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
 		var tag_comment_html;
 		var tag_color_html;
-		tag_comment_html = '';
 		tag_color_html = '';
+		tag_project_html = '';
 		if(rec.data.labels){
 			for(i=0;i<rec.data.labels.length;i++){
-				tag_color_html = tag_color_html + "<span style='width:35;float:left;border:1px solid #cccccc;background-color:" + rec.data.labels[i].color + "'>&nbsp;</span>";
+				tag_color_html = tag_color_html + "<span style='float:left;border:1px solid #cccccc;padding:2px 8px 2px 8px;color:#" + returnOpposite(rec.data.labels[i].color) + ";background-color:#" + rec.data.labels[i].color + "'><b>" + rec.data.labels[i].name + "</b></span>";
 			}
 		}
-		if(rec.data.numcomment){
-			tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + " comments</span>";
-		}		
-		return "<div style='font-weight:bold; font-size: 14px;' >" + value + "</div><br><div><font color='808080'>by </font><b>" + rec.data.created_by + "</b> <font color='808080'>" + rec.data.created_on + "</font ></div>" + tag_color_html;
+		return "<div style='font-weight:bold; font-size: 14px;' >" + value + "</div><br><div><font color='808080'>by </font><b>" + rec.data.created_by + "</b> <font color='808080'>" + rec.data.created_on + "</font ></div>" + tag_color_html + tag_project_html;
 	};
 	
 	var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -507,7 +704,16 @@
 			tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + " comments</span>";
 		}		
 		return tag_comment_html;
-	};	
+	};
+	
+	var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
+		if(rec.data.projects){
+			for(i=0;i<rec.data.projects.length;i++){
+				tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
+			}
+		}
+		return tag_project_html;
+	}
 
 	var grid_opened = new Ext.grid.GridPanel({
 		title: _('Issues'),
@@ -525,8 +731,8 @@
 			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
 			{ header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
-			{ header: _('Projects'), dataIndex: 'projects', width: 60, sortable: true, renderer: Baseliner.render_tags },
-			{ header: _('Category'), dataIndex: 'category', width: 50, sortable: true, renderer: Baseliner.render_tags },
+			{ header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
+			{ header: _('Category'), dataIndex: 'namecategory', width: 50, sortable: true },
 			{ header: _('Description'), hidden: true, dataIndex: 'description' }
 		],
 		autoSizeColumns: true,
@@ -546,7 +752,7 @@
 
 	grid_opened.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
-		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , 'Issue #' + r.get('id'),{},config_tabs );
+		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , _('Issue') + ' #' + r.get('id'),{},config_tabs );
 	});
 	
     grid_opened.on( 'render', function(){
@@ -564,15 +770,42 @@
 					var rindex = grid_opened.getView().findRowIndex(t);
 					if (rindex === false ) return false;
 					var row = s.getAt( rindex );
+					var swSave = true;
 					var projects = row.get('projects');
 					if( typeof projects != 'object' ) projects = new Array();
-					if( projects.indexOf( data.project ) == -1 ) {
+					for (i=0;i<projects.length;i++) {
+						if(projects[i].project == data.project){
+							swSave = false;
+							break;
+						}
+					}
+
+					//if( projects.name.indexOf( data.project ) == -1 ) {
+					if( swSave ) {
 						row.beginEdit();
-						projects.push( data.project );
+						projects.push( data );
 						row.set('projects', projects );
 						row.endEdit();
 						row.commit();
-						Baseliner.message( _('Info'), _('Project %1 added', data.project) );
+						
+						Baseliner.ajaxEval( '/issue/update_project',{ id_project: data.id_project, id_issue: row.get('id') },
+							function(response) {
+								if ( response.success ) {
+									//store_label.load();
+									Baseliner.message( _('Success'), response.msg );
+									//init_buttons('disable');
+								} else {
+									//Baseliner.message( _('ERROR'), response.msg );
+									Ext.Msg.show({
+										title: _('Information'), 
+										msg: response.msg , 
+										buttons: Ext.Msg.OK, 
+										icon: Ext.Msg.INFO
+									});
+								}
+							}
+						
+						);
 					} else {
 						Baseliner.message( _('Warning'), _('Project %1 is already assigned', data.project));
 					}
@@ -605,7 +838,8 @@
 			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
 			{ header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
-			{ header: _('Category'), dataIndex: 'category', width: 50, sortable: true },
+			{ header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
+			{ header: _('Category'), dataIndex: 'namecategory', width: 50, sortable: true },
 			{ header: _('Description'), hidden: true, dataIndex: 'description' }
 		],
 		autoSizeColumns: true,
@@ -621,7 +855,7 @@
 	
 	grid_closed.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
-		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , 'Issue #' + r.get('id'),{},config_tabs );
+		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , _('Issue') + (' #') + r.get('id'),{},config_tabs );
 	});
 	
 	
@@ -805,17 +1039,22 @@
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
-			var sm = grid_categories.getSelectionModel();
-			var sel = sm.getSelected();
-			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the category') + ' <b>' + sel.data.name + '</b>?', 
+			//var sm = grid_categories.getSelectionModel();
+			//var sel = sm.getSelected();
+			var categories_checked = getCategories();
+			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the categories selected?'), 
 			function(btn){ 
 				if(btn=='yes') {
-					Baseliner.ajaxEval( '/issue/update_category?action=delete',{ id: sel.data.id },
+					Baseliner.ajaxEval( '/issue/update_category?action=delete',{ idscategory: categories_checked },
 						function(response) {
 							if ( response.success ) {
-								grid_categories.getStore().remove(sel);
+								//grid_categories.getStore().remove(sel);
 								Baseliner.message( _('Success'), response.msg );
-								init_buttons('disable');
+								//init_buttons('disable');
+								init_buttons_category('disable');
+								store_category.load();
+								var labels_checked = getLabels();
+								filtrar_issues(labels_checked, null);								
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -823,9 +1062,11 @@
 					
 					);
 				}
-			} );
+			});
 		}
 	});
+	
+	
 
 	var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
 		singleSelect: false,
@@ -958,18 +1199,18 @@
 		}
 	});
 
-	var color_lbl = '#000000';
+	var color_lbl = '000000';
 	var color_label = new Ext.form.TextField({
 		id:'color_label',
 		width: 25,
 		readOnly: true,
-		style:'background:#000000'
+		style:'background:#' + color_lbl
 	});
 	
 	var colorMenu = new Ext.menu.ColorMenu({
 		handler: function(cm, color) {
 		  eval("Ext.get('color_label').setStyle('background','#" + color + "')");
-		  color_lbl = '#' + color ;
+		  color_lbl = color ;
 		}
 	});
 
@@ -1120,7 +1361,3 @@
 	
 	return panel;
 })();
-
-
-
-
