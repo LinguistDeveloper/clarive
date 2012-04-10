@@ -2514,7 +2514,7 @@ msgstr "Error borrando categoría"
 
 # lib/Baseliner/Model/Issue.pm (32)
 msgid "Issue added"
-msgstr "Tópico añadida"
+msgstr "Tópico añadido"
 
 
 # lib/Baseliner/Model/Issue.pm (32)
@@ -2524,7 +2524,7 @@ msgstr "Error añadiendo tópico: %1"
 
 # lib/Baseliner/Model/Issue.pm (48)
 msgid "Issue modified"
-msgstr "Tópico modificada"
+msgstr "Tópico modificado"
 
 
 # lib/Baseliner/Model/Issue.pm (51)
@@ -2698,3 +2698,15 @@ msgstr "Categorías borradas"
 # lib/Baseliner/Controller/Issue.pm (250)
 msgid "Error deleting Categories"
 msgstr "Error borrando categorías"
+
+# lib/Baseliner/Controller/Issue.pm (422)
+msgid "Projects unassigned"
+msgstr "Proyectos desasignados"
+
+# lib/Baseliner/Controller/Issue.pm (425)
+msgid "Error unassigning Projects: %1"
+msgstr "Error desasignando proyectos: %1"
+
+# root/comp/issue_grid.js (624)
+msgid "Unassign projects"
+msgstr "Desasignar proyectos"

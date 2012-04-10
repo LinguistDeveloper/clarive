@@ -541,7 +541,7 @@
 				}
 				,items:[{
 					// left column
-					columnWidth:0.84,
+					columnWidth:0.82,
 					defaults:{anchor:'100%'}
 					,items:[
 						{
@@ -553,7 +553,7 @@
 					]
 					},
 					{
-					columnWidth:0.16,
+					columnWidth:0.18,
 					// right column
 					defaults:{anchor:'100%'},
 					items:[
