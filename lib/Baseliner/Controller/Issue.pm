@@ -53,7 +53,11 @@ sub list : Local {
 		}
 	}
 	
-	@datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"}, \@labels, \@categories);
+	my @projects = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
+																			action => 'action.job.viewall',
+																			level => 1);
+	
+	@datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir"}, \@labels, \@categories, \@projects);
 	#my @datas = Baseliner::Model::Issue->GetIssues({orderby => "$sort $dir", labels => @labels});
 	
 	#Viene por la parte de dashboard, y realiza el filtrado por ids.
@@ -117,13 +121,13 @@ sub update : Local {
 	
 	_log ">>>>>>>>Parametros: " . _dump $p . "\n";
 
-	##try  {    
+	try  {    
 	    my ($msg, $id) = Baseliner::Model::Issue->update( $p );
 	    $c->stash->{json} = { success => \1, msg=>_loc($msg), issue_id => $id };
-	##} catch {
-	##	my $e = shift;
-	##	$c->stash->{json} = { success => \0, msg=>_loc($e) };
-	##};
+	} catch {
+		my $e = shift;
+		$c->stash->{json} = { success => \0, msg=>_loc($e) };
+	};
     $c->forward('View::JSON');
 }
 
