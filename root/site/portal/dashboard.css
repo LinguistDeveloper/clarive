@@ -40,6 +40,13 @@
   text-rendering: optimizeLegibility;
 }
 
+#bodyjob span {
+  font-family: "museo sans 500", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  font-size: 24px;
+}
+
+
 #project h3, h4, h5, h6 {
   font-family: "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
   text-rendering: optimizeLegibility;

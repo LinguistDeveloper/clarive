@@ -243,7 +243,8 @@
     };
 
 	Baseliner.openLogTab = function(id, name) {
-        Baseliner.addNewTabComp('/job/log/list?id_job=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
+        //Baseliner.addNewTabComp('/job/log/list?id_job=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
+		Baseliner.addNewTab('/job/log/dashboard?id_job=' + id + '&name=' + name , _('Log') + ' ' + name);
 	};
 
     var render_topic = function(value, p, record){

@@ -19,6 +19,25 @@ sub logs_list : Path('/job/log/list') {
     $c->stash->{template} = '/comp/log_grid.mas';
 }
 
+sub dashboard_log : Path('/job/log/dashboard') {
+    my ( $self, $c ) = @_;
+	my $p = $c->req->params;
+	$c->stash->{id_job} = $p->{id_job};
+	$c->stash->{name_job} = $p->{name};
+#   $c->stash->{annotate_now} = $p->{annotate_now};
+#	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+#	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
+#   $c->forward('/permissions/load_user_actions');
+	
+	
+    $c->forward('/dashboard/list_entornos');
+    $c->forward('/dashboard/list_emails');
+	$c->forward('/dashboard/list_issues');	
+	$c->forward('/dashboard/list_jobs');	
+    $c->forward('/dashboard/list_sqa');
+    $c->stash->{template} = '/comp/dashboard_job.js';
+}
+
 sub _select_words {
 	my ($self,$text,$cnt)=@_;
 	my @ret=();
