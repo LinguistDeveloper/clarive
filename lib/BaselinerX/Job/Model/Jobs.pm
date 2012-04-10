@@ -564,9 +564,23 @@ sub get_contents {
 sub get_outputs {
     my ( $self, %p ) = @_;
     my $rs =
-        Baseliner->model( 'Baseliner::BaliLog' )
-        ->search( {id_job => $p{jobid}, lev => {'<>', 'debug'}, more => {'<>', undef}},
-        {order_by => 'id'} );
+
+        # Baseliner->model( 'Baseliner::BaliLog' )
+        # ->search( {id_job => $p{jobid}, lev => {'<>', 'debug'}, more => {'<>', undef}},
+        # {order_by => 'id'} );
+        Baseliner->model( 'Baseliner::BaliLog' )->search(
+        {
+            -and => [
+                id_job => $p{jobid},
+                lev    => {'<>', 'debug'},
+                -or    => [
+                    more      => {'<>', undef},
+                    milestone => 1
+                ]
+            ]
+        },
+        {order_by => 'id'}
+        );
     my $result;
     my $qre = qr/\.\w+$/;
 
@@ -581,12 +595,11 @@ sub get_outputs {
             : ( $data_len > ( 4 * 1024 ) )
             ? ( $data_name || $self->_select_words( $r->text, 2 ) ) . ".txt"
             : '';
-        push @{$result->{outputs}},
-            {
-            id          => $r->id,
-            datalen     => $data_len,
+        push @{$result->{outputs}}, {
+            id      => $r->id,
+            datalen => $data_len,
             data        => $data,
-            more        => {
+            more => {
                 more      => $more,
                 data_name => $r->data_name,
                 data      => $data_len ? \1 : \0,

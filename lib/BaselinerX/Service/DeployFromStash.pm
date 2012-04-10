@@ -77,11 +77,11 @@ sub deployments {
             $deployment->deploy_and_run( callback=>sub {
                 my ($ret, $f) = @_;
                 if( $ret->rc ) {
-                    $log->error( _loc("Deployment error for %1", $name ), data=>$ret->output );
+                    $log->error( _loc("Deployment error for %1", $name ), data=>$ret->output, milestone => 1, data_name => $name.'.txt' );
                     _throw _loc( "Error during deployment %1", $name );
                 } else {
                     my $file_or_script = ref $f =~ /Path::Class/ ? $f->basename : "$f";
-                    $log->info( _loc("Deployment ok for *%1* - %2", $name, $file_or_script ), data=>$ret->output );
+                    $log->info( _loc("Deployment ok for *%1* - %2", $name, $file_or_script ), data=>$ret->output, , milestone => 1, data_name => $name.'.txt' );
                 }
             });
 
@@ -129,10 +129,10 @@ sub deploy_scripts {
             $d->throw_errors( 0 );  # I'll catch them myself
             $d->run();
             if( $d->rc ) {
-                $log->error( _loc("Deployment script error for %1", $name ), data=>$d->output );
+                $log->error( _loc("Deployment script error for %1", $name ), data=>$d->output, milestone => 1, data_name => $name.'.txt' );
                 _throw _loc( "Error during deployment script %1", $name );
             } else {
-                $log->info( _loc("Deployment scripts ok for *%1*", $name), data=>$d->output );
+                $log->info( _loc("Deployment scripts ok for *%1*", $name), data=>$d->output, milestone => 1, data_name => $name.'.txt' );
             }
             $d->{needs_rollback} = 1;
         }
