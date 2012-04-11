@@ -671,13 +671,6 @@
 		return "<div style='font-weight:bold; font-size: 14px; color: #808080'> #" + value + "</div>" ;
 	};
 
-	function decimalToHex(decimal) {
-	  var hex = decimal.toString(16);
-	  if (hex.length == 1) hex = '0' + hex;
-	  return hex;
-	}
-	function hexToDecimal(hex) {return parseInt(hex,16);}
-	 
 	function returnOpposite(hexcolor) {
 		var r = parseInt(hexcolor.substr(0,2),16);
 		var g = parseInt(hexcolor.substr(2,2),16);
@@ -1079,14 +1072,14 @@
 	var grid_categories = new Ext.grid.GridPanel({
 		region : 'north',
 		title : _('Categories'),
-		autoScroll: true,
 		sm: check_categories_sm,
-		split : true,
-		collapsible : true,
+		//collapsible : true,
+        height: 300,
+        minSize: 150,
+		split: true,
 		header: true,
 		stripeRows: true,
 		autoScroll: true,
-		autoHeight: true,
 		enableHdMenu: false,
 		store: store_category,
 		viewConfig: {forceFit: true},
@@ -1269,18 +1262,14 @@
 		checkOnly: true,
 	});
 
-	
 	var grid_labels = new Ext.grid.GridPanel({
 		region : 'center',
 		title : _('Labels'),
 		sm: check_labels_sm,
 		autoScroll: true,
-		split : true,
-		collapsible : true,
+		//collapsible : true,
 		header: true,
 		stripeRows: true,
-		autoScroll: true,
-		autoHeight: true,
 		enableHdMenu: false,
 		store: store_label,
 		viewConfig: {forceFit: true},
@@ -1345,8 +1334,10 @@
 					region : 'east',
 					split: true,
 					width: 350,
-					minSize: 100,
-					maxSize: 350,				
+					minSize: 150,
+					maxSize: 500,
+					layout:'border',
+					border: true,
 					items: [
 							grid_categories,
 							grid_labels
