@@ -527,36 +527,38 @@ sub get_contents {
 
     my $job_stash     = _load $row_stash->stash;
     my $elements      = $job_stash->{elements};
-    my @elements_list = $elements->list( '' );
-
-    my $result = {};
-    my %topics;
-    my %technologies;
-
-    while ( my $row = $rs->next ) {
-        my $ns = ns_get( $row->item );
-        push @{$result->{packages}->{$ns->{ns_data}->{project}}}, $ns->{ns_name};
-        push @{$result->{elements}},
-            map { 
-                $_->path =~ /^\/.*\/.*\/(.*)\/.*?/;
-                my $tech = $1;
-                $technologies{$tech} = '';
-                {name => $_->name, status => $_->status, path => $_->path} 
-            } @elements_list;
-
-        my $rs_topics =
-            Baseliner->model( 'Baseliner::BaliRelationship' )->search( {from_ns => $ns->{ns_type}.'/'.$ns->{ns_name}} );
-
-        while ( my $topic = $rs_topics->next ) {
-            # _log _dump $topic;
-            my $row_topics =
-                Baseliner->model( 'Baseliner::BaliIssue' )->search( {id => $topic->to_id} )->first;
-            $topics{$topic->to_id} = $row_topics->title;
-        }
-    } ## end while ( my $row = $rs->next)
-
-    push @{$result->{topics}}, map { {id => $_, title => $topics{$_}} } keys %topics;
-    push @{$result->{technologies}}, keys %technologies;
+    my @elements_list;
+    $result = {};
+    if($elements){
+        @elements_list = $elements->list( '' );
+        my %topics;
+        my %technologies;
+    
+        while ( my $row = $rs->next ) {
+            my $ns = ns_get( $row->item );
+            push @{$result->{packages}->{$ns->{ns_data}->{project}}}, $ns->{ns_name};
+            push @{$result->{elements}},
+                map { 
+                    $_->path =~ /^\/.*\/.*\/(.*)\/.*?/;
+                    my $tech = $1;
+                    $technologies{$tech} = '';
+                    {name => $_->name, status => $_->status, path => $_->path} 
+                } @elements_list;
+    
+            my $rs_topics =
+                Baseliner->model( 'Baseliner::BaliRelationship' )->search( {from_ns => $ns->{ns_type}.'/'.$ns->{ns_name}} );
+    
+            while ( my $topic = $rs_topics->next ) {
+                # _log _dump $topic;
+                my $row_topics =
+                    Baseliner->model( 'Baseliner::BaliIssue' )->search( {id => $topic->to_id} )->first;
+                $topics{$topic->to_id} = $row_topics->title;
+            }
+        } ## end while ( my $row = $rs->next)
+    
+        push @{$result->{topics}}, map { {id => $_, title => $topics{$_}} } keys %topics;
+        push @{$result->{technologies}}, keys %technologies;        
+    }
     return $result;
 
 } ## end sub get_contents
