@@ -32,6 +32,12 @@ sub dashboard_log : Path('/job/log/dashboard') {
     $c->stash->{template} = '/comp/dashboard_job.js';
 }
 
+sub resumen: Private{
+    my ( $self, $c, $id_job ) = @_;
+	my $resumen = $c->model('Jobs')->get_summary( jobid => $id_job);
+	$c->stash->{resumen} = $resumen;
+}
+
 sub _select_words {
 	my ($self,$text,$cnt)=@_;
 	my @ret=();
