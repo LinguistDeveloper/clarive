@@ -68,6 +68,10 @@
               <td class="section-literal"><%_loc($resumen->{status})%></td>
             </tr>
             <tr class='last-child'>
+              <td class="section-description">Tipo</td>
+              <td class="section-literal"><%_loc($resumen->{type})%></td>
+            </tr>
+            <tr class='last-child'>
               <td class="section-description">Inicio</td>
               <td class="section-literal"><%$resumen->{starttime}?$resumen->{starttime}->dmy.' '.$resumen->{starttime}->hms:''%></td>
             </tr>
@@ -78,6 +82,14 @@
             <tr class='last-child'>
               <td class="section-description">Tiempo de Ejecución</td>
               <td class="section-literal"><%$resumen->{execution_time}?sprintf("%d",$resumen->{execution_time}->min):''%> min.</td>
+            </tr>
+            <tr class='last-child'>
+              <td class="section-description">Último paso</td>
+              <td class="section-literal"><%$resumen->{last_step}%></td>
+            </tr>
+            <tr class='last-child'>
+              <td class="section-description">Usuario</td>
+              <td class="section-literal"><%$resumen->{owner}%></td>
             </tr>
           </tbody>    
         </table>
