@@ -28,6 +28,7 @@ sub dashboard_log : Path('/job/log/dashboard') {
 	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $self->summary( $c );
+    $self->services( $c );
 #   $c->forward('/permissions/load_user_actions');
 
     $c->stash->{template} = '/comp/dashboard_job.js';

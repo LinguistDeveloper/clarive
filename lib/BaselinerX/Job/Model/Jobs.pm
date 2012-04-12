@@ -506,7 +506,7 @@ sub get_services_status {
     my ( $self, %p ) = @_;
     my $rs =
         Baseliner->model( 'Baseliner::BaliLog' )
-        ->search( {id_job => $p{jobid}, exec => $p{job_exec}, lev => 'debug', milestone => {'>', 1}}, {order_by => 'id'} );
+        ->search( {id_job => $p{jobid}, exec => $p{job_exec}, milestone => {'>', 1}}, {order_by => 'id'} );
 
     my $service_statuses = {2 => 'Success', 3 => 'Warning', 4 => 'Error'};
     my $result;
