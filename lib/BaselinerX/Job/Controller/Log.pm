@@ -24,12 +24,18 @@ sub dashboard_log : Path('/job/log/dashboard') {
 	my $p = $c->req->params;
 	$c->stash->{id_job} = $p->{id_job};
 	$c->stash->{name_job} = $p->{name};
-#   $c->stash->{annotate_now} = $p->{annotate_now};
-#	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+	$c->forward('/log/resumen/' . $p->{id_job} . '/');
+
 #	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
 #   $c->forward('/permissions/load_user_actions');
 
     $c->stash->{template} = '/comp/dashboard_job.js';
+}
+
+sub resumen: Private{
+    my ( $self, $c, $id_job ) = @_;
+	my $resumen = $c->model('Jobs')->get_summary( jobid => $id_job);
+	$c->stash->{resumen} = $resumen;
 }
 
 sub _select_words {
