@@ -510,9 +510,13 @@ sub get_services_status {
 
     my $service_statuses = {2 => 'Success', 3 => 'Warning', 4 => 'Error'};
     my $result;
+    my %added_services;
     while ( my $row = $rs->next ) {
-        push @{$result->{$row->step}}, 
-            { service=>$row->service_key, status => $service_statuses->{$row->milestone}, id => $row->id};
+        if ( !$added_services{$row->step.$row->service_key} ) {
+            push @{$result->{$row->step}}, 
+                { service=>$row->service_key, status => $service_statuses->{$row->milestone}, id => $row->id};
+            $added_services{$row->step.$row->service_key} = 1;
+        }
     } ## end while ( my $row = $rs->next)
 
     return $result;

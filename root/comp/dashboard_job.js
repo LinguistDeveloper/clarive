@@ -63,7 +63,7 @@
 	      
 	      <div id="body" class="span-12">
 	        <!--######INICIO TABLA EJECUCION ##################################################################################-->
-	        <table class="summary-table-entornos" cellspacing="0">
+	        <table class="summary-table-entornos" cellspacing="0" style="height:50px;">
 	          <thead>
 	          	<tr>
 	              <th class="first-child section-name" colspan="3">Servicios</th>
@@ -76,7 +76,7 @@
 	          <tbody>
 <%perl>
     my @steps = ( 'PRE', 'RUN', 'POST', 'END' );
-
+    my $colors = { Success => '#00BB00', Warning => '#00BBBB', Error => '#BB0000'};
     for my $step ( @steps ) {
         if ( $servicios->{$step} ) {
         	my $first = 1;
@@ -89,10 +89,11 @@
 <%perl>
         			$first = 0;
         		}
+
 </%perl>
 	            <tr>
 	              <td class="section-literal"><% $service->{service} %></td>
-	              <td class="section-literal"><% $service->{status} %></td>
+	              <td class="section-literal" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
 	            </tr>
 <%perl>
 
