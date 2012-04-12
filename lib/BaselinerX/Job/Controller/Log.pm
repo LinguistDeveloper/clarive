@@ -27,15 +27,22 @@ sub dashboard_log : Path('/job/log/dashboard') {
 #   $c->stash->{annotate_now} = $p->{annotate_now};
 	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
+    $self->summary( $c );
 #   $c->forward('/permissions/load_user_actions');
 
     $c->stash->{template} = '/comp/dashboard_job.js';
 }
 
-sub resumen: Private{
-    my ( $self, $c, $id_job ) = @_;
-	my $resumen = $c->model('Jobs')->get_summary( jobid => $id_job);
-	$c->stash->{resumen} = $resumen;
+sub summary: Private{
+    my ( $self, $c ) = @_;
+    my $resumen = $c->model('Jobs')->get_summary( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+    $c->stash->{summary} = $resumen;
+}
+
+sub services: Private{
+    my ( $self, $c ) = @_;
+	my $resumen = $c->model('Jobs')->get_services_status( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+	$c->stash->{services} = $resumen;
 }
 
 sub _select_words {

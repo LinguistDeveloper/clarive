@@ -472,7 +472,7 @@ sub log {
 
 sub get_summary {
     my ($self, %p) = @_;
-    my $row = Baseliner->model( 'Baseliner::BaliJob' )->search( {id => $p{jobid}} )->first;
+    my $row = Baseliner->model( 'Baseliner::BaliJob' )->search( {id => $p{jobid}, exec => $p{job_exec}} )->first;
     my $result = {};
 
     if ( $row ) {
@@ -495,7 +495,8 @@ sub get_summary {
             endtime => $endtime,
             type => $row->type,
             owner => $row->owner,
-            last_step => $row->step
+            last_step => $row->step,
+            rollback => $row->rollback
         }
     }
     return $result;
@@ -505,7 +506,7 @@ sub get_services_status {
     my ( $self, %p ) = @_;
     my $rs =
         Baseliner->model( 'Baseliner::BaliLog' )
-        ->search( {id_job => $p{jobid}, lev => 'debug', milestone => {'>', 1}}, {order_by => 'id'} );
+        ->search( {id_job => $p{jobid}, exec => $p{job_exec}, lev => 'debug', milestone => {'>', 1}}, {order_by => 'id'} );
 
     my $service_statuses = {2 => 'Success', 3 => 'Warning', 4 => 'Error'};
     my $result;
@@ -566,14 +567,11 @@ sub get_contents {
 sub get_outputs {
     my ( $self, %p ) = @_;
     my $rs =
-
-        # Baseliner->model( 'Baseliner::BaliLog' )
-        # ->search( {id_job => $p{jobid}, lev => {'<>', 'debug'}, more => {'<>', undef}},
-        # {order_by => 'id'} );
         Baseliner->model( 'Baseliner::BaliLog' )->search(
         {
             -and => [
                 id_job => $p{jobid},
+                exec => $p{job_exec},
                 lev    => {'<>', 'debug'},
                 -or    => [
                     more      => {'<>', undef},

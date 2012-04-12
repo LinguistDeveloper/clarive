@@ -3,8 +3,44 @@
   my $idjob = $c->stash->{id_job};
   my $namejob = $c->stash->{name_job};
 
-  my $resumen = $c->stash->{resumen};
+  my $resumen = $c->stash->{summary};
+  my $servicios = $c->stash->{services};
 </%perl>
+<script language="javascript">
+    function render_level ( status, type, rollback ) {
+        var icon;
+		var bold = false;
+		var type   = rec.data.type_raw;
+		var rollback = rec.data.rollback;
+        if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
+        else if( status=='READY' ) icon='log_d.gif';
+        else if( status=='APPROVAL' ) icon='verify.gif';
+        else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
+        else if( status=='IN-EDIT' ) icon='log_w.gif';
+        else { icon='log_e.gif'; bold=true; }
+        value = (bold?'<b>':'') + value + (bold?'</b>':'');
+
+        // Rollback?
+        if( status == 'FINISHED' && rollback == 1 )  {
+            value += ' (' + _('Rollback OK') + ')';
+            icon = 'log_e.gif';
+        }
+        else if( status == 'ERROR' && rollback == 1 )  {
+            value += ' (' + _('Rollback Failed') + ')';
+        }
+        //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
+		if( status == 'APPROVAL' ) { // add a link to the approval main
+			value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", _('Approvals'), value ); 
+		}
+        if( icon!=undefined ) {
+            return div1 
+                + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/"+icon+"' />"
+                + value + div2 ;
+        } else {
+            return value;
+        }
+    };
+</script>
 
 <div id="project" style="padding: 10px 10px 10px 10px;">   
 <div id="project" style="width: 98%; padding: 2px 2px 2px 2px;">
@@ -12,31 +48,36 @@
     <div id="bodyjob" class="span-24" width="100%">
       <span>Job: <%$namejob%> (<a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>', _('Log details <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"> log completo </a>)</span>
     </div>
+    <br><br><br><br>
     <div id="bodyjob" class="span-24" width="100%">
       <div id="body" class="span-12 colborder append-bottom">
-        <h2>Resumen</h2>
         <!--######INICIO TABLA RESUMEN ###################################################################################-->      
-        <table class="summary-table-entornos" width="100%" cellspacing="0">
+        <table class="summary-table-entornos" cellspacing="0">
+          <thead>
+            <tr>
+              <th class="first-child section-name" colspan="2">Resumen</th>
+            </tr>
+          </thead>
           <tbody>
             <tr class='last-child'>
-              <td class='first-child section-name'>Entorno</td>
+              <td class="section-description">Entorno</td>
               <td class="section-literal"><%$resumen->{bl}%></td>
             </tr>
             <tr class='last-child'>
-              <td class='first-child section-name'>Estado</td>
-              <td class="section-literal"><%$resumen->{status}%></td>
+              <td class="section-description">Estado</td>
+              <td class="section-literal"><%_loc($resumen->{status})%></td>
             </tr>
             <tr class='last-child'>
-              <td class='first-child section-name'>Inicio</td>
-              <td class="section-literal"><%$resumen->{starttime}?$resumen->{starttime}->dmy:''%></td>
+              <td class="section-description">Inicio</td>
+              <td class="section-literal"><%$resumen->{starttime}?$resumen->{starttime}->dmy.' '.$resumen->{starttime}->hms:''%></td>
             </tr>
             <tr class='last-child'>
-              <td class='first-child section-name'>Fin</td>
-              <td class="section-literal"><%$resumen->{endtime}?$resumen->{endtime}->dmy:''%></td>
+              <td class="section-description">Fin</td>
+              <td class="section-literal"><%$resumen->{endtime}?$resumen->{endtime}->dmy.' '.$resumen->{endtime}->hms:''%></td>
             </tr>
             <tr class='last-child'>
-              <td class='first-child section-name'>Tiempo de Ejecución</td>
-              <td class="section-literal"><%$resumen->{execution_time}?$resumen->{execution_time}->min:''%></td>
+              <td class="section-description">Tiempo de Ejecución</td>
+              <td class="section-literal"><%$resumen->{execution_time}?sprintf("%d",$resumen->{execution_time}->min):''%> min.</td>
             </tr>
           </tbody>    
         </table>
@@ -44,34 +85,8 @@
       </div>
       
       <div id="body" class="span-12">
-        <h2>Ejecución</h2>
         <!--######INICIO TABLA EJECUCION ##################################################################################-->
-        <table class="summary-table-entornos" width="100%" cellspacing="0">
-          <thead>
-            <tr>
-              <th colspan="2" class="section-description">Pasos</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class='last-child'>
-              <td class='first-child section-name' rowspan='2'><%$entorno->{bl}%></td>
-              <td class="section-graph" colspan='2'>
-                  <div class="data-bar" style="width:<%$entorno->{porcentOk}%>%">&nbsp;</div>
-              </td>
-              <td class="section-score"><%$entorno->{totOk}%></td>
-              <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
-              <td class='overall-score' rowspan='2'><%$entorno->{total}%></td>
-            </tr>
-            <tr class='last-child'>
-              <td class="data-graph" colspan='2'>
-                  <div class="data-bar-error" style="width:<%$entorno->{porcentError}%>%">&nbsp;</div>
-              </td>
-              <td class="section-score"><%$entorno->{totError}%></td>
-              <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=0', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
-            </tr>
-%}
-          </tbody>    
-        </table>
+
         <!--######FIN TABLA EJECUCION ##################################################################################-->
       </div>
     </div>
