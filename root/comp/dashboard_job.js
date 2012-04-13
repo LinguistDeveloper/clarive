@@ -5,7 +5,9 @@
 
   my $resumen = $c->stash->{summary};
   my $servicios = $c->stash->{services};
+  my $status_id = "status". _nowstamp;
 </%perl>
+
 
 	<div id="project" style="padding: 10px 10px 10px 10px;">   
 	<div id="project" style="width: 98%; padding: 2px 2px 2px 2px;">
@@ -14,7 +16,12 @@
 	      <span>Job: <%$namejob%> (<a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>', _('Log details <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"> log completo </a>)</span>
 	    </div>
 	    <br><br><br><br>
+
+
 	    <div id="bodyjob" class="span-24" width="100%">
+     	  <table>
+		  <tr>
+		  <td valign="top">
 	      <div id="body" class="span-12 colborder append-bottom">
 	        <!--######INICIO TABLA RESUMEN ###################################################################################-->      
 	        <table class="summary-table-entornos" cellspacing="0">
@@ -30,7 +37,7 @@
 	            </tr>
 	            <tr>
 	              <td class="section-literal">Estado</td>
-	              <td class="section-literal" id="dashboard_status"></td>
+	              <td class="section-literal" id="<% $status_id %>"></td>
 	            </tr>
 	            <tr>
 	              <td class="section-literal">Tipo</td>
@@ -60,10 +67,11 @@
 	        </table>
 	        <!--######FIN TABLA RESUMEN #######################################################################################-->
 	      </div>
-	      
+	      </td>
+	      <td> 
 	      <div id="body" class="span-12">
 	        <!--######INICIO TABLA EJECUCION ##################################################################################-->
-	        <table class="summary-table-entornos" cellspacing="0" style="height:50px;">
+	        <table class="summary-table-entornos" cellspacing="0">
 	          <thead>
 	          	<tr>
 	              <th class="first-child section-name" colspan="3">Servicios</th>
@@ -105,10 +113,13 @@
 	        </table>
 	        <!--######FIN TABLA EJECUCION ##################################################################################-->
 	      </div>
+		 </tr>
+		 </table>
 	    </div>
 	  </div>
 	</div>
 	</div>
+
 <script language="javascript">
     function render_level ( ) {
         var icon;
@@ -140,7 +151,7 @@
 			value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status ); 
 		}
     	//alert(icon);
-		var tdStatus = document.getElementById('dashboard_status');
+		var tdStatus = document.getElementById('<% $status_id %>');
         if( icon!=undefined ) {
             tdStatus.innerHTML = div1 
                 + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/"+icon+"' />"
