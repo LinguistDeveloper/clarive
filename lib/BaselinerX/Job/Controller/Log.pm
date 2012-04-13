@@ -36,15 +36,17 @@ sub dashboard_log : Path('/job/log/dashboard') {
 
 sub summary: Private{
     my ( $self, $c ) = @_;
-    my $resumen = $c->model('Jobs')->get_summary( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
-    $c->stash->{summary} = $resumen;
+    my $sumary = $c->model('Jobs')->get_summary( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+    $c->stash->{summary} = $sumary;
 }
 
 sub services: Private{
     my ( $self, $c ) = @_;
-	my $resumen = $c->model('Jobs')->get_services_status( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
-	$c->stash->{services} = $resumen;
+	my $services = $c->model('Jobs')->get_services_status( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+	$c->stash->{services} = $services;
 }
+
+
 
 sub _select_words {
 	my ($self,$text,$cnt)=@_;
