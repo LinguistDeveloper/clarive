@@ -12,6 +12,8 @@ sub logs_list : Path('/job/log/list') {
     my ( $self, $c ) = @_;
 	my $p = $c->req->params;
     $c->stash->{id_job} = $p->{id_job};
+	$c->stash->{service_name} = $p->{service_name};
+	_log ">>>>>>>>>SERVICE NAME: " . $p->{service_name} . "\n";
     $c->stash->{annotate_now} = $p->{annotate_now};
 	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
@@ -80,22 +82,33 @@ sub log_rows : Private {
 	my ( $self,$c )=@_;
     _db_setup;
 	my $p = $c->request->parameters;
-    my ($start, $limit, $query, $dir, $sort, $filter, $cnt ) = @{$p}{qw/start limit query dir sort filter/};
+    my ($start, $limit, $query, $dir, $sort, $service_name, $filter, $cnt ) = @{$p}{qw/start limit query dir sort service_name filter/};
     $limit||=50;
     $filter = decode_json( $filter ) if $filter;
 	my $config = $c->registry->get( 'config.job.log' );
 	my @rows = ();
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
-
-	my $where = $p->{id_job} ? { id_job=>$p->{id_job} } : {};
 	my $from = {   order_by=> $sort ? "$sort $dir" : 'me.id',
 					#page => to_pages( start=>$start, limit=>$limit ),  
 					#rows => $limit,
 				#	prefetch => ['job']
                 };
 	#TODO use the blob 'data' somehow .. change to clob?
+	_log ">>>>>>>>>>>>>>>Service_name: " . $service_name . " <<<<<<<<<\n";
+	
+	
+	
+	my $where = {};	
 	if( $query ) {
-		$where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
+		#$where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
+		$where = query_sql_build( query=>$query, fields=>{
+			    timestamp   =>'to_char(timestamp)',
+			    text		=>'text',
+			    ns			=>'ns',
+			    provider	=>'provider',
+			    data_name   =>'data_name',
+				service_key	=>'service_key',
+			});		
 	} else {
 		my $job_exec;
 		if( exists $p->{job_exec} ) {
@@ -106,10 +119,18 @@ sub log_rows : Private {
 		$where->{'me.exec'} = $job_exec;
 		# faster: $from->{join} = [ 'jobexec' ];
 	}
+	
+	if($p->{id_job}){
+		$where->{id_job} = $p->{id_job};
+	}
     $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
         if ref($filter) eq 'HASH';
     $p->{levels} and $where->{lev} = [ _array $p->{levels} ];
-
+	
+	#Viene por la parte de dashboard_log
+	if($service_name){
+		$where->{service_key} = $service_name;
+	}
     #TODO    store filter preferences in a session instead of a cookie, on a by id_job basis
     #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$p->{id_job} })->first;
     my $rs = $c->model( 'Baseliner::BaliLog')->search( $where , $from );
