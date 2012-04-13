@@ -13,7 +13,6 @@ sub logs_list : Path('/job/log/list') {
 	my $p = $c->req->params;
     $c->stash->{id_job} = $p->{id_job};
 	$c->stash->{service_name} = $p->{service_name};
-	_log ">>>>>>>>>SERVICE NAME: " . $p->{service_name} . "\n";
     $c->stash->{annotate_now} = $p->{annotate_now};
 	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
@@ -94,10 +93,7 @@ sub log_rows : Private {
 				#	prefetch => ['job']
                 };
 	#TODO use the blob 'data' somehow .. change to clob?
-	_log ">>>>>>>>>>>>>>>Service_name: " . $service_name . " <<<<<<<<<\n";
-	
-	
-	
+
 	my $where = {};	
 	if( $query ) {
 		#$where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
