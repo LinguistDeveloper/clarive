@@ -15,70 +15,64 @@
 	    <div id="bodyjob" class="span-24" width="100%">
 	      <span>Job: <%$namejob%> (<a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>', _('Log details <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"> log completo </a>)</span>
 	    </div>
-	    <br><br><br><br>
-
-
+	    <br><br><br>
 	    <div id="bodyjob" class="span-24" width="100%">
-     	  <table>
-		  <tr>
-		  <td valign="top">
 	      <div id="body" class="span-12 colborder append-bottom">
-	        <!--######INICIO TABLA RESUMEN ###################################################################################-->      
-	        <table class="summary-table-entornos" cellspacing="0">
-	          <thead>
+	        <!--######INICIO TABLA RESUMEN ###################################################################################-->
+            <h3>Resumen</h3>
+	        <table class="summary-table-resumen" cellspacing="0">
+	          <!--<thead>
 	            <tr>
 	              <th class="first-child section-name" colspan="2">Resumen</th>
 	            </tr>
-	          </thead>
+	          </thead>-->
 	          <tbody>
 	            <tr>
-	              <td class="section-literal">Entorno</td>
-	              <td class="section-literal"><%$resumen->{bl}%></td>
+	              <td class="encabezado">Entorno</td>
+	              <td class="datos"><%$resumen->{bl}%></td>
 	            </tr>
 	            <tr>
-	              <td class="section-literal">Estado</td>
-	              <td class="section-literal" id="<% $status_id %>"></td>
+	              <td class="encabezado">Estado</td>
+	              <td class="datos" id="<% $status_id %>"></td>
 	            </tr>
 	            <tr>
-	              <td class="section-literal">Tipo</td>
-	              <td class="section-literal"><%_loc($resumen->{type})%></td>
+	              <td class="encabezado">Tipo</td>
+	              <td class="datos"><%_loc($resumen->{type})%></td>
 	            </tr>
 	            <tr>
-	              <td class="section-literal">Inicio</td>
-	              <td class="section-literal"><%$resumen->{starttime}?$resumen->{starttime}->dmy.' '.$resumen->{starttime}->hms:''%></td>
+	              <td class="encabezado">Inicio</td>
+	              <td class="datos"><%$resumen->{starttime}?$resumen->{starttime}->dmy.' '.$resumen->{starttime}->hms:''%></td>
 	            </tr>
 	            <tr>
-	              <td class="section-literal">Fin</td>
-	              <td class="section-literal"><%$resumen->{endtime}?$resumen->{endtime}->dmy.' '.$resumen->{endtime}->hms:''%></td>
+	              <td class="encabezado">Fin</td>
+	              <td class="datos"><%$resumen->{endtime}?$resumen->{endtime}->dmy.' '.$resumen->{endtime}->hms:''%></td>
 	            </tr>
 	            <tr>
-	              <td class="section-literal">Tiempo de Ejecución</td>
-	              <td class="section-literal"><%$resumen->{execution_time}?sprintf("%d",$resumen->{execution_time}->min):''%> min.</td>
+	              <td class="encabezado">Tiempo de Ejecución</td>
+	              <td class="datos"><%$resumen->{execution_time}?sprintf("%d",$resumen->{execution_time}->min):''%> min.</td>
 	            </tr>
 	            <tr>
-	              <td class="section-literal">Último paso</td>
-	              <td class="section-literal"><%$resumen->{last_step}%></td>
+	              <td class="encabezado">Último paso</td>
+	              <td class="datos"><%$resumen->{last_step}%></td>
 	            </tr>
-	            <tr class='last-child'>
-	              <td class="section-literal">Usuario</td>
-	              <td class="section-literal"><%$resumen->{owner}%></td>
+	            <tr>
+	              <td class='encabezado last-child'>Usuario</td>
+	              <td class="datos last-child"><%$resumen->{owner}%></td>
 	            </tr>
 	          </tbody>    
 	        </table>
 	        <!--######FIN TABLA RESUMEN #######################################################################################-->
 	      </div>
-	      </td>
-	      <td> 
+
 	      <div id="body" class="span-12">
 	        <!--######INICIO TABLA EJECUCION ##################################################################################-->
-	        <table class="summary-table-entornos" cellspacing="0">
+            <h3>Ejecución</h3>
+	        <table class="summary-table-ejecucion" cellspacing="0">
 	          <thead>
-	          	<tr>
-	              <th class="first-child section-name" colspan="3">Servicios</th>
-	            </tr>
 	            <tr>
-	              <th class="section-description">Servicio</th>
-	              <th class="section-description">Estado</th>
+                  <th class="section-ejecucion first-child">Paso</th>
+	              <th class="section-ejecucion">Servicio</th>
+	              <th class="section-ejecucion last-child">Estado</th>
 	            </tr>
 	          </thead>
 	          <tbody>
@@ -87,21 +81,21 @@
     my $colors = { Success => '#00BB00', Warning => '#00BBBB', Error => '#BB0000'};
     for my $step ( @steps ) {
         if ( $servicios->{$step} ) {
+            my @services = _array $servicios->{$step};
+            my $tot_elements = scalar @services;
         	my $first = 1;
-        	for my $service ( _array $servicios->{$step} ) {
+        	for my $service ( @services ) {
         		if ( $first ) {
 </%perl>
-	            <tr>
-	              <th class="section-description" colspan="2"><% $step %></th>
-	            </tr>
+                  <tr>
+                    <td class="section-paso" rowspan="<%$tot_elements%>"><% $step %></td>
 <%perl>
-        			$first = 0;
+        		  $first = 0;
         		}
 
 </%perl>
-	            <tr>
-	              <td class="section-literal"><% $service->{service} %></td>
-	              <td class="section-literal" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
+                    <td class="datos"><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><b><% $service->{service} %></b></a></td>
+                    <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
 	            </tr>
 <%perl>
 
@@ -113,8 +107,6 @@
 	        </table>
 	        <!--######FIN TABLA EJECUCION ##################################################################################-->
 	      </div>
-		 </tr>
-		 </table>
 	    </div>
 	  </div>
 	</div>

@@ -35,7 +35,7 @@
 		totalProperty:"totalCount", 
 		id: 'id', 
 		url: '/job/log/json',
-		baseParams: {  start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>', filter: {} },
+		baseParams: {  start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>', service_name: '<% $c->stash->{service_name} %>', filter: {} },
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'id_job' },
