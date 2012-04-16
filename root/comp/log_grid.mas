@@ -69,7 +69,7 @@
 
     //Filtering
     var filter_me = function( item, checked ) {
-        filter_obj[ item.id ] = checked;
+        filter_obj[ item.value ] = checked;
         var cm = grid.getColumnModel();
 		cm.setHidden( cm.getIndexById('module'), !filter_obj['debug'] );
 		cm.setHidden( cm.getIndexById('service_key'), !filter_obj['debug'] );
@@ -79,13 +79,12 @@
     };
 
     var filter_menu = new Ext.menu.Menu({
-        id: 'filter_menu',
         items: [
-            { id: 'info', text: _('Information'),checked: filter_obj['info'] , checkHandler: filter_me },
-            { id: 'comment', text: _('Comments'),checked: filter_obj['comment'] , checkHandler: filter_me },
-            { id: 'warn', text: _('Warning'),checked: filter_obj['warn'] , checkHandler: filter_me },
-            { id: 'error', text: _('Error'), checked: filter_obj['error'], checkHandler: filter_me },
-            { id: 'debug', text: _('Debug'),checked: filter_obj['debug'] , checkHandler: filter_me }
+            { value: 'info', text: _('Information'),checked: filter_obj['info'] , checkHandler: filter_me },
+            { value: 'comment', text: _('Comments'),checked: filter_obj['comment'] , checkHandler: filter_me },
+            { value: 'warn', text: _('Warning'),checked: filter_obj['warn'] , checkHandler: filter_me },
+            { value: 'error', text: _('Error'), checked: filter_obj['error'], checkHandler: filter_me },
+            { value: 'debug', text: _('Debug'),checked: filter_obj['debug'] , checkHandler: filter_me }
         ]
     });
 
