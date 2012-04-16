@@ -100,7 +100,7 @@
 
 </%perl>
 	            <tr>
-	              <td class="section-literal"><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log service <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{service} %></a></td>
+	              <td class="section-literal"><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{service} %></a></td>
 	              <td class="section-literal" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
 	            </tr>
 <%perl>

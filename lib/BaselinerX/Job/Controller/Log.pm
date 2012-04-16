@@ -104,6 +104,7 @@ sub log_rows : Private {
 			    provider	=>'provider',
 			    data_name   =>'data_name',
 				service_key	=>'service_key',
+				step		=>'step',
 			});		
 	} else {
 		my $job_exec;
