@@ -34,3 +34,6 @@
 [submodule "features/cia"]
 	path = features/cia
 	url = http://git.vasslabs.com/git/cia.git
+[submodule "features/bde.core"]
+	path = features/bde.core
+	url = http://git.vasslabs.com/git/bde.core.git
