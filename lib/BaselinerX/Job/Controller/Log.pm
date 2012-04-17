@@ -31,6 +31,7 @@ sub dashboard_log : Path('/job/log/dashboard') {
     $self->summary( $c );
     $self->services( $c );
 	$self->contents( $c );
+	$self->outputs( $c );
 
     $c->stash->{template} = '/comp/dashboard_job.js';
 }
@@ -51,6 +52,21 @@ sub contents: Private{
 	my ($self, $c ) = @_;
 	my $contents = $c->model('Jobs')->get_contents ( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
 	$c->stash->{contents} = $contents;
+}
+
+sub outputs: Private{
+	my ($self, $c ) = @_;
+	my $outputs = $c->model('Jobs')->get_outputs ( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+	
+	#my @outputs = _array $outputs->{outputs}->{more};
+	#_log ">>>>>> " . _dump @outputs ;
+	
+	#for my $output (@outputs){
+	#	_log ">>>>>>>>output: " . $output->{more} . "\n";
+	#}	
+	
+	
+	$c->stash->{outputs} = $outputs;
 }
 
 

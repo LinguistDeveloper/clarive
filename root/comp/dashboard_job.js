@@ -106,6 +106,36 @@
         
         <div id="bodyjob" class="span-24" width="100%">
             <div id="body" class="span-12 colborder append-bottom">
+            <br>
+                <!--######INICIO TABLA SALIDA ###################################################################################-->
+                <h3>Salida</h3>
+                <table class="summary-table-resumen" cellspacing="0">
+                    <tbody>
+                        <tr>     
+                            <td class="encabezado" >Aplicaciones</td>
+                            <td class="datos"></td>
+                        </tr>
+                        <tr>
+                            <td class="encabezado" >Paquetes</td>
+                            <td class="datos"></td>
+                        </tr>
+                        <tr>
+                            <td class="encabezado">Elementos del pase</td>
+                            <td class="datos"></td>
+                        </tr>
+                        <tr>
+                            <td class="encabezado" >Técnologias</td>
+                        </tr>
+                        <tr>
+                            <td class="encabezado last-child" >Tópicos</td>
+                            <td class="datos"></td>
+                        </tr>
+                    </tbody>    
+                </table>
+            <!--######FIN TABLA SALIDA #######################################################################################-->
+            </div>        
+            <div id="body" class="span-12  append-bottom">
+            <br>
                 <!--######INICIO TABLA CONTENIDO ###################################################################################-->
                 <h3>Contenido</h3>
                 <table class="summary-table-resumen" cellspacing="0">
@@ -178,8 +208,9 @@
                     </tbody>    
                 </table>
             <!--######FIN TABLA CONTENIDO #######################################################################################-->
-            </div>        
-    </div>
+            </div>
+            
+        </div>
     </div>
 
 <script language="javascript">
