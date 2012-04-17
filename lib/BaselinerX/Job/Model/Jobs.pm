@@ -504,18 +504,40 @@ sub get_summary {
 
 sub get_services_status {
     my ( $self, %p ) = @_;
-    my $rs =
+    defined $p{jobid} or _throw "Missing jobid";
+    my $rs = 
         Baseliner->model( 'Baseliner::BaliLog' )
         ->search( {id_job => $p{jobid}, exec => $p{job_exec}, milestone => {'>', 1}}, {order_by => 'id'} );
+
+    my $row_stash = Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
+
+    my $job_stash = _load $row_stash->stash;
+
+    my $chain_id = 1;
+    if ( $job_stash->{runner_data}->{chain_id} ) {
+        $chain_id = $job_stash->{runner_data}->{chain_id};
+    }
+    my $chain_rs =
+        Baseliner->model( 'Baseliner::BaliChainedService' )
+        ->search( { chain_id => $chain_id } );
+
+    my $services = {};
+
+    while ( my $chained_service = $chain_rs->next() ) {
+        $services->{$chained_service->step.'-'.$chained_service->key } = $chained_service->description;
+    }
 
     my $service_statuses = {2 => 'Success', 3 => 'Warning', 4 => 'Error'};
     my $result;
     my %added_services;
     while ( my $row = $rs->next ) {
-        if ( !$added_services{$row->step.$row->service_key} ) {
-            push @{$result->{$row->step}}, 
-                { service=>$row->service_key, status => $service_statuses->{$row->milestone}, id => $row->id};
-            $added_services{$row->step.$row->service_key} = 1;
+        my $info = Baseliner->model( 'Baseliner::BaliLog' )->search( {id_job => $p{jobid}, exec => $p{job_exec}, lev => {'<>','debug'}, service_key => $row->service_key, step => $row->step}, {order_by => 'id'} )->first;
+        if ( $info ) {
+            if ( !$added_services{$row->step.$row->service_key} ) {
+                push @{$result->{$row->step}}, 
+                    { description => $services->{$row->step.'-'.$row->service_key}, service=>$row->service_key, status => $service_statuses->{$row->milestone}, id => $row->id};
+                $added_services{$row->step.$row->service_key} = 1;
+            }
         }
     } ## end while ( my $row = $rs->next)
 
@@ -524,13 +546,14 @@ sub get_services_status {
 
 sub get_contents {
     my ( $self, %p ) = @_;
+    defined $p{jobid} or _throw "Missing jobid"; 
     my $result;
 
     my $rs = Baseliner->model( 'Baseliner::BaliJobItems' )->search( {id_job => $p{jobid}} );
     my $row_stash =
         Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
 
-    my $job_stash     = _load $row_stash->stash;
+    my $job_stash     = _load$row_stash->stash;
     my $elements      = $job_stash->{elements};
     my @elements_list;
     $result = {};
@@ -541,10 +564,10 @@ sub get_contents {
     
         while ( my $row = $rs->next ) {
             my $ns = ns_get( $row->item );
-            push @{$result->{packages}->{$ns->{ns_data}->{project}}}, { name => $ns->{ns_name}, type => $ns->{ns_type}};
+            push @{$result->{packages}->{$ns->{ns_data}->{project}}}, $ns->{ns_name};
             push @{$result->{elements}},
                 map { 
-                    $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
+                    $_->path =~ /^\/.*\/.*\/(.*)\/.*?/;
                     my $tech = $1;
                     $technologies{$tech} = '';
                     {name => $_->name, status => $_->status, path => $_->path} 
@@ -602,7 +625,7 @@ sub get_outputs {
         push @{$result->{outputs}}, {
             id      => $r->id,
             datalen => $data_len,
-            data        => $data,
+                data        => $data,
             more => {
                 more      => $more,
                 data_name => $r->data_name,
