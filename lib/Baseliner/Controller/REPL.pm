@@ -39,7 +39,7 @@ sub test : Local {
 
 sub main : Local {
     my ($self, $c ) = @_;
-    $c->stash->{template} = '/comp/repl.mas';
+    $c->stash->{template} = '/comp/repl.js';
 }
 
 sub eval : Local {
@@ -77,12 +77,15 @@ sub eval : Local {
     my $elapsed = tv_interval( $t0 );
     $res = _dump( $res ) if $dump eq 'yaml';
     $res = JSON::XS::encode_json( $res ) if $dump eq 'json' && ref $res && !blessed $res;
+    my ($line) = ( $err . $stderr . $stdout ) =~ /line ([0-9]+)/;
+    
     $c->stash->{json} = {
         stdout => $stdout,
         stderr => $stderr,
         elapsed => "$elapsed",
         result => "$res",
         error  => "$err",
+        line => $line,
         success => \( $err ? 0 : 1 ) ,
     };
     $c->forward('View::JSON');
