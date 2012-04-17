@@ -148,7 +148,7 @@
 </%perl>                        
                         <tr>
                             <td class="encabezado">Elementos del pase</td>
-                            <td class="datos"></td>
+                            <td class="datos"><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos de pase'), { tab_icon: '/static/images/icons/moredata.gif' } );"><b>Ver elementos</b>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></td>
                         </tr>
 <%perl>
     my $tot_tecnologias;
@@ -160,9 +160,20 @@
                             <td class="datos"><%$tecnologia%></td>
 %}
                         </tr>
+<%perl>
+    my $tot_topicos;
+    my @topicos = _array $contenido->{topicos};
+</%perl>                        
                         <tr>
-                            <td class="encabezado">Tópicos</td>
+                            <td class="encabezado last-child" rowspan="<%$tot_topicos%>">Tópicos</td>
+%   if (@topicos){
+%       for my $topico ( @topicos){
                             <td class="datos"></td>
+%       }
+%   }
+%   else{
+                            <td class="datos last-child">&nbsp;</td>
+%   }
                         </tr>
                     </tbody>    
                 </table>

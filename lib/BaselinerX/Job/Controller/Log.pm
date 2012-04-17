@@ -321,6 +321,23 @@ sub log_data : Path('/job/log/data') {
     $c->res->body( "<pre>" . $data  . " " );
 }
 
+sub log_elements : Path('/job/log/elements') {
+    my ( $self, $c ) = @_;
+	my $p = $c->req->params;
+	my $job = $c->model('Baseliner::BaliJob')->find(  $p->{id_job} );
+	
+	my $job_exec = ref $job ? $job->exec : 1;
+	my $contents = $c->model('Jobs')->get_contents ( jobid => $p->{id_job}, job_exec => $job_exec);	
+	
+	my $data;
+	my @elements = _array ($contents->{elements});
+	for my $element (@elements){
+		$data = $data . $element->{status} . "\t" . $element->{path} . '/' . $element->{name} ."\n";
+	}
+	$data = _html_escape( $data );
+    $c->res->body( "<pre>" . $data  . " " );	
+}
+
 sub log_delete : Path('/job/log/delete') {
     my ( $self, $c, $id ) = @_;
     my $p = $c->req->params;
