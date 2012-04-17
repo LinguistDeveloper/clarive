@@ -76,6 +76,44 @@ sub get_dir {
     $self->ftp->message;
 }
 
+sub pwd {
+    my ($self, %p) = @_;
+    $self->ftp->pwd();
+    $self->ftp->message;
+}
+
+sub ls {
+    my ($self, %p) = @_;
+    my @files=$self->ftp->ls( "$p{remote}" );
+    return ({files=>[@files], message=>$self->ftp->message});
+}
+
+sub dir {
+    my ($self, %p) = @_;
+    my @files=$self->ftp->dir( "$p{remote}" );
+    return ({files=>[@files], message=>$self->ftp->message});
+}
+
+sub get_ftp {
+    my ($self) = @_;
+    $self->ftp->dir( );
+    $self->ftp;
+}
+
+sub cd {
+    my ($self, %p) = @_;
+    
+    $self->ftp->cwd( "$p{remote}" );
+    $self->ftp->message;
+}
+
+sub delete {
+    my ($self, %p) = @_;
+    
+    $self->ftp->delete( "$p{remote}" );
+    $self->ftp->message;
+}
+
 sub execute {
     my $self = shift;
     _throw "FTP execute not implemented yet.";
