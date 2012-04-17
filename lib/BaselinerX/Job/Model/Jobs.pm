@@ -564,10 +564,11 @@ sub get_contents {
     
         while ( my $row = $rs->next ) {
             my $ns = ns_get( $row->item );
-            push @{$result->{packages}->{$ns->{ns_data}->{project}}}, $ns->{ns_name};
+            push @{$result->{packages}->{$ns->{ns_data}->{project}}}, { name => $ns->{ns_name}, type => $ns->{ns_type} };
             push @{$result->{elements}},
                 map { 
-                    $_->path =~ /^\/.*\/.*\/(.*)\/.*?/;
+                    $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
+                    #_log $_->path;
                     my $tech = $1;
                     $technologies{$tech} = '';
                     {name => $_->name, status => $_->status, path => $_->path} 

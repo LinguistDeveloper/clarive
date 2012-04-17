@@ -169,7 +169,7 @@
                         $first = 0;
                     }
 </%perl>                            
-                            <td class="datos"><%$paquete->{name}%>/<%$paquete->{type}%></td>
+                            <td class="datos"><%$paquete->{type}%>/<%$paquete->{name}%></td>
                         </tr>
 <%perl>
                 }
@@ -186,9 +186,11 @@
 </%perl> 
                         <tr>
                             <td class="encabezado" rowspan="<%$tot_tecnologias%>">Técnologias</td>
+                            <td class="datos">
 %   for my $tecnologia ( @tecnologias ){
-                            <td class="datos"><%$tecnologia%></td>
+								<%$tecnologia%><br>
 %}
+							</td>
                         </tr>
 <%perl>
     my $tot_topicos;
