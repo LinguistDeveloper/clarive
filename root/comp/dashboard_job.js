@@ -94,7 +94,7 @@
         		}
 
 </%perl>
-                    <td class="datos"><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><b><% $service->{service} %></b></a></td>
+                    <td class="datos"><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><b><% $service->{description} || $service->{service} %></b></a></td>
                     <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
 	            </tr>
 <%perl>
