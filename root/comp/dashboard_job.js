@@ -2,11 +2,14 @@
     use Baseliner::Utils;
     my $idjob = $c->stash->{id_job};
     my $namejob = $c->stash->{name_job};
-
+    my $status_id = "status". _nowstamp;
+    my $details_file_id = "details_file". _nowstamp;
+    
     my $resumen = $c->stash->{summary};
     my $servicios = $c->stash->{services};
     my $contenido = $c->stash->{contents};
-    my $status_id = "status". _nowstamp;
+    my $salida = $c->stash->{outputs};
+
 </%perl>
 
 
@@ -109,27 +112,93 @@
             <br>
                 <!--######INICIO TABLA SALIDA ###################################################################################-->
                 <h3>Salida</h3>
-                <table class="summary-table-resumen" cellspacing="0">
+                <script language="javascript">
+                    var onemeg = 1024 * 1024;
+                    function file(obj, td_id) {
+                            var ret="";
+                            var xdatalen = obj.datalen;
+                            var datalen='';
+                            if( xdatalen > 4096 ) {
+                                if( xdatalen >= onemeg ) {
+                                   datalen = Math.round( (xdatalen/onemeg) * 10) / 10;
+                                   datalen += 'MB';
+                                } else {
+                                   datalen = Math.round( (xdatalen/1024) * 10) / 10;
+                                   datalen += 'KB';
+                                }
+                            }
+                        
+                            if( obj.more=='jes' ) {
+                            //    ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+                            //} else if( value.more=='link'  ) {
+                            //    ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", rec.data.data );
+                            //} else if( value.more!='' && value.more!=undefined && value.data ) {
+                            //    var img;
+                            //    if( value.more=='zip' ) {
+                            //       img = '/static/images/icons/mime/file_extension_zip.png';
+                            //    } else {
+                            //       img = '/static/images/download.gif';
+                            //} 
+                            //    ret += "<a href='/job/log/download_data?id=" + rec.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
+                            } else {
+                                //alert('more: ' + obj.more);
+                                //alert('data: ' + obj.data);
+                                //alert('file: ' + obj.file)
+                                //alert('xdatalen: ' + xdatalen);
+                                
+                                if( obj.more!='file' && obj.data && xdatalen < 250000 ) {  // 250Ks max
+                                    var data_name = obj.data_name;
+                                    if( data_name==undefined || data_name.length<1 ) {
+                                       data_name = "Log Data " + obj.id;
+                                    }
+                                    ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + obj.id + "\",\""+data_name+"\"); return false;'><img border=0 src='/static/images/moredata.gif'/></a> " + datalen ;
+                                }
+                                else if( obj.file!=undefined && obj.file!='' && obj.data ) { // alternative file
+                                    ret += "<a href='/job/log/highlight/" + obj.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.gif'></a> "
+                                    ret += "&nbsp;<a href='/job/log/download_data?id=" + obj.id + "&file_name=" + obj.file + "' target='FrameDownload'><img border=0 src='/static/images/download.gif'/></a> " + datalen ;
+                                }
+                            }
+                            var td_details_file = document.getElementById(td_id);
+                            td_details_file.innerHTML = ret;
+                    };
+
+                </script>
+                
+                <table class="summary-table-salida" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="section-ejecucion first-child" colspan="2">Ficheros generados</th>
+                        </tr>
+                    </thead>                
                     <tbody>
+<%perl>
+    my @ficheros = _array $salida->{outputs};
+    my $data;
+    my $row = 0;
+	for my $fichero (@ficheros){
+        $row = $row + 1;
+        if ($fichero->{data}){
+            $data = 1;
+        }
+</%perl>
                         <tr>     
-                            <td class="encabezado" >Aplicaciones</td>
-                            <td class="datos"></td>
+                            <td class="datos"><%$fichero->{more}->{data_name} || $fichero->{more}->{file} %></td>
+                            <td class="link" id="row<%$row%>_<%$details_file_id%>" width=25%>&nbsp;</td>
                         </tr>
-                        <tr>
-                            <td class="encabezado" >Paquetes</td>
-                            <td class="datos"></td>
-                        </tr>
-                        <tr>
-                            <td class="encabezado">Elementos del pase</td>
-                            <td class="datos"></td>
-                        </tr>
-                        <tr>
-                            <td class="encabezado" >Técnologias</td>
-                        </tr>
-                        <tr>
-                            <td class="encabezado last-child" >Tópicos</td>
-                            <td class="datos"></td>
-                        </tr>
+                        <script language="javascript">
+                            var details_file = new Object();
+                            details_file.id = <%$fichero->{id}%>;
+                            details_file.data_name = '<%$fichero->{data_name}%>';
+                            details_file.datalen = <%$fichero->{datalen}%>;
+                            details_file.more = '<%$fichero->{more}->{more}%>';
+                            details_file.data = <%$data%>;
+                            details_file.file = '<%$fichero->{more}->{file}%>';
+
+                            file(details_file, 'row<%$row%>_<%$details_file_id%>');
+                        </script>                        
+<%perl>                        
+	}                
+</%perl>                        
                     </tbody>    
                 </table>
             <!--######FIN TABLA SALIDA #######################################################################################-->
@@ -178,7 +247,7 @@
 </%perl>                        
                         <tr>
                             <td class="encabezado">Elementos del pase</td>
-                            <td class="datos"><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos de pase'), { tab_icon: '/static/images/icons/moredata.gif' } );"><b>Ver elementos</b>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></td>
+                            <td class="datos"><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><b>Ver elementos</b>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></td>
                         </tr>
 <%perl>
     my $tot_tecnologias;

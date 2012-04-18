@@ -57,15 +57,6 @@ sub contents: Private{
 sub outputs: Private{
 	my ($self, $c ) = @_;
 	my $outputs = $c->model('Jobs')->get_outputs ( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
-	
-	#my @outputs = _array $outputs->{outputs}->{more};
-	#_log ">>>>>> " . _dump @outputs ;
-	
-	#for my $output (@outputs){
-	#	_log ">>>>>>>>output: " . $output->{more} . "\n";
-	#}	
-	
-	
 	$c->stash->{outputs} = $outputs;
 }
 
