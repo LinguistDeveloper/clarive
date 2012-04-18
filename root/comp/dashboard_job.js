@@ -129,23 +129,19 @@
                             }
                         
                             if( obj.more=='jes' ) {
-                            //    ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
-                            //} else if( value.more=='link'  ) {
-                            //    ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", rec.data.data );
-                            //} else if( value.more!='' && value.more!=undefined && value.data ) {
-                            //    var img;
-                            //    if( value.more=='zip' ) {
-                            //       img = '/static/images/icons/mime/file_extension_zip.png';
-                            //    } else {
-                            //       img = '/static/images/download.gif';
-                            //} 
-                            //    ret += "<a href='/job/log/download_data?id=" + rec.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
+                                ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + obj.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+                            } else if( obj.more=='link'  ) {
+                                //Ojo con obj.data en este caso, verificar.++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", obj.data );
+                            } else if( obj.more!='' && obj.more!=undefined && obj.data ) {
+                                var img;
+                                if( obj.more=='zip' ) {
+                                   img = '/static/images/icons/mime/file_extension_zip.png';
+                                } else {
+                                   img = '/static/images/download.gif';
+                            } 
+                                ret += "<a href='/job/log/download_data?id=" + obj.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
                             } else {
-                                //alert('more: ' + obj.more);
-                                //alert('data: ' + obj.data);
-                                //alert('file: ' + obj.file)
-                                //alert('xdatalen: ' + xdatalen);
-                                
                                 if( obj.more!='file' && obj.data && xdatalen < 250000 ) {  // 250Ks max
                                     var data_name = obj.data_name;
                                     if( data_name==undefined || data_name.length<1 ) {
@@ -159,15 +155,14 @@
                                 }
                             }
                             var td_details_file = document.getElementById(td_id);
-                            td_details_file.innerHTML = ret;
+                            td_details_file.innerHTML = ret || '&nbsp';;
                     };
-
                 </script>
                 
                 <table class="summary-table-salida" cellspacing="0">
                     <thead>
                         <tr>
-                            <th class="section-ejecucion first-child" colspan="2">Ficheros generados</th>
+                            <th class="section-ejecucion first-child last-child" colspan="2">Ficheros generados</th>
                         </tr>
                     </thead>                
                     <tbody>
@@ -179,6 +174,8 @@
         $row = $row + 1;
         if ($fichero->{data}){
             $data = 1;
+        }else{
+            $data = 0;
         }
 </%perl>
                         <tr>     

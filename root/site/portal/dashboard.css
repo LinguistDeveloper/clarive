@@ -500,12 +500,12 @@
 
 .summary-table-salida * td.datos {
     border-bottom: #ccc 1px solid;
-    width: 75%
+    width: 85%
 }
 
 .summary-table-salida * td.link {
     border-bottom: #ccc 1px solid;
-    width: 25%
+    width: 15%
 }
 .summary-table-salida * td.last-child {
     border-bottom: #ccc 1px solid;
