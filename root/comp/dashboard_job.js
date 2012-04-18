@@ -172,11 +172,8 @@
     my $row = 0;
 	for my $fichero (@ficheros){
         $row = $row + 1;
-        if ($fichero->{data}){
+        if ($fichero->{more}->{data}){
             $data = 1;
-        }else{
-            $data = 0;
-        }
 </%perl>
                         <tr>     
                             <td class="datos"><%$fichero->{more}->{data_name} || $fichero->{more}->{file} %></td>
@@ -194,6 +191,7 @@
                             file(details_file, 'row<%$row%>_<%$details_file_id%>');
                         </script>                        
 <%perl>                        
+        }
 	}                
 </%perl>                        
                     </tbody>    
@@ -249,6 +247,7 @@
 <%perl>
     my $tot_tecnologias;
     my @tecnologias = _array $contenido->{technologies};
+    $tot_tecnologias = scalar @tecnologias;
 </%perl> 
                         <tr>
                             <td class="encabezado" rowspan="<%$tot_tecnologias%>">Técnologias</td>
@@ -260,13 +259,14 @@
                         </tr>
 <%perl>
     my $tot_topicos;
-    my @topicos = _array $contenido->{topicos};
+    my @topicos = _array $contenido->{topics};
+    $tot_topicos = scalar @topicos;
 </%perl>                        
                         <tr>
                             <td class="encabezado last-child" rowspan="<%$tot_topicos%>">Tópicos</td>
 %   if (@topicos){
 %       for my $topico ( @topicos){
-                            <td class="datos"></td>
+                            <td class="datos"><% $topico->{title} %></td>
 %       }
 %   }
 %   else{

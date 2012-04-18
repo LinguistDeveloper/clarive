@@ -77,11 +77,11 @@ sub deployments {
             $deployment->deploy_and_run( callback=>sub {
                 my ($ret, $f) = @_;
                 if( $ret->rc ) {
-                    $log->error( _loc("Deployment error for %1", $name ), data=>$ret->output, milestone => 1, data_name => $name.'.txt' );
+                    $log->error( _loc("Deployment error for %1", $name ), data=>$ret->output, milestone => 1, data_name => 'Deployment_error_'.$name.'.txt' );
                     _throw _loc( "Error during deployment %1", $name );
                 } else {
                     my $file_or_script = ref $f =~ /Path::Class/ ? $f->basename : "$f";
-                    $log->info( _loc("Deployment ok for *%1* - %2", $name, $file_or_script ), data=>$ret->output, , milestone => 1, data_name => $name.'.txt' );
+                    $log->info( _loc("Deployment ok for *%1* - %2", $name, $file_or_script ), data=>$ret->output );
                 }
             });
 

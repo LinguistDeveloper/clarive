@@ -626,11 +626,10 @@ sub get_outputs {
         push @{$result->{outputs}}, {
             id      => $r->id,
             datalen => $data_len,
-                data        => $data,
             more => {
                 more      => $more,
                 data_name => $r->data_name,
-                data      => $data_len ? \1 : \0,
+                data      => $data_len ? 1 : 0,
                 file      => $file
             },
             }
