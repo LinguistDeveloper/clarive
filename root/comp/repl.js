@@ -73,12 +73,68 @@ To do:
 		}
 	});
     
+    // setup defaults
+    if( Baseliner.editor_defaults == undefined ) Baseliner.editor_defaults = { theme: 'lesser-dark', mode: { name:'perl' } };
+
+    // editor generator function
+    var editor_gen = function(args) {
+        if( args!=undefined ) {
+            Baseliner.editor_defaults = Ext.apply( Baseliner.editor_defaults, args );
+        }
+        var ret = CodeMirror.fromTextArea( document.getElementById( code.getId() ), Ext.apply({
+               lineNumbers: true,
+               tabMode: "indent",
+               smartIndent: true,
+               matchBrackets: true,
+               extraKeys: { 
+                    "Ctrl-W": function() {
+                      var scroller = editor.getScrollerElement();
+                      if (scroller.className.search(/\bCodeMirror-fullscreen\b/) === -1) {
+                        scroller.className += " CodeMirror-fullscreen";
+                        scroller.style.height = "100%";
+                        scroller.style.width = "100%";
+                        editor.refresh();
+                      } else {
+                        scroller.className = scroller.className.replace(" CodeMirror-fullscreen", "");
+                        scroller.style.height = '';
+                        scroller.style.width = '';
+                        editor.refresh();
+                      }
+                    },
+                    "Esc": function() {
+                      var scroller = editor.getScrollerElement();
+                      if (scroller.className.search(/\bCodeMirror-fullscreen\b/) !== -1) {
+                        scroller.className = scroller.className.replace(" CodeMirror-fullscreen", "");
+                        scroller.style.height = '';
+                        scroller.style.width = '';
+                        editor.refresh();
+                      }
+                    },
+               
+                   "Cmd-E": function(cm) { submit({ eval: true }); },
+                   "Ctrl-E": function(cm) { submit({ eval: true }); },
+                   "Ctrl-Space": function(cm) {
+                         CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
+                    }
+               }
+            }, Baseliner.editor_defaults )
+        );
+        var hlLine = ret.setLineClass(0, "activeline");
+        return ret;
+    };
     var code = new Ext.form.TextArea({
         name: 'code',
-        value: "$c->model('Repository')",
+        value: "$c->model('Repository');\n",
         style: style_cons,
         width: 700,
         height: 300
+    });
+
+    var editor;
+
+    // Codemirror 
+    code.on( 'afterrender', function(){
+        editor = editor_gen(); 
     });
 
     var thist = new Ext.tree.TreeNode({text:'History',draggable : false, expandable:true, leaf:false, url:'/repl/tree_hist' });
@@ -296,6 +352,7 @@ To do:
         //Baseliner.showLoadingMask(form.getEl(), _("Loading") );
         var f = form.getForm();
         set_output( "" );
+        code.setValue( editor.getValue() );  // copy from codemirror to textarea
         f.submit({
             params: parms,
             waitMsg: _('Running...'),
@@ -306,8 +363,10 @@ To do:
                     action.result.result ;
                 set_output( data );
                 status.setValue( "OK" );
+                document.getElementById( output.getId() ).style.color = "#10c000"; // green
                 elapsed.setValue( action.result.elapsed );
                 save({ t: thist, c: code.getValue(), o: output.getValue() });
+                editor.focus();
             },
             failure: function(f,action){
                 status.setValue( "ERROR" );
@@ -318,9 +377,54 @@ To do:
                     action.result.stdout + "\n" + 
                     action.result.stderr ;
                 set_output( data );
+                //output.getEl().style.color = "#f33";
+                document.getElementById( output.getId() ).style.color = "#f54";  // red
+                editor.focus();
+                var line = action.result.line ;
+                if( line > 0 ) {
+                    editor.markText({ line:line, ch:1}, {line:line,ch: 100}, "hightlight");
+                }
             }
         });
     };
+
+    var change_theme = function(x) {
+        if( x.checked ) { 
+            var txt = editor.getValue();
+            editor = editor_gen({ theme: x.theme });
+            editor.setValue( txt );
+        }
+    };
+    var default_lang = function(x) { return Baseliner.editor_defaults.mode.name == x; };
+    var default_theme = function(x) { return Baseliner.editor_defaults.theme == x; };
+    var change_lang = function(x) {
+        if( x.checked ) { 
+            var txt = editor.getValue();
+            editor = editor_gen({ mode: { name: x.lang } });
+            editor.setValue( txt );
+        }
+    };
+    var config_menu = new Ext.menu.Menu({
+        items: [
+            {
+                text: _('Programming-Language'),
+                menu: { items: [ 
+                        { text: 'Perl', lang: 'perl', checked: default_lang('perl'), group: 'lang', checkHandler: change_lang },
+                        { text: 'Javascript', lang: 'javascript', checked: default_lang('javascript'), group: 'lang', checkHandler: change_lang },
+                        { text: 'SQL', lang: 'sql', checked: default_lang('sql'), group: 'lang', checkHandler: change_lang }
+                ]}
+            },{
+                text: _('Theme'),
+                menu: { items: [ 
+                        { text: 'Lesser-Dark', theme: 'lesser-dark', checked: default_theme('lesser-dark'), group: 'theme', checkHandler: change_theme },
+                        { text: 'Eclipse', theme: 'eclipse', checked: default_theme('eclipse'), group: 'theme', checkHandler: change_theme },
+                        { text: 'CodeMirror', theme: 'default', checked: default_theme('default'), group: 'theme', checkHandler: change_theme },
+                        { text: 'Night', theme: 'night', checked: default_theme('night'), group: 'theme', checkHandler: change_theme },
+                        { text: 'Elegant', theme: 'elegant', checked: default_theme('elegant'), group: 'theme', checkHandler: change_theme }
+                ]}
+            }
+        ]
+    });
 
     var tbar = [
             {   xtype: 'button',
@@ -437,7 +541,14 @@ To do:
                             }
                     );
                 }
-            }, '->', _('Elapsed')+': ', elapsed
+            },
+            '->',
+            _('Elapsed')+': ', elapsed,
+            {   
+                icon:'/static/images/icons/config.gif',
+                cls: 'x-btn-text-icon',
+                menu: config_menu
+            }
     ];
 
     var form = new Ext.FormPanel({
