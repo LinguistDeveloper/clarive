@@ -98,7 +98,6 @@
     });
 
     tree.on('dblclick', function(node, ev){ 
-        console.log( node );
         show_properties( node.attributes.path, node.attributes.item, node.attributes.version, node.leaf );
     });
 
@@ -106,6 +105,10 @@
         //var style_cons = 'background-color: #000; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
         var style_cons = 'margin: 10px 10px 10px 10px';
         //var output = new Ext.form.TextArea({
+        // var tpl = new Ext.XTemplate('<div>Commit: {data}</div>');
+            // tplWriteMode: 'insertAfter',
+            // tpl: tpl,
+        
         var output = new Ext.Panel({
             name: 'output',
             title: _('%1', name),
@@ -113,7 +116,6 @@
             style: style_cons,
             data: {path: path, version: version, ref: bl, repo_path: repo_path },
             //tbar: [ ],
-            width: 700,
             height: 300
         });
 
@@ -121,19 +123,40 @@
         properties.setActiveTab( output );
         properties.changeTabIcon( '/static/images/moredata.gif' ); 
         properties.expand();
-        properties_load(output,{ pane: 'hist', path: path, version: version, ref: bl, repo_path: repo_path });
+        //properties_load(output,{ pane: properties.pane, path: path, version: version, ref: bl, repo_path: repo_path });
     };
+
+    var tpl_hist = new Ext.XTemplate(
+        '<div style="width:50%;margin-bottom: 4px; padding: 5px 5px 5px 5px; background-color: #ddd;">'
+        + '<table cellpadding="5">'
+        + '<tr><td>Commit</td><td>{commit}</td></tr>'
+        + '<tr><td>Revs</td><td>{revs}</td></tr>'
+        + '</table>'
+        + '</div>');
     
     var properties_load = function( panel, args ) {
         Baseliner.ajaxEval( '/lifecycle/file', args, function(res){
             if( res == undefined ) return;
+            if( res.info == undefined ) return;
             if( res.pane == 'hist' ) {
-                //for( var i = 0; i < res.info.length ; i++ ) {
-                //
+                for( var i = 0; i < res.info.length ; i++ ) {
+                    //panel.update({ data: res.info[i] });
+                    panel.update('');
+                    var row = res.info[i];
+                    panel.add({ xtype:'component', tpl: tpl_hist, data: row });
+                }
+                //panel.update( '<pre>' + res.info.join('\n') + '</pre>' );
+            }
+            else if( res.pane == 'diff' ) {
+                panel.update('');
                 panel.update( '<pre>' + res.info.join('\n') + '</pre>' );
             }
             else if( res.pane == 'source' ) {
+                panel.update('');
                 panel.update( '<pre>' + res.info.join('\n') + '</pre>' );
+            }
+            else {
+                Baseliner.message( 'Error', 'No pane' );
             }
         });
     };
@@ -142,6 +165,7 @@
         if( ! pressed ) return;
         var pane = item.initialConfig.pane;
         var panel = properties.getActiveTab();
+        properties.pane = pane;
         var data = panel.initialConfig.data;
         data.pane = pane;
         properties_load( panel, data );
@@ -163,6 +187,7 @@
 
     var properties = new Ext.TabPanel({
         //collapsible: true,
+        pane: 'hist',  //default pane
         defaults: { closable: true, autoScroll: true }, 
         split: true,
         activeTab: 0,
@@ -195,6 +220,12 @@
             Baseliner.button('Collapse', '/static/images/icons/arrow_down.gif', function(b) { properties.collapse(true) } )
         ],
         region: 'south'
+    });
+
+    properties.on( 'tabchange', function( t, panel ) {
+        var data = panel.initialConfig.data;
+        data.pane = properties.pane;
+        properties_load( panel, data );
     });
 
     var panel = new Ext.Panel({
