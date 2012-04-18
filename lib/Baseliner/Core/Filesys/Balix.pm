@@ -31,7 +31,7 @@ sub BUILD {
     my $home = $self->home;
 	my $os = $self->os;
     my ( $user, $host, $port, $home_real ) =
-      ($1,$2,$3,$4) if( $home =~ m/^(\w+)\@(\w+)\:(\d+)\=(\w+)/ );
+      ($1,$2,$3,$4) if( $home =~ m/^(\w+)\@(\.+?)\:(\d+)\=(\w+)/ );
 
     $self->user($user);
     $self->host($host);
