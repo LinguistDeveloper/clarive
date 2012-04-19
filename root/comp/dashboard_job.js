@@ -48,7 +48,7 @@
                             </tr>
                             <tr>
                                 <td class="encabezado">Tiempo de Ejecución</td>
-                                <td class="datos"><%$resumen->{execution_time}?sprintf("%d",$resumen->{execution_time}->min):''%> min.</td>
+                                <td class="datos"><%$resumen->{execution_time}?sprintf("%s",$resumen->{execution_time} < 60? ($resumen->{execution_time}->sec . ' seg.') : ($resumen->{execution_time}->min) . ' min.'):''%></td>
                             </tr>
                             <tr>
                                 <td class="encabezado">Último paso</td>
