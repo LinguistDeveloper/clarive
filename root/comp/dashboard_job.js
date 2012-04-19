@@ -132,7 +132,7 @@
                                 ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + obj.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
                             } else if( obj.more=='link'  ) {
                                 //Ojo con obj.data en este caso, verificar.++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", obj.data );
+                                ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", obj.link );
                             } else if( obj.more!='' && obj.more!=undefined && obj.data ) {
                                 var img;
                                 if( obj.more=='zip' ) {
@@ -187,7 +187,7 @@
                             details_file.more = '<%$fichero->{more}->{more}%>';
                             details_file.data = <%$data%>;
                             details_file.file = '<%$fichero->{more}->{file}%>';
-
+                            details_file.link = '<%$fichero->{more}->{link}%>';
                             file(details_file, 'row<%$row%>_<%$details_file_id%>');
                         </script>                        
 <%perl>                        
@@ -216,8 +216,8 @@
                             <td class="encabezado" rowspan="<%$tot_aplicaciones%>">Aplicaciones</td>
 %       for my $aplicacion (@aplicaciones){
                             <td class="datos"><%$aplicacion%></td>
-%       }
                         </tr>
+%       }
 <%perl>
         for my $aplicacion ( @aplicaciones ) {
             if ( $contenido->{packages}->{$aplicacion} ) {
@@ -228,7 +228,7 @@
                     if ( $first ) {
 </%perl>                        
                         <tr>
-                            <td class="encabezado" rowspan="<%$tot_paquetes%>">Paquetes</td>
+                            <td class="encabezado" rowspan="<%$tot_paquetes%>">Paquetes (<% $aplicacion %>)</td>
 <%perl>
                         $first = 0;
                     }
@@ -251,12 +251,13 @@
 </%perl> 
                         <tr>
                             <td class="encabezado" rowspan="<%$tot_tecnologias%>">Técnologias</td>
-                            <td class="datos">
 %   for my $tecnologia ( @tecnologias ){
-								<%$tecnologia%><br>
-%}
-							</td>
+                            <td class="datos">
+                                <%$tecnologia%><br>
+                            </td>
+
                         </tr>
+%}
 <%perl>
     my $tot_topicos;
     my @topicos = _array $contenido->{topics};
@@ -266,13 +267,14 @@
                             <td class="encabezado last-child" rowspan="<%$tot_topicos%>">Tópicos</td>
 %   if (@topicos){
 %       for my $topico ( @topicos){
-                            <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$topico->{id}%>', _('Issues'));"><% $topico->{title} %></a></b></td>
+                            <td class="datos last-child"><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$topico->{id}%>', _('Issues'));"><% $topico->{title} %></a></b></td>
+                        </tr>
 %       }
 %   }
 %   else{
                             <td class="datos last-child">&nbsp;</td>
-%   }
                         </tr>
+%   }
                     </tbody>    
                 </table>
             <!--######FIN TABLA CONTENIDO #######################################################################################-->

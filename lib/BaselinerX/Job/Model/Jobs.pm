@@ -150,16 +150,18 @@ sub rerun {
     _throw _loc('Job %1 is currently running (%2) and cannot be rerun', $job->name, $job->status)
         unless( $job->is_not_running );
 
-    if( $p{run_now} ) {
     my $now = DateTime->now;
     $now->set_time_zone(_tz);
-        my $end = $now->clone->add( hours => 5 );
     my $ora_now =  $now->strftime('%Y-%m-%d %T');
-    my $ora_end =  $end->strftime('%Y-%m-%d %T');
-    $job->schedtime( $ora_now );
-    $job->starttime( $ora_now );
-    $job->maxstarttime( $ora_end );
+
+    if( $p{run_now} ) {
+            my $end = $now->clone->add( hours => 5 );
+        my $ora_end =  $end->strftime('%Y-%m-%d %T');
+        $job->schedtime( $ora_now );
+        $job->maxstarttime( $ora_end );
     }
+    $job->starttime( $ora_now );
+    $job->endtime( undef );
     $job->rollback( 0 );
     $job->status( 'READY' );
     $job->step( $p{step} || 'PRE' );
@@ -553,7 +555,7 @@ sub get_contents {
     my $row_stash =
         Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
 
-    my $job_stash     = _load$row_stash->stash;
+    my $job_stash     = _load$row_stash->stash || {};
     my $elements      = $job_stash->{elements};
     my @elements_list;
     $result = {};
@@ -623,6 +625,10 @@ sub get_outputs {
             : ( $data_len > ( 4 * 1024 ) )
             ? ( $data_name || $self->_select_words( $r->text, 2 ) ) . ".txt"
             : '';
+        my $link;
+        if ( $more eq 'link') {
+            $link = $data;
+        }
         push @{$result->{outputs}}, {
             id      => $r->id,
             datalen => $data_len,
@@ -630,7 +636,8 @@ sub get_outputs {
                 more      => $more,
                 data_name => $r->data_name,
                 data      => $data_len ? 1 : 0,
-                file      => $file
+                file      => $file,
+                link      => $link
             },
             }
 
