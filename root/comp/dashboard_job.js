@@ -69,7 +69,7 @@
                     <table class="summary-table-ejecucion" cellspacing="0">
                         <thead>
                             <tr>
-                                <th class="section-ejecucion first-child">Paso</th>
+                                <th class="section-ejecucion first-child">&nbsp;</th>
                                 <th class="section-ejecucion">Servicio</th>
                                 <th class="section-ejecucion last-child">Estado</th>
                             </tr>
@@ -266,7 +266,7 @@
                             <td class="encabezado last-child" rowspan="<%$tot_topicos%>">Tópicos</td>
 %   if (@topicos){
 %       for my $topico ( @topicos){
-                            <td class="datos"><% $topico->{title} %></td>
+                            <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$topico->{id}%>', _('Issues'));"><% $topico->{title} %></a></b></td>
 %       }
 %   }
 %   else{
