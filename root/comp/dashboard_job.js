@@ -202,7 +202,7 @@
             <br>
                 <!--######INICIO TABLA CONTENIDO ###################################################################################-->
                 <h3>Contenido</h3>
-                <table class="summary-table-resumen" cellspacing="0">
+                <table class="summary-table-contenido" cellspacing="0">
                     <tbody>
 <%perl>
         my @aplicaciones;
@@ -214,8 +214,15 @@
 </%perl>
                         <tr>     
                             <td class="encabezado" rowspan="<%$tot_aplicaciones%>">Aplicaciones</td>
+%       my $first = 1;                            
 %       for my $aplicacion (@aplicaciones){
+%                   if ( $first ) {    
+                            <td class="datos first-child"><%$aplicacion%></td>
+%                       $first = 0;
+%                   }
+%                   else {
                             <td class="datos"><%$aplicacion%></td>
+%                   }                            
                         </tr>
 %       }
 <%perl>
@@ -267,12 +274,12 @@
                             <td class="encabezado last-child" rowspan="<%$tot_topicos%>">Tópicos</td>
 %   if (@topicos){
 %       for my $topico ( @topicos){
-                            <td class="datos last-child"><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$topico->{id}%>', _('Issues'));"><% $topico->{title} %></a></b></td>
+                            <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$topico->{id}%>', _('Issues'));"><% $topico->{title} %></a></b></td>
                         </tr>
 %       }
 %   }
 %   else{
-                            <td class="datos last-child">&nbsp;</td>
+                            <td class="datos">&nbsp;</td>
                         </tr>
 %   }
                     </tbody>    
