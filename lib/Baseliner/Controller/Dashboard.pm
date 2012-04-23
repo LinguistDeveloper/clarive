@@ -20,6 +20,7 @@ register 'config.dashboard' => {
 sub list : Local {
     my ($self, $c) = @_;
     $c->forward('/dashboard/list_entornos');
+	$self->list_lastjobs( $c );
     $c->forward('/dashboard/list_emails');
 	$c->forward('/dashboard/list_issues');	
 	$c->forward('/dashboard/list_jobs');	
@@ -97,6 +98,31 @@ sub list_entornos: Private{
 		}
 	}
 	$c->stash->{entornos} =\@datas;
+}
+
+sub list_lastjobs: Private{
+	my ( $self, $c ) = @_;
+	my $order_by = 'STARTTIME DESC'; 
+	my $rs_search = $c->model('Baseliner::BaliJob')->search(
+        undef,
+		{
+			order_by => $order_by,
+		}
+	);
+	my $numrow = 0;
+	my @lastjobs;
+	while( my $rs = $rs_search->next ) {
+		if ($numrow >= 5) {last;}
+	    push @lastjobs,{ 	id => $rs->id,
+							name => $rs->name,
+							type => $rs->type,
+							rollback => $rs->rollback,
+							status => $rs->status,
+							starttime => $rs->starttime,
+							endtime=> $rs->endtime};
+		$numrow = $numrow + 1;
+	}
+	$c->stash->{lastjobs} =\@lastjobs;
 }
 
 sub list_emails: Private{

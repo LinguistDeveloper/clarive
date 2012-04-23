@@ -11,8 +11,6 @@
     my $salida = $c->stash->{outputs};
 
 </%perl>
-
-
 	<div id="project" style="padding: 10px 10px 10px 10px;">   
 	<div id="project" style="width: 98%; padding: 2px 2px 2px 2px;">
         <div class="container body">

@@ -62,8 +62,8 @@
     <script type="text/javascript" src="/site/portal/PortalUtil.js"></script>
     <link rel="stylesheet" type="text/css" href="/site/portal/portal.css" />
     <link rel="stylesheet" type="text/css" href="/site/portal/sample.css" />
+    
     <link rel="stylesheet" type="text/css" href="/site/portal/dashboard.css" />
-
     <link rel="stylesheet" type="text/css" href="/static/livegrid/resources/css/ext-ux-livegrid.css" /> 
 
     <!-- superbox -->
@@ -191,8 +191,8 @@ Ext.onReady(function(){
 
 % if( $show_dashboard ) {
 %    $show_portal and print ',';
-                {title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, 
-                    cls: 'tab-style', tab_icon: icon_home }
+                //{title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style', tab_icon: icon_home }
+                {title:_loc('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: icon_home }
 % }
             ]
             })

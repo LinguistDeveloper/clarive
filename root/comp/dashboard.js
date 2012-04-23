@@ -2,14 +2,14 @@
     use Baseliner::Utils;
     my @entornos = $c->stash->{entornos};
     my $idjob = '';
+    my @lastjobs = $c->stash->{lastjobs};
     my @emails = $c->stash->{emails};
     my $style = '';
     my @issues = $c->stash->{issues};
     my @jobs = $c->stash->{jobs};    
     my @sqas = $c->stash->{sqas};
+    my $status_id = "status". _nowstamp;
 </%perl>
-
-<link rel="stylesheet" type="text/css" href="/site/portal/dashboard.css" />
 
 <div id="project" style="width: 98%; padding: 2px 2px 2px 2px;">
   <div class="container body">
@@ -57,7 +57,84 @@
       </div>
       
       <div id="body" class="span-12">
-        <h2>Mensajes / Issues</h2>
+        <h2>Pases / Mensajes / Issues</h2>
+        <!--######INICIO TABLA PASES #################################################################################-->
+        <script language="javascript">
+            function render_level ( obj, td_id ) {
+                var icon;
+                var bold = false;
+                var status = obj.status;
+                var type   = obj.type;
+                var rollback = obj.rollback;
+                var div1   = '<div style="white-space:normal !important;">';
+                var div2   = '</div>';
+                if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
+                else if( status=='READY' ) icon='log_d.gif';
+                else if( status=='APPROVAL' ) icon='verify.gif';
+                else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
+                else if( status=='IN-EDIT' ) icon='log_w.gif';
+                else { icon='log_e.gif'; bold=true; }
+                var value = (bold?'<b>' + _(status) + '</b>': _(status));
+        
+                // Rollback?
+                if( status == 'FINISHED' && rollback == 1 )  {
+                    value += ' (<% _loc("Rollback OK") %>)';
+                    icon = 'log_e.gif';
+                }
+                else if( status == 'ERROR' && rollback == 1 )  {
+                    value += ' (<% _loc("Rollback Failed") %>)';
+                }
+                //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
+                if( status == 'APPROVAL' ) { // add a link to the approval main
+                    //value = '<a href="javascript:Baseliner.addNewTabComp(' + '"/request/main", '<% _loc("Approvals") %>, value ); 
+                    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status ); 
+                }
+                
+                
+                ////alert(icon);
+                var tdStatus = document.getElementById( td_id );
+                if( icon!=undefined ) {
+                    tdStatus.innerHTML = div1 
+                        + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/"+icon+"' />"
+                        + value + div2 ;
+                } else {
+                    tdStatus.innerHTML = value;
+                }
+            };
+        </script>
+        
+        <table class="summary-table-mensajes" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th class="first-child ">Pase</th>
+              <th class="section-emisor">Estado</th>
+              <th class="section-fecha">Inicio</th>
+              <th class="last-child section-fecha">Fin</th>
+            </tr>
+          </thead>
+          <tbody>
+%my $row = 0;
+%foreach my $lastjob (_array @lastjobs){
+%$row = $row + 1;
+            <tr class='last-child'>
+              <td class='section-name'><b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<%$lastjob->{id}%>&name=<%$lastjob->{name}%>', _('Log <%$lastjob->{name}%>') );"><%$lastjob->{name}%></a></b></td>
+              <td class='section-description' id='row<%$row%>_<%$status_id%>'><%$lastjob->{status}%></td>
+              <td class='section-fecha'><%$lastjob->{starttime}->ymd%> <%$lastjob->{starttime}->hms%> </td>
+              <td class='section-fecha'><%$lastjob->{endtime}->ymd%> <%$lastjob->{starttime}->hms%></td>
+            </tr>
+            <script>
+                var details_job = new Object();
+                details_job.status = '<%$lastjob->{status}%>';
+                details_job.type = '<%$lastjob->{type}%>';
+                details_job.rollback = <%$lastjob->{rollback}%>;
+                render_level(details_job, 'row<%$row%>_<%$status_id%>');
+            </script>
+    
+%}            
+          </tbody>
+        </table>
+        <!--######FIN TABLA PASES ####################################################################################-->
+        
         <!--######INICIO TABLA MENSAJES #################################################################################-->
         <table class="summary-table-mensajes" width="100%" cellspacing="0">
           <thead>
@@ -123,12 +200,14 @@
               <td class="section-proyecto"><%$job->{project}%></td>
               <td class='section-entorno'><%$job->{bl}%></td>
 %if($job->{idOk}){
-              <td class="section-exito"><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$job->{idOk}%>', _('Log <%$job->{nameOk}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>
+              <!--<td class="section-exito"><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$job->{idOk}%>', _('Log <%$job->{nameOk}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>-->
+              <td class="section-exito"><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<%$job->{idOk}%>&name=<%$job->{nameOk}%>', _('Log <%$job->{nameOk}%>') );" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>
 %}else{
               <td class="section-exito"> ------------- </td>  
 %}
 %if($job->{idError}){
-              <td class="section-fallo"><%$job->{lastError}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$job->{idError}%>', _('Log <%$job->{nameError}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>
+              <!--<td class="section-fallo"><%$job->{lastError}%> dias (<b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$job->{idError}%>', _('Log <%$job->{nameError}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>-->
+              <td class="section-fallo"><%$job->{lastError}%> dias (<b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<%$job->{idError}%>&name=<%$job->{nameError}%>', _('Log <%$job->{nameError}%>') );" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>
 %}else{
               <td class="section-fallo"> ------------- </td>  
 %}
