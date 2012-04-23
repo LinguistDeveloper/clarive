@@ -90,7 +90,7 @@
                     $first = 0;
         		}
 </%perl>
-                    <td class="datos"><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><b><% $service->{description} || $service->{service} %></b></a></td>
+                    <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
                     <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
 	            </tr>
 <%perl>
@@ -247,7 +247,7 @@
 </%perl>                        
                         <tr>
                             <td class="encabezado">Elementos del pase</td>
-                            <td class="datos"><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><b>Ver elementos</b>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></td>
+                            <td class="datos"><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );">Ver elementos&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
                         </tr>
 <%perl>
     my $tot_tecnologias;
