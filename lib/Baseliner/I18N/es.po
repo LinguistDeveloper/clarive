@@ -1150,7 +1150,7 @@ msgid "RESUME"
 msgstr "Reiniciado"
 
 msgid "SUSPENDED"
-msgstr "Suspenso"
+msgstr "Suspendido"
 
 msgid "DONE"
 msgstr "Finalizado"
