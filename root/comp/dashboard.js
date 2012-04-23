@@ -119,8 +119,8 @@
             <tr class='last-child'>
               <td class='section-name'><b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<%$lastjob->{id}%>&name=<%$lastjob->{name}%>', _('Log <%$lastjob->{name}%>') );"><%$lastjob->{name}%></a></b></td>
               <td class='section-description' id='row<%$row%>_<%$status_id%>'><%$lastjob->{status}%></td>
-              <td class='section-fecha'><%$lastjob->{starttime}->ymd%> <%$lastjob->{starttime}->hms%> </td>
-              <td class='section-fecha'><%$lastjob->{endtime}->ymd%> <%$lastjob->{starttime}->hms%></td>
+              <td class='section-fecha'><% length($lastjob->{starttime}) ? $lastjob->{starttime}->ymd() : '' %> <% length($lastjob->{starttime}) ? $lastjob->{starttime}->hms : '' %> </td>
+              <td class='section-fecha'><% length($lastjob->{endtime}) ? $lastjob->{endtime}->ymd() : '' %> <% length($lastjob->{endtime}) ? $lastjob->{endtime}->hms : '' %></td>
             </tr>
             <script>
                 var details_job = new Object();
