@@ -198,18 +198,39 @@ sub file : Local {
 
     # TODO separate concerns, put this in Git Repo provider
     #      Baseliner::Repo->new( 'git:repo@tag:file' )
+    my $g = Girl::Repo->new( path=>"$repo_path" );
     if( $pane eq 'hist' ) {
-        my $g = Girl::Repo->new( path=>"$repo_path" );
-        my @log = $g->git->exec( 'log', '--decorate', $ref, '--', $path );
-        $res->{info} = \@log;
+        my @log = $g->git->exec( 'log', '--pretty=oneline', '--decorate', $ref, '--', $path );
+        my @formatted_log;
+        for (@log) {
+            my $rev_data = {};
+            $_ =~ /^(.+?)\s\(.*?\)\s(.*)$/;
+            my $commit = $1;
+            my $revs = $2;
+            my $author;
+            my $date;
+            my @log_data = $g->git->exec( 'rev-list', '--pretty', $commit );
+            map {
+                if ( $_ =~ /^Author:\s(.*)$/ ) {
+                    $author = $1;
+                }
+                if ( $_ =~ /^Date:\s(.*)$/ ) {
+                    $date = $1;
+                }
+
+            }
+            grep {
+                /Author:|Date:/
+            } @log_data;
+            push @formatted_log, { commit => $commit, revs => $revs, author => $author, date => $date};
+        };
+        $res->{info} = \@formatted_log;
     }
     elsif( $pane eq 'diff' ) {
-        my $g = Girl::Repo->new( path=>"$repo_path" );
-        my @log = $g->git->exec( 'diff', '--decorate', $ref, '--', $path );
+        my @log = $g->git->exec( 'diff', $ref, '--', $path );
         $res->{info} = \@log;
     }
     elsif( $pane eq 'source' ) {
-        my $g = Girl::Repo->new( path=>"$repo_path" );
         my @log = $g->git->exec( 'cat-file', '-p', $version );
         $res->{info} = \@log;
     }
