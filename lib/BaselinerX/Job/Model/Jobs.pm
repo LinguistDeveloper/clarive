@@ -513,7 +513,7 @@ sub get_services_status {
 
     my $row_stash = Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
 
-    my $job_stash = _load $row_stash->stash;
+    my $job_stash = _load $row_stash->stash || {};
 
     my $chain_id = 1;
     if ( $job_stash->{runner_data}->{chain_id} ) {
