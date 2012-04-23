@@ -129,8 +129,10 @@
     var tpl_hist = new Ext.XTemplate(
         '<div style="width:50%;margin-bottom: 4px; padding: 5px 5px 5px 5px; background-color: #ddd;">'
         + '<table cellpadding="5">'
-        + '<tr><td>Commit</td><td>{commit}</td></tr>'
-        + '<tr><td>Revs</td><td>{revs}</td></tr>'
+        + '<tr><td>Commit:</td><td></td>&nbsp;<td>{commit}</td></tr>'
+        + '<tr><td>Revisi&oacute;n:</td><td></td>&nbsp;<td>{revs}</td></tr>'
+        + '<tr><td>Autor:</td><td></td>&nbsp;<td>{author}</td></tr>'
+        + '<tr><td>Fecha:</td><td></td>&nbsp;<td>{date}</td></tr>'
         + '</table>'
         + '</div>');
     
