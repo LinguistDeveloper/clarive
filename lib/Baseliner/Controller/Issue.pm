@@ -141,8 +141,7 @@ sub view : Local {
     $c->stash->{description} = $issue->description;
     $c->stash->{id_rel} = $id_issue;
 	$self->viewdetail( $c );
-    #$c->stash->{template} = '/comp/issue_msg.js';
-	$c->stash->{template} = '/comp/issue_msg1.js';
+    $c->stash->{template} = '/comp/issue_msg.js';
 }
 
 sub viewdetail: Local {
