@@ -615,28 +615,39 @@
 				type: 'submit',
 				handler: function() {
 					var form = form_issue_comment.getForm();
+					var text = form.findField("text").getValue();
 					var obj_tab = Ext.getCmp('tabs_issues');
 					var obj_tab_active = obj_tab.getActiveTab();
 					var title = obj_tab_active.title;
 					cad = title.split('#');
-					var action = cad[1]; 
+					var action = cad[1];
 					if (form.isValid()) {
-					       form.submit({
-						   params: {action: action},
-						   success: function(f,a){
-						       Baseliner.message(_('Success'), a.result.msg );
-						       store_issue_comments.load({ params: {id_rel: cad[1]} });
-						       win.close();
-						   },
-						   failure: function(f,a){
-						       Ext.Msg.show({  
-							   title: _('Information'), 
-							   msg: a.result.msg , 
-							   buttons: Ext.Msg.OK, 
-							   icon: Ext.Msg.INFO
-						       }); 						
-						   }
-					       });
+						form.submit({
+							params: {action: action},
+							success: function(f,a){
+								Baseliner.message(_('Success'), a.result.msg );
+								//store_issue_comments.load({ params: {id_rel: cad[1]} });
+								win.close();
+                                myDiv = new Ext.Element(document.createElement('div'));
+ 								myP = new Ext.Element(document.createElement('p'));
+								myP.dom.innerHTML = text;
+								//myText = new Ext.Element(document.createTextNode(text));
+								//myP.appendChild(myText);
+                                myP.addClass('triangle-border');
+                                myDiv.appendChild(myP);
+                                myDiv.addClass('comment');
+								div = Ext.get('comments');
+								div.insertFirst(myDiv);
+							},
+							failure: function(f,a){
+								Ext.Msg.show({  
+									title: _('Information'), 
+									msg: a.result.msg , 
+									buttons: Ext.Msg.OK, 
+									icon: Ext.Msg.INFO
+								}); 						
+							}
+					   });
 					}
 				}
 				},
