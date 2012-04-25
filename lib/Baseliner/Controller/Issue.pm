@@ -155,12 +155,12 @@ sub viewdetail: Local {
 		$id_issue = $p->{action};
 
 	    try{
-	#        my $issue = $c->model('Baseliner::BaliIssueMsg')->create(
-	#					    {
-	#						id_issue	=> $id_issue,
-	#						text => $p->{text},
-	#						created_by => $c->username
-	#					    });
+	        my $issue = $c->model('Baseliner::BaliIssueMsg')->create(
+						    {
+							id_issue	=> $id_issue,
+							text => $p->{text},
+							created_by => $c->username
+						    });
 		    
 			$c->stash->{json} = {  data =>{ text => $p->{text}, created_by => $c->username} , msg=>_loc('Comment added'), success=>\1 };
 	
@@ -168,8 +168,6 @@ sub viewdetail: Local {
 	    catch{
 			$c->stash->{json} = { msg => _loc('Error adding Comment: %1', shift()), failure => \1 }
 	    };
-	
-
 		$c->forward('View::JSON');
 	
     }
@@ -190,7 +188,6 @@ sub viewdetail: Local {
 		}
 		$c->stash->{comments} = \@rows;
     }
-    #$c->forward('View::JSON');
 }
 
 sub list_category : Local {
