@@ -1,7 +1,7 @@
 (function(){
 	<& /comp/search_field.mas &>
 	var ps = 100; //page_size
-	
+
 	var store_opened = new Ext.data.JsonStore({
 		root: 'data' , 
 		remoteSort: true,
@@ -118,14 +118,14 @@
 	var init_buttons_label = function(action) {
 		eval('btn_delete_label.' + action + '()');
 	}
-	
+
 	var btn_add = new Ext.Toolbar.Button({
 		id: 'btn_add',
 		text: _('New'),
 		icon:'/static/images/icons/add.gif',
 		cls: 'x-btn-text-icon',
 		handler: function() {
-					add_edit()
+			add_edit();
 		}
 	});
 	
@@ -197,7 +197,7 @@
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
-			add_comment()
+			add_comment();
 		}
 	});
 
@@ -611,45 +611,42 @@
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
 				{
-				text: _('Accept'),
-				type: 'submit',
-				handler: function() {
-					var form = form_issue_comment.getForm();
-					var text = form.findField("text").getValue();
-					var obj_tab = Ext.getCmp('tabs_issues');
-					var obj_tab_active = obj_tab.getActiveTab();
-					var title = obj_tab_active.title;
-					cad = title.split('#');
-					var action = cad[1];
-					if (form.isValid()) {
-						form.submit({
-							params: {action: action},
-							success: function(f,a){
-								Baseliner.message(_('Success'), a.result.msg );
-								//store_issue_comments.load({ params: {id_rel: cad[1]} });
-								win.close();
-                                myDiv = new Ext.Element(document.createElement('div'));
- 								myP = new Ext.Element(document.createElement('p'));
-								myP.dom.innerHTML = text;
-								//myText = new Ext.Element(document.createTextNode(text));
-								//myP.appendChild(myText);
-                                myP.addClass('triangle-border');
-                                myDiv.appendChild(myP);
-                                myDiv.addClass('comment');
-								div = Ext.get('comments');
-								div.insertFirst(myDiv);
-							},
-							failure: function(f,a){
-								Ext.Msg.show({  
-									title: _('Information'), 
-									msg: a.result.msg , 
-									buttons: Ext.Msg.OK, 
-									icon: Ext.Msg.INFO
-								}); 						
-							}
-					   });
+					text: _('Accept'),
+					type: 'submit',
+					handler: function() {
+						var form = form_issue_comment.getForm();
+						var text = form.findField("text").getValue();
+						var obj_tab = Ext.getCmp('tabs_issues');
+						var obj_tab_active = obj_tab.getActiveTab();
+						var title = obj_tab_active.title;
+						cad = title.split('#');
+						var action = cad[1];
+						if (form.isValid()) {
+							form.submit({
+								params: {action: action},
+								success: function(f,a){
+									Baseliner.message(_('Success'), a.result.msg );
+									win.close();
+									myDiv = new Ext.Element(document.createElement('div'));
+									myP = new Ext.Element(document.createElement('p'));
+									myP.dom.innerHTML = text;
+									myP.addClass('triangle-border');
+									myDiv.appendChild(myP);
+									myDiv.addClass('comment');
+									div = Ext.get('comments');
+									div.insertFirst(myDiv);
+								},
+								failure: function(f,a){
+									Ext.Msg.show({  
+										title: _('Information'), 
+										msg: a.result.msg , 
+										buttons: Ext.Msg.OK, 
+										icon: Ext.Msg.INFO
+									}); 						
+								}
+						   });
+						}
 					}
-				}
 				},
 				{
 				text: _('Close'),
@@ -672,11 +669,13 @@
 		win = new Ext.Window({
 			title: _(title),
 			width: 700,
-			autoHeight: true,
-			items: form_issue_comment
+			autoHeight: true
+			//items: form_issue_comment
 		});
 		win.show();		
 	};
+
+
 
 	var render_id = function(value,metadata,rec,rowIndex,colIndex,store) {
 		return "<div style='font-weight:bold; font-size: 14px; color: #808080'> #" + value + "</div>" ;
@@ -719,7 +718,7 @@
 			}
 		}
 		return tag_project_html;
-	}
+	};
 
 	var grid_opened = new Ext.grid.GridPanel({
 		title: _('Issues'),
@@ -828,7 +827,7 @@
              }
         });
     });	
-	
+
 	var grid_closed = new Ext.grid.GridPanel({
 		title: _('Issues'),
 		header: false,
@@ -863,43 +862,42 @@
 	    var r = grid.getStore().getAt(rowIndex);
 		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , _('Issue') + (' #') + r.get('id'),{},config_tabs );
 	});
-	
-	
+
 	var search_field = new Ext.app.SearchField({
 				store: store_opened,
 				params: {start: 0, limit: ps},
 				emptyText: _('<Enter your search string>')
-			});
-	
+	});
+
 	var config_tabs = new Ext.TabPanel({
 		id: 'tabs_issues',
 		region: 'center',
 		layoutOnTabChange:true,
 		deferredRender: false,
 		defaults: {layout:'fit'},
-		tbar: [ _('Search') + ' ', ' ',
-			search_field,
-			btn_add,
-			btn_edit,
-			btn_delete,
-			btn_labels,
-			'->',
-			btn_comment,
-			btn_close
+		tbar: 	[ _('Search') + ' ', ' ',
+				search_field,
+				btn_add,
+				btn_edit,
+				btn_delete,
+				btn_labels,
+				'->',
+				btn_comment,
+				btn_close
 		], 
 		items : [
-			{
-			  id: 'open_tab',
-			  xtype : 'panel',
-			  title : _('Open'),
-			  items: [ grid_opened ]
-			},
-			{
-			  id: 'closed_tab',
-			  xtype : 'panel',
-			  title : _('Closed'),
-			  items: [ grid_closed ]
-			},		 
+				{
+				  id: 'open_tab',
+				  xtype : 'panel',
+				  title : _('Open'),
+				  items: [ grid_opened ]
+				},
+				{
+				  id: 'closed_tab',
+				  xtype : 'panel',
+				  title : _('Closed'),
+				  items: [ grid_closed ]
+				}		 
 		],
 		activeTab : 0,
 		listeners: {
@@ -933,8 +931,7 @@
 		    }
 		}		
 	});
-	
-	
+
 	var add_edit_category = function(rec) {
 		var win;
 		var title = 'Create category';
@@ -953,40 +950,40 @@
 			labelAlign: 'top',
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
-				{
-				text: _('Accept'),
-				type: 'submit',
-				handler: function() {
-					var form = form_category.getForm();
-					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-					
-					if (form.isValid()) {
-					       form.submit({
-						   params: {action: action},
-						   success: function(f,a){
-						       Baseliner.message(_('Success'), a.result.msg );
-						       form.findField("id").setValue(a.result.category_id);
-						       store_category.load();
-						       win.setTitle(_('Edit category'));
-						   },
-						   failure: function(f,a){
-						       Ext.Msg.show({  
-							   title: _('Information'), 
-							   msg: a.result.msg , 
-							   buttons: Ext.Msg.OK, 
-							   icon: Ext.Msg.INFO
-						       }); 						
-						   }
-					       });
+					{
+						text: _('Accept'),
+						type: 'submit',
+						handler: function() {
+							var form = form_category.getForm();
+							var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+							
+							if (form.isValid()) {
+								form.submit({
+									params: {action: action},
+									success: function(f,a){
+										Baseliner.message(_('Success'), a.result.msg );
+										form.findField("id").setValue(a.result.category_id);
+										store_category.load();
+										win.setTitle(_('Edit category'));
+									},
+									failure: function(f,a){
+										Ext.Msg.show({  
+											title: _('Information'), 
+											msg: a.result.msg , 
+											buttons: Ext.Msg.OK, 
+											icon: Ext.Msg.INFO
+										}); 						
+									}
+								});
+							}
+						}
+					},
+					{
+					text: _('Close'),
+					handler: function(){ 
+							win.close();
+						}
 					}
-				}
-				},
-				{
-				text: _('Close'),
-				handler: function(){ 
-						win.close();
-					}
-				}
 			],
 			defaults: { anchor:'100%'},
 			items: [
@@ -1010,14 +1007,15 @@
 		});
 		win.show();		
 	};
-	
+
+
 	var btn_add_category = new Ext.Toolbar.Button({
 		id: 'btn_add_category',
 		text: _('New'),
 		icon:'/static/images/icons/add.gif',
 		cls: 'x-btn-text-icon',
 		handler: function() {
-					add_edit_category()
+					add_edit_category();
 		}
 	});
 	
@@ -1028,7 +1026,7 @@
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
-		var sm = grid_categories.getSelectionModel();
+			var sm = grid_categories.getSelectionModel();
 			if (sm.hasSelection()) {
 				var sel = sm.getSelected();
 				add_edit_category(sel);
@@ -1071,13 +1069,11 @@
 			});
 		}
 	});
-	
-	
 
 	var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
 		singleSelect: false,
 		sortable: false,
-		checkOnly: true,
+		checkOnly: true
 	});
 	
 	var grid_categories = new Ext.grid.GridPanel({
@@ -1100,7 +1096,7 @@
 			{ hidden: true, dataIndex:'id' },
 			check_categories_sm,
 			{ header: _('Category'), dataIndex: 'name', width:50, sortable: false },
-			{ header: _('Description'), dataIndex: 'description', sortable: false },	
+			{ header: _('Description'), dataIndex: 'description', sortable: false }	
 		],
 		autoSizeColumns: true,
 		deferredRender:true,	
@@ -1156,7 +1152,7 @@
 				}
 			}
 	});
-	
+
 	var btn_edit_label = new Ext.Toolbar.Button({
 		id: 'btn_edit_label',
 		text: _('Edit'),
@@ -1215,14 +1211,15 @@
 	
 	var colorMenu = new Ext.menu.ColorMenu({
 		handler: function(cm, color) {
-		  eval("Ext.get('color_label').setStyle('background','#" + color + "')");
-		  color_lbl = color ;
+			eval("Ext.get('color_label').setStyle('background','#" + color + "')");
+			color_lbl = color ;
 		}
 	});
 
 	var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}});
 	
 	var label_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
+	
     label_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
 			if(f.getValue() != ''){
@@ -1247,11 +1244,12 @@
 			}
         }
     });
-	
+
 	var tb = new Ext.Toolbar({
-		items: [{
-				text: 	_('Pick a Color'),
-				menu: 	colorMenu
+		items: [
+				{
+					text: 	_('Pick a Color'),
+					menu: 	colorMenu
 				},
 				color_label,
 				blank_image,
@@ -1260,17 +1258,15 @@
 				btn_delete_label
 		]
 	});
-
 	
 	var render_color = function(value,metadata,rec,rowIndex,colIndex,store) {
 		return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
 	};	
 
-	
 	var check_labels_sm = new Ext.grid.CheckboxSelectionModel({
 		singleSelect: false,
 		sortable: false,
-		checkOnly: true,
+		checkOnly: true
 	});
 
 	var grid_labels = new Ext.grid.GridPanel({
@@ -1361,7 +1357,7 @@
 	store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>'}});
 	store_closed.load({params:{start:0 , limit: ps, filter:'C'}});
 	store_category.load();
-	store_label.load();
+	store_label.load();	
 	
 	return panel;
-})();
+})
