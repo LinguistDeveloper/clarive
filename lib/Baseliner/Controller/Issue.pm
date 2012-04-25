@@ -134,14 +134,15 @@ sub update : Local {
 sub view : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $id_issue = $p->{id_rel};
-
+    my $id_issue = $p->{id_rel} || $p->{action};
+	
     my $issue = $c->model('Baseliner::BaliIssue')->find( $id_issue );
     $c->stash->{title} = $issue->title;
     $c->stash->{description} = $issue->description;
-    
     $c->stash->{id_rel} = $id_issue;
-    $c->stash->{template} = '/comp/issue_msg.js';
+	$self->viewdetail( $c );
+    #$c->stash->{template} = '/comp/issue_msg.js';
+	$c->stash->{template} = '/comp/issue_msg1.js';
 }
 
 sub viewdetail: Local {
@@ -149,23 +150,28 @@ sub viewdetail: Local {
     my $p = $c->request->parameters;
     my $id_issue = $p->{id_rel};
     
+
     if ($p->{action}){
 		$id_issue = $p->{action};
 
 	    try{
-	        my $issue = $c->model('Baseliner::BaliIssueMsg')->create(
-						    {
-							id_issue	=> $id_issue,
-							text => $p->{text},
-							created_by => $c->username
-						    });
+	#        my $issue = $c->model('Baseliner::BaliIssueMsg')->create(
+	#					    {
+	#						id_issue	=> $id_issue,
+	#						text => $p->{text},
+	#						created_by => $c->username
+	#					    });
 		    
-			$c->stash->{json} = { msg=>_loc('Comment added'), success=>\1, issue_id=> $issue->id };
-
+			$c->stash->{json} = {  data =>{ text => $p->{text}, created_by => $c->username} , msg=>_loc('Comment added'), success=>\1 };
+	
 	    }
 	    catch{
-			$c->stash->{json} = { msg=>_loc('Error adding Comment: %1', shift()), failure=>\1 }
-	    }
+			$c->stash->{json} = { msg => _loc('Error adding Comment: %1', shift()), failure => \1 }
+	    };
+	
+
+		$c->forward('View::JSON');
+	
     }
     else{
 		my $rs = $c->model('Baseliner::BaliIssueMsg')->search( {id_issue=>$id_issue},	    
@@ -182,9 +188,9 @@ sub viewdetail: Local {
 							text		=> $r->text
 						};
 		}
-		$c->stash->{json} = { data=>\@rows, success => \1 };
+		$c->stash->{comments} = \@rows;
     }
-    $c->forward('View::JSON');    
+    #$c->forward('View::JSON');
 }
 
 sub list_category : Local {
