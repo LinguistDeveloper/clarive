@@ -18,6 +18,7 @@
 %   foreach my $comentario (_array @comentarios){
             <div class="comment">
                 <p class="triangle-border"><%$comentario->{text}%></p>
+                <h3 class="separacion-comment" style="padding:15px;">Creada por <%$comentario->{created_by}%>, <%$comentario->{created_on}->dmy%> <%$comentario->{created_on}->hms%></h3>
             </div>
 %}
         </div>

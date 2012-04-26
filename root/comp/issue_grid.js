@@ -627,11 +627,16 @@
 								success: function(f,a){
 									Baseliner.message(_('Success'), a.result.msg );
 									win.close();
+									myBR = new Ext.Element(document.createElement('br'));
+									myH3 = new Ext.Element(document.createElement('h3'));
+									myH3.dom.innerHTML = 'Creada por ' + a.result.data.created_by + ', ' + a.result.data.created_on
+									myH3.addClass('separacion-comment');
 									myDiv = new Ext.Element(document.createElement('div'));
 									myP = new Ext.Element(document.createElement('p'));
 									myP.dom.innerHTML = text;
 									myP.addClass('triangle-border');
 									myDiv.appendChild(myP);
+									myDiv.appendChild(myH3);
 									myDiv.addClass('comment');
 									div = Ext.get('comments');
 									div.insertFirst(myDiv);
@@ -669,8 +674,8 @@
 		win = new Ext.Window({
 			title: _(title),
 			width: 700,
-			autoHeight: true
-			//items: form_issue_comment
+			autoHeight: true,
+			items: form_issue_comment
 		});
 		win.show();		
 	};

@@ -592,7 +592,12 @@
             margin-top: 40px;
             margin-bottom: 40px;
         }
-        
+  
+        .separacion-comment{
+            margin-top: 15px;
+            padding: 15px;
+        }        
+  
         .rectangle-border {
             position:relative;
             padding:15px;
