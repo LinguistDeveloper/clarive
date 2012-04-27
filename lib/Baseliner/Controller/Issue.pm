@@ -134,13 +134,13 @@ sub update : Local {
 sub view : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $id_issue = $p->{id_rel};
-
+    my $id_issue = $p->{id_rel} || $p->{action};
+	
     my $issue = $c->model('Baseliner::BaliIssue')->find( $id_issue );
     $c->stash->{title} = $issue->title;
     $c->stash->{description} = $issue->description;
-    
     $c->stash->{id_rel} = $id_issue;
+	$self->viewdetail( $c );
     $c->stash->{template} = '/comp/issue_msg.js';
 }
 
@@ -149,6 +149,7 @@ sub viewdetail: Local {
     my $p = $c->request->parameters;
     my $id_issue = $p->{id_rel};
     
+
     if ($p->{action}){
 		$id_issue = $p->{action};
 
@@ -157,15 +158,18 @@ sub viewdetail: Local {
 						    {
 							id_issue	=> $id_issue,
 							text => $p->{text},
-							created_by => $c->username
+							created_by => $c->username,
+							created_on => DateTime->now,
 						    });
 		    
-			$c->stash->{json} = { msg=>_loc('Comment added'), success=>\1, issue_id=> $issue->id };
-
+			$c->stash->{json} = {  data =>{ text => $p->{text}, created_by => $c->username, created_on => $issue->created_on->dmy . ' ' . $issue->created_on->hms} , msg=>_loc('Comment added'), success=>\1 };
+	
 	    }
 	    catch{
-			$c->stash->{json} = { msg=>_loc('Error adding Comment: %1', shift()), failure=>\1 }
-	    }
+			$c->stash->{json} = { msg => _loc('Error adding Comment: %1', shift()), failure => \1 }
+	    };
+		$c->forward('View::JSON');
+	
     }
     else{
 		my $rs = $c->model('Baseliner::BaliIssueMsg')->search( {id_issue=>$id_issue},	    
@@ -178,13 +182,13 @@ sub viewdetail: Local {
 		# produce the grid
 			push @rows,
 						{
+							created_on 	=> $r->created_on,
 							created_by	=> $r->created_by,
 							text		=> $r->text
 						};
 		}
-		$c->stash->{json} = { data=>\@rows, success => \1 };
+		$c->stash->{comments} = \@rows;
     }
-    $c->forward('View::JSON');    
 }
 
 sub list_category : Local {
