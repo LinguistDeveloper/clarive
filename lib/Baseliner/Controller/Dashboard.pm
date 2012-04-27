@@ -17,6 +17,11 @@ register 'config.dashboard' => {
 	    ]
 };
 
+#register 'dashboard.jobs.envs' => {
+#    name => 'Jobs By Baseline'
+#    url  => '/dashboard/list_entornos',
+#};
+
 sub list : Local {
     my ($self, $c) = @_;
     $c->forward('/dashboard/list_entornos');
@@ -24,7 +29,14 @@ sub list : Local {
     $c->forward('/dashboard/list_emails');
 	$c->forward('/dashboard/list_issues');	
 	$c->forward('/dashboard/list_jobs');	
-    $c->forward('/dashboard/list_sqa');
+
+    # list dashboardlets, only active ones
+    my @dashs = Baseliner->model('Registry')->search_for( key => 'dashboard.' ); #, allowed_actions => [@actions] );
+    @dashs = grep { $_->active } @dashs;
+    for my $dash ( @dashs ) {
+        $c->forward( $dash->url );
+    }
+    $c->stash->{dashboardlets} = \@dashs;
     $c->stash->{template} = '/comp/dashboard.js';
 }
 
@@ -377,11 +389,6 @@ sub get_last_jobError: Private{
 										AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND ENDTIME IS NOT NULL)
 					WHERE MY_ROW_NUM < 2";
 	return $db->array_hash( $SQL, $project, $bl );	
-}
-
-sub list_sqa: Private{
-	my ( $self, $c ) = @_;
-	$c->forward('/sqa/grid_json/Dashboard');
 }
 
 sub viewjobs: Local{
