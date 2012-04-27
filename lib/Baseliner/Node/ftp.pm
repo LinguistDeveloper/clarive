@@ -94,12 +94,6 @@ sub dir {
     return ({files=>[@files], message=>$self->ftp->message});
 }
 
-sub get_ftp {
-    my ($self) = @_;
-    $self->ftp->dir( );
-    $self->ftp;
-}
-
 sub cd {
     my ($self, %p) = @_;
     
@@ -111,6 +105,20 @@ sub delete {
     my ($self, %p) = @_;
     
     $self->ftp->delete( "$p{remote}" );
+    $self->ftp->message;
+}
+
+sub rename {
+    my ($self, %p) = @_;
+    
+    $self->ftp->rename( "$p{old}", "$p{new}" );
+    $self->ftp->message;
+}
+
+sub close {
+    my ($self, %p) = @_;
+    
+    $self->ftp->close();
     $self->ftp->message;
 }
 
