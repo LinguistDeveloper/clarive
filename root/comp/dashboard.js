@@ -1,3 +1,6 @@
+<%args>
+    $dashboardlets
+</%args>
 <%perl>
     use Baseliner::Utils;
     my @entornos = $c->stash->{entornos};
@@ -7,7 +10,6 @@
     my $style = '';
     my @issues = $c->stash->{issues};
     my @jobs = $c->stash->{jobs};    
-    my @sqas = $c->stash->{sqas};
     my $status_id = "status". _nowstamp;
 </%perl>
 
@@ -219,47 +221,9 @@
         <!--######FIN TABLA PASES #######################################################################################-->
       </div>
   
-      <div id="body" class="span-12">
-        <h2>Calidad</h2>
-        <!--######INICIO TABLA SQA ######################################################################################-->
-        <table class="summary-table-sqa"  cellspacing="0">
-          <thead>
-            <tr>
-              <th class="first-child section-proyecto">Proyecto</th>            
-              <th class="section-entorno">Entorno</th>
-              <th class="section-subproyecto">Subproyecto</th>            
-              <th class="section-naturaleza">Naturaleza</th>
-              <th class="section-auditoria">Auditoría</th>
-              <th class="last-child section-calificacion">Calificación</th>
-            </tr>          
-          </thead>
-          <tbody>
-%foreach my $sqa (_array @sqas){
-% my $subapp = $sqa->{subapp} ? $sqa->{subapp}:'&nbsp';
-% my $nature = $sqa->{nature} ? $sqa->{nature}:'&nbsp';
-% my ($image, $color);
-% if($sqa->{result} eq 'OK'){
-% $image = 'flag_green.png';
-% $color = '#000';
-% }else{
-% $image = 'flag_red.png';
-% $color = 'red';
-%}
-            <tr class='last-child'>
-              <td class="section-proyecto"><b><a target="_blank" href="/sqa/view_html/<%$sqa->{id}%>"><%$sqa->{project}%></a></b></td>            
-              <td class='section-entorno'><%$sqa->{bl}%></td>
-              <td class="section-subproyecto"><%$subapp%></td>
-              <td class="section-naturaleza"><%$nature%></td>
-              <td class="section-auditoria" align="center"><img src="/static/images/silk/<%$image%>"/></td>
-              <td class="section-calificacion" style="font-size:12px;color:<%$color%>"><b><%$sqa->{qualification}%></b></td>
-            </tr>
-%}
-          </tbody>
-        </table>
-        <!--######FIN TABLA SQA #########################################################################################-->                      
-      </div>
-    </div>
-      
+% for my $dash ( sort { $a->order <=> $b->order } _array $dashboardlets ) {
+    <& $dash->html &>
+% } 
     </div>
   </div>
 </div>

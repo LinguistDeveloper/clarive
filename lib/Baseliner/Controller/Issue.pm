@@ -158,10 +158,11 @@ sub viewdetail: Local {
 						    {
 							id_issue	=> $id_issue,
 							text => $p->{text},
-							created_by => $c->username
+							created_by => $c->username,
+							created_on => DateTime->now,
 						    });
 		    
-			$c->stash->{json} = {  data =>{ text => $p->{text}, created_by => $c->username} , msg=>_loc('Comment added'), success=>\1 };
+			$c->stash->{json} = {  data =>{ text => $p->{text}, created_by => $c->username, created_on => $issue->created_on->dmy . ' ' . $issue->created_on->hms} , msg=>_loc('Comment added'), success=>\1 };
 	
 	    }
 	    catch{
@@ -181,6 +182,7 @@ sub viewdetail: Local {
 		# produce the grid
 			push @rows,
 						{
+							created_on 	=> $r->created_on,
 							created_by	=> $r->created_by,
 							text		=> $r->text
 						};
