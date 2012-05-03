@@ -307,11 +307,11 @@
 
         // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
-            value += ' (<% _loc("Rollback OK") %>)';
+            value = ' <% _loc("Rollback OK") %>';
             icon = 'log_e.gif';
         }
         else if( status == 'ERROR' && rollback == 1 )  {
-            value += ' (<% _loc("Rollback Failed") %>)';
+            value = ' <% _loc("Rollback Failed") %>';
         }
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
 		if( status == 'APPROVAL' ) { // add a link to the approval main
