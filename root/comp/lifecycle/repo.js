@@ -199,7 +199,7 @@
         collapsed: true,
         height: 350,
         tbar: [
-            button['h'], ' ', button['d'], ' ', button['s'],
+            button['h'], //' ', button['d'], ' ', button['s'],
             '->',
             Baseliner.button('Close All', '/static/images/icons/clear.gif', function(b) { 
                 properties.items.each(function(comp) {
