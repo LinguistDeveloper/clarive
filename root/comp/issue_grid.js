@@ -70,7 +70,8 @@
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
-			{  name: 'description' }
+			{  name: 'description' },
+			{  name: 'statuses' }
 		]
 	});
 	
@@ -1154,7 +1155,7 @@
 		
         var column1 = {
 			xtype:'panel',
-			flex: 2,
+			columnWidth:0.50,
 			layout:'form',
 			defaults:{anchor:'100%'},
 			items: [
@@ -1165,10 +1166,10 @@
         };
 		
 		var grid_category_status = new Ext.grid.GridPanel({
-			title : _('Issues: Statuses'),
+			//title : _('Issues: Statuses'),
 			sm: check_status_sm,
-			header: true,
-			autoHeight: true,
+			header: false,
+			height: 157,
 			stripeRows: true,
 			autoScroll: true,
 			enableHdMenu: false,
@@ -1183,12 +1184,33 @@
 				{ header: _('Description'), dataIndex: 'description', sortable: false }	
 			],
 			autoSizeColumns: true,
-			deferredRender:true
+			deferredRender:true,
+			listeners: {
+				viewready: function() {
+					var me = this;
+					
+					var datas = me.getStore();
+					var recs = [];
+					datas.each(function(row, index){
+						if(rec.data.statuses){
+							for(i=0;i<rec.data.statuses.length;i++){
+								if(row.get('id') == rec.data.statuses[i]){
+									recs.push(index);	
+								}
+							}
+						}						
+					});
+					me.getSelectionModel().selectRows(recs);					
+				
+				}
+			}	
+			
 		});			
 		
         var column2 = {
            xtype:'panel',
-           flex: 1,
+		   defaults:{anchor:'98%'},
+		   columnWidth:0.50,
            items: grid_category_status
         };		
 		
@@ -1196,10 +1218,8 @@
 		var form_category = new Ext.FormPanel({
 			frame: true,
 			url:'/issue/update_category',
-			//labelAlign: 'top',
-			//bodyStyle:'padding:10px 10px 0',
             layout: {
-                type: 'hbox',
+                type: 'column',
                 padding: '5'
             },			
 			buttons: [
@@ -1211,8 +1231,15 @@
 							var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
 							
 							if (form.isValid()) {
+								
+								var statuses_checked = new Array();
+								check_status_sm.each(function(rec){
+									statuses_checked.push(rec.get('id'));
+								});								
+								
+								
 								form.submit({
-									params: {action: action},
+									params: {action: action, idsstatus: statuses_checked},
 									success: function(f,a){
 										Baseliner.message(_('Success'), a.result.msg );
 										form.findField("id").setValue(a.result.category_id);
@@ -1238,14 +1265,9 @@
 						}
 					}
 			],
-			defaults: { anchor:'100%',
-						margins: '0 5 0 0'			
+			defaults: { bodyStyle:'padding:0 18px 0 0'
+							
 			},
-			//items: [
-			//	{ xtype: 'hidden', name: 'id', value: -1 },
-			//	{ xtype:'textfield', name:'name', fieldLabel:_('Category'), allowBlank:false, emptyText:_('Name of category') },
-			//	ta
-			//]
 			items: [
                 column1,
                 column2
@@ -1260,7 +1282,7 @@
 		
 		win = new Ext.Window({
 			title: _(title),
-			width: 600,
+			width: 700,
 			autoHeight: true,
 			items: form_category
 		});

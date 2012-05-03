@@ -201,11 +201,18 @@ sub list_category : Local {
 	
 	if($row){
 		while( my $r = $row->next ) {
+			my @statuses;
+			my $statuses = $c->model('Baseliner::BaliIssueCategoriesStatus')->search({id_category => $r->id});
+			while( my $status = $statuses->next ) {
+				push @statuses, $status->id_status;
+			}
+			
 			push @rows,
 			  {
 				id          => $r->id,
 				name	    => $r->name,
 				description	=> $r->description,
+				statuses	=> \@statuses
 			  };
 		}  
 	}
@@ -219,6 +226,7 @@ sub update_category : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $action = $p->{action};
+	my $idsstatus = $p->{idsstatus};
 
     given ($action) {
         when ('add') {
@@ -226,6 +234,17 @@ sub update_category : Local {
 				my $row = $c->model('Baseliner::BaliIssueCategories')->search({name => $p->{name}})->first;
 				if(!$row){
 					my $category = $c->model('Baseliner::BaliIssueCategories')->create({name  => $p->{name}, description=> $p->{description}});
+					
+					if($idsstatus){
+						foreach my $id_status (_array $idsstatus){
+							$row = $c->model('Baseliner::BaliIssueCategoriesStatus')->create(
+																							{
+																								id_category    =>  $category->id,
+																								id_status  	=> $id_status,
+																							});		
+						}
+					}
+
 	                $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=> $category->id };
 				}
 				else{
