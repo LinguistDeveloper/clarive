@@ -502,7 +502,6 @@
 		var form_issue = new Ext.FormPanel({
 			frame: true,
 			url:'/issue/update',
-			//labelAlign: 'top',
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
 				{
@@ -957,6 +956,13 @@
 		}		
 	});
 
+	//Para cuando se envia el formulario no coja el atributo emptytext de los textfields
+	Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+		Ext.applyIf(this.options, {
+		submitEmptyText:false
+		});
+	});
+		
 	var add_edit_status = function(rec) {
 		var win;
 		var title = 'Create status';
@@ -969,6 +975,7 @@
             emptyText: _('A brief description of the status')
         });		
 		
+	
 		var form_status = new Ext.FormPanel({
 			frame: true,
 			url:'/issue/update_status',
@@ -1078,7 +1085,8 @@
 								init_buttons_status('disable');
 								store_status.load();
 								var labels_checked = getLabels();
-								filtrar_issues(labels_checked, null);								
+								var categories_checked = getCategories();
+								filtrar_issues(labels_checked, categories_checked);
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -1125,19 +1133,35 @@
 
 	grid_status.on('cellclick', function(grid, rowIndex, columnIndex, e) {
 		if(columnIndex == 1){
+			var statuses_checked = getStatuses();
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
 			filtrar_issues(labels_checked, categories_checked);
-			init_buttons_status('enable');
+			if (statuses_checked.length == 1){
+				init_buttons_status('enable');
+			}else{
+				if(statuses_checked.length == 0){
+					init_buttons_status('disable');
+				}else{
+					btn_delete_status.enable();
+					btn_edit_status.disable();
+				}
+			}			
 		}
 	});
 	
 	grid_status.on('headerclick', function(grid, columnIndex, e) {
 		if(columnIndex == 1){
+			var statuses_checked = getStatuses();
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
 			filtrar_issues(labels_checked, categories_checked);
-			init_buttons_status('enable');
+			if(statuses_checked.length == 0){
+				init_buttons_status('disable');
+			}else{
+				btn_delete_status.enable();
+				btn_edit_status.disable();
+			}
 		}
 	});
 
@@ -1165,9 +1189,14 @@
 			]
         };
 		
+		var check_category_status_sm = new Ext.grid.CheckboxSelectionModel({
+			singleSelect: false,
+			sortable: false,
+			checkOnly: true
+		});
+
 		var grid_category_status = new Ext.grid.GridPanel({
-			//title : _('Issues: Statuses'),
-			sm: check_status_sm,
+			sm: check_category_status_sm,
 			header: false,
 			height: 157,
 			stripeRows: true,
@@ -1179,7 +1208,7 @@
 			loadMask:'true',
 			columns: [
 				{ hidden: true, dataIndex:'id' },
-				check_status_sm,
+				check_category_status_sm,
 				{ header: _('Issues: Status'), dataIndex: 'name', width:50, sortable: false },
 				{ header: _('Description'), dataIndex: 'description', sortable: false }	
 			],
@@ -1233,7 +1262,7 @@
 							if (form.isValid()) {
 								
 								var statuses_checked = new Array();
-								check_status_sm.each(function(rec){
+								check_category_status_sm.each(function(rec){
 									statuses_checked.push(rec.get('id'));
 								});								
 								
@@ -1265,9 +1294,7 @@
 						}
 					}
 			],
-			defaults: { bodyStyle:'padding:0 18px 0 0'
-							
-			},
+			defaults: { bodyStyle:'padding:0 18px 0 0'},
 			items: [
                 column1,
                 column2
@@ -1385,7 +1412,16 @@
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
 			filtrar_issues(labels_checked, categories_checked);
-			init_buttons_category('enable');
+			if (categories_checked.length == 1){
+				init_buttons_category('enable');
+			}else{
+				if(categories_checked.length == 0){
+					init_buttons_category('disable');
+				}else{
+					btn_delete_category.enable();
+					btn_edit_category.disable();
+				}
+			}
 		}
 	});
 	
@@ -1394,7 +1430,12 @@
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
 			filtrar_issues(labels_checked, categories_checked);
-			init_buttons_category('enable');
+			if(categories_checked.length == 0){
+				init_buttons_category('disable');
+			}else{
+				btn_delete_category.enable();
+				btn_edit_category.disable();
+			}
 		}
 	});
 

@@ -263,6 +263,19 @@ sub update_category : Local {
                 $category->description( $p->{description} );
                 $category->update();
                 
+				my $rs = Baseliner->model('Baseliner::BaliIssueCategoriesStatus')->search({ id_category => $id_category });
+				$rs->delete;
+				if($idsstatus){
+					foreach my $id_status (_array $idsstatus){
+						$rs = $c->model('Baseliner::BaliIssueCategoriesStatus')->create(
+																						{
+																							id_category    =>  $category->id,
+																							id_status  	=> $id_status,
+																						});		
+					}
+				}				
+				
+				
                 $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, category_id=> $id_category };
             }
             catch{
