@@ -70,7 +70,8 @@
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
-			{  name: 'description' }
+			{  name: 'description' },
+			{  name: 'statuses' }
 		]
 	});
 	
@@ -103,6 +104,20 @@
 		)
 	});
 	
+	
+	var store_status = new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/issue/list_status',
+		fields: [ 
+			{  name: 'id' },
+			{  name: 'name' },
+			{  name: 'description' }
+		]
+	});	
+	
 	var init_buttons = function(action) {
 		eval('btn_edit.' + action + '()');
 		eval('btn_delete.' + action + '()');
@@ -117,6 +132,11 @@
 	
 	var init_buttons_label = function(action) {
 		eval('btn_delete_label.' + action + '()');
+	}
+
+	var init_buttons_status = function(action) {
+		eval('btn_edit_status.' + action + '()');		
+		eval('btn_delete_status.' + action + '()');
 	}
 
 	var btn_add = new Ext.Toolbar.Button({
@@ -482,7 +502,6 @@
 		var form_issue = new Ext.FormPanel({
 			frame: true,
 			url:'/issue/update',
-			//labelAlign: 'top',
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
 				{
@@ -937,6 +956,215 @@
 		}		
 	});
 
+	//Para cuando se envia el formulario no coja el atributo emptytext de los textfields
+	Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+		Ext.applyIf(this.options, {
+		submitEmptyText:false
+		});
+	});
+		
+	var add_edit_status = function(rec) {
+		var win;
+		var title = 'Create status';
+		
+        var ta = new Ext.form.TextArea({
+            name: 'description',
+            height: 130,
+            enableKeyEvents: true,
+            fieldLabel: _('Description'),
+            emptyText: _('A brief description of the status')
+        });		
+		
+	
+		var form_status = new Ext.FormPanel({
+			frame: true,
+			url:'/issue/update_status',
+			labelAlign: 'top',
+			bodyStyle:'padding:10px 10px 0',
+			buttons: [
+					{
+						text: _('Accept'),
+						type: 'submit',
+						handler: function() {
+							var form = form_status.getForm();
+							var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+							
+							if (form.isValid()) {
+								form.submit({
+									params: {action: action},
+									success: function(f,a){
+										Baseliner.message(_('Success'), a.result.msg );
+										form.findField("id").setValue(a.result.status_id);
+										store_status.load();
+										win.setTitle(_('Edit status'));
+									},
+									failure: function(f,a){
+										Ext.Msg.show({  
+											title: _('Information'), 
+											msg: a.result.msg , 
+											buttons: Ext.Msg.OK, 
+											icon: Ext.Msg.INFO
+										}); 						
+									}
+								});
+							}
+						}
+					},
+					{
+					text: _('Close'),
+					handler: function(){ 
+							win.close();
+						}
+					}
+			],
+			defaults: { anchor:'100%'},
+			items: [
+				{ xtype: 'hidden', name: 'id', value: -1 },
+				{ xtype:'textfield', name:'name', fieldLabel:_('Issues: Status'), allowBlank:false, emptyText:_('Name of status') },
+				ta
+			]
+		});
+
+		if(rec){
+			var ff = form_status.getForm();
+			ff.loadRecord( rec );
+			title = 'Edit status';
+		}
+		
+		win = new Ext.Window({
+			title: _(title),
+			width: 400,
+			autoHeight: true,
+			items: form_status
+		});
+		win.show();		
+	};
+	
+	var btn_add_status = new Ext.Toolbar.Button({
+		id: 'btn_add_status',
+		text: _('New'),
+		icon:'/static/images/icons/add.gif',
+		cls: 'x-btn-text-icon',
+		handler: function() {
+					add_edit_status();
+		}
+	});
+	
+	var btn_edit_status = new Ext.Toolbar.Button({
+		id: 'btn_edit_status',
+		text: _('Edit'),
+		icon:'/static/images/icons/edit.gif',
+		cls: 'x-btn-text-icon',
+		disabled: true,
+		handler: function() {
+			var sm = grid_status.getSelectionModel();
+			if (sm.hasSelection()) {
+				var sel = sm.getSelected();
+				add_edit_status(sel);
+			} else {
+				Baseliner.message( _('ERROR'), _('Select at least one row'));    
+			};
+		}
+	});
+
+	var btn_delete_status = new Ext.Toolbar.Button({
+		id: 'btn_delete_status',
+		text: _('Delete'),
+		icon:'/static/images/icons/delete.gif',
+		cls: 'x-btn-text-icon',
+		disabled: true,
+		handler: function() {
+			var statuses_checked = getStatuses();
+			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the statuses selected?'), 
+			function(btn){ 
+				if(btn=='yes') {
+					Baseliner.ajaxEval( '/issue/update_status?action=delete',{ idsstatus: statuses_checked },
+						function(response) {
+							if ( response.success ) {
+								Baseliner.message( _('Success'), response.msg );
+								init_buttons_status('disable');
+								store_status.load();
+								var labels_checked = getLabels();
+								var categories_checked = getCategories();
+								filtrar_issues(labels_checked, categories_checked);
+							} else {
+								Baseliner.message( _('ERROR'), response.msg );
+							}
+						}
+					
+					);
+				}
+			});
+		}
+	});	
+	
+	var check_status_sm = new Ext.grid.CheckboxSelectionModel({
+		singleSelect: false,
+		sortable: false,
+		checkOnly: true
+	});
+	
+	var grid_status = new Ext.grid.GridPanel({
+		title : _('Issues: Statuses'),
+		sm: check_status_sm,
+		header: true,
+		stripeRows: true,
+		autoScroll: true,
+		enableHdMenu: false,
+		store: store_status,
+		viewConfig: {forceFit: true},
+		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+		loadMask:'true',
+		columns: [
+			{ hidden: true, dataIndex:'id' },
+			check_status_sm,
+			{ header: _('Issues: Status'), dataIndex: 'name', width:50, sortable: false },
+			{ header: _('Description'), dataIndex: 'description', sortable: false }	
+		],
+		autoSizeColumns: true,
+		deferredRender:true,	
+		tbar: [ 
+				btn_add_status,
+				btn_edit_status,
+				btn_delete_status,
+				'->'
+		]		
+	});	
+
+	grid_status.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+		if(columnIndex == 1){
+			var statuses_checked = getStatuses();
+			var categories_checked = getCategories();
+			var labels_checked = getLabels();
+			filtrar_issues(labels_checked, categories_checked);
+			if (statuses_checked.length == 1){
+				init_buttons_status('enable');
+			}else{
+				if(statuses_checked.length == 0){
+					init_buttons_status('disable');
+				}else{
+					btn_delete_status.enable();
+					btn_edit_status.disable();
+				}
+			}			
+		}
+	});
+	
+	grid_status.on('headerclick', function(grid, columnIndex, e) {
+		if(columnIndex == 1){
+			var statuses_checked = getStatuses();
+			var categories_checked = getCategories();
+			var labels_checked = getLabels();
+			filtrar_issues(labels_checked, categories_checked);
+			if(statuses_checked.length == 0){
+				init_buttons_status('disable');
+			}else{
+				btn_delete_status.enable();
+				btn_edit_status.disable();
+			}
+		}
+	});
+
 	var add_edit_category = function(rec) {
 		var win;
 		var title = 'Create category';
@@ -949,11 +1177,80 @@
             emptyText: _('A brief description of the category')
         });		
 		
+        var column1 = {
+			xtype:'panel',
+			columnWidth:0.50,
+			layout:'form',
+			defaults:{anchor:'100%'},
+			items: [
+				{ xtype: 'hidden', name: 'id', value: -1 },
+				{ xtype:'textfield', name:'name', fieldLabel:_('Category'), allowBlank:false, emptyText:_('Name of category') },
+				ta
+			]
+        };
+		
+		var check_category_status_sm = new Ext.grid.CheckboxSelectionModel({
+			singleSelect: false,
+			sortable: false,
+			checkOnly: true
+		});
+
+		var grid_category_status = new Ext.grid.GridPanel({
+			sm: check_category_status_sm,
+			header: false,
+			height: 157,
+			stripeRows: true,
+			autoScroll: true,
+			enableHdMenu: false,
+			store: store_status,
+			viewConfig: {forceFit: true},
+			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+			loadMask:'true',
+			columns: [
+				{ hidden: true, dataIndex:'id' },
+				check_category_status_sm,
+				{ header: _('Issues: Status'), dataIndex: 'name', width:50, sortable: false },
+				{ header: _('Description'), dataIndex: 'description', sortable: false }	
+			],
+			autoSizeColumns: true,
+			deferredRender:true,
+			listeners: {
+				viewready: function() {
+					var me = this;
+					
+					var datas = me.getStore();
+					var recs = [];
+					datas.each(function(row, index){
+						if(rec.data.statuses){
+							for(i=0;i<rec.data.statuses.length;i++){
+								if(row.get('id') == rec.data.statuses[i]){
+									recs.push(index);	
+								}
+							}
+						}						
+					});
+					me.getSelectionModel().selectRows(recs);					
+				
+				}
+			}	
+			
+		});			
+		
+        var column2 = {
+           xtype:'panel',
+		   defaults:{anchor:'98%'},
+		   columnWidth:0.50,
+           items: grid_category_status
+        };		
+		
+		
 		var form_category = new Ext.FormPanel({
 			frame: true,
 			url:'/issue/update_category',
-			labelAlign: 'top',
-			bodyStyle:'padding:10px 10px 0',
+            layout: {
+                type: 'column',
+                padding: '5'
+            },			
 			buttons: [
 					{
 						text: _('Accept'),
@@ -963,8 +1260,15 @@
 							var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
 							
 							if (form.isValid()) {
+								
+								var statuses_checked = new Array();
+								check_category_status_sm.each(function(rec){
+									statuses_checked.push(rec.get('id'));
+								});								
+								
+								
 								form.submit({
-									params: {action: action},
+									params: {action: action, idsstatus: statuses_checked},
 									success: function(f,a){
 										Baseliner.message(_('Success'), a.result.msg );
 										form.findField("id").setValue(a.result.category_id);
@@ -990,12 +1294,11 @@
 						}
 					}
 			],
-			defaults: { anchor:'100%'},
+			defaults: { bodyStyle:'padding:0 18px 0 0'},
 			items: [
-				{ xtype: 'hidden', name: 'id', value: -1 },
-				{ xtype:'textfield', name:'name', fieldLabel:_('Category'), allowBlank:false, emptyText:_('Name of category') },
-				ta
-			]
+                column1,
+                column2
+			]			
 		});
 
 		if(rec){
@@ -1006,7 +1309,7 @@
 		
 		win = new Ext.Window({
 			title: _(title),
-			width: 400,
+			width: 700,
 			autoHeight: true,
 			items: form_category
 		});
@@ -1048,8 +1351,6 @@
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
-			//var sm = grid_categories.getSelectionModel();
-			//var sel = sm.getSelected();
 			var categories_checked = getCategories();
 			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the categories selected?'), 
 			function(btn){ 
@@ -1057,9 +1358,7 @@
 					Baseliner.ajaxEval( '/issue/update_category?action=delete',{ idscategory: categories_checked },
 						function(response) {
 							if ( response.success ) {
-								//grid_categories.getStore().remove(sel);
 								Baseliner.message( _('Success'), response.msg );
-								//init_buttons('disable');
 								init_buttons_category('disable');
 								store_category.load();
 								var labels_checked = getLabels();
@@ -1082,13 +1381,8 @@
 	});
 	
 	var grid_categories = new Ext.grid.GridPanel({
-		region : 'north',
 		title : _('Categories'),
 		sm: check_categories_sm,
-		//collapsible : true,
-        height: 300,
-        minSize: 150,
-		split: true,
 		header: true,
 		stripeRows: true,
 		autoScroll: true,
@@ -1118,7 +1412,16 @@
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
 			filtrar_issues(labels_checked, categories_checked);
-			init_buttons_category('enable');
+			if (categories_checked.length == 1){
+				init_buttons_category('enable');
+			}else{
+				if(categories_checked.length == 0){
+					init_buttons_category('disable');
+				}else{
+					btn_delete_category.enable();
+					btn_edit_category.disable();
+				}
+			}
 		}
 	});
 	
@@ -1127,9 +1430,14 @@
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
 			filtrar_issues(labels_checked, categories_checked);
-			init_buttons_category('enable');
+			if(categories_checked.length == 0){
+				init_buttons_category('disable');
+			}else{
+				btn_delete_category.enable();
+				btn_edit_category.disable();
+			}
 		}
-	});	
+	});
 
 	var btn_add_label = new Ext.Toolbar.Button({
 			id: 'btn_add_label',
@@ -1189,7 +1497,6 @@
 					Baseliner.ajaxEval( '/issue/update_label?action=delete',{ idslabel: labels_checked },
 						function(response) {
 							if ( response.success ) {
-								//grid_labels.getStore().remove(sel);
 								Baseliner.message( _('Success'), response.msg );
 								init_buttons_label('disable');
 								store_label.load();
@@ -1233,9 +1540,7 @@
 						if ( response.success ) {
 							store_label.load();
 							Baseliner.message( _('Success'), response.msg );
-							//init_buttons('disable');
 						} else {
-							//Baseliner.message( _('ERROR'), response.msg );
 							Ext.Msg.show({
 								title: _('Information'), 
 								msg: response.msg , 
@@ -1275,11 +1580,9 @@
 	});
 
 	var grid_labels = new Ext.grid.GridPanel({
-		region : 'center',
 		title : _('Labels'),
 		sm: check_labels_sm,
 		autoScroll: true,
-		//collapsible : true,
 		header: true,
 		stripeRows: true,
 		enableHdMenu: false,
@@ -1298,6 +1601,14 @@
 		deferredRender:true,
 		tbar: tb
 	});
+	
+	function getStatuses(){
+		var statuses_checked = new Array();
+		check_status_sm.each(function(rec){
+			statuses_checked.push(rec.get('id'));
+		});
+		return statuses_checked
+	}	
 
 	function getCategories(){
 		var categories_checked = new Array();
@@ -1344,13 +1655,13 @@
 		items : [ config_tabs,   
 				{
 					region : 'east',
-					split: true,
 					width: 350,
-					minSize: 150,
-					maxSize: 500,
-					layout:'border',
-					border: true,
+					layout:'accordion',
+					split: true,
+					collapsible: true,
+					defaults: {collapsed : true},
 					items: [
+							grid_status,
 							grid_categories,
 							grid_labels
 					]
@@ -1361,6 +1672,7 @@
 	var query_id = '<% $c->stash->{query_id} %>';
 	store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>'}});
 	store_closed.load({params:{start:0 , limit: ps, filter:'C'}});
+	store_status.load();
 	store_category.load();
 	store_label.load();	
 	

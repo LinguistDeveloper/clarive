@@ -141,7 +141,7 @@ sub view : Local {
     $c->stash->{description} = $issue->description;
     $c->stash->{id_rel} = $id_issue;
 	$self->viewdetail( $c );
-    $c->stash->{template} = '/comp/issue_msg.js';
+    $c->stash->{template} = '/comp/issue_msg.html';
 }
 
 sub viewdetail: Local {
@@ -201,11 +201,18 @@ sub list_category : Local {
 	
 	if($row){
 		while( my $r = $row->next ) {
+			my @statuses;
+			my $statuses = $c->model('Baseliner::BaliIssueCategoriesStatus')->search({id_category => $r->id});
+			while( my $status = $statuses->next ) {
+				push @statuses, $status->id_status;
+			}
+			
 			push @rows,
 			  {
 				id          => $r->id,
 				name	    => $r->name,
 				description	=> $r->description,
+				statuses	=> \@statuses
 			  };
 		}  
 	}
@@ -219,6 +226,7 @@ sub update_category : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $action = $p->{action};
+	my $idsstatus = $p->{idsstatus};
 
     given ($action) {
         when ('add') {
@@ -226,6 +234,17 @@ sub update_category : Local {
 				my $row = $c->model('Baseliner::BaliIssueCategories')->search({name => $p->{name}})->first;
 				if(!$row){
 					my $category = $c->model('Baseliner::BaliIssueCategories')->create({name  => $p->{name}, description=> $p->{description}});
+					
+					if($idsstatus){
+						foreach my $id_status (_array $idsstatus){
+							$row = $c->model('Baseliner::BaliIssueCategoriesStatus')->create(
+																							{
+																								id_category    =>  $category->id,
+																								id_status  	=> $id_status,
+																							});		
+						}
+					}
+
 	                $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=> $category->id };
 				}
 				else{
@@ -244,6 +263,19 @@ sub update_category : Local {
                 $category->description( $p->{description} );
                 $category->update();
                 
+				my $rs = Baseliner->model('Baseliner::BaliIssueCategoriesStatus')->search({ id_category => $id_category });
+				$rs->delete;
+				if($idsstatus){
+					foreach my $id_status (_array $idsstatus){
+						$rs = $c->model('Baseliner::BaliIssueCategoriesStatus')->create(
+																						{
+																							id_category    =>  $category->id,
+																							id_status  	=> $id_status,
+																						});		
+					}
+				}				
+				
+				
                 $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, category_id=> $id_category };
             }
             catch{
@@ -272,6 +304,87 @@ sub update_category : Local {
     $c->forward('View::JSON');    
 }
 
+
+sub list_status : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+	my $cnt;
+	my $row;
+	my @rows;
+	$row = $c->model('Baseliner::BaliIssueStatus')->search();
+	
+	if($row){
+		while( my $r = $row->next ) {
+			push @rows,
+			  {
+				id          => $r->id,
+				name	    => $r->name,
+				description	=> $r->description,
+			  };
+		}  
+	}
+    $cnt = $#rows + 1 ;	
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->forward('View::JSON');
+}
+
+sub update_status : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $action = $p->{action};
+
+    given ($action) {
+        when ('add') {
+            try{
+				my $row = $c->model('Baseliner::BaliIssueStatus')->search({name => $p->{name}})->first;
+				if(!$row){
+					my $status = $c->model('Baseliner::BaliIssueStatus')->create({name  => $p->{name}, description=> $p->{description}});
+	                $c->stash->{json} = { msg=>_loc('Status added'), success=>\1, status_id=> $status->id };
+				}
+				else{
+					$c->stash->{json} = { msg=>_loc('Status name already exists, introduce another status name'), failure=>\1 };
+				}
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error adding Status: %1', shift()), failure=>\1 }
+            }
+        }
+        when ('update') {
+            try{
+                my $id_status = $p->{id};
+                my $status = $c->model('Baseliner::BaliIssueStatus')->find( $id_status );
+                $status->name( $p->{name} );
+                $status->description( $p->{description} );
+                $status->update();
+                
+                $c->stash->{json} = { msg=>_loc('Status modified'), success=>\1, status_id=> $id_status };
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error modifying Status: %1', shift()), failure=>\1 };
+            }
+        }
+        when ('delete') {
+            my $ids_status = $p->{idsstatus};
+            try{
+				my @ids_status;
+				foreach my $id_status (_array $ids_status){
+					push @ids_status, $id_status;
+				}
+				  
+				my $rs = Baseliner->model('Baseliner::BaliIssueStatus')->search({ id => \@ids_status });
+				$rs->delete;
+				
+                $c->stash->{json} = { success => \1, msg=>_loc('Statuses deleted') };
+            }
+            catch{
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Statuses') };
+            }
+        }
+    }
+    
+    $c->forward('View::JSON');    
+}
 
 sub update_label : Local {
     my ($self,$c)=@_;

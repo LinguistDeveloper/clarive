@@ -2710,3 +2710,14 @@ msgstr "Error desasignando proyectos: %1"
 # root/comp/issue_grid.js (624)
 msgid "Unassign projects"
 msgstr "Desasignar proyectos"
+
+# root/comp/issue_grid.js (963)
+msgid "Issues: Statuses"
+msgstr "Estados"
+
+# root/comp/issue_grid.js (980)
+msgid "Issues: Status"
+msgstr "Estado"
+
+
+
