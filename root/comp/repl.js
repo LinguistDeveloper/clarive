@@ -243,7 +243,7 @@ To do:
     tree.on('click', function(n,e) {
         if( n.attributes.url_click != undefined ) {
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
-                if( res.code != undefined ) code.setValue( res.code );
+                if( res.code != undefined ) { editor.setValue( res.code ); code.setValue( res.code ); }
                 if( res.output != undefined ) set_output( res.output );
                 if( res.div != undefined ) {
                     var tab = console.add({ xtype:'component', closable: true,
