@@ -195,29 +195,42 @@ sub list_category : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 	my $cnt;
-	my $row;
 	my @rows;
-	$row = $c->model('Baseliner::BaliIssueCategories')->search();
-	
-	if($row){
-		while( my $r = $row->next ) {
-			my @statuses;
-			my $statuses = $c->model('Baseliner::BaliIssueCategoriesStatus')->search({id_category => $r->id});
+
+	if( !$p->{categoryId} ){	
+		my $row = $c->model('Baseliner::BaliIssueCategories')->search();
+		
+		if($row){
+			while( my $r = $row->next ) {
+				my @statuses;
+				my $statuses = $c->model('Baseliner::BaliIssueCategoriesStatus')->search({id_category => $r->id});
+				while( my $status = $statuses->next ) {
+					push @statuses, $status->id_status;
+				}
+				
+				push @rows,
+				  {
+					id          => $r->id,
+					name	    => $r->name,
+					description	=> $r->description,
+					statuses	=> \@statuses
+				  };
+			}  
+		}
+		$cnt = $#rows + 1 ;	
+	}else{
+		my $statuses = $c->model('Baseliner::BaliIssueCategoriesStatus')->search({id_category => $p->{categoryId}});
+		if($statuses){
 			while( my $status = $statuses->next ) {
-				push @statuses, $status->id_status;
+				push @rows, {
+								id		=> $status->status->id,
+								name	=> $status->status->name
+							};
 			}
-			
-			push @rows,
-			  {
-				id          => $r->id,
-				name	    => $r->name,
-				description	=> $r->description,
-				statuses	=> \@statuses
-			  };
-		}  
+		}
+		$cnt = $#rows + 1 ;
 	}
-    $cnt = $#rows + 1 ;	
-    
+	
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
