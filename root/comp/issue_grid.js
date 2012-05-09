@@ -9,7 +9,6 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		//id: 'id', 
 		url: '/issue/list',
 		fields: [ 
 			{  name: 'id' },
@@ -38,7 +37,6 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		//id: 'id', 
 		url: '/issue/list',
 		fields: [ 
 			{  name: 'id' },
@@ -69,7 +67,6 @@
 		remoteSort: true,
 		baseParams:{cmb:'category'},
 		totalProperty:"totalCount", 
-		//id: 'id', 
 		url: '/issue/list_category',
 		fields: [ 
 			{  name: 'id' },
@@ -83,7 +80,6 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		//id: 'id', 
 		url: '/issue/list_category',
 		fields: [ 
 			{  name: 'id' },
@@ -96,7 +92,6 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		//id: 'id', 
 		url: '/issue/list_label',
 		fields: [ 
 			{  name: 'id' },
@@ -109,13 +104,14 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		//id: 'id', 
 		url: '/issue/list_priority',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
-			{  name: 'response_time' },
-			{  name: 'deadline' }
+			{  name: 'response_time_min' },
+			{  name: 'expr_response_time' },
+			{  name: 'deadline_min' },
+			{  name: 'expr_deadline' }			
 		]
 	});	
 	
@@ -139,7 +135,6 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		//id: 'id', 
 		url: '/issue/list_status',
 		fields: [ 
 			{  name: 'id' },
@@ -168,6 +163,11 @@
 		eval('btn_edit_status.' + action + '()');		
 		eval('btn_delete_status.' + action + '()');
 	}
+	
+	var init_buttons_priority = function(action) {
+		eval('btn_edit_priority.' + action + '()');		
+		eval('btn_delete_priority.' + action + '()');
+	}	
 
 	var btn_add = new Ext.Toolbar.Button({
 		text: _('New'),
@@ -1670,6 +1670,14 @@
 		return labels_checked
 	}
 	
+	function getPriorities(){
+		var priorities_checked = new Array();
+		check_priorities_sm.each(function(rec){
+			priorities_checked.push(rec.get('id'));
+		});
+		return priorities_checked
+	}		
+	
 	function filtrar_issues(labels_checked, categories_checked){
 		var query_id = '<% $c->stash->{query_id} %>';
 		store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked}});
@@ -1695,12 +1703,269 @@
 	});
 
 
+	var add_edit_priority = function(rec) {
+		var win;
+		var title = 'Create priority';
+		
+		function load_cbx(form, rec){
+			var expr = rec.data.expr_response_time.split(':');
+			for (i=0; i < expr.length; i++){
+				var value = expr[i].substr(0, expr[i].length - 1);
+				if(value != 0){
+					var type = 	expr[i].substr(expr[i].length - 1, 1);
+					switch (type){
+						case 'M': 	form.findField("txt_rsptime_months").setValue(value);
+									break;
+						case 'W': 	form.findField("txt_rsptime_weeks").setValue(value);
+									break;
+						case 'D': 	form.findField("txt_rsptime_days").setValue(value);
+									break;
+						case 'h': 	form.findField("txt_rsptime_hours").setValue(value);
+									break;
+						case 'm': 	form.findField("txt_rsptime_minutes").setValue(value);
+									break;
+					}
+				}
+				
+			}
+			expr = rec.data.expr_deadline.split(':');
+			for (i=0; i < expr.length; i++){
+				var value = expr[i].substr(0, expr[i].length - 1);
+				if(value != 0){
+					var type = 	expr[i].substr(expr[i].length - 1, 1);
+					switch (type){
+						case 'M': 	form.findField("txt_deadline_months").setValue(value);
+									break;
+						case 'W': 	form.findField("txt_deadline_weeks").setValue(value);
+									break;
+						case 'D': 	form.findField("txt_deadline_days").setValue(value);
+									break;
+						case 'h': 	form.findField("txt_deadline_hours").setValue(value);
+									break;
+						case 'm': 	form.findField("txt_deadline_minutes").setValue(value);
+									break;
+					}
+				}
+				
+			}
+			
+		}
+
+		var txt_rsptime_months = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_months',
+			fieldLabel: _('Months'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
+		});
+		
+		var txt_rsptime_weeks = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_weeks',
+			fieldLabel: _('Weeks'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
+		});
+		
+		var txt_rsptime_days = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_days',
+			fieldLabel: _('Days'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
+		});
+		
+		var txt_rsptime_hours = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_hours',
+			fieldLabel: _('Hours'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
+		});
+		
+		var txt_rsptime_minutes = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_minutes',
+			fieldLabel: _('Minutes'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
+		});
+		
+		var txt_deadline_months = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_months',
+			fieldLabel: _('Months'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
+		});
+		
+		var txt_deadline_weeks = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_weeks',
+			fieldLabel: _('Weeks'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
+		});
+		
+		var txt_deadline_days = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_days',
+			fieldLabel: _('Days'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
+		});		
+		
+		var txt_deadline_hours = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_hours',
+			fieldLabel: _('Hours'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
+		});
+		
+		var txt_deadline_minutes = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_minutes',
+			fieldLabel: _('Minutes'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
+		});		
+		
+		var form_priority = new Ext.FormPanel({
+			frame: true,
+			url:'/issue/update_priority',
+			bodyStyle:'padding:10px 10px 0',
+			buttons: [
+					{
+						text: _('Accept'),
+						type: 'submit',
+						handler: function() {
+							var form = form_priority.getForm();
+							var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+							var rsptime = new Array();
+							var deadline = new Array();
+							
+							var txt_rsptime_months =  form.findField("txt_rsptime_months").getValue();
+							var txt_rsptime_weeks =  form.findField("txt_rsptime_weeks").getValue();
+							var txt_rsptime_days =  form.findField("txt_rsptime_days").getValue();
+							var txt_rsptime_hours =  form.findField("txt_rsptime_hours").getValue();
+							var txt_rsptime_minutes =  form.findField("txt_rsptime_minutes").getValue();
+
+							var txt_deadline_months =  form.findField("txt_deadline_months").getValue();
+							var txt_deadline_weeks =  form.findField("txt_deadline_weeks").getValue();
+							var txt_deadline_days =  form.findField("txt_deadline_days").getValue();
+							var txt_deadline_hours =  form.findField("txt_deadline_hours").getValue();
+							var txt_deadline_minutes =  form.findField("txt_deadline_minutes").getValue();
+							
+							txt_rsptime_months =  txt_rsptime_months ? txt_rsptime_months : 0;
+							txt_rsptime_weeks =  txt_rsptime_weeks ? txt_rsptime_weeks : 0;
+							txt_rsptime_days =  txt_rsptime_days ? txt_rsptime_days : 0;
+							txt_rsptime_hours =  txt_rsptime_hours ? txt_rsptime_hours : 0;
+							txt_rsptime_minutes =  txt_rsptime_minutes ? txt_rsptime_minutes : 0;
+
+							txt_deadline_months =  txt_deadline_months ? txt_deadline_months : 0;
+							txt_deadline_weeks =  txt_deadline_weeks ? txt_deadline_weeks : 0;
+							txt_deadline_days =  txt_deadline_days ? txt_deadline_days : 0;
+							txt_deadline_hours =  txt_deadline_hours ? txt_deadline_hours : 0;
+							txt_deadline_minutes =  txt_deadline_minutes ? txt_deadline_minutes : 0;
+							
+							rsptime[0] = txt_rsptime_months + 'M:' + txt_rsptime_weeks + 'W:' + txt_rsptime_days + 'D:' + txt_rsptime_hours + 'h:' + txt_rsptime_minutes + 'm';
+							rsptime[1] = (txt_rsptime_months * 31 * 24 * 60 * 60) + (txt_rsptime_weeks * 7 * 24 * 60 * 60) + (txt_rsptime_days * 24 * 60 * 60) + (txt_rsptime_hours * 60) + txt_rsptime_minutes;
+							
+							deadline[0] = txt_deadline_months + 'M:' + txt_deadline_weeks + 'W:' + txt_deadline_days + 'D:' + txt_deadline_hours + 'h:' + txt_deadline_minutes + 'm';
+							deadline[1] = (txt_deadline_months * 31 * 24 * 60 * 60) + (txt_deadline_weeks * 7 * 24 * 60 * 60) + (txt_deadline_days * 24 * 60 * 60) + (txt_deadline_hours * 60) + txt_deadline_minutes;
+							
+							
+							if (form.isValid()) {
+								form.submit({
+									params: {action: action, rsptime: rsptime, deadline: deadline},
+									success: function(f,a){
+										Baseliner.message(_('Success'), a.result.msg );
+										form.findField("id").setValue(a.result.priority_id);
+										store_priority.load();
+										win.setTitle(_('Edit priority'));
+									},
+									failure: function(f,a){
+										Ext.Msg.show({  
+											title: _('Information'), 
+											msg: a.result.msg , 
+											buttons: Ext.Msg.OK, 
+											icon: Ext.Msg.INFO
+										}); 						
+									}
+								});
+							}
+						}
+					},
+					{
+					text: _('Close'),
+					handler: function(){ 
+							win.close();
+						}
+					}
+			],
+			defaults: { anchor:'100%'},
+			items: [
+				{ xtype: 'hidden', name: 'id', value: -1 },
+				{ xtype:'textfield', name:'name', fieldLabel:_('Priority'), allowBlank:false, emptyText:_('Name of priority') },
+				{
+					// column layout with 2 columns
+					layout:'column'
+					,defaults:{
+						columnWidth:0.5
+						,layout:'form'
+						,border:false
+						,xtype:'panel'
+						,bodyStyle:'padding:0 10px 0 0'
+					}
+					,items:[
+							{
+								// left column
+								defaults:{anchor:'100%'}
+								,items:[
+										{
+											xtype:'fieldset',
+											title: 'Response time',
+											autoHeight:true,
+											defaults: {width: 40},
+											defaultType: 'textfield',
+											items :[
+												txt_rsptime_months,
+												txt_rsptime_weeks,
+												txt_rsptime_days,
+												txt_rsptime_hours,
+												txt_rsptime_minutes
+											]
+										}
+								]
+							},
+							{
+								// right column
+								defaults:{anchor:'100%'}
+								,items:[
+										{
+											xtype:'fieldset',
+											title: 'Deadline',
+											autoHeight:true,
+											defaults: {width: 40},
+											defaultType: 'textfield',
+											items :[
+												txt_deadline_months,
+												txt_deadline_weeks,
+												txt_deadline_days,
+												txt_deadline_hours,
+												txt_deadline_minutes
+											]
+										}
+								]
+							}
+					]
+				}
+			]
+		});
+
+		if(rec){
+			var ff = form_priority.getForm();
+			ff.loadRecord( rec );
+			load_cbx(ff, rec);
+			title = 'Edit priority';
+		}
+		
+		win = new Ext.Window({
+			title: _(title),
+			width: 450,
+			autoHeight: true,
+			items: form_priority
+		});
+		win.show();		
+	};
+
 	var btn_add_priority = new Ext.Toolbar.Button({
 		text: _('New'),
 		icon:'/static/images/icons/add.gif',
 		cls: 'x-btn-text-icon',
 		handler: function() {
-					//add_edit_category();
+					add_edit_priority();
 		}
 	});
 	
@@ -1710,13 +1975,14 @@
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
-			//var sm = grid_categories.getSelectionModel();
-			//if (sm.hasSelection()) {
-			//	var sel = sm.getSelected();
-			//	add_edit_category(sel);
-			//} else {
-			//	Baseliner.message( _('ERROR'), _('Select at least one row'));    
-			//};
+			var sm = grid_priority.getSelectionModel();
+			if (sm.hasSelection()) {
+				var sel = sm.getSelected();
+				//load_cbx();
+				add_edit_priority(sel);
+			} else {
+				Baseliner.message( _('ERROR'), _('Select at least one row'));    
+			};
 		}
 	});
 
@@ -1727,29 +1993,44 @@
 		cls: 'x-btn-text-icon',
 		disabled: true,
 		handler: function() {
-			//var categories_checked = getCategories();
-			//Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the categories selected?'), 
-			//function(btn){ 
-			//	if(btn=='yes') {
-			//		Baseliner.ajaxEval( '/issue/update_category?action=delete',{ idscategory: categories_checked },
-			//			function(response) {
-			//				if ( response.success ) {
-			//					Baseliner.message( _('Success'), response.msg );
-			//					init_buttons_category('disable');
-			//					store_category.load();
-			//					var labels_checked = getLabels();
-			//					filtrar_issues(labels_checked, null);								
-			//				} else {
-			//					Baseliner.message( _('ERROR'), response.msg );
-			//				}
-			//			}
-			//		
-			//		);
-			//	}
-			//});
+			var priorities_checked = getPriorities();
+			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the priorities selected?'), 
+			function(btn){ 
+				if(btn=='yes') {
+					Baseliner.ajaxEval( '/issue/update_priority?action=delete',{ idspriority: priorities_checked },
+						function(response) {
+							if ( response.success ) {
+								Baseliner.message( _('Success'), response.msg );
+								init_buttons_priority('disable');
+								store_priority.load();
+								var labels_checked = getLabels();
+								var categories_checked = getCategories();
+								filtrar_issues(labels_checked, categories_checked);								
+							} else {
+								Baseliner.message( _('ERROR'), response.msg );
+							}
+						}
+					
+					);
+				}
+			});
 		}
 	});
 
+
+	var show_expr = function(value,metadata,rec,rowIndex,colIndex,store) {
+		var expr = value.split(':');
+		var str_expr = '';
+		for(i=0; i < expr.length; i++)
+		{
+			if (expr[i].length == 2 && expr[i].substr(0,1) == '0'){
+				continue;
+			}else{
+				str_expr += expr[i] + ' ';
+			}
+		}
+		return str_expr;
+	};
 
 	var check_priorities_sm = new Ext.grid.CheckboxSelectionModel({
 		singleSelect: false,
@@ -1771,9 +2052,9 @@
 		columns: [
 			{ hidden: true, dataIndex:'id' },
 			check_priorities_sm,
-			{ header: _('Priority'), dataIndex: 'priority', width:50, sortable: false },
-			{ header: _('Response time'), dataIndex: 'response_time', sortable: false },
-			{ header: _('Deadline'), dataIndex: 'deadline', sortable: false }	
+			{ header: _('Priority'), dataIndex: 'name', width:50, sortable: true },
+			{ header: _('Response time'), dataIndex: 'expr_response_time', sortable: false, renderer: show_expr },
+			{ header: _('Deadline'), dataIndex: 'expr_deadline', sortable: false, renderer: show_expr }	
 		],
 		autoSizeColumns: true,
 		deferredRender:true,	
@@ -1784,6 +2065,40 @@
 				'->'
 		]	
 	});
+	
+	grid_priority.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+		if(columnIndex == 1){
+			var priorities_checked = getPriorities();
+			var categories_checked = getCategories();
+			var labels_checked = getLabels();
+			filtrar_issues(labels_checked, categories_checked);
+			if (priorities_checked.length == 1){
+				init_buttons_priority('enable');
+			}else{
+				if(priorities_checked.length == 0){
+					init_buttons_priority('disable');
+				}else{
+					btn_delete_priority.enable();
+					btn_edit_priority.disable();
+				}
+			}			
+		}
+	});
+	
+	grid_priority.on('headerclick', function(grid, columnIndex, e) {
+		if(columnIndex == 1){
+			var priorities_checked = getPriorities();
+			var categories_checked = getCategories();
+			var labels_checked = getLabels();
+			filtrar_issues(labels_checked, categories_checked);
+			if(priorities_checked.length == 0){
+				init_buttons_priority('disable');
+			}else{
+				btn_delete_priority.enable();
+				btn_edit_priority.disable();
+			}
+		}
+	});	
 
 	var panel = new Ext.Panel({
 		layout : "border",
@@ -1810,7 +2125,8 @@
 	store_closed.load({params:{start:0 , limit: ps, filter:'C'}});
 	store_status.load();
 	store_category.load();
-	store_label.load();	
+	store_label.load();
+	store_priority.load();
 	
 	return panel;
 })

@@ -399,6 +399,102 @@ sub update_status : Local {
     $c->forward('View::JSON');    
 }
 
+sub list_priority : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+	my $cnt;
+	my $row;
+	my @rows;
+	$row = $c->model('Baseliner::BaliIssuePriority')->search();
+	
+	if($row){
+		while( my $r = $row->next ) {
+			push @rows,
+			  {
+				id          => $r->id,
+				name	    => $r->name,
+				response_time_min	=> $r->response_time_min,
+				expr_response_time => $r->expr_response_time,
+				deadline_min => $r->deadline_min,
+				expr_deadline => $r->expr_deadline
+			  };
+		}  
+	}
+    $cnt = $#rows + 1 ;	
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->forward('View::JSON');
+}
+
+sub update_priority : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $action = $p->{action};
+	my @rsptime = _array $p->{rsptime};
+	my @deadline = _array $p->{deadline};
+	
+    given ($action) {
+        when ('add') {
+            try{
+				my $row = $c->model('Baseliner::BaliIssuePriority')->search({name => $p->{name}})->first;
+				if(!$row){
+					my $priority = $c->model('Baseliner::BaliIssuePriority')->create({
+																					name => $p->{name},
+																					response_time_min => $rsptime[1],
+																					expr_response_time => $rsptime[0],
+																					deadline_min => $deadline[1],
+																					expr_deadline => $deadline[0]
+																					});
+					
+	                $c->stash->{json} = { msg=>_loc('Priority added'), success=>\1, status_id=> $priority->id };
+				}
+				else{
+					$c->stash->{json} = { msg=>_loc('Priority name already exists, introduce another priority name'), failure=>\1 };
+				}
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error adding Priority: %1', shift()), failure=>\1 }
+            }
+        }
+        when ('update') {
+            try{
+                my $id_priority = $p->{id};
+                my $priority = $c->model('Baseliner::BaliIssuePriority')->find( $id_priority );
+                $priority->name( $p->{name} );
+				$priority->response_time_min( $rsptime[1] );
+				$priority->expr_response_time( $rsptime[0] );
+				$priority->deadline_min( $deadline[1] );
+				$priority->expr_deadline( $deadline[0] );
+                $priority->update();
+                
+                $c->stash->{json} = { msg=>_loc('Priority modified'), success=>\1, priority_id=> $id_priority };
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error modifying Priority: %1', shift()), failure=>\1 };
+            }
+        }
+        when ('delete') {
+            my $ids_priority = $p->{idspriority};
+            try{
+				my @ids_priority;
+				foreach my $id_priority (_array $ids_priority){
+					push @ids_priority, $id_priority;
+				}
+				  
+				my $rs = Baseliner->model('Baseliner::BaliIssuePriority')->search({ id => \@ids_priority });
+				$rs->delete;
+				
+                $c->stash->{json} = { success => \1, msg=>_loc('Priorities deleted') };
+            }
+            catch{
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Priorities') };
+            }
+        }
+    }
+    
+    $c->forward('View::JSON');    
+}
+
 sub update_label : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
