@@ -23,7 +23,7 @@ sub tree_projects : Local {
                 id_project => $r->id,
                 project    => $r->name,
             },
-            icon       => '/static/images/icons/project_small.gif',
+            icon       => '/static/images/icons/project_small.png',
             leaf       => \0,
             expandable => \1
             };
