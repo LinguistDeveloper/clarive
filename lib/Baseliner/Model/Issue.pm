@@ -34,7 +34,7 @@ sub update {
                         created_by  => $p->{username},
                         id_category  => $p->{category},
                         id_category_status => $p->{status},
-                        id_priority => $p->{id_priority},
+                        id_priority => $p->{priority},
                         response_time_min => $rsptime[1],
                         expr_response_time => $rsptime[0],
                         deadline_min => $deadline[1],
@@ -57,6 +57,14 @@ sub update {
                 $issue->title( $p->{title} );
                 $issue->description( $p->{description} );
                 $issue->id_category( $p->{category} );
+                $issue->id_category_status( $p->{status} );
+                $issue->id_priority( $p->{priority} );
+                $issue->response_time_min( $rsptime[1] );
+                $issue->expr_response_time( $rsptime[0] );
+                $issue->deadline_min( $deadline[1] );
+                $issue->expr_deadline( $deadline[0] );
+                
+                
                 $issue->update();
                 $id     = $id_issue;
                 $return = _loc( 'Issue modified' );
@@ -131,7 +139,8 @@ sub GetIssues {
         #                    (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
         #                ON BALI_ISSUE.ID = D.ID WHERE $ids_labels AND $ids_categories";
           
-        $SQL = "SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY
+        $SQL = "SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
+                        ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
                         FROM  ((BALI_ISSUE INNER JOIN BALI_ISSUE_PROJECT ON BALI_ISSUE.ID = BALI_ISSUE_PROJECT.ID_ISSUE AND $ids_projects ) INNER JOIN BALI_ISSUE_LABEL ON BALI_ISSUE.ID = BALI_ISSUE_LABEL.ID_ISSUE)  LEFT JOIN BALI_ISSUE_CATEGORIES F ON ID_CATEGORY = F.ID
                         LEFT JOIN
                             (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
@@ -139,7 +148,8 @@ sub GetIssues {
                         
                 UNION ALL        
                         
-                SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY
+                SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
+                        ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
                         FROM  ((BALI_ISSUE LEFT JOIN BALI_ISSUE_PROJECT ON BALI_ISSUE.ID = BALI_ISSUE_PROJECT.ID_ISSUE ) INNER JOIN BALI_ISSUE_LABEL ON BALI_ISSUE.ID = BALI_ISSUE_LABEL.ID_ISSUE)  LEFT JOIN BALI_ISSUE_CATEGORIES F ON ID_CATEGORY = F.ID
                         LEFT JOIN
                             (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
@@ -152,7 +162,8 @@ sub GetIssues {
         #                    (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
         #                ON C.ID = D.ID WHERE $ids_categories ORDER BY $orderby ";
         
-        $SQL = "SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY
+        $SQL = "SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
+                        ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
                         FROM  ((BALI_ISSUE INNER JOIN BALI_ISSUE_PROJECT ON BALI_ISSUE.ID = BALI_ISSUE_PROJECT.ID_ISSUE AND $ids_projects ) LEFT JOIN BALI_ISSUE_CATEGORIES F ON BALI_ISSUE.ID_CATEGORY = F.ID)
                         LEFT JOIN
                             (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
@@ -160,7 +171,8 @@ sub GetIssues {
                         
                 UNION ALL
                 
-                SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY
+                SELECT BALI_ISSUE.ID AS ID, TITLE, BALI_ISSUE.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
+                        ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
                         FROM  ((BALI_ISSUE LEFT JOIN BALI_ISSUE_PROJECT ON BALI_ISSUE.ID = BALI_ISSUE_PROJECT.ID_ISSUE ) LEFT JOIN BALI_ISSUE_CATEGORIES F ON BALI_ISSUE.ID_CATEGORY = F.ID)
                         LEFT JOIN
                             (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D

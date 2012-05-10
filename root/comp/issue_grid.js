@@ -437,6 +437,55 @@
 			store: store_category_status
 		});		
 		
+		function get_expr_response_time(row){
+			var str_expr = '';
+			var expr = row.data.expr_response_time.split(':');
+			for(i=0; i < expr.length; i++)
+			{
+				if (expr[i].length == 2 && expr[i].substr(0,1) == '0'){
+					continue;
+				}else{
+					str_expr += expr[i] + ' ';
+				}
+			}
+			return str_expr;
+		}
+		
+		function get_expr_deadline(row){
+			var str_expr = '';
+			var expr = row.data.expr_deadline.split(':');
+			for(i=0; i < expr.length; i++)
+			{
+				if (expr[i].length == 2 && expr[i].substr(0,1) == '0'){
+					continue;
+				}else{
+					str_expr += expr[i] + ' ';
+				}
+			}
+			return str_expr;
+		}
+		
+		function load_txt_values_priority(row){
+			var ff = form_issue.getForm();
+			var obj_rsp_expr_min = ff.findField("txt_rsptime_expr_min");
+			var obj_rsp_time = ff.findField("txtrsptime");
+			var obj_deadline_expr_min = ff.findField("txt_deadline_expr_min");
+			var obj_deadline = ff.findField("txtdeadline");
+			obj_rsp_expr_min.setValue('');
+			obj_rsp_time.setValue('');
+			obj_deadline_expr_min.setValue('');
+			obj_deadline.setValue('');
+			if(row.data.expr_response_time){
+				ff.findField("txtrsptime").setValue();
+				obj_rsp_expr_min.setValue(row.data.expr_response_time + '#' + row.data.response_time_min);
+				obj_rsp_time.setValue(get_expr_response_time(row));
+			}
+			if(row.data.expr_deadline){
+				obj_deadline_expr_min.setValue(row.data.expr_deadline + '#' + row.data.deadline_min);
+				obj_deadline.setValue(get_expr_deadline(row));
+			}
+		}
+		
 		var combo_priority = new Ext.form.ComboBox({
 			mode: 'local',
 			forceSelection: true,
@@ -450,33 +499,7 @@
 			store: store_priority,
 			listeners:{
 				'select': function(cmd, rec, idx){
-					var ff = form_issue.getForm();
-					ff.findField("txt_rsptime_expr_min").setValue(rec.data.expr_response_time + '#' + rec.data.response_time_min);
-					var expr = rec.data.expr_response_time.split(':');
-					var str_expr = '';
-					for(i=0; i < expr.length; i++)
-					{
-						if (expr[i].length == 2 && expr[i].substr(0,1) == '0'){
-							continue;
-						}else{
-							str_expr += expr[i] + ' ';
-						}
-					}
-					ff.findField("txtrpstime").setValue(str_expr);
-					
-					ff.findField("txt_deadline_expr_min").setValue(rec.data.expr_deadline + '#' + rec.data.deadline_min);
-					expr = rec.data.expr_deadline.split(':');
-					var str_expr = '';
-					for(i=0; i < expr.length; i++)
-					{
-						if (expr[i].length == 2 && expr[i].substr(0,1) == '0'){
-							continue;
-						}else{
-							str_expr += expr[i] + ' ';
-						}
-					}					
-					ff.findField("txtdeadline").setValue(str_expr);
-
+					load_txt_values_priority(rec);
 				}
 			}			
 		});
@@ -683,7 +706,7 @@
 						{
 							xtype:'textfield',
 							fieldLabel: _('Response time'),
-							name: 'txtrpstime',
+							name: 'txtrsptime',
 							readOnly: true
 						}
 					]
@@ -749,12 +772,7 @@
 		if(rec){
 			var ff = form_issue.getForm();
 			ff.loadRecord( rec );
-			
-			//combo_category.setValue(rec.data.key);
-			//combo_status.setValue(rec.data.key);
-			alert(rec.data.status);
-			
-			
+			load_txt_values_priority(rec);
 			var projects = '';
 			if(rec.data.projects){
 				for(i=0;i<rec.data.projects.length;i++){
@@ -2083,7 +2101,6 @@
 			var sm = grid_priority.getSelectionModel();
 			if (sm.hasSelection()) {
 				var sel = sm.getSelected();
-				//load_cbx();
 				add_edit_priority(sel);
 			} else {
 				Baseliner.message( _('ERROR'), _('Select at least one row'));    
