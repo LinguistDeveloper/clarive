@@ -687,8 +687,8 @@
 				    name: 'title',
 				    allowBlank: false
 				},
-				combo_category,
-				combo_status,
+				//combo_category,
+				//combo_status,
 				{
 				// column layout with 2 columns
 				layout:'column'
@@ -700,33 +700,60 @@
 				}
 				,items:[{
 					// left column
-					columnWidth:0.33,
+					columnWidth:0.50,
+					defaults:{anchor:'100%'}
+					,items:[
+						combo_category
+					]
+					},
+					{
+					columnWidth:0.50,
+					// right column
+					defaults:{anchor:'100%'},
+					items:[
+						combo_status
+					]
+					}					
+				]
+				},				
+				{
+				// column layout with 2 columns
+				layout:'column'
+				,defaults:{
+					layout:'form'
+					,border:false
+					,xtype:'panel'
+					,bodyStyle:'padding:0 10px 0 0'
+				}
+				,items:[{
+					// left column
+					columnWidth:0.40,
 					defaults:{anchor:'100%'}
 					,items:[
 						combo_priority
 					]
 					},
 					{
-					columnWidth:0.33,
+					columnWidth:0.30,
 					// right column
 					defaults:{anchor:'100%'},
 					items:[
 						{
 							xtype:'textfield',
-							fieldLabel: _('Response time'),
+							fieldLabel: _('Response'),
 							name: 'txtrsptime',
 							readOnly: true
 						}
 					]
 					},
 					{
-					columnWidth:0.33,
+					columnWidth:0.30,
 					// right column
 					defaults:{anchor:'100%'},
 					items:[
 						{
 							xtype:'textfield',
-							fieldLabel: _('Resolution time'),
+							fieldLabel: _('Resolution'),
 							name: 'txtdeadline',
 							readOnly: true
 						}
