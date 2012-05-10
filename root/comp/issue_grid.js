@@ -476,7 +476,6 @@
 			obj_deadline_expr_min.setValue('');
 			obj_deadline.setValue('');
 			if(row.data.expr_response_time){
-				ff.findField("txtrsptime").setValue();
 				obj_rsp_expr_min.setValue(row.data.expr_response_time + '#' + row.data.response_time_min);
 				obj_rsp_time.setValue(get_expr_response_time(row));
 			}
@@ -624,11 +623,20 @@
 		};
 		
 		var btn_unassign_project = new Ext.Toolbar.Button({
-			text: _('Unassign projects'),
+			//text: _('Unassign projects'),
+			text: _('projects'),
 			handler: function() {
 				show_projects(rec);
 			}
-		});		
+		});
+		
+		var btn_unassign_roles = new Ext.Toolbar.Button({
+			//text: _('Unassign projects'),
+			text: _('roles'),
+			handler: function() {
+				show_projects(rec);
+			}
+		});			
 		
 		var form_issue = new Ext.FormPanel({
 			frame: true,
@@ -735,29 +743,53 @@
 					layout:'form'
 					,border:false
 					,xtype:'panel'
-					,bodyStyle:'padding:0 2px 0 0'
+					,bodyStyle:'padding:0 10px 0 0'
 				}
 				,items:[{
 					// left column
-					columnWidth:0.82,
+					columnWidth:0.40,
 					defaults:{anchor:'100%'}
 					,items:[
 						{
-							xtype:'textfield',
+							xtype:'textarea',
 							fieldLabel: _('Projects'),
 							name: 'txtprojects',
+							height: 100,
 							readOnly: true
 						}
 					]
 					},
 					{
-					columnWidth:0.18,
+					columnWidth:0.10,
 					// right column
 					defaults:{anchor:'100%'},
 					items:[
 						btn_unassign_project
 					]
+					},
+					{
+					// left column
+					columnWidth:0.40,
+					defaults:{anchor:'100%'}
+					,items:[
+						{
+							xtype:'textarea',
+							fieldLabel: _('Roles'),
+							name: 'txtroles',
+							height: 100,
+							readOnly: true
+						}
+					]
+					},
+					{
+					columnWidth:0.10,
+					// right column
+					defaults:{anchor:'100%'},
+					items:[
+						btn_unassign_roles
+					]
 					}
+					
 				]
 				},
 				{
@@ -776,7 +808,7 @@
 			var projects = '';
 			if(rec.data.projects){
 				for(i=0;i<rec.data.projects.length;i++){
-					projects = projects ? projects + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
+					projects = projects ? projects + '\n' + rec.data.projects[i].project: rec.data.projects[i].project;
 				}
 				ff.findField("txtprojects").setValue(projects);
 			}			
