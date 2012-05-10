@@ -75,6 +75,55 @@ __PACKAGE__->table("bali_issue");
   is_nullable: 0
   size: 1
 
+=head2 id_category
+
+  data_type: 'numeric'
+  default_value: 'O'
+  is_nullable: 0
+  size: 126
+  
+  
+=head2 id_category_status
+
+  data_type: 'numeric'
+  default_value: 'O'
+  is_nullable: 1
+  size: 126
+  
+=head2 id_priority
+
+  data_type: 'numeric'
+  default_value: 'O'
+  is_nullable: 1
+  size: 126
+  
+=head2 response_time_min
+
+  data_type: 'numeric'
+  default_value: 'O'
+  is_nullable: 1
+  size: 126
+  
+=head2 deadline_time_min
+
+  data_type: 'numeric'
+  default_value: 'O'
+  is_nullable: 1
+  size: 126
+  
+=head2 expr_response_time
+
+  data_type: 'varchar2'
+  is_nullable: 1
+  size: 255
+  
+=head2 expr_deadline
+
+  data_type: 'varchar2'
+  is_nullable: 1
+  size: 255
+
+  
 =cut
 
 __PACKAGE__->add_columns(
@@ -107,7 +156,35 @@ __PACKAGE__->add_columns(
     data_type => "numeric",
     is_nullable => 0,
     size => 126,
+  },
+  "id_category_status",
+  {
+    data_type => "numeric",
+    is_nullable => 1,
+    size => 126,
   },  
+  "id_priority",
+  {
+    data_type => "numeric",
+    is_nullable => 1,
+    size => 126,
+  },
+  "response_time_min",
+  {
+    data_type => "numeric",
+    is_nullable => 1,
+    size => 126,
+  },
+  "deadline_min",
+  {
+    data_type => "numeric",
+    is_nullable => 1,
+    size => 126,
+  },
+  "expr_response_time",
+  { data_type => "varchar2", is_nullable => 1, size => 255 },
+  "expr_deadline",
+  { data_type => "varchar2", is_nullable => 1, size => 255 },
 );
 
 =head1 PRIMARY KEY

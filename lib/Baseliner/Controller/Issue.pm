@@ -100,7 +100,13 @@ sub list : Local {
 			category	=> $data->{category} ? [$data->{category}] : '',
 			namecategory	=> $data->{namecategory} ? [$data->{namecategory}] : '',
 			labels		=> \@labels,
-			projects	=> \@projects
+			projects	=> \@projects,
+			status		=> $data->{id_category_status},
+			priority	=> $data->{id_priority},
+			response_time_min	=> $data->{response_time_min},
+			expr_response_time	=> $data->{expr_response_time},
+			deadline_min	=> $data->{deadline_min},
+			expr_deadline	=> $data->{expr_deadline}
 		};
     }	
 

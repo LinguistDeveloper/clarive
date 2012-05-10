@@ -20,7 +20,13 @@
 			{  name: 'category' },
 			{  name: 'namecategory' },
 			{  name: 'projects' },
-			{  name: 'labels' }
+			{  name: 'labels' },
+			{  name: 'status' },
+			{  name: 'priority' },
+			{  name: 'response_time_min' },
+			{  name: 'expr_response_time' },
+			{  name: 'deadline_min' },
+			{  name: 'expr_deadline' }
 		],
 		listeners: {
 			'beforeload': function( obj, opt ) {
@@ -48,7 +54,14 @@
 			{  name: 'category' },
 			{  name: 'namecategory' },
 			{  name: 'projects' },			
-			{  name: 'labels' }
+			{  name: 'labels' },
+			{  name: 'status' },
+			{  name: 'priority' },
+			{  name: 'response_time_min' },
+			{  name: 'expr_response_time' },
+			{  name: 'deadline_min' },
+			{  name: 'expr_deadline' }
+			
 		],
 		listeners: {
 			'beforeload': function( obj, opt ) {
@@ -421,9 +434,52 @@
 			displayField: 'name',
 			valueField: 'id',
 			disabled: true,
-			allowBlank: false,
 			store: store_category_status
 		});		
+		
+		var combo_priority = new Ext.form.ComboBox({
+			mode: 'local',
+			forceSelection: true,
+			emptyText: 'select a priority',
+			triggerAction: 'all',
+			fieldLabel: _('Priority'),
+			name: 'priority',
+			hiddenName: 'priority',
+			displayField: 'name',
+			valueField: 'id',
+			store: store_priority,
+			listeners:{
+				'select': function(cmd, rec, idx){
+					var ff = form_issue.getForm();
+					ff.findField("txt_rsptime_expr_min").setValue(rec.data.expr_response_time + '#' + rec.data.response_time_min);
+					var expr = rec.data.expr_response_time.split(':');
+					var str_expr = '';
+					for(i=0; i < expr.length; i++)
+					{
+						if (expr[i].length == 2 && expr[i].substr(0,1) == '0'){
+							continue;
+						}else{
+							str_expr += expr[i] + ' ';
+						}
+					}
+					ff.findField("txtrpstime").setValue(str_expr);
+					
+					ff.findField("txt_deadline_expr_min").setValue(rec.data.expr_deadline + '#' + rec.data.deadline_min);
+					expr = rec.data.expr_deadline.split(':');
+					var str_expr = '';
+					for(i=0; i < expr.length; i++)
+					{
+						if (expr[i].length == 2 && expr[i].substr(0,1) == '0'){
+							continue;
+						}else{
+							str_expr += expr[i] + ' ';
+						}
+					}					
+					ff.findField("txtdeadline").setValue(str_expr);
+
+				}
+			}			
+		});
 		
 		var show_projects = function(rec) {
 			var win_project;
@@ -609,6 +665,53 @@
 					layout:'form'
 					,border:false
 					,xtype:'panel'
+					,bodyStyle:'padding:0 10px 0 0'
+				}
+				,items:[{
+					// left column
+					columnWidth:0.33,
+					defaults:{anchor:'100%'}
+					,items:[
+						combo_priority
+					]
+					},
+					{
+					columnWidth:0.33,
+					// right column
+					defaults:{anchor:'100%'},
+					items:[
+						{
+							xtype:'textfield',
+							fieldLabel: _('Response time'),
+							name: 'txtrpstime',
+							readOnly: true
+						}
+					]
+					},
+					{
+					columnWidth:0.33,
+					// right column
+					defaults:{anchor:'100%'},
+					items:[
+						{
+							xtype:'textfield',
+							fieldLabel: _('Resolution time'),
+							name: 'txtdeadline',
+							readOnly: true
+						}
+					]
+					}					
+				]
+				},
+				{ xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
+				{ xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
+				{
+				// column layout with 2 columns
+				layout:'column'
+				,defaults:{
+					layout:'form'
+					,border:false
+					,xtype:'panel'
 					,bodyStyle:'padding:0 2px 0 0'
 				}
 				,items:[{
@@ -648,6 +751,8 @@
 			ff.loadRecord( rec );
 			
 			//combo_category.setValue(rec.data.key);
+			//combo_status.setValue(rec.data.key);
+			alert(rec.data.status);
 			
 			
 			var projects = '';
