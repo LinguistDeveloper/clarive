@@ -2474,249 +2474,249 @@ msgstr "Editar entorno"
 msgid "Are you sure you want to delete the baseline"
 msgstr "¿Seguro que quiere borrar el entorno"
 
-# lib/Baseliner/Controller/Issue.pm (171)
+# lib/Baseliner/Controller/Topic.pm (171)
 msgid "Comment added"
 msgstr "Observación añadida"
 
 
-# lib/Baseliner/Controller/Issue.pm (175)
+# lib/Baseliner/Controller/Topic.pm (175)
 msgid "Error adding Comment: %1"
 msgstr "Error añadiendo observación: %1"
 
 
-# lib/Baseliner/Controller/Issue.pm (235)
+# lib/Baseliner/Controller/Topic.pm (235)
 msgid "Category added"
 msgstr "Categoría añadida"
 
-# lib/Baseliner/Controller/Issue.pm (238)
+# lib/Baseliner/Controller/Topic.pm (238)
 msgid "Error adding Category: %1"
 msgstr "Error añadiendo categoría: %1"
 
-# lib/Baseliner/Controller/Issue.pm (249)
+# lib/Baseliner/Controller/Topic.pm (249)
 msgid "Category modified"
 msgstr "Categoría modificada"
 
 
-# lib/Baseliner/Controller/Issue.pm (252)
+# lib/Baseliner/Controller/Topic.pm (252)
 msgid "Error modifying Category: %1"
 msgstr "Error modificando categoría: %1"
 
 
-# lib/Baseliner/Controller/Issue.pm (262)
+# lib/Baseliner/Controller/Topic.pm (262)
 msgid "Category deleted"
 msgstr "Categoría borrada"
 
 
-# lib/Baseliner/Controller/Issue.pm (265)
+# lib/Baseliner/Controller/Topic.pm (265)
 msgid "Error deleting Category"
 msgstr "Error borrando categoría"
 
 
-# lib/Baseliner/Model/Issue.pm (32)
-msgid "Issue added"
+# lib/Baseliner/Model/Topic.pm (32)
+msgid "Topic added"
 msgstr "Tópico añadido"
 
 
-# lib/Baseliner/Model/Issue.pm (32)
-msgid "Error adding Issue: %1"
+# lib/Baseliner/Model/Topic.pm (32)
+msgid "Error adding Topic: %1"
 msgstr "Error añadiendo tópico: %1"
 
 
-# lib/Baseliner/Model/Issue.pm (48)
-msgid "Issue modified"
+# lib/Baseliner/Model/Topic.pm (48)
+msgid "Topic modified"
 msgstr "Tópico modificado"
 
 
-# lib/Baseliner/Model/Issue.pm (51)
-msgid "Error modifying Issue: %1"
+# lib/Baseliner/Model/Topic.pm (51)
+msgid "Error modifying Topic: %1"
 msgstr "Error modificando tópico: %1"
 
 
-# lib/Baseliner/Model/Issue.pm (63)
-msgid "Issue deleted"
+# lib/Baseliner/Model/Topic.pm (63)
+msgid "Topic deleted"
 msgstr "Tópico borrado"
 
 
-# lib/Baseliner/Model/Issue.pm (66)
-msgid "Error deleting issue: %1"
+# lib/Baseliner/Model/Topic.pm (66)
+msgid "Error deleting topic: %1"
 msgstr "Error borrando tópico: %1"
 
 
-# lib/Baseliner/Model/Issue.pm (77)
-msgid "Issue closed"
+# lib/Baseliner/Model/Topic.pm (77)
+msgid "Topic closed"
 msgstr "Tópico cerrado"
 
 
-# lib/Baseliner/Model/Issue.pm (80)
-msgid "Error closing Issue: %1"
+# lib/Baseliner/Model/Topic.pm (80)
+msgid "Error closing Topic: %1"
 msgstr "Error cerrando tópico: %1"
 
 
-# root/comp/issue_grid.js (116)
-msgid "Are you sure you want to delete the issue"
+# root/comp/topic_grid.js (116)
+msgid "Are you sure you want to delete the topic"
 msgstr "¿Seguro que quiere borrar tópico"
 
 
-# root/comp/issue_grid.js (156)
-msgid "Are you sure you want to close the issue"
+# root/comp/topic_grid.js (156)
+msgid "Are you sure you want to close the topic"
 msgstr "¿Seguro que quiere cerrar tópico"
 
 
-# root/comp/issue_grid.js (181)
-msgid "Create issue"
+# root/comp/topic_grid.js (181)
+msgid "Create topic"
 msgstr "Crear tópico"
 
 
-# root/comp/issue_grid.js (187)
+# root/comp/topic_grid.js (187)
 msgid "Category"
 msgstr "Categoría"
 
 
-# root/comp/issue_grid.js (241)
+# root/comp/topic_grid.js (241)
 msgid "Title"
 msgstr "Título"
 
-# root/comp/issue_grid.js (258)
-msgid "Edit issue"
+# root/comp/topic_grid.js (258)
+msgid "Edit topic"
 msgstr "Editar tópico"
 
-# root/comp/issue_grid.js (275)
+# root/comp/topic_grid.js (275)
 msgid "Create comment"
 msgstr "Crear observación"
 
 
-# root/comp/issue_grid.js (537)
+# root/comp/topic_grid.js (537)
 msgid "Create category"
 msgstr "Crear categoría"
 
-# root/comp/issue_grid.js (545)
+# root/comp/topic_grid.js (545)
 msgid "A brief description of the category"
 msgstr "Una breve descripción de la categoría"
 
 
-# root/comp/issue_grid.js (568)
+# root/comp/topic_grid.js (568)
 msgid "Edit category"
 msgstr "Editar categoría"
 
 
-# root/comp/issue_grid.js (592)
+# root/comp/topic_grid.js (592)
 msgid "Name of category"
 msgstr "Nombre de categoría"
 
-# root/comp/issue_grid.js (829)
+# root/comp/topic_grid.js (829)
 msgid "Are you sure you want to delete the categories selected?"
 msgstr "¿Seguro que quiere borrar las categorias seleccionadas?"
 
-# root/comp/issue_grid.js (669)
+# root/comp/topic_grid.js (669)
 msgid "Categories"
 msgstr "Categorías"
 
-# lib/Baseliner/Controller/Issue.pm (15)
-msgid "Issues"
+# lib/Baseliner/Controller/Topic.pm (15)
+msgid "Topics"
 msgstr "Tópicos"
 
-# lib/Baseliner/Controller/Issue.pm (268)
+# lib/Baseliner/Controller/Topic.pm (268)
 msgid "Label added"
 msgstr "Etiqueta añadida"
 
-# lib/Baseliner/Controller/Issue.pm (271)
+# lib/Baseliner/Controller/Topic.pm (271)
 msgid "Label name already exists, introduce another label name"
 msgstr "Etiqueta ya existe, introduce otra"
 
-# lib/Baseliner/Controller/Issue.pm (214)
+# lib/Baseliner/Controller/Topic.pm (214)
 msgid "Category name already exists, introduce another category name"
 msgstr "Categoria ya existe, introduce otra"
 
-# lib/Baseliner/Controller/Issue.pm (275)
+# lib/Baseliner/Controller/Topic.pm (275)
 msgid "Error adding Label: %1"
 msgstr "Error añadiendo etiqueta: %1"
 
-# lib/Baseliner/Controller/Issue.pm (301)
+# lib/Baseliner/Controller/Topic.pm (301)
 msgid "Labels deleted"
 msgstr "Etiquetas borradas"
 
-# lib/Baseliner/Controller/Issue.pm (304)
+# lib/Baseliner/Controller/Topic.pm (304)
 msgid "Error deleting Labels"
 msgstr "Error borrando etiquetas"
 
-# lib/Baseliner/Controller/Issue.pm (357)
+# lib/Baseliner/Controller/Topic.pm (357)
 msgid "Labels assigned"
 msgstr "Etiquetas asignadas"
 
-# lib/Baseliner/Controller/Issue.pm (360)
+# lib/Baseliner/Controller/Topic.pm (360)
 msgid "Error assigning Labels: %1"
 msgstr "Error asignando etiquetas: %1"
 
-# root/comp/issue_grid.js (605)
-msgid "Issue"
+# root/comp/topic_grid.js (605)
+msgid "Topic"
 msgstr "Tópico"
 
-# root/comp/issue_grid.js (654)
+# root/comp/topic_grid.js (654)
 msgid "Open"
 msgstr "Abiertas"
 
-# root/comp/issue_grid.js (660)
+# root/comp/topic_grid.js (660)
 msgid "Closed"
 msgstr "Cerradas"
 
-# root/comp/issue_grid.js (660)
+# root/comp/topic_grid.js (660)
 msgid "Closed"
 msgstr "Cerradas"
 
-# root/comp/issue_grid.js (938)
+# root/comp/topic_grid.js (938)
 msgid "Are you sure you want to delete the labels selected?"
 msgstr "¿Seguro que quiere borrar le etiqueta seleccionada?"
 
-# root/comp/issue_grid.js (1006)
+# root/comp/topic_grid.js (1006)
 msgid "Pick a Color"
 msgstr "Elije color"
 
-# root/comp/issue_grid.js (1032)
+# root/comp/topic_grid.js (1032)
 msgid "Labels"
 msgstr "Etiquetas"
 
-# root/comp/issue_grid.js (1050)
+# root/comp/topic_grid.js (1050)
 msgid "Label"
 msgstr "Etiqueta"
 
-# root/comp/issue_grid.js (575)
+# root/comp/topic_grid.js (575)
 msgid "Project %1 added"
 msgstr "Proyecto %1 añadido"
 
-# root/comp/issue_grid.js (577)
+# root/comp/topic_grid.js (577)
 msgid "Project %1 is already assigned"
 msgstr "Proyecto ya esta asignado"
 
-# root/comp/issue_grid.js (624)
-msgid "Issue #"
+# root/comp/topic_grid.js (624)
+msgid "Topic #"
 msgstr "Tópico #"
 
-# lib/Baseliner/Controller/Issue.pm (247)
+# lib/Baseliner/Controller/Topic.pm (247)
 msgid "Categories deleted"
 msgstr "Categorías borradas"
 
-# lib/Baseliner/Controller/Issue.pm (250)
+# lib/Baseliner/Controller/Topic.pm (250)
 msgid "Error deleting Categories"
 msgstr "Error borrando categorías"
 
-# lib/Baseliner/Controller/Issue.pm (422)
+# lib/Baseliner/Controller/Topic.pm (422)
 msgid "Projects unassigned"
 msgstr "Proyectos desasignados"
 
-# lib/Baseliner/Controller/Issue.pm (425)
+# lib/Baseliner/Controller/Topic.pm (425)
 msgid "Error unassigning Projects: %1"
 msgstr "Error desasignando proyectos: %1"
 
-# root/comp/issue_grid.js (624)
+# root/comp/topic_grid.js (624)
 msgid "Unassign projects"
 msgstr "Desasignar proyectos"
 
-# root/comp/issue_grid.js (963)
-msgid "Issues: Statuses"
+# root/comp/topic_grid.js (963)
+msgid "Topics: Statuses"
 msgstr "Estados"
 
-# root/comp/issue_grid.js (980)
-msgid "Issues: Status"
+# root/comp/topic_grid.js (980)
+msgid "Topics: Status"
 msgstr "Estado"
 
 
