@@ -1,12 +1,12 @@
 use utf8;
-package Baseliner::Schema::Baseliner::Result::BaliIssueMsg;
+package Baseliner::Schema::Baseliner::Result::BaliTopicMsg;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Baseliner::Schema::Baseliner::Result::BaliIssueMsg
+Baseliner::Schema::Baseliner::Result::BaliTopicMsg
 
 =cut
 
@@ -27,11 +27,11 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<bali_issue_msg>
+=head1 TABLE: C<bali_topic_msg>
 
 =cut
 
-__PACKAGE__->table("bali_issue_msg");
+__PACKAGE__->table("bali_topic_msg");
 
 =head1 ACCESSORS
 
@@ -41,10 +41,10 @@ __PACKAGE__->table("bali_issue_msg");
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
-  sequence: 'bali_issue_msg_seq'
+  sequence: 'bali_topic_msg_seq'
   size: 126
 
-=head2 id_issue
+=head2 id_topic
 
   data_type: 'numeric'
   is_nullable: 0
@@ -78,10 +78,10 @@ __PACKAGE__->add_columns(
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },
-    sequence => "bali_issue_msg_seq",
+    sequence => "bali_topic_msg_seq",
     size => 126,
   },
-  "id_issue",
+  "id_topic",
   {
     data_type => "numeric",
     is_nullable => 0,

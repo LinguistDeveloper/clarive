@@ -1,12 +1,12 @@
 use utf8;
-package Baseliner::Schema::Baseliner::Result::BaliIssueProject;
+package Baseliner::Schema::Baseliner::Result::BaliTopicLabel;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Baseliner::Schema::Baseliner::Result::BaliIssueProject
+Baseliner::Schema::Baseliner::Result::BaliTopicLabel
 
 =cut
 
@@ -27,21 +27,21 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<bali_issue_project>
+=head1 TABLE: C<bali_topic_label>
 
 =cut
 
-__PACKAGE__->table("bali_issue_project");
+__PACKAGE__->table("bali_topic_label");
 
 =head1 ACCESSORS
 
-=head2 id_issue
+=head2 id_topic
 
   data_type: 'numeric'
   is_nullable: 0
   size: 126
 
-=head2 id_project
+=head2 id_label
 
   data_type: 'numeric'
   is_nullable: 0
@@ -50,13 +50,13 @@ __PACKAGE__->table("bali_issue_project");
 =cut
 
 __PACKAGE__->add_columns(
-  "id_issue",
+  "id_topic",
   {
     data_type => "numeric",
     is_nullable => 0,
     size => 126,
   },
-  "id_project",
+  "id_label",
   {
     data_type => "numeric",
     is_nullable => 0,
@@ -81,9 +81,9 @@ __PACKAGE__->add_columns(
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kPypxdTqp7bcXeLkSRdC7A
 
 __PACKAGE__->belongs_to(
-  "project",
-  "Baseliner::Schema::Baseliner::Result::BaliProject",
-  { id => "id_project" },
+  "label",
+  "Baseliner::Schema::Baseliner::Result::BaliLabel",
+  { id => "id_label" },
 );
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

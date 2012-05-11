@@ -1,12 +1,12 @@
 use utf8;
-package Baseliner::Schema::Baseliner::Result::BaliIssueCategories;
+package Baseliner::Schema::Baseliner::Result::BaliTopicCategories;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Baseliner::Schema::Baseliner::Result::BaliIssueCategories
+Baseliner::Schema::Baseliner::Result::BaliTopicCategories
 
 =cut
 
@@ -27,11 +27,11 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<bali_issue_categories>
+=head1 TABLE: C<bali_topic_categories>
 
 =cut
 
-__PACKAGE__->table("bali_issue_categories");
+__PACKAGE__->table("bali_topic_categories");
 
 =head1 ACCESSORS
 
@@ -41,7 +41,7 @@ __PACKAGE__->table("bali_issue_categories");
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
-  sequence: 'bali_issue_categories_seq'
+  sequence: 'bali_topic_categories_seq'
   size: 126
 
 =head2 name
@@ -66,7 +66,7 @@ __PACKAGE__->add_columns(
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },
-    sequence => "bali_issue_categories_seq",
+    sequence => "bali_topic_categories_seq",
     size => 126,
   },
   "name",
