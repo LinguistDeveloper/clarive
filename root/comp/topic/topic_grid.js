@@ -9,7 +9,7 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		url: '/issue/list',
+		url: '/topic/list',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'title' },
@@ -43,7 +43,7 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		url: '/issue/list',
+		url: '/topic/list',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'title' },
@@ -80,7 +80,7 @@
 		remoteSort: true,
 		baseParams:{cmb:'category'},
 		totalProperty:"totalCount", 
-		url: '/issue/list_category',
+		url: '/topic/list_category',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
@@ -93,7 +93,7 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		url: '/issue/list_category',
+		url: '/topic/list_category',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
@@ -105,7 +105,7 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		url: '/issue/list_label',
+		url: '/topic/list_label',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
@@ -117,7 +117,7 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		url: '/issue/list_priority',
+		url: '/topic/list_priority',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
@@ -148,7 +148,7 @@
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
-		url: '/issue/list_status',
+		url: '/topic/list_status',
 		fields: [ 
 			{  name: 'id' },
 			{  name: 'name' },
@@ -215,10 +215,10 @@
 		handler: function() {
 			var sm = grid_opened.getSelectionModel();
 			var sel = sm.getSelected();
-			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the issue') + ' <b>' + sel.data.id + '</b>?', 
+			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + sel.data.id + '</b>?', 
 			function(btn){ 
 				if(btn=='yes') {
-					Baseliner.ajaxEval( '/issue/update?action=delete',{ id: sel.data.id },
+					Baseliner.ajaxEval( '/topic/update?action=delete',{ id: sel.data.id },
 						function(response) {
 							if ( response.success ) {
 								grid_opened.getStore().remove(sel);
@@ -267,10 +267,10 @@
 		handler: function() {
 			var sm = grid_opened.getSelectionModel();
 			var sel = sm.getSelected();
-			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to close the issue') + ' <b># ' + sel.data.id + '</b>?', 
+			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to close the topic') + ' <b># ' + sel.data.id + '</b>?', 
 			function(btn){ 
 				if(btn=='yes') {
-					Baseliner.ajaxEval( '/issue/update?action=close',{ id: sel.data.id },
+					Baseliner.ajaxEval( '/topic/update?action=close',{ id: sel.data.id },
 						function(response) {
 							if ( response.success ) {
 								grid_opened.getStore().remove(sel);
@@ -309,12 +309,12 @@
 				check_ast_labels_sm.each(function(rec){
 					labels_checked.push(rec.get('id'));
 				});
-				Baseliner.ajaxEval( '/issue/update_issuelabels',{ idissue: rec.data.id, idslabel: labels_checked },
+				Baseliner.ajaxEval( '/topic/update_topiclabels',{ idtopic: rec.data.id, idslabel: labels_checked },
 					function(response) {
 						if ( response.success ) {
 							Baseliner.message( _('Success'), response.msg );
 							var labels_checked = getLabels();
-							filtrar_issues(labels_checked);
+							filtrar_topics(labels_checked);
 							
 						} else {
 							Baseliner.message( _('ERROR'), response.msg );
@@ -396,7 +396,7 @@
 		
 		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
 		
-		var title = 'Create issue';
+		var title = 'Create topic';
 		
 		var combo_category = new Ext.form.ComboBox({
 			mode: 'local',
@@ -428,7 +428,7 @@
 			forceSelection: true,
 			triggerAction: 'all',
 			emptyText: 'select a status',
-			fieldLabel: _('Issues: Status'),
+			fieldLabel: _('Topics: Status'),
 			name: 'status',
 			hiddenName: 'status',
 			displayField: 'name',
@@ -466,7 +466,7 @@
 		}
 		
 		function load_txt_values_priority(row){
-			var ff = form_issue.getForm();
+			var ff = form_topic.getForm();
 			var obj_rsp_expr_min = ff.findField("txt_rsptime_expr_min");
 			var obj_rsp_time = ff.findField("txtrsptime");
 			var obj_deadline_expr_min = ff.findField("txt_deadline_expr_min");
@@ -533,7 +533,7 @@
 				handler: function(){
 					var names_checked = new Array();
 					var projects_checked = getProjects(names_checked);
-					var form = form_issue.getForm();
+					var form = form_topic.getForm();
 					var projects = '';
 					if(names_checked){
 						for(i=0;i<names_checked.length;i++){
@@ -542,14 +542,14 @@
 						ff.findField("txtprojects").setValue(projects);						
 					}
 					
-					Baseliner.ajaxEval( '/issue/unassign_projects',{ idissue: rec.data.id, idsproject: projects_checked },
+					Baseliner.ajaxEval( '/topic/unassign_projects',{ idtopic: rec.data.id, idsproject: projects_checked },
 						function(response) {
 							if ( response.success ) {
 								Baseliner.message( _('Success'), response.msg );
 								var categories_checked = getCategories();
 								var labels_checked = getLabels();
 								form.findField("id").setValue(rec.data.id);
-								filtrar_issues(labels_checked, categories_checked);								
+								filtrar_topics(labels_checked, categories_checked);								
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -638,16 +638,16 @@
 			}
 		});			
 		
-		var form_issue = new Ext.FormPanel({
+		var form_topic = new Ext.FormPanel({
 			frame: true,
-			url:'/issue/update',
+			url:'/topic/update',
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
 				{
 				text: _('Accept'),
 				type: 'submit',
 				handler: function() {
-					var form = form_issue.getForm();
+					var form = form_topic.getForm();
 					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
 					
 					if (form.isValid()) {
@@ -655,9 +655,9 @@
 						   params: {action: action},
 						   success: function(f,a){
 						       Baseliner.message(_('Success'), a.result.msg );
-						       form.findField("id").setValue(a.result.issue_id);
+						       form.findField("id").setValue(a.result.topic_id);
 						       store_opened.load();
-						       win.setTitle(_('Edit issue'));
+						       win.setTitle(_('Edit topic'));
 						   },
 						   failure: function(f,a){
 						       Ext.Msg.show({  
@@ -829,7 +829,7 @@
 		});
 
 		if(rec){
-			var ff = form_issue.getForm();
+			var ff = form_topic.getForm();
 			ff.loadRecord( rec );
 			load_txt_values_priority(rec);
 			var projects = '';
@@ -839,14 +839,14 @@
 				}
 				ff.findField("txtprojects").setValue(projects);
 			}			
-			title = 'Edit issue';
+			title = 'Edit topic';
 		}
 		
 		win = new Ext.Window({
 			title: _(title),
 			width: 700,
 			autoHeight: true,
-			items: form_issue
+			items: form_topic
 		});
 		win.show();		
 	};
@@ -858,9 +858,9 @@
 		
 		var title = 'Create comment';
 		
-		var form_issue_comment = new Ext.FormPanel({
+		var form_topic_comment = new Ext.FormPanel({
 			frame: true,
-			url:'/issue/viewdetail',
+			url:'/topic/viewdetail',
 			labelAlign: 'top',
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
@@ -868,9 +868,9 @@
 					text: _('Accept'),
 					type: 'submit',
 					handler: function() {
-						var form = form_issue_comment.getForm();
+						var form = form_topic_comment.getForm();
 						var text = form.findField("text").getValue();
-						var obj_tab = Ext.getCmp('tabs_issues_<%$id%>');
+						var obj_tab = Ext.getCmp('tabs_topics_<%$id%>');
 						var obj_tab_active = obj_tab.getActiveTab();
 						var title = obj_tab_active.title;
 						cad = title.split('#');
@@ -929,7 +929,7 @@
 			title: _(title),
 			width: 700,
 			autoHeight: true,
-			items: form_issue_comment
+			items: form_topic_comment
 		});
 		win.show();		
 	};
@@ -980,7 +980,7 @@
 	};
 
 	var grid_opened = new Ext.grid.GridPanel({
-		title: _('Issues'),
+		title: _('Topics'),
 		header: false,
 		stripeRows: true,
 		autoScroll: true,
@@ -992,7 +992,7 @@
 		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 		loadMask:'true',
 		columns: [
-			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },	
+			{ header: _('Topic'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
 			{ header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
 			{ header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
@@ -1016,7 +1016,7 @@
 
 	grid_opened.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
-		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , _('Issue') + ' #' + r.get('id'),{},config_tabs );
+		Baseliner.addNewTab('/topic/view?id_rel=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{},config_tabs );
 	});
 	
     grid_opened.on( 'render', function(){
@@ -1052,7 +1052,7 @@
 						row.endEdit();
 						row.commit();
 						
-						Baseliner.ajaxEval( '/issue/update_project',{ id_project: data.id_project, id_issue: row.get('id') },
+						Baseliner.ajaxEval( '/topic/update_project',{ id_project: data.id_project, id_topic: row.get('id') },
 							function(response) {
 								if ( response.success ) {
 									//store_label.load();
@@ -1088,7 +1088,7 @@
     });	
 
 	var grid_closed = new Ext.grid.GridPanel({
-		title: _('Issues'),
+		title: _('Topics'),
 		header: false,
 		stripeRows: true,
 		autoScroll: true,
@@ -1099,7 +1099,7 @@
 		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
 		loadMask:'true',
 		columns: [
-			{ header: _('Issue'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },	
+			{ header: _('Topic'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },	
 			{ header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
 			{ header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
 			{ header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
@@ -1119,7 +1119,7 @@
 	
 	grid_closed.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
-		Baseliner.addNewTab('/issue/view?id_rel=' + r.get('id') , _('Issue') + (' #') + r.get('id'),{},config_tabs );
+		Baseliner.addNewTab('/topic/view?id_rel=' + r.get('id') , _('Topic') + (' #') + r.get('id'),{},config_tabs );
 	});
 
 	var search_field = new Ext.app.SearchField({
@@ -1129,7 +1129,7 @@
 	});
 
 	var config_tabs = new Ext.TabPanel({
-		id: 'tabs_issues_<%$id%>',
+		id: 'tabs_topics_<%$id%>',
 		region: 'center',
 		layoutOnTabChange:true,
 		deferredRender: false,
@@ -1213,7 +1213,7 @@
 	
 		var form_status = new Ext.FormPanel({
 			frame: true,
-			url:'/issue/update_status',
+			url:'/topic/update_status',
 			labelAlign: 'top',
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
@@ -1255,7 +1255,7 @@
 			defaults: { anchor:'100%'},
 			items: [
 				{ xtype: 'hidden', name: 'id', value: -1 },
-				{ xtype:'textfield', name:'name', fieldLabel:_('Issues: Status'), allowBlank:false, emptyText:_('Name of status') },
+				{ xtype:'textfield', name:'name', fieldLabel:_('Topics: Status'), allowBlank:false, emptyText:_('Name of status') },
 				ta
 			]
 		});
@@ -1310,7 +1310,7 @@
 			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the statuses selected?'), 
 			function(btn){ 
 				if(btn=='yes') {
-					Baseliner.ajaxEval( '/issue/update_status?action=delete',{ idsstatus: statuses_checked },
+					Baseliner.ajaxEval( '/topic/update_status?action=delete',{ idsstatus: statuses_checked },
 						function(response) {
 							if ( response.success ) {
 								Baseliner.message( _('Success'), response.msg );
@@ -1318,7 +1318,7 @@
 								store_status.load();
 								var labels_checked = getLabels();
 								var categories_checked = getCategories();
-								filtrar_issues(labels_checked, categories_checked);
+								filtrar_topics(labels_checked, categories_checked);
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -1337,7 +1337,7 @@
 	});
 	
 	var grid_status = new Ext.grid.GridPanel({
-		title : _('Issues: Statuses'),
+		title : _('Topics: Statuses'),
 		sm: check_status_sm,
 		header: true,
 		stripeRows: true,
@@ -1350,7 +1350,7 @@
 		columns: [
 			{ hidden: true, dataIndex:'id' },
 			check_status_sm,
-			{ header: _('Issues: Status'), dataIndex: 'name', width:50, sortable: false },
+			{ header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
 			{ header: _('Description'), dataIndex: 'description', sortable: false }	
 		],
 		autoSizeColumns: true,
@@ -1368,7 +1368,7 @@
 			var statuses_checked = getStatuses();
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
-			filtrar_issues(labels_checked, categories_checked);
+			filtrar_topics(labels_checked, categories_checked);
 			if (statuses_checked.length == 1){
 				init_buttons_status('enable');
 			}else{
@@ -1387,7 +1387,7 @@
 			var statuses_checked = getStatuses();
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
-			filtrar_issues(labels_checked, categories_checked);
+			filtrar_topics(labels_checked, categories_checked);
 			if(statuses_checked.length == 0){
 				init_buttons_status('disable');
 			}else{
@@ -1441,7 +1441,7 @@
 			columns: [
 				{ hidden: true, dataIndex:'id' },
 				check_category_status_sm,
-				{ header: _('Issues: Status'), dataIndex: 'name', width:50, sortable: false },
+				{ header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
 				{ header: _('Description'), dataIndex: 'description', sortable: false }	
 			],
 			autoSizeColumns: true,
@@ -1478,7 +1478,7 @@
 		
 		var form_category = new Ext.FormPanel({
 			frame: true,
-			url:'/issue/update_category',
+			url:'/topic/update_category',
             layout: {
                 type: 'column',
                 padding: '5'
@@ -1584,14 +1584,14 @@
 			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the categories selected?'), 
 			function(btn){ 
 				if(btn=='yes') {
-					Baseliner.ajaxEval( '/issue/update_category?action=delete',{ idscategory: categories_checked },
+					Baseliner.ajaxEval( '/topic/update_category?action=delete',{ idscategory: categories_checked },
 						function(response) {
 							if ( response.success ) {
 								Baseliner.message( _('Success'), response.msg );
 								init_buttons_category('disable');
 								store_category.load();
 								var labels_checked = getLabels();
-								filtrar_issues(labels_checked, null);								
+								filtrar_topics(labels_checked, null);								
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -1640,7 +1640,7 @@
 		if(columnIndex == 1){
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
-			filtrar_issues(labels_checked, categories_checked);
+			filtrar_topics(labels_checked, categories_checked);
 			if (categories_checked.length == 1){
 				init_buttons_category('enable');
 			}else{
@@ -1658,7 +1658,7 @@
 		if(columnIndex == 1){
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
-			filtrar_issues(labels_checked, categories_checked);
+			filtrar_topics(labels_checked, categories_checked);
 			if(categories_checked.length == 0){
 				init_buttons_category('disable');
 			}else{
@@ -1674,7 +1674,7 @@
 		cls: 'x-btn-text-icon',
 		handler: function() {
 			if(label_box.getValue() != ''){
-				Baseliner.ajaxEval( '/issue/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+				Baseliner.ajaxEval( '/topic/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
 					function(response) {
 						if ( response.success ) {
 							store_label.load();
@@ -1720,14 +1720,14 @@
 			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the labels selected?'), 
 			function(btn){ 
 				if(btn=='yes') {
-					Baseliner.ajaxEval( '/issue/update_label?action=delete',{ idslabel: labels_checked },
+					Baseliner.ajaxEval( '/topic/update_label?action=delete',{ idslabel: labels_checked },
 						function(response) {
 							if ( response.success ) {
 								Baseliner.message( _('Success'), response.msg );
 								init_buttons_label('disable');
 								store_label.load();
 								var categories_checked = getCategories();
-								filtrar_issues(null, categories_checked);
+								filtrar_topics(null, categories_checked);
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -1761,7 +1761,7 @@
     label_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
 			if(f.getValue() != ''){
-				Baseliner.ajaxEval( '/issue/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+				Baseliner.ajaxEval( '/topic/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
 					function(response) {
 						if ( response.success ) {
 							store_label.load();
@@ -1860,7 +1860,7 @@
 		return priorities_checked
 	}		
 	
-	function filtrar_issues(labels_checked, categories_checked){
+	function filtrar_topics(labels_checked, categories_checked){
 		var query_id = '<% $c->stash->{query_id} %>';
 		store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked}});
 		store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked, categories: categories_checked}});		
@@ -1870,7 +1870,7 @@
 		if(columnIndex == 1){
 			var labels_checked = getLabels();
 			var categories_checked = getCategories();
-			filtrar_issues(labels_checked, categories_checked);
+			filtrar_topics(labels_checked, categories_checked);
 			init_buttons_label('enable');
 		}
 	});
@@ -1879,7 +1879,7 @@
 		if(columnIndex == 1){
 			var labels_checked = getLabels();
 			var categories_checked = getCategories();
-			filtrar_issues(labels_checked, categories_checked);
+			filtrar_topics(labels_checked, categories_checked);
 			init_buttons_label('enable');
 		}
 	});
@@ -1995,7 +1995,7 @@
 		
 		var form_priority = new Ext.FormPanel({
 			frame: true,
-			url:'/issue/update_priority',
+			url:'/topic/update_priority',
 			bodyStyle:'padding:10px 10px 0',
 			buttons: [
 					{
@@ -2178,7 +2178,7 @@
 			Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the priorities selected?'), 
 			function(btn){ 
 				if(btn=='yes') {
-					Baseliner.ajaxEval( '/issue/update_priority?action=delete',{ idspriority: priorities_checked },
+					Baseliner.ajaxEval( '/topic/update_priority?action=delete',{ idspriority: priorities_checked },
 						function(response) {
 							if ( response.success ) {
 								Baseliner.message( _('Success'), response.msg );
@@ -2186,7 +2186,7 @@
 								store_priority.load();
 								var labels_checked = getLabels();
 								var categories_checked = getCategories();
-								filtrar_issues(labels_checked, categories_checked);								
+								filtrar_topics(labels_checked, categories_checked);								
 							} else {
 								Baseliner.message( _('ERROR'), response.msg );
 							}
@@ -2252,7 +2252,7 @@
 			var priorities_checked = getPriorities();
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
-			filtrar_issues(labels_checked, categories_checked);
+			filtrar_topics(labels_checked, categories_checked);
 			if (priorities_checked.length == 1){
 				init_buttons_priority('enable');
 			}else{
@@ -2271,7 +2271,7 @@
 			var priorities_checked = getPriorities();
 			var categories_checked = getCategories();
 			var labels_checked = getLabels();
-			filtrar_issues(labels_checked, categories_checked);
+			filtrar_topics(labels_checked, categories_checked);
 			if(priorities_checked.length == 0){
 				init_buttons_priority('disable');
 			}else{

@@ -25,7 +25,7 @@ sub grid : Local {
     my ($self, $c) = @_;
 	my $p = $c->req->params;
 	$c->stash->{query_id} = $p->{query};	
-    $c->stash->{template} = '/comp/topic_grid.js';
+    $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
 
 sub list : Local {
@@ -147,7 +147,7 @@ sub view : Local {
     $c->stash->{description} = $topic->description;
     $c->stash->{id_rel} = $id_topic;
 	$self->viewdetail( $c );
-    $c->stash->{template} = '/comp/topic_msg.html';
+    $c->stash->{template} = '/comp/topic/topic_msg.html';
 }
 
 sub viewdetail: Local {
