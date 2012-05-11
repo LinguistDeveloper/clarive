@@ -23,7 +23,19 @@ sub update {
         @rsptime = split('#', $p->{txt_rsptime_expr_min});
         @deadline = split('#', $p->{txt_deadline_expr_min});
     }
+warn _dump( {
+                        title       => $p->{title},
+                        description => $p->{description},
+                        created_by  => $p->{username},
+                        id_category  => $p->{category},
+                        id_category_status => $p->{status},
+                        id_priority => $p->{priority},
+                        response_time_min => $rsptime[1],
+                        expr_response_time => $rsptime[0],
+                        deadline_min => $deadline[1],
+                        expr_deadline => $deadline[0]
 
+                    } );
     given ( $action ) {
         when ( 'add' ) {
             try {

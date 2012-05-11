@@ -27,7 +27,7 @@ sub list : Local {
     $c->forward('/dashboard/list_entornos');
 	$self->list_lastjobs( $c );
     $c->forward('/dashboard/list_emails');
-	$c->forward('/dashboard/list_issues');	
+	$c->forward('/dashboard/list_topics');	
 	$c->forward('/dashboard/list_jobs');	
 
     # list dashboardlets, only active ones
@@ -161,28 +161,28 @@ sub list_emails: Private{
 	$c->stash->{emails} =\@datas;
 }
 
-sub list_issues: Private{
+sub list_topics: Private{
     my ( $self, $c ) = @_;
 	my $username = $c->username;
-	my (@issues, $issue, @datas, $SQL);
+	my (@topics, $topic, @datas, $SQL);
 	
 	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	$SQL = "SELECT * FROM (SELECT C.ID, TITLE, DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT
-								FROM  BALI_ISSUE C
+								FROM  BALI_TOPIC C
 								LEFT JOIN
-										(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_ISSUE A, BALI_ISSUE_MSG B WHERE A.ID = B.ID_ISSUE GROUP BY A.ID) D
+										(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_TOPIC_MSG B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
 									ON C.ID = D.ID 
 								WHERE STATUS = 'O'
 								ORDER BY CREATED_ON DESC)
 					  WHERE ROWNUM < 6";
 
-	@issues = $db->array_hash( $SQL );
-	foreach $issue (@issues){
-	    push @datas, $issue;
+	@topics = $db->array_hash( $SQL );
+	foreach $topic (@topics){
+	    push @datas, $topic;
 	}	
 		
-	$c->stash->{issues} =\@datas;
+	$c->stash->{topics} =\@datas;
 }
 
 sub list_jobs: Private {
