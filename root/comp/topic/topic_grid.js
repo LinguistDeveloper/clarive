@@ -1,4 +1,5 @@
 <%perl>
+    use Baseliner::Utils;
     my $id = _nowstamp;
 </%perl>
 (function(){
@@ -1016,7 +1017,8 @@
 
 	grid_opened.on("rowdblclick", function(grid, rowIndex, e ) {
 	    var r = grid.getStore().getAt(rowIndex);
-		Baseliner.addNewTab('/topic/view?id_rel=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{},config_tabs );
+		//Baseliner.addNewTab('/topic/view?id_rel=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{} );
+		Baseliner.addNewTabComp('/topic/view?id_rel=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{} );
 	});
 	
     grid_opened.on( 'render', function(){

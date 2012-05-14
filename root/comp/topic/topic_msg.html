@@ -1,16 +1,25 @@
+<%args>
+    $form => '/forms/base.js'
+</%args>
 <%perl>
     use Baseliner::Utils;
     my @comentarios = $c->stash->{comments};
     my $title = $c->stash->{title};
     my $description = $c->stash->{description};  
+    my $id = rand(9999999999999999);
 
 </%perl>
+
     <div id="topico" style="height:20%;padding:0px 50px 0px 50px;">
         <div class="rectangle-border">
             <h1><%$title%></h1>
             <p><%$description%></p>
         </div>
     </div>
+
+    <div id="form_common"></div>
+    <div id="form"></div>
+
     <div id="comments" name="comments" style="overflow:auto;height:80%;padding:0px 100px 0px 100px;">
 %   foreach my $comentario (_array @comentarios){
         <div class="comment">

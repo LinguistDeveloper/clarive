@@ -147,7 +147,11 @@ sub view : Local {
     $c->stash->{description} = $topic->description;
     $c->stash->{id_rel} = $id_topic;
 	$self->viewdetail( $c );
-    $c->stash->{template} = '/comp/topic/topic_msg.html';
+    if( $p->{html} ) {
+        $c->stash->{template} = '/comp/topic/topic_msg.html';
+    } else {
+        $c->stash->{template} = '/comp/topic/topic_main.js';
+    }
 }
 
 sub viewdetail: Local {
@@ -167,7 +171,14 @@ sub viewdetail: Local {
 							created_by => $c->username,
 							created_on => DateTime->now,
 						    });
-		    
+		    #$c->model('Event')->create({
+            #    type => 'event.topic.new_comment',
+            #    ids  => [ $id_topic ],
+            #    username => $c->username,
+            #    data => {
+            #        text=>$p->{text}
+            #    }
+            #});
 			$c->stash->{json} = {  data =>{ text => $p->{text}, created_by => $c->username, created_on => $topic->created_on->dmy . ' ' . $topic->created_on->hms} , msg=>_loc('Comment added'), success=>\1 };
 	
 	    }
