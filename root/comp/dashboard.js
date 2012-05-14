@@ -8,7 +8,7 @@
     my @lastjobs = $c->stash->{lastjobs};
     my @emails = $c->stash->{emails};
     my $style = '';
-    my @issues = $c->stash->{issues};
+    my @topics = $c->stash->{topics};
     my @jobs = $c->stash->{jobs};    
     my $status_id = "status". _nowstamp;
 </%perl>
@@ -32,7 +32,10 @@
             <tr class='last-child'>
               <td class='first-child section-name' rowspan='2'><%$entorno->{bl}%></td>
               <td class="section-graph" colspan='2'>
-                  <div class="data-bar" style="width:<%$entorno->{porcentOk}%>%">&nbsp;</div>
+                  <!--<div class="data-bar" style="width:<%$entorno->{porcentOk}%>%">&nbsp;</div>-->
+                        <div class="progress progress-success" >
+                            <div class="bar" style="width: <%$entorno->{porcentOk}%>%"></div>
+                        </div>
               </td>
               <td class="section-score"><%$entorno->{totOk}%></td>
               <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
@@ -40,7 +43,10 @@
             </tr>
             <tr class='last-child'>
               <td class="data-graph" colspan='2'>
-                  <div class="data-bar-error" style="width:<%$entorno->{porcentError}%>%">&nbsp;</div>
+                  <!--<div class="data-bar-error" style="width:<%$entorno->{porcentError}%>%">&nbsp;</div>-->
+                        <div class="progress progress-danger" >
+                            <div class="bar" style="width: <%$entorno->{porcentError}%>%"></div>
+                        </div>
               </td>
               <td class="section-score"><%$entorno->{totError}%></td>
               <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=0', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
@@ -59,7 +65,7 @@
       </div>
       
       <div id="body" class="span-12">
-        <h2>Pases / Mensajes / Issues</h2>
+        <h2>Pases / Mensajes / Topics</h2>
         <!--######INICIO TABLA PASES #################################################################################-->
         <script language="javascript">
             function render_level ( obj, td_id ) {
@@ -158,7 +164,7 @@
         </table>
         <!--######FIN TABLA MENSAJES ####################################################################################-->
   
-        <!--######INICIO TABLA ISSUES ###################################################################################-->
+        <!--######INICIO TABLA TOPICS ###################################################################################-->
         <table class="summary-table-mensajes" width="100%" cellspacing="0">
           <thead>
             <tr>
@@ -168,17 +174,17 @@
             </tr>
           </thead>
           <tbody>
-%foreach my $issue (_array @issues){
-% my $numcomment = $issue->{numcomment} ? $issue->{numcomment}:'&nbsp';
+%foreach my $topic (_array @topics){
+% my $numcomment = $topic->{numcomment} ? $topic->{numcomment}:'&nbsp';
             <tr class='last-child'>
-              <td class='section-titulo' colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/issue/grid?query=<%$issue->{id}%>', _('Issues'));"><%$issue->{title}%></a></b></td>
+              <td class='section-titulo' colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{id}%>', _('Topics'));"><%$topic->{title}%></a></b></td>
               <td class='section-comentario'><%$numcomment%></td>
-              <td class='section-fecha'><%$issue->{created_on}%></td>
+              <td class='section-fecha'><%$topic->{created_on}%></td>
             </tr>
 %}
           </tbody>
         </table>
-        <!--######FIN TABLA ISSUES ######################################################################################-->
+        <!--######FIN TABLA TOPICS ######################################################################################-->
       </div>
     </div>
     
