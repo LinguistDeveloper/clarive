@@ -16,6 +16,12 @@
 <div id="project" style="width: 98%; padding: 2px 2px 2px 2px;">
   <div class="container body">
     <div id="body" class="span-24" width="100%">
+        <div class="span-12">
+            <div class="alert">
+                <button class="close" data-dismiss="alert">×</button>
+                <strong>Warning!</strong> Best check yo self, you're not looking too good.
+            </div>
+        </div>    
       <div id="body" class="span-12 colborder append-bottom">
         <h2>Entornos</h2>
         <!--######INICIO TABLA ENTORNOS ###################################################################################-->      

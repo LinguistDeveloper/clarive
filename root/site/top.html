@@ -11,7 +11,12 @@
 % if( my $favicon = $c->config->{favicon} ) {
     <link rel="shortcut icon" href="<% $favicon %>" mce_href="<% $favicon %>"/>
 % }
+
+    <!--JQuery -->
+    <script type="text/javascript" src="/site/bootstrap/js/jquery-1.7.2.js"></script>
+    
     <!-- ExtJS -->
+    <script type="text/javascript" src="/static/ext/jquery/ext-jquery-adapter<% $debug %>.js"></script>
     <link rel="stylesheet" href="/static/metal/metal.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="/static/ext/resources/css/ext-all.css" />
 
