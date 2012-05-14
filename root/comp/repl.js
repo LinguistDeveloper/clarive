@@ -472,7 +472,7 @@ To do:
                 icon:'/static/images/gears.gif',
                 cls: 'x-btn-text-icon',
                 handler: function(){
-                    try { eval(code.getValue());
+                    try { eval(editor.getValue());
                     } catch(e) {
                         set_output( e + "" );
                     }
@@ -483,7 +483,7 @@ To do:
                 icon:'/static/images/gears.gif',
                 cls: 'x-btn-text-icon',
                 handler: function(){
-                    eval( "var code_evaled = " + code.getValue() );
+                    eval( "var code_evaled = " + editor.getValue() );
                     var win = new Ext.Window( code_evaled );
                     if( win.width == undefined ) { win.width = '90%' }
                     win.show();
