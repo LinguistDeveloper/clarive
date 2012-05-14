@@ -13,6 +13,7 @@
     my $status_id = "status". _nowstamp;
 </%perl>
 
+<div id="boot">
 <div id="project" style="width: 98%; padding: 2px 2px 2px 2px;">
   <div class="container body">
     <div id="body" class="span-24" width="100%">
@@ -232,4 +233,5 @@
 % } 
     </div>
   </div>
+</div>
 </div>
