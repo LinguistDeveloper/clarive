@@ -956,7 +956,7 @@
 		tag_project_html = '';
 		if(rec.data.labels){
 			for(i=0;i<rec.data.labels.length;i++){
-				tag_color_html = tag_color_html + "<span style='float:left;border:1px solid #cccccc;padding:2px 8px 2px 8px;color:#" + returnOpposite(rec.data.labels[i].color) + ";background-color:#" + rec.data.labels[i].color + "'><b>" + rec.data.labels[i].name + "</b></span>";
+				tag_color_html = tag_color_html + "<div id='boot'><span class='badge' style='float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(rec.data.labels[i].color) + ";background-color:#" + rec.data.labels[i].color + "'>" + rec.data.labels[i].name + "</span></div>";
 			}
 		}
 		return "<div style='font-weight:bold; font-size: 14px;' >" + value + "</div><br><div><font color='808080'>by </font><b>" + rec.data.created_by + "</b> <font color='808080'>" + rec.data.created_on + "</font ></div>" + tag_color_html + tag_project_html;
@@ -974,7 +974,8 @@
 	var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
 		if(rec.data.projects){
 			for(i=0;i<rec.data.projects.length;i++){
-				tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
+				//tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
+				tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
 			}
 		}
 		return tag_project_html;
