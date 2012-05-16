@@ -22,6 +22,7 @@
     <script type="text/javascript" src="/site/tabfu.js"></script>
     <script type="text/javascript" src="/site/help.js"></script>
     <script type="text/javascript" src="/site/runner.js"></script>
+    <script type="text/javascript" src="/comp/topic/topic_lib.js"></script>
     <script type="text/javascript" src="/site/panelresizer.js"></script>
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
     <script type="text/javascript" src="/i18n/js"></script>
@@ -56,10 +57,6 @@
     <script type="text/javascript" src="/site/lifecycle.js"></script>
 
     <!-- Portal Stuff -->
-    <link rel="stylesheet/less" type="text/css" href="/site/bootstrap.css" />
-    <script type="text/javascript" src="/site/less.js"></script>
-    <script type="text/javascript" src="/site/bootstrap/js/bootstrap.js"></script>
-    
     <script type="text/javascript" src="/site/portal/Portal.js"></script>
     <script type="text/javascript" src="/site/portal/PortalColumn.js"></script>
     <script type="text/javascript" src="/site/portal/Portlet.js"></script>
@@ -77,6 +74,13 @@
     <!-- model depends on superbox -->
     <script type="text/javascript" src="/site/model.js"></script>
 
+    <!-- Twitter Bootstrap
+    <link rel="stylesheet/less" type="text/css" href="/site/bootstrap.css" />
+    <script type="text/javascript" src="/site/less.js"></script>
+    <script type="text/javascript" src="/site/bootstrap/js/bootstrap.js"></script>
+    -->
+    <link rel="stylesheet" type="text/css" href="/site/boot.css" /> 
+    
     <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
     <!-- BEGIN <% $include->{name} %> -->
@@ -270,7 +274,6 @@ Ext.onReady(function(){
         
     </script>
 
-%# <link href="/static/style2.css" type="text/css" rel="stylesheet"></link>
 <!-- TODO: No sería mala idea poder meter esto en las features -->
 <!-- Para poder incluir el Widget DatePickerPlus de Ext -->
     <script type="text/javascript" src="/static/ext.ux.datepickerplus/ext.ux.datepickerplus.js"></script> 
