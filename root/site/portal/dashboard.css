@@ -73,7 +73,7 @@
 
 /*#Estilos tabla de entornos###################################################################*/
 .summary-table-entornos {
-  width: 480px;
+  /*width: 480px;*/
 }
 
 .summary-table-entornos * {
@@ -161,7 +161,7 @@
 
 /*#Estilos tabla de pases###################################################################*/
 .summary-table-pases {
-  width: 480px;
+  /*width: 480px;*/
 }
 
 .summary-table-pases * {
@@ -240,7 +240,7 @@
 
 /*#Estilos tabla de mensajes################################################################*/
 .summary-table-mensajes {
-  width: 500px;
+  /*width: 500px;*/
   margin-bottom: 9px;
 }
 
@@ -289,7 +289,7 @@
 
 /*#Estilos tabla de sqa###################################################################*/
 .summary-table-sqa {
-  width: 500px;
+  /*width: 500px;*/
 }
 
 .summary-table-sqa * a, .summary-table-mensajes * a {
