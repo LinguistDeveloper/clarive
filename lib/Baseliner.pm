@@ -64,7 +64,7 @@ __PACKAGE__->config->{static}->{dirs} = [
         qr/images/,
     ];
 __PACKAGE__->config->{static}->{ignore_extensions} 
-        = [ qw/mas html js json css/ ];    
+        = [ qw/mas html js json css less/ ];    
 
 __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
 

@@ -3,10 +3,12 @@
     $id_rel
 </%args>
 (function(){
-    var detail = new Ext.Panel({ region: 'center' });
-    var form = new Ext.Panel({ region: 'center', hidden: true });
+    var detail = new Ext.Panel({
+        style: { overflow: 'auto' }
+    });
+    var form = new Ext.Panel({  });
     var show_detail = function(){
-        panel.add( detail );
+        tabpanel.getLayout().setActiveItem( 0 );
     };
     var form_comment = new Ext.FormPanel({
         defaults: { hideLabel: true },
@@ -23,10 +25,13 @@
     });
     menu_comment.on('render', function(){ menu_comment.keyNav.disable() } );
     var show_form = function(){
-        panel.remove( detail );
-        //Baseliner.ajaxEval( '/comp/topic/topic_form2.js', {}, function(comp) {
-            //form.add( comp );
-        //});
+        tabpanel.getLayout().setActiveItem( 1 );
+        Baseliner.ajaxEval( '/comp/topic/topic_form.js', {}, function(comp) {
+            form.removeAll();
+            //alert( comp );
+            form.add( comp() );
+            form.doLayout();
+        });
     };
     var tb = new Ext.Toolbar({
         isFormField: true,
@@ -40,18 +45,16 @@
             { text: _('Add Comment'), menu: menu_comment }
         ]
     });
-    var panel = new Ext.Panel({
-        layout: 'border',
+    var tabpanel = new Ext.Panel({
+        layout: 'card',
+        activeItem: 0,
         title: '<% $title %>',
         tbar: tb,
-        items: [ ]
-    });
-    panel.on( 'render', function() {
-        panel.add( detail ) ;
+        items: [ detail, form ]
     });
     detail.on( 'render', function() {
         detail.load({ url: '/topic/view', params: { id_rel: '<% $id_rel %>', html: 1 }, scripts: true });
     });
 
-    return panel;
+    return tabpanel;
 })
