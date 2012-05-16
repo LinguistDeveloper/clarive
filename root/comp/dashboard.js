@@ -14,53 +14,82 @@
 </%perl>
 
 <div id="boot">
-    <!--<div id="project" style="width: 100%; padding: 2px 2px 2px 2px;">-->
     <div class="container_24">
-            <div id="body" class="grid_12 colborder append-bottom">
-                <h2>Entornos</h2>
-                <!--######INICIO TABLA ENTORNOS ###################################################################################-->      
-                <table class="summary-table-entornos"  cellspacing="0">
-                <thead>
-                    <tr>
-                        <th class="first-child section-name">Entorno</th>
-                        <th colspan="4" class="section-description">Finalizado</th>
-                        <th class="last-child section-name">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="grid_11 alert alert-info">
+                <button class="close" data-dismiss="alert">×</button>
+                <h3>Entornos</h3>
+                <div class="container_11">
+                    <!--<div class="grid_8 progress progress-success" >
+                        <div class="bar" style="width: 50%"></div>
+                    </div>
+
+                    <div class="clear"></div>-->
+                
+                    <!--<div class="grid_8">
+                          <table class="table">
+                            <tbody>
+                              <tr>
+                              <tr>
+                                <td>1</td>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>@mdo</td>
+                              </tr>
+                              <tr>
+                                <td>2</td>
+                                <td>Jacob</td>
+                                <td>Thornton</td>
+                                <td>@fat</td>
+                              </tr>
+                              <tr>
+                                <td>3</td>
+                                <td colspan="2">Larry the Bird</td>
+                                <td>@twitter</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                    </div>
+                </div>-->
+                
+                
+                
+                
+                
+                
+                
+                <!--######INICIO TABLA ENTORNOS ###################################################################################-->
+                <div class="grid_8">
+                <table class="table">
+                    <tbody>
 %foreach my $entorno (_array @entornos){
-                <tr class='last-child'>
-                    <td class='first-child section-name' rowspan='2'><%$entorno->{bl}%></td>
-                    <td class="section-graph" colspan='2'>
-                        <!--<div class="data-bar" style="width:<%$entorno->{porcentOk}%>%">&nbsp;</div>-->
-                        <div class="progress progress-success" >
-                            <div class="bar" style="width: <%$entorno->{porcentOk}%>%"></div>
-                        </div>
-                    </td>
-                    <td class="section-score"><%$entorno->{totOk}%></td>
-                    <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
-                    <td class='overall-score' rowspan='2'><%$entorno->{total}%></td>
-                </tr>
-                <tr class='last-child'>
-                    <td class="data-graph" colspan='2'>
-                        <!--<div class="data-bar-error" style="width:<%$entorno->{porcentError}%>%">&nbsp;</div>-->
-                        <div class="progress progress-danger" >
-                            <div class="bar" style="width: <%$entorno->{porcentError}%>%"></div>
-                        </div>
-                    </td>
-                    <td class="section-score"><%$entorno->{totError}%></td>
-                    <td class="section-score"><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=0', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
-                </tr>
+                        <tr>
+                            <td ><%$entorno->{bl}%></td>
+                            <td colspan='3' width='66%'>
+                                <div class="progress progress-success" >
+                                    <div class="bar" style="width: <%$entorno->{porcentOk}%>%"><%$entorno->{totOk}%></div>
+                                </div>
+                                <div class="progress progress-danger" >
+                                    <div class="bar" style="width: <%$entorno->{porcentError}%>%"><%$entorno->{totError}%></div>
+                                </div>                                
+                            </td>
+                            <td ><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
+                            <td ><%$entorno->{total}%></td>
+                        </tr>
+
 %}
-                </tbody>    
+                    </tbody>    
                 </table>
+                </div>
+                
+                <!--
                 <table>
                     <tr>
                         <td align="right">
                             <b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=All', _('Running jobs'));">Ver en ejecución</a></b>
                         </td>
                     </tr>
-                </table>        
+                </table>-->
+                </div>
                 <!--######FIN TABLA ENTORNOS #######################################################################################-->
             </div>
     
@@ -231,8 +260,6 @@
     <& $dash->html &>
 % } 
             
-    
-    <!--  </div>-->
     </div>
 </div>
 
