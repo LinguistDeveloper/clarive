@@ -36,7 +36,7 @@ register 'namespace.project' => {
 
 sub namespace { 'BaselinerX::Project' }
 sub domain    { 'project' }
-sub icon      { '/static/images/scm/project.gif' }
+sub icon      { '/static/images/scm/project.png' }
 sub name      { 'Baseliner Project' }
 
 sub find {

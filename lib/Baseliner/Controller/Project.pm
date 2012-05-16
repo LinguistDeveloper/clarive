@@ -12,7 +12,7 @@ use v5.10;
 register 'menu.admin.project' => {
 	label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.role'],
 	title=>'Projects', index=>80,
-	icon=>'/static/images/icons/project.gif' };
+	icon=>'/static/images/icons/project.png' };
 
 sub list : Local {
     my ($self,$c) = @_;
