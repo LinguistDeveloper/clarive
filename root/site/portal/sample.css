@@ -22,6 +22,8 @@ html, body {
 .settings {
     background-image:url( /static/ext/examples/shared/icons/fam/folder_wrench.png ) !important;
 }
+/*  conflicts with bootstrap
 .nav {
     background-image:url( /static/ext/examples/shared/icons/fam/folder_go.png ) !important;
 }
+*/

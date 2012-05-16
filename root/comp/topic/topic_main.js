@@ -4,7 +4,6 @@
 </%args>
 (function(){
     var detail = new Ext.Panel({
-        style: { overflow: 'auto' }
     });
     var form = new Ext.Panel({  });
     var show_detail = function(){
@@ -54,6 +53,7 @@
     });
     detail.on( 'render', function() {
         detail.load({ url: '/topic/view', params: { id_rel: '<% $id_rel %>', html: 1 }, scripts: true });
+        detail.body.setStyle('overflow', 'auto');
     });
 
     return tabpanel;
