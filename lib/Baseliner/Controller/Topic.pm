@@ -15,8 +15,8 @@ register 'menu.tools.topic' => {
     title    => _loc ('Topics'),
     action   => 'action.topics.view',
     url_comp => '/topic/grid',
-    icon     => '/static/images/icons/tasks.gif',
-    tab_icon => '/static/images/icons/tasks.gif'
+    icon     => '/static/images/icons/topic.png',
+    tab_icon => '/static/images/icons/topic.png'
 };
 
 register 'action.topics.view' => { name=>'View and Admin topics' };
