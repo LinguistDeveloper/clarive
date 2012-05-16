@@ -24,13 +24,13 @@
     });
     menu_comment.on('render', function(){ menu_comment.keyNav.disable() } );
     var show_form = function(){
-        tabpanel.getLayout().setActiveItem( 1 );
         Baseliner.ajaxEval( '/comp/topic/topic_form.js', {}, function(comp) {
             form.removeAll();
             //alert( comp );
             form.add( comp() );
             form.doLayout();
         });
+        tabpanel.getLayout().setActiveItem( 1 );
     };
     var tb = new Ext.Toolbar({
         isFormField: true,
