@@ -17,17 +17,14 @@
     <div class="container_24">
 
                 <div class="container_10">
-                    <div class="grid_10">
+                    <div class="grid_8 alert alert-success" style="margin-bottom: 5px;">
 %foreach my $entorno (_array @entornos){
-                                <div class="grid_10 alert alert-info">
-                                    <button class="close" data-dismiss="alert">×</button>
-                                    <h4><%$entorno->{bl}%></h4>
-                                    <div class="progress progress-success" style="margin-bottom: 5px;">
-                                        <div class="bar" style="width: <%$entorno->{porcentOk}%>%"><%$entorno->{totOk}%></div>
-                                    </div>
-                                    <div class="progress progress-danger" style="margin-bottom: 5px;">
-                                        <div class="bar" style="width: <%$entorno->{porcentError}%>%"><%$entorno->{totError}%></div>
-                                    </div>
+                                <h4><%$entorno->{bl}%></h4>
+                                <div class="progress progress-success" style="margin-bottom: 5px;">
+                                    <div class="bar" style="width: <%$entorno->{porcentOk}%>%"><%$entorno->{totOk}%></div>
+                                </div>
+                                <div class="progress progress-danger" style="margin-bottom: 5px;">
+                                    <div class="bar" style="width: <%$entorno->{porcentError}%>%"><%$entorno->{totError}%></div>
                                 </div>
                                 <div class="clear"></div>
 %}
