@@ -15,85 +15,27 @@
 
 <div id="boot">
     <div class="container_24">
-            <div class="grid_11 alert alert-info">
-                <button class="close" data-dismiss="alert">×</button>
-                <h3>Entornos</h3>
-                <div class="container_11">
-                    <!--<div class="grid_8 progress progress-success" >
-                        <div class="bar" style="width: 50%"></div>
-                    </div>
 
-                    <div class="clear"></div>-->
-                
-                    <!--<div class="grid_8">
-                          <table class="table">
-                            <tbody>
-                              <tr>
-                              <tr>
-                                <td>1</td>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                              </tr>
-                              <tr>
-                                <td>2</td>
-                                <td>Jacob</td>
-                                <td>Thornton</td>
-                                <td>@fat</td>
-                              </tr>
-                              <tr>
-                                <td>3</td>
-                                <td colspan="2">Larry the Bird</td>
-                                <td>@twitter</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                    </div>
-                </div>-->
-                
-                
-                
-                
-                
-                
-                
-                <!--######INICIO TABLA ENTORNOS ###################################################################################-->
-                <div class="grid_8">
-                <table class="table">
-                    <tbody>
+                <div class="container_10">
+                    <div class="grid_10">
 %foreach my $entorno (_array @entornos){
-                        <tr>
-                            <td ><%$entorno->{bl}%></td>
-                            <td colspan='3' width='66%'>
-                                <div class="progress progress-success" >
-                                    <div class="bar" style="width: <%$entorno->{porcentOk}%>%"><%$entorno->{totOk}%></div>
+                                <div class="grid_10 alert alert-info">
+                                    <button class="close" data-dismiss="alert">×</button>
+                                    <h4><%$entorno->{bl}%></h4>
+                                    <div class="progress progress-success" style="margin-bottom: 5px;">
+                                        <div class="bar" style="width: <%$entorno->{porcentOk}%>%"><%$entorno->{totOk}%></div>
+                                    </div>
+                                    <div class="progress progress-danger" style="margin-bottom: 5px;">
+                                        <div class="bar" style="width: <%$entorno->{porcentError}%>%"><%$entorno->{totError}%></div>
+                                    </div>
                                 </div>
-                                <div class="progress progress-danger" >
-                                    <div class="bar" style="width: <%$entorno->{porcentError}%>%"><%$entorno->{totError}%></div>
-                                </div>                                
-                            </td>
-                            <td ><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
-                            <td ><%$entorno->{total}%></td>
-                        </tr>
-
+                                <div class="clear"></div>
 %}
-                    </tbody>    
-                </table>
+                    </div>
                 </div>
-                
-                <!--
-                <table>
-                    <tr>
-                        <td align="right">
-                            <b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=All', _('Running jobs'));">Ver en ejecución</a></b>
-                        </td>
-                    </tr>
-                </table>-->
-                </div>
-                <!--######FIN TABLA ENTORNOS #######################################################################################-->
-            </div>
+
     
-    
+            <div class="grid_2">&nbsp;</div>
             <div class="grid_12">
                 <h2>Pases / Mensajes / Topics</h2>
                 <!--######INICIO TABLA PASES #################################################################################-->
