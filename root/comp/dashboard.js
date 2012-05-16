@@ -63,25 +63,19 @@
                     <tbody>
 %foreach my $entorno (_array @entornos){
                         <tr>
-                            <td rowspan='2'><%$entorno->{bl}%></td>
-                            <td colspan='2'>
+                            <td ><%$entorno->{bl}%></td>
+                            <td colspan='3' width='66%'>
                                 <div class="progress progress-success" >
-                                    <div class="bar" style="width: <%$entorno->{porcentOk}%>%"></div>
+                                    <div class="bar" style="width: <%$entorno->{porcentOk}%>%"><%$entorno->{totOk}%></div>
                                 </div>
-                            </td>
-                            <td ><%$entorno->{totOk}%></td>
-                            <td ><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
-                            <td rowspan='2'><%$entorno->{total}%></td>
-                        </tr>
-                        <tr>
-                            <td colspan='2'>
                                 <div class="progress progress-danger" >
-                                    <div class="bar" style="width: <%$entorno->{porcentError}%>%"></div>
-                                </div>
+                                    <div class="bar" style="width: <%$entorno->{porcentError}%>%"><%$entorno->{totError}%></div>
+                                </div>                                
                             </td>
-                            <td ><%$entorno->{totError}%></td>
-                            <td ><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=0', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
+                            <td ><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><img src="/static/images/preview.png" width="16px" height="12px" /></a></td>
+                            <td ><%$entorno->{total}%></td>
                         </tr>
+
 %}
                     </tbody>    
                 </table>
