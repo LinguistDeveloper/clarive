@@ -33,7 +33,7 @@ sub dashboard_log : Path('/job/log/dashboard') {
 	$self->contents( $c );
 	$self->outputs( $c );
 
-    $c->stash->{template} = '/comp/dashboard_job.js';
+    $c->stash->{template} = '/comp/dashboard_job.html';
 }
 
 sub summary: Private{
