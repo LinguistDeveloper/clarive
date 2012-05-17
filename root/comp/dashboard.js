@@ -20,14 +20,17 @@
 %foreach my $entorno (_array @entornos){
             <h4><%$entorno->{bl}%></h4>
             <div class="progress progress-success" style="margin-bottom: 5px;">
-                <div class="bar" style="width: <%$entorno->{porcentOk}%>%"><%$entorno->{totOk}%></div>
+                <div class="bar" style="width: <%$entorno->{porcentOk}%>%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=1', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><%$entorno->{totOk}%></div>
             </div>
             <div class="progress progress-danger" style="margin-bottom: 5px;">
-                <div class="bar" style="width: <%$entorno->{porcentError}%>%"><%$entorno->{totError}%></div>
+                <div class="bar" style="width: <%$entorno->{porcentError}%>%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=<%$entorno->{bl}%>&swOk=0', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));"><%$entorno->{totError}%></div>
             </div>
             <div class="clear"></div>
 %}
+            <div class="grid_10" style="text-align:right;"><b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs?ent=All', _('Running jobs'));">Ver en ejecución</a></b></div>
+            <div class="clear"></div>
         </div>
+        
         <div class="grid_1">&nbsp;</div>
         <div class="grid_13">
             <h2>Pases / Mensajes / Topicos</h2>

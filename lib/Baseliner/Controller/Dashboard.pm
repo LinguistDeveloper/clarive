@@ -99,15 +99,21 @@ sub list_entornos: Private{
 		if($total){
 			$porcentOk = $totOk * 100/$total;
 			$porcentError = $totError * 100/$total;
-			push @datas, {
-							bl 				=> $bl,
-							porcentOk		=> $porcentOk,
-							totOk			=> $totOk,
-							total			=> $total,
-							totError		=> $totError,
-							porcentError	=> $porcentError
-						};			
+		}else{
+			$bl = $entorno;
+			$totOk = '';
+			$totError = '';
+			$porcentOk = 0;
+			$porcentError = 0;			
 		}
+		push @datas, {
+						bl 				=> $bl,
+						porcentOk		=> $porcentOk,
+						totOk			=> $totOk,
+						total			=> $total,
+						totError		=> $totError,
+						porcentError	=> $porcentError
+					};			
 	}
 	$c->stash->{entornos} =\@datas;
 }
@@ -396,7 +402,7 @@ sub viewjobs: Local{
 	my $p = $c->request->parameters;
 	my $username = $c->username;
 	my ($status, @jobs, $job, $jobsid, $SQL);
-	
+	my $jobsid = '';
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
 	#ERROR, CANCELLED, KILLED 
@@ -410,10 +416,10 @@ sub viewjobs: Local{
 		$SQL = "SELECT ID FROM BALI_JOB WHERE STATUS = 'RUNNING' AND USERNAME = ?";
 		@jobs = $db->array_hash( $SQL, $username );
 	}else{
-        my $job_days = config_get('config.dashboard')->{job_days};
+		my $job_days = config_get('config.dashboard')->{bl_days};
 		$SQL = $p->{swOk} ?
 				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND BL = ? AND STATUS = 'FINISHED' AND USERNAME = ?" :
-				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?";	
+				"SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?";
 		@jobs = $db->array_hash( $SQL, $job_days, $p->{ent}, $username );
 	}
 	
@@ -422,7 +428,6 @@ sub viewjobs: Local{
  	}
 	$c->stash->{jobs} =$jobsid;
 	$c->forward('/job/monitor/Dashboard');
-	
 }
 
 
