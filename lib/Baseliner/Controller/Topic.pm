@@ -162,7 +162,7 @@ sub view : Local {
     $c->stash->{description} = $topic->description;
     my $category = $topic->categories->first;
     $c->stash->{category} = $category->name;
-    $c->stash->{category} = $category->color;
+    $c->stash->{category_color} = try { $category->color} catch { '#444' };
     $c->stash->{id} = $id_topic;
     $self->viewdetail( $c );
     if( $p->{html} ) {
