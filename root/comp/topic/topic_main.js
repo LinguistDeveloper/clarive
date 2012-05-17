@@ -1,13 +1,8 @@
-<%args>
-    $title 
-    $id_rel
-</%args>
-(function(){
-    var detail = new Ext.Panel({
-    });
-    var form = new Ext.Panel({  });
+(function(params){
+    // Detail Panel
+    var detail = new Ext.Panel({ });
     var show_detail = function(){
-        tabpanel.getLayout().setActiveItem( 0 );
+        cardpanel.getLayout().setActiveItem( 0 );
     };
     var form_comment = new Ext.FormPanel({
         defaults: { hideLabel: true },
@@ -23,20 +18,28 @@
         items: form_comment
     });
     menu_comment.on('render', function(){ menu_comment.keyNav.disable() } );
+
+    // Form Panel
+    var form = new Ext.Panel({ });
     var show_form = function(){
-        Baseliner.ajaxEval( '/comp/topic/topic_form.js', {}, function(comp) {
+        Baseliner.ajaxEval( '/comp/topic/topic_form.js', { params: { title: 1212 } }, function(comp) {
             form.removeAll();
-            //alert( comp );
-            form.add( comp() );
+            form.add( comp );
             form.doLayout();
         });
-        tabpanel.getLayout().setActiveItem( 1 );
+        cardpanel.getLayout().setActiveItem( 1 );
     };
     var tb = new Ext.Toolbar({
         isFormField: true,
         items: [
-            { text:'Resumen', enableToggle: true, pressed: true, handler: show_detail, toggleGroup: 'form' },
-            { text:'Editar', enableToggle: true, handler: show_form, toggleGroup: 'form' },
+            { 
+            icon:'/static/images/icons/detail.png',
+            cls: 'x-btn-icon',
+            enableToggle: true, pressed: true, handler: show_detail, toggleGroup: 'form' },
+            { text:'Editar',
+            icon:'/static/images/icons/edit.png',
+            cls: 'x-btn-text-icon',
+            enableToggle: true, handler: show_form, toggleGroup: 'form' },
             '-',
             _('Estado') + ': ',
             { xtype: 'combo', value: 'New' },
@@ -44,17 +47,19 @@
             { text: _('Add Comment'), menu: menu_comment }
         ]
     });
-    var tabpanel = new Ext.Panel({
+    var cardpanel = new Ext.Panel({
         layout: 'card',
         activeItem: 0,
-        title: '<% $title %>',
+        cardSwitchAnimation:'slide',
+        title: params.title,
         tbar: tb,
         items: [ detail, form ]
     });
     detail.on( 'render', function() {
-        detail.load({ url: '/topic/view', params: { id_rel: '<% $id_rel %>', html: 1 }, scripts: true });
+        detail.load({ url: '/topic/view', params: { id: params.id, html: 1 }, scripts: true });
         detail.body.setStyle('overflow', 'auto');
     });
 
-    return tabpanel;
+    cardpanel.tab_icon = '/static/images/icons/topic_one.png';
+    return cardpanel;
 })

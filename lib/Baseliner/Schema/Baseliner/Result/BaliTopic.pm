@@ -204,5 +204,10 @@ __PACKAGE__->set_primary_key("id");
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kPypxdTqp7bcXeLkSRdC7A
 
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->has_many(
+  "categories",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategories",
+  { "foreign.id" => "self.id_category" },
+);
+
 1;

@@ -1,7 +1,15 @@
-(function(){
+(function(params){
+    alert( params.title );
+    var rec = params.rec;
         var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
         
         var title = 'Create topic';
+
+        var store_category = new Baseliner.Topic.StoreCategory();
+        var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
+        var store_priority = new Baseliner.Topic.StorePriority();
+        var store_project = new Baseliner.Topic.StoreProject();
+        var store_opened = new Baseliner.Topic.StoreOpened();
         
         var combo_category = new Ext.form.ComboBox({
             mode: 'local',
@@ -290,79 +298,20 @@
                     name: 'title',
                     allowBlank: false
                 },
-                //combo_category,
-                //combo_status,
+                combo_category,
+                combo_status,
+                combo_priority,
                 {
-                // column layout with 2 columns
-                layout:'column'
-                ,defaults:{
-                    layout:'form'
-                    ,border:false
-                    ,xtype:'panel'
-                    ,bodyStyle:'padding:0 10px 0 0'
-                }
-                ,items:[{
-                    // left column
-                    columnWidth:0.50,
-                    defaults:{anchor:'100%'}
-                    ,items:[
-                        combo_category
-                    ]
-                    },
-                    {
-                    columnWidth:0.50,
-                    // right column
-                    defaults:{anchor:'100%'},
-                    items:[
-                        combo_status
-                    ]
-                    }                   
-                ]
-                },              
+                    xtype:'textfield',
+                    fieldLabel: _('Response'),
+                    name: 'txtrsptime',
+                    readOnly: true
+                },
                 {
-                // column layout with 2 columns
-                layout:'column'
-                ,defaults:{
-                    layout:'form'
-                    ,border:false
-                    ,xtype:'panel'
-                    ,bodyStyle:'padding:0 10px 0 0'
-                }
-                ,items:[{
-                    // left column
-                    columnWidth:0.40,
-                    defaults:{anchor:'100%'}
-                    ,items:[
-                        combo_priority
-                    ]
-                    },
-                    {
-                    columnWidth:0.30,
-                    // right column
-                    defaults:{anchor:'100%'},
-                    items:[
-                        {
-                            xtype:'textfield',
-                            fieldLabel: _('Response'),
-                            name: 'txtrsptime',
-                            readOnly: true
-                        }
-                    ]
-                    },
-                    {
-                    columnWidth:0.30,
-                    // right column
-                    defaults:{anchor:'100%'},
-                    items:[
-                        {
-                            xtype:'textfield',
-                            fieldLabel: _('Resolution'),
-                            name: 'txtdeadline',
-                            readOnly: true
-                        }
-                    ]
-                    }                   
-                ]
+                    xtype:'textfield',
+                    fieldLabel: _('Resolution'),
+                    name: 'txtdeadline',
+                    readOnly: true
                 },
                 { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
                 { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
@@ -431,7 +380,7 @@
             ]
         });
 
-        if(rec){
+        if( rec !== undefined ){
             var ff = form_topic.getForm();
             ff.loadRecord( rec );
             load_txt_values_priority(rec);
