@@ -4388,3 +4388,7 @@
   background-color: #ffffff;
 }
 
+#boot .dashboard {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 11px;  
+}

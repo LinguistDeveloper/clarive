@@ -28,7 +28,6 @@
             <div class="clear"></div>
 %}
         </div>
-    
         <div class="grid_1">&nbsp;</div>
         <div class="grid_13">
             <h2>Pases / Mensajes / Topicos</h2>
@@ -76,7 +75,7 @@
                     }
                 };
             </script>
-            <table class="table table-bordered table-condensed">
+            <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
                         <th>Pase</th>
@@ -108,7 +107,7 @@
             <!--######FIN TABLA PASES ####################################################################################-->
               
             <!--######INICIO TABLA MENSAJES #################################################################################-->
-            <table class="table table-bordered table-condensed">
+            <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
                         <th colspan="3">Asunto</th>
@@ -129,7 +128,7 @@
             <!--######FIN TABLA MENSAJES ####################################################################################-->
         
             <!--######INICIO TABLA TOPICS ###################################################################################-->
-            <table class="table table-bordered table-condensed">
+            <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
                         <th colspan="3">Título</th>
@@ -154,7 +153,7 @@
         <div class="grid_10">
             <h2>Pases</h2>
             <!--######INICIO TABLA PASES ###################################################################################-->
-            <table class="table table-bordered table-condensed">
+            <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
                         <th>Proyecto</th>
