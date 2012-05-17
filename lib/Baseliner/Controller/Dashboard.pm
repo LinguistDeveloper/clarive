@@ -37,7 +37,7 @@ sub list : Local {
         $c->forward( $dash->url );
     }
     $c->stash->{dashboardlets} = \@dashs;
-    $c->stash->{template} = '/comp/dashboard.js';
+    $c->stash->{template} = '/comp/dashboard.html';
 }
 
 sub list_entornos: Private{
