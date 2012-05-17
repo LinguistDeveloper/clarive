@@ -22,7 +22,7 @@
     // Form Panel
     var form = new Ext.Panel({ });
     var show_form = function(){
-        Baseliner.ajaxEval( '/comp/topic/topic_form.js', { params: { title: 1212 } }, function(comp) {
+        Baseliner.ajaxEval( '/comp/topic/topic_form.js', { id: params.id }, function(comp) {
             form.removeAll();
             form.add( comp );
             form.doLayout();

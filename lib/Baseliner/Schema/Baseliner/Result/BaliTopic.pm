@@ -210,4 +210,10 @@ __PACKAGE__->has_many(
   { "foreign.id" => "self.id_category" },
 );
 
+__PACKAGE__->has_many(
+  "projects",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicProject",
+  { "foreign.id_topic" => "self.id" },
+);
+
 1;
