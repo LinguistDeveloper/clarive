@@ -16,18 +16,24 @@ use Baseliner::Utils;
 
 sub deploy_schema {
     my ( $self, %p ) = @_;
+
+    # get config and connect
     my $config = delete $p{ config };
     warn _dump $config unless $p{show_config};
     $config ||= eval "Baseliner->config";
     die "Could not connect to db: no config loaded" unless $config;
     my ( $dsn, $user, $pass ) = @{ $config->{ 'Model::Baseliner' }->{ 'connect_info' } };
     $self->db_driver( $dsn );
+
+    # setup driver, $schema is the actual $self
     my $driver = $__PACKAGE__::DB_DRIVER;
     my $schema = __PACKAGE__->connect( $dsn, $user, $pass, { RaiseError=>1 } )
         or die "Failed to connect to db";
+
+    # process main command
     if( $p{install_version} ) {
         warn "Dumping files...\n";
-        $schema->dump_file( $driver, $p{version}, $schema->get_db_version(), %p );
+        $schema->dump_file( $driver, $p{to}, $p{from}, %p );
         if (!$schema->get_db_version()) { # schema is unversioned
             warn sprintf "Installing schema versioning system for the first time. Version=%s\n", $schema->schema_version;
             $schema->install();
@@ -35,10 +41,10 @@ sub deploy_schema {
         return 0;
     } elsif( $p{upgrade} ) {
         # generate the migration file?  1-2, etc
-        my $file = $schema->_upgrade_file;
+        my $file = $schema->_upgrade_file( $p{from}, $p{to} );
         my $question = qq{File '$file' already exists. Do you want to overwrite it with an automatically generated version?};
         if( ! -e $file || $self->_ask_me( $question ) ) {
-            $schema->dump_file( $driver, $p{version}, $schema->get_db_version, %p  );
+            $schema->dump_file( $driver, $p{to}, $p{from}, %p  );
         }
         # show file
         open my $ff, '<', $file;
@@ -47,7 +53,7 @@ sub deploy_schema {
         if (!$schema->get_db_version()) {
             # schema is unversioned
             $schema->install();
-        } else {
+        } elsif( ! exists $p{show} ) {
             # upgrade (execute sql files) is done here:
             print sprintf "Upgrading schema to version=%s\n", $schema->schema_version;
             $schema->upgrade();
@@ -129,6 +135,7 @@ sub _upgrade_file {
 sub dump_file {
     my ($self, $driver, $version, $preversion, %p) = @_;
     $version //= $self->schema_version();
+    $preversion //= $self->get_db_version();
     my $sql_dir = './sql';
     warn "****** Dumping files into $sql_dir: Schema Version=$version, Database Version=$preversion\n";
     $self->create_ddl_dir( $driver, $version, $sql_dir, $preversion, 

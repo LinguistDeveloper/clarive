@@ -73,10 +73,18 @@ Options:
   -quote                  : quote table names
   -drop                   : add drop statements
   -env                    : sets BALI_ENV (local, test, prod, t, etc...)
-  -installversion         : installs versioning tables
   -schema                 : schemas to deploy 
                                 bali deploy --schema BaliRepo --schema BaliRepoKeys 
 
+Versioning Options:
+  --installversion        : installs versioning tables if needed
+  --upgrade               : upgrades database version
+  --from <version>        : from version (replaces current db version)
+  --to <version>          : to version (replaces current schema version)
+
+Examples:
+    bin/bali deploy --env t --installversion   
+    bin/bali deploy --env t --upgrade --show   # show scripts
 EOF
     exit 0;
 }
@@ -121,10 +129,12 @@ Baseliner::Schema::Baseliner->deploy_schema(
     downgrade       => exists $args{ downgrade },
     show_config     => !exists $args{show_config},
     show            => !exists $args{deploy},
+    from            => $args{from}, # from version num
+    to              => $args{to},  # to version num
     drop            => exists $args{drop},
     schema          => $args{schema}
 ) and die pre . "Errors while deploying DB. Aborted\n";
 
-say pre . "Done Deploying DB.";
+say pre . "Done.";
 
 exit 0;

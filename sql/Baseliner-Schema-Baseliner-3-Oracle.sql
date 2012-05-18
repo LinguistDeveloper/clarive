@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::Oracle
--- Created on Fri May 18 13:47:44 2012
+-- Created on Fri May 18 15:30:12 2012
 -- 
 --
 -- Table: bali_baseline
@@ -447,6 +447,8 @@ CREATE TABLE bali_topic_categories (
   id number(38) NOT NULL,
   name varchar2(255) NOT NULL,
   description varchar2(1024),
+  color varchar2(255),
+  forms varchar2(1024),
   PRIMARY KEY (id)
 );
 
