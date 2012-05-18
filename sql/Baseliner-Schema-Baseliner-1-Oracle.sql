@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::Oracle
--- Created on Fri May 18 12:09:45 2012
+-- Created on Fri May 18 12:18:46 2012
 -- 
 --
 -- Table: bali_baseline
@@ -115,7 +115,7 @@ CREATE TABLE bali_config (
   ts date DEFAULT SYSDATE NOT NULL,
   ref number(38),
   reftable varchar2(100),
-  data blob(2147483647),
+  data blob,
   parent_id number(38) DEFAULT '0' NOT NULL,
   PRIMARY KEY (id)
 );
@@ -294,7 +294,7 @@ CREATE TABLE bali_message (
   body clob,
   created date DEFAULT SYSDATE,
   active number(38) DEFAULT '1',
-  attach blob(2147483647),
+  attach blob,
   sender varchar2(255),
   content_type varchar2(50),
   attach_content_type varchar2(50),
@@ -726,7 +726,7 @@ CREATE SEQUENCE sq_bali_job_stash_id;
 
 CREATE TABLE bali_job_stash (
   id number(38) NOT NULL,
-  stash blob(2147483647),
+  stash blob,
   id_job number(38),
   PRIMARY KEY (id)
 );
@@ -857,7 +857,7 @@ CREATE TABLE bali_log (
   timestamp date DEFAULT SYSDATE,
   ns varchar2(255) DEFAULT '/',
   provider varchar2(255),
-  data blob(2147483647),
+  data blob,
   data_name varchar2(1024),
   data_length number(38) DEFAULT '0',
   module varchar2(1024),
@@ -907,7 +907,7 @@ CREATE SEQUENCE sq_bali_log_data_id;
 CREATE TABLE bali_log_data (
   id number(38) NOT NULL,
   id_log number(38) NOT NULL,
-  data blob(2147483647),
+  data blob,
   timestamp date DEFAULT SYSDATE,
   name varchar2(2048),
   type varchar2(255),
