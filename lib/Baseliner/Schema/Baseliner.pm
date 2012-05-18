@@ -3,7 +3,7 @@ package Baseliner::Schema::Baseliner;
 use strict;
 use warnings;
 
-our $VERSION = 2;
+our $VERSION = 3;
 
 use base 'DBIx::Class::Schema';
 
@@ -34,13 +34,23 @@ sub deploy_schema {
         }
         return 0;
     } elsif( $p{upgrade} ) {
-        $schema->dump_file( $driver, $p{version}, $schema->get_db_version, %p  );
+        # generate the migration file?  1-2, etc
+        my $file = $schema->_upgrade_file;
+        my $question = qq{File '$file' already exists. Do you want to overwrite it with an automatically generated version?};
+        if( ! -e $file || $self->_ask_me( $question ) ) {
+            $schema->dump_file( $driver, $p{version}, $schema->get_db_version, %p  );
+        }
+        # show file
+        open my $ff, '<', $file;
+        print join '',<$ff>;
+        close $ff;
         if (!$schema->get_db_version()) {
-          # schema is unversioned
-          $schema->install();
+            # schema is unversioned
+            $schema->install();
         } else {
-        print sprintf "Upgrading schema to version=%s\n", $schema->schema_version;
-          $schema->upgrade();
+            # upgrade (execute sql files) is done here:
+            print sprintf "Upgrading schema to version=%s\n", $schema->schema_version;
+            $schema->upgrade();
         }
         return 0;
     } elsif( $p{show} ) {
@@ -83,11 +93,39 @@ sub db_driver {
     };
 }
 
+#
+# monkey patch to implement drop_table drop_column
+#
 sub SQL::Translator::Producer::Oracle::drop_table {
   my ($table) = @_;
   return "DROP TABLE $table CASCADE CONSTRAINTS";
 }
 
+sub SQL::Translator::Producer::Oracle::drop_field {
+    my ($old_field, $options) = @_;
+
+    my $qf = $options->{quote_field_names} || '';
+    my $qt = $options->{quote_table_names} || '';
+    #my $table_name = quote_table_name($old_field->table->name, $qt);
+    my $table_name = $old_field->table->name;
+
+    my $out = sprintf('ALTER TABLE %s DROP COLUMN "%s"',
+                      $table_name,
+                      $qf . $old_field->name . $qf);
+
+    return $out;
+}
+
+# guess name of the upgrade file
+sub _upgrade_file {
+    my ($self, $from, $to) = @_;
+    my $driver = $__PACKAGE__::DB_DRIVER;
+    $from //= $self->get_db_version;
+    $to //= $self->schema_version;
+    return sprintf '%s/Baseliner-Schema-Baseliner-%s-%s-%s.sql', 'sql', $from, $to, $driver;
+}
+
+# dump the upgrade file
 sub dump_file {
     my ($self, $driver, $version, $preversion, %p) = @_;
     $version //= $self->schema_version();
@@ -98,7 +136,7 @@ sub dump_file {
             quote_table_names => 0,
             quote_field_names => 0,
             add_drop_table    => $p{drop},
-            #ignore_missing_methods => 1,
+            #ignore_missing_methods => 1,   # like if drop_table is not implemented
             producer_args => {
                 quote_table_names => 0,
                 quote_field_names => 0,
@@ -127,6 +165,16 @@ sub _filter {
             }
         }
     }
+}
+
+sub _ask_me {
+    my $self = shift;
+    print shift . "\n";
+    print "*** Are you sure [y/N]: ";
+    unless( (my $yn = <STDIN>) =~ /^y/i ) {
+        return 0;
+    }
+    return 1;
 }
 
 1;

@@ -73,6 +73,10 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 0, size => 255 },
   "description",
   { data_type => "varchar2", is_nullable => 1, size => 1024 },
+  "color",
+  { data_type => "varchar2", is_nullable => 1, size => 255 },
+  "forms",
+  { data_type => "varchar2", is_nullable => 1, size => 1024 },
 
 );
 
