@@ -3,9 +3,14 @@ package Baseliner::Schema::Baseliner;
 use strict;
 use warnings;
 
+our $VERSION = 1;
+
 use base 'DBIx::Class::Schema';
 
 __PACKAGE__->load_namespaces( default_resultset_class => '+Baseliner::Schema::Baseliner::Base::ResultSet' );
+__PACKAGE__->load_components(qw/Schema::Versioned/);
+__PACKAGE__->upgrade_directory('sql/');
+ 
 
 use Baseliner::Utils;
 
@@ -17,9 +22,28 @@ sub deploy_schema {
     die "Could not connect to db: no config loaded" unless $config;
     my ( $dsn, $user, $pass ) = @{ $config->{ 'Model::Baseliner' }->{ 'connect_info' } };
     $self->db_driver( $dsn );
+    my $driver = $__PACKAGE__::DB_DRIVER;
     my $schema = __PACKAGE__->connect( $dsn, $user, $pass, { RaiseError=>1 } )
         or die "Failed to connect to db";
-    if( $p{show} ) {
+    if( $p{install_version} ) {
+        warn "Dumping files...\n";
+        $schema->dump_file( $driver, $p{version}, $schema->get_db_version() );
+        if (!$schema->get_db_version()) { # schema is unversioned
+            warn sprintf "Installing schema versioning system for the first time. Version=%s\n", $schema->schema_version;
+            $schema->install();
+        }
+        return 0;
+    } elsif( $p{upgrade} ) {
+        $schema->dump_file( $driver, $p{version}, $schema->get_db_version  );
+        if (!$schema->get_db_version()) {
+          # schema is unversioned
+          $schema->install();
+        } else {
+        print sprintf "Upgrading schema to version=%s\n", $schema->schema_version;
+          $schema->upgrade();
+        }
+        return 0;
+    } elsif( $p{show} ) {
         my $sqlt_opts = {
             add_drop_table => $p{drop}, 
             quote_table_names => exists $p{quote},
@@ -35,26 +59,7 @@ sub deploy_schema {
             sources           => $p{schema},
             quote_field_names => 0,
             trace             => 1,
-            filters           => [
-                sub {
-                    my $s = shift;
-                    my $dbd = $__PACKAGE__::DB_DRIVER;
-                    # replace default (Oracle) for equivalents
-                    for my $table_name ( $s->get_tables ) { 
-                        my $table = $s->get_table( $table_name );
-                        for my $col_name ( $table->get_fields ) {
-                            my $col = $table->get_field($col_name); 
-                            my $def = $col->default_value;
-                            if( ref($def) eq 'SCALAR' && $$def eq 'SYSDATE' ) {
-                                $col->default_value( \"(datetime('now'))" ) if $dbd eq 'SQLite';
-                            }
-                            if( $col_name eq 'id' && $col->data_type =~ m/^num/i && $dbd eq 'SQLite' ) {
-                                $col->data_type( 'integer' );
-                            }
-                        }
-                    }
-                }
-            ],
+            filters           => [ \&_filter ],
             %p
         });
         #$schema->storage->debug(1);
@@ -78,4 +83,38 @@ sub db_driver {
     };
 }
 
+sub dump_file {
+    my ($self, $driver, $version, $preversion) = @_;
+    $version //= $self->schema_version();
+    my $sql_dir = './sql';
+    warn "****** Dumping files into $sql_dir: Schema Version=$version, Database Version=$preversion\n";
+    $self->create_ddl_dir( $driver, $version, $sql_dir, $preversion, 
+        {   # sqlt options
+            quote_table_names => 0,
+            quote_field_names => 0,
+            trace             => 1,
+            filters           => [ \&_filter ],
+            #parser => 'Baseliner::Schema::Parser::Oracle',  NOT WORKING, probably ddl_dir is not calling parser directly
+        }
+    );
+}
+
+sub _filter {
+    my $s = shift;
+    my $dbd = $__PACKAGE__::DB_DRIVER;
+    # replace default (Oracle) for equivalents
+    for my $table_name ( $s->get_tables ) { 
+        my $table = $s->get_table( $table_name );
+        for my $col_name ( $table->get_fields ) {
+            my $col = $table->get_field($col_name); 
+            my $def = $col->default_value;
+            if( ref($def) eq 'SCALAR' && $$def =~ /^SYSDATE/i ) {
+                $col->default_value( \"current_timestamp" ) if $dbd eq 'SQLite';
+            }
+            if( $col_name eq 'id' && $col->data_type =~ m/^num/i && $dbd eq 'SQLite' ) {
+                $col->data_type( 'integer' );
+            }
+        }
+    }
+}
 1;

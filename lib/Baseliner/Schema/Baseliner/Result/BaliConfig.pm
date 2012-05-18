@@ -39,7 +39,6 @@ __PACKAGE__->add_columns(
   "value",
   {
     data_type => "VARCHAR2",
-    default_value => "NULL",
     is_nullable => 1,
     size => 1024,
   },
@@ -74,7 +73,7 @@ __PACKAGE__->add_columns(
   "parent_id",
   {
     data_type => "NUMBER",
-    default_value => "0                     ",
+    default_value => 0,
     is_nullable => 0,
     size => 126,
   },
