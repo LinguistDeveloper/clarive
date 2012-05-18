@@ -83,6 +83,12 @@ sub db_driver {
     };
 }
 
+sub SQL::Translator::Producer::Oracle::drop_table {
+  my ($table) = @_;
+  return "DROP TABLE $table";
+}
+
+
 sub dump_file {
     my ($self, $driver, $version, $preversion, %p) = @_;
     $version //= $self->schema_version();
