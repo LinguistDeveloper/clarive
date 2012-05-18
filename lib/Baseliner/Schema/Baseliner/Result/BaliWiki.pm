@@ -20,7 +20,6 @@ __PACKAGE__->add_columns(
     data_type => "CLOB",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
   "username",
   {

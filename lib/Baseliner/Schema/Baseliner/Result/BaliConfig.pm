@@ -68,7 +68,6 @@ __PACKAGE__->add_columns(
     data_type => "BLOB",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
   "parent_id",
   {
