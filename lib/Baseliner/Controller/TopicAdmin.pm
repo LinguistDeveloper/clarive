@@ -12,7 +12,7 @@ $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'menu.admin.topic' => {
     label    => 'Topics',
-    title    => _loc ('Topics'),
+    title    => _loc ('Admin Topics'),
     action   => 'action.admin.topics',
     url_comp => '/topicadmin/grid',
     icon     => '/static/images/icons/topic.png',
