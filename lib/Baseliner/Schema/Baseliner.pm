@@ -3,7 +3,7 @@ package Baseliner::Schema::Baseliner;
 use strict;
 use warnings;
 
-our $VERSION = 1;
+our $VERSION = 2;
 
 use base 'DBIx::Class::Schema';
 
@@ -27,14 +27,14 @@ sub deploy_schema {
         or die "Failed to connect to db";
     if( $p{install_version} ) {
         warn "Dumping files...\n";
-        $schema->dump_file( $driver, $p{version}, $schema->get_db_version() );
+        $schema->dump_file( $driver, $p{version}, $schema->get_db_version(), %p );
         if (!$schema->get_db_version()) { # schema is unversioned
             warn sprintf "Installing schema versioning system for the first time. Version=%s\n", $schema->schema_version;
             $schema->install();
         }
         return 0;
     } elsif( $p{upgrade} ) {
-        $schema->dump_file( $driver, $p{version}, $schema->get_db_version  );
+        $schema->dump_file( $driver, $p{version}, $schema->get_db_version, %p  );
         if (!$schema->get_db_version()) {
           # schema is unversioned
           $schema->install();
@@ -55,8 +55,8 @@ sub deploy_schema {
     } else {
         $schema->deploy({
             add_drop_table    => $p{drop},
-            quote_table_names => 0,
             sources           => $p{schema},
+            quote_table_names => 0,
             quote_field_names => 0,
             trace             => 1,
             filters           => [ \&_filter ],
@@ -84,7 +84,7 @@ sub db_driver {
 }
 
 sub dump_file {
-    my ($self, $driver, $version, $preversion) = @_;
+    my ($self, $driver, $version, $preversion, %p) = @_;
     $version //= $self->schema_version();
     my $sql_dir = './sql';
     warn "****** Dumping files into $sql_dir: Schema Version=$version, Database Version=$preversion\n";
@@ -92,6 +92,12 @@ sub dump_file {
         {   # sqlt options
             quote_table_names => 0,
             quote_field_names => 0,
+            add_drop_table    => $p{drop},
+            #ignore_missing_methods => 1,
+            producer_args => {
+                quote_table_names => 0,
+                quote_field_names => 0,
+            },
             trace             => 1,
             filters           => [ \&_filter ],
             #parser => 'Baseliner::Schema::Parser::Oracle',  NOT WORKING, probably ddl_dir is not calling parser directly
@@ -117,4 +123,5 @@ sub _filter {
         }
     }
 }
+
 1;
