@@ -176,6 +176,7 @@
     var grid_status = new Ext.grid.GridPanel({
         title : _('Topics: Statuses'),
         sm: check_status_sm,
+		height: 200,
         header: true,
         stripeRows: true,
         autoScroll: true,
@@ -449,6 +450,7 @@
     var grid_categories = new Ext.grid.GridPanel({
         title : _('Categories'),
         sm: check_categories_sm,
+		height: 200,
         header: true,
         stripeRows: true,
         autoScroll: true,
@@ -646,6 +648,7 @@
     var grid_labels = new Ext.grid.GridPanel({
         title : _('Labels'),
         sm: check_labels_sm,
+		height: 200,
         autoScroll: true,
         header: true,
         stripeRows: true,
@@ -1058,6 +1061,7 @@
     var grid_priority = new Ext.grid.GridPanel({
         title : _('Priorities'),
         sm: check_priorities_sm,
+		height: 200,
         autoScroll: true,
         header: true,
         stripeRows: true,
