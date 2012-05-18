@@ -16,7 +16,7 @@ Baseliner.Topic.StoreProject = Ext.extend(Ext.data.Store, {
                 Baseliner.Topic.rt // recordType
             )
         }, config);
-        Baseliner.Topic.StoreStatus.superclass.constructor.call(this, config);
+        Baseliner.Topic.StoreProject.superclass.constructor.call(this, config);
     }
 }); 
 

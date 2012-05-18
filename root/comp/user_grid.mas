@@ -502,7 +502,7 @@
 						  ]
 				})
 		});	    	
-		
+
 		var form_user = new Ext.FormPanel({
 			name: form_user,
 			url: '/user/update',
