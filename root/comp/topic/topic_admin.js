@@ -176,7 +176,7 @@
     var grid_status = new Ext.grid.GridPanel({
         title : _('Topics: Statuses'),
         sm: check_status_sm,
-		height: 200,
+		height: 250,
         header: true,
         stripeRows: true,
         autoScroll: true,
@@ -450,7 +450,7 @@
     var grid_categories = new Ext.grid.GridPanel({
         title : _('Categories'),
         sm: check_categories_sm,
-		height: 200,
+		height: 250,
         header: true,
         stripeRows: true,
         autoScroll: true,
@@ -648,7 +648,7 @@
     var grid_labels = new Ext.grid.GridPanel({
         title : _('Labels'),
         sm: check_labels_sm,
-		height: 200,
+		height: 250,
         autoScroll: true,
         header: true,
         stripeRows: true,
@@ -1061,7 +1061,7 @@
     var grid_priority = new Ext.grid.GridPanel({
         title : _('Priorities'),
         sm: check_priorities_sm,
-		height: 200,
+		height: 250,
         autoScroll: true,
         header: true,
         stripeRows: true,
@@ -1130,39 +1130,62 @@
         bodyStyle:'padding:5px 5px 0',
         width: 350,
 
-        items: [{
-            xtype:'fieldset',
-            title: _('Topics: Statuses'),
-            collapsible: true,
-            autoHeight:true,
-            items :[
+        items: [
+				
+		{
+		// column layout with 2 columns
+		layout:'column'
+		,defaults:{
+			layout:'form'
+			,border:false
+			,xtype:'panel'
+			,bodyStyle:'padding:10px 10px 10px 10px'
+		}
+		,items:[{
+			// left column
+			columnWidth:0.50,
+			defaults:{anchor:'100%'}
+			,items:[
 				grid_status
-            ]
-        },{
-            xtype:'fieldset',
-            title: _('Categories'),
-            collapsible: true,
-            autoHeight:true,
-            items :[
+			]
+			},
+			{
+			// right column				
+			columnWidth:0.50,
+			defaults:{anchor:'100%'},
+			items:[
 				grid_categories
-            ]
-        },{
-            xtype:'fieldset',
-            title: _('Labels'),
-            collapsible: true,
-            autoHeight:true,
-            items :[
+			]
+			}                   
+		]
+		},
+		{
+		// column layout with 2 columns
+		layout:'column'
+		,defaults:{
+			layout:'form'
+			,border:false
+			,xtype:'panel'
+			,bodyStyle:'padding:10px 10px 10px 10px'
+		}
+		,items:[{
+			// left column
+			columnWidth:0.50,
+			defaults:{anchor:'100%'}
+			,items:[
 				grid_labels
-            ]
-        },{
-            xtype:'fieldset',
-            title: _('Priorities'),
-            collapsible: true,
-            autoHeight:true,
-            items :[
+			]
+			},
+			{
+			// right column				
+			columnWidth:0.50,
+			defaults:{anchor:'100%'},
+			items:[
 				grid_priority
-            ]
-        }
+			]
+			}                   
+		]
+		}
 		]
     });
 
