@@ -20,7 +20,6 @@ __PACKAGE__->add_columns(
     data_type => "VARCHAR2",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
   "slots", { data_type => "NUMBER", default_value => 1, is_nullable => 1, size => 126 },
   "active", { data_type => "NUMBER", default_value => 1, is_nullable => 1, size => 126 },

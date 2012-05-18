@@ -72,7 +72,6 @@ __PACKAGE__->add_columns(
     data_type => "CLOB",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
   "attempts",
   { data_type => "NUMBER", default_value => 0, is_nullable => 1, size => 126 },
