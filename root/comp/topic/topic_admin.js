@@ -155,7 +155,7 @@
                                 store_status.load();
                                 var labels_checked = getLabels();
                                 var categories_checked = getCategories();
-                                filtrar_topics(labels_checked, categories_checked);
+                                //filtrar_topics(labels_checked, categories_checked);
                             } else {
                                 Baseliner.message( _('ERROR'), response.msg );
                             }
@@ -206,7 +206,7 @@
             var statuses_checked = getStatuses();
             var categories_checked = getCategories();
             var labels_checked = getLabels();
-            filtrar_topics(labels_checked, categories_checked);
+            //filtrar_topics(labels_checked, categories_checked);
             if (statuses_checked.length == 1){
                 init_buttons_status('enable');
             }else{
@@ -225,7 +225,7 @@
             var statuses_checked = getStatuses();
             var categories_checked = getCategories();
             var labels_checked = getLabels();
-            filtrar_topics(labels_checked, categories_checked);
+            //filtrar_topics(labels_checked, categories_checked);
             if(statuses_checked.length == 0){
                 init_buttons_status('disable');
             }else{
@@ -429,7 +429,7 @@
                                 init_buttons_category('disable');
                                 store_category.load();
                                 var labels_checked = getLabels();
-                                filtrar_topics(labels_checked, null);                               
+                                //filtrar_topics(labels_checked, null);                               
                             } else {
                                 Baseliner.message( _('ERROR'), response.msg );
                             }
@@ -479,7 +479,7 @@
         if(columnIndex == 1){
             var categories_checked = getCategories();
             var labels_checked = getLabels();
-            filtrar_topics(labels_checked, categories_checked);
+            //filtrar_topics(labels_checked, categories_checked);
             if (categories_checked.length == 1){
                 init_buttons_category('enable');
             }else{
@@ -497,7 +497,7 @@
         if(columnIndex == 1){
             var categories_checked = getCategories();
             var labels_checked = getLabels();
-            filtrar_topics(labels_checked, categories_checked);
+            //filtrar_topics(labels_checked, categories_checked);
             if(categories_checked.length == 0){
                 init_buttons_category('disable');
             }else{
@@ -567,7 +567,7 @@
                                 init_buttons_label('disable');
                                 store_label.load();
                                 var categories_checked = getCategories();
-                                filtrar_topics(null, categories_checked);
+                                //filtrar_topics(null, categories_checked);
                             } else {
                                 Baseliner.message( _('ERROR'), response.msg );
                             }
@@ -701,17 +701,17 @@
         return priorities_checked
     }       
 	
-    function filtrar_topics(labels_checked, categories_checked){
-        var query_id = '<% $c->stash->{query_id} %>';
-        store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked}});
-        store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked, categories: categories_checked}});      
-    };
+    //function filtrar_topics(labels_checked, categories_checked){
+    //    var query_id = '<% $c->stash->{query_id} %>';
+    //    store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked}});
+    //    store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked, categories: categories_checked}});      
+    //};
 
     grid_labels.on('cellclick', function(grid, rowIndex, columnIndex, e) {
         if(columnIndex == 1){
             var labels_checked = getLabels();
             var categories_checked = getCategories();
-            filtrar_topics(labels_checked, categories_checked);
+            //filtrar_topics(labels_checked, categories_checked);
             init_buttons_label('enable');
         }
     });
@@ -720,7 +720,7 @@
         if(columnIndex == 1){
             var labels_checked = getLabels();
             var categories_checked = getCategories();
-            filtrar_topics(labels_checked, categories_checked);
+            //filtrar_topics(labels_checked, categories_checked);
             init_buttons_label('enable');
         }
     });
@@ -1026,7 +1026,7 @@
                                 store_priority.load();
                                 var labels_checked = getLabels();
                                 var categories_checked = getCategories();
-                                filtrar_topics(labels_checked, categories_checked);                             
+                                //filtrar_topics(labels_checked, categories_checked);                             
                             } else {
                                 Baseliner.message( _('ERROR'), response.msg );
                             }
@@ -1092,7 +1092,7 @@
             var priorities_checked = getPriorities();
             var categories_checked = getCategories();
             var labels_checked = getLabels();
-            filtrar_topics(labels_checked, categories_checked);
+            //filtrar_topics(labels_checked, categories_checked);
             if (priorities_checked.length == 1){
                 init_buttons_priority('enable');
             }else{
@@ -1111,7 +1111,7 @@
             var priorities_checked = getPriorities();
             var categories_checked = getCategories();
             var labels_checked = getLabels();
-            filtrar_topics(labels_checked, categories_checked);
+            //filtrar_topics(labels_checked, categories_checked);
             if(priorities_checked.length == 0){
                 init_buttons_priority('disable');
             }else{
