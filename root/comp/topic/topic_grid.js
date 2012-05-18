@@ -62,58 +62,103 @@
         eval('btn_delete_priority.' + action + '()');
     }   
 
-    var btn_add = new Ext.Toolbar.Button({
-        text: _('New'),
-        icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
-        handler: function() {
-            add_edit();
-        }
-    });
+    //var btn_add = new Ext.Toolbar.Button({
+    //    text: _('New'),
+    //    icon:'/static/images/icons/add.gif',
+    //    cls: 'x-btn-text-icon',
+    //    handler: function() {
+    //        add_edit();
+    //    }
+    //});
     
-    var btn_edit = new Ext.Toolbar.Button({
-        text: _('Edit'),
-        icon:'/static/images/icons/edit.gif',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-        var sm = grid_opened.getSelectionModel();
-            if (sm.hasSelection()) {
-                var sel = sm.getSelected();
-                add_edit(sel);
-            } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));    
-            };
+    //var btn_edit = new Ext.Toolbar.Button({
+    //    text: _('Edit'),
+    //    icon:'/static/images/icons/edit.gif',
+    //    cls: 'x-btn-text-icon',
+    //    disabled: true,
+    //    handler: function() {
+    //    var sm = grid_opened.getSelectionModel();
+    //        if (sm.hasSelection()) {
+    //            var sel = sm.getSelected();
+    //            add_edit(sel);
+    //        } else {
+    //            Baseliner.message( _('ERROR'), _('Select at least one row'));    
+    //        };
+    //    }
+    //});
+	
+	var btn_add = new Baseliner.Grid.Buttons.Add({
+		handler: function() {
+			add_edit();
+	    }		
+	});
+	
+	var btn_edit = new Baseliner.Grid.Buttons.Edit({
+		handler: function() {
+			var sm = grid_opened.getSelectionModel();
+				if (sm.hasSelection()) {
+					var sel = sm.getSelected();
+					add_edit(sel);
+				} else {
+					Baseliner.message( _('ERROR'), _('Select at least one row'));    
+				};
         }
-    });
-
-    var btn_delete = new Ext.Toolbar.Button({
-        text: _('Delete'),
-        icon:'/static/images/icons/delete.gif',
-        cls: 'x-btn-text-icon',
-        disabled: true,
+	});
+	
+	var btn_delete = new Baseliner.Grid.Buttons.Delete({
         handler: function() {
             var sm = grid_opened.getSelectionModel();
             var sel = sm.getSelected();
             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + sel.data.id + '</b>?', 
-            function(btn){ 
-                if(btn=='yes') {
-                    Baseliner.ajaxEval( '/topic/update?action=delete',{ id: sel.data.id },
-                        function(response) {
-                            if ( response.success ) {
-                                grid_opened.getStore().remove(sel);
-                                Baseliner.message( _('Success'), response.msg );
-                                init_buttons('disable');
-                            } else {
-                                Baseliner.message( _('ERROR'), response.msg );
-                            }
-                        }
-                    
-                    );
-                }
-            } );
+				function(btn){ 
+					if(btn=='yes') {
+						Baseliner.ajaxEval( '/topic/update?action=delete',{ id: sel.data.id },
+							function(response) {
+								if ( response.success ) {
+									grid_opened.getStore().remove(sel);
+									Baseliner.message( _('Success'), response.msg );
+									init_buttons('disable');
+								} else {
+									Baseliner.message( _('ERROR'), response.msg );
+								}
+							}
+						
+						);
+					}
+				}
+			);
         }
-    });
+	});
+	
+
+
+    //var btn_delete = new Ext.Toolbar.Button({
+    //    text: _('Delete'),
+    //    icon:'/static/images/icons/delete.gif',
+    //    cls: 'x-btn-text-icon',
+    //    disabled: true,
+    //    handler: function() {
+    //        var sm = grid_opened.getSelectionModel();
+    //        var sel = sm.getSelected();
+    //        Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + sel.data.id + '</b>?', 
+    //        function(btn){ 
+    //            if(btn=='yes') {
+    //                Baseliner.ajaxEval( '/topic/update?action=delete',{ id: sel.data.id },
+    //                    function(response) {
+    //                        if ( response.success ) {
+    //                            grid_opened.getStore().remove(sel);
+    //                            Baseliner.message( _('Success'), response.msg );
+    //                            init_buttons('disable');
+    //                        } else {
+    //                            Baseliner.message( _('ERROR'), response.msg );
+    //                        }
+    //                    }
+    //                
+    //                );
+    //            }
+    //        } );
+    //    }
+    //});
     
     var btn_labels = new Ext.Toolbar.Button({
         text: _('Labels'),
