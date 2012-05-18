@@ -108,7 +108,7 @@ __PACKAGE__->add_columns(
   "dsl_code",
   { data_type => "clob", is_nullable => 0 },
   "active",
-  { data_type => "char", default_value => \"NULL", is_nullable => 0, size => 1 },
+  { data_type => "char", is_nullable => 0, size => 1 },
 );
 __PACKAGE__->set_primary_key("id");
 
