@@ -31,7 +31,7 @@ sub grid : Local {
 sub list : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $cnt) = ( @{$p}{qw/start limit query query_id dir sort filter/}, 0 );
+    my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
     $sort ||= 'id';
     $dir ||= 'asc';
     $start||= 0;
@@ -39,6 +39,8 @@ sub list : Local {
 
     my @labels = ();
     my @categories = ();
+    my @statuses = ();
+    my @priorities = ();
     my @datas;
     
     if($p->{categories}){
@@ -53,11 +55,25 @@ sub list : Local {
         }
     }
     
+    if($p->{statuses}){
+        foreach my $status (_array $p->{statuses}){
+            push @statuses, $status;
+        }
+    }
+    
+    if($p->{priorities}){
+        foreach my $priority (_array $p->{priorities}){
+            push @priorities, $priority;
+        }
+    }    
+    
     my @projects = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
                                                                             action => 'action.job.viewall',
                                                                             level => 1);
     
-    @datas = Baseliner::Model::Topic->GetTopics({orderby => "$sort $dir"}, \@labels, \@categories, \@projects);
+    
+    #REVISAR CONSULTA, SALEN REGISTROS DUPLICADOS.
+    @datas = Baseliner::Model::Topic->GetTopics({orderby => "$sort $dir"}, \@labels, \@categories, \@projects, \@statuses, \@priorities);
     #my @datas = Baseliner::Model::Topic->GetTopics({orderby => "$sort $dir", labels => @labels});
     
     #Viene por la parte de dashboard, y realiza el filtrado por ids.
@@ -66,7 +82,7 @@ sub list : Local {
     #Comportamiento normal.
     }else{
         #Filtramos por el estado de las topics, abiertas 'O' o cerradas 'C'.
-        @datas = grep { uc($_->{status}) =~ $filter } @datas;
+        #@datas = grep { uc($_->{status}) =~ $filter } @datas;
         #Filtramos por lo que han introducido en el campo de búsqueda.
         @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
     }
@@ -111,7 +127,7 @@ sub list : Local {
     }   
 
 
-    $cnt = $#rows + 1 ;
+    $cnt = scalar @datas ;
     
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
@@ -687,4 +703,125 @@ sub unassign_projects : Local {
      
     $c->forward('View::JSON');    
 }
+
+sub filters_list : Local {
+    my ($self,$c) = @_;
+    my $id = $c->req->params->{node};
+    #my $project = $c->req->params->{project} ;
+    #my $id_project = $c->req->params->{id_project} ;
+    #my $parent_checked = $c->req->params->{parent_checked} || 0 ;
+    
+    
+    
+    my @tree;
+    my @labels; 
+    my $row;
+    $row = $c->model('Baseliner::BaliLabel')->search();
+    
+    if($row){
+        while( my $r = $row->next ) {
+            push @labels, {
+                id      => $r->id,
+                text    => $r->name,
+                cls     => 'forum',
+                iconCls => 'icon-forum',
+                checked => \0,
+                leaf    => 'true'
+            };	
+        }  
+    }
+    
+    push @tree, {
+        id          => 'L',
+        text        => 'labels',
+        cls         => 'forum-ct',
+        iconCls     => 'forum-parent',
+        children    => \@labels
+    };
+    
+    my @statuses;
+    $row = $c->model('Baseliner::BaliTopicStatus')->search();
+    
+    if($row){
+        while( my $r = $row->next ) {
+            push @statuses,
+                {
+                    id      => $r->id,
+                    text    => $r->name,
+                    cls     => 'forum',
+                    iconCls => 'icon-forum',
+                    checked => \0,
+                    leaf    => 'true'
+                };
+        }  
+    }
+    
+    push @tree, {
+        id          => 'S',
+        text        => 'statuses',
+        cls         => 'forum-ct',
+        iconCls     => 'forum-parent',
+        expanded    => 'true',
+        children    => \@statuses
+    };
+    
+    
+    my @categories;
+    my $row = $c->model('Baseliner::BaliTopicCategories')->search();
+    
+    if($row){
+        while( my $r = $row->next ) {
+            push @categories,
+                {
+                    id      => $r->id,
+                    text    => $r->name,
+                    cls     => 'forum',
+                    iconCls => 'icon-forum',
+                    checked => \0,
+                    leaf    => 'true'
+                };
+        }  
+    }
+
+    push @tree, {
+        id          => 'C',
+        text        => 'categories',
+        cls         => 'forum-ct',
+        iconCls     => 'forum-parent',
+        expanded    => 'true',
+        children    => \@categories
+    };
+        
+    
+    my @priorities;
+    $row = $c->model('Baseliner::BaliTopicPriority')->search();
+    
+    if($row){
+        while( my $r = $row->next ) {
+            push @priorities,
+            {
+                id      => $r->id,
+                text    => $r->name,
+                cls     => 'forum',
+                iconCls => 'icon-forum',
+                checked => \0,
+                leaf    => 'true'
+            };
+        }  
+    }       
+       
+    push @tree, {
+        id          => 'P',
+        text        => 'priorities',
+        cls         => 'forum-ct',
+        iconCls     => 'forum-parent',
+        expanded    => 'true',
+        children    => \@priorities
+    };
+       
+        
+    $c->stash->{json} = \@tree;
+    $c->forward('View::JSON');
+}
+
 1;

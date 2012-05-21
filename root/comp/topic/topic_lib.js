@@ -84,7 +84,7 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'id' },
                 {  name: 'title' },
                 {  name: 'description' },
-                {  name: 'created_on' },        
+                {  name: 'created_on', type: 'date', dateFormat: 'c' },        
                 {  name: 'created_by' },
                 {  name: 'numcomment' },
                 {  name: 'category' },

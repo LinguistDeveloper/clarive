@@ -106,13 +106,15 @@ sub update {
 } ## end sub update
 
 sub GetTopics {
-    my ( $self, $p, $labels, $categories, $projects ) = @_;
+    my ( $self, $p, $labels, $categories, $projects, $statuses, $priorities ) = @_;
     my $orderby = $p->{orderby} || 'ID ASC';
     my $SQL;
     my $ids_categories;
     my @labels = _array $labels;
     my @categories = _array $categories;
     my @projects = _array $projects;
+    my @statuses = _array $statuses;
+    my @priorities = _array $priorities;
     my $ids_projects;
     
     if (@projects){
