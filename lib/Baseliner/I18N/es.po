@@ -2719,5 +2719,10 @@ msgstr "Estados"
 msgid "Topics: Status"
 msgstr "Estado"
 
+msgid "Add Comment"
+msgstr "Comentar"
+
+msgid "Activity"
+msgstr "Actividad"
 
 
