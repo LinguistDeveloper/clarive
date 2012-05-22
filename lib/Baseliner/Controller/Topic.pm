@@ -38,42 +38,19 @@ sub list : Local {
     $limit ||= 100;
 
     my @labels = ();
+    my $labels;
     my @categories = ();
     my @statuses = ();
     my @priorities = ();
     my @datas;
-    
-    if($p->{categories}){
-        foreach my $category (_array $p->{categories}){
-            push @categories, $category;
-        }
-    }
-    
-    if($p->{labels}){
-        foreach my $label (_array $p->{labels}){
-            push @labels, $label;
-        }
-    }
-    
-    if($p->{statuses}){
-        foreach my $status (_array $p->{statuses}){
-            push @statuses, $status;
-        }
-    }
-    
-    if($p->{priorities}){
-        foreach my $priority (_array $p->{priorities}){
-            push @priorities, $priority;
-        }
-    }    
     
     my @projects = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
                                                                             action => 'action.job.viewall',
                                                                             level => 1);
     
     
-    #REVISAR CONSULTA, SALEN REGISTROS DUPLICADOS.
-    @datas = Baseliner::Model::Topic->GetTopics({orderby => "$sort $dir"}, \@labels, \@categories, \@projects, \@statuses, \@priorities);
+    @datas = Baseliner::Model::Topic->GetTopics({orderby => "$sort $dir"});
+    #@datas = Baseliner::Model::Topic->GetTopics({orderby => "$sort $dir"}, \@labels, \@categories, \@projects, \@statuses, \@priorities);
     #my @datas = Baseliner::Model::Topic->GetTopics({orderby => "$sort $dir", labels => @labels});
     
     #Viene por la parte de dashboard, y realiza el filtrado por ids.
@@ -81,10 +58,59 @@ sub list : Local {
         @datas = grep { ($_->{id}) =~ $query_id } @datas if $query_id;
     #Comportamiento normal.
     }else{
+        my @temp =();
+        my %seen   = ();
         #Filtramos por el estado de las topics, abiertas 'O' o cerradas 'C'.
         #@datas = grep { uc($_->{status}) =~ $filter } @datas;
         #Filtramos por lo que han introducido en el campo de búsqueda.
         @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
+        
+        if($p->{labels}){
+            foreach my $label (_array $p->{labels}){
+                push @labels, $label;
+            }
+            
+            $labels = $c->model('Baseliner::BaliTopicLabel')->search({id_label => \@labels});
+            while( my $label = $labels->next ) {
+                push @temp, grep { $_->{id} =~ $label->id_topic && ! $seen{ $_->{id} }++ } @datas if $label;    
+            }
+            @datas = @temp;
+        }
+        
+        @temp =();
+        %seen   = ();
+        
+        if($p->{categories}){
+            foreach my $category (_array $p->{categories}){
+                #push @categories, $category;
+                push @temp, grep { $_->{category} =~ $category && ! $seen{ $_->{id} }++ } @datas if $category;    
+            }
+            @datas = @temp;
+        }
+        
+        @temp =();
+        %seen   = ();
+        
+        if($p->{statuses}){
+            foreach my $status (_array $p->{statuses}){
+                #push @statuses, $status;
+                push @temp, grep { $_->{id_category_status} =~ $status && ! $seen{ $_->{id} }++ } @datas if $status;    
+            }
+            @datas = @temp;
+        }        
+
+        @temp =();
+        %seen   = ();
+        
+        if($p->{priorities}){
+            foreach my $priority (_array $p->{priorities}){
+                #push @priorities, $priority;
+                _log ">>>>>>>>>>>>>>>>asas: " . $priority;
+                push @temp, grep { $_->{id_priority} =~ $priority && ! $seen{ $_->{id} }++ } @datas if $priority;
+            }
+            @datas = @temp;            
+        }
+        
     }
     my @rows;
           
