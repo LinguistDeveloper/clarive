@@ -12,7 +12,7 @@ __PACKAGE__->add_columns(
   { data_type => "INTEGER", is_nullable => 0, size => undef },
   "plugin",
   { data_type => "VARCHAR", is_nullable => 0, size => 250 },
-  "desc",
+  "description",
   { data_type => "VARCHAR", is_nullable => 0, size => 500 },
   "wiki_id",
   { data_type => "INT", is_nullable => 0, size => 10 },
