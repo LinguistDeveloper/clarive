@@ -7,7 +7,6 @@
 	var store_status = new Baseliner.Topic.StoreStatus();
 	var store_category = new Baseliner.Topic.StoreCategory();
 	
-	var store_admin_status = new Baseliner.Topic.StoreStatus();
 	var store_roles = new Ext.data.JsonStore({
 		root: 'data' , 
 		remoteSort: true,
@@ -461,7 +460,23 @@
     var add_edit_admin_category = function(rec) {
         var win;
         var title = 'Admin category';
-        store_roles.load();
+
+		var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
+		var store_admin_status = new Baseliner.Topic.StoreCategoryStatus({
+				listeners: {
+					'load': function( store, rec, obj ) {
+						statusCbx = Ext.getCmp('status-combo_<%$id%>');
+						store.filter( {	fn   : function(record) {
+						
+																	return record.get('name') != statusCbx.getRawValue();
+																}
+													});
+					}
+				}	
+		});
+	
+		store_roles.load();
+		store_category_status.load({params:{categoryId: rec.data.id}});
 		
         var ta = new Ext.form.TextArea({
             name: 'description',
@@ -514,19 +529,20 @@
                     var me = this;
                     
                     var datas = me.getStore();
-                    var recs = [];
-                    datas.each(function(row, index){
-                        if(rec.data.statuses){
-                            for(i=0;i<rec.data.statuses.length;i++){
-                                if(row.get('id') == rec.data.statuses[i]){
-                                    recs.push(index);   
-                                }
-                            }
-                        }                       
-                    });
-                    me.getSelectionModel().selectRows(recs);                    
+					alert('pasa');
+                    //var recs = [];
+                    //datas.each(function(row, index){
+                    //    if(rec.data.statuses){
+                    //        for(i=0;i<rec.data.statuses.length;i++){
+                    //            if(row.get('id') == rec.data.statuses[i]){
+                    //                recs.push(index);   
+                    //            }
+                    //        }
+                    //    }                       
+                    //});
+                    //me.getSelectionModel().selectRows(recs);                    
                 }
-            }*/   
+            }   */
         });         
         
         var column2 = {
@@ -534,11 +550,13 @@
            defaults:{anchor:'98%'},
            columnWidth:0.50,
            items: grid_admin_status
-        };      
+        };
+		
+		//store_admin_status.load();				
         
          var combo_status = new Ext.form.ComboBox({
             mode: 'local',
-            //id: 'status-combo_<%$id%>',
+            id: 'status-combo_<%$id%>',
             forceSelection: true,
             triggerAction: 'all',
             emptyText: 'select a status',
@@ -548,8 +566,23 @@
             displayField: 'name',
             valueField: 'id',
             //disabled: true,
-            store: store_status
+            store: store_category_status,
+            listeners:{
+                'select': function(cmd, r, idx){
+					if(store_admin_status.getCount()){
+						store_admin_status.filter( {	fn   : function(record) {
+																	return record.get('name') != r.data.name;
+																},scope:this
+													});
+					}else{
+						store_admin_status.load({params:{categoryId: rec.data.id}});
+					}
+                }
+            }			
         });
+	
+	
+	
 		 
 		var check_roles_sm = new Ext.grid.CheckboxSelectionModel({
 			singleSelect: false,
@@ -1464,8 +1497,6 @@
 
     store_status.load();
     store_category.load();
-	
-	store_admin_status.load();
 	
     store_label.load();
     store_priority.load();
