@@ -95,7 +95,6 @@ __PACKAGE__->add_columns(
     data_type     => "integer",
     default_value => 1,
     is_nullable   => 0,
-    original      => { data_type => "number", size => [38, 0] },
   },
   "name",
   { data_type => "varchar2", is_nullable => 0, size => 30 },

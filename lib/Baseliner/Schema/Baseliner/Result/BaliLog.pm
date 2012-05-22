@@ -83,7 +83,6 @@ __PACKAGE__->table("bali_log");
   data_type: BLOB
   default_value: undef
   is_nullable: 1
-  size: 2147483647
 
 =head2 data_name
 
@@ -207,7 +206,6 @@ __PACKAGE__->add_columns(
     data_type => "BLOB",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
   "data_name",
   {

@@ -33,7 +33,6 @@ __PACKAGE__->table("bali_job_stash");
   data_type: BLOB
   default_value: undef
   is_nullable: 1
-  size: 2147483647
 
 =head2 id_job
 
@@ -59,7 +58,6 @@ __PACKAGE__->add_columns(
     data_type => "BLOB",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
   "id_job",
   {

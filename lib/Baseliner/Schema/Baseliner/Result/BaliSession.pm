@@ -32,7 +32,6 @@ __PACKAGE__->table("bali_session");
   data_type: CLOB
   default_value: undef
   is_nullable: 1
-  size: 2147483647
 
 =head2 expires
 
@@ -56,7 +55,6 @@ __PACKAGE__->add_columns(
     data_type => "CLOB",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
   "expires",
   {
