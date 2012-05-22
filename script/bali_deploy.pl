@@ -67,14 +67,15 @@ Usage:
   bali deploy [options]
 
 Options:
-  -h          : this help
-  -deploy     : actually execute statements in the db
-                  bali deploy --deploy
-  -quote      : quote table names
-  -drop       : add drop statements
-  -env        : sets BALI_ENV (local, test, prod, t, etc...)
-  -schema     : schemas to deploy 
-                  bali deploy --schema BaliRepo --schema BaliRepoKeys 
+  -h                      : this help
+  -deploy                 : actually execute statements in the db
+                              bali deploy --deploy
+  -quote                  : quote table names
+  -drop                   : add drop statements
+  -env                    : sets BALI_ENV (local, test, prod, t, etc...)
+  -installversion         : installs versioning tables
+  -schema                 : schemas to deploy 
+                                bali deploy --schema BaliRepo --schema BaliRepoKeys 
 
 EOF
     exit 0;
@@ -101,7 +102,7 @@ if( $args{schema} ) {
 }
 
 my $dropping= exists $args{drop} ? ' (with DROP)' : '';
-if( exists $args{drop} && ! @{ $args{schema} } ) {
+if( exists $args{drop} && ! @{ $args{schema} || [] } && ! exists $args{installversion} ) {
     say "\n*** Warning: Drop specified and no --schema parameter found.";
     say "*** All tables in the schema will be dropped. Data loss will sue.";
     print "*** Are you sure [y/N]: ";
@@ -113,11 +114,15 @@ if( exists $args{drop} && ! @{ $args{schema} } ) {
 say pre . "Deploying started$dropping.";
 
 Baseliner::Schema::Baseliner->deploy_schema(
-    config      => { $cfg->getall },
-    show_config => !exists $args{ show_config },
-    show        => !exists $args{ deploy },
-    drop        => exists $args{ drop },
-    schema      => $args{ schema }
+    config          => { $cfg->getall },
+    version         => exists $args{'version'},
+    install_version => exists $args{'installversion'},
+    upgrade         => exists $args{ upgrade },
+    downgrade       => exists $args{ downgrade },
+    show_config     => !exists $args{show_config},
+    show            => !exists $args{deploy},
+    drop            => exists $args{drop},
+    schema          => $args{schema}
 ) and die pre . "Errors while deploying DB. Aborted\n";
 
 say pre . "Done Deploying DB.";
