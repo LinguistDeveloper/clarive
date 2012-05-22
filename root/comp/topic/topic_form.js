@@ -266,47 +266,22 @@
     });         
     
     var form_topic = new Ext.FormPanel({
-        frame: true,
+        frame: false,
+        border: false,
         url:'/topic/update',
-        bodyStyle:'padding:10px 10px 0',
+        itemCls: 'boot',
+        bodyStyle:'margin:10px 10px 0',
         buttons: [
-            {
-            text: _('Accept'),
-            type: 'submit',
-            handler: function() {
-                var form = form_topic.getForm();
-                var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-                
-                if (form.isValid()) {
-                       form.submit({
-                       params: {action: action},
-                       success: function(f,a){
-                           Baseliner.message(_('Success'), a.result.msg );
-                           form.findField("id").setValue(a.result.topic_id);
-                           //store_opened.load();
-                           win.setTitle(_('Edit topic'));
-                       },
-                       failure: function(f,a){
-                           Ext.Msg.show({  
-                           title: _('Information'), 
-                           msg: a.result.msg , 
-                           buttons: Ext.Msg.OK, 
-                           icon: Ext.Msg.INFO
-                           });                      
-                       }
-                       });
-                }
-            }
-            },
-            {
-            text: _('Close'),
-            handler: function(){ 
-                    //win.close();
-                }
-            }
         ],
-        defaults: { anchor:'50%'},
+        defaults: { anchor:'70%'},
         items: [
+            {
+                  xtype : "fieldset",
+                  title : _("Main"),
+                  collapsible: true,
+                  autoHeight : true,
+                  items: [
+            
             { xtype: 'hidden', name: 'id', value: -1 },
             {
                 xtype:'textfield',
@@ -388,11 +363,14 @@
             ]
             },
             {
-            xtype:'htmleditor',
-            name:'description',
-            fieldLabel: _('Description'),
-            height:350
+                xtype:'htmleditor',
+                name:'description',
+                fieldLabel: _('Description'),
+                width: '100%',
+                height:350
             }
+           ]
+              }
         ]
     });
 

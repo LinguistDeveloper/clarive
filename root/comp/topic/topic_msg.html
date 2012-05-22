@@ -44,10 +44,11 @@
     <div class="grid_24">
 <div class="tab-content">
   <div class="tab-pane active" id="comments<% $ii %>">
-%   foreach my $comentario (_array $comments){
-            <div class="well">
+%   foreach my $comentario ( _array( $comments) ){
+            <div style="margin-left: 20px">  <!-- class 'well' -->
                 <p><% $comentario->{text} %></p>
                 <p><small>Creada por <%$comentario->{created_by}%>, <%$comentario->{created_on}->dmy%> <%$comentario->{created_on}->hms%></small></p>
+                <hr />
             </div>
 %}
   </div>

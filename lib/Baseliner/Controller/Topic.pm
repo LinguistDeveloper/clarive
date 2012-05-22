@@ -205,8 +205,12 @@ sub view : Local {
     my $category = $topic->categories->first;
     $c->stash->{category} = $category->name;
     $c->stash->{category_color} = try { $category->color} catch { '#444' };
+    $c->stash->{forms} = [
+        map { "/forms/$_" } split /,/,$category->forms
+    ];
     $c->stash->{id} = $id_topic;
-    $self->viewdetail( $c );
+    $self->viewdetail( $c );  # get comments into stash
+    _log ">>>>>>>>>>>>>>>>>" . _dump( $c->stash->{comments} );
     if( $p->{html} ) {
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
@@ -214,19 +218,18 @@ sub view : Local {
     }
 }
 
-sub viewdetail : Local {
+sub comment : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $id_topic = $p->{id};
-
-    if ($p->{action}){
-        $id_topic = $p->{action};
-
+    my $id_topic = $p->{id_topic};
+    if( defined $id_topic ) {
         try{
+            my $text = $p->{text};
+            _log $text;
             my $topic = $c->model('Baseliner::BaliTopicMsg')->create(
                             {
                             id_topic    => $id_topic,
-                            text => $p->{text},
+                            text => $text,
                             created_by => $c->username,
                             created_on => DateTime->now,
                             });
@@ -244,27 +247,27 @@ sub viewdetail : Local {
         catch{
             $c->stash->{json} = { msg => _loc('Error adding Comment: %1', shift()), failure => \1 }
         };
-        $c->forward('View::JSON');
-    
+    } else {
+        $c->stash->{json} = { msg => _loc('Error adding Comment: %1', 'Missing id'), failure => \1 }
     }
-    else{
-        my $rs = $c->model('Baseliner::BaliTopicMsg')->search( {id_topic=>$id_topic},       
-                            {
-                                order_by=> 'created_on desc'
-                            }
-                            );
-        my @rows;
-        while( my $r = $rs->next ) {
-        # produce the grid
-            push @rows,
-                        {
-                            created_on  => $r->created_on,
-                            created_by  => $r->created_by,
-                            text        => $r->text
-                        };
-        }
-        $c->stash->{comments} = \@rows;
+    $c->forward('View::JSON');
+}
+
+sub viewdetail : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $id_topic = $p->{id};
+
+    my $rs = $c->model('Baseliner::BaliTopicMsg')->search( { id_topic => $id_topic }, { order_by => 'created_on desc' } );
+    my @rows;
+    while( my $r = $rs->next ) {
+        push @rows, {
+                        created_on  => $r->created_on,
+                        created_by  => $r->created_by,
+                        text        => $r->text
+                    };
     }
+    $c->stash->{comments} = \@rows;
 }
 
 sub list_category : Local {
