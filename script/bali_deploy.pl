@@ -70,12 +70,29 @@ Options:
   -h                      : this help
   -deploy                 : actually execute statements in the db
                               bali deploy --deploy
+  -run                    : Run DB statements interactively or from STDIN
   -quote                  : quote table names
   -drop                   : add drop statements
   -env                    : sets BALI_ENV (local, test, prod, t, etc...)
-  -installversion         : installs versioning tables
-  -schema                 : schemas to deploy 
+  -schema                 : schemas to deploy (does not work for migrations)
                                 bali deploy --schema BaliRepo --schema BaliRepoKeys 
+
+Versioning Options:
+  --diff                  : diffs this schema against the database and generates a diff
+  --installversion        : installs versioning tables if needed
+  --upgrade               : upgrades database version
+  --from <version>        : from version (replaces current db version)
+  --to <version>          : to version (replaces current schema version)
+
+Examples:
+    bin/bali deploy --env t   
+    bin/bali deploy --env t --diff
+    bin/bali deploy --env t --diff --deploy
+    bin/bali deploy --env t --installversion   
+    bin/bali deploy --env t --upgrade                   # print migration scripts only, no changes made
+    bin/bali deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
+    bin/bali deploy --env t --upgrade --show --to 2     # same, but with schema version 2
+    bin/bali deploy --env t --upgrade --show --from 1   # same, but with db version 2
 
 EOF
     exit 0;
@@ -113,18 +130,26 @@ if( exists $args{drop} && ! @{ $args{schema} || [] } && ! exists $args{installve
 }
 say pre . "Deploying started$dropping.";
 
+my $deploy_now = exists $args{deploy};
+say pre . "No deployments will run. Only printing information." unless $deploy_now;
+
 Baseliner::Schema::Baseliner->deploy_schema(
     config          => { $cfg->getall },
+    run             => exists $args{run},
     version         => exists $args{'version'},
     install_version => exists $args{'installversion'},
     upgrade         => exists $args{ upgrade },
+    diff            => exists $args{ diff },
     downgrade       => exists $args{ downgrade },
     show_config     => !exists $args{show_config},
-    show            => !exists $args{deploy},
+    deploy_now      => $deploy_now,
+    from            => $args{from}, # from version num
+    to              => $args{to},  # to version num
     drop            => exists $args{drop},
     schema          => $args{schema}
 ) and die pre . "Errors while deploying DB. Aborted\n";
 
-say pre . "Done Deploying DB.";
+say pre . "No DB statements were executed. Use --deploy to actually deploy/migrate the schema. " unless $deploy_now;
+say pre . "Done.";
 
 exit 0;
