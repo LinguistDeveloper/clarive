@@ -199,6 +199,8 @@
         var win;
         var title = 'Labels';
         
+		store_label.load();
+			
         var btn_cerrar_labels = new Ext.Toolbar.Button({
             icon:'/static/images/icons/door_out.png',
             cls: 'x-btn-text-icon',
@@ -307,7 +309,7 @@
         var title = 'Create topic';
         
         var combo_category = new Ext.form.ComboBox({
-            mode: 'local',
+            mode: 'remote',
             forceSelection: true,
             emptyText: 'select a category',
             triggerAction: 'all',
@@ -394,7 +396,7 @@
         }
         
         var combo_priority = new Ext.form.ComboBox({
-            mode: 'local',
+            mode: 'remote',
             forceSelection: true,
             emptyText: 'select a priority',
             triggerAction: 'all',

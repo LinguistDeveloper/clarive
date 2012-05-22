@@ -6,12 +6,30 @@
 (function(){
 	var store_status = new Baseliner.Topic.StoreStatus();
 	var store_category = new Baseliner.Topic.StoreCategory();
+	
+	var store_admin_status = new Baseliner.Topic.StoreStatus();
+	var store_roles = new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/role/json',
+		fields: [ 
+			{  name: 'id' },
+			{  name: 'role' },
+			{  name: 'actions' },
+			{  name: 'description' },
+			{  name: 'mailbox' }
+		]
+	});	
+	
 	var store_label = new Baseliner.Topic.StoreLabel();
 	var store_priority = new Baseliner.Topic.StorePriority();
 	
     var init_buttons_category = function(action) {
         eval('btn_edit_category.' + action + '()');
         eval('btn_delete_category.' + action + '()');
+		eval('btn_admin_category.' + action + '()');
     }   
     
     var init_buttons_label = function(action) {
@@ -300,10 +318,8 @@
                         }                       
                     });
                     me.getSelectionModel().selectRows(recs);                    
-                
                 }
             }   
-            
         });         
         
         var column2 = {
@@ -440,7 +456,261 @@
             });
         }
     });
+	
 
+    var add_edit_admin_category = function(rec) {
+        var win;
+        var title = 'Admin category';
+        store_roles.load();
+		
+        var ta = new Ext.form.TextArea({
+            name: 'description',
+            height: 130,
+            enableKeyEvents: true,
+            fieldLabel: _('Description'),
+            emptyText: _('A brief description of the category')
+        });     
+        
+        var column1 = {
+            xtype:'panel',
+            columnWidth:0.50,
+            layout:'form',
+            defaults:{anchor:'100%'},
+            items: [
+                { xtype: 'hidden', name: 'id', value: -1 },
+                { xtype:'textfield', name:'name', fieldLabel:_('Category'), allowBlank:false, emptyText:_('Name of category') },
+                ta
+            ]
+        };
+        
+        var check_admin_status_sm = new Ext.grid.CheckboxSelectionModel({
+            singleSelect: false,
+            sortable: false,
+            checkOnly: true
+        });
+
+        var grid_admin_status = new Ext.grid.GridPanel({
+            sm: check_admin_status_sm,
+            header: false,
+            height: 157,
+            stripeRows: true,
+            autoScroll: true,
+            enableHdMenu: false,
+            store: store_admin_status,
+            viewConfig: {forceFit: true},
+            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+            loadMask:'true',
+            columns: [
+                { hidden: true, dataIndex:'id' },
+				  check_admin_status_sm,
+                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
+                { header: _('Description'), dataIndex: 'description', sortable: false } 
+            ],
+            autoSizeColumns: true,
+            deferredRender:true/*,
+            listeners: {
+                viewready: function() {
+                    var me = this;
+                    
+                    var datas = me.getStore();
+                    var recs = [];
+                    datas.each(function(row, index){
+                        if(rec.data.statuses){
+                            for(i=0;i<rec.data.statuses.length;i++){
+                                if(row.get('id') == rec.data.statuses[i]){
+                                    recs.push(index);   
+                                }
+                            }
+                        }                       
+                    });
+                    me.getSelectionModel().selectRows(recs);                    
+                }
+            }*/   
+        });         
+        
+        var column2 = {
+           xtype:'panel',
+           defaults:{anchor:'98%'},
+           columnWidth:0.50,
+           items: grid_admin_status
+        };      
+        
+         var combo_status = new Ext.form.ComboBox({
+            mode: 'local',
+            //id: 'status-combo_<%$id%>',
+            forceSelection: true,
+            triggerAction: 'all',
+            emptyText: 'select a status',
+            fieldLabel: _('Topics: Status'),
+            name: 'status',
+            hiddenName: 'status',
+            displayField: 'name',
+            valueField: 'id',
+            //disabled: true,
+            store: store_status
+        });
+		 
+		var check_roles_sm = new Ext.grid.CheckboxSelectionModel({
+			singleSelect: false,
+			sortable: false,
+			checkOnly: true
+		});
+
+		var grid_roles = new Ext.grid.GridPanel({
+			title: _('Available Roles'),
+			sm: check_roles_sm,
+			store: store_roles,
+			stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			viewConfig: {
+				forceFit: true
+			},		    
+			height:157,
+			columns: [
+				check_roles_sm,
+				{ hidden: true, dataIndex:'id' }, 
+				{ header: _('All'), width:250, dataIndex: 'role', sortable: true }
+			],
+			autoSizeColumns: true
+		});		 
+		 
+        var form_category = new Ext.FormPanel({
+            frame: true,
+            url:'/topic/update_category',
+            buttons: [
+                    {
+                        text: _('Accept'),
+                        type: 'submit',
+                        handler: function() {
+                            var form = form_category.getForm();
+                            var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+                            
+                            if (form.isValid()) {
+                                
+                                var statuses_checked = new Array();
+                                check_category_status_sm.each(function(rec){
+                                    statuses_checked.push(rec.get('id'));
+                                });                             
+                                
+                                
+                                form.submit({
+                                    params: {action: action, idsstatus: statuses_checked},
+                                    success: function(f,a){
+                                        Baseliner.message(_('Success'), a.result.msg );
+                                        form.findField("id").setValue(a.result.category_id);
+                                        store_category.load();
+                                        win.setTitle(_('Edit category'));
+                                    },
+                                    failure: function(f,a){
+                                        Ext.Msg.show({  
+                                            title: _('Information'), 
+                                            msg: a.result.msg , 
+                                            buttons: Ext.Msg.OK, 
+                                            icon: Ext.Msg.INFO
+                                        });                         
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    {
+                    text: _('Close'),
+                    handler: function(){ 
+                            win.close();
+                        }
+                    }
+            ],
+            defaults: { bodyStyle:'padding:0 18px 0 0'},
+            items: [
+				{
+				// column layout with 2 columns
+				layout:'column'
+				,defaults:{
+					layout:'form'
+					,border:false
+					,xtype:'panel'
+					,bodyStyle:'padding:10px 10px 10px 10px'
+				}
+				,items:[{
+					// left column
+					columnWidth:0.50,
+					defaults:{anchor:'100%'}
+					,items:[
+						column1
+					]
+					},
+					{
+					// right column				
+					columnWidth:0.50,
+					defaults:{anchor:'100%'},
+					items:[
+						grid_roles
+					]
+					}                   
+				]
+				},
+				{
+				// column layout with 2 columns
+				layout:'column'
+				,defaults:{
+					layout:'form'
+					,border:false
+					,xtype:'panel'
+					,bodyStyle:'padding:10px 10px 10px 10px'
+				}
+				,items:[{
+					// left column
+					columnWidth:0.50,
+					defaults:{anchor:'100%'}
+					,items:[
+						combo_status
+					]
+					},
+					{
+					// right column				
+					columnWidth:0.50,
+					defaults:{anchor:'100%'},
+					items:[
+						column2
+					]
+					}                   
+				]
+				}				
+            ]           
+        });
+
+        if(rec){
+            var ff = form_category.getForm();
+            ff.loadRecord( rec );
+            //title = 'Edit category';
+        }
+        
+        win = new Ext.Window({
+            title: _(title),
+            width: 700,
+            autoHeight: true,
+            items: form_category
+        });
+        win.show();     
+    };
+
+    var btn_admin_category = new Ext.Toolbar.Button({
+        text: _('Admin'),
+        icon:'/static/images/icons/user.gif',
+        cls: 'x-btn-text-icon',
+        disabled: true,
+        handler: function() {
+            var sm = grid_categories.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                add_edit_admin_category(sel);
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));    
+            };			
+        }
+    });	
+	
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
         sortable: false,
@@ -471,6 +741,7 @@
                 btn_add_category,
                 btn_edit_category,
                 btn_delete_category,
+				btn_admin_category,
                 '->'
         ]       
     }); 
@@ -488,6 +759,7 @@
                 }else{
                     btn_delete_category.enable();
                     btn_edit_category.disable();
+					btn_admin_category.disable();
                 }
             }
         }
@@ -1191,6 +1463,9 @@
 
     store_status.load();
     store_category.load();
+	
+	store_admin_status.load();
+	
     store_label.load();
     store_priority.load();
 	
