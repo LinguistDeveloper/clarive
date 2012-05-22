@@ -468,7 +468,8 @@
             height: 130,
             enableKeyEvents: true,
             fieldLabel: _('Description'),
-            emptyText: _('A brief description of the category')
+            emptyText: _('A brief description of the category'),
+			readOnly: true
         });     
         
         var column1 = {
@@ -478,7 +479,7 @@
             defaults:{anchor:'100%'},
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
-                { xtype:'textfield', name:'name', fieldLabel:_('Category'), allowBlank:false, emptyText:_('Name of category') },
+                { xtype:'textfield', name:'name', fieldLabel:_('Category'), readOnly:true, allowBlank:false, emptyText:_('Name of category') },
                 ta
             ]
         };
@@ -503,8 +504,8 @@
             columns: [
                 { hidden: true, dataIndex:'id' },
 				  check_admin_status_sm,
-                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
-                { header: _('Description'), dataIndex: 'description', sortable: false } 
+                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false }
+                //{ header: _('Description'), dataIndex: 'description', sortable: false } 
             ],
             autoSizeColumns: true,
             deferredRender:true/*,
