@@ -160,7 +160,7 @@ __PACKAGE__->add_columns(
   "id_category_status",
   {
     data_type => "numeric",
-    is_nullable => 1,
+    is_nullable => 0,
     size => 126,
   },  
   "id_priority",
@@ -214,6 +214,12 @@ __PACKAGE__->has_many(
   "projects",
   "Baseliner::Schema::Baseliner::Result::BaliTopicProject",
   { "foreign.id_topic" => "self.id" },
+);
+
+__PACKAGE__->has_one(
+  "status",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
+  { "foreign.id" => "self.id_category_status" },
 );
 
 1;

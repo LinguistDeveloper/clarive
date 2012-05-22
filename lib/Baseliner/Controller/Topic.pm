@@ -201,6 +201,10 @@ sub view : Local {
     
     my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
     $c->stash->{title} = $topic->title;
+    $c->stash->{created_on} = $topic->created_on;
+    $c->stash->{created_by} = $topic->created_by;
+    $c->stash->{deadline} = $topic->created_on;  # TODO
+    $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
     $c->stash->{description} = $topic->description;
     my $category = $topic->categories->first;
     $c->stash->{category} = $category->name;
@@ -219,36 +223,71 @@ sub view : Local {
 }
 
 sub comment : Local {
-    my ($self, $c) = @_;
+    my ($self, $c, $action) = @_;
     my $p = $c->request->parameters;
-    my $id_topic = $p->{id_topic};
-    if( defined $id_topic ) {
+    if( $action eq 'add' ) {
         try{
+            my $id_topic = $p->{id_topic};
+            my $id_com = $p->{id_com};
+            _throw( _loc( 'Missing id' ) ) unless defined $id_topic;
             my $text = $p->{text};
             _log $text;
-            my $topic = $c->model('Baseliner::BaliTopicMsg')->create(
-                            {
-                            id_topic    => $id_topic,
-                            text => $text,
-                            created_by => $c->username,
-                            created_on => DateTime->now,
-                            });
-            #$c->model('Event')->create({
-            #    type => 'event.topic.new_comment',
-            #    ids  => [ $id_topic ],
-            #    username => $c->username,
-            #    data => {
-            #        text=>$p->{text}
-            #    }
-            #});
-            $c->stash->{json} = {  data =>{ text => $p->{text}, created_by => $c->username, created_on => $topic->created_on->dmy . ' ' . $topic->created_on->hms} , msg=>_loc('Comment added'), success=>\1 };
-    
+            
+            my $topic;
+            if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
+                $topic = $c->model('Baseliner::BaliTopicMsg')->create(
+                                {
+                                id_topic    => $id_topic,
+                                text => $text,
+                                created_by => $c->username,
+                                created_on => DateTime->now,
+                                });
+                #$c->model('Event')->create({
+                #    type => 'event.topic.new_comment',
+                #    ids  => [ $id_topic ],
+                #    username => $c->username,
+                #    data => {
+                #        text=>$p->{text}
+                #    }
+                #});
+            } else {
+                my $topic = $c->model('Baseliner::BaliTopicMsg')->find( $id_com );
+                $topic->text( $text );
+                $topic->update;
+            }
+            $c->stash->{json} = {
+                msg     => _loc('Comment added'),
+                success => \1
+            };
         }
         catch{
             $c->stash->{json} = { msg => _loc('Error adding Comment: %1', shift()), failure => \1 }
         };
-    } else {
-        $c->stash->{json} = { msg => _loc('Error adding Comment: %1', 'Missing id'), failure => \1 }
+    } elsif( $action eq 'delete' )  {
+        try {
+            my $id_com = $p->{id_com};
+            _throw( _loc( 'Missing id' ) ) unless defined $id_com;
+            $c->model('Baseliner::BaliTopicMsg')->find( $id_com )->delete;
+            $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
+        } catch {
+            $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', shift() ), failure => \1 }
+        };
+    } elsif( $action eq 'view' )  {
+        try {
+            my $id_com = $p->{id_com};
+            my $topic = $c->model('Baseliner::BaliTopicMsg')->find($id_com);
+            # check if youre the owner
+            _fail _loc( "You're not the owner (%1) of the comment.", $topic->created_by ) 
+                if $topic->created_by ne $c->username;
+            $c->stash->{json} = {
+                failure=>\0,
+                text       => $topic->text,
+                created_by => $topic->created_by,
+                created_on => $topic->created_on->dmy . ' ' . $topic->created_on->hms
+            };
+        } catch {
+            $c->stash->{json} = { msg => _loc('Error viewing comment: %1', shift() ), failure => \1 }
+        };
     }
     $c->forward('View::JSON');
 }
@@ -262,10 +301,11 @@ sub viewdetail : Local {
     my @rows;
     while( my $r = $rs->next ) {
         push @rows, {
-                        created_on  => $r->created_on,
-                        created_by  => $r->created_by,
-                        text        => $r->text
-                    };
+            created_on => $r->created_on,
+            created_by => $r->created_by,
+            text       => $r->text,
+            id         => $r->id,
+            };
     }
     $c->stash->{comments} = \@rows;
 }

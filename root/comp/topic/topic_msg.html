@@ -6,6 +6,10 @@
     $comments
     $category
     $category_color
+    $created_by
+    $created_on
+    $deadline
+    $status
 </%args>
 <%perl>
     my $ii = int rand(999999999999999);
@@ -21,6 +25,18 @@
                 <th>
                     <h3><% $title %></h3>
                 </th>
+              </tr>
+              <tr>
+                <th><% _loc('Status') %>:</th>
+                <td><% $status || '&nbsp;' %></td>
+              </tr>
+              <tr>
+                <th><% _loc('Created By') %>:</th>
+                <td><% $created_by || '&nbsp;' %></td>
+              </tr>
+              <tr>
+                <th><% _loc('Created On') %>:</th>
+                <td><% $created_on || '&nbsp;' %></td>
               </tr>
               <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>
@@ -45,9 +61,15 @@
 <div class="tab-content">
   <div class="tab-pane active" id="comments<% $ii %>">
 %   foreach my $comentario ( _array( $comments) ){
-            <div style="margin-left: 20px">  <!-- class 'well' -->
+%      my $id_div_com =  "comment_$comentario->{id}_$ii";
+            <div style="margin-left: 20px" id="<% $id_div_com %>">  <!-- class 'well' -->
                 <p><% $comentario->{text} %></p>
-                <p><small>Creada por <%$comentario->{created_by}%>, <%$comentario->{created_on}->dmy%> <%$comentario->{created_on}->hms%></small></p>
+                <p><small><%$comentario->{created_by}%>, <%$comentario->{created_on}->dmy%> <%$comentario->{created_on}->hms%>
+% if( $c->username eq $comentario->{created_by} ) {
+                    | <a href="javascript:Baseliner.Topic.comment_edit( undefined, <% $comentario->{id} %>)"><% _loc("edit") %></a>
+                    | <a href="javascript:Baseliner.Topic.comment_delete(<% $comentario->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
+% }
+                </small></p>
                 <hr />
             </div>
 %}

@@ -141,3 +141,19 @@ Baseliner.Topic.StorePriority = Ext.extend( Ext.data.JsonStore, {
     }
 });
 
+Baseliner.Topic.comment_delete = function(id_com, id_div ) {
+    Baseliner.ajaxEval( '/topic/comment/delete', { id_com: id_com }, function(res) {
+        if( res.failure ) {
+            Ext.Msg.alert( _('Error'), res.msg );
+        } else {
+            // no need to report anything
+            // delete div if any
+            try {
+                var el = Ext.fly( id_div );
+                if( el !== undefined ) {
+                    el.fadeOut({ duration: .5, callback: function(e){ e.remove() } });
+                }
+            } catch(eee) { }
+        }
+    });
+};

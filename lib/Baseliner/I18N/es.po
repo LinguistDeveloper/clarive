@@ -1100,6 +1100,9 @@ msgstr "resultado"
 msgid "cancel"
 msgstr "cancelar"
 
+msgid "edit"
+msgstr "editar"
+
 msgid "delete"
 msgstr "borrar"
 
@@ -1210,11 +1213,17 @@ msgstr ""
 
 # Requests
 
+msgid "unassigned"
+msgstr "sin asignar"
+
 msgid "Name"
 msgstr "Nombre"
 
 msgid "Status"
-msgstr "Estado de Aprobación"
+msgstr "Estado"
+
+msgid "State"
+msgstr "Estadio"
 
 msgid "Approve"
 msgstr "Aprobar"

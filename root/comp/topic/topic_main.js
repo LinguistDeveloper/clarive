@@ -76,24 +76,26 @@
         });
         cardpanel.getLayout().setActiveItem( 1 );
     };
-    var add_comment = function() {
+
+    // if id_com is undefined, then its add, otherwise it's an edit
+    Baseliner.Topic.comment_edit = function(id_topic, id_com) {
         var win_comment;    
-        var form_topic_comment_field = new Ext.form.HtmlEditor({
-            width: '100%'
+        var comment_field = new Ext.form.HtmlEditor({
+            listeners: { 'initialize': function(){ comment_field.focus() } }
         });
         var btn_submit = {
             xtype: 'button',
             text: _('Add Comment'),
             handler: function(){
-                var text = form_topic_comment_field.getValue();
-                Baseliner.ajaxEval( '/topic/comment', { id_topic: params.id, text: text }, function(res) {
+                var text = comment_field.getValue();
+                Baseliner.ajaxEval( '/topic/comment/add', { id_topic: id_topic, id_com: id_com, text: text }, function(res) {
                    if( ! res.failure ) { 
                        Baseliner.message(_('Success'), res.msg );
                        win_comment.close();
                        detail_reload();
                    } else {
-                        Ext.Msg.show({  
-                            title: _('Information'), 
+                        Ext.Msg.show({ 
+                            title: _('Information'),
                             msg: res.msg , 
                             buttons: Ext.Msg.OK, 
                             icon: Ext.Msg.INFO
@@ -107,13 +109,25 @@
 
         win_comment = new Ext.Window({
             title: _('Add Comment'),
+            layout: 'fit',
             width: 700,
             closeAction: 'close',
             autoHeight: true,
             bbar: [ '->', btn_submit],
-            items: form_topic_comment_field
+            items: comment_field
         });
-        win_comment.show();     
+        if( id_com !== undefined ) {
+            Baseliner.ajaxEval('/topic/comment/view', { id_com: id_com }, function(res) {
+                if( res.failure ) {
+                    Baseliner.message( _('Error'), res.msg );
+                } else {
+                    comment_field.setValue( res.text );
+                    win_comment.show();
+                }
+            });
+        } else {
+            win_comment.show();
+        }
     };
 
     var btn_comment = new Ext.Toolbar.Button({
@@ -122,7 +136,7 @@
         cls: 'x-btn-icon-text',
         //disabled: true,
         handler: function() {
-            add_comment();
+            Baseliner.Topic.comment_edit( params.id );
         }
     });
 
