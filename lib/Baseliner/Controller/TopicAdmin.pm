@@ -687,4 +687,87 @@ sub unassign_projects : Local {
      
     $c->forward('View::JSON');    
 }
+
+sub update_category_admin : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $idcategory = $p->{id};
+    my $idsroles = $p->{idsroles};
+    my $status_from = $p->{status_from};
+    my $idsstatus_to = $p->{idsstatus_to};
+
+    foreach my $role (_array $idsroles){
+        my $category = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $idcategory, id_role => $role, id_status_from => $status_from});
+        if($category->first){
+            $category->delete;
+            if($idsstatus_to){
+                foreach my $idstatus_to (_array $idsstatus_to){
+                    my $category = $c->model('Baseliner::BaliTopicCategoriesAdmin')->create({
+                                                                                            id_category => $idcategory,
+                                                                                            id_role      => $role,
+                                                                                            id_status_from  => $status_from,
+                                                                                            id_status_to => $idstatus_to
+                    });
+        
+                }
+            }
+
+        }
+        else{
+            if($idsstatus_to){
+                foreach my $idstatus_to (_array $idsstatus_to){
+                    my $category = $c->model('Baseliner::BaliTopicCategoriesAdmin')->create({
+                                                                                            id_category => $idcategory,
+                                                                                            id_role      => $role,
+                                                                                            id_status_from  => $status_from,
+                                                                                            id_status_to => $idstatus_to
+                    });
+        
+                }
+            }
+        }        
+    }
+    $c->stash->{json} = { success => \1, msg=>_loc('Categories admin') };
+    $c->forward('View::JSON');    
+}
+
+sub list_categories_admin : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $cnt;
+    my @rows;
+
+    my $rows = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $p->{categoryId}},
+                                                                        {
+                                                                        select=>[qw/id_role id_status_from/],
+                                                                        group_by=>[qw/id_role id_status_from/], 
+                                                                        orderby => ['id_role ASC', 'id_status_from ASC']});
+                                                                        
+    if($rows){
+        while( my $rec = $rows->next ) {
+            
+            my @statuses_to;
+            my $statuses_to = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $p->{categoryId},
+                                                                                        id_role => $rec->id_role,
+                                                                                        id_status_from => $rec->id_status_from});
+            
+            while( my $status_to = $statuses_to->next ) {
+                push @statuses_to, $status_to->statuses_to->name;
+            }
+            
+            push @rows, {
+                         role      => $rec->roles->name,
+                         status_from    => $rec->statuses_from->name,
+                         statuses_to    => \@statuses_to
+                     };             
+
+        }
+    }
+    $cnt = $#rows + 1 ;
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->forward('View::JSON');
+}
+
+
 1;
