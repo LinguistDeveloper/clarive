@@ -151,8 +151,9 @@ sub list {
 	#_log Dumper $p{action} ;
     $p{action} and $where->{action} = $p{action};
 	my $from = {};
-	$from->{order_by} = $p{sort} || "me.id desc";
-	$from->{order_by} = 'me.' . $from->{order_by} unless $from->{order_by} =~ /^me/;
+    $p{dir} ||= 'asc';
+	$from->{order_by} = { "-$p{dir}" => "me.$p{sort}" } || { -desc => "me.id" };
+	#$from->{order_by} = 'me.' . $from->{order_by} unless $from->{order_by} =~ /^me/;
 	if( exists($p{start}) && exists($p{limit}) ) {
 		my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
 		$from->{page} = $page;
@@ -211,7 +212,7 @@ sub is_status {
 
 sub top {
     my ($self, %p ) = @_;
-    return Baseliner->model('Baseliner::BaliRequest')->search({ ns=>$p{ns} }, { order_by=>'me.id DESC' } )->first;
+    return Baseliner->model('Baseliner::BaliRequest')->search({ ns=>$p{ns} }, { order_by=> { -desc =>'me.id' } } )->first;
 }
 
 sub last_status {
@@ -347,7 +348,7 @@ sub status_by_key {
     my ( $self, %p ) = @_;
 
 	# order by id desc just in the remote case there is duplicate 'keys'
-    my $rs = Baseliner->model('Baseliner::BaliRequest')->search({ key => $p{key} }, { order_by=>'me.id desc' });
+    my $rs = Baseliner->model('Baseliner::BaliRequest')->search({ key => $p{key} }, { order_by=>{ -desc => 'me.id' } });
 	my $request = $rs->first;
 
     _throw _loc('Could not find a request for %1', $p{key} ) unless ref $request;

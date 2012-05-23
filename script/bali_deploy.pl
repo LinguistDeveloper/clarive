@@ -93,7 +93,6 @@ Examples:
     bin/bali deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
     bin/bali deploy --env t --upgrade --show --to 2     # same, but with schema version 2
     bin/bali deploy --env t --upgrade --show --from 1   # same, but with db version 2
-
 EOF
     exit 0;
 }
@@ -121,7 +120,7 @@ if( $args{schema} ) {
 my $dropping= exists $args{drop} ? ' (with DROP)' : '';
 if( exists $args{drop} && ! @{ $args{schema} || [] } && ! exists $args{installversion} ) {
     say "\n*** Warning: Drop specified and no --schema parameter found.";
-    say "*** All tables in the schema will be dropped. Data loss will sue.";
+    say "*** All tables in the schema will be dropped. Data loss will ensue.";
     print "*** Are you sure [y/N]: ";
     unless( (my $yn = <STDIN>) =~ /^y/i ) {
         say "Aborted.";

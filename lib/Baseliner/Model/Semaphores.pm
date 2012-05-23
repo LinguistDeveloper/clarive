@@ -135,7 +135,7 @@ sub grant_slots {
     my $queue = $sem->bl_queue->search(
         { 'active'=>1, 'status'=>'waiting' },
         {
-            order_by=>'seq DESC, id ASC',
+            order_by=>[ { -desc => 'seq' }, { -asc => 'id' } ],
         }
     );
     # process queue one by one

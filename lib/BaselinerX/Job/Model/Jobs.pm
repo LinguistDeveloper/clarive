@@ -81,7 +81,7 @@ sub check_scheduled {
             $frequency = Baseliner->model('Config')->get( $service->frequency_key );
         }
         if( $frequency ) {
-            my $last_run = Baseliner->model('Baseliner::BaliJob')->search({ runner=> $service->key }, { order_by=>'starttime desc' })->first;
+            my $last_run = Baseliner->model('Baseliner::BaliJob')->search({ runner=> $service->key }, { order_by=>{ '-desc' => 'starttime' } })->first;
         }
     }
 }
@@ -95,7 +95,7 @@ sub job_name {
 
 sub top_job {
     my ($self, %p )=@_;
-    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ %p }, { order_by => "id_job.id desc", prefetch=>['id_job'] });
+    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ %p }, { order_by => { '-desc' => 'id_job.id' }, prefetch=>['id_job'] });
     return undef unless ref $rs;
     my $row = $rs->next;
     return undef unless ref $row;
@@ -105,7 +105,7 @@ sub top_job {
 sub is_in_active_job {
     my ($self, $ns )=@_;
     
-    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ item=> $ns }, { order_by => "id_job.id desc", prefetch=>['id_job'] });
+    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ item=> $ns }, { order_by => { '-desc' => 'id_job.id' }, prefetch=>['id_job'] });
     while( my $r = $rs->next ) {
         if(  $r->id_job->is_active ) {
             return $r->id_job;
