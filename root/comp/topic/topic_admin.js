@@ -480,24 +480,25 @@
 		
         var ta = new Ext.form.TextArea({
             name: 'description',
-            height: 130,
+            height: 50,
             enableKeyEvents: true,
             fieldLabel: _('Description'),
             emptyText: _('A brief description of the category'),
-			readOnly: true
+			disabled: true
+			//readOnly: true
         });     
         
-        var column1 = {
-            xtype:'panel',
-            columnWidth:0.50,
-            layout:'form',
-            defaults:{anchor:'100%'},
-            items: [
-                { xtype: 'hidden', name: 'id', value: -1 },
-                { xtype:'textfield', name:'name', fieldLabel:_('Category'), readOnly:true, allowBlank:false, emptyText:_('Name of category') },
-                ta
-            ]
-        };
+        //var column1 = {
+        //    xtype:'panel',
+        //    columnWidth:0.50,
+        //    layout:'form',
+        //    defaults:{anchor:'100%'},
+        //    items: [
+        //        { xtype: 'hidden', name: 'id', value: -1 },
+        //        { xtype:'textfield', name:'name', fieldLabel:_('Category'), readOnly:true, allowBlank:false, emptyText:_('Name of category') },
+        //        ta
+        //    ]
+        //};
         
         var check_admin_status_sm = new Ext.grid.CheckboxSelectionModel({
             singleSelect: false,
@@ -561,11 +562,11 @@
             triggerAction: 'all',
             emptyText: 'select a status',
             fieldLabel: _('Topics: Status'),
-            name: 'status',
-            hiddenName: 'status',
+            name: 'status_from',
+            hiddenName: 'status_from',
             displayField: 'name',
             valueField: 'id',
-            //disabled: true,
+            allowBlank:false,
             store: store_category_status,
             listeners:{
                 'select': function(cmd, r, idx){
@@ -600,7 +601,7 @@
 			viewConfig: {
 				forceFit: true
 			},		    
-			height:157,
+			height:190,
 			columns: [
 				check_roles_sm,
 				{ hidden: true, dataIndex:'id' }, 
@@ -608,33 +609,106 @@
 			],
 			autoSizeColumns: true
 		});		 
+	
+	var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
+        if(rec.data.projects){
+            for(i=0;i<rec.data.projects.length;i++){
+                //tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
+                tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
+            }
+        }
+        return tag_project_html;
+    };
+	
+	
+		var render_statuses_to = function (val){
+			if( val == null || val == undefined ) return '';
+			if( typeof val != 'object' ) return '';
+			var str = ''
+			for( var i=0; i<val.length; i++ ) {
+				str += String.format('<li>{0}</li>', val[i]);
+			}
+			return str;
+		}	
+	
+		var reader = new Ext.data.JsonReader({
+			root: 'data' , 
+			remoteSort: true,
+			totalProperty:"totalCount", 
+			id: 'id'
+			}, 
+			[ 
+					{name: 'role' },
+					{name: 'status_from' },
+					{name: 'statuses_to' }	
+			]
+		);
+		
+		var store_categories_admin = new Ext.data.GroupingStore({			
+			reader: reader,
+		    url: '/topicadmin/list_categories_admin',
+			groupField: 'role',
+			sortInfo:{field: 'role', direction: "ASC"},
+		});
+		
+	
+		var grid_categories_admin = new Ext.grid.GridPanel({
+			title: _('Roles/Workflow states'),
+			stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			store: store_categories_admin,
+			view: new Ext.grid.GroupingView({
+				forceFit:true,
+				groupTextTpl: '{[ values.rs[0].data["role"] ]}',
+			}),			
+			iconCls: 'icon-grid',
+			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+			loadMask:'true',
+			columns: [
+				{ header: _('Role'), width: 120, dataIndex: 'role', hidden: true },	
+				{ header: _('From status'), width: 350, dataIndex: 'status_from'},
+				{ header: _('To statuses'), width: 150, dataIndex: 'statuses_to', renderer: render_statuses_to}
+			],
+			autoSizeColumns: true,
+			deferredRender:true,
+			height:200
+		});		 
 		 
-        var form_category = new Ext.FormPanel({
+		store_categories_admin.load({params:{categoryId: rec.data.id}});
+		
+        var form_category_admin = new Ext.FormPanel({
             frame: true,
-            url:'/topic/update_category',
+            url:'/topicadmin/update_category_admin',
             buttons: [
                     {
                         text: _('Accept'),
                         type: 'submit',
                         handler: function() {
-                            var form = form_category.getForm();
-                            var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+                            var form = form_category_admin.getForm();
+                            var action = '';
                             
                             if (form.isValid()) {
                                 
-                                var statuses_checked = new Array();
-                                check_category_status_sm.each(function(rec){
-                                    statuses_checked.push(rec.get('id'));
+								var roles_checked = new Array();
+								check_roles_sm.each(function(rec){
+									roles_checked.push(rec.get('id'));
+								});	
+                                var statuses_to_checked = new Array();
+								
+                                check_admin_status_sm.each(function(rec){
+                                    statuses_to_checked.push(rec.get('id'));
                                 });                             
                                 
                                 
                                 form.submit({
-                                    params: {action: action, idsstatus: statuses_checked},
+                                    params: {action: action, idsroles: roles_checked, idsstatus_to: statuses_to_checked},
                                     success: function(f,a){
                                         Baseliner.message(_('Success'), a.result.msg );
-                                        form.findField("id").setValue(a.result.category_id);
-                                        store_category.load();
-                                        win.setTitle(_('Edit category'));
+										store_categories_admin.load({params:{categoryId: rec.data.id}});
+                                        //form.findField("id").setValue(a.result.category_id);
+                                        //store_category.load();
+                                        //win.setTitle(_('Edit category'));
                                     },
                                     failure: function(f,a){
                                         Ext.Msg.show({  
@@ -655,8 +729,11 @@
                         }
                     }
             ],
-            defaults: { bodyStyle:'padding:0 18px 0 0'},
+            defaults: { bodyStyle:'padding:0 18px 0 0', anchor:'100%'},
             items: [
+                { xtype: 'hidden', name: 'id', value: -1 },
+                { xtype:'textfield', name:'name', fieldLabel:_('Category'), disabled: true,  emptyText:_('Name of category') },
+                ta,
 				{
 				// column layout with 2 columns
 				layout:'column'
@@ -671,51 +748,52 @@
 					columnWidth:0.50,
 					defaults:{anchor:'100%'}
 					,items:[
-						column1
-					]
-					},
-					{
-					// right column				
-					columnWidth:0.50,
-					defaults:{anchor:'100%'},
-					items:[
 						grid_roles
 					]
-					}                   
-				]
-				},
-				{
-				// column layout with 2 columns
-				layout:'column'
-				,defaults:{
-					layout:'form'
-					,border:false
-					,xtype:'panel'
-					,bodyStyle:'padding:10px 10px 10px 10px'
-				}
-				,items:[{
-					// left column
-					columnWidth:0.50,
-					defaults:{anchor:'100%'}
-					,items:[
-						combo_status
-					]
 					},
 					{
 					// right column				
 					columnWidth:0.50,
 					defaults:{anchor:'100%'},
 					items:[
+						combo_status,
 						column2
 					]
 					}                   
 				]
-				}				
+				},
+				//{
+				//// column layout with 2 columns
+				//layout:'column'
+				//,defaults:{
+				//	layout:'form'
+				//	,border:false
+				//	,xtype:'panel'
+				//	,bodyStyle:'padding:10px 10px 10px 10px'
+				//}
+				//,items:[{
+				//	// left column
+				//	columnWidth:0.50,
+				//	defaults:{anchor:'100%'}
+				//	,items:[
+				//		combo_status
+				//	]
+				//	},
+				//	{
+				//	// right column				
+				//	columnWidth:0.50,
+				//	defaults:{anchor:'100%'},
+				//	items:[
+				//		column2
+				//	]
+				//	}                   
+				//]
+				//}
             ]           
         });
 
         if(rec){
-            var ff = form_category.getForm();
+            var ff = form_category_admin.getForm();
             ff.loadRecord( rec );
             //title = 'Edit category';
         }
@@ -724,7 +802,9 @@
             title: _(title),
             width: 700,
             autoHeight: true,
-            items: form_category
+            items: [form_category_admin,
+					grid_categories_admin
+			]
         });
         win.show();     
     };
@@ -775,8 +855,8 @@
                 btn_add_category,
                 btn_edit_category,
                 btn_delete_category,
-				btn_admin_category,
-                '->'
+                '->',
+				btn_admin_category
         ]       
     }); 
     
