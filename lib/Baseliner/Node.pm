@@ -93,11 +93,12 @@ sub parse_url {
            ^
            (?<agent>\w+)://                     # agent name
            ((?<user>\w+)(:(?<password>.*))?@)?  # optional: "user:password" [user[:password]]
-           ((?<host>.*?)(:(?<port>\d+)))[^/]?   # host (Ip or name) [:port]
+           (?<host>[^:/]+)(:(?<port>\d+))?   # host (Ip or name) [:port]
            (?<home>/[^\?]+)?                    # optional: home dir
            (\?(?<params>.+))?                   # optional: params
            $ }x ) {
-        return %{ { %+ } };    }
+        return %{ { %+ } };
+    }
     return ();
 }
 
