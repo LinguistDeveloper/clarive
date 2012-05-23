@@ -26,11 +26,13 @@ sub update {
     given ( $action ) {
         when ( 'add' ) {
             try {
+                my $master = Baseliner->model( 'Baseliner::BaliMaster' )->create({ collection=>'bali_topic' });
                 my $topic = Baseliner->model( 'Baseliner::BaliTopic' )->create(
                     {
                         title       => $p->{title},
                         description => $p->{description},
                         created_by  => $p->{username},
+                        mid  => $master->mid,
                         id_category  => $p->{category},
                         id_category_status => $p->{status},
                         id_priority => $p->{priority},
@@ -133,10 +135,10 @@ sub GetTopics {
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     $SQL = "SELECT BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
-                        ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
+                        ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, F.COLOR CATEGORY_COLOR
                         FROM  BALI_TOPIC LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
                         LEFT JOIN
-                            (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_TOPIC_MSG B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
+                            (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_POST B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
                         ON BALI_TOPIC.ID = D.ID ORDER BY $orderby";
     
     

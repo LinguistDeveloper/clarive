@@ -39,6 +39,37 @@
                 <td><% $created_on || '&nbsp;' %></td>
               </tr>
               <tr>
+                <th colspan="2"><% _loc('Files') %>:</th>
+              </tr>
+              <tr>
+                <td colspan="2">
+<ul class="nav nav-list">
+  <li>
+    <a href="#">
+      <i class="icon-book"></i> Manual de usuario
+    </a>
+  </li>
+  <li>
+    <a href="#">
+      <i class="icon-book"></i> Manual de explotacion
+    </a>
+    <div class="btn-group">
+          <button class="btn btn-primary dropdown-toggle btn-mini" data-toggle="dropdown">v4 <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            <li><a href="#">v3</a></li>
+            <li><a href="#">v2</a></li>
+            <li><a href="#">v1</a></li>
+            <li class="divider"></li>
+            <li><a href="#">Delete</a></li>
+          </ul>
+    </div>
+    
+  </li>
+</ul>
+                
+                </td>
+              </tr>
+              <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>
               </tr>
               <tr>
@@ -60,14 +91,23 @@
     <div class="grid_24">
 <div class="tab-content">
   <div class="tab-pane active" id="comments<% $ii %>">
-%   foreach my $comentario ( _array( $comments) ){
-%      my $id_div_com =  "comment_$comentario->{id}_$ii";
+%   foreach my $com ( _array( $comments) ){
+%      my $id_div_com =  "comment_$com->{id}_$ii";
             <div style="margin-left: 20px" id="<% $id_div_com %>">  <!-- class 'well' -->
-                <p><% $comentario->{text} %></p>
-                <p><small><%$comentario->{created_by}%>, <%$comentario->{created_on}->dmy%> <%$comentario->{created_on}->hms%>
-% if( $c->username eq $comentario->{created_by} ) {
-                    | <a href="javascript:Baseliner.Topic.comment_edit( undefined, <% $comentario->{id} %>)"><% _loc("edit") %></a>
-                    | <a href="javascript:Baseliner.Topic.comment_delete(<% $comentario->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
+%      if( $com->{content_type} eq 'code' )  {
+                <p><pre id="<% $id_div_com . '_ta' %>"><% $com->{text} %></pre></p>
+
+%#   codemirror does not work well under boot, needs a css reset before
+%#                <script>setTimeout( function(){CodeMirror.fromTextArea( document.getElementById("<% $id_div_com . '_ta' %>",
+%#                    {lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true}) );}, 2000)</script>
+
+%      } else {
+                <p><% $com->{text} %></p>
+%      } 
+                <p><small><%$com->{created_by}%>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
+% if( $c->username eq $com->{created_by} ) {
+                    | <a href="javascript:Baseliner.Topic.comment_edit( undefined, <% $com->{id} %>)"><% _loc("edit") %></a>
+                    | <a href="javascript:Baseliner.Topic.comment_delete(<% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
 % }
                 </small></p>
                 <hr />

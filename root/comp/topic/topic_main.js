@@ -87,34 +87,80 @@
             xtype: 'button',
             text: _('Add Comment'),
             handler: function(){
-                var text = comment_field.getValue();
-                Baseliner.ajaxEval( '/topic/comment/add', { id_topic: id_topic, id_com: id_com, text: text }, function(res) {
-                   if( ! res.failure ) { 
-                       Baseliner.message(_('Success'), res.msg );
-                       win_comment.close();
-                       detail_reload();
-                   } else {
-                        Ext.Msg.show({ 
-                            title: _('Information'),
-                            msg: res.msg , 
-                            buttons: Ext.Msg.OK, 
-                            icon: Ext.Msg.INFO
-                        });                         
-                    }
-                });
+                var text, content_type;
+                var id = cardcom.getLayout().activeItem.id;
+                if( id == comment_field.getId() ) {
+                    text = comment_field.getValue();
+                    content_type = 'html';
+                } else {
+                    text = code.getValue();
+                    content_type = 'code';
+                }
+                Baseliner.ajaxEval( '/topic/comment/add',
+                    { id_topic: id_topic, id_com: id_com, text: text, content_type: content_type },
+                    function(res) {
+                       if( ! res.failure ) { 
+                           Baseliner.message(_('Success'), res.msg );
+                           win_comment.close();
+                           detail_reload();
+                       } else {
+                            Ext.Msg.show({ 
+                                title: _('Information'),
+                                msg: res.msg , 
+                                buttons: Ext.Msg.OK, 
+                                icon: Ext.Msg.INFO
+                            });                         
+                        }
+                     }
+                );
                 //url:'/topic/comment',
                 win_comment.close();
             }
         };
+
+        var code_field = new Ext.form.TextArea({});
+        var code;
+
+        var btn_html = {
+            xtype: 'button',
+            text: _('HTML'),
+            enableToggle: true, pressed: true, toggleGroup: 'comment_edit',
+            handler: function(){
+                cardcom.getLayout().setActiveItem( 0 );
+            }
+        };
+        var btn_code = {
+            xtype: 'button',
+            text: _('Code'),
+            enableToggle: true, pressed: false, toggleGroup: 'comment_edit',
+            handler: function(){
+                cardcom.getLayout().setActiveItem( 1 );
+                var com = code_field.getEl().dom;
+                code = CodeMirror(function(elt) {
+                    com.parentNode.replaceChild( elt, com );
+                }, { 
+                    value: comment_field.getValue(),
+                    lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true
+                });
+            }
+        };
+        var cardcom = new Ext.Panel({ 
+            layout: 'card', 
+            activeItem: 0,
+            items: [ comment_field, code_field ]
+        });
 
         win_comment = new Ext.Window({
             title: _('Add Comment'),
             layout: 'fit',
             width: 700,
             closeAction: 'close',
+            maximizable: true,
             autoHeight: true,
-            bbar: [ '->', btn_submit],
-            items: comment_field
+            bbar: [ 
+                btn_html,
+                btn_code, '->', btn_submit],
+            items: cardcom
         });
         if( id_com !== undefined ) {
             Baseliner.ajaxEval('/topic/comment/view', { id_com: id_com }, function(res) {

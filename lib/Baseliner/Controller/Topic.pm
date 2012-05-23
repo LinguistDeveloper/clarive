@@ -140,6 +140,7 @@ sub list : Local {
             created_by  => $data->{created_by},
             numcomment  => $data->{numcomment},
             category    => $data->{category} ? [$data->{category}] : '',
+            category_color => $data->{category_color},
             namecategory    => $data->{namecategory} ? [$data->{namecategory}] : '',
             labels      => \@labels,
             projects    => \@projects,
@@ -166,9 +167,6 @@ sub update : Local {
 
     $p->{username} = $c->username;
     
-    
-    _log ">>>>>>>>Parametros: " . _dump $p . "\n";
-
     try  {    
         my ($msg, $id) = Baseliner::Model::Topic->update( $p );
         $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_id => $id };
@@ -213,8 +211,7 @@ sub view : Local {
         map { "/forms/$_" } split /,/,$category->forms
     ];
     $c->stash->{id} = $id_topic;
-    $self->viewdetail( $c );  # get comments into stash
-    _log ">>>>>>>>>>>>>>>>>" . _dump( $c->stash->{comments} );
+    $self->list_comments( $c );  # get comments into stash
     if( $p->{html} ) {
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
@@ -229,19 +226,21 @@ sub comment : Local {
         try{
             my $id_topic = $p->{id_topic};
             my $id_com = $p->{id_com};
+            my $content_type = $p->{content_type};
             _throw( _loc( 'Missing id' ) ) unless defined $id_topic;
             my $text = $p->{text};
             _log $text;
             
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
-                $topic = $c->model('Baseliner::BaliTopicMsg')->create(
-                                {
-                                id_topic    => $id_topic,
-                                text => $text,
-                                created_by => $c->username,
-                                created_on => DateTime->now,
-                                });
+                $topic = $c->model('Baseliner::BaliPost')->create(
+                    {   id_topic   => $id_topic,
+                        text       => $text,
+                        content_type => $content_type,
+                        created_by => $c->username,
+                        created_on => DateTime->now,
+                    }
+                );
                 #$c->model('Event')->create({
                 #    type => 'event.topic.new_comment',
                 #    ids  => [ $id_topic ],
@@ -251,8 +250,10 @@ sub comment : Local {
                 #    }
                 #});
             } else {
-                my $topic = $c->model('Baseliner::BaliTopicMsg')->find( $id_com );
+                my $topic = $c->model('Baseliner::BaliPost')->find( $id_com );
                 $topic->text( $text );
+                $topic->content_type( $content_type );
+                # TODO modified_on ?
                 $topic->update;
             }
             $c->stash->{json} = {
@@ -267,7 +268,7 @@ sub comment : Local {
         try {
             my $id_com = $p->{id_com};
             _throw( _loc( 'Missing id' ) ) unless defined $id_com;
-            $c->model('Baseliner::BaliTopicMsg')->find( $id_com )->delete;
+            $c->model('Baseliner::BaliPost')->find( $id_com )->delete;
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
             $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', shift() ), failure => \1 }
@@ -275,7 +276,7 @@ sub comment : Local {
     } elsif( $action eq 'view' )  {
         try {
             my $id_com = $p->{id_com};
-            my $topic = $c->model('Baseliner::BaliTopicMsg')->find($id_com);
+            my $topic = $c->model('Baseliner::BaliPost')->find($id_com);
             # check if youre the owner
             _fail _loc( "You're not the owner (%1) of the comment.", $topic->created_by ) 
                 if $topic->created_by ne $c->username;
@@ -292,19 +293,21 @@ sub comment : Local {
     $c->forward('View::JSON');
 }
 
-sub viewdetail : Local {
+sub list_comments : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $id_topic = $p->{id};
 
-    my $rs = $c->model('Baseliner::BaliTopicMsg')->search( { id_topic => $id_topic }, { order_by => 'created_on desc' } );
+    my $rs = $c->model('Baseliner::BaliPost')->search( { id_topic => $id_topic }, { order_by => 'created_on desc' } );
     my @rows;
     while( my $r = $rs->next ) {
-        push @rows, {
-            created_on => $r->created_on,
-            created_by => $r->created_by,
-            text       => $r->text,
-            id         => $r->id,
+        push @rows,
+            {
+            created_on   => $r->created_on,
+            created_by   => $r->created_by,
+            text         => $r->text,
+            content_type => $r->content_type,
+            id           => $r->id,
             };
     }
     $c->stash->{comments} = \@rows;

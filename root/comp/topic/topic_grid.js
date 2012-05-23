@@ -892,6 +892,14 @@
         return tag_project_html;
     };
 
+    var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
+        var id = rec.data.id;
+        var color = rec.data.category_color;
+        //if( color == undefined ) color = '#777';
+        var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + ' #' + id + '</span></div>';
+        return ret;
+    };
+
      var search_field = new Ext.app.SearchField({
                 store: store_topics,
                 params: {start: 0, limit: ps},
@@ -910,11 +918,11 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
+            { header: _('Category'), dataIndex: 'namecategory', width: 50, sortable: true, renderer: render_category },
             { header: _('Topic'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },    
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
             { header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
-            { header: _('Category'), dataIndex: 'namecategory', width: 50, sortable: true },
             { header: _('Description'), hidden: true, dataIndex: 'description' }
         ],
         tbar:   [ _('Search') + ' ', ' ',

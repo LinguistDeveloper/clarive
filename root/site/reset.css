@@ -1,0 +1,232 @@
+/* `XHTML, HTML4, HTML5 Reset
+----------------------------------------------------------------------------------------------------*/
+#reset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 100%;
+  height: 100%;
+}
+#reset a,
+#reset abbr,
+#reset acronym,
+#reset address,
+#reset applet,
+#reset article,
+#reset aside,
+#reset audio,
+#reset b,
+#reset big,
+#reset blockquote,
+#reset body,
+#reset canvas,
+#reset caption,
+#reset center,
+#reset cite,
+#reset code,
+#reset dd,
+#reset del,
+#reset details,
+#reset dfn,
+#reset dialog,
+#reset div,
+#reset dl,
+#reset dt,
+#reset em,
+#reset embed,
+#reset fieldset,
+#reset figcaption,
+#reset figure,
+#reset font,
+#reset footer,
+#reset form,
+#reset h1,
+#reset h2,
+#reset h3,
+#reset h4,
+#reset h5,
+#reset h6,
+#reset header,
+#reset hgroup,
+#reset hr,
+#reset html,
+#reset i,
+#reset iframe,
+#reset img,
+#reset ins,
+#reset kbd,
+#reset label,
+#reset legend,
+#reset li,
+#reset mark,
+#reset menu,
+#reset meter,
+#reset nav,
+#reset object,
+#reset ol,
+#reset output,
+#reset p,
+#reset pre,
+#reset progress,
+#reset q,
+#reset rp,
+#reset rt,
+#reset ruby,
+#reset s,
+#reset samp,
+#reset section,
+#reset small,
+#reset span,
+#reset strike,
+#reset strong,
+#reset sub,
+#reset summary,
+#reset sup,
+#reset table,
+#reset tbody,
+#reset td,
+#reset tfoot,
+#reset th,
+#reset thead,
+#reset time,
+#reset tr,
+#reset tt,
+#reset u,
+#reset ul,
+#reset var,
+#reset video,
+#reset xmp {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 100%;
+}
+#reset html,
+#reset body {
+  height: 100%;
+}
+#reset article,
+#reset aside,
+#reset details,
+#reset figcaption,
+#reset figure,
+#reset footer,
+#reset header,
+#reset hgroup,
+#reset menu,
+#reset nav,
+#reset section {
+  /*
+  Override the default (display: inline) for
+  browsers that do not recognize HTML5 tags.
+
+  IE8 (and lower) requires a shiv:
+  http://ejohn.org/blog/html5-shiv
+*/
+
+  display: block;
+}
+#reset b,
+#reset strong {
+  /*
+  Makes browsers agree.
+  IE + Opera = font-weight: bold.
+  Gecko + WebKit = font-weight: bolder.
+*/
+
+  font-weight: bold;
+}
+#reset img {
+  color: transparent;
+  font-size: 0;
+  vertical-align: middle;
+  /*
+  For IE.
+  http://css-tricks.com/ie-fix-bicubic-scaling-for-images
+*/
+
+  -ms-interpolation-mode: bicubic;
+}
+#reset ol,
+#reset ul {
+  list-style: none;
+}
+#reset li {
+  /*
+  For IE6 + IE7:
+
+  "display: list-item" keeps bullets from
+  disappearing if hasLayout is triggered.
+*/
+
+  display: list-item;
+}
+#reset table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+#reset th,
+#reset td,
+#reset caption {
+  font-weight: normal;
+  vertical-align: top;
+  text-align: left;
+}
+#reset q {
+  quotes: none;
+}
+#reset q:before,
+#reset q:after {
+  content: '';
+  content: none;
+}
+#reset sub,
+#reset sup,
+#reset small {
+  font-size: 75%;
+}
+#reset sub,
+#reset sup {
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+#reset sub {
+  bottom: -0.25em;
+}
+#reset sup {
+  top: -0.5em;
+}
+#reset svg {
+  /*
+  For IE9. Without, occasionally draws shapes
+  outside the boundaries of <svg> rectangle.
+*/
+
+  overflow: hidden;
+}
+
+
+#reset {margin:0;padding:0;}
+#reset h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,cite,code,del,dfn,em,img,q,s,samp,small,strike,strong,sub,sup,tt,var,dd,dl,dt,li,ol,ul,fieldset,form,label,legend,button,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;font-weight:normal;font-style:normal;font-size:100%;line-height:1;font-family:inherit;}
+#reset table{border-collapse:collapse;border-spacing:0;}
+#reset ol,ul{list-style:none;}
+#reset q:before,q:after,blockquote:before,blockquote:after{content:"";}
+#reset {overflow-y:scroll;font-size:100%;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
+#reset a:focus{outline:thin dotted;}
+#reset a:hover,a:active{outline:0;}
+#reset article,aside,details,figcaption,figure,footer,header,hgroup,nav,section{display:block;}
+#reset audio,canvas,video{display:inline-block;*display:inline;*zoom:1;}
+#reset audio:not([controls]){display:none;}
+#reset sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline;}
+#reset sup{top:-0.5em;}
+#reset sub{bottom:-0.25em;}
+#reset img{border:0;-ms-interpolation-mode:bicubic;}
+#reset button,input,select,textarea{font-size:100%;margin:0;vertical-align:baseline;*vertical-align:middle;}
+#reset button,input{line-height:normal;*overflow:visible;}
+#reset button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0;}
+#reset button,input[type="button"],input[type="reset"],input[type="submit"]{cursor:pointer;-webkit-appearance:button;}
+#reset input[type="search"]{-webkit-appearance:textfield;-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;}
+#reset input[type="search"]::-webkit-search-decoration{-webkit-appearance:none;}
+#reset textarea{overflow:auto;vertical-align:top;}
+#reset a:focus,input,textarea,select{outline:0;}
