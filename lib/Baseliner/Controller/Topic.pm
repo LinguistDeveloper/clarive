@@ -896,4 +896,19 @@ sub filters_list : Local {
     $c->forward('View::JSON');
 }
 
+sub view_filter : Local {
+    my ($self,$c, $action) = @_;
+    my $name = $c->req->params->{name};
+    my $filter = $c->req->params->{filter};
+    try {
+        if( $action eq 'new' ) {
+        }
+        $c->stash->{json} = { success=>\1, msg=>_loc("Created view %1", $name) };
+    } catch {
+        $c->stash->{json} = { success=>\0, msg=>_loc("Error view %1", shift() ) };
+    };
+    $c->forward('View::JSON');
+
+}
+
 1;

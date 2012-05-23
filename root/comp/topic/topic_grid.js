@@ -5,6 +5,7 @@
 (function(){
     <& /comp/search_field.mas &>
     var ps = 100; //page_size
+    var filter_current;
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
@@ -43,7 +44,21 @@
         eval('btn_close.' + action + '()');
     }
     
-
+    var button_create_view = new Ext.Button({
+        icon:'/static/images/icons/add.gif',
+        cls: 'x-btn-icon',
+        handler: function(){
+            // TODO input view name
+            var filter = Ext.util.JSON.encode( filter_current );
+            Baseliner.ajaxEval( '/topic/view_filter/new', { name: 'view1', view: filter }, function(res) {
+                if( res.success ) {
+                    Baseliner.message( _('View'), res.msg );
+                } else {
+                    Ext.Msg.alert( _('Error'), res.msg );
+                }
+            });
+        }
+    });
 
     //var btn_add = new Ext.Toolbar.Button({
     //    text: _('New'),
@@ -1179,14 +1194,15 @@
     
     function filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked){
         var query_id = '<% $c->stash->{query_id} %>';
-        store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked}});
+        filter_current = {start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
+        store_topics.load({params: filter_current });
 		//store_topics.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked}});
         //store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked, categories: categories_checked}});      
     };
 
 
 	var tree_filters = new Ext.tree.TreePanel({
-		title: _('Available Filters'),
+        tbar: [ button_create_view ],
 		dataUrl: "topic/filters_list",
 		split: true,
 		colapsible: true,
