@@ -181,7 +181,7 @@ sub viewdetail : Local {
         $id_topic = $p->{action};
 
         try{
-            my $topic = $c->model('Baseliner::BaliTopicMsg')->create(
+            my $topic = $c->model('Baseliner::BaliPost')->create(
                             {
                             id_topic    => $id_topic,
                             text => $p->{text},
@@ -206,7 +206,7 @@ sub viewdetail : Local {
     
     }
     else{
-        my $rs = $c->model('Baseliner::BaliTopicMsg')->search( {id_topic=>$id_topic},       
+        my $rs = $c->model('Baseliner::BaliPost')->search( {id_topic=>$id_topic},       
                             {
                                 order_by=> 'created_on desc'
                             }
