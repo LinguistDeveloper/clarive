@@ -111,4 +111,10 @@ __PACKAGE__->has_many(
 );
 #__PACKAGE__->many_to_many('posts' => 'master_rel', 'address');
 
+__PACKAGE__->has_one(
+  "master",
+  "Baseliner::Schema::Baseliner::Result::BaliMaster",
+  { "foreign.mid" => "self.mid" },
+);
+
 1;
