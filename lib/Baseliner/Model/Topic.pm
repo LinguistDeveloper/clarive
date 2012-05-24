@@ -1,6 +1,7 @@
 package Baseliner::Model::Topic;
 use Moose;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
@@ -26,30 +27,30 @@ sub update {
     given ( $action ) {
         when ( 'add' ) {
             try {
-                my $master = Baseliner->model( 'Baseliner::BaliMaster' )->create({ collection=>'bali_topic' });
-                my $topic = Baseliner->model( 'Baseliner::BaliTopic' )->create(
-                    {
-                        title       => $p->{title},
-                        description => $p->{description},
-                        created_by  => $p->{username},
-                        mid  => $master->mid,
-                        id_category  => $p->{category},
-                        id_category_status => $p->{status},
-                        id_priority => $p->{priority},
-                        response_time_min => $rsptime[1],
-                        expr_response_time => $rsptime[0],
-                        deadline_min => $deadline[1],
-                        expr_deadline => $deadline[0]
+                my $topic = master_new 'bali_topic' => sub {
+                    my $mid = shift;    
+                    Baseliner->model('Baseliner::BaliTopic')->create(
+                        {   title              => $p->{title},
+                            description        => $p->{description},
+                            created_by         => $p->{username},
+                            mid                => $mid,
+                            id_category        => $p->{category},
+                            id_category_status => $p->{status},
+                            id_priority        => $p->{priority},
+                            response_time_min  => $rsptime[1],
+                            expr_response_time => $rsptime[0],
+                            deadline_min       => $deadline[1],
+                            expr_deadline      => $deadline[0]
 
-                    }
-                );
+                        }
+                    );
+                };
                 $id     = $topic->id;
                 $return = _loc( 'Topic added' );
             } ## end try
             catch {
-
                 _throw _loc( 'Error adding Topic: %1', shift() );
-            }
+            };
         } ## end when ( 'add' )
         when ( 'update' ) {
             try {
@@ -134,66 +135,20 @@ sub GetTopics {
     ##}
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    $SQL = "SELECT BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
-                        ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, F.COLOR CATEGORY_COLOR
-                        FROM  BALI_TOPIC LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
-                        LEFT JOIN
-                            (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_POST B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
-                        ON BALI_TOPIC.ID = D.ID ORDER BY $orderby";
+    $SQL = "SELECT BALI_TOPIC.MID AS MID, BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION,
+                    CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
+                    ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, F.COLOR CATEGORY_COLOR
+                    FROM  BALI_TOPIC LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
+                      LEFT JOIN
+                            (SELECT COUNT(*) AS NUMCOMMENT, A.MID 
+                                FROM BALI_TOPIC A, BALI_MASTER_REL REL, BALI_POST B
+                                WHERE A.MID = REL.FROM_MID
+                                AND REL.TO_MID = B.MID
+                                AND REL.REL_TYPE = 'topic_post'
+                                GROUP BY A.MID) D
+                      ON BALI_TOPIC.MID = D.MID ORDER BY ?";
     
-    
-    #if (@labels){
-    #    my $ids_labels =  '(BALI_TOPIC_LABEL.ID_LABEL = ' . join (' OR BALI_TOPIC_LABEL.ID_LABEL = ', @labels) . ')';
-    #
-    #    #$SQL = "SELECT BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY
-    #    #                FROM  (BALI_TOPIC INNER JOIN BALI_TOPIC_LABEL ON BALI_TOPIC.ID = BALI_TOPIC_LABEL.ID_TOPIC)  LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
-    #    #                LEFT JOIN
-    #    #                    (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_TOPIC_MSG B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
-    #    #                ON BALI_TOPIC.ID = D.ID WHERE $ids_labels AND $ids_categories";
-    #      
-    #    #$SQL = "SELECT BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
-    #    #                ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
-    #    #                FROM  ((BALI_TOPIC INNER JOIN BALI_TOPIC_PROJECT ON BALI_TOPIC.ID = BALI_TOPIC_PROJECT.ID_TOPIC AND $ids_projects ) INNER JOIN BALI_TOPIC_LABEL ON BALI_TOPIC.ID = BALI_TOPIC_LABEL.ID_TOPIC)  LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
-    #    #                LEFT JOIN
-    #    #                    (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_TOPIC_MSG B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
-    #    #                ON BALI_TOPIC.ID = D.ID WHERE $ids_labels AND $ids_categories
-    #    #                
-    #    #        UNION ALL        
-    #    #                
-    #    #        SELECT BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
-    #    #                ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
-    #    #                FROM  ((BALI_TOPIC LEFT JOIN BALI_TOPIC_PROJECT ON BALI_TOPIC.ID = BALI_TOPIC_PROJECT.ID_TOPIC ) INNER JOIN BALI_TOPIC_LABEL ON BALI_TOPIC.ID = BALI_TOPIC_LABEL.ID_TOPIC)  LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
-    #    #                LEFT JOIN
-    #    #                    (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_TOPIC_MSG B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
-    #    #                ON BALI_TOPIC.ID = D.ID WHERE $ids_labels AND $ids_categories AND ID_PROJECT IS NULL ";
-    #                   
-    #}else{
-    #    #$SQL = "SELECT C.ID AS ID, TITLE, C.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY
-    #    #                FROM  (BALI_TOPIC C LEFT JOIN BALI_TOPIC_CATEGORIES F ON C.ID_CATEGORY = F.ID)
-    #    #                LEFT JOIN
-    #    #                    (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_TOPIC_MSG B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
-    #    #                ON C.ID = D.ID WHERE $ids_categories ORDER BY $orderby ";
-    #    
-    #    $SQL = "SELECT BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
-    #                    ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
-    #                    FROM  ((BALI_TOPIC INNER JOIN BALI_TOPIC_PROJECT ON BALI_TOPIC.ID = BALI_TOPIC_PROJECT.ID_TOPIC AND $ids_projects ) LEFT JOIN BALI_TOPIC_CATEGORIES F ON BALI_TOPIC.ID_CATEGORY = F.ID)
-    #                    LEFT JOIN
-    #                        (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_TOPIC_MSG B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
-    #                    ON BALI_TOPIC.ID = D.ID WHERE $ids_categories
-    #                    
-    #            UNION ALL
-    #            
-    #            SELECT BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
-    #                    ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE
-    #                    FROM  ((BALI_TOPIC LEFT JOIN BALI_TOPIC_PROJECT ON BALI_TOPIC.ID = BALI_TOPIC_PROJECT.ID_TOPIC ) LEFT JOIN BALI_TOPIC_CATEGORIES F ON BALI_TOPIC.ID_CATEGORY = F.ID)
-    #                    LEFT JOIN
-    #                        (SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_TOPIC_MSG B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
-    #                    ON BALI_TOPIC.ID = D.ID WHERE $ids_categories AND ID_PROJECT IS NULL
-    #                    
-    #            ORDER BY $orderby ";        
-    #}
-   
-    return $db->array_hash( $SQL );
+    return $db->array_hash( $SQL, $orderby);
 }
 
 1;

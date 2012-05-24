@@ -113,8 +113,6 @@
                         }
                      }
                 );
-                //url:'/topic/comment',
-                win_comment.close();
             }
         };
 
