@@ -246,8 +246,10 @@ To do:
                 if( res.code != undefined ) { editor.setValue( res.code ); code.setValue( res.code ); }
                 if( res.output != undefined ) set_output( res.output );
                 if( res.div != undefined ) {
-                    var tab = console.add({ xtype:'component', closable: true,
-                        style: { padding: '10px 10px 10px 10px' }, title: n.text, html: res.div, iconCls: 'icon-method' });
+                    var tab = console.add({ xtype:'panel', closable: true,
+                        style: { padding: '10px 10px 10px 10px' },
+                        title: n.text, html: '<div id="boot">' + res.div + '</div>',
+                        iconCls: 'icon-method' });
                     console.setActiveTab( tab );
                     console.expand( true );
                     //output_tabs.
