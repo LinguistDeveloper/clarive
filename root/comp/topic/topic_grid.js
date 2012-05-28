@@ -95,8 +95,13 @@
 		handler: function() {
 			var sm = grid_topics.getSelectionModel();
 				if (sm.hasSelection()) {
-					var sel = sm.getSelected();
-					add_edit(sel);
+					var r = sm.getSelected();
+					//add_edit(sel);
+					var title = _(r.get( 'namecategory' )) + ' #' + r.get('id');
+					Baseliner.add_tabcomp('/topic/view?id=' + r.get('id') + '&swEdit=1', title , { id: r.get('id'), title: title } );
+					
+					
+					
 				} else {
 					Baseliner.message( _('ERROR'), _('Select at least one row'));    
 				};
@@ -900,8 +905,8 @@
     var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
         if(rec.data.projects){
             for(i=0;i<rec.data.projects.length;i++){
-                //tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
-                tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
+                tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
+                //tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
             }
         }
         return tag_project_html;
@@ -945,10 +950,10 @@
                 btn_add,
                 btn_edit,
                 btn_delete,
-                btn_labels,
-                '->',
-                btn_comment,
-                btn_close
+                btn_labels
+                //'->',
+                //btn_comment,
+                //btn_close
         ], 		
         autoSizeColumns: true,
         deferredRender:true,

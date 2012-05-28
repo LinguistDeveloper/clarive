@@ -185,8 +185,11 @@ sub json : Local {
     my $ret = {
         title       => $topic->title,
         description => $topic->description,
-        category    => $topic->categories->first->name,
+        category    => $topic->categories->name,
+        id_category => $topic->id_category,
         id          => $id_topic,
+        status      => $topic->status->name,
+        id_status   => $topic->id_category_status
     };
     $c->stash->{json} = $ret;
     $c->forward('View::JSON');
@@ -204,14 +207,18 @@ sub view : Local {
     $c->stash->{deadline} = $topic->created_on;  # TODO
     $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
     $c->stash->{description} = $topic->description;
-    my $category = $topic->categories->first;
-    $c->stash->{category} = $category->name;
-    $c->stash->{category_color} = try { $category->color} catch { '#444' };
+    #my $category = $topic->categories->first;
+    #$c->stash->{category} = $category->name;
+    $c->stash->{category} = $topic->categories->name;
+    #$c->stash->{category_color} = try { $category->color} catch { '#444' };
+    $c->stash->{category_color} = try { $topic->categories->color} catch { '#444' };
     $c->stash->{forms} = [
-        map { "/forms/$_" } split /,/,$category->forms
+        #map { "/forms/$_" } split /,/,$category->forms
+        map { "/forms/$_" } split /,/,$topic->categories->forms
     ];
     $c->stash->{id} = $id_topic;
     $self->list_comments( $c );  # get comments into stash
+    $c->stash->{swEdit} = $p->{swEdit};
     if( $p->{html} ) {
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
@@ -911,4 +918,87 @@ sub view_filter : Local {
 
 }
 
+sub list_admin_category : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $cnt;
+    my @rows;
+    my $statuses;
+    my $swStatus = 0;
+
+    ##TODO controlar cuando cambia y vuelve a la misma categoria inicial, para poner el workflow correspondiente.
+    if ($p->{change_categoryId}){
+        if ($p->{statusId}){
+            $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{change_categoryId}, id_status => $p->{statusId}},
+                                                                                        {
+                                                                                        prefetch=>['status'],
+                                                                                        }                                                                                 
+                                                                                     );
+            if($statuses->count){
+                $swStatus = 1;
+            }
+            
+        }
+        if(!$swStatus){
+            $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{change_categoryId}, type => 'I'},
+                                                                                        {
+                                                                                        prefetch=>['status'],
+                                                                                        }                                                                                 
+                                                                                     );        
+        }
+        
+        if($statuses->count){
+            while( my $status = $statuses->next ) {
+                push @rows, {
+                                id      => $status->status->id,
+                                name    => $status->status->name
+                            };
+            }
+        }        
+
+    }else{
+        
+            my $roles = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $p->{categoryId}, id_status_from => $p->{statusId}},
+                                                                                    {
+                                                                                        prefetch => ['roles','statuses_to'],
+                                                                                    }                                                                                    
+                                                                                );
+            my %roles;
+            my %status;
+            while( my $role = $roles->next ) {
+                $roles{$role->id_role} = $role->roles->role;
+                $status{$role->id_status_to} = $role->statuses_to->name;
+            }
+
+            #foreach my $role ( keys %roles ){
+            #    push @roles, $roles{$role};
+            #}
+            
+            push my @roles, ( keys %roles );
+            
+            my $swAllowed = 0;
+            my $roles_users = $c->model('Baseliner::BaliRoleUser')->search({username => $c->username, id_role =>\@roles});
+            if(($roles_users->count > 0) || ($c->username eq 'root')){
+                $swAllowed = 1;
+            }
+        
+            if($swAllowed){
+                foreach my $status ( keys %status ){
+                    push @rows, {
+                                    id  => $status,
+                                    name => $status{$status}
+                                }
+                }
+            }
+            
+            #$statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}},
+            #                                                                            {
+            #                                                                            prefetch=>['status'],
+            #                                                                            }                                                                                 
+            #                                                                         );
+    }
+        
+    $c->stash->{json} = { data=>\@rows};
+    $c->forward('View::JSON');
+}
 1;

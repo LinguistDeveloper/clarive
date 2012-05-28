@@ -2,17 +2,22 @@
     // loads data into the form:
     var load_form = function(rec) {
         if( rec !== undefined ){
+            store_category.load();
+            store_admin_category.load({
+                    params:{ 'categoryId': rec.id_category, 'statusId': rec.id_status }
+                });
             var ff = form_topic.getForm();
             rec = { data: rec };  // loadRecord needs the actual record in "data: "
             ff.loadRecord( rec );
             load_txt_values_priority(rec);
+            ff.findField("txtcategory_old").setValue(rec.data.id_category);
             var projects = '';
             if(rec.data.projects){
                 for(i=0;i<rec.data.projects.length;i++){
                     projects = projects ? projects + '\n' + rec.data.projects[i].project: rec.data.projects[i].project;
                 }
                 ff.findField("txtprojects").setValue(projects);
-            }           
+            }         
             title = 'Edit topic';
         }
     };
@@ -22,7 +27,12 @@
     var title = 'Create topic';
 
     var store_category = new Baseliner.Topic.StoreCategory();
-    var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
+    var store_admin_category = new Baseliner.Topic.StoreCategoryStatus({
+        url:'/topic/list_admin_category'
+    });
+    
+    
+    
     var store_priority = new Baseliner.Topic.StorePriority();
     var store_project = new Baseliner.Topic.StoreProject();
     //var store_opened = new Baseliner.Topic.StoreList();
@@ -42,10 +52,17 @@
         listeners:{
             'select': function(cmd, rec, idx){
                 combo_status.clearValue();
-                combo_status.store.load({
-                    params:{ 'categoryId': this.getValue() }
-                });
-                combo_status.enable();
+                var ff;
+                ff = form_topic.getForm();
+                if(ff.findField("txtcategory_old").getValue() == this.getValue()){
+                    combo_status.store.load({
+                       params:{ 'categoryId': this.getValue(), 'statusId': ff.findField("id_status").getValue() }
+                   });                   
+                }else{
+                    combo_status.store.load({
+                        params:{ 'change_categoryId': this.getValue(), 'statusId': ff.findField("id_status").getValue() }
+                    });                    
+                }
             }
         }
     });
@@ -55,13 +72,13 @@
         forceSelection: true,
         triggerAction: 'all',
         emptyText: 'select a status',
-        fieldLabel: _('Topics: Status'),
-        name: 'status',
-        hiddenName: 'status',
+        fieldLabel: _('Status new'),
+        name: 'status_new',
+        hiddenName: 'status_new',
         displayField: 'name',
         valueField: 'id',
-        disabled: true,
-        store: store_category_status
+        //disabled: true,
+        store: store_admin_category
     });     
     
     function get_expr_response_time(row){
@@ -289,8 +306,42 @@
                 name: 'title',
                 allowBlank: false
             },
+            { xtype: 'hidden', name: 'txtcategory_old' },
             combo_category,
-            combo_status,
+            {
+            // column layout with 2 columns
+            layout:'column'
+            ,defaults:{
+                layout:'form'
+                ,border:false
+                ,xtype:'panel'
+                ,bodyStyle:'padding:0 10px 0 0'
+            }
+            ,items:[{
+                // left column
+                columnWidth:0.50,
+                defaults:{anchor:'100%'}
+                ,items:[
+                    {
+                        xtype:'textfield',
+                        fieldLabel: _('Topics: Status'),
+                        name: 'status',
+                        readOnly: true
+                    },
+                    { xtype: 'hidden', name: 'id_status' },
+                ]
+                },
+                {
+                columnWidth:0.50,
+                // right column
+                defaults:{anchor:'100%'},
+                items:[
+                    combo_status
+                ]
+                }
+                
+            ]
+            },            
             combo_priority,
             {
                 xtype:'textfield',
