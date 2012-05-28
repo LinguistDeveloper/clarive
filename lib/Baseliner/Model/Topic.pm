@@ -59,8 +59,8 @@ sub update {
                 $topic->title( $p->{title} );
                 $topic->description( $p->{description} );
                 $topic->id_category( $p->{category} );
-                $topic->id_category_status( $p->{status} );
-                $topic->id_priority( $p->{priority} );
+                $topic->id_category_status( $p->{status_new} );
+                $topic->id_priority( $p->{id_priority} );
                 $topic->response_time_min( $rsptime[1] );
                 $topic->expr_response_time( $rsptime[0] );
                 $topic->deadline_min( $deadline[1] );
@@ -135,7 +135,7 @@ sub GetTopics {
     ##}
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    $SQL = "SELECT BALI_TOPIC.MID AS MID, BALI_TOPIC.ID AS ID, TITLE, BALI_TOPIC.DESCRIPTION,
+    $SQL = "SELECT BALI_TOPIC.MID AS MID, BALI_TOPIC.ID AS ID, TITLE,
                     CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
                     ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, F.COLOR CATEGORY_COLOR
                     FROM  BALI_TOPIC LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID

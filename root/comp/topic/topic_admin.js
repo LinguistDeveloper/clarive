@@ -67,7 +67,7 @@
     
         var form_status = new Ext.FormPanel({
             frame: true,
-            url:'/topic/update_status',
+            url:'/topicadmin/update_status',
             labelAlign: 'top',
             bodyStyle:'padding:10px 10px 0',
             buttons: [
@@ -110,7 +110,18 @@
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
                 { xtype:'textfield', name:'name', fieldLabel:_('Topics: Status'), allowBlank:false, emptyText:_('Name of status') },
-                ta
+                ta,
+				{
+				xtype: 'radiogroup',
+				id: 'statusgroup',
+				fieldLabel: _('Type'),
+				defaults: {xtype: "radio",name: "type"},
+				items: [
+					{boxLabel: _('General'), inputValue: 'G', checked: true},
+					{boxLabel: _('Inicial'), inputValue: 'I'},
+					{boxLabel: _('Final'), inputValue: 'F'}
+				]
+				}				
             ]
         });
     
@@ -164,7 +175,7 @@
             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the statuses selected?'), 
             function(btn){ 
                 if(btn=='yes') {
-                    Baseliner.ajaxEval( '/topic/update_status?action=delete',{ idsstatus: statuses_checked },
+                    Baseliner.ajaxEval( '/topicadmin/update_status?action=delete',{ idsstatus: statuses_checked },
                         function(response) {
                             if ( response.success ) {
                                 Baseliner.message( _('Success'), response.msg );
@@ -331,7 +342,7 @@
         
         var form_category = new Ext.FormPanel({
             frame: true,
-            url:'/topic/update_category',
+            url:'/topicadmin/update_category',
             layout: {
                 type: 'column',
                 padding: '5'
@@ -437,7 +448,7 @@
             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the categories selected?'), 
             function(btn){ 
                 if(btn=='yes') {
-                    Baseliner.ajaxEval( '/topic/update_category?action=delete',{ idscategory: categories_checked },
+                    Baseliner.ajaxEval( '/topicadmin/update_category?action=delete',{ idscategory: categories_checked },
                         function(response) {
                             if ( response.success ) {
                                 Baseliner.message( _('Success'), response.msg );
@@ -900,7 +911,7 @@
         cls: 'x-btn-text-icon',
         handler: function() {
             if(label_box.getValue() != ''){
-                Baseliner.ajaxEval( '/topic/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
                     function(response) {
                         if ( response.success ) {
                             store_label.load();
@@ -946,7 +957,7 @@
             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the labels selected?'), 
             function(btn){ 
                 if(btn=='yes') {
-                    Baseliner.ajaxEval( '/topic/update_label?action=delete',{ idslabel: labels_checked },
+                    Baseliner.ajaxEval( '/topicadmin/update_label?action=delete',{ idslabel: labels_checked },
                         function(response) {
                             if ( response.success ) {
                                 Baseliner.message( _('Success'), response.msg );
@@ -987,7 +998,7 @@
     label_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
             if(f.getValue() != ''){
-                Baseliner.ajaxEval( '/topic/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
                     function(response) {
                         if ( response.success ) {
                             store_label.load();
@@ -1221,7 +1232,7 @@
         
         var form_priority = new Ext.FormPanel({
             frame: true,
-            url:'/topic/update_priority',
+            url:'/topicadmin/update_priority',
             bodyStyle:'padding:10px 10px 0',
             buttons: [
                     {
@@ -1404,7 +1415,7 @@
             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the priorities selected?'), 
             function(btn){ 
                 if(btn=='yes') {
-                    Baseliner.ajaxEval( '/topic/update_priority?action=delete',{ idspriority: priorities_checked },
+                    Baseliner.ajaxEval( '/topicadmin/update_priority?action=delete',{ idspriority: priorities_checked },
                         function(response) {
                             if ( response.success ) {
                                 Baseliner.message( _('Success'), response.msg );

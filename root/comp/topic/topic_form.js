@@ -1,18 +1,35 @@
 (function(params){
+    var json;
     // loads data into the form:
     var load_form = function(rec) {
         if( rec !== undefined ){
+            store_admin_category.load({
+                    params:{ 'categoryId': rec.category, 'statusId': rec.status }
+                });
+            
             var ff = form_topic.getForm();
+            var store = combo_category.getStore();
+            var category = rec.category;
+            store.on("load", function() {
+               combo_category.setValue(category);
+            });
+            store.load();
+            var priority = rec.priority;
+            store_priority.on("load", function() {
+               combo_priority.setValue(priority);
+            });
+            store_priority.load();
             rec = { data: rec };  // loadRecord needs the actual record in "data: "
             ff.loadRecord( rec );
             load_txt_values_priority(rec);
+            ff.findField("txtcategory_old").setValue(rec.data.category);
             var projects = '';
             if(rec.data.projects){
                 for(i=0;i<rec.data.projects.length;i++){
                     projects = projects ? projects + '\n' + rec.data.projects[i].project: rec.data.projects[i].project;
                 }
                 ff.findField("txtprojects").setValue(projects);
-            }           
+            }         
             title = 'Edit topic';
         }
     };
@@ -22,10 +39,11 @@
     var title = 'Create topic';
 
     var store_category = new Baseliner.Topic.StoreCategory();
-    var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
+    var store_admin_category = new Baseliner.Topic.StoreCategoryStatus({
+        url:'/topic/list_admin_category'
+    });
     var store_priority = new Baseliner.Topic.StorePriority();
     var store_project = new Baseliner.Topic.StoreProject();
-    //var store_opened = new Baseliner.Topic.StoreList();
     
     var combo_category = new Ext.form.ComboBox({
         mode: 'local',
@@ -42,10 +60,17 @@
         listeners:{
             'select': function(cmd, rec, idx){
                 combo_status.clearValue();
-                combo_status.store.load({
-                    params:{ 'categoryId': this.getValue() }
-                });
-                combo_status.enable();
+                var ff;
+                ff = form_topic.getForm();
+                if(ff.findField("txtcategory_old").getValue() == this.getValue()){
+                    combo_status.store.load({
+                       params:{ 'categoryId': this.getValue(), 'statusId': ff.findField("status").getValue() }
+                   });                   
+                }else{
+                    combo_status.store.load({
+                        params:{ 'change_categoryId': this.getValue(), 'statusId': ff.findField("status").getValue() }
+                    });                    
+                }
             }
         }
     });
@@ -55,13 +80,13 @@
         forceSelection: true,
         triggerAction: 'all',
         emptyText: 'select a status',
-        fieldLabel: _('Topics: Status'),
-        name: 'status',
-        hiddenName: 'status',
+        fieldLabel: _('Status new'),
+        name: 'status_new',
+        hiddenName: 'status_new',
         displayField: 'name',
         valueField: 'id',
-        disabled: true,
-        store: store_category_status
+        //disabled: true,
+        store: store_admin_category
     });     
     
     function get_expr_response_time(row){
@@ -166,17 +191,19 @@
                     for(i=0;i<names_checked.length;i++){
                         projects = projects ? projects + ',' + names_checked[i]: names_checked[i];
                     }
-                    ff.findField("txtprojects").setValue(projects);                     
+                    form.findField("txtprojects").setValue(projects);                     
                 }
                 
                 Baseliner.ajaxEval( '/topic/unassign_projects',{ idtopic: rec.data.id, idsproject: projects_checked },
                     function(response) {
                         if ( response.success ) {
                             Baseliner.message( _('Success'), response.msg );
-                            var categories_checked = getCategories();
-                            var labels_checked = getLabels();
                             form.findField("id").setValue(rec.data.id);
-                            filtrar_topics(labels_checked, categories_checked);                             
+                            Baseliner.ajaxEval( '/topic/json', { id: rec.data.id }, function(data) {
+                                load_form( data );
+                                json = data;
+                                json = { data: json };
+                            });                          
                         } else {
                             Baseliner.message( _('ERROR'), response.msg );
                         }
@@ -250,15 +277,13 @@
     };
     
     var btn_unassign_project = new Ext.Toolbar.Button({
-        //text: _('Unassign projects'),
         text: _('projects'),
         handler: function() {
-            show_projects(rec);
+            show_projects(json);
         }
     });
     
     var btn_unassign_roles = new Ext.Toolbar.Button({
-        //text: _('Unassign projects'),
         text: _('roles'),
         handler: function() {
             show_projects(rec);
@@ -289,20 +314,85 @@
                 name: 'title',
                 allowBlank: false
             },
+            { xtype: 'hidden', name: 'txtcategory_old' },
             combo_category,
-            combo_status,
-            combo_priority,
             {
-                xtype:'textfield',
-                fieldLabel: _('Response'),
-                name: 'txtrsptime',
-                readOnly: true
-            },
-            {
-                xtype:'textfield',
-                fieldLabel: _('Resolution'),
-                name: 'txtdeadline',
-                readOnly: true
+            // column layout with 2 columns
+            layout:'column'
+            ,defaults:{
+                layout:'form'
+                ,border:false
+                ,xtype:'panel'
+                ,bodyStyle:'padding:0 10px 0 0'
+            }
+            ,items:[{
+                // left column
+                columnWidth:0.50,
+                defaults:{anchor:'100%'}
+                ,items:[
+                    {
+                        xtype:'textfield',
+                        fieldLabel: _('Topics: Status'),
+                        name: 'status_name',
+                        readOnly: true
+                    },
+                    { xtype: 'hidden', name: 'status' },
+                ]
+                },
+                {
+                columnWidth:0.50,
+                // right column
+                defaults:{anchor:'100%'},
+                items:[
+                    combo_status
+                ]
+                }
+                
+            ]
+            },            {
+            // column layout with 2 columns
+            layout:'column'
+            ,defaults:{
+                layout:'form'
+                ,border:false
+                ,xtype:'panel'
+                ,bodyStyle:'padding:0 10px 0 0'
+            }
+            ,items:[{
+                // left column
+                columnWidth:0.40,
+                defaults:{anchor:'100%'}
+                ,items:[
+                    combo_priority
+                ]
+                },
+                {
+                columnWidth:0.30,
+                // right column
+                defaults:{anchor:'100%'},
+                items:[
+                    {
+                        xtype:'textfield',
+                        fieldLabel: _('Response'),
+                        name: 'txtrsptime',
+                        readOnly: true
+                    }
+                ]
+                },
+                {
+                columnWidth:0.30,
+                // right column
+                defaults:{anchor:'100%'},
+                items:[
+                    {
+                        xtype:'textfield',
+                        fieldLabel: _('Resolution'),
+                        name: 'txtdeadline',
+                        readOnly: true
+                    }
+                ]
+                }
+            ]
             },
             { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
             { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
@@ -379,6 +469,8 @@
         if( params!==undefined && params.id !== undefined ) {
             Baseliner.ajaxEval( '/topic/json', { id: params.id }, function(data) {
                 load_form( data );
+                json = data;
+                json = { data: json };
             });
         }
     });

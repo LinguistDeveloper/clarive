@@ -84,10 +84,10 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
-__PACKAGE__->has_many(
+__PACKAGE__->belongs_to(
   "categories",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategories",
-  { "foreign.id" => "self.id_category" },
+  { "id" => "id_category" },
 );
 
 __PACKAGE__->has_many(
@@ -103,5 +103,11 @@ __PACKAGE__->has_one(
 );
 
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
+
+__PACKAGE__->belongs_to(
+  "priorities",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicPriority",
+  { id => "id_priority" },
+);
 
 1;

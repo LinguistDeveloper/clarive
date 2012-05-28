@@ -118,6 +118,11 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-10-29 18:11:05
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SZePRrn3q3DyUUF50Lfv4w
 
+__PACKAGE__->has_many(
+  "roles",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesAdmin",
+  { id => "id_role" },
+);
 
 sub name {
     my $self = shift;

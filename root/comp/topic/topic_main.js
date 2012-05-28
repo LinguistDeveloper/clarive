@@ -1,5 +1,7 @@
 <%perl>
     my $ii = int rand 9999999999999999999;
+    my $swEdit = $c->stash->{swEdit};
+
 </%perl>
 (function(params){
     var btn_form_ok = new Ext.Button({
@@ -31,19 +33,19 @@
                 }
             }
     });
-    var btn_form_reset = ({
-        text: _('Reset'),
-        hidden: true,
-        handler: function(){ 
-                //win.close();
-            }
-    });
+    //var btn_form_reset = ({
+    //    text: _('Reset'),
+    //    hidden: true,
+    //    handler: function(){ 
+    //            //win.close();
+    //        }
+    //});
     // Detail Panel
     var detail = new Ext.Panel({ });
     var show_detail = function(){
         cardpanel.getLayout().setActiveItem( 0 );
         btn_form_ok.hide();
-        btn_form_reset.hide();
+        //btn_form_reset.hide();
     };
     /* 
     var form_comment = new Ext.FormPanel({
@@ -72,7 +74,7 @@
             form.add( comp );
             form.doLayout();
             btn_form_ok.show();
-            btn_form_reset.show();
+            //btn_form_reset.show();
         });
         cardpanel.getLayout().setActiveItem( 1 );
     };
@@ -184,27 +186,42 @@
         }
     });
 
+    var btn_detail = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/detail.png',
+        cls: 'x-btn-icon',
+        enableToggle: true, pressed: true, handler: show_detail, toggleGroup: 'form'
+    });
+    
+    var btn_edit = new Ext.Toolbar.Button({
+        text:_('Edit'),
+        icon:'/static/images/icons/edit.png',
+        cls: 'x-btn-text-icon',
+        enableToggle: true, handler: show_form, toggleGroup: 'form'
+    });
+        
     var tb = new Ext.Toolbar({
         isFormField: true,
         items: [
-            { 
-                icon:'/static/images/icons/detail.png',
-                cls: 'x-btn-icon',
-                enableToggle: true, pressed: true, handler: show_detail, toggleGroup: 'form'
-            },
-            { text:_('Edit'),
-                icon:'/static/images/icons/edit.png',
-                cls: 'x-btn-text-icon',
-                enableToggle: true, handler: show_form, toggleGroup: 'form'
-            },
+            //{ 
+            //    icon:'/static/images/icons/detail.png',
+            //    cls: 'x-btn-icon',
+            //    enableToggle: true, pressed: true, handler: show_detail, toggleGroup: 'form'
+            //},
+            //{ text:_('Edit'),
+            //    icon:'/static/images/icons/edit.png',
+            //    cls: 'x-btn-text-icon',
+            //    enableToggle: true, handler: show_form, toggleGroup: 'form'
+            //},
+            btn_detail,
+            btn_edit,
             '-',
             btn_comment,
             '-',
             _('Estado') + ': ',
             { xtype: 'combo', value: 'New' },
             '->',
-            btn_form_ok,
-            btn_form_reset
+            btn_form_ok
+            //btn_form_reset
         ]
     });
     var cardpanel = new Ext.Panel({
@@ -223,8 +240,15 @@
     };
     detail.on( 'render', function() {
         detail_reload();
+%if($swEdit){    
+        btn_edit.toggle(true);
+        btn_detail.toggle(false);
+        show_form();
+%}        
     });
+    
 
+    
     cardpanel.tab_icon = '/static/images/icons/topic_one.png';
     return cardpanel;
 })
