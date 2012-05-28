@@ -2734,4 +2734,8 @@ msgstr "Comentar"
 msgid "Activity"
 msgstr "Actividad"
 
+msgid "%1 posted a comment on %2: %3"
+msgstr "%1 publicó un comentario el %2: %3"
 
+msgid "%1 deleted a comment on %2: %3"
+msgstr "%1 borró un comentario el %2: %3"

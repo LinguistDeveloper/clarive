@@ -9,6 +9,24 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
+my $post_filter = sub {
+        my ($text, @vars ) = @_;
+        $vars[0] = "<b>$vars[0]</b>";  # bold username
+        $vars[2] = "<quote>$vars[2]</quote>";  # quote post
+        ($text,@vars);
+    };
+register 'event.post.create' => {
+    text => '%1 posted a comment on %2: %3',
+    vars => ['username', 'ts', 'post'],
+    filter => $post_filter,
+};
+
+register 'event.post.delete' => {
+    text => '%1 deleted a comment on %2: %3',
+    vars => ['username', 'ts', 'post'],
+    filter => $post_filter,
+};
+
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'menu.tools.topic' => {
@@ -212,6 +230,7 @@ sub view : Local {
         map { "/forms/$_" } split /,/,$category->forms
     ];
     $c->stash->{id} = $id_topic;
+    $c->stash->{events} = events_by_mid( $id_topic );
     $self->list_posts( $c );  # get comments into stash
     if( $p->{html} ) {
         $c->stash->{template} = '/comp/topic/topic_msg.html';
@@ -244,6 +263,12 @@ sub comment : Local {
                             created_on => DateTime->now,
                         }
                     );
+                    event_new 'event.post.create' => {
+                        username => $c->username,
+                        mid      => $id_topic,
+                        id_post  => $mid,
+                        post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
+                    };
                     my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
                     $topic->add_to_posts( $post, { rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
@@ -275,7 +300,16 @@ sub comment : Local {
         try {
             my $id_com = $p->{id_com};
             _throw( _loc( 'Missing id' ) ) unless defined $id_com;
-            $c->model('Baseliner::BaliPost')->find( $id_com )->delete;
+            my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
+            my $text = $post->text;
+            # find my parents to notify via events
+            my @mids = map { $_->from_mid } $post->parents->all; 
+            # delete the record
+            $post->delete;
+            # now notify my parents
+            event_new 'event.post.delete' => { username => $c->username, mid => $_, id_post=>$id_com,
+                post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
+            } for @mids;
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
             $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', shift() ), failure => \1 }

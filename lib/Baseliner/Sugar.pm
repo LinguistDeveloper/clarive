@@ -10,6 +10,8 @@ Some convenient sugar to over called methods.
 
 =cut 
 
+use strict;
+use Try::Tiny;
 use Exporter::Tidy default => [qw/
     config_store
     config_get
@@ -28,6 +30,9 @@ use Exporter::Tidy default => [qw/
     lifecycle
     master_new
     master_rel
+    event_new
+    events_by_key
+    events_by_mid
     /
 ];
 
@@ -105,7 +110,7 @@ sub master_new {
 }
 
 sub master_rel {
-    my ($from, $to ) =@_;
+    my ($from, $to, $rel_type ) =@_;
     if( defined $from && defined $to ) {
         my $p = { from_mid=>$from, to_mid=>$to };
         if( defined $rel_type ) {  # just one row
@@ -120,7 +125,46 @@ sub master_rel {
 }
 
 sub event_new {
-    my ($key, $data ) =@_;
+    my ($key, $data, $code ) =@_;
+    $data ||= {};
+    _throw 'event_new is missing mid parameter' unless length $data->{mid};
+    my $event_create = sub {
+        Baseliner->model('Baseliner::BaliEvent')->create({ event_key=>$key, event_data=>_dump( $data ), mid=>$data->{mid}, username=>$data->{username} });
+    };
+    if( ref $code eq 'CODE' ) {
+        try {
+            $code->( $data );
+            $event_create->();
+        };  # no event if fails
+    } else {
+        $event_create->();
+    }
+}
+
+sub events_by_key {
+    my ($key, $args ) = @_;
+    my $evs_rs = Baseliner->model('Baseliner::BaliEvent')->search({ event_key=>$key }, { order_by=>{ '-desc' => 'ts' } });
+    rs_hashref( $evs_rs );
+    return [ map { 
+        # merge 2 hashes
+        my $d = { %$_ , %{ _load( $_->{event_data} ) } };
+        $d; 
+    } $evs_rs->all ];
+}
+
+sub events_by_mid {
+    my ($mid, $args ) = @_;
+    my $evs_rs = Baseliner->model('Baseliner::BaliEvent')->search({ mid=>$mid }, { order_by=>{ '-desc' => 'ts' } });
+    rs_hashref( $evs_rs );
+    return [ map { 
+        # merge 2 hashes
+        my $d = { %$_ , %{ _load( $_->{event_data} ) } };
+        try {
+            my $ev = Baseliner->model('Registry')->get( $d->{event_key} ); # this throws an exception if key not found
+            $d->{text} = $ev->event_text( $d );
+        };  
+        $d; 
+    } $evs_rs->all ];
 }
 
 1;

@@ -34,6 +34,8 @@ __PACKAGE__->add_columns(
   },
   "event_key",
   { data_type => "varchar2", is_nullable => 0, size => 1024 },
+  "event_status",
+  { data_type => "varchar2", is_nullable => 0, size => 255, default_value=>'new' },
   "event_data",
   { data_type => "clob", is_nullable => 0 },
   "ts",

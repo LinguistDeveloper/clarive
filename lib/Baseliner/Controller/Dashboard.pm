@@ -177,7 +177,9 @@ sub list_topics: Private{
 	$SQL = "SELECT * FROM (SELECT C.ID, TITLE, DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT
 								FROM  BALI_TOPIC C
 								LEFT JOIN
-										(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_POST B WHERE A.ID = B.ID_TOPIC GROUP BY A.ID) D
+										(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_POST B, BALI_MASTER_REL REL
+                                        WHERE A.MID = REL.FROM_MID AND B.MID = REL.TO_MID AND REL_TYPE = 'topic_post'
+                                        GROUP BY A.ID) D
 									ON C.ID = D.ID 
 								WHERE STATUS = 'O'
 								ORDER BY CREATED_ON DESC)

@@ -882,7 +882,7 @@
 		
         if(rec.data.labels){
             for(i=0;i<rec.data.labels.length;i++){
-                tag_color_html = tag_color_html + "<div id='boot'><span class='badge' style='float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(rec.data.labels[i].color) + ";background-color:#" + rec.data.labels[i].color + "'>" + rec.data.labels[i].name + "</span></div>";
+                tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 10px; float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(rec.data.labels[i].color) + ";background-color:#" + rec.data.labels[i].color + "'>" + rec.data.labels[i].name + "</span></div>";
             }
         }
         return "<div style='font-weight:bold; font-size: 14px;' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>" + tag_color_html + tag_project_html;
@@ -933,11 +933,11 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _('Category'), dataIndex: 'namecategory', width: 50, sortable: true, renderer: render_category },
-            { header: _('Topic'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },    
+            { header: _('Category'), dataIndex: 'namecategory', width: 80, sortable: true, renderer: render_category },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
             { header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
+            { header: _('Topic'), hidden: true, dataIndex: 'id', width: 39, sortable: true, renderer: render_id },    
             { header: _('Description'), hidden: true, dataIndex: 'description' }
         ],
         tbar:   [ _('Search') + ' ', ' ',
@@ -1201,6 +1201,11 @@
     };
 
 
+    var tree_root = new Ext.tree.AsyncTreeNode({
+				text: 'Filters',
+				expanded:true
+			});
+
 	var tree_filters = new Ext.tree.TreePanel({
         tbar: [ button_create_view ],
 		dataUrl: "topic/filters_list",
@@ -1210,11 +1215,8 @@
 		animate: true,
 		autoScroll: true,
 		rootVisible: false,
-		root: new Ext.tree.AsyncTreeNode({
-				text: 'Filters',
-				expanded:true
-			})
-	});
+		root: tree_root
+    });
 
 	tree_filters.on('click', function(node, event){
 		//alert('pasa');
@@ -1248,7 +1250,10 @@
 		
 	});	
 		
-	tree_filters.getLoader();
+    // expand the whole tree
+	tree_filters.getLoader().on( 'load', function(){
+        tree_root.expandChildNodes();
+    });
 		
     var panel = new Ext.Panel({
         layout : "border",
