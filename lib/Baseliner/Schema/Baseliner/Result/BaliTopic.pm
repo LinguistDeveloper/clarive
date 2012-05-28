@@ -84,10 +84,10 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
-__PACKAGE__->has_one(
+__PACKAGE__->belongs_to(
   "categories",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategories",
-  { "foreign.id" => "self.id_category" },
+  { "id" => "id_category" },
 );
 
 __PACKAGE__->has_many(
