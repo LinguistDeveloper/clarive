@@ -17,11 +17,11 @@
     var store_topics = new Baseliner.Topic.StoreList({
             listeners: {
                 'beforeload': function( obj, opt ) {
-                    obj.baseParams.filter = 'O';
-                    var labels_checked = getLabels();
-                    obj.baseParams.labels = labels_checked;
-                    var categories_checked = getCategories();
-                    obj.baseParams.categories = categories_checked;                 
+                    //obj.baseParams.filter = 'O';
+                    //var labels_checked = getLabels();
+                    //obj.baseParams.labels = labels_checked;
+                    //var categories_checked = getCategories();
+                    //obj.baseParams.categories = categories_checked;                 
                 }
             }
     });
@@ -76,9 +76,81 @@
 	
 	var btn_add = new Baseliner.Grid.Buttons.Add({
 		handler: function() {
-			add_edit();
+			add_topic();
 	    }		
 	});
+	
+	
+	var add_topic = function(rec) {
+		var win;
+		
+		var combo_category = new Ext.form.ComboBox({
+			mode: 'local',
+			forceSelection: true,
+			emptyText: 'select a category',
+			triggerAction: 'all',
+			fieldLabel: _('Category'),
+			name: 'category',
+			hiddenName: 'category',
+			displayField: 'name',
+			valueField: 'id',
+			store: store_category,
+			allowBlank: false,
+			listeners:{
+				//'select': function(cmd, rec, idx){
+				//	combo_status.clearValue();
+				//	var ff;
+				//	ff = form_topic.getForm();
+				//	if(ff.findField("txtcategory_old").getValue() == this.getValue()){
+				//		combo_status.store.load({
+				//		   params:{ 'categoryId': this.getValue(), 'statusId': ff.findField("status").getValue() }
+				//	   });                   
+				//	}else{
+				//		combo_status.store.load({
+				//			params:{ 'change_categoryId': this.getValue(), 'statusId': ff.findField("status").getValue() }
+				//		});                    
+				//	}
+				//}
+			}
+		});
+
+
+		var title = 'Create topic';
+		
+		var form_topic = new Ext.FormPanel({
+			frame: true,
+			buttons: [
+				{
+				text: _('Accept'),
+				type: 'submit',
+				handler: function() {
+
+				}
+				},
+				{
+				text: _('Close'),
+				handler: function(){ 
+						win.close();
+					}
+				}
+			],
+			defaults: { width: 400 },
+			items: [
+				combo_category
+			]
+		});
+
+		store_category.load();
+		
+		win = new Ext.Window({
+			title: _(title),
+			width: 550,
+			autoHeight: true,
+			items: form_topic
+		});
+		win.show();		
+	};
+	
 	
 	var btn_edit = new Baseliner.Grid.Buttons.Edit({
 		handler: function() {
@@ -232,8 +304,8 @@
                     function(response) {
                         if ( response.success ) {
                             Baseliner.message( _('Success'), response.msg );
-                            var labels_checked = getLabels();
-                            filtrar_topics(labels_checked);
+                            //var labels_checked = getLabels();
+                            //filtrar_topics(labels_checked);
                             
                         } else {
                             Baseliner.message( _('ERROR'), response.msg );
@@ -676,55 +748,55 @@
     //});
 
    
-    var check_status_sm = new Ext.grid.CheckboxSelectionModel({
-        singleSelect: false,
-        sortable: false,
-        checkOnly: true
-    });
-    
-
-
-    var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
-        singleSelect: false,
-        sortable: false,
-        checkOnly: true
-    });
-    
-    
+    //var check_status_sm = new Ext.grid.CheckboxSelectionModel({
+    //    singleSelect: false,
+    //    sortable: false,
+    //    checkOnly: true
+    //});
+    //
+    //
+    //
+    //var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
+    //    singleSelect: false,
+    //    sortable: false,
+    //    checkOnly: true
+    //});
+    //
+    //
     var render_color = function(value,metadata,rec,rowIndex,colIndex,store) {
         return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
     };  
-
-    var check_labels_sm = new Ext.grid.CheckboxSelectionModel({
-        singleSelect: false,
-        sortable: false,
-        checkOnly: true
-    });
-
-    
-    function getStatuses(){
-        var statuses_checked = new Array();
-        check_status_sm.each(function(rec){
-            statuses_checked.push(rec.get('id'));
-        });
-        return statuses_checked
-    }   
-
-    function getCategories(){
-        var categories_checked = new Array();
-        check_categories_sm.each(function(rec){
-            categories_checked.push(rec.get('id'));
-        });
-        return categories_checked
-    }
-    
-    function getLabels(){
-        var labels_checked = new Array();
-        check_labels_sm.each(function(rec){
-            labels_checked.push(rec.get('id'));
-        });
-        return labels_checked
-    }
+    //
+    //var check_labels_sm = new Ext.grid.CheckboxSelectionModel({
+    //    singleSelect: false,
+    //    sortable: false,
+    //    checkOnly: true
+    //});
+    //
+    //
+    //function getStatuses(){
+    //    var statuses_checked = new Array();
+    //    check_status_sm.each(function(rec){
+    //        statuses_checked.push(rec.get('id'));
+    //    });
+    //    return statuses_checked
+    //}   
+    //
+    //function getCategories(){
+    //    var categories_checked = new Array();
+    //    check_categories_sm.each(function(rec){
+    //        categories_checked.push(rec.get('id'));
+    //    });
+    //    return categories_checked
+    //}
+    //
+    //function getLabels(){
+    //    var labels_checked = new Array();
+    //    check_labels_sm.each(function(rec){
+    //        labels_checked.push(rec.get('id'));
+    //    });
+    //    return labels_checked
+    //}
     
     function filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked){
         var query_id = '<% $c->stash->{query_id} %>';
@@ -750,9 +822,9 @@
 			})
 	});
 
-	tree_filters.on('click', function(node, event){
-		//alert('pasa');
-	});
+	//tree_filters.on('click', function(node, event){
+	//	//alert('pasa');
+	//});
 	
 	tree_filters.on('checkchange', function(node, checked) {
 		var labels_checked = new Array();
@@ -812,8 +884,6 @@
     var query_id = '<% $c->stash->{query_id} %>';
     store_topics.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>'}});
     //store_closed.load({params:{start:0 , limit: ps, filter:'C'}});
-
-
     
     return panel;
 })
