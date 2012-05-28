@@ -12,6 +12,7 @@ use warnings;
 
 use base 'DBIx::Class::Core';
 __PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
 __PACKAGE__->table("bali_topic");
 
 __PACKAGE__->add_columns(
@@ -101,21 +102,7 @@ __PACKAGE__->has_one(
   { "foreign.id" => "self.id_category_status" },
 );
 
-__PACKAGE__->has_many(
-    'children' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
-    { 'foreign.from_mid' => 'self.mid' }
-);
-__PACKAGE__->has_many(
-    'parents' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
-    { 'foreign.to_mid' => 'self.mid' }
-);
-#__PACKAGE__->many_to_many('posts' => 'master_rel', 'address');
-
-__PACKAGE__->has_one(
-  "master",
-  "Baseliner::Schema::Baseliner::Result::BaliMaster",
-  { "foreign.mid" => "self.mid" },
-);
+__PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
 
 __PACKAGE__->belongs_to(
   "priorities",

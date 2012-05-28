@@ -1,6 +1,7 @@
 package Baseliner::Controller::Topic;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Baseliner::Core::DBI;
 use DateTime;
 use Try::Tiny;
@@ -243,8 +244,9 @@ sub view : Local {
         map { "/forms/$_" } split /,/,$topic->categories->forms
     ];
     $c->stash->{id} = $id_topic;
-    $self->list_comments( $c );  # get comments into stash
     $c->stash->{swEdit} = $p->{swEdit};
+    $self->list_posts( $c );  # get comments into stash
+
     if( $p->{html} ) {
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
@@ -266,14 +268,20 @@ sub comment : Local {
             
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
-                $topic = $c->model('Baseliner::BaliPost')->create(
-                    {   id_topic   => $id_topic,
-                        text       => $text,
-                        content_type => $content_type,
-                        created_by => $c->username,
-                        created_on => DateTime->now,
-                    }
-                );
+                $topic = master_new 'bali_post' => sub { 
+                    my $mid = shift;
+                    my $post = $c->model('Baseliner::BaliPost')->create(
+                        {   mid   => $mid,
+                            text       => $text,
+                            content_type => $content_type,
+                            created_by => $c->username,
+                            created_on => DateTime->now,
+                        }
+                    );
+                    my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+                    $topic->add_to_posts( $post, { rel_type=>'topic_post' });
+                    #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
+                };
                 #$c->model('Event')->create({
                 #    type => 'event.topic.new_comment',
                 #    ids  => [ $id_topic ],
@@ -283,11 +291,11 @@ sub comment : Local {
                 #    }
                 #});
             } else {
-                my $topic = $c->model('Baseliner::BaliPost')->find( $id_com );
-                $topic->text( $text );
-                $topic->content_type( $content_type );
+                my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
+                $post->text( $text );
+                $post->content_type( $content_type );
                 # TODO modified_on ?
-                $topic->update;
+                $post->update;
             }
             $c->stash->{json} = {
                 msg     => _loc('Comment added'),
@@ -326,12 +334,13 @@ sub comment : Local {
     $c->forward('View::JSON');
 }
 
-sub list_comments : Local {
+sub list_posts : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $id_topic = $p->{id};
 
-    my $rs = $c->model('Baseliner::BaliPost')->search( { id_topic => $id_topic }, { order_by => 'created_on desc' } );
+    my $rs = $c->model('Baseliner::BaliTopic')->find( $id_topic )
+        ->posts->search( undef, { order_by => { '-desc' => 'created_on' } } );
     my @rows;
     while( my $r = $rs->next ) {
         push @rows,

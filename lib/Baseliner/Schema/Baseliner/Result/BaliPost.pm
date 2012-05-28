@@ -23,14 +23,6 @@ __PACKAGE__->load_components("InflateColumn::DateTime");
 __PACKAGE__->table("bali_post");
 
 __PACKAGE__->add_columns(
-  "id",
-  {
-    data_type => "numeric",
-    is_auto_increment => 1,
-    is_nullable => 0,
-    original => { data_type => "number" },
-    sequence => "bali_post_seq",
-  },
   "mid",
   {
     data_type => "numeric",
@@ -52,7 +44,7 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", default_value=>'html', size => 255 },
 );
 
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key("mid");
 
 
 1;
