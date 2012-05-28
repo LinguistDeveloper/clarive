@@ -198,8 +198,6 @@
                     function(response) {
                         if ( response.success ) {
                             Baseliner.message( _('Success'), response.msg );
-/*                            var categories_checked = getCategories();
-                            var labels_checked = getLabels()*/;
                             form.findField("id").setValue(rec.data.id);
                             Baseliner.ajaxEval( '/topic/json', { id: rec.data.id }, function(data) {
                                 load_form( data );

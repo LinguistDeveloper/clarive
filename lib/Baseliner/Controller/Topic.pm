@@ -135,7 +135,7 @@ sub list : Local {
         push @rows, {
             id      => $data->{id},
             title   => $data->{title},
-            description => $data->{description},
+            #description => $data->{description},
             created_on  => $data->{created_on},
             created_by  => $data->{created_by},
             numcomment  => $data->{numcomment},
