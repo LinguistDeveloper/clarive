@@ -602,7 +602,7 @@
 
     //adds a new tab from a function() type component
     Baseliner.addNewTabComp = function( comp_url, ptitle, params ){
-        var req_params = params != undefined ? params.params : {};
+        var req_params = params != undefined ? params : {};
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
             var id = Baseliner.addNewTabItem( comp, ptitle, params );
             Baseliner.tabInfo[id] = { url: comp_url, title: ptitle, params: params, type: 'comp' };
