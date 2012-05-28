@@ -105,7 +105,6 @@ sub list : Local {
         if($p->{priorities}){
             foreach my $priority (_array $p->{priorities}){
                 #push @priorities, $priority;
-                _log ">>>>>>>>>>>>>>>>asas: " . $priority;
                 push @temp, grep { $_->{id_priority} =~ $priority && ! $seen{ $_->{id} }++ } @datas if $priority;
             }
             @datas = @temp;            
@@ -181,15 +180,42 @@ sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $id_topic = $p->{id};
-    my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+    my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic,
+                                                            {
+                                                                join => ['status'],
+                                                                '+select' => ['status.name'],
+                                                            }                                                          
+                                                        );
+   
+    
+    my @projects;
+    my $topicprojects = $c->model('Baseliner::BaliTopicProject')->search(   {id_topic => $id_topic},
+                                                                            {
+                                                                                join => ['project'],
+                                                                                '+select' => ['project.name'],
+                                                                            }                                                                          
+                                                                        );
+    
+    while( my $topicproject = $topicprojects->next ) {
+        my $str = { project => $topicproject->project->name,  id_project => $topicproject->id_project };
+        push @projects, $str
+    }    
+    
     my $ret = {
         title       => $topic->title,
         description => $topic->description,
-        category    => $topic->categories->name,
-        id_category => $topic->id_category,
+        category    => $topic->id_category,
+        ##id_category => $topic->id_category,
         id          => $id_topic,
-        status      => $topic->status->name,
-        id_status   => $topic->id_category_status
+        status      => $topic->id_category_status,
+        status_name   => $topic->status->name,
+        projects    => \@projects,
+        priority    => $topic->id_priority,
+        ##id_priority => $topic->id_priority,
+        response_time_min   => $topic->response_time_min,
+        expr_response_time  => $topic->expr_response_time,
+        deadline_min    => $topic->deadline_min,
+        expr_deadline   => $topic->expr_deadline        
     };
     $c->stash->{json} = $ret;
     $c->forward('View::JSON');
@@ -348,7 +374,11 @@ sub list_category : Local {
         }
         $cnt = $#rows + 1 ; 
     }else{
-        my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}});
+        my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}},
+                                                                            {
+                                                                                join => ['status'],
+                                                                                '+select' => ['status.name','status.id'],
+                                                                            });            
         if($statuses){
             while( my $status = $statuses->next ) {
                 push @rows, {

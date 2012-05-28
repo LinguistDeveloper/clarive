@@ -58,8 +58,8 @@ sub update {
                 $topic->title( $p->{title} );
                 $topic->description( $p->{description} );
                 $topic->id_category( $p->{category} );
-                $topic->id_category_status( $p->{status} );
-                $topic->id_priority( $p->{priority} );
+                $topic->id_category_status( $p->{status_new} );
+                $topic->id_priority( $p->{id_priority} );
                 $topic->response_time_min( $rsptime[1] );
                 $topic->expr_response_time( $rsptime[0] );
                 $topic->deadline_min( $deadline[1] );

@@ -117,4 +117,10 @@ __PACKAGE__->has_one(
   { "foreign.mid" => "self.mid" },
 );
 
+__PACKAGE__->belongs_to(
+  "priorities",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicPriority",
+  { id => "id_priority" },
+);
+
 1;
