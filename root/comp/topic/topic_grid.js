@@ -308,6 +308,7 @@
                             Baseliner.message( _('Success'), response.msg );
                             //var labels_checked = getLabels();
                             //filtrar_topics(labels_checked);
+							loadfilters();
                             
                         } else {
                             Baseliner.message( _('ERROR'), response.msg );
@@ -654,7 +655,33 @@
         return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
     };  
 
-    
+    function loadfilters(){
+		var labels_checked = new Array();
+		var statuses_checked = new Array();
+		var categories_checked = new Array();
+		var priorities_checked = new Array();
+		var type;
+		selNodes = tree_filters.getChecked();
+		Ext.each(selNodes, function(node){
+			type = node.parentNode.attributes.id;
+			switch (type){
+				//Labels
+				case 'L':  	labels_checked.push(node.attributes.idfilter);
+							break;
+				//Statuses
+				case 'S':   statuses_checked.push(node.attributes.idfilter);
+							break;
+				//Categories
+				case 'C':   categories_checked.push(node.attributes.idfilter);
+							break;
+				//Priorities
+				case 'P':   priorities_checked.push(node.attributes.idfilter);
+							break;
+			}
+		});
+		filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked);
+	}
+	
     function filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked){
         var query_id = '<% $c->stash->{query_id} %>';
         filter_current = {start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
@@ -684,31 +711,7 @@
 	//});
 	
 	tree_filters.on('checkchange', function(node, checked) {
-		var labels_checked = new Array();
-		var statuses_checked = new Array();
-		var categories_checked = new Array();
-		var priorities_checked = new Array();
-		var type;
-		selNodes = tree_filters.getChecked();
-		Ext.each(selNodes, function(node){
-			type = node.parentNode.attributes.id;
-			switch (type){
-				//Labels
-				case 'L':  	labels_checked.push(node.attributes.id);
-							break;
-				//Statuses
-				case 'S':   statuses_checked.push(node.attributes.id);
-							break;
-				//Categories
-				case 'C':   categories_checked.push(node.attributes.id);
-							break;
-				//Priorities
-				case 'P':   priorities_checked.push(node.attributes.id);
-							break;
-			}
-		});
-		filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked);
-		
+		loadfilters();
 	});	
 		
     // expand the whole tree

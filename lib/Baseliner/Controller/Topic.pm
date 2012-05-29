@@ -884,12 +884,14 @@ sub filters_list : Local {
     my @tree;
     my @labels; 
     my $row;
+    my $i=0;
     $row = $c->model('Baseliner::BaliLabel')->search();
     
     if($row){
         while( my $r = $row->next ) {
             push @labels, {
-                id      => $r->id,
+                id  => $i++,
+                idfilter      => $r->id,
                 text    => $r->name,
                 cls     => 'forum',
                 iconCls => 'icon-forum',
@@ -914,7 +916,8 @@ sub filters_list : Local {
         while( my $r = $row->next ) {
             push @statuses,
                 {
-                    id      => $r->id,
+                    id  => $i++,
+                    idfilter      => $r->id,
                     text    => $r->name,
                     cls     => 'forum',
                     iconCls => 'icon-forum',
@@ -941,7 +944,8 @@ sub filters_list : Local {
         while( my $r = $row->next ) {
             push @categories,
                 {
-                    id      => $r->id,
+                    id  => $i++,
+                    idfilter      => $r->id,
                     text    => $r->name,
                     cls     => 'forum',
                     iconCls => 'icon-forum',
@@ -968,7 +972,8 @@ sub filters_list : Local {
         while( my $r = $row->next ) {
             push @priorities,
             {
-                id      => $r->id,
+                id  => $i++,
+                idfilter      => $r->id,
                 text    => $r->name,
                 cls     => 'forum',
                 iconCls => 'icon-forum',
