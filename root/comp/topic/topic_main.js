@@ -217,8 +217,8 @@
             '-',
             btn_comment,
             '-',
-            _('Estado') + ': ',
-            { xtype: 'combo', value: 'New' },
+            //_('Estado') + ': ',
+            //{ xtype: 'combo', value: 'New' },
             '->',
             btn_form_ok
             //btn_form_reset
