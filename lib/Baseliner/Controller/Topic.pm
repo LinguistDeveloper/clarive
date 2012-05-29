@@ -11,6 +11,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 my $post_filter = sub {
         my ($text, @vars ) = @_;
+        $vars[2] =~ s{\n|\r|<(.+?)>}{ }gs;
         $vars[0] = "<b>$vars[0]</b>";  # bold username
         $vars[2] = "<quote>$vars[2]</quote>";  # quote post
         ($text,@vars);
@@ -199,26 +200,20 @@ sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $id_topic = $p->{id};
-    my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic,
-                                                            {
-                                                                join => ['status'],
-                                                                '+select' => ['status.name'],
-                                                            }                                                          
-                                                        );
-   
-    
+    my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+
     my @projects;
-    my $topicprojects = $c->model('Baseliner::BaliTopicProject')->search(   {id_topic => $id_topic},
-                                                                            {
-                                                                                join => ['project'],
-                                                                                '+select' => ['project.name'],
-                                                                            }                                                                          
-                                                                        );
-    
-    while( my $topicproject = $topicprojects->next ) {
-        my $str = { project => $topicproject->project->name,  id_project => $topicproject->id_project };
-        push @projects, $str
-    }    
+    my $topicprojects = $c->model('Baseliner::BaliTopicProject')->search(
+        { id_topic => $id_topic },
+        {   join      => ['project'],
+            '+select' => ['project.name'],
+        }
+    );
+
+    while ( my $topicproject = $topicprojects->next ) {
+        my $str = { project => $topicproject->project->name, id_project => $topicproject->id_project };
+        push @projects, $str;
+    }
     
     my $ret = {
         title       => $topic->title,
@@ -227,7 +222,7 @@ sub json : Local {
         ##id_category => $topic->id_category,
         id          => $id_topic,
         status      => $topic->id_category_status,
-        status_name   => $topic->status->name,
+        status_name   => try { $topic->status->name },
         projects    => \@projects,
         priority    => $topic->id_priority,
         ##id_priority => $topic->id_priority,

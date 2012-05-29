@@ -452,13 +452,15 @@
                 
             ]
             },
-            {
-                xtype:'htmleditor',
-                name:'description',
-                fieldLabel: _('Description'),
-                width: '100%',
-                height:350
-            }
+            { xtype:'panel', layout:'fit', items: [ //this panel is here to make the htmleditor fit
+                {
+                    xtype:'htmleditor',
+                    name:'description',
+                    fieldLabel: _('Description'),
+                    width: '100%',
+                    height:350
+                }
+            ]}
            ]
               }
         ]

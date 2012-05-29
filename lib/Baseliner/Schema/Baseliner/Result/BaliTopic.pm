@@ -100,6 +100,7 @@ __PACKAGE__->has_one(
   "status",
   "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
   { "foreign.id" => "self.id_category_status" },
+  { join_type => 'LEFT_OUTER' }
 );
 
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );

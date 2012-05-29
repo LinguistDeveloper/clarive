@@ -124,7 +124,7 @@
         var btn_html = {
             xtype: 'button',
             text: _('HTML'),
-            enableToggle: true, pressed: true, toggleGroup: 'comment_edit',
+            enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit',
             handler: function(){
                 cardcom.getLayout().setActiveItem( 0 );
             }
@@ -132,7 +132,7 @@
         var btn_code = {
             xtype: 'button',
             text: _('Code'),
-            enableToggle: true, pressed: false, toggleGroup: 'comment_edit',
+            enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit',
             handler: function(){
                 cardcom.getLayout().setActiveItem( 1 );
                 var com = code_field.getEl().dom;
@@ -189,14 +189,14 @@
     var btn_detail = new Ext.Toolbar.Button({
         icon:'/static/images/icons/detail.png',
         cls: 'x-btn-icon',
-        enableToggle: true, pressed: true, handler: show_detail, toggleGroup: 'form'
+        enableToggle: true, pressed: true, allowDepress: false, handler: show_detail, toggleGroup: 'form'
     });
     
     var btn_edit = new Ext.Toolbar.Button({
         text:_('Edit'),
         icon:'/static/images/icons/edit.png',
         cls: 'x-btn-text-icon',
-        enableToggle: true, handler: show_form, toggleGroup: 'form'
+        enableToggle: true, handler: show_form, allowDepress: false, toggleGroup: 'form'
     });
         
     var tb = new Ext.Toolbar({
