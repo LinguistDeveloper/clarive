@@ -17,8 +17,8 @@ sub update {
 
     my $return;
     my $id;
-    my @rsptime = {};
-    my @deadline = {};
+    my @rsptime = ();
+    my @deadline = ();
     
     if( length $p->{priority} ) {
         @rsptime = split('#', $p->{txt_rsptime_expr_min});
@@ -35,7 +35,7 @@ sub update {
                             created_by         => $p->{username},
                             mid                => $mid,
                             id_category        => $p->{category},
-                            id_category_status => $p->{status},
+                            id_category_status => $p->{status_new},
                             id_priority        => $p->{priority},
                             response_time_min  => $rsptime[1],
                             expr_response_time => $rsptime[0],
@@ -58,14 +58,26 @@ sub update {
                 my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $id_topic );
                 $topic->title( $p->{title} );
                 $topic->description( $p->{description} );
-                $topic->id_category( $p->{category} );
-                $topic->id_category_status( $p->{status_new} );
-                $topic->id_priority( $p->{id_priority} );
+                $topic->id_category( $p->{category} ) if is_number( $p->{category} ) ;
+                $topic->id_category_status( $p->{status_new} ) if is_number( $p->{status_new} );
+                $topic->id_priority( $p->{priority} ) if is_number( $p->{priority} );
                 $topic->response_time_min( $rsptime[1] );
                 $topic->expr_response_time( $rsptime[0] );
                 $topic->deadline_min( $deadline[1] );
                 $topic->expr_deadline( $deadline[0] );
-                
+
+                my @projects = _array( $p->{projects} );
+                if (@projects) {
+                    my $project = Baseliner->model('Baseliner::BaliTopicProject')
+                        ->search({ id_topic => $id_topic } )->delete;
+                    foreach my $id_project (@projects) {
+                        Baseliner->model('Baseliner::BaliTopicProject')->create(
+                            {   id_topic   => $id_topic,
+                                id_project => $id_project
+                            }
+                        );
+                    }
+                }
                 
                 $topic->update();
                 $id     = $id_topic;

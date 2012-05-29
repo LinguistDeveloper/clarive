@@ -17,9 +17,9 @@ Baseliner.store.AllProjects = function(c) {
         autoLoad: true,
         totalProperty:"totalCount", 
         baseParams: {},
-        id: 'ns', 
+        id: 'id', 
         url: '/project/all_projects',
-        fields: ['ns','name','description'] 
+        fields: ['id','ns','name','description'] 
      }, c));
 };
 Ext.extend( Baseliner.store.AllProjects, Ext.data.JsonStore );
@@ -42,14 +42,14 @@ Baseliner.model.Projects = function(c) {
         //emptyText: _('Enter or select the category tags'),
         triggerAction: 'all',
         resizable: true,
-        store: new Baseliner.store.AllProjects({}),
+        store: new Baseliner.store.UserProjects({}),
         mode: 'remote',
         fieldLabel: _('Projects'),
         typeAhead: true,
         name: 'projects',
         displayField: 'name',
         hiddenName: 'projects',
-        valueField: 'ns',
+        valueField: 'id',
         tpl: '<tpl for="."><div class="x-combo-list-item">{name} - {description}</div></tpl>',
         displayFieldTpl: tpl2,
         value: '/',

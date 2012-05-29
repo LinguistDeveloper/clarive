@@ -156,6 +156,8 @@ sub events_by_mid {
     my ($mid, $args ) = @_;
     my $evs_rs = Baseliner->model('Baseliner::BaliEvent')->search({ mid=>$mid }, { order_by=>{ '-desc' => 'ts' } });
     rs_hashref( $evs_rs );
+    my @evs = $evs_rs->all;
+    return [] unless @evs;
     return [ map { 
         # merge 2 hashes
         my $d = { %$_ , %{ _load( $_->{event_data} ) } };
@@ -164,7 +166,7 @@ sub events_by_mid {
             $d->{text} = $ev->event_text( $d );
         };  
         $d; 
-    } $evs_rs->all ];
+    } @evs ];
 }
 
 1;

@@ -46,7 +46,7 @@ __PACKAGE__->add_columns(
     original      => { data_type => "date", default_value => \"sysdate" },
   },
   "username",
-  { data_type => "varchar2", default_value=>'html', size => 1024 },
+  { data_type => "varchar2", is_nullable=>1, size => 1024 },
 );
 
 __PACKAGE__->set_primary_key("id");

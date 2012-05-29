@@ -519,7 +519,7 @@ sub user_projects : Local {
     @rows = grep { $_ =~ $query } @rows if $query;
 	my $rs = $c->model('Baseliner::BaliProject')->search({ ns=>\@rows });
     rs_hashref($rs);
-    @rows = map { $_->{data}=_load($_->{data}); $_ } $rs->all;
+    @rows = map { $_->{data}=_load($_->{data}); $_->{description} //=''; $_ } $rs->all;
 	$c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
 	$c->forward('View::JSON');
 }

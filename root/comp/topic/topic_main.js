@@ -4,6 +4,8 @@
 
 </%perl>
 (function(params){
+    var view_is_dirty = false;
+    var form_is_loaded = false;
     var btn_form_ok = new Ext.Button({
             text: _('Accept'),
             type: 'submit',
@@ -18,8 +20,9 @@
                        success: function(f,a){
                            Baseliner.message(_('Success'), a.result.msg );
                            form2.findField("id").setValue(a.result.topic_id);
-                           //store_opened.load();
-                           win.setTitle(_('Edit topic'));
+                           params.id = a.result.topic_id;
+                           btn_comment.show();
+                           view_is_dirty = true;
                        },
                        failure: function(f,a){
                            Ext.Msg.show({  
@@ -45,37 +48,42 @@
     var show_detail = function(){
         cardpanel.getLayout().setActiveItem( 0 );
         btn_form_ok.hide();
+        if( view_is_dirty ) {
+            view_is_dirty = false;
+            detail_reload();
+        }
         //btn_form_reset.hide();
     };
-    /* 
-    var form_comment = new Ext.FormPanel({
-        defaults: { hideLabel: true },
-        items: [
-            { xtype:'textarea', width: 200 }
-        ]
-    });
-    var menu_comment = new Ext.menu.Menu({
-        text: _('Comment'),
-        style: {
-            overflow: 'visible'     // For the Combo popup
-        },
-        items: form_comment
-    });
-    menu_comment.on('render', function(){ menu_comment.keyNav.disable() } );
-    */
 
     // Form Panel
-    var form = new Ext.Panel({ });
+    var form = new Ext.Panel({ layout:'fit' });
     var form_topic;
-    var show_form = function(){
-        Baseliner.ajaxEval( '/comp/topic/topic_form.js', { id: params.id }, function(comp) {
-            form.removeAll();
-            form_topic = comp;
-            form.add( comp );
-            form.doLayout();
+    var load_form = function(rec) {
+        Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
+            if( ! form_is_loaded ) {
+                form.removeAll();
+                form_topic = comp;
+                form.add( comp );
+                form.doLayout();
+                form_is_loaded = true;
+            }
             btn_form_ok.show();
+            if(params.id){
+                btn_comment.show();
+            }else{
+                btn_comment.hide();
+            }
             //btn_form_reset.show();
         });
+    };
+    var show_form = function(){
+        if( params!==undefined && params.id !== undefined ) {
+            Baseliner.ajaxEval( '/topic/json', { id: params.id }, function(rec) {
+                load_form( rec );
+            });
+        } else {
+            load_form({ new_category_id: params.new_category_id, new_category_name: params.new_category_name });
+        }
         cardpanel.getLayout().setActiveItem( 1 );
     };
 
@@ -182,6 +190,7 @@
         cls: 'x-btn-icon-text',
         //disabled: true,
         handler: function() {
+            alert(params.id);
             Baseliner.Topic.comment_edit( params.id );
         }
     });
@@ -217,8 +226,8 @@
             '-',
             btn_comment,
             '-',
-            _('Estado') + ': ',
-            { xtype: 'combo', value: 'New' },
+            //_('Estado') + ': ',
+            //{ xtype: 'combo', value: 'New' },
             '->',
             btn_form_ok
             //btn_form_reset
@@ -233,7 +242,7 @@
         items: [ detail, form ]
     });
     var detail_reload = function(){
-        detail.load({ url: '/topic/view', params: { id: params.id, html: 1 }, scripts: true, callback: function(x){ 
+        detail.load({ url: '/topic/view', params: { id: params.id, html: 1, categoryId: params.categoryId }, scripts: true, callback: function(x){ 
             // finished loading HTML
         }});
         detail.body.setStyle('overflow', 'auto');

@@ -116,7 +116,7 @@
 %}
   </div>
   <div class="tab-pane" id="activity<% $ii %>">
-%  foreach ( _array $events ) {
+%  foreach ( _array( $events ) ) {
        <div style="margin-left: 20px">
             <p><% $_->{text} %>
 %#            <small>Creada por <% $_->{username} %>, <% $_->{username} %> <% $_ %></small>
