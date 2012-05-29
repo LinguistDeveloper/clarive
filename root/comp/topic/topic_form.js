@@ -30,13 +30,13 @@
                 }
                 ff.findField("txtprojects").setValue(projects);
             }         
-            title = 'Edit topic';
+            //title = 'Edit topic';
         }
     };
        
     var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
     
-    var title = 'Create topic';
+    //var title = 'Create topic';
 
     var store_category = new Baseliner.Topic.StoreCategory();
     var store_admin_category = new Baseliner.Topic.StoreCategoryStatus({
@@ -472,6 +472,15 @@
                 json = data;
                 json = { data: json };
             });
+        }else{
+            store_category.on("load", function() {
+               combo_category.setValue(params.categoryId);
+            });
+            store_category.load();
+            store_admin_category.load({
+                    params:{ 'change_categoryId': params.categoryId }
+            });            
+            store_priority.load();
         }
     });
 

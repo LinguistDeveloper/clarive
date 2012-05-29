@@ -199,6 +199,7 @@ sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $id_topic = $p->{id};
+    
     my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic,
                                                             {
                                                                 join => ['status'],
@@ -224,19 +225,18 @@ sub json : Local {
         title       => $topic->title,
         description => $topic->description,
         category    => $topic->id_category,
-        ##id_category => $topic->id_category,
         id          => $id_topic,
         status      => $topic->id_category_status,
         status_name   => $topic->status->name,
         projects    => \@projects,
         priority    => $topic->id_priority,
-        ##id_priority => $topic->id_priority,
         response_time_min   => $topic->response_time_min,
         expr_response_time  => $topic->expr_response_time,
         deadline_min    => $topic->deadline_min,
         expr_deadline   => $topic->expr_deadline        
     };
     $c->stash->{json} = $ret;
+    
     $c->forward('View::JSON');
 }
 
@@ -245,26 +245,42 @@ sub view : Local {
     my $p = $c->request->parameters;
     my $id_topic = $p->{id} || $p->{action};
     
-    my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
-    $c->stash->{title} = $topic->title;
-    $c->stash->{created_on} = $topic->created_on;
-    $c->stash->{created_by} = $topic->created_by;
-    $c->stash->{deadline} = $topic->created_on;  # TODO
-    $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
-    $c->stash->{description} = $topic->description;
-    #my $category = $topic->categories->first;
-    #$c->stash->{category} = $category->name;
-    $c->stash->{category} = $topic->categories->name;
-    #$c->stash->{category_color} = try { $category->color} catch { '#444' };
-    $c->stash->{category_color} = try { $topic->categories->color} catch { '#444' };
-    $c->stash->{forms} = [
-        #map { "/forms/$_" } split /,/,$category->forms
-        map { "/forms/$_" } split /,/,$topic->categories->forms
-    ];
-    $c->stash->{id} = $id_topic;
-    $c->stash->{events} = events_by_mid( $id_topic );
-    $c->stash->{swEdit} = $p->{swEdit};
-    $self->list_posts( $c );  # get comments into stash
+    if($id_topic){
+        my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+        $c->stash->{title} = $topic->title;
+        $c->stash->{created_on} = $topic->created_on;
+        $c->stash->{created_by} = $topic->created_by;
+        $c->stash->{deadline} = $topic->created_on;  # TODO
+        $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
+        $c->stash->{description} = $topic->description;
+        #my $category = $topic->categories->first;
+        #$c->stash->{category} = $category->name;
+        $c->stash->{category} = $topic->categories->name;
+        #$c->stash->{category_color} = try { $category->color} catch { '#444' };
+        $c->stash->{category_color} = try { $topic->categories->color} catch { '#444' };
+        $c->stash->{forms} = [
+            #map { "/forms/$_" } split /,/,$category->forms
+            map { "/forms/$_" } split /,/,$topic->categories->forms
+        ];
+        $c->stash->{id} = $id_topic;
+        $c->stash->{events} = events_by_mid( $id_topic );
+        $c->stash->{swEdit} = $p->{swEdit};
+        $self->list_posts( $c );  # get comments into stash
+    }else{
+        $c->stash->{title} = '';
+        $c->stash->{created_on} = '';
+        $c->stash->{created_by} = '';
+        $c->stash->{deadline} = '';  # TODO
+        $c->stash->{status} = '';
+        $c->stash->{description} = '';        
+        $c->stash->{category} = $p->{categoryId};
+        $c->stash->{category_color} = '#444';
+        $c->stash->{forms} = '';
+        $c->stash->{id} = '';
+        $c->stash->{swEdit} = $p->{swEdit};
+        $c->stash->{events} = '';
+        $c->stash->{comments} = '';
+    }
 
     if( $p->{html} ) {
         $c->stash->{template} = '/comp/topic/topic_msg.html';
@@ -999,7 +1015,7 @@ sub list_admin_category : Local {
     my $statuses;
     my $swStatus = 0;
 
-    ##TODO controlar cuando cambia y vuelve a la misma categoria inicial, para poner el workflow correspondiente.
+
     if ($p->{change_categoryId}){
         if ($p->{statusId}){
             $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{change_categoryId}, id_status => $p->{statusId}},

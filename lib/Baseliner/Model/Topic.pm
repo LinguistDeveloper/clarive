@@ -35,7 +35,7 @@ sub update {
                             created_by         => $p->{username},
                             mid                => $mid,
                             id_category        => $p->{category},
-                            id_category_status => $p->{status},
+                            id_category_status => $p->{status_new},
                             id_priority        => $p->{priority},
                             response_time_min  => $rsptime[1],
                             expr_response_time => $rsptime[0],

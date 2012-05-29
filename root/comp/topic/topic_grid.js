@@ -124,7 +124,9 @@
 				text: _('Accept'),
 				type: 'submit',
 				handler: function() {
-
+					var title = combo_category.getRawValue();
+					Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, categoryId: combo_category.getValue() } );
+					win.close();
 				}
 				},
 				{
@@ -647,163 +649,16 @@
         });
     }); 
 
-    //var grid_closed = new Ext.grid.GridPanel({
-    //    title: _('Topics'),
-    //    header: false,
-    //    stripeRows: true,
-    //    autoScroll: true,
-    //    height: 400,
-    //    enableHdMenu: false,        
-    //    store: store_closed,
-    //    viewConfig: {forceFit: true},
-    //    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-    //    loadMask:'true',
-    //    columns: [
-    //        { header: _('Topic'), dataIndex: 'id', width: 39, sortable: true, renderer: render_id },    
-    //        { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
-    //        { header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
-    //        { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
-    //        { header: _('Category'), dataIndex: 'namecategory', width: 50, sortable: true },
-    //        { header: _('Description'), hidden: true, dataIndex: 'description' }
-    //    ],
-    //    autoSizeColumns: true,
-    //    deferredRender:true,    
-    //    bbar: new Ext.PagingToolbar({
-    //        store: store_closed,
-    //        pageSize: ps,
-    //        displayInfo: true,
-    //        displayMsg: _('Rows {0} - {1} of {2}'),
-    //        emptyMsg: _('There are no rows available')
-    //    })
-    //});
-    //
-    //grid_closed.on("rowdblclick", function(grid, rowIndex, e ) {
-    //    var r = grid.getStore().getAt(rowIndex);
-    //    Baseliner.addNewTab('/topic/view?id=' + r.get('id') , _('Topic') + (' #') + r.get('id'),{},config_tabs );
-    //});
-
-
-
-    //var config_tabs = new Ext.TabPanel({
-    //    id: 'tabs_topics_<%$id%>',
-    //    region: 'center',
-    //    layoutOnTabChange:true,
-    //    deferredRender: false,
-    //    defaults: {layout:'fit'},
-    //    tbar:   [ _('Search') + ' ', ' ',
-    //            search_field,
-    //            btn_add,
-    //            btn_edit,
-    //            btn_delete,
-    //            btn_labels,
-    //            '->',
-    //            btn_comment,
-    //            btn_close
-    //    ], 
-    //    items : [
-    //            {
-    //              id: 'open_tab_<%$id%>',
-    //              xtype : 'panel',
-    //              title : _('Open'),
-    //              items: [ grid_topics ]
-    //            },
-    //            {
-    //              id: 'closed_tab_<%$id%>',
-    //              xtype : 'panel',
-    //              title : _('Closed'),
-    //              items: [ grid_closed ]
-    //            }        
-    //    ],
-    //    activeTab : 0,
-    //    listeners: {
-    //        'tabchange': function(tabPanel, tab){
-    //            if(tab.id == 'open_tab_<%$id%>'){
-    //                search_field.store = store_opened;
-    //                var sm = grid_topics.getSelectionModel();
-    //                var sel = sm.getSelected();
-    //                if(sel){
-    //                    btn_add.enable();
-    //                    init_buttons('enable');
-    //                }else{
-    //                    init_buttons('disable');
-    //                    btn_add.enable();
-    //                }
-    //                btn_comment.disable();
-    //            }
-    //            else{
-    //                if(tab.id == 'closed_tab_<%$id%>'){
-    //                    search_field.store = store_closed;
-    //                    init_buttons('disable');
-    //                    btn_add.disable();
-    //                    btn_comment.disable();
-    //                }
-    //                else{
-    //                    init_buttons('disable');
-    //                    btn_add.disable();              
-    //                    btn_comment.enable();
-    //                }
-    //            }
-    //        }
-    //    }       
-    //});
-
    
-    //var check_status_sm = new Ext.grid.CheckboxSelectionModel({
-    //    singleSelect: false,
-    //    sortable: false,
-    //    checkOnly: true
-    //});
-    //
-    //
-    //
-    //var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
-    //    singleSelect: false,
-    //    sortable: false,
-    //    checkOnly: true
-    //});
-    //
-    //
     var render_color = function(value,metadata,rec,rowIndex,colIndex,store) {
         return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
     };  
-    //
-    //var check_labels_sm = new Ext.grid.CheckboxSelectionModel({
-    //    singleSelect: false,
-    //    sortable: false,
-    //    checkOnly: true
-    //});
-    //
-    //
-    //function getStatuses(){
-    //    var statuses_checked = new Array();
-    //    check_status_sm.each(function(rec){
-    //        statuses_checked.push(rec.get('id'));
-    //    });
-    //    return statuses_checked
-    //}   
-    //
-    //function getCategories(){
-    //    var categories_checked = new Array();
-    //    check_categories_sm.each(function(rec){
-    //        categories_checked.push(rec.get('id'));
-    //    });
-    //    return categories_checked
-    //}
-    //
-    //function getLabels(){
-    //    var labels_checked = new Array();
-    //    check_labels_sm.each(function(rec){
-    //        labels_checked.push(rec.get('id'));
-    //    });
-    //    return labels_checked
-    //}
+
     
     function filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked){
         var query_id = '<% $c->stash->{query_id} %>';
         filter_current = {start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         store_topics.load({params: filter_current });
-		//store_topics.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked}});
-        //store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked, categories: categories_checked}});      
     };
 
 
@@ -887,8 +742,7 @@
     });
     
     var query_id = '<% $c->stash->{query_id} %>';
-    store_topics.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>'}});
-    //store_closed.load({params:{start:0 , limit: ps, filter:'C'}});
+    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>'}});
     
     return panel;
 })

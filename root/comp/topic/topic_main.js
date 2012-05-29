@@ -18,8 +18,8 @@
                        success: function(f,a){
                            Baseliner.message(_('Success'), a.result.msg );
                            form2.findField("id").setValue(a.result.topic_id);
-                           //store_opened.load();
-                           win.setTitle(_('Edit topic'));
+                           params.id = a.result.topic_id;
+                           btn_comment.show();
                        },
                        failure: function(f,a){
                            Ext.Msg.show({  
@@ -68,12 +68,17 @@
     var form = new Ext.Panel({ });
     var form_topic;
     var show_form = function(){
-        Baseliner.ajaxEval( '/comp/topic/topic_form.js', { id: params.id }, function(comp) {
+        Baseliner.ajaxEval( '/comp/topic/topic_form.js', { id: params.id, categoryId: params.categoryId }, function(comp) {
             form.removeAll();
             form_topic = comp;
             form.add( comp );
             form.doLayout();
             btn_form_ok.show();
+            if(params.id){
+                btn_comment.show();
+            }else{
+                btn_comment.hide();
+            }
             //btn_form_reset.show();
         });
         cardpanel.getLayout().setActiveItem( 1 );
@@ -182,6 +187,7 @@
         cls: 'x-btn-icon-text',
         //disabled: true,
         handler: function() {
+            alert(params.id);
             Baseliner.Topic.comment_edit( params.id );
         }
     });
@@ -233,7 +239,7 @@
         items: [ detail, form ]
     });
     var detail_reload = function(){
-        detail.load({ url: '/topic/view', params: { id: params.id, html: 1 }, scripts: true, callback: function(x){ 
+        detail.load({ url: '/topic/view', params: { id: params.id, html: 1, categoryId: params.categoryId }, scripts: true, callback: function(x){ 
             // finished loading HTML
         }});
         detail.body.setStyle('overflow', 'auto');
