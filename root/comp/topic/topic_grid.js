@@ -706,9 +706,13 @@
 		root: tree_root
     });
 
-	//tree_filters.on('click', function(node, event){
-	//	//alert('pasa');
-	//});
+	tree_filters.on('click', function(node, event){
+		if(node.parentNode.attributes.id == 'V'){
+			//var filter = Ext.util.JSON.decode( node.attributes.filter );
+			//alert(filter);
+			store_topics.load({params: Ext.util.JSON.decode( node.attributes.filter ) });
+		};
+	});
 	
 	tree_filters.on('checkchange', function(node, checked) {
 		loadfilters();

@@ -879,12 +879,49 @@ sub filters_list : Local {
     #my $id_project = $c->req->params->{id_project} ;
     #my $parent_checked = $c->req->params->{parent_checked} || 0 ;
     
-    
-    
     my @tree;
-    my @labels; 
     my $row;
     my $i=0;
+    
+    my @views;
+    $row = $c->model('Baseliner::BaliTopicView')->search();
+    
+     if($row){
+        while( my $r = $row->next ) {
+            push @views, {
+                id  => $i++,
+                idfilter      => $r->id,
+                text    => $r->name,
+                filter  => $r->filter_json,
+                cls     => 'forum',
+                iconCls => 'icon-forum',
+                leaf    => 'true'
+            };	
+        }  
+    }   
+    
+    #foreach my $view ('Peticiones', 'Urgentes', 'Mis topicos'){
+    #    push @views, {
+    #        id  => $i++,
+    #        idfilter      => 1,
+    #        text    => $view,
+    #        filter  => $
+    #        cls     => 'forum',
+    #        iconCls => 'icon-forum',
+    #        leaf    => 'true'
+    #    };	 
+    #}
+ 
+    push @tree, {
+        id          => 'V',
+        text        => 'views',
+        cls         => 'forum-ct',
+        iconCls     => 'forum-parent',
+        children    => \@views
+    };   
+    
+    my @labels; 
+
     $row = $c->model('Baseliner::BaliLabel')->search();
     
     if($row){
@@ -894,7 +931,7 @@ sub filters_list : Local {
                 idfilter      => $r->id,
                 text    => $r->name,
                 cls     => 'forum',
-                iconCls => 'icon-forum',
+                iconCls => 'icon-no',
                 checked => \0,
                 leaf    => 'true'
             };	
@@ -920,7 +957,7 @@ sub filters_list : Local {
                     idfilter      => $r->id,
                     text    => $r->name,
                     cls     => 'forum',
-                    iconCls => 'icon-forum',
+                    iconCls => 'icon-no',
                     checked => \0,
                     leaf    => 'true'
                 };
@@ -948,7 +985,7 @@ sub filters_list : Local {
                     idfilter      => $r->id,
                     text    => $r->name,
                     cls     => 'forum',
-                    iconCls => 'icon-forum',
+                    iconCls => 'icon-no',
                     checked => \0,
                     leaf    => 'true'
                 };
@@ -976,7 +1013,7 @@ sub filters_list : Local {
                 idfilter      => $r->id,
                 text    => $r->name,
                 cls     => 'forum',
-                iconCls => 'icon-forum',
+                iconCls => 'icon-no',
                 checked => \0,
                 leaf    => 'true'
             };
@@ -1001,6 +1038,7 @@ sub view_filter : Local {
     my ($self,$c, $action) = @_;
     my $name = $c->req->params->{name};
     my $filter = $c->req->params->{filter};
+    
     try {
         if( $action eq 'new' ) {
         }
