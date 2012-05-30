@@ -280,7 +280,7 @@ sub update_category : Local {
             try{
                 my $row = $c->model('Baseliner::BaliTopicCategories')->search({name => $p->{name}})->first;
                 if(!$row){
-                    my $category = $c->model('Baseliner::BaliTopicCategories')->create({name  => $p->{name}, description=> $p->{description}});
+                    my $category = $c->model('Baseliner::BaliTopicCategories')->create({name  => $p->{name}, description=> $p->{description} ? $p->{description}:''});
                     
                     if($idsstatus){
                         foreach my $id_status (_array $idsstatus){

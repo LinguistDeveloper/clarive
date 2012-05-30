@@ -89,7 +89,6 @@ sub update {
         } ## end when ( 'update' )
         when ( 'delete' ) {
             my $id_topic = $p->{id};
-
             try {
 
                 my $row = Baseliner->model( 'Baseliner::BaliTopic' )->find( $id_topic );

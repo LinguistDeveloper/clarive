@@ -18,11 +18,21 @@
                    form2.submit({
                        params: {action: action},
                        success: function(f,a){
-                           Baseliner.message(_('Success'), a.result.msg );
-                           form2.findField("id").setValue(a.result.topic_id);
-                           params.id = a.result.topic_id;
-                           btn_comment.show();
-                           view_is_dirty = true;
+                            Baseliner.message(_('Success'), a.result.msg );
+                            
+                            form2.findField("id").setValue(a.result.topic_id);
+                            form2.findField("status").setValue(form2.findField("status_new").getValue());
+                            
+                            var store = form2.findField("status_new").getStore();
+                            store.load({
+                                params:{    'categoryId': form2.findField("category").getValue(),
+                                            'statusId': form2.findField("status_new").getValue(),
+                                            'statusName': form2.findField("status_new").getRawValue()
+                                        }
+                            });  
+                            params.id = a.result.topic_id;
+                            btn_comment.show();
+                            view_is_dirty = true;
                        },
                        failure: function(f,a){
                            Ext.Msg.show({  
