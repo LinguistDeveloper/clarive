@@ -45,6 +45,20 @@ sub update {
                         }
                     );
                 };
+                
+                my @projects = _array( $p->{projects} );
+                if (@projects) {
+                    my $project = Baseliner->model('Baseliner::BaliTopicProject')
+                        ->search({ id_topic => $topic->id } )->delete;
+                    foreach my $id_project (@projects) {
+                        Baseliner->model('Baseliner::BaliTopicProject')->create(
+                            {   id_topic   => $topic->id,
+                                id_project => $id_project
+                            }
+                        );
+                    }
+                }                
+                
                 $id     = $topic->id;
                 $return = _loc( 'Topic added' );
             } ## end try
