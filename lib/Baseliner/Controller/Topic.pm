@@ -881,12 +881,24 @@ sub filters_list : Local {
     
     my @tree;
     my $row;
-    my $i=0;
-    
+    my $i=1;
+ 
     my @views;
+    
+    push @views, {
+        id  => $i++,
+        idfilter      => 1,
+        text    => 'Nuevas y pendientes de validar',
+        filter  => '{"start":0,"limit":100,"query_id":"","labels":[],"categories":[],"statuses":["18","23"],"priorities":[]}',
+        cls     => 'forum',
+        iconCls => 'icon-forum',
+        leaf    => 'true'
+    };	     
+    
+
     $row = $c->model('Baseliner::BaliTopicView')->search();
     
-     if($row){
+    if($row){
         while( my $r = $row->next ) {
             push @views, {
                 id  => $i++,
