@@ -583,7 +583,7 @@ sub get_contents {
                 # _log _dump $topic;
                 my $row_topics =
                     Baseliner->model( 'Baseliner::BaliIssue' )->search( {id => $topic->to_id} )->first;
-                $topics{$topic->to_id} = $row_topics->title;
+                $topics{$topic->to_id} = $row_topics->title if $row_topics && $row_topics->title;
             }
         } ## end while ( my $row = $rs->next)
     
