@@ -92,9 +92,10 @@ sub list : Local {
             
             $labels = $c->model('Baseliner::BaliTopicLabel')->search({id_label => \@labels});
             while( my $label = $labels->next ) {
-                push @temp, grep { $_->{id} =~ $label->id_topic && ! $seen{ $_->{id} }++ } @datas if $label;    
+                push @temp, grep { $_->{id} =~ $label->id_topic && ! $seen{ $_->{id} }++ } @datas if $label;
             }
             @datas = @temp;
+            #_log ">>>>>>>>>>>>>>>>>>: " . _dump @temp;
         }
         
         @temp =();
