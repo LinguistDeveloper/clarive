@@ -261,6 +261,7 @@ sub view : Local {
             map { "/forms/$_" } split /,/,$topic->categories->forms
         ];
         $c->stash->{id} = $id_topic;
+        $c->stash->{ii} = $p->{ii};
         $c->stash->{events} = events_by_mid( $id_topic );
         $c->stash->{swEdit} = $p->{swEdit};
         $self->list_posts( $c );  # get comments into stash
@@ -278,6 +279,7 @@ sub view : Local {
         $c->stash->{swEdit} = $p->{swEdit};
         $c->stash->{events} = '';
         $c->stash->{comments} = '';
+        $c->stash->{ii} = $p->{ii};
     }
 
     if( $p->{html} ) {
