@@ -319,7 +319,6 @@
         frame: false,
         border: false,
         url:'/topic/update',
-        fileUpload: true,
         //itemCls: 'boot',
         bodyStyle:'padding: 10px 0px 0px 15px',
         buttons: [ ],

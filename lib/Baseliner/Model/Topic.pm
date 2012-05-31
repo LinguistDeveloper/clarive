@@ -60,7 +60,7 @@ sub update {
                 }                
                 
                 $id     = $topic->id;
-                $return = _loc( 'Topic added' );
+                $return = 'Topic added';
             } ## end try
             catch {
                 _throw _loc( 'Error adding Topic: %1', shift() );
@@ -95,7 +95,7 @@ sub update {
                 
                 $topic->update();
                 $id     = $id_topic;
-                $return = _loc( 'Topic modified' );
+                $return = 'Topic modified';
             } ## end try
             catch {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -109,7 +109,7 @@ sub update {
                 $row->delete;
 
                 $id     = $id_topic;
-                $return = _loc( 'Topic deleted' );
+                $return = 'Topic deleted';
             } ## end try
             catch {
                 _throw _loc( 'Error deleting topic: %1', shift() );
@@ -123,7 +123,7 @@ sub update {
                 $topic->update();
 
                 $id     = $id_topic;
-                $return = _loc( 'Topic closed' );
+                $return = 'Topic closed'
             } ## end try
             catch {
                 _throw _loc( 'Error closing Topic: %1', shift() );

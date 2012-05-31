@@ -366,3 +366,68 @@ Baseliner.array_field = function( args ) {
     return { data: fdata, grid: fgrid };
 };
 
+Baseliner.isArray = function(obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+};
+
+Baseliner.isFunction = function(obj) {
+};
+
+Baseliner.merge = function() {
+    // copy reference to target object
+    var target = arguments[0] || {}, i = 1, length = arguments.length, deep = true, options;
+
+    // Handle a deep copy situation
+    if ( typeof target === "boolean" ) {
+        deep = target;
+        target = arguments[1] || {};
+        // skip the boolean and the target
+        i = 2;
+    }
+
+    // Handle case when target is a string or something (possible in deep copy)
+    if ( typeof target !== "object" ) 
+        target = {};
+
+    /* if ( typeof target !== "object" && !jQuery.isFunction(target) )
+        target = {};
+    */
+
+    // extend jQuery itself if only one argument is passed
+    if ( length == i ) {
+        target = this;
+        --i;
+    }
+
+    for ( ; i < length; i++ )
+        // Only deal with non-null/undefined values
+        if ( (options = arguments[ i ]) != null )
+                // Extend the base object
+                for ( var name in options ) {
+                        var src = target[ name ], copy = options[ name ];
+
+                        // Prevent never-ending loop
+                        if ( target === copy )
+                                continue;
+                        var is_arr = Baseliner.isArray( copy );
+                        // Recurse if we're merging object values
+                        if ( deep && copy && typeof copy === "object" && ! is_arr && !copy.nodeType )
+                                target[ name ] = Baseliner.merge( deep, 
+                                        // Never move original objects, clone them
+                                        src || ( copy.length != null ? [ ] : { } )
+                                , copy );
+                        else if ( deep && copy && is_arr && !copy.nodeType ) {
+                            if( src === undefined ) src = []; 
+                                target[ name ]= src.concat( copy );
+                        }
+                 
+                        // Don't bring in undefined values
+                        else if ( copy !== undefined )
+                                target[ name ] = copy;
+
+                }
+
+    // Return the modified object
+    return target;
+};
+

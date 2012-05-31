@@ -17,6 +17,9 @@
     var store_topics = new Baseliner.Topic.StoreList({
             listeners: {
                 'beforeload': function( obj, opt ) {
+                    //alert( Ext.util.JSON.encode( opt ) );
+                    if( opt !== undefined && opt.params !== undefined )
+                        filter_current = Baseliner.merge( filter_current, opt.params );
                     //obj.baseParams.filter = 'O';
                     //var labels_checked = getLabels();
                     //obj.baseParams.labels = labels_checked;
@@ -37,8 +40,10 @@
         icon:'/static/images/icons/add.gif',
         cls: 'x-btn-text-icon',
 		text: _('Create view'),
-		disabled: true,
+		disabled: false,
         handler: function(){
+                        //alert('Guardar1111: ' + Ext.util.JSON.encode(  filter_current ));
+                        //alert('Guardar: ' + Ext.util.JSON.encode(  store_topics.baseParams ));
 			add_view();
         }
     });
@@ -157,6 +162,9 @@
 		
 		var combo_category = new Ext.form.ComboBox({
 			mode: 'local',
+            editable: false,
+            autoSelect: true,
+            selectOnFocus: true,
 			forceSelection: true,
 			emptyText: 'select a category',
 			triggerAction: 'all',
@@ -178,9 +186,12 @@
 				text: _('Accept'),
 				type: 'submit',
 				handler: function() {
-					var title = combo_category.getRawValue();
-					Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
-					win.close();
+                    var form = form_view.getForm();
+                    if (form.isValid()) {
+                        var title = combo_category.getRawValue();
+                        Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
+                        win.close();
+                    }
 				}
 				},
 				{
@@ -197,11 +208,13 @@
 		});
 
 		store_category.load();
+        //store_category.on( 'load', function(){ combo_category.select(0) });
 		
 		win = new Ext.Window({
 			title: _(title),
 			width: 550,
 			autoHeight: true,
+            modal: true,
 			items: form_topic
 		});
 		win.show();		
@@ -714,13 +727,14 @@
 		//var views_filters = new Array();
 		var type;
 		var merge_filters = {};
-		var swCreateView = false;
+		var swCreateView = true;
 		selNodes = tree_filters.getChecked();
 		Ext.each(selNodes, function(node){
 			type = node.parentNode.attributes.id;
 			switch (type){
 				//Views
-				case 'V':	Ext.apply(merge_filters, Ext.util.JSON.decode(node.attributes.filter));
+				case 'V':	merge_filters = Baseliner.merge(merge_filters, Ext.util.JSON.decode(node.attributes.filter));
+                            swCreateView = true;
 							break;
 				//Labels
 				case 'L':  	labels_checked.push(node.attributes.idfilter);
@@ -746,15 +760,24 @@
 	
     function filtrar_topics(merge_filters, labels_checked, categories_checked, statuses_checked, priorities_checked){
         var query_id = '<% $c->stash->{query_id} %>';
+        var bp = store_topics.baseParams;
+        var base_params;
+        if( bp !== undefined )
+            base_params= { query: bp.query, start: bp.start, limit: bp.limit, sort: bp.sort, dir: bp.dir };
+		//alert('Base: ' + Ext.util.JSON.encode(base_params));
 		//alert('Filtro merge views: ' + Ext.util.JSON.encode(merge_filters));
-        var filter = {start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', labels: labels_checked.length ? labels_checked : '', categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
+        var filter = {labels: labels_checked.length ? labels_checked : '', categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
 		//eval('var filter={start:0,' + str_labels + '}');
 		//alert('Filtro filter: ' + Ext.util.JSON.encode(filter));
-		Ext.apply(merge_filters, filter);
-		filter_current = merge_filters;
+		merge_filters = Baseliner.merge( merge_filters, filter);
+		//filter_current = merge_filters;
+		filter_current = Baseliner.merge( merge_filters, base_params );
 		//alert('Filtro merge views-filter: ' + Ext.util.JSON.encode(merge_filters));
 		//alert('Filtro final: ' + Ext.util.JSON.encode(merge_filters));
-        store_topics.load({params: filter_current });
+		//alert('Filtro final: ' + Ext.util.JSON.encode(filter_current));
+        store_topics.baseParams = filter_current;
+        store_topics.load();
+        //store_topics.load({params: filter_current });
     };
 
 
