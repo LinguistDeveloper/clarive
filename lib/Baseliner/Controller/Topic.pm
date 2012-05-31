@@ -888,15 +888,15 @@ sub filters_list : Local {
  
     my @views;
     
-    push @views, {
-        id  => $i++,
-        idfilter      => 1,
-        text    => 'Nuevas y pendientes de validar',
-        filter  => '{"start":0,"limit":100,"query_id":"","labels":[],"categories":[],"statuses":["18","23"],"priorities":[]}',
-        cls     => 'forum',
-        iconCls => 'icon-forum',
-        leaf    => 'true'
-    };	     
+    #push @views, {
+    #    id  => $i++,
+    #    idfilter      => 1,
+    #    text    => 'Nuevas y pendientes de validar',
+    #    filter  => '{"start":0,"limit":100,"query_id":"","labels":[],"categories":[],"statuses":["18","23"],"priorities":[]}',
+    #    cls     => 'forum',
+    #    iconCls => 'icon-forum',
+    #    leaf    => 'true'
+    #};	     
     
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
@@ -1051,17 +1051,42 @@ sub filters_list : Local {
 
 sub view_filter : Local {
     my ($self,$c, $action) = @_;
+    my $action = $c->req->params->{action};
     my $name = $c->req->params->{name};
     my $filter = $c->req->params->{filter};
-    
-    try {
-        if( $action eq 'new' ) {
+  
+    given ($action) {
+        when ('add') {
+            try{
+                my $row = $c->model('Baseliner::BaliTopicView')->search({name => $name})->first;
+                if(!$row){
+                    my $view = $c->model('Baseliner::BaliTopicView')->create({name => $name, filter_json => $filter});
+                    $c->stash->{json} = { msg=>_loc('View added'), success=>\1, $name };
+                }
+                else{
+                    $c->stash->{json} = { msg=>_loc('View name already exists, introduce another view name'), failure=>\1 };
+                }
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error adding View: %1', shift()), failure=>\1 }
+            }
         }
-        $c->stash->{json} = { success=>\1, msg=>_loc("Created view %1", $name) };
-    } catch {
-        $c->stash->{json} = { success=>\0, msg=>_loc("Error view %1", shift() ) };
-    };
-    $c->forward('View::JSON');
+        when ('update') {
+
+        }
+        when ('delete') {
+        }
+    }
+    
+    $c->forward('View::JSON');    
+
+    
+    #try {
+    #    $c->stash->{json} = { success=>\1, msg=>_loc("Created view %1", $name) };
+    #} catch {
+    #    $c->stash->{json} = { success=>\0, msg=>_loc("Error view %1", shift() ) };
+    #};
+    #$c->forward('View::JSON');
 
 }
 

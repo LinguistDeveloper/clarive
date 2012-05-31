@@ -35,19 +35,90 @@
     
     var button_create_view = new Ext.Button({
         icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-icon',
+        cls: 'x-btn-text-icon',
+		text: _('Create view'),
+		disabled: true,
         handler: function(){
-            // TODO input view name
-            var filter = Ext.util.JSON.encode( filter_current );
-            Baseliner.ajaxEval( '/topic/view_filter/new', { name: 'view1', view: filter }, function(res) {
-                if( res.success ) {
-                    Baseliner.message( _('View'), res.msg );
-                } else {
-                    Ext.Msg.alert( _('Error'), res.msg );
-                }
-            });
+			add_view();
         }
     });
+	
+	
+	var add_view = function() {
+		var win;
+		
+		var title = 'Create view';
+		
+		var form_view = new Ext.FormPanel({
+			frame: true,
+			url: '/topic/view_filter/new',
+			buttons: [
+				{
+					text: _('Accept'),
+					type: 'submit',
+					handler: function() {
+						var form = form_view.getForm();
+						if (form.isValid()) {
+							form.submit({
+								params: {action: 'add', filter: Ext.util.JSON.encode( filter_current )},
+								success: function(f,a){
+									Baseliner.message(_('Success'), a.result.msg );
+									tree_filters.getLoader().load(tree_root);
+									loadfilters();
+									win.close();
+								},
+								failure: function(f,a){
+									Ext.Msg.show({  
+									title: _('Information'), 
+									msg: a.result.msg , 
+									buttons: Ext.Msg.OK, 
+									icon: Ext.Msg.INFO
+									});                      
+								}
+						   });
+						}					
+						//var filter = Ext.util.JSON.encode( filter_current );
+						//var ff;
+						//ff = form_topic.getForm();
+						//var name = ff.findField("txtcategory_old").getValue();
+						//Baseliner.ajaxEval( '/topic/view_filter/new', { name: 'view1', view: filter }, function(res) {
+						//	if( res.success ) {
+						//		Baseliner.message( _('View'), res.msg );
+						//	} else {
+						//		Ext.Msg.alert( _('Error'), res.msg );
+						//	}
+						//});
+						//win.close();
+					}
+				},
+				{
+				text: _('Close'),
+				handler: function(){ 
+						win.close();
+					}
+				}
+			],
+			defaults: { width: 400 },
+			items: [
+			    {
+					xtype:'textfield',
+					fieldLabel: _('Name view'),
+					name: 'name',
+					width: '100%',
+					allowBlank: false
+				}
+			]
+		});
+		
+		win = new Ext.Window({
+			title: _(title),
+			width: 550,
+			autoHeight: true,
+			items: form_view
+		});
+		win.show();		
+	};
+	
 
     //var btn_add = new Ext.Toolbar.Button({
     //    text: _('New'),
@@ -81,7 +152,7 @@
 	});
 	
 	
-	var add_topic = function(rec) {
+	var add_topic = function() {
 		var win;
 		
 		var combo_category = new Ext.form.ComboBox({
@@ -95,25 +166,8 @@
 			displayField: 'name',
 			valueField: 'id',
 			store: store_category,
-			allowBlank: false,
-			listeners:{
-				//'select': function(cmd, rec, idx){
-				//	combo_status.clearValue();
-				//	var ff;
-				//	ff = form_topic.getForm();
-				//	if(ff.findField("txtcategory_old").getValue() == this.getValue()){
-				//		combo_status.store.load({
-				//		   params:{ 'categoryId': this.getValue(), 'statusId': ff.findField("status").getValue() }
-				//	   });                   
-				//	}else{
-				//		combo_status.store.load({
-				//			params:{ 'change_categoryId': this.getValue(), 'statusId': ff.findField("status").getValue() }
-				//		});                    
-				//	}
-				//}
-			}
+			allowBlank: false
 		});
-
 
 		var title = 'Create topic';
 		
@@ -661,6 +715,7 @@
 		var categories_checked = new Array();
 		var priorities_checked = new Array();
 		var type;
+		var swCreateView = false;
 		selNodes = tree_filters.getChecked();
 		Ext.each(selNodes, function(node){
 			type = node.parentNode.attributes.id;
@@ -678,7 +733,9 @@
 				case 'P':   priorities_checked.push(node.attributes.idfilter);
 							break;
 			}
+			swCreateView = true;
 		});
+		swCreateView ? button_create_view.enable(): button_create_view.disable();
 		filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked);
 	}
 	
