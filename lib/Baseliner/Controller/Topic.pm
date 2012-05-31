@@ -85,6 +85,17 @@ sub list : Local {
         #Filtramos por lo que han introducido en el campo de búsqueda.
         @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
         
+        my $Hoy = DateTime->now->ymd;
+        if($p->{hoy} eq 'true'){
+            foreach my $data (@datas){
+                my $created_on = parse_date( 'dd/mm/Y', $data->{created_on})->ymd;
+                push @temp, $data if $Hoy eq $created_on;
+            }
+            @datas = @temp;
+        }
+        
+        @temp =();
+        
         if($p->{labels}){
             foreach my $label (_array $p->{labels}){
                 push @labels, $label;
@@ -95,7 +106,6 @@ sub list : Local {
                 push @temp, grep { $_->{id} =~ $label->id_topic && ! $seen{ $_->{id} }++ } @datas if $label;
             }
             @datas = @temp;
-            #_log ">>>>>>>>>>>>>>>>>>: " . _dump @temp;
         }
         
         @temp =();
@@ -886,16 +896,18 @@ sub filters_list : Local {
  
     my @views;
     
-    #push @views, {
-    #    id  => $i++,
-    #    idfilter      => 1,
-    #    text    => 'Nuevas y pendientes de validar',
-    #    filter  => '{"start":0,"limit":100,"query_id":"","labels":[],"categories":[],"statuses":["18","23"],"priorities":[]}',
-    #    cls     => 'forum',
-    #    iconCls => 'icon-forum',
-    #    leaf    => 'true'
-    #};	     
-    
+    ####Defaults views################################################################
+    push @views, {
+        id  => $i++,
+        idfilter      => 1,
+        text    => 'Hoy',
+        filter  => '{"hoy":true}',
+        cls     => 'forum',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true'
+    };	     
+    ##################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
     
@@ -907,24 +919,13 @@ sub filters_list : Local {
                 text    => $r->name,
                 filter  => $r->filter_json,
                 cls     => 'forum',
-                iconCls => 'icon-forum',
+                iconCls => 'icon-no',
+                checked => \0,
                 leaf    => 'true'
             };	
         }  
     }   
     
-    #foreach my $view ('Peticiones', 'Urgentes', 'Mis topicos'){
-    #    push @views, {
-    #        id  => $i++,
-    #        idfilter      => 1,
-    #        text    => $view,
-    #        filter  => $
-    #        cls     => 'forum',
-    #        iconCls => 'icon-forum',
-    #        leaf    => 'true'
-    #    };	 
-    #}
- 
     push @tree, {
         id          => 'V',
         text        => 'views',

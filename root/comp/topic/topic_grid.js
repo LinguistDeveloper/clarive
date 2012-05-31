@@ -360,10 +360,7 @@
                     function(response) {
                         if ( response.success ) {
                             Baseliner.message( _('Success'), response.msg );
-                            //var labels_checked = getLabels();
-                            //filtrar_topics(labels_checked);
 							loadfilters();
-                            
                         } else {
                             Baseliner.message( _('ERROR'), response.msg );
                         }
@@ -714,34 +711,49 @@
 		var statuses_checked = new Array();
 		var categories_checked = new Array();
 		var priorities_checked = new Array();
+		//var views_filters = new Array();
 		var type;
+		var merge_filters = {};
 		var swCreateView = false;
 		selNodes = tree_filters.getChecked();
 		Ext.each(selNodes, function(node){
 			type = node.parentNode.attributes.id;
 			switch (type){
+				//Views
+				case 'V':	Ext.apply(merge_filters, Ext.util.JSON.decode(node.attributes.filter));
+							break;
 				//Labels
 				case 'L':  	labels_checked.push(node.attributes.idfilter);
+							swCreateView = true;
 							break;
 				//Statuses
 				case 'S':   statuses_checked.push(node.attributes.idfilter);
+							swCreateView = true;
 							break;
 				//Categories
 				case 'C':   categories_checked.push(node.attributes.idfilter);
+							swCreateView = true;
 							break;
 				//Priorities
 				case 'P':   priorities_checked.push(node.attributes.idfilter);
+							swCreateView = true;
 							break;
 			}
-			swCreateView = true;
 		});
 		swCreateView ? button_create_view.enable(): button_create_view.disable();
-		filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked);
+		filtrar_topics(merge_filters, labels_checked, categories_checked, statuses_checked, priorities_checked);
 	}
 	
-    function filtrar_topics(labels_checked, categories_checked, statuses_checked, priorities_checked){
+    function filtrar_topics(merge_filters, labels_checked, categories_checked, statuses_checked, priorities_checked){
         var query_id = '<% $c->stash->{query_id} %>';
-        filter_current = {start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
+		//alert('Filtro merge views: ' + Ext.util.JSON.encode(merge_filters));
+        var filter = {start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', labels: labels_checked.length ? labels_checked : '', categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
+		//eval('var filter={start:0,' + str_labels + '}');
+		//alert('Filtro filter: ' + Ext.util.JSON.encode(filter));
+		Ext.apply(merge_filters, filter);
+		filter_current = merge_filters;
+		//alert('Filtro merge views-filter: ' + Ext.util.JSON.encode(merge_filters));
+		//alert('Filtro final: ' + Ext.util.JSON.encode(merge_filters));
         store_topics.load({params: filter_current });
     };
 
@@ -764,14 +776,20 @@
     });
 
 	tree_filters.on('click', function(node, event){
-		if(node.parentNode.attributes.id == 'V'){
-			//var filter = Ext.util.JSON.decode( node.attributes.filter );
-			//alert(filter);
-			store_topics.load({params: Ext.util.JSON.decode( node.attributes.filter ) });
-		};
+		//if(node.parentNode.attributes.id == 'V'){
+		//	var filter = Ext.util.JSON.decode( node.attributes.filter );
+		//	var filter = node.attributes.filter;
+		//	alert(filter);
+		//	//store_topics.load({params: Ext.util.JSON.decode( node.attributes.filter ) });
+		//};
 	});
 	
 	tree_filters.on('checkchange', function(node, checked) {
+		//if(node.parentNode.attributes.id == 'V'){
+		//	var filter = Ext.util.JSON.decode( node.attributes.filter );
+		//	Ext.apply(filter, filter_current);
+		//	var merge = Ext.util.JSON.encode(filter);			
+		//};		
 		loadfilters();
 	});	
 		
