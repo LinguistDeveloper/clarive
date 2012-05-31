@@ -1,54 +1,55 @@
 (function(rec){
     var form_is_loaded = false;
     // loads data into the form:
-    var load_form = function(rec) {
-        if( rec !== undefined ){
-            var status = rec.status; 
-
-            alert( 'noo');
-            store_admin_category.baseParams = { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name };
-            //store_admin_category.load({
-             //   params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
-            //});
-            var ff = form_topic.getForm();
-            var store = combo_category.getStore();
-            var category = rec.category;
-            //store.load();
-            var priority = rec.priority;
-            //store_priority.load();
-
-            rec.category = rec.category_name;
-            rec.status_new   = rec.status_name;
-            rec.priority   = rec.priority_name;
-
-            /* /* /* /* /* /* /* /* var cat_rec = Ext.data.Record.create(['category', 'category_name']);
-            store.insert(0, new cat_rec({ category: rec.category, category_name: rec.category_name  }));
-            combo_category.setValue( rec.category ); */
-            
-            ff.loadRecord({ data: rec });// loadRecord needs the actual record in "data: "
-            load_txt_values_priority({ data: rec });
-
-            ff.findField("txtcategory_old").setValue(rec.category);
-            var projects = '';
-            if(rec.projects){
-                for(i=0;i<rec.projects.length;i++){
-                    projects = projects ? projects + '\n' + rec.projects[i].project: rec.projects[i].project;
-                }
-                ff.findField("txtprojects").setValue(projects);
-            }         
-            //title = 'Edit topic';
-        }
-    };
-       
-    var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
+    //var load_form = function(rec) {
+    //    if( rec !== undefined ){
+    //        var status = rec.status; 
+    //
+    //        alert( 'noo');
+    //        store_admin_category.baseParams = { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name };
+    //        //store_admin_category.load({
+    //         //   params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
+    //        //});
+    //        var ff = form_topic.getForm();
+    //        var store = combo_category.getStore();
+    //        var category = rec.category;
+    //        //store.load();
+    //        var priority = rec.priority;
+    //        //store_priority.load();
+    //
+    //        rec.category = rec.category_name;
+    //        rec.status_new   = rec.status_name;
+    //        rec.priority   = rec.priority_name;
+    //
+    //        /* /* /* /* /* /* /* /* var cat_rec = Ext.data.Record.create(['category', 'category_name']);
+    //        store.insert(0, new cat_rec({ category: rec.category, category_name: rec.category_name  }));
+    //        combo_category.setValue( rec.category ); */
+    //        
+    //        ff.loadRecord({ data: rec });// loadRecord needs the actual record in "data: "
+    //        load_txt_values_priority({ data: rec });
+    //
+    //        ff.findField("txtcategory_old").setValue(rec.category);
+    //        var projects = '';
+    //        if(rec.projects){
+    //            for(i=0;i<rec.projects.length;i++){
+    //                projects = projects ? projects + '\n' + rec.projects[i].project: rec.projects[i].project;
+    //            }
+    //            ff.findField("txtprojects").setValue(projects);
+    //        }         
+    //        //title = 'Edit topic';
+    //    }
+    //};
+    //   
+    //var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
     
     //var title = 'Create topic';
 
     var store_category = new Baseliner.Topic.StoreCategory({
             fields: ['category', 'category_name' ]  
     });
+    //alert(rec.status);
     var store_admin_category = new Baseliner.Topic.StoreCategoryStatus({
-        baseParams: { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name, change_categoryId: rec.new_category_id },
+        //baseParams: { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name, change_categoryId: rec.new_category_id },
         url:'/topic/list_admin_category'
     });
     var store_priority = new Baseliner.Topic.StorePriority();
@@ -56,7 +57,7 @@
     
     var combo_category = new Ext.form.ComboBox({
         value: rec.category_name,
-        mode: 'remote',
+        mode: 'local',
         forceSelection: true,
         emptyText: 'select a category',
         triggerAction: 'all',
@@ -87,7 +88,7 @@
     
     var combo_status = new Ext.form.ComboBox({
         value: rec.status_name,
-        mode: 'remote',
+        mode: 'local',
         forceSelection: true,
         autoSelect: true,
         triggerAction: 'all',
@@ -168,137 +169,137 @@
         }           
     });
     
-    var show_projects = function(rec) {
-        var win_project;
-        var title = 'Projects';
-
-        function getProjects(names_checked){
-            var projects_checked = new Array();
-            check_ast_projects_sm.each(function(rec){
-                projects_checked.push(rec.get('id_project'));
-                names_checked.push(rec.get('project'));
-            });
-            return projects_checked
-        }
-
-
-        var btn_cerrar_projects = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/door_out.png',
-            cls: 'x-btn-text-icon',
-            text: _('Close'),
-            handler: function() {
-                win_project.close();
-            }
-        });
-        
-        var btn_grabar_projects = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/database_save.png',
-            cls: 'x-btn-text-icon',
-            text: _('Save'),
-            handler: function(){
-                var names_checked = new Array();
-                var projects_checked = getProjects(names_checked);
-                var form = form_topic.getForm();
-                var projects = '';
-                if(names_checked){
-                    for(i=0;i<names_checked.length;i++){
-                        projects = projects ? projects + ',' + names_checked[i]: names_checked[i];
-                    }
-                    form.findField("txtprojects").setValue(projects);                     
-                }
-                
-                Baseliner.ajaxEval( '/topic/unassign_projects',{ idtopic: rec.id, idsproject: projects_checked },
-                    function(response) {
-                        if ( response.success ) {
-                            Baseliner.message( _('Success'), response.msg );
-                            form.findField("id").setValue(rec.id);
-                            Baseliner.ajaxEval( '/topic/json', { id: rec.id }, function(data) {
-                                load_form( data );
-                            });                          
-                        } else {
-                            Baseliner.message( _('ERROR'), response.msg );
-                        }
-                    }
-                );
-            }
-        });
-
-        var check_ast_projects_sm = new Ext.grid.CheckboxSelectionModel({
-            singleSelect: false,
-            sortable: false,
-            checkOnly: true
-        });
-    
-        
-        var grid_ast_projects = new Ext.grid.GridPanel({
-            title : _('Projects'),
-            sm: check_ast_projects_sm,
-            autoScroll: true,
-            header: false,
-            stripeRows: true,
-            autoScroll: true,
-            height: 300,
-            enableHdMenu: false,
-            store: store_project,
-            viewConfig: {forceFit: true},
-            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
-            columns: [
-                { hidden: true, dataIndex:'id_project' },
-                check_ast_projects_sm,
-                { header: _('Project'), dataIndex: 'project', sortable: false }
-            ],
-            autoSizeColumns: true,
-            deferredRender:false,
-            bbar: [
-                btn_grabar_projects,
-                btn_cerrar_projects
-            ],
-            listeners: {        
-                viewready: function() {
-                    var me = this;
-                    var myDatas = [];
-                    var recs = [];
-                    if(rec.projects){
-                        for(i=0;i<rec.projects.length;i++){
-                            var myData = new Array();
-                            myData[0] = rec.projects[i].id_project;
-                            myData[1] = rec.projects[i].project;
-                            myDatas.push(myData);
-                            recs.push(i);
-                        }
-                    }
-                    store_project.loadData(myDatas);
-                    me.getSelectionModel().selectRows(recs);
-                }
-            }       
-        });
-        
-        //Ext.util.Observable.capture(grid_ast_labels, console.info);
-    
-        win_project = new Ext.Window({
-            title: _(title),
-            width: 400,
-            modal: true,
-            autoHeight: true,
-            items: grid_ast_projects
-        });
-        
-        win_project.show();
-    };
-    
-    var btn_unassign_project = new Ext.Toolbar.Button({
-        text: _('projects'),
-        handler: function() {
-        }
-    });
-    
-    var btn_unassign_roles = new Ext.Toolbar.Button({
-        text: _('roles'),
-        handler: function() {
-            show_projects(rec);
-        }
-    });         
+    //var show_projects = function(rec) {
+    //    var win_project;
+    //    var title = 'Projects';
+    //
+    //    function getProjects(names_checked){
+    //        var projects_checked = new Array();
+    //        check_ast_projects_sm.each(function(rec){
+    //            projects_checked.push(rec.get('id_project'));
+    //            names_checked.push(rec.get('project'));
+    //        });
+    //        return projects_checked
+    //    }
+    //
+    //
+    //    var btn_cerrar_projects = new Ext.Toolbar.Button({
+    //        icon:'/static/images/icons/door_out.png',
+    //        cls: 'x-btn-text-icon',
+    //        text: _('Close'),
+    //        handler: function() {
+    //            win_project.close();
+    //        }
+    //    });
+    //    
+    //    var btn_grabar_projects = new Ext.Toolbar.Button({
+    //        icon:'/static/images/icons/database_save.png',
+    //        cls: 'x-btn-text-icon',
+    //        text: _('Save'),
+    //        handler: function(){
+    //            var names_checked = new Array();
+    //            var projects_checked = getProjects(names_checked);
+    //            var form = form_topic.getForm();
+    //            var projects = '';
+    //            if(names_checked){
+    //                for(i=0;i<names_checked.length;i++){
+    //                    projects = projects ? projects + ',' + names_checked[i]: names_checked[i];
+    //                }
+    //                form.findField("txtprojects").setValue(projects);                     
+    //            }
+    //            
+    //            Baseliner.ajaxEval( '/topic/unassign_projects',{ idtopic: rec.id, idsproject: projects_checked },
+    //                function(response) {
+    //                    if ( response.success ) {
+    //                        Baseliner.message( _('Success'), response.msg );
+    //                        form.findField("id").setValue(rec.id);
+    //                        Baseliner.ajaxEval( '/topic/json', { id: rec.id }, function(data) {
+    //                            load_form( data );
+    //                        });                          
+    //                    } else {
+    //                        Baseliner.message( _('ERROR'), response.msg );
+    //                    }
+    //                }
+    //            );
+    //        }
+    //    });
+    //
+    //    var check_ast_projects_sm = new Ext.grid.CheckboxSelectionModel({
+    //        singleSelect: false,
+    //        sortable: false,
+    //        checkOnly: true
+    //    });
+    //
+    //    
+    //    var grid_ast_projects = new Ext.grid.GridPanel({
+    //        title : _('Projects'),
+    //        sm: check_ast_projects_sm,
+    //        autoScroll: true,
+    //        header: false,
+    //        stripeRows: true,
+    //        autoScroll: true,
+    //        height: 300,
+    //        enableHdMenu: false,
+    //        store: store_project,
+    //        viewConfig: {forceFit: true},
+    //        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+    //        loadMask:'true',
+    //        columns: [
+    //            { hidden: true, dataIndex:'id_project' },
+    //            check_ast_projects_sm,
+    //            { header: _('Project'), dataIndex: 'project', sortable: false }
+    //        ],
+    //        autoSizeColumns: true,
+    //        deferredRender:false,
+    //        bbar: [
+    //            btn_grabar_projects,
+    //            btn_cerrar_projects
+    //        ],
+    //        listeners: {        
+    //            viewready: function() {
+    //                var me = this;
+    //                var myDatas = [];
+    //                var recs = [];
+    //                if(rec.projects){
+    //                    for(i=0;i<rec.projects.length;i++){
+    //                        var myData = new Array();
+    //                        myData[0] = rec.projects[i].id_project;
+    //                        myData[1] = rec.projects[i].project;
+    //                        myDatas.push(myData);
+    //                        recs.push(i);
+    //                    }
+    //                }
+    //                store_project.loadData(myDatas);
+    //                me.getSelectionModel().selectRows(recs);
+    //            }
+    //        }       
+    //    });
+    //    
+    //    //Ext.util.Observable.capture(grid_ast_labels, console.info);
+    //
+    //    win_project = new Ext.Window({
+    //        title: _(title),
+    //        width: 400,
+    //        modal: true,
+    //        autoHeight: true,
+    //        items: grid_ast_projects
+    //    });
+    //    
+    //    win_project.show();
+    //};
+    //
+    //var btn_unassign_project = new Ext.Toolbar.Button({
+    //    text: _('projects'),
+    //    handler: function() {
+    //    }
+    //});
+    //
+    //var btn_unassign_roles = new Ext.Toolbar.Button({
+    //    text: _('roles'),
+    //    handler: function() {
+    //        show_projects(rec);
+    //    }
+    //});         
 
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id', autoLoad: true });
     var project_box = new Baseliner.model.Projects({
@@ -330,7 +331,7 @@
                   autoHeight : true,
                   items: [
             
-            { xtype: 'hidden', name: 'id', value: -1 },
+            { xtype: 'hidden', name: 'id', value: rec.id },
             {
                 xtype:'textfield',
                 fieldLabel: _('Title'),
@@ -343,7 +344,7 @@
             },
             { xtype: 'hidden', name: 'txtcategory_old' },
             combo_category,
-            { xtype: 'hidden', name: 'status' },
+            { xtype: 'hidden', name: 'status', value: rec.status },
             combo_status,
             combo_priority,
             {
@@ -388,13 +389,26 @@
            combo_category.setValue(rec.new_category_id);
         });
         store_category.load();
-        store_admin_category.on('load', function(){
-           combo_status.setValue( store_admin_category.getAt(0).data.id );
-        });
+        //store_admin_category.on('load', function(){
+        //   combo_status.setValue( store_admin_category.getAt(0).data.id );
+        //});
         store_admin_category.load({
                 params:{ 'change_categoryId': rec.new_category_id }
         });            
         store_priority.load();
+        var form2 = form_topic.getForm();
+        form2.findField("id").setValue(-1);
+    }else {
+        store_category.on("load", function() {
+            combo_category.setValue(rec.category);
+        });
+        store_category.load();
+        store_admin_category.load({
+                params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
+        });        
+        
+        
+        
     }
 
     pb_panel.on( 'afterrender', function(){

@@ -92,9 +92,10 @@ sub list : Local {
             
             $labels = $c->model('Baseliner::BaliTopicLabel')->search({id_label => \@labels});
             while( my $label = $labels->next ) {
-                push @temp, grep { $_->{id} =~ $label->id_topic && ! $seen{ $_->{id} }++ } @datas if $label;    
+                push @temp, grep { $_->{id} =~ $label->id_topic && ! $seen{ $_->{id} }++ } @datas if $label;
             }
             @datas = @temp;
+            #_log ">>>>>>>>>>>>>>>>>>: " . _dump @temp;
         }
         
         @temp =();
@@ -881,12 +882,61 @@ sub filters_list : Local {
     #my $id_project = $c->req->params->{id_project} ;
     #my $parent_checked = $c->req->params->{parent_checked} || 0 ;
     
-    
-    
     my @tree;
-    my @labels; 
     my $row;
-    my $i=0;
+    my $i=1;
+ 
+    my @views;
+    
+    push @views, {
+        id  => $i++,
+        idfilter      => 1,
+        text    => 'Nuevas y pendientes de validar',
+        filter  => '{"start":0,"limit":100,"query_id":"","labels":[],"categories":[],"statuses":["18","23"],"priorities":[]}',
+        cls     => 'forum',
+        iconCls => 'icon-forum',
+        leaf    => 'true'
+    };	     
+    
+
+    $row = $c->model('Baseliner::BaliTopicView')->search();
+    
+    if($row){
+        while( my $r = $row->next ) {
+            push @views, {
+                id  => $i++,
+                idfilter      => $r->id,
+                text    => $r->name,
+                filter  => $r->filter_json,
+                cls     => 'forum',
+                iconCls => 'icon-forum',
+                leaf    => 'true'
+            };	
+        }  
+    }   
+    
+    #foreach my $view ('Peticiones', 'Urgentes', 'Mis topicos'){
+    #    push @views, {
+    #        id  => $i++,
+    #        idfilter      => 1,
+    #        text    => $view,
+    #        filter  => $
+    #        cls     => 'forum',
+    #        iconCls => 'icon-forum',
+    #        leaf    => 'true'
+    #    };	 
+    #}
+ 
+    push @tree, {
+        id          => 'V',
+        text        => 'views',
+        cls         => 'forum-ct',
+        iconCls     => 'forum-parent',
+        children    => \@views
+    };   
+    
+    my @labels; 
+
     $row = $c->model('Baseliner::BaliLabel')->search();
     
     if($row){
@@ -896,7 +946,7 @@ sub filters_list : Local {
                 idfilter      => $r->id,
                 text    => $r->name,
                 cls     => 'forum',
-                iconCls => 'icon-forum',
+                iconCls => 'icon-no',
                 checked => \0,
                 leaf    => 'true'
             };	
@@ -922,7 +972,7 @@ sub filters_list : Local {
                     idfilter      => $r->id,
                     text    => $r->name,
                     cls     => 'forum',
-                    iconCls => 'icon-forum',
+                    iconCls => 'icon-no',
                     checked => \0,
                     leaf    => 'true'
                 };
@@ -950,7 +1000,7 @@ sub filters_list : Local {
                     idfilter      => $r->id,
                     text    => $r->name,
                     cls     => 'forum',
-                    iconCls => 'icon-forum',
+                    iconCls => 'icon-no',
                     checked => \0,
                     leaf    => 'true'
                 };
@@ -978,7 +1028,7 @@ sub filters_list : Local {
                 idfilter      => $r->id,
                 text    => $r->name,
                 cls     => 'forum',
-                iconCls => 'icon-forum',
+                iconCls => 'icon-no',
                 checked => \0,
                 leaf    => 'true'
             };
@@ -1003,6 +1053,7 @@ sub view_filter : Local {
     my ($self,$c, $action) = @_;
     my $name = $c->req->params->{name};
     my $filter = $c->req->params->{filter};
+    
     try {
         if( $action eq 'new' ) {
         }

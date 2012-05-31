@@ -4394,7 +4394,7 @@
 }
 
 .x-tree-node div.forum-ct{
-    background:#eee url(cmp-bg.gif) repeat-x;
+    background:#eee url(/static/images/icons/cmp-bg.gif) repeat-x;
     margin-top:1px;
     border-top:1px solid #ddd;
     border-bottom:1px solid #ccc;
@@ -4415,7 +4415,10 @@
     display:none;
 }
 .icon-forum {
-    background-image:url(forum.gif) !important;
+    background-image:url(/static/images/icons/track.gif) !important;
+}
+.icon-no {
+    background-image:url('') !important;
 }
 .x-tree-selected {
     border:1px dotted #a3bae9;
