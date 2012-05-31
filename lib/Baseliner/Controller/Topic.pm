@@ -1151,4 +1151,35 @@ sub list_admin_category : Local {
     $c->stash->{json} = { data=>\@rows};
     $c->forward('View::JSON');
 }
+
+sub upload : Local {
+    my ( $self, $c ) = @_;
+    my $p      = $c->req->params;
+    my $upload = $c->req->upload( 'file_path' );
+    $p->{uncompress} = $p->{uncompress} eq 'on' ? 1 : 0;
+    _log "Uploading file " . $upload->{ filename };
+    try {
+        my $config = config_get( 'config.uploader' );
+
+        $config->{ storage } eq 'file'
+            ? $c->model( 'Uploader' )->upload_to_file(
+            upload      => $upload,
+            username    => $c->username,
+            %$p
+            )
+            : _throw( 'DB not supported yet' );
+
+        #$c->stash->{json} = { success=> \1 };
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $upload->basename ) };
+    }
+    catch {
+        my $err = shift;
+        _log "Error uploading file: " . $err;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+
+    #$c->res->body('{success: true}');
+    $c->forward( 'View::JSON' );
+    $c->res->content_type( 'text/html' );    # fileupload: true forms need this
+}
 1;
