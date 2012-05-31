@@ -17,6 +17,7 @@ use vars qw($VERSION);
         metadata => [
            { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
            { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'},
+           { id=>'nopurge', label=>'0->purge jobs when retrieved, 1->do not purge', default => '0'},
         ]
     };
 }
@@ -389,7 +390,7 @@ sub output {
 	
 	_log _loc("Unable to retrieve the output for Job %1. Check QE>Q>1>H (Display Promotion History) to see the result", $JobNumber ) unless $output;
 	#sleep(20);
-	$self->{jes}->delete($JobNumber) unless( $ENV{MVS_NOPURGE} );;
+	$self->{jes}->delete($JobNumber) unless( $JESConfig->{nopurge} );;
 	return $output, @summary;	
 }
 
@@ -410,9 +411,10 @@ sub codepage {
 sub close {
 	my $self=shift;
 	rmdir $self->opt('tempdir');
-	return unless ref $self->{jes};				
+	return unless ref $self->{jes};	
+	my $JESConfig = Baseliner->model('ConfigStore')->get( 'config.JES', ns=>'/', bl=>'*' );			
 	for( $self->jobs ) {
-		$self->{jes}->delete( $_ ) unless( $ENV{MVS_NOPURGE} );
+		$self->{jes}->delete( $_ ) unless( $JESConfig->{nopurge} );
 	}
 	$self->{jes}->quit();
 }
