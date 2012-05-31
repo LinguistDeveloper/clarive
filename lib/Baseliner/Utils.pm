@@ -63,6 +63,7 @@ use Exporter::Tidy default => [
     _join_quoted
     case
     _utf8_on_all
+    _size_unit
     /
 ];
 
@@ -940,6 +941,17 @@ sub case {
 sub _utf8_on_all {
     my $self = shift;
     return map { Encode::_utf8_on( $_ ); $_ } @_;
+}
+
+sub _size_unit {
+    my $size = shift;
+    use constant MB => (1024*1024);
+    use constant GB => (1024* MB);
+    my $units = $size >= GB ? 'GB' : $size >= MB ? 'MB' :  $size > 1024 ? 'KB' : 'bytes';
+    my $divisor = { GB=>(1024*1024*1024), MB=>(1024*1024), KB=>1024, bytes=>1 }->{ $units };
+    my $size = $size / $divisor;
+    $size = ($units =~ /bytes|KB/i) ? int( $size) : sprintf( "%.02f", $size );
+    return ( $size, $units );
 }
 
 1;

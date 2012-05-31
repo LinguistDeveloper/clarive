@@ -201,7 +201,6 @@
         cls: 'x-btn-icon-text',
         //disabled: true,
         handler: function() {
-            alert(params.id);
             Baseliner.Topic.comment_edit( params.id );
         }
     });
@@ -259,11 +258,11 @@
             var el = document.getElementById('uploader_' + ii );
             var uploader = new qq.FileUploader({
                 element: el,
-                action: '/server-side.upload',
-                debug: true,  
+                action: '/topic/upload',
+                //debug: true,  
                 // additional data to send, name-value pairs
                 params: {
-                    param1: 'value1',
+                    id_topic: params.id
                 },
                 template: '<div class="qq-uploader">' + 
                     '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
@@ -271,7 +270,6 @@
                     '<ul class="qq-upload-list"></ul>' + 
                  '</div>',
                 onCancel: function(){
-                   alert( 989898 );
                 },
                 classes: {
                     // used to get elements from templates

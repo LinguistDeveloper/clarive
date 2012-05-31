@@ -1,4 +1,5 @@
 <%args>
+    $ii
     $form => '/forms/base.js'
     $id
     $title
@@ -11,10 +12,8 @@
     $deadline
     $status
     $events
+    $files
 </%args>
-<%perl>
-    my $ii = int rand(999999999999999);
-</%perl>
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
     <div class="grid_24"> 
           <table class="table table-bordered table-condensed">
@@ -40,41 +39,46 @@
                 <td><% $created_on || '&nbsp;' %></td>
               </tr>
               <tr>
-                <th colspan="2"><% _loc('Files') %>:</th>
-              </tr>
-              <tr>
-                <td colspan="2">
-<ul class="nav nav-list">
-  <li>
-    <a href="#">
-      <i class="icon-book"></i> Manual de usuario
-    </a>
-  </li>
-  <li>
-    <a href="#">
-      <i class="icon-book"></i> Manual de explotacion
-    </a>
-    <div class="btn-group">
-          <button class="btn btn-primary dropdown-toggle btn-mini" data-toggle="dropdown">v4 <span class="caret"></span></button>
-          <ul class="dropdown-menu">
-            <li><a href="#">v3</a></li>
-            <li><a href="#">v2</a></li>
-            <li><a href="#">v1</a></li>
-            <li class="divider"></li>
-            <li><a href="#">Delete</a></li>
-          </ul>
-    </div>
-    
-  </li>
-</ul>
-                
-                </td>
-              </tr>
-              <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>
               </tr>
               <tr>
                 <td colspan="2"><% $description || '&nbsp;' %></td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                    <ul class="nav nav-list">
+                      <li class="nav-header">
+                        <% _loc("Files") %>
+                      </li>
+                    </ul>
+                    <ul class="">
+                      <li class="">
+% foreach my $file ( _array( $files ) ) {
+%   my $target = $file->{extension} =~ /pdf|htm|html|txt|properties/i ? '_blank' : 'FD';  # download or try to show on next tab?
+%   my ($size,$units) = Baseliner::Utils::_size_unit( $file->{filesize} );
+                      <li>
+                        <a href="/topic/download_file/<% $file->{md5} %>/<% $file->{filename} %>" target="<% $target %>">
+                          <i class="icon-file"></i> <% Baseliner::Utils::_html_escape( $file->{filename} ) %>
+                        </a> (<% $size %> <% $units %>) | <a href="/topic/file/delete/<% $file->{md5} %>"><i class="icon-trash"></i></a>
+                        <!-- div class="btn-group">
+                              <button class="btn btn-primary dropdown-toggle btn-mini" data-toggle="dropdown">v4 <span class="caret"></span></button>
+                              <ul class="dropdown-menu">
+                                <li><a href="#">v3</a></li>
+                                <li><a href="#">v2</a></li>
+                                <li><a href="#">v1</a></li>
+                                <li class="divider"></li>
+                                <li><a href="#">Delete</a></li>
+                              </ul>
+                        </div -->
+                        
+                      </li>
+% }
+                    </ul>
+                    <p>
+                    <div id="uploader_<% $ii %>"></div>
+                    </p>
+                
+                </td>
               </tr>
             </tbody>
           </table>

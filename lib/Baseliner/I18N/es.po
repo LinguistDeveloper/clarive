@@ -2739,3 +2739,12 @@ msgstr "%1 publicó un comentario el %2: %3"
 
 msgid "%1 deleted a comment on %2: %3"
 msgstr "%1 borró un comentario el %2: %3"
+
+msgid "Files"
+msgstr "Ficheros"
+
+msgid "Upload File"
+msgstr "Subir Fichero"
+
+msgid "Drop files here to upload"
+msgstr "Arrastre los fichero aquí para subirlos"

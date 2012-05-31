@@ -95,6 +95,7 @@ sub deploy_schema {
         # calculate diff
         $obj  = $obj->compute_differences; # here: $obj->table_diff_hash has keys as tablenames
         my $diff = $obj->produce_diff_sql;
+        $diff =~ s{"}{}gs;
 
         # execute ALL?
         print $diff, "\n";

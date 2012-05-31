@@ -103,6 +103,7 @@ __PACKAGE__->belongs_to(
 );
 
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
+__PACKAGE__->master_setup( 'files', ['topic','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 
 __PACKAGE__->belongs_to(
   "priorities",

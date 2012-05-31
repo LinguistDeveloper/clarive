@@ -319,6 +319,7 @@
         frame: false,
         border: false,
         url:'/topic/update',
+        fileUpload: true,
         //itemCls: 'boot',
         bodyStyle:'padding: 10px 0px 0px 15px',
         buttons: [ ],
@@ -364,6 +365,17 @@
             { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
             { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
             pb_panel,
+            { xtype: 'panel', layout:'fit', border:false,items: 
+            {
+                xtype: 'fileuploadfield',
+                emptyText: _('Select a File'),
+                fieldLabel: _('File'),
+                name: 'file_path',
+                buttonText: '',
+                buttonCfg: {
+                    iconCls: 'upload-icon'
+                }
+            }},
             { xtype:'panel', layout:'fit', items: [ //this panel is here to make the htmleditor fit
                 {
                     xtype:'htmleditor',

@@ -48,7 +48,7 @@ sub master_setup {
     Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to( $from_name, $self,
         { "foreign.$from_col" => 'self.from_mid' } );
     Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
-        post => $foreign,
+        $to_name , $foreign,
         { "foreign.$to_col" => 'self.to_mid' }
     );
     $self->has_many(

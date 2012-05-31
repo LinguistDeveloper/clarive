@@ -28,6 +28,11 @@ register 'event.post.delete' => {
     filter => $post_filter,
 };
 
+register 'event.file.create' => {
+    text => '%1 posted a file on %2: %3',
+    vars => ['username', 'ts', 'filename'],
+};
+
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'menu.tools.topic' => {
@@ -265,7 +270,14 @@ sub view : Local {
         $c->stash->{ii} = $p->{ii};
         $c->stash->{events} = events_by_mid( $id_topic );
         $c->stash->{swEdit} = $p->{swEdit};
+        # comments
         $self->list_posts( $c );  # get comments into stash
+        # files
+        my @files = map { +{ $_->get_columns } } 
+            $c->model('Baseliner::BaliTopic')->find( $id_topic )
+            ->files->search( undef, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
+            order_by => { '-asc' => 'created_on' } } )->all;
+        $c->stash->{files} = \@files; 
     }else{
         $c->stash->{title} = '';
         $c->stash->{created_on} = '';
@@ -1180,22 +1192,39 @@ sub list_admin_category : Local {
 sub upload : Local {
     my ( $self, $c ) = @_;
     my $p      = $c->req->params;
-    my $upload = $c->req->upload( 'file_path' );
-    $p->{uncompress} = $p->{uncompress} eq 'on' ? 1 : 0;
-    _log "Uploading file " . $upload->{ filename };
+    my $filename = $p->{qqfile};
+    my ($extension) =  $filename =~ /\.(\S+)$/;
+    $extension //= '';
+    my $f =  _file( $c->req->body );
+    _log "Uploading file " . $filename;
     try {
         my $config = config_get( 'config.uploader' );
-
-        $config->{ storage } eq 'file'
-            ? $c->model( 'Uploader' )->upload_to_file(
-            upload      => $upload,
-            username    => $c->username,
-            %$p
-            )
-            : _throw( 'DB not supported yet' );
-
-        #$c->stash->{json} = { success=> \1 };
-        $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $upload->basename ) };
+        my $topic = $c->model('Baseliner::BaliTopic')->find( $p->{id_topic} );
+        my $topic_mid = $topic->mid;
+        master_new 'bali_file', sub {
+            my $mid = shift;
+            my $body = scalar $f->slurp;
+            my $file = $c->model('Baseliner::BaliFileVersion')->create(
+                {   mid   => $mid,
+                    filedata   => $body,
+                    filename => $filename,
+                    extension => $extension,
+                    versionid => '1',
+                    md5 => _md5( $body ),
+                    filesize => length( $body ), 
+                    created_by => $c->username,
+                    created_on => DateTime->now,
+                }
+            );
+            event_new 'event.file.create' => {
+                username => $c->username,
+                mid      => $topic_mid,
+                id_file  => $mid,
+                filename     => $filename,
+            };
+            $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
+        };
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ) };
     }
     catch {
         my $err = shift;
@@ -1205,6 +1234,20 @@ sub upload : Local {
 
     #$c->res->body('{success: true}');
     $c->forward( 'View::JSON' );
-    $c->res->content_type( 'text/html' );    # fileupload: true forms need this
+    #$c->res->content_type( 'text/html' );    # fileupload: true forms need this
 }
+
+sub download_file : Local {
+    my ( $self, $c, $md5 ) = @_;
+    my $p      = $c->req->params;
+    my $file = $c->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
+    if( defined $file ) {
+        $c->stash->{serve_filename} = $file->filename;
+        $c->stash->{serve_body} = $file->filedata;
+        $c->forward('/serve_file');
+    } else {
+        $c->res->body(_loc('File %1 not found', $md5 ) );
+    }
+}
+
 1;
