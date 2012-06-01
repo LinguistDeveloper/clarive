@@ -916,6 +916,7 @@ sub filters_list : Local {
         idfilter      => 1,
         text    => 'Hoy',
         filter  => '{"hoy":true}',
+        default    => \1,
         cls     => 'forum',
         iconCls => 'icon-no',
         checked => \0,
@@ -932,6 +933,7 @@ sub filters_list : Local {
                 idfilter      => $r->id,
                 text    => $r->name,
                 filter  => $r->filter_json,
+                default    => \0,
                 cls     => 'forum',
                 iconCls => 'icon-no',
                 checked => \0,
@@ -1063,10 +1065,11 @@ sub filters_list : Local {
 }
 
 sub view_filter : Local {
-    my ($self,$c, $action) = @_;
-    my $action = $c->req->params->{action};
-    my $name = $c->req->params->{name};
-    my $filter = $c->req->params->{filter};
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    my $action = $p->{action};
+    my $name = $p->{name};
+    my $filter = $p->{filter};
   
     given ($action) {
         when ('add') {
@@ -1088,19 +1091,25 @@ sub view_filter : Local {
 
         }
         when ('delete') {
+            my $ids_view = $p->{ids_view};
+            try{
+                my @ids_view;
+                foreach my $id_view (_array $ids_view){
+                    push @ids_view, $id_view;
+                }
+                  
+                my $rs = Baseliner->model('Baseliner::BaliTopicView')->search({ id => \@ids_view });
+                $rs->delete;
+                
+                $c->stash->{json} = { success => \1, msg=>_loc('Views deleted') };
+            }
+            catch{
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting views') };
+            }            
         }
     }
     
     $c->forward('View::JSON');    
-
-    
-    #try {
-    #    $c->stash->{json} = { success=>\1, msg=>_loc("Created view %1", $name) };
-    #} catch {
-    #    $c->stash->{json} = { success=>\0, msg=>_loc("Error view %1", shift() ) };
-    #};
-    #$c->forward('View::JSON');
-
 }
 
 sub list_admin_category : Local {
