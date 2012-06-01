@@ -186,7 +186,7 @@
 				text: _('Accept'),
 				type: 'submit',
 				handler: function() {
-                    var form = form_view.getForm();
+                    var form = form_topic.getForm();
                     if (form.isValid()) {
                         var title = combo_category.getRawValue();
                         Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
