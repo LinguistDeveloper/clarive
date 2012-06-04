@@ -762,13 +762,23 @@
 	});
 	
 	tree_filters.on('checkchange', function(node, checked) {
-		var swDisable = false;
+		var swDisable = true;
 		var selNodes = tree_filters.getChecked();
+		var tot_view_defaults = 1;
 		Ext.each(selNodes, function(node){
 			var type = node.parentNode.attributes.id;
 			if(type == 'V'){
-				button_delete_view.enable();
-				return false;
+				if(!node.attributes.default){
+					button_delete_view.enable();
+					swDisable = false;
+					return false;
+				}else{
+					if(selNodes.length == tot_view_defaults){
+						swDisable = true;
+					}else{
+						swDisable = false;
+					}
+				}
 			}else{
 				swDisable = true;
 			}
