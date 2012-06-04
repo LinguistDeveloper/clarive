@@ -1077,7 +1077,7 @@ sub view_filter : Local {
                 my $row = $c->model('Baseliner::BaliTopicView')->search({name => $name})->first;
                 if(!$row){
                     my $view = $c->model('Baseliner::BaliTopicView')->create({name => $name, filter_json => $filter});
-                    $c->stash->{json} = { msg=>_loc('View added'), success=>\1, $name };
+                    $c->stash->{json} = { msg=>_loc('View added'), success=>\1, data=>{id=>9999999999, idfilter=>$view->id}};
                 }
                 else{
                     $c->stash->{json} = { msg=>_loc('View name already exists, introduce another view name'), failure=>\1 };

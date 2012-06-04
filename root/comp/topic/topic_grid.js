@@ -101,8 +101,11 @@
 								params: {action: 'add', filter: Ext.util.JSON.encode( filter_current )},
 								success: function(f,a){
 									Baseliner.message(_('Success'), a.result.msg );
-									tree_filters.getLoader().load(tree_root);
-									loadfilters();
+									var parent_node = tree_filters.getNodeById('V');
+									var ff;
+									ff = form_view.getForm();
+									var name = ff.findField("name").getValue();
+									parent_node.appendChild({id:a.result.data.id, idfilter: a.result.data.idfilter, text:name, filter:  Ext.util.JSON.encode( filter_current ), default: false, cls: 'forum', iconCls: 'icon-no', checked: false, leaf: true});
 									win.close();
 								},
 								failure: function(f,a){
