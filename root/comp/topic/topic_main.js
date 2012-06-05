@@ -30,9 +30,14 @@
                                             'statusId': form2.findField("status_new").getValue(),
                                             'statusName': form2.findField("status_new").getRawValue()
                                         }
-                            });  
+                            });
                             params.id = a.result.topic_id;
                             btn_comment.show();
+                            if(action == 'add'){
+                                var tabpanel = Ext.getCmp('main-panel');
+                                var objtab = tabpanel.getActiveTab();
+                                objtab.setTitle(objtab.title + ' #' + a.result.topic_id);
+                            }
                             view_is_dirty = true;
                        },
                        failure: function(f,a){
