@@ -169,145 +169,19 @@
         }           
     });
     
-    //var show_projects = function(rec) {
-    //    var win_project;
-    //    var title = 'Projects';
-    //
-    //    function getProjects(names_checked){
-    //        var projects_checked = new Array();
-    //        check_ast_projects_sm.each(function(rec){
-    //            projects_checked.push(rec.get('id_project'));
-    //            names_checked.push(rec.get('project'));
-    //        });
-    //        return projects_checked
-    //    }
-    //
-    //
-    //    var btn_cerrar_projects = new Ext.Toolbar.Button({
-    //        icon:'/static/images/icons/door_out.png',
-    //        cls: 'x-btn-text-icon',
-    //        text: _('Close'),
-    //        handler: function() {
-    //            win_project.close();
-    //        }
-    //    });
-    //    
-    //    var btn_grabar_projects = new Ext.Toolbar.Button({
-    //        icon:'/static/images/icons/database_save.png',
-    //        cls: 'x-btn-text-icon',
-    //        text: _('Save'),
-    //        handler: function(){
-    //            var names_checked = new Array();
-    //            var projects_checked = getProjects(names_checked);
-    //            var form = form_topic.getForm();
-    //            var projects = '';
-    //            if(names_checked){
-    //                for(i=0;i<names_checked.length;i++){
-    //                    projects = projects ? projects + ',' + names_checked[i]: names_checked[i];
-    //                }
-    //                form.findField("txtprojects").setValue(projects);                     
-    //            }
-    //            
-    //            Baseliner.ajaxEval( '/topic/unassign_projects',{ idtopic: rec.id, idsproject: projects_checked },
-    //                function(response) {
-    //                    if ( response.success ) {
-    //                        Baseliner.message( _('Success'), response.msg );
-    //                        form.findField("id").setValue(rec.id);
-    //                        Baseliner.ajaxEval( '/topic/json', { id: rec.id }, function(data) {
-    //                            load_form( data );
-    //                        });                          
-    //                    } else {
-    //                        Baseliner.message( _('ERROR'), response.msg );
-    //                    }
-    //                }
-    //            );
-    //        }
-    //    });
-    //
-    //    var check_ast_projects_sm = new Ext.grid.CheckboxSelectionModel({
-    //        singleSelect: false,
-    //        sortable: false,
-    //        checkOnly: true
-    //    });
-    //
-    //    
-    //    var grid_ast_projects = new Ext.grid.GridPanel({
-    //        title : _('Projects'),
-    //        sm: check_ast_projects_sm,
-    //        autoScroll: true,
-    //        header: false,
-    //        stripeRows: true,
-    //        autoScroll: true,
-    //        height: 300,
-    //        enableHdMenu: false,
-    //        store: store_project,
-    //        viewConfig: {forceFit: true},
-    //        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-    //        loadMask:'true',
-    //        columns: [
-    //            { hidden: true, dataIndex:'id_project' },
-    //            check_ast_projects_sm,
-    //            { header: _('Project'), dataIndex: 'project', sortable: false }
-    //        ],
-    //        autoSizeColumns: true,
-    //        deferredRender:false,
-    //        bbar: [
-    //            btn_grabar_projects,
-    //            btn_cerrar_projects
-    //        ],
-    //        listeners: {        
-    //            viewready: function() {
-    //                var me = this;
-    //                var myDatas = [];
-    //                var recs = [];
-    //                if(rec.projects){
-    //                    for(i=0;i<rec.projects.length;i++){
-    //                        var myData = new Array();
-    //                        myData[0] = rec.projects[i].id_project;
-    //                        myData[1] = rec.projects[i].project;
-    //                        myDatas.push(myData);
-    //                        recs.push(i);
-    //                    }
-    //                }
-    //                store_project.loadData(myDatas);
-    //                me.getSelectionModel().selectRows(recs);
-    //            }
-    //        }       
-    //    });
-    //    
-    //    //Ext.util.Observable.capture(grid_ast_labels, console.info);
-    //
-    //    win_project = new Ext.Window({
-    //        title: _(title),
-    //        width: 400,
-    //        modal: true,
-    //        autoHeight: true,
-    //        items: grid_ast_projects
-    //    });
-    //    
-    //    win_project.show();
-    //};
-    //
-    //var btn_unassign_project = new Ext.Toolbar.Button({
-    //    text: _('projects'),
-    //    handler: function() {
-    //    }
-    //});
-    //
-    //var btn_unassign_roles = new Ext.Toolbar.Button({
-    //    text: _('roles'),
-    //    handler: function() {
-    //        show_projects(rec);
-    //    }
-    //});         
-
-    var project_box_store = new Baseliner.store.UserProjects({ id: 'id', autoLoad: true });
+    var project_box_store = new Baseliner.store.UserProjects({ id: 'id' });
+    
     var project_box = new Baseliner.model.Projects({
         store: project_box_store
     });
     project_box_store.on('load',function(){
-        project_box.setValue( rec.projects) ;
+        project_box.setValue( rec.projects) ;            
     });
+    
+    //var user_box = new Baseliner.model.Users({
+    //    store: project_box_store 
+    //});
+    
     var pb_panel = new Ext.Panel({
         layout: 'form',
         enableDragDrop: true,
