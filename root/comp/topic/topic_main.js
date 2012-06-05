@@ -66,6 +66,18 @@
         //btn_form_reset.hide();
     };
 
+    Baseliner.Topic.file_del = function( id_topic, md5, id_row ) {
+        Baseliner.ajaxEval( '/topic/file/delete', { md5 : md5, id_topic: id_topic }, function(res) {
+            if( res.success ) {
+                Baseliner.message( _('File'), res.msg );
+                Ext.fly( id_row ).remove();
+            }
+            else {
+                Ext.Msg.alert( _('Error'), res.msg );
+            }
+        });
+    };
+
     // Form Panel
     var form = new Ext.Panel({ layout:'fit' });
     var form_topic;

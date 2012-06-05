@@ -262,6 +262,7 @@ sub view : Local {
     if($id_topic){
         my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
         $c->stash->{title} = $topic->title;
+        $c->stash->{mid} = $topic->mid;
         $c->stash->{created_on} = $topic->created_on;
         $c->stash->{created_by} = $topic->created_by;
         $c->stash->{deadline} = $topic->created_on;  # TODO
@@ -287,7 +288,7 @@ sub view : Local {
             $c->model('Baseliner::BaliTopic')->find( $id_topic )
             ->files->search( undef, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
             order_by => { '-asc' => 'created_on' } } )->all;
-        $c->stash->{files} = \@files; 
+        $c->stash->{files} = @files ? \@files : []; 
     }else{
         $c->stash->{title} = '';
         $c->stash->{created_on} = '';
@@ -1202,29 +1203,42 @@ sub upload : Local {
         my $config = config_get( 'config.uploader' );
         my $topic = $c->model('Baseliner::BaliTopic')->find( $p->{id_topic} );
         my $topic_mid = $topic->mid;
-        master_new 'bali_file', sub {
-            my $mid = shift;
-            my $body = scalar $f->slurp;
-            my $file = $c->model('Baseliner::BaliFileVersion')->create(
-                {   mid   => $mid,
-                    filedata   => $body,
-                    filename => $filename,
-                    extension => $extension,
-                    versionid => '1',
-                    md5 => _md5( $body ),
-                    filesize => length( $body ), 
-                    created_by => $c->username,
-                    created_on => DateTime->now,
-                }
-            );
-            event_new 'event.file.create' => {
-                username => $c->username,
-                mid      => $topic_mid,
-                id_file  => $mid,
-                filename     => $filename,
+        my $body = scalar $f->slurp;
+        my $md5 = _md5( $body );
+        my $existing = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
+        if( $existing ) {
+            # file already exists
+            if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
+                _fail _loc "File already attached to topic";
+            } else {
+                $topic->add_to_files( $existing, { rel_type=>'topic_file_version' });
+            }
+        } else {
+            # create file version master and bali_file_version rows
+            master_new 'bali_file', sub {
+                my $mid = shift;
+                my $file = $c->model('Baseliner::BaliFileVersion')->create(
+                    {   mid   => $mid,
+                        filedata   => $body,
+                        filename => $filename,
+                        extension => $extension,
+                        versionid => '1',
+                        md5 => $md5, 
+                        filesize => length( $body ), 
+                        created_by => $c->username,
+                        created_on => DateTime->now,
+                    }
+                );
+                event_new 'event.file.create' => {
+                    username => $c->username,
+                    mid      => $topic_mid,
+                    id_file  => $mid,
+                    filename     => $filename,
+                };
+                # tie file to topic
+                $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
             };
-            $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
-        };
+        }
         $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ) };
     }
     catch {
@@ -1236,6 +1250,37 @@ sub upload : Local {
     #$c->res->body('{success: true}');
     $c->forward( 'View::JSON' );
     #$c->res->content_type( 'text/html' );    # fileupload: true forms need this
+}
+
+sub file : Local {
+    my ( $self, $c, $action ) = @_;
+    my $p      = $c->req->params;
+    my $md5 = $p->{md5};
+    my $id_topic = $p->{id_topic};
+    try {
+        my $msg; 
+        if( $action eq 'delete' ) {
+            my $file = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
+            ref $file or _fail _loc("File id %1 not found", $md5 );
+            my $count = Baseliner->model('Baseliner::BaliMasterRel')->search({ to_mid => $file->mid })->count;
+            if( $count < 2 ) {
+                _log "Deleting file " . $file->mid;
+                $file->delete;
+                $msg = _loc( "File deleted ok" );
+            } else {
+                my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$id_topic, to_mid => $file->mid })->first;
+                _log "Deleting file from topic $id_topic ($rel) = " . $file->mid;
+                ref $rel or _fail _loc "File not attached to topic";
+                $rel -> delete;
+                $msg = _loc( "Relationship deleted ok" );
+            }
+        }
+        $c->stash->{ json } = { success => \1, msg => $msg };
+    } catch {
+        my $err = shift;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+    $c->forward( 'View::JSON' );
 }
 
 sub download_file : Local {
