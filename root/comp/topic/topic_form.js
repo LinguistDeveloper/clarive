@@ -6,8 +6,8 @@
     //        var status = rec.status; 
     //
     //        alert( 'noo');
-    //        store_admin_category.baseParams = { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name };
-    //        //store_admin_category.load({
+    //        store_category_status.baseParams = { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name };
+    //        //store_category_status.load({
     //         //   params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
     //        //});
     //        var ff = form_topic.getForm();
@@ -48,7 +48,7 @@
             fields: ['category', 'category_name' ]  
     });
     //alert(rec.status);
-    var store_admin_category = new Baseliner.Topic.StoreCategoryStatus({
+    var store_category_status = new Baseliner.Topic.StoreCategoryStatus({
         //baseParams: { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name, change_categoryId: rec.new_category_id },
         url:'/topic/list_admin_category'
     });
@@ -99,7 +99,7 @@
         displayField: 'name',
         valueField: 'id',
         //disabled: true,
-        store: store_admin_category
+        store: store_category_status
     });     
     
     function get_expr_response_time(row){
@@ -400,11 +400,14 @@
            combo_category.setValue(rec.new_category_id);
         });
         store_category.load();
-        //store_admin_category.on('load', function(){
-        //   combo_status.setValue( store_admin_category.getAt(0).data.id );
+        //store_category_status.on('load', function(){
+        //   combo_status.setValue( store_category_status.getAt(0).data.id );
         //});
-        store_admin_category.load({
-                params:{ 'change_categoryId': rec.new_category_id }
+        store_category_status.on('load', function(){
+            combo_status.setValue( store_category_status.getAt(0).id );
+        });
+        store_category_status.load({
+            params:{ 'change_categoryId': rec.new_category_id }
         });            
         store_priority.load();
         var form2 = form_topic.getForm();
@@ -414,12 +417,9 @@
             combo_category.setValue(rec.category);
         });
         store_category.load();
-        store_admin_category.load({
+        store_category_status.load({
                 params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
         });        
-        
-        
-        
     }
 
     pb_panel.on( 'afterrender', function(){
