@@ -29,6 +29,7 @@ Baseliner.store.UserProjects = function(c) {
         url: '/project/user_projects'
     },c));
 };
+
 Ext.extend( Baseliner.store.UserProjects, Baseliner.store.AllProjects );
 
 Baseliner.model.Projects = function(c) {
@@ -42,8 +43,8 @@ Baseliner.model.Projects = function(c) {
         //emptyText: _('Enter or select the category tags'),
         triggerAction: 'all',
         resizable: true,
-        store: new Baseliner.store.UserProjects({}),
-        mode: 'remote',
+        //store: new Baseliner.store.UserProjects({}),
+        mode: 'local',
         fieldLabel: _('Projects'),
         typeAhead: true,
         name: 'projects',
@@ -67,6 +68,7 @@ Baseliner.model.Projects = function(c) {
     }, c));
 };
 Ext.extend( Baseliner.model.Projects, Ext.ux.form.SuperBoxSelect );
+
 
 Baseliner.combo_baseline = function(params) {
     if( params==undefined) params={};
