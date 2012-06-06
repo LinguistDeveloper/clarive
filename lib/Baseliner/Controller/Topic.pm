@@ -300,10 +300,12 @@ sub view : Local {
         $c->stash->{category_color} = '#444';
         $c->stash->{forms} = '';
         $c->stash->{id} = '';
+        $c->stash->{mid} = '';
         $c->stash->{swEdit} = $p->{swEdit};
         $c->stash->{events} = '';
         $c->stash->{comments} = '';
         $c->stash->{ii} = $p->{ii};
+        $c->stash->{files} = []; 
     }
 
     if( $p->{html} ) {

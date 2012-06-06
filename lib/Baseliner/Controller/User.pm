@@ -693,7 +693,6 @@ sub list : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-	_log ">>>>>>>>>>>>>>>>>>>>>>>>><: " . $limit . "\n";
     $sort ||= 'me.username';
     $dir ||= 'asc';
     $start||= 0;
