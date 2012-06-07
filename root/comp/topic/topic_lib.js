@@ -158,3 +158,21 @@ Baseliner.Topic.comment_delete = function(id_com, id_div ) {
         }
     });
 };
+
+Baseliner.Topic.StoreUsers = Ext.extend( Ext.data.JsonStore, {
+    constructor: function(config) {
+        config = Ext.apply({
+            root: 'data' , 
+            remoteSort: true,
+            totalProperty:"totalCount", 
+            url: '/topic/list_users',
+            fields: [ 
+                {  name: 'id' },
+                {  name: 'username' },
+                {  name: 'realname' }
+            ]
+        },config);
+        Baseliner.Topic.StoreUsers.superclass.constructor.call(this, config);
+    }
+});
+

@@ -125,8 +125,11 @@
             }
         }           
     });
-    
-    var user_box_store = new Baseliner.store.Users({ id: 'id' });
+
+    var user_box_store = new Baseliner.Topic.StoreUsers({
+        autoLoad: true,
+        baseParams: {projects:[]}
+    });
     
     var user_box = new Baseliner.model.Users({
         store: user_box_store 
@@ -137,9 +140,18 @@
     var project_box = new Baseliner.model.Projects({
         store: project_box_store
     });
+    
     project_box_store.on('load',function(){
         project_box.setValue( rec.projects) ;            
     });
+    
+    project_box.on('blur',function(obj){
+        var projects = new Array();
+        projects = (obj.getValue()).split(","); 
+        user_box.store.load({
+            params:{ projects: projects}
+        }); 
+    });    
     
     var pb_panel = new Ext.Panel({
         layout: 'form',

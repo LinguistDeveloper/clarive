@@ -57,7 +57,28 @@ sub update {
                             }
                         );
                     }
-                }                
+                }
+                
+                my @users = _array( $p->{users});
+                
+                if (@users){
+                    my $user;
+                    my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({id =>\@users});
+                    while($user = $rs_users->next){
+                        my $mid;
+                        if($user->mid){
+                            $mid = $user->mid
+                        }
+                        else{
+                        	my $user_mid = master_new 'bali_user' => sub {
+                                my $mid = shift;
+                                $user->mid($mid);
+                                $user->update();
+                            };
+                        }
+                        $topic->add_to_users( $user, { rel_type=>'topic_user' });
+                    }
+                }
                 
                 $id     = $topic->id;
                 $return = 'Topic added';

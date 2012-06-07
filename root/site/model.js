@@ -32,23 +32,6 @@ Baseliner.store.UserProjects = function(c) {
 
 Ext.extend( Baseliner.store.UserProjects, Baseliner.store.AllProjects );
 
-Baseliner.store.Users = function(c) {
-    Baseliner.store.UserProjects.superclass.constructor.call(this, Ext.apply({
-        baseParams: {limit: 9999999999},
-        url: '/user/list',
-        fields: [
-            {  name: 'id' },
-            {  name: 'username' },
-            {  name: 'realname' },
-            {  name: 'alias' },
-            {  name: 'email' },
-            {  name: 'phone' }
-        ]        
-    },c));
-};
-
-Ext.extend( Baseliner.store.Users, Baseliner.store.AllProjects );
-
 
 Baseliner.model.Projects = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {description}</div></tpl>' );
