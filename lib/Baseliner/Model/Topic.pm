@@ -17,6 +17,7 @@ sub update {
 
     my $return;
     my $id;
+    my $mid;
     my @rsptime = ();
     my @deadline = ();
     
@@ -76,11 +77,12 @@ sub update {
                                 $user->update();
                             };
                         }
-                        $topic->add_to_users( $user, { rel_type=>'topic_user' });
+                        $topic->add_to_users( $user, { rel_type=>'topic_users' });
                     }
                 }
                 
                 $id     = $topic->id;
+                $mid    = $topic->mid;
                 $return = 'Topic added';
             } ## end try
             catch {
@@ -114,8 +116,30 @@ sub update {
                     }
                 }
                 
+                my @users = _array( $p->{users} );
+                if (@users){
+                    my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
+                    my $user;
+                    my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({id =>\@users});
+                    while($user = $rs_users->next){
+                        my $mid;
+                        if($user->mid){
+                            $mid = $user->mid
+                        }
+                        else{
+                        	my $user_mid = master_new 'bali_user' => sub {
+                                my $mid = shift;
+                                $user->mid($mid);
+                                $user->update();
+                            };
+                        }
+                        $topic->add_to_users( $user, { rel_type=>'topic_users' });
+                    }                    
+                }
+                
                 $topic->update();
                 $id     = $id_topic;
+                $mid    = $topic->mid;
                 $return = 'Topic modified';
             } ## end try
             catch {
@@ -126,10 +150,12 @@ sub update {
             my $id_topic = $p->{id};
             try {
                 my $row = Baseliner->model( 'Baseliner::BaliTopic' )->find( $id_topic );
+                $mid    = $row->mid;
                 #my $row2 = Baseliner->model( 'Baseliner::BaliMaster' )->find( $row->mid );
                 $row->delete;
 
                 $id     = $id_topic;
+                
                 $return = 'Topic deleted';
             } ## end try
             catch {
@@ -144,6 +170,7 @@ sub update {
                 $topic->update();
 
                 $id     = $id_topic;
+                $mid    = $topic->mid;
                 $return = 'Topic closed'
             } ## end try
             catch {
@@ -151,7 +178,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $id );
+    return ( $return, $id, $mid );
 } ## end sub update
 
 sub GetTopics {

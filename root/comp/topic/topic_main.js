@@ -32,6 +32,7 @@
                                         }
                             });
                             params.id = a.result.topic_id;
+                            params.mid = a.result.topic_mid;
                             btn_comment.show();
                             if(action == 'add'){
                                 var tabpanel = Ext.getCmp('main-panel');
