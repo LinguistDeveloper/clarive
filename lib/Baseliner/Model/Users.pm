@@ -48,4 +48,47 @@ sub encriptar_password{
     return Digest::MD5::md5_hex($b->encrypt($string));    
 }
 
+sub get_users_friends_by_username{
+	my ($self, $username ) = @_;
+	my $root = Baseliner->model('Permissions')->is_root( $username );
+	my $where = {};
+	my @users_friends = [];
+	
+	if (!$root){
+		my @projects = Baseliner->model('Permissions')->user_projects( username => $username );	
+		$where = { ns => \@projects };
+	}
+    
+    my $rs_users = Baseliner->model('Baseliner::BaliRoleuser')->search(
+																$where,
+																{ select => {distinct => 'username'}, as => ['username'] } #, order_by => 'username asc' }
+														);
+	
+	while( my $user = $rs_users->next ) {
+        push @users_friends, $user->username;
+    }
+	
+	return wantarray ? @users_friends : \@users_friends;
+}
+
+sub get_users_friends_by_projects{
+	my ($self, $projects ) = @_;
+	my @users_friends = [];
+    
+	if($projects){
+		my @ns_projects = map { 'project/' . $_ } _array $projects;	
+		my $where = { ns => \@ns_projects };
+		my $rs_users = Baseliner->model('Baseliner::BaliRoleuser')->search(
+																	$where,
+																	{ select => {distinct => 'username'}, as => ['username'] } #, order_by => 'username asc' }
+															);
+		
+		while( my $user = $rs_users->next ) {
+			push @users_friends, $user->username;
+		}
+	}
+	
+	return wantarray ? @users_friends : \@users_friends;
+}
+
 1;

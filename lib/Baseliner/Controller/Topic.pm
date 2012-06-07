@@ -310,10 +310,12 @@ sub view : Local {
         $c->stash->{category_color} = '#444';
         $c->stash->{forms} = '';
         $c->stash->{id} = '';
+        $c->stash->{mid} = '';
         $c->stash->{swEdit} = $p->{swEdit};
         $c->stash->{events} = '';
         $c->stash->{comments} = '';
         $c->stash->{ii} = $p->{ii};
+        $c->stash->{files} = []; 
     }
 
     if( $p->{html} ) {
@@ -1321,6 +1323,36 @@ sub download_file : Local {
     } else {
         $c->res->body(_loc('File %1 not found', $md5 ) );
     }
+}
+
+
+sub list_users : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $row;
+    my (@rows, $users_friends);
+    my $username = $c->username;
+    if($p->{projects}){
+        my @projects = _array $p->{projects};
+        $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
+    }else{
+        $users_friends = $c->model('Users')->get_users_friends_by_username($username);
+        
+    }
+    $row = $c->model('Baseliner::BaliUser')->search({username => $users_friends},{order_by => 'realname asc'});    
+    if($row){
+        while( my $r = $row->next ) {
+            push @rows,
+              {
+                id 		=> $r->id,
+                username	=> $r->username,
+                realname	=> $r->realname
+              };
+        }  
+    }
+    
+    $c->stash->{json} = { data=>\@rows };
+    $c->forward('View::JSON');
 }
 
 1;

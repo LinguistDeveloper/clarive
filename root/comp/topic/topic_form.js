@@ -1,57 +1,14 @@
 (function(rec){
     var form_is_loaded = false;
-    // loads data into the form:
-    //var load_form = function(rec) {
-    //    if( rec !== undefined ){
-    //        var status = rec.status; 
-    //
-    //        alert( 'noo');
-    //        store_category_status.baseParams = { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name };
-    //        //store_category_status.load({
-    //         //   params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
-    //        //});
-    //        var ff = form_topic.getForm();
-    //        var store = combo_category.getStore();
-    //        var category = rec.category;
-    //        //store.load();
-    //        var priority = rec.priority;
-    //        //store_priority.load();
-    //
-    //        rec.category = rec.category_name;
-    //        rec.status_new   = rec.status_name;
-    //        rec.priority   = rec.priority_name;
-    //
-    //        /* /* /* /* /* /* /* /* var cat_rec = Ext.data.Record.create(['category', 'category_name']);
-    //        store.insert(0, new cat_rec({ category: rec.category, category_name: rec.category_name  }));
-    //        combo_category.setValue( rec.category ); */
-    //        
-    //        ff.loadRecord({ data: rec });// loadRecord needs the actual record in "data: "
-    //        load_txt_values_priority({ data: rec });
-    //
-    //        ff.findField("txtcategory_old").setValue(rec.category);
-    //        var projects = '';
-    //        if(rec.projects){
-    //            for(i=0;i<rec.projects.length;i++){
-    //                projects = projects ? projects + '\n' + rec.projects[i].project: rec.projects[i].project;
-    //            }
-    //            ff.findField("txtprojects").setValue(projects);
-    //        }         
-    //        //title = 'Edit topic';
-    //    }
-    //};
-    //   
-    //var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
-    
-    //var title = 'Create topic';
 
     var store_category = new Baseliner.Topic.StoreCategory({
-            fields: ['category', 'category_name' ]  
+        fields: ['category', 'category_name' ]  
     });
-    //alert(rec.status);
+
     var store_category_status = new Baseliner.Topic.StoreCategoryStatus({
-        //baseParams: { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name, change_categoryId: rec.new_category_id },
         url:'/topic/list_admin_category'
     });
+    
     var store_priority = new Baseliner.Topic.StorePriority();
     var store_project = new Baseliner.Topic.StoreProject();
     
@@ -168,19 +125,33 @@
             }
         }           
     });
+
+    var user_box_store = new Baseliner.Topic.StoreUsers({
+        autoLoad: true,
+        baseParams: {projects:[]}
+    });
+    
+    var user_box = new Baseliner.model.Users({
+        store: user_box_store 
+    });
     
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id' });
     
     var project_box = new Baseliner.model.Projects({
         store: project_box_store
     });
+    
     project_box_store.on('load',function(){
         project_box.setValue( rec.projects) ;            
     });
     
-    //var user_box = new Baseliner.model.Users({
-    //    store: project_box_store 
-    //});
+    project_box.on('blur',function(obj){
+        var projects = new Array();
+        projects = (obj.getValue()).split(","); 
+        user_box.store.load({
+            params:{ projects: projects}
+        }); 
+    });    
     
     var pb_panel = new Ext.Panel({
         layout: 'form',
@@ -238,6 +209,7 @@
             { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
             { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
             pb_panel,
+            user_box,
             { xtype: 'panel', layout:'fit', border:false,items: 
             {
                 xtype: 'fileuploadfield',

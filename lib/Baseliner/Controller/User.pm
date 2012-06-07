@@ -2,6 +2,7 @@ package Baseliner::Controller::User;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::DBI;
+use Baseliner::Sugar;
 use Try::Tiny;
 use v5.10;
 
@@ -225,25 +226,34 @@ sub update : Local {
     my $user_key; # (Public key + Username al revés)
     $user_key = $c->config->{decrypt_key}.reverse ($p->{username});
 
+							
     given ($action) {
 	when ('add') {
 	    try{
-		my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
-		if(!$row){
-		    my $user = $c->model('Baseliner::BaliUser')->create(
-							{
-							    username    => $p->{username},
-							    realname  	=> $p->{realname},
-							    password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
-							    alias	=> $p->{alias},
-							    email	=> $p->{email},
-							    phone	=> $p->{phone}
-							});
-		
-		    $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
-		}else{
-		    $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
-		}
+			my $swOk = 1;
+			my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
+			if(!$row){
+				my $user_mid;
+				my $user;
+				$user_mid = master_new 'bali_user' => sub {
+					my $mid = shift;
+					
+					$user = Baseliner->model('Baseliner::BaliUser')->create(
+						{
+							mid			=> $mid,
+							username    => $p->{username},
+							realname  	=> $p->{realname},
+							password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
+							alias	=> $p->{alias},
+							email	=> $p->{email},
+							phone	=> $p->{phone}
+						}
+					);
+				};
+				$c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
+			}else{
+				$c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
+			}
 	    }
 	    catch{
 	    	$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
