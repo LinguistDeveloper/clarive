@@ -116,9 +116,10 @@ sub update {
                     }
                 }
                 
+                my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
                 my @users = _array( $p->{users} );
                 if (@users){
-                    my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
+                    #my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
                     my $user;
                     my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({id =>\@users});
                     while($user = $rs_users->next){
