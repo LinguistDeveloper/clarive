@@ -544,7 +544,7 @@
         var tag_comment_html;
         tag_comment_html='';
         if(rec.data.numcomment){
-            tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + " comments</span>";
+            tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + "</span>";
         }       
         return tag_comment_html;
     };
