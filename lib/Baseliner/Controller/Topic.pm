@@ -1335,6 +1335,24 @@ sub download_file : Local {
     }
 }
 
+sub file_tree : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $id_topic = $p->{id_topic};
+    my @files = map {
+        my ( $size, $unit ) = _size_unit( $_->filesize );
+        $size = "$size $unit";
+        +{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
+        } 
+        $c->model('Baseliner::BaliTopic')->search( { mid => $id_topic } )->first->files->search(
+        undef,
+        {   select   => [qw(mid filename filesize md5 versionid extension created_on created_by)],
+            order_by => { '-asc' => 'created_on' }
+        }
+        )->all;
+    $c->stash->{json} = { total=>scalar( @files ), success=>\1, data=>\@files };
+    $c->forward('View::JSON');
+}
 
 sub list_users : Local {
     my ($self,$c) = @_;

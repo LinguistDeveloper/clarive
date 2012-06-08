@@ -58,6 +58,115 @@
         //disabled: true,
         store: store_category_status
     });     
+
+    var record = Ext.data.Record.create([
+        {name: 'filename'},
+        {name: 'versionid'},
+        {name: 'filesize'},     
+        {name: 'size'},     
+        {name: 'md5'},     
+        {name: '_id', type: 'int'},
+        {name: '_parent', type: 'auto'},
+        {name: '_level', type: 'int'},
+        {name: '_is_leaf', type: 'bool'}
+    ]); 
+
+    var store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
+       autoLoad : true,  
+       url: '/topic/file_tree',
+       baseParams: { id_topic: rec.mid },
+       reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
+    }); 
+    var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var md5 = rec.data.md5;
+        if( md5 != undefined ) {
+            value = String.format('<a target="FrameDownload" href="/topic/download_file/{1}">{0}</a>', value, md5 );
+        }
+        value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' 
+            + '<input type="checkbox" class="ux-maximgb-tg-mastercol-cb" ext:record-id="' + record.id +  '"/>&nbsp;'
+            + value 
+            + '</div>';
+        return value;
+    };
+
+    var filelist = new Ext.ux.maximgb.tg.GridPanel({
+        height: 120,
+        header: false,
+        stripeRows: true,
+        autoScroll: true,
+        autoWidth: true,
+        sortable: false,
+        header: false,
+        store: store_file,
+        viewConfig: {
+        header: false,
+            enableRowBody: true,
+            scrollOffset: 2,
+            forceFit: true
+        },
+        master_column_id : 'filename',
+        autoExpandColumn: 'filename',
+        columns: [
+          { width: 16, dataIndex: 'extension', sortable: true, renderer: Baseliner.render_extensions },
+          { id:"filename", header: _('File'), width: 150, dataIndex: 'filename', renderer: render_file },
+          { header: _('Id'), hidden: true, dataIndex: '_id' },
+          { header: _('Size'), width: 100, dataIndex: 'size' },
+          { header: _('Version'), width: 75, dataIndex: 'versionid' }
+        ]
+    });
+    /* tree.getLoader().on("beforeload", function(treeLoader, node) {
+        var loader = tree.getLoader();
+        loader.baseParams = { path: node.attributes.path, repo_path: repo_path, bl: bl };
+    });
+
+    tree.on('dblclick', function(node, ev){ 
+        show_properties( node.attributes.path, node.attributes.item, node.attributes.version, node.leaf );
+    }); */
+    
+
+    var filedrop = new Ext.Panel({
+        border: false,
+        height: '100px'
+    });
+
+    filedrop.on('afterrender', function(){
+        var el = filedrop.el.dom;
+        var uploader = new qq.FileUploader({
+            element: el,
+            action: '/topic/upload',
+            //debug: true,  
+            // additional data to send, name-value pairs
+            params: {
+                id_topic: params.id
+            },
+            template: '<div class="qq-uploader">' + 
+                '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
+                '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
+                '<ul class="qq-upload-list"></ul>' + 
+             '</div>',
+            onComplete: function(){
+                store_file.load();
+            },
+            onCancel: function(){ },
+            classes: {
+                // used to get elements from templates
+                button: 'qq-upload-button',
+                drop: 'qq-upload-drop-area',
+                dropActive: 'qq-upload-drop-area-active',
+                list: 'qq-upload-list',
+                            
+                file: 'qq-upload-file',
+                spinner: 'qq-upload-spinner',
+                size: 'qq-upload-size',
+                cancel: 'qq-upload-cancel',
+
+                // added to list item when upload completes
+                // used in css to hide progress spinner
+                success: 'qq-upload-success',
+                fail: 'qq-upload-fail'
+            }
+        });
+    });
     
     function get_expr_response_time(row){
         var str_expr = '';
@@ -215,17 +324,16 @@
             { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
             pb_panel,
             user_box,
-            { xtype: 'panel', layout:'fit', border:false,items: 
             {
-                xtype: 'fileuploadfield',
-                emptyText: _('Select a File'),
-                fieldLabel: _('File'),
-                name: 'file_path',
-                buttonText: '',
-                buttonCfg: {
-                    iconCls: 'upload-icon'
-                }
-            }},
+                xtype: 'panel',
+                border: false,
+                layout: 'form',
+                items: [
+                    filelist,
+                    filedrop
+                ],
+                fieldLabel: _('Files')
+            },
             { xtype:'panel', layout:'fit', items: [ //this panel is here to make the htmleditor fit
                 {
                     xtype:'htmleditor',

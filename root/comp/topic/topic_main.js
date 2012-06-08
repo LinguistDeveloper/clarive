@@ -273,40 +273,6 @@
         detail.load({ url: '/topic/view', params: { id: params.id, ii: ii, html: 1, categoryId: params.categoryId }, scripts: true, callback: function(x){ 
             // loading HTML has finished
             //   careful: errors here block will break js in baseliner
-            var el = document.getElementById('uploader_' + ii );
-            var uploader = new qq.FileUploader({
-                element: el,
-                action: '/topic/upload',
-                //debug: true,  
-                // additional data to send, name-value pairs
-                params: {
-                    id_topic: params.id
-                },
-                template: '<div class="qq-uploader">' + 
-                    '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
-                    '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
-                    '<ul class="qq-upload-list"></ul>' + 
-                 '</div>',
-                onCancel: function(){
-                },
-                classes: {
-                    // used to get elements from templates
-                    button: 'qq-upload-button',
-                    drop: 'qq-upload-drop-area',
-                    dropActive: 'qq-upload-drop-area-active',
-                    list: 'qq-upload-list',
-                                
-                    file: 'qq-upload-file',
-                    spinner: 'qq-upload-spinner',
-                    size: 'qq-upload-size',
-                    cancel: 'qq-upload-cancel',
-
-                    // added to list item when upload completes
-                    // used in css to hide progress spinner
-                    success: 'qq-upload-success',
-                    fail: 'qq-upload-fail'
-                }
-            });
         }});
         detail.body.setStyle('overflow', 'auto');
     };
