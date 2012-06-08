@@ -100,13 +100,27 @@ sub list : Local {
         #Filtramos por lo que han introducido en el campo de búsqueda.
         @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
         
-        my $Hoy = DateTime->now->ymd;
         if($p->{hoy} eq 'true'){
+            my $Hoy = DateTime->now->ymd;
             foreach my $data (@datas){
                 my $created_on = parse_date( 'dd/mm/Y', $data->{created_on})->ymd;
                 push @temp, $data if $Hoy eq $created_on;
             }
             @datas = @temp;
+        }
+        
+        @temp =();
+        
+        if($p->{Asignadas} eq 'true'){
+            my $rs_user = $c->model('Baseliner::BaliUser')->search( username => $c->username )->first;
+            if($rs_user){
+                my $topics = $c->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]});
+                while( my $topic = $topics->next ) {
+                    push @temp, grep { $_->{mid} =~ $topic->from_mid  } @datas if $topic;
+                }
+                @datas = @temp;
+            }
+        
         }
         
         @temp =();
@@ -938,7 +952,20 @@ sub filters_list : Local {
         iconCls => 'icon-no',
         checked => \0,
         leaf    => 'true'
-    };	     
+    };
+    
+    push @views, {
+        id  => $i++,
+        idfilter      => 2,
+        text    => 'Asignadas',
+        filter  => '{"Asignadas":true}',
+        default    => \1,
+        cls     => 'forum',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true'
+    };
+    
     ##################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
