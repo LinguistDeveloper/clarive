@@ -33,6 +33,16 @@ register 'event.file.create' => {
     vars => ['username', 'ts', 'filename'],
 };
 
+register 'event.topic.file_remove' => {
+    text => '%1 removed a file from %2: %3',
+    vars => ['username', 'ts', 'filename'],
+};
+
+register 'event.topic.create' => {
+    text => '%1 created topic %2',
+    vars => ['username', 'topic'],
+};
+
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'menu.tools.topic' => {
@@ -1287,11 +1297,19 @@ sub file : Local {
                 $file->delete;
                 $msg = _loc( "File deleted ok" );
             } else {
-                my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$id_topic, to_mid => $file->mid })->first;
-                _log "Deleting file from topic $id_topic ($rel) = " . $file->mid;
-                ref $rel or _fail _loc "File not attached to topic";
-                $rel -> delete;
-                $msg = _loc( "Relationship deleted ok" );
+                event_new 'event.topic.file_remove' => {
+                    username => $c->username,
+                    mid      => $id_topic,
+                    id_file  => $file->mid,
+                    filename => $file->filename,
+                    }
+                => sub {
+                    my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$id_topic, to_mid => $file->mid })->first;
+                    _log "Deleting file from topic $id_topic ($rel) = " . $file->mid;
+                    ref $rel or _fail _loc "File not attached to topic";
+                    $rel -> delete;
+                    $msg = _loc( "Relationship deleted ok" );
+                };
             }
         }
         $c->stash->{ json } = { success => \1, msg => $msg };
