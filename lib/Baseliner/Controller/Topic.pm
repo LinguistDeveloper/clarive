@@ -100,13 +100,27 @@ sub list : Local {
         #Filtramos por lo que han introducido en el campo de búsqueda.
         @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
         
-        my $Hoy = DateTime->now->ymd;
         if($p->{hoy} eq 'true'){
+            my $Hoy = DateTime->now->ymd;
             foreach my $data (@datas){
                 my $created_on = parse_date( 'dd/mm/Y', $data->{created_on})->ymd;
                 push @temp, $data if $Hoy eq $created_on;
             }
             @datas = @temp;
+        }
+        
+        @temp =();
+        
+        if($p->{Asignadas} eq 'true'){
+            my $rs_user = $c->model('Baseliner::BaliUser')->search( username => $c->username )->first;
+            if($rs_user){
+                my $topics = $c->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]});
+                while( my $topic = $topics->next ) {
+                    push @temp, grep { $_->{mid} =~ $topic->from_mid  } @datas if $topic;
+                }
+                @datas = @temp;
+            }
+        
         }
         
         @temp =();
@@ -171,11 +185,12 @@ sub list : Local {
         }
         
         my @projects;
-        my $topicprojects = $c->model('Baseliner::BaliTopicProject')->search({id_topic => $data->{id}});
+        my $topicprojects = $c->model('Baseliner::BaliTopic')->find( $data->{id} )->projects->search();
         while( my $topicproject = $topicprojects->next ) {
-            my $str = { project => $topicproject->project->name,  id_project => $topicproject->id_project };
+            my $str = { project => $topicproject->name,  id_project => $topicproject->id };
             push @projects, $str
-        }
+        }        
+        
         
         push @rows, {
             id      => $data->{id},
@@ -213,8 +228,8 @@ sub update : Local {
     $p->{username} = $c->username;
     
     try  {    
-        my ($msg, $id, $mid) = Baseliner::Model::Topic->update( $p );
-        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_id => $id, topic_mid => $mid };
+        my ($msg, $id, $mid, $status) = Baseliner::Model::Topic->update( $p );
+        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_id => $id, topic_mid => $mid, topic_status => $status };
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
@@ -229,17 +244,10 @@ sub json : Local {
     my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
 
     my @projects;
-    my $topicprojects = $c->model('Baseliner::BaliTopicProject')->search(
-        { id_topic => $id_topic },
-        {   join      => ['project'],
-            '+select' => ['project.name'],
-        }
-    );
-
-    while ( my $topicproject = $topicprojects->next ) {
-        #my $str = { project => $topicproject->project->name, id_project => $topicproject->id_project };
-        my $str = $topicproject->id_project;
-        push @projects, $str;
+    my $topicprojects = $c->model('Baseliner::BaliTopic')->find( $id_topic )->projects->search();
+    while( my $topicproject = $topicprojects->next ) {
+        my $str = $topicproject->id;
+        push @projects, $str
     }
     
     my @users = map { $_->id } 
@@ -944,7 +952,20 @@ sub filters_list : Local {
         iconCls => 'icon-no',
         checked => \0,
         leaf    => 'true'
-    };	     
+    };
+    
+    push @views, {
+        id  => $i++,
+        idfilter      => 2,
+        text    => 'Asignadas',
+        filter  => '{"Asignadas":true}',
+        default    => \1,
+        cls     => 'forum',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true'
+    };
+    
     ##################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
@@ -1202,11 +1223,15 @@ sub list_admin_category : Local {
             }
         
             if($swAllowed){
-                push @rows, { id => $p->{statusId}, name => $p->{statusName} };
+                push @rows, { id => $p->{statusId}, name => $p->{statusName}, status => $p->{statusId}, status_name => $p->{statusName}  };
                 foreach my $status ( keys %status ){
                     push @rows, {
                                     id  => $status,
-                                    name => $status{$status}
+                                    name => $status{$status},
+                                    status => $status,
+                                    status_name    => $status{$status},
+
+                                    
                                 }
                 }
             }

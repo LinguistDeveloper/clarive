@@ -22,7 +22,8 @@
                             Baseliner.message(_('Success'), a.result.msg );
                             
                             form2.findField("id").setValue(a.result.topic_id);
-                            //form2.findField("status").setValue(form2.findField("status_new").getValue());
+                            form2.findField("mid").setValue(a.result.topic_mid);
+                            form2.findField("status").setValue(a.result.topic_status);
                             
                             var store = form2.findField("status_new").getStore();
                             store.load({
@@ -95,6 +96,8 @@
                 form.add( comp );
                 form.doLayout();
                 form_is_loaded = true;
+                //var form2 = form_topic.getForm();
+                //form2.findField("status").setValue(rec.status);                 
             }
             btn_form_ok.show();
             if(params.id){
@@ -108,11 +111,13 @@
     var show_form = function(){
         if( params!==undefined && params.id !== undefined ) {
             Baseliner.ajaxEval( '/topic/json', { id: params.id }, function(rec) {
+                
                 load_form( rec );
             });
         } else {
             load_form({ new_category_id: params.new_category_id, new_category_name: params.new_category_name });
         }
+          
         cardpanel.getLayout().setActiveItem( 1 );
     };
 

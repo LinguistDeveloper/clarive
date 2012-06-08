@@ -328,13 +328,20 @@ sub update : Local {
 	    try{
 		my $row = $c->model('Baseliner::BaliProject')->search({name => $p->{name}, active => 1})->first;
 		if(!$row){
-		    my $project = $c->model('Baseliner::BaliProject')->create(
+			my $project_mid;
+			my $project;
+			
+			$project_mid = master_new 'bali_project' => sub {
+				my $mid = shift;			
+				$project = $c->model('Baseliner::BaliProject')->create(
 							{
-							    name   	=> $p->{name},
+								mid			=> $mid,
+							    name   		=> $p->{name},
 							    id_parent  	=> $p->{id_parent} eq '/'?'':$p->{id_parent},
-							    nature	=> $p->{nature},
+							    nature		=> $p->{nature},
 							    description	=> $p->{description},
 							});
+			};
 		    
 		    $c->stash->{json} = { msg=>_loc('Project added'), success=>\1, project_id=> $project->id };
 		}else{

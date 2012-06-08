@@ -85,6 +85,11 @@ __PACKAGE__->table("bali_project");
 =cut
 
 __PACKAGE__->add_columns(
+  "mid", {
+    data_type => "numeric",
+    is_nullable => 0,
+    original => { data_type => "number" },
+  },     
   "id",
   {
     data_type => 'integer',
