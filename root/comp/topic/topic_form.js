@@ -269,7 +269,7 @@
         });
         store_category.load();
         store_category_status.load({
-                params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
+                params:{ 'categoryId': rec.category, 'statusId': rec.status, 'statusName': rec.status_name }
         });        
     }
 

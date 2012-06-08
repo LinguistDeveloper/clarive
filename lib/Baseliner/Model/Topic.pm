@@ -18,6 +18,7 @@ sub update {
     my $return;
     my $id;
     my $mid;
+    my $status;
     my @rsptime = ();
     my @deadline = ();
     
@@ -48,16 +49,25 @@ sub update {
                 };
                 
                 my @projects = _array( $p->{projects} );
+                
                 if (@projects) {
-                    my $project = Baseliner->model('Baseliner::BaliTopicProject')
-                        ->search({ id_topic => $topic->id } )->delete;
-                    foreach my $id_project (@projects) {
-                        Baseliner->model('Baseliner::BaliTopicProject')->create(
-                            {   id_topic   => $topic->id,
-                                id_project => $id_project
-                            }
-                        );
+                    my $project;
+                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({id =>\@projects});
+                    while($project = $rs_projects->next){
+                        my $mid;
+                        if($project->mid){
+                            $mid = $project->mid
+                        }
+                        else{
+                            my $project_mid = master_new 'bali_project' => sub {
+                                my $mid = shift;
+                                $project->mid($mid);
+                                $project->update();
+                            };
+                        }
+                        $topic->add_to_projects($project, { rel_type=>'topic_project'});
                     }
+
                 }
                 
                 my @users = _array( $p->{users});
@@ -83,6 +93,7 @@ sub update {
                 
                 $id     = $topic->id;
                 $mid    = $topic->mid;
+                $status = $topic->id_category_status;
                 $return = 'Topic added';
             } ## end try
             catch {
@@ -103,16 +114,24 @@ sub update {
                 $topic->deadline_min( $deadline[1] );
                 $topic->expr_deadline( $deadline[0] );
 
+                my $projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $p->{mid}, rel_type => 'topic_project'})->delete;
                 my @projects = _array( $p->{projects} );
-                if (@projects) {
-                    my $project = Baseliner->model('Baseliner::BaliTopicProject')
-                        ->search({ id_topic => $id_topic } )->delete;
-                    foreach my $id_project (@projects) {
-                        Baseliner->model('Baseliner::BaliTopicProject')->create(
-                            {   id_topic   => $id_topic,
-                                id_project => $id_project
+                if (@projects){
+                    my $project;
+                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({id =>\@projects});
+                    while($project = $rs_projects->next){
+                        my $mid;
+                        if($project->mid){
+                            $mid = $project->mid
+                        }
+                        else{
+                            my $user_mid = master_new 'bali_project' => sub {
+                                my $mid = shift;
+                                $project->mid($mid);
+                                $project->update();
                             }
-                        );
+                        }
+                        $topic->add_to_projects( $project, { rel_type=>'topic_project' } );
                     }
                 }
                 
@@ -141,6 +160,7 @@ sub update {
                 $topic->update();
                 $id     = $id_topic;
                 $mid    = $topic->mid;
+                $status = $topic->id_category_status;
                 $return = 'Topic modified';
             } ## end try
             catch {
@@ -179,7 +199,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $id, $mid );
+    return ( $return, $id, $mid, $status );
 } ## end sub update
 
 sub GetTopics {
