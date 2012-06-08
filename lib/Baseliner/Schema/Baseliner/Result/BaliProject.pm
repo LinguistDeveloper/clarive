@@ -162,12 +162,5 @@ __PACKAGE__->belongs_to(
   "Baseliner::Schema::Baseliner::Result::BaliProject",
   { id => "id_parent" },
 );
-# You can replace this text with custom content, and it will be preserved on regeneration
-
-__PACKAGE__->has_many(
-  "bali_issueprojects",
-  "Baseliner::Schema::Baseliner::Result::BaliIssueProject",
-  { "foreign.id_project" => "self.id" },
-);
 
 1;

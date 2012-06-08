@@ -90,12 +90,6 @@ __PACKAGE__->belongs_to(
   { "id" => "id_category" },
 );
 
-__PACKAGE__->has_many(
-  "projects",
-  "Baseliner::Schema::Baseliner::Result::BaliTopicProject",
-  { "foreign.id_topic" => "self.id" },
-);
-
 __PACKAGE__->belongs_to(
   "status",
   "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
