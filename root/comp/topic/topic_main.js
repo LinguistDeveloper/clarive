@@ -22,16 +22,17 @@
                             Baseliner.message(_('Success'), a.result.msg );
                             
                             form2.findField("id").setValue(a.result.topic_id);
-                            form2.findField("status").setValue(form2.findField("status_new").getValue());
+                            //form2.findField("status").setValue(form2.findField("status_new").getValue());
                             
                             var store = form2.findField("status_new").getStore();
                             store.load({
                                 params:{    'categoryId': form2.findField("category").getValue(),
-                                            'statusId': form2.findField("status_new").getValue(),
+                                            'statusId': form2.findField("status").getValue(),
                                             'statusName': form2.findField("status_new").getRawValue()
                                         }
                             });
                             params.id = a.result.topic_id;
+                            params.mid = a.result.topic_mid;
                             btn_comment.show();
                             if(action == 'add'){
                                 var tabpanel = Ext.getCmp('main-panel');

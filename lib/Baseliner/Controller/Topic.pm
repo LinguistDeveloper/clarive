@@ -213,8 +213,8 @@ sub update : Local {
     $p->{username} = $c->username;
     
     try  {    
-        my ($msg, $id) = Baseliner::Model::Topic->update( $p );
-        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_id => $id };
+        my ($msg, $id, $mid) = Baseliner::Model::Topic->update( $p );
+        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_id => $id, topic_mid => $mid };
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
@@ -237,18 +237,28 @@ sub json : Local {
     );
 
     while ( my $topicproject = $topicprojects->next ) {
-        my $str = { project => $topicproject->project->name, id_project => $topicproject->id_project };
-        $str = $topicproject->id_project;
+        #my $str = { project => $topicproject->project->name, id_project => $topicproject->id_project };
+        my $str = $topicproject->id_project;
         push @projects, $str;
     }
+    
+    my @users = map { $_->id } 
+        $c->model('Baseliner::BaliTopic')->find( $id_topic )
+        ->users->search( undef, { select=>[qw(id)],
+        order_by => { '-asc' => 'username' } } )->all;
+        
+    
+    
     
     my $ret = {
         title              => $topic->title,
         description        => $topic->description,
         category           => $topic->id_category,
         id                 => $id_topic,
+        mid                => $topic->mid,
         status             => $topic->id_category_status,
         projects           => \@projects,
+        users              => \@users,
         priority           => $topic->id_priority,
         response_time_min  => $topic->response_time_min,
         expr_response_time => $topic->expr_response_time,

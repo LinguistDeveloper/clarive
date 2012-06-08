@@ -135,6 +135,10 @@
         store: user_box_store 
     });
     
+    user_box_store.on('load',function(){
+        user_box.setValue( rec.users) ;            
+    });
+    
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id' });
     
     var project_box = new Baseliner.model.Projects({
@@ -177,6 +181,7 @@
                   items: [
             
             { xtype: 'hidden', name: 'id', value: rec.id },
+            { xtype: 'hidden', name: 'mid', value: rec.mid },
             {
                 xtype:'textfield',
                 fieldLabel: _('Title'),
