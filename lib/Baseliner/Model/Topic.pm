@@ -48,6 +48,16 @@ sub update {
                     );
                 };
                 
+                # related topics
+                if( my @topics = _array( $p->{topics} ) ) {
+                    my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+                    die "TOPICS";
+                    while(my $topic = $rs_topics->next){
+                        $topic->add_to_topics($topic, { rel_type=>'topic_topic'});
+                    }
+                }
+                
+                # projects assigned to 
                 my @projects = _array( $p->{projects} );
                 
                 if (@projects) {
@@ -70,6 +80,7 @@ sub update {
 
                 }
                 
+                # users assigned to
                 my @users = _array( $p->{users});
                 
                 if (@users){
@@ -114,6 +125,15 @@ sub update {
                 $topic->deadline_min( $deadline[1] );
                 $topic->expr_deadline( $deadline[0] );
 
+                # related topics
+                if( my @topics = _array( $p->{topics} ) ) {
+                    #my @curr_topics = $topic->topics;
+                    my @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+                    #$topic->remove_from_topics( $_ ) for @curr_topics;
+                    $topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+                }
+                
+                # projects
                 my $projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $p->{mid}, rel_type => 'topic_project'})->delete;
                 my @projects = _array( $p->{projects} );
                 if (@projects){
@@ -135,6 +155,7 @@ sub update {
                     }
                 }
                 
+                # users
                 my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
                 my @users = _array( $p->{users} );
                 if (@users){
@@ -243,6 +264,15 @@ sub GetTopics {
                       ON BALI_TOPIC.MID = D.MID ORDER BY ?";
     
     return $db->array_hash( $SQL, $orderby);
+}
+
+sub append_category {
+    my ($self, @topics ) =@_;
+    return map {
+        $_->{name} = $_->{categories}->{name} . ' #' . $_->{id};
+        $_->{color} = $_->{categories}->{color};
+        $_
+    } @topics;
 }
 
 1;

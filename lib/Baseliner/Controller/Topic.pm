@@ -237,6 +237,21 @@ sub update : Local {
     $c->forward('View::JSON');
 }
 
+sub related : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $mid = $p->{mid};
+    my $rs_topic = $c->model('Baseliner::BaliTopic')->search({}, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
+    rs_hashref( $rs_topic );
+    my @topics = map {
+        $_->{name} = $_->{categories}->{name} . ' #' . $_->{id};
+        $_->{color} = $_->{categories}->{color};
+        $_
+    } $rs_topic->all;
+    $c->stash->{json} = { totalCount=>scalar(@topics), data=>\@topics };
+    $c->forward('View::JSON');
+}
+
 sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
@@ -244,20 +259,20 @@ sub json : Local {
     my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
 
     my @projects;
-    my $topicprojects = $c->model('Baseliner::BaliTopic')->find( $id_topic )->projects->search();
+    my $topicprojects = $topic->projects->search();
     while( my $topicproject = $topicprojects->next ) {
         my $str = $topicproject->id;
         push @projects, $str
     }
     
     my @users = map { $_->id } 
-        $c->model('Baseliner::BaliTopic')->find( $id_topic )
-        ->users->search( undef, { select=>[qw(id)],
+        $topic->users->search( undef, { select=>[qw(id)],
         order_by => { '-asc' => 'username' } } )->all;
         
-    
-    
-    
+    my @topics = map { $_->mid } 
+        $topic->topics->search( undef, { select=>[qw(mid)],
+        order_by => { '-asc' => 'mid' } } )->all;
+        
     my $ret = {
         title              => $topic->title,
         description        => $topic->description,
@@ -267,6 +282,7 @@ sub json : Local {
         status             => $topic->id_category_status,
         projects           => \@projects,
         users              => \@users,
+        topics             => \@topics,
         priority           => $topic->id_priority,
         response_time_min  => $topic->response_time_min,
         expr_response_time => $topic->expr_response_time,
@@ -311,10 +327,15 @@ sub view : Local {
         $c->stash->{swEdit} = $p->{swEdit};
         # comments
         $self->list_posts( $c );  # get comments into stash
+        # related topics
+        my $rs_rel_topic = $topic->topics->search( undef, { order_by => { '-asc' => ['categories.name', 'mid'] }, prefetch=>['categories'] } );
+        rs_hashref ( $rs_rel_topic );
+        my @topics = $rs_rel_topic->all;
+        @topics = $c->model('Topic')->append_category( @topics );
+        $c->stash->{topics} = @topics ? \@topics : []; 
         # files
         my @files = map { +{ $_->get_columns } } 
-            $c->model('Baseliner::BaliTopic')->find( $id_topic )
-            ->files->search( undef, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
+            $topic->files->search( undef, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
             order_by => { '-asc' => 'created_on' } } )->all;
         $c->stash->{files} = @files ? \@files : []; 
     }else{
@@ -334,6 +355,7 @@ sub view : Local {
         $c->stash->{comments} = '';
         $c->stash->{ii} = $p->{ii};
         $c->stash->{files} = []; 
+        $c->stash->{topics} = []; 
     }
 
     if( $p->{html} ) {
@@ -1311,32 +1333,33 @@ sub upload : Local {
 sub file : Local {
     my ( $self, $c, $action ) = @_;
     my $p      = $c->req->params;
-    my $md5 = $p->{md5};
     my $id_topic = $p->{id_topic};
     try {
         my $msg; 
         if( $action eq 'delete' ) {
-            my $file = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
-            ref $file or _fail _loc("File id %1 not found", $md5 );
-            my $count = Baseliner->model('Baseliner::BaliMasterRel')->search({ to_mid => $file->mid })->count;
-            if( $count < 2 ) {
-                _log "Deleting file " . $file->mid;
-                $file->delete;
-                $msg = _loc( "File deleted ok" );
-            } else {
-                event_new 'event.topic.file_remove' => {
-                    username => $c->username,
-                    mid      => $id_topic,
-                    id_file  => $file->mid,
-                    filename => $file->filename,
-                    }
-                => sub {
-                    my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$id_topic, to_mid => $file->mid })->first;
-                    _log "Deleting file from topic $id_topic ($rel) = " . $file->mid;
-                    ref $rel or _fail _loc "File not attached to topic";
-                    $rel -> delete;
-                    $msg = _loc( "Relationship deleted ok" );
-                };
+            for my $md5 ( _array( $p->{md5} ) ) {
+                my $file = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
+                ref $file or _fail _loc("File id %1 not found", $md5 );
+                my $count = Baseliner->model('Baseliner::BaliMasterRel')->search({ to_mid => $file->mid })->count;
+                if( $count < 2 ) {
+                    _log "Deleting file " . $file->mid;
+                    $file->delete;
+                    $msg = _loc( "File deleted ok" );
+                } else {
+                    event_new 'event.topic.file_remove' => {
+                        username => $c->username,
+                        mid      => $id_topic,
+                        id_file  => $file->mid,
+                        filename => $file->filename,
+                        }
+                    => sub {
+                        my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$id_topic, to_mid => $file->mid })->first;
+                        _log "Deleting file from topic $id_topic ($rel) = " . $file->mid;
+                        ref $rel or _fail _loc "File not attached to topic";
+                        $rel -> delete;
+                        $msg = _loc( "Relationship deleted ok" );
+                    };
+                }
             }
         }
         $c->stash->{ json } = { success => \1, msg => $msg };

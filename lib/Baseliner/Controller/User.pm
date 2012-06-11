@@ -772,4 +772,24 @@ sub change_pass : Local {
     $c->forward('View::JSON');
 }
 
+sub avatar : Local {
+    my ( $self, $c, $username ) = @_;
+    my ($file, $body, $filename, $extension);
+    $filename = "$username.png";
+    $file = $c->path_to( "/root/static/images/icons/user.png" );
+    if( defined $file ) {
+        $c->serve_static_file( $file );
+    } 
+    elsif( defined $body ) {
+        $c->res->body( $body );
+    }
+    else {
+        _throw 'Missing serve_file or serve_body on stash';
+    }
+    #$c->res->headers->remove_header('Cache-Control');
+    #$c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
+    #$c->res->headers->remove_header('Pragma');
+	$c->res->content_type('image/png');
+}
+
 1;

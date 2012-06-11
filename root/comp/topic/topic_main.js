@@ -111,7 +111,6 @@
     var show_form = function(){
         if( params!==undefined && params.id !== undefined ) {
             Baseliner.ajaxEval( '/topic/json', { id: params.id }, function(rec) {
-                
                 load_form( rec );
             });
         } else {
@@ -119,6 +118,10 @@
         }
           
         cardpanel.getLayout().setActiveItem( 1 );
+    };
+
+    Baseliner.show_topic = function(id_topic, title) {
+        Baseliner.add_tabcomp('/topic/view', title , { id: id_topic, title: title } );
     };
 
     // if id_com is undefined, then its add, otherwise it's an edit
