@@ -125,7 +125,7 @@ sub update {
                             $mid = $project->mid
                         }
                         else{
-                            my $user_mid = master_new 'bali_project' => sub {
+                            my $project_mid = master_new 'bali_project' => sub {
                                 my $mid = shift;
                                 $project->mid($mid);
                                 $project->update();

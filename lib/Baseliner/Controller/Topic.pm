@@ -888,7 +888,21 @@ sub update_project : Local {
     my $id_project = $p->{id_project};
 
     try{
-        my $project = $c->model('Baseliner::BaliTopicProject')->create({id_topic => $id_topic, id_project => $id_project});
+        my $project = $c->model('Baseliner::BaliProject')->find({id => $id_project});
+        my $mid;
+        if($project->mid){
+            $mid = $project->mid
+        }
+        else{
+            my $project_mid = master_new 'bali_project' => sub {
+                my $mid = shift;
+                $project->mid($mid);
+                $project->update();
+            }
+        }
+        my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+        $topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+        
         $c->stash->{json} = { msg=>_loc('Project added'), success=>\1 };
     }
     catch{
