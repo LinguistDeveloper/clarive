@@ -122,7 +122,8 @@
 %      } else {
                 <p><% $com->{text} %></p>
 %      } 
-                <p><small><b><%$com->{created_by}%></b>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
+                <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $com->{created_by} %>/image.png" />
+                    <b><%$com->{created_by}%></b>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
 %    if( $c->username eq $com->{created_by} ) {
                     | <a href="javascript:Baseliner.Topic.comment_edit( undefined, <% $com->{id} %>)"><% _loc("edit") %></a>
                     | <a href="javascript:Baseliner.Topic.comment_delete(<% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
@@ -136,7 +137,7 @@
           <div class="tab-pane" id="activity<% $ii %>">
 %  foreach ( _array( $events ) ) {
             <div style="margin-left: 20px">
-             <p><img style="margin: 4px" src="/user/avatar/<% $_->{username} %>/image.png" /><% $_->{text} %></p>
+             <p><img style="margin: 5px" width=16 src="/user/avatar/<% $_->{username} %>/image.png" /><% $_->{text} %></p>
              <hr />
             </div> 
 %}
