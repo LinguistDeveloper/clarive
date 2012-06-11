@@ -544,7 +544,8 @@
         var tag_comment_html;
         tag_comment_html='';
         if(rec.data.numcomment){
-            tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + "</span>";
+            //tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + "</span>";
+			tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /></span>";
         }       
         return tag_comment_html;
     };
@@ -586,8 +587,8 @@
         loadMask:'true',
         columns: [
             { header: _('Category'), dataIndex: 'namecategory', width: 80, sortable: true, renderer: render_category },
+            { header: '', dataIndex: 'numcomment', width: 10, renderer: render_comment },			
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
-            { header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('Topic'), hidden: true, dataIndex: 'id', width: 39, sortable: true, renderer: render_id },    
             { header: _('Description'), hidden: true, dataIndex: 'description' }
