@@ -51,7 +51,6 @@ sub update {
                 # related topics
                 if( my @topics = _array( $p->{topics} ) ) {
                     my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
-                    die "TOPICS";
                     while(my $topic = $rs_topics->next){
                         $topic->add_to_topics($topic, { rel_type=>'topic_topic'});
                     }
@@ -226,7 +225,7 @@ sub update {
 sub GetTopics {
     ##my ( $self, $p, $labels, $categories, $projects, $statuses, $priorities ) = @_;
     my ( $self, $p ) = @_;
-    my $orderby = $p->{orderby} || 'ID ASC';
+    my $orderby = $p->{orderby} || 'MID DESC';
     my $username = $p->{username};
     my $hoy = $p->{hoy} eq 'true' ? 1:0;;
     my $asignadas = $p->{asignadas} eq 'true' ? 1:0;
@@ -260,7 +259,7 @@ sub GetTopics {
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     $SQL = "SELECT BALI_TOPIC.MID AS MID, BALI_TOPIC.ID AS ID, TITLE,
-                    CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
+                    CREATED_ON, CREATED_BY, STATUS, S.NAME AS STATUS_NAME, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
                     ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, F.COLOR CATEGORY_COLOR
                     FROM  BALI_TOPIC LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
                       LEFT JOIN
@@ -270,7 +269,9 @@ sub GetTopics {
                                 AND REL.TO_MID = B.MID
                                 AND REL.REL_TYPE = 'topic_post'
                                 GROUP BY A.MID) D
-                      ON BALI_TOPIC.MID = D.MID ORDER BY ?";
+                      ON BALI_TOPIC.MID = D.MID
+                      LEFT JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID
+                      ORDER BY ?";
     
     my @datas = $db->array_hash( $SQL, $orderby);
     
