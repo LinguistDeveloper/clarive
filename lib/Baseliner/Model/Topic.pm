@@ -206,7 +206,16 @@ sub GetTopics {
     ##my ( $self, $p, $labels, $categories, $projects, $statuses, $priorities ) = @_;
     my ( $self, $p ) = @_;
     my $orderby = $p->{orderby} || 'ID ASC';
+    my $username = $p->{username};
+    my $hoy = $p->{hoy} eq 'true' ? 1:0;;
+    my $asignadas = $p->{asignadas} eq 'true' ? 1:0;
+    my @labels = _array $p->{labels};
+    my @categories = _array $p->{categories};
+    my @statuses = _array $p->{statuses};
+    my @priorities = _array $p->{priorities};
+    
     my $SQL;
+    
     ##my $ids_categories;
     ##my @labels = _array $labels;
     ##my @categories = _array $categories;
@@ -242,7 +251,83 @@ sub GetTopics {
                                 GROUP BY A.MID) D
                       ON BALI_TOPIC.MID = D.MID ORDER BY ?";
     
-    return $db->array_hash( $SQL, $orderby);
+    my @datas = $db->array_hash( $SQL, $orderby);
+    
+    my @temp =();
+    my %seen   = ();
+    
+    if($hoy){
+        my $Hoy = DateTime->now->ymd;
+        foreach my $data (@datas){
+            my $created_on = parse_date( 'dd/mm/Y', $data->{created_on})->ymd;
+            push @temp, $data if $Hoy eq $created_on;
+        }
+        @datas = @temp;
+    }
+    
+    @temp =();
+    
+    if($asignadas){
+        my $rs_user = Baseliner->model('Baseliner::BaliUser')->search( username => $username )->first;
+        if($rs_user){
+            my $topics = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]});
+            while( my $topic = $topics->next ) {
+                push @temp, grep { $_->{mid} =~ $topic->from_mid  } @datas if $topic;
+            }
+            @datas = @temp;
+        }        
+    }
+    
+    @temp =();
+    
+    if(@labels){
+        my @f_labels;
+        my $labels;
+        
+        foreach my $label (@labels){
+            push @f_labels, $label;
+        }
+        
+        $labels = Baseliner->model('Baseliner::BaliTopicLabel')->search({id_label => \@f_labels});
+        while( my $label = $labels->next ) {
+            push @temp, grep { $_->{id} =~ $label->id_topic && ! $seen{ $_->{id} }++ } @datas if $label;
+        }
+        @datas = @temp;
+        
+    }
+    
+    
+    @temp =();
+    %seen   = ();
+    
+    if(@categories){
+        foreach my $category (@categories){
+            push @temp, grep { $_->{category} =~ $category && ! $seen{ $_->{id} }++ } @datas if $category;    
+        }
+        @datas = @temp;
+    }
+    
+    @temp =();
+    %seen   = ();
+    
+    if(@statuses){
+        foreach my $status (@statuses){
+            push @temp, grep { $_->{id_category_status} =~ $status && ! $seen{ $_->{id} }++ } @datas if $status;    
+        }
+        @datas = @temp;
+    }        
+
+    @temp =();
+    %seen   = ();
+    
+    if(@priorities){
+        foreach my $priority (@priorities){
+            push @temp, grep { $_->{id_priority} =~ $priority && ! $seen{ $_->{id} }++ } @datas if $priority;
+        }
+        @datas = @temp;            
+    }    
+    
+    return @datas;
 }
 
 1;
