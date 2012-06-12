@@ -113,7 +113,7 @@ register 'service.job.footprint' => {
 					}
 				}
 			} else {
-				$log->warn("No se han encontrado datos para footprinting del fichero $filename");
+				$log->debug("No se han encontrado datos para footprinting del fichero $filename");
 			}
 		}
 		$log->info("Footprinting terminado. Listado de ".scalar(keys(%MODIFICADOS))." elemento(s) modificado(s):", data => join("\n",keys(%MODIFICADOS)), milestone => 1, data_name => 'Footprinting.txt');

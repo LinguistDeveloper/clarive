@@ -288,7 +288,7 @@ sub search {
 		$filter->{rows} = $p->{limit};
 	}
     # sorting
-	$filter->{order_by} = $p->{"sort"} ? "$p->{sort} $p->{dir}" : "me.key asc"
+	$filter->{order_by} = $p->{"sort"} ? { "-$p->{dir}" => $p->{sort} } : { -asc =>"me.key" }
 		unless $p->{sort} =~ /^config_/i;
 	
     my $rs = Baseliner->model('Baseliner::BaliConfig')->search($where,$filter);

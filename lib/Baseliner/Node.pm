@@ -92,11 +92,10 @@ sub parse_url {
     if( $url =~ m{
            ^
            (?<agent>\w+)://                     # agent name
-           ((?<user>\w+)(:(?<password>.*))?@)?  # optional: "user:password"
-           (?<host>[^/]+)                       # hostname or IP
-           (:(?<port>\d+))?                     # optional: port
-           (?<home>/[^\?]+)?                    # optional: home dir 
-           (\?(?<params>.+))?                   # optional: params 
+           ((?<user>\w+)(:(?<password>.*))?@)?  # optional: "user:password" [user[:password]]
+           (?<host>[^:/]+)(:(?<port>\d+))?   # host (Ip or name) [:port]
+           (?<home>/[^\?]+)?                    # optional: home dir
+           (\?(?<params>.+))?                   # optional: params
            $ }x ) {
         return %{ { %+ } };
     }

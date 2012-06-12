@@ -8,6 +8,7 @@ with 'Baseliner::Role::Baselined';
 
 requires 'created_on';
 requires 'created_by';
+requires 'more_info';
 
 has 'icon_on'  => ( is=>'rw', isa=>'Str', default=> '/static/images/scm/package.gif' ); 
 has 'icon_off' => ( is=>'rw', isa=>'Str', default=> '/static/images/scm/package_off.gif' );

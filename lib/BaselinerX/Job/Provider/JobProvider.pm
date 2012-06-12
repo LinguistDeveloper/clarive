@@ -59,7 +59,7 @@ sub list {
 	my @ns;
 	my $rs = Baseliner->model('Baseliner::BaliJob')->search( $sql_query , { %range });
 	while( my $r = $rs->next ) {
-		push @ns, BaselinerX::CA::Harvest::Namespace::Application->new({ row=> $r });
+		#push @ns, BaselinerX::CA::Harvest::Namespace::Application->new({ row=> $r });
 	}
 
 	my $cnt = scalar @ns;

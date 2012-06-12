@@ -303,7 +303,7 @@ Renders a Mason view by default, passing it all parameters as <%args>.
 sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
     $c->stash->{$_}=$c->request->parameters->{$_} 
-    	foreach( keys %{ $c->req->parameters || ()});
+    	foreach( keys %{ $c->req->parameters || {} });
 }
 
 =head1 LICENCE AND COPYRIGHT
