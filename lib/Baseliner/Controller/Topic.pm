@@ -67,8 +67,8 @@ sub list : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
-    $sort ||= 'id';
-    $dir ||= 'asc';
+    $sort ||= 'mid';
+    $dir ||= 'desc';
     $start||= 0;
     $limit ||= 100;
 
@@ -135,7 +135,10 @@ sub list : Local {
             labels      => \@labels,
             projects    => \@projects,
             status      => $data->{id_category_status},
+            status_letter      => $data->{status},
+            is_closed => ( $data->{status} eq 'C' ? \1 : \0 ),
             priority    => $data->{id_priority},
+            status_name    => $data->{status_name},
             response_time_min   => $data->{response_time_min},
             expr_response_time  => $data->{expr_response_time},
             deadline_min    => $data->{deadline_min},
@@ -433,6 +436,7 @@ sub list_category : Local {
                     id          => $r->id,
                     category    => $r->id,
                     name        => $r->name,
+                    color        => $r->color,
                     category_name => $r->name,
                     description => $r->description,
                     statuses    => \@statuses
@@ -911,7 +915,7 @@ sub filters_list : Local {
     push @views, {
         id  => $i++,
         idfilter      => 1,
-        text    => 'Hoy',
+        text    => _loc('Created Today'),
         filter  => '{"hoy":true}',
         default    => \1,
         cls     => 'forum',
@@ -923,7 +927,7 @@ sub filters_list : Local {
     push @views, {
         id  => $i++,
         idfilter      => 2,
-        text    => 'Asignadas',
+        text    => _loc('Assigned To Me'),
         filter  => '{"Asignadas":true}',
         default    => \1,
         cls     => 'forum',
@@ -954,7 +958,7 @@ sub filters_list : Local {
     
     push @tree, {
         id          => 'V',
-        text        => 'views',
+        text        => _loc('views'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         children    => \@views
@@ -980,7 +984,7 @@ sub filters_list : Local {
     
     push @tree, {
         id          => 'L',
-        text        => 'labels',
+        text        => _loc('labels'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         children    => \@labels
@@ -1006,7 +1010,7 @@ sub filters_list : Local {
     
     push @tree, {
         id          => 'S',
-        text        => 'statuses',
+        text        => _loc('statuses'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         expanded    => 'true',
@@ -1034,7 +1038,7 @@ sub filters_list : Local {
 
     push @tree, {
         id          => 'C',
-        text        => 'categories',
+        text        => _loc('categories'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         expanded    => 'true',
@@ -1062,7 +1066,7 @@ sub filters_list : Local {
        
     push @tree, {
         id          => 'P',
-        text        => 'priorities',
+        text        => _loc('priorities'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         expanded    => 'true',
