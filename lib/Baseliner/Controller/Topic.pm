@@ -121,6 +121,7 @@ sub list : Local {
             labels      => \@labels,
             projects    => \@projects,
             status      => $data->{id_category_status},
+            status_name      => $data->{status_name},
             status_letter      => $data->{status},
             is_closed => ( $data->{status} eq 'C' ? \1 : \0 ),
             priority    => $data->{id_priority},
