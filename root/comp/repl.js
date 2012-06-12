@@ -217,7 +217,7 @@ To do:
                     tree.removeAll();
                     reload_root();
                 }
-            },
+            }
         ],
         root: {
             nodeType: 'async',
