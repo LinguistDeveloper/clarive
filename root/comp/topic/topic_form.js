@@ -1,57 +1,14 @@
 (function(rec){
     var form_is_loaded = false;
-    // loads data into the form:
-    //var load_form = function(rec) {
-    //    if( rec !== undefined ){
-    //        var status = rec.status; 
-    //
-    //        alert( 'noo');
-    //        store_admin_category.baseParams = { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name };
-    //        //store_admin_category.load({
-    //         //   params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
-    //        //});
-    //        var ff = form_topic.getForm();
-    //        var store = combo_category.getStore();
-    //        var category = rec.category;
-    //        //store.load();
-    //        var priority = rec.priority;
-    //        //store_priority.load();
-    //
-    //        rec.category = rec.category_name;
-    //        rec.status_new   = rec.status_name;
-    //        rec.priority   = rec.priority_name;
-    //
-    //        /* /* /* /* /* /* /* /* var cat_rec = Ext.data.Record.create(['category', 'category_name']);
-    //        store.insert(0, new cat_rec({ category: rec.category, category_name: rec.category_name  }));
-    //        combo_category.setValue( rec.category ); */
-    //        
-    //        ff.loadRecord({ data: rec });// loadRecord needs the actual record in "data: "
-    //        load_txt_values_priority({ data: rec });
-    //
-    //        ff.findField("txtcategory_old").setValue(rec.category);
-    //        var projects = '';
-    //        if(rec.projects){
-    //            for(i=0;i<rec.projects.length;i++){
-    //                projects = projects ? projects + '\n' + rec.projects[i].project: rec.projects[i].project;
-    //            }
-    //            ff.findField("txtprojects").setValue(projects);
-    //        }         
-    //        //title = 'Edit topic';
-    //    }
-    //};
-    //   
-    //var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
-    
-    //var title = 'Create topic';
 
     var store_category = new Baseliner.Topic.StoreCategory({
-            fields: ['category', 'category_name' ]  
+        fields: ['category', 'category_name' ]  
     });
-    //alert(rec.status);
-    var store_admin_category = new Baseliner.Topic.StoreCategoryStatus({
-        //baseParams: { 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name, change_categoryId: rec.new_category_id },
+
+    var store_category_status = new Baseliner.Topic.StoreCategoryStatus({
         url:'/topic/list_admin_category'
     });
+    
     var store_priority = new Baseliner.Topic.StorePriority();
     var store_project = new Baseliner.Topic.StoreProject();
     
@@ -99,8 +56,164 @@
         displayField: 'name',
         valueField: 'id',
         //disabled: true,
-        store: store_admin_category
+        store: store_category_status
     });     
+
+    var record = Ext.data.Record.create([
+        {name: 'filename'},
+        {name: 'versionid'},
+        {name: 'filesize'},     
+        {name: 'size'},     
+        {name: 'md5'},     
+        {name: '_id', type: 'int'},
+        {name: '_parent', type: 'auto'},
+        {name: '_level', type: 'int'},
+        {name: '_is_leaf', type: 'bool'}
+    ]); 
+
+    var store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
+       autoLoad : true,  
+       url: '/topic/file_tree',
+       baseParams: { id_topic: rec.mid },
+       reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
+    }); 
+    var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var md5 = rec.data.md5;
+        if( md5 != undefined ) {
+            value = String.format('<a target="FrameDownload" href="/topic/download_file/{1}">{0}</a>', value, md5 );
+        }
+        value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' 
+            //+ '<input type="checkbox" class="ux-maximgb-tg-mastercol-cb" ext:record-id="' + record.id +  '"/>&nbsp;'
+            + value 
+            + '</div>';
+        return value;
+    };
+
+    var file_del = function(){
+        var sels = checked_selections();
+        if ( sels != undefined ) {
+            var sel = check_sm.getSelected();
+            Baseliner.confirm( _('Are you sure you want to delete these artifacts?'), function(){
+                var sels = checked_selections();
+                Baseliner.ajaxEval( '/topic/file/delete', { md5 : sels.md5, id_topic: rec.mid }, function(res) {
+                    Baseliner.message(_('Deleted'), res.msg ); 
+                    store_file.load();
+                });
+            });
+        } 
+        //Baseliner.Topic.file_del('', '', '' );
+    };
+
+    var checked_selections = function() {
+        if (check_sm.hasSelection()) {
+            var sel = check_sm.getSelections();
+            var name = [];
+            var md5 = [];
+            for( var i=0; i<sel.length; i++ ) {
+                md5.push( sel[i].data.md5 );
+                name.push( sel[i].data.name );
+            }
+            return { count: md5.length, name: name, md5: md5 };
+        }
+        return undefined;
+    };
+
+    var check_sm = new Ext.grid.CheckboxSelectionModel({
+        singleSelect: false,
+        sortable: false,
+        checkOnly: true
+    });
+
+    var filelist = new Ext.ux.maximgb.tg.GridPanel({
+        height: 120,
+        header: false,
+        stripeRows: true,
+        autoScroll: true,
+        autoWidth: true,
+        sortable: false,
+        header: false,
+        hideHeaders: true,
+        sm: check_sm,
+        store: store_file,
+        tbar: [
+            { xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
+            '->',
+            { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete.gif', handler: file_del }
+        ],
+        viewConfig: {
+            headersDisabled: true,
+            enableRowBody: true,
+            scrollOffset: 2,
+            forceFit: true
+        },
+        master_column_id : 'filename',
+        autoExpandColumn: 'filename',
+        columns: [
+          check_sm,
+          { width: 16, dataIndex: 'extension', sortable: true, renderer: Baseliner.render_extensions },
+          { id:"filename", header: _('File'), width: 250, dataIndex: 'filename', renderer: render_file },
+          { header: _('Id'), hidden: true, dataIndex: '_id' },
+          { header: _('Size'), width: 40, dataIndex: 'size' },
+          { header: _('Version'), width: 40, dataIndex: 'versionid' }
+        ]
+    });
+    /* tree.getLoader().on("beforeload", function(treeLoader, node) {
+        var loader = tree.getLoader();
+        loader.baseParams = { path: node.attributes.path, repo_path: repo_path, bl: bl };
+    });
+
+    tree.on('dblclick', function(node, ev){ 
+        show_properties( node.attributes.path, node.attributes.item, node.attributes.version, node.leaf );
+    }); */
+    
+
+    var filedrop = new Ext.Panel({
+        border: false,
+        style: { margin: '10px 0px 10px 0px' },
+        height: '100px'
+    });
+
+    filedrop.on('afterrender', function(){
+        var el = filedrop.el.dom;
+        var uploader = new qq.FileUploader({
+            element: el,
+            action: '/topic/upload',
+            //debug: true,  
+            // additional data to send, name-value pairs
+            params: {
+                id_topic: params.id
+            },
+            template: '<div class="qq-uploader">' + 
+                '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
+                '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
+                '<ul class="qq-upload-list"></ul>' + 
+             '</div>',
+            onComplete: function(fu, filename, res){
+                Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
+                store_file.load();
+            },
+            onSubmit: function(id, filename){},
+            onProgress: function(id, filename, loaded, total){},
+            onCancel: function(id, filename){ },
+            classes: {
+                // used to get elements from templates
+                button: 'qq-upload-button',
+                drop: 'qq-upload-drop-area',
+                dropActive: 'qq-upload-drop-area-active',
+                list: 'qq-upload-list',
+                            
+                file: 'qq-upload-file',
+                spinner: 'qq-upload-spinner',
+                size: 'qq-upload-size',
+                cancel: 'qq-upload-cancel',
+
+                // added to list item when upload completes
+                // used in css to hide progress spinner
+                success: 'qq-upload-success',
+                fail: 'qq-upload-fail'
+            }
+        });
+    });
     
     function get_expr_response_time(row){
         var str_expr = '';
@@ -168,146 +281,104 @@
             }
         }           
     });
-    
-    //var show_projects = function(rec) {
-    //    var win_project;
-    //    var title = 'Projects';
-    //
-    //    function getProjects(names_checked){
-    //        var projects_checked = new Array();
-    //        check_ast_projects_sm.each(function(rec){
-    //            projects_checked.push(rec.get('id_project'));
-    //            names_checked.push(rec.get('project'));
-    //        });
-    //        return projects_checked
-    //    }
-    //
-    //
-    //    var btn_cerrar_projects = new Ext.Toolbar.Button({
-    //        icon:'/static/images/icons/door_out.png',
-    //        cls: 'x-btn-text-icon',
-    //        text: _('Close'),
-    //        handler: function() {
-    //            win_project.close();
-    //        }
-    //    });
-    //    
-    //    var btn_grabar_projects = new Ext.Toolbar.Button({
-    //        icon:'/static/images/icons/database_save.png',
-    //        cls: 'x-btn-text-icon',
-    //        text: _('Save'),
-    //        handler: function(){
-    //            var names_checked = new Array();
-    //            var projects_checked = getProjects(names_checked);
-    //            var form = form_topic.getForm();
-    //            var projects = '';
-    //            if(names_checked){
-    //                for(i=0;i<names_checked.length;i++){
-    //                    projects = projects ? projects + ',' + names_checked[i]: names_checked[i];
-    //                }
-    //                form.findField("txtprojects").setValue(projects);                     
-    //            }
-    //            
-    //            Baseliner.ajaxEval( '/topic/unassign_projects',{ idtopic: rec.id, idsproject: projects_checked },
-    //                function(response) {
-    //                    if ( response.success ) {
-    //                        Baseliner.message( _('Success'), response.msg );
-    //                        form.findField("id").setValue(rec.id);
-    //                        Baseliner.ajaxEval( '/topic/json', { id: rec.id }, function(data) {
-    //                            load_form( data );
-    //                        });                          
-    //                    } else {
-    //                        Baseliner.message( _('ERROR'), response.msg );
-    //                    }
-    //                }
-    //            );
-    //        }
-    //    });
-    //
-    //    var check_ast_projects_sm = new Ext.grid.CheckboxSelectionModel({
-    //        singleSelect: false,
-    //        sortable: false,
-    //        checkOnly: true
-    //    });
-    //
-    //    
-    //    var grid_ast_projects = new Ext.grid.GridPanel({
-    //        title : _('Projects'),
-    //        sm: check_ast_projects_sm,
-    //        autoScroll: true,
-    //        header: false,
-    //        stripeRows: true,
-    //        autoScroll: true,
-    //        height: 300,
-    //        enableHdMenu: false,
-    //        store: store_project,
-    //        viewConfig: {forceFit: true},
-    //        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-    //        loadMask:'true',
-    //        columns: [
-    //            { hidden: true, dataIndex:'id_project' },
-    //            check_ast_projects_sm,
-    //            { header: _('Project'), dataIndex: 'project', sortable: false }
-    //        ],
-    //        autoSizeColumns: true,
-    //        deferredRender:false,
-    //        bbar: [
-    //            btn_grabar_projects,
-    //            btn_cerrar_projects
-    //        ],
-    //        listeners: {        
-    //            viewready: function() {
-    //                var me = this;
-    //                var myDatas = [];
-    //                var recs = [];
-    //                if(rec.projects){
-    //                    for(i=0;i<rec.projects.length;i++){
-    //                        var myData = new Array();
-    //                        myData[0] = rec.projects[i].id_project;
-    //                        myData[1] = rec.projects[i].project;
-    //                        myDatas.push(myData);
-    //                        recs.push(i);
-    //                    }
-    //                }
-    //                store_project.loadData(myDatas);
-    //                me.getSelectionModel().selectRows(recs);
-    //            }
-    //        }       
-    //    });
-    //    
-    //    //Ext.util.Observable.capture(grid_ast_labels, console.info);
-    //
-    //    win_project = new Ext.Window({
-    //        title: _(title),
-    //        width: 400,
-    //        modal: true,
-    //        autoHeight: true,
-    //        items: grid_ast_projects
-    //    });
-    //    
-    //    win_project.show();
-    //};
-    //
-    //var btn_unassign_project = new Ext.Toolbar.Button({
-    //    text: _('projects'),
-    //    handler: function() {
-    //    }
-    //});
-    //
-    //var btn_unassign_roles = new Ext.Toolbar.Button({
-    //    text: _('roles'),
-    //    handler: function() {
-    //        show_projects(rec);
-    //    }
-    //});         
 
-    var project_box_store = new Baseliner.store.UserProjects({ id: 'id', autoLoad: true });
+    Baseliner.store.Topics = function(c) {
+         Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
+            root: 'data' , 
+            remoteSort: true,
+            autoLoad: true,
+            totalProperty:"totalCount", 
+            baseParams: {},
+            id: 'mid', 
+            url: '/topic/related',
+            fields: ['mid','name', 'title','description','color'] 
+         }, c));
+    };
+    Ext.extend( Baseliner.store.Topics, Ext.data.JsonStore );
+
+    Baseliner.model.Topics = function(c) {
+        //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
+        var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+            '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+            '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+        var tpl_field = new Ext.XTemplate( '<tpl for=".">',
+            '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+            '</tpl>' );
+        Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
+            allowBlank: true,
+            msgTarget: 'under',
+            allowAddNewData: true,
+            addNewDataOnBlur: true, 
+            //emptyText: _('Enter or select topics'),
+            triggerAction: 'all',
+            resizable: true,
+            //store: new Baseliner.store.UserProjects({}),
+            mode: 'local',
+            fieldLabel: _('Topics'),
+            typeAhead: true,
+            name: 'topics',
+            displayField: 'name',
+            hiddenName: 'topics',
+            valueField: 'mid',
+            tpl: tpl_list,
+            displayFieldTpl: tpl_field,
+            value: '/',
+            extraItemCls: 'x-tag'
+            /*
+            ,listeners: {
+                newitem: function(bs,v, f){
+                    v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                    var newObj = {
+                        mid: v,
+                        title: v
+                    };
+                    bs.addItem(newObj);
+                }
+            }
+            */
+        }, c));
+    };
+    Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
+
+    var topic_box_store = new Baseliner.store.Topics({ mid: rec.mid });
+    var topic_box = new Baseliner.model.Topics({
+        store: topic_box_store
+    });
+    topic_box_store.on('load',function(){
+        topic_box.setValue( rec.topics ) ;            
+    });
+
+    var user_box_store = new Baseliner.Topic.StoreUsers({
+        autoLoad: true,
+        baseParams: {projects:[]}
+    });
+    
+    var user_box = new Baseliner.model.Users({
+        store: user_box_store 
+    });
+    
+    user_box_store.on('load',function(){
+        user_box.setValue( rec.users) ;            
+    });
+    
+    var project_box_store = new Baseliner.store.UserProjects({ id: 'id' });
+    
     var project_box = new Baseliner.model.Projects({
         store: project_box_store
     });
+    
     project_box_store.on('load',function(){
-        project_box.setValue( rec.projects) ;
+        project_box.setValue( rec.projects) ;            
     });
+    
+    project_box.on('blur',function(obj){
+        var projects = new Array();
+        projects = (obj.getValue()).split(","); 
+        user_box.store.load({
+            params:{ projects: projects}
+        }); 
+    });    
+    
     var pb_panel = new Ext.Panel({
         layout: 'form',
         enableDragDrop: true,
@@ -332,6 +403,7 @@
                   items: [
             
             { xtype: 'hidden', name: 'id', value: rec.id },
+            { xtype: 'hidden', name: 'mid', value: rec.mid },
             {
                 xtype:'textfield',
                 fieldLabel: _('Title'),
@@ -364,17 +436,18 @@
             { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
             { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
             pb_panel,
-            { xtype: 'panel', layout:'fit', border:false,items: 
+            user_box,
+            topic_box,
             {
-                xtype: 'fileuploadfield',
-                emptyText: _('Select a File'),
-                fieldLabel: _('File'),
-                name: 'file_path',
-                buttonText: '',
-                buttonCfg: {
-                    iconCls: 'upload-icon'
-                }
-            }},
+                xtype: 'panel',
+                border: false,
+                layout: 'form',
+                items: [
+                    filelist,
+                    filedrop
+                ],
+                fieldLabel: _('Files')
+            },
             { xtype:'panel', layout:'fit', items: [ //this panel is here to make the htmleditor fit
                 {
                     xtype:'htmleditor',
@@ -400,11 +473,14 @@
            combo_category.setValue(rec.new_category_id);
         });
         store_category.load();
-        //store_admin_category.on('load', function(){
-        //   combo_status.setValue( store_admin_category.getAt(0).data.id );
+        //store_category_status.on('load', function(){
+        //   combo_status.setValue( store_category_status.getAt(0).data.id );
         //});
-        store_admin_category.load({
-                params:{ 'change_categoryId': rec.new_category_id }
+        store_category_status.on('load', function(){
+            combo_status.setValue( store_category_status.getAt(0).id );
+        });
+        store_category_status.load({
+            params:{ 'change_categoryId': rec.new_category_id }
         });            
         store_priority.load();
         var form2 = form_topic.getForm();
@@ -414,12 +490,9 @@
             combo_category.setValue(rec.category);
         });
         store_category.load();
-        store_admin_category.load({
-                params:{ 'categoryId': rec.category, 'statusId': rec.status, statusName: rec.status_name }
+        store_category_status.load({
+                params:{ 'categoryId': rec.category, 'statusId': rec.status, 'statusName': rec.status_name }
         });        
-        
-        
-        
     }
 
     pb_panel.on( 'afterrender', function(){

@@ -22,17 +22,24 @@
                             Baseliner.message(_('Success'), a.result.msg );
                             
                             form2.findField("id").setValue(a.result.topic_id);
-                            form2.findField("status").setValue(form2.findField("status_new").getValue());
+                            form2.findField("mid").setValue(a.result.topic_mid);
+                            form2.findField("status").setValue(a.result.topic_status);
                             
                             var store = form2.findField("status_new").getStore();
                             store.load({
                                 params:{    'categoryId': form2.findField("category").getValue(),
-                                            'statusId': form2.findField("status_new").getValue(),
+                                            'statusId': form2.findField("status").getValue(),
                                             'statusName': form2.findField("status_new").getRawValue()
                                         }
-                            });  
+                            });
                             params.id = a.result.topic_id;
+                            params.mid = a.result.topic_mid;
                             btn_comment.show();
+                            if(action == 'add'){
+                                var tabpanel = Ext.getCmp('main-panel');
+                                var objtab = tabpanel.getActiveTab();
+                                objtab.setTitle(objtab.title + ' #' + a.result.topic_id);
+                            }
                             view_is_dirty = true;
                        },
                        failure: function(f,a){
@@ -66,6 +73,18 @@
         //btn_form_reset.hide();
     };
 
+    Baseliner.Topic.file_del = function( id_topic, md5, id_row ) {
+        Baseliner.ajaxEval( '/topic/file/delete', { md5 : md5, id_topic: id_topic }, function(res) {
+            if( res.success ) {
+                Baseliner.message( _('File'), res.msg );
+                Ext.fly( id_row ).remove();
+            }
+            else {
+                Ext.Msg.alert( _('Error'), res.msg );
+            }
+        });
+    };
+
     // Form Panel
     var form = new Ext.Panel({ layout:'fit' });
     var form_topic;
@@ -77,6 +96,8 @@
                 form.add( comp );
                 form.doLayout();
                 form_is_loaded = true;
+                //var form2 = form_topic.getForm();
+                //form2.findField("status").setValue(rec.status);                 
             }
             btn_form_ok.show();
             if(params.id){
@@ -95,7 +116,12 @@
         } else {
             load_form({ new_category_id: params.new_category_id, new_category_name: params.new_category_name });
         }
+          
         cardpanel.getLayout().setActiveItem( 1 );
+    };
+
+    Baseliner.show_topic = function(id_topic, title) {
+        Baseliner.add_tabcomp('/topic/view', title , { id: id_topic, title: title } );
     };
 
     // if id_com is undefined, then its add, otherwise it's an edit
@@ -255,40 +281,6 @@
         detail.load({ url: '/topic/view', params: { id: params.id, ii: ii, html: 1, categoryId: params.categoryId }, scripts: true, callback: function(x){ 
             // loading HTML has finished
             //   careful: errors here block will break js in baseliner
-            var el = document.getElementById('uploader_' + ii );
-            var uploader = new qq.FileUploader({
-                element: el,
-                action: '/topic/upload',
-                //debug: true,  
-                // additional data to send, name-value pairs
-                params: {
-                    id_topic: params.id
-                },
-                template: '<div class="qq-uploader">' + 
-                    '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
-                    '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
-                    '<ul class="qq-upload-list"></ul>' + 
-                 '</div>',
-                onCancel: function(){
-                },
-                classes: {
-                    // used to get elements from templates
-                    button: 'qq-upload-button',
-                    drop: 'qq-upload-drop-area',
-                    dropActive: 'qq-upload-drop-area-active',
-                    list: 'qq-upload-list',
-                                
-                    file: 'qq-upload-file',
-                    spinner: 'qq-upload-spinner',
-                    size: 'qq-upload-size',
-                    cancel: 'qq-upload-cancel',
-
-                    // added to list item when upload completes
-                    // used in css to hide progress spinner
-                    success: 'qq-upload-success',
-                    fail: 'qq-upload-fail'
-                }
-            });
         }});
         detail.body.setStyle('overflow', 'auto');
     };

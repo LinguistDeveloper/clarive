@@ -2668,10 +2668,6 @@ msgstr "Abiertas"
 msgid "Closed"
 msgstr "Cerradas"
 
-# root/comp/topic_grid.js (660)
-msgid "Closed"
-msgstr "Cerradas"
-
 # root/comp/topic_grid.js (938)
 msgid "Are you sure you want to delete the labels selected?"
 msgstr "¿Seguro que quiere borrar le etiqueta seleccionada?"
@@ -2740,6 +2736,9 @@ msgstr "%1 publicó un comentario el %2: %3"
 msgid "%1 deleted a comment on %2: %3"
 msgstr "%1 borró un comentario el %2: %3"
 
+msgid "File"
+msgstr "Fichero"
+
 msgid "Files"
 msgstr "Ficheros"
 
@@ -2748,3 +2747,36 @@ msgstr "Subir Fichero"
 
 msgid "Drop files here to upload"
 msgstr "Arrastre los fichero aquí para subirlos"
+
+msgid "Create view"
+msgstr "Crear vista"
+
+msgid "Delete view"
+msgstr "Borrar vista"
+
+msgid "Assign to"
+msgstr "Asignados"
+
+msgid "select a category"
+msgstr "seleccione una categoría"
+
+msgid "select a priority"
+msgstr "seleccione una prioridad"
+
+msgid "categories"
+msgstr "categorías"
+
+msgid "priorities"
+msgstr "prioridades"
+
+msgid "statuses"
+msgstr "estados"
+
+msgid "labels"
+msgstr "etiquetas"
+
+msgid "Assigned To Me"
+msgstr "Assignadas a Mí"
+
+msgid "Created Today"
+msgstr "Creadas Hoy"

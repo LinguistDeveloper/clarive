@@ -17,6 +17,8 @@ sub update {
 
     my $return;
     my $id;
+    my $mid;
+    my $status;
     my @rsptime = ();
     my @deadline = ();
     
@@ -46,20 +48,62 @@ sub update {
                     );
                 };
                 
-                my @projects = _array( $p->{projects} );
-                if (@projects) {
-                    my $project = Baseliner->model('Baseliner::BaliTopicProject')
-                        ->search({ id_topic => $topic->id } )->delete;
-                    foreach my $id_project (@projects) {
-                        Baseliner->model('Baseliner::BaliTopicProject')->create(
-                            {   id_topic   => $topic->id,
-                                id_project => $id_project
-                            }
-                        );
+                # related topics
+                if( my @topics = _array( $p->{topics} ) ) {
+                    my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+                    while(my $topic = $rs_topics->next){
+                        $topic->add_to_topics($topic, { rel_type=>'topic_topic'});
                     }
-                }                
+                }
+                
+                # projects assigned to 
+                my @projects = _array( $p->{projects} );
+                
+                if (@projects) {
+                    my $project;
+                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({id =>\@projects});
+                    while($project = $rs_projects->next){
+                        my $mid;
+                        if($project->mid){
+                            $mid = $project->mid
+                        }
+                        else{
+                            my $project_mid = master_new 'bali_project' => sub {
+                                my $mid = shift;
+                                $project->mid($mid);
+                                $project->update();
+                            };
+                        }
+                        $topic->add_to_projects($project, { rel_type=>'topic_project'});
+                    }
+
+                }
+                
+                # users assigned to
+                my @users = _array( $p->{users});
+                
+                if (@users){
+                    my $user;
+                    my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({id =>\@users});
+                    while($user = $rs_users->next){
+                        my $mid;
+                        if($user->mid){
+                            $mid = $user->mid
+                        }
+                        else{
+                        	my $user_mid = master_new 'bali_user' => sub {
+                                my $mid = shift;
+                                $user->mid($mid);
+                                $user->update();
+                            };
+                        }
+                        $topic->add_to_users( $user, { rel_type=>'topic_users' });
+                    }
+                }
                 
                 $id     = $topic->id;
+                $mid    = $topic->mid;
+                $status = $topic->id_category_status;
                 $return = 'Topic added';
             } ## end try
             catch {
@@ -80,21 +124,63 @@ sub update {
                 $topic->deadline_min( $deadline[1] );
                 $topic->expr_deadline( $deadline[0] );
 
+                # related topics
+                if( my @topics = _array( $p->{topics} ) ) {
+                    #my @curr_topics = $topic->topics;
+                    my @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+                    #$topic->remove_from_topics( $_ ) for @curr_topics;
+                    $topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+                }
+                
+                # projects
+                my $projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $p->{mid}, rel_type => 'topic_project'})->delete;
                 my @projects = _array( $p->{projects} );
-                if (@projects) {
-                    my $project = Baseliner->model('Baseliner::BaliTopicProject')
-                        ->search({ id_topic => $id_topic } )->delete;
-                    foreach my $id_project (@projects) {
-                        Baseliner->model('Baseliner::BaliTopicProject')->create(
-                            {   id_topic   => $id_topic,
-                                id_project => $id_project
+                if (@projects){
+                    my $project;
+                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({id =>\@projects});
+                    while($project = $rs_projects->next){
+                        my $mid;
+                        if($project->mid){
+                            $mid = $project->mid
+                        }
+                        else{
+                            my $project_mid = master_new 'bali_project' => sub {
+                                my $mid = shift;
+                                $project->mid($mid);
+                                $project->update();
                             }
-                        );
+                        }
+                        $topic->add_to_projects( $project, { rel_type=>'topic_project' } );
                     }
+                }
+                
+                # users
+                my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
+                my @users = _array( $p->{users} );
+                if (@users){
+                    #my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
+                    my $user;
+                    my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({id =>\@users});
+                    while($user = $rs_users->next){
+                        my $mid;
+                        if($user->mid){
+                            $mid = $user->mid
+                        }
+                        else{
+                        	my $user_mid = master_new 'bali_user' => sub {
+                                my $mid = shift;
+                                $user->mid($mid);
+                                $user->update();
+                            };
+                        }
+                        $topic->add_to_users( $user, { rel_type=>'topic_users' });
+                    }                    
                 }
                 
                 $topic->update();
                 $id     = $id_topic;
+                $mid    = $topic->mid;
+                $status = $topic->id_category_status;
                 $return = 'Topic modified';
             } ## end try
             catch {
@@ -105,10 +191,12 @@ sub update {
             my $id_topic = $p->{id};
             try {
                 my $row = Baseliner->model( 'Baseliner::BaliTopic' )->find( $id_topic );
+                $mid    = $row->mid;
                 #my $row2 = Baseliner->model( 'Baseliner::BaliMaster' )->find( $row->mid );
                 $row->delete;
 
                 $id     = $id_topic;
+                
                 $return = 'Topic deleted';
             } ## end try
             catch {
@@ -123,6 +211,7 @@ sub update {
                 $topic->update();
 
                 $id     = $id_topic;
+                $mid    = $topic->mid;
                 $return = 'Topic closed'
             } ## end try
             catch {
@@ -130,14 +219,23 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $id );
+    return ( $return, $id, $mid, $status );
 } ## end sub update
 
 sub GetTopics {
     ##my ( $self, $p, $labels, $categories, $projects, $statuses, $priorities ) = @_;
     my ( $self, $p ) = @_;
-    my $orderby = $p->{orderby} || 'ID ASC';
+    my $orderby = $p->{orderby} || 'MID DESC';
+    my $username = $p->{username};
+    my $hoy = $p->{hoy} eq 'true' ? 1:0;;
+    my $asignadas = $p->{asignadas} eq 'true' ? 1:0;
+    my @labels = _array $p->{labels};
+    my @categories = _array $p->{categories};
+    my @statuses = _array $p->{statuses};
+    my @priorities = _array $p->{priorities};
+    
     my $SQL;
+    
     ##my $ids_categories;
     ##my @labels = _array $labels;
     ##my @categories = _array $categories;
@@ -161,7 +259,7 @@ sub GetTopics {
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     $SQL = "SELECT BALI_TOPIC.MID AS MID, BALI_TOPIC.ID AS ID, TITLE,
-                    CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
+                    CREATED_ON, CREATED_BY, STATUS, S.NAME AS STATUS_NAME, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
                     ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, F.COLOR CATEGORY_COLOR
                     FROM  BALI_TOPIC LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
                       LEFT JOIN
@@ -171,9 +269,96 @@ sub GetTopics {
                                 AND REL.TO_MID = B.MID
                                 AND REL.REL_TYPE = 'topic_post'
                                 GROUP BY A.MID) D
-                      ON BALI_TOPIC.MID = D.MID ORDER BY ?";
+                      ON BALI_TOPIC.MID = D.MID
+                      LEFT JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID
+                      ORDER BY ?";
     
-    return $db->array_hash( $SQL, $orderby);
+    my @datas = $db->array_hash( $SQL, $orderby);
+    
+    my @temp =();
+    my %seen   = ();
+    
+    if($hoy){
+        my $Hoy = DateTime->now->ymd;
+        foreach my $data (@datas){
+            my $created_on = parse_date( 'dd/mm/Y', $data->{created_on})->ymd;
+            push @temp, $data if $Hoy eq $created_on;
+        }
+        @datas = @temp;
+    }
+    
+    @temp =();
+    
+    if($asignadas){
+        my $rs_user = Baseliner->model('Baseliner::BaliUser')->search( username => $username )->first;
+        if($rs_user){
+            my $topics = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]});
+            while( my $topic = $topics->next ) {
+                push @temp, grep { $_->{mid} =~ $topic->from_mid  } @datas if $topic;
+            }
+            @datas = @temp;
+        }        
+    }
+    
+    @temp =();
+    
+    if(@labels){
+        my @f_labels;
+        my $labels;
+        
+        foreach my $label (@labels){
+            push @f_labels, $label;
+        }
+        
+        $labels = Baseliner->model('Baseliner::BaliTopicLabel')->search({id_label => \@f_labels});
+        while( my $label = $labels->next ) {
+            push @temp, grep { $_->{id} =~ $label->id_topic && ! $seen{ $_->{id} }++ } @datas if $label;
+        }
+        @datas = @temp;
+        
+    }
+    
+    
+    @temp =();
+    %seen   = ();
+    
+    if(@categories){
+        foreach my $category (@categories){
+            push @temp, grep { $_->{category} =~ $category && ! $seen{ $_->{id} }++ } @datas if $category;    
+        }
+        @datas = @temp;
+    }
+    
+    @temp =();
+    %seen   = ();
+    
+    if(@statuses){
+        foreach my $status (@statuses){
+            push @temp, grep { $_->{id_category_status} =~ $status && ! $seen{ $_->{id} }++ } @datas if $status;    
+        }
+        @datas = @temp;
+    }        
+
+    @temp =();
+    %seen   = ();
+    
+    if(@priorities){
+        foreach my $priority (@priorities){
+            push @temp, grep { $_->{id_priority} =~ $priority && ! $seen{ $_->{id} }++ } @datas if $priority;
+        }
+        @datas = @temp;            
+    }    
+    
+    return @datas;
+}
+
+sub append_category {
+    my ($self, @topics ) =@_;
+    return map {
+        $_->{name} = $_->{categories}->{name} . ' #' . $_->{id};
+        $_->{color} = $_->{categories}->{color};
+        $_
+    } @topics;
 }
 
 1;

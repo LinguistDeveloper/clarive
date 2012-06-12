@@ -48,6 +48,7 @@ Baseliner.Topic.StoreCategory = Ext.extend( Ext.data.JsonStore, {
             fields: [ 
                 {  name: 'id' },
                 {  name: 'name' },
+                {  name: 'color' },
                 {  name: 'description' },
                 {  name: 'statuses' }
             ]
@@ -93,6 +94,8 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'projects' },          
                 {  name: 'labels' },
                 {  name: 'status' },
+                {  name: 'status_name' },
+                {  name: 'status_letter' },
                 {  name: 'priority' },
                 {  name: 'response_time_min' },
                 {  name: 'expr_response_time' },
@@ -158,3 +161,21 @@ Baseliner.Topic.comment_delete = function(id_com, id_div ) {
         }
     });
 };
+
+Baseliner.Topic.StoreUsers = Ext.extend( Ext.data.JsonStore, {
+    constructor: function(config) {
+        config = Ext.apply({
+            root: 'data' , 
+            remoteSort: true,
+            totalProperty:"totalCount", 
+            url: '/topic/list_users',
+            fields: [ 
+                {  name: 'id' },
+                {  name: 'username' },
+                {  name: 'realname' }
+            ]
+        },config);
+        Baseliner.Topic.StoreUsers.superclass.constructor.call(this, config);
+    }
+});
+

@@ -128,14 +128,19 @@ sub event_new {
     my ($key, $data, $code ) =@_;
     $data ||= {};
     _throw 'event_new is missing mid parameter' unless length $data->{mid};
+    my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
     my $event_create = sub {
         Baseliner->model('Baseliner::BaliEvent')->create({ event_key=>$key, event_data=>_dump( $data ), mid=>$data->{mid}, username=>$data->{username} });
     };
     if( ref $code eq 'CODE' ) {
         try {
+            $ev->pre->( $data ) if defined $ev->pre;
             $code->( $data );
+            $ev->post->( $data ) if defined $ev->pre;
             $event_create->();
-        };  # no event if fails
+        } catch {  # no event if fails
+            ;
+        };
     } else {
         $event_create->();
     }

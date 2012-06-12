@@ -101,8 +101,11 @@
 								params: {action: 'add', filter: Ext.util.JSON.encode( filter_current )},
 								success: function(f,a){
 									Baseliner.message(_('Success'), a.result.msg );
-									tree_filters.getLoader().load(tree_root);
-									loadfilters();
+									var parent_node = tree_filters.getNodeById('V');
+									var ff;
+									ff = form_view.getForm();
+									var name = ff.findField("name").getValue();
+									parent_node.appendChild({id:a.result.data.id, idfilter: a.result.data.idfilter, text:name, filter:  Ext.util.JSON.encode( filter_current ), default: false, cls: 'forum', iconCls: 'icon-no', checked: false, leaf: true});
 									win.close();
 								},
 								failure: function(f,a){
@@ -180,8 +183,16 @@
 			displayField: 'name',
 			valueField: 'id',
 			store: store_category,
+            tpl: '<tpl for="."><div id="boot" class="x-combo-list-item"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></div></tpl>', 
 			allowBlank: false
 		});
+
+        var combo_select = function() {
+            var title = combo_category.getRawValue();
+            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
+            win.close();
+        };
+        combo_category.on('select', combo_select );
 
 		var title = 'Create topic';
 		
@@ -193,11 +204,7 @@
 				type: 'submit',
 				handler: function() {
                     var form = form_topic.getForm();
-                    if (form.isValid()) {
-                        var title = combo_category.getRawValue();
-                        Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
-                        win.close();
-                    }
+                    if (form.isValid()) { combo_select() }
 				}
 				},
 				{
@@ -214,11 +221,13 @@
 		});
 
 		store_category.load();
+        store_category.on( 'load', function(){ combo_category.setValue( store_category.getAt(0).id );  });
 		
 		win = new Ext.Window({
 			title: _(title),
 			width: 550,
 			autoHeight: true,
+            closeAction: 'close',
             modal: true,
 			items: form_topic
 		});
@@ -526,21 +535,31 @@
         tag_color_html = '';
         tag_project_html = '';
 		date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
+        var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
 		
         if(rec.data.labels){
             for(i=0;i<rec.data.labels.length;i++){
                 tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 10px; float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(rec.data.labels[i].color) + ";background-color:#" + rec.data.labels[i].color + "'>" + rec.data.labels[i].name + "</span></div>";
             }
         }
-        return "<div style='font-weight:bold; font-size: 14px;' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>" + tag_color_html + tag_project_html;
+        return "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>" + tag_color_html + tag_project_html;
     };
     
     var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
         var tag_comment_html;
-        tag_comment_html='';
         if(rec.data.numcomment){
-            tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + " comments</span>";
-        }       
+            tag_comment_html = [
+                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
+                rec.data.numcomment,
+                "</span>",
+                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
+                rec.data.numfile,
+                "</span>"
+            ].join("");
+			//tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /></span>";
+        } else {       
+            tag_comment_html='';
+        }
         return tag_comment_html;
     };
     
@@ -552,6 +571,13 @@
             }
         }
         return tag_project_html;
+    };
+
+    var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
+        var ret = 
+            '<small><b><span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#555">' + value + '</span></b></small>';
+           //+ '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background:#ddd;color:#222;font-weight:normal;text-transform:lowercase;text-shadow:none;"><small>' + value + '</small></span></div>'
+        return ret;
     };
 
     var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
@@ -581,8 +607,9 @@
         loadMask:'true',
         columns: [
             { header: _('Category'), dataIndex: 'namecategory', width: 80, sortable: true, renderer: render_category },
+            { header: _('Status'), dataIndex: 'status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
-            { header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
+            { header: '', dataIndex: 'numcomment', width: 10, renderer: render_comment },			
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('Topic'), hidden: true, dataIndex: 'id', width: 39, sortable: true, renderer: render_id },    
             { header: _('Description'), hidden: true, dataIndex: 'description' }
@@ -762,13 +789,23 @@
 	});
 	
 	tree_filters.on('checkchange', function(node, checked) {
-		var swDisable = false;
+		var swDisable = true;
 		var selNodes = tree_filters.getChecked();
+		var tot_view_defaults = 1;
 		Ext.each(selNodes, function(node){
 			var type = node.parentNode.attributes.id;
 			if(type == 'V'){
-				button_delete_view.enable();
-				return false;
+				if(!node.attributes.default){
+					button_delete_view.enable();
+					swDisable = false;
+					return false;
+				}else{
+					if(selNodes.length == tot_view_defaults){
+						swDisable = true;
+					}else{
+						swDisable = false;
+					}
+				}
 			}else{
 				swDisable = true;
 			}
@@ -797,7 +834,7 @@
 				    },   
 					{
 						region : 'east',
-						width: 350,
+						width: 250,
 						split: true,
 						collapsible: true,
 						items: [

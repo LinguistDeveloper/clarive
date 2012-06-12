@@ -2,6 +2,7 @@
     $ii
     $form => '/forms/base.js'
     $id
+    $mid
     $title
     $description
     $comments
@@ -13,6 +14,7 @@
     $status
     $events
     $files
+    $topics
 </%args>
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
     <div class="grid_24"> 
@@ -46,36 +48,46 @@
               </tr>
               <tr>
                 <td colspan="2">
+% if( _array( $topics ) ) {
+                    <ul class="nav nav-list">
+                      <li class="nav-header">
+                        <% _loc("Topics") %>
+                      </li>
+                    </ul>
+                    <ul class="" style="margin-left: 20px">
+                      <li class="">
+% foreach my $topic ( _array( $topics ) ) {
+                      <li style="margin: 6px 0px 6px 0px">
+                          <span class="badge" onclick="javascript:Baseliner.show_topic(<% $topic->{id} %>, '<% $topic->{name} %>')" 
+                            style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
+                            &nbsp;&nbsp;<b><% $topic->{title} %></b>
+                      </li>
+% }
+                    </ul>
+% }
+% if( _array( $files ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
                         <% _loc("Files") %>
                       </li>
                     </ul>
-                    <ul class="">
+                    <ul class="" style="margin-left: 20px">
                       <li class="">
 % foreach my $file ( _array( $files ) ) {
-%   my $target = $file->{extension} =~ /pdf|htm|html|txt|properties/i ? '_blank' : 'FD';  # download or try to show on next tab?
+%   my $fii = $ii . '_' . $file->{md5};
+%   my $target = $file->{extension} =~ /pdf|htm|html|txt|properties/i ? '_blank' : 'FrameDownload';  # download or try to show on next tab?
 %   my ($size,$units) = Baseliner::Utils::_size_unit( $file->{filesize} );
-                      <li>
+                      <li id="<% $fii %>">
+                        <i class="icon-file"></i> 
                         <a href="/topic/download_file/<% $file->{md5} %>/<% $file->{filename} %>" target="<% $target %>">
-                          <i class="icon-file"></i> <% Baseliner::Utils::_html_escape( $file->{filename} ) %>
-                        </a> (<% $size %> <% $units %>) | <a href="/topic/file/delete/<% $file->{md5} %>"><i class="icon-trash"></i></a>
-                        <!-- div class="btn-group">
-                              <button class="btn btn-primary dropdown-toggle btn-mini" data-toggle="dropdown">v4 <span class="caret"></span></button>
-                              <ul class="dropdown-menu">
-                                <li><a href="#">v3</a></li>
-                                <li><a href="#">v2</a></li>
-                                <li><a href="#">v1</a></li>
-                                <li class="divider"></li>
-                                <li><a href="#">Delete</a></li>
-                              </ul>
-                        </div -->
-                        
+                          <% Baseliner::Utils::_html_escape( $file->{filename} ) %>
+                        </a> (<% $size %> <% $units %>) 
                       </li>
 % }
                     </ul>
+% }
                     <p>
-                    <div id="uploader_<% $ii %>"></div>
+%#                    <div id="uploader_<% $ii %>"></div>
                     </p>
                 
                 </td>
@@ -94,9 +106,10 @@
     </ul>
 
     <div class="grid_24">
-<div class="tab-content">
-  <div class="tab-pane active" id="comments<% $ii %>">
-%   foreach my $com ( _array( $comments) ){
+        <div class="tab-content">
+          <div class="tab-pane active" id="comments<% $ii %>">
+
+% foreach my $com ( _array( $comments) ){
 %      my $id_div_com =  "comment_$com->{id}_$ii";
             <div style="margin-left: 20px" id="<% $id_div_com %>">  <!-- class 'well' -->
 %      if( $com->{content_type} eq 'code' )  {
@@ -109,27 +122,26 @@
 %      } else {
                 <p><% $com->{text} %></p>
 %      } 
-                <p><small><%$com->{created_by}%>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
-% if( $c->username eq $com->{created_by} ) {
+                <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $com->{created_by} %>/image.png" />
+                    <b><%$com->{created_by}%></b>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
+%    if( $c->username eq $com->{created_by} ) {
                     | <a href="javascript:Baseliner.Topic.comment_edit( undefined, <% $com->{id} %>)"><% _loc("edit") %></a>
                     | <a href="javascript:Baseliner.Topic.comment_delete(<% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
-% }
+%    }
                 </small></p>
                 <hr />
             </div>
 %}
-  </div>
-  <div class="tab-pane" id="activity<% $ii %>">
-%  foreach ( _array( $events ) ) {
-       <div style="margin-left: 20px">
-            <p><% $_->{text} %>
-%#            <small>Creada por <% $_->{username} %>, <% $_->{username} %> <% $_ %></small>
-            </p>
-            <hr />
-       </div>
-%}
-  </div>
-</div>
+          </div>  <!-- comment tab -->
 
-    </div> 
-</div> 
+          <div class="tab-pane" id="activity<% $ii %>">
+%  foreach ( _array( $events ) ) {
+            <div style="margin-left: 20px">
+             <p><img style="margin: 5px" width=16 src="/user/avatar/<% $_->{username} %>/image.png" /><% $_->{text} %></p>
+             <hr />
+            </div> 
+%}
+          </div> <!-- activity tab -->
+      </div> <!-- tab content -->
+  </div> <!-- lower grid -->
+</div> <!-- boot container -->

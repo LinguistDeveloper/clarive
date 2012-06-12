@@ -2,6 +2,7 @@ package Baseliner::Controller::User;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::DBI;
+use Baseliner::Sugar;
 use Try::Tiny;
 use v5.10;
 
@@ -225,25 +226,34 @@ sub update : Local {
     my $user_key; # (Public key + Username al revés)
     $user_key = $c->config->{decrypt_key}.reverse ($p->{username});
 
+							
     given ($action) {
 	when ('add') {
 	    try{
-		my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
-		if(!$row){
-		    my $user = $c->model('Baseliner::BaliUser')->create(
-							{
-							    username    => $p->{username},
-							    realname  	=> $p->{realname},
-							    password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
-							    alias	=> $p->{alias},
-							    email	=> $p->{email},
-							    phone	=> $p->{phone}
-							});
-		
-		    $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
-		}else{
-		    $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
-		}
+			my $swOk = 1;
+			my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
+			if(!$row){
+				my $user_mid;
+				my $user;
+				$user_mid = master_new 'bali_user' => sub {
+					my $mid = shift;
+					
+					$user = Baseliner->model('Baseliner::BaliUser')->create(
+						{
+							mid			=> $mid,
+							username    => $p->{username},
+							realname  	=> $p->{realname},
+							password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
+							alias	=> $p->{alias},
+							email	=> $p->{email},
+							phone	=> $p->{phone}
+						}
+					);
+				};
+				$c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
+			}else{
+				$c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
+			}
 	    }
 	    catch{
 	    	$c->stash->{json} = { msg=>_loc('Error adding User: %1', shift()), failure=>\1 }
@@ -760,6 +770,71 @@ sub change_pass : Local {
     }
 
     $c->forward('View::JSON');
+}
+
+sub avatar : Local {
+    my ( $self, $c, $username ) = @_;
+    my ($file, $body, $filename, $extension);
+    $filename = "$username.png";
+    try {
+        $file = _dir( $c->path_to( "/root/identicon" ) );
+        $file->mkpath unless -d $file;
+        $file = _file( $file, $username . ".png");
+        unless( -e $file ) {   # generate identicon
+            my $png = $self->identicon($c, $username);
+            my $fh = $file->openw or _fail $!;
+            binmode $fh;
+            print $fh $png;
+            close $fh;
+        }
+    } catch {
+        my $err = shift;
+        _log "Identicon failed: $err";
+        $file = $c->path_to( "/root/static/images/icons/user.png" );
+    };
+    if( defined $file ) {
+        $c->serve_static_file( $file );
+    } 
+    elsif( defined $body ) {
+        $c->res->body( $body );
+    }
+    else {
+        _throw 'Missing serve_file or serve_body on stash';
+    }
+    #$c->res->headers->remove_header('Cache-Control');
+    #$c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
+    #$c->res->headers->remove_header('Pragma');
+	$c->res->content_type('image/png');
+}
+
+sub identicon {
+    my ($self, $c, $username)=@_;
+    my $user = $c->model('Baseliner::BaliUser')->search({ username=>$username })->first;
+    my $generate = sub {
+            # generate png identicon from random
+            require Image::Identicon;
+            my $salt = '1234';
+            my $identicon = Image::Identicon->new({ salt=>$salt });
+            my $image = $identicon->render({ code=> int(rand(999999999999999)), size=>32 });
+            return $image->{image}->png;
+    };
+    if( ref $user ) {
+        if( length $user->avatar ) {
+            _debug "Avatar from db";
+            return $user->avatar;
+        } else {
+            _debug "Generating and saving avatar";
+            my $png = $generate->();
+            # save to user
+            $user->avatar( $png );
+            $user->update;
+            return $png;
+        }
+    }
+    else {
+        _debug "User not found, avatar generated anyway";
+        return $generate->();
+    }
 }
 
 1;

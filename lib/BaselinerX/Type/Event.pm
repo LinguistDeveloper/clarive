@@ -55,6 +55,8 @@ has 'id'=> (is=>'rw', isa=>'Str', default=>'');
 has 'text' => ( is=> 'rw', isa=> 'Str', required=>1 );
 has 'vars' => ( is=> 'rw', isa=> 'ArrayRef', default=>sub{[]}, lazy=>1 );
 has 'filter' => ( is=> 'rw', isa=> 'CodeRef' );
+has 'pre' => ( is=> 'rw', isa=> 'CodeRef' );
+has 'post' => ( is=> 'rw', isa=> 'CodeRef' );
 
 sub event_text {
     my ($self, $data ) = @_;

@@ -85,6 +85,11 @@ __PACKAGE__->table("bali_project");
 =cut
 
 __PACKAGE__->add_columns(
+  "mid", {
+    data_type => "numeric",
+    is_nullable => 0,
+    original => { data_type => "number" },
+  },     
   "id",
   {
     data_type => 'integer',
@@ -156,13 +161,6 @@ __PACKAGE__->belongs_to(
   "parent",
   "Baseliner::Schema::Baseliner::Result::BaliProject",
   { id => "id_parent" },
-);
-# You can replace this text with custom content, and it will be preserved on regeneration
-
-__PACKAGE__->has_many(
-  "bali_issueprojects",
-  "Baseliner::Schema::Baseliner::Result::BaliIssueProject",
-  { "foreign.id_project" => "self.id" },
 );
 
 1;
