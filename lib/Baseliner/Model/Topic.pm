@@ -223,11 +223,11 @@ sub update {
 } ## end sub update
 
 sub GetTopics {
-    ##my ( $self, $p, $labels, $categories, $projects, $statuses, $priorities ) = @_;
     my ( $self, $p ) = @_;
+    my $query = $p->{query};
     my $orderby = $p->{orderby} || 'MID DESC';
     my $username = $p->{username};
-    my $hoy = $p->{hoy} eq 'true' ? 1:0;;
+    my $hoy = $p->{hoy} eq 'true' ? 1:0;
     my $asignadas = $p->{asignadas} eq 'true' ? 1:0;
     my @labels = _array $p->{labels};
     my @categories = _array $p->{categories};
@@ -235,27 +235,6 @@ sub GetTopics {
     my @priorities = _array $p->{priorities};
     
     my $SQL;
-    
-    ##my $ids_categories;
-    ##my @labels = _array $labels;
-    ##my @categories = _array $categories;
-    ##my @projects = _array $projects;
-    ##my @statuses = _array $statuses;
-    ##my @priorities = _array $priorities;
-    ##my $ids_projects;
-    
-    ##if (@projects){
-    ##    $ids_projects =  '(BALI_TOPIC_PROJECT.ID_PROJECT = ' . join (' OR BALI_TOPIC_PROJECT.ID_PROJECT = ', @projects) . ')';
-    ##}
-    ##else{
-    ##    $ids_projects = '1 = 0';
-    ##}
-    ##
-    ##if (@categories){
-    ##    $ids_categories =  '(F.ID = ' . join (' OR F.ID = ', @categories) . ')';
-    ##}else{
-    ##    $ids_categories = '1 = 1';
-    ##}
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     $SQL = "SELECT BALI_TOPIC.MID AS MID, BALI_TOPIC.ID AS ID, TITLE,
@@ -278,6 +257,39 @@ sub GetTopics {
     my @temp =();
     my %seen   = ();
     
+    #Filtramos por lo que han introducido en el campo de búsqueda.
+    @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
+    
+    #Filtramos por los proyectos a los que tenemos permisos.
+    my @projects = Baseliner->model( 'Permissions' )->user_projects_with_action(username => $username,
+                                                                            action => 'action.job.viewall',
+                                                                            level => 1);
+    
+    if(@projects){
+        my $topics_no_allowed = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => {'!=' =>  \@projects}, rel_type => 'topic_project'});
+        rs_hashref($topics_no_allowed);
+        my @topics_no_allowed = map { $_->{mid} } $topics_no_allowed->all;
+        
+        my $topics_allowed = Baseliner->model('Baseliner::BaliMaster')->search({mid => {'!=' =>  \@topics_no_allowed}, collection => 'bali_topic'});
+        
+        while ( my $topic = $topics_allowed-> next ) {
+            push @temp, grep { $_->{mid} =~ $topic->mid  } @datas if $topic;
+        }
+        @datas = @temp;
+    }else{
+        my $topics_no_allowed = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'topic_project'});
+        rs_hashref($topics_no_allowed);
+        my @topics_no_allowed = map { $_->{from_mid} } $topics_no_allowed->all;
+        
+        my $topics_allowed = Baseliner->model('Baseliner::BaliMaster')->search({-not => {mid =>  \@topics_no_allowed}, collection => 'bali_topic'});
+        while ( my $topic = $topics_allowed-> next ) {
+            push @temp, grep { $_->{mid} =~ $topic->mid  } @datas if $topic;
+        }
+        @datas = @temp;
+    }
+    
+    @temp =();
+     
     if($hoy){
         my $Hoy = DateTime->now->ymd;
         foreach my $data (@datas){
