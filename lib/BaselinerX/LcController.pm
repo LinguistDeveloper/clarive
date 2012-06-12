@@ -11,7 +11,7 @@ sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
     my @project_ids = Baseliner->model('Permissions')->all_projects();
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ id=>\@project_ids, id_parent=>undef }, { order_by=>{ -asc => \'lower(name)' }  });
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ id=>\@project_ids, id_parent=>undef, active=>1 }, { order_by=>{ -asc => \'lower(name)' }  });
     while( my $r = $rs->next ) {
         push @tree, {
             text       => $r->name,
