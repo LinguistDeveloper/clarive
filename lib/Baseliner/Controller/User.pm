@@ -772,4 +772,69 @@ sub change_pass : Local {
     $c->forward('View::JSON');
 }
 
+sub avatar : Local {
+    my ( $self, $c, $username ) = @_;
+    my ($file, $body, $filename, $extension);
+    $filename = "$username.png";
+    try {
+        $file = _dir( $c->path_to( "/root/identicon" ) );
+        $file->mkpath unless -d $file;
+        $file = _file( $file, $username . ".png");
+        unless( -e $file ) {   # generate identicon
+            my $png = $self->identicon($c, $username);
+            my $fh = $file->openw or _fail $!;
+            binmode $fh;
+            print $fh $png;
+            close $fh;
+        }
+    } catch {
+        my $err = shift;
+        _log "Identicon failed: $err";
+        $file = $c->path_to( "/root/static/images/icons/user.png" );
+    };
+    if( defined $file ) {
+        $c->serve_static_file( $file );
+    } 
+    elsif( defined $body ) {
+        $c->res->body( $body );
+    }
+    else {
+        _throw 'Missing serve_file or serve_body on stash';
+    }
+    #$c->res->headers->remove_header('Cache-Control');
+    #$c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
+    #$c->res->headers->remove_header('Pragma');
+	$c->res->content_type('image/png');
+}
+
+sub identicon {
+    my ($self, $c, $username)=@_;
+    my $user = $c->model('Baseliner::BaliUser')->search({ username=>$username })->first;
+    my $generate = sub {
+            # generate png identicon from random
+            require Image::Identicon;
+            my $salt = '1234';
+            my $identicon = Image::Identicon->new({ salt=>$salt });
+            my $image = $identicon->render({ code=> int(rand(999999999999999)), size=>32 });
+            return $image->{image}->png;
+    };
+    if( ref $user ) {
+        if( length $user->avatar ) {
+            _debug "Avatar from db";
+            return $user->avatar;
+        } else {
+            _debug "Generating and saving avatar";
+            my $png = $generate->();
+            # save to user
+            $user->avatar( $png );
+            $user->update;
+            return $png;
+        }
+    }
+    else {
+        _debug "User not found, avatar generated anyway";
+        return $generate->();
+    }
+}
+
 1;

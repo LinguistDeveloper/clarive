@@ -659,7 +659,7 @@
 			reader: reader,
 		    url: '/topicadmin/list_categories_admin',
 			groupField: 'role',
-			sortInfo:{field: 'role', direction: "ASC"},
+			sortInfo:{field: 'role', direction: "ASC"}
 		});
 		
 	
@@ -671,7 +671,7 @@
 			store: store_categories_admin,
 			view: new Ext.grid.GroupingView({
 				forceFit:true,
-				groupTextTpl: '{[ values.rs[0].data["role"] ]}',
+				groupTextTpl: '{[ values.rs[0].data["role"] ]}'
 			}),			
 			iconCls: 'icon-grid',
 			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),

@@ -48,6 +48,15 @@ sub update {
                     );
                 };
                 
+                # related topics
+                if( my @topics = _array( $p->{topics} ) ) {
+                    my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+                    while(my $topic = $rs_topics->next){
+                        $topic->add_to_topics($topic, { rel_type=>'topic_topic'});
+                    }
+                }
+                
+                # projects assigned to 
                 my @projects = _array( $p->{projects} );
                 
                 if (@projects) {
@@ -70,6 +79,7 @@ sub update {
 
                 }
                 
+                # users assigned to
                 my @users = _array( $p->{users});
                 
                 if (@users){
@@ -114,6 +124,15 @@ sub update {
                 $topic->deadline_min( $deadline[1] );
                 $topic->expr_deadline( $deadline[0] );
 
+                # related topics
+                if( my @topics = _array( $p->{topics} ) ) {
+                    #my @curr_topics = $topic->topics;
+                    my @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+                    #$topic->remove_from_topics( $_ ) for @curr_topics;
+                    $topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+                }
+                
+                # projects
                 my $projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $p->{mid}, rel_type => 'topic_project'})->delete;
                 my @projects = _array( $p->{projects} );
                 if (@projects){
@@ -135,6 +154,7 @@ sub update {
                     }
                 }
                 
+                # users
                 my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
                 my @users = _array( $p->{users} );
                 if (@users){
@@ -205,7 +225,7 @@ sub update {
 sub GetTopics {
     my ( $self, $p ) = @_;
     my $query = $p->{query};
-    my $orderby = $p->{orderby} || 'ID ASC';
+    my $orderby = $p->{orderby} || 'MID DESC';
     my $username = $p->{username};
     my $hoy = $p->{hoy} eq 'true' ? 1:0;
     my $asignadas = $p->{asignadas} eq 'true' ? 1:0;
@@ -218,7 +238,7 @@ sub GetTopics {
     
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     $SQL = "SELECT BALI_TOPIC.MID AS MID, BALI_TOPIC.ID AS ID, TITLE,
-                    CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
+                    CREATED_ON, CREATED_BY, STATUS, S.NAME AS STATUS_NAME, NUMCOMMENT, F.NAME AS NAMECATEGORY, F.ID AS CATEGORY,
                     ID_CATEGORY_STATUS, ID_PRIORITY, RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, F.COLOR CATEGORY_COLOR
                     FROM  BALI_TOPIC LEFT JOIN BALI_TOPIC_CATEGORIES F ON ID_CATEGORY = F.ID
                       LEFT JOIN
@@ -228,7 +248,9 @@ sub GetTopics {
                                 AND REL.TO_MID = B.MID
                                 AND REL.REL_TYPE = 'topic_post'
                                 GROUP BY A.MID) D
-                      ON BALI_TOPIC.MID = D.MID ORDER BY ?";
+                      ON BALI_TOPIC.MID = D.MID
+                      LEFT JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID
+                      ORDER BY ?";
     
     my @datas = $db->array_hash( $SQL, $orderby);
     
@@ -340,6 +362,15 @@ sub GetTopics {
     }    
     
     return @datas;
+}
+
+sub append_category {
+    my ($self, @topics ) =@_;
+    return map {
+        $_->{name} = $_->{categories}->{name} . ' #' . $_->{id};
+        $_->{color} = $_->{categories}->{color};
+        $_
+    } @topics;
 }
 
 1;

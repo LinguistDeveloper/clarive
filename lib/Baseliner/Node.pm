@@ -2,7 +2,6 @@ package Baseliner::Node;
 use strict;
 use Baseliner::Utils;
 use Module::Loaded;
-use namespace::autoclean;
 
 sub new {
     my $class = shift;
