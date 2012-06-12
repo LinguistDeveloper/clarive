@@ -71,22 +71,14 @@ sub list : Local {
     $dir ||= 'asc';
     $start||= 0;
     $limit ||= 100;
-
-    my @datas;
     
-    my @projects = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-                                                                            action => 'action.job.viewall',
-                                                                            level => 1);
-    
-    
-    
-    my @datas = Baseliner::Model::Topic->GetTopics({orderby    => "$sort $dir",
+    my @datas = Baseliner::Model::Topic->GetTopics({query      => $query,
+                                                    orderby    => "$sort $dir",
                                                     username   => $c->username,
                                                     hoy        => $p->{hoy},
                                                     asignadas  => $p->{asignadas},
                                                     labels     => $p->{labels},
                                                     categories => $p->{categories},
-                                                    projects   => \@projects,
                                                     statuses   => $p->{statuses},
                                                     priorities => $p->{priorities}});
     
@@ -94,17 +86,11 @@ sub list : Local {
     #Viene por la parte de dashboard, y realiza el filtrado por ids.
     if($query_id){ 
         @datas = grep { ($_->{id}) =~ $query_id } @datas if $query_id;
-    #Comportamiento normal.
-    }else{
-        my @temp =();
-        my %seen   = ();
-        #Filtramos por lo que han introducido en el campo de búsqueda.
-        @datas = grep { lc($_->{title}) =~ $query } @datas if $query;
     }
+    
     my @rows;
           
     #Creamos el json para la carga del grid de topics.
-
 
     foreach my $data (@datas){
         my @labels;
