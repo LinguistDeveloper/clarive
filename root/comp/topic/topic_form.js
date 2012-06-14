@@ -126,7 +126,6 @@
 
     var filelist = new Ext.ux.maximgb.tg.GridPanel({
         height: 120,
-        header: false,
         stripeRows: true,
         autoScroll: true,
         autoWidth: true,
