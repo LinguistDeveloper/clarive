@@ -4,7 +4,7 @@
 </%perl>
 (function(){
     <& /comp/search_field.mas &>
-    var ps = 100; //page_size
+    var ps = 10; //page_size
     var filter_current;
 
     // Create store instances
