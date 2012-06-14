@@ -125,7 +125,13 @@ sub list : Local {
     }
 
     #*****************************************************************************************************************************
-            
+    
+    #Filtro cuando viene por la parte del Dashboard.
+    if($p->{query_id}){
+        $where->{id} = $p->{query_id};
+    }
+    
+
     # SELECT GROUP_BY MID:
     my $rs = $c->model('Baseliner::TopicView')->search(  
         $where,
@@ -140,18 +146,19 @@ sub list : Local {
     # SELECT MID DATA:
     my @mid_data = $c->model('Baseliner::TopicView')->search({ mid=>\@mids })->hashref->all;
     my @rows;
-    my %id_label;
+    my (%id_label, %name_label);
     my %projects;
     my %mid_data;
     for( @mid_data ) {
         $mid_data{ $_->{mid} } = $_ unless exists $mid_data{ $_->{mid} };
         $id_label{ $_->{mid} }{ $_->{label} } = ();
-        $projects{ $_->{mid} }{ $_->{projects} } = ();
+        $name_label{ $_->{mid} }{ $_->{label_name} } = ();
+        $projects{ $_->{mid} }{ $_->{project} } = ();
     }
     for my $mid ( @mids ) {
        push @rows, {
            %{ $mid_data{ $mid } },
-           id_label => [ keys $id_label{ $mid } ],
+           labels=> {label => [ keys $id_label{ $mid } ],name => [ keys $name_label{ $mid } ]},
            projects => [ keys $projects{ $mid } ],
        }
     }
