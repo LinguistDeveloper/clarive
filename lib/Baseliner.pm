@@ -262,8 +262,8 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 	}
 
     # Beep
+    print STDERR "Baseliner Server v" . Baseliner->config->{About}->{version} . ". Startup time: " . tv_interval($t0) . "s\n";
     $ENV{CATALYST_DEBUG} && do { 
-        print STDERR "Startup time: " . tv_interval($t0) . "s\n";
         print STDERR "\7";
     };
 	# Make registry easily available to contexts
