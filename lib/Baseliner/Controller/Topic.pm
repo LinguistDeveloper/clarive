@@ -146,19 +146,18 @@ sub list : Local {
     # SELECT MID DATA:
     my @mid_data = $c->model('Baseliner::TopicView')->search({ mid=>\@mids })->hashref->all;
     my @rows;
-    my (%id_label, %name_label);
+    my (%id_label);
     my %projects;
     my %mid_data;
     for( @mid_data ) {
         $mid_data{ $_->{mid} } = $_ unless exists $mid_data{ $_->{mid} };
-        $id_label{ $_->{mid} }{ $_->{label} } = ();
-        $name_label{ $_->{mid} }{ $_->{label_name} } = ();
-        $projects{ $_->{mid} }{ $_->{project} } = ();
+        $_->{label} ? $id_label{ $_->{mid} }{ $_->{label} . ";" . $_->{label_name} . ";" . $_->{label_color} }= (): $id_label{ $_->{mid} } = {};
+        $_->{project} ? $projects{ $_->{mid} }{ $_->{project} . ";" . $_->{project_name} } = (): $projects{ $_->{mid} } = {};
     }
     for my $mid ( @mids ) {
        push @rows, {
            %{ $mid_data{ $mid } },
-           labels=> {label => [ keys $id_label{ $mid } ],name => [ keys $name_label{ $mid } ]},
+           labels => [ keys $id_label{ $mid } ],
            projects => [ keys $projects{ $mid } ],
        }
     }

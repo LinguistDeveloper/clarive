@@ -529,20 +529,21 @@
     }
 
     var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var tag_comment_html;
         var tag_color_html;
 		var date_created_on;
         tag_color_html = '';
-        tag_project_html = '';
 		date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
 		
         if(rec.data.labels){
             for(i=0;i<rec.data.labels.length;i++){
-                tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 10px; float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(rec.data.labels[i].color) + ";background-color:#" + rec.data.labels[i].color + "'>" + rec.data.labels[i].name + "</span></div>";
+				var label = rec.data.labels[i].split(';');
+				var label_name = label[1];
+				var label_color = label[2];
+				tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 10px; float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
             }
         }
-        return "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>" + tag_color_html + tag_project_html;
+        return "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>" + tag_color_html;
     };
     
     var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -564,10 +565,12 @@
     };
     
     var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
+		var tag_project_html = '';
         if(rec.data.projects){
             for(i=0;i<rec.data.projects.length;i++){
-                tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
-                //tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
+				var project = rec.data.projects[i].split(';');
+				var project_name = project[1];				
+                tag_project_html = tag_project_html ? tag_project_html + ',' + project_name: project_name;
             }
         }
         return tag_project_html;
@@ -606,13 +609,12 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _('Category'), dataIndex: 'namecategory', width: 80, sortable: true, renderer: render_category },
-            { header: _('Status'), dataIndex: 'status_name', width: 50, renderer: render_status },
+            { header: _('Category'), dataIndex: 'category_name', width: 80, sortable: true, renderer: render_category },
+            { header: _('Status'), dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
             { header: '', dataIndex: 'numcomment', width: 10, renderer: render_comment },			
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('Topic'), hidden: true, dataIndex: 'id', width: 39, sortable: true, renderer: render_id },    
-            { header: _('Description'), hidden: true, dataIndex: 'description' }
         ],
         tbar:   [ _('Search') + ' ', ' ',
                 search_field,
