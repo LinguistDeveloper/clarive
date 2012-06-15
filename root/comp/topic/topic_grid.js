@@ -240,7 +240,7 @@
 			var sm = grid_topics.getSelectionModel();
 				if (sm.hasSelection()) {
 					var r = sm.getSelected();
-					var title = _(r.get( 'namecategory' )) + ' #' + r.get('id');
+					var title = _(r.get( 'category_name' )) + ' #' + r.get('id');
 					Baseliner.add_tabcomp('/topic/view?id=' + r.get('id') + '&swEdit=1', title , { id: r.get('id'), title: title } );
 					
 					
@@ -645,7 +645,7 @@
         var r = grid.getStore().getAt(rowIndex);
         //Baseliner.addNewTab('/topic/view?id=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{} );
         //Baseliner.addNewTabComp('/topic/view?id=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{} );
-        var title = _(r.get( 'namecategory' )) + ' #' + r.get('id');
+        var title = _(r.get( 'category_name' )) + ' #' + r.get('id');
         Baseliner.add_tabcomp('/topic/view?id=' + r.get('id') , title , { id: r.get('id'), title: title } );
     });
     
