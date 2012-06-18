@@ -21,15 +21,6 @@ __PACKAGE__->add_columns(
     data_type => "numeric",
     is_nullable => 0,
   },
-  "id",
-  {
-    data_type => "numeric",
-    is_auto_increment => 1,
-    is_nullable => 0,
-    original => { data_type => "number" },
-    sequence => "bali_topic_seq",
-    size => 126,
-  },
   "title",
   { data_type => "varchar2", is_nullable => 0, size => 1024 },
   "description",
@@ -82,7 +73,7 @@ __PACKAGE__->add_columns(
 );
 
 
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key("mid");
 
 __PACKAGE__->belongs_to(
   "categories",
@@ -96,16 +87,18 @@ __PACKAGE__->belongs_to(
   { "id" => "id_category_status" },
 );
 
+__PACKAGE__->belongs_to(
+  "priorities",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicPriority",
+  { id => "id_priority" },
+);
+
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
 __PACKAGE__->master_setup( 'files', ['topic','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid'] );
 __PACKAGE__->master_setup( 'projects', ['topic','mid'] => ['project', 'BaliProject','mid'] );
 __PACKAGE__->master_setup( 'topics', ['topic','mid'] => ['topic', 'BaliTopic','mid'] );
 
-__PACKAGE__->belongs_to(
-  "priorities",
-  "Baseliner::Schema::Baseliner::Result::BaliTopicPriority",
-  { id => "id_priority" },
-);
+
 
 1;

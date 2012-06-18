@@ -78,8 +78,8 @@ sub list : Local {
 	my $query_limit = 300;
     
     my ($select,$order_by, $as, $group_by) = $sort
-    ? ([{ distinct=>'me.mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.mid' }], ['mid', $sort], ['mid', $sort] )
-    : ([{ distinct=>'me.mid'}], { -desc => "me.mid" }, ['mid'], ['mid'] );
+    ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
+    : ([{ distinct=>'me.topic_mid'}], { -desc => "me.topic_mid" }, ['topic_mid'], ['topic_mid'] );
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
     if( $username && ! $perm->is_root( $username )){
@@ -95,10 +95,10 @@ sub list : Local {
     }
     
     if($p->{assigned_to_me}){
-        my $rs_user = Baseliner->model('Baseliner::BaliUser')->search( username => $username )->first;
+        my $rs_user = $c->model('Baseliner::BaliUser')->search( username => $username )->first;
         if($rs_user){
             my @topic_mids = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]})->hashref->all;
-            $where->{'me.mid'} = \@topic_mids;
+            $where->{'me.topic_mid'} = \@topic_mids;
         }            
     }
     #*****************************************************************************************************************************
@@ -106,32 +106,31 @@ sub list : Local {
     #FILTERS**********************************************************************************************************************
     if($p->{labels}){
         my @labels = _array $p->{labels};
-        $where->{'label'} = \@labels;
+        $where->{'label_id'} = \@labels;
     }
     
     if($p->{categories}){
         my @categories = _array $p->{categories};
-        $where->{'category'} = \@categories;
+        $where->{'category_id'} = \@categories;
     }
     
     if($p->{statuses}){
         my @statuses = _array $p->{statuses};
-        $where->{'category_status'} = \@statuses;
+        $where->{'category_status_id'} = \@statuses;
     }
       
     if($p->{priorities}){
         my @priorities = _array $p->{priorities};
-        $where->{'priority'} = \@priorities;
+        $where->{'priority_id'} = \@priorities;
     }
 
     #*****************************************************************************************************************************
     
     #Filtro cuando viene por la parte del Dashboard.
     if($p->{query_id}){
-        $where->{id} = $p->{query_id};
+        $where->{topic_mid} = $p->{query_id};
     }
     
-
     # SELECT GROUP_BY MID:
     my $rs = $c->model('Baseliner::TopicView')->search(  
         $where,
@@ -141,18 +140,18 @@ sub list : Local {
     my $pager = $rs->pager;
 	$cnt = $pager->total_entries;
     rs_hashref( $rs );
-    my @mids = map { $_->{mid} } $rs->all;
+    my @mids = map { $_->{topic_mid} } $rs->all;
     
     # SELECT MID DATA:
-    my @mid_data = $c->model('Baseliner::TopicView')->search({ mid=>\@mids })->hashref->all;
+    my @mid_data = $c->model('Baseliner::TopicView')->search({ topic_mid=>\@mids })->hashref->all;
     my @rows;
     my (%id_label);
     my %projects;
     my %mid_data;
     for( @mid_data ) {
-        $mid_data{ $_->{mid} } = $_ unless exists $mid_data{ $_->{mid} };
-        $_->{label} ? $id_label{ $_->{mid} }{ $_->{label} . ";" . $_->{label_name} . ";" . $_->{label_color} }= (): $id_label{ $_->{mid} } = {};
-        $_->{project} ? $projects{ $_->{mid} }{ $_->{project} . ";" . $_->{project_name} } = (): $projects{ $_->{mid} } = {};
+        $mid_data{ $_->{topic_mid} } = $_ unless exists $mid_data{ $_->{topic_mid} };
+        $_->{label_id} ? $id_label{ $_->{topic_mid} }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} }= (): $id_label{ $_->{topic_mid} } = {};
+        $_->{project_id} ? $projects{ $_->{topic_mid} }{ $_->{project_id} . ";" . $_->{project_name} } = (): $projects{ $_->{topic_mid} } = {};
     }
     for my $mid ( @mids ) {
        push @rows, {
@@ -198,8 +197,8 @@ sub update : Local {
     $p->{username} = $c->username;
     
     try  {    
-        my ($msg, $id, $mid, $status) = Baseliner::Model::Topic->update( $p );
-        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_id => $id, topic_mid => $mid, topic_status => $status };
+        my ($msg, $topic_mid, $status) = Baseliner::Model::Topic->update( $p );
+        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_mid => $topic_mid, topic_status => $status };
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
@@ -225,8 +224,8 @@ sub related : Local {
 sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $id_topic = $p->{id};
-    my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+    my $topic_mid = $p->{topic_mid};
+    my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
 
     my @projects;
     my $topicprojects = $topic->projects->search();
@@ -247,8 +246,7 @@ sub json : Local {
         title              => $topic->title,
         description        => $topic->description,
         category           => $topic->id_category,
-        id                 => $id_topic,
-        mid                => $topic->mid,
+        topic_mid          => $topic_mid,
         status             => $topic->id_category_status,
         projects           => \@projects,
         users              => \@users,
@@ -271,12 +269,12 @@ sub json : Local {
 sub view : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $id_topic = $p->{id} || $p->{action};
+    my $topic_mid = $p->{topic_mid} || $p->{action};
     
-    if($id_topic){
-        my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+    if($topic_mid){
+        my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
         $c->stash->{title} = $topic->title;
-        $c->stash->{mid} = $topic->mid;
+        $c->stash->{topic_mid} = $topic->mid;
         $c->stash->{created_on} = $topic->created_on;
         $c->stash->{created_by} = $topic->created_by;
         $c->stash->{deadline} = $topic->created_on;  # TODO
@@ -291,9 +289,8 @@ sub view : Local {
             #map { "/forms/$_" } split /,/,$category->forms
             map { "/forms/$_" } split /,/,$topic->categories->forms
         ];
-        $c->stash->{id} = $id_topic;
         $c->stash->{ii} = $p->{ii};
-        $c->stash->{events} = events_by_mid( $id_topic );
+        $c->stash->{events} = events_by_mid( $topic_mid );
         $c->stash->{swEdit} = $p->{swEdit};
         # comments
         $self->list_posts( $c );  # get comments into stash
@@ -318,8 +315,7 @@ sub view : Local {
         $c->stash->{category} = $p->{categoryId};
         $c->stash->{category_color} = '#444';
         $c->stash->{forms} = '';
-        $c->stash->{id} = '';
-        $c->stash->{mid} = '';
+        $c->stash->{topic_mid} = '';
         $c->stash->{swEdit} = $p->{swEdit};
         $c->stash->{events} = '';
         $c->stash->{comments} = '';
@@ -340,10 +336,10 @@ sub comment : Local {
     my $p = $c->request->parameters;
     if( $action eq 'add' ) {
         try{
-            my $id_topic = $p->{id_topic};
+            my $topic_mid = $p->{topic_mid};
             my $id_com = $p->{id_com};
             my $content_type = $p->{content_type};
-            _throw( _loc( 'Missing id' ) ) unless defined $id_topic;
+            _throw( _loc( 'Missing id' ) ) unless defined $topic_mid;
             my $text = $p->{text};
             _log $text;
             
@@ -361,11 +357,11 @@ sub comment : Local {
                     );
                     event_new 'event.post.create' => {
                         username => $c->username,
-                        mid      => $id_topic,
+                        mid      => $topic_mid,
                         id_post  => $mid,
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
-                    my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+                    my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
                     $topic->add_to_posts( $post, { rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
@@ -433,9 +429,9 @@ sub comment : Local {
 sub list_posts : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $id_topic = $p->{id};
+    my $topic_mid = $p->{topic_mid};
 
-    my $rs = $c->model('Baseliner::BaliTopic')->find( $id_topic )
+    my $rs = $c->model('Baseliner::BaliTopic')->find( $topic_mid )
         ->posts->search( undef, { order_by => { '-desc' => 'created_on' } } );
     my @rows;
     while( my $r = $rs->next ) {
@@ -844,26 +840,19 @@ sub list_label : Local {
     $c->forward('View::JSON');
 }
 
-sub update_topiclabels : Local {
-    my ($self,$c)=@_;
+sub update_topic_labels : Local {
+    my ($self,$c) = @_;
     my $p = $c->req->params;
-    my $idtopic = $p->{idtopic};
-    my $idslabel = $p->{idslabel};
-    my $topiclabels;
+    my $topic_mid = $p->{topic_mid};
+    my $label_ids = $p->{label_ids};
     
     try{
-        my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-        my $dbh = $db->dbh;
-        my $sth = $dbh->prepare('DELETE FROM BALI_TOPIC_LABEL WHERE ID_TOPIC = ?');
-        $sth->bind_param( 1, $idtopic );
-        $sth->execute();        
+        $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
         
-        foreach my $id_label (_array $idslabel){
-            $topiclabels = $c->model('Baseliner::BaliTopicLabel')->create(
-                                                                            {
-                                                                                id_topic    => $idtopic,
-                                                                                id_label    => $id_label,
-                                                                            });     
+        foreach my $label_id (_array $label_ids){
+            $c->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
+                                                                id_label    => $label_id,
+                                                            });     
         }
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
     }
@@ -877,7 +866,7 @@ sub update_topiclabels : Local {
 sub update_project : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my $id_topic = $p->{id_topic};
+    my $topic_mid = $p->{topic_mid};
     my $id_project = $p->{id_project};
 
     try{
@@ -893,7 +882,7 @@ sub update_project : Local {
                 $project->update();
             }
         }
-        my $topic = $c->model('Baseliner::BaliTopic')->find( $id_topic );
+        my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
         $topic->add_to_projects( $project, { rel_type=>'topic_project' } );
         
         $c->stash->{json} = { msg=>_loc('Project added'), success=>\1 };
@@ -905,42 +894,9 @@ sub update_project : Local {
     $c->forward('View::JSON');    
 }
 
-sub unassign_projects : Local {
-    my ($self,$c)=@_;
-    my $p = $c->req->params;
-    my $idtopic = $p->{idtopic};
-    my $idsproject = $p->{idsproject};
-    my $topicprojects;
-    
-    try{
-        my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-        my $dbh = $db->dbh;
-        my $sth = $dbh->prepare('DELETE FROM BALI_TOPIC_PROJECT WHERE ID_TOPIC = ?');
-        $sth->bind_param( 1, $idtopic );
-        $sth->execute();        
-        
-        foreach my $id_project (_array $idsproject){
-            $topicprojects = $c->model('Baseliner::BaliTopicProject')->create(
-                                                                            {
-                                                                                id_topic    => $idtopic,
-                                                                                id_project  => $id_project
-                                                                            });     
-        }
-        $c->stash->{json} = { msg=>_loc('Projects unassigned'), success=>\1 };
-    }
-    catch{
-        $c->stash->{json} = { msg=>_loc('Error unassigning Projects: %1', shift()), failure=>\1 }
-    };
-     
-    $c->forward('View::JSON');    
-}
-
 sub filters_list : Local {
     my ($self,$c) = @_;
     my $id = $c->req->params->{node};
-    #my $project = $c->req->params->{project} ;
-    #my $id_project = $c->req->params->{id_project} ;
-    #my $parent_checked = $c->req->params->{parent_checked} || 0 ;
     
     my @tree;
     my $row;
@@ -1263,53 +1219,57 @@ sub upload : Local {
     my $f =  _file( $c->req->body );
     _log "Uploading file " . $filename;
     try {
-        my $config = config_get( 'config.uploader' );
-        my $topic = $c->model('Baseliner::BaliTopic')->find( $p->{id_topic} );
-        my $topic_mid = $topic->mid;
-        my $body = scalar $f->slurp;
-        my $md5 = _md5( $body );
-        my $existing = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
-        if( $existing ) {
-            # file already exists
-            if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
-                _fail _loc "File already attached to topic";
+        if($p->{topic_mid}){
+            my $config = config_get( 'config.uploader' );
+            my $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
+            my $topic_mid = $topic->mid;
+            my $body = scalar $f->slurp;
+            my $md5 = _md5( $body );
+            my $existing = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
+            if( $existing ) {
+                # file already exists
+                if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
+                    _fail _loc "File already attached to topic";
+                } else {
+                    $topic->add_to_files( $existing, { rel_type=>'topic_file_version' });
+                }
             } else {
-                $topic->add_to_files( $existing, { rel_type=>'topic_file_version' });
-            }
-        } else {
-            # create file version master and bali_file_version rows
-            master_new 'bali_file', sub {
-                my $mid = shift;
-                my $file = $c->model('Baseliner::BaliFileVersion')->create(
-                    {   mid   => $mid,
-                        filedata   => $body,
-                        filename => $filename,
-                        extension => $extension,
-                        versionid => '1',
-                        md5 => $md5, 
-                        filesize => length( $body ), 
-                        created_by => $c->username,
-                        created_on => DateTime->now,
-                    }
-                );
-                event_new 'event.file.create' => {
-                    username => $c->username,
-                    mid      => $topic_mid,
-                    id_file  => $mid,
-                    filename     => $filename,
+                # create file version master and bali_file_version rows
+                master_new 'bali_file', sub {
+                    my $mid = shift;
+                    my $file = $c->model('Baseliner::BaliFileVersion')->create(
+                        {   mid   => $mid,
+                            filedata   => $body,
+                            filename => $filename,
+                            extension => $extension,
+                            versionid => '1',
+                            md5 => $md5, 
+                            filesize => length( $body ), 
+                            created_by => $c->username,
+                            created_on => DateTime->now,
+                        }
+                    );
+                    event_new 'event.file.create' => {
+                        username => $c->username,
+                        mid      => $topic_mid,
+                        id_file  => $mid,
+                        filename     => $filename,
+                    };
+                    # tie file to topic
+                    $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
                 };
-                # tie file to topic
-                $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
-            };
-        }
-        $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ) };
+            }
+            $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ) };
+        }else{
+            _fail _loc('you must save the topic before uploading files');
+            $c->stash->{ json } = { success => \0, msg => _loc('you must save the topic before uploading files') };
+        }            
     }
     catch {
         my $err = shift;
         _log "Error uploading file: " . $err;
         $c->stash->{ json } = { success => \0, msg => $err };
     };
-
     #$c->res->body('{success: true}');
     $c->forward( 'View::JSON' );
     #$c->res->content_type( 'text/html' );    # fileupload: true forms need this
@@ -1318,7 +1278,7 @@ sub upload : Local {
 sub file : Local {
     my ( $self, $c, $action ) = @_;
     my $p      = $c->req->params;
-    my $id_topic = $p->{id_topic};
+    my $topic_mid = $p->{topic_mid};
     try {
         my $msg; 
         if( $action eq 'delete' ) {
@@ -1333,13 +1293,13 @@ sub file : Local {
                 } else {
                     event_new 'event.topic.file_remove' => {
                         username => $c->username,
-                        mid      => $id_topic,
+                        mid      => $topic_mid,
                         id_file  => $file->mid,
                         filename => $file->filename,
                         }
                     => sub {
-                        my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$id_topic, to_mid => $file->mid })->first;
-                        _log "Deleting file from topic $id_topic ($rel) = " . $file->mid;
+                        my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$topic_mid, to_mid => $file->mid })->first;
+                        _log "Deleting file from topic $topic_mid ($rel) = " . $file->mid;
                         ref $rel or _fail _loc "File not attached to topic";
                         $rel -> delete;
                         $msg = _loc( "Relationship deleted ok" );
@@ -1371,18 +1331,22 @@ sub download_file : Local {
 sub file_tree : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $id_topic = $p->{id_topic};
-    my @files = map {
-        my ( $size, $unit ) = _size_unit( $_->filesize );
-        $size = "$size $unit";
-        +{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
-        } 
-        $c->model('Baseliner::BaliTopic')->search( { mid => $id_topic } )->first->files->search(
-        undef,
-        {   select   => [qw(mid filename filesize md5 versionid extension created_on created_by)],
-            order_by => { '-asc' => 'created_on' }
-        }
-        )->all;
+    my $topic_mid = $p->{topic_mid};
+    my @files = ();
+    if($topic_mid){
+        @files = map {
+           my ( $size, $unit ) = _size_unit( $_->filesize );
+           $size = "$size $unit";
+           +{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
+           } 
+           $c->model('Baseliner::BaliTopic')->search( { mid => $topic_mid } )->first->files->search(
+           undef,
+           {   select   => [qw(mid filename filesize md5 versionid extension created_on created_by)],
+               order_by => { '-asc' => 'created_on' }
+           }
+           )->all;       
+    }
+
     $c->stash->{json} = { total=>scalar( @files ), success=>\1, data=>\@files };
     $c->forward('View::JSON');
 }

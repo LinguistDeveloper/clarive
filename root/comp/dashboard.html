@@ -143,7 +143,7 @@
 %foreach my $topic (_array @topics){
 % my $numcomment = $topic->{numcomment} ? $topic->{numcomment}:'&nbsp';
                     <tr>
-                        <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{id}%>', _('Topics'));"><%$topic->{title}%></a></b></td>
+                        <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{topic_mid}%>', _('Topics'));"><%$topic->{title}%></a></b></td>
                         <td><%$numcomment%></td>
                         <td><%$topic->{created_on}%></td>
                     </tr>
