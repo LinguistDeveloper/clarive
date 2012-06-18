@@ -211,7 +211,9 @@ sub related : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $mid = $p->{mid};
-    my $rs_topic = $c->model('Baseliner::BaliTopic')->search({}, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
+    my $where = {};
+    $where->{mid} = { '<>' => $mid } if defined $mid;
+    my $rs_topic = $c->model('Baseliner::BaliTopic')->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
     rs_hashref( $rs_topic );
     my @topics = map {
         $_->{name} = $_->{categories}->{name} . ' #' . $_->{id};
