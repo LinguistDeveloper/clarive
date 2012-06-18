@@ -465,6 +465,8 @@ sub list_category : Local {
                 while( my $status = $statuses->next ) {
                     push @statuses, $status->id_status;
                 }
+
+                my $type = $r->is_changeset ? 'C' : $r->is_release ? 'R' : 'N';
                 
                 push @rows,
                   {
@@ -472,6 +474,7 @@ sub list_category : Local {
                     category    => $r->id,
                     name        => $r->name,
                     color        => $r->color,
+                    type         => $type,
                     category_name => $r->name,
                     description => $r->description,
                     statuses    => \@statuses

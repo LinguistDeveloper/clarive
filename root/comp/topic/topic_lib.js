@@ -50,6 +50,7 @@ Baseliner.Topic.StoreCategory = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'name' },
                 {  name: 'color' },
                 {  name: 'description' },
+                {  name: 'type' },
                 {  name: 'statuses' }
             ]
         },config);
@@ -67,6 +68,7 @@ Baseliner.Topic.StoreCategoryStatus = Ext.extend( Ext.data.JsonStore, {
             fields: [ 
                 {  name: 'id' },
                 {  name: 'name' },
+                {  name: 'type' },
                 {  name: 'description' }
             ]
         },config);
