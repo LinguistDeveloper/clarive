@@ -66,76 +66,126 @@ sub grid : Local {
 sub list : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    my $username = $c->username;
+    my $perm = $c->model('Permissions');
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
-    $sort ||= 'mid';
     $dir ||= 'desc';
     $start||= 0;
     $limit ||= 100;
     
-    my @datas = Baseliner::Model::Topic->GetTopics({query      => $query,
-                                                    orderby    => "$sort $dir",
-                                                    username   => $c->username,
-                                                    hoy        => $p->{hoy},
-                                                    asignadas  => $p->{asignadas},
-                                                    labels     => $p->{labels},
-                                                    categories => $p->{categories},
-                                                    statuses   => $p->{statuses},
-                                                    priorities => $p->{priorities}});
+    my $page = to_pages( start=>$start, limit=>$limit );
+    my $where = {};
+	my $query_limit = 300;
     
-    
-    #Viene por la parte de dashboard, y realiza el filtrado por ids.
-    if($query_id){ 
-        @datas = grep { ($_->{id}) =~ $query_id } @datas if $query_id;
+    my ($select,$order_by, $as, $group_by) = $sort
+    ? ([{ distinct=>'me.mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.mid' }], ['mid', $sort], ['mid', $sort] )
+    : ([{ distinct=>'me.mid'}], { -desc => "me.mid" }, ['mid'], ['mid'] );
+
+    #Filtramos por las aplicaciones a las que tenemos permisos.
+    if( $username && ! $perm->is_root( $username )){
+        my @user_apps = $perm->user_projects_ids( $username );
+        push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
+        $where->{'me.project'} =  \@user_apps;
+    }
+
+    #DEFAULT VIEWS***************************************************************************************************************
+    if($p->{today}){
+        my $today = DateTime->now();
+        $where->{created_on} = {'between' => [ $today->ymd, $today->add(days=>1)->ymd]};
     }
     
-    my @rows;
-          
-    #Creamos el json para la carga del grid de topics.
-
-    foreach my $data (@datas){
-        my @labels;
-        my $topiclabels = $c->model('Baseliner::BaliTopicLabel')->search({id_topic => $data->{id}});
-        while( my $topiclabel = $topiclabels->next ) {
-            my $str = { label => $topiclabel->id_label,  color => $topiclabel->label->color, name => $topiclabel->label->name  };
-            push @labels, $str
-        }
-        
-        my @projects;
-        my $topicprojects = $c->model('Baseliner::BaliTopic')->find( $data->{id} )->projects->search();
-        while( my $topicproject = $topicprojects->next ) {
-            my $str = { project => $topicproject->name,  id_project => $topicproject->id };
-            push @projects, $str
-        }        
-        
-        
-        push @rows, {
-            id      => $data->{id},
-            title   => $data->{title},
-            #description => $data->{description},
-            created_on  => $data->{created_on},
-            created_by  => $data->{created_by},
-            numcomment  => $data->{numcomment},
-            category    => $data->{category} ? [$data->{category}] : '',
-            category_color => $data->{category_color},
-            namecategory    => $data->{namecategory} ? [$data->{namecategory}] : '',
-            labels      => \@labels,
-            projects    => \@projects,
-            status      => $data->{id_category_status},
-            status_name      => $data->{status_name},
-            status_letter      => $data->{status},
-            is_closed => ( $data->{status} eq 'C' ? \1 : \0 ),
-            priority    => $data->{id_priority},
-            status_name    => $data->{status_name},
-            response_time_min   => $data->{response_time_min},
-            expr_response_time  => $data->{expr_response_time},
-            deadline_min    => $data->{deadline_min},
-            expr_deadline   => $data->{expr_deadline}
-        };
-    }   
-
-
-    $cnt = scalar @datas ;
+    if($p->{assigned_to_me}){
+        my $rs_user = Baseliner->model('Baseliner::BaliUser')->search( username => $username )->first;
+        if($rs_user){
+            my @topic_mids = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]})->hashref->all;
+            $where->{'me.mid'} = \@topic_mids;
+        }            
+    }
+    #*****************************************************************************************************************************
     
+    #FILTERS**********************************************************************************************************************
+    if($p->{labels}){
+        my @labels = _array $p->{labels};
+        $where->{'label'} = \@labels;
+    }
+    
+    if($p->{categories}){
+        my @categories = _array $p->{categories};
+        $where->{'category'} = \@categories;
+    }
+    
+    if($p->{statuses}){
+        my @statuses = _array $p->{statuses};
+        $where->{'category_status'} = \@statuses;
+    }
+      
+    if($p->{priorities}){
+        my @priorities = _array $p->{priorities};
+        $where->{'priority'} = \@priorities;
+    }
+
+    #*****************************************************************************************************************************
+    
+    #Filtro cuando viene por la parte del Dashboard.
+    if($p->{query_id}){
+        $where->{id} = $p->{query_id};
+    }
+    
+
+    # SELECT GROUP_BY MID:
+    my $rs = $c->model('Baseliner::TopicView')->search(  
+        $where,
+        { select=>$select, as=>$as, order_by=>$order_by, page=>$page, rows=>$limit, group_by=>$group_by }
+    );                                                             
+    
+    my $pager = $rs->pager;
+	$cnt = $pager->total_entries;
+    rs_hashref( $rs );
+    my @mids = map { $_->{mid} } $rs->all;
+    
+    # SELECT MID DATA:
+    my @mid_data = $c->model('Baseliner::TopicView')->search({ mid=>\@mids })->hashref->all;
+    my @rows;
+    my (%id_label);
+    my %projects;
+    my %mid_data;
+    for( @mid_data ) {
+        $mid_data{ $_->{mid} } = $_ unless exists $mid_data{ $_->{mid} };
+        $_->{label} ? $id_label{ $_->{mid} }{ $_->{label} . ";" . $_->{label_name} . ";" . $_->{label_color} }= (): $id_label{ $_->{mid} } = {};
+        $_->{project} ? $projects{ $_->{mid} }{ $_->{project} . ";" . $_->{project_name} } = (): $projects{ $_->{mid} } = {};
+    }
+    for my $mid ( @mids ) {
+       push @rows, {
+           %{ $mid_data{ $mid } },
+           labels => [ keys $id_label{ $mid } ],
+           projects => [ keys $projects{ $mid } ],
+       }
+    }
+
+        #push @rows, {
+        #    id      => $data->{id},
+        #    title   => $data->{title},
+        #    #description => $data->{description},
+        #    created_on  => $data->{created_on},
+        #    created_by  => $data->{created_by},
+        #    numcomment  => $data->{numcomment},
+        #    category    => $data->{id_category} ? [$data->{id_category}] : '',
+        #    category_color => $data->{category_color},
+        #    namecategory    => $data->{category_name} ? [$data->{category_name}] : '',
+        #    labels      => \@labels,
+        #    projects    => \@projects,
+        #    status      => $data->{category_status},
+        #    status_name      => $data->{category_status_name},
+        #    status_letter      => $data->{status},
+        #    is_closed => ( $data->{status} eq 'C' ? \1 : \0 ),
+        #    priority    => $data->{priority},
+        #    response_time_min   => $data->{response_time_min},
+        #    expr_response_time  => $data->{expr_response_time},
+        #    deadline_min    => $data->{deadline_min},
+        #    expr_deadline   => $data->{expr_deadline}
+        #};
+    
+
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
@@ -903,7 +953,7 @@ sub filters_list : Local {
         id  => $i++,
         idfilter      => 1,
         text    => _loc('Created Today'),
-        filter  => '{"hoy":true}',
+        filter  => '{"today":true}',
         default    => \1,
         cls     => 'forum',
         iconCls => 'icon-no',
@@ -915,7 +965,7 @@ sub filters_list : Local {
         id  => $i++,
         idfilter      => 2,
         text    => _loc('Assigned To Me'),
-        filter  => '{"Asignadas":true}',
+        filter  => '{"assigned_to_me":true}',
         default    => \1,
         cls     => 'forum',
         iconCls => 'icon-no',
