@@ -262,8 +262,10 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 	}
 
     # Beep
-    print STDERR "Baseliner Server v" . Baseliner->config->{About}->{version} . ". Startup time: " . tv_interval($t0) . "s\n";
-    $ENV{CATALYST_DEBUG} && do { 
+    my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
+    print STDERR "Baseliner Server v" . Baseliner->config->{About}->{version} . ". Startup time: " . tv_interval($t0) . "s.\n";
+    $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
+        print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
     };
 	# Make registry easily available to contexts
