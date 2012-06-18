@@ -210,10 +210,12 @@ sub related : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $mid = $p->{mid};
-    my $rs_topic = $c->model('Baseliner::BaliTopic')->search({}, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
+    my $where = {};
+    $where->{mid} = { '<>' => $mid } if length $mid;
+    my $rs_topic = $c->model('Baseliner::BaliTopic')->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
     rs_hashref( $rs_topic );
     my @topics = map {
-        $_->{name} = $_->{categories}->{name} . ' #' . $_->{id};
+        $_->{name} = $_->{categories}->{name} . ' #' . $_->{mid};
         $_->{color} = $_->{categories}->{color};
         $_
     } $rs_topic->all;
@@ -463,6 +465,8 @@ sub list_category : Local {
                 while( my $status = $statuses->next ) {
                     push @statuses, $status->id_status;
                 }
+
+                my $type = $r->is_changeset ? 'C' : $r->is_release ? 'R' : 'N';
                 
                 push @rows,
                   {
@@ -470,6 +474,7 @@ sub list_category : Local {
                     category    => $r->id,
                     name        => $r->name,
                     color        => $r->color,
+                    type         => $type,
                     category_name => $r->name,
                     description => $r->description,
                     statuses    => \@statuses

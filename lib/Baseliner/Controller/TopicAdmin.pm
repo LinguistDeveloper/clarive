@@ -241,12 +241,15 @@ sub list_category : Local {
                 while( my $status = $statuses->next ) {
                     push @statuses, $status->id_status;
                 }
+
+                my $type = $row->is_changeset ? 'C' : $row->is_release ? 'R' : 'N';
                 
                 push @rows,
                   {
                     id          => $r->id,
                     name        => $r->name,
                     description => $r->description,
+                    type        => $type,
                     statuses    => \@statuses
                   };
             }  
@@ -274,6 +277,13 @@ sub update_category : Local {
     my $p = $c->req->params;
     my $action = $p->{action};
     my $idsstatus = $p->{idsstatus};
+    my $type = $p->{type};
+
+    sub assign_type {
+        my ($category) = @_;
+        $category->is_release('1') if $type eq 'R';
+        $category->is_changeset('1') if $type eq 'C';
+    }
 
     given ($action) {
         when ('add') {
@@ -281,6 +291,8 @@ sub update_category : Local {
                 my $row = $c->model('Baseliner::BaliTopicCategories')->search({name => $p->{name}})->first;
                 if(!$row){
                     my $category = $c->model('Baseliner::BaliTopicCategories')->create({name  => $p->{name}, description=> $p->{description} ? $p->{description}:''});
+                    assign_type( $category );
+                    $category->update;
                     
                     if($idsstatus){
                         foreach my $id_status (_array $idsstatus){
@@ -306,6 +318,7 @@ sub update_category : Local {
             try{
                 my $id_category = $p->{id};
                 my $category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
+                assign_type( $category );
                 $category->name( $p->{name} );
                 $category->description( $p->{description} );
                 $category->update();

@@ -50,8 +50,8 @@ sub update {
                 # related topics
                 if( my @topics = _array( $p->{topics} ) ) {
                     my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
-                    while(my $topic = $rs_topics->next){
-                        $topic->add_to_topics($topic, { rel_type=>'topic_topic'});
+                    while(my $rel_topic = $rs_topics->next){
+                        $topic->add_to_topics($rel_topic, { rel_type=>'topic_topic'});
                     }
                 }
                 
