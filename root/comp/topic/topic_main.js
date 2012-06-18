@@ -36,7 +36,11 @@
                             if(action == 'add'){
                                 var tabpanel = Ext.getCmp('main-panel');
                                 var objtab = tabpanel.getActiveTab();
-                                objtab.setTitle(objtab.title + ' #' + a.result.topic_mid);
+                                var title = objtab.title + ' #' + a.result.topic_mid;
+                                objtab.setTitle( title );
+                                var info = Baseliner.panel_info( objtab );
+                                info.params.topic_mid = a.result.topic_mid;
+                                info.title = title;
                             }
                             view_is_dirty = true;
                        },

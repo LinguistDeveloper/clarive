@@ -763,6 +763,15 @@
         } catch(e) { };
     };
 
+    Baseliner.panel_info = function( panel ) {
+        var id = panel.getId();
+        if( id !== undefined )  {
+            var info = Baseliner.tabInfo[id];
+            if( info.params==undefined ) info.params={};
+            return info;
+        }
+    };
+
     Baseliner.refreshCurrentTab = function() {
         var tabpanel = Ext.getCmp('main-panel');
         var panel = tabpanel.getActiveTab();

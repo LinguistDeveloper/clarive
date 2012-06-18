@@ -313,7 +313,6 @@
             //emptyText: _('Enter or select topics'),
             triggerAction: 'all',
             resizable: true,
-            //store: new Baseliner.store.UserProjects({}),
             mode: 'local',
             fieldLabel: _('Topics'),
             typeAhead: true,
@@ -341,7 +340,7 @@
     };
     Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
 
-    var topic_box_store = new Baseliner.store.Topics({ mid: rec.topic_mid });
+    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid } });
     var topic_box = new Baseliner.model.Topics({
         store: topic_box_store
     });
