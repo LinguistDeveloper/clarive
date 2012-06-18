@@ -74,7 +74,7 @@
     var store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/topic/file_tree',
-       baseParams: { id_topic: rec.mid },
+       baseParams: { topic_mid: rec.topic_mid },
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
     }); 
     var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -95,7 +95,7 @@
             var sel = check_sm.getSelected();
             Baseliner.confirm( _('Are you sure you want to delete these artifacts?'), function(){
                 var sels = checked_selections();
-                Baseliner.ajaxEval( '/topic/file/delete', { md5 : sels.md5, id_topic: rec.mid }, function(res) {
+                Baseliner.ajaxEval( '/topic/file/delete', { md5 : sels.md5, topic_mid: rec.topic_mid }, function(res) {
                     Baseliner.message(_('Deleted'), res.msg ); 
                     store_file.load();
                 });
@@ -180,7 +180,7 @@
             //debug: true,  
             // additional data to send, name-value pairs
             params: {
-                id_topic: params.id
+                topic_mid: params.topic_mid ? params.topic_mid : 0
             },
             template: '<div class="qq-uploader">' + 
                 '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
@@ -191,7 +191,9 @@
                 Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
                 store_file.load();
             },
-            onSubmit: function(id, filename){},
+            onSubmit: function(id, filename){
+                alert( filename );
+            },
             onProgress: function(id, filename, loaded, total){},
             onCancel: function(id, filename){ },
             classes: {
@@ -339,7 +341,7 @@
     };
     Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
 
-    var topic_box_store = new Baseliner.store.Topics({ mid: rec.mid });
+    var topic_box_store = new Baseliner.store.Topics({ mid: rec.topic_mid });
     var topic_box = new Baseliner.model.Topics({
         store: topic_box_store
     });
@@ -401,8 +403,7 @@
                   autoHeight : true,
                   items: [
             
-            { xtype: 'hidden', name: 'id', value: rec.id },
-            { xtype: 'hidden', name: 'mid', value: rec.mid },
+            { xtype: 'hidden', name: 'topic_mid', value: rec.topic_mid },
             {
                 xtype:'textfield',
                 fieldLabel: _('Title'),
@@ -483,7 +484,7 @@
         });            
         store_priority.load();
         var form2 = form_topic.getForm();
-        form2.findField("id").setValue(-1);
+        form2.findField("topic_mid").setValue(-1);
     }else {
         store_category.on("load", function() {
             combo_category.setValue(rec.category);
