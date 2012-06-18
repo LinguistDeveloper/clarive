@@ -193,7 +193,7 @@
                 store_file.load();
             },
             onSubmit: function(id, filename){
-                alert( filename );
+
             },
             onProgress: function(id, filename, loaded, total){},
             onCancel: function(id, filename){ },

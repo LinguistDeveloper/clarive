@@ -13,10 +13,10 @@ sub json : Local {
     my ($self, $c) = @_;
     # name=>'cambiar pantalla de login', description=>'', assigned=>'infroox', category=>'Incidencia'
 
-    my $rs = $c->model('Baseliner::BaliIssue')->search( status => 'O');
+    my $rs = $c->model('Baseliner::BaliTopic')->search( status => 'O');
     my @tasks;
     while ( my $row = $rs->next ) {
-        push @tasks, { id => $row->id, name => $row->title, description => $row->description, assigned => $row->created_by, category => 'Incidencia'}
+        push @tasks, { topic_mid => $row->mid, name => $row->title, description => $row->description, assigned => $row->created_by, category => 'Incidencia'}
     }
 
     $c->stash->{json} = {
