@@ -1359,6 +1359,15 @@ sub file_tree : Local {
                order_by => { '-asc' => 'created_on' }
            }
            )->all;       
+    }else{
+        my @files_mid = _array $p->{files_mid};
+        @files = map {
+           my ( $size, $unit ) = _size_unit( $_->filesize );
+           $size = "$size $unit";
+           +{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
+           } 
+           $c->model('Baseliner::BaliFileVersion')->search( { mid => \@files_mid } )->all;           
+        
     }
 
     $c->stash->{json} = { total=>scalar( @files ), success=>\1, data=>\@files };

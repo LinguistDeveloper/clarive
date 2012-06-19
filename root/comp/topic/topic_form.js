@@ -194,6 +194,10 @@
                     var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();
                     files_uploaded_mid = files_uploaded_mid ? files_uploaded_mid + ',' + res.file_uploaded_mid : res.file_uploaded_mid;
                     form2.findField("files_uploaded_mid").setValue(files_uploaded_mid);
+                    var files_mid = files_uploaded_mid.split(',');
+                    store_file.baseParams = { files_mid: files_mid };
+                    store_file.load();
+                    
                 }
                 else{
                     store_file.load();                    
