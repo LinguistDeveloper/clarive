@@ -129,7 +129,7 @@ sub update {
         } ## end when ( 'add' )
         when ( 'update' ) {
             try {
-                my $topic_mid = $p->{topic_mid};
+                $topic_mid = $p->{topic_mid};
                 my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 $topic->title( $p->{title} );
                 $topic->description( $p->{description} );
@@ -204,18 +204,18 @@ sub update {
             }
         } ## end when ( 'update' )
         when ( 'delete' ) {
-            my $topic_mid = $p->{topic_mid};
-            #try {
+            $topic_mid = $p->{topic_mid};
+            try {
                 my $row = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 #my $row2 = Baseliner->model( 'Baseliner::BaliMaster' )->find( $row->mid );
                 $row->delete;
                 $topic_mid    = $topic_mid;
                 
                 $return = 'Topic deleted';
-            #} ## end try
-            #catch {
-            #    _throw _loc( 'Error deleting topic: %1', shift() );
-            #}
+            } ## end try
+            catch {
+                _throw _loc( 'Error deleting topic: %1', shift() );
+            }
         } ## end when ( 'delete' )
         when ( 'close' ) {
             try {
