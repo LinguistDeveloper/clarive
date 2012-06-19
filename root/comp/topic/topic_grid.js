@@ -9,10 +9,6 @@
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
-    var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
-    var store_priority = new Baseliner.Topic.StorePriority();
-    var store_project = new Baseliner.Topic.StoreProject();
-    var store_status = new Baseliner.Topic.StoreStatus();
     var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList({
 		listeners: {

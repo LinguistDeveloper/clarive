@@ -225,52 +225,6 @@ sub viewdetail : Local {
     }
 }
 
-sub list_category : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-    my $cnt;
-    my @rows;
-
-    if( !$p->{categoryId} ){    
-        my $row = $c->model('Baseliner::BaliTopicCategories')->search();
-        
-        if($row){
-            while( my $r = $row->next ) {
-                my @statuses;
-                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $r->id});
-                while( my $status = $statuses->next ) {
-                    push @statuses, $status->id_status;
-                }
-
-                my $type = $row->is_changeset ? 'C' : $row->is_release ? 'R' : 'N';
-                
-                push @rows,
-                  {
-                    id          => $r->id,
-                    name        => $r->name,
-                    description => $r->description,
-                    type        => $type,
-                    statuses    => \@statuses
-                  };
-            }  
-        }
-        $cnt = $#rows + 1 ; 
-    }else{
-        my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}});
-        if($statuses){
-            while( my $status = $statuses->next ) {
-                push @rows, {
-                                id      => $status->status->id,
-                                name    => $status->status->name
-                            };
-            }
-        }
-        $cnt = $#rows + 1 ;
-    }
-    
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
-    $c->forward('View::JSON');
-}
 
 sub update_category : Local {
     my ($self,$c)=@_;
@@ -375,11 +329,13 @@ sub list_status : Local {
     
     if($row){
         while( my $r = $row->next ) {
+             
             push @rows,
               {
                 id          => $r->id,
                 name        => $r->name,
                 description => $r->description,
+                type        => $r->type
               };
         }  
     }

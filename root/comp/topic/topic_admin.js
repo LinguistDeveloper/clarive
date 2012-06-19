@@ -217,7 +217,8 @@
             { hidden: true, dataIndex:'id' },
             check_status_sm,
             { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
-            { header: _('Description'), dataIndex: 'description', sortable: false } 
+            { header: _('Description'), dataIndex: 'description', sortable: false },
+			{ header: _('Type'), dataIndex: 'type', width:50, sortable: false }
         ],
         autoSizeColumns: true,
         deferredRender:true,    

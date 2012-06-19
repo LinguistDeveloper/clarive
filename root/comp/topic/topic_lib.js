@@ -26,11 +26,12 @@ Baseliner.Topic.StoreStatus = Ext.extend(Ext.data.JsonStore, {
             root: 'data' , 
             remoteSort: true,
             totalProperty:"totalCount", 
-            url: '/topic/list_status',
+            url: '/topicadmin/list_status',
             fields: [ 
                 {  name: 'id' },
                 {  name: 'name' },
-                {  name: 'description' }
+                {  name: 'description' },
+                {  name: 'type' }                
             ]
         }, config);
         Baseliner.Topic.StoreStatus.superclass.constructor.call(this, config);
