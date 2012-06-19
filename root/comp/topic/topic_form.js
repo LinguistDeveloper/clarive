@@ -96,8 +96,10 @@
             Baseliner.confirm( _('Are you sure you want to delete these artifacts?'), function(){
                 var sels = checked_selections();
                 Baseliner.ajaxEval( '/topic/file/delete', { md5 : sels.md5, topic_mid: rec.topic_mid }, function(res) {
-                    Baseliner.message(_('Deleted'), res.msg ); 
-                    store_file.load();
+                    Baseliner.message(_('Deleted'), res.msg );
+                    var rows = check_sm.getSelections();
+                    Ext.each(rows, function(row){ store_file.remove(row); })                    
+                    //store_file.load();
                 });
             });
         } 
