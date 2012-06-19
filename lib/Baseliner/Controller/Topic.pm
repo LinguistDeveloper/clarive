@@ -98,7 +98,11 @@ sub list : Local {
         my $rs_user = $c->model('Baseliner::BaliUser')->search( username => $username )->first;
         if($rs_user){
             my @topic_mids = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]})->hashref->all;
-            $where->{'me.topic_mid'} = \@topic_mids;
+            if(@topic_mids){
+                $where->{'me.topic_mid'} = \@topic_mids;
+            }else{
+                $where->{'me.topic_mid'} = -1;
+            }
         }            
     }
     #*****************************************************************************************************************************
@@ -1224,22 +1228,25 @@ sub upload : Local {
     my $f =  _file( $c->req->body );
     _log "Uploading file " . $filename;
     try {
+        my $config = config_get( 'config.uploader' );
+        my ($topic, $topic_mid, $file_mid);
         if($p->{topic_mid}){
-            my $config = config_get( 'config.uploader' );
-            my $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
-            my $topic_mid = $topic->mid;
-            my $body = scalar $f->slurp;
-            my $md5 = _md5( $body );
-            my $existing = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
-            if( $existing ) {
-                # file already exists
-                if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
-                    _fail _loc "File already attached to topic";
-                } else {
-                    $topic->add_to_files( $existing, { rel_type=>'topic_file_version' });
-                }
+            $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
+            $topic_mid = $topic->mid;
+        }
+        my $body = scalar $f->slurp;
+        my $md5 = _md5( $body );
+        my $existing = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
+        if( $existing && $p->{topic_mid}) {
+            # file already exists
+            if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
+                _fail _loc "File already attached to topic";
             } else {
-                # create file version master and bali_file_version rows
+                $topic->add_to_files( $existing, { rel_type=>'topic_file_version' });
+            }
+        } else {
+            # create file version master and bali_file_version rows
+            if (!$existing){
                 master_new 'bali_file', sub {
                     my $mid = shift;
                     my $file = $c->model('Baseliner::BaliFileVersion')->create(
@@ -1254,21 +1261,23 @@ sub upload : Local {
                             created_on => DateTime->now,
                         }
                     );
-                    event_new 'event.file.create' => {
-                        username => $c->username,
-                        mid      => $topic_mid,
-                        id_file  => $mid,
-                        filename     => $filename,
-                    };
-                    # tie file to topic
-                    $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
-                };
+                    $file_mid = $mid;
+                    if ($p->{topic_mid}){
+                        event_new 'event.file.create' => {
+                            username => $c->username,
+                            mid      => $topic_mid,
+                            id_file  => $mid,
+                            filename     => $filename,
+                        };
+                        # tie file to topic
+                        $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
+                    }
+                };                        
+            }else{
+                $file_mid = $existing->mid;
             }
-            $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ) };
-        }else{
-            _fail _loc('you must save the topic before uploading files');
-            $c->stash->{ json } = { success => \0, msg => _loc('you must save the topic before uploading files') };
-        }            
+        }
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $p->{topic_mid}? '': $file_mid, };
     }
     catch {
         my $err = shift;

@@ -189,10 +189,17 @@
              '</div>',
             onComplete: function(fu, filename, res){
                 Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
-                store_file.load();
+                if(res.file_uploaded_mid){
+                    var form2 = form_topic.getForm();
+                    var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();
+                    files_uploaded_mid = files_uploaded_mid ? files_uploaded_mid + ',' + res.file_uploaded_mid : res.file_uploaded_mid;
+                    form2.findField("files_uploaded_mid").setValue(files_uploaded_mid);
+                }
+                else{
+                    store_file.load();                    
+                }
             },
             onSubmit: function(id, filename){
-
             },
             onProgress: function(id, filename, loaded, total){},
             onCancel: function(id, filename){ },
@@ -403,6 +410,7 @@
                   items: [
             
             { xtype: 'hidden', name: 'topic_mid', value: rec.topic_mid },
+            { xtype: 'hidden', name: 'files_uploaded_mid' },
             {
                 xtype:'textfield',
                 fieldLabel: _('Title'),

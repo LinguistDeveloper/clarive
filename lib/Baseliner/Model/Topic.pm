@@ -29,7 +29,7 @@ sub update {
         when ( 'add' ) {
             try {
                 my $topic = master_new 'bali_topic' => sub {
-                    my $topic_mid = shift;    
+                    $topic_mid = shift;    
                     Baseliner->model('Baseliner::BaliTopic')->create(
                         {   title              => $p->{title},
                             description        => $p->{description},
@@ -46,6 +46,25 @@ sub update {
                         }
                     );
                 };
+
+                # files topics
+
+                #if( my @files_uploaded_mid = split(",", $p->{files_upload_mid}) ) {
+                if( my @files_uploaded_mid = split(",", $p->{files_uploaded_mid}) ) {
+                    _log ">>>>>>>>>>>>>>>>>>>>>>>>PASASASASASASAS\n";
+                    my $rs_files = Baseliner->model('Baseliner::BaliFileVersion')->search({mid =>\@files_uploaded_mid});
+                    while(my $rel_file = $rs_files->next){
+                        # tie file to topic
+                        event_new 'event.file.create' => {
+                            username => $p->{username},
+                            mid      => $topic_mid,
+                            id_file  => $rel_file->mid,
+                            filename     => $rel_file->filename,
+                        };                        
+                        $topic->add_to_files( $rel_file, { rel_type=>'topic_file_version' });
+                    }
+                }
+                
                 
                 # related topics
                 if( my @topics = _array( $p->{topics} ) ) {
@@ -100,7 +119,7 @@ sub update {
                     }
                 }
                 
-                $topic_mid    = $topic->mid;
+                $topic_mid    = $topic_mid;
                 $status = $topic->id_category_status;
                 $return = 'Topic added';
             } ## end try
