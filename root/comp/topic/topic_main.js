@@ -33,6 +33,7 @@
                             });
                             params.topic_mid = a.result.topic_mid;
                             btn_comment.show();
+                            btn_detail.show();
                             if(action == 'add'){
                                 var tabpanel = Ext.getCmp('main-panel');
                                 var objtab = tabpanel.getActiveTab();
@@ -104,8 +105,10 @@
             btn_form_ok.show();
             if(params.topic_mid){
                 btn_comment.show();
+                btn_detail.show();
             }else{
                 btn_comment.hide();
+                btn_detail.hide();
             }
             //btn_form_reset.show();
         });
