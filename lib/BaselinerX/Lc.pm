@@ -28,8 +28,9 @@ has 'state_data' => qw(is rw isa HashRef lazy 1),
         my $state_data = {};
         for my $state ( _array $states ) {
             my $state_name = $state->{name} // $state->{node}  ;
-            $state_data->{ $state_name }->{to} = $state->{bl_to};
-            $state_data->{ $state_name }->{from} = $state->{bl_from};
+            $state_data->{ $state_name }->{bl} = $state->{bl};
+            $state_data->{ $state_name }->{bl_to} = $state->{bl_to};
+            $state_data->{ $state_name }->{bl_from} = $state->{bl_from};
             $state_data->{ $state_name }->{show_branch} = $state->{show_branch};
         }
         return $state_data;
@@ -76,16 +77,22 @@ sub all_repos {
     @ret;
 }
 
+sub bl {
+    my ($self, $state_name ) = @_;
+    my $state_data = $self->state_data;
+    return try { $state_data->{ $state_name }->{bl} } catch { undef };
+}
+
 sub bl_from {
     my ($self, $state_name ) = @_;
     my $state_data = $self->state_data;
-    return try { $state_data->{ $state_name }->{from} } catch { undef };
+    return try { $state_data->{ $state_name }->{bl_from} } catch { undef };
 }
 
 sub bl_to {
     my ($self, $state_name ) = @_;
     my $state_data = $self->state_data;
-    return try { $state_data->{ $state_name }->{to} } catch { undef };
+    return try { $state_data->{ $state_name }->{bl_to} } catch { undef };
 }
 
 =head2 state_names_for_bl
@@ -96,10 +103,13 @@ sub bl_to {
 
 =cut
 sub state_names_for_bl {
-    my ( $self, $type, $bl ) = @_;
+    my ($self, $type, $bl ) = @_;
+
     my @state_names;
     my $state_data = $self->state_data;
     for my $state_name ( keys %{ $state_data || {} } ) {
+        # _log '%%%%%%%%%%% Checking '.$state_name;
+        # _log '%%%%%%%%%%% Is correct? '.$state_data->{$state_name}->{ $type };
         if( $state_data->{$state_name}->{ $type } eq $bl ) {
             push @state_names, $state_name;
         }

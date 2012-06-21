@@ -29,7 +29,6 @@ Baseliner.store.UserProjects = function(c) {
         url: '/project/user_projects'
     },c));
 };
-
 Ext.extend( Baseliner.store.UserProjects, Baseliner.store.AllProjects );
 
 

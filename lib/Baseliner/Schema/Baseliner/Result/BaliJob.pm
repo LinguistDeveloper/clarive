@@ -460,7 +460,7 @@ sub last_log_message {
 	use Baseliner::Core::DBI;
 	my $db = Baseliner::Core::DBI->new( dbi=>$self->result_source->storage->dbh );
 	my $id = $self->id;
-	return $db->value("select trim(text) from bali_log
+	return $db->value("select rtrim(text) from bali_log
 		where id=(select max(id) from bali_log bl where bl.id_job=$id and bl.lev<>'debug')");
 	#return bali_log->first->text
 }

@@ -322,6 +322,8 @@ sub update : Local {
     my $dbh = $db->dbh;
     my $SQL;
     my @datas;
+
+    $p->{id_parent} eq '' and $p->{id_parent} = undef;
     
     given ($action) {
 	when ('add') {
@@ -336,10 +338,11 @@ sub update : Local {
 				$project = $c->model('Baseliner::BaliProject')->create(
 							{
 								mid			=> $mid,
-							    name   		=> $p->{name},
-							    id_parent  	=> $p->{id_parent} eq '/'?'':$p->{id_parent},
-							    nature		=> $p->{nature},
-							    description	=> $p->{description},
+                                name        => $p->{name},
+                                id_parent   => $p->{id_parent} eq '/' ? undef : $p->{id_parent},
+                                nature      => $p->{nature},
+                                description => $p->{description},
+                                active      => '1',
 							});
 			};
 		    
@@ -356,7 +359,7 @@ sub update : Local {
 	    try{
 		my $project = $c->model('Baseliner::BaliProject')->find( $id_project );
 		$project->name( $p->{name} );
-		$project->id_parent( $p->{id_parent} eq '/'?'':$p->{id_parent} );
+		$project->id_parent( $p->{id_parent} eq '/'? undef : $p->{id_parent} );
 		$project->nature( $p->{nature} );
 		$project->description( $p->{description} );
 		$project->update();

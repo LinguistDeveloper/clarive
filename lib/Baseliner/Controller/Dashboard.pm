@@ -170,25 +170,39 @@ sub list_emails: Private{
 sub list_topics: Private{
     my ( $self, $c ) = @_;
 	my $username = $c->username;
-	my (@topics, $topic, @datas, $SQL);
+	#my (@topics, $topic, @datas, $SQL);
 	
+	my $limit = 5;
+	my @columns = ('topic_mid','title', 'category_name', 'created_on', 'created_by', 'category_status_name', 'numcomment');
+	my ($select, $as, $order_by,  $group_by) = ([map {'me.' . $_} @columns], #select
+												[@columns], #as
+												[{-desc => 'me.created_on' }], #order_by
+												[@columns] #group_by
+												);
+	my $where = {};
+    $where->{'me.status'} = 'O';
 	
-	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-	$SQL = "SELECT * FROM (SELECT C.ID, TITLE, DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT
-								FROM  BALI_TOPIC C
-								LEFT JOIN
-										(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_POST B, BALI_MASTER_REL REL
-                                        WHERE A.MID = REL.FROM_MID AND B.MID = REL.TO_MID AND REL_TYPE = 'topic_post'
-                                        GROUP BY A.ID) D
-									ON C.ID = D.ID 
-								WHERE STATUS = 'O'
-								ORDER BY CREATED_ON DESC)
-					  WHERE ROWNUM < 6";
-
-	@topics = $db->array_hash( $SQL );
-	foreach $topic (@topics){
-	    push @datas, $topic;
-	}	
+	my @datas = $c->model('Baseliner::TopicView')->search(  
+        $where,
+        { select=>$select, as=>$as, order_by=>$order_by, rows=>$limit, group_by=>$group_by }
+    )->hashref->all; 	
+	
+#	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+#	$SQL = "SELECT * FROM (SELECT C.ID, TITLE, DESCRIPTION, CREATED_ON, CREATED_BY, STATUS, NUMCOMMENT
+#								FROM  BALI_TOPIC C
+#								LEFT JOIN
+#										(SELECT COUNT(*) AS NUMCOMMENT, A.ID FROM BALI_TOPIC A, BALI_POST B, BALI_MASTER_REL REL
+#                                        WHERE A.MID = REL.FROM_MID AND B.MID = REL.TO_MID AND REL_TYPE = 'topic_post'
+#                                        GROUP BY A.ID) D
+#									ON C.ID = D.ID 
+#								WHERE STATUS = 'O'
+#								ORDER BY CREATED_ON DESC)
+#					  WHERE ROWNUM < 6";
+#
+#	@topics = $db->array_hash( $SQL );
+#	foreach $topic (@topics){
+#	    push @datas, $topic;
+#	}	
 		
 	$c->stash->{topics} =\@datas;
 }

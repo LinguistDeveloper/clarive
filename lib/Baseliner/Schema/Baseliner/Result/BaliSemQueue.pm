@@ -234,7 +234,7 @@ C<wait_for> will trigger a C<DESTROY> everytime.
 =cut
 sub DESTROY {
     my $self = shift;
-    if( $self->status =~ /busy|waiting|idle/ ) {
+    if( $self->status && $self->status =~ /busy|waiting|idle/ ) {
         $self->release;
         #$self->ts_release( \'sysdate' );
     }

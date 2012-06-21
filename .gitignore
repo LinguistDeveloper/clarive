@@ -29,3 +29,5 @@ inc
 t/balitest.db
 t/old
 mvsjobs
+.sonar
+root/identicon

@@ -74,7 +74,7 @@
     var store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/topic/file_tree',
-       baseParams: { id_topic: rec.mid },
+       baseParams: { topic_mid: rec.topic_mid },
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
     }); 
     var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -83,23 +83,66 @@
             value = String.format('<a target="FrameDownload" href="/topic/download_file/{1}">{0}</a>', value, md5 );
         }
         value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' 
-            + '<input type="checkbox" class="ux-maximgb-tg-mastercol-cb" ext:record-id="' + record.id +  '"/>&nbsp;'
+            //+ '<input type="checkbox" class="ux-maximgb-tg-mastercol-cb" ext:record-id="' + record.id +  '"/>&nbsp;'
             + value 
             + '</div>';
         return value;
     };
 
+    var file_del = function(){
+        var sels = checked_selections();
+        if ( sels != undefined ) {
+            var sel = check_sm.getSelected();
+            Baseliner.confirm( _('Are you sure you want to delete these artifacts?'), function(){
+                var sels = checked_selections();
+                Baseliner.ajaxEval( '/topic/file/delete', { md5 : sels.md5, topic_mid: rec.topic_mid }, function(res) {
+                    Baseliner.message(_('Deleted'), res.msg );
+                    var rows = check_sm.getSelections();
+                    Ext.each(rows, function(row){ store_file.remove(row); })                    
+                    //store_file.load();
+                });
+            });
+        } 
+        //Baseliner.Topic.file_del('', '', '' );
+    };
+
+    var checked_selections = function() {
+        if (check_sm.hasSelection()) {
+            var sel = check_sm.getSelections();
+            var name = [];
+            var md5 = [];
+            for( var i=0; i<sel.length; i++ ) {
+                md5.push( sel[i].data.md5 );
+                name.push( sel[i].data.name );
+            }
+            return { count: md5.length, name: name, md5: md5 };
+        }
+        return undefined;
+    };
+
+    var check_sm = new Ext.grid.CheckboxSelectionModel({
+        singleSelect: false,
+        sortable: false,
+        checkOnly: true
+    });
+
     var filelist = new Ext.ux.maximgb.tg.GridPanel({
         height: 120,
-        header: false,
         stripeRows: true,
         autoScroll: true,
         autoWidth: true,
         sortable: false,
         header: false,
+        hideHeaders: true,
+        sm: check_sm,
         store: store_file,
+        tbar: [
+            { xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
+            '->',
+            { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete.gif', handler: file_del }
+        ],
         viewConfig: {
-        header: false,
+            headersDisabled: true,
             enableRowBody: true,
             scrollOffset: 2,
             forceFit: true
@@ -107,11 +150,12 @@
         master_column_id : 'filename',
         autoExpandColumn: 'filename',
         columns: [
+          check_sm,
           { width: 16, dataIndex: 'extension', sortable: true, renderer: Baseliner.render_extensions },
-          { id:"filename", header: _('File'), width: 150, dataIndex: 'filename', renderer: render_file },
+          { id:"filename", header: _('File'), width: 250, dataIndex: 'filename', renderer: render_file },
           { header: _('Id'), hidden: true, dataIndex: '_id' },
-          { header: _('Size'), width: 100, dataIndex: 'size' },
-          { header: _('Version'), width: 75, dataIndex: 'versionid' }
+          { header: _('Size'), width: 40, dataIndex: 'size' },
+          { header: _('Version'), width: 40, dataIndex: 'versionid' }
         ]
     });
     /* tree.getLoader().on("beforeload", function(treeLoader, node) {
@@ -126,6 +170,7 @@
 
     var filedrop = new Ext.Panel({
         border: false,
+        style: { margin: '10px 0px 10px 0px' },
         height: '100px'
     });
 
@@ -137,17 +182,33 @@
             //debug: true,  
             // additional data to send, name-value pairs
             params: {
-                id_topic: params.id
+                topic_mid: params.topic_mid ? params.topic_mid : 0
             },
             template: '<div class="qq-uploader">' + 
                 '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
                 '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
-            onComplete: function(){
-                store_file.load();
+            onComplete: function(fu, filename, res){
+                Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
+                if(res.file_uploaded_mid){
+                    var form2 = form_topic.getForm();
+                    var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();
+                    files_uploaded_mid = files_uploaded_mid ? files_uploaded_mid + ',' + res.file_uploaded_mid : res.file_uploaded_mid;
+                    form2.findField("files_uploaded_mid").setValue(files_uploaded_mid);
+                    var files_mid = files_uploaded_mid.split(',');
+                    store_file.baseParams = { files_mid: files_mid };
+                    store_file.load();
+                    
+                }
+                else{
+                    store_file.load();                    
+                }
             },
-            onCancel: function(){ },
+            onSubmit: function(id, filename){
+            },
+            onProgress: function(id, filename, loaded, total){},
+            onCancel: function(id, filename){ },
             classes: {
                 // used to get elements from templates
                 button: 'qq-upload-button',
@@ -235,6 +296,71 @@
         }           
     });
 
+    Baseliner.store.Topics = function(c) {
+         Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
+            root: 'data' , 
+            remoteSort: true,
+            autoLoad: true,
+            totalProperty:"totalCount", 
+            baseParams: {},
+            id: 'mid', 
+            url: '/topic/related',
+            fields: ['mid','name', 'title','description','color'] 
+         }, c));
+    };
+    Ext.extend( Baseliner.store.Topics, Ext.data.JsonStore );
+
+    Baseliner.model.Topics = function(c) {
+        //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
+        var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+            '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+            '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+        var tpl_field = new Ext.XTemplate( '<tpl for=".">',
+            '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+            '</tpl>' );
+        Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
+            allowBlank: true,
+            msgTarget: 'under',
+            allowAddNewData: true,
+            addNewDataOnBlur: true, 
+            //emptyText: _('Enter or select topics'),
+            triggerAction: 'all',
+            resizable: true,
+            mode: 'local',
+            fieldLabel: _('Topics'),
+            typeAhead: true,
+            name: 'topics',
+            displayField: 'name',
+            hiddenName: 'topics',
+            valueField: 'mid',
+            tpl: tpl_list,
+            displayFieldTpl: tpl_field,
+            value: '/',
+            extraItemCls: 'x-tag'
+            /*
+            ,listeners: {
+                newitem: function(bs,v, f){
+                    v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                    var newObj = {
+                        mid: v,
+                        title: v
+                    };
+                    bs.addItem(newObj);
+                }
+            }
+            */
+        }, c));
+    };
+    Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
+
+    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid } });
+    var topic_box = new Baseliner.model.Topics({
+        store: topic_box_store
+    });
+    topic_box_store.on('load',function(){
+        topic_box.setValue( rec.topics ) ;            
+    });
+
     var user_box_store = new Baseliner.Topic.StoreUsers({
         autoLoad: true,
         baseParams: {projects:[]}
@@ -289,8 +415,8 @@
                   autoHeight : true,
                   items: [
             
-            { xtype: 'hidden', name: 'id', value: rec.id },
-            { xtype: 'hidden', name: 'mid', value: rec.mid },
+            { xtype: 'hidden', name: 'topic_mid', value: rec.topic_mid },
+            { xtype: 'hidden', name: 'files_uploaded_mid' },
             {
                 xtype:'textfield',
                 fieldLabel: _('Title'),
@@ -324,6 +450,7 @@
             { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
             pb_panel,
             user_box,
+            topic_box,
             {
                 xtype: 'panel',
                 border: false,
@@ -370,7 +497,7 @@
         });            
         store_priority.load();
         var form2 = form_topic.getForm();
-        form2.findField("id").setValue(-1);
+        form2.findField("topic_mid").setValue(-1);
     }else {
         store_category.on("load", function() {
             combo_category.setValue(rec.category);

@@ -13,7 +13,7 @@ __PACKAGE__->add_columns(
     data_type => "NUMBER",
     default_value => undef,
     is_nullable => 0,
-    size => 126,
+    is_auto_increment => 1,
   },
   "ns",
   {
@@ -54,7 +54,6 @@ __PACKAGE__->add_columns(
     data_type => "NUMBER",
     default_value => undef,
     is_nullable => 1,
-    size => 126,
   },
   "reftable",
   {
@@ -74,7 +73,6 @@ __PACKAGE__->add_columns(
     data_type => "NUMBER",
     default_value => 0,
     is_nullable => 0,
-    size => 126,
   },
 );
 __PACKAGE__->set_primary_key("id");

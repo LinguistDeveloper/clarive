@@ -40,6 +40,7 @@ BEGIN {
             +CatalystX::Features::Plugin::Static::Simple/;
 		push @modules, 'Log::Colorful' if eval "require Catalyst::Plugin::Log::Colorful";
     }
+    #unshift @modules, '-Debug' if $ENV{BASELINER_DEBUG};
 }
 
 use Catalyst @modules;
@@ -248,7 +249,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
             my $meta = $cl{ $package };
             next if ref $meta eq 'Moose::Meta::Role';
 			#eval { $package->meta->make_immutable; };
-			$meta->make_immutable;
+			$meta->make_immutable unless $meta->is_immutable;
 		}
 
 		#my %pkgs;
@@ -261,8 +262,10 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 	}
 
     # Beep
-    $ENV{CATALYST_DEBUG} && do { 
-        print STDERR "Startup time: " . tv_interval($t0) . "s\n";
+    my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
+    print STDERR "Baseliner Server v" . Baseliner->config->{About}->{version} . ". Startup time: " . tv_interval($t0) . "s.\n";
+    $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
+        print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
     };
 	# Make registry easily available to contexts
@@ -343,29 +346,6 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 		}
 		return \%data;
 	}
-
-    #TODO deprecated:
-                sub inf_bl {
-                    my $c=shift;
-                    $c->stash->{bl};
-                }
-                sub inf_search {
-                    my ($c, %p ) = @_;
-                    $p{ns} ||= '%';
-                    $p{bl} ||= '%';
-                    $p{key} ||= '%';
-                    my $bl = $p{bl} eq '*' ? '%' : $p{bl};
-                    my $ns = $p{ns} ? $p{ns}.'/%' : '%';
-                    $ns =~ s{//}{/}g;
-                    warn "------------SEARCH: $ns,$bl,$p{key}"; 
-                    return $c->model('Baseliner::Bigtable')->search({ ns=>{ -like => $ns },bl=>{ -like =>$bl },key=>{ -like =>$p{key} }}); 
-                }
-                sub inf_write {
-                    my ($c,%p) = @_;
-                    $p{ns} ||= '/';
-                    $p{bl} ||= '*';
-                    $c->model('Baseliner::Bigtable')->create({ ns=>$p{ns},bl=>$p{bl}, key=>$p{key}, value=>$p{value} }); 
-                }
 
 # user shortcut
 use Try::Tiny;

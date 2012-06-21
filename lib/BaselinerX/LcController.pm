@@ -11,17 +11,14 @@ sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
     my @project_ids = Baseliner->model('Permissions')->all_projects();
-    my $rs          = Baseliner->model('Baseliner::BaliProject')
-        ->search( { id => \@project_ids, id_parent => undef, active => 1 }, { order_by => 'lower(name) asc' } );
-
-    while ( my $r = $rs->next ) {
-        push @tree,
-            {
-            text => $r->name,
-            url  => '/lifecycle/tree_project',
-            data => {
-                id_project => $r->id,
-                project    => $r->name,
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ id=>\@project_ids, id_parent=>undef, active=>1 }, { order_by=>{ -asc => \'lower(name)' }  });
+    while( my $r = $rs->next ) {
+        push @tree, {
+            text       => $r->name,
+            url        => '/lifecycle/tree_project',
+            data       => {
+               id_project => $r->id,
+               project    => $r->name,
             },
             icon       => '/static/images/icons/project_small.png',
             leaf       => \0,
@@ -294,29 +291,38 @@ sub agent_ftp : Local {
     my $p = $c->req->params;
     my $dir = $p->{dir};
 
+    # TODO : from user workspace repo
+    my ($user, $pass, $host) = ( 'ICDMPA0', 'FEB01FEB', '192.168.107.2' );
+
     my @tree;
 
     my @path;
-    push @path, $p->{curr} // '//IBMUSER';
+    push @path, $p->{curr} // '//' . $user;
     push @path, $dir if $dir && $dir ne '/';
     my $path = join '.', @path;
     _log "FTP path $path";
 
     use Net::FTP; 
-    my $ftp=Net::FTP->new("sysb");
-    $ftp->login("ibmuser","sys1");
-    $ftp->cwd( $path );
+    my $ftp=Net::FTP->new( $host );
+    $ftp->login( $user, $pass );
+    $ftp->cwd( $path ); 
     my $k = 0;
     for my $i ( $ftp->dir ) {
         next if $k++ == 0;
         my @f = split /[\s|\t]+/, $i;
+        my $vol = $f[0];
+        
+        next if ($vol eq 'Migrated');
+
         my ($vol, $unit, $ref, $ext, $used, $fmt, $lrecl, $blksz, $dsorg, $dsname ) = @f;
         _log "FFFFFFFFFFFFFF=" . join ',', @f;
-        my $is_leaf = @f <= 5 ;
-        my $text = @f < 2 ? $vol : ( @f <= 5 ? $f[4] : $dsname );
+        
+        my $is_leaf = @f <= 5 || $unit ne '3390' ;
+        my $text = @f < 2 || $unit ne '3390' ? $vol : ( @f <= 5 ? $f[4] : $dsname );
 
         my $node = {
             text => $text, 
+            url => 'lifecycle/agent_ftp',
             data => { curr=>$path, dir=>$text },
             leaf => $is_leaf,
         };
@@ -341,9 +347,13 @@ sub view_file : Local {
     my $path = $p->{curr};
     my $remote = $p->{dir};
     my $local = _tmp_file;
+
+    # TODO : from user workspace repo
+    my ($user, $pass, $host) = ( 'ICDMPA0', 'FEB01FEB', '192.168.107.2' );
+
     use Net::FTP; 
-    my $ftp=Net::FTP->new("sysb");
-    $ftp->login("ibmuser","sys1");
+    my $ftp=Net::FTP->new( $host );
+    $ftp->login( $user, $pass );
     $ftp->cwd( $path );
     $ftp->get( $remote, $local );
     my $data = _file( $local )->slurp;
@@ -356,7 +366,7 @@ sub list_workspaces : Private {
     my ($self, %args) = @_;
 
     +{
-        text => 'sysb:TSSTROG',
+        text => '192.168.107.2:ICDMPA0',
         leaf => \0,
         url  => '/lifecycle/agent_ftp',
         data => { dir=>'/' },

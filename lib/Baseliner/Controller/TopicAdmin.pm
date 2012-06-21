@@ -225,55 +225,19 @@ sub viewdetail : Local {
     }
 }
 
-sub list_category : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-    my $cnt;
-    my @rows;
-
-    if( !$p->{categoryId} ){    
-        my $row = $c->model('Baseliner::BaliTopicCategories')->search();
-        
-        if($row){
-            while( my $r = $row->next ) {
-                my @statuses;
-                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $r->id});
-                while( my $status = $statuses->next ) {
-                    push @statuses, $status->id_status;
-                }
-                
-                push @rows,
-                  {
-                    id          => $r->id,
-                    name        => $r->name,
-                    description => $r->description,
-                    statuses    => \@statuses
-                  };
-            }  
-        }
-        $cnt = $#rows + 1 ; 
-    }else{
-        my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}});
-        if($statuses){
-            while( my $status = $statuses->next ) {
-                push @rows, {
-                                id      => $status->status->id,
-                                name    => $status->status->name
-                            };
-            }
-        }
-        $cnt = $#rows + 1 ;
-    }
-    
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
-    $c->forward('View::JSON');
-}
 
 sub update_category : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $action = $p->{action};
     my $idsstatus = $p->{idsstatus};
+    my $type = $p->{type};
+
+    sub assign_type {
+        my ($category) = @_;
+        $category->is_release('1') if $type eq 'R';
+        $category->is_changeset('1') if $type eq 'C';
+    }
 
     given ($action) {
         when ('add') {
@@ -281,6 +245,8 @@ sub update_category : Local {
                 my $row = $c->model('Baseliner::BaliTopicCategories')->search({name => $p->{name}})->first;
                 if(!$row){
                     my $category = $c->model('Baseliner::BaliTopicCategories')->create({name  => $p->{name}, description=> $p->{description} ? $p->{description}:''});
+                    assign_type( $category );
+                    $category->update;
                     
                     if($idsstatus){
                         foreach my $id_status (_array $idsstatus){
@@ -306,6 +272,7 @@ sub update_category : Local {
             try{
                 my $id_category = $p->{id};
                 my $category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
+                assign_type( $category );
                 $category->name( $p->{name} );
                 $category->description( $p->{description} );
                 $category->update();
@@ -362,11 +329,13 @@ sub list_status : Local {
     
     if($row){
         while( my $r = $row->next ) {
+             
             push @rows,
               {
                 id          => $r->id,
                 name        => $r->name,
                 description => $r->description,
+                type        => $r->type
               };
         }  
     }

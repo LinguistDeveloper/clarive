@@ -4,15 +4,11 @@
 </%perl>
 (function(){
     <& /comp/search_field.mas &>
-    var ps = 100; //page_size
+    var ps = 10; //page_size
     var filter_current;
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
-    var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
-    var store_priority = new Baseliner.Topic.StorePriority();
-    var store_project = new Baseliner.Topic.StoreProject();
-    var store_status = new Baseliner.Topic.StoreStatus();
     var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList({
 		listeners: {
@@ -183,8 +179,16 @@
 			displayField: 'name',
 			valueField: 'id',
 			store: store_category,
+            tpl: '<tpl for="."><div id="boot" class="x-combo-list-item"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></div></tpl>', 
 			allowBlank: false
 		});
+
+        var combo_select = function() {
+            var title = combo_category.getRawValue();
+            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
+            win.close();
+        };
+        combo_category.on('select', combo_select );
 
 		var title = 'Create topic';
 		
@@ -196,11 +200,7 @@
 				type: 'submit',
 				handler: function() {
                     var form = form_topic.getForm();
-                    if (form.isValid()) {
-                        var title = combo_category.getRawValue();
-                        Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
-                        win.close();
-                    }
+                    if (form.isValid()) { combo_select() }
 				}
 				},
 				{
@@ -223,7 +223,7 @@
 			title: _(title),
 			width: 550,
 			autoHeight: true,
-            onCloseAction: 'close',
+            closeAction: 'close',
             modal: true,
 			items: form_topic
 		});
@@ -236,10 +236,10 @@
 			var sm = grid_topics.getSelectionModel();
 				if (sm.hasSelection()) {
 					var r = sm.getSelected();
-					var title = _(r.get( 'namecategory' )) + ' #' + r.get('id');
-					Baseliner.add_tabcomp('/topic/view?id=' + r.get('id') + '&swEdit=1', title , { id: r.get('id'), title: title } );
+					var topic_mid = r.get('topic_mid');
+					var title = _(r.get( 'category_name' )) + ' #' + topic_mid;
 					
-					
+					Baseliner.add_tabcomp('/topic/view?topic_mid=' + topic_mid + '&swEdit=1', title , { topic_mid: topic_mid, title: title } );
 					
 				} else {
 					Baseliner.message( _('ERROR'), _('Select at least one row'));    
@@ -251,10 +251,11 @@
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + sel.data.id + '</b>?', 
+			var topico = sel.data.category_name + ' ' + sel.data.topic_mid;
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + topico + '</b>?', 
 				function(btn){ 
 					if(btn=='yes') {
-						Baseliner.ajaxEval( '/topic/update?action=delete',{ id: sel.data.id },
+						Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: sel.data.topic_mid },
 							function(response) {
 								if ( response.success ) {
 									grid_topics.getStore().remove(sel);
@@ -304,10 +305,10 @@
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to close the topic') + ' <b># ' + sel.data.id + '</b>?', 
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to close the topic') + ' <b># ' + sel.data.topic_mid + '</b>?', 
             function(btn){ 
                 if(btn=='yes') {
-                    Baseliner.ajaxEval( '/topic/update?action=close',{ id: sel.data.id },
+                    Baseliner.ajaxEval( '/topic/update?action=close',{ id: sel.data.topic_mid },
                         function(response) {
                             if ( response.success ) {
                                 grid_topics.getStore().remove(sel);
@@ -348,7 +349,7 @@
                 check_ast_labels_sm.each(function(rec){
                     labels_checked.push(rec.get('id'));
                 });
-                Baseliner.ajaxEval( '/topic/update_topiclabels',{ idtopic: rec.data.id, idslabel: labels_checked },
+                Baseliner.ajaxEval( '/topic/update_topic_labels',{ topic_mid: rec.data.topic_mid, label_ids: labels_checked },
                     function(response) {
                         if ( response.success ) {
                             Baseliner.message( _('Success'), response.msg );
@@ -525,42 +526,62 @@
     }
 
     var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var tag_comment_html;
         var tag_color_html;
 		var date_created_on;
         tag_color_html = '';
-        tag_project_html = '';
 		date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
+        var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
 		
         if(rec.data.labels){
             for(i=0;i<rec.data.labels.length;i++){
-                tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 10px; float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(rec.data.labels[i].color) + ";background-color:#" + rec.data.labels[i].color + "'>" + rec.data.labels[i].name + "</span></div>";
+				var label = rec.data.labels[i].split(';');
+				var label_name = label[1];
+				var label_color = label[2];
+				tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 10px; float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
             }
         }
-        return "<div style='font-weight:bold; font-size: 14px;' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>" + tag_color_html + tag_project_html;
+        return "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>" + tag_color_html;
     };
     
     var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
         var tag_comment_html;
-        tag_comment_html='';
         if(rec.data.numcomment){
-            tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> " + rec.data.numcomment + "</span>";
-        }       
+            tag_comment_html = [
+                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
+                rec.data.numcomment,
+                "</span>",
+                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
+                rec.data.numfile,
+                "</span>"
+            ].join("");
+			//tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /></span>";
+        } else {       
+            tag_comment_html='';
+        }
         return tag_comment_html;
     };
     
     var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
+		var tag_project_html = '';
         if(rec.data.projects){
             for(i=0;i<rec.data.projects.length;i++){
-                tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
-                //tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
+				var project = rec.data.projects[i].split(';');
+				var project_name = project[1];				
+                tag_project_html = tag_project_html ? tag_project_html + ',' + project_name: project_name;
             }
         }
         return tag_project_html;
     };
 
+    var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
+        var ret = 
+            '<small><b><span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#555">' + value + '</span></b></small>';
+           //+ '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background:#ddd;color:#222;font-weight:normal;text-transform:lowercase;text-shadow:none;"><small>' + value + '</small></span></div>'
+        return ret;
+    };
+
     var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
-        var id = rec.data.id;
+        var id = rec.data.topic_mid; //Cambiarlo en un futuro por un contador de categorias
         var color = rec.data.category_color;
         //if( color == undefined ) color = '#777';
         var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + ' #' + id + '</span></div>';
@@ -585,12 +606,12 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _('Category'), dataIndex: 'namecategory', width: 80, sortable: true, renderer: render_category },
+            { header: _('Category'), dataIndex: 'category_name', width: 80, sortable: true, renderer: render_category },
+            { header: _('Status'), dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
-            { header: _('Comments'), dataIndex: 'numcomment', width: 60, sortable: true, renderer: render_comment },
+            { header: '', dataIndex: 'numcomment', width: 10, renderer: render_comment },			
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
-            { header: _('Topic'), hidden: true, dataIndex: 'id', width: 39, sortable: true, renderer: render_id },    
-            { header: _('Description'), hidden: true, dataIndex: 'description' }
+            { header: _('Topic'), hidden: true, dataIndex: 'topic_mid'},    
         ],
         tbar:   [ _('Search') + ' ', ' ',
                 search_field,
@@ -621,8 +642,8 @@
         var r = grid.getStore().getAt(rowIndex);
         //Baseliner.addNewTab('/topic/view?id=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{} );
         //Baseliner.addNewTabComp('/topic/view?id=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{} );
-        var title = _(r.get( 'namecategory' )) + ' #' + r.get('id');
-        Baseliner.add_tabcomp('/topic/view?id=' + r.get('id') , title , { id: r.get('id'), title: title } );
+        var title = _(r.get( 'category_name' )) + ' #' + r.get('topic_mid');
+        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') , title , { topic_mid: r.get('topic_mid'), title: title } );
     });
     
     grid_topics.on( 'render', function(){
@@ -644,7 +665,9 @@
                     var projects = row.get('projects');
                     if( typeof projects != 'object' ) projects = new Array();
                     for (i=0;i<projects.length;i++) {
-                        if(projects[i].project == data.project){
+						var project = projects[i].split(';');
+						var project_name = project[1];
+                        if(project_name == data.project){
                             swSave = false;
                             break;
                         }
@@ -653,12 +676,13 @@
                     //if( projects.name.indexOf( data.project ) == -1 ) {
                     if( swSave ) {
                         row.beginEdit();
-                        projects.push( data );
+						
+                        projects.push( data.id_project + ';' + data.project );
                         row.set('projects', projects );
                         row.endEdit();
                         row.commit();
                         
-                        Baseliner.ajaxEval( '/topic/update_project',{ id_project: data.id_project, id_topic: row.get('id') },
+                        Baseliner.ajaxEval( '/topic/update_project',{ id_project: data.id_project, topic_mid: row.get('topic_mid') },
                             function(response) {
                                 if ( response.success ) {
                                     //store_label.load();
@@ -812,7 +836,7 @@
 				    },   
 					{
 						region : 'east',
-						width: 350,
+						width: 250,
 						split: true,
 						collapsible: true,
 						items: [

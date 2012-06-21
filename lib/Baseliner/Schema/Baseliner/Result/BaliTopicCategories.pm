@@ -77,6 +77,10 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 255 },
   "forms",
   { data_type => "varchar2", is_nullable => 1, size => 1024 },
+  "is_changeset",
+  { data_type => "char", is_nullable => 1, size => 1, default=>'0' },
+  "is_release",
+  { data_type => "char", is_nullable => 1, size => 1, default=>'0'},
 
 );
 

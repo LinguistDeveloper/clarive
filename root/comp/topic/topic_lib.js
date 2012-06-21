@@ -26,11 +26,12 @@ Baseliner.Topic.StoreStatus = Ext.extend(Ext.data.JsonStore, {
             root: 'data' , 
             remoteSort: true,
             totalProperty:"totalCount", 
-            url: '/topic/list_status',
+            url: '/topicadmin/list_status',
             fields: [ 
                 {  name: 'id' },
                 {  name: 'name' },
-                {  name: 'description' }
+                {  name: 'description' },
+                {  name: 'type' }                
             ]
         }, config);
         Baseliner.Topic.StoreStatus.superclass.constructor.call(this, config);
@@ -48,7 +49,9 @@ Baseliner.Topic.StoreCategory = Ext.extend( Ext.data.JsonStore, {
             fields: [ 
                 {  name: 'id' },
                 {  name: 'name' },
+                {  name: 'color' },
                 {  name: 'description' },
+                {  name: 'type' },
                 {  name: 'statuses' }
             ]
         },config);
@@ -66,6 +69,7 @@ Baseliner.Topic.StoreCategoryStatus = Ext.extend( Ext.data.JsonStore, {
             fields: [ 
                 {  name: 'id' },
                 {  name: 'name' },
+                {  name: 'type' },
                 {  name: 'description' }
             ]
         },config);
@@ -81,19 +85,21 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
             totalProperty:"totalCount", 
             url: '/topic/list',
             fields: [ 
-                {  name: 'id' },
+                {  name: 'topic_mid' },
                 {  name: 'title' },
                 //{  name: 'description' },
                 {  name: 'created_on', type: 'date', dateFormat: 'c' },        
                 {  name: 'created_by' },
                 {  name: 'numcomment' },
-                {  name: 'category' },
+                {  name: 'category_id' },
                 {  name: 'category_color' },
-                {  name: 'namecategory' },
+                {  name: 'category_name' },
                 {  name: 'projects' },          
                 {  name: 'labels' },
                 {  name: 'status' },
-                {  name: 'priority' },
+                {  name: 'category_status_name' },
+                {  name: 'status_letter' },
+                {  name: 'priority_id' },
                 {  name: 'response_time_min' },
                 {  name: 'expr_response_time' },
                 {  name: 'deadline_min' },

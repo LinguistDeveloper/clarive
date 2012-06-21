@@ -5,8 +5,8 @@
         width: 700,
         defaults: { width: 550 },
         items: [
-            { xtype: 'textfield', name: 'name', fieldLabel: _('Name'), required: true },
-            { xtype: 'textfield', name: 'agent', fieldLabel: _('Agent'), required: true },
+            { xtype: 'textfield', name: 'name', fieldLabel: _('Workspace Name'), required: true },
+            { xtype: 'textfield', name: 'host', fieldLabel: _('Host'), required: true },
             { xtype: 'textfield', name: 'user', fieldLabel: _('User'), required: true },
             { xtype: 'textfield', name: 'password', inputType: 'password', fieldLabel: _('Password'), required: true },
             { xtype: 'textfield', name: 'remote', fieldLabel: _('Remote Dir'), required: true }

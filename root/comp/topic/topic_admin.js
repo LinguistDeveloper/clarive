@@ -217,7 +217,8 @@
             { hidden: true, dataIndex:'id' },
             check_status_sm,
             { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
-            { header: _('Description'), dataIndex: 'description', sortable: false } 
+            { header: _('Description'), dataIndex: 'description', sortable: false },
+			{ header: _('Type'), dataIndex: 'type', width:50, sortable: false }
         ],
         autoSizeColumns: true,
         deferredRender:true,    
@@ -283,7 +284,18 @@
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
                 { xtype:'textfield', name:'name', fieldLabel:_('Category'), allowBlank:false, emptyText:_('Name of category') },
-                ta
+                ta,
+                {
+                    xtype: 'radiogroup',
+                    id: 'categorygroup',
+                    fieldLabel: _('Type'),
+                    defaults: {xtype: "radio",name: "type"},
+                    items: [
+                        {boxLabel: _('Normal'), inputValue: 'N', checked: true},
+                        {boxLabel: _('Changeset'), inputValue: 'C'},
+                        {boxLabel: _('Release'), inputValue: 'R'}
+                    ]
+				}
             ]
         };
         
@@ -336,8 +348,7 @@
            xtype:'panel',
            defaults:{anchor:'98%'},
            columnWidth:0.50,
-           items: grid_category_status
-        };      
+           items: [ grid_category_status, ]};      
         
         
         var form_category = new Ext.FormPanel({
@@ -405,7 +416,7 @@
         
         win = new Ext.Window({
             title: _(title),
-            width: 700,
+            width: 750,
             autoHeight: true,
             items: form_category
         });
@@ -659,7 +670,7 @@
 			reader: reader,
 		    url: '/topicadmin/list_categories_admin',
 			groupField: 'role',
-			sortInfo:{field: 'role', direction: "ASC"},
+			sortInfo:{field: 'role', direction: "ASC"}
 		});
 		
 	
@@ -671,7 +682,7 @@
 			store: store_categories_admin,
 			view: new Ext.grid.GroupingView({
 				forceFit:true,
-				groupTextTpl: '{[ values.rs[0].data["role"] ]}',
+				groupTextTpl: '{[ values.rs[0].data["role"] ]}'
 			}),			
 			iconCls: 'icon-grid',
 			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
@@ -858,7 +869,8 @@
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
             { header: _('Category'), dataIndex: 'name', width:50, sortable: false },
-            { header: _('Description'), dataIndex: 'description', sortable: false } 
+            { header: _('Description'), dataIndex: 'description', sortable: false },
+            { header: _('Type'), dataIndex: 'type', width:50, sortable: false }
         ],
         autoSizeColumns: true,
         deferredRender:true,    
