@@ -3,8 +3,8 @@
 if [ "$BASELINER_HOME" != "" ]; then
     cd $BASELINER_HOME
 else
-    BASEDIR=$(dirname $0)/..
-    BASEDIR=`perl -MCwd -e 'print Cwd::realpath "$BASEDIR"'`
+    export BASEDIR=$(dirname $0)/..
+    BASEDIR=`perl -MCwd -e 'print Cwd::realpath "$ENV{BASEDIR}"'`
     export BASELINER_HOME=$BASEDIR
 fi
 
