@@ -596,16 +596,86 @@
                     }
                     
                 };
+				
+                var add_label = function(node) {
+                    var text = node.attributes.text;
+                    // determine the row
+                    var t = Ext.lib.Event.getTarget(e);
+                    var rindex = grid_topics.getView().findRowIndex(t);
+                    if (rindex === false ) return false;
+                    var row = s.getAt( rindex );
+                    var swSave = true;
+                    var labels = row.get('labels');
+                    if( typeof labels != 'object' ) labels = new Array();
+                    for (i=0;i<labels.length;i++) {
+						var label = labels[i].split(';');
+						var label_name = label[1];
+                        if(label_name == text){
+                            swSave = false;
+                            break;
+                        }
+                    }
+
+                    //if( projects.name.indexOf( data.project ) == -1 ) {
+                    if( swSave ) {
+                        row.beginEdit();
+						
+                        labels.push( node.attributes.idfilter + ';' + text + ';' + node.attributes.color );
+                        row.set('labels', labels );
+                        row.endEdit();
+                        row.commit();
+                        
+						var label_ids = new Array();
+						for(i=0;i<labels.length;i++){
+							var label = labels[i].split(';');
+							label_ids.push(label[0]);
+						}
+						Baseliner.ajaxEval( '/topic/update_topic_labels',{ topic_mid: row.get('topic_mid'), label_ids: label_ids },
+                            function(response) {
+                                if ( response.success ) {
+                                    //store_label.load();
+                                    Baseliner.message( _('Success'), response.msg );
+                                    //init_buttons('disable');
+                                } else {
+                                    //Baseliner.message( _('ERROR'), response.msg );
+                                    Ext.Msg.show({
+                                        title: _('Information'), 
+                                        msg: response.msg , 
+                                        buttons: Ext.Msg.OK, 
+                                        icon: Ext.Msg.INFO
+                                    });
+                                }
+                            }
+                        
+                        );
+                    } else {
+                        Baseliner.message( _('Warning'), _('Label %1 is already assigned', text));
+                    }
+                    
+                };				
+				
+				
                 var attr = n.attributes;
-                if( typeof attr.data.id_project == 'undefined' ) {  // is a project?
-                    Baseliner.message( _('Error'), _('Node is not a project'));
-                } else {
-                    add_node(n);
-                }
+				if(attr.data){
+					if( typeof attr.data.id_project == 'undefined' ) {  // is a project?
+						Baseliner.message( _('Error'), _('Node is not a project'));
+					} else {
+						add_node(n);
+					}
+				}
+				else{
+					if(n.parentNode.attributes.id == 'L'){
+						add_label(n);
+					}else{
+						Baseliner.message( _('Error'), _('Node is not a label'));
+					}
+					
+				}
                 // multiple? Ext.each(dd.dragData.selections, add_node );
                 return (true); 
              }
         });
+		
     }); 
 
    
@@ -674,7 +744,9 @@
 		animate: true,
 		autoScroll: true,
 		rootVisible: false,
-		root: tree_root
+		root: tree_root,
+		enableDD: true,
+		ddGroup: 'lifecycle_dd'
     });
 
 	tree_filters.on('click', function(node, event){
