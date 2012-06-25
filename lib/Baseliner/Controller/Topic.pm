@@ -283,7 +283,8 @@ sub view : Local {
         $c->stash->{topic_mid} = $topic->mid;
         $c->stash->{created_on} = $topic->created_on;
         $c->stash->{created_by} = $topic->created_by;
-        $c->stash->{deadline} = $topic->created_on;  # TODO
+        $c->stash->{priority} = try { $topic->priorities->name } catch { _loc('unassigned') };
+        $c->stash->{deadline} = $topic->created_on->add( minutes => $topic->deadline_min );  # TODO
         $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
         $c->stash->{description} = $topic->description;
         #my $category = $topic->categories->first;

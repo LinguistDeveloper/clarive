@@ -9,6 +9,7 @@
     $category_color
     $created_by
     $created_on
+    $priority
     $deadline
     $status
     $events
@@ -41,6 +42,14 @@
                 <th><% _loc('Created On') %>:</th>
                 <td><% $created_on->dmy%> <%$created_on->hms || '&nbsp;' %></td>
               </tr>
+              <tr>
+                <th><% _loc('Priority') %>:</th>
+                <td><% $priority || '&nbsp;' %></td>
+              </tr>
+              <tr>
+                <th><% _loc('Deadline') %>:</th>
+                <td><% $deadline->dmy%> <%$deadline->hms || '&nbsp;' %></td>
+              </tr>              
               <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>
               </tr>
