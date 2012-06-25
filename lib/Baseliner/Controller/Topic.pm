@@ -284,16 +284,13 @@ sub view : Local {
         $c->stash->{created_on} = $topic->created_on;
         $c->stash->{created_by} = $topic->created_by;
         $c->stash->{priority} = try { $topic->priorities->name } catch { _loc('unassigned') };
-        $c->stash->{deadline} = $topic->created_on->add( minutes => $topic->deadline_min );  # TODO
+        my $deadline = $topic->created_on->clone->add( minutes => $topic->deadline_min );
+        $c->stash->{deadline} = $deadline; 
         $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
         $c->stash->{description} = $topic->description;
-        #my $category = $topic->categories->first;
-        #$c->stash->{category} = $category->name;
         $c->stash->{category} = $topic->categories->name;
-        #$c->stash->{category_color} = try { $category->color} catch { '#444' };
         $c->stash->{category_color} = try { $topic->categories->color} catch { '#444' };
         $c->stash->{forms} = [
-            #map { "/forms/$_" } split /,/,$category->forms
             map { "/forms/$_" } split /,/,$topic->categories->forms
         ];
         $c->stash->{ii} = $p->{ii};
