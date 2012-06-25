@@ -21,6 +21,13 @@ register 'menu.admin.topic' => {
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };
 
+sub grid : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    $c->stash->{query_id} = $p->{query};    
+    $c->stash->{template} = '/comp/topic/topic_admin.js';
+}
+
 sub update_category : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
