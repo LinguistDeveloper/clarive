@@ -518,58 +518,26 @@
                 //var s = project_box.store;
                 var add_node = function(node) {
                     var data = node.attributes.data;
-                    // determine the row
-                    /* var t = Ext.lib.Event.getTarget(e);
-                    var rindex = grid_topics.getView().findRowIndex(t);
-                    if (rindex === false ) return false;
-                    var row = s.getAt( rindex );
-                    var swSave = true;
-                    var projects = row.get('projects');
-                    if( typeof projects != 'object' ) projects = new Array();
-                    for (i=0;i<projects.length;i++) {
-                        if(projects[i].project == data.project){
-                            swSave = false;
+                    var swOk = true;
+                    projects = (project_box.getValue()).split(",");
+                    for(var i=0; i<projects.length; i++) {
+                        if (projects[i] == data.id_project){
+                            swOk = false;
                             break;
                         }
-                    } */
-
-                    /* if( swSave ) {
-                        row.beginEdit();
-                        projects.push( data );
-                        row.set('projects', projects );
-                        row.endEdit();
-                        row.commit();
-                        
-                        Baseliner.ajaxEval( '/topic/update_project',{ id_project: data.id_project, id_topic: row.get('id') },
-                            function(response) {
-                                if ( response.success ) {
-                                    //store_label.load();
-                                    Baseliner.message( _('Success'), response.msg );
-                                    //init_buttons('disable');
-                                } else {
-                                    //Baseliner.message( _('ERROR'), response.msg );
-                                    Ext.Msg.show({
-                                        title: _('Information'), 
-                                        msg: response.msg , 
-                                        buttons: Ext.Msg.OK, 
-                                        icon: Ext.Msg.INFO
-                                    });
-                                }
-                            }
-                        
-                        );
-                    } else {
-                        Baseliner.message( _('Warning'), _('Project %1 is already assigned', data.project));
                     }
-                    */
-                    
+                    if(swOk){
+                        projects.push(data.id_project);
+                        project_box.setValue( projects );
+                    }else{
+                        Baseliner.message( _('Warning'), _('Project %1 is already assigned', data.project));  
+                    }
                 };
                 var attr = n.attributes;
                 if( typeof attr.data.id_project == 'undefined' ) {  // is a project?
                     Baseliner.message( _('Error'), _('Node is not a project'));
                 } else {
-                    //add_node(n);
-                    alert( n );
+                    add_node(n);
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
                 return (true); 
