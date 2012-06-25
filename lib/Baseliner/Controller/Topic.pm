@@ -298,6 +298,12 @@ sub view : Local {
         $c->stash->{ii} = $p->{ii};
         $c->stash->{events} = events_by_mid( $topic_mid );
         $c->stash->{swEdit} = $p->{swEdit};
+        # users
+        my @users = $topic->users->search()->hashref->all;
+        $c->stash->{users} = @users ? \@users : []; 
+        # projects
+        my @projects = $topic->projects->search()->hashref->all;
+        $c->stash->{projects} = @projects ? \@projects : []; 
         # comments
         $self->list_posts( $c );  # get comments into stash
         # related topics

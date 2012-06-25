@@ -14,6 +14,8 @@
     $events
     $files
     $topics
+    $projects
+    $users
 </%args>
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
     <div class="grid_24"> 
@@ -37,7 +39,7 @@
               </tr>
               <tr>
                 <th><% _loc('Created On') %>:</th>
-                <td><% $created_on || '&nbsp;' %></td>
+                <td><% $created_on->dmy%> <%$created_on->hms || '&nbsp;' %></td>
               </tr>
               <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>
@@ -47,6 +49,36 @@
               </tr>
               <tr>
                 <td colspan="2">
+% if( _array( $projects ) ) {
+                    <ul class="nav nav-list">
+                      <li class="nav-header">
+                        <% _loc("Projects") %>
+                      </li>
+                    </ul>
+                    <ul class="" style="margin-left: 20px">
+                      <li class="">
+% foreach my $project ( _array( $projects ) ) {
+                      <li style="margin: 6px 0px 6px 0px">
+                          <% $project->{name} %>
+                      </li>
+% }
+                    </ul>
+% }
+% if( _array( $users ) ) {
+                    <ul class="nav nav-list">
+                      <li class="nav-header">
+                        <% _loc("Assign to") %>
+                      </li>
+                    </ul>
+                    <ul class="" style="margin-left: 20px">
+                      <li class="">
+% foreach my $user ( _array( $users ) ) {
+                      <li style="margin: 6px 0px 6px 0px">
+                          <% $user->{username} %> - <% $user->{realname} %>
+                      </li>
+% }
+                    </ul>
+% }
 % if( _array( $topics ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
