@@ -23,7 +23,6 @@
         eval('btn_edit.' + action + '()');
         eval('btn_delete.' + action + '()');
         eval('btn_labels.' + action + '()');
-        eval('btn_close.' + action + '()');
     }
     
     var button_create_view = new Ext.Button({
@@ -114,18 +113,6 @@
 								}
 						   });
 						}					
-						//var filter = Ext.util.JSON.encode( filter_current );
-						//var ff;
-						//ff = form_topic.getForm();
-						//var name = ff.findField("txtcategory_old").getValue();
-						//Baseliner.ajaxEval( '/topic/view_filter/new', { name: 'view1', view: filter }, function(res) {
-						//	if( res.success ) {
-						//		Baseliner.message( _('View'), res.msg );
-						//	} else {
-						//		Ext.Msg.alert( _('Error'), res.msg );
-						//	}
-						//});
-						//win.close();
 					}
 				},
 				{
@@ -287,50 +274,39 @@
         }
     }); 
     
-    var btn_comment = new Ext.Toolbar.Button({
-        text: _('Comment'),
-        icon:'/static/images/icons/comment_new.gif',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-            add_comment();
-        }
-    });
 
-    var btn_close = new Ext.Toolbar.Button({
-        text: _('Close'),
-        icon:'/static/images/icons/cerrar.png',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-            var sm = grid_topics.getSelectionModel();
-            var sel = sm.getSelected();
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to close the topic') + ' <b># ' + sel.data.topic_mid + '</b>?', 
-            function(btn){ 
-                if(btn=='yes') {
-                    Baseliner.ajaxEval( '/topic/update?action=close',{ id: sel.data.topic_mid },
-                        function(response) {
-                            if ( response.success ) {
-                                grid_topics.getStore().remove(sel);
-                                Baseliner.message( _('Success'), response.msg );
-                                init_buttons('disable');
-                            } else {
-                                Baseliner.message( _('ERROR'), response.msg );
-                            }
-                        }
-                    
-                    );
-                }
-            } );
-        }
-    });
+    //var btn_close = new Ext.Toolbar.Button({
+    //    text: _('Close'),
+    //    icon:'/static/images/icons/cerrar.png',
+    //    cls: 'x-btn-text-icon',
+    //    disabled: true,
+    //    handler: function() {
+    //        var sm = grid_topics.getSelectionModel();
+    //        var sel = sm.getSelected();
+    //        Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to close the topic') + ' <b># ' + sel.data.topic_mid + '</b>?', 
+    //        function(btn){ 
+    //            if(btn=='yes') {
+    //                Baseliner.ajaxEval( '/topic/update?action=close',{ id: sel.data.topic_mid },
+    //                    function(response) {
+    //                        if ( response.success ) {
+    //                            grid_topics.getStore().remove(sel);
+    //                            Baseliner.message( _('Success'), response.msg );
+    //                            init_buttons('disable');
+    //                        } else {
+    //                            Baseliner.message( _('ERROR'), response.msg );
+    //                        }
+    //                    }
+    //                
+    //                );
+    //            }
+    //        } );
+    //    }
+    //});
 
     var add_labels = function(rec) {
         var win;
         var title = 'Labels';
-        
-		store_label.load();
-			
+		
         var btn_cerrar_labels = new Ext.Toolbar.Button({
             icon:'/static/images/icons/door_out.png',
             cls: 'x-btn-text-icon',
@@ -397,13 +373,14 @@
             listeners: {
                 viewready: function() {
                     var me = this;
-                    
                     var datas = me.getStore();
                     var recs = [];
                     datas.each(function(row, index){
                         if(rec.data.labels){
                             for(i=0;i<rec.data.labels.length;i++){
-                                if(row.get('id') == rec.data.labels[i].label){
+								var label = rec.data.labels[i].split(';');
+								var label_id = label[0];
+                                if(row.get('id') == label_id){
                                     recs.push(index);   
                                 }
                             }
@@ -426,90 +403,6 @@
         });
         
         win.show();
-    };
-
-
-    var add_comment = function() {
-        var win;
-        
-        var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
-        
-        var title = 'Create comment';
-        
-        var form_topic_comment = new Ext.FormPanel({
-            frame: true,
-            url:'/topic/viewdetail',
-            labelAlign: 'top',
-            bodyStyle:'padding:10px 10px 0',
-            buttons: [
-                {
-                    text: _('Accept'),
-                    type: 'submit',
-                    handler: function() {
-                        var form = form_topic_comment.getForm();
-                        var text = form.findField("text").getValue();
-                        var obj_tab = Ext.getCmp('tabs_topics_<%$id%>');
-                        var obj_tab_active = obj_tab.getActiveTab();
-                        var title = obj_tab_active.title;
-                        cad = title.split('#');
-                        var action = cad[1];
-                        if (form.isValid()) {
-                            form.submit({
-                                params: {action: action},
-                                success: function(f,a){
-                                    Baseliner.message(_('Success'), a.result.msg );
-                                    win.close();
-                                    myBR = new Ext.Element(document.createElement('br'));
-                                    myH3 = new Ext.Element(document.createElement('h3'));
-                                    myH3.dom.innerHTML = 'Creada por ' + a.result.data.created_by + ', ' + a.result.data.created_on
-                                    myH3.addClass('separacion-comment');
-                                    myDiv = new Ext.Element(document.createElement('div'));
-                                    myP = new Ext.Element(document.createElement('p'));
-                                    myP.dom.innerHTML = text;
-                                    myP.addClass('triangle-border');
-                                    myDiv.appendChild(myP);
-                                    myDiv.appendChild(myH3);
-                                    myDiv.addClass('comment');
-                                    div = Ext.get('comments');
-                                    div.insertFirst(myDiv);
-                                },
-                                failure: function(f,a){
-                                    Ext.Msg.show({  
-                                        title: _('Information'), 
-                                        msg: a.result.msg , 
-                                        buttons: Ext.Msg.OK, 
-                                        icon: Ext.Msg.INFO
-                                    });                         
-                                }
-                           });
-                        }
-                    }
-                },
-                {
-                text: _('Close'),
-                handler: function(){ 
-                        win.close();
-                    }
-                }
-            ],
-            defaults: { width: 650 },
-            items: [
-                {
-                xtype:'htmleditor',
-                name:'text',
-                fieldLabel: _('Text'),
-                height:350
-                }
-            ]
-        });
-
-        win = new Ext.Window({
-            title: _(title),
-            width: 700,
-            autoHeight: true,
-            items: form_topic_comment
-        });
-        win.show();     
     };
 
 
@@ -640,8 +533,6 @@
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
-        //Baseliner.addNewTab('/topic/view?id=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{} );
-        //Baseliner.addNewTabComp('/topic/view?id=' + r.get('id') , _('Topic') + ' #' + r.get('id'),{} );
         var title = _(r.get( 'category_name' )) + ' #' + r.get('topic_mid');
         Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') , title , { topic_mid: r.get('topic_mid'), title: title } );
     });
@@ -849,6 +740,7 @@
     
     var query_id = '<% $c->stash->{query_id} %>';
     store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>'}});
+	store_label.load();
     
     return panel;
 })
