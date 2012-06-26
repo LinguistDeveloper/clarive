@@ -430,10 +430,10 @@
 				var label = rec.data.labels[i].split(';');
 				var label_name = label[1];
 				var label_color = label[2];
-				tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 10px; float:left;padding:2px 8px 2px 8px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
+				tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
             }
         }
-        return "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>" + tag_color_html;
+        return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>";
     };
     
     var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
