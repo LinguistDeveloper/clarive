@@ -11,13 +11,15 @@ fi
 export LIBPATH=$BASELINER_LIBPATH:$LIBPATH
 
 if [ "$BASELINER_ENV" != "" ]; then
-	export CATALYST_CONFIG_LOCAL_SUFFIX=$BASELINER_ENV
+    export CATALYST_CONFIG_LOCAL_SUFFIX=$BASELINER_ENV
 elif [ "$BALI_ENV" != "" ]; then
-	export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+    export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
 fi
 
 if [ "$BASELINER_NLS_LANG" != "" ]; then
-	export NLS_LANG=$BASELINER_NLS_LANG
+    export NLS_LANG=$BASELINER_NLS_LANG
+else
+    export NLS_LANG=AMERICAN_AMERICA.UTF8
 fi
 
 if [ "$BASELINER_SCRIPT" == "" ]; then
@@ -29,7 +31,7 @@ if [ "$BASELINER_TRACE" != "" ]; then
 fi
 
 if [ "$BASELINER_LANG" != "" ]; then
-	export LANG=$BASELINER_LANG
+    export LANG=$BASELINER_LANG
 else
     export LANG=en_US.UTF-8
 fi
