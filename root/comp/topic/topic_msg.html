@@ -48,7 +48,7 @@
               </tr>
               <tr>
                 <th><% _loc('Deadline') %>:</th>
-                <td><% $deadline->dmy%> <%$deadline->hms || '&nbsp;' %></td>
+                <td><% $deadline ? $deadline->dmy . ' ' . $deadline->hms : '&nbsp;' %></td>
               </tr>              
               <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>
