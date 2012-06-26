@@ -390,7 +390,22 @@
         user_box.store.load({
             params:{ projects: projects}
         }); 
-    });    
+    });
+
+	var commit_box_store = new Ext.data.JsonStore({
+		root: 'data' , 
+		id: 'id', 
+		//url: '/user/list',
+		fields: [
+            {  name: 'id' },
+			{  name: 'name' }
+		]
+	});
+    
+    
+    var commit_box = new Baseliner.model.Commits({
+        store: commit_box_store 
+    });
     
     var pb_panel = new Ext.Panel({
         layout: 'form',
@@ -399,6 +414,15 @@
         //style: 'border-top: 0px',
         items: [ project_box ]
     });
+    
+    var cb_panel = new Ext.Panel({
+        layout: 'form',
+        enableDragDrop: true,
+        border: false,
+        //style: 'border-top: 0px',
+        items: [ commit_box ]
+    });
+    
     var form_topic = new Ext.FormPanel({
         frame: false,
         border: false,
@@ -451,6 +475,7 @@
             pb_panel,
             user_box,
             topic_box,
+            cb_panel,
             {
                 xtype: 'panel',
                 border: false,
@@ -543,7 +568,48 @@
                 return (true); 
              }
         });
+    });
+    
+    cb_panel.on( 'afterrender', function(){
+        var el = cb_panel.el.dom; //.childNodes[0].childNodes[1];
+        var commit_box_dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyDrop: function(dd, e, id) {
+                var n = dd.dragData.node;
+                //var s = project_box.store;
+                var add_node = function(node) {
+                    var data = node.attributes.text;
+                    var swOk = true;
+                    commits = (commit_box.getValue()).split(",");
+                    for(var i=0; i<commits.length; i++) {
+                        if (commits[i] == data){
+                            swOk = false;
+                            break;
+                        }
+                    }
+                    if(swOk){
+                        var myStore = commit_box.store;
+                        myStore.insert(0,new Ext.data.Record({'id':Ext.id(),'name':data}, '-1'));
+                        
+                        //commits.push(data);
+                        //commit_box.setValue( commits );
+                    }else{
+                        Baseliner.message( _('Warning'), _('Commit %1 is already assigned', data));  
+                    }
+                };
+                var attr = n.attributes;
+                if( n.parentNode.attributes.text != 'commits' ) {  // is a project?
+                    Baseliner.message( _('Error'), _('Node is not a commit'));
+                } else {
+                    add_node(n);
+                }
+                // multiple? Ext.each(dd.dragData.selections, add_node );
+                return (true); 
+             }
+        });
     }); 
+    
     return form_topic;
 })
 
