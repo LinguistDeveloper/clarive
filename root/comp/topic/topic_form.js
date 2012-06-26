@@ -590,8 +590,11 @@
                     }
                     if(swOk){
                         var myStore = commit_box.store;
-                        myStore.insert(0,new Ext.data.Record({'id':Ext.id(),'name':data}, '-1'));
+                        var rec = new Ext.data.Record({'id':Ext.id(),'name':data}, '-1')
+                        //myStore.insert(0,rec);
                         
+                        //myStore.loadData(rec);
+                        //commit_box.setValue(rec);
                         //commits.push(data);
                         //commit_box.setValue( commits );
                     }else{
@@ -602,6 +605,13 @@
                 if( n.parentNode.attributes.text != 'commits' ) {  // is a project?
                     Baseliner.message( _('Error'), _('Node is not a commit'));
                 } else {
+                    var myStore = commit_box.store;
+                    var rec1 = new Ext.data.Record({'id':1,'name':'prueba1'}, '0');
+                    myStore.insert(0,rec1);
+                
+                    var rec2 = new Ext.data.Record({'id':2,'name':'prueba2'}, '1');
+                    myStore.insert(1,rec2);
+                    commit_box.setValue( '1,2' );
                     add_node(n);
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
@@ -609,7 +619,7 @@
              }
         });
     }); 
-    
+
     return form_topic;
 })
 

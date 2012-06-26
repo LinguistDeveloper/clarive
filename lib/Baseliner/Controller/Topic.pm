@@ -284,8 +284,8 @@ sub view : Local {
         $c->stash->{created_on} = $topic->created_on;
         $c->stash->{created_by} = $topic->created_by;
         $c->stash->{priority} = try { $topic->priorities->name } catch { _loc('unassigned') };
-        my $deadline = $topic->deadline_min ? $topic->created_on->clone->add( minutes => $topic->deadline_min ):'';    
-        $c->stash->{deadline} = $deadline; 
+        my $deadline = $topic->deadline_min ? $topic->created_on->clone->add( minutes => $topic->deadline_min ):'';
+        $c->stash->{deadline} = $deadline;
         $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
         $c->stash->{description} = $topic->description;
         $c->stash->{category} = $topic->categories->name;
