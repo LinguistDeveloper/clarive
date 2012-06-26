@@ -64,6 +64,7 @@ use Exporter::Tidy default => [
     case
     _utf8_on_all
     _size_unit
+    _dbis
     /
 ];
 
@@ -952,6 +953,11 @@ sub _size_unit {
     my $size = $size / $divisor;
     $size = ($units =~ /bytes|KB/i) ? int( $size) : sprintf( "%.02f", $size );
     return ( $size, $units );
+}
+
+sub _dbis {
+    require DBIx::Simple;
+    return DBIx::Simple->connect( Baseliner->model('Baseliner')->storage->dbh );
 }
 
 1;
