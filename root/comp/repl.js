@@ -199,12 +199,12 @@ To do:
                 if( res.code != undefined ) { editor.setValue( res.code ); code.setValue( res.code ); }
                 if( res.output != undefined ) set_output( res.output );
                 if( res.div != undefined ) {
-                    var tab = console.add({ xtype:'panel', closable: true,
+                    var tab = cons.add({ xtype:'panel', closable: true,
                         style: { padding: '10px 10px 10px 10px' },
                         title: n.text, html: '<div id="boot">' + res.div + '</div>',
                         iconCls: 'icon-method' });
-                    console.setActiveTab( tab );
-                    console.expand( true );
+                    cons.setActiveTab( tab );
+                    cons.expand( true );
                     //output_tabs.
                 }
             });
@@ -248,7 +248,7 @@ To do:
         height: 300
     });
 
-    var console = new Ext.TabPanel({
+    var cons = new Ext.TabPanel({
         //collapsible: true,
         defaults: { closable: false, autoScroll: true }, 
         split: true,
@@ -261,15 +261,15 @@ To do:
         tbar: [
             Baseliner.button('Clear', '/static/images/icons/clear.gif', function(b) { set_output("") } ),
             Baseliner.button('Close All', '/static/images/icons/clear.gif', function(b) { 
-                console.items.each(function(comp) {
+                cons.items.each(function(comp) {
                     if( comp.initialConfig.closable ) {
-                        console.remove( comp );
+                        cons.remove( comp );
                         comp.destroy();
                     }
                 });
             }),
             Baseliner.button('Maximize', '/static/images/icons/application_double.png', function(b) { 
-                var tab = console.getActiveTab();
+                var tab = cons.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
                 } else {
@@ -278,15 +278,15 @@ To do:
                 }
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.gif', function(b) { console.collapse(true) } )
+            Baseliner.button('Collapse', '/static/images/icons/arrow_down.gif', function(b) { cons.collapse(true) } )
         ],
         region: 'south'
     });
 
     function set_output( data ) {
         output.setValue( data );
-        console.setActiveTab( output );
-        console.expand(true);
+        cons.setActiveTab( output );
+        cons.expand(true);
     }
 
     function save(params) {
@@ -444,7 +444,7 @@ To do:
                     win.show();
                     /* try { eval("new Ext.Window("+ code.getValue() + ").show()");
                     } catch(e) {
-                        console.setValue( e + "");
+                        cons.setValue( e + "");
                     } */
                 }
             },
@@ -522,7 +522,7 @@ To do:
     var panel_center = new Ext.Panel({
         layout: 'border',
         region: 'center',
-        items: [ form, console ]
+        items: [ form, cons ]
     });
 
     var panel = new Ext.Panel({
