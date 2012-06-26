@@ -283,21 +283,25 @@ sub view : Local {
         $c->stash->{topic_mid} = $topic->mid;
         $c->stash->{created_on} = $topic->created_on;
         $c->stash->{created_by} = $topic->created_by;
-        $c->stash->{deadline} = $topic->created_on;  # TODO
+        $c->stash->{priority} = try { $topic->priorities->name } catch { _loc('unassigned') };
+        my $deadline = $topic->deadline_min ? $topic->created_on->clone->add( minutes => $topic->deadline_min ):'';    
+        $c->stash->{deadline} = $deadline; 
         $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
         $c->stash->{description} = $topic->description;
-        #my $category = $topic->categories->first;
-        #$c->stash->{category} = $category->name;
         $c->stash->{category} = $topic->categories->name;
-        #$c->stash->{category_color} = try { $category->color} catch { '#444' };
         $c->stash->{category_color} = try { $topic->categories->color} catch { '#444' };
         $c->stash->{forms} = [
-            #map { "/forms/$_" } split /,/,$category->forms
             map { "/forms/$_" } split /,/,$topic->categories->forms
         ];
         $c->stash->{ii} = $p->{ii};
         $c->stash->{events} = events_by_mid( $topic_mid );
         $c->stash->{swEdit} = $p->{swEdit};
+        # users
+        my @users = $topic->users->search()->hashref->all;
+        $c->stash->{users} = @users ? \@users : []; 
+        # projects
+        my @projects = $topic->projects->search()->hashref->all;
+        $c->stash->{projects} = @projects ? \@projects : []; 
         # comments
         $self->list_posts( $c );  # get comments into stash
         # related topics
@@ -687,6 +691,7 @@ sub filters_list : Local {
                 id  => $i++,
                 idfilter      => $r->id,
                 text    => $r->name,
+                color   => $r->color,
                 cls     => 'forum',
                 iconCls => 'icon-no',
                 checked => \0,

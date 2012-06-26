@@ -107,6 +107,43 @@ Baseliner.model.Users = function(c) {
 };
 Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 
+Baseliner.model.Commits = function(c) {
+    var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
+    var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+    Baseliner.model.Projects.superclass.constructor.call(this, Ext.apply({
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        //emptyText: _('Enter or select the category tags'),
+        triggerAction: 'all',
+        resizable: true,
+        //store: new Baseliner.store.UserProjects({}),
+        mode: 'local',
+        fieldLabel: _('Commits'),
+        typeAhead: true,
+        name: 'commits',
+        displayField: 'name',
+        hiddenName: 'commits',
+        valueField: 'id',
+        tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
+        displayFieldTpl: tpl2,
+        value: '/',
+        extraItemCls: 'x-tag',
+        listeners: {
+            newitem: function(bs,v, f){
+                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                var newObj = {
+                    id: v,
+                    name: v
+                };
+                bs.addItem(newObj);
+            }
+        }
+    }, c));
+};
+Ext.extend( Baseliner.model.Commits, Ext.ux.form.SuperBoxSelect );
+
 
 Baseliner.combo_baseline = function(params) {
     if( params==undefined) params={};
