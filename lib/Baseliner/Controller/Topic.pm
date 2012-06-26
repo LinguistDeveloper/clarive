@@ -103,6 +103,8 @@ sub list : Local {
             }else{
                 $where->{'me.topic_mid'} = -1;
             }
+        }else{
+            $where->{'me.topic_mid'} = -1;
         }            
     }
     #*****************************************************************************************************************************
@@ -574,7 +576,7 @@ sub update_topic_labels : Local {
         $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
         
         foreach my $label_id (_array $label_ids){
-            $c->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
+            $c->model('Baseliner::BaliTopicLabel')->create( {   id_topic    => $topic_mid,
                                                                 id_label    => $label_id,
                                                             });     
         }
