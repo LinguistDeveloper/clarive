@@ -602,6 +602,7 @@
         enableHdMenu: false,
         store: store_topics,
         enableDragDrop: true,
+        ddGroup: 'lifecycle_dd',
         viewConfig: {forceFit: true},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
