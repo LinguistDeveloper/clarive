@@ -67,6 +67,7 @@ sub eval : Local {
                 $res = $self->sql( $sql, $code );
             }
         } else {
+            $code = "use v5.10;$code";
             $res = [ eval $code ];
             $res = $res->[0] if @$res <= 1;
         }

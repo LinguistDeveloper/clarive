@@ -2780,3 +2780,39 @@ msgstr "Assignadas a Mí"
 
 msgid "Created Today"
 msgstr "Creadas Hoy"
+
+msgid "Month"
+msgstr "Mes"
+
+msgid "Day1"
+msgstr "Día"
+
+msgid "Day2"
+msgstr "Día-Agenda"
+
+msgid "Week1"
+msgstr "Semana"
+
+msgid "Week2"
+msgstr "Semana-Agenda"
+
+msgid "Mon"
+msgstr "Lun"
+
+msgid "Tue"
+msgstr "Mar"
+
+msgid "Wed"
+msgstr "Mie"
+
+msgid "Thu"
+msgstr "Jue"
+
+msgid "Fri"
+msgstr "Vie"
+
+msgid "Sat"
+msgstr "Sab"
+
+msgid "Sun"
+msgstr "Dom"

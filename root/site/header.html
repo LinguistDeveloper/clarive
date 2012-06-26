@@ -91,6 +91,25 @@
     <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
     -->
     
+    <!-- Cal -->
+    <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.css' />
+    <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.print.css' media='print' />
+    <script type='text/javascript' src='/static/fullcalendar/fullcalendar.min.js'></script>
+    
+    <!-- dhtmlxGantt includes -->
+    <link rel="stylesheet" type="text/css" href="/static/dhtmlxGantt/dhtmlxGantt/codebase/dhtmlxgantt.css" />
+    <script type="text/javascript" src="/static/dhtmlxGantt/dhtmlxGantt/codebase/dhtmlxgantt.js"></script>
+    <script type="text/javascript" src="/static/dhtmlxGantt/dhtmlxGantt/codebase/dhtmlxcommon.js"></script>
+
+    <!-- Extensible includes -->
+    <link rel="stylesheet" type="text/css" href="/static/cal/resources/css/extensible-all.css" />
+    <script type="text/javascript" src="/static/cal/lib/extensible-all-debug.js"></script>
+
+    <!-- Sch includes -->
+    <link rel="stylesheet" type="text/css" href="/static/sch/sch.css" />
+    <script type="text/javascript" src="/static/sch/LockingGridView.js"></script>
+    <script type="text/javascript" src="/static/sch/sch.js"></script>
+
     <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
     <!-- BEGIN <% $include->{name} %> -->
@@ -121,6 +140,27 @@ Ext.onReady(function(){
             search_box.setSize( 120 );
         }
     });
+    Baseliner.toggleCalendar = function(){
+        var bc = Baseliner.calpanel;
+        //if( bc.collapsed ) bc.toggleCollapse()
+        if( bc.isVisible() ) {
+            bc.hide();
+        } else {
+            bc.show();
+            //bc.expand();
+        }
+        viewport.doLayout();
+    };
+    Baseliner.tabCalendar = function(){
+        var tabpanel = Baseliner.tabpanel();
+        var cal = new Baseliner.Calendar({
+            fullCalendarConfig: { timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' } }
+        });
+        var tab = tabpanel.add( cal );
+        tabpanel.setActiveTab( tab );
+        tabpanel.changeTabIcon( tab, '/static/images/icons/calendar.png' );
+        tab.setTitle( '&nbsp;' );
+    };
     Baseliner.help_button.on('click', Baseliner.help_off );
     var tb = new Ext.Toolbar({
         id: 'mainMenu',
@@ -135,8 +175,9 @@ Ext.onReady(function(){
             '->',
             search_box,
             Baseliner.help_button,
-            '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
-            '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
+            '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />',
+            '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
+            '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '-', 
             <%perl>
                 my $user = $c->username;
@@ -169,6 +210,19 @@ Ext.onReady(function(){
 
     var icon_home = '/static/images/icons/home.gif';
 
+    Baseliner.calpanel = new Baseliner.Calendar({
+        region: 'south',
+        split: true,
+        //collapsible: true,
+        //collapsed: true,
+        hidden: true,
+        height: 300,
+        tbar_end: [ '->', { xtype:'button', text:'#', handler:function(){ Baseliner.tabCalendar() } } ],
+        fullCalendarConfig: {
+            timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
+        }
+    });
+
     var lifecycle = Baseliner.lifecycle;
 % unless( $show_lifecycle ) {
 
@@ -193,6 +247,7 @@ Ext.onReady(function(){
 % } else {
             tb,
             lifecycle,
+            Baseliner.calpanel,
             new Ext.TabPanel({  region: 'center', id:'main-panel',
                 defaults: { closable: true, autoScroll: true }, 
                 enableTabScroll: true,
@@ -303,3 +358,4 @@ Ext.onReady(function(){
 
 <%init>
 </%init>
+

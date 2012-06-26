@@ -448,3 +448,136 @@ Baseliner.combo_services = function(params) {
     return combo;
 };
 
+/*
+
+   Baseliner.Calendar - fullcalendar Panel wrapper
+
+   var cal = new Baseliner.Calendar({
+        width: 999, height: 999, ...            // panel config
+        fullCalendarConfig: {  ... }            // fullcalendar object config
+   });
+
+   cal.fullCalendar('renderEvent', { ... } );
+  
+   Docs: http://arshaw.com/fullcalendar/docs/usage/
+
+*/ 
+Baseliner.Calendar =  function(c) {
+    var cal_div = new Ext.Container({
+      style: { padding: '10px' },
+      autoScroll: true
+    });
+    var cal;
+    var tbarr = [
+          { xtype:'button', text:'<', handler:function(){ cal.fullCalendar("prev") } },
+          { xtype:'button', text:'>', handler:function(){ cal.fullCalendar("next") } }, 
+          '-',
+          { xtype:'button', text:_('Today'), handler:function(){ cal.fullCalendar("today") } },
+          '-',
+             { xtype:'button', text:_('Day1'), handler:function(){ cal.fullCalendar("changeView", "basicDay") } } ,
+              { xtype:'button', text:_('Day2'), handler:function(){ cal.fullCalendar("changeView", "agendaDay") } } ,
+            { xtype:'button', text:_('Week1'), handler:function(){ cal.fullCalendar("changeView", "basicWeek") } } ,
+          { xtype:'button', text:_('Week2'), handler:function(){ cal.fullCalendar("changeView", "agendaWeek") } } ,
+          { xtype:'button', text:_('Month'), handler:function(){ cal.fullCalendar("changeView", "month") } } 
+        ];
+    if( c.tbar_end ) tbarr.push( c.tbar_end );
+    var panel = new Ext.Panel( Ext.apply({
+      layout: 'fit',
+      tbar: tbarr,
+      items: cal_div
+    }, c ));
+
+    cal_div.on('afterrender', function(){
+		var date = new Date();
+		var d = date.getDate();
+		var m = date.getMonth();
+		var y = date.getFullYear();
+		var el = cal_div.getEl() ;
+		var id = el.id ;
+        var dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyEnter: function(ddSource, ev, data) {
+                var el = ddSource.getProxy().getGhost();
+
+                $(el.dom).data('eventObject', data );
+                var id = el.id;
+                //$( el.dom ).css( 'background-color', 'green' );
+                $( el.dom ).draggable({
+                    addClasses: true,
+                    zIndex: 999,
+                    //revert: true,      // will cause the event to go back to its
+                    //revertDuration: 0  //  original position after the drag
+                });
+                panel.calendar.getView().dragStart(el.dom, ev.browserEvent, null);
+				return true;              
+            },
+            notifyDrop: function(ddSource, ev, data) {
+                var el = ddSource.getProxy().getGhost();
+                // get drag object data (node or row grid are supported for now)
+                var calev; 
+                if( data.grid != undefined ) {
+                    var row = data.grid.getStore().getAt( data.rowIndex );
+                    calev = row.data.calevent != undefined ? row.data.calevent : row.data;
+                }
+                else if( data.node!=undefined && data.node.attributes!=undefined ) {
+                    calev = data.node.attributes.calevent != undefined 
+                        ? data.node.attributes.calevent : data.node.attributes;
+                }
+                else {
+                    Baseliner.message( _('Calendar'), _('Calendar object type not allowed') );
+                    return false;
+                } 
+                ev.browserEvent.data = calev;   // store the row data in the event hack
+                panel.calendar.getView().dragStop(el.dom, ev.browserEvent, null);  // call the original end of drag event
+                return true;
+            }
+        });
+
+        cal = $( el.dom );
+        cal.fullCalendar( Ext.apply({
+            height: 300,
+            header: false,
+            timeFormat: 'H(:mm)',
+            dayNames: [_('Sunday'), _('Monday'), _('Tuesday'), _('Wednesday'), _('Thursday'), _('Friday'), _('Saturday')],
+            dayNamesShort: [_('Sun'), _('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat')],
+            selectable: true,
+            selectHelper: true,
+            drop: function( date, allDay, jsEvent, ui  ) {
+                 var opts = jsEvent.data;
+                 cal.fullCalendar('renderEvent',
+						Ext.apply({
+							title: _('[untitled]'),
+							start: date,
+							end: date,
+							allDay: allDay
+						}, opts),
+						true 
+			     );
+            },
+            select: function(start, end, allDay) {
+                if( c.onSelect ) {
+                    c.onSelect( cal, start, end, allDay );
+                }
+                cal.fullCalendar('unselect');
+            },
+            editable: true,
+            events: []
+        }, c.fullCalendarConfig ));
+        panel.calendar = cal.data('fullCalendar'); // new Calendar() in fullcalendar
+    });
+
+    panel.fullCalendar = function( p ) {
+        return cal.fullCalendar( p );
+    };
+
+    panel.on('resize', function(w,w1,h1,w2,h2) { 
+      if( cal == undefined ) return;
+      cal.fullCalendar('option', 'height', h1 - 80);
+      cal.fullCalendar('option', 'width', w1);
+      cal.fullCalendar("render");
+    });
+    return panel;
+};
+
+
