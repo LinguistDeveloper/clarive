@@ -719,7 +719,7 @@
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { query: bp.query, start: bp.start, limit: bp.limit, sort: bp.sort, dir: bp.dir };
+            base_params= { query: bp.query, start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir };
         var filter = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
 		
 		//alert('filters: ' + Ext.util.JSON.encode(filter));
