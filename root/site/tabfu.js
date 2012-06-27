@@ -572,14 +572,50 @@
         window.open(url,'_blank');
     };
 
-    Baseliner.addNewIframe = function(url,title) {
-        var tab = Ext.getCmp('main-panel').add({ 
+    Baseliner.addNewIframe = function(url,title,params) {
+        var tabpanel = Baseliner.tabpanel();
+        var tab = tabpanel.add({ 
                     xtype: 'panel', 
                     layout: 'fit', 
-                    html: '<iframe border=0 width="100%" height="100%" src="' + url + '"></iframe>',
+                    autoScroll: false,
+                    style: { overflow: 'hidden' },
+                    html: '<iframe style="margin: -2px" border=0 width="100%" height="100%" src="' + url + '"></iframe>',
                     title: title
         }); 
         Ext.getCmp('main-panel').setActiveTab(tab); 
+        if( params == undefined ) params={};
+        if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
+        var id = tab.getId();
+        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe' };
+    };
+
+    Baseliner.add_iframe = function(url,title,params) {
+        var tabpanel = Baseliner.tabpanel();
+        var panel = new Ext.Panel({
+            layout: 'fit', 
+            autoScroll: false,
+            tbar: [
+                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow_left_black.png', handler:function(){ 
+                      var dom = panel.body.dom;
+                      var iframe = dom.childNodes[0];
+                      iframe.contentWindow.history.back();
+                  }
+                },
+                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow_right_black.png', handler:function(){ 
+                      var dom = panel.body.dom;
+                      var iframe = dom.childNodes[0];
+                      iframe.contentWindow.history.forward();
+                  }
+                }
+            ],
+            style: { overflow: 'hidden' },
+            html: '<iframe style="margin: -2px" border=0 width="100%" height="100%" src="' + url + '"></iframe>',
+            title: title
+        });
+        var tab = tabpanel.add(panel); 
+        Ext.getCmp('main-panel').setActiveTab(tab); 
+        if( params == undefined ) params={};
+        if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
         Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe' };
     };

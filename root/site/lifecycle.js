@@ -240,6 +240,9 @@ Baseliner.lifecycle.on('dblclick', function(n, ev){
     } else if( c.type == 'html' ) {
         Baseliner.add_tab( c.url, _(c.title), params );
         ev.stopEvent();
+    } else if( c.type == 'iframe' ) {
+        Baseliner.add_iframe( c.url, _(c.title), params );
+        ev.stopEvent();
     } else {
         Baseliner.message( 'Invalid or missing click.type', '' );
     }
