@@ -304,7 +304,11 @@ sub view : Local {
         $c->stash->{users} = @users ? \@users : []; 
         # projects
         my @projects = $topic->projects->search()->hashref->all;
-        $c->stash->{projects} = @projects ? \@projects : []; 
+        $c->stash->{projects} = @projects ? \@projects : [];
+        # labels
+        my @labels = Baseliner->model('Baseliner::BaliTopicLabel')->search({ id_topic => $topic_mid },
+                                                                         {prefetch =>['label']})->hashref->all;
+        $c->stash->{labels} = @labels ? \@labels : []; 
         # comments
         $self->list_posts( $c );  # get comments into stash
         # related topics

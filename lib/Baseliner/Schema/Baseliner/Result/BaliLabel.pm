@@ -100,8 +100,8 @@ Related object: L<Baseliner::Schema::Baseliner::Result::BaliIssueLabel>
 =cut
 
 __PACKAGE__->has_many(
-  "bali_issuelabels",
-  "Baseliner::Schema::Baseliner::Result::BaliIssueLabel",
+  "bali_topiclabel",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicLabel",
   { "foreign.id_label" => "self.id" },
 );
 
