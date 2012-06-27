@@ -151,11 +151,12 @@ sub list : Local {
     # SELECT MID DATA:
     my @mid_data = $c->model('Baseliner::TopicView')->search({ topic_mid=>\@mids })->hashref->all;
     my @rows;
-    my (%id_label);
+    my %id_label;
     my %projects;
     my %mid_data;
     for( @mid_data ) {
         $mid_data{ $_->{topic_mid} } = $_ unless exists $mid_data{ $_->{topic_mid} };
+        $mid_data{ $_->{topic_mid} }{is_closed} = $_->{status} eq 'C' ? \1 : \0;        
         $_->{label_id} ? $id_label{ $_->{topic_mid} }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} }= (): $id_label{ $_->{topic_mid} } = {};
         $_->{project_id} ? $projects{ $_->{topic_mid} }{ $_->{project_id} . ";" . $_->{project_name} } = (): $projects{ $_->{topic_mid} } = {};
     }

@@ -260,7 +260,17 @@
         }
 	});
 	
-    //var btn_labels = new Ext.Toolbar.Button({
+	var btn_comprimir = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/color_swatch.png',
+        cls: 'x-btn-text-icon',
+        enableToggle: true, pressed: false, allowDepress: true,
+        handler: function() {
+			store_topics.reload();
+        }		
+    }); 
+    
+	
+	//var btn_labels = new Ext.Toolbar.Button({
     //    text: _('Labels'),
     //    icon:'/static/images/icons/color_swatch.png',
     //    cls: 'x-btn-text-icon',
@@ -433,8 +443,28 @@
 				tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
             }
         }
-        return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>";
+		if(btn_comprimir.pressed){
+			return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div>";			
+		}else{
+			return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>";						
+		}
+        
     };
+	
+    var render_title_comprimido = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var tag_color_html = '';
+        var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
+		
+        if(rec.data.labels){
+            for(i=0;i<rec.data.labels.length;i++){
+				var label = rec.data.labels[i].split(';');
+				var label_name = label[1];
+				var label_color = label[2];
+				tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
+            }
+        }
+        return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div>";
+    };	
     
     var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
         var tag_comment_html;
@@ -502,7 +532,7 @@
         columns: [
             { header: _('Category'), dataIndex: 'category_name', width: 80, sortable: true, renderer: render_category },
             { header: _('Status'), dataIndex: 'category_status_name', width: 50, renderer: render_status },
-            { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title },
+            { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
             { header: '', dataIndex: 'numcomment', width: 10, renderer: render_comment },			
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('Topic'), hidden: true, dataIndex: 'topic_mid'},    
@@ -511,10 +541,10 @@
                 search_field,
                 btn_add,
                 btn_edit,
-                btn_delete
+                btn_delete,
                 //btn_labels
-                //'->',
-                //btn_comment,
+                '->',
+                btn_comprimir
                 //btn_close
         ], 		
         autoSizeColumns: true,
