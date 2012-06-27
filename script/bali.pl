@@ -3,8 +3,15 @@
 BEGIN { print STDERR "Baseliner initializing...\n" }
 use strict;
 use warnings;
+use v5.10;
 use FindBin;
 use lib "$FindBin::Bin/../lib"; 
+BEGIN {
+    my $locallibdir="$FindBin::Bin/../local-lib";
+    if( -d $locallibdir ) {
+        eval qq{use local::lib '$locallibdir'};
+    }
+}
 use Baseliner::Trace;
 use Pod::Usage;
 use Hash::Merge::Simple qw/merge/;
@@ -21,6 +28,22 @@ BEGIN { $ENV{BALI_CMD} = 1; }  # prevents controllers from loading
 
 $SIG{TERM} = sub { die "Baseliner process $$ stopped." };
 
+BEGIN {
+    # options previous to services
+    if( $ARGV[0] =~ /--env/ ) {
+        my ($x,$env) = (shift @ARGV,shift @ARGV);
+        die "Missing --env <environment>" unless length $env;
+        $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $env;
+        $ENV{BASELINER_ENV} = $env;
+    }
+    # take out any other options until the action-name
+    my @args;
+    for( @ARGV ) {
+        last if /^[^-]/;
+        push @args, shift @ARGV;
+    }
+}
+
 if( !@ARGV ) {
     require Baseliner;
     my $c = Baseliner::Cmd->new;
@@ -36,6 +59,13 @@ if( !@ARGV ) {
 my @argv = @ARGV;
 my $service_name = shift @ARGV;
 my @argv_noservice = @ARGV;
+
+# check if porcelain
+for( "script/bali_$service_name.pl" , "script/bali-$service_name.pl", "script/baseliner_$service_name.pl" ) {
+    next unless -f $_;
+    say "Running porcelain $_ @argv_noservice";
+    exec 'bin/bali', $service_name, @argv_noservice; 
+}
 
 if( $service_name =~ /(stop|kill)/ ) {
     stop( $1 );
@@ -55,9 +85,7 @@ elsif( $service_name =~ /^shut|shutdown$/i ) {
 }
 
 print "Starting $service_name...\n";
-use Baseliner;
-#my $c = Baseliner->commandline;  # XXX
-#my $c = bless { stash=>{} } => 'Baseliner';
+require Baseliner;
 use Carp::Always;
 my $c = Baseliner::Cmd->new;
 Baseliner->app( $c );
