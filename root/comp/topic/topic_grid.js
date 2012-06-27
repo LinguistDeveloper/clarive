@@ -261,7 +261,7 @@
 	});
 	
 	var btn_comprimir = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/color_swatch.png',
+        icon:'/static/images/icons/updown_.gif',
         cls: 'x-btn-text-icon',
         enableToggle: true, pressed: false, allowDepress: true,
         handler: function() {
