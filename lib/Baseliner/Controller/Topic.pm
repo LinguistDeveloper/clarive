@@ -247,6 +247,9 @@ sub json : Local {
         $topic->users->search( undef, { select=>[qw(id)],
         order_by => { '-asc' => 'username' } } )->all;
         
+    my @labels = map { $_->id_label } 
+        $c->model('Baseliner::BaliTopicLabel')->search( id_topic => $topic_mid , { select=>[qw(id_label)] } )->all;        
+        
     my @topics = map { $_->mid } 
         $topic->topics->search( undef, { select=>[qw(mid)],
         order_by => { '-asc' => 'mid' } } )->all;
@@ -257,6 +260,7 @@ sub json : Local {
         category           => $topic->id_category,
         topic_mid          => $topic_mid,
         status             => $topic->id_category_status,
+        labels             => \@labels,
         projects           => \@projects,
         users              => \@users,
         topics             => \@topics,
@@ -308,6 +312,7 @@ sub view : Local {
         # labels
         my @labels = Baseliner->model('Baseliner::BaliTopicLabel')->search({ id_topic => $topic_mid },
                                                                          {prefetch =>['label']})->hashref->all;
+        @labels = map {$_->{label}} @labels;
         $c->stash->{labels} = @labels ? \@labels : []; 
         # comments
         $self->list_posts( $c );  # get comments into stash

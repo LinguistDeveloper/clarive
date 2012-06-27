@@ -35,10 +35,10 @@
 % if( _array( $labels ) ) {        
         <div style="margin-bottom:25px;">
 % foreach my $label ( _array( $labels ) ) {
-            <div id='<% $label->{label}->{name} %>'></div>
+            <div id='<% $label->{name} %>'></div>
             <script language="javascript">
-                var label_color = '<% $label->{label}->{color} %>';
-                var label_name = '<% $label->{label}->{name} %>'
+                var label_color = '<% $label->{color} %>';
+                var label_name = '<% $label->{name} %>'
                 var div_label = document.getElementById(label_name);
                 div_label.innerHTML = "<span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span>";
             </script>
