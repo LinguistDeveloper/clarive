@@ -478,7 +478,10 @@ Baseliner.Calendar =  function(c) {
               { xtype:'button', text:_('Day2'), handler:function(){ cal.fullCalendar("changeView", "agendaDay") } } ,
             { xtype:'button', text:_('Week1'), handler:function(){ cal.fullCalendar("changeView", "basicWeek") } } ,
           { xtype:'button', text:_('Week2'), handler:function(){ cal.fullCalendar("changeView", "agendaWeek") } } ,
-          { xtype:'button', text:_('Month'), handler:function(){ cal.fullCalendar("changeView", "month") } } 
+          { xtype:'button', text:_('Month'), handler:function(){ cal.fullCalendar("changeView", "month") } } ,
+          '-',
+          { xtype:'button', text:_('( )'), handler:function(){ cal.fullCalendar("refetchEvents") } } ,
+
         ];
     if( c.tbar_end ) tbarr.push( c.tbar_end );
     var panel = new Ext.Panel( Ext.apply({
@@ -534,6 +537,26 @@ Baseliner.Calendar =  function(c) {
             }
         });
 
+        var event_new_url = c.url_new || '/eventnew.js';
+        var event_new = function( data ) {
+            Baseliner.ajaxEval( event_new_url, data, function(res) { 
+                if( res && res.success ) {
+                    // create the event
+                    cal.fullCalendar('renderEvent',
+                        Ext.apply({
+                            title: _('[untitled]'),
+                            start: date,
+                            end: date,
+                            allDay: allDay
+                        }, Ext.apply(data, res.data ) ),
+                        true 
+                    );
+                } else {
+                    Baseliner.error( _('Error'), _(res.msg) );
+                }
+            });
+        };
+
         cal = $( el.dom );
         cal.fullCalendar( Ext.apply({
             height: 300,
@@ -545,15 +568,7 @@ Baseliner.Calendar =  function(c) {
             selectHelper: true,
             drop: function( date, allDay, jsEvent, ui  ) {
                  var opts = jsEvent.data;
-                 cal.fullCalendar('renderEvent',
-						Ext.apply({
-							title: _('[untitled]'),
-							start: date,
-							end: date,
-							allDay: allDay
-						}, opts),
-						true 
-			     );
+                 event_new( opts );
             },
             select: function(start, end, allDay) {
                 if( c.onSelect ) {
@@ -580,4 +595,9 @@ Baseliner.Calendar =  function(c) {
     return panel;
 };
 
+Baseliner.calendar_events = function( start, end, cb ) {
+   Baseliner.ajaxEval('/events.js', { start: start, end: end }, function(res){
+        cb( res.data ); 
+   });
+};
 
