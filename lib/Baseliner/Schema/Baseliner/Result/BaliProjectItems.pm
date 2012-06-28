@@ -28,7 +28,7 @@ __PACKAGE__->add_columns(
   },
   "id_project",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_foreign_key => 1,
     is_nullable => 0,
     original => { data_type => "number" },

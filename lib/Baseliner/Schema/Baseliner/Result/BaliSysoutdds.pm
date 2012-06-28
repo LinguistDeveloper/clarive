@@ -40,7 +40,7 @@ __PACKAGE__->table("bali_sysoutdds");
 
 =head2 id
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
@@ -68,7 +68,7 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 255 },
   "id",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },

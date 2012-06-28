@@ -37,7 +37,7 @@ __PACKAGE__->table("bali_topic_categories_admin");
 
 =head2 id
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
@@ -46,25 +46,25 @@ __PACKAGE__->table("bali_topic_categories_admin");
 
 =head2 id_category
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_nullable: 0
   size: 126
 
 =head2 id_rol
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_nullable: 0
   size: 126
 
 =head2 id_status_from
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_nullable: 0
   size: 126
 
 =head2 id_status_to
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_nullable: 0
   size: 126
 
@@ -74,7 +74,7 @@ __PACKAGE__->table("bali_topic_categories_admin");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },
@@ -83,25 +83,25 @@ __PACKAGE__->add_columns(
   },
   "id_category",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },
   "id_role",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },  
   "id_status_from",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },  
   "id_status_to",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },  

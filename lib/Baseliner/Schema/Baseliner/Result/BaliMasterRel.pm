@@ -18,9 +18,9 @@ use base 'DBIx::Class::Core';
 __PACKAGE__->table("bali_master_rel");
 __PACKAGE__->add_columns(
   "from_mid",
-  { data_type => "numeric", default_value => undef, is_nullable => 1 },
+  { data_type => "number", default_value => undef, is_nullable => 1 },
   "to_mid",
-  { data_type => "numeric", default_value => undef, is_nullable => 1 },
+  { data_type => "number", default_value => undef, is_nullable => 1 },
   "rel_type",
   {
     data_type => "VARCHAR2",

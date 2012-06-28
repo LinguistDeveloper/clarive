@@ -18,7 +18,7 @@ __PACKAGE__->table("bali_topic");
 __PACKAGE__->add_columns(
   "mid",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
   },
   "title",
@@ -38,31 +38,31 @@ __PACKAGE__->add_columns(
   { data_type => "char", default_value => "O", is_nullable => 0, size => 1 },
   "id_category",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },
   "id_category_status",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },  
   "id_priority",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 1,
     size => 126,
   },
   "response_time_min",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 1,
     size => 126,
   },
   "deadline_min",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 1,
     size => 126,
   },

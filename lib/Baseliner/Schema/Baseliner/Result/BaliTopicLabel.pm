@@ -37,13 +37,13 @@ __PACKAGE__->table("bali_topic_label");
 
 =head2 id_topic
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_nullable: 0
   size: 126
 
 =head2 id_label
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_nullable: 0
   size: 126
 
@@ -52,13 +52,13 @@ __PACKAGE__->table("bali_topic_label");
 __PACKAGE__->add_columns(
   "id_topic",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },
   "id_label",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },

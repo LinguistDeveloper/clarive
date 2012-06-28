@@ -37,7 +37,7 @@ __PACKAGE__->table("bali_topic_view");
 
 =head2 id
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
@@ -61,7 +61,7 @@ __PACKAGE__->table("bali_topic_view");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },

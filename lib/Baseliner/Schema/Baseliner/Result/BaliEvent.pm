@@ -22,14 +22,14 @@ __PACKAGE__->table("bali_event");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     sequence => "bali_event_seq",
   },
   "mid",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
   },
   "event_key",

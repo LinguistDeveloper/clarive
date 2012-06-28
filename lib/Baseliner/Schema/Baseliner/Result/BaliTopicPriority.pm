@@ -37,7 +37,7 @@ __PACKAGE__->table("bali_topic_priority");
 
 =head2 id
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
@@ -52,14 +52,14 @@ __PACKAGE__->table("bali_topic_priority");
 
 =head2 response_time_min
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_nullable: 1
   size: 126
 
 
 =head2 deadline_min
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_nullable: 1
   size: 126
 
@@ -83,7 +83,7 @@ __PACKAGE__->table("bali_topic_priority");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },
@@ -93,9 +93,9 @@ __PACKAGE__->add_columns(
   "name",
   { data_type => "varchar2", is_nullable => 0, size => 255 },
   "response_time_min",
-  { data_type => "numeric", is_nullable => 1, size => 126 },
+  { data_type => "number", is_nullable => 1, size => 126 },
   "deadline_min",
-  { data_type => "numeric", is_nullable => 1, size => 126 },
+  { data_type => "number", is_nullable => 1, size => 126 },
   "expr_response_time",
   { data_type => "varchar2", is_nullable => 1, size => 255 },
   "expr_deadline",
