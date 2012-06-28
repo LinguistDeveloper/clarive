@@ -1281,10 +1281,10 @@
                             txt_deadline_minutes =  txt_deadline_minutes ? txt_deadline_minutes : 0;
                             
                             rsptime[0] = txt_rsptime_months + 'M:' + txt_rsptime_weeks + 'W:' + txt_rsptime_days + 'D:' + txt_rsptime_hours + 'h:' + txt_rsptime_minutes + 'm';
-                            rsptime[1] = (txt_rsptime_months * 31 * 24 * 60 * 60) + (txt_rsptime_weeks * 7 * 24 * 60 * 60) + (txt_rsptime_days * 24 * 60 * 60) + (txt_rsptime_hours * 60) + txt_rsptime_minutes;
+                            rsptime[1] = (txt_rsptime_months * 31 * 24 * 60 ) + (txt_rsptime_weeks * 7 * 24 * 60 ) + (txt_rsptime_days * 24 * 60 ) + (txt_rsptime_hours * 60) + txt_rsptime_minutes;
                             
                             deadline[0] = txt_deadline_months + 'M:' + txt_deadline_weeks + 'W:' + txt_deadline_days + 'D:' + txt_deadline_hours + 'h:' + txt_deadline_minutes + 'm';
-                            deadline[1] = (txt_deadline_months * 31 * 24 * 60 * 60) + (txt_deadline_weeks * 7 * 24 * 60 * 60) + (txt_deadline_days * 24 * 60 * 60) + (txt_deadline_hours * 60) + txt_deadline_minutes;
+                            deadline[1] = (txt_deadline_months * 31 * 24 * 60 ) + (txt_deadline_weeks * 7 * 24 * 60 ) + (txt_deadline_days * 24 * 60 ) + (txt_deadline_hours * 60) + txt_deadline_minutes;
                             
                             
                             if (form.isValid()) {

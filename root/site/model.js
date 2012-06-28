@@ -144,6 +144,54 @@ Baseliner.model.Commits = function(c) {
 };
 Ext.extend( Baseliner.model.Commits, Ext.ux.form.SuperBoxSelect );
 
+function returnOpposite(hexcolor) {
+    var r = parseInt(hexcolor.substr(0,2),16);
+    var g = parseInt(hexcolor.substr(2,2),16);
+    var b = parseInt(hexcolor.substr(4,2),16);
+    var yiq = ((r*299)+(g*587)+(b*114))/1000;
+    return (yiq >= 128) ? '000000' : 'FFFFFF';
+}
+    
+Baseliner.model.Labels = function(c) {
+    var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+        '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: #{[returnOpposite(values.color)]};background: #{color}">{name}</span></span>',
+        '</div></tpl>');
+    var tpl_field = new Ext.XTemplate( '<tpl for=".">',
+        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: #{[returnOpposite(values.color)]};background: #{color}">{name}</span></span>',
+        '</tpl>');
+    
+    Baseliner.model.Projects.superclass.constructor.call(this, Ext.apply({
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        triggerAction: 'all',
+        resizable: true,
+        mode: 'local',
+        fieldLabel: _('Labels'),
+        typeAhead: true,
+        name: 'labels',
+        displayField: 'name',
+        hiddenName: 'labels',
+        valueField: 'id',
+        tpl: tpl_list,
+        displayFieldTpl: tpl_field,
+        value: '/',
+        extraItemCls: 'x-tag',
+        listeners: {
+            newitem: function(bs,v, f){
+                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                var newObj = {
+                    id: v,
+                    name: v
+                };
+                bs.addItem(newObj);
+            }
+        }
+    }, c));
+};
+Ext.extend( Baseliner.model.Labels, Ext.ux.form.SuperBoxSelect );
+
 
 Baseliner.combo_baseline = function(params) {
     if( params==undefined) params={};

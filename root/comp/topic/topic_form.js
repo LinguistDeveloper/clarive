@@ -1,6 +1,5 @@
 (function(rec){
     var form_is_loaded = false;
-
     var store_category = new Baseliner.Topic.StoreCategory({
         fields: ['category', 'category_name' ]  
     });
@@ -361,6 +360,18 @@
         topic_box.setValue( rec.topics ) ;            
     });
 
+    var label_box_store = new Baseliner.Topic.StoreLabel({
+        autoLoad: true
+    });
+    
+    var label_box = new Baseliner.model.Labels({
+        store: label_box_store 
+    });
+
+    label_box_store.on('load',function(){
+        label_box.setValue( rec.labels ) ;            
+    });
+
     var user_box_store = new Baseliner.Topic.StoreUsers({
         autoLoad: true,
         baseParams: {projects:[]}
@@ -432,72 +443,75 @@
         buttons: [ ],
         defaults: { anchor:'70%'},
         items: [
+            label_box,
             {
-                  xtype : "fieldset",
-                  title : _("Main"),
-                  collapsible: true,
-                  autoHeight : true,
-                  items: [
-            
-            { xtype: 'hidden', name: 'topic_mid', value: rec.topic_mid },
-            { xtype: 'hidden', name: 'files_uploaded_mid' },
-            {
-                xtype:'textfield',
-                fieldLabel: _('Title'),
-                name: 'title',
-                value: rec.title,
-                style: { 'font-size': '16px' },
-                width: '100%',
-                height: 30,
-                allowBlank: false
-            },
-            { xtype: 'hidden', name: 'txtcategory_old' },
-            combo_category,
-            { xtype: 'hidden', name: 'status', value: rec.status },
-            combo_status,
-            combo_priority,
-            {
-                xtype:'textfield',
-                fieldLabel: _('Response'),
-                hidden: true,
-                name: 'txtrsptime',
-                readOnly: true
-            },
-            {
-                xtype:'textfield',
-                fieldLabel: _('Resolution'),
-                hidden: true,
-                name: 'txtdeadline',
-                readOnly: true
-            },
-            { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
-            { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
-            pb_panel,
-            user_box,
-            topic_box,
-            cb_panel,
-            {
-                xtype: 'panel',
-                border: false,
-                layout: 'form',
+                xtype : "fieldset",
+                title : _("Main"),
+                collapsible: true,
+                autoHeight : true,
                 items: [
-                    filelist,
-                    filedrop
-                ],
-                fieldLabel: _('Files')
-            },
-            { xtype:'panel', layout:'fit', items: [ //this panel is here to make the htmleditor fit
-                {
-                    xtype:'htmleditor',
-                    name:'description',
-                    fieldLabel: _('Description'),
-                    width: '100%',
-                    value: rec.description,
-                    height:350
-                }
-            ]}
-           ]
-              }
+            
+                    { xtype: 'hidden', name: 'topic_mid', value: rec.topic_mid },
+                    { xtype: 'hidden', name: 'files_uploaded_mid' },
+                    {
+                        xtype:'textfield',
+                        fieldLabel: _('Title'),
+                        name: 'title',
+                        value: rec.title,
+                        style: { 'font-size': '16px' },
+                        width: '100%',
+                        height: 30,
+                        allowBlank: false
+                    },
+                    { xtype: 'hidden', name: 'txtcategory_old' },
+                    combo_category,
+                    { xtype: 'hidden', name: 'status', value: rec.status },
+                    combo_status,
+                    combo_priority,
+                    {
+                        xtype:'textfield',
+                        fieldLabel: _('Response'),
+                        hidden: true,
+                        name: 'txtrsptime',
+                        readOnly: true
+                    },
+                    {
+                        xtype:'textfield',
+                        fieldLabel: _('Resolution'),
+                        hidden: true,
+                        name: 'txtdeadline',
+                        readOnly: true
+                    },
+                    { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
+                    { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
+                    pb_panel,
+                    user_box,
+                    topic_box,
+                    cb_panel,
+                    {
+                        xtype: 'panel',
+                        border: false,
+                        layout: 'form',
+                        items: [
+                            filelist,
+                            filedrop
+                        ],
+                        fieldLabel: _('Files')
+                    },
+                    {   xtype:'panel', layout:'fit',
+                        items: [ //this panel is here to make the htmleditor fit
+                            {
+                                xtype:'htmleditor',
+                                name:'description',
+                                fieldLabel: _('Description'),
+                                width: '100%',
+                                value: rec.description,
+                                height:350
+                            }
+                        ]
+                    }
+                ]
+            }
         ]
     });
 
@@ -590,8 +604,11 @@
                     }
                     if(swOk){
                         var myStore = commit_box.store;
-                        myStore.insert(0,new Ext.data.Record({'id':Ext.id(),'name':data}, '-1'));
+                        var rec = new Ext.data.Record({'id':Ext.id(),'name':data}, '-1')
+                        //myStore.insert(0,rec);
                         
+                        //myStore.loadData(rec);
+                        //commit_box.setValue(rec);
                         //commits.push(data);
                         //commit_box.setValue( commits );
                     }else{
@@ -602,6 +619,13 @@
                 if( n.parentNode.attributes.text != 'commits' ) {  // is a project?
                     Baseliner.message( _('Error'), _('Node is not a commit'));
                 } else {
+                    var myStore = commit_box.store;
+                    var rec1 = new Ext.data.Record({'id':1,'name':'prueba1'}, '0');
+                    myStore.insert(0,rec1);
+                
+                    var rec2 = new Ext.data.Record({'id':2,'name':'prueba2'}, '1');
+                    myStore.insert(1,rec2);
+                    commit_box.setValue( '1,2' );
                     add_node(n);
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
@@ -609,7 +633,7 @@
              }
         });
     }); 
-    
+
     return form_topic;
 })
 

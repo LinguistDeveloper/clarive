@@ -51,7 +51,6 @@ sub update {
 
                 #if( my @files_uploaded_mid = split(",", $p->{files_upload_mid}) ) {
                 if( my @files_uploaded_mid = split(",", $p->{files_uploaded_mid}) ) {
-                    _log ">>>>>>>>>>>>>>>>>>>>>>>>PASASASASASASAS\n";
                     my $rs_files = Baseliner->model('Baseliner::BaliFileVersion')->search({mid =>\@files_uploaded_mid});
                     while(my $rel_file = $rs_files->next){
                         # tie file to topic
@@ -117,6 +116,13 @@ sub update {
                         }
                         $topic->add_to_users( $user, { rel_type=>'topic_users' });
                     }
+                }
+                
+                # labels
+                foreach my $label_id (_array $p->{labels}){
+                    Baseliner->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
+                                                                                id_label    => $label_id,
+                                                                    });     
                 }
                 
                 $topic_mid    = $topic_mid;
@@ -194,6 +200,15 @@ sub update {
                     }                    
                 }
                 
+                # labels
+                Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
+                
+                foreach my $label_id (_array $p->{labels}){
+                    Baseliner->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
+                                                                                id_label    => $label_id,
+                                                                    });     
+                }                
+
                 $topic->update();
                 $topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;

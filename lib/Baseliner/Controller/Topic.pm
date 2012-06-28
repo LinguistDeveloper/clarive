@@ -103,6 +103,8 @@ sub list : Local {
             }else{
                 $where->{'me.topic_mid'} = -1;
             }
+        }else{
+            $where->{'me.topic_mid'} = -1;
         }            
     }
     #*****************************************************************************************************************************
@@ -149,11 +151,12 @@ sub list : Local {
     # SELECT MID DATA:
     my @mid_data = $c->model('Baseliner::TopicView')->search({ topic_mid=>\@mids })->hashref->all;
     my @rows;
-    my (%id_label);
+    my %id_label;
     my %projects;
     my %mid_data;
     for( @mid_data ) {
         $mid_data{ $_->{topic_mid} } = $_ unless exists $mid_data{ $_->{topic_mid} };
+        $mid_data{ $_->{topic_mid} }{is_closed} = $_->{status} eq 'C' ? \1 : \0;        
         $_->{label_id} ? $id_label{ $_->{topic_mid} }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} }= (): $id_label{ $_->{topic_mid} } = {};
         $_->{project_id} ? $projects{ $_->{topic_mid} }{ $_->{project_id} . ";" . $_->{project_name} } = (): $projects{ $_->{topic_mid} } = {};
     }
@@ -252,6 +255,9 @@ sub json : Local {
         $topic->users->search( undef, { select=>[qw(id)],
         order_by => { '-asc' => 'username' } } )->all;
         
+    my @labels = map { $_->id_label } 
+        $c->model('Baseliner::BaliTopicLabel')->search( id_topic => $topic_mid , { select=>[qw(id_label)] } )->all;        
+        
     my @topics = map { $_->mid } 
         $topic->topics->search( undef, { select=>[qw(mid)],
         order_by => { '-asc' => 'mid' } } )->all;
@@ -262,6 +268,7 @@ sub json : Local {
         category           => $topic->id_category,
         topic_mid          => $topic_mid,
         status             => $topic->id_category_status,
+        labels             => \@labels,
         projects           => \@projects,
         users              => \@users,
         topics             => \@topics,
@@ -292,8 +299,8 @@ sub view : Local {
         $c->stash->{created_on} = $topic->created_on;
         $c->stash->{created_by} = $topic->created_by;
         $c->stash->{priority} = try { $topic->priorities->name } catch { _loc('unassigned') };
-        my $deadline = $topic->deadline_min ? $topic->created_on->clone->add( minutes => $topic->deadline_min ):'';    
-        $c->stash->{deadline} = $deadline; 
+        my $deadline = $topic->deadline_min ? $topic->created_on->clone->add( minutes => $topic->deadline_min ):'';
+        $c->stash->{deadline} = $deadline;
         $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
         $c->stash->{description} = $topic->description;
         $c->stash->{category} = $topic->categories->name;
@@ -309,7 +316,12 @@ sub view : Local {
         $c->stash->{users} = @users ? \@users : []; 
         # projects
         my @projects = $topic->projects->search()->hashref->all;
-        $c->stash->{projects} = @projects ? \@projects : []; 
+        $c->stash->{projects} = @projects ? \@projects : [];
+        # labels
+        my @labels = Baseliner->model('Baseliner::BaliTopicLabel')->search({ id_topic => $topic_mid },
+                                                                         {prefetch =>['label']})->hashref->all;
+        @labels = map {$_->{label}} @labels;
+        $c->stash->{labels} = @labels ? \@labels : []; 
         # comments
         $self->list_posts( $c );  # get comments into stash
         # related topics
@@ -582,7 +594,7 @@ sub update_topic_labels : Local {
         $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
         
         foreach my $label_id (_array $label_ids){
-            $c->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
+            $c->model('Baseliner::BaliTopicLabel')->create( {   id_topic    => $topic_mid,
                                                                 id_label    => $label_id,
                                                             });     
         }

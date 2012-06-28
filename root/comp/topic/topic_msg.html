@@ -16,10 +16,36 @@
     $files
     $topics
     $projects
+    $labels
     $users
 </%args>
+<script language="JavaScript">
+    function returnOpposite(hexcolor) {
+        var r = parseInt(hexcolor.substr(0,2),16);
+        var g = parseInt(hexcolor.substr(2,2),16);
+        var b = parseInt(hexcolor.substr(4,2),16);
+        var yiq = ((r*299)+(g*587)+(b*114))/1000;
+        return (yiq >= 128) ? '000000' : 'FFFFFF';
+    }    
+</script>
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
-    <div class="grid_24"> 
+    <div class="grid_24">
+% my $id = _nowstamp;
+% if( _array( $labels ) ) {        
+        <div style="margin-bottom:25px;">
+% foreach my $label ( _array( $labels ) ) {
+            <div id='<%$id . '_' . $label->{name} %>'></div>
+            <script language="javascript">
+                var label_color = '<% $label->{color} %>';
+                var label_name = '<% $label->{name} %>'
+                var div_name = '<%$id . '_' . $label->{name} %>'
+                var div_label = document.getElementById(div_name);
+                div_label.innerHTML = "<span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span>";
+            </script>
+        
+% }
+        </div>
+% }
           <table class="table table-bordered table-condensed">
             <tbody>
               <tr>
