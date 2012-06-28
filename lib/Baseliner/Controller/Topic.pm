@@ -157,12 +157,20 @@ sub list : Local {
         $_->{label_id} ? $id_label{ $_->{topic_mid} }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} }= (): $id_label{ $_->{topic_mid} } = {};
         $_->{project_id} ? $projects{ $_->{topic_mid} }{ $_->{project_id} . ";" . $_->{project_name} } = (): $projects{ $_->{topic_mid} } = {};
     }
-    for my $mid ( @mids ) {
-       push @rows, {
-           %{ $mid_data{ $mid } },
-           labels => [ keys $id_label{ $mid } ],
-           projects => [ keys $projects{ $mid } ],
-       }
+    for my $mid (@mids) {
+        my $data = $mid_data{$mid};
+        $data->{calevent} = {
+            mid    => $mid,
+            color  => $data->{category_color},
+            title  => sprintf("%s #%d - %s", $data->{category_name}, $mid, $data->{title}),
+            allDay => \1
+        };
+        push @rows,
+            {
+            %$data,
+            labels   => [ keys $id_label{$mid} ],
+            projects => [ keys $projects{$mid} ],
+            };
     }
 
         #push @rows, {
