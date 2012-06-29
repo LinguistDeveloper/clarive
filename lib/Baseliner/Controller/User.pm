@@ -418,14 +418,14 @@ sub tratar_proyectos_padres(){
     my $sth;
     
     if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-	$sth = $dbh->prepare("SELECT ID FROM BALI_PROJECT START WITH ID = ? AND ACTIVE = 1 CONNECT BY PRIOR ID = ID_PARENT AND ACTIVE = 1");
+	$sth = $dbh->prepare("SELECT MID FROM BALI_PROJECT START WITH MID = ? AND ACTIVE = 1 CONNECT BY PRIOR MID = ID_PARENT AND ACTIVE = 1");
     }
     else{
 	##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
-	$sth = $dbh->prepare("WITH N(ID) AS (SELECT ID FROM BALI_PROJECT WHERE ID = ? AND ACTIVE = 1
+	$sth = $dbh->prepare("WITH N(MID) AS (SELECT MID FROM BALI_PROJECT WHERE MID = ? AND ACTIVE = 1
 					    UNION ALL
-					    SELECT NPLUS1.ID FROM BALI_PROJECT AS NPLUS1, N WHERE N.ID = NPLUS1.ID_PARENT AND ACTIVE = 1)
-					    SELECT N.ID FROM N ");
+					    SELECT NPLUS1.MID FROM BALI_PROJECT AS NPLUS1, N WHERE N.MID = NPLUS1.ID_PARENT AND ACTIVE = 1)
+					    SELECT N.MID FROM N ");
     }
     
     given ($accion) {
