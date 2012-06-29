@@ -429,76 +429,76 @@ sub tratar_proyectos_padres(){
     }
     
     given ($accion) {
-	when ('update') {
-	    my @roles_checked;
-	    if(!$roles_checked){
-		my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-		my $dbh = $db->dbh;
-		my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
-		$sth->bind_param( 1, $user_name );
-		$sth->execute();
-		@roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
-	    }
-	    else{
-		foreach my $role (_array $roles_checked){
-		    push @roles_checked, $role;
-		}
-	    }
-	    foreach my $role ( @roles_checked){
-		my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(
-								{username => $user_name,
-								 id_role => $role,
-								 ns => '/'
-								},
-								{ key => 'primary' });
-		if(!$all_projects){
-		    foreach my $project (_array $projects_parents_checked){
-			$sth->bind_param( 1, $project );
-			$sth->execute();
-			while(my @row = $sth->fetchrow_array){
-			    my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-								       {
-									username => $user_name,
-									id_role => $role,
-									ns => 'project/' . $row[0]
-								       },
-								       { key => 'primary' });
-			    $role_user->update();
+		when ('update') {
+			my @roles_checked;
+			if(!$roles_checked){
+				my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+				my $dbh = $db->dbh;
+				my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
+				$sth->bind_param( 1, $user_name );
+				$sth->execute();
+				@roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
 			}
-		   }
+			else{
+				foreach my $role (_array $roles_checked){
+					push @roles_checked, $role;
+				}
+			}
+			foreach my $role ( @roles_checked){
+				my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(
+										{username => $user_name,
+										 id_role => $role,
+										 ns => '/'
+										},
+										{ key => 'primary' });
+				if(!$all_projects){
+					foreach my $project (_array $projects_parents_checked){
+						$sth->bind_param( 1, $project );
+						$sth->execute();
+							while(my @row = $sth->fetchrow_array){
+								my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+													   {
+													username => $user_name,
+													id_role => $role,
+													ns => 'project/' . $row[0]
+													   },
+													   { key => 'primary' });
+								$role_user->update();
+							}
+					}
+				}
+			
+			}
 		}
-		
-	    }
-	}
-	when ('delete') {
-	    my $rs;
-	    if($roles_checked){
-		foreach my $role (_array $roles_checked){
-		    foreach my $project (_array $projects_parents_checked){
-			$sth->bind_param( 1, $project );
-			$sth->execute();
-			my @ns_projects = _unique
-					  map { 'project/' . $_->[0] }
-					  _array $sth->fetchall_arrayref;
-					  
-			$rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
-			$rs->delete;
-		    }
+		when ('delete') {
+			my $rs;
+			if($roles_checked){
+				foreach my $role (_array $roles_checked){
+					foreach my $project (_array $projects_parents_checked){
+					$sth->bind_param( 1, $project );
+					$sth->execute();
+					my @ns_projects = _unique
+							  map { 'project/' . $_->[0] }
+							  _array $sth->fetchall_arrayref;
+							  
+					$rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
+					$rs->delete;
+					}
+				}
+			}
+			else{
+				foreach my $project (_array $projects_parents_checked){
+					$sth->bind_param( 1, $project );
+					$sth->execute();
+					my @ns_projects = _unique
+							  map { 'project/' . $_->[0] }
+							  _array $sth->fetchall_arrayref;
+							  
+					$rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, ns=>\@ns_projects });
+					$rs->delete;
+				}
+			}
 		}
-	    }
-	    else{
-		foreach my $project (_array $projects_parents_checked){
-		    $sth->bind_param( 1, $project );
-		    $sth->execute();
-		    my @ns_projects = _unique
-				      map { 'project/' . $_->[0] }
-				      _array $sth->fetchall_arrayref;
-				      
-		    $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, ns=>\@ns_projects });
-		    $rs->delete;
-		}
-	    }
-	}
     }
 
 }
@@ -641,38 +641,38 @@ sub projects_list : Local {
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
     if($id_project ne 'todos'){
-	$SQL = "SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
+	$SQL = "SELECT * FROM (SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
 			       FROM BALI_PROJECT B
 			       WHERE B.ID_PARENT = ? AND B.ACTIVE = 1
-                                     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+                                     AND B.MID NOT IN (SELECT DISTINCT A.ID_PARENT
                                                       FROM BALI_PROJECT A
                                                       WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
                                UNION ALL
-                               SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
+                               SELECT E.MID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
                                FROM BALI_PROJECT E
-                               WHERE E.ID IN (SELECT DISTINCT D.ID 
+                               WHERE E.MID IN (SELECT DISTINCT D.MID 
                                               FROM BALI_PROJECT D,  
                                               BALI_PROJECT C
                                               WHERE D.ID_PARENT = ? AND C.ACTIVE = 1 AND
-                                                    D.ID = C.ID_PARENT)) RESULT
+                                                    D.MID = C.ID_PARENT)) RESULT
 	       ORDER BY NAME ASC";
 	@datas = $db->array_hash( "$SQL" , $id_project, $id_project);					 
     }
     else{
-	$SQL = "SELECT * FROM (SELECT B.ID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
+	$SQL = "SELECT * FROM (SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
 			       FROM BALI_PROJECT B
 			       WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
-                                     AND B.ID NOT IN (SELECT DISTINCT A.ID_PARENT
+                                     AND B.MID NOT IN (SELECT DISTINCT A.ID_PARENT
                                                       FROM BALI_PROJECT A
                                                       WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
                                UNION ALL
-                               SELECT E.ID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
+                               SELECT E.MID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
                                FROM BALI_PROJECT E
-                               WHERE E.id in (SELECT DISTINCT D.ID 
+                               WHERE E.MID IN (SELECT DISTINCT D.MID 
                                               FROM BALI_PROJECT D,  
                                               BALI_PROJECT C
                                               WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
-                                                    D.ID = C.ID_PARENT)) RESULT
+                                                    D.MID = C.ID_PARENT)) RESULT
 	       ORDER BY NAME ASC";
 	
 	@datas = $db->array_hash( "$SQL" );					 
@@ -685,9 +685,9 @@ sub projects_list : Local {
 	    description => $data->{description}?$data->{description}:"",
 	    url         => 'user/projects_list',
 	    data        => {
-		id_project => $data->{id},
-		project    => $data->{name},
-		parent_checked => 0,
+			id_project => $data->{mid},
+			project    => $data->{name},
+			parent_checked => 0,
 	    },	    
 	    icon       => '/static/images/icons/project_small.gif',
 	    leaf       => \$data->{leaf},
