@@ -51,7 +51,7 @@ sub list_entornos: Private{
 	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
 																			action => 'action.job.viewall',
 																			level => 1);
-	my $ids_project =  'ID=' . join (' OR ID=', @ids_project);
+	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
 	#$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
@@ -218,7 +218,7 @@ sub list_jobs: Private {
 	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
 																			action => 'action.job.viewall',
 																			level => 1);
-	my $ids_project =  'ID=' . join (' OR ID=', @ids_project);
+	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
 	
 	
 	#$SQL = "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION

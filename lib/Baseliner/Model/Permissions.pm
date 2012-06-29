@@ -313,7 +313,7 @@ sub user_projects_with_action {
                 username = ? AND
                 action = ? AND
                  (
-                       ( ru.NS like 'project/%' AND p.id = to_number( replace( ru.NS, 'project/','' ) ) )
+                       ( ru.NS like 'project/%' AND p.mid = to_number( replace( ru.NS, 'project/','' ) ) )
                        OR
                        ( ru.NS = '/' )
                     ) AND
@@ -331,7 +331,7 @@ sub user_projects_with_action {
             sub parent_ids {
                 my $rs = shift;
                 rs_hashref($rs);
-                map { $_->{id} } $rs->all;
+                map { $_->{mid} } $rs->all;
             }
             my @natures;
             my @subapls;
@@ -339,14 +339,14 @@ sub user_projects_with_action {
             if ( $level eq 'all' || $level ge 2 ) {
                 @natures    = parent_ids(
                     scalar Baseliner->model('Baseliner::BaliProject')
-                        ->search( { id_parent => \@data, nature => { '=', undef } }, { select => [qw/id/] } ) );
+                        ->search( { id_parent => \@data, nature => { '=', undef } }, { select => [qw/mid/] } ) );
                 @granted_projects = _unique @granted_projects, @subapls
             }
 
             if ( $level eq 'all' || $level ge 3 ) {
                 @subapls    = parent_ids(
                     scalar Baseliner->model('Baseliner::BaliProject')
-                        ->search( { id_parent => \@subapls, nature => { '!=', undef } }, { select => [qw/id/] } ) );
+                        ->search( { id_parent => \@subapls, nature => { '!=', undef } }, { select => [qw/mid/] } ) );
                 @granted_projects = _unique @granted_projects, @natures
             }
             @granted_projects =_unique @granted_projects;
@@ -359,11 +359,11 @@ sub user_projects_with_action {
 #### Ricardo (21/6/2011): Listado de todos los proyectos
 sub all_projects {
 	my @projects = [];
-	my $rs = Baseliner->model('Baseliner::BaliProject')->search( undef, { select=>['id'] } );
+	my $rs = Baseliner->model('Baseliner::BaliProject')->search( undef, { select=>['mid'] } );
 	rs_hashref($rs);
 	
 	@projects = map {
-		$_->{id}
+		$_->{mid}
 	} $rs->all;
 	
 	return @projects;

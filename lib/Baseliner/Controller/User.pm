@@ -91,53 +91,54 @@ sub infodetail : Local {
     rs_hashref($roles);
     
     while( my $r = $roles->next ) {
-	my $rs_userprojects = $c->model('Baseliner::BaliRoleUser')->search( { username => $username ,  id_role => $r->{id}} );
-	rs_hashref($rs_userprojects);
-	my @projects;
-	while( my $rs = $rs_userprojects->next ) {
-	    my ($ns, $prjid) = split "/", $rs->{ns};
-	    my $str;
-	    my $parent;
-	    my $allpath;
-	    my $nature;
-	    if($prjid){
-		my @path;
-		my $project = $c->model('Baseliner::BaliProject')->find($prjid);
-		if($project){
-		    push @path, $project->name;
-		    $parent = $project->id_parent;
-		    while($parent){
-			my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
-			push @path, $projectparent->name . '/';
-			$parent = $projectparent->id_parent;
-		    }
-		    while(@path){
-			$allpath .= pop (@path)
-		    }
-		    if($project->nature){ $nature= ' (' . $project->nature . ')';}
-		    $str = $allpath . $nature;
+		my $rs_userprojects = $c->model('Baseliner::BaliRoleUser')->search( { username => $username ,  id_role => $r->{id}} );
+		rs_hashref($rs_userprojects);
+		my @projects;
+		while( my $rs = $rs_userprojects->next ) {
+			my ($ns, $prjid) = split "/", $rs->{ns};
+			my $str;
+			my $parent;
+			my $allpath;
+			my $nature;
+			if($prjid){
+				my @path;
+				my $project = $c->model('Baseliner::BaliProject')->find($prjid);
+				if($project){
+					push @path, $project->name;
+					$parent = $project->id_parent;
+					while($parent){
+						my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
+						push @path, $projectparent->name . '/';
+						$parent = $projectparent->id_parent;
+					}
+					while(@path){
+						$allpath .= pop (@path)
+					}
+					if($project->nature){ $nature= ' (' . $project->nature . ')';}
+					$str = $allpath . $nature;
+				}
+			}
+			else{
+				$str = '';
+			}
+			push @projects, $str;
 		}
-	    }
-	    else{
-		$str = '';
-	    }
-	    push @projects, $str;
- 	}
-	@projects = sort(@projects);
-	my @jsonprojects;
-	foreach my $project (@projects){
-	    my $str = { name=>$project };
-	    push @jsonprojects, $str;
-	}
-        my $projects_txt = \@jsonprojects;
-
-	push @rows,
-		    {
-		      id_role		=> $r->{id},
-		      role		=> $r->{role},
-		      description	=> $r->{description},
-		      projects		=> $projects_txt
-		    };
+		
+		@projects = sort(@projects);
+		my @jsonprojects;
+		foreach my $project (@projects){
+			my $str = { name=>$project };
+			push @jsonprojects, $str;
+		}
+		my $projects_txt = \@jsonprojects;
+	
+		push @rows,
+				{
+				  id_role		=> $r->{id},
+				  role		=> $r->{role},
+				  description	=> $r->{description},
+				  projects		=> $projects_txt
+				};
     }
     $c->stash->{json} = { data=>\@rows};		
     $c->forward('View::JSON');    

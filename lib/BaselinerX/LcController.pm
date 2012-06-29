@@ -7,17 +7,31 @@ BEGIN { extends 'Catalyst::Controller' };
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
+sub tree_file_project : Local {
+    my ($self,$c) = @_;
+    my @tree;
+
+    my $project = $c->req->params->{project} ;
+    my $id_project = $c->req->params->{id_project} ;
+    
+    _log ">>>>>>>>>>project: " . $id_project . "\n";
+
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
+
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
     my @project_ids = Baseliner->model('Permissions')->all_projects();
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ id=>\@project_ids, id_parent=>undef, active=>1 }, { order_by=>{ -asc => \'lower(name)' }  });
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ mid=>\@project_ids, id_parent=>undef, active=>1 }, { order_by=>{ -asc => \'lower(name)' }  });
     while( my $r = $rs->next ) {
         push @tree, {
             text       => $r->name,
             url        => '/lifecycle/tree_project',
             data       => {
-               id_project => $r->id,
+               id_project => $r->mid,
                project    => $r->name,
             },
             icon       => '/static/images/icons/project_small.png',
@@ -66,7 +80,7 @@ sub tree_project : Local {
             text       => $name,
             url        => '/lifecycle/tree_project',
             data       => {
-                id_project => $r->id,
+                id_project => $r->mid,
                 project    => $r->name,
             },
             icon       => '/static/images/icons/project_small_child.gif',

@@ -44,10 +44,10 @@ sub find {
     my ($provider, $item ) =  ns_split $ns;
     my $r = Baseliner->model('Baseliner::BaliProject')->find( $item );
     return BaselinerX::Project->new(
-        {   ns       => 'project/' . $r->id,
+        {   ns       => 'project/' . $r->mid,
             ns_name  => $r->name,
             ns_type  => _loc('Baseliner Project'),
-            ns_id    => $r->id,
+            ns_id    => $r->mid,
             ns_data  => { $r->get_columns },
             provider => 'namespace.project',
             related  => [],

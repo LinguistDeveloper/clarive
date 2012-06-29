@@ -78,7 +78,7 @@ sub update {
                 
                 if (@projects) {
                     my $project;
-                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({id =>\@projects});
+                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@projects});
                     while($project = $rs_projects->next){
                         my $mid;
                         if($project->mid){
@@ -160,7 +160,7 @@ sub update {
                 my @projects = _array( $p->{projects} );
                 if (@projects){
                     my $project;
-                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({id =>\@projects});
+                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@projects});
                     while($project = $rs_projects->next){
                         my $mid;
                         if($project->mid){

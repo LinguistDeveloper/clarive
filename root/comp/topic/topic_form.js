@@ -329,7 +329,7 @@
             fieldLabel: _('Topics'),
             typeAhead: true,
             name: 'topics',
-            displayField: 'name',
+            displayField: 'title',
             hiddenName: 'topics',
             valueField: 'mid',
             tpl: tpl_list,

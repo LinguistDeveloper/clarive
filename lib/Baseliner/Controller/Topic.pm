@@ -606,7 +606,7 @@ sub update_project : Local {
     my $id_project = $p->{id_project};
 
     try{
-        my $project = $c->model('Baseliner::BaliProject')->find({id => $id_project});
+        my $project = $c->model('Baseliner::BaliProject')->find($id_project);
         my $mid;
         if($project->mid){
             $mid = $project->mid

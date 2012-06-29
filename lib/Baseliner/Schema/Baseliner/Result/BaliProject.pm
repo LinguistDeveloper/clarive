@@ -20,12 +20,6 @@ __PACKAGE__->table("bali_project");
 
 =head1 ACCESSORS
 
-=head2 id
-
-  is_auto_increment: 1
-  is_nullable: 0
-  sequence: 'bali_project_seq'
-
 =head2 name
 
   data_type: 'varchar2'
@@ -90,13 +84,6 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
     original => { data_type => "number" },
   },     
-  "id",
-  {
-    data_type => 'integer',
-    is_auto_increment => 1,
-    is_nullable => 0,
-    sequence => "bali_project_seq",
-  },
   "name",
   { data_type => "varchar2", is_nullable => 0, size => 1024 },
   "data",
@@ -138,7 +125,7 @@ __PACKAGE__->add_columns(
   "active",
   { data_type => "char", is_nullable => 1, size => 1, default => '1' },  
 );
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key("mid");
 
 =head1 RELATIONS
 
@@ -153,14 +140,14 @@ Related object: L<Baseliner::Schema::Baseliner::Result::BaliProjectItems>
 __PACKAGE__->has_many(
   "bali_project_items",
   "Baseliner::Schema::Baseliner::Result::BaliProjectItems",
-  { "foreign.id_project" => "self.id" },
+  { "foreign.id_project" => "self.mid" },
   {},
 );
 
 __PACKAGE__->belongs_to(
   "parent",
   "Baseliner::Schema::Baseliner::Result::BaliProject",
-  { id => "id_parent" },
+  { mid => "id_parent" },
 );
 
 1;
