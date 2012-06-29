@@ -40,6 +40,16 @@ if [ -f "script/bali_$1.pl" ]; then
     export BASELINER_SCRIPT=script/bali_$1.pl
     shift
 fi
+# check if its a porcelain command
+if [ -f "script/bali-$1.pl" ]; then
+    export BASELINER_SCRIPT=script/bali-$1.pl
+    shift
+fi
+# check again for a freescript
+if [ -f "script/$1.pl" ]; then
+    export BASELINER_SCRIPT=script/$1.pl
+    shift
+fi
 
 # -X : no warnings for production environments
 exec perl $BASELINER_TRACE_MODULE -I$BASELINER_HOME/lib -X $BASELINER_SCRIPT "$@"
