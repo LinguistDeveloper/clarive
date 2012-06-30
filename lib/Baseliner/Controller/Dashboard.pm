@@ -40,7 +40,7 @@ sub list : Local {
     $c->stash->{template} = '/comp/dashboard.html';
 }
 
-sub list_entornos: Private{
+sub list_entornos : Private{
     my ( $self, $c ) = @_;
 	my $username = $c->username;
 	my (@jobs, $job, @datas, @temps, $SQL);
@@ -78,7 +78,8 @@ sub list_entornos: Private{
 					WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
 			GROUP BY BL";				
 	
-	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
+	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days)
+        if @ids_project;
 
 	#my @entornos = ('TEST', 'PREP', 'PROD');
     my $config     = Baseliner->model('ConfigStore')->get('config.dashboard');
@@ -146,21 +147,27 @@ sub list_lastjobs: Private{
 sub list_emails: Private{
     my ( $self, $c ) = @_;
 	my $username = $c->username;
-	my (@emails, $email, @datas, $SQL);
+    my @datas;
 	
 	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-	$SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
-				FROM BALI_MESSAGE A,
-					(SELECT * FROM ( SELECT ID_MESSAGE,  SENT
-										FROM BALI_MESSAGE_QUEUE
-										WHERE USERNAME = ? AND SWREADED = 0
-										ORDER BY SENT DESC ) WHERE ROWNUM < 6) B
-				WHERE A.ID = B.ID_MESSAGE";
-				
+	#$SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
+	#			FROM BALI_MESSAGE A,
+	#				(SELECT * FROM ( SELECT ID_MESSAGE,  SENT
+	#									FROM BALI_MESSAGE_QUEUE
+	#									WHERE USERNAME = ? AND SWREADED = 0
+	#									ORDER BY SENT DESC ) WHERE ROWNUM < 6) B
+	#			WHERE A.ID = B.ID_MESSAGE";
+	#			
 
-	@emails = $db->array_hash( $SQL , $username);
-	foreach $email (@emails){
+	#@emails = $db->array_hash( $SQL , $username);
+
+    my $rs = $c->model('Baseliner::BaliMessageQueue')
+      ->search( { username => $username, swreaded => 0 },
+        { order_by => { -asc => 'sent' }, 
+        prefetch => ['id_message'] } );
+	while( my $email = $rs->hashref->next ){
+        _log _dump $email;
 	    push @datas, $email;
 	}	
 		
@@ -273,7 +280,8 @@ sub list_jobs: Private {
 								) B
 							WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
 				WHERE MY_ROW_NUM < 11";				
-	my @jobs = $db->array_hash( $SQL);
+	my @jobs = $db->array_hash( $SQL)
+        if @ids_project;
 	
 	foreach my $job (@jobs){
 		my ($lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration);
