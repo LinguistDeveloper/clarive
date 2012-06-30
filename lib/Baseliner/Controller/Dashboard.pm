@@ -165,7 +165,7 @@ sub list_emails: Private{
     my $rs = $c->model('Baseliner::BaliMessageQueue')
       ->search( { username => $username, swreaded => 0 },
         { order_by => { -asc => 'sent' }, 
-        prefetch => ['id_message'] } );
+        prefetch => ['id_message'], page=>1, rows=>6 } );
 	while( my $email = $rs->hashref->next ){
         _log _dump $email;
 	    push @datas, $email;
