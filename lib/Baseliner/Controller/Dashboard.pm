@@ -165,10 +165,12 @@ sub list_emails: Private{
     my $rs = $c->model('Baseliner::BaliMessageQueue')
       ->search( { username => $username, swreaded => 0 },
         { order_by => { -asc => 'sent' }, 
-        prefetch => ['id_message'], page=>1, rows=>6 } );
+        join => ['id_message'], 
+        +select => [qw/id_message.subject id_message.sender me.sent id_message.id/],
+        +as => [qw/subject sender sent id/],
+        page=>1, rows=>6 } );
 	while( my $email = $rs->hashref->next ){
-        _log _dump $email;
-	    push @datas, $email;
+        push @datas, $email;
 	}	
 		
 	$c->stash->{emails} =\@datas;
