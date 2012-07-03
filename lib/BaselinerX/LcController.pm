@@ -120,6 +120,7 @@ sub tree_project : Local {
             text       => _loc( $node->{name} // $node->{node} ),  # name is official, node is deprecated
             url        => $node->{url} || '/lifecycle/changeset',
             icon       => $node->{icon},
+            menu       => $node->{menu},
             data       => {
                 project    => $project,
                 id_project => $id_project,

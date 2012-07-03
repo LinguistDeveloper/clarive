@@ -217,9 +217,6 @@ var drop_handler = function(e) {
                     refresh_node( e.target );
                 } else {
                     Ext.Msg.alert( _('Error'), res.msg );
-                    // NewParent:e.target.parentNode.id, NewPosition:e.target.parentNode.indexOf(dropEvent.target) 
-                    //alert( e.target.indexOf( e.source ) );
-
                     return false;
                 }
             });

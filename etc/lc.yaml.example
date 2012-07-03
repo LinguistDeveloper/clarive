@@ -20,6 +20,11 @@ nodes:
       type: component
       url : /fileversion/tree_file_project
       icon: /static/images/scm/icons/log_16.png
+      menu:
+         - 
+           text: New Folder
+           icon: /static/images/icons/folder.gif
+           url: /fileversion/new_folder
       data:
           on_drop:
               url: /fileversion/drop

@@ -2775,6 +2775,9 @@ msgstr "estados"
 msgid "labels"
 msgstr "etiquetas"
 
+msgid "New Folder"
+msgstr "Crear Carpeta"
+
 msgid "Assigned To Me"
 msgstr "Assignadas a Mí"
 
