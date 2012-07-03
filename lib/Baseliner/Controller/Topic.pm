@@ -991,6 +991,13 @@ sub upload : Local {
         } else {
             # create file version master and bali_file_version rows
             if (!$existing){
+                my $versionid = 1;
+                my @file = map {$_->{versionid}}  Baseliner->model('Baseliner::BaliFileVersion')->search({ filename =>$filename },{order_by => {'-desc' => 'versionid'}})->hashref->first;
+                if(@file){
+                    $versionid = $file[0] + 1;
+                }else{
+                }
+                
                 master_new 'bali_file', sub {
                     my $mid = shift;
                     my $file = $c->model('Baseliner::BaliFileVersion')->create(
@@ -998,7 +1005,7 @@ sub upload : Local {
                             filedata   => $body,
                             filename => $filename,
                             extension => $extension,
-                            versionid => '1',
+                            versionid => $versionid,
                             md5 => $md5, 
                             filesize => length( $body ), 
                             created_by => $c->username,
