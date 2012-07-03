@@ -196,19 +196,47 @@ Baseliner.lifecycle = new Ext.tree.TreePanel({
     split: true,
     collapsible: true,
     title: _("Lifecycle"),
-    ddGroup: 'lifecycle_dd',
     width: 250,
     useArrows: true,
     autoScroll: true,
     animate: true,
-    baseArgs: {
-        singleClickExpand: true
+    enableDD: true,
+    ddGroup: 'lifecycle_dd',
+    dragConfig: {
+        ddGroup: 'lifecycle_dd',
+        dragAllowed: true
+    },
+    dropConfig: {
+        ddGroup: 'lifecycle_dd',
+        dropAllowed: true,
+        notifyDrop: function(source, e, data) {
+            //console.log( data );
+            var n = data.node;
+            if( n == undefined ) return;
+            var node_data = n.attributes.data;
+            if( node_data == undefined ) return;
+            //alert( JSON.stringify( nd ) );
+            if( node_data.on_drop != undefined ) {
+                var drop_data = nd.on_drop;
+                if( drop_data.url != undefined ) {
+                    Baseliner.ajaxEval( drop_data.url, node_data, function(res){
+                        if( res.success ) {
+                            Baseliner.message( _('Drop'), res.msg );
+                        } else {
+                            Ext.Msg.alert( _('Error'), res.msg );
+                        }
+                    });
+
+                }
+            }
+
+            return true;
+        }
     },
     containerScroll: true,
     listeners: { contextmenu: menu_click },
     rootVisible: false,
     dataUrl: Baseliner.lc.dataUrl,
-    enableDD: true,
     tbar: Baseliner.lc_tbar,
     root: {
         nodeType: 'async',
