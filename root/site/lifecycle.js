@@ -25,9 +25,7 @@ var add_workspace = function() {
     Baseliner.ajaxEval( '/comp/lifecycle/workspace_new.js', {}, function(){} );
 };
 
-var refresh_lc = function(){
-    var sm = Baseliner.lifecycle.getSelectionModel();
-    var node = sm.getSelectedNode();
+var refresh_node = function(node){
     var loader = Baseliner.lifecycle.getLoader();
     loader.dataUrl = Baseliner.lc.dataUrl;
     if( node != undefined ) {
@@ -37,6 +35,12 @@ var refresh_lc = function(){
     } else {
         loader.load(Baseliner.lifecycle.root);
     }
+};
+
+var refresh_lc = function(){
+    var sm = Baseliner.lifecycle.getSelectionModel();
+    var node = sm.getSelectedNode();
+    refresh_node( node );
 };
 
 var button_favorites = new Ext.Button({
@@ -190,6 +194,39 @@ var menu_click = function(node,event){
     Baseliner.lc_menu.showAt(event.xy);
 }
 
+var drop_handler = function(e) {
+    // from node:1 , to_node:2
+    e.cancel = true;
+    e.dropStatus = true;
+    var n1 = e.source.dragData.node;
+    var n2 = e.target;
+    if( n1 == undefined || n2 == undefined ) return false;
+    var node_data1 = n1.attributes.data;
+    var node_data2 = n2.attributes.data;
+    if( node_data1 == undefined ) node_data1={};
+    if( node_data2 == undefined ) return false;
+    //alert( JSON.stringify( node_data2 ) );
+    if( node_data2.on_drop != undefined ) {
+        var on_drop = node_data2.on_drop;
+        if( on_drop.url != undefined ) {
+            Baseliner.ajaxEval( on_drop.url, { from: Ext.util.JSON.encode(node_data1), to: Ext.util.JSON.encode(node_data2) }, function(res){
+                if( res.success ) {
+                    Baseliner.message( _('Drop'), res.msg );
+                    //e.target.appendChild( n1 );
+                    //e.target.expand();
+                    refresh_node( e.target );
+                } else {
+                    Ext.Msg.alert( _('Error'), res.msg );
+                    // NewParent:e.target.parentNode.id, NewPosition:e.target.parentNode.indexOf(dropEvent.target) 
+                    //alert( e.target.indexOf( e.source ) );
+
+                    return false;
+                }
+            });
+        }
+    }
+    return true;
+};
 
 Baseliner.lifecycle = new Ext.tree.TreePanel({
     region: 'west',
@@ -202,39 +239,11 @@ Baseliner.lifecycle = new Ext.tree.TreePanel({
     animate: true,
     enableDD: true,
     ddGroup: 'lifecycle_dd',
-    dragConfig: {
-        ddGroup: 'lifecycle_dd',
-        dragAllowed: true
-    },
-    dropConfig: {
-        ddGroup: 'lifecycle_dd',
-        dropAllowed: true,
-        notifyDrop: function(source, e, data) {
-            //console.log( data );
-            var n = data.node;
-            if( n == undefined ) return;
-            var node_data = n.attributes.data;
-            if( node_data == undefined ) return;
-            //alert( JSON.stringify( nd ) );
-            if( node_data.on_drop != undefined ) {
-                var drop_data = nd.on_drop;
-                if( drop_data.url != undefined ) {
-                    Baseliner.ajaxEval( drop_data.url, node_data, function(res){
-                        if( res.success ) {
-                            Baseliner.message( _('Drop'), res.msg );
-                        } else {
-                            Ext.Msg.alert( _('Error'), res.msg );
-                        }
-                    });
-
-                }
-            }
-
-            return true;
-        }
+    listeners: {
+        beforenodedrop: { fn: drop_handler },
+        contextmenu: menu_click
     },
     containerScroll: true,
-    listeners: { contextmenu: menu_click },
     rootVisible: false,
     dataUrl: Baseliner.lc.dataUrl,
     tbar: Baseliner.lc_tbar,
