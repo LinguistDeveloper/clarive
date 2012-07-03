@@ -7,14 +7,73 @@ BEGIN { extends 'Catalyst::Controller' };
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
-sub tree_file_project : Local {
+sub tree_topic_get_files : Local {
+    my ($self,$c) = @_;
+    my @tree;
+
+    my $id_topic = $c->req->params->{id_topic} ;
+    my $sw_get_files = $c->req->params->{sw_get_files} ;
+    
+    if ($sw_get_files){
+        my $files = $c->model('Baseliner::BaliTopic')->find($id_topic)->files->search();
+            while (my $file = $files->next){
+                push @tree, {
+                    text       => $file->filename,
+                    #url        => '/lifecycle/tree_topic_get_files',
+                    #data       => {
+                    #   id_topic => $topic->mid,
+                    #},
+                    #icon       => '/static/images/icons/project_small.png',
+                    leaf       => \1,
+                    expandable => \0
+                };
+        }
+    }
+    else{
+        my $files = $c->model('Baseliner::BaliTopic')->find($id_topic)->files->search()->count;
+        if ($files > 0){
+            push @tree, {
+               text       => _loc ('Files'),
+               url        => '/lifecycle/tree_topic_get_files',
+               data       => {
+                  id_topic => $id_topic,
+                  sw_get_files =>\1
+               },
+               icon       => '/static/images/icons/log_16.png',
+               leaf       => \0,
+               expandable => \1
+           };           
+        }
+    }
+    
+    
+
+
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
+
+sub tree_topics_project : Local {
     my ($self,$c) = @_;
     my @tree;
 
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
-    
-    _log ">>>>>>>>>>project: " . $id_project . "\n";
+    my @topics_project = map {$_->{from_mid}} $c->model('Baseliner::BaliMasterRel')->search({ to_mid=>$id_project, collection =>'bali_topic' }, {join => ['master_from']})->hashref->all;
+    my $topics = $c->model('Baseliner::BaliTopic')->search( {mid =>\@topics_project} );
+    while ( my $topic = $topics->next ) {
+        push @tree, {
+            text       => $topic->categories->name . ' #' . $topic->mid,
+            url        => '/lifecycle/tree_topic_get_files',
+            data       => {
+               id_topic => $topic->mid
+            },
+            icon       => '/static/images/icons/topic_lc.png',
+            leaf       => \0,
+            expandable => \1
+        };
+    }
 
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );

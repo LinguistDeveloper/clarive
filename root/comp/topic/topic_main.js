@@ -1,5 +1,5 @@
 <%perl>
-    my $ii = int rand 9999999999999999999;
+    my $ii = int rand _nowstamp;
     my $swEdit = $c->stash->{swEdit};
 
 </%perl>

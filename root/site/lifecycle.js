@@ -261,6 +261,10 @@ Baseliner.lifecycle.on('dblclick', function(n, ev){
     var c = n.attributes.data.click;
     if( c==undefined || c.url==undefined ) return;
     var params = n.attributes.data;
+    
+    if(n.attributes.text == _('Topics')){
+        params.id_project = n.parentNode.attributes.data.id_project;
+    }
     if( params.tab_icon == undefined ) params.tab_icon = c.icon;
     if( c.type == 'comp' ) {
         Baseliner.add_tabcomp( c.url, _(c.title), params );

@@ -232,7 +232,9 @@
 
     var panel = new Ext.Panel({
         layout: 'border',
-        items: [ tree, properties ]
+        items: [
+				tree,
+				properties ]
     });
     return panel;
 })
