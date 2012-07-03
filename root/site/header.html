@@ -96,20 +96,6 @@
     <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.print.css' media='print' />
     <script type='text/javascript' src='/static/fullcalendar/fullcalendar.min.js'></script>
     
-    <!-- dhtmlxGantt includes -->
-    <link rel="stylesheet" type="text/css" href="/static/dhtmlxGantt/dhtmlxGantt/codebase/dhtmlxgantt.css" />
-    <script type="text/javascript" src="/static/dhtmlxGantt/dhtmlxGantt/codebase/dhtmlxgantt.js"></script>
-    <script type="text/javascript" src="/static/dhtmlxGantt/dhtmlxGantt/codebase/dhtmlxcommon.js"></script>
-
-    <!-- Extensible includes -->
-    <link rel="stylesheet" type="text/css" href="/static/cal/resources/css/extensible-all.css" />
-    <script type="text/javascript" src="/static/cal/lib/extensible-all-debug.js"></script>
-
-    <!-- Sch includes -->
-    <link rel="stylesheet" type="text/css" href="/static/sch/sch.css" />
-    <script type="text/javascript" src="/static/sch/LockingGridView.js"></script>
-    <script type="text/javascript" src="/static/sch/sch.js"></script>
-
     <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
     <!-- BEGIN <% $include->{name} %> -->
@@ -219,6 +205,7 @@ Ext.onReady(function(){
         height: 300,
         tbar_end: [ '->', { xtype:'button', text:'#', handler:function(){ Baseliner.tabCalendar() } } ],
         fullCalendarConfig: {
+            events: Baseliner.calendar_events,
             timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
         }
     });
