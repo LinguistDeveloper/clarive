@@ -64,8 +64,11 @@ __PACKAGE__->config->{static}->{dirs} = [
         'static',
         qr/images/,
     ];
+# __PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = __PACKAGE__->config->{static}->{dirs};
+
 __PACKAGE__->config->{static}->{ignore_extensions} 
         = [ qw/mas html js json css less/ ];    
+# __PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = __PACKAGE__->config->{static}->{ignore_extensions};
 
 __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
 
@@ -183,11 +186,10 @@ if( $ENV{BALI_FAST} ) {
 }
 
 __PACKAGE__->setup();
+
 # Capture Signals
 $SIG{INT} = \&signal_interrupt;
 $SIG{KILL} = \&signal_interrupt;
-
-#Class::C3::initialize();
 
 # Setup date formating for Oracle
 my $dbh = __PACKAGE__->model('Baseliner')->storage->dbh;
