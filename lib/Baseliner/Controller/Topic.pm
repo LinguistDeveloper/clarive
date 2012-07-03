@@ -59,6 +59,7 @@ register 'action.topics.view' => { name=>'View and Admin topics' };
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    $c->stash->{id_project} = $p->{id_project}; 
     $c->stash->{query_id} = $p->{query};    
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
@@ -136,6 +137,13 @@ sub list : Local {
     if($p->{query_id}){
         $where->{topic_mid} = $p->{query_id};
     }
+    
+    #Filtro cuando viene por la parte del lifecycle.
+    if($p->{id_project}){
+        my @topics_project = map {$_->{from_mid}} $c->model('Baseliner::BaliMasterRel')->search({ to_mid=>$p->{id_project}, collection =>'bali_topic' }, {join => ['master_from']})->hashref->all;
+        $where->{topic_mid} = \@topics_project;
+        _log ">>>>>>>>>>>>>>>>>>: " . $p->{id_project};
+    }    
     
     # SELECT GROUP_BY MID:
     my $rs = $c->model('Baseliner::TopicView')->search(  
