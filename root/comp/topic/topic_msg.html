@@ -147,7 +147,7 @@
                         <i class="icon-file"></i> 
                         <a href="/topic/download_file/<% $file->{md5} %>/<% $file->{filename} %>" target="<% $target %>">
                           <% Baseliner::Utils::_html_escape( $file->{filename} ) %>
-                        </a> (<% $size %> <% $units %>) 
+                        </a> (<% $size %> <% $units %>) version <% $file->{versionid} %>
                       </li>
 % }
                     </ul>

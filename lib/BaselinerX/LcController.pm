@@ -18,7 +18,7 @@ sub tree_topic_get_files : Local {
         my $files = $c->model('Baseliner::BaliTopic')->find($id_topic)->files->search();
             while (my $file = $files->next){
                 push @tree, {
-                    text       => $file->filename,
+                    text       => $file->filename . '(v.' . $file->versionid . ')',
                     #url        => '/lifecycle/tree_topic_get_files',
                     #data       => {
                     #   id_topic => $topic->mid,
