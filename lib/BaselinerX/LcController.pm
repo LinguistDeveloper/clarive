@@ -22,6 +22,7 @@ sub tree_topic_get_files : Local {
                     #url        => '/lifecycle/tree_topic_get_files',
                     data       => {
                        id_file => $file->mid,
+                       #sw_get_files =>\1
                     },
                     #icon       => '/static/images/icons/project_small.png',
                     leaf       => \1,
@@ -45,10 +46,6 @@ sub tree_topic_get_files : Local {
            };           
         }
     }
-    
-    
-
-
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
@@ -337,7 +334,9 @@ sub tree_all : Local {
             $c->stash->{node} = $node;
             $c->forward( $type );
         } else {
-            $c->forward('tree_lifecycle');
+            #$c->forward('tree_lifecycle');
+             $c->stash->{json} = {};
+             $c->forward( 'View::JSON' );
         }
     }
 
