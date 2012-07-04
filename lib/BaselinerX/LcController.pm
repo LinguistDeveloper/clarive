@@ -18,11 +18,11 @@ sub tree_topic_get_files : Local {
         my $files = $c->model('Baseliner::BaliTopic')->find($id_topic)->files->search();
             while (my $file = $files->next){
                 push @tree, {
-                    text       => $file->filename . '(v.' . $file->versionid . ')',
+                    text       => $file->filename . '(v' . $file->versionid . ')',
                     #url        => '/lifecycle/tree_topic_get_files',
-                    #data       => {
-                    #   id_topic => $topic->mid,
-                    #},
+                    data       => {
+                       id_file => $file->mid,
+                    },
                     #icon       => '/static/images/icons/project_small.png',
                     leaf       => \1,
                     expandable => \0

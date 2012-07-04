@@ -201,6 +201,7 @@ var drop_handler = function(e) {
     var n1 = e.source.dragData.node;
     var n2 = e.target;
     if( n1 == undefined || n2 == undefined ) return false;
+    
     var node_data1 = n1.attributes.data;
     var node_data2 = n2.attributes.data;
     if( node_data1 == undefined ) node_data1={};
@@ -209,14 +210,16 @@ var drop_handler = function(e) {
     if( node_data2.on_drop != undefined ) {
         var on_drop = node_data2.on_drop;
         if( on_drop.url != undefined ) {
-            Baseliner.ajaxEval( on_drop.url, { from: Ext.util.JSON.encode(node_data1), to: Ext.util.JSON.encode(node_data2) }, function(res){
+            var id_project = n2.parentNode.attributes.data.id_project
+            Baseliner.ajaxEval( on_drop.url, { id_file: node_data1.id_file, id_project: id_project  }, function(res){
                 if( res.success ) {
-                    Baseliner.message( _('Drop'), res.msg );
+                    Baseliner.message(  _('Drop'), res.msg );
                     //e.target.appendChild( n1 );
                     //e.target.expand();
                     refresh_node( e.target );
                 } else {
-                    Ext.Msg.alert( _('Error'), res.msg );
+                    Baseliner.message( _('Drop'), res.msg );
+                    //Ext.Msg.alert( _('Error'), res.msg );
                     return false;
                 }
             });
