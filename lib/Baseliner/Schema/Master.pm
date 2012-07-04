@@ -41,14 +41,15 @@ sub master_setup {
     $to_col //= 'mid';
 
     my $rel_type = $from_name .'_'. $to_name;
+    my $rel_type_inverse = $to_name .'_'. $from_name;
 
     my $foreign = "Baseliner::Schema::Baseliner::Result::$to_class";
 
     # especific 
-    Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to( $from_name, $self,
+    Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to( $rel_type, $self,
         { "foreign.$from_col" => 'self.from_mid' } );
     Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
-        $to_name , $foreign,
+        $rel_type_inverse , $foreign,
         { "foreign.$to_col" => 'self.to_mid' }
     );
     $self->has_many(
@@ -57,7 +58,7 @@ sub master_setup {
         { 'foreign.from_mid' => "self.$from_col", },
         { where=>{'rel_type' => $rel_type} }
     );
-    $self->many_to_many( $name, $rel_type, $to_name );
+    $self->many_to_many( $name, $rel_type, $rel_type_inverse );
 
     # generic 
     $self->has_one(

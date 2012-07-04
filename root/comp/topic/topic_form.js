@@ -24,6 +24,7 @@
         displayField: 'category_name',
         store: store_category,
         allowBlank: false,
+        hidden: rec.fields_form.hide_category,
         listeners:{
             'select': function(cmd, rec, idx){
                 combo_status.clearValue();
@@ -54,6 +55,7 @@
         hiddenName: 'status_new',
         displayField: 'name',
         valueField: 'id',
+        hidden: rec.fields_form.hide_status,
         //disabled: true,
         store: store_category_status
     });     
@@ -288,6 +290,7 @@
         displayField: 'name',
         valueField: 'id',
         store: store_priority,
+        hidden: rec.fields_form.hide_priority,
         listeners:{
             'select': function(cmd, rec, idx){
                 load_txt_values_priority(rec);
@@ -354,6 +357,7 @@
 
     var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid } });
     var topic_box = new Baseliner.model.Topics({
+        hidden: rec.fields_form.hide_topics,
         store: topic_box_store
     });
     topic_box_store.on('load',function(){
@@ -365,6 +369,7 @@
     });
     
     var label_box = new Baseliner.model.Labels({
+        hidden: rec.fields_form.hide_labels,
         store: label_box_store 
     });
 
@@ -378,6 +383,7 @@
     });
     
     var user_box = new Baseliner.model.Users({
+        hidden: rec.fields_form.hide_assign_to,
         store: user_box_store 
     });
     
@@ -390,6 +396,7 @@
     var project_box = new Baseliner.model.Projects({
         store: project_box_store
     });
+    
     
     project_box_store.on('load',function(){
         project_box.setValue( rec.projects) ;            
@@ -422,6 +429,7 @@
         layout: 'form',
         enableDragDrop: true,
         border: false,
+        hidden: rec.fields_form.hide_projects,
         //style: 'border-top: 0px',
         items: [ project_box ]
     });
@@ -430,6 +438,7 @@
         layout: 'form',
         enableDragDrop: true,
         border: false,
+        hidden: rec.fields_form.hide_commits,
         //style: 'border-top: 0px',
         items: [ commit_box ]
     });
@@ -461,7 +470,8 @@
                         style: { 'font-size': '16px' },
                         width: '100%',
                         height: 30,
-                        allowBlank: false
+                        allowBlank: false,
+                        hidden: rec.fields_form.hide_title
                     },
                     { xtype: 'hidden', name: 'txtcategory_old' },
                     combo_category,
@@ -492,6 +502,7 @@
                         xtype: 'panel',
                         border: false,
                         layout: 'form',
+                        hidden: rec.fields_form.hide_files,
                         items: [
                             filelist,
                             filedrop
@@ -499,6 +510,7 @@
                         fieldLabel: _('Files')
                     },
                     {   xtype:'panel', layout:'fit',
+                        hidden: rec.fields_form.hide_description,
                         items: [ //this panel is here to make the htmleditor fit
                             {
                                 xtype:'htmleditor',

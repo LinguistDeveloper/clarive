@@ -1,8 +1,11 @@
+<%init>
+    use Baseliner::Utils;
+</%init>
 <%perl>
-    my $ii = int rand _nowstamp;
+    my $ii = Baseliner::Utils::_nowstamp();
     my $swEdit = $c->stash->{swEdit};
-
 </%perl>
+
 (function(params){
     var view_is_dirty = false;
     var form_is_loaded = false;
@@ -119,7 +122,10 @@
                 load_form( rec );
             });
         } else {
-            load_form({ new_category_id: params.new_category_id, new_category_name: params.new_category_name });
+            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name }, function(rec) {
+                load_form( rec );
+            });
+            //load_form({ new_category_id: params.new_category_id, new_category_name: params.new_category_name });
         }
           
         cardpanel.getLayout().setActiveItem( 1 );

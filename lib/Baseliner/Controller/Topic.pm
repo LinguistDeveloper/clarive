@@ -142,7 +142,6 @@ sub list : Local {
     if($p->{id_project}){
         my @topics_project = map {$_->{from_mid}} $c->model('Baseliner::BaliMasterRel')->search({ to_mid=>$p->{id_project}, collection =>'bali_topic' }, {join => ['master_from']})->hashref->all;
         $where->{topic_mid} = \@topics_project;
-        _log ">>>>>>>>>>>>>>>>>>: " . $p->{id_project};
     }    
     
     # SELECT GROUP_BY MID:
@@ -183,30 +182,6 @@ sub list : Local {
             projects => [ keys $projects{$mid} ],
             };
     }
-
-        #push @rows, {
-        #    id      => $data->{id},
-        #    title   => $data->{title},
-        #    #description => $data->{description},
-        #    created_on  => $data->{created_on},
-        #    created_by  => $data->{created_by},
-        #    numcomment  => $data->{numcomment},
-        #    category    => $data->{id_category} ? [$data->{id_category}] : '',
-        #    category_color => $data->{category_color},
-        #    namecategory    => $data->{category_name} ? [$data->{category_name}] : '',
-        #    labels      => \@labels,
-        #    projects    => \@projects,
-        #    status      => $data->{category_status},
-        #    status_name      => $data->{category_status_name},
-        #    status_letter      => $data->{status},
-        #    is_closed => ( $data->{status} eq 'C' ? \1 : \0 ),
-        #    priority    => $data->{priority},
-        #    response_time_min   => $data->{response_time_min},
-        #    expr_response_time  => $data->{expr_response_time},
-        #    deadline_min    => $data->{deadline_min},
-        #    expr_deadline   => $data->{expr_deadline}
-        #};
-    
 
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
@@ -269,6 +244,11 @@ sub json : Local {
     my @topics = map { $_->mid } 
         $topic->topics->search( undef, { select=>[qw(mid)],
         order_by => { '-asc' => 'mid' } } )->all;
+     
+    ######################################################################################### 
+    #Preguntar por el formulario de configuracion;
+    #my $id_category = $topic->id_category;
+    ##########################################################################################
         
     my $ret = {
         title              => $topic->title,
@@ -284,7 +264,20 @@ sub json : Local {
         response_time_min  => $topic->response_time_min,
         expr_response_time => $topic->expr_response_time,
         deadline_min       => $topic->deadline_min,
-        expr_deadline      => $topic->expr_deadline
+        expr_deadline      => $topic->expr_deadline,
+        fields_form        => {
+            hide_title => \0,
+            hide_category => \0,
+            hide_status => \0,
+            hide_priority => \0,
+            hide_projects => \0,
+            hide_assign_to => \0,
+            hide_labels => \0,
+            hide_topics => \0,
+            hide_commits => \0,
+            hide_files => \0,
+            hide_description => \0
+        }        
     };
     $ret->{category_name} = try { $topic->categories->name } catch {''};
     $ret->{status_name} = try { $topic->status->name } catch {''};
@@ -292,6 +285,39 @@ sub json : Local {
     
     $c->stash->{json} = $ret;
     
+    $c->forward('View::JSON');
+}
+
+sub new_topic : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    
+    ######################################################################################### 
+    #Preguntar por el formulario de configuracion;
+    # my $id_category = $p->{new_category_id};
+    ##########################################################################################
+
+    
+        
+    my $ret = {
+        new_category_id    => $p->{new_category_id},
+        new_category_name  => $p->{new_category_name},
+        fields_form        => {
+            hide_title => \0,
+            hide_category => \0,
+            hide_status => \0,
+            hide_priority => \0,
+            hide_projects => \0,
+            hide_assign_to => \0,
+            hide_labels => \0,
+            hide_topics => \0,
+            hide_commits => \0,
+            hide_files => \0,
+            hide_description => \0
+        }
+    };
+    
+    $c->stash->{json} = $ret;
     $c->forward('View::JSON');
 }
 
@@ -352,6 +378,7 @@ sub view : Local {
         $c->stash->{description} = '';        
         $c->stash->{category} = $p->{categoryId};
         $c->stash->{category_color} = '#444';
+        $c->stash->{priority} = '';
         $c->stash->{forms} = '';
         $c->stash->{topic_mid} = '';
         $c->stash->{swEdit} = $p->{swEdit};
@@ -359,7 +386,10 @@ sub view : Local {
         $c->stash->{comments} = '';
         $c->stash->{ii} = $p->{ii};
         $c->stash->{files} = []; 
-        $c->stash->{topics} = []; 
+        $c->stash->{topics} = [];
+        $c->stash->{projects} = [];
+        $c->stash->{labels} = [];
+        $c->stash->{users} = [];
     }
 
     if( $p->{html} ) {

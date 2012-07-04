@@ -22,7 +22,6 @@
     var init_buttons = function(action) {
         eval('btn_edit.' + action + '()');
         eval('btn_delete.' + action + '()');
-        //eval('btn_labels.' + action + '()');
     }
     
     var button_create_view = new Ext.Button({
