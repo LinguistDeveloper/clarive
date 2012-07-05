@@ -2832,3 +2832,6 @@ msgstr "Nombre o IP de Host"
 msgid "New: %1"
 msgstr "Nuevo: %1"
 
+msgid "Copy of %1"
+msgstr "Copia de %1"
+

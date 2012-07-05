@@ -28,7 +28,7 @@ sub update {
     given ( $action ) {
         when ( 'add' ) {
             try {
-                my $topic = master_new 'bali_topic' => sub {
+                my $topic = master_new 'bali_topic' => $p->{title} => sub {
                     $topic_mid = shift;    
                     Baseliner->model('Baseliner::BaliTopic')->create(
                         {   title              => $p->{title},
@@ -85,7 +85,7 @@ sub update {
                             $mid = $project->mid
                         }
                         else{
-                            my $project_mid = master_new 'bali_project' => sub {
+                            my $project_mid = master_new 'bali_project' => $project->name => sub {
                                 my $mid = shift;
                                 $project->mid($mid);
                                 $project->update();
@@ -108,7 +108,7 @@ sub update {
                             $mid = $user->mid
                         }
                         else{
-                        	my $user_mid = master_new 'bali_user' => sub {
+                        	my $user_mid = master_new 'bali_user' => $user->username => sub {
                                 my $mid = shift;
                                 $user->mid($mid);
                                 $user->update();
@@ -167,7 +167,7 @@ sub update {
                             $mid = $project->mid
                         }
                         else{
-                            my $project_mid = master_new 'bali_project' => sub {
+                            my $project_mid = master_new 'bali_project' => $project->name => sub {
                                 my $mid = shift;
                                 $project->mid($mid);
                                 $project->update();
@@ -190,7 +190,7 @@ sub update {
                             $mid = $user->mid
                         }
                         else{
-                        	my $user_mid = master_new 'bali_user' => sub {
+                        	my $user_mid = master_new 'bali_user' => $user->username => sub {
                                 my $mid = shift;
                                 $user->mid($mid);
                                 $user->update();

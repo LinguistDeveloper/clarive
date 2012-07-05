@@ -2,6 +2,7 @@ package Baseliner::Controller::CI;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
 
 register 'action.ci.admin' => { name => 'Admin CIs' };
@@ -210,24 +211,27 @@ sub tree_objects {
         my $data = _load( $_->{yaml} );
         # list properties: field: value, field: value ...
         my $pretty = join(', ',map {
-            "$_: $data->{$_}"
+            my $d = $data->{$_};
+            $d = '**' x length($d) if $_ =~ /password/;
+            "$_: $d"
         } grep { length $data->{$_} } keys %$data );
         my $noname = $_->{collection}.':'.$_->{mid};
         +{
-            _id      => ++$cnt,
-            _parent  => $p{parent},
-            _is_leaf => \0,
-            mid      => $_->{mid},
-            name     => ($_->{name} // $noname ),
-            item     => ( $_->{name} // $data->{name} // $noname ),
-            type     => 'object',
-            class    => $class,
-            icon     => $class->icon,
-            ts      => $_->{ts},
-            data     => $data,
-            properties     => $_->{yaml},
+            _id               => ++$cnt,
+            _parent           => $p{parent},
+            _is_leaf          => \0,
+            mid               => $_->{mid},
+            name              => ( $_->{name} // $noname ),
+            item              => ( $_->{name} // $data->{name} // $noname ),
+            type              => 'object',
+            class             => $class,
+            icon              => $class->icon,
+            ts                => $_->{ts},
+            bl                => $_->{bl},
+            data              => $data,
+            properties        => $_->{yaml},
             pretty_properties => $pretty,
-            version  => '',
+            versionid         => $_->{versionid},
         }
     } $rs->hashref->all;
     ( $total, @tree );
@@ -355,11 +359,19 @@ sub update : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my $name = delete $p->{name};
+    my $mid = delete $p->{mid};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
 
     if( $action eq 'add' ) {
         master_new $collection => $name => $p;
+    }
+    elsif( $action eq 'edit' && defined $mid ) {
+        my $row = $c->model('Baseliner::BaliMaster')->find( $mid );
+        if( $row ) {
+            $row->yaml( _dump( $p ) );
+            $row->update;
+        }
     }
     
 
@@ -367,105 +379,21 @@ sub update : Local {
     $c->forward('View::JSON');
 }
 
-1;
+sub delete : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $mids = delete $p->{mids};
 
-__END__
-(function(params) {
-    var store = {
-        reload: function() {
-           tree.root.reload(); 
-        }
+    try {
+        my $cnt = $c->model('Baseliner::BaliMaster')->search( { mid=>$mids })->delete;
+        $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
+        #$c->stash->{json} = { success=>\1, msg=>_loc('CI does not exist' ) };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg=>_loc('Error deleting CIs: %1', $err) };
     };
-    <& /comp/search_field.mas &>
-    var search_field = new Ext.app.SearchField({
-        store: store,
-        params: {start: 0, limit: 100 },
-        emptyText: _('<Enter your search string>')
-    });
-    var render_tags = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( typeof value == 'object' ) {
-            var va = value.slice(0); // copy array
-            return Baseliner.render_tags( va, metadata, rec );
-        } else {
-            return Baseliner.render_tags( value, metadata, rec );
-        }
-    };
-    var render_mapping = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var ret = '<table>';
-        ret += '<tr>'; 
-        var k = 0;
-        for( var k in value ) {
-            if( value[k]==undefined ) value[k]='';
-            ret += '<td style="font-size: 10px;font-weight: bold;padding: 1px 3px 1px 3px;">' + _(k) + '</td>'
-            ret += '<td width="80px" style="font-size: 10px; background: #f5f5f5;padding: 1px 3px 1px 3px;"><code>' + value[k] + '</code></td>'
-            if( k % 2 ) {
-                ret += '</tr>'; 
-                ret += '<tr>'; 
-            }
-        }
-        ret += '</table>';
-        return ret;
-    };
-    var tree = new Ext.ux.tree.TreeGrid({
-        width: 500,
-        height: 300,
-        lines: true,
-		stripeRows: true,
-        enableSort: false,
-        enableDD: true,
-        dataUrl: '/cia/list',
-        //dataUrl: '/cia/data.json',
-        tbar: [ search_field,
-            { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: 'Etiquetar', icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: 'Exportar', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
-        ],
-        columns:[
-            {
-                header: 'Item',
-                dataIndex: 'item',
-                width: 230
-            },
-            {
-                header: 'Class',
-                width: 120,
-                dataIndex: 'class'
-            },
-            {
-                header: 'Version',
-                width: 80,
-                dataIndex: 'version'
-            },
-            {
-                header: 'Last Scan',
-                width: 120,
-                dataIndex: 'last'
-            },
-            {
-                header: _('Tags'),
-                width: 140,
-                tpl: new Ext.XTemplate('{tags:this.renderer}', {
-                    renderer: function(v) {
-                        if( v== undefined ) return '';
-                        return render_tags(v);
-                    }
-                }),
-                dataIndex: 'tags'
-            },
-            {
-                header: 'Properties',
-                width: 250,
-                tpl: new Ext.XTemplate('{properties:this.renderer}', {
-                    renderer: function(v) {
-                        if( v== undefined ) return '';
-                        return render_mapping(v);
-                    }
-                }),
-                dataIndex: 'properties'
-            }
-        ]
-    });
-    return tree;
-})
+    $c->forward('View::JSON');
+}
+
+1;
 

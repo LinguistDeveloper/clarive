@@ -92,8 +92,9 @@ Or:
 sub master_new {
     my ($collection, $name, $code ) =@_;
     if( ref $code eq 'HASH' ) {
-        my $master = Baseliner->model('Baseliner::BaliMaster')
-            ->create( { collection => $collection, name => $name, yaml => Baseliner::Utils::_dump($code) } );
+        my $row = { collection => $collection, name => $name, yaml => Baseliner::Utils::_dump($code) };
+        $row->{bl} = $code->{bl} if defined $code->{bl};
+        my $master = Baseliner->model('Baseliner::BaliMaster')->create( $row );
         return $master;
     } elsif( ref $code eq 'CODE' ) {
         my $ret;

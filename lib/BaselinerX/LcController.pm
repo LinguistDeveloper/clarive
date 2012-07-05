@@ -211,6 +211,32 @@ sub changeset : Local {
               },
         } for @repos;
     }
+
+    # topic changes
+    my @changes = $c->model('Baseliner::BaliTopic')->search(
+        { is_changeset => 1, rel_type=>'topic_project', to_mid=>124, bl=>$bl },
+        { prefetch=>['categories','children','master'] }
+    )->hashref->all;
+    
+    push @tree, {
+        url  => '/lifecycle/repo',
+        icon => '/static/images/icons/topic_lc.png',
+        text => "[$_->{categories}{name} #$_->{mid}] $_->{title}",
+        leaf => \1,
+        data => {
+            bl    => $bl,
+            name  => $_->{title},
+            click => {
+                url   => '/topic/show',
+                type  => 'comp',
+                icon  => '/static/images/icons/topic.png',
+                title => "$_->{title}",
+            }
+          },
+    } for @changes;
+
+
+
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
