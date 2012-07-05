@@ -113,16 +113,17 @@
                 { xtype:'textfield', name:'name', fieldLabel:_('Topics: Status'), allowBlank:false, emptyText:_('Name of status') },
                 ta,
 				{
-				xtype: 'radiogroup',
-				id: 'statusgroup',
-				fieldLabel: _('Type'),
-				defaults: {xtype: "radio",name: "type"},
-				items: [
-					{boxLabel: _('General'), inputValue: 'G', checked: true},
-					{boxLabel: _('Inicial'), inputValue: 'I'},
-					{boxLabel: _('Final'), inputValue: 'F'}
-				]
-				}				
+                    xtype: 'radiogroup',
+                    id: 'statusgroup',
+                    fieldLabel: _('Type'),
+                    defaults: {xtype: "radio",name: "type"},
+                    items: [
+                        {boxLabel: _('General'), inputValue: 'G', checked: true},
+                        {boxLabel: _('Initial'), inputValue: 'I'},
+                        {boxLabel: _('Final'), inputValue: 'F'}
+                    ]
+				},
+                Baseliner.combo_baseline()
             ]
         });
     
@@ -201,17 +202,24 @@
         sortable: false,
         checkOnly: true
     });
+
+    var render_status_type = function (val){
+        if( val == null || val == undefined ) return '';
+        var str = val == 'G' ? _('General') : val == 'I' ? _('Initial') : _('Final');
+        return str;
+    }	
     
     var grid_status = new Ext.grid.GridPanel({
         title : _('Topics: Statuses'),
         sm: check_status_sm,
 		height: 250,
         header: true,
+        border: true,
         stripeRows: true,
         autoScroll: true,
         enableHdMenu: false,
         store: store_status,
-        viewConfig: {forceFit: true},
+        viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
@@ -219,7 +227,8 @@
             check_status_sm,
             { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
             { header: _('Description'), dataIndex: 'description', sortable: false },
-			{ header: _('Type'), dataIndex: 'type', width:50, sortable: false }
+            { header: _('Baseline'), dataIndex: 'bl', sortable: false, renderer: Baseliner.render_bl },
+			{ header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_status_type }
         ],
         autoSizeColumns: true,
         deferredRender:true,    
@@ -314,7 +323,7 @@
             autoScroll: true,
             enableHdMenu: false,
             store: store_status,
-            viewConfig: {forceFit: true},
+            viewConfig: {forceFit: true, scrollOffset: 2},
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
@@ -537,13 +546,13 @@
             autoScroll: true,
             enableHdMenu: false,
             store: store_admin_status,
-            viewConfig: {forceFit: true},
+            viewConfig: {forceFit: true, scrollOffset: 2},
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
                 { hidden: true, dataIndex:'id' },
 				  check_admin_status_sm,
-                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false }
+                { header: _('Status To'), dataIndex: 'name', width:50, sortable: false }
                 //{ header: _('Description'), dataIndex: 'description', sortable: false } 
             ],
             autoSizeColumns: true,
@@ -584,7 +593,7 @@
             forceSelection: true,
             triggerAction: 'all',
             emptyText: 'select a status',
-            fieldLabel: _('Topics: Status'),
+            fieldLabel: _('Status From'),
             name: 'status_from',
             hiddenName: 'status_from',
             displayField: 'name',
@@ -621,9 +630,7 @@
 			stripeRows: true,
 			autoScroll: true,
 			autoWidth: true,
-			viewConfig: {
-				forceFit: true
-			},		    
+			viewConfig: { forceFit: true, scrollOffset: 2 },		    
 			height:190,
 			columns: [
 				check_roles_sm,
@@ -690,8 +697,8 @@
 			loadMask:'true',
 			columns: [
 				{ header: _('Role'), width: 120, dataIndex: 'role', hidden: true },	
-				{ header: _('From status'), width: 350, dataIndex: 'status_from'},
-				{ header: _('To statuses'), width: 150, dataIndex: 'statuses_to', renderer: render_statuses_to}
+				{ header: _('From Status'), width: 350, dataIndex: 'status_from'},
+				{ header: _('To Status'), width: 150, dataIndex: 'statuses_to', renderer: render_statuses_to}
 			],
 			autoSizeColumns: true,
 			deferredRender:true,
@@ -981,8 +988,8 @@
     });
 	
     var btn_admin_category = new Ext.Toolbar.Button({
-        text: _('Admin'),
-        icon:'/static/images/icons/user.gif',
+        text: _('Workflow'),
+        icon:'/static/images/icons/workflow.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -1011,7 +1018,7 @@
         autoScroll: true,
         enableHdMenu: false,
         store: store_category,
-        viewConfig: {forceFit: true},
+        viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
@@ -1214,7 +1221,7 @@
         stripeRows: true,
         enableHdMenu: false,
         store: store_label,
-        viewConfig: {forceFit: true},
+        viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
@@ -1627,7 +1634,7 @@
         stripeRows: true,
         enableHdMenu: false,
         store: store_priority,
-        viewConfig: {forceFit: true},
+        viewConfig: {forceFit: true, scrollOffset: 2},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [

@@ -453,6 +453,9 @@ msgstr "Última Actualización"
 msgid "Add to Favorites..."
 msgstr "Añadir a Favoritos..."
 
+msgid "Remove from Favorites"
+msgstr "Quitar de Favoritos"
+
 msgid "Tasks"
 msgstr "Tareas"
 
@@ -2834,4 +2837,22 @@ msgstr "Nuevo: %1"
 
 msgid "Copy of %1"
 msgstr "Copia de %1"
+
+msgid "Initial"
+msgstr "Inicial"
+
+msgid "Unassigned"
+msgstr "Sin assignar"
+
+msgid "Status From"
+msgstr "Estado Origen"
+
+msgid "Status To"
+msgstr "Estado Destino"
+
+msgid "From Status"
+msgstr "Estado Origen"
+
+msgid "To Status"
+msgstr "Estado Destino"
 
