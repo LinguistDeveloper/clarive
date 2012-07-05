@@ -257,7 +257,7 @@ sub _log {
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
-    return unless $ENV{BASELINER_DEBUG};
+    return unless  $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ;
     _log_me($cl,$fi,$li,@_);
 }
 
@@ -592,7 +592,7 @@ sub _tmp_file {
     _mkpath( $tempdir );
     }
     my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} );
-    $ENV{BASELINER_DEBUG} and warn "Created tempfile $file\n";
+    ( $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ) and warn "Created tempfile $file\n";
     return $file;
 }
 

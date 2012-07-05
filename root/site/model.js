@@ -649,3 +649,116 @@ Baseliner.calendar_events = function( start, end, cb ) {
    });
 };
 
+/* 
+
+    Generic CI Store, SuperBox and ComboBox
+
+    var server_store = new Baseliner.store.CI({ baseParams: { role:'Server' } });
+    var servers = new Baseliner.model.CISelect({ store: server_store, 
+        singleMode: true, 
+        fieldLabel:_('Server'), 
+        name:'server', 
+        hiddenName:'server', 
+        allowBlank:false }); 
+    server_store.on('load',function(){
+        if( params.server != undefined ) 
+            servers.setValue( params.server ) ;            
+    });
+*/
+Baseliner.store.CI = function(c) {
+     Baseliner.store.CI.superclass.constructor.call(this, Ext.apply({
+        id: 'mid', 
+        url: '/ci/store',
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty: 'totalCount', 
+        fields: ['mid','item', 'name','collection','class','description', 'properties', 'pretty_properties'] 
+     }, c));
+};
+Ext.extend( Baseliner.store.CI, Ext.data.JsonStore );
+
+Baseliner.model.CISelect = function(c) {
+    //var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">{name} ({class})</div></tpl>' );
+    var tpl_list = new Ext.XTemplate(
+        '<tpl for="."><div class="search-item">',
+            //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
+        '<span id="boot"><strong>{name}</strong> ({class})</span>',
+        '<tpl if="pretty_properties">',
+            '<br />{pretty_properties}',
+        '</tpl>',
+        '</div></tpl>'
+    );
+    var tpl_field = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+    Baseliner.model.CISelect.superclass.constructor.call(this, Ext.apply({
+        allowBlank: false,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        singleMode: true,
+        pageSize: 20,
+        loadingText: _('Searching...'),
+        resizable: true,
+        //emptyText: _('Enter or select topics'),
+        triggerAction: 'all',
+        itemSelector: 'div.search-item',
+        resizable: true,
+        mode: 'local',
+        fieldLabel: _('CI'),
+        typeAhead: true,
+            name: 'ci',
+            displayField: 'name',
+            hiddenName: 'ci',
+            valueField: 'mid',
+        tpl: tpl_list,
+        displayFieldTpl: tpl_field,
+        value: '/',
+        extraItemCls: 'x-tag'
+    }, c));
+};
+Ext.extend( Baseliner.model.CISelect, Ext.ux.form.SuperBoxSelect );
+
+
+Baseliner.model.CICombo = function(c) {
+    var resultTpl = new Ext.XTemplate(
+        '<tpl for="."><div class="search-item">',
+            //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
+        '<span id="boot"><strong>{name}</strong> ({class})</span>',
+        '<tpl if="pretty_properties">',
+            '<br />{pretty_properties}',
+        '</tpl>',
+        '</div></tpl>'
+    );
+    Baseliner.model.CICombo.superclass.constructor.call(this, Ext.apply({
+        minChars: 2,
+        fieldLabel: _('CI'),
+            name: 'ci',
+            displayField: 'name',
+            hiddenName: 'ci',
+            valueField: 'mid',
+        msgTarget: 'under',
+        forceSelection: true,
+        typeAhead: false,
+        loadingText: _('Searching...'),
+        resizable: true,
+        allowBlank: false,
+        lazyRender: false,
+        pageSize: 20,
+        //editable: false,
+        //mode: 'local',
+        //width: 550,
+        //hideTrigger:true,
+        triggerAction: 'all',
+        tpl: resultTpl,
+        itemSelector: 'div.search-item',
+        listeners: {
+            // delete the previous query in the beforequery event or set
+            // combo.lastQuery = null (this will reload the store the next time it expands)
+            beforequery: function(qe){
+                delete qe.combo.lastQuery;
+            }
+        }
+    }, c));
+};
+Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
+

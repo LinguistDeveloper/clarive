@@ -8,6 +8,7 @@ var which_tree = function() {
     if( root.attributes.data == undefined ) root.attributes.data = {}; 
     root.attributes.data.favorites =  button_favorites.pressed;
     root.attributes.data.show_workspaces = button_workspaces.pressed;
+    root.attributes.data.show_ci = button_ci.pressed;
     root.attributes.data.favorites =  button_favorites.pressed;
     Baseliner.lifecycle.getSelectionModel().clearSelections();
     refresh_lc();
@@ -18,6 +19,10 @@ var show_favorites = function() {
 };
 
 var show_workspaces = function() {
+    which_tree();
+};
+
+var show_ci = function() {
     which_tree();
 };
 
@@ -61,6 +66,15 @@ var button_workspaces = new Ext.Button({
     enableToggle: true
 });
 
+var button_ci = new Ext.Button({
+    cls: 'x-btn-icon',
+    icon: '/static/images/ci/ci.png',
+    handler: show_ci,
+    toggleGroup: 'lc',
+    pressed: false,
+    enableToggle: true
+});
+
 var button_menu = new Ext.Button({
     menu: [
         { text: _('Add Workspace'), handler: add_workspace }
@@ -75,6 +89,7 @@ Baseliner.lc_tbar = new Ext.Toolbar({
             handler: refresh_lc        },
         button_favorites,
         button_workspaces,
+        button_ci,
         '->',
         button_menu
     ]
@@ -232,7 +247,7 @@ Baseliner.lifecycle = new Ext.tree.TreePanel({
     region: 'west',
     split: true,
     collapsible: true,
-    title: _("Lifecycle"),
+    title: _("Navigator"),
     width: 250,
     useArrows: true,
     autoScroll: true,

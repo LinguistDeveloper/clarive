@@ -79,27 +79,27 @@ all within a transaction.
 
 Usage:
 
-    master_new 'bali_topic' => sub {
+    master_new 'bali_topic' => 'my_ci_name' => sub {
        my $mid = shift;
        ...
     };
 
 Or:
 
-    master_new 'something' => {  yada=>1234, etc=>'...' };
+    master_new 'something' => 'my_ci_name' => {  yada=>1234, etc=>'...' };
 
 =cut
 sub master_new {
-    my ($collection, $code ) =@_;
+    my ($collection, $name, $code ) =@_;
     if( ref $code eq 'HASH' ) {
         my $master = Baseliner->model('Baseliner::BaliMaster')
-            ->create( { collection => $collection, yaml => Baseliner::Utils::_dump($code) } );
+            ->create( { collection => $collection, name => $name, yaml => Baseliner::Utils::_dump($code) } );
         return $master;
     } elsif( ref $code eq 'CODE' ) {
         my $ret;
         Baseliner->model('Baseliner')->txn_do(sub{
             my $master = Baseliner->model('Baseliner::BaliMaster')->create({
-                collection => $collection,
+                collection => $collection, name=> $name
             });
             $ret = $code->( $master->mid, $master );
         });

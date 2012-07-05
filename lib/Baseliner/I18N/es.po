@@ -2736,6 +2736,12 @@ msgstr "%1 publicó un comentario el %2: %3"
 msgid "%1 deleted a comment on %2: %3"
 msgstr "%1 borró un comentario el %2: %3"
 
+msgid "Depends On"
+msgstr "Dependo De"
+
+msgid "Depend On Me"
+msgstr "Dependen De Mí"
+
 msgid "File"
 msgstr "Fichero"
 
@@ -2819,3 +2825,10 @@ msgstr "Sab"
 
 msgid "Sun"
 msgstr "Dom"
+
+msgid "Hostname or IP"
+msgstr "Nombre o IP de Host"
+
+msgid "New: %1"
+msgstr "Nuevo: %1"
+

@@ -314,6 +314,8 @@ sub tree : Local {
         $c->forward( 'tree_favorites' );
     } elsif( $p->{show_workspaces} eq 'true' ) {
         $c->forward( 'tree_workspaces' );
+    } elsif( $p->{show_ci} eq 'true' ) {
+        $c->forward( '/ci/list' );
     } else {
         $c->forward( 'tree_all' );
     }
