@@ -244,10 +244,13 @@ sub json : Local {
     my @topics = map { $_->mid } 
         $topic->topics->search( undef, { select=>[qw(mid)],
         order_by => { '-asc' => 'mid' } } )->all;
-     
+    
     ######################################################################################### 
     #Preguntar por el formulario de configuracion;
-    #my $id_category = $topic->id_category;
+    my $id_category = $topic->id_category;    
+    my $field_hash;
+    map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category}, {prefetch => ['fields']})->hashref->all;
+
     ##########################################################################################
         
     my $ret = {
@@ -265,19 +268,7 @@ sub json : Local {
         expr_response_time => $topic->expr_response_time,
         deadline_min       => $topic->deadline_min,
         expr_deadline      => $topic->expr_deadline,
-        fields_form        => {
-            hide_title => \0,
-            hide_category => \0,
-            hide_status => \0,
-            hide_priority => \0,
-            hide_projects => \0,
-            hide_assign_to => \0,
-            hide_labels => \0,
-            hide_topics => \0,
-            hide_commits => \0,
-            hide_files => \0,
-            hide_description => \0
-        }        
+        fields_form        => $field_hash
     };
     $ret->{category_name} = try { $topic->categories->name } catch {''};
     $ret->{status_name} = try { $topic->status->name } catch {''};
@@ -295,6 +286,11 @@ sub new_topic : Local {
     ######################################################################################### 
     #Preguntar por el formulario de configuracion;
     # my $id_category = $p->{new_category_id};
+    
+    my $id_category = $p->{new_category_id};
+    my $field_hash;
+    map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
+    
     ##########################################################################################
 
     
@@ -302,19 +298,7 @@ sub new_topic : Local {
     my $ret = {
         new_category_id    => $p->{new_category_id},
         new_category_name  => $p->{new_category_name},
-        fields_form        => {
-            hide_title => \0,
-            hide_category => \0,
-            hide_status => \0,
-            hide_priority => \0,
-            hide_projects => \0,
-            hide_assign_to => \0,
-            hide_labels => \0,
-            hide_topics => \0,
-            hide_commits => \0,
-            hide_files => \0,
-            hide_description => \0
-        }
+        fields_form        => $field_hash
     };
     
     $c->stash->{json} = $ret;
@@ -534,6 +518,10 @@ sub list_category : Local {
 
                 my $type = $r->is_changeset ? 'C' : $r->is_release ? 'R' : 'N';
                 
+                my @fields = map { $_->id_field } 
+                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( id_category => $r->id, {order_by=> {'-asc'=> 'id_field'}} )->all;        
+
+                
                 push @rows,
                   {
                     id          => $r->id,
@@ -543,7 +531,8 @@ sub list_category : Local {
                     type         => $type,
                     category_name => $r->name,
                     description => $r->description,
-                    statuses    => \@statuses
+                    statuses    => \@statuses,
+                    fields      => \@fields
                   };
             }  
         }

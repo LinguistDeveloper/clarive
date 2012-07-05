@@ -28,6 +28,7 @@
     var init_buttons_category = function(action) {
         eval('btn_edit_category.' + action + '()');
         eval('btn_delete_category.' + action + '()');
+		eval('btn_form_category.' + action + '()');
 		eval('btn_admin_category.' + action + '()');
     }   
     
@@ -632,15 +633,15 @@
 			autoSizeColumns: true
 		});		 
 	
-	var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
-        if(rec.data.projects){
-            for(i=0;i<rec.data.projects.length;i++){
-                //tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
-                tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
-            }
-        }
-        return tag_project_html;
-    };
+		var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
+			if(rec.data.projects){
+				for(i=0;i<rec.data.projects.length;i++){
+					//tag_project_html = tag_project_html ? tag_project_html + ',' + rec.data.projects[i].project: rec.data.projects[i].project;
+					tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
+				}
+			}
+			return tag_project_html;
+		};
 	
 	
 		var render_statuses_to = function (val){
@@ -830,7 +831,155 @@
         });
         win.show();     
     };
+	
+	
+		Baseliner.store.Fields = function(c) {
+			 Baseliner.store.Fields.superclass.constructor.call(this, Ext.apply({
+				root: 'data' , 
+				remoteSort: true,
+				autoLoad: true,
+				totalProperty:"totalCount", 
+				baseParams: {},
+				id: 'id', 
+				url: '/topicadmin/list_fields',
+				fields: ['id','name'] 
+			 }, c));
+		};
+		Ext.extend( Baseliner.store.Fields, Ext.data.JsonStore );
+	
+		Baseliner.model.Fields = function(c) {
+			//var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
+			var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+				'<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+				'&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+			var tpl_field = new Ext.XTemplate( '<tpl for=".">',
+				'<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+				'</tpl>' );
+			Baseliner.model.Fields.superclass.constructor.call(this, Ext.apply({
+				allowBlank: true,
+				msgTarget: 'under',
+				allowAddNewData: true,
+				addNewDataOnBlur: true, 
+				//emptyText: _('Enter or select topics'),
+				triggerAction: 'all',
+				resizable: true,
+				mode: 'local',
+				fieldLabel: _('Fields'),
+				typeAhead: true,
+				name: 'fields',
+				displayField: 'name',
+				hiddenName: 'fields',
+				valueField: 'id',
+				tpl: tpl_list,
+				displayFieldTpl: tpl_field,
+				value: '/',
+				extraItemCls: 'x-tag'
+			}, c));
+		};
+		Ext.extend( Baseliner.model.Fields, Ext.ux.form.SuperBoxSelect );
+	
+		var field_box_store = new Baseliner.store.Fields();
+	
+	
+	
+	var edit_form_category = function(rec) {
+        var win;
+        var title = 'Form category';
+		
+		var field_box = new Baseliner.model.Fields({
+			store: field_box_store
+		});
+		field_box_store.on('load',function(){
+			field_box.setValue( rec.fields ) ;            
+		});		
+		
+		var form_category = new Ext.FormPanel({
+			frame: false,
+			border: false,
+			url:'/topicadmin/update_fields',
+			//itemCls: 'boot',
+			bodyStyle:'padding: 10px 0px 0px 10px',
+            buttons: [
+                    {
+                        text: _('Accept'),
+                        type: 'submit',
+                        handler: function() {
+                            var form = form_category.getForm();
+                            
+                            if (form.isValid()) {
+                                form.submit({
+                                    success: function(f,a){
+                                        Baseliner.message(_('Success'), a.result.msg );
+                                    },
+                                    failure: function(f,a){
+                                        Ext.Msg.show({  
+                                            title: _('Information'), 
+                                            msg: a.result.msg , 
+                                            buttons: Ext.Msg.OK, 
+                                            icon: Ext.Msg.INFO
+                                        });                         
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    {
+                    text: _('Close'),
+                    handler: function(){
+							store_category.reload();							
+                            win.close();
+                        }
+                    }
+            ],
+			defaults: { anchor:'95%'},
+			items: [
+				{
+					xtype : "fieldset",
+					title : _("Main"),
+					collapsible: true,
+					autoHeight : true,
+					items: [
+						{ xtype: 'hidden', name: 'id'},
+						field_box
+					]
+				}
+			]
+		});
 
+        if(rec){
+            var ff = form_category.getForm();
+            ff.loadRecord( rec );
+            title = 'Edit form';
+        }
+        
+        win = new Ext.Window({
+            title: _(title),
+            width: 700,
+            autoHeight: true,
+            items: form_category
+        });
+        win.show();     
+    };
+
+
+
+
+    var btn_form_category = new Ext.Toolbar.Button({
+        text: _('Fields'),
+        icon:'/static/images/icons/detail.png',
+        cls: 'x-btn-text-icon',
+        disabled: true,
+        handler: function() {
+            var sm = grid_categories.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                edit_form_category(sel);
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));    
+            };			
+        }
+    });
+	
     var btn_admin_category = new Ext.Toolbar.Button({
         text: _('Admin'),
         icon:'/static/images/icons/user.gif',
@@ -879,6 +1028,7 @@
                 btn_edit_category,
                 btn_delete_category,
                 '->',
+				btn_form_category,
 				btn_admin_category
         ]       
     }); 
@@ -896,6 +1046,7 @@
                 }else{
                     btn_delete_category.enable();
                     btn_edit_category.disable();
+					btn_form_category.disable();
 					btn_admin_category.disable();
                 }
             }

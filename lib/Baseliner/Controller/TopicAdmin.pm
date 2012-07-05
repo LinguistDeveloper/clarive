@@ -405,4 +405,53 @@ sub list_categories_admin : Local {
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
+
+sub list_fields : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $cnt;
+    my @rows;
+
+    my $rows = $c->model('Baseliner::BaliFieldsCategory')->search(undef, {orderby => ['id ASC']});
+
+                                                                        
+    if($rows){
+        while( my $rec = $rows->next ) {
+            push @rows, {
+                         id      => $rec->id,
+                         name    => $rec->name
+                     };             
+
+        }
+    }
+    $cnt = $#rows + 1 ;
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->forward('View::JSON');
+}
+
+sub update_fields : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $id_category = $p->{id};
+    my @ids_field = _array $p->{fields};
+    
+
+    my $category = $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $id_category} );
+    if($category->count > 0){
+        $category->delete;
+    }
+    
+    foreach my $id_field (@ids_field){
+        my $fields_category = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
+                                                                                id_category => $id_category,
+                                                                                id_field    => $id_field
+        });
+    }    
+
+    $c->stash->{json} = { success => \1, msg=>_loc('fields added') };
+
+    $c->forward('View::JSON');    
+}
+
 1;

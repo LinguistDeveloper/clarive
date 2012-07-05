@@ -24,7 +24,7 @@
         displayField: 'category_name',
         store: store_category,
         allowBlank: false,
-        hidden: rec.fields_form.hide_category,
+        hidden: rec.fields_form.show_category  ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){
                 combo_status.clearValue();
@@ -55,7 +55,7 @@
         hiddenName: 'status_new',
         displayField: 'name',
         valueField: 'id',
-        hidden: rec.fields_form.hide_status,
+        hidden: rec.fields_form.show_status ? false : true,
         //disabled: true,
         store: store_category_status
     });     
@@ -290,7 +290,7 @@
         displayField: 'name',
         valueField: 'id',
         store: store_priority,
-        hidden: rec.fields_form.hide_priority,
+        hidden: rec.fields_form.show_priority ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){
                 load_txt_values_priority(rec);
@@ -357,7 +357,7 @@
 
     var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid } });
     var topic_box = new Baseliner.model.Topics({
-        hidden: rec.fields_form.hide_topics,
+        hidden: rec.fields_form.show_topics ? false : true,
         store: topic_box_store
     });
     topic_box_store.on('load',function(){
@@ -369,7 +369,7 @@
     });
     
     var label_box = new Baseliner.model.Labels({
-        hidden: rec.fields_form.hide_labels,
+        hidden: rec.fields_form.show_labels ? false : true,
         store: label_box_store 
     });
 
@@ -383,7 +383,7 @@
     });
     
     var user_box = new Baseliner.model.Users({
-        hidden: rec.fields_form.hide_assign_to,
+        hidden: rec.fields_form.show_assign_to ? false : true,
         store: user_box_store 
     });
     
@@ -429,7 +429,7 @@
         layout: 'form',
         enableDragDrop: true,
         border: false,
-        hidden: rec.fields_form.hide_projects,
+        hidden: rec.fields_form.show_projects ? false : true,
         //style: 'border-top: 0px',
         items: [ project_box ]
     });
@@ -438,7 +438,7 @@
         layout: 'form',
         enableDragDrop: true,
         border: false,
-        hidden: rec.fields_form.hide_commits,
+        hidden: rec.fields_form.show_commits ? false : true,
         //style: 'border-top: 0px',
         items: [ commit_box ]
     });
@@ -471,7 +471,7 @@
                         width: '100%',
                         height: 30,
                         allowBlank: false,
-                        hidden: rec.fields_form.hide_title
+                        hidden: rec.fields_form.show_title ? false : true
                     },
                     { xtype: 'hidden', name: 'txtcategory_old' },
                     combo_category,
@@ -502,7 +502,7 @@
                         xtype: 'panel',
                         border: false,
                         layout: 'form',
-                        hidden: rec.fields_form.hide_files,
+                        hidden: rec.fields_form.show_files ? false : true,
                         items: [
                             filelist,
                             filedrop
@@ -510,7 +510,7 @@
                         fieldLabel: _('Files')
                     },
                     {   xtype:'panel', layout:'fit',
-                        hidden: rec.fields_form.hide_description,
+                        hidden: rec.fields_form.show_description ? false : true,
                         items: [ //this panel is here to make the htmleditor fit
                             {
                                 xtype:'htmleditor',
