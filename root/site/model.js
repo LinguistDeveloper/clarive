@@ -19,7 +19,7 @@ Baseliner.store.AllProjects = function(c) {
         baseParams: {},
         id: 'id', 
         url: '/project/all_projects',
-        fields: ['id','ns','name','description'] 
+        fields: ['mid','ns','name','description'] 
      }, c));
 };
 Ext.extend( Baseliner.store.AllProjects, Ext.data.JsonStore );
@@ -50,7 +50,7 @@ Baseliner.model.Projects = function(c) {
         name: 'projects',
         displayField: 'name',
         hiddenName: 'projects',
-        valueField: 'id',
+        valueField: 'mid',
         tpl: '<tpl for="."><div class="x-combo-list-item">{name} - {description}</div></tpl>',
         displayFieldTpl: tpl2,
         value: '/',

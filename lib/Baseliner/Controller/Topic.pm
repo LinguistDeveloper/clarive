@@ -142,7 +142,6 @@ sub list : Local {
     if($p->{id_project}){
         my @topics_project = map {$_->{from_mid}} $c->model('Baseliner::BaliMasterRel')->search({ to_mid=>$p->{id_project}, collection =>'bali_topic' }, {join => ['master_from']})->hashref->all;
         $where->{topic_mid} = \@topics_project;
-        _log ">>>>>>>>>>>>>>>>>>: " . $p->{id_project};
     }    
     
     # SELECT GROUP_BY MID:
@@ -183,30 +182,6 @@ sub list : Local {
             projects => [ keys $projects{$mid} ],
             };
     }
-
-        #push @rows, {
-        #    id      => $data->{id},
-        #    title   => $data->{title},
-        #    #description => $data->{description},
-        #    created_on  => $data->{created_on},
-        #    created_by  => $data->{created_by},
-        #    numcomment  => $data->{numcomment},
-        #    category    => $data->{id_category} ? [$data->{id_category}] : '',
-        #    category_color => $data->{category_color},
-        #    namecategory    => $data->{category_name} ? [$data->{category_name}] : '',
-        #    labels      => \@labels,
-        #    projects    => \@projects,
-        #    status      => $data->{category_status},
-        #    status_name      => $data->{category_status_name},
-        #    status_letter      => $data->{status},
-        #    is_closed => ( $data->{status} eq 'C' ? \1 : \0 ),
-        #    priority    => $data->{priority},
-        #    response_time_min   => $data->{response_time_min},
-        #    expr_response_time  => $data->{expr_response_time},
-        #    deadline_min    => $data->{deadline_min},
-        #    expr_deadline   => $data->{expr_deadline}
-        #};
-    
 
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
@@ -269,6 +244,14 @@ sub json : Local {
     my @topics = map { $_->mid } 
         $topic->topics->search( undef, { select=>[qw(mid)],
         order_by => { '-asc' => 'mid' } } )->all;
+    
+    ######################################################################################### 
+    #Preguntar por el formulario de configuracion;
+    my $id_category = $topic->id_category;    
+    my $field_hash;
+    map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category}, {prefetch => ['fields']})->hashref->all;
+
+    ##########################################################################################
         
     my $ret = {
         title              => $topic->title,
@@ -284,7 +267,8 @@ sub json : Local {
         response_time_min  => $topic->response_time_min,
         expr_response_time => $topic->expr_response_time,
         deadline_min       => $topic->deadline_min,
-        expr_deadline      => $topic->expr_deadline
+        expr_deadline      => $topic->expr_deadline,
+        fields_form        => $field_hash
     };
     $ret->{category_name} = try { $topic->categories->name } catch {''};
     $ret->{status_name} = try { $topic->status->name } catch {''};
@@ -295,13 +279,41 @@ sub json : Local {
     $c->forward('View::JSON');
 }
 
+sub new_topic : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    
+    ######################################################################################### 
+    #Preguntar por el formulario de configuracion;
+    # my $id_category = $p->{new_category_id};
+    
+    my $id_category = $p->{new_category_id};
+    my $field_hash;
+    map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
+    
+    ##########################################################################################
+
+    
+        
+    my $ret = {
+        new_category_id    => $p->{new_category_id},
+        new_category_name  => $p->{new_category_name},
+        fields_form        => $field_hash
+    };
+    
+    $c->stash->{json} = $ret;
+    $c->forward('View::JSON');
+}
+
 sub view : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid} || $p->{action};
+    my $id_category;
     
     if($topic_mid){
         my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
+        $id_category = $topic->id_category;
         $c->stash->{title} = $topic->title;
         $c->stash->{topic_mid} = $topic->mid;
         $c->stash->{created_on} = $topic->created_on;
@@ -344,14 +356,16 @@ sub view : Local {
             order_by => { '-asc' => 'created_on' } } )->all;
         $c->stash->{files} = @files ? \@files : []; 
     }else{
+        $id_category = $p->{categoryId};
         $c->stash->{title} = '';
         $c->stash->{created_on} = '';
         $c->stash->{created_by} = '';
         $c->stash->{deadline} = '';  # TODO
         $c->stash->{status} = '';
         $c->stash->{description} = '';        
-        $c->stash->{category} = $p->{categoryId};
+        $c->stash->{category} = $id_category;
         $c->stash->{category_color} = '#444';
+        $c->stash->{priority} = '';
         $c->stash->{forms} = '';
         $c->stash->{topic_mid} = '';
         $c->stash->{swEdit} = $p->{swEdit};
@@ -359,10 +373,17 @@ sub view : Local {
         $c->stash->{comments} = '';
         $c->stash->{ii} = $p->{ii};
         $c->stash->{files} = []; 
-        $c->stash->{topics} = []; 
+        $c->stash->{topics} = [];
+        $c->stash->{projects} = [];
+        $c->stash->{labels} = [];
+        $c->stash->{users} = [];
     }
 
     if( $p->{html} ) {
+        #my @fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
+        #$c->stash->{fields} = @fields ? \@fields : [];
+        map { $c->stash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
+        
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
         $c->stash->{template} = '/comp/topic/topic_main.js';
@@ -504,6 +525,10 @@ sub list_category : Local {
 
                 my $type = $r->is_changeset ? 'C' : $r->is_release ? 'R' : 'N';
                 
+                my @fields = map { $_->id_field } 
+                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( id_category => $r->id, {order_by=> {'-asc'=> 'id_field'}} )->all;        
+
+                
                 push @rows,
                   {
                     id          => $r->id,
@@ -513,7 +538,8 @@ sub list_category : Local {
                     type         => $type,
                     category_name => $r->name,
                     description => $r->description,
-                    statuses    => \@statuses
+                    statuses    => \@statuses,
+                    fields      => \@fields
                   };
             }  
         }
