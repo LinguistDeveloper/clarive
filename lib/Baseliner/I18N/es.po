@@ -2208,7 +2208,7 @@ msgstr "Naturaleza del proyecto (Ejemplos: J2EE, .NET)"
 
 # root/comp/Project_grid.js (209)
 msgid "A brief description of the project"
-msgstr "A breve descripción del proyecto"
+msgstr "Una breve descripción del proyecto"
 
 # root/comp/Project_grid.js (247)
 msgid "Create project"
@@ -2372,7 +2372,7 @@ msgstr "Debes salvar una cadea primero"
 
 # root/comp/chain_grid.js (548)
 msgid "A brief description of the service"
-msgstr "A breve descripcion del servicio"
+msgstr "Una breve descripcion del servicio"
 
 # root/comp/chain_grid.js (621)
 msgid "Do you want to save changes?"
@@ -2903,6 +2903,89 @@ msgstr "Prioridades borradas"
 
 msgid "Error deleting Priorities"
 msgstr "Error borrando prioridades"
+
+msgid "Are you sure you want to delete the priorities selected?"
+msgstr "¿Seguro que quiere borrar las prioridades seleccionadas?"
+
+msgid "Changeset"
+msgstr "Cambio"
+
+msgid "Edit status"
+msgstr "Editar estado"
+
+msgid "Create status"
+msgstr "Crear estado"
+
+msgid "Name of status"
+msgstr "Nombre del estado"
+
+msgid "A brief description of the status"
+msgstr "Una breve descripción del proyecto"
+
+msgid "Status added"
+msgstr "Estado creado"
+
+msgid "Status name already exists, introduce another status name"
+msgstr "Estado ya existe, introduce otro estado"
+
+msgid "Error adding Status: %1"
+msgstr "Error creando estado"
+
+msgid "Status modified"
+msgstr "Estado modificado"
+
+msgid "Error modifying Status: %1"
+msgstr "Error modificando estado: %1"
+
+msgid "Statuses deleted"
+msgstr "Estados borrados"
+
+msgid "Error deleting Statuses"
+msgstr "Error borrando estados"
+
+msgid "Are you sure you want to delete the statuses selected?"
+msgstr "¿Seguro que quiere borrar los estados seleccionados?"
+
+msgid "Create fields"
+msgstr "Crear campos"
+
+msgid "Edit fields"
+msgstr "Editar campos"
+
+msgid "title"
+msgstr "Título"
+
+msgid "category"
+msgstr "Categoría"
+
+msgid "status"
+msgstr "Estado"
+
+msgid "priority"
+msgstr "Prioridad"
+
+msgid "projects"
+msgstr "Proyectos"
+
+msgid "assign_to"
+msgstr "Asignar a"
+
+msgid "labels"
+msgstr "Etiquetas"
+
+msgid "topics"
+msgstr "Tópicos"
+
+msgid "commits"
+msgstr "Commits"
+
+msgid "files"
+msgstr "Ficheros"
+
+msgid "description"
+msgstr "Descripción"
+
+
 
 
 
