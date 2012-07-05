@@ -644,9 +644,9 @@ Baseliner.Calendar =  function(c) {
 };
 
 Baseliner.calendar_events = function( start, end, cb ) {
-   Baseliner.ajaxEval('/events.js', { start: start, end: end }, function(res){
+   /* Baseliner.ajaxEval('/events.js', { start: start, end: end }, function(res){
         cb( res.data ); 
-   });
+   }); */
 };
 
 /* 

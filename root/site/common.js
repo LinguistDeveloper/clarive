@@ -484,3 +484,8 @@ Baseliner.merge = function() {
     return target;
 };
 
+Baseliner.openLogTab = function(id_job,title) {
+    if( id_job!=undefined ) {
+        Baseliner.addNewTabComp("/job/log/list?id_job="+id_job, title);
+    }
+};

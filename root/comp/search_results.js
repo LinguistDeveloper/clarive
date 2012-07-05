@@ -1,6 +1,6 @@
 (function(params){
     var query = params.query;
-    var panel = new Ext.Panel({ title: _('Search: %1', query ) });
+    var panel = new Ext.Panel({ title: _('Search: %1', query ), style:{ margin:'10px' } });
 
     Baseliner.ajaxEval( '/search/providers', {}, function(res) {
         var provs = res.providers;
@@ -15,8 +15,8 @@
                         if( r.type == 'log' ) {
                             url = 'javascript:Baseliner.openLogTab(' + r.url[0] + ", '" + r.url[1] + "' )";
                         }
-                        var block = '<div id="search-result-block">'
-                            + '<div id="search-result-block-title">';
+                        var block = '<div id="boot"><div id="search-result-block">'
+                            + '<div id="search-result-block-title"><h4>';
                         if( url != undefined ) {
                             block += res_query.name + ": " +  '<a href="' + url + '">' + r.title + '</a>';
                         } else {
@@ -24,8 +24,8 @@
                         }
 
                         block += '</div>'
-                            +  r.text
-                            + '</div>'
+                            +  '<pre>' + r.text + '</pre>'
+                            + '</div></div>'
                             ;
                         panel.add( { xtype: 'container', html: block } );
                         panel.doLayout();
