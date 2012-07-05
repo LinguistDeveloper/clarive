@@ -1487,7 +1487,7 @@
                                 ,items:[
                                         {
                                             xtype:'fieldset',
-                                            title: 'Response time',
+                                            title: _('Response time'),
                                             autoHeight:true,
                                             defaults: {width: 40},
                                             defaultType: 'textfield',
@@ -1507,7 +1507,7 @@
                                 ,items:[
                                         {
                                             xtype:'fieldset',
-                                            title: 'Deadline',
+                                            title: _('Deadline'),
                                             autoHeight:true,
                                             defaults: {width: 40},
                                             defaultType: 'textfield',

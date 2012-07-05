@@ -2835,3 +2835,84 @@ msgstr "Nuevo: %1"
 msgid "Copy of %1"
 msgstr "Copia de %1"
 
+msgid "Priorities"
+msgstr "Prioridades"
+
+msgid "Admin Topics"
+msgstr "Administración Tópicos"
+
+msgid "Fields"
+msgstr "Campos"
+
+msgid "Priority"
+msgstr "Prioridad"
+
+msgid "Response time"
+msgstr "Tiempo respuesta"
+
+msgid "Deadline"
+msgstr "Plazo límite"
+
+msgid "Create priority"
+msgstr "Crear prioridad"
+
+msgid "Months"
+msgstr "Meses"
+
+msgid "Weeks"
+msgstr "Semanas"
+
+msgid "Days"
+msgstr "Días"
+
+msgid "Hours"
+msgstr "Horas"
+
+msgid "Minutes"
+msgstr "Minutos"
+
+msgid "Name of priority"
+msgstr "Nombre de la prioridad"
+
+msgid "Priority added"
+msgstr "Prioridad creada"
+
+msgid "Edit priority"
+msgstr "Editar prioridad"
+
+msgid "Priority added"
+msgstr "Prioridad creada"
+
+msgid "Priority name already exists, introduce another priority name"
+msgstr "Prioridad ya existe, introduce otra prioridad"
+
+msgid "Error adding Priority: %1"
+msgstr "Error creando prioridad: %1"
+
+msgid "Priority modified"
+msgstr "Prioridad modificada"
+
+msgid "Error modifying Priority: %1"
+msgstr "Error modificando prioridad: %1"
+
+msgid "Priority modified"
+msgstr "Prioridad modificada"
+
+msgid "Priorities deleted"
+msgstr "Prioridades borradas"
+
+msgid "Error deleting Priorities"
+msgstr "Error borrando prioridades"
+
+
+
+
+
+
+
+
+
+
+
+
+
