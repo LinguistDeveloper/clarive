@@ -383,7 +383,7 @@ sub comment : Local {
             
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
-                $topic = master_new 'bali_post' => sub { 
+                $topic = master_new 'bali_post' => substr($text,10) => sub { 
                     my $mid = shift;
                     my $post = $c->model('Baseliner::BaliPost')->create(
                         {   mid   => $mid,
@@ -628,7 +628,7 @@ sub update_project : Local {
             $mid = $project->mid
         }
         else{
-            my $project_mid = master_new 'bali_project' => sub {
+            my $project_mid = master_new 'bali_project' => $project->name => sub {
                 my $mid = shift;
                 $project->mid($mid);
                 $project->update();
@@ -998,7 +998,7 @@ sub upload : Local {
                 }else{
                 }
                 
-                master_new 'bali_file', sub {
+                master_new 'bali_file', $filename, sub {
                     my $mid = shift;
                     my $file = $c->model('Baseliner::BaliFileVersion')->create(
                         {   mid   => $mid,

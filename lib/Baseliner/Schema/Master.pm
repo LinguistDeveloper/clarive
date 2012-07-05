@@ -16,7 +16,7 @@ Then you can use it like this:
     $row->parents; # all parents
     $row->master;  # my master row
 
-    master_new 'post' => sub { my $mid = shift;
+    master_new 'post' => 'nanana' => sub { my $mid = shift;
         $row->add_to_posts({ text=>'nanana', created_by=>$c->username, mid=>$mid }, { rel_type=>'topic_post' });
     };
 
