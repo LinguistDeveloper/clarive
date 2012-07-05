@@ -1,4 +1,6 @@
 (function(params){
+    if( params.rec == undefined ) params.rec = {};            // master row record
+    if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
     var btn_form_ok = new Ext.Button({
         text: _('Accept'),
         icon:'/static/images/icons/save.png',
@@ -33,7 +35,11 @@
         ]
     });
     var fieldset = new Ext.form.FieldSet({
-        defaults: { anchor: '70%' },
+        defaults: { 
+           anchor: '70%',
+           msgTarget: 'under',
+           allowBlank: false
+        },
         style: { 'margin-top':'30px' },
         title: _(params.class),
         collapsible: true,
@@ -43,14 +49,16 @@
         url:'/ci/update',
         tbar: tb,
         defaults: {
+           allowBlank: false,
            anchor: '70%' 
         },
         bodyStyle:'padding: 10px 0px 0px 15px',
         items: [
             { xtype: 'container', html:_('New: %1', params.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
-            { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false },
+            { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name },
             Baseliner.combo_baseline({ value: params.bl || '*' }),
             { xtype: 'hidden', name:'collection', value: params.collection },
+            { xtype: 'hidden', name:'mid', value: params.rec.mid },
             fieldset
         ]
     });
@@ -62,5 +70,14 @@
             }
         });
     }
+    form.on('destroy', function(){
+        var g = params._parent_grid;
+        if( g != undefined ) {
+            var sm = g.getSelectionModel();
+            if( sm != undefined ) sm.clearSelections();
+            var s = g.getStore();
+            if( s!=undefined ) s.load();
+        }
+    });
     return form;
 })

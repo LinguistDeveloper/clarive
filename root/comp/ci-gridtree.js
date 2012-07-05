@@ -1,7 +1,8 @@
 (function(params){
-    //alert( JSON.stringify( params ) );
+    delete params['tab_index'];  // this comes from the tab data
     var ps = 30;
-    var record = Ext.data.Record.create([ 'mid','_id','_parent','_is_leaf','type', 'item','class','versionid','ts','tags','data','properties','icon','collection']);
+    var record = Ext.data.Record.create([ 'mid','_id','bl','_parent','_is_leaf',
+        'type', 'pretty_properties', 'name', 'item','class','versionid','ts','tags','data','properties','icon','collection']);
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/ci/gridtree',
@@ -26,15 +27,69 @@
         return false;
     };
 
+    var ci_edit = function(rec){
+        var data = store_ci.baseParams;
+        var classname = data.class ;
+        var collection = data.collection ;
+        var component = String.format('/ci/{0}.js' , collection );
+        Baseliner.add_tabcomp( '/ci/new.js', _('CI %1' , rec.name ), 
+            Ext.apply({
+                component: component,
+                _parent_grid: ci_grid,
+                mid: rec.mid,
+                rec: rec,
+                action: 'edit'
+            },
+            data) );
+    };
+
     var ci_create = function(){
         var data = store_ci.baseParams;
         var classname = data.class ;
         var collection = data.collection ;
         var component = String.format('/ci/{0}.js' , collection );
-        Baseliner.add_tabcomp( '/ci/new.js', _('New %1' , classname), Ext.apply({ component: component, action: 'add' }, data) );
+        var rec = {};
+        if (check_sm.hasSelection()) {
+           var sel = check_sm.getSelections();
+           rec = sel[0].data;
+           rec.name = _('Copy of %1', rec.name );
+        }
+        Baseliner.add_tabcomp( '/ci/new.js', _('New %1' , classname), 
+            Ext.apply({
+                component: component,
+                _parent_grid: ci_grid,
+                rec: rec,
+                action: 'add'
+            },
+            data) );
+    };
+
+    // Usage:   var checked = Baseliner.multi_check_data( check_sm, 'mid' );
+    Baseliner.multi_check_data = function(obj, field){
+       if (obj.hasSelection()) {
+           var sel = obj.getSelections();
+           var data = [];
+           for( var i=0; i<sel.length; i++ ) {
+               data.push( sel[i].data[field] );
+           }
+           return { count: data.length, data: data };
+       }
+       return { count: 0, data:[] };
     };
 
     var ci_delete = function(){
+        var checked = Baseliner.multi_check_data( check_sm, 'mid' );
+        if ( checked.count > 0 ) {
+            Baseliner.ajaxEval( '/ci/delete', { mids: checked.data }, function(res) {
+                if( res.success ) {
+                    Baseliner.message(_('CI'), res.msg );
+                    check_sm.clearSelections();  // otherwise it refreshes current selected nodes
+                    ci_grid.getStore().load();
+                } else {
+                    Ext.Msg.alert( _('CI'), res.msg );
+                }
+            });
+        }
     };
 
     /*  Renderers */
@@ -57,6 +112,10 @@
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value == undefined ) return '';
         return '<pre style="font-size:9px">' + value + '</pre>';
+    };
+    var render_datadiv = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( value == undefined ) return '';
+        return '<code>' + value + '</code>'; //<img src="/static/images/icons/expandall.gif" onclick="Baseliner.ci_data_win(' + rec.data.mid + ')" />';
     };
     var render_mapping_long = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value == undefined ) return '';
@@ -134,11 +193,12 @@
             { header: _('Collection'), width: 160, dataIndex: 'collection' },
             { header: _('ID'), width: 30, dataIndex: 'mid' },
             { header: _('Class'), hidden: true, width: 160, dataIndex: 'class' },
+            { header: _('Baseline'), width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl },
             { header: _('Version'), width: 50, dataIndex: 'versionid' },
             { header: _('Timestamp'), width: 80, dataIndex: 'ts' },
             { header: _('Tags'), width: 140, dataIndex: 'tags', renderer: render_tags },
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties },
-            { header: _('Data'), hidden: false, width: 250, dataIndex: 'data', renderer: render_mapping_long }
+            { header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv }
         ],
         bbar: new Ext.ux.maximgb.tg.PagingToolbar({
             store: store_ci,
@@ -149,7 +209,12 @@
         })
     });
 
+    ci_grid.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
+        ci_edit( grid.getStore().getAt(rowIndex).data );
+    });
+
     // Lifecycle tree node listener on click
+    /*  TODO needs to setTimeout on dblclick
     var click_foo = function(n, ev){ 
         if( ! ci_grid.isVisible() ) return;
         var data = n.attributes.data;
@@ -165,6 +230,7 @@
     ci_grid.on('destroy', function(){
         Baseliner.lifecycle.removeListener('click', click_foo );
     });
+    */
 
     store_ci.on('beforeload', function(s,obj) {
         if( store_ci.additional_params ) {
