@@ -309,9 +309,11 @@ sub view : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid} || $p->{action};
+    my $id_category;
     
     if($topic_mid){
         my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
+        $id_category = $topic->id_category;
         $c->stash->{title} = $topic->title;
         $c->stash->{topic_mid} = $topic->mid;
         $c->stash->{created_on} = $topic->created_on;
@@ -354,13 +356,14 @@ sub view : Local {
             order_by => { '-asc' => 'created_on' } } )->all;
         $c->stash->{files} = @files ? \@files : []; 
     }else{
+        $id_category = $p->{categoryId};
         $c->stash->{title} = '';
         $c->stash->{created_on} = '';
         $c->stash->{created_by} = '';
         $c->stash->{deadline} = '';  # TODO
         $c->stash->{status} = '';
         $c->stash->{description} = '';        
-        $c->stash->{category} = $p->{categoryId};
+        $c->stash->{category} = $id_category;
         $c->stash->{category_color} = '#444';
         $c->stash->{priority} = '';
         $c->stash->{forms} = '';
@@ -377,6 +380,10 @@ sub view : Local {
     }
 
     if( $p->{html} ) {
+        #my @fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
+        #$c->stash->{fields} = @fields ? \@fields : [];
+        map { $c->stash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
+        
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
         $c->stash->{template} = '/comp/topic/topic_main.js';

@@ -30,7 +30,10 @@
 </script>
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
     <div class="grid_24">
+
 % my $id = _nowstamp;
+
+%if($c->stash->{show_labels}){
 % if( _array( $labels ) ) {        
         <div style="margin-bottom:25px;">
 % foreach my $label ( _array( $labels ) ) {
@@ -46,20 +49,27 @@
 % }
         </div>
 % }
+% }
           <table class="table table-bordered table-condensed">
             <tbody>
               <tr>
+%if($c->stash->{show_category}){                
                 <th width="1" style="vertical-align: middle">
                     <span class="badge" style="background: <% $category_color %>"><% $category %> #<% $topic_mid %></span>
                 </th>
+%}                
+%if($c->stash->{show_title}){
                 <th>
                     <h3><% $title %></h3>
                 </th>
+%}
               </tr>
+%if($c->stash->{show_status}){
               <tr>
                 <th><% _loc('Status') %>:</th>
                 <td><% $status || '&nbsp;' %></td>
               </tr>
+%}
               <tr>
                 <th><% _loc('Created By') %>:</th>
                 <td><% $created_by || '&nbsp;' %></td>
@@ -68,6 +78,7 @@
                 <th><% _loc('Created On') %>:</th>
                 <td><% $created_on ? $created_on->dmy . ' ' . $created_on->hms : '&nbsp;' %></td>
               </tr>
+%if($c->stash->{show_priority}){
               <tr>
                 <th><% _loc('Priority') %>:</th>
                 <td><% $priority || '&nbsp;' %></td>
@@ -75,15 +86,19 @@
               <tr>
                 <th><% _loc('Deadline') %>:</th>
                 <td><% $deadline ? $deadline->dmy . ' ' . $deadline->hms : '&nbsp;' %></td>
-              </tr>              
+              </tr>
+%}
+%if($c->stash->{show_description}){
               <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>
               </tr>
               <tr>
                 <td colspan="2"><% $description || '&nbsp;' %></td>
               </tr>
+%}              
               <tr>
                 <td colspan="2">
+%if($c->stash->{show_projects}){                    
 % if( _array( $projects ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
@@ -99,6 +114,9 @@
 % }
                     </ul>
 % }
+% }
+
+%if($c->stash->{show_assign_to}){                    
 % if( _array( $users ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
@@ -114,6 +132,10 @@
 % }
                     </ul>
 % }
+% }
+
+
+%if($c->stash->{show_topics}){                    
 % if( _array( $topics ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
@@ -131,6 +153,10 @@
 % }
                     </ul>
 % }
+% }
+
+
+%if($c->stash->{show_files}){                    
 % if( _array( $files ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
@@ -155,7 +181,8 @@
                     <p>
 %#                    <div id="uploader_<% $ii %>"></div>
                     </p>
-                
+
+%}                
                 </td>
               </tr>
             </tbody>
