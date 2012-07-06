@@ -37,9 +37,6 @@ sub update_category : Local {
     
     my $assign_type = sub {
         my ($category) = @_;
-        
-        _log "DENTRO TTTTTTTYYYYYYYYYYYYPPPPPPPPPPEEEEEEEEEEEE:   " . '#' . $type . '#';
-        
         given ($type) {
             when ('R'){
                 $category->is_release('1');
@@ -62,7 +59,7 @@ sub update_category : Local {
                 my $row = $c->model('Baseliner::BaliTopicCategories')->search({name => $p->{name}})->first;
                 if(!$row){
                     my $category = $c->model('Baseliner::BaliTopicCategories')->create({name  => $p->{name}, description=> $p->{description} ? $p->{description}:''});
-                    $assign_type ->( $category, $type );
+                    $assign_type ->( $category );
                     $category->update;
                     
                     if($idsstatus){
@@ -91,7 +88,7 @@ sub update_category : Local {
                 my $category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
                 $category->name( $p->{name} );
                 $category->description( $p->{description} );
-                $assign_type ->( $category, $type );
+                $assign_type ->( $category );
                 $category->update();
                 
                 my $rs = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')->search({ id_category => $id_category });
