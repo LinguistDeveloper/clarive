@@ -857,10 +857,10 @@
 		Baseliner.model.Fields = function(c) {
 			//var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
 			var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-				'<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+				'<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.name)]}</span></span>',
 				'&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
 			var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-				'<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+				'<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.name)]}</span></span>',
 				'</tpl>' );
 			Baseliner.model.Fields.superclass.constructor.call(this, Ext.apply({
 				allowBlank: true,
@@ -891,7 +891,7 @@
 	
 	var edit_form_category = function(rec) {
         var win;
-        var title = 'Form category';
+        var title = 'Create fields';
 		
 		var field_box = new Baseliner.model.Fields({
 			store: field_box_store
@@ -956,7 +956,7 @@
         if(rec){
             var ff = form_category.getForm();
             ff.loadRecord( rec );
-            title = 'Edit form';
+            title = 'Edit fields';
         }
         
         win = new Ext.Window({
@@ -1494,7 +1494,7 @@
                                 ,items:[
                                         {
                                             xtype:'fieldset',
-                                            title: 'Response time',
+                                            title: _('Response time'),
                                             autoHeight:true,
                                             defaults: {width: 40},
                                             defaultType: 'textfield',
@@ -1514,7 +1514,7 @@
                                 ,items:[
                                         {
                                             xtype:'fieldset',
-                                            title: 'Deadline',
+                                            title: _('Deadline'),
                                             autoHeight:true,
                                             defaults: {width: 40},
                                             defaultType: 'textfield',
