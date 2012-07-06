@@ -273,9 +273,9 @@
             //},
             btn_detail,
             btn_edit,
-            btn_form_ok,
             '-',
-            btn_comment
+            btn_comment,
+            btn_form_ok
             //'-',
             //_('Estado') + ': ',
             //{ xtype: 'combo', value: 'New' },

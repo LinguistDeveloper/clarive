@@ -688,7 +688,7 @@
                 var attr = n.attributes;
 				if(attr.data){
 					if( typeof attr.data.id_project == 'undefined' ) {  // is a project?
-						Baseliner.message( _('Error'), _('Node is not a project'));
+						//Baseliner.message( _('Error'), _('Node is not a project'));
 					} else {
 						add_node(n);
 					}
@@ -697,7 +697,7 @@
 					if(n.parentNode.attributes.id == 'L'){
 						add_label(n);
 					}else{
-						Baseliner.message( _('Error'), _('Node is not a label'));
+						//Baseliner.message( _('Error'), _('Node is not a label'));
 					}
 					
 				}
@@ -766,6 +766,10 @@
 			});
 
 	var tree_filters = new Ext.tree.TreePanel({
+						region : 'east',
+						width: 250,
+						split: true,
+						collapsible: true,
         tbar: [ button_create_view, button_delete_view ],
 		dataUrl: "topic/filters_list",
 		split: true,
@@ -827,16 +831,7 @@
 							grid_topics
 						]
 				    },   
-					{
-						region : 'east',
-						width: 250,
-						split: true,
-						collapsible: true,
-						items: [
-							tree_filters
-	
-						]
-					}
+                    tree_filters
         ]
     });
     

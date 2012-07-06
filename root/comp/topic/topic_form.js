@@ -493,7 +493,7 @@
                     combo_category,
                     { xtype: 'hidden', name: 'status', value: rec.status },
                     combo_status,
-                    custom_form_container,
+                    release_box,
                     combo_priority,
                     {
                         xtype:'textfield',
@@ -513,7 +513,6 @@
                     { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
                     pb_panel,
                     user_box,
-                    release_box,
                     topic_box,
                     cb_panel,
                     label_box,
@@ -528,6 +527,7 @@
                         ],
                         fieldLabel: _('Files')
                     },
+                    custom_form_container,
                     {   xtype:'panel', layout:'fit',
                         hidden: rec.fields_form.show_description ? false : true,
                         items: [ //this panel is here to make the htmleditor fit
