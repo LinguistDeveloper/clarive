@@ -355,6 +355,18 @@
     };
     Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
 
+    var release_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid } });
+    var release_box = new Baseliner.model.Topics({
+        fieldLabel: _('Release'),
+        singleMode: true,
+        hidden: rec.fields_form.show_release ? false : true,
+        store: release_box_store
+    });
+    release_box_store.on('load',function(){
+        release_box.setValue( rec.topics ) ;            
+    });
+
+
     var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid } });
     var topic_box = new Baseliner.model.Topics({
         hidden: rec.fields_form.show_topics ? false : true,
@@ -452,7 +464,6 @@
         buttons: [ ],
         defaults: { anchor:'70%'},
         items: [
-            label_box,
             {
                 xtype : "fieldset",
                 title : _("Main"),
@@ -496,8 +507,10 @@
                     { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
                     pb_panel,
                     user_box,
+                    release_box,
                     topic_box,
                     cb_panel,
+                    label_box,
                     {
                         xtype: 'panel',
                         border: false,
