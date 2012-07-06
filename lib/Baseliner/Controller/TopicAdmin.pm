@@ -137,6 +137,7 @@ sub list_status : Local {
                 id          => $r->id,
                 name        => $r->name,
                 description => $r->description,
+                bl          => $r->bl,
                 type        => $r->type
               };
         }  
@@ -157,7 +158,7 @@ sub update_status : Local {
             try{
                 my $row = $c->model('Baseliner::BaliTopicStatus')->search({name => $p->{name}})->first;
                 if(!$row){
-                    my $status = $c->model('Baseliner::BaliTopicStatus')->create({name  => $p->{name}, description=> $p->{description}, type=> $p->{type}});
+                    my $status = $c->model('Baseliner::BaliTopicStatus')->create({name  => $p->{name}, bl=>$p->{bl}, description=> $p->{description}, type=> $p->{type}});
                     $c->stash->{json} = { msg=>_loc('Status added'), success=>\1, status_id=> $status->id };
                 }
                 else{
@@ -430,12 +431,32 @@ sub list_fields : Local {
     $c->forward('View::JSON');
 }
 
+sub list_forms : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my @rows;
+
+    my $dir = _dir( $c->path_to('root/forms') );
+    if( $dir ) {
+        for my $f ( $dir->children ) {
+            my $name = $f->basename;
+            ($name) = $name =~ m{^(.*)(\..*?)$};
+            push @rows, {
+                form_name => $name,
+                form_path => "$f",
+            };
+        }
+    }
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};
+    $c->forward('View::JSON');
+}
+
 sub update_fields : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $id_category = $p->{id};
     my @ids_field = _array $p->{fields};
-    
 
     my $category = $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $id_category} );
     if($category->count > 0){
@@ -448,6 +469,12 @@ sub update_fields : Local {
                                                                                 id_field    => $id_field
         });
     }    
+
+    if( $p->{forms} ) {
+        my $forms = join ',', _array $p->{forms};
+        my $row = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
+        $row->update({ forms=>$forms }) if ref $row;
+    }
 
     $c->stash->{json} = { success => \1, msg=>_loc('fields added') };
 

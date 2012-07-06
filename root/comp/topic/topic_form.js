@@ -442,6 +442,9 @@
         //style: 'border-top: 0px',
         items: [ commit_box ]
     });
+   var custom_form_container = new Ext.Container({ 
+      hidden: true
+   });
     
     var form_topic = new Ext.FormPanel({
         frame: false,
@@ -477,6 +480,7 @@
                     combo_category,
                     { xtype: 'hidden', name: 'status', value: rec.status },
                     combo_status,
+                    custom_form_container,
                     combo_priority,
                     {
                         xtype:'textfield',
@@ -557,6 +561,33 @@
         store_category_status.load({
                 params:{ 'categoryId': rec.category, 'statusId': rec.status, 'statusName': rec.status_name }
         });        
+    }
+
+    if( rec.forms != undefined ) {
+        var f = rec.forms;
+        for( var i=0; i<f.length; i++ ) {
+           var fieldset = new Ext.form.FieldSet({
+                defaults: { 
+                   anchor: '70%',
+                   msgTarget: 'under',
+                   allowBlank: false
+                },
+                style: { 'margin-top':'30px' },
+                title: _( f[i].form_name ),
+                collapsible: true,
+                autoHeight : true
+            });
+            Baseliner.ajaxEval( f[i].form_path, {}, function(res) {
+                if( res.xtype == 'fieldset' ) {
+                    custom_form_container.add( res ) ;
+                } else {
+                    fieldset.add( res );
+                    custom_form_container.add( fieldset) ;
+                }
+                if( ! custom_form_container.isVisible() ) custom_form_container.show();
+                form_topic.doLayout();
+            });
+        }
     }
 
     pb_panel.on( 'afterrender', function(){
