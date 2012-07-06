@@ -10,8 +10,10 @@ has 'lc' => (
         # loads the lc.yaml file on initialization
         my $feature = Baseliner->features->find( file => __FILE__ );
         my $file = _file( $feature->root, '..', 'etc', 'lc.yaml' );    # TODO to config
-        open my $ff, '<', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
-        my $lc = _load join '', <$ff>;
+        open my $ff, '<:encoding(UTF-8)', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
+        my $fi = join '', <$ff>;
+        utf8::downgrade( $fi );
+        my $lc = _load( $fi ); 
         close $ff;
         # now from config
         my $ch = Baseliner->config->{lifecycle} || {};

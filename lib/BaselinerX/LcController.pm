@@ -213,32 +213,70 @@ sub changeset : Local {
     }
 
     # topic changes
+    my $where = { is_changeset => 1, rel_type=>'topic_project', to_mid=>$id_project };
+    $where->{bl} = $bl eq 'new' ? '*' : $bl;
     my @changes = $c->model('Baseliner::BaliTopic')->search(
-        { is_changeset => 1, rel_type=>'topic_project', to_mid=>124, bl=>$bl },
+        $where,
         { prefetch=>['categories','children','master'] }
     )->hashref->all;
     
-    push @tree, {
-        url  => '/lifecycle/repo',
-        icon => '/static/images/icons/topic_lc.png',
-        text => "[$_->{categories}{name} #$_->{mid}] $_->{title}",
-        leaf => \1,
-        data => {
-            bl    => $bl,
-            name  => $_->{title},
-            click => {
-                url   => '/topic/show',
-                type  => 'comp',
-                icon  => '/static/images/icons/topic.png',
-                title => "$_->{title}",
-            }
-          },
-    } for @changes;
-
-
+    for ( @changes ) { 
+        my $topicid = "$_->{categories}{name} #$_->{mid}";
+        push @tree, {
+            url  => '/lifecycle/repo',
+            icon => '/static/images/icons/topic_lc.png',
+            text => "[$topicid] $_->{title}",
+            leaf => \1,
+            menu => $self->cs_menu( $bl ),
+            data => {
+                bl    => $bl,
+                name  => $_->{title},
+                topic_mid => $_->{mid},
+                click => {
+                    url   => sprintf('/comp/topic/topic_main.js' ),
+                    type  => 'comp',
+                    icon  => '/static/images/icons/topic.png',
+                    title => "$topicid",
+                }
+              },
+        } 
+    }
 
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
+}
+
+sub cs_menu {
+    my ($self, $bl ) = @_;
+    return [] if $bl eq '*';
+    my @menu;
+    my $sha = ''; #try { $self->head->{commit}->id } catch {''};
+    push @menu,
+        {
+        text => 'Deploy',
+        eval => { url => '/comp/lifecycle/deploy.js', title => 'Deploy' },
+        icon => '/static/images/silk/arrow_right.gif'
+        };
+    1 and push @menu,
+        {
+        text => 'To Promote',
+        eval => { url => '/comp/lifecycle/promote.js', title => 'Promote' },
+        icon => '/static/images/silk/arrow_down.gif'
+        };
+    1 and push @menu,
+        {
+        text => 'Demote',
+        eval => { url => '/comp/lifecycle/demote.js', title => 'Demote' },
+        icon => '/static/images/silk/arrow_up.gif'
+        };
+    #push @menu,
+    #    {
+    #    text => 'Create Tag...',
+    #    eval => { url => '/comp/git/tag_commit.js', title => 'Create Tag...' },
+    #    icon => '/static/images/icons/tag.gif',
+    #    data => { sha => $sha },
+    #    };
+    \@menu;
 }
 
 sub repo : Local {

@@ -762,3 +762,41 @@ Baseliner.model.CICombo = function(c) {
 };
 Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 
+/* 
+     Baseliner.form components
+*/
+Baseliner.form = {};
+Baseliner.form.ComboList = function(c) {
+    if( c==undefined ) c={};
+    if( c.data==undefined ) c.data=[];
+    if( c.name==undefined ) c.name='combo_list';
+    if( c.valueField==undefined ) c.valueField=c.name;
+    if( c.displayField==undefined ) c.displayField=c.name;
+
+    var arr = [];
+    for( var i=0; i<c.data.length; i++) {
+        arr.push( [ c.data[i] ] );
+    }
+
+    var s=new Ext.data.SimpleStore({
+        fields: ['tipo_pet'],
+        data:[ arr ]
+    });
+    
+    Baseliner.form.ComboList.superclass.constructor.call(this, Ext.apply({
+            store: s,
+            displayField: 'combo_list',
+            valueField: 'combo_list',
+            name: 'combo_list',
+            typeAhead: true,
+            editable: true,
+            mode: 'local',
+            forceSelection: true,
+            triggerAction: 'all', 
+            fieldLabel: 'ComboList',
+            emptyText: '',
+            selectOnFocus: true
+    }, c));
+};
+Ext.extend( Baseliner.form.ComboList, Ext.form.ComboBox );
+

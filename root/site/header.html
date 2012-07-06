@@ -322,6 +322,13 @@ Ext.onReady(function(){
        
 });
         
+ setTimeout(function(){
+	Ext.get('loading').remove();
+	Ext.get('loading-mask').fadeOut({
+		remove:true
+	});
+ }, 2050);
+
     </script>
 
 <!-- TODO: No sería mala idea poder meter esto en las features -->

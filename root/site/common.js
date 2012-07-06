@@ -153,7 +153,7 @@ Baseliner.render_ns = function (val){
 
 Baseliner.render_bl = function (val){
     if( val == null || val == undefined ) return '';
-    if( val == '*' ) val = _('All');
+    if( val == '*' ) val = _('Common');
     return String.format('<b>{0}</b>', val );
 }
 

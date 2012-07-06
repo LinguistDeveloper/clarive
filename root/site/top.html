@@ -37,6 +37,12 @@
 % if( my $theme_dir = $c->stash->{theme_dir} ) {
     <link rel="stylesheet" type="text/css" href="/static<% $theme_dir %>/style.css" />
 % }
+
+    <div id="loading-mask"></div>
+    <div id="loading">
+      <div class="loading-indicator"><img src="/static/gui/icons/loading-balls.gif" style="margin-right:8px;" align="absmiddle"/><% _loc('Loading...') %></div>
+    </div>
+
     <!--script type="text/javascript" src="/static/ext/air/ext-air.js"></script-->
     <!-- link rel="stylesheet" type="text/css" href="/static/ext/air/resources/ext-air.css" /-->
 

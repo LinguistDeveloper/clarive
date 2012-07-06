@@ -321,7 +321,7 @@ sub view : Local {
     my $topic_mid = $p->{topic_mid} || $p->{action};
     my $id_category;
     
-    if($topic_mid){
+    if($topic_mid || $c->stash->{topic_mid} ){
         my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
         $id_category = $topic->id_category;
         $c->stash->{title} = $topic->title;
@@ -752,61 +752,7 @@ sub filters_list : Local {
         children    => \@views
     };   
     
-    my @labels; 
-
-    $row = $c->model('Baseliner::BaliLabel')->search();
-    
-    if($row){
-        while( my $r = $row->next ) {
-            push @labels, {
-                id  => $i++,
-                idfilter      => $r->id,
-                text    => $r->name,
-                color   => $r->color,
-                cls     => 'forum',
-                iconCls => 'icon-no',
-                checked => \0,
-                leaf    => 'true'
-            };	
-        }  
-    }
-    
-    push @tree, {
-        id          => 'L',
-        text        => _loc('labels'),
-        cls         => 'forum-ct',
-        iconCls     => 'forum-parent',
-        children    => \@labels
-    };
-    
-    my @statuses;
-    $row = $c->model('Baseliner::BaliTopicStatus')->search();
-    
-    if($row){
-        while( my $r = $row->next ) {
-            push @statuses,
-                {
-                    id  => $i++,
-                    idfilter      => $r->id,
-                    text    => $r->name,
-                    cls     => 'forum',
-                    iconCls => 'icon-no',
-                    checked => \0,
-                    leaf    => 'true'
-                };
-        }  
-    }
-    
-    push @tree, {
-        id          => 'S',
-        text        => _loc('statuses'),
-        cls         => 'forum-ct',
-        iconCls     => 'forum-parent',
-        expanded    => 'true',
-        children    => \@statuses
-    };
-    
-    
+    # Filter: Categories
     my @categories;
     my $row = $c->model('Baseliner::BaliTopicCategories')->search();
     
@@ -834,6 +780,63 @@ sub filters_list : Local {
         children    => \@categories
     };
         
+    
+    # Filter: Labels
+    my @labels; 
+
+    $row = $c->model('Baseliner::BaliLabel')->search();
+    
+    if($row){
+        while( my $r = $row->next ) {
+            push @labels, {
+                id  => $i++,
+                idfilter      => $r->id,
+                text    => $r->name,
+                color   => $r->color,
+                cls     => 'forum',
+                iconCls => 'icon-no',
+                checked => \0,
+                leaf    => 'true'
+            };	
+        }  
+    }
+    
+    push @tree, {
+        id          => 'L',
+        text        => _loc('labels'),
+        cls         => 'forum-ct',
+        iconCls     => 'forum-parent',
+        children    => \@labels
+    };
+    
+    # Filter: Status
+    my @statuses;
+    $row = $c->model('Baseliner::BaliTopicStatus')->search();
+    
+    if($row){
+        while( my $r = $row->next ) {
+            push @statuses,
+                {
+                    id  => $i++,
+                    idfilter      => $r->id,
+                    text    => $r->name,
+                    cls     => 'forum',
+                    iconCls => 'icon-no',
+                    checked => \0,
+                    leaf    => 'true'
+                };
+        }  
+    }
+    
+    push @tree, {
+        id          => 'S',
+        text        => _loc('statuses'),
+        cls         => 'forum-ct',
+        iconCls     => 'forum-parent',
+        expanded    => 'true',
+        children    => \@statuses
+    };
+    
     
     my @priorities;
     $row = $c->model('Baseliner::BaliTopicPriority')->search();
