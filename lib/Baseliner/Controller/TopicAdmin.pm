@@ -34,12 +34,27 @@ sub update_category : Local {
     my $action = $p->{action};
     my $idsstatus = $p->{idsstatus};
     my $type = $p->{type};
-
-    sub assign_type {
+    
+    my $assign_type = sub {
         my ($category) = @_;
-        $category->is_release('1') if $type eq 'R';
-        $category->is_changeset('1') if $type eq 'C';
-    }
+        
+        _log "DENTRO TTTTTTTYYYYYYYYYYYYPPPPPPPPPPEEEEEEEEEEEE:   " . '#' . $type . '#';
+        
+        given ($type) {
+            when ('R'){
+                $category->is_release('1');
+                $category->is_changeset('0');                
+            }
+            when ('C'){
+                $category->is_release('0');
+                $category->is_changeset('1');                
+            }
+            when ('N'){
+                $category->is_release('0');
+                $category->is_changeset('0');                
+            }            
+        }
+    };
 
     given ($action) {
         when ('add') {
@@ -47,7 +62,7 @@ sub update_category : Local {
                 my $row = $c->model('Baseliner::BaliTopicCategories')->search({name => $p->{name}})->first;
                 if(!$row){
                     my $category = $c->model('Baseliner::BaliTopicCategories')->create({name  => $p->{name}, description=> $p->{description} ? $p->{description}:''});
-                    assign_type( $category );
+                    $assign_type ->( $category, $type );
                     $category->update;
                     
                     if($idsstatus){
@@ -74,9 +89,9 @@ sub update_category : Local {
             try{
                 my $id_category = $p->{id};
                 my $category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
-                assign_type( $category );
                 $category->name( $p->{name} );
                 $category->description( $p->{description} );
+                $assign_type ->( $category, $type );
                 $category->update();
                 
                 my $rs = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')->search({ id_category => $id_category });

@@ -541,7 +541,7 @@ sub list_category : Local {
                 my $type = $r->is_changeset ? 'C' : $r->is_release ? 'R' : 'N';
                 
                 my @fields = map { $_->id_field } 
-                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( id_category => $r->id, {order_by=> {'-asc'=> 'id_field'}} )->all;        
+                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $r->id}, {order_by=> {'-asc'=> 'id_field'}} )->all;        
 
                 my $forms = $self->form_build( $r->forms );
                 
