@@ -73,6 +73,12 @@ sub update {
                     }
                 }
                 
+                # release
+                if( my @releases = _array( $p->{release} ) ) {
+                    my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
+                    $topic->add_to_releases($row_release, { rel_type=>'topic_release'});
+                }
+                
                 # projects assigned to 
                 my @projects = _array( $p->{projects} );
                 
@@ -153,6 +159,13 @@ sub update {
                     my @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
                     #$topic->remove_from_topics( $_ ) for @curr_topics;
                     $topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+                }
+                
+                # release
+                if( my @releases = _array( $p->{release} ) ) {
+                    #my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
+                    my @rels = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@releases});
+                    $topic->set_releases( \@rels, { rel_type=>'topic_release'});
                 }
                 
                 # projects

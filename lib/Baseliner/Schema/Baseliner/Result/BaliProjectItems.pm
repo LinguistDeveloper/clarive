@@ -52,7 +52,7 @@ Related object: L<Baseliner::Schema::Baseliner::Result::BaliProject>
 __PACKAGE__->belongs_to(
   "id_project",
   "Baseliner::Schema::Baseliner::Result::BaliProject",
-  { id => "id_project" },
+  { mid => "id_project" },
 );
 
 1;

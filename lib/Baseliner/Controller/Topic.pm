@@ -208,12 +208,16 @@ sub related : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $mid = $p->{mid};
+    my $show_release = $p->{show_release} // '0';
     my $where = {};
     $where->{mid} = { '<>' => $mid } if length $mid;
+    $where->{'categories.is_release'} = $show_release;
     my $rs_topic = $c->model('Baseliner::BaliTopic')->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
     rs_hashref( $rs_topic );
     my @topics = map {
-        $_->{name} = $_->{categories}->{name} . ' #' . $_->{mid};
+        $_->{name} = $_->{categories}{is_release} eq '1' 
+            ?  $_->{title}
+            :  $_->{categories}->{name} . ' #' . $_->{mid};
         $_->{color} = $_->{categories}->{color};
         $_
     } $rs_topic->all;
@@ -250,6 +254,11 @@ sub json : Local {
     my $id_category = $topic->id_category;    
     my $field_hash;
     map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category}, {prefetch => ['fields']})->hashref->all;
+    my $row_category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
+    my $forms;
+    if( ref $row_category ) {
+        $forms = $self->form_build( $row_category->forms );
+    }
 
     ##########################################################################################
         
@@ -268,7 +277,8 @@ sub json : Local {
         expr_response_time => $topic->expr_response_time,
         deadline_min       => $topic->deadline_min,
         expr_deadline      => $topic->expr_deadline,
-        fields_form        => $field_hash
+        fields_form        => $field_hash,
+        forms              => $forms,
     };
     $ret->{category_name} = try { $topic->categories->name } catch {''};
     $ret->{status_name} = try { $topic->status->name } catch {''};
@@ -350,6 +360,9 @@ sub view : Local {
         my @topics = $rs_rel_topic->all;
         @topics = $c->model('Topic')->append_category( @topics );
         $c->stash->{topics} = @topics ? \@topics : []; 
+        # release
+        my $release_row = $topic->releases->first;
+        $c->stash->{release} = ref $release_row ? $release_row->title : '';
         # files
         my @files = map { +{ $_->get_columns } } 
             $topic->files->search( undef, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
@@ -382,7 +395,9 @@ sub view : Local {
     if( $p->{html} ) {
         #my @fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
         #$c->stash->{fields} = @fields ? \@fields : [];
-        map { $c->stash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
+        map { $c->stash->{ 'show_' . $_->{fields}->{name} } = \1 }
+            $c->model('Baseliner::BaliTopicFieldsCategory')
+            ->search( { id_category => $id_category }, { prefetch => ['fields'] } )->hashref->all;
         
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
@@ -404,7 +419,7 @@ sub comment : Local {
             
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
-                $topic = master_new 'bali_post' => substr($text,10) => sub { 
+                $topic = master_new 'bali_post' => substr($text,0,10) => sub { 
                     my $mid = shift;
                     my $post = $c->model('Baseliner::BaliPost')->create(
                         {   mid   => $mid,
@@ -528,6 +543,7 @@ sub list_category : Local {
                 my @fields = map { $_->id_field } 
                     $c->model('Baseliner::BaliTopicFieldsCategory')->search( id_category => $r->id, {order_by=> {'-asc'=> 'id_field'}} )->all;        
 
+                my $forms = $self->form_build( $r->forms );
                 
                 push @rows,
                   {
@@ -536,6 +552,7 @@ sub list_category : Local {
                     name        => $r->name,
                     color        => $r->color,
                     type         => $type,
+                    forms        => $forms,
                     category_name => $r->name,
                     description => $r->description,
                     statuses    => \@statuses,
@@ -1178,6 +1195,16 @@ sub list_users : Local {
     
     $c->stash->{json} = { data=>\@rows };
     $c->forward('View::JSON');
+}
+sub form_build {
+    my ($self, $form_str ) = @_;
+    [ map {
+        my $form_name = $_;
+        +{
+            form_name => $_,
+            form_path => "/forms/$form_name.js",
+        }
+    } split /,/, $form_str ];
 }
 
 1;
