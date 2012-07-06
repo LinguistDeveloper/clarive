@@ -449,7 +449,7 @@ sub update_fields : Local {
         });
     }    
 
-    $c->stash->{json} = { success => \1, msg=>_loc('fields added') };
+    $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
 
     $c->forward('View::JSON');    
 }
