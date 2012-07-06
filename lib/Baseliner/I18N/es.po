@@ -3008,3 +3008,32 @@ msgstr "Descripción"
 
 msgid "Select forms to add to the category"
 msgstr "Seleccione formularios para añadir a la categoría"
+
+msgid "release"
+msgstr "Release"
+
+msgid "description"
+msgstr "Descripción"
+
+msgid "fields added"
+msgstr "Campos añadidos"
+
+msgid "fields modified"
+msgstr "Campos modificados"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> fc89982e2938a9c1344033305047d08e8f4caf74

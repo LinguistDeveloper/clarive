@@ -1,7 +1,5 @@
-<%init>
-    use Baseliner::Utils;
-</%init>
 <%perl>
+    use Baseliner::Utils;
     my $ii = Baseliner::Utils::_nowstamp();
     my $swEdit = $c->stash->{swEdit};
 </%perl>
@@ -11,7 +9,9 @@
     var form_is_loaded = false;
     var ii = "<% $ii %>";  // used by the detail page
     var btn_form_ok = new Ext.Button({
-            text: _('Accept'),
+            text: _('Save'),
+            icon:'/static/images/icons/save.png',
+            cls: 'x-btn-icon-text',
             type: 'submit',
             hidden: true,
             handler: function() {
@@ -26,6 +26,9 @@
                             
                             form2.findField("topic_mid").setValue(a.result.topic_mid);
                             form2.findField("status").setValue(a.result.topic_status);
+
+                            if( params._parent_grid != undefined )
+                                params._parent_grid.getStore().reload();
                             
                             var store = form2.findField("status_new").getStore();
                             store.load({
@@ -270,13 +273,13 @@
             //},
             btn_detail,
             btn_edit,
+            btn_form_ok,
             '-',
-            btn_comment,
-            '-',
+            btn_comment
+            //'-',
             //_('Estado') + ': ',
             //{ xtype: 'combo', value: 'New' },
-            '->',
-            btn_form_ok
+            //'->'
             //btn_form_reset
         ]
     });

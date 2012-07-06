@@ -476,7 +476,7 @@ sub update_fields : Local {
         $row->update({ forms=>$forms }) if ref $row;
     }
 
-    $c->stash->{json} = { success => \1, msg=>_loc('fields added') };
+    $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
 
     $c->forward('View::JSON');    
 }

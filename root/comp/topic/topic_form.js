@@ -331,10 +331,10 @@
             mode: 'local',
             fieldLabel: _('Topics'),
             typeAhead: true,
-            name: 'topics',
-            displayField: 'title',
-            hiddenName: 'topics',
-            valueField: 'mid',
+                name: 'topics',
+                displayField: 'title',
+                hiddenName: 'topics',
+                valueField: 'mid',
             tpl: tpl_list,
             displayFieldTpl: tpl_field,
             value: '/',
@@ -355,7 +355,21 @@
     };
     Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
 
-    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid } });
+    var release_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid, show_release: 1 } });
+    var release_box = new Baseliner.model.Topics({
+        hiddenName: 'release',
+        name: 'release',
+        fieldLabel: _('Release'),
+        singleMode: true,
+        hidden: rec.fields_form.show_release ? false : true,
+        store: release_box_store
+    });
+    release_box_store.on('load',function(){
+        release_box.setValue( rec.topics ) ;            
+    });
+
+
+    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid, show_release: 0} });
     var topic_box = new Baseliner.model.Topics({
         hidden: rec.fields_form.show_topics ? false : true,
         store: topic_box_store
@@ -455,7 +469,6 @@
         buttons: [ ],
         defaults: { anchor:'70%'},
         items: [
-            label_box,
             {
                 xtype : "fieldset",
                 title : _("Main"),
@@ -500,8 +513,10 @@
                     { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
                     pb_panel,
                     user_box,
+                    release_box,
                     topic_box,
                     cb_panel,
+                    label_box,
                     {
                         xtype: 'panel',
                         border: false,
