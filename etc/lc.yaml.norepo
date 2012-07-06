@@ -37,6 +37,7 @@ nodes:
       node: Branches
       type: changeset
       bl: *
+      active: 0
       icon: /static/images/icons/lc/branches_obj.gif
       actions:
          - 
@@ -49,23 +50,23 @@ lifecycle:
     default:
         states:
             -
-              node: Unassigned
+              node: Development
               type: state
               bl: new
-              active: 0
+              active: 1
               icon: /static/images/icons/lc/history.gif
             -
-              node: Development
+              node: Entregado
               type: state
               active: 1
               show_branch: master
               bl: TEST
-              bl_to: TEST
+              bl_to: IT
               icon: /static/images/icons/lc/history.gif
             -
-              node: Test
+              node: Integración
               type: state
-              bl: TEST
+              bl: IT
               bl_from: master
               bl_to: PREP
               icon: /static/images/icons/lc/history.gif
@@ -84,15 +85,43 @@ lifecycle:
               icon: /static/images/icons/lc/history.gif
 projects:
     - 
-      name: XXX
+       name: clarive
        repositories:
            -
-              name: xxx_repo
-              path: /Users/Rick/dev/repo/XXX/.git
+              name: clarive
+              path: /Users/rod/dev/clarive/.git
     - 
-       name: YYY
+       name: prj1
        repositories:
            -
-              name: yyy_repo 
-              path: /Users/Rick/dev/repo/YYY/.git
+              name: aaa
+              path: /Users/rod/tmp/repo/aaa/.git
+           -
+              name: prj_j2ee
+              path: /Users/rod/dev/clarive/etc/repo/prj_j2ee.git
+    - 
+       name: AAA
+       repositories:
+           -
+              name: zos
+              path: /Users/rod/dev/clarive/etc/repo/zos.git
+
+    - 
+       name: AAP
+       repositories:
+           -
+              name: test1
+              path: /Users/rod/git/test1/.git
+    - 
+       name: ABD
+       repositories:
+           -
+              name: ic_cobol
+              path: /Users/rod/git/ic_cobol/.git
+    - 
+       name: ABD
+       repositories:
+           -
+              name: ic_cobol
+              path: /Users/rod/git/ic_cobol/.git
 
