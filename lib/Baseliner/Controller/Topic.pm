@@ -535,10 +535,10 @@ sub list_category : Local {
     my @rows;
 
     if( !$p->{categoryId} ){    
-        my $row = $c->model('Baseliner::BaliTopicCategories')->search();
+        my $rs = $c->model('Baseliner::BaliTopicCategories')->search();
         
-        if($row){
-            while( my $r = $row->next ) {
+        if($rs){
+            while( my $r = $rs->next ) {
                 my @statuses;
                 my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $r->id});
                 while( my $status = $statuses->next ) {
@@ -573,12 +573,13 @@ sub list_category : Local {
         my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}},
                                                                             {
                                                                                 join => ['status'],
-                                                                                '+select' => ['status.name','status.id'],
+                                                                                '+select' => ['status.name','status.id','status.bl'],
                                                                             });            
         if($statuses){
             while( my $status = $statuses->next ) {
                 push @rows, {
                                 id      => $status->status->id,
+                                bl      => $status->status->bl,
                                 name    => $status->status->name
                             };
             }

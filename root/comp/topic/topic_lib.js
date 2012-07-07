@@ -75,6 +75,7 @@ Baseliner.Topic.StoreCategoryStatus = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'type' },
+                {  name: 'bl' },
                 {  name: 'description' }
             ]
         },config);
