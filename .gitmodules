@@ -40,3 +40,6 @@
 [submodule "features/sonar"]
 	path = features/sonar
 	url = http://git.vasslabs.com/git/sonar.git
+[submodule "features/reports"]
+	path = features/reports
+	url = http://git.vasslabs.com/git/reports.git
