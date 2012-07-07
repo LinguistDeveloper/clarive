@@ -8,6 +8,7 @@ has 'status' => (is=>'rw', isa=>enum([ qw(A M D R) ]), default=>'M' );  # Modifi
 has 'mask' => ( is=>'rw', isa=>'Str' );
 has 'version' => ( is=>'rw', isa=>'Str' );
 has 'modified_on' => ( is=>'rw', isa=>'DateTime' );
+has 'mid' => ( is=>'rw', isa=>'Str' );
 has 'handled_by' => (
 	is=>'ro',
 	isa=>'ArrayRef[Str]',

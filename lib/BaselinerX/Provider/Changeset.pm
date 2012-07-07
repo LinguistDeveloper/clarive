@@ -29,6 +29,7 @@ sub find {
 
     BaselinerX::Namespace::Changeset->new({
             ns       => "changeset/$nsid",
+            mid     => $nsid,
             ns_name  => $title,
             ns_info  => $title,
             ns_type  => 'changeset',
@@ -48,7 +49,6 @@ sub _break_ns {
 
     if( defined $nsid ) {
         my $mid = $nsid;
-        _log $mid;
         my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $mid );
         my $projectid = $topic->projects->search()->first->id;
         my $project = Baseliner::Model::Projects->get_project_name( id => $projectid );
