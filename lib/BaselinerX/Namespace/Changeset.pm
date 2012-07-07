@@ -82,12 +82,7 @@ sub get_row {
 
 sub project {
     my $self = shift;
-    my $ns = $self->ns;
-    if( my ( $type, $rev, $prj, $repo_name ) = $ns =~ /^(.+)\/(.*?)@(.*)\:(.*)$/ ) {
-        return ( $rev, $prj, $repo_name );
-    } else {
-        _throw "Could not split project out of ns $ns";
-    }
+    $self->ns_data->{project};
 }
 
 sub application {
@@ -110,5 +105,6 @@ sub more_info {
     my $self = shift;
     return "";
 }
+
 1;
 
