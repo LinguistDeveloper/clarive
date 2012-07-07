@@ -26,6 +26,7 @@
 	<!-- The ExtJs base 2.2, version 2.0.2 is still supported  -->
     <link rel="stylesheet" type="text/css" href="css/Loading.css" />
     <link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all.css" />
+    <!-- link rel="stylesheet" type="text/css" href="extjs/resources/css/xtheme-gray.css" / -->
 
 
 <!-- Look for a change log at changes.txt -->
@@ -55,7 +56,7 @@ if (document.location.protocol == 'file:') require('localXHR','js');
   You can now use the designer as panel, JSON can contain javascript and information
   of base info is stored in special tag Window. enabling auto create window/frame see show code
  */
- var phpSupport; // Flag is set in index.php to indicate whe support PHP
+ var phpSupport = true; // Flag is set in index.php to indicate whe support PHP
  var cookies = new Ext.state.CookieProvider();
  var options = cookies.get('Designer.Options') ||
 	  {dock : 1,
@@ -69,14 +70,15 @@ if (document.location.protocol == 'file:') require('localXHR','js');
  //Url based actions
  var windowMode = Ext.ux.UTIL.getUrlAction('window',options.float)==1; //Change this flag to true if you want designer to be a window
  var docked = Ext.ux.UTIL.getUrlAction('docked',options.dock)==1;
- var nocache = Ext.ux.UTIL.getUrlAction('nocache',options.nocache)==1;
+ var nocache = true; // Ext.ux.UTIL.getUrlAction('nocache',options.nocache)==1;
  var autoResize = Ext.ux.UTIL.getUrlAction('autoresize',options.autoresize)==1;
  var cmpfiles = (options.cmpfiles || "").replace('\r').split("\n");
  var designer; //Variable used to save the designer plugin
 
  if (forceCompressed || (Ext.ux.UTIL.getUrlAction('compressed',options.compressed)==1 &&
 	 Ext.ux.UTIL.getUrlAction('debug',0)==0)) {
-   require('Ext.ux.guid.plugin.Designer.css;Ext.ux.guid.plugin.Designer-all',
+   //require('Ext.ux.guid.plugin.Designer.css;Ext.ux.guid.plugin.Designer-all',
+   require('Ext.ux.guid.plugin.Designer.css;Ext.ux.guid.plugin.Designer',
 	  {basedir:'compressed',cssdir:'css',nocache: nocache});
  } else {
    require('Ext.ux.guid.plugin.Designer.css;Ext.ux.Override;' +
@@ -126,7 +128,7 @@ if (document.location.protocol == 'file:') require('localXHR','js');
 			  nocache : nocache,
 			  customProperties : true
 			 , repository      : phpSupport
-								 ? new Ext.ux.guid.data.PHPFileRepository()
+								 ? new Ext.ux.guid.data.PHPFileRepository({ url: '/forms/save' })
 								 : new Ext.ux.guid.data.CookieRepository()
 			})
 		  ]

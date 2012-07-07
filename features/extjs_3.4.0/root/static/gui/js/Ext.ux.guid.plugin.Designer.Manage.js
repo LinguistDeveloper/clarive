@@ -66,9 +66,10 @@
     }.createDelegate(this));
   },
   tbar:[{
-    tooltip : 'Save the design, reusing last name',
+    tooltip : 'SSave the design, reusing last name',
     iconCls:'icon-save',
     handler: function(){
+        alert( scope.getCode() );
       if (scope.repository.last) {
         scope.repository.save(scope.repository.last,scope.getCode(),function(success){
          if (!success) {
