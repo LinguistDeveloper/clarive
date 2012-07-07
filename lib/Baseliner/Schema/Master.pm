@@ -46,8 +46,15 @@ sub master_setup {
     my $foreign = "Baseliner::Schema::Baseliner::Result::$to_class";
 
     # especific 
-    Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to( $rel_type, $self,
+    # topic_post (to get the related topic row)
+    Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
+        $rel_type, $self,
         { "foreign.$from_col" => 'self.from_mid' } );
+    # topic_post_to (to get the related post row)
+    Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
+        "${rel_type}_to", $foreign,
+        { "foreign.$from_col" => 'self.to_mid' } );
+    # post_topic (inverse relationship)
     Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
         $rel_type_inverse , $foreign,
         { "foreign.$to_col" => 'self.to_mid' }
