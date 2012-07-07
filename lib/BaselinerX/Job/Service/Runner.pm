@@ -114,6 +114,7 @@ sub new_from_id {
     my $service_name = $p{service_name} || '';
     my $exec = delete $p{exec};
     # instantiate myself
+    my $current_service = delete $p{current_service}; # defer later, when we have a logger
     my $job = $class->new( %p );
     my $row = $job->row;
     _log "Created job object for jobid=$p{jobid} exec=$exec";
