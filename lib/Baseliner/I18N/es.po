@@ -1176,6 +1176,9 @@ msgstr "finalizado"
 
 # Job Types
 
+msgid "none"
+msgstr "Ninguno"
+
 msgid "normal"
 msgstr "Normal"
 
@@ -3026,3 +3029,30 @@ msgstr "vistas"
 
 msgid "%1 created topic '%2'"
 msgstr "%1 ha creado el tópico '%2'"
+
+msgid "select status..."
+msgstr "seleccione un estado..."
+
+msgid "select job type..."
+msgstr "seleccione el tipo de pase entre estados..."
+
+msgid "Accept"
+msgstr "Aceptar"
+
+msgid "Error deleting relationships: %1"
+msgstr "Error borrando relación: %1"
+
+msgid "Relationship deleted: %1"
+msgstr "Relaciones borradas: %1"
+
+msgid "Workflow: %1"
+msgstr "Workflow: %1"
+
+msgid "Providers"
+msgstr "Provedores"
+
+msgid "Readonly"
+msgstr "Sólo Lectura"
+
+msgid "Internal"
+msgstr "Interno"
