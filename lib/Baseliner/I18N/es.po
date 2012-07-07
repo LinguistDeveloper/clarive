@@ -3023,3 +3023,6 @@ msgstr "Campos modificados"
 
 msgid "views"
 msgstr "vistas"
+
+msgid "%1 created topic '%2'"
+msgstr "%1 ha creado el tópico '%2'"

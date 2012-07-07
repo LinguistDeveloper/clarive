@@ -585,17 +585,18 @@ Baseliner.Calendar =  function(c) {
             }
         });
 
-        var event_new_url = c.url_new || '/eventnew.js';
+        var event_new_url = c.url_new || '/eventnew.js';  // this should be the controller that creates events
         var event_new = function( data ) {
             Baseliner.ajaxEval( event_new_url, data, function(res) { 
                 if( res && res.success ) {
+                    //var allday = res.allday!=undefined ? res.allday : true;
                     // create the event
                     cal.fullCalendar('renderEvent',
                         Ext.apply({
                             title: _('[untitled]'),
-                            start: date,
-                            end: date,
-                            allDay: allDay
+                            //start: date,
+                            //end: date,
+                            //allDay: allday
                         }, Ext.apply(data, res.data ) ),
                         true 
                     );
@@ -614,13 +615,15 @@ Baseliner.Calendar =  function(c) {
             dayNamesShort: [_('Sun'), _('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat')],
             selectable: true,
             selectHelper: true,
-            drop: function( date, allDay, jsEvent, ui  ) {
+            drop: function( date, allday, jsEvent, ui  ) {
                  var opts = jsEvent.data;
+                 opts.date = date;
+                 opts.allday = allday;
                  event_new( opts );
             },
-            select: function(start, end, allDay) {
+            select: function(start, end, allday) {
                 if( c.onSelect ) {
-                    c.onSelect( cal, start, end, allDay );
+                    c.onSelect( cal, start, end, allday );
                 }
                 cal.fullCalendar('unselect');
             },
@@ -785,11 +788,11 @@ Baseliner.form.ComboList = function(c) {
     
     Baseliner.form.ComboList.superclass.constructor.call(this, Ext.apply({
             store: s,
-            displayField: 'combo_list',
-            valueField: 'combo_list',
-            name: 'combo_list',
+            displayField: 'tipo_pet',
+            valueField: 'tipo_pet',
+            name: 'tipo_pet',
             typeAhead: true,
-            editable: true,
+            editable: false,
             mode: 'local',
             forceSelection: true,
             triggerAction: 'all', 

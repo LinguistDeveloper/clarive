@@ -227,10 +227,12 @@ sub changeset : Local {
             icon => '/static/images/icons/topic_lc.png',
             text => "[$topicid] $_->{title}",
             leaf => \1,
-            menu => $self->cs_menu( $bl ),
+            menu => $self->cs_menu( $_, $bl ),
             data => {
+                ns    => 'changeset/' . $_->{mid},
                 bl    => $bl,
                 name  => $_->{title},
+                state_name  => $state_name,
                 topic_mid => $_->{mid},
                 click => {
                     url   => sprintf('/comp/topic/topic_main.js' ),
@@ -247,26 +249,27 @@ sub changeset : Local {
 }
 
 sub cs_menu {
-    my ($self, $bl ) = @_;
+    my ($self, $topic,$bl ) = @_;
     return [] if $bl eq '*';
     my @menu;
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
+    #my @changes = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
     push @menu,
         {
         text => 'Deploy',
-        eval => { url => '/comp/lifecycle/deploy.js', title => 'Deploy' },
+        eval => { url => '/comp/lifecycle/deploy.js', title => 'Deploy', job_type=>'static' },
         icon => '/static/images/silk/arrow_right.gif'
         };
     1 and push @menu,
         {
         text => 'To Promote',
-        eval => { url => '/comp/lifecycle/promote.js', title => 'Promote' },
+        eval => { url => '/comp/lifecycle/deploy.js', title => 'Promote', job_type=>'promote' },
         icon => '/static/images/silk/arrow_down.gif'
         };
     1 and push @menu,
         {
         text => 'Demote',
-        eval => { url => '/comp/lifecycle/demote.js', title => 'Demote' },
+        eval => { url => '/comp/lifecycle/deploy.js', title => 'Demote', job_type=>'demote' },
         icon => '/static/images/silk/arrow_up.gif'
         };
     #push @menu,

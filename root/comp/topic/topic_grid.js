@@ -4,7 +4,7 @@
 </%perl>
 (function(){
     <& /comp/search_field.mas &>
-    var ps = 10; //page_size
+    var ps = 30; //page_size
     var filter_current;
 
     // Create store instances
@@ -26,8 +26,8 @@
     
     var button_create_view = new Ext.Button({
         icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
-		text: _('Create view'),
+		tooltip: _('Create view'),
+        cls: 'x-btn-icon',
 		disabled: false,
         handler: function(){
 			add_view();
@@ -37,7 +37,8 @@
 	
 	
 	var button_delete_view = new Baseliner.Grid.Buttons.Delete({
-		text: _('Delete view'),
+		tooltip: _('Delete view'),
+        cls: 'x-btn-icon',
 		disabled: true,
         handler: function() {
             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the views selected?'), 
@@ -505,8 +506,9 @@
     var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
         var id = rec.data.topic_mid; //Cambiarlo en un futuro por un contador de categorias
         var color = rec.data.category_color;
+        var cls = rec.data.is_release ? 'label' : 'badge';
         //if( color == undefined ) color = '#777';
-        var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + ' #' + id + '</span></div>';
+        var ret = '<div id="boot"><span class="'+cls+'" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + ' #' + id + '</span></div>';
         return ret;
     };
 
@@ -767,10 +769,10 @@
 
 	var tree_filters = new Ext.tree.TreePanel({
 						region : 'east',
-						width: 250,
+						width: 180,
 						split: true,
 						collapsible: true,
-        tbar: [ button_create_view, button_delete_view ],
+        tbar: [ '->', button_create_view, button_delete_view ],
 		dataUrl: "topic/filters_list",
 		split: true,
 		colapsible: true,

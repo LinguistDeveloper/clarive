@@ -214,11 +214,17 @@
         var str = val == 'R' ? _('Release') : val == 'C' ? _('Changeset') : _('Normal');
         return str;
     }   
+
+    var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
+        var ret = 
+            '<b><span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#111">' + value + '</span></b>';
+        return ret;
+    };
     
     var grid_status = new Ext.grid.GridPanel({
         title : _('Topics: Statuses'),
         sm: check_status_sm,
-        height: 250,
+        height: 400,
         header: true,
         border: true,
         stripeRows: true,
@@ -231,7 +237,7 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_status_sm,
-            { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
+            { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: false, renderer: render_status },
             { header: _('Description'), dataIndex: 'description', sortable: false },
             { header: _('Baseline'), dataIndex: 'bl', sortable: false, renderer: Baseliner.render_bl },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_status_type }
@@ -292,6 +298,26 @@
             emptyText: _('A brief description of the category')
         });     
         
+        //   Color settings 
+        var category_color = new Ext.form.Hidden({ name:'category_color' });
+
+        var color_pick = new Ext.ColorPalette({ 
+            value:'FF43B8',
+            listeners: {
+                select: function(cp, color){
+                   category_color.setRawValue( '#' + color.toLowerCase() ); 
+                }
+            },
+            colors: [
+                'FF43B8', '30BED0', 'A01515', 'A83030', '003366', '000080', '333399', '333333',
+                '800000', 'FF6600', '808000', '008000', '008080', '0000FF', '666699', '808080',
+                'FF0000', 'FF9900', '99CC00', '339966', '33CCCC', '3366FF', '800080', '969696',
+                'FF00FF', 'FFCC00', 'FFFF00', '00ACFF', '20BCFF', '00CCFF', '993366', 'C0C0C0',
+                'FF99CC', 'DDAA55', 'BBBB77', '88CC88', 'CCFFFF', '99CCFF', 'CC99FF', '11B411'
+            ]
+        });
+        
+        // Main Edit for Categories
         var column1 = {
             xtype:'panel',
             columnWidth:0.50,
@@ -299,6 +325,7 @@
             defaults:{anchor:'100%'},
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
+                category_color,
                 { xtype:'textfield', name:'name', fieldLabel:_('Category'), allowBlank:false, emptyText:_('Name of category') },
                 ta,
                 {
@@ -312,6 +339,7 @@
                         {boxLabel: _('Release'), inputValue: 'R'}
                     ]
                 }
+                ,{ xtype:'button', text:'Select Color', menu:{ items: color_pick } }
             ]
         };
         
@@ -1042,10 +1070,16 @@
         checkOnly: true
     });
     
+    var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
+        var color = rec.data.color;
+        var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+        return ret;
+    };
+
     var grid_categories = new Ext.grid.GridPanel({
         title : _('Categories'),
         sm: check_categories_sm,
-        height: 250,
+        height: 350,
         header: true,
         stripeRows: true,
         autoScroll: true,
@@ -1057,7 +1091,7 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
-            { header: _('Category'), dataIndex: 'name', width:50, sortable: false },
+            { header: _('Category'), dataIndex: 'name', width:50, sortable: false, renderer: render_category },
             { header: _('Description'), dataIndex: 'description', sortable: false },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_category_type }
         ],
@@ -1072,9 +1106,9 @@
                 btn_admin_category
         ]       
     }); 
-    grid_categories.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
+    /* grid_categories.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
         
-    });
+    }); */
     
     grid_categories.on('cellclick', function(grid, rowIndex, columnIndex, e) {
         if(columnIndex == 1){
@@ -1731,7 +1765,7 @@
         frame:true,
         title: 'Simple Form with FieldSets',
         bodyStyle:'padding:5px 5px 0',
-        width: 350,
+        width: 400,
 
         items: [
                 

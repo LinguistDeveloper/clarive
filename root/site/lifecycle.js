@@ -176,13 +176,18 @@ var menu_click = function(node,event){
             // component opener menu
             if( menu_item.comp != undefined ) {
                 url = menu_item.comp.url; 
+                menu_item.click_data = { action: menu_item.comp }; // need this before to preserve scope
                 menu_item.handler = function(item) {
-                    Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), item.node );
+                    item.click_data.node = item.node;   
+                    var d = { node: item.node, action: menu_item.comp };
+                    Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), d );
                 };
             } else if( menu_item.eval != undefined ) {
                 url = menu_item.eval.url; 
+                menu_item.click_data = { action: menu_item.eval }; // need this before to preserve scope
                 menu_item.handler = function( item ) {
-                    Baseliner.ajaxEval( item.url, item.node , function(comp) {
+                    item.click_data.node = item.node;
+                    Baseliner.ajaxEval( item.url, item.click_data , function(comp) {
                         // no op
                         var x = 0;
                     });

@@ -55,6 +55,8 @@ Baseliner.Topic.StoreCategory = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'type' },
                 {  name: 'statuses' },
                 {  name: 'forms' },
+                {  name: 'is_release' },
+                {  name: 'is_changeset' },
                 {  name: 'fields' }
             ]
         },config);
@@ -96,6 +98,8 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'numcomment' },
                 {  name: 'category_id' },
                 {  name: 'category_color' },
+                {  name: 'is_release' },
+                {  name: 'is_changeset' },
                 {  name: 'category_name' },
                 {  name: 'calevent' },
                 {  name: 'projects' },          

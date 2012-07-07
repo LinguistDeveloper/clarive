@@ -39,7 +39,7 @@ register 'event.topic.file_remove' => {
 };
 
 register 'event.topic.create' => {
-    text => '%1 created topic %2',
+    text => "%1 created topic '%2'",
     vars => ['username', 'topic'],
 };
 
@@ -334,6 +334,8 @@ sub view : Local {
         $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
         $c->stash->{description} = $topic->description;
         $c->stash->{category} = $topic->categories->name;
+        $c->stash->{is_release} = $topic->categories->is_release;
+        $c->stash->{is_changeset} = $topic->categories->is_changeset;
         $c->stash->{category_color} = try { $topic->categories->color} catch { '#444' };
         $c->stash->{forms} = [
             map { "/forms/$_" } split /,/,$topic->categories->forms
@@ -361,8 +363,13 @@ sub view : Local {
         @topics = $c->model('Topic')->append_category( @topics );
         $c->stash->{topics} = @topics ? \@topics : []; 
         # release
-        my $release_row = $topic->releases->first;
-        $c->stash->{release} = ref $release_row ? $release_row->title : '';
+        #my $release_row = $topic->topics->search({ is_release=>'1' })->first;
+        my $release_row = $c->model('Baseliner::BaliTopic')->search(
+                                { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid },
+                                { prefetch=>['categories','children','master'] }
+                                )->hashref->first;
+        $c->stash->{release} = ref $release_row ? $release_row->{title} : '';
+        $c->stash->{release_row} = $release_row;
         # files
         my @files = map { +{ $_->get_columns } } 
             $topic->files->search( undef, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
@@ -546,18 +553,19 @@ sub list_category : Local {
                 my $forms = $self->form_build( $r->forms );
                 
                 push @rows,
-                  {
-                    id          => $r->id,
-                    category    => $r->id,
-                    name        => $r->name,
-                    color        => $r->color,
-                    type         => $type,
-                    forms        => $forms,
+                {   id            => $r->id,
+                    category      => $r->id,
+                    name          => $r->name,
+                    color         => $r->color,
+                    type          => $type,
+                    forms         => $forms,
                     category_name => $r->name,
-                    description => $r->description,
-                    statuses    => \@statuses,
-                    fields      => \@fields
-                  };
+                    is_release    => $r->is_release,
+                    is_changeset  => $r->is_changeset,
+                    description   => $r->description,
+                    statuses      => \@statuses,
+                    fields        => \@fields
+                };
             }  
         }
         $cnt = $#rows + 1 ; 
@@ -1208,6 +1216,41 @@ sub form_build {
             form_path => "/forms/$form_name.js",
         }
     } split /,/, $form_str ];
+}
+
+sub newjob : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    my $ns = $p->{ns} or _throw 'Missing parameter ns';
+    my $bl = $p->{bl} or _throw 'Missing parameter bl';
+
+    $c->stash->{json} = try {
+        my @contents = map {
+            _log _loc "Adding namespace %1 to job", $_;
+            my $item = Baseliner->model('Namespaces')->get( $_ );
+            _throw _loc 'Could not find changeset "%1"', $_ unless ref $item;
+            $item;
+        } ($ns);
+
+        _log _dump \@contents;
+
+        my $job_type = $p->{job_type} || 'static';
+
+        my $job = $c->model('Jobs')->create(
+            bl       => $bl,
+            type     => $job_type,
+            username => $c->username || $p->{username} || `whoami`,
+            runner   => $p->{runner} || 'service.job.chain.simple',
+            comments => $p->{comments},
+            items    => [ @contents ]
+        );
+        $job->update;
+        { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };
+    };
+    $c->forward('View::JSON');
 }
 
 1;
