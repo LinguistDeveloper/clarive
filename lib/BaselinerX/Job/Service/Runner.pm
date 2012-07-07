@@ -128,9 +128,9 @@ sub new_from_id {
     $job->exec( $row->exec );
     $job->job_type( $row->type );
     $job->job_data( { $row->get_columns } );
-    $job->current_service( $service_name );
     # setup the logger
     my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid}, job=>$job }) );
+    $job->current_service( $service_name );
     #thaw job stash from table
     my $stash = $job->thaw;
     $log->info(_loc("Job revived"), data=>_dump($stash) );
