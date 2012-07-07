@@ -42,8 +42,8 @@ sub find {
 sub _break_ns {
     my ($self, $nsid ) = @_;
 
-    if( $nsid =~ /changeset\/(.+)$/ ) {
-        my $mid = $1;
+    if( $nsid =~ /(.*)\/(.*)$/ ) {
+        my $mid = $2;
         _log $mid;
         my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $mid );
         my $projectid = $topic->projects->search()->first->id;
@@ -116,17 +116,16 @@ sub list {
                     #my $nsid = sprintf 'git.revision/%s@%s', $_->name, $repo->path;
                     my $nsid = sprintf 'git.revision/%s@%s:%s', $_->name, $project->{project},
                         $repo->{name};
-                    BaselinerX::Namespace::GitRevision->new(
-                        {
-                            ns       => $nsid,
-                            ns_name  => $_->name,
-                            ns_info  => $_->description,
-                            ns_data  => {},
-                            icon     => '/static/images/icons/tag.gif',
-                            provider => 'namespace.git.revision',
-                            ns_type  => 'git.revision',
-                            related  => [],
-                            more_info => '',
+                        my $title;
+                        BaselinerX::Namespace::Changeset->new({
+                                ns       => "$nsid",
+                                ns_name  => $title,
+                                ns_info  => $title,
+                                ns_type  => 'changeset',
+                                ns_data  => { project=>$project },
+                                icon     => '/static/images/icons/changeset.gif',
+                                provider => 'namespace.changeset',
+                                related  => [],
                         }
                     );
                 } @tags;
