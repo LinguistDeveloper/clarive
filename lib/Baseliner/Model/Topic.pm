@@ -27,7 +27,7 @@ sub update {
     }
     given ( $action ) {
         when ( 'add' ) {
-            try {
+            event_new 'event.topic.create' => { username=>$p->{username} } => sub {
                 my $topic = master_new 'bali_topic' => $p->{title} => sub {
                     $topic_mid = shift;    
                     Baseliner->model('Baseliner::BaliTopic')->create(
@@ -49,7 +49,7 @@ sub update {
 
                 # files topics
 
-                #if( my @files_uploaded_mid = split(",", $p->{files_upload_mid}) ) {
+                #if( my @files_uploaded_mid = split(",", $p->{files_upload_mid}) ) 
                 if( my @files_uploaded_mid = split(",", $p->{files_uploaded_mid}) ) {
                     my $rs_files = Baseliner->model('Baseliner::BaliFileVersion')->search({mid =>\@files_uploaded_mid});
                     while(my $rel_file = $rs_files->next){
@@ -76,7 +76,7 @@ sub update {
                 # release
                 if( my @releases = _array( $p->{release} ) ) {
                     my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
-                    $topic->add_to_releases($row_release, { rel_type=>'topic_release'});
+                    $row_release->add_to_topics($topic, { rel_type=>'topic_topic'});
                 }
                 
                 # projects assigned to 
@@ -131,13 +131,14 @@ sub update {
                                                                     });     
                 }
                 
-                $topic_mid    = $topic_mid;
+                #$topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;
                 $return = 'Topic added';
-            } ## end try
-            catch {
+               { mid=>$topic->mid, topic=>$topic->title }   # to the event
+            } 
+            => sub { # catch
                 _throw _loc( 'Error adding Topic: %1', shift() );
-            };
+            }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
             try {
@@ -163,9 +164,9 @@ sub update {
                 
                 # release
                 if( my @releases = _array( $p->{release} ) ) {
-                    #my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
-                    my @rels = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@releases});
-                    $topic->set_releases( \@rels, { rel_type=>'topic_release'});
+                    my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
+                    my @topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>$topic->mid });
+                    $row_release->set_topics( \@topics, { rel_type=>'topic_topic'});
                 }
                 
                 # projects
