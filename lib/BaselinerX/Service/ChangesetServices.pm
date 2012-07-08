@@ -104,7 +104,7 @@ sub update_baselines {
     my $stash    = $job->job_stash;
     my $bl       = $job->bl;
     my $job_type = $job->job_type;
-    my $status   = $job->status_to;
+    my $status   = $stash->{status_to};
     my @changesets;
 
     if ( $job_type eq 'static' ) {
