@@ -32,6 +32,7 @@ Baseliner.Topic.StoreStatus = Ext.extend(Ext.data.JsonStore, {
                 {  name: 'name' },
                 {  name: 'description' },
                 {  name: 'bl' },
+                {  name: 'seq' },
                 {  name: 'type' }                
             ]
         }, config);

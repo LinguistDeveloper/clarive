@@ -156,6 +156,7 @@ sub list_status : Local {
                 name        => $r->name,
                 description => $r->description,
                 bl          => $r->bl,
+                seq         => $r->seq,
                 type        => $r->type
               };
         }  
