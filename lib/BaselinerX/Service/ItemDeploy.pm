@@ -27,7 +27,7 @@ This service will deploy job elements (items).
 =cut
 use Baseliner::Plug;
 use Baseliner::Utils;
-use Baseliner::Node;
+use Baseliner::CI;
 use Baseliner::Sugar;
 use Try::Tiny;
 with 'Baseliner::Role::Service';
@@ -205,7 +205,7 @@ sub select_mappings {
 
         push @{ $job_stash->{deployment_scripts}->{ DOMAIN() } }, 
             map {
-                Baseliner::Node->new( $_ )
+                Baseliner::CI->new( $_ )
             } _array $m->{scripts_multi};
     }
     return @workspaces;

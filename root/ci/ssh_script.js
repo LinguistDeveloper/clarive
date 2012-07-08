@@ -1,5 +1,5 @@
 (function(params){
-    var server_store = new Baseliner.store.CI({ baseParams: { role:'Destination' } });
+    var server_store = new Baseliner.store.CI({ baseParams: { role:'Agent' } });
     var server = new Baseliner.model.CISelect({ store: server_store, 
         singleMode: true, 
         fieldLabel:_('SSH Destination'), 
@@ -16,6 +16,3 @@
        { xtype:'textfield', fieldLabel: _('Script'), name:'script', value: params.rec.data.script }
     ]
 })
-
-
-

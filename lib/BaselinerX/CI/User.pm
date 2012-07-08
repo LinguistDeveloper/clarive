@@ -1,4 +1,4 @@
-package BaselinerX::CI::User;
+package BaselinerX::CI::user;
 use Moose;
 with 'Baseliner::Role::CI::Internal';
 

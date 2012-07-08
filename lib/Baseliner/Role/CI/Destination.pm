@@ -4,6 +4,6 @@ with 'Baseliner::Role::CI';
 
 sub icon { '/static/images/ci/destination.png' }
 
+requires 'path';
+
 1;
-
-

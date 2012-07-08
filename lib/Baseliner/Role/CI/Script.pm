@@ -4,7 +4,9 @@ with 'Baseliner::Role::CI';
 
 sub icon { '/static/images/ci/script.png' }
 
+requires 'script';
+requires 'run';
+
+has arg => qw(is rw isa ArrayRef[Str]), default=>sub{[]}, traits=>['Array'];
+
 1;
-
-
-
