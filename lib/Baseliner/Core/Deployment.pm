@@ -46,7 +46,7 @@ around BUILDARGS => sub {
     } else {
         %args = @_;
     }
-    ref $args{destination} or $args{destination} = Baseliner::Node->new( $args{destination} );
+    ref $args{destination} or $args{destination} = Baseliner::CI->new( $args{destination} );
     $class->$orig( %args ); 
 };
 
@@ -102,7 +102,7 @@ sub run {
     $self->each_script( sub {
        my $uri = $_;
        # instanciate just in case
-       my $s = ref $uri ? $uri : Baseliner::Node->new( $uri );
+       my $s = ref $uri ? $uri : Baseliner::CI->new( $uri );
        # now run it
        my $ret = $s->run;
        ref $cb and $cb->( $s, $uri );

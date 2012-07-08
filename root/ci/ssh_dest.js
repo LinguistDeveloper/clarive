@@ -13,7 +13,7 @@
 
     return [
        server,
-       { xtype:'textfield', fieldLabel: _('Path'), name:'path', value: params.rec.data.path }
+       { xtype:'textfield', fieldLabel: _('Path'), name:'home', value: params.rec.data.home }
     ]
 })
 

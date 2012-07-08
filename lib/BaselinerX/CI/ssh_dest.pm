@@ -5,6 +5,7 @@ sub collection { 'ssh_dest' }
 
 has path => qw(is rw isa Any);
 
+extends 'BaselinerX::CI::ssh_agent';
 with 'Baseliner::Role::CI::Destination';
 
 sub error {}

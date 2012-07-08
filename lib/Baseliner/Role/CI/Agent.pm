@@ -6,6 +6,9 @@ sub icon { '/static/images/ci/agent.png' }
 
 use Moose::Util::TypeConstraints;
 
+has user     => qw(is rw isa Str);
+has password => qw(is rw isa Str);
+
 requires 'put_file';
 requires 'get_file';
 requires 'put_dir';
