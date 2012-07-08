@@ -1,6 +1,7 @@
 (function(params){
     if( params.rec == undefined ) params.rec = {};            // master row record
     if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
+    var mid = params.mid;
     var btn_form_ok = new Ext.Button({
         text: _('Accept'),
         icon:'/static/images/icons/save.png',
@@ -10,18 +11,13 @@
             var form2 = form.getForm();
             if ( form2.isValid() ) {
                form2.submit({
-                   params: {action: params.action },
+                   params: {action: params.action, mid: params.mid, collection:params.collection },
                    success: function(f,a){
                         Baseliner.message(_('Success'), a.result.msg );
                         form.destroy();
                    },
                    failure: function(f,a){
-                       Ext.Msg.alert({  
-                           title: _('Error'), 
-                           msg: a.result.msg , 
-                           buttons: Ext.Msg.OK, 
-                           icon: Ext.Msg.INFO
-                       });                      
+                       Ext.Msg.alert( _('Error'), a.result.msg );
                    }
                });
             }
@@ -41,10 +37,12 @@
            allowBlank: false
         },
         style: { 'margin-top':'30px' },
-        title: _(params.class),
+        title: _(params.collection),
         collapsible: true,
         autoHeight : true
     });
+    var txt = (params.action == 'add' ? 'New: %1' : 'Edit: %1' );
+    var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'] });
     var form = new Ext.FormPanel({
         url:'/ci/update',
         tbar: tb,
@@ -54,22 +52,32 @@
         },
         bodyStyle:'padding: 10px 0px 0px 15px',
         items: [
-            { xtype: 'container', html:_('New: %1', params.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
+            { xtype: 'container', html:_( txt, params.data.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
             { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name },
-            Baseliner.combo_baseline({ value: params.bl || '*' }),
-            { xtype: 'hidden', name:'collection', value: params.collection },
-            { xtype: 'hidden', name:'mid', value: params.rec.mid },
+            bl_combo,
+            //Baseliner.combo_baseline({ value: params.bl || '*' }),
+            //{ xtype: 'hidden', name:'collection', value: params.collection },
+            //{ xtype: 'hidden', name:'mid' , value: params.rec.mid },
             fieldset
         ]
     });
-    if( params.component ) {
-        Baseliner.ajaxEval( params.component, params, function(res){
-            if( res != undefined ) {
-                fieldset.add( res );
-                fieldset.doLayout();
-            }
+    form.on( 'afterrender', function(){
+        params.rec.collection = params.collection;
+        bl_combo.getStore().on( 'load', function(){
+            bl_combo.setValue( params.rec.bl );
         });
-    }
+        if( params.component ) {
+            Baseliner.ajaxEval( params.component, params, function(res){
+                if( res != undefined ) {
+                    fieldset.add( res );
+                    fieldset.doLayout();
+                    //form.getForm().loadRecord( params.rec );
+                }
+            });
+        } else {
+            //form.getForm().loadRecord( params.rec );
+        }
+    });
     form.on('destroy', function(){
         var g = params._parent_grid;
         if( g != undefined ) {
