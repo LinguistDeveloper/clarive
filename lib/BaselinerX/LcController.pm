@@ -215,7 +215,15 @@ sub changeset : Local {
 
     # topic changes
     my $where = { -or=>[ {is_changeset => 1},{is_release=>1} ], rel_type=>'topic_project', to_mid=>$id_project };
-    $where->{bl} = $bl eq 'new' ? '*' : $bl;
+    if( defined $p->{id_status} ) {
+        $where->{id_category_status} = $p->{id_status};
+    } else {
+        $where->{bl} =  '*'; # XXX should be the promoteables with bl="*"
+    }
+    _log _dump $c->model('Baseliner::BaliTopic')->search(
+        $where,
+        { prefetch=>['categories','children','master'] }
+    )->as_query;
     my @changes = $c->model('Baseliner::BaliTopic')->search(
         $where,
         { prefetch=>['categories','children','master'] }

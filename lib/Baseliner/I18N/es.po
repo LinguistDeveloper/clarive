@@ -3131,3 +3131,6 @@ msgstr "Scripts Globales"
 
 msgid "Deploy Job Items"
 msgstr "Despliegue de Ficheros"
+
+msgid "Mapping Order"
+msgstr "Orden de Mapeo"

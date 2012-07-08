@@ -60,6 +60,7 @@ sub lc_for_project {
         +{  node   => "$_->{name} [$_->{bl}]",
             type   => 'state',
             active => 1,
+            data => { id_status => $_->{id}, },
             bl     => $_->{bl},
             bl_to  => $_->{bl},                               # XXX
             icon   => '/static/images/icons/lc/history.gif'
