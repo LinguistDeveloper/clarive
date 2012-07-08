@@ -480,8 +480,8 @@ msgstr "Promover"
 msgid "Promote to %1"
 msgstr "Promover a %1"
 
-msgid "Demote from %1"
-msgstr "Devolver de %1"
+msgid "Demote to %1"
+msgstr "Devolver a %1"
 
 msgid "Position"
 msgstr "Posición"
