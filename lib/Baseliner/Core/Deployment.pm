@@ -12,7 +12,7 @@ Runs a list of scripts on each node.
 
 =cut
 use Moose;
-use Baseliner::Node;
+use Baseliner::CI;
 use Path::Class;
 use Moose::Util::TypeConstraints;
 use Baseliner::Utils;
@@ -27,7 +27,7 @@ has origin  => qw/is ro isa ArrayRef[PathClass] required 1/,
                traits  => ['Array'],
                handles => { each_origin => 'map', count=>'count' };
 
-has destination => qw/is ro does Baseliner::Role::Node::Filesys required 1/;
+has destination => qw/is ro does Baseliner::Role::CI::Destination required 1/;
 
 # base dir or regex to copy from origin path to destination path
 has base => qw/is ro isa Str default/ => '';
