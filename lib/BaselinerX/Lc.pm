@@ -43,9 +43,33 @@ sub lc_for_project {
     my $lc = $self->lc;
     _log "LC==========> $lc , " . ref $lc;
     my $nodes = $lc->{nodes};
-    my $states = $lc->{lifecycle}->{default}->{states};
+    #my $states = $lc->{lifecycle}->{default}->{states};
+
+    # General bag for starting the deployment workflow
+    my @states = (
+        {   node   => _loc('Ready'),
+            type   => 'state',
+            active => 1,
+            bl     => 'new',
+            icon   => '/static/images/icons/lc/history.gif'
+        }
+    );
+
+    # States-Statuses with bl and type = D (Deployable)
+    push @states, map {
+        +{  node   => "$_->{name} [$_->{bl}]",
+            type   => 'state',
+            active => 1,
+            bl     => $_->{bl},
+            bl_to  => $_->{bl},                               # XXX
+            icon   => '/static/images/icons/lc/history.gif'
+            }
+        } Baseliner->model('Baseliner::BaliTopicStatus')
+        ->search( { bl => { '<>' => '*' }, type=>'D'  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+            
+
     no strict;
-    [ @$nodes, @$states ];
+    [ @$nodes, @states ];
 }
 
 =head2 project_repos project=>'...'

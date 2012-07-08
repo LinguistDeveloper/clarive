@@ -4,11 +4,11 @@
 {
   xtype : "fieldset",
   autoHeight : true,
-  title : "JazzztelFactoría",
+  title : "JazzztelFactorÃ­a",
   items : [    {
       xtype : "textfield",
       name : "textvalue",
-      fieldLabel : "NombreFactoría"
+      fieldLabel : "NombreFactorÃ­a"
   },    {
       xtype : "timefield",
       fieldLabel : "Time",

@@ -129,6 +129,7 @@ sub tree_project : Local {
             expandable => \0
         };
     }
+
     # get sub projects TODO make this recurse over the previous controller (or into a model)
     my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project, active=>1 });
     while( my $r = $rs_prj->next ) {
@@ -213,7 +214,7 @@ sub changeset : Local {
     }
 
     # topic changes
-    my $where = { is_changeset => 1, rel_type=>'topic_project', to_mid=>$id_project };
+    my $where = { -or=>[ {is_changeset => 1},{is_release=>1} ], rel_type=>'topic_project', to_mid=>$id_project };
     $where->{bl} = $bl eq 'new' ? '*' : $bl;
     my @changes = $c->model('Baseliner::BaliTopic')->search(
         $where,
@@ -234,6 +235,7 @@ sub changeset : Local {
                 name  => $_->{title},
                 state_name  => $state_name,
                 topic_mid => $_->{mid},
+                topic_status   => $_->{id_category_status},
                 click => {
                     url   => sprintf('/comp/topic/topic_main.js' ),
                     type  => 'comp',
@@ -249,29 +251,55 @@ sub changeset : Local {
 }
 
 sub cs_menu {
-    my ($self, $topic,$bl ) = @_;
-    return [] if $bl eq '*';
+    my ($self, $topic, $bl_state ) = @_;
+    return [] if $bl_state eq '*';
     my @menu;
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
-    #my @changes = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+
     push @menu,
         {
         text => 'Deploy',
         eval => { url => '/comp/lifecycle/deploy.js', title => 'Deploy', job_type=>'static' },
         icon => '/static/images/silk/arrow_right.gif'
         };
-    1 and push @menu,
-        {
-        text => 'To Promote',
-        eval => { url => '/comp/lifecycle/deploy.js', title => 'Promote', job_type=>'promote' },
-        icon => '/static/images/silk/arrow_down.gif'
+
+    # Promote
+    my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+        { id_category=>$topic->{id_category}, id_status_from=>$topic->{id_category_status}, job_type=>'promote' },
+        { prefetch=>['statuses_from','statuses_to'], order_by =>{ -asc=>'statuses_to.seq' } }
+    )->hashref->all;
+
+    for my $status ( @status_to ) {
+        push @menu, {
+            text => _loc( 'Promote to %1', _loc( $status->{statuses_to}{name} ) ),
+            eval => {
+                url      => '/comp/lifecycle/deploy.js',
+                title    => 'To Promote',
+                job_type => 'promote',
+                status_to => $status->{statuses_to}{id},
+            },
+            icon => '/static/images/silk/arrow_down.gif'
         };
-    1 and push @menu,
-        {
-        text => 'Demote',
-        eval => { url => '/comp/lifecycle/deploy.js', title => 'Demote', job_type=>'demote' },
-        icon => '/static/images/silk/arrow_up.gif'
+    }
+
+    # Demote
+    my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+        { id_category=>$topic->{id_category}, id_status_from=>$topic->{id_category_status}, job_type=>'demote' },
+        { prefetch=>['statuses_from','statuses_to'], order_by =>{ -asc=>'statuses_to.seq' } }
+    )->hashref->all;
+
+    for my $status ( @status_from ) {
+        push @menu, {
+            text => _loc( 'Demote to %1', _loc( $status->{statuses_to}{name} ) ),
+            eval => {
+                url      => '/comp/lifecycle/deploy.js',
+                title    => 'Demote',
+                job_type => 'demote',
+                status_to => $status->{statuses_to}{id},
+            },
+            icon => '/static/images/silk/arrow_up.gif'
         };
+    }
     #push @menu,
     #    {
     #    text => 'Create Tag...',
@@ -452,9 +480,8 @@ sub agent_ftp : Local {
     for my $i ( $ftp->dir ) {
         next if $k++ == 0;
         my @f = split /[\s|\t]+/, $i;
-        my $vol = $f[0];
         
-        next if ($vol eq 'Migrated');
+        next if ($f[0] eq 'Migrated');
 
         my ($vol, $unit, $ref, $ext, $used, $fmt, $lrecl, $blksz, $dsorg, $dsname ) = @f;
         _log "FFFFFFFFFFFFFF=" . join ',', @f;

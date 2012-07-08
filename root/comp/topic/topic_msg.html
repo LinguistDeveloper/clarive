@@ -14,11 +14,21 @@
     $events
     $files
     $release => ''
+    $release_row => {}
     $topics
     $projects
     $labels
     $users
+    $show_priority => 0
+    $show_description => 0
+    $show_topics => 0
+    $show_projects => 0
+    $show_assign_to => 0
+    $show_files => 0
 </%args>
+<%perl>
+    my @tabactive = _array( $comments ) ? ( 1,0 ) : ( 0,1);
+</%perl>
 <script language="JavaScript">
     function returnOpposite(hexcolor) {
         var r = parseInt(hexcolor.substr(0,2),16);
@@ -28,6 +38,72 @@
         return (yiq >= 128) ? '000000' : 'FFFFFF';
     }    
 </script>
+<style>
+.badge-rel {
+    padding: 15px;    
+    width: 400px;
+    background: black;
+    margin: 50px auto;
+}
+.badge-rel-inner {
+padding: 0px 20px 0px 20px;
+    background: white;
+border-top-left-radius: 0px;
+border-top-right-radius: 0px;
+border-bottom-left-radius: 5px;
+border-bottom-right-radius: 5px;
+
+-webkit-border-top-left-radius: 0px;
+-webkit-border-top-right-radius: 0px;
+-webkit-border-bottom-left-radius: 5px;
+-webkit-border-bottom-right-radius: 5px;
+
+-moz-border-top-left-radius: 0px;
+-moz-border-top-right-radius: 0px;
+-moz-border-bottom-left-radius: 10px;
+-moz-border-bottom-right-radius: 10px;
+}
+
+
+.arrow_box {
+font-size: 10.998px;
+text-transform: uppercase;
+font-weight: bold;
+line-height: 14px;
+color: white;
+text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+white-space: nowrap;
+vertical-align: baseline;
+padding: 2px 4px 2px 7px;
+
+    position: relative;
+    background: #222;
+    border: 2px solid #c2e1f5;
+}
+.arrow_box:after, .arrow_box:before {
+    left: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.arrow_box:after {
+    border-left-color: #222;
+    border-width: 10px;
+    top: 50%;
+    margin-top: -10px;
+}
+.arrow_box:before {
+    border-left-color: #c2e1f5;
+    border-width: 13px;
+    top: 50%;
+    margin-top: -13px;
+}
+
+</style>
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
     <div class="grid_24">
 
@@ -73,7 +149,7 @@
 %if( $c->stash->{show_release} && $release ){
               <tr>
                 <th><% _loc('Release') %>:</th>
-                <td><% $release || '&nbsp;' %></td>
+                <td><span class="arrow_box" style="background-color:<% $release_row->{categories}{color} %>"><% $release || '&nbsp;' %></span></td>
               </tr>
 %}
               <tr>
@@ -84,7 +160,7 @@
                 <th><% _loc('Created On') %>:</th>
                 <td><% $created_on ? $created_on->dmy . ' ' . $created_on->hms : '&nbsp;' %></td>
               </tr>
-%if($c->stash->{show_priority}){
+%if($show_priority ){
               <tr>
                 <th><% _loc('Priority') %>:</th>
                 <td><% $priority || '&nbsp;' %></td>
@@ -94,7 +170,7 @@
                 <td><% $deadline ? $deadline->dmy . ' ' . $deadline->hms : '&nbsp;' %></td>
               </tr>
 %}
-%if($c->stash->{show_description}){
+%if($show_description && length $description ){
               <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>
               </tr>
@@ -102,9 +178,12 @@
                 <td colspan="2"><% $description || '&nbsp;' %></td>
               </tr>
 %}              
+
+%if( ($show_projects || $show_assign_to || $show_topics || $show_files)
+%       && ( _array($projects) || _array( $users ) || _array( $files ) || _array( $topics ) ) ) {                    
               <tr>
                 <td colspan="2">
-%if($c->stash->{show_projects}){                    
+%if( $show_projects ){                    
 % if( _array( $projects ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
@@ -122,7 +201,7 @@
 % }
 % }
 
-%if($c->stash->{show_assign_to}){                    
+%if( $show_assign_to ) {                    
 % if( _array( $users ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
@@ -133,6 +212,7 @@
                       <li class="">
 % foreach my $user ( _array( $users ) ) {
                       <li style="margin: 6px 0px 6px 0px">
+                          <img style="margin: 5px" width=16 src="/user/avatar/<% $user->{username} %>/image.png" />
                           <% $user->{username} %> - <% $user->{realname} %>
                       </li>
 % }
@@ -141,7 +221,7 @@
 % }
 
 
-%if($c->stash->{show_topics}){                    
+%if( $show_topics ){                    
 % if( _array( $topics ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
@@ -162,7 +242,7 @@
 % }
 
 
-%if($c->stash->{show_files}){                    
+%if($show_files){                    
 % if( _array( $files ) ) {
                     <ul class="nav nav-list">
                       <li class="nav-header">
@@ -191,6 +271,7 @@
 %}                
                 </td>
               </tr>
+%} # end mix block
             </tbody>
           </table>
     </div>
@@ -198,20 +279,24 @@
     <div class="clear"></div>
 
     <ul class="nav nav-tabs">
-      <li class="active">
+      <li <% $tabactive[0] and 'class="active"' %>>
         <a href="#comments<% $ii %>" data-toggle="tab"><% _loc('Comments') %></a>
       </li>
-      <li><a href="#activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a></li>
+      <li <% $tabactive[1] and 'class="active"' %>>
+        <a href="#activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a></li>
     </ul>
 
     <div class="grid_24">
         <div class="tab-content">
-          <div class="tab-pane active" id="comments<% $ii %>">
+          <div class="tab-pane <% $tabactive[0] and 'active' %>" id="comments<% $ii %>">
 
 % foreach my $com ( _array( $comments) ){
 %      my $id_div_com =  "comment_$com->{id}_$ii";
+
             <div style="margin-left: 20px" id="<% $id_div_com %>">  <!-- class 'well' -->
+
 %      if( $com->{content_type} eq 'code' )  {
+
                 <p><pre id="<% $id_div_com . '_ta' %>"><% $com->{text} %></pre></p>
 
 %#   codemirror does not work well under boot, needs a css reset before
@@ -219,28 +304,36 @@
 %#                    {lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true}) );}, 2000)</script>
 
 %      } else {
+
                 <p><% $com->{text} %></p>
+
 %      } 
+
                 <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $com->{created_by} %>/image.png" />
                     <b><%$com->{created_by}%></b>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
+
 %    if( $c->username eq $com->{created_by} ) {
+
                     | <a href="javascript:Baseliner.Topic.comment_edit( undefined, <% $com->{id} %>)"><% _loc("edit") %></a>
                     | <a href="javascript:Baseliner.Topic.comment_delete(<% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
+
 %    }
+
                 </small></p>
                 <hr />
             </div>
 %}
           </div>  <!-- comment tab -->
 
-          <div class="tab-pane" id="activity<% $ii %>">
+          <div class="tab-pane <% $tabactive[1] and 'active' %>" id="activity<% $ii %>">
 %  foreach ( _array( $events ) ) {
             <div style="margin-left: 20px">
-             <p><img style="margin: 5px" width=16 src="/user/avatar/<% $_->{username} %>/image.png" /><% $_->{text} %></p>
+             <p><img style="margin: 5px" width=16 src="/user/avatar/<% $_->{username} %>/image.png" /><% $_->{text} %> <small><% $_->{ts} %></small></p>
              <hr />
             </div> 
 %}
           </div> <!-- activity tab -->
+
       </div> <!-- tab content -->
   </div> <!-- lower grid -->
 </div> <!-- boot container -->

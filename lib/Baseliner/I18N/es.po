@@ -468,6 +468,9 @@ msgstr "Ramas"
 msgid "Deploy"
 msgstr "Desplegar"
 
+msgid "Deployable"
+msgstr "Desplegable"
+
 msgid "Promote"
 msgstr "Promoción"
 
@@ -3056,3 +3059,54 @@ msgstr "Sólo Lectura"
 
 msgid "Internal"
 msgstr "Interno"
+
+msgid "Ready"
+msgstr "Disponible"
+
+msgid "Enable Job"
+msgstr "Disponible para Pase"
+
+msgid "Are you sure you want to deploy %1 to baseline %2?"
+msgstr "¿Quiere desplegar %1 en el entorno %2?"
+
+msgid "Are you sure you want to delete the role %1?"
+msgstr "¿Seguro que quieres borrar el rol %1?"
+
+msgid "Update Baselines"
+msgstr "Actualiza Líneas Bases"
+
+msgid "Missing parameter revision"
+msgstr "Falta el parámetro revision"
+
+msgid "Missing parameter project"
+msgstr "Falta el parámetro project"
+
+msgid "Created job %1 of type %2 ok."
+msgstr "Creación de pase %1 de tipo %2 ok."
+
+msgid "Promoted baseline %1 to %2"
+msgstr "Línea Base promocionada de %1 a %2"
+
+msgid "Demoted baseline %1 to %2"
+msgstr "Línea Base devuelta de %1 a %2"
+
+msgid "Commit"
+msgstr "Commit"
+
+msgid "Changes"
+msgstr "Cambios"
+
+msgid "File %1 does not exist"
+msgstr "Fichero %1 no existe"
+
+msgid "Job %1 created ok"
+msgstr "Pase %1 creado"
+
+msgid "Error creating job: %1"
+msgstr "Error creando pase: %1"
+
+msgid "Error creating job"
+msgstr "Error creando pase"
+
+msgid "Frozen"
+msgstr "Congelado"

@@ -121,11 +121,13 @@
                     items: [
                         {boxLabel: _('General'), inputValue: 'G', checked: true},
                         {boxLabel: _('Initial'), inputValue: 'I'},
+                        {boxLabel: _('Deployable'), inputValue: 'D'},
                         {boxLabel: _('Final'), inputValue: 'F'}
                     ]
                 },
                 Baseliner.combo_baseline(),
-                { xtype:'checkbox', name:'job_enable', boxLabel:_('Enable Job') }
+                { xtype:'checkbox', name:'frozen', boxLabel:_('Frozen') },
+                { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
             ]
         });
 
