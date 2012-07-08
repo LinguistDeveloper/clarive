@@ -215,32 +215,42 @@ sub changeset : Local {
 
     # topic changes
     my $where = { -or=>[ {is_changeset => 1},{is_release=>1} ], rel_type=>'topic_project', to_mid=>$id_project };
+    my @changes;
     if( defined $p->{id_status} ) {
         $where->{id_category_status} = $p->{id_status};
+        @changes = $c->model('Baseliner::BaliTopic')->search(
+            $where,
+            { prefetch=>['categories','children','master'] }
+        )->hashref->all;
+        _log "IN CYCLE"; 
     } else {
-        $where->{bl} =  '*'; # XXX should be the promoteables with bl="*"
+        # Available 
+        $where->{'status.bl'} = '*';
+        $where->{id_category_status} = { -in => $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+                { 'statuses_to.bl' => { '<>' => '*' } },
+                { +select=>['id_status_from'], join=>['statuses_to'] }
+            )->as_query };
+        @changes = $c->model('Baseliner::BaliTopic')->search(
+                $where,
+                { prefetch=>['categories','children','master','status'] }
+            )->hashref->all;
     }
-    _log _dump $c->model('Baseliner::BaliTopic')->search(
-        $where,
-        { prefetch=>['categories','children','master'] }
-    )->as_query;
-    my @changes = $c->model('Baseliner::BaliTopic')->search(
-        $where,
-        { prefetch=>['categories','children','master'] }
-    )->hashref->all;
-    
+
     for ( @changes ) { 
+        my ($promotable, $demotable, $menu ) = $self->cs_menu( $_, $bl );
         my $topicid = "$_->{categories}{name} #$_->{mid}";
         push @tree, {
             url  => '/lifecycle/repo',
             icon => '/static/images/icons/topic_lc.png',
             text => "[$topicid] $_->{title}",
             leaf => \1,
-            menu => $self->cs_menu( $_, $bl ),
+            menu => $menu,
             data => {
                 ns    => 'changeset/' . $_->{mid},
                 bl    => $bl,
                 name  => $_->{title},
+                promotable => $promotable,
+                demotable => $demotable,
                 state_name  => $state_name,
                 topic_mid => $_->{mid},
                 topic_status   => $_->{id_category_status},
@@ -273,11 +283,17 @@ sub cs_menu {
 
     # Promote
     my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_category=>$topic->{id_category}, id_status_from=>$topic->{id_category_status}, job_type=>'promote' },
-        { join=>['statuses_from','statuses_to'], distinct=>1, +select=>[qw/statuses_to.name statuses_to.id/], order_by =>{ -asc=>'statuses_to.seq' } }
+        { id_category => $topic->{id_category}, id_status_from => $topic->{id_category_status}, job_type => 'promote' },
+        {   join     => [ 'statuses_from', 'statuses_to' ],
+            distinct => 1,
+            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id/],
+            order_by => { -asc => 'statuses_to.seq' }
+        }
     )->hashref->all;
 
+    my $promotable={};
     for my $status ( @status_to ) {
+        $promotable->{ $status->{statuses_to}{bl} } = \1;
         push @menu, {
             text => _loc( 'Promote to %1', _loc( $status->{statuses_to}{name} ) ),
             eval => {
@@ -293,12 +309,17 @@ sub cs_menu {
 
     # Demote
     my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_category=>$topic->{id_category}, id_status_from=>$topic->{id_category_status}, job_type=>'demote' },
-        { join=>['statuses_from','statuses_to'], distinct=>1, +select=>[qw/statuses_to.name statuses_to.id/],
-        order_by =>{ -asc=>'statuses_to.seq' } }
+        { id_category => $topic->{id_category}, id_status_from => $topic->{id_category_status}, job_type => 'demote' },
+        {   join     => [ 'statuses_from', 'statuses_to' ],
+            distinct => 1,
+            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id/],
+            order_by => { -asc => 'statuses_to.seq' }
+        }
     )->hashref->all;
 
+    my $demotable={};
     for my $status ( @status_from ) {
+        $demotable->{ $status->{statuses_to}{bl} } = \1;
         push @menu, {
             text => _loc( 'Demote to %1', _loc( $status->{statuses_to}{name} ) ),
             eval => {
@@ -311,14 +332,7 @@ sub cs_menu {
             icon => '/static/images/silk/arrow_up.gif'
         };
     }
-    #push @menu,
-    #    {
-    #    text => 'Create Tag...',
-    #    eval => { url => '/comp/git/tag_commit.js', title => 'Create Tag...' },
-    #    icon => '/static/images/icons/tag.gif',
-    #    data => { sha => $sha },
-    #    };
-    \@menu;
+    ( $promotable, $demotable, \@menu );
 }
 
 sub repo : Local {

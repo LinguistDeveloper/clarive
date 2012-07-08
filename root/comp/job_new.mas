@@ -581,23 +581,25 @@ Ext.onReady(function(){
                     //tree_check_folder_enabled(parent_node);
                 }
                 var attr = n.attributes;
-                if( attr.data.promotable == 1 ) {
-                    var bl = combo_baseline.getValue();
-                    var job_type = main_form.getForm().getValues()['job_type'];
-                    var bl_item = ( job_type == 'promote' ) ? attr.data.bl_to : attr.data.bl_from;
-                    if( bl_item == undefined ) {
-                        Baseliner.message( _('Error'),
-                            _("Cannot promote/demote revision %1 or missing baseline (job type %2)", attr.data.name, job_type ) );
-                    } else if( bl != bl_item ) {
-                        Baseliner.message( _('Error'),
-                            _("Revision baseline '%1' does not match the job baseline '%2'", bl_item, bl ) );
-                    } else {
-                        add_node(n);
-                    }
+                var data = n.attributes.data;
+                var job_type = main_form.getForm().getValues()['job_type'];
+                var bl = combo_baseline.getValue();
+                console.log( data );
+                //if( data.promotable[ bl ] == 1  || data.demot) {
+                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
+                if( bl_item == undefined ) {
+                    Baseliner.message( _('Error'),
+                        _("Cannot promote/demote revision %1 or missing baseline (job type %2)", attr.data.name, job_type ) );
+                //} else if( bl != bl_item ) {
+                    //Baseliner.message( _('Error'),
+                        //_("Revision baseline '%1' does not match the job baseline '%2'", bl_item, bl ) );
                 } else {
-                    var msg = ( job_type == 'promote' ) ? _("Not promotable") : _("Not demotable") ;
-                    Baseliner.message( _('Error'), msg );
+                    add_node(n);
                 }
+                //} else {
+                    //var msg = ( job_type == 'promote' ) ? _("Not promotable to %1", bl) : _("Not demotable to %1", bl) ;
+                    //Baseliner.message( _('Error'), msg );
+                //}
                 // multiple? Ext.each(dd.dragData.selections, add_node );
                 return (true); 
              }

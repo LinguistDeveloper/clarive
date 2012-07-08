@@ -575,6 +575,7 @@ sub list_category : Local {
                                                                             {
                                                                                 join => ['status'],
                                                                                 '+select' => ['status.name','status.id','status.bl'],
+                                                                                order_by => { -asc => ['status.seq'] },
                                                                             });            
         if($statuses){
             while( my $status = $statuses->next ) {

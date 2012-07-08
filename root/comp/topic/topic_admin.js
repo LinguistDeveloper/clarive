@@ -876,7 +876,10 @@
                                     statuses_to_checked.push(rec.get('id'));
                                 });                             
                                 
-                                
+                                if( ! combo_job_type.isVisible() ) {
+                                    combo_job_type.setValue('');
+                                }
+
                                 form.submit({
                                     params: {action: action, idsroles: roles_checked, idsstatus_to: statuses_to_checked},
                                     success: function(f,a){

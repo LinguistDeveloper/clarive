@@ -145,7 +145,7 @@ sub list_status : Local {
     my $cnt;
     my $row;
     my @rows;
-    $row = $c->model('Baseliner::BaliTopicStatus')->search();
+    $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>{ -asc => ['seq' ] } });
     
     if($row){
         while( my $r = $row->next ) {
@@ -194,6 +194,7 @@ sub update_status : Local {
                 my $status = $c->model('Baseliner::BaliTopicStatus')->find( $id_status );
                 $status->name( $p->{name} );
                 $status->description( $p->{description} );
+                $status->bl( $p->{bl} );
                 $status->type( $p->{type} );
                 $status->update();
                 
@@ -401,8 +402,9 @@ sub list_categories_admin : Local {
     my $rows = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         { id_category => $p->{categoryId} },
         {   
-            select   => [qw/id_role id_status_from job_type/],
-            group_by => [qw/id_role id_status_from job_type/],
+            select   => [qw/id_role id_status_from /],
+            group_by => [qw/id_role id_status_from /],
+            distinct => 1,
             join     => ['statuses_from'],
             orderby  => { -asc => [ 'id_role', 'id_status_from', 'statuses_from.seq' ] }
         }
@@ -415,24 +417,26 @@ sub list_categories_admin : Local {
             my $statuses_to = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
                 {   id_category    => $p->{categoryId},
                     id_role        => $rec->id_role,
-                    id_status_from => $rec->id_status_from
+                    id_status_from => $rec->id_status_from,
                 },
                 {
                     join=>['statuses_from'],
-                    order_by => ['statuses_from.seq']
+                    distinct=>1,
+                    order_by => { -asc => ['statuses_from.seq'] },
                 }
             );
             
-            my $job_type = $rec->job_type;
             # Grid for workflow configuration: right side field
             while( my $status_to = $statuses_to->next ) {
                 my $name = $status_to->statuses_to->name;
                 # show 
-                $job_type && $job_type ne 'none'
-                    and $name = sprintf '%s [%s]', $name, _loc($job_type);
+                my $job_type = $status_to->job_type;
+                if( $job_type && $job_type ne 'none' ) {
+                    $name = sprintf '%s [%s]', $name, lc( _loc($job_type) );
+                }
                 push @statuses_to,  $name;
             }
-            
+           _log _dump \@statuses_to; 
             push @rows, {
                          role      => $rec->roles->name,
                          status_from    => $rec->statuses_from->name,

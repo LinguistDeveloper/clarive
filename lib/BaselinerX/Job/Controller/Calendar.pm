@@ -96,11 +96,11 @@ sub calendar_list : Path('/job/calendar_list') {
 sub calendar_update : Path( '/job/calendar_update' ) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    eval {
+    try {
 		if( $p->{action} eq 'create' ) {
             my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } );
             if ( my $r = $r1->first ) {
-                die _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->name, $p->{ ns }, $p->{ bl } );
+                _fail _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->name, $p->{ ns }, $p->{ bl } );
 			} else {
 				my $row = $c->model('Baseliner::BaliCalendar')->create({
                         name        => $p->{ name },
@@ -144,14 +144,12 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             $p->{ bl } and $row->bl( $p->{ bl } );
             $row->update;
         }
-    };
-    if ( $@ ) {
-        _log $@;
-        $c->stash->{ json } = { success => \0, msg => _loc( "Error modifying the calendar: " ) . $@ };
-    }
-    else {
         $c->stash->{ json } = { success => \1, msg => _loc( "Calendar '%1' modified", $p->{ name } ) };
-    }
+    } catch {
+        my $err = shift;
+        _log "CAL ERR=$err";
+        $c->stash->{ json } = { success => \0, msg => _loc( "Error modifying the calendar: %1", $err ) };
+    };
     $c->forward( 'View::JSON' );
 }
 
@@ -368,7 +366,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                     $cierra = 1;
                 }
                 else {
-                    die( "<H5>Error: id '$id' de ventana no encontrado.</H5>" );
+                    _fail( "<H5>Error: id '$id' de ventana no encontrado.</H5>" );
                 }
             }
             elsif ( $cmd eq "A" or $cmd eq "AD" ) {
@@ -386,7 +384,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                         . " currentDate: $currentDate";
 
                     #Inicio está en una ventana ya existente
-                    die(      "<h5>Error: la hora de inicio de ventana ($ven_ini) se solapa con la siguiente ventana:<br>"
+                    _fail(      "<h5>Error: la hora de inicio de ventana ($ven_ini) se solapa con la siguiente ventana:<br>"
                             . "-----------VENTANA: ven: $ven id: $id tipo: "
                             . $ven->{ tipo }
                             . " ven_ini: $ven_ini ven_fin: "
@@ -414,7 +412,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                     {
 
                         #Fin está en una ventana ya existente
-                        die(      "<h5>Error: la hora de fin de ventana ($ven_fin) se solapa con la siguiente ventana: "
+                        _fail(      "<h5>Error: la hora de fin de ventana ($ven_fin) se solapa con la siguiente ventana: "
                                 . "-----------VENTANA: ven: $ven id: $id tipo: "
                                 . $ven->{ tipo }
                                 . " ven_ini: $ven_ini ven_fin: "
@@ -468,7 +466,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                 $cierra = 1;
             }
             else {
-                die( "<h5>Error: Comando desconocido o incompleto.</h5>" );
+                _fail( "<h5>Error: Comando desconocido o incompleto.</h5>" );
             }
 
             last unless ( $cierra );
