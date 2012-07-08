@@ -570,6 +570,7 @@ sub list_category : Local {
         }
         $cnt = $#rows + 1 ; 
     }else{
+        # Status list for combo and grid in workflow 
         my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}},
                                                                             {
                                                                                 join => ['status'],
@@ -580,7 +581,7 @@ sub list_category : Local {
                 push @rows, {
                                 id      => $status->status->id,
                                 bl      => $status->status->bl,
-                                name    => $status->status->name
+                                name    => $status->status->name_with_bl,
                             };
             }
         }
@@ -763,7 +764,7 @@ sub filters_list : Local {
     
     # Filter: Categories
     my @categories;
-    my $row = $c->model('Baseliner::BaliTopicCategories')->search();
+    $row = $c->model('Baseliner::BaliTopicCategories')->search();
     
     if($row){
         while( my $r = $row->next ) {
@@ -1245,6 +1246,8 @@ sub newjob : Local {
             comments => $p->{comments},
             items    => [ @contents ]
         );
+        $job->stash_key( status_from => $p->{status_from} );
+        $job->stash_key( status_to => $p->{status_to} );
         $job->update;
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
     } catch {

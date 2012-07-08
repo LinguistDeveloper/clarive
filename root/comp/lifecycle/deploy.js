@@ -21,8 +21,10 @@
     if( bl == 'new' ) {
         bl = 'DESA';  // XXX
     }
-    Baseliner.confirm( _('Are you sure you want to deploy %1 in baseline %2', String.format("<b>{0}</b>", name), String.format("<b>{0}</b>",_(state_name)) ), function() { 
-        Baseliner.ajaxEval( '/topic/newjob', { ns: ns, bl: bl, job_type: job_type }, function(res) {
+    var status_to = action.status_to;
+    var status_from = node.attributes.data.topic_status;
+    Baseliner.confirm( _('Are you sure you want to deploy %1 to baseline %2', String.format("<b>{0}</b>", name), String.format("<b>{0}</b>",_(state_name)) ), function() { 
+        Baseliner.ajaxEval( '/topic/newjob', { ns: ns, bl: bl, job_type: job_type, status_to: status_to, status_from: status_from }, function(res) {
             if( res.success ) {
                 Baseliner.message( _('Job'), res.msg );
             } else {

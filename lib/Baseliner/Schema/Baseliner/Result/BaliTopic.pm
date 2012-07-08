@@ -99,6 +99,21 @@ __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid
 __PACKAGE__->master_setup( 'projects', ['topic','mid'] => ['project', 'BaliProject','mid'] );
 __PACKAGE__->master_setup( 'topics', ['topic','mid'] => ['topic', 'BaliTopic','mid'] );  # topic_topic
 
+sub badge_name {
+    my ($self) =@_;
+    my $cat = $self->categories;
+    if( $cat->is_release ) {
+        my $title = $self->title;
+        $title =~ s{^(\w+\s+\w+)\s+.*$}{$1};
+        return $title;
+    } else {
+        return sprintf '%s #%s', $cat->name, $self->mid;
+    }
+}
 
+sub full_name {
+    my ($self) =@_;
+    sprintf '[%s] %s', $self->badge_name, $self->title;
+}
 
 1;

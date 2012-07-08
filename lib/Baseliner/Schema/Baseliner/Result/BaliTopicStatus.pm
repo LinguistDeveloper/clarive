@@ -22,10 +22,19 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 1024 },
   "type",
   { data_type => "char", is_nullable => 1, size => 1 },
+  "seq",
+  { data_type => "number", is_nullable => 1, default_value=>1 },
   "bl",
   { data_type => "varchar2", is_nullable => 0, size => 1024, default_value=>'*' },
 
 );
 __PACKAGE__->set_primary_key("id");
+
+sub name_with_bl {
+    my ($self)=@_;
+    $self->bl eq '*' 
+        ? $self->name
+        : sprintf '%s [%s]', $self->name, $self->bl;
+}
 
 1;
