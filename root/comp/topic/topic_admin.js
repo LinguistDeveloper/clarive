@@ -1048,18 +1048,6 @@
     
         var field_box_store = new Baseliner.store.Fields();
     
-    // --------------- Forms 
-    var form_category_store = new Ext.data.JsonStore({
-        root: 'data' , 
-        remoteSort: true,
-        autoLoad: true,
-        totalProperty:"totalCount", 
-        baseParams: {},
-        id: 'form_path', 
-        url: '/topicadmin/list_forms',
-        fields: ['form_name','form_path'] 
-    });
-
     var edit_form_category = function(rec) {
         var win;
         var title = _('Create fields');
@@ -1071,29 +1059,40 @@
             field_box.setValue( rec.fields ) ;            
         });     
 
+        // --------------- Forms 
+        var form_category_store = new Ext.data.JsonStore({
+            root: 'data' , 
+            remoteSort: true,
+            autoLoad: true,
+            totalProperty:"totalCount", 
+            baseParams: {},
+            id: 'form_path', 
+            url: '/topicadmin/list_forms',
+            fields: ['form_name','form_path'] 
+        });
         var fc_tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">{form_name}</div></tpl>');
         var fc_tpl_field = new Ext.XTemplate( '<tpl for=".">{form_name}</tpl>' );
+
         var form_category_select = new Ext.ux.form.SuperBoxSelect({
             store: form_category_store,
             allowBlank: true,
             msgTarget: 'under',
-            allowAddNewData: true,
-            addNewDataOnBlur: true, 
+            //allowAddNewData: true,
+            //addNewDataOnBlur: true, 
             emptyText: _('Select forms to add to the category'),
             triggerAction: 'all',
             resizable: true,
-            mode: 'local',
+            mode: 'remote',
             fieldLabel: _('Forms'),
             typeAhead: true,
-                name: 'form_name',
-                displayField: 'form_name',
+                name: 'forms',
                 hiddenName: 'forms',
+                displayField: 'form_name',
                 valueField: 'form_name',
             tpl: fc_tpl_list,
             displayFieldTpl: fc_tpl_field,
             extraItemCls: 'x-tag'
         });
-        
         var form_category = new Ext.FormPanel({
             frame: false,
             border: false,
@@ -1146,6 +1145,12 @@
             ff.loadRecord( rec );
             title = _('Edit fields');
         }
+
+        form_category_store.on('load', function(){
+            if( rec && rec.data.forms != undefined ) {
+                form_category_select.setValue( rec.data.forms[0] );    
+            }
+        });
         
         win = new Ext.Window({
             title: _(title),

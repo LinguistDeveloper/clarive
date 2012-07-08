@@ -18,6 +18,16 @@ Baseliner.errorWin = function( p_title, p_html ) {
 };
 
 
+Baseliner.alert = function(title, format){
+    var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
+    Ext.Msg.alert({
+        title: title,
+        msg: s
+        //buttons: Ext.Msg.OK,
+        //icon: Ext.Msg.ERROR
+    });
+};
+
 Baseliner.error = function(title, format){
     var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
     Ext.Msg.show({
