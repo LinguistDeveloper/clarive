@@ -1,8 +1,11 @@
 (function(params){
     delete params['tab_index'];  // this comes from the tab data
     var ps = 30;
+
     var record = Ext.data.Record.create([ 'mid','_id','bl','_parent','_is_leaf',
-        'type', 'pretty_properties', 'name', 'item','class','versionid','ts','tags','data','properties','icon','collection']);
+        'type', 'pretty_properties', 'name', 'item',
+        'class','versionid','bl', 'ts','tags','data','properties','icon','collection']);
+
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/ci/gridtree',
@@ -16,15 +19,11 @@
         emptyText: _('<Enter your search string>')
     });
     
-    // XXX fix me, this should not be global
-    Baseliner.ci_add = function( index ) {
-        var rec = store_ci.getAt( index );
-        if( rec == undefined ) return false;
-        var classname = rec.data.class;
-        var collection = rec.data.collection;
-        var component = String.format('/ci/{0}.js' , collection );
-        Baseliner.add_tabcomp( component, _('New %1' , classname), rec.data );
-        return false;
+    // only globals can be seen from grid
+    Baseliner.ci_edit = function( gridid, ix ){
+        var g = Ext.getCmp( gridid );
+        if( g!= undefined ) 
+            ci_edit( g.getStore().getAt(ix).data );
     };
 
     var ci_edit = function(rec){
@@ -33,17 +32,28 @@
         var collection = data.collection ;
         var component = String.format('/ci/{0}.js' , collection );
         Baseliner.add_tabcomp( '/ci/new.js', _('CI %1' , rec.name ), 
-            Ext.apply({
+            {
                 component: component,
+                collection: collection,
                 _parent_grid: ci_grid,
                 mid: rec.mid,
                 rec: rec,
+                data: data,
+                class: data.class,
+                tab_icon: rec.icon,
                 action: 'edit'
-            },
-            data) );
+            }
+        );
     };
 
-    var ci_create = function(){
+    // only globals can be seen from grid
+    Baseliner.ci_add = function( gridid, ix ){
+        var g = Ext.getCmp( gridid );
+        if( g!= undefined ) 
+            ci_add( g.getStore().getAt(ix).data );
+    };
+
+    var ci_add = function(){
         var data = store_ci.baseParams;
         var classname = data.class ;
         var collection = data.collection ;
@@ -54,14 +64,16 @@
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
         }
-        Baseliner.add_tabcomp( '/ci/new.js', _('New %1' , classname), 
-            Ext.apply({
+        Baseliner.add_tabcomp( '/ci/new.js', _('New: %1' , params.item ), {
                 component: component,
                 _parent_grid: ci_grid,
+                collection: collection,
                 rec: rec,
+                data: data,
+                class: data.class,
+                tab_icon: data.icon,
                 action: 'add'
-            },
-            data) );
+        });
     };
 
     // Usage:   var checked = Baseliner.multi_check_data( check_sm, 'mid' );
@@ -104,10 +116,13 @@
     var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( rec.data.type == 'class' ) {
             // we create objects
-            value = String.format('<a href="#" onclick="Baseliner.ci_add({0})">{1}</a>', rowIndex, value );
+            value = String.format('<a href="#" onclick="Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
         }
-        value = '<table><tr><td width="1"><img style="margin-top:-2px" src="' + rec.data.icon + '" alt="" /></td><td>' + value + '</td></tr></table>';
-        return value;
+        var ed = String.format('Baseliner.ci_edit(\'{0}\',{1})', ci_grid.id, rowIndex, value );
+        var ret = '<table><tr><td width="1">';
+        ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
+        ret += '</td><td><b><a href="#" onclick="'+ed+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value == undefined ) return '';
@@ -156,7 +171,7 @@
     });
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
-        title: _('CI: %1', params.item),
+        title: _('CI Class: %1', params.item),
         stripeRows: false,
         autoScroll: true,
         autoWidth: true,
@@ -173,7 +188,7 @@
         tbar: [ 
             //{ xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
             search_field,
-            { xtype:'button', text: _('Create'), icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon', handler: ci_create },
+            { xtype:'button', text: _('Create'), icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon', handler: ci_add },
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
@@ -191,7 +206,7 @@
             { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
             { id:'item', header: _('Item'), dataIndex: 'item', width: 230, renderer: render_item },
             { header: _('Collection'), width: 160, dataIndex: 'collection' },
-            { header: _('ID'), width: 30, dataIndex: 'mid' },
+            { header: _('ID'), width: 45, dataIndex: 'mid' },
             { header: _('Class'), hidden: true, width: 160, dataIndex: 'class' },
             { header: _('Baseline'), width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl },
             { header: _('Version'), width: 50, dataIndex: 'versionid' },

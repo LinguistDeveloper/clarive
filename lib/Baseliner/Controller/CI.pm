@@ -91,7 +91,7 @@ sub list : Local {
         #$_->{id} = $_->{_id};
         $n->{url} = '/ci/list';
         $n->{data} = $_;
-        $n->{data}{click} = { url=>'/comp/ci-gridtree.js', type=>'comp', icon=>$p->{icon} };
+        $n->{data}{click} = { url=>'/comp/ci-gridtree.js', type=>'comp', icon=>$_->{icon} };
         $n;
     } @tree;
     _debug _dump( \@tree );
@@ -175,7 +175,7 @@ sub tree_classes {
             _parent    => $p{parent},
             _is_leaf   => \0,
             type       => 'class',
-            mid        => $cnt,
+            #mid        => $cnt,
             item       => $item,
             collection => $collection,
             class      => $_,
@@ -260,6 +260,7 @@ sub tree_object_depend {
     my @tree = map {
         my $class = 'BaselinerX::CI::GenericServer';  # TODO reverse lookup
         my $data = _load( $_->{yaml} );
+        my $bl = [ split /,/, $_->{bl} ];
         +{
             _id        => ++$cnt,
             _parent    => $p{parent},
@@ -268,6 +269,7 @@ sub tree_object_depend {
             item       => ( $_->{name} // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
             type       => 'object',
             class      => $class,
+            bl         => $bl,
             collection => $_->{$rel_type}{collection},
             icon       => $class->icon,
             ts         => $_->{$rel_type}{ts},
@@ -358,24 +360,36 @@ sub store : Local {
 sub update : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    # don't store in yaml
     my $name = delete $p->{name};
+    my $bl = delete $p->{bl};
     my $mid = delete $p->{mid};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
 
-    if( $action eq 'add' ) {
-        master_new $collection => $name => $p;
-    }
-    elsif( $action eq 'edit' && defined $mid ) {
-        my $row = $c->model('Baseliner::BaliMaster')->find( $mid );
-        if( $row ) {
-            $row->yaml( _dump( $p ) );
-            $row->update;
+    try {
+        if( $action eq 'add' ) {
+            master_new $collection => $name => $p;
         }
-    }
-    
+        elsif( $action eq 'edit' && defined $mid ) {
+            my $row = $c->model('Baseliner::BaliMaster')->find( $mid );
+            if( $row ) {
+                $row->name( $name );
+                $row->yaml( _dump( $p ) );
+                $row->bl( join ',', _array $bl ); # TODO mid rel bl 
+                $row->update;
+                _log _dump { $row->get_columns };
+            }
+        }
+        else {
+            _fail _loc("Undefined action");
+        }
+        $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
+    };
 
-    $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
     $c->forward('View::JSON');
 }
 

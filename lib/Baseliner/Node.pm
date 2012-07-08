@@ -8,10 +8,14 @@ sub new {
     my %args;
     if( @_ == 0 ) {
         _throw "Missing node URI";
-    } elsif( @_ == 1 && ! ref $_[0] ) {
-        $args{uri} = $_[0];
     } elsif( @_ == 1 && ref $_[0] eq 'HASH' ) {
         %args = %{ $_[0] };
+    } elsif( @_ == 1 && is_number( $_[0] ) ) {   # mid! a CI!
+        my $rec = Baseliner->model('Baseliner::BaliMaster')->find( $_[0] );
+        my $class = "BaselinerX::CI::" . $rec->collection;
+        return $class->new( _load( $rec->yaml ) );
+    } elsif( @_ == 1 && ! ref $_[0] ) {
+        $args{uri} = $_[0];
     } elsif( @_ == 2 && ! ref $_[0] && ref $_[1] eq 'HASH' ) {
         %args = %{ $_[1] };
         $args{uri} = $_[0];

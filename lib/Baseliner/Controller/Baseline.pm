@@ -70,6 +70,7 @@ sub bl_list : Path('/core/baselines') {
 
 sub json : Local {
     my ($self,$c)=@_;
+    my $p = $c->req->params;
     my @bl_list =
     map {
         +{  name        => $_->{name},
@@ -79,6 +80,7 @@ sub json : Local {
             active      => 1
          }
     } Baseliner::Core::Baseline->baselines();
+    @bl_list = grep { $_->{bl} ne '*' } @bl_list if $p->{no_common};
     $c->stash->{json} = { totalCount=>scalar(@bl_list), data=> \@bl_list };
     $c->forward('View::JSON');
 }
