@@ -22,6 +22,7 @@
     }
     var state_name = node.attributes.data.state_name;
     var status_to = action.status_to;
+    var bl_to = action.bl_to;
     var to_state_name = action.status_to_name;
     var status_from = node.attributes.data.topic_status;
     Baseliner.confirm( _('Are you sure you want to deploy %1 to baseline %2?', String.format("<b>{0}</b>", name), String.format("<b>{0}</b>",_(to_state_name)) ), function() { 

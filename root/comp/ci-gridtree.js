@@ -24,6 +24,7 @@
         var g = Ext.getCmp( gridid );
         if( g!= undefined ) 
             ci_edit( g.getStore().getAt(ix).data );
+        return false;
     };
 
     var ci_edit = function(rec){
@@ -51,6 +52,7 @@
         var g = Ext.getCmp( gridid );
         if( g!= undefined ) 
             ci_add( g.getStore().getAt(ix).data );
+        return false;
     };
 
     var ci_add = function(){
@@ -116,12 +118,12 @@
     var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( rec.data.type == 'class' ) {
             // we create objects
-            value = String.format('<a href="#" onclick="Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
+            value = String.format('<a href="javascript:Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
         }
         var ed = String.format('Baseliner.ci_edit(\'{0}\',{1})', ci_grid.id, rowIndex, value );
         var ret = '<table><tr><td width="1">';
         ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
-        ret += '</td><td><b><a href="#" onclick="'+ed+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        ret += '</td><td><b><a href="javascript:'+ed+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {

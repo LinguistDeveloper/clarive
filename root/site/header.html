@@ -180,7 +180,7 @@ Ext.onReady(function(){
                     if($user ne 'root'){
                      $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
                     }
-                    $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/users.gif' } );
+                    $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/icons/users.gif' } );
                     print js_dumper { text=>$c->username , menu=> [
             sort {
                 $a->{index}||=0;

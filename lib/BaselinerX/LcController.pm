@@ -274,12 +274,18 @@ sub cs_menu {
     my @menu;
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
 
-    push @menu,
-        {
+    push @menu, {
         text => 'Deploy',
-        eval => { url => '/comp/lifecycle/deploy.js', title => 'Deploy', job_type=>'static' },
+        eval => {
+            url            => '/comp/lifecycle/deploy.js',
+            title          => 'Deploy',
+            bl_to          => $bl_state,
+            status_to      => '',                            # id?
+            status_to_name => '',                            # name?
+            job_type       => 'static'
+        },
         icon => '/static/images/silk/arrow_right.gif'
-        };
+    };
 
     # Promote
     my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
@@ -300,6 +306,7 @@ sub cs_menu {
                 url      => '/comp/lifecycle/deploy.js',
                 title    => 'To Promote',
                 job_type => 'promote',
+                bl_to => $status->{statuses_to}{bl},
                 status_to => $status->{statuses_to}{id},
                 status_to_name => $status->{statuses_to}{name},
             },
@@ -326,6 +333,8 @@ sub cs_menu {
                 url      => '/comp/lifecycle/deploy.js',
                 title    => 'Demote',
                 job_type => 'demote',
+                bl_to => $status->{statuses_to}{bl},
+                status_to => $status->{statuses_to}{id},
                 status_to => $status->{statuses_to}{id},
                 status_to_name => $status->{statuses_to}{name},
             },

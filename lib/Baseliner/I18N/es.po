@@ -3138,6 +3138,7 @@ msgstr "Despliegue de Ficheros"
 msgid "Mapping Order"
 msgstr "Orden de Mapeo"
 
+<<<<<<< HEAD
 # lib/Baseliner/Utils.pm (475)
 msgid "Could not open template file %1"
 msgstr "No se ha podido abrir el fichero de plantilla %1"
@@ -3574,3 +3575,8 @@ msgstr "El mapeo a `%1` no tiene elementos coincidentes"
 msgid "*Pushed deployment* for `%1`"
 msgstr "*Despliegue añadido* para `%1`"
 
+msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
+msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
+
+msgid "Job element '%1' is in an active job: %2"
+msgstr "Item de pase '%1' está en un pase activo: %2"

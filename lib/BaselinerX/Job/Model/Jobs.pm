@@ -272,7 +272,7 @@ sub _create {
             # check contents job status
             _log "Checking if in active job: " . $item->{ns};
             my $active_job = $self->is_in_active_job( $item->{ns} );
-            _throw _loc("Job element '%1' is in an active job: %2", $item->{ns}, $active_job->name)
+            _fail _loc("Job element '%1' is in an active job: %2", $item->{ns}, $active_job->name)
                 if ref $active_job;
                     # item => $item->{ns},
             my $provider=$1 if $item->{provider} =~ m/^namespace\.(.*)$/g;
