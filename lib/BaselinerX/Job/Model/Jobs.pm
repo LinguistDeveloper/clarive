@@ -569,11 +569,15 @@ sub get_contents {
             push @{$result->{packages}->{$ns->{ns_data}->{project}}}, { name => $ns->{ns_name}, type => $ns->{ns_type} };
             push @{$result->{elements}},
                 map { 
-                    $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
-                    #_log $_->path;
-                    my $tech = $1;
-                    $technologies{$tech} = '';
-                    {name => $_->name, status => $_->status, path => $_->path} 
+                    try {
+                        $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
+                        #_log $_->path;
+                        my $tech = $1;
+                        $technologies{$tech} = '';
+                        {name => $_->name, status => $_->status, path => $_->path} 
+                    } catch {
+                        +{}
+                    };
                 } @elements_list;
     
             my $rs_topics =

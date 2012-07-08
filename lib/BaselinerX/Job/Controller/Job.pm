@@ -272,10 +272,18 @@ sub monitor_json : Path('/job/monitor_json') {
         my $type = _loc( $r->type );
 		my %app;
 		my @items = _array $job_items{$r->id};
+        # TODO make this mid - master_rel relationship
         my $contents = @items ? [
 			  map {
 				  $app{ $_->{application} }=() if defined $_->{application};
-				  ( ns_split( $_->{item} ) )[1]
+                  my ( $dom,$nsid) = ns_split( $_->{item} );
+                  my $ret;
+                  if( $dom eq 'changeset' ) {
+                    $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name } catch { $nsid };
+                  } else {
+                    $ret = $nsid;
+                  }
+				  $ret;
 			  } @items
 		  ] : [];
 		my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
