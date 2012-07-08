@@ -629,6 +629,32 @@
             sortable: false,
             checkOnly: true
         });
+        
+        var job_type_switch = function( rec, data ) {
+            var sel = check_admin_status_sm.getSelections();
+            var flag = true;
+            for( var i=0; i<sel.length; i++ ) {
+                var bl = sel[i].data.bl;
+                if( bl==undefined || bl == ''  || bl == '*' ) 
+                    flag = false;
+            }
+            if( flag && ( rec.data.is_changeset==1 || rec.data.is_release )
+                && data.bl!= undefined && data.bl!='' && data.bl != '*' ) {
+                combo_job_type.show();
+                combo_job_type.setValue('promote');
+            } else {
+                combo_job_type.hide();
+                combo_job_type.setRawValue('*');
+            }
+        };
+        check_admin_status_sm.on('rowselect', function( sm,ix,row ){
+            job_type_switch( rec, row.data );
+        });
+
+        check_admin_status_sm.on('rowdeselect', function( sm,ix,row ){
+            job_type_switch( rec, row.data );
+        });
+
 
         var grid_admin_status = new Ext.grid.GridPanel({
             sm: check_admin_status_sm,
@@ -705,14 +731,7 @@
 
                     // show job_type combo ?
                     var bl = r.data.bl;
-                    if( ( rec.data.is_changeset==1 || rec.data.is_release )
-                        && bl!= undefined && bl!='' && bl != '*' ) {
-                        combo_job_type.show();
-                        combo_job_type.setValue('promote');
-                    } else {
-                        combo_job_type.hide();
-                        combo_job_type.setRawValue('');
-                    }
+                    job_type_switch( rec, r.data );
                 }
             }           
         });

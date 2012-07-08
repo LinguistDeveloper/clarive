@@ -477,6 +477,12 @@ msgstr "Promoción"
 msgid "To Promote"
 msgstr "Promover"
 
+msgid "Promote to %1"
+msgstr "Promover a %1"
+
+msgid "Demote from %1"
+msgstr "Devolver de %1"
+
 msgid "Development"
 msgstr "Desarrollo"
 
@@ -3110,3 +3116,18 @@ msgstr "Error creando pase"
 
 msgid "Frozen"
 msgstr "Congelado"
+
+msgid "Directory"
+msgstr "Directorio"
+
+msgid "Deployments"
+msgstr "Despliegues"
+
+msgid "Scripts Single"
+msgstr "Scripts Individuales"
+
+msgid "Scripts Multi"
+msgstr "Scripts Globales"
+
+msgid "Deploy Job Items"
+msgstr "Despliegue de Ficheros"

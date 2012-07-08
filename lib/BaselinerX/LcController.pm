@@ -266,7 +266,7 @@ sub cs_menu {
     # Promote
     my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         { id_category=>$topic->{id_category}, id_status_from=>$topic->{id_category_status}, job_type=>'promote' },
-        { prefetch=>['statuses_from','statuses_to'], order_by =>{ -asc=>'statuses_to.seq' } }
+        { prefetch=>['statuses_from','statuses_to'], +select=>[qw/statuses_to.name statuses_to.id/], order_by =>{ -asc=>'statuses_to.seq' } }
     )->hashref->all;
 
     for my $status ( @status_to ) {
@@ -277,6 +277,7 @@ sub cs_menu {
                 title    => 'To Promote',
                 job_type => 'promote',
                 status_to => $status->{statuses_to}{id},
+                status_to_name => $status->{statuses_to}{name},
             },
             icon => '/static/images/silk/arrow_down.gif'
         };
@@ -296,6 +297,7 @@ sub cs_menu {
                 title    => 'Demote',
                 job_type => 'demote',
                 status_to => $status->{statuses_to}{id},
+                status_to_name => $status->{statuses_to}{name},
             },
             icon => '/static/images/silk/arrow_up.gif'
         };

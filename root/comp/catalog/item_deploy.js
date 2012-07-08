@@ -1,6 +1,25 @@
 (function(params) {
     if( params==undefined ) params={};
 
+    Baseliner.cis = function(c) {
+        if( c==undefined ) c={};
+        var role = ( c.role == undefined ? 'CI' : c.role );
+        var ci_store = new Baseliner.store.CI({ baseParams: { role:role } });
+        var cis = new Baseliner.model.CISelect(Ext.apply({
+            store: ci_store, 
+            singleMode: true, 
+            fieldLabel:_('CI'), 
+            name:'ci', 
+            hiddenName:'ci', 
+            allowBlank:false }, c)); 
+        ci_store.on('load',function(){
+            if( c.value != undefined )  {
+               cis.setValue( c.value ) ;            
+            }
+        });
+        return cis;
+    };
+
     var scripts_single = Baseliner.array_field({ name:'scripts_single',
         title:_('Scripts Single'), label:_('Scripts Single'), value: params.scripts_single, default_value: 'ssh_script://user@host:port/path/new_script.sh'});
 
@@ -15,13 +34,16 @@
         title:_('Exclude'), label:_('Exclude'), description: _('Element pattern regex to exclude'),
             value: params.exclude, default_value: '\\.ext$'});
 
-    var deployments = Baseliner.array_field({ name:'deployments', description: _('List of nodes to deploy to'),
-        title:_('Deployments'), label:_('Deployments'), value: params.deployments, default_value: 'new_deployment'});
+    var deployments = Baseliner.cis({ name:'deployments', hiddenName:'deployments', role: 'Destination', description: _('List of nodes to deploy to'),
+        fieldLabel:_('Deployments'), value: params.deployments });
+
+    //var deployments = Baseliner.array_field({ name:'deployments', description: _('List of nodes to deploy to'),
+        //title:_('Deployments'), label:_('Deployments'), value: params.deployments, default_value: 'new_deployment'});
     
     var tabs = new Ext.TabPanel({ width: '705', height: '200',
-                items: [ include.grid, exclude.grid, deployments.grid, scripts_single.grid, scripts_multi.grid ] });
+                items: [ include.grid, exclude.grid, scripts_single.grid, scripts_multi.grid ] });
 
-    tabs.setActiveTab( deployments.grid );
+    tabs.setActiveTab( include.grid );
 
     var form = new Ext.FormPanel( {
          border : false,
@@ -65,7 +87,7 @@
             { xtype: 'checkbox', name: 'path_deploy', fieldLabel: _('Path'), boxLabel: _("Deploy full workspace path"),
                 checked: params.path_deploy == undefined ? false : params.path_deploy
             },
-            deployments.data,
+            deployments,
             scripts_single.data,
             scripts_multi.data,
             include.data,

@@ -715,7 +715,6 @@ Baseliner.model.CISelect = function(c) {
             valueField: 'mid',
         tpl: tpl_list,
         displayFieldTpl: tpl_field,
-        value: '/',
         extraItemCls: 'x-tag'
     }, c));
 };
@@ -803,3 +802,47 @@ Baseliner.form.ComboList = function(c) {
 };
 Ext.extend( Baseliner.form.ComboList, Ext.form.ComboBox );
 
+Baseliner.model.SelectBaseline = function(c) {
+    var self = this;
+    var tpl_list = new Ext.XTemplate(
+        '<tpl for="."><div class="search-item">',
+        '<span id="boot"><strong>{[ values.bl == "*" ? _("Common") : values.bl ]}</strong> {name}</span>',
+        '</div></tpl>'
+    );
+    var tpl_field = new Ext.XTemplate( '<tpl for=".">{[ values.bl == "*" ? _("Common") : values.bl ]}</tpl>' );
+    var store = new Ext.data.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty:"totalCount", 
+        baseParams: {}, //{ no_common: true },
+        id: 'id', 
+        url: '/baseline/json',
+        fields: ['id','bl','name','description', 'active'] 
+    });
+    Baseliner.model.SelectBaseline.superclass.constructor.call(this, Ext.apply({
+       fieldLabel: _("Baseline"),
+           name: 'bl',
+           hiddenName: 'bl',
+           valueField: 'bl', 
+           displayField: 'name',
+        store: store,
+        allowBlank: false,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        singleMode: false,
+        loadingText: _('Searching...'),
+        resizable: true,
+        //emptyText: _('Enter or select topics'),
+        triggerAction: 'all',
+        itemSelector: 'div.search-item',
+        resizable: true,
+        mode: 'local',
+        typeAhead: true,
+        tpl: tpl_list,
+        displayFieldTpl: tpl_field,
+        extraItemCls: 'x-tag'
+    }, c));
+};
+Ext.extend( Baseliner.model.SelectBaseline, Ext.ux.form.SuperBoxSelect );
