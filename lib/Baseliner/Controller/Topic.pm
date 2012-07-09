@@ -100,18 +100,22 @@ sub list : Local {
         $where->{created_on} = {'between' => [ $today->ymd, $today->add(days=>1)->ymd]};
     }
     
-    if($p->{assigned_to_me}){
+    if ( $p->{assigned_to_me} ) {
         my $rs_user = $c->model('Baseliner::BaliUser')->search( username => $username )->first;
-        if($rs_user){
-            my @topic_mids = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]})->hashref->all;
-            if(@topic_mids){
+        if ($rs_user) {
+            my @topic_mids
+                = map { $_->{from_mid} }
+                Baseliner->model('Baseliner::BaliMasterRel')
+                ->search( { to_mid => $rs_user->mid, rel_type => 'topic_users' }, { select => [qw(from_mid)] } )
+                ->hashref->all;
+            if (@topic_mids) {
                 $where->{'me.topic_mid'} = \@topic_mids;
-            }else{
+            } else {
                 $where->{'me.topic_mid'} = -1;
             }
-        }else{
+        } else {
             $where->{'me.topic_mid'} = -1;
-        }            
+        }
     }
     #*****************************************************************************************************************************
     

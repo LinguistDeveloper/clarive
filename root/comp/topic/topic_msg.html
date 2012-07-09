@@ -175,7 +175,12 @@ padding: 2px 4px 2px 7px;
 %if($show_progress && length $progress ){
               <tr>
                 <th><% _loc('Progress') %>:</th>
-                <td><% $progress || '&nbsp;' %>%</td>
+                <td>
+%  my $cls = ( $progress < 20 ? 'danger' : ( $progress < 40 ? 'warning' : ( $progress < 80 ? 'info' : 'success' ) ) );
+                    <div class="progress progress-<% $cls %>" style="width: 120px; height: 8px">
+                        <div class="bar" style="width: <% $progress %>%"></div>
+                    </div>
+                </td>
               </tr>
 %}              
 %if($show_description && length $description ){
