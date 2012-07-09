@@ -191,8 +191,7 @@
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
             onComplete: function(fu, filename, res){
-                //Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
-                Baseliner.message(_('Upload File'), _(res.msg, filename) );
+                Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
                 if(res.file_uploaded_mid){
                     var form2 = form_topic.getForm();
                     var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();
@@ -494,8 +493,15 @@
                     combo_category,
                     { xtype: 'hidden', name: 'status', value: rec.status },
                     combo_status,
-                    custom_form_container,
+                    release_box,
                     combo_priority,
+                    { xtype:'sliderfield', fieldLabel: _('Progress'), name: 'progress',
+                        value: rec.progress,
+                        hidden: !rec.fields_form.show_progress,
+                        anchor: '40%', tipText: function(thumb){
+                                return String(thumb.value) + '%';
+                        } 
+                    },
                     {
                         xtype:'textfield',
                         fieldLabel: _('Response'),
@@ -514,7 +520,6 @@
                     { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
                     pb_panel,
                     user_box,
-                    release_box,
                     topic_box,
                     cb_panel,
                     label_box,
@@ -529,6 +534,7 @@
                         ],
                         fieldLabel: _('Files')
                     },
+                    custom_form_container,
                     {   xtype:'panel', layout:'fit',
                         hidden: rec.fields_form.show_description ? false : true,
                         items: [ //this panel is here to make the htmleditor fit
