@@ -3638,3 +3638,32 @@ msgstr "No es un commit"
 msgid "Node is not a project"
 msgstr "No es un proyecto"
 
+msgid "Create view"
+msgstr "Crear vista"
+
+msgid "Delete view"
+msgstr "Borrar vista"
+
+msgid "Forms"
+msgstr "Formularios"
+
+msgid "Name view"
+msgstr "Nombre vista"
+
+msgid "View added"
+msgstr "Vista añadida"
+
+msgid "View name already exists, introduce another view name"
+msgstr "Vista ya existe, introduce otro nombre de vista"
+
+msgid "Error adding View: %1"
+msgstr "Error añadiendo vista: %1"
+
+msgid "Views deleted"
+msgstr "Vistas borradas"
+
+msgid "Error deleting views"
+msgstr "Error borrando vistas"
+
+msgid "Are you sure you want to delete the views selected?"
+msgstr "¿Seguro que quiere borrar las vistas seleccionadas?"
