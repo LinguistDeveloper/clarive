@@ -1,8 +1,8 @@
-package BaselinerX::CI::websphere_dmgr;
+package BaselinerX::CI::websphere;
 use Moose;
 with 'Baseliner::Role::CI::ApplicationServer';
 
-sub collection { 'websphere_dmgr' }
+sub collection { 'websphere' }
 
 sub error {}
 sub rc {}
