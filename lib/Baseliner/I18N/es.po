@@ -3589,3 +3589,81 @@ msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase
 
 msgid "Job element '%1' is in an active job: %2"
 msgstr "Item de pase '%1' está en un pase activo: %2"
+
+msgid "Are you sure you want to delete these artifacts?"
+msgstr "¿Seguro que quiere borrar estos ficheros?"
+
+msgid "File already attached to topic"
+msgstr "Fichero ya esta adjunto"
+
+msgid "Error uploading file: "
+msgstr "Error subiendo fichero: "
+
+msgid "Uploaded file %1"
+msgstr "Fichero subido %1"
+
+msgid "File id %1 not found"
+msgstr "Fichero id %1 no encontrado"
+
+msgid "Deleting file"
+msgstr "Borrando fichero"
+
+msgid "File deleted ok"
+msgstr "Fichero borrado correctamente"
+
+msgid "Relationship deleted ok"
+msgstr "Relación borrada correctamente"
+
+msgid "File %1 not found"
+msgstr "Fichero %1 no encontrado"
+
+msgid "Drop files here to upload"
+msgstr "Arrastrar fichero aqui para subirlo"
+
+msgid "Upload File"
+msgstr "Subir fichero"
+
+msgid "Are you sure you want to delete these artifacts?"
+msgstr "¿Seguro que quiere borrar estos ficheros?"
+
+msgid "Deleted"
+msgstr "Borrado"
+
+msgid "Commit %1 is already assigned"
+msgstr "Commit %1 ya esta asignado"
+
+msgid "Node is not a commit"
+msgstr "No es un commit"
+
+msgid "Node is not a project"
+msgstr "No es un proyecto"
+
+msgid "Create view"
+msgstr "Crear vista"
+
+msgid "Delete view"
+msgstr "Borrar vista"
+
+msgid "Forms"
+msgstr "Formularios"
+
+msgid "Name view"
+msgstr "Nombre vista"
+
+msgid "View added"
+msgstr "Vista añadida"
+
+msgid "View name already exists, introduce another view name"
+msgstr "Vista ya existe, introduce otro nombre de vista"
+
+msgid "Error adding View: %1"
+msgstr "Error añadiendo vista: %1"
+
+msgid "Views deleted"
+msgstr "Vistas borradas"
+
+msgid "Error deleting views"
+msgstr "Error borrando vistas"
+
+msgid "Are you sure you want to delete the views selected?"
+msgstr "¿Seguro que quiere borrar las vistas seleccionadas?"
