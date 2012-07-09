@@ -130,7 +130,7 @@ sub list_lastjobs: Private{
 	my $numrow = 0;
 	my @lastjobs;
 	while( my $rs = $rs_search->next ) {
-		if ($numrow >= 5) {last;}
+		if ($numrow >= 10) {last;}
 	    push @lastjobs,{ 	id => $rs->id,
 							name => $rs->name,
 							type => $rs->type,

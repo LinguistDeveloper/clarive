@@ -109,27 +109,10 @@
             </table>
             <!--######FIN TABLA PASES ####################################################################################-->
               
-            <!--######INICIO TABLA MENSAJES #################################################################################-->
-            <table class="table table-bordered table-condensed dashboard">
-                <thead>
-                    <tr>
-                        <th colspan="3">Asunto</th>
-                        <th>De</th>
-                        <th>Enviado</th>
-                    </tr>
-                </thead>
-                <tbody>
-%foreach my $email (_array @emails){
-                    <tr>
-                        <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );"><%$email->{subject}%></a></b></td>
-                        <td><%$email->{sender}%></td>
-                        <td><%$email->{sent}%></td>
-                    </tr>
-%}
-                </tbody>
-            </table>
-            <!--######FIN TABLA MENSAJES ####################################################################################-->
+        </div>
         
+        <div class="grid_10 style="margin-bottom: 5px;">
+            <h2>Pases / Mensajes / Topicos</h2>
             <!--######INICIO TABLA TOPICS ###################################################################################-->
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
@@ -151,6 +134,33 @@
                 </tbody>
             </table>
             <!--######FIN TABLA TOPICS ######################################################################################-->
+            
+        </div>
+        
+        <div class="grid_1">&nbsp;</div>
+        
+        <div class="grid_13">
+            <h2>Pases / Mensajes / Topicos</h2>
+            <!--######INICIO TABLA MENSAJES #################################################################################-->
+            <table class="table table-bordered table-condensed dashboard">
+                <thead>
+                    <tr>
+                        <th colspan="3">Asunto</th>
+                        <th>De</th>
+                        <th>Enviado</th>
+                    </tr>
+                </thead>
+                <tbody>
+%foreach my $email (_array @emails){
+                    <tr>
+                        <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );"><%$email->{subject}%></a></b></td>
+                        <td><%$email->{sender}%></td>
+                        <td><%$email->{sent}%></td>
+                    </tr>
+%}
+                </tbody>
+            </table>
+            <!--######FIN TABLA MENSAJES ####################################################################################-->
         </div>
             
         <div class="grid_10">
