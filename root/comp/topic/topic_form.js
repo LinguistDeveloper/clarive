@@ -191,7 +191,8 @@
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
             onComplete: function(fu, filename, res){
-                Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
+                //Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
+                Baseliner.message(_('Upload File'), _(res.msg, filename) );
                 if(res.file_uploaded_mid){
                     var form2 = form_topic.getForm();
                     var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();

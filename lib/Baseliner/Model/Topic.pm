@@ -143,13 +143,18 @@ sub update {
         } ## end when ( 'add' )
         when ( 'update' ) {
             event_new 'event.topic.modify' => { username=>$p->{username} } => sub {
+				my @field;
                 $topic_mid = $p->{topic_mid};
                 my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
+                if ($topic->title ne $p->{title}){ push @field, _loc('title');}
                 $topic->title( $p->{title} );
+                if ($topic->description ne $p->{description}){ push @field, _loc('description');}
                 $topic->description( $p->{description} );
-                $topic->progress( $p->{progress} );
-                $topic->id_category( $p->{category} )          if is_number( $p->{category} );
+                if ($topic->id_category ne $p->{category}){ push @field, _loc('category');}
+                $topic->id_category( $p->{category} ) if is_number( $p->{category} ) ;
+                if ($topic->id_category_status ne $p->{status_new}){ push @field, _loc('status');}
                 $topic->id_category_status( $p->{status_new} ) if is_number( $p->{status_new} );
+				if ($topic->id_priority ne $p->{priority}){ push @field, _loc('priority');}
                 $topic->id_priority( $p->{priority} )          if is_number( $p->{priority} );
                 $topic->response_time_min( $rsptime[1] );
                 $topic->expr_response_time( $rsptime[0] );
@@ -230,6 +235,15 @@ sub update {
                 $topic->update();
                 $topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;
+                
+              
+                event_new 'event.topic.modify' => {
+                    username => $p->{username},
+                    mid      => $topic_mid,
+                    field  => @field ? 'topic' : '',
+                    
+                };                   
+                
                 $return = 'Topic modified';
                { mid=>$topic->mid, topic=>$topic->title }   # to the event
             } ## end try

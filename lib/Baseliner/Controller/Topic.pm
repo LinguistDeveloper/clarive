@@ -33,19 +33,24 @@ register 'event.file.create' => {
     vars => ['username', 'ts', 'filename'],
 };
 
+register 'event.file.attach' => {
+    text => '%1 attached %2 on %3',
+    vars => ['username', 'filename', 'ts'],
+};
+
 register 'event.topic.file_remove' => {
-    text => '%1 removed a file from %2: %3',
-    vars => ['username', 'ts', 'filename'],
+    text => '%1 removed %2 on %3',
+    vars => ['username', 'filename', 'ts'],
 };
 
 register 'event.topic.create' => {
-    text => "%1 created topic '%2'",
-    vars => ['username', 'topic'],
+    text => '%1 created topic on %2',
+    vars => ['username', 'ts'],
 };
 
 register 'event.topic.modify' => {
-    text => "%1 modified topic '%2'",
-    vars => ['username', 'topic'],
+    text => '%1 modified topic on %3',
+    vars => ['username', 'field', 'ts'],
 };
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
@@ -767,7 +772,7 @@ sub filters_list : Local {
     
     push @tree, {
         id          => 'V',
-        text        => _loc('views'),
+        text        => _loc('Views'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         children    => \@views
@@ -824,7 +829,7 @@ sub filters_list : Local {
     
     push @tree, {
         id          => 'L',
-        text        => _loc('labels'),
+        text        => _loc('Labels'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         children    => \@labels
@@ -851,7 +856,7 @@ sub filters_list : Local {
     
     push @tree, {
         id          => 'S',
-        text        => _loc('statuses'),
+        text        => _loc('Statuses'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         expanded    => 'true',
@@ -879,7 +884,7 @@ sub filters_list : Local {
        
     push @tree, {
         id          => 'P',
-        text        => _loc('priorities'),
+        text        => _loc('Priorities'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         expanded    => 'true',
@@ -1053,6 +1058,12 @@ sub upload : Local {
             if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
                 _fail _loc "File already attached to topic";
             } else {
+                event_new 'event.file.attach' => {
+                    username => $c->username,
+                    mid      => $topic_mid,
+                    id_file  => $existing->mid,
+                    filename     => $filename,
+                };                
                 $topic->add_to_files( $existing, { rel_type=>'topic_file_version' });
             }
         } else {
@@ -1091,9 +1102,9 @@ sub upload : Local {
                         $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
                     }
                 };                        
-            }else{
-                $file_mid = $existing->mid;
             }
+                
+            $file_mid = $existing->mid;
         }
         $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $p->{topic_mid}? '': $file_mid, };
     }
@@ -1120,6 +1131,12 @@ sub file : Local {
                 my $count = Baseliner->model('Baseliner::BaliMasterRel')->search({ to_mid => $file->mid })->count;
                 if( $count < 2 ) {
                     _log "Deleting file " . $file->mid;
+                    event_new 'event.file_remove' => {
+                        username => $c->username,
+                        mid      => $topic_mid,
+                        id_file  => $file->mid,
+                        filename => $file->filename,
+                    };                  
                     $file->delete;
                     $msg = _loc( "File deleted ok" );
                 } else {

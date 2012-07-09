@@ -37,6 +37,7 @@
 	
 	
 	var button_delete_view = new Baseliner.Grid.Buttons.Delete({
+		text: _(''),
 		tooltip: _('Delete view'),
         cls: 'x-btn-icon',
 		disabled: true,
