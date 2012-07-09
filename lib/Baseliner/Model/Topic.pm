@@ -33,6 +33,7 @@ sub update {
                     Baseliner->model('Baseliner::BaliTopic')->create(
                         {   title              => $p->{title},
                             description        => $p->{description},
+                            progress           => $p->{progress},
                             created_by         => $p->{username},
                             mid                => $topic_mid,
                             id_category        => $p->{category},
@@ -146,9 +147,10 @@ sub update {
                 my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 $topic->title( $p->{title} );
                 $topic->description( $p->{description} );
-                $topic->id_category( $p->{category} ) if is_number( $p->{category} ) ;
+                $topic->progress( $p->{progress} );
+                $topic->id_category( $p->{category} )          if is_number( $p->{category} );
                 $topic->id_category_status( $p->{status_new} ) if is_number( $p->{status_new} );
-                $topic->id_priority( $p->{priority} ) if is_number( $p->{priority} );
+                $topic->id_priority( $p->{priority} )          if is_number( $p->{priority} );
                 $topic->response_time_min( $rsptime[1] );
                 $topic->expr_response_time( $rsptime[0] );
                 $topic->deadline_min( $deadline[1] );

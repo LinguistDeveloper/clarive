@@ -3,6 +3,12 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Progress"
+msgstr "Avance"
+
+msgid "progress"
+msgstr "Avance"
+
 msgid "Inbox"
 msgstr "Buzón"
 
@@ -3075,8 +3081,8 @@ msgstr "Disponible"
 msgid "Enable Job"
 msgstr "Disponible para Pase"
 
-msgid "Are you sure you want to deploy %1 to baseline %2?"
-msgstr "¿Quiere desplegar %1 en el entorno %2?"
+msgid "Are you sure you want to deploy/rollback %1 to baseline %2?"
+msgstr "¿Quiere mover %1 al entorno de %2?"
 
 msgid "Are you sure you want to delete the role %1?"
 msgstr "¿Seguro que quieres borrar el rol %1?"

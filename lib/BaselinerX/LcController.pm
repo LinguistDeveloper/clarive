@@ -221,7 +221,7 @@ sub changeset : Local {
         @changes = $c->model('Baseliner::BaliTopic')->search(
             $where,
             { prefetch=>['categories','children','master'] }
-        )->hashref->all;
+        )->all;
         _log "IN CYCLE"; 
     } else {
         # Available 
@@ -233,35 +233,58 @@ sub changeset : Local {
         @changes = $c->model('Baseliner::BaliTopic')->search(
                 $where,
                 { prefetch=>['categories','children','master','status'] }
-            )->hashref->all;
+            )->all;
     }
 
-    for ( @changes ) { 
-        my ($promotable, $demotable, $menu ) = $self->cs_menu( $_, $bl );
-        my $topicid = "$_->{categories}{name} #$_->{mid}";
-        push @tree, {
+    for my $topic (@changes) {
+        my @rels = $topic->my_releases->hashref->all;
+        my $td = { $topic->get_columns() };
+        if( @rels ) {
+            #$td->{id_category_status} = $rels[0]->{topic_topic}{id_category_status};
+            #$td->{id_status} = $rels[0]->{topic_topic}{id_status};
+        }
+        # get the menus for the changeset
+        my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
+        my $topicid = "$td->{categories}{name} #$td->{mid}";
+        my $node = {
             url  => '/lifecycle/repo',
             icon => '/static/images/icons/topic_lc.png',
-            text => "[$topicid] $_->{title}",
+            text => "[$topicid] $td->{title}",
             leaf => \1,
             menu => $menu,
             data => {
-                ns    => 'changeset/' . $_->{mid},
-                bl    => $bl,
-                name  => $_->{title},
-                promotable => $promotable,
-                demotable => $demotable,
-                state_name  => $state_name,
-                topic_mid => $_->{mid},
-                topic_status   => $_->{id_category_status},
-                click => {
-                    url   => sprintf('/comp/topic/topic_main.js' ),
+                ns           => 'changeset/' . $td->{mid},
+                bl           => $bl,
+                name         => $td->{title},
+                promotable   => $promotable,
+                demotable    => $demotable,
+                state_name   => $state_name,
+                topic_mid    => $td->{mid},
+                topic_status => $td->{id_category_status},
+                click        => {
+                    url   => sprintf('/comp/topic/topic_main.js'),
                     type  => 'comp',
                     icon  => '/static/images/icons/topic.png',
                     title => "$topicid",
                 }
-              },
-        } 
+            },
+        };
+        if( @rels ) {
+            for my $rel ( @rels ) {
+                my $title = $rel->{topic_topic}{title};
+                $node->{text} = $title;
+                $node->{icon} = '/static/images/icons/release_lc.png';
+                $node->{click} = {
+                    url   => sprintf('/comp/topic/topic_main.js'),
+                    type  => 'comp',
+                    icon  => '/static/images/icons/topic.png',
+                    title => $title,
+                },
+                push @tree, $node;
+            }
+        } else {
+            push @tree, $node;
+        }
     }
 
     $c->stash->{ json } = \@tree;
@@ -269,7 +292,7 @@ sub changeset : Local {
 }
 
 sub cs_menu {
-    my ($self, $topic, $bl_state ) = @_;
+    my ($self, $topic, $bl_state, $state_name ) = @_;
     return [] if $bl_state eq '*';
     my @menu;
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
@@ -281,7 +304,7 @@ sub cs_menu {
             title          => 'Deploy',
             bl_to          => $bl_state,
             status_to      => '',                            # id?
-            status_to_name => '',                            # name?
+            status_to_name => $state_name,                            # name?
             job_type       => 'static'
         },
         icon => '/static/images/silk/arrow_right.gif'

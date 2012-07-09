@@ -9,6 +9,7 @@
     $created_by
     $created_on
     $priority
+    $progress
     $deadline
     $status
     $events
@@ -20,6 +21,7 @@
     $labels
     $users
     $show_priority => 0
+    $show_progress => 0
     $show_description => 0
     $show_topics => 0
     $show_projects => 0
@@ -170,6 +172,12 @@ padding: 2px 4px 2px 7px;
                 <td><% $deadline ? $deadline->dmy . ' ' . $deadline->hms : '&nbsp;' %></td>
               </tr>
 %}
+%if($show_progress && length $progress ){
+              <tr>
+                <th><% _loc('Progress') %>:</th>
+                <td><% $progress || '&nbsp;' %>%</td>
+              </tr>
+%}              
 %if($show_description && length $description ){
               <tr>
                 <th colspan="2"><% _loc('Description') %>:</th>

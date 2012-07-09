@@ -265,6 +265,7 @@ sub json : Local {
     my $ret = {
         title              => $topic->title,
         description        => $topic->description,
+        progress           => $topic->progress,
         category           => $topic->id_category,
         topic_mid          => $topic_mid,
         status             => $topic->id_category_status,
@@ -333,6 +334,7 @@ sub view : Local {
         $c->stash->{deadline} = $deadline;
         $c->stash->{status} = try { $topic->status->name } catch { _loc('unassigned') };
         $c->stash->{description} = $topic->description;
+        $c->stash->{progress} = $topic->progress;
         $c->stash->{category} = $topic->categories->name;
         $c->stash->{is_release} = $topic->categories->is_release;
         $c->stash->{is_changeset} = $topic->categories->is_changeset;
@@ -386,6 +388,7 @@ sub view : Local {
         $c->stash->{category} = $id_category;
         $c->stash->{category_color} = '#444';
         $c->stash->{priority} = '';
+        $c->stash->{progress} = 0;
         $c->stash->{forms} = '';
         $c->stash->{topic_mid} = '';
         $c->stash->{swEdit} = $p->{swEdit};
@@ -678,18 +681,20 @@ sub update_project : Local {
     try{
         my $project = $c->model('Baseliner::BaliProject')->find($id_project);
         my $mid;
-        if($project->mid){
-            $mid = $project->mid
-        }
-        else{
-            my $project_mid = master_new 'bali_project' => $project->name => sub {
-                my $mid = shift;
-                $project->mid($mid);
-                $project->update();
+        if( ref $project ) {
+            if($project && $project->mid){
+                $mid = $project->mid
             }
-        }
-        my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
-        $topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+            else{
+                my $project_mid = master_new 'bali_project' => $project->name => sub {
+                    my $mid = shift;
+                    $project->mid($mid);
+                    $project->update();
+                }
+            }
+            my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
+            $topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+        } # TODO invalid
         
         $c->stash->{json} = { msg=>_loc('Project added'), success=>\1 };
     }

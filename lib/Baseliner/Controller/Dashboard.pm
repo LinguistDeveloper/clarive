@@ -11,7 +11,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 ##Configuración del dashboard
 register 'config.dashboard' => {
 	metadata => [
-	       { id=>'states', label=>'States for job statistics', default => 'DESA,TEST,PREP,PROD' },
+	       { id=>'states', label=>'States for job statistics', default => 'DESA,IT,TEST,PREP,PROD' },
 	       { id=>'job_days', label=>'Days for job statistics', default => 7 },
 	       { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
 	    ]

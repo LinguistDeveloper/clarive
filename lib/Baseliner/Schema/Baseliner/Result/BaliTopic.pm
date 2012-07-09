@@ -70,6 +70,7 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 255 },
   "expr_deadline",
   { data_type => "varchar2", is_nullable => 1, size => 255 },
+  "progress", { data_type => "number", is_nullable => 1, default_value=>0 },  
 );
 
 
@@ -114,6 +115,23 @@ sub badge_name {
 sub full_name {
     my ($self) =@_;
     sprintf '[%s] %s', $self->badge_name, $self->title;
+}
+
+sub my_releases {
+    my ($self) = @_;
+    my $rels = Baseliner->model('Baseliner::BaliTopicCategories')->search( { is_release => 1 }, { select => ['id'] } )->as_query;
+    Baseliner->model('Baseliner::BaliMasterRel')->search(
+        {   rel_type                  => 'topic_topic',
+            to_mid                    => $self->mid,
+            'topic_topic.id_category' => { -in => $rels }
+        },
+        { prefetch => [ 'topic_topic', 'topic_topic2' ] }
+    )
+}
+
+sub is_in_release {
+    my ($self) = @_;
+    $self->my_releases->count();
 }
 
 1;

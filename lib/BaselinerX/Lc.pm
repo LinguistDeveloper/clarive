@@ -47,7 +47,7 @@ sub lc_for_project {
 
     # General bag for starting the deployment workflow
     my @states = (
-        {   node   => _loc('Ready'),
+        {   node   => _loc('(Stage)'),
             type   => 'state',
             active => 1,
             bl     => 'new',

@@ -42,6 +42,7 @@ sub master_setup {
 
     my $rel_type = $from_name .'_'. $to_name;
     my $rel_type_inverse = $to_name .'_'. $from_name;
+    $rel_type_inverse = $rel_type_inverse . '2' if $rel_type eq $rel_type_inverse;
 
     my $foreign = "Baseliner::Schema::Baseliner::Result::$to_class";
 

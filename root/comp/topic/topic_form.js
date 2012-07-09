@@ -495,6 +495,13 @@
                     combo_status,
                     release_box,
                     combo_priority,
+                    { xtype:'sliderfield', fieldLabel: _('Progress'), name: 'progress',
+                        value: rec.progress,
+                        hidden: !rec.fields_form.show_progress,
+                        anchor: '40%', tipText: function(thumb){
+                                return String(thumb.value) + '%';
+                        } 
+                    },
                     {
                         xtype:'textfield',
                         fieldLabel: _('Response'),

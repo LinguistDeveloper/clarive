@@ -517,18 +517,22 @@ Baseliner.Calendar =  function(c) {
     });
     var cal;
     var tbarr = [
-          { xtype:'button', text:'<', handler:function(){ cal.fullCalendar("prev") } },
-          { xtype:'button', text:'>', handler:function(){ cal.fullCalendar("next") } }, 
+          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_left.gif', handler:function(){ cal.fullCalendar("prev") } },
+          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_right.gif', handler:function(){ cal.fullCalendar("next") } },
           '-',
           { xtype:'button', text:_('Today'), handler:function(){ cal.fullCalendar("today") } },
           '-',
              { xtype:'button', text:_('Day1'), handler:function(){ cal.fullCalendar("changeView", "basicDay") } } ,
+          '-',
               { xtype:'button', text:_('Day2'), handler:function(){ cal.fullCalendar("changeView", "agendaDay") } } ,
+          '-',
             { xtype:'button', text:_('Week1'), handler:function(){ cal.fullCalendar("changeView", "basicWeek") } } ,
+          '-',
           { xtype:'button', text:_('Week2'), handler:function(){ cal.fullCalendar("changeView", "agendaWeek") } } ,
+          '-',
           { xtype:'button', text:_('Month'), handler:function(){ cal.fullCalendar("changeView", "month") } } ,
           '-',
-          { xtype:'button', text:_('( )'), handler:function(){ cal.fullCalendar("refetchEvents") } } ,
+          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.gif', handler:function(){ cal.fullCalendar("refetchEvents") } } ,
 
         ];
     if( c.tbar_end ) tbarr.push( c.tbar_end );
