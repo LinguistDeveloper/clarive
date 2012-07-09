@@ -15,6 +15,17 @@
 
 <div id="boot">
     <div class="container_24">
+        <h2>Enlaces</h2>
+        <div class="grid_10" ><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid', _('Topics'));">Tópicos</a></b></div>    
+    </div>
+    <div class="container_24">
+        <div class="grid_10" ><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid', _('Topics'));">Aprobaciones</a></b></div>    
+    </div>
+    <div class="container_24">
+        <div class="grid_10" ><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid', _('Topics'));">Monitor</a></b></div>    
+    </div>
+    
+    <div class="container_24">
         <div class="grid_10 style="margin-bottom: 5px;">
             <h2>Entornos</h2>
 %foreach my $entorno (_array @entornos){
@@ -33,7 +44,7 @@
         
         <div class="grid_1">&nbsp;</div>
         <div class="grid_13">
-            <h2>Pases / Mensajes / Topicos</h2>
+            <h2>Pases</h2>
             <!--######INICIO TABLA PASES #################################################################################-->
             <script language="javascript">
                 function render_level ( obj, td_id ) {
@@ -110,9 +121,10 @@
             <!--######FIN TABLA PASES ####################################################################################-->
               
         </div>
-        
+    </div>
+    <div class="container_24">        
         <div class="grid_10 style="margin-bottom: 5px;">
-            <h2>Pases / Mensajes / Topicos</h2>
+            <h2>Topicos</h2>
             <!--######INICIO TABLA TOPICS ###################################################################################-->
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
@@ -140,7 +152,7 @@
         <div class="grid_1">&nbsp;</div>
         
         <div class="grid_13">
-            <h2>Pases / Mensajes / Topicos</h2>
+            <h2>Mensajes </h2>
             <!--######INICIO TABLA MENSAJES #################################################################################-->
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
@@ -203,7 +215,8 @@
   
 % for my $dash ( sort { $a->order <=> $b->order } _array $dashboardlets ) {
     <& $dash->html &>
-% } 
+% }
+
     </div>
 </div>
 
