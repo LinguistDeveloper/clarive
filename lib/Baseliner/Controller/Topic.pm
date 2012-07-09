@@ -43,6 +43,11 @@ register 'event.topic.create' => {
     vars => ['username', 'topic'],
 };
 
+register 'event.topic.modify' => {
+    text => "%1 modified topic '%2'",
+    vars => ['username', 'topic'],
+};
+
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'menu.tools.topic' => {

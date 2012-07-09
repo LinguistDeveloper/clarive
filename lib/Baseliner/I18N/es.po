@@ -3048,6 +3048,9 @@ msgstr "vistas"
 msgid "%1 created topic '%2'"
 msgstr "%1 ha creado el tópico '%2'"
 
+msgid "%1 modified topic '%2'"
+msgstr "%1 ha modificado el tópico '%2'"
+
 msgid "select status..."
 msgstr "seleccione un estado..."
 

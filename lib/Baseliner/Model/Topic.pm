@@ -142,7 +142,7 @@ sub update {
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
-            try {
+            event_new 'event.topic.modify' => { username=>$p->{username} } => sub {
                 $topic_mid = $p->{topic_mid};
                 my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 $topic->title( $p->{title} );
@@ -155,6 +155,8 @@ sub update {
                 $topic->expr_response_time( $rsptime[0] );
                 $topic->deadline_min( $deadline[1] );
                 $topic->expr_deadline( $deadline[0] );
+
+                # TODO create event data for all the fields changed
 
                 # related topics
                 if( my @topics = _array( $p->{topics} ) ) {
@@ -229,10 +231,11 @@ sub update {
                 $topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;
                 $return = 'Topic modified';
+               { mid=>$topic->mid, topic=>$topic->title }   # to the event
             } ## end try
-            catch {
+            => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
-            }
+            };
         } ## end when ( 'update' )
         when ( 'delete' ) {
             $topic_mid = $p->{topic_mid};

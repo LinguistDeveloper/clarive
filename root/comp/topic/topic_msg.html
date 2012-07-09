@@ -151,7 +151,7 @@ padding: 2px 4px 2px 7px;
 %if( $c->stash->{show_release} && $release ){
               <tr>
                 <th><% _loc('Release') %>:</th>
-                <td><span class="arrow_box" style="background-color:<% $release_row->{categories}{color} %>"><% $release || '&nbsp;' %></span></td>
+                <td><span class="arrow_box" style="padding: 3px; background-color:<% $release_row->{categories}{color} %>"><% $release || '&nbsp;' %></span></td>
               </tr>
 %}
               <tr>

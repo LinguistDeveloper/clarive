@@ -589,7 +589,7 @@ Baseliner.Calendar =  function(c) {
             }
         });
 
-        var event_new_url = c.url_new || '/eventnew.js';  // this should be the controller that creates events
+        var event_new_url = c.url_new || '/calendar/event/add';  // this should be the controller that creates events
         var event_new = function( data ) {
             Baseliner.ajaxEval( event_new_url, data, function(res) { 
                 if( res && res.success ) {
@@ -624,6 +624,10 @@ Baseliner.Calendar =  function(c) {
                  opts.date = date;
                  opts.allday = allday;
                  event_new( opts );
+            },
+            eventResizeStop: function( ev, jsEvent, ui, view ) { 
+                Baseliner.ajaxEval( '/calendar/event/modify', ev, function(res) { 
+                });
             },
             select: function(start, end, allday) {
                 if( c.onSelect ) {
