@@ -436,7 +436,7 @@
 	});
     
     
-    var revision_box = new Baseliner.model.Revision({
+    var revision_box = new Baseliner.model.Revisions({
         store: revision_box_store 
     });
     
@@ -682,17 +682,19 @@
                     }
                 };
                 var attr = n.attributes;
-                if( n.parentNode.attributes.text != 'revisions' ) {  // is a project?
+                var data = attr.data || {};
+                var ns = data.ns;
+                if( ns == undefined || ns.indexOf('revision/') == -1 ) {  // git.revision/xxxxxxxx
                     Baseliner.message( _('Error'), _('Node is not a revision'));
                 } else {
-                    var myStore = revision_box.store;
-                    var rec1 = new Ext.data.Record({'id':1,'name':'prueba1'}, '0');
-                    myStore.insert(0,rec1);
-                
-                    var rec2 = new Ext.data.Record({'id':2,'name':'prueba2'}, '1');
-                    myStore.insert(1,rec2);
-                    revision_box.setValue( '1,2' );
-                    add_node(n);
+                    try {
+                        var s = revision_box.store;
+                        var rec = new Ext.data.Record({ name: attr.text, ns: ns, id: ns }, '0');
+                        s.insert(0,rec);
+                        revision_box.setValue( ns );
+                    } catch(e) {
+                        Baseliner.alert( _('Error'), _('Error adding revision %1: %2', ns, e) );
+                    }
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
                 return (true); 
