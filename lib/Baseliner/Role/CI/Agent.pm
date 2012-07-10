@@ -1,6 +1,7 @@
 package Baseliner::Role::CI::Agent;
 use Moose::Role;
 with 'Baseliner::Role::CI';
+with 'Baseliner::Role::ErrorThrower';
 
 sub icon { '/static/images/ci/agent.png' }
 

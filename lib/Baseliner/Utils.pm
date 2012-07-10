@@ -771,7 +771,7 @@ sub _to_json {
 }
 
 sub _from_json {
-    JSON::XS::decode_json( @_ );
+    goto &JSON::XS::decode_json;   
 }
 
 =head2 zip_files( files=>['file.txt', ... ] [, to=>'file.zip' ] )

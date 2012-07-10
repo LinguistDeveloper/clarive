@@ -332,6 +332,9 @@ sub list_roles {
     } grep /^Baseliner::Role::CI/, keys %cl;
 }
 
+# used by Baseliner.store.CI
+#   (used in ci forms)
+
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -342,7 +345,11 @@ sub store : Local {
     my @data;
     my $total = 0; 
 
-    if( my $role = $p->{role} ) {
+    if( my $class = $p->{class} ) {
+        $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
+    }
+    elsif( my $role = $p->{role} ) {
         $role = "Baseliner::Role::CI::$role" if $role !~ /^Baseliner/;
         for my $class(  packages_that_do( $role ) ) {
             my ($t, @rows) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
@@ -357,19 +364,75 @@ sub store : Local {
     $c->forward('View::JSON');
 }
 
+## adds/updates foreign CIs
+
+sub sync : Local {
+    my ($self, $c, $action) = @_;
+    my $p = $c->req->params;
+    my $mid = delete $p->{mid};
+    my $collection = delete $p->{collection};
+    my $class = delete $p->{class};
+    my $name = delete $p->{name};
+
+    my $data = exists $p->{ci_json} ? _from_json( $p->{ci_json} ) : $p;
+    my $ci_create_or_update = sub {
+        my $ci = shift;
+        my $mid;
+        # check if needed, in case of foreign ci
+        if( my $ns = $p->{ns} ) {
+            my $row = $c->model('Baseliner::BaliMaster')->search({ ns=>$ns })->first;
+            if( ref $row ) {  # it's an update
+                $row->name( $name );
+                $row->collection( $name );
+                $row->yaml( _dump( $data ) );
+                $row->update;
+            }
+        }
+        if( !$collection && exists $p->{class} ) {
+            my $class = "BaselinerX::CI::$p->{class}";
+            $collection = $class->collection;
+            _fail _loc( 'Missing collection for %1', $class ) unless $collection;
+        } else {
+            _fail _loc( 'Missing collection for %1', $name ) unless $collection;
+        }
+    };
+
+    try {
+        # check for relationships
+        while( my ($k,$v) = each %$data ) {
+            if( $k eq 'ci' ) {
+                for my $ci ( _array $v ) {
+                    $ci_create_or_update->( $ci ) ;
+                }
+            }
+            elsif( ref $v eq 'ARRAY' ) {
+            }
+        }
+
+        $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
+        $c->stash->{json}{mid} = $mid;
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
+    };
+
+    $c->forward('View::JSON');
+}
+
 sub update : Local {
-    my ($self, $c) = @_;
+    my ($self, $c, $action) = @_;
     my $p = $c->req->params;
     # don't store in yaml
     my $name = delete $p->{name};
     my $bl = delete $p->{bl};
     my $mid = delete $p->{mid};
     my $collection = delete $p->{collection};
-    my $action = delete $p->{action};
+    $action ||= delete $p->{action};
 
     try {
         if( $action eq 'add' ) {
-            master_new $collection => $name => $p;
+            my $master_row = master_new $collection => $name => $p;
+            $mid = $master_row->mid;
         }
         elsif( $action eq 'edit' && defined $mid ) {
             my $row = $c->model('Baseliner::BaliMaster')->find( $mid );
@@ -385,6 +448,7 @@ sub update : Local {
             _fail _loc("Undefined action");
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
+        $c->stash->{json}{mid} = $mid;
     } catch {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };

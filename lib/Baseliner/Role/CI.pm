@@ -12,6 +12,8 @@ sub icon_class { '/static/images/ci/class.gif' }
 requires 'icon';
 requires 'collection';
 
+has job      => qw(is rw isa Baseliner::Role::JobRunner), lazy=>1, default=>sub{ Baseliner::Core::JobRunner->new };  
+
 # from Node
 has uri      => qw(is rw isa Str);   # maybe a URI someday...
 has resource => qw(is rw isa Baseliner::CI::URI), 
@@ -19,22 +21,6 @@ has resource => qw(is rw isa Baseliner::CI::URI),
 
 has debug => qw(is rw isa Bool), default=>sub { $ENV{BASELINER_DEBUG} };
 
-
-# error control 
-has throw_errors => qw(is rw isa Bool default 1 lazy 1);
-has ret => qw(is rw isa Str), default => '';
-
-requires 'error';
-requires 'rc';
-
-sub _throw_on_error {
-    my $self = shift;
-    return unless $self->throw_errors;
-    use Baseliner::Utils;
-    _throw sprintf '%s: %s', $self->error, $self->ret if $self->rc;
-}
-
-sub output { shift->ret }
 
 1;
 
