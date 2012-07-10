@@ -8,16 +8,18 @@
 <div id="boot">
     <div class="container_24">
 
+        <div class="grid_10 style="margin-bottom: 5px;">
+        
 % for my $dash ( sort { $a->order <=> $b->order } _array $dashboardlets ) {
 % if ($dash->order % 2 != 0){
     <& $dash->html &>
 % }}
 
-        </div> <!-- No borrar, es el div que cierra la primera plantilla. -->
+        </div> 
 
         <div class="grid_1">&nbsp;</div>
         
-        <div class="grid_13">
+        <div class="grid_11">
             
 % for my $dash ( sort { $a->order <=> $b->order } _array $dashboardlets ) {
 % if ($dash->order % 2 == 0){

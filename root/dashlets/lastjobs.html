@@ -1,11 +1,10 @@
 <%perl>
     use Baseliner::Utils;
     my @lastjobs = $c->stash->{lastjobs};
-    my $order_lastjobs = $c->stash->{order_lastjobs};
     my $status_id = "status". _nowstamp;
 </%perl>
 
-    <div class="grid_13">
+    <div>
         <h2>Pases</h2>
         <script language="javascript">
             function render_level ( obj, td_id ) {
@@ -79,7 +78,5 @@
 %}            
             </tbody>
         </table>
-%if ($order_lastjobs != 1){
     </div>
-%}
 
