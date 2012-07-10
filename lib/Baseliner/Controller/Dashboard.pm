@@ -17,6 +17,42 @@ register 'config.dashboard' => {
 	    ]
 };
 
+register 'dashboard.main.baselines' => {
+    name => 'show baselines',
+    url => '/dashboard/list_baseline/1',
+    html => '/comp/dashboard/dashboard_baselines.html',
+	order => 1,
+};
+
+register 'dashboard.main.lastjobs' => {
+    name => 'show last jobs',
+    url => '/dashboard/list_lastjobs/2',
+    html => '/comp/dashboard/dashboard_lastjobs.html',
+	order => 2,
+};
+
+
+register 'dashboard.main.topics' => {
+    name => 'show topics',
+    url => '/dashboard/list_topics/3',
+    html => '/comp/dashboard/dashboard_topics.html',
+	order => 3,
+};
+
+register 'dashboard.main.emails' => {
+    name => 'show emails',
+    url => '/dashboard/list_emails/4',
+    html => '/comp/dashboard/dashboard_emails.html',
+	order => 4,
+};
+
+register 'dashboard.main.jobs' => {
+    name => 'show jobs',
+    url => '/dashboard/list_jobs/5',
+    html => '/comp/dashboard/dashboard_jobs.html',
+	order => 5,
+};
+
 #register 'dashboard.jobs.envs' => {
 #    name => 'Jobs By Baseline'
 #    url  => '/dashboard/list_entornos',
@@ -24,11 +60,6 @@ register 'config.dashboard' => {
 
 sub list : Local {
     my ($self, $c) = @_;
-    $c->forward('/dashboard/list_entornos');
-	$self->list_lastjobs( $c );
-    $c->forward('/dashboard/list_emails');
-	$c->forward('/dashboard/list_topics');	
-	$c->forward('/dashboard/list_jobs');	
 
     # list dashboardlets, only active ones
     my @dashs = Baseliner->model('Registry')->search_for( key => 'dashboard.' ); #, allowed_actions => [@actions] );
@@ -40,8 +71,8 @@ sub list : Local {
     $c->stash->{template} = '/comp/dashboard.html';
 }
 
-sub list_entornos: Private{
-    my ( $self, $c ) = @_;
+sub list_baseline: Private{
+    my ( $self, $c, $order ) = @_;
 	my $username = $c->username;
 	my (@jobs, $job, @datas, @temps, $SQL);
 	
@@ -54,15 +85,6 @@ sub list_entornos: Private{
 	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
-	#$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-	#			WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED' AND USERNAME = ?
-	#			GROUP BY BL
-	#		UNION
-	#		SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-	#			WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?
-	#			GROUP BY BL";
-	
-	#@jobs = $db->array_hash( $SQL, $bl_days, $username, $bl_days, $username );	
 
 	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
@@ -116,10 +138,12 @@ sub list_entornos: Private{
 					};			
 	}
 	$c->stash->{entornos} =\@datas;
+	_log ">>>>>>>>>>>baseline: " . $order;
+	$c->stash->{order_baselines} = $order;
 }
 
 sub list_lastjobs: Private{
-	my ( $self, $c ) = @_;
+	my ( $self, $c, $order ) = @_;
 	my $order_by = 'STARTTIME DESC'; 
 	my $rs_search = $c->model('Baseliner::BaliJob')->search(
         undef,
@@ -141,10 +165,12 @@ sub list_lastjobs: Private{
 		$numrow = $numrow + 1;
 	}
 	$c->stash->{lastjobs} =\@lastjobs;
+	_log ">>>>>>>>>>>lastjobs: " . $order;
+	$c->stash->{order_lastjobs} = $order;
 }
 
 sub list_emails: Private{
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $order ) = @_;
 	my $username = $c->username;
 	my (@emails, $email, @datas, $SQL);
 	
@@ -165,10 +191,12 @@ sub list_emails: Private{
 	}	
 		
 	$c->stash->{emails} =\@datas;
+	_log ">>>>>>>>>>>order_emails: " . $order;
+	$c->stash->{order_emails} = $order;
 }
 
 sub list_topics: Private{
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $order ) = @_;
 	my $username = $c->username;
 	#my (@topics, $topic, @datas, $SQL);
 	
@@ -205,10 +233,12 @@ sub list_topics: Private{
 #	}	
 		
 	$c->stash->{topics} =\@datas;
+_log ">>>>>>>>>>>order_topics: " . $order;	
+	$c->stash->{order_topics} = $order;
 }
 
 sub list_jobs: Private {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $order ) = @_;
 	my $username = $c->username;
 	my @datas;	
 	my $SQL;
@@ -368,7 +398,9 @@ sub list_jobs: Private {
 				};	
 	}	
 	
-	$c->stash->{jobs} =\@datas;	
+	$c->stash->{jobs} =\@datas;
+_log ">>>>>>>>>>>order_jobs: " . $order;	
+	$c->stash->{order_jobs} = $order;
 }
 
 sub get_last_jobOk: Private{
