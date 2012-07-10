@@ -19,14 +19,14 @@ register 'config.dashboard' => {
 
 register 'dashboard.main.baselines' => {
     name => 'show baselines',
-    url => '/dashboard/list_baseline/1',
+    url => '/dashboard/list_baseline',
     html => '/dashlets/baselines.html',
 	order => 1,
 };
 
 register 'dashboard.main.lastjobs' => {
     name => 'show last jobs',
-    url => '/dashboard/list_lastjobs/2',
+    url => '/dashboard/list_lastjobs',
     html => '/dashlets/lastjobs.html',
 	order => 2,
 };
@@ -34,21 +34,21 @@ register 'dashboard.main.lastjobs' => {
 
 register 'dashboard.main.topics' => {
     name => 'show topics',
-    url => '/dashboard/list_topics/3',
+    url => '/dashboard/list_topics',
     html => '/dashlets/topics.html',
 	order => 3,
 };
 
 register 'dashboard.main.emails' => {
     name => 'show emails',
-    url => '/dashboard/list_emails/4',
+    url => '/dashboard/list_emails',
     html => '/dashlets/emails.html',
 	order => 4,
 };
 
 register 'dashboard.main.jobs' => {
     name => 'show jobs',
-    url => '/dashboard/list_jobs/5',
+    url => '/dashboard/list_jobs',
     html => '/dashlets/jobs.html',
 	order => 5,
 };
@@ -72,7 +72,7 @@ sub list : Local {
 }
 
 sub list_baseline: Private{
-    my ( $self, $c, $order ) = @_;
+    my ( $self, $c ) = @_;
 	my $username = $c->username;
 	my (@jobs, $job, @datas, @temps, $SQL);
 	
@@ -138,11 +138,10 @@ sub list_baseline: Private{
 					};			
 	}
 	$c->stash->{entornos} =\@datas;
-	$c->stash->{order_baselines} = $order;
 }
 
 sub list_lastjobs: Private{
-	my ( $self, $c, $order ) = @_;
+	my ( $self, $c ) = @_;
 	my $order_by = 'STARTTIME DESC'; 
 	my $rs_search = $c->model('Baseliner::BaliJob')->search(
         undef,
@@ -164,11 +163,10 @@ sub list_lastjobs: Private{
 		$numrow = $numrow + 1;
 	}
 	$c->stash->{lastjobs} =\@lastjobs;
-	$c->stash->{order_lastjobs} = $order;
 }
 
 sub list_emails: Private{
-    my ( $self, $c, $order ) = @_;
+    my ( $self, $c ) = @_;
 	my $username = $c->username;
 	my (@emails, $email, @datas, $SQL);
 	
@@ -189,11 +187,10 @@ sub list_emails: Private{
 	}	
 		
 	$c->stash->{emails} =\@datas;
-	$c->stash->{order_emails} = $order;
 }
 
 sub list_topics: Private{
-    my ( $self, $c, $order ) = @_;
+    my ( $self, $c ) = @_;
 	my $username = $c->username;
 	#my (@topics, $topic, @datas, $SQL);
 	
@@ -213,11 +210,10 @@ sub list_topics: Private{
     )->hashref->all; 	
 	
 	$c->stash->{topics} =\@datas;
-	$c->stash->{order_topics} = $order;
 }
 
 sub list_jobs: Private {
-    my ( $self, $c, $order ) = @_;
+    my ( $self, $c ) = @_;
 	my $username = $c->username;
 	my @datas;	
 	my $SQL;
@@ -339,7 +335,6 @@ sub list_jobs: Private {
 	}	
 	
 	$c->stash->{jobs} =\@datas;
-	$c->stash->{order_jobs} = $order;
 }
 
 sub get_last_jobOk: Private{

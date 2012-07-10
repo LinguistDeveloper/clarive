@@ -1,10 +1,9 @@
 <%perl>
     use Baseliner::Utils;
     my @emails = $c->stash->{emails};
-    my $order_emails = $c->stash->{order_emails};    
 </%perl>
 
-    <div class="grid_13">
+    <div>
         <h2>Mensajes </h2>
         <table class="table table-bordered table-condensed dashboard">
             <thead>
@@ -24,8 +23,4 @@
 %}
             </tbody>
         </table>
-%if ($order_emails != 1){
     </div>
-%}
-
-

@@ -1,11 +1,9 @@
 <%perl>
     use Baseliner::Utils;
     my @jobs = $c->stash->{jobs};
-    my $order_jobs = $c->stash->{order_jobs};
 </%perl>
 
-
-    <div class="grid_10">
+    <div>
         <h2>Pases</h2>
         <table class="table table-bordered table-condensed dashboard">
             <thead>
@@ -37,9 +35,8 @@
 %}
             </tbody>    
         </table>
-%if ($order_jobs != 1){
     </div>
-%}
+
 
 
 
