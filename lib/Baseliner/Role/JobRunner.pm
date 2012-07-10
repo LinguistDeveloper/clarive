@@ -7,5 +7,6 @@ requires 'step';
 requires 'status';
 requires 'exec';
 requires 'logger';
+requires 'job_stash';
 
 1;
