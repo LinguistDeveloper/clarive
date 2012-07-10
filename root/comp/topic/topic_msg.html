@@ -243,8 +243,10 @@ padding: 2px 4px 2px 7px;
                     <ul class="" style="margin-left: 20px">
                       <li class="">
 % foreach my $date ( _array( $dates ) ) {
+%  my $s = $date->{start_date};
+%  $s =~ s{00:00:00}{}g;
                       <li style="margin: 6px 0px 6px 0px">
-                          <% $date->{start_date} %>
+                          <% $s %>
                       </li>
 % }
                     </ul>
