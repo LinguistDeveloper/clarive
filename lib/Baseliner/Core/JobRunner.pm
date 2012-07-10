@@ -20,10 +20,6 @@ sub bl { '*' }
 sub step { 1 }
 sub status { }
 sub exec { }
-sub logger {
-    my $self = shift;
-    _log @_;
-}
 sub job_stash { 
     my $self = shift;
     $self->stash;
