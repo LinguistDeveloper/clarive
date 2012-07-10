@@ -1,0 +1,32 @@
+<%perl>
+    use Baseliner::Utils;
+    my @topics = $c->stash->{topics};
+    my $order_topics = $c->stash->{order_topics};    
+</%perl>
+
+    <div class="grid_10 style="margin-bottom: 5px;">
+        <h2>Tópicos</h2>
+        <table class="table table-bordered table-condensed dashboard">
+            <thead>
+                <tr>
+                    <th colspan="3">Título</th>
+                    <th>Comentarios</th>            
+                    <th>Creada</th>
+                </tr>
+            </thead>
+            <tbody>
+%foreach my $topic (_array @topics){
+% my $numcomment = $topic->{numcomment} ? $topic->{numcomment}:'&nbsp';
+                <tr>
+                    <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{topic_mid}%>', _('Topics'));"><%$topic->{title}%></a></b></td>
+                    <td><%$numcomment%></td>
+                    <td><%$topic->{created_on}%></td>
+                </tr>
+%}
+            </tbody>
+        </table>
+%if ($order_topics != 1){
+    </div>
+%}
+
+
