@@ -3063,6 +3063,96 @@ msgstr "Campos modificados"
 msgid "views"
 msgstr "vistas"
 
+msgid "Admin category"
+msgstr "Administrar categoría"
+
+msgid "Views"
+msgstr "Vistas"
+
+msgid "Statuses"
+msgstr "Estados"
+
+msgid "Name view"
+msgstr "Nombre vista"
+
+msgid "View added"
+msgstr "Vista añadida"
+
+msgid "View name already exists, introduce another view name"
+msgstr "Vista ya existe, introduce otro nombre de vista"
+
+msgid "Error adding View: %1"
+msgstr "Error añadiendo vista: %1"
+
+msgid "Views deleted"
+msgstr "Vistas borradas"
+
+msgid "Error deleting views"
+msgstr "Error borrando vistas"
+
+msgid "Are you sure you want to delete the views selected?"
+msgstr "¿Seguro que quiere borrar las vistas seleccionadas?"
+
+msgid "Forms"
+msgstr "Formularios"
+
+msgid "File already attached to topic"
+msgstr "Fichero ya esta adjunto"
+
+msgid "Error uploading file: "
+msgstr "Error subiendo fichero: "
+
+msgid "Uploaded file %1"
+msgstr "Fichero subido %1"
+
+msgid "File id %1 not found"
+msgstr "Fichero id %1 no encontrado"
+
+msgid "Deleting file"
+msgstr "Borrando fichero"
+
+msgid "File deleted ok"
+msgstr "Fichero borrado correctamente"
+
+msgid "Relationship deleted ok"
+msgstr "Relación borrada correctamente"
+
+msgid "File %1 not found"
+msgstr "Fichero %1 no encontrado"
+
+msgid "Drop files here to upload"
+msgstr "Arrastrar fichero aqui para subirlo"
+
+msgid "Upload File"
+msgstr "Subir fichero"
+
+msgid "Are you sure you want to delete these artifacts?"
+msgstr "¿Seguro que quiere borrar estos ficheros?"
+
+msgid "Deleted"
+msgstr "Borrado"
+
+msgid "Commit %1 is already assigned"
+msgstr "Commit %1 ya esta asignado"
+
+msgid "Node is not a commit"
+msgstr "No es un commit"
+
+msgid "Node is not a project"
+msgstr "No es un proyecto"
+
+msgid "%1 created topic on %2"
+msgstr "%1 creó tópico el %2"
+
+msgid "%1 removed %2 on %3"
+msgstr "%1 borró el fichero %2 el %3"
+
+msgid "%1 attached %2 on %3"
+msgstr "%1 adjuntó el fichero %2 el %3"
+
+msgid "%1 modified topic on %3"
+msgstr "%1 modificó tópico el %3"
+
 msgid "%1 created topic '%2'"
 msgstr "%1 ha creado el tópico '%2'"
 
@@ -3165,7 +3255,6 @@ msgstr "Despliegue de Ficheros"
 msgid "Mapping Order"
 msgstr "Orden de Mapeo"
 
-<<<<<<< HEAD
 # lib/Baseliner/Utils.pm (475)
 msgid "Could not open template file %1"
 msgstr "No se ha podido abrir el fichero de plantilla %1"
@@ -3607,81 +3696,3 @@ msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase
 
 msgid "Job element '%1' is in an active job: %2"
 msgstr "Item de pase '%1' está en un pase activo: %2"
-
-msgid "Are you sure you want to delete these artifacts?"
-msgstr "¿Seguro que quiere borrar estos ficheros?"
-
-msgid "File already attached to topic"
-msgstr "Fichero ya esta adjunto"
-
-msgid "Error uploading file: "
-msgstr "Error subiendo fichero: "
-
-msgid "Uploaded file %1"
-msgstr "Fichero subido %1"
-
-msgid "File id %1 not found"
-msgstr "Fichero id %1 no encontrado"
-
-msgid "Deleting file"
-msgstr "Borrando fichero"
-
-msgid "File deleted ok"
-msgstr "Fichero borrado correctamente"
-
-msgid "Relationship deleted ok"
-msgstr "Relación borrada correctamente"
-
-msgid "File %1 not found"
-msgstr "Fichero %1 no encontrado"
-
-msgid "Drop files here to upload"
-msgstr "Arrastrar fichero aqui para subirlo"
-
-msgid "Upload File"
-msgstr "Subir fichero"
-
-msgid "Are you sure you want to delete these artifacts?"
-msgstr "¿Seguro que quiere borrar estos ficheros?"
-
-msgid "Deleted"
-msgstr "Borrado"
-
-msgid "Commit %1 is already assigned"
-msgstr "Commit %1 ya esta asignado"
-
-msgid "Node is not a commit"
-msgstr "No es un commit"
-
-msgid "Node is not a project"
-msgstr "No es un proyecto"
-
-msgid "Create view"
-msgstr "Crear vista"
-
-msgid "Delete view"
-msgstr "Borrar vista"
-
-msgid "Forms"
-msgstr "Formularios"
-
-msgid "Name view"
-msgstr "Nombre vista"
-
-msgid "View added"
-msgstr "Vista añadida"
-
-msgid "View name already exists, introduce another view name"
-msgstr "Vista ya existe, introduce otro nombre de vista"
-
-msgid "Error adding View: %1"
-msgstr "Error añadiendo vista: %1"
-
-msgid "Views deleted"
-msgstr "Vistas borradas"
-
-msgid "Error deleting views"
-msgstr "Error borrando vistas"
-
-msgid "Are you sure you want to delete the views selected?"
-msgstr "¿Seguro que quiere borrar las vistas seleccionadas?"
