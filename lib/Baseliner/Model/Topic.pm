@@ -74,6 +74,14 @@ sub update {
                     }
                 }
                 
+                # revisions
+                if( my @revs = _array( $p->{revisions} ) ) {
+                    #my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+                    #while(my $rel_topic = $rs_topics->next){
+                    #    $topic->add_to_topics($rel_topic, { rel_type=>'topic_topic'});
+                    #}
+                }
+                
                 # release
                 if( my @releases = _array( $p->{release} ) ) {
                     my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );

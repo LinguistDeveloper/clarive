@@ -771,6 +771,34 @@ Baseliner.model.CICombo = function(c) {
 };
 Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 
+// quick CI Select Box generator
+//   usage:
+//      Baseliner.ci_box({ name:'repo', class:'BaselinerX::CI::GitRepository', fieldLabel:_('Git Repository'), value: data.repo })
+
+Baseliner.ci_box = function(c) {
+    var value = c.value; delete c.value;
+    var role = c.role; delete c.role;
+    var cl = c.class; delete c.class;
+    var bp = {};
+    if( cl !=undefined ) bp.class = cl;
+    else bp.role = role;
+    if( c.hiddenName == undefined ) c.hiddenName = c.name;
+    var store = new Baseliner.store.CI({ baseParams: bp });
+    var ci_box = new Baseliner.model.CISelect(Ext.apply({
+        store: store, 
+        singleMode: true, 
+        fieldLabel: _('CI'),
+        name: 'ci',
+        hiddenName: 'ci', 
+        allowBlank: false
+    }, c )); 
+    store.on('load',function(){
+        if( value != undefined ) 
+            ci_box.setValue( value ) ;           
+    });
+    return ci_box;
+};
+
 /* 
      Baseliner.form components
 */
