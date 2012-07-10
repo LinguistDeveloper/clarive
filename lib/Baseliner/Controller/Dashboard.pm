@@ -17,57 +17,51 @@ register 'config.dashboard' => {
 	    ]
 };
 
-register 'dashboard.main.baselines' => {
-    name => 'show baselines',
-    url => '/dashboard/list_baseline',
-    html => '/dashlets/baselines.html',
-	order => 1,
-};
-
-register 'dashboard.main.lastjobs' => {
-    name => 'show last jobs',
-    url => '/dashboard/list_lastjobs',
-    html => '/dashlets/lastjobs.html',
-	order => 2,
-};
-
-
-register 'dashboard.main.topics' => {
-    name => 'show topics',
-    url => '/dashboard/list_topics',
-    html => '/dashlets/topics.html',
-	order => 3,
-};
-
-register 'dashboard.main.emails' => {
-    name => 'show emails',
-    url => '/dashboard/list_emails',
-    html => '/dashlets/emails.html',
-	order => 4,
-};
-
-register 'dashboard.main.jobs' => {
-    name => 'show jobs',
-    url => '/dashboard/list_jobs',
-    html => '/dashlets/jobs.html',
-	order => 5,
-};
-
-#register 'dashboard.jobs.envs' => {
-#    name => 'Jobs By Baseline'
-#    url  => '/dashboard/list_entornos',
-#};
-
 sub list : Local {
     my ($self, $c) = @_;
 
     # list dashboardlets, only active ones
-    my @dashs = Baseliner->model('Registry')->search_for( key => 'dashboard.' ); #, allowed_actions => [@actions] );
-    @dashs = grep { $_->active } @dashs;
-    for my $dash ( @dashs ) {
-        $c->forward( $dash->url );
+    #my @dashs = Baseliner->model('Registry')->search_for( key => 'dashboard.' ); #, allowed_actions => [@actions] );
+    #@dashs = grep { $_->active } @dashs;
+	
+	my @dash_dirs = 
+	map {
+		_dir( $_->root, 'dashlets' )->stringify  
+	} Baseliner->features->list;
+	push @dash_dirs, $c->path_to( 'root/dashlets' ) . "";
+	@dash_dirs = grep { -d } @dash_dirs;
+	my @dashlets = map {
+		my @ret;
+		for my $f ( grep { -f } _dir( $_ )->children ) { 
+		my $d = $f->slurp;
+		my ( $yaml, $html ) = $d =~ /^<!--(.*)\n---.?\n(.*)$/gs;
+	   
+		my $metadata;
+		if(length $yaml && length $html ) {
+			$metadata =  _load( $yaml );    
+		} else {
+			$metadata = {};
+			$html = $d; 
+		}
+		my @rows = map {
+			+{  field=>$_, value => $metadata->{$_} } 
+		} keys %{ $metadata || {} };
+		push @ret, {
+			file => "$f",
+			html => $html,
+			yaml => $yaml,
+			metadata => $metadata,
+			rows => \@rows,
+		};
+		}
+	   @ret;
+	} @dash_dirs;
+	@dashlets;
+	
+    for my $dash ( @dashlets ) {
+        $c->forward( $dash->{metadata}->{url} );
     }
-    $c->stash->{dashboardlets} = \@dashs;
+    $c->stash->{dashboardlets} = \@dashlets;
     $c->stash->{template} = '/comp/dashboard.html';
 }
 
