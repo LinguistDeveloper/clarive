@@ -20,14 +20,14 @@ register 'config.dashboard' => {
 register 'dashboard.main.baselines' => {
     name => 'show baselines',
     url => '/dashboard/list_baseline/1',
-    html => '/dashboard/baselines.html',
+    html => '/dashlet/baselines.html',
 	order => 1,
 };
 
 register 'dashboard.main.lastjobs' => {
     name => 'show last jobs',
     url => '/dashboard/list_lastjobs/2',
-    html => '/dashboard/lastjobs.html',
+    html => '/dashlet/lastjobs.html',
 	order => 2,
 };
 
@@ -35,21 +35,21 @@ register 'dashboard.main.lastjobs' => {
 register 'dashboard.main.topics' => {
     name => 'show topics',
     url => '/dashboard/list_topics/3',
-    html => '/dashboard/topics.html',
+    html => '/dashlet/topics.html',
 	order => 3,
 };
 
 register 'dashboard.main.emails' => {
     name => 'show emails',
     url => '/dashboard/list_emails/4',
-    html => '/dashboard/emails.html',
+    html => '/dashlet/emails.html',
 	order => 4,
 };
 
 register 'dashboard.main.jobs' => {
     name => 'show jobs',
     url => '/dashboard/list_jobs/5',
-    html => '/dashboard/jobs.html',
+    html => '/dashlet/jobs.html',
 	order => 5,
 };
 
