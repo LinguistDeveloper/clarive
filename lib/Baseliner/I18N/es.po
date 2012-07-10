@@ -3036,8 +3036,8 @@ msgstr "Etiquetas"
 msgid "topics"
 msgstr "Tópicos"
 
-msgid "commits"
-msgstr "Commits"
+msgid "revisions"
+msgstr "Revisions"
 
 msgid "files"
 msgstr "Ficheros"
@@ -3132,11 +3132,11 @@ msgstr "¿Seguro que quiere borrar estos ficheros?"
 msgid "Deleted"
 msgstr "Borrado"
 
-msgid "Commit %1 is already assigned"
-msgstr "Commit %1 ya esta asignado"
+msgid "Revision %1 is already assigned"
+msgstr "Revision %1 ya esta asignado"
 
-msgid "Node is not a commit"
-msgstr "No es un commit"
+msgid "Node is not a revision"
+msgstr "No es un revision"
 
 msgid "Node is not a project"
 msgstr "No es un proyecto"
@@ -3216,8 +3216,8 @@ msgstr "Línea Base promocionada de %1 a %2"
 msgid "Demoted baseline %1 to %2"
 msgstr "Línea Base devuelta de %1 a %2"
 
-msgid "Commit"
-msgstr "Commit"
+msgid "Revision"
+msgstr "Revision"
 
 msgid "Changes"
 msgstr "Cambios"

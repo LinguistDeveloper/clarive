@@ -107,7 +107,7 @@ Baseliner.model.Users = function(c) {
 };
 Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 
-Baseliner.model.Commits = function(c) {
+Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     Baseliner.model.Projects.superclass.constructor.call(this, Ext.apply({
@@ -120,11 +120,11 @@ Baseliner.model.Commits = function(c) {
         resizable: true,
         //store: new Baseliner.store.UserProjects({}),
         mode: 'local',
-        fieldLabel: _('Commits'),
+        fieldLabel: _('Revisions'),
         typeAhead: true,
-        name: 'commits',
+        name: 'revisions',
         displayField: 'name',
-        hiddenName: 'commits',
+        hiddenName: 'revisions',
         valueField: 'id',
         tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
         displayFieldTpl: tpl2,
@@ -142,7 +142,7 @@ Baseliner.model.Commits = function(c) {
         }
     }, c));
 };
-Ext.extend( Baseliner.model.Commits, Ext.ux.form.SuperBoxSelect );
+Ext.extend( Baseliner.model.Revisions, Ext.ux.form.SuperBoxSelect );
 
 function returnOpposite(hexcolor) {
     var r = parseInt(hexcolor.substr(0,2),16);

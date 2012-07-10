@@ -425,7 +425,7 @@
         }); 
     });
 
-	var commit_box_store = new Ext.data.JsonStore({
+	var revision_box_store = new Ext.data.JsonStore({
 		root: 'data' , 
 		id: 'id', 
 		//url: '/user/list',
@@ -436,8 +436,8 @@
 	});
     
     
-    var commit_box = new Baseliner.model.Commits({
-        store: commit_box_store 
+    var revision_box = new Baseliner.model.Revision({
+        store: revision_box_store 
     });
     
     var pb_panel = new Ext.Panel({
@@ -453,9 +453,9 @@
         layout: 'form',
         enableDragDrop: true,
         border: false,
-        hidden: rec.fields_form.show_commits ? false : true,
+        hidden: rec.fields_form.show_revisions ? false : true,
         //style: 'border-top: 0px',
-        items: [ commit_box ]
+        items: [ revision_box ]
     });
    var custom_form_container = new Ext.Container({ 
       hidden: true
@@ -652,7 +652,7 @@
     
     cb_panel.on( 'afterrender', function(){
         var el = cb_panel.el.dom; //.childNodes[0].childNodes[1];
-        var commit_box_dt = new Ext.dd.DropTarget(el, {
+        var revision_box_dt = new Ext.dd.DropTarget(el, {
             ddGroup: 'lifecycle_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
@@ -661,37 +661,37 @@
                 var add_node = function(node) {
                     var data = node.attributes.text;
                     var swOk = true;
-                    commits = (commit_box.getValue()).split(",");
-                    for(var i=0; i<commits.length; i++) {
-                        if (commits[i] == data){
+                    revisions = (revision_box.getValue()).split(",");
+                    for(var i=0; i<revisions.length; i++) {
+                        if (revisions[i] == data){
                             swOk = false;
                             break;
                         }
                     }
                     if(swOk){
-                        var myStore = commit_box.store;
+                        var myStore = revision_box.store;
                         var rec = new Ext.data.Record({'id':Ext.id(),'name':data}, '-1')
                         //myStore.insert(0,rec);
                         
                         //myStore.loadData(rec);
-                        //commit_box.setValue(rec);
-                        //commits.push(data);
-                        //commit_box.setValue( commits );
+                        //revision_box.setValue(rec);
+                        //revisions.push(data);
+                        //revision_box.setValue( revisions );
                     }else{
-                        Baseliner.message( _('Warning'), _('Commit %1 is already assigned', data));  
+                        Baseliner.message( _('Warning'), _('Revision %1 is already assigned', data));  
                     }
                 };
                 var attr = n.attributes;
-                if( n.parentNode.attributes.text != 'commits' ) {  // is a project?
-                    Baseliner.message( _('Error'), _('Node is not a commit'));
+                if( n.parentNode.attributes.text != 'revisions' ) {  // is a project?
+                    Baseliner.message( _('Error'), _('Node is not a revision'));
                 } else {
-                    var myStore = commit_box.store;
+                    var myStore = revision_box.store;
                     var rec1 = new Ext.data.Record({'id':1,'name':'prueba1'}, '0');
                     myStore.insert(0,rec1);
                 
                     var rec2 = new Ext.data.Record({'id':2,'name':'prueba2'}, '1');
                     myStore.insert(1,rec2);
-                    commit_box.setValue( '1,2' );
+                    revision_box.setValue( '1,2' );
                     add_node(n);
                 }
                 // multiple? Ext.each(dd.dragData.selections, add_node );
