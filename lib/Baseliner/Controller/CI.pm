@@ -366,53 +366,77 @@ sub store : Local {
 
 ## adds/updates foreign CIs
 
+sub ci_create_or_update {
+    my %p = @_;
+    return $p{mid} if length $p{mid};
+    my $ns = $p{ns} || delete $p{data}{ns};
+    # check if it's an update, in case of foreign ci
+    if( $ns ) {
+        my $row = Baseliner->model('Baseliner::BaliMaster')->search({ ns=>$ns })->first;
+        if( ref $row ) {  # it's an update
+            $p{yaml} = _dump( delete $p{data} ) if ref $p{data};
+            #$row->name( $name ) if defined $name;
+            #$row->collection( $p{collection} ) if defined $p{collection};
+            #$row->yaml( _dump( $p{data} ) );
+            $row->update( %p );
+            return $row->mid;
+        }
+    }
+    # new
+    # find collection
+    my $collection = $p{collection};
+    my $name = $p{name};
+    if( !$collection && exists $p{class} ) {
+        my $class = "BaselinerX::CI::$p{class}";
+        $collection = $class->collection;
+        _fail _loc( 'Missing collection for class %1', $class ) unless $collection;
+    } else {
+        _fail _loc( 'Missing collection for %1', $name ) unless $collection;
+    }
+    my $master_row = master_new $collection => $name => $p{data};
+    $master_row->ns( $ns ) if $p{ns};
+    $master_row->update;
+    return $master_row->mid;
+};
+
 sub sync : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
-    my $mid = delete $p->{mid};
+
     my $collection = delete $p->{collection};
     my $class = delete $p->{class};
     my $name = delete $p->{name};
+    my $mid = delete $p->{mid};
+    my $ns = delete $p->{ns};
 
     my $data = exists $p->{ci_json} ? _from_json( $p->{ci_json} ) : $p;
-    my $ci_create_or_update = sub {
-        my $ci = shift;
-        my $mid;
-        # check if needed, in case of foreign ci
-        if( my $ns = $p->{ns} ) {
-            my $row = $c->model('Baseliner::BaliMaster')->search({ ns=>$ns })->first;
-            if( ref $row ) {  # it's an update
-                $row->name( $name );
-                $row->collection( $name );
-                $row->yaml( _dump( $data ) );
-                $row->update;
-            }
-        }
-        if( !$collection && exists $p->{class} ) {
-            my $class = "BaselinerX::CI::$p->{class}";
-            $collection = $class->collection;
-            _fail _loc( 'Missing collection for %1', $class ) unless $collection;
-        } else {
-            _fail _loc( 'Missing collection for %1', $name ) unless $collection;
-        }
-    };
 
     try {
-        # check for relationships
+        # check for prereq relationships
+        my @ci_pre;
+        my %ci_data;
         while( my ($k,$v) = each %$data ) {
-            if( $k eq 'ci' ) {
+            if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
-                    $ci_create_or_update->( $ci ) ;
+                    push @ci_pre, ci_create_or_update( %$ci ) ;
                 }
             }
-            elsif( ref $v eq 'ARRAY' ) {
+            elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
+                my $ix = $1;
+                $ci_data{ $k } = $ci_pre[ $ix ];
+            }
+            else {
+                $ci_data{ $k } = $v;
             }
         }
+
+        ci_create_or_update( name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;
     } catch {
         my $err = shift;
+        _whereami $err;
         $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
     };
 

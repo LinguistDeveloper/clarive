@@ -12,6 +12,7 @@ sub new {
         %args = %{ $_[0] };
     } elsif( @_ == 1 && is_number( $_[0] ) ) {   # mid! a CI!
         my $rec = Baseliner->model('Baseliner::BaliMaster')->find( $_[0] );
+        _throw _loc("Master object with mid '%1' not found", $_[0] ) unless ref $rec;
         my $class = "BaselinerX::CI::" . $rec->collection;
         my $d = _load( $rec->yaml ) ;
         $d->{mid} = $_[0];
