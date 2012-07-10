@@ -775,7 +775,7 @@ Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 //   usage:
 //      Baseliner.ci_box({ name:'repo', class:'BaselinerX::CI::GitRepository', fieldLabel:_('Git Repository'), value: data.repo })
 
-Baseliner.ci_store = function(c) {
+Baseliner.ci_box = function(c) {
     var value = c.value; delete c.value;
     var role = c.role; delete c.role;
     var cl = c.class; delete c.class;
