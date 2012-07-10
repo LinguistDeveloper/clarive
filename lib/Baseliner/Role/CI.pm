@@ -7,6 +7,7 @@ subtype CI => as 'Baseliner::Role::CI';
 coerce 'CI' =>
   from 'Num' => via { Baseliner::CI->new( $_ ) }; 
 
+has mid => qw(is rw isa Num);
 
 sub icon_class { '/static/images/ci/class.gif' }
 requires 'icon';

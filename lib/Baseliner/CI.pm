@@ -13,7 +13,10 @@ sub new {
     } elsif( @_ == 1 && is_number( $_[0] ) ) {   # mid! a CI!
         my $rec = Baseliner->model('Baseliner::BaliMaster')->find( $_[0] );
         my $class = "BaselinerX::CI::" . $rec->collection;
-        return $class->new( _load( $rec->yaml ) );
+        my $d = _load( $rec->yaml ) ;
+        $d->{mid} = $_[0];
+        my $obj = $class->new( $d );
+        return $obj;
     } elsif( @_ == 1 && ! ref $_[0] ) {
         $args{uri} = $_[0];
     } elsif( @_ == 2 && ! ref $_[0] && ref $_[1] eq 'HASH' ) {
