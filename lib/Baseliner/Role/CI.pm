@@ -13,7 +13,12 @@ sub icon_class { '/static/images/ci/class.gif' }
 requires 'icon';
 requires 'collection';
 
-has job      => qw(is rw isa Baseliner::Role::JobRunner), lazy=>1, default=>sub{ Baseliner::Core::JobRunner->new };  
+has job     => qw(is rw isa Baseliner::Role::JobRunner),
+    lazy    => 1,
+    default => sub {
+        require Baseliner::Core::JobRunner;
+        Baseliner::Core::JobRunner->new;
+    };
 
 # from Node
 has uri      => qw(is rw isa Str);   # maybe a URI someday...
