@@ -14,6 +14,7 @@
     $status
     $events
     $files
+    $dates
     $release => ''
     $release_row => {}
     $topics
@@ -175,7 +176,12 @@ padding: 2px 4px 2px 7px;
 %if($show_progress && length $progress ){
               <tr>
                 <th><% _loc('Progress') %>:</th>
-                <td><% $progress || '&nbsp;' %>%</td>
+                <td>
+%  my $cls = ( $progress < 20 ? 'danger' : ( $progress < 40 ? 'warning' : ( $progress < 80 ? 'info' : 'success' ) ) );
+                    <div class="progress progress-<% $cls %>" style="width: 120px; height: 8px">
+                        <div class="bar" style="width: <% $progress %>%"></div>
+                    </div>
+                </td>
               </tr>
 %}              
 %if($show_description && length $description ){
@@ -187,8 +193,8 @@ padding: 2px 4px 2px 7px;
               </tr>
 %}              
 
-%if( ($show_projects || $show_assign_to || $show_topics || $show_files)
-%       && ( _array($projects) || _array( $users ) || _array( $files ) || _array( $topics ) ) ) {                    
+%if( _array($dates) || ( ($show_projects || $show_assign_to || $show_topics || $show_files)
+%       && ( _array($projects) || _array( $users ) || _array( $files ) || _array( $topics ) ) ) ) {                    
               <tr>
                 <td colspan="2">
 %if( $show_projects ){                    
@@ -228,6 +234,21 @@ padding: 2px 4px 2px 7px;
 % }
 % }
 
+% if( _array( $dates ) ) {
+                    <ul class="nav nav-list">
+                      <li class="nav-header">
+                        <% _loc("Scheduling") %>
+                      </li>
+                    </ul>
+                    <ul class="" style="margin-left: 20px">
+                      <li class="">
+% foreach my $date ( _array( $dates ) ) {
+                      <li style="margin: 6px 0px 6px 0px">
+                          <% $date->{start_date} %>
+                      </li>
+% }
+                    </ul>
+% }
 
 %if( $show_topics ){                    
 % if( _array( $topics ) ) {

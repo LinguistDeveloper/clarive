@@ -64,7 +64,13 @@ register 'menu.tools.topic' => {
     tab_icon => '/static/images/icons/topic.png'
 };
 
-register 'action.topics.view' => { name=>'View and Admin topics' };
+register 'action.topics.admin' => { name=>'Admin topics' };
+
+# XXX
+map {
+    register "action.topics.view." . lc($_) => { name=>"Ver $_" };
+    register "action.topics.edit." . lc($_) => { name=>"Editar $_" };
+} (qw/Cambio Tarea Release Peticion Incidencia/, 'Caso de Prueba', 'Plan de Pruebas', 'Funcionalidad');
 
 sub grid : Local {
     my ($self, $c) = @_;
@@ -105,18 +111,22 @@ sub list : Local {
         $where->{created_on} = {'between' => [ $today->ymd, $today->add(days=>1)->ymd]};
     }
     
-    if($p->{assigned_to_me}){
+    if ( $p->{assigned_to_me} ) {
         my $rs_user = $c->model('Baseliner::BaliUser')->search( username => $username )->first;
-        if($rs_user){
-            my @topic_mids = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => $rs_user->mid, rel_type => 'topic_users'}, { select=>[qw(from_mid)]})->hashref->all;
-            if(@topic_mids){
+        if ($rs_user) {
+            my @topic_mids
+                = map { $_->{from_mid} }
+                Baseliner->model('Baseliner::BaliMasterRel')
+                ->search( { to_mid => $rs_user->mid, rel_type => 'topic_users' }, { select => [qw(from_mid)] } )
+                ->hashref->all;
+            if (@topic_mids) {
                 $where->{'me.topic_mid'} = \@topic_mids;
-            }else{
+            } else {
                 $where->{'me.topic_mid'} = -1;
             }
-        }else{
+        } else {
             $where->{'me.topic_mid'} = -1;
-        }            
+        }
     }
     #*****************************************************************************************************************************
     
@@ -374,6 +384,11 @@ sub view : Local {
         my @topics = $rs_rel_topic->all;
         @topics = $c->model('Topic')->append_category( @topics );
         $c->stash->{topics} = @topics ? \@topics : []; 
+
+        # dates
+        my @dates = $c->model('Baseliner::BaliMasterCal')->search({ mid=> $topic_mid })->hashref->all;
+        $c->stash->{dates} = \@dates;
+
         # release
         #my $release_row = $topic->topics->search({ is_release=>'1' })->first;
         my $release_row = $c->model('Baseliner::BaliTopic')->search(
@@ -398,6 +413,7 @@ sub view : Local {
         $c->stash->{category} = $id_category;
         $c->stash->{category_color} = '#444';
         $c->stash->{priority} = '';
+        $c->stash->{dates} = [];
         $c->stash->{progress} = 0;
         $c->stash->{forms} = '';
         $c->stash->{topic_mid} = '';

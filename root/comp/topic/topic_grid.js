@@ -441,7 +441,9 @@
 				var label = rec.data.labels[i].split(';');
 				var label_name = label[1];
 				var label_color = label[2];
-				tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
+				tag_color_html = tag_color_html
+                    + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" 
+                    + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
             }
         }
 		if(btn_comprimir.pressed){
@@ -474,7 +476,7 @@
                 "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
                 rec.data.numcomment,
                 "</span>",
-                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
+                "<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ",
                 rec.data.numfile,
                 "</span>"
             ].join("");
@@ -501,6 +503,20 @@
         var ret = 
             '<small><b><span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#555">' + value + '</span></b></small>';
            //+ '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background:#ddd;color:#222;font-weight:normal;text-transform:lowercase;text-shadow:none;"><small>' + value + '</small></span></div>'
+        return ret;
+    };
+
+    var render_progress = function(value,metadata,rec,rowIndex,colIndex,store){
+        if( value == 0 ) return '';
+        var cls = ( value < 20 ? 'danger' : ( value < 40 ? 'warning' : ( value < 80 ? 'info' : 'success' ) ) );
+        var ret =  [
+            '<span id="boot">',
+            '<div class="progress progress-'+ cls +'" style="height: 8px">',
+                '<div class="bar" style="width: '+value+'%">',
+                '</div>',
+            '</div>',
+            '</span>',
+        ].join('');
         return ret;
     };
 
@@ -535,7 +551,8 @@
             { header: _('Category'), dataIndex: 'category_name', width: 80, sortable: true, renderer: render_category },
             { header: _('Status'), dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
-            { header: '', dataIndex: 'numcomment', width: 10, renderer: render_comment },			
+            { header: _('Progress'), dataIndex: 'progress', width: 50, sortable: true, renderer: render_progress },
+            { header: '', dataIndex: 'numcomment', width: 45, renderer: render_comment },			
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('Topic'), hidden: true, dataIndex: 'topic_mid'},    
         ],

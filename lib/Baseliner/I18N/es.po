@@ -18,8 +18,26 @@ msgstr "Buzón %1"
 msgid "About..."
 msgstr "Acerca de..."
 
+msgid "Scheduling"
+msgstr "Planificación"
+
+msgid "Select the Action"
+msgstr "Seleccione la Acción"
+
+msgid "Select the Event"
+msgstr "Seleccione el Evento"
+
+msgid "Rules"
+msgstr "Reglas"
+
+msgid "Rule"
+msgstr "Regla"
+
 msgid "Data"
 msgstr "Datos"
+
+msgid "Back"
+msgstr "Atrás"
 
 msgid "Text"
 msgstr "Texto"
