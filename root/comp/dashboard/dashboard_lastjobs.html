@@ -1,0 +1,85 @@
+<%perl>
+    use Baseliner::Utils;
+    my @lastjobs = $c->stash->{lastjobs};
+    my $order_lastjobs = $c->stash->{order_lastjobs};
+    my $status_id = "status". _nowstamp;
+</%perl>
+
+    <div class="grid_13">
+        <h2>Pases</h2>
+        <script language="javascript">
+            function render_level ( obj, td_id ) {
+                var icon;
+                var bold = false;
+                var status = obj.status;
+                var type   = obj.type;
+                var rollback = obj.rollback;
+                var div1   = '<div style="white-space:normal !important;">';
+                var div2   = '</div>';
+                if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
+                else if( status=='READY' ) icon='log_d.gif';
+                else if( status=='APPROVAL' ) icon='verify.gif';
+                else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
+                else if( status=='IN-EDIT' ) icon='log_w.gif';
+                else { icon='log_e.gif'; bold=true; }
+                var value = (bold?'<b>' + _(status) + '</b>': _(status));
+        
+                // Rollback?
+                if( status == 'FINISHED' && rollback == 1 )  {
+                    value += ' (<% _loc("Rollback OK") %>)';
+                    icon = 'log_e.gif';
+                }
+                else if( status == 'ERROR' && rollback == 1 )  {
+                    value += ' (<% _loc("Rollback Failed") %>)';
+                }
+                //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
+                if( status == 'APPROVAL' ) { // add a link to the approval main
+                    //value = '<a href="javascript:Baseliner.addNewTabComp(' + '"/request/main", '<% _loc("Approvals") %>, value ); 
+                    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status ); 
+                }
+                
+                
+                ////alert(icon);
+                var tdStatus = document.getElementById( td_id );
+                if( icon!=undefined ) {
+                    tdStatus.innerHTML = div1 
+                        + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/"+icon+"' />"
+                        + value + div2 ;
+                } else {
+                    tdStatus.innerHTML = value;
+                }
+            };
+        </script>
+            <table class="table table-bordered table-condensed dashboard">
+                <thead>
+                    <tr>
+                        <th>Pase</th>
+                        <th>Estado</th>
+                        <th>Inicio</th>
+                        <th>Fin</th>
+                    </tr>
+                </thead>
+                    <tbody>
+%my $row = 0;
+%foreach my $lastjob (_array @lastjobs){
+%$row = $row + 1;
+                    <tr>
+                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<%$lastjob->{id}%>&name=<%$lastjob->{name}%>', _('Log <%$lastjob->{name}%>') );"><%$lastjob->{name}%></a></b></td>
+                        <td id='row<%$row%>_<%$status_id%>'><%$lastjob->{status}%></td>
+                        <td><% length($lastjob->{starttime}) ? $lastjob->{starttime}->ymd() : '' %> <% length($lastjob->{starttime}) ? $lastjob->{starttime}->hms : '' %> </td>
+                        <td><% length($lastjob->{endtime}) ? $lastjob->{endtime}->ymd() : '' %> <% length($lastjob->{endtime}) ? $lastjob->{endtime}->hms : '' %></td>
+                    </tr>
+                <script>
+                    var details_job = new Object();
+                    details_job.status = '<%$lastjob->{status}%>';
+                    details_job.type = '<%$lastjob->{type}%>';
+                    details_job.rollback = <%$lastjob->{rollback}%>;
+                    render_level(details_job, 'row<%$row%>_<%$status_id%>');
+                </script>
+%}            
+            </tbody>
+        </table>
+%if ($order_lastjobs != 1){
+    </div>
+%}
+
