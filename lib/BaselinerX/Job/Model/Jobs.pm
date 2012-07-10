@@ -584,11 +584,10 @@ sub get_contents {
                 Baseliner->model( 'Baseliner::BaliRelationship' )->search( {from_ns => $ns->{ns_type}.'/'.$ns->{ns_name}} );
     
             while ( my $topic = $rs_topics->next ) {
-                # _log _dump $topic;
                 my $row_topics =
                     Baseliner->model( 'Baseliner::BaliTopic' )->search( {mid => $topic->to_id} )->first;
-                $topics{$topic->to_id} = $row_topics->title;
-                ##$topics{$topic->to_id} = $row_topics->title if $row_topics && $row_topics->title;
+                ##$topics{$topic->to_id} = $row_topics->title;
+                $topics{$topic->to_id} = $row_topics->title if $row_topics && $row_topics->title;
             }
         } ## end while ( my $row = $rs->next)
     
