@@ -109,10 +109,10 @@ msgid "Login"
 msgstr "Login"
 
 msgid "Revision"
-msgstr "Elemento"
+msgstr "Revisión"
 
 msgid "Revisions"
-msgstr "Mis Elementos"
+msgstr "Revisiones"
 
 msgid "Login Failed"
 msgstr "Login Inválido"
@@ -3036,8 +3036,8 @@ msgstr "Etiquetas"
 msgid "topics"
 msgstr "Tópicos"
 
-msgid "commits"
-msgstr "Commits"
+msgid "revisions"
+msgstr "Revisions"
 
 msgid "files"
 msgstr "Ficheros"
@@ -3132,11 +3132,11 @@ msgstr "¿Seguro que quiere borrar estos ficheros?"
 msgid "Deleted"
 msgstr "Borrado"
 
-msgid "Commit %1 is already assigned"
-msgstr "Commit %1 ya esta asignado"
+msgid "Revision %1 is already assigned"
+msgstr "Revision %1 ya esta asignado"
 
-msgid "Node is not a commit"
-msgstr "No es un commit"
+msgid "Node is not a revision"
+msgstr "No es una revisión"
 
 msgid "Node is not a project"
 msgstr "No es un proyecto"
@@ -3215,9 +3215,6 @@ msgstr "Línea Base promocionada de %1 a %2"
 
 msgid "Demoted baseline %1 to %2"
 msgstr "Línea Base devuelta de %1 a %2"
-
-msgid "Commit"
-msgstr "Commit"
 
 msgid "Changes"
 msgstr "Cambios"
@@ -3696,3 +3693,6 @@ msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase
 
 msgid "Job element '%1' is in an active job: %2"
 msgstr "Item de pase '%1' está en un pase activo: %2"
+
+msgid "select or drop repository revisions"
+msgstr "seleccione o arrastre revisiones de repositorio"
