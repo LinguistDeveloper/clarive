@@ -1019,6 +1019,10 @@ Baseliner.model.RevisionsGridDD = function(c) {
         ]
     });
     
+    var id_store = revision_box_store.getId();
+    Baseliner.delete_revision = function( id_store ) {
+        alert( id_store );
+    };
     Baseliner.model.RevisionsGridDD.superclass.constructor.call(this, Ext.apply({
         store: revision_box_store,
         layout: 'form',
@@ -1041,7 +1045,7 @@ Baseliner.model.RevisionsGridDD = function(c) {
           },
           { width: 20, dataIndex: 'id',
               renderer: function(){
-                  return '<a href="javascript:Baseliner.delete_revision()"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
+                  return '<a href="javascript:Baseliner.delete_revision('+id_store+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
               }
           },
 
@@ -1110,3 +1114,101 @@ Baseliner.model.RevisionsGridDD = function(c) {
     }); 
 };
 Ext.extend( Baseliner.model.RevisionsGridDD, Ext.grid.GridPanel );
+
+/*
+
+Flot plotting
+
+*/
+Baseliner.flot = {};
+Baseliner.flot.Base = function(c) {
+    if( c==undefined ) c={};
+    var data = c.data;
+    delete c.data;
+    var w = c.width == undefined ? 200 : c.width;
+    var h = c.height == undefined ? 200 : c.height;
+    Baseliner.flot.Base.superclass.constructor.call(this,
+        Ext.apply({ style:{width: w, height: h, background:'white'} }, c)
+    );
+    this.on('afterrender',function(){
+        $.plot(	$(this.el.dom ), data, c.plotConfig );
+    });
+};
+Ext.extend( Baseliner.flot.Base, Ext.Container ); 
+
+Baseliner.flot.Donut = function(c) {
+    if( c==undefined ) c={};
+    var data = c.data;
+    delete c.data;
+    // fake data
+    if( data == undefined ) {
+        var series = 3;
+        data=[];
+        for( var i = 0; i<series; i++)
+        {
+            data[i] = { label: "Series "+(i+1), data: Math.floor(Math.random()*100)+1 } 
+        }
+    }
+    Baseliner.flot.Donut.superclass.constructor.call(this, Ext.apply({
+        plotConfig: Ext.apply({
+		   colors: ["#F90", "#222", "#777", "#AAA"],
+	        series: {
+	            pie: { 
+	                innerRadius: 0.5,
+	                show: true
+	            }
+	        }
+	    }, c.plotConfig),
+        data: data    
+    }, c ));
+};
+Ext.extend( Baseliner.flot.Donut, Baseliner.flot.Base ); 
+
+Baseliner.flot.Area = function(c) {
+    if( c==undefined ) c={};
+    var data = c.data;
+    delete c.data;
+    // fake data
+    if( data == undefined ) {
+        var data = [], totalPoints = 200;
+        function getRandomData() {
+            if (data.length > 0)
+                data = data.slice(1);
+            while (data.length < totalPoints) {
+                var prev = data.length > 0 ? data[data.length - 1] : 50;
+                var y = prev + Math.random() * 10 - 5;
+                if (y < 0)
+                    y = 0;
+                if (y > 100)
+                    y = 100;
+                data.push(y);
+            }
+            var res = [];
+            for (var i = 0; i < data.length; ++i)
+                res.push([i, data[i]])
+            return res;
+        }
+        data = [ getRandomData() ];
+    }
+	// setup plot
+	var options = {
+		yaxis: { min: 0, max: 100 },
+		xaxis: { min: 0, max: 100 },
+		colors: ["#F90", "#222", "#666", "#BBB"],
+		series: {
+				   lines: { 
+						lineWidth: 2, 
+						fill: true,
+						fillColor: { colors: [ { opacity: 0.6 }, { opacity: 0.2 } ] },
+						steps: false
+
+					}
+			   }
+	};
+	
+    Baseliner.flot.Area.superclass.constructor.call(this, Ext.apply({
+        plotConfig: Ext.apply( options, c.plotConfig),
+        data: data    
+    }, c));
+};
+Ext.extend( Baseliner.flot.Area, Baseliner.flot.Base ); 
