@@ -18,7 +18,9 @@ with 'Baseliner::Role::JobRunner';
 sub jobid { 0 }
 sub bl { '*' }
 sub step { 1 }
+sub rollback { 0 }
 sub status { }
+sub job_type { 'static' }
 sub exec { }
 sub job_stash { 
     my $self = shift;
