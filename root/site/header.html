@@ -4,6 +4,7 @@
     $show_dashboard => 1
     $show_menu => 1
     $show_lifecycle => 1
+    $show_js_reload => 0
 </%args>
 
 <%perl>
@@ -18,6 +19,7 @@
  <head>
     <& '/site/nocache.html' &>
     <& '/site/top.html' &>
+    <script type="text/javascript" src="/site/globals.js"></script>
     <script type="text/javascript" src="/site/tablegrid.js"></script>
     <script type="text/javascript" src="/site/tabfu.js"></script>
     <script type="text/javascript" src="/site/help.js"></script>
@@ -161,6 +163,9 @@ Ext.onReady(function(){
             '->',
             search_box,
             Baseliner.help_button,
+% if( $show_js_reload ) {
+            '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />',
+% }
             '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />',
             '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',

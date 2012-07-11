@@ -1,5 +1,3 @@
-Ext.ns('Baseliner');
-
 // Cookies
 Baseliner.cookie = new Ext.state.CookieProvider({
 		expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
@@ -88,6 +86,8 @@ Baseliner.columnWrap = function (val){
     if( val == null || val == undefined ) return '';
     return '<div style="white-space:normal !important;">'+ val +'</div>';
 }
+
+Baseliner.render_wrap = Baseliner.columnWrap;
 
 // open a window given a username link
 Baseliner.render_user_field  = function(value,metadata,rec,rowIndex,colIndex,store) {

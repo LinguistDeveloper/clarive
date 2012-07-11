@@ -115,7 +115,7 @@ Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
-    Baseliner.model.Projects.superclass.constructor.call(this, Ext.apply({
+    Baseliner.model.Revisions.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
@@ -886,3 +886,227 @@ Baseliner.model.SelectBaseline = function(c) {
     }, c));
 };
 Ext.extend( Baseliner.model.SelectBaseline, Ext.ux.form.SuperBoxSelect );
+
+/*
+
+A Revision draganddrop superbox inside a form-ready panel.
+
+    var revision_box = new Baseliner.model.RevisionsBoxDD({
+        hidden: rec.fields_form.show_revisions ? false : true
+    });
+
+    var form = new Ext.form.FormPanel({ items: revision_box });
+
+*/
+Baseliner.model.RevisionsBoxDD = function(c) {
+    if( c==undefined ) c = {};
+    //c.panelConfig = {};
+    var revision_box_store = new Ext.data.JsonStore({
+        root: 'data' , 
+        id: 'id', 
+        fields: [
+            {  name: 'id' },
+            {  name: 'name' }
+        ]
+    });
+    
+    var hidden = c.hidden;
+
+    var revision_box = new Baseliner.model.Revisions(Ext.apply({
+        store: revision_box_store 
+    }, c));
+    
+    Baseliner.model.RevisionsBoxDD.superclass.constructor.call(this, Ext.apply({
+        layout: 'form',
+        enableDragDrop: true,
+        border: false,
+        hidden: hidden,
+        style: 'border-top: 0px',
+        items: [ revision_box ]
+    }, c.panelConfig ));
+
+    var v = c.value;
+    revision_box.on('afterrender', function(){
+        if( v != undefined ) {
+            var s = revision_box.store;
+            var revs = v;
+            var mids = [];
+            console.log( revs );
+            for( var i=0; i< revs.length; i++ ) {
+                var r = new s.recordType( revs[i], revs[i].mid );
+                mids.push( revs[i].mid );
+                s.add( r );
+                s.commitChanges();
+            }
+            revision_box.setValue( mids.join(',') );
+        }
+    });
+
+    revision_box.on('afterrender', function(){
+        var el = revision_box.el.dom; 
+        var revision_box_dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyDrop: function(dd, e, id) {
+                var n = dd.dragData.node;
+                var attr = n.attributes;
+                var data = attr.data || {};
+                var ci = data.ci;
+                var mid = data.mid;
+                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
+                    Baseliner.message( _('Error'), _('Node is not a revision'));
+                } 
+                else if ( mid!=undefined ) { // TODO
+                }
+                else if ( ci !=undefined ) {
+                    Baseliner.ajaxEval('/ci/sync',
+                        { name: ci.name, class: ci.class, ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
+                        function(res) {
+                            if( res.success ) {
+                                var mid = res.mid ;
+                                var s = revision_box.store;
+                                var d = { name: attr.text, id: mid };
+                                var r = new s.recordType( d, mid );
+                                s.add( r );
+                                s.commitChanges();
+                                //s.loadData( { data: [ d ] }, true );
+                                var mids = [ ];
+                                var current = revision_box.getValue() ;
+                                if( current !=undefined && current != '' ) { mids.push( current ); }
+
+                                s.each(function(sr){
+                                    mids.push( sr.id );
+                                });
+                                //var rec = new Ext.data.Record(, '-1');
+                                //var rec = new Ext.data.Record({ name: attr.text, ci: ci, id: mid }, '-1');
+                                //s.insert(0,rec);
+                                revision_box.setValue( mids.join(',') );
+                            }
+                            else {
+                                Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
+                            }
+                        }
+                    );
+                }
+                return (true); 
+             }
+        });  //droptarget
+    });
+};
+Ext.extend( Baseliner.model.RevisionsBoxDD, Ext.Panel );
+
+/*
+
+A Revision draganddrop grid that is form-ready
+
+    var revision_grid = new Baseliner.model.RevisionsGridDD({
+        hidden: rec.fields_form.show_revisions ? false : true
+    });
+
+    var form = new Ext.form.FormPanel({ items: revision_grid });
+
+*/
+Baseliner.model.RevisionsGridDD = function(c) {
+    if( c==undefined ) c = {};
+    
+    var revision_box_store = new Ext.data.JsonStore({
+        root: 'data' , 
+        id: 'id', 
+        //url: '/user/list',
+        fields: [
+            {  name: 'id' },
+            {  name: 'name' }
+        ]
+    });
+    
+    Baseliner.model.RevisionsGridDD.superclass.constructor.call(this, Ext.apply({
+        store: revision_box_store,
+        layout: 'form',
+        height: 120,
+        fieldLabel: _('Revisions'),
+        hideHeaders: true,
+        viewConfig: {
+            headersDisabled: true,
+            enableRowBody: true,
+            //scrollOffset: 2,
+            forceFit: true
+        },
+        columns: [
+          //{ header: _('ID'), width: 60, hidden: true, dataIndex: 'id' },
+          { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.gif" />'} },
+          { header: _('Name'), width: 240, dataIndex: 'name',
+              renderer: function(v,metadata,rec){
+                  return Baseliner.render_wrap( String.format('<span id="boot"><h5>{0}</h5></span>', v ) );
+              }
+          },
+          { width: 20, dataIndex: 'id',
+              renderer: function(){
+                  return '<a href="javascript:Baseliner.delete_revision()"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
+              }
+          },
+
+        ]
+    }, c ));
+
+    var revision_grid = this;
+    revision_grid.on('afterrender', function(){
+        if( c.value != undefined ) {
+            var s = revision_grid.store;
+            var revs = c.value;
+            var mids = [];
+            console.log( revs );
+            for( var i=0; i< revs.length; i++ ) {
+                var r = new s.recordType( revs[i], revs[i].mid );
+                mids.push( revs[i].mid );
+                s.add( r );
+                s.commitChanges();
+            }
+            revision_grid.setValue( mids.join(',') );
+        }
+    });
+    revision_grid.on( 'afterrender', function(){
+        var el = this.el.dom; 
+        var revision_box_dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyDrop: function(dd, e, id) {
+                var n = dd.dragData.node;
+                //var s = project_box.store;
+                var attr = n.attributes;
+                var data = attr.data || {};
+                var ci = data.ci;
+                var mid = data.mid;
+                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
+                    Baseliner.message( _('Error'), _('Node is not a revision'));
+                } 
+                else if ( mid!=undefined ) {
+                    // TODO
+                }
+                else if ( ci !=undefined ) {
+                    Baseliner.ajaxEval('/ci/sync',
+                        { name: ci.name, class: ci.class, ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
+                        function(res) {
+                            if( res.success ) {
+                                var mid = res.mid ;
+                                var s = revision_grid.store;
+                                var d = { name: attr.text, id: mid };
+                                var r = new s.recordType( d, mid );
+                                s.add( r );
+                                s.commitChanges();
+                                var mids = [ ];
+                                s.each(function(sr){
+                                    mids.push( sr.id );
+                                });
+                            }
+                            else {
+                                Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
+                            }
+                        }
+                    );
+                }
+                return (true); 
+             }
+        });
+    }); 
+};
+Ext.extend( Baseliner.model.RevisionsGridDD, Ext.grid.GridPanel );
