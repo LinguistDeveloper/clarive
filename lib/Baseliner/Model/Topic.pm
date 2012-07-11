@@ -76,10 +76,10 @@ sub update {
                 
                 # revisions
                 if( my @revs = _array( $p->{revisions} ) ) {
-                    #my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
-                    #while(my $rel_topic = $rs_topics->next){
-                    #    $topic->add_to_topics($rel_topic, { rel_type=>'topic_topic'});
-                    #}
+                    my $rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@revs});
+                    while(my $rev = $rs_revs->next){
+                        $topic->add_to_revisions($rev, { rel_type=>'topic_revision'});
+                    }
                 }
                 
                 # release
@@ -177,6 +177,14 @@ sub update {
                     my @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
                     #$topic->remove_from_topics( $_ ) for @curr_topics;
                     $topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+                }
+
+                # revisions
+                if( my @revs = _array( $p->{revisions} ) ) {
+                    my @rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@revs});
+                    $topic->set_revisions( \@rs_revs, { rel_type=>'topic_revision'});
+                } else {
+                    $topic->revisions->delete;
                 }
                 
                 # release

@@ -99,6 +99,7 @@ __PACKAGE__->master_setup( 'files', ['topic','mid'] => ['file_version', 'BaliFil
 __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid'] );
 __PACKAGE__->master_setup( 'projects', ['topic','mid'] => ['project', 'BaliProject','mid'] );
 __PACKAGE__->master_setup( 'topics', ['topic','mid'] => ['topic', 'BaliTopic','mid'] );  # topic_topic
+__PACKAGE__->master_setup( 'revisions' => ['topic','mid'] => ['revision', 'BaliMaster','mid'] );  # topic_revision
 
 sub badge_name {
     my ($self) =@_;

@@ -269,6 +269,10 @@ sub json : Local {
         $topic->topics->search( undef, { select=>[qw(mid)],
         order_by => { '-asc' => 'mid' } } )->all;
     
+    my @revisions = map { $_->{id} = $_->{mid}; $_ } 
+        $topic->revisions->search( undef, { select=>[qw(name mid)],
+        order_by => { '-asc' => 'mid' } } )->hashref->all;
+    
     ######################################################################################### 
     #Preguntar por el formulario de configuracion;
     my $id_category = $topic->id_category;    
@@ -293,6 +297,7 @@ sub json : Local {
         projects           => \@projects,
         users              => \@users,
         topics             => \@topics,
+        revisions          => \@revisions,
         priority           => $topic->id_priority,
         response_time_min  => $topic->response_time_min,
         expr_response_time => $topic->expr_response_time,
@@ -389,6 +394,13 @@ sub view : Local {
         my @dates = $c->model('Baseliner::BaliMasterCal')->search({ mid=> $topic_mid })->hashref->all;
         $c->stash->{dates} = \@dates;
 
+        # revisions
+        my @revisions =
+            $c->model('Baseliner::BaliMasterRel')->search( { rel_type => 'topic_revision', from_mid => $topic_mid },
+            { prefetch => ['master_to'], +select => [ 'master_to.name', 'master_to.mid' ], +as => [qw/name mid/] } )
+            ->hashref->all;
+        $c->stash->{revisions} = \@revisions;
+
         # release
         #my $release_row = $topic->topics->search({ is_release=>'1' })->first;
         my $release_row = $c->model('Baseliner::BaliTopic')->search(
@@ -415,6 +427,7 @@ sub view : Local {
         $c->stash->{priority} = '';
         $c->stash->{dates} = [];
         $c->stash->{progress} = 0;
+        $c->stash->{revisions} = [];
         $c->stash->{forms} = '';
         $c->stash->{topic_mid} = '';
         $c->stash->{swEdit} = $p->{swEdit};

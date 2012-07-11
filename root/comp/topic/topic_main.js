@@ -27,8 +27,9 @@
                             form2.findField("topic_mid").setValue(a.result.topic_mid);
                             form2.findField("status").setValue(a.result.topic_status);
 
-                            if( params._parent_grid != undefined )
+                            if( params._parent_grid != undefined && params._parent_grid.getStore()!=undefined ) {
                                 params._parent_grid.getStore().reload();
+                            }
                             
                             var store = form2.findField("status_new").getStore();
                             store.load({

@@ -19,11 +19,13 @@
     $release_row => {}
     $topics
     $projects
+    $revisions
     $labels
     $users
     $show_priority => 0
     $show_progress => 0
     $show_description => 0
+    $show_revisions => 0
     $show_topics => 0
     $show_projects => 0
     $show_assign_to => 0
@@ -228,6 +230,25 @@ padding: 2px 4px 2px 7px;
                       <li style="margin: 6px 0px 6px 0px">
                           <img style="margin: 5px" width=16 src="/user/avatar/<% $user->{username} %>/image.png" />
                           <% $user->{username} %> - <% $user->{realname} %>
+                      </li>
+% }
+                    </ul>
+% }
+% }
+
+%if( 1 || $show_revisions ) {                    
+% if( _array( $revisions ) ) {
+                    <ul class="nav nav-list">
+                      <li class="nav-header">
+                        <% _loc("Revisions") %>
+                      </li>
+                    </ul>
+                    <ul class="" style="margin-left: 20px">
+                      <li class="">
+% foreach my $revision ( _array( $revisions ) ) {
+                      <li style="margin: 6px 0px 6px 0px">
+                          <img style="margin: 5px" width=16 src="/static/images/icons/tag.gif" />
+                          <% $revision->{name} %>
                       </li>
 % }
                     </ul>

@@ -374,11 +374,14 @@ sub ci_create_or_update {
     if( $ns ) {
         my $row = Baseliner->model('Baseliner::BaliMaster')->search({ ns=>$ns })->first;
         if( ref $row ) {  # it's an update
-            $p{yaml} = _dump( delete $p{data} ) if ref $p{data};
+            if( ref $p{data} ) {
+                $p{yaml} = _dump( delete $p{data} );
+                $row->yaml( $p{yaml} );
+                $row->update;
+            }
             #$row->name( $name ) if defined $name;
             #$row->collection( $p{collection} ) if defined $p{collection};
             #$row->yaml( _dump( $p{data} ) );
-            $row->update( %p );
             return $row->mid;
         }
     }
@@ -413,30 +416,31 @@ sub sync : Local {
 
     try {
         # check for prereq relationships
-        my @ci_pre;
+        my @ci_pre_mid;
         my %ci_data;
         while( my ($k,$v) = each %$data ) {
             if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
-                    push @ci_pre, ci_create_or_update( %$ci ) ;
+                    _log( _dump( $ci ) );
+                    push @ci_pre_mid, ci_create_or_update( %$ci ) ;
                 }
             }
             elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
                 my $ix = $1;
-                $ci_data{ $k } = $ci_pre[ $ix ];
+                $ci_data{ $k } = $ci_pre_mid[ $ix ];
             }
             else {
                 $ci_data{ $k } = $v;
             }
         }
 
-        ci_create_or_update( name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+        $mid = ci_create_or_update( name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;
     } catch {
         my $err = shift;
-        _whereami $err;
+        _log( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
     };
 

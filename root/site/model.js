@@ -107,6 +107,11 @@ Baseliner.model.Users = function(c) {
 };
 Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 
+		Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+		    Ext.applyIf(this.options, {
+			submitEmptyText:false
+		    });
+		});
 Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
