@@ -931,7 +931,6 @@ Baseliner.model.RevisionsBoxDD = function(c) {
             var s = revision_box.store;
             var revs = v;
             var mids = [];
-            console.log( revs );
             for( var i=0; i< revs.length; i++ ) {
                 var r = new s.recordType( revs[i], revs[i].mid );
                 mids.push( revs[i].mid );
@@ -1009,22 +1008,13 @@ A Revision draganddrop grid that is form-ready
 Baseliner.model.RevisionsGridDD = function(c) {
     if( c==undefined ) c = {};
     
-    var revision_box_store = new Ext.data.JsonStore({
-        root: 'data' , 
-        id: 'id', 
-        //url: '/user/list',
-        fields: [
-            {  name: 'id' },
-            {  name: 'name' }
-        ]
-    });
+    var revision_store = new Ext.data.SimpleStore(Ext.apply({
+        fields: ['mid','name','id']
+    },c.storeConfig));
     
-    var id_store = revision_box_store.getId();
-    Baseliner.delete_revision = function( id_store ) {
-        alert( id_store );
-    };
+    var revision_grid = this;
     Baseliner.model.RevisionsGridDD.superclass.constructor.call(this, Ext.apply({
-        store: revision_box_store,
+        store: revision_store,
         layout: 'form',
         height: 120,
         fieldLabel: _('Revisions'),
@@ -1043,32 +1033,46 @@ Baseliner.model.RevisionsGridDD = function(c) {
                   return Baseliner.render_wrap( String.format('<span id="boot"><h5>{0}</h5></span>', v ) );
               }
           },
-          { width: 20, dataIndex: 'id',
-              renderer: function(){
-                  return '<a href="javascript:Baseliner.delete_revision('+id_store+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
+          { width: 20, dataIndex: 'mid',
+              renderer: function(v,meta,rec,rowIndex){
+                  return '<a href="javascript:Baseliner.delete_revision(\''+revision_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
               }
           },
 
         ]
     }, c ));
-
-    var revision_grid = this;
-    revision_grid.on('afterrender', function(){
-        if( c.value != undefined ) {
-            var s = revision_grid.store;
-            var revs = c.value;
-            var mids = [];
-            console.log( revs );
-            for( var i=0; i< revs.length; i++ ) {
-                var r = new s.recordType( revs[i], revs[i].mid );
-                mids.push( revs[i].mid );
-                s.add( r );
-                s.commitChanges();
-            }
-            revision_grid.setValue( mids.join(',') );
+    
+    this.mid_data = {};
+    Baseliner.delete_revision = function( id_grid, mid ) {
+        var g = Ext.getCmp( id_grid );
+        delete g.mid_data[ mid ];
+        revision_grid.refreshField();
+    };
+    // a hidden form field, needed for this to save data in a form
+    revision_grid.field = new Ext.form.TextField(Ext.apply({ name:'revisions' },c.fieldConfig));
+    revision_grid.refreshField = function(){
+        var mids = [];
+        var s = revision_grid.getStore();
+        s.removeAll();
+        s.commitChanges();
+        for( var mid in revision_grid.mid_data ) {
+            var d = revision_grid.mid_data[ mid ];
+            var r = new s.recordType( d, mid );
+            s.add( r );
+            mids.push( mid );
         }
-    });
+        s.commitChanges();
+
+        if( mids.length == 0 ) {
+            revision_grid.field.setValue( '' );
+        } else  {
+            revision_grid.field.setValue( mids.join(',') );
+        }
+    };
     revision_grid.on( 'afterrender', function(){
+        if( c.value != undefined ) {
+            // TODO no loader from mids yet 
+        }
         var el = this.el.dom; 
         var revision_box_dt = new Ext.dd.DropTarget(el, {
             ddGroup: 'lifecycle_dd',
@@ -1092,15 +1096,9 @@ Baseliner.model.RevisionsGridDD = function(c) {
                         function(res) {
                             if( res.success ) {
                                 var mid = res.mid ;
-                                var s = revision_grid.store;
-                                var d = { name: attr.text, id: mid };
-                                var r = new s.recordType( d, mid );
-                                s.add( r );
-                                s.commitChanges();
-                                var mids = [ ];
-                                s.each(function(sr){
-                                    mids.push( sr.id );
-                                });
+                                var d = { name: attr.text, id: mid, mid: mid };
+                                revision_grid.mid_data[ mid ] = d;
+                                revision_grid.refreshField()
                             }
                             else {
                                 Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
