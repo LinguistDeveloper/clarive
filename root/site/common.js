@@ -1,5 +1,3 @@
-Ext.ns('Baseliner');
-
 // Cookies
 Baseliner.cookie = new Ext.state.CookieProvider({
 		expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
@@ -17,6 +15,15 @@ Baseliner.errorWin = function( p_title, p_html ) {
 	win.show();
 };
 
+Baseliner.js_reload = function() {
+    // if you reload globals.js, tabs lose their info, and hell breaks loose
+    Baseliner.loadFile( '/site/common.js', 'js' );
+    Baseliner.loadFile( '/site/tabfu.js', 'js' );
+    Baseliner.loadFile( '/site/model.js', 'js' );
+    Baseliner.loadFile( '/comp/topic/topic_lib.js', 'js' );
+
+    Baseliner.message(_('JS'), _('Reloaded successfully') );  
+};
 
 Baseliner.alert = function(title, format){
     var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
@@ -88,6 +95,8 @@ Baseliner.columnWrap = function (val){
     if( val == null || val == undefined ) return '';
     return '<div style="white-space:normal !important;">'+ val +'</div>';
 }
+
+Baseliner.render_wrap = Baseliner.columnWrap;
 
 // open a window given a username link
 Baseliner.render_user_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -499,3 +508,4 @@ Baseliner.openLogTab = function(id_job,title) {
         Baseliner.addNewTabComp("/job/log/list?id_job="+id_job, title);
     }
 };
+

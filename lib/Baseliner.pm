@@ -338,6 +338,11 @@ sub username {
     } and return $user;
 }
 
+sub has_action {
+    my ($c,$action) = @_;
+    $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
+}
+
 sub is_root {
     my $c = shift;
     Baseliner->model('Permissions')->is_root( $c->username );

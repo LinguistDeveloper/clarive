@@ -1,9 +1,5 @@
-    Baseliner.tabInfo = {};
     Baseliner.tabpanel = function() { return Ext.getCmp('main-panel') };
 
-    Ext.Ajax.timeout = 60000;
-
-    Baseliner.keyMap = {};
     Baseliner.eventKey = function(key) {
         var f = Baseliner.keyMap[ key ];
         if( f!=undefined ) {
@@ -565,6 +561,35 @@
 
     Baseliner.runUrl = function(url) {
         Ext.get('run-panel').load({ url: url, scripts:true }); 
+    };
+
+    Baseliner.loadFile = function(filename, filetype){
+
+        var rnd = Math.floor(Math.random()*80000);
+        filename += '?balirnd=' + rnd;
+        if (filetype=="js"){ //if filename is a external JavaScript file
+           var fileref=document.createElement('script')
+           fileref.setAttribute("type","text/javascript")
+           fileref.setAttribute("src", filename)
+        }
+        else if (filetype=="css"){ //if filename is an external CSS file
+           var fileref=document.createElement("link")
+           fileref.setAttribute("rel", "stylesheet")
+           fileref.setAttribute("type", "text/css")
+           fileref.setAttribute("href", filename)
+        }
+        if (typeof fileref!="undefined")
+           document.getElementsByTagName("head")[0].appendChild(fileref)
+    };
+
+    // used by the url_eval menu option
+    Baseliner.evalUrl = function(url) {
+        Ext.Ajax.request({
+            url: url,
+            success: function(r) {
+                eval( r.responseText );
+            }
+        });
     };
 
     Baseliner.addNewBrowserWindow = function(url,title) {

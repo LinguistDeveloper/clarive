@@ -115,7 +115,7 @@ Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
-    Baseliner.model.Projects.superclass.constructor.call(this, Ext.apply({
+    Baseliner.model.Revisions.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
@@ -886,3 +886,327 @@ Baseliner.model.SelectBaseline = function(c) {
     }, c));
 };
 Ext.extend( Baseliner.model.SelectBaseline, Ext.ux.form.SuperBoxSelect );
+
+/*
+
+A Revision draganddrop superbox inside a form-ready panel.
+
+    var revision_box = new Baseliner.model.RevisionsBoxDD({
+        hidden: rec.fields_form.show_revisions ? false : true
+    });
+
+    var form = new Ext.form.FormPanel({ items: revision_box });
+
+*/
+Baseliner.model.RevisionsBoxDD = function(c) {
+    if( c==undefined ) c = {};
+    //c.panelConfig = {};
+    var revision_box_store = new Ext.data.JsonStore({
+        root: 'data' , 
+        id: 'id', 
+        fields: [
+            {  name: 'id' },
+            {  name: 'name' }
+        ]
+    });
+    
+    var hidden = c.hidden;
+
+    var revision_box = new Baseliner.model.Revisions(Ext.apply({
+        store: revision_box_store 
+    }, c));
+    
+    Baseliner.model.RevisionsBoxDD.superclass.constructor.call(this, Ext.apply({
+        layout: 'form',
+        enableDragDrop: true,
+        border: false,
+        hidden: hidden,
+        style: 'border-top: 0px',
+        items: [ revision_box ]
+    }, c.panelConfig ));
+
+    var v = c.value;
+    revision_box.on('afterrender', function(){
+        if( v != undefined ) {
+            var s = revision_box.store;
+            var revs = v;
+            var mids = [];
+            for( var i=0; i< revs.length; i++ ) {
+                var r = new s.recordType( revs[i], revs[i].mid );
+                mids.push( revs[i].mid );
+                s.add( r );
+                s.commitChanges();
+            }
+            revision_box.setValue( mids.join(',') );
+        }
+    });
+
+    revision_box.on('afterrender', function(){
+        var el = revision_box.el.dom; 
+        var revision_box_dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyDrop: function(dd, e, id) {
+                var n = dd.dragData.node;
+                var attr = n.attributes;
+                var data = attr.data || {};
+                var ci = data.ci;
+                var mid = data.mid;
+                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
+                    Baseliner.message( _('Error'), _('Node is not a revision'));
+                } 
+                else if ( mid!=undefined ) { // TODO
+                }
+                else if ( ci !=undefined ) {
+                    Baseliner.ajaxEval('/ci/sync',
+                        { name: ci.name, class: ci.class, ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
+                        function(res) {
+                            if( res.success ) {
+                                var mid = res.mid ;
+                                var s = revision_box.store;
+                                var d = { name: attr.text, id: mid };
+                                var r = new s.recordType( d, mid );
+                                s.add( r );
+                                s.commitChanges();
+                                //s.loadData( { data: [ d ] }, true );
+                                var mids = [ ];
+                                var current = revision_box.getValue() ;
+                                if( current !=undefined && current != '' ) { mids.push( current ); }
+
+                                s.each(function(sr){
+                                    mids.push( sr.id );
+                                });
+                                //var rec = new Ext.data.Record(, '-1');
+                                //var rec = new Ext.data.Record({ name: attr.text, ci: ci, id: mid }, '-1');
+                                //s.insert(0,rec);
+                                revision_box.setValue( mids.join(',') );
+                            }
+                            else {
+                                Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
+                            }
+                        }
+                    );
+                }
+                return (true); 
+             }
+        });  //droptarget
+    });
+};
+Ext.extend( Baseliner.model.RevisionsBoxDD, Ext.Panel );
+
+/*
+
+A Revision draganddrop grid that is form-ready
+
+    var revision_grid = new Baseliner.model.RevisionsGridDD({
+        hidden: rec.fields_form.show_revisions ? false : true
+    });
+
+    var form = new Ext.form.FormPanel({ items: revision_grid });
+
+*/
+Baseliner.model.RevisionsGridDD = function(c) {
+    if( c==undefined ) c = {};
+    
+    var revision_store = new Ext.data.SimpleStore(Ext.apply({
+        fields: ['mid','name','id']
+    },c.storeConfig));
+    
+    var revision_grid = this;
+    Baseliner.model.RevisionsGridDD.superclass.constructor.call(this, Ext.apply({
+        store: revision_store,
+        layout: 'form',
+        height: 120,
+        fieldLabel: _('Revisions'),
+        hideHeaders: true,
+        viewConfig: {
+            headersDisabled: true,
+            enableRowBody: true,
+            //scrollOffset: 2,
+            forceFit: true
+        },
+        columns: [
+          //{ header: _('ID'), width: 60, hidden: true, dataIndex: 'id' },
+          { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.gif" />'} },
+          { header: _('Name'), width: 240, dataIndex: 'name',
+              renderer: function(v,metadata,rec){
+                  return Baseliner.render_wrap( String.format('<span id="boot"><h5>{0}</h5></span>', v ) );
+              }
+          },
+          { width: 20, dataIndex: 'mid',
+              renderer: function(v,meta,rec,rowIndex){
+                  return '<a href="javascript:Baseliner.delete_revision(\''+revision_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
+              }
+          },
+
+        ]
+    }, c ));
+    
+    this.mid_data = {};
+    Baseliner.delete_revision = function( id_grid, mid ) {
+        var g = Ext.getCmp( id_grid );
+        delete g.mid_data[ mid ];
+        revision_grid.refreshField();
+    };
+    // a hidden form field, needed for this to save data in a form
+    revision_grid.field = new Ext.form.TextField(Ext.apply({ name:'revisions' },c.fieldConfig));
+    revision_grid.refreshField = function(){
+        var mids = [];
+        var s = revision_grid.getStore();
+        s.removeAll();
+        s.commitChanges();
+        for( var mid in revision_grid.mid_data ) {
+            var d = revision_grid.mid_data[ mid ];
+            var r = new s.recordType( d, mid );
+            s.add( r );
+            mids.push( mid );
+        }
+        s.commitChanges();
+
+        if( mids.length == 0 ) {
+            revision_grid.field.setValue( '' );
+        } else  {
+            revision_grid.field.setValue( mids.join(',') );
+        }
+    };
+    revision_grid.on( 'afterrender', function(){
+        if( c.value != undefined ) {
+            // TODO no loader from mids yet 
+        }
+        var el = this.el.dom; 
+        var revision_box_dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyDrop: function(dd, e, id) {
+                var n = dd.dragData.node;
+                //var s = project_box.store;
+                var attr = n.attributes;
+                var data = attr.data || {};
+                var ci = data.ci;
+                var mid = data.mid;
+                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
+                    Baseliner.message( _('Error'), _('Node is not a revision'));
+                } 
+                else if ( mid!=undefined ) {
+                    // TODO
+                }
+                else if ( ci !=undefined ) {
+                    Baseliner.ajaxEval('/ci/sync',
+                        { name: ci.name, class: ci.class, ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
+                        function(res) {
+                            if( res.success ) {
+                                var mid = res.mid ;
+                                var d = { name: attr.text, id: mid, mid: mid };
+                                revision_grid.mid_data[ mid ] = d;
+                                revision_grid.refreshField()
+                            }
+                            else {
+                                Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
+                            }
+                        }
+                    );
+                }
+                return (true); 
+             }
+        });
+    }); 
+};
+Ext.extend( Baseliner.model.RevisionsGridDD, Ext.grid.GridPanel );
+
+/*
+
+Flot plotting
+
+*/
+Baseliner.flot = {};
+Baseliner.flot.Base = function(c) {
+    if( c==undefined ) c={};
+    var data = c.data;
+    delete c.data;
+    var w = c.width == undefined ? 200 : c.width;
+    var h = c.height == undefined ? 200 : c.height;
+    Baseliner.flot.Base.superclass.constructor.call(this,
+        Ext.apply({ style:{width: w, height: h, background:'white'} }, c)
+    );
+    this.on('afterrender',function(){
+        $.plot(	$(this.el.dom ), data, c.plotConfig );
+    });
+};
+Ext.extend( Baseliner.flot.Base, Ext.Container ); 
+
+Baseliner.flot.Donut = function(c) {
+    if( c==undefined ) c={};
+    var data = c.data;
+    delete c.data;
+    // fake data
+    if( data == undefined ) {
+        var series = 3;
+        data=[];
+        for( var i = 0; i<series; i++)
+        {
+            data[i] = { label: "Series "+(i+1), data: Math.floor(Math.random()*100)+1 } 
+        }
+    }
+    Baseliner.flot.Donut.superclass.constructor.call(this, Ext.apply({
+        plotConfig: Ext.apply({
+		   colors: ["#F90", "#222", "#777", "#AAA"],
+	        series: {
+	            pie: { 
+	                innerRadius: 0.5,
+	                show: true
+	            }
+	        }
+	    }, c.plotConfig),
+        data: data    
+    }, c ));
+};
+Ext.extend( Baseliner.flot.Donut, Baseliner.flot.Base ); 
+
+Baseliner.flot.Area = function(c) {
+    if( c==undefined ) c={};
+    var data = c.data;
+    delete c.data;
+    // fake data
+    if( data == undefined ) {
+        var data = [], totalPoints = 200;
+        function getRandomData() {
+            if (data.length > 0)
+                data = data.slice(1);
+            while (data.length < totalPoints) {
+                var prev = data.length > 0 ? data[data.length - 1] : 50;
+                var y = prev + Math.random() * 10 - 5;
+                if (y < 0)
+                    y = 0;
+                if (y > 100)
+                    y = 100;
+                data.push(y);
+            }
+            var res = [];
+            for (var i = 0; i < data.length; ++i)
+                res.push([i, data[i]])
+            return res;
+        }
+        data = [ getRandomData() ];
+    }
+	// setup plot
+	var options = {
+		yaxis: { min: 0, max: 100 },
+		xaxis: { min: 0, max: 100 },
+		colors: ["#F90", "#222", "#666", "#BBB"],
+		series: {
+				   lines: { 
+						lineWidth: 2, 
+						fill: true,
+						fillColor: { colors: [ { opacity: 0.6 }, { opacity: 0.2 } ] },
+						steps: false
+
+					}
+			   }
+	};
+	
+    Baseliner.flot.Area.superclass.constructor.call(this, Ext.apply({
+        plotConfig: Ext.apply( options, c.plotConfig),
+        data: data    
+    }, c));
+};
+Ext.extend( Baseliner.flot.Area, Baseliner.flot.Base ); 

@@ -412,7 +412,6 @@
         store: project_box_store
     });
     
-    
     project_box_store.on('load',function(){
         project_box.setValue( rec.projects) ;            
     });
@@ -425,34 +424,9 @@
         }); 
     });
 
-	var revision_box_store = new Ext.data.JsonStore({
-		root: 'data' , 
-		id: 'id', 
-		//url: '/user/list',
-		fields: [
-            {  name: 'id' },
-			{  name: 'name' }
-		]
-	});
-    
-    var revision_box = new Baseliner.model.Revisions({
-        store: revision_box_store 
-    });
-    
-    revision_box.on('afterrender', function(){
-        if( rec.revisions != undefined ) {
-            var s = revision_box.store;
-            var revs = rec.revisions;
-            var mids = [];
-            console.log( revs );
-            for( var i=0; i< revs.length; i++ ) {
-                var r = new s.recordType( revs[i], revs[i].mid );
-                mids.push( revs[i].mid );
-                s.add( r );
-                s.commitChanges();
-            }
-            revision_box.setValue( mids.join(',') );
-        }
+    var revision_box = new Baseliner.model.RevisionsBoxDD({
+        name: 'revisions',
+        hidden: rec.fields_form.show_revisions ? false : true
     });
     
     var pb_panel = new Ext.Panel({
@@ -464,14 +438,6 @@
         items: [ project_box ]
     });
     
-    var cb_panel = new Ext.Panel({
-        layout: 'form',
-        enableDragDrop: true,
-        border: false,
-        hidden: rec.fields_form.show_revisions ? false : true,
-        //style: 'border-top: 0px',
-        items: [ revision_box ]
-    });
    var custom_form_container = new Ext.Container({ 
       hidden: true
    });
@@ -537,7 +503,8 @@
                     pb_panel,
                     user_box,
                     topic_box,
-                    cb_panel,
+                    revision_box,  
+                    //revision_box.field,  // hiddenfield for the revision items TODO needs to inherit from Field
                     label_box,
                     {
                         xtype: 'panel',
@@ -665,59 +632,6 @@
         });
     });
     
-    cb_panel.on( 'afterrender', function(){
-        var el = cb_panel.el.dom; //.childNodes[0].childNodes[1];
-        var revision_box_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
-            copy: true,
-            notifyDrop: function(dd, e, id) {
-                var n = dd.dragData.node;
-                //var s = project_box.store;
-                var attr = n.attributes;
-                var data = attr.data || {};
-                var ci = data.ci;
-                var mid = data.mid;
-                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
-                    Baseliner.message( _('Error'), _('Node is not a revision'));
-                } 
-                else if ( mid!=undefined ) {
-                    // TODO
-                }
-                else if ( ci !=undefined ) {
-                    Baseliner.ajaxEval('/ci/sync',
-                        { name: ci.name, class: ci.class, ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
-                        function(res) {
-                            if( res.success ) {
-                                var mid = res.mid ;
-                                var s = revision_box.store;
-                                var d = { name: attr.text, id: mid };
-                                var r = new s.recordType( d, mid );
-                                s.add( r );
-                                s.commitChanges();
-                                //s.loadData( { data: [ d ] }, true );
-                                var mids = [ ];
-                                var current = revision_box.getValue() ;
-                                if( current !=undefined && current != '' ) { mids.push( current ); }
-
-                                s.each(function(sr){
-                                    mids.push( sr.id );
-                                });
-                                //var rec = new Ext.data.Record(, '-1');
-                                //var rec = new Ext.data.Record({ name: attr.text, ci: ci, id: mid }, '-1');
-                                //s.insert(0,rec);
-                                revision_box.setValue( mids.join(',') );
-                            }
-                            else {
-                                Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
-                            }
-                        }
-                    );
-                }
-                return (true); 
-             }
-        });
-    }); 
-
     return form_topic;
 })
 
