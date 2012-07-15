@@ -72,6 +72,9 @@ sub deployments {
             my $name = $deployment->destination->uri;
             $log->info( _loc( "Running deployment: %1", $name ), dump=>$deployment );
             $deployment->destination->throw_errors( 0 );  # I'll catch them myself
+            my %vars;
+            $vars{bl} = $self->job->bl;
+            $deployment->push_vars( %vars );
 
             # now deploy and run scripts
             $deployment->deploy_and_run( callback=>sub {

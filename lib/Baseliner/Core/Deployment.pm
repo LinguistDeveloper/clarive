@@ -76,10 +76,10 @@ sub deploy {
             $base_path = _file( $base_path )->dir;
             $self->push_vars( %captures );
             # now use captures as variables in the remote base path
-            my $remote = $node->home;
-            $remote = $self->parse_vars( $remote );
-            $node->home( $remote );
         }
+        my $remote = $node->home;
+        $remote = $self->parse_vars( $remote );
+        $node->home( $remote );
         if( $f->is_dir ) {
             $node->put_dir( local=>$f, add_path=>$base_path );
             ref $cb and $cb->( $node, $f );

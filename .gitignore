@@ -1,4 +1,5 @@
 baseliner_local.conf
+baseliner_topic.conf
 etc/bali_cache
 etc/repo
 etc/export
@@ -26,6 +27,8 @@ features/#*
 features/nature.tp
 features/nature.ssrs
 features/gbp
+features/sonar
+features/checking
 inc
 t/balitest.db
 t/old
