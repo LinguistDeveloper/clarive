@@ -169,6 +169,7 @@ sub update {
                 $topic->expr_response_time( $rsptime[0] );
                 $topic->deadline_min( $deadline[1] );
                 $topic->expr_deadline( $deadline[0] );
+                $topic->progress( $p->{progress} ) if $p->{progress};
 
                 # TODO create event data for all the fields changed
 
