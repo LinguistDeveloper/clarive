@@ -192,7 +192,20 @@ sub update : Local {
                 $dashboard ->name( $p->{name} );
                 $dashboard ->description( $p->{description} );
 				$dashboard ->is_main ( $p->{dashboard_main_check} ? '1': '0');
+				$dashboard ->dashlets( _dump \@dashlets );
                 $dashboard ->update();
+
+				my $dashboard = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
+				$dashboard->delete();
+				
+				foreach my $role (_array $p->{roles}){
+					my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+										{
+											id_dashboard  => $dashboard_id,
+											id_role => $role,
+										});
+				}				
+				
                 
                 $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $dashboard_id };
             }
