@@ -519,7 +519,7 @@ sub agent_ftp : Local {
     my $dir = $p->{dir};
 
     # TODO : from user workspace repo
-    my ($user, $pass, $host) = ( 'ICDMPA0', 'FEB01FEB', '192.168.107.2' );
+    my ($user, $pass, $host) = ( 'IBMUSER', 'SYS1', '192.168.200.1' );
 
     my @tree;
 
@@ -575,7 +575,7 @@ sub view_file : Local {
     my $local = _tmp_file;
 
     # TODO : from user workspace repo
-    my ($user, $pass, $host) = ( 'ICDMPA0', 'FEB01FEB', '192.168.107.2' );
+    my ($user, $pass, $host) = ( 'IBMUSER', 'SYS1', '192.168.200.1' );
 
     use Net::FTP; 
     my $ftp=Net::FTP->new( $host );
@@ -592,7 +592,7 @@ sub list_workspaces : Private {
     my ($self, %args) = @_;
 
     +{
-        text => '192.168.107.2:ICDMPA0',
+        text => 'HERCULES:IBMUSER',
         leaf => \0,
         url  => '/lifecycle/agent_ftp',
         data => { dir=>'/' },
