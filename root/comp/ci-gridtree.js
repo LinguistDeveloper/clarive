@@ -24,7 +24,6 @@
         var g = Ext.getCmp( gridid );
         if( g!= undefined ) 
             ci_edit( g.getStore().getAt(ix).data );
-        return false;
     };
 
     var ci_edit = function(rec){
@@ -52,7 +51,6 @@
         var g = Ext.getCmp( gridid );
         if( g!= undefined ) 
             ci_add( g.getStore().getAt(ix).data );
-        return false;
     };
 
     var ci_add = function(){
