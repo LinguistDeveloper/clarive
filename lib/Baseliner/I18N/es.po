@@ -3696,3 +3696,67 @@ msgstr "Item de pase '%1' está en un pase activo: %2"
 
 msgid "select or drop repository revisions"
 msgstr "seleccione o arrastre revisiones de repositorio"
+
+msgid "Dashboard added"
+msgstr "Dashboard creado"
+
+msgid "Dashboard name already exists, introduce another dashboard"
+msgstr "Dashboard ya existe, introduce otro nombre"
+
+msgid "Error adding dashboard: %1"
+msgstr "Error creando dashboard: %1"
+
+msgid "Dashboard modified"
+msgstr "Dashboard modificado"
+
+msgid "Error modifying dashboard: %1"
+msgstr "Error modificanco dashboard: %1"
+
+msgid "Dashboard deleted"
+msgstr "Dashboard borrado"
+
+msgid "Error deleting dashboard"
+msgstr "Error borrando dashboard"
+
+msgid "A brief description of the dashboard"
+msgstr "Una breve descripción del dashboard"
+
+msgid "Create dashboard"
+msgstr "Crear dashboard"
+
+msgid "Edit dashboard"
+msgstr "Editar dashboard"
+
+msgid "Are you sure you want to delete the dashboard"
+msgstr "¿Esta seguro de querer borrar el dashboard"
+
+msgid "Job statistics by baselines"
+msgstr "Estadísticas de pases por proyecto"
+
+msgid "List of last jobs by application"
+msgstr "Listado de los últimos pases por proyecto"
+
+msgid "List of last jobs"
+msgstr "Listado de los últimos pases"
+
+msgid "Software quality assurance by applications"
+msgstr "Control de calidad por proyecto"
+
+msgid "List of topics"
+msgstr "Listado de tópicos"
+
+msgid "List of emails"
+msgstr "Listado de emails"
+
+msgid "Admin Dashboard"
+msgstr "Administración Dashboard"
+
+
+
+
+
+
+
+
+
+

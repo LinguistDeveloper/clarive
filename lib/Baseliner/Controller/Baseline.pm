@@ -180,7 +180,6 @@ sub update : Local {
                 $baseline->name( $p->{name} );
                 $baseline->description( $p->{description} );
                 $baseline->update();
-                
                 update_sequence($p->{sq});
                 $c->stash->{json} = { msg=>_loc('Baseline modified'), success=>\1, baseline_id=> $id_baseline };
             }

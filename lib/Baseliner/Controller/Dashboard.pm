@@ -8,6 +8,17 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
+register 'menu.admin.dashboard' => {
+    label    => 'Dashboard',
+    title    => _loc ('Admin Dashboard'),
+    action   => 'action.admin.dashboard',
+    url_comp => '/dashboard/grid',
+    icon     => '/static/images/icons/home.gif',
+    tab_icon => '/static/images/icons/home.gif'
+};
+
+register 'action.admin.dashboard' => { name=>'View and Admin dashboards' };
+
 ##Configuración del dashboard
 register 'config.dashboard' => {
 	metadata => [
@@ -17,13 +28,64 @@ register 'config.dashboard' => {
 	    ]
 };
 
-sub list : Local {
+sub grid : Local {
     my ($self, $c) = @_;
+    my $p = $c->req->params;
+    $c->stash->{template} = '/comp/dashboard_grid.js';
+}
 
-    # list dashboardlets, only active ones
-    #my @dashs = Baseliner->model('Registry')->search_for( key => 'dashboard.' ); #, allowed_actions => [@actions] );
-    #@dashs = grep { $_->active } @dashs;
+
+sub list_dashboard : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+
+    my ($start, $limit, $query, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    $dir ||= 'desc';
+    $start||= 0;
+    $limit ||= 100;
+    
+    my $page = to_pages( start=>$start, limit=>$limit );
+    
+    
+    my $where = $query
+        ? { 'lower(name||description)' => { -like => "%".lc($query)."%" } }
+        : undef;   
+    
+    my $rs = $c->model('Baseliner::BaliDashboard')->search( $where,
+															{ page => $page,
+															  rows => $limit,
+															  order_by => $sort ? { "-$dir" => $sort } : undef
+															}
+													);
 	
+	my $pager = $rs->pager;
+	$cnt = $pager->total_entries;		
+	
+    my @rows;
+    while( my $r = $rs->next ) {
+	    # produce the grid
+
+		my @roles = map { $_->{id_role} } $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $r->id})->hashref->all;
+		my @dashlets = map {$_->{html} . '#' . $_->{url}} _load $r->dashlets;
+		
+		push @rows,
+		  {
+			id 			=> $r->id,
+			name		=> $r->name,
+			description	=> $r->description,
+			roles => \@roles,
+			dashlets	=> \@dashlets,
+		  };
+    }
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
+    $c->forward('View::JSON');
+}
+
+sub list_dashlets : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+
+    
 	my @dash_dirs = 
 	map {
 		_dir( $_->root, 'dashlets' )->stringify  
@@ -58,10 +120,179 @@ sub list : Local {
 	} @dash_dirs;
 	@dashlets;
 	
+	my @rows;
     for my $dash ( @dashlets ) {
         $c->forward( $dash->{metadata}->{url} );
+		push @rows,
+		  {
+			id			=> $dash->{metadata}->{html} .'#' . $dash->{metadata}->{url},
+			name		=> $dash->{metadata}->{name},
+			description	=> $dash->{metadata}->{description},
+			
+		  };		
+    }	
+	
+    $c->stash->{json} = { data=>\@rows };		
+    $c->forward('View::JSON');
+}
+
+sub update : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $action = $p->{action};
+	my (@dashlets, $i);
+	
+	my $i = 0;
+	foreach my $dashlet (_array $p->{dashlets}){
+		my @html_url = split(/#/, $dashlet);
+		push @dashlets, { html	=>	$html_url[0],
+						  url	=>  $html_url[1],
+						  order	=>  ++$i	};
+	}
+
+    given ($action) {
+        when ('add') {
+            try{
+				my $row;
+                $row = $c->model('Baseliner::BaliDashboard')->search( {name => $p->{name}} )->first;
+                if(!$row){
+                    my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+                                    {
+                                        name  => $p->{name},
+                                        description => $p->{description},
+										dashlets => _dump @dashlets,
+                                    });
+					
+					if ($dashboard->id){
+						foreach my $role (_array $p->{roles}){
+							my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+												{
+													id_dashboard  => $dashboard->id,
+													id_role => $role,
+												});
+						}
+					}
+                    
+                    $c->stash->{json} = { msg => _loc('Dashboard added'), success => \1, dashboard_id => $dashboard->id };
+                }else{
+                    $c->stash->{json} = { msg => _loc('Dashboard name already exists, introduce another dashboard'), failure => \1 };
+                }
+            }
+            catch{
+                $c->stash->{json} = { msg => _loc('Error adding dashboard: %1', shift()), failure => \1 }
+            }
+        }
+        when ('update') {
+            try{
+                my $dashboard_id = $p->{id};
+                my $dashboard = $c->model('Baseliner::BaliDashboard')->find( $dashboard_id );
+                $dashboard ->name( $p->{name} );
+                $dashboard ->description( $p->{description} );
+                $dashboard ->update();
+                
+                $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $dashboard_id };
+            }
+            catch{
+                $c->stash->{json} = { msg => _loc('Error modifying dashboard: %1', shift()), failure => \1 };
+            }
+        }
+        when ('delete') {
+            my $dashboard_id = $p->{id};
+            
+            try{
+                my $row = $c->model('Baseliner::BaliDashboard')->find( $dashboard_id );
+                $row->delete;
+				
+				$row = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
+				if($row){
+					$row->delete;	
+				}
+				
+                
+                $c->stash->{json} = { success => \1, msg=>_loc('Dashboard deleted') };
+            }
+            catch{
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting dashboard') };
+            }
+        }
     }
-    $c->stash->{dashboardlets} = \@dashlets;
+    $c->forward('View::JSON');    
+}
+
+
+sub list : Local {
+    my ($self, $c) = @_;
+	my $p = $c->req->params;
+	my $dashboard_id = $p->{dashboard_id};
+
+    # list dashboardlets, only active ones
+    #my @dashs = Baseliner->model('Registry')->search_for( key => 'dashboard.' ); #, allowed_actions => [@actions] );
+    #@dashs = grep { $_->active } @dashs;
+	my @dashlets;
+	_log "pasdpasdpasdaspdasd:  " . $dashboard_id;
+	
+	if ($dashboard_id){
+		_log "pasdpasdpasdaspdasd";
+		my $dashboard = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		@dashlets = _load $dashboard->dashlets;
+		for my $dash ( @dashlets ) {
+			$c->forward( $dash->{url} );
+			_log "xxxxxxxxxxxxxxx";
+		}
+		$c->stash->{dashboardlets} = \@dashlets;
+	}else{
+		my $dashboard = $c->model('Baseliner::BaliDashboard')->search();
+		
+		if ($dashboard->count > 0){
+			my $i = 0;
+			my @dashboard;
+			while (my $dashboard = $dashboard->next){
+				if($i == 0){
+					@dashlets = _load $dashboard->dashlets;
+					for my $dash ( @dashlets ) {
+						$c->forward( $dash->{url} );
+					}
+					$c->stash->{dashboardlets} = \@dashlets;
+				}else{
+					push @dashboard, { name => $dashboard->name,
+									   id   => $dashboard->id,
+									 };
+				}
+				$i++;
+			}
+			$c->stash->{dashboards} = \@dashboard;
+			
+		}else{
+			##Dashboard proporcionado por clarive (default)
+			@dashlets = (	{ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
+							{ html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
+							{ html => '/dashlets/topics.html', url => '/dashboard/list_topics', order => 3},
+							{ html => '/dashlets/emails.html', url => '/dashboard/list_emails', order => 4},
+							{ html => '/dashlets/jobs.html', url => '/dashboard/list_jobs', order=> 5},
+							{ html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
+						);
+			
+			my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+							{
+								name  => 'Clarive',
+								description => 'Demo dashboard Clarive configurable',
+								dashlets => _dump @dashlets,
+							});
+			
+			if ($dashboard->id){
+				my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+									{
+										id_dashboard  => $dashboard->id,
+										id_role => 100, #Public
+									});
+			}
+			for my $dash ( @dashlets ) {
+				$c->forward( $dash->{url} );
+				$c->stash->{dashboardlets} = \@dashlets;
+			}	
+		}
+	}
+    
     $c->stash->{template} = '/comp/dashboard.html';
 }
 
