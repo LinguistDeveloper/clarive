@@ -28,6 +28,12 @@ register 'config.dashboard' => {
 	    ]
 };
 
+register 'config.dashlet.baselines' => {
+	metadata => [
+	       { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
+	    ]
+};
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -69,14 +75,14 @@ sub list_dashboard : Local {
 		my @dashlets = map {$_->{html} . '#' . $_->{url}} @{_load $r->dashlets};
 		
 		push @rows,
-		  {
-			id 			=> $r->id,
-			name		=> $r->name,
-			description	=> $r->description,
-			is_main 	=>     $r->is_main,
-			roles 		=> \@roles,
-			dashlets	=> \@dashlets,
-		  };
+			{
+				id 			=> $r->id,
+				name		=> $r->name,
+				description	=> $r->description,
+				is_main 	=>     $r->is_main,
+				roles 		=> \@roles,
+				dashlets	=> \@dashlets,
+			};
     }
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
     $c->forward('View::JSON');

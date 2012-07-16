@@ -15,7 +15,7 @@
 			{  name: 'description' },
 			{  name: 'dashlets' },
 			{  name: 'roles' },
-			{  name: 'is_main} '}
+			{  name: 'is_main' }
 		]
 	});
 	
@@ -167,8 +167,6 @@
 		var dashboard_main_check = new Ext.form.Checkbox({
 			name: 'dashboard_main_check',
 			boxLabel: _('Main dashboard')
-
-
         });		
 
 		var ta = new Ext.form.TextArea({
@@ -178,6 +176,83 @@
 			fieldLabel: _('Description'),
 			emptyText: _('A brief description of the dashboard')
 		});
+		
+		var btn_config_dashlets = new Ext.Toolbar.Button({
+			text: _('Parameters'),
+			icon:'/static/images/icons/cog_edit.png',
+			cls: 'x-btn-text-icon',
+			disabled: false,
+			handler: function() {
+			//	var ta = new Ext.form.TextArea({
+			//		height: 300,
+			//		width: 500,
+			//		enableKeyEvents: true,
+			//		style: { 'font-family': 'Consolas, Courier, monotype' },
+			//		value: txtconfig
+			//	});
+			//	
+			//	ta.on('keypress', function(TextField, e) {
+			//		btn_grabar_config.enable();
+			//	}); 
+			//	
+			//	var title;
+			//	var img_icon;
+			//	var bl_save = false;
+			//	title = 'Apply';
+			//	img_icon = '/static/images/icons/cog_edit.png';     
+			//	
+			//	form = form_services.getForm();
+			//	var disabled = form.findField('service').disabled;
+			//	var id = form.findField('id').value;
+			//	
+			//	if (disabled){
+			//		title = 'Save';
+			//		img_icon = '/static/images/icons/database_save.png';
+			//		bl_save = true;
+			//	}
+			//
+			//	var btn_grabar_config = new Ext.Toolbar.Button({
+			//		text: _(title),
+			//		icon: img_icon,
+			//		cls: 'x-btn-text-icon',
+			//		handler: function(){
+			//			if(bl_save){
+			//				Baseliner.ajaxEval( '/chain/update_conf', { id: id, conf: ta.getValue() },
+			//					function(resp){
+			//						Baseliner.message( _('Success'), resp.msg );
+			//						store_services.load();
+			//						btn_grabar_config.disable();
+			//					}
+			//				);
+			//			}else{
+			//				form = form_services.getForm();
+			//				form.findField("txt_conf").setValue(ta.getValue());
+			//				btn_grabar_config.disable();
+			//			}
+			//		}
+			//	});
+			//	
+				var winYaml = new Ext.Window({
+					modal: true,
+					width: 500,
+					title: _('Parameters'),
+					tbar: [
+							//btn_grabar_config,
+							{   xtype:'button',
+								text: _('Close'),
+								iconCls:'x-btn-text-icon',
+								icon:'/static/images/icons/door_out.png',
+								handler: function(){
+									winYaml.close();
+								}
+							}           
+					]//,
+					//items: ta
+				});
+				winYaml.show();
+			}
+		});
+		
 		
 		var form_dashboard = new Ext.FormPanel({
 			name: form_dashboard,
@@ -221,8 +296,34 @@
 						]
 						},						
 						roles_box,
-						dashlets_box
-					
+						{
+						// column layout with 2 columns
+						layout:'column'
+						,defaults:{
+							//columnWidth:0.5
+							layout:'form'
+							,border:false
+							,xtype:'panel'
+							,bodyStyle:'padding:0 2px 0 0'
+						}
+						,items:[{
+							// left column
+							columnWidth:0.86,
+							defaults:{anchor:'100%'}
+							,items:[
+								dashlets_box
+								]
+							},
+							{
+							columnWidth:0.14,
+							// right column
+							defaults:{anchor:'100%'},
+							items:[
+								btn_config_dashlets
+							]
+							}
+						]
+						}						
 					]
 		});
 		
@@ -231,6 +332,8 @@
 		if(rec){
 			var ff = form_dashboard.getForm();
 			ff.loadRecord( rec );
+			dashboard_main_check.setValue( rec.data.is_main );
+			//alert(rec.data.is_main);
 			title = 'Edit dashboard';
 		}
 	
