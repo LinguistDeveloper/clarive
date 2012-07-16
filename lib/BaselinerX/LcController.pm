@@ -160,33 +160,37 @@ sub changeset : Local {
     my $state_name = $p->{state_name} or _throw 'missing state name';
     my $id_project = $p->{id_project} or _throw 'missing project id';
 
+    my $config = config_get 'config.lc';
     # provider-by-provider:
     # get all the changes for this project + baseline
     my @cs;
-    for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
-        #push @cs, $class;
-        my $prov = $provider->new( project=>$project );
-        my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
-        _log _loc "---- provider $provider has %1 changesets", scalar @changes;
-        push @cs, @changes
-    }
 
-    # loop through the changeset objects (such as BaselinerX::GitChangeset)
-    for my $cs ( @cs ) {
-        my $menu = [];
-        # get menu extensions (find packages that do)
-        # get node menu
-        ref $cs->node_menu and push @$menu, _array $cs->node_menu;
-        push @tree, {
-            url        => $cs->node_url,
-            data       => $cs->node_data,
-            parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
-            menu       => $menu,
-            icon       => $cs->icon,
-            text       => $cs->text || $cs->name,
-            leaf       => \0,
-            expandable => \0
-        };
+    if( $config->{show_changes_in_tree} ) { 
+        for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
+            #push @cs, $class;
+            my $prov = $provider->new( project=>$project );
+            my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
+            _log _loc "---- provider $provider has %1 changesets", scalar @changes;
+            push @cs, @changes
+        }
+
+        # loop through the changeset objects (such as BaselinerX::GitChangeset)
+        for my $cs ( @cs ) {
+            my $menu = [];
+            # get menu extensions (find packages that do)
+            # get node menu
+            ref $cs->node_menu and push @$menu, _array $cs->node_menu;
+            push @tree, {
+                url        => $cs->node_url,
+                data       => $cs->node_data,
+                parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
+                menu       => $menu,
+                icon       => $cs->icon,
+                text       => $cs->text || $cs->name,
+                leaf       => \0,
+                expandable => \0
+            };
+        }
     }
 
     ## add what's in this baseline 
