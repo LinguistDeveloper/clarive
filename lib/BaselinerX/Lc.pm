@@ -1,5 +1,5 @@
 package BaselinerX::Lc;
-use Moose;
+use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
 
