@@ -66,14 +66,15 @@ sub list_dashboard : Local {
 	    # produce the grid
 
 		my @roles = map { $_->{id_role} } $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $r->id})->hashref->all;
-		my @dashlets = map {$_->{html} . '#' . $_->{url}} _load $r->dashlets;
+		my @dashlets = map {$_->{html} . '#' . $_->{url}} @{_load $r->dashlets};
 		
 		push @rows,
 		  {
 			id 			=> $r->id,
 			name		=> $r->name,
 			description	=> $r->description,
-			roles => \@roles,
+			is_main 	=>     $r->is_main,
+			roles 		=> \@roles,
 			dashlets	=> \@dashlets,
 		  };
     }
@@ -160,7 +161,9 @@ sub update : Local {
                                     {
                                         name  => $p->{name},
                                         description => $p->{description},
-										dashlets => _dump @dashlets,
+										is_main => $p->{dashboard_main_check} ? '1': '0',
+										dashlets => _dump \@dashlets,
+										
                                     });
 					
 					if ($dashboard->id){
@@ -188,6 +191,7 @@ sub update : Local {
                 my $dashboard = $c->model('Baseliner::BaliDashboard')->find( $dashboard_id );
                 $dashboard ->name( $p->{name} );
                 $dashboard ->description( $p->{description} );
+				$dashboard ->is_main ( $p->{dashboard_main_check} ? '1': '0');
                 $dashboard ->update();
                 
                 $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $dashboard_id };
@@ -229,26 +233,23 @@ sub list : Local {
     #my @dashs = Baseliner->model('Registry')->search_for( key => 'dashboard.' ); #, allowed_actions => [@actions] );
     #@dashs = grep { $_->active } @dashs;
 	my @dashlets;
-	_log "pasdpasdpasdaspdasd:  " . $dashboard_id;
 	
 	if ($dashboard_id){
-		_log "pasdpasdpasdaspdasd";
 		my $dashboard = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-		@dashlets = _load $dashboard->dashlets;
+		@dashlets = @{_load $dashboard->dashlets};
 		for my $dash ( @dashlets ) {
 			$c->forward( $dash->{url} );
-			_log "xxxxxxxxxxxxxxx";
 		}
 		$c->stash->{dashboardlets} = \@dashlets;
 	}else{
-		my $dashboard = $c->model('Baseliner::BaliDashboard')->search();
+		my $dashboard = $c->model('Baseliner::BaliDashboard')->search( undef, {order_by => 'is_main desc'} );
 		
 		if ($dashboard->count > 0){
 			my $i = 0;
 			my @dashboard;
 			while (my $dashboard = $dashboard->next){
 				if($i == 0){
-					@dashlets = _load $dashboard->dashlets;
+					@dashlets = @{_load $dashboard->dashlets};
 					for my $dash ( @dashlets ) {
 						$c->forward( $dash->{url} );
 					}
@@ -276,7 +277,7 @@ sub list : Local {
 							{
 								name  => 'Clarive',
 								description => 'Demo dashboard Clarive configurable',
-								dashlets => _dump @dashlets,
+								dashlets => _dump \@dashlets,
 							});
 			
 			if ($dashboard->id){

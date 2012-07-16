@@ -3751,6 +3751,17 @@ msgstr "Listado de emails"
 msgid "Admin Dashboard"
 msgstr "Administración Dashboard"
 
+msgid "Main dashboard"
+msgstr "Dashboard principal"
+
+msgid "One column"
+msgstr "Una columna"
+
+msgid "Two columns"
+msgstr "Dos columnas"
+
+
+
 
 
 

@@ -33,7 +33,9 @@ __PACKAGE__->add_columns(
     data_type => "CLOB",
     default_value => undef,
     is_nullable => 1,
-  },  
+  },
+  "is_main",
+  { data_type => "char", is_nullable => 0, size => 1, default_value => '0'},  
 );
 
 

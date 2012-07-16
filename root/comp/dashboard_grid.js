@@ -14,7 +14,8 @@
 			{  name: 'name' },
 			{  name: 'description' },
 			{  name: 'dashlets' },
-			{  name: 'roles' }
+			{  name: 'roles' },
+			{  name: 'is_main} '}
 		]
 	});
 	
@@ -161,7 +162,14 @@
 					});
 				}
 			}
-		}) 		
+		})
+		
+		var dashboard_main_check = new Ext.form.Checkbox({
+			name: 'dashboard_main_check',
+			boxLabel: _('Main dashboard')
+
+
+        });		
 
 		var ta = new Ext.form.TextArea({
 			name: 'description',
@@ -181,9 +189,40 @@
 						{ xtype: 'hidden', name: 'id', value: -1 },
 						{fieldLabel: _('Name'), name: 'name', emptyText: 'name', xtype: 'textfield', allowBlank:false},
 						ta,
+						{
+						// column layout with 2 columns
+						layout:'column'
+						,defaults:{
+							columnWidth:0.5
+							,layout:'form'
+							,border:false
+							,xtype:'panel'
+						}
+						,items:[{
+							// left column
+							defaults:{anchor:'100%'}
+							,items: [ dashboard_main_check ],
+							},
+							{
+							// right column
+							defaults:{anchor:'100%'}
+							,items:[
+									{
+										xtype: 'radiogroup',
+										id: 'columnsgroup',
+										defaults: {xtype: "radio",name: "type"},
+										items: [
+											{boxLabel: _('One column'), inputValue: 'O'},
+											{boxLabel: _('Two columns'), inputValue: 'T', checked: true}
+										]
+									}
+								]
+							}
+						]
+						},						
 						roles_box,
 						dashlets_box
-
+					
 					]
 		});
 		
