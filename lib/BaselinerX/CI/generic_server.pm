@@ -8,5 +8,3 @@ sub error {}
 sub rc {}
 
 1;
-
-

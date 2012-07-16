@@ -37,10 +37,10 @@ sub gridtree : Local {
         @tree = $self->tree_object_info( mid=>$p->{mid}, parent=>$p->{anode} );
     }
     elsif( $p->{type} eq 'depend_from' ) {
-        @tree = $self->tree_object_depend( from=>$p->{mid}, parent=>$p->{anode} , start=>$p->{start}, limit=>$p->{limit} );
+        ($total, @tree) = $self->tree_object_depend( from=>$p->{mid}, parent=>$p->{anode} , start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}  );
     }
     elsif( $p->{type} eq 'depend_to' ) {
-        @tree = $self->tree_object_depend( to=>$p->{mid}, parent=>$p->{anode} , start=>$p->{start}, limit=>$p->{limit} );
+        ($total, @tree) = $self->tree_object_depend( to=>$p->{mid}, parent=>$p->{anode} , start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}  );
     }
     
     _debug _dump( \@tree );
@@ -172,7 +172,7 @@ sub tree_classes {
         $item =~ s/^BaselinerX::CI:://g;
         $cnt++;
         +{  _id        => ++$cnt,
-            _parent    => $p{parent},
+            _parent  => $p{parent} || undef,
             _is_leaf   => \0,
             type       => 'class',
             #mid        => $cnt,
@@ -217,8 +217,8 @@ sub tree_objects {
         } grep { length $data->{$_} } keys %$data );
         my $noname = $_->{collection}.':'.$_->{mid};
         +{
-            _id               => ++$cnt,
-            _parent           => $p{parent},
+            _id               => $_->{mid},
+            _parent           => $p{parent} || undef,
             _is_leaf          => \0,
             mid               => $_->{mid},
             name              => ( $_->{name} // $noname ),
@@ -241,7 +241,8 @@ sub tree_object_depend {
     my ($self, %p)=@_;
     my $class = $p{class};
     my $where = {};
-    my $join = {};
+    my $join = { };
+    my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
     my $rel_type;
     if( defined $p{from} ) {
         $where->{from_mid} = $p{from};
@@ -254,16 +255,18 @@ sub tree_object_depend {
         $join->{prefetch} = [$rel_type];
     }
     my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search(
-        $where, { %$join }
+        $where, { %$join, order_by=>{ -asc=>['mid'] }, rows=>$p{limit}, page=>$page }
     );
-    my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
+    my $total = $rs->pager->total_entries;
+    #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
+    my $cnt = $p{parent} * 10;
     my @tree = map {
-        my $class = 'BaselinerX::CI::GenericServer';  # TODO reverse lookup
+        my $class = 'BaselinerX::CI::generic_server';  # TODO reverse lookup
         my $data = _load( $_->{yaml} );
         my $bl = [ split /,/, $_->{bl} ];
         +{
             _id        => ++$cnt,
-            _parent    => $p{parent},
+            _parent    => $p{parent} || undef,
             _is_leaf   => \0,
             mid        => $_->{$rel_type}{mid},
             item       => ( $_->{name} // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
@@ -278,16 +281,18 @@ sub tree_object_depend {
             versionid    => $_->{versionid},
             }
     } $rs->hashref->all;
+    ( $total, @tree );
 }
 
 sub tree_object_info {
     my ($self, %p)=@_;
     my $mid = $p{mid};
-    my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
+    #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
+    my $cnt = $p{parent} * 10;
     my @tree = (
         {
             _id      => $cnt++,
-            _parent  => $p{parent},
+            _parent  => $p{parent} || undef,
             _is_leaf => \0,
             mid      => $mid,
             item     => _loc('Depends On'), 
@@ -299,7 +304,7 @@ sub tree_object_info {
         },
         {
             _id      => $cnt++,
-            _parent  => $p{parent},
+            _parent  => $p{parent} || undef,
             _is_leaf => \0,
             mid      => $mid,
             item     => _loc('Depend On Me'), 

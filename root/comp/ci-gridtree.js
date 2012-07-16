@@ -2,9 +2,9 @@
     delete params['tab_index'];  // this comes from the tab data
     var ps = 30;
 
-    var record = Ext.data.Record.create([ 'mid','_id','bl','_parent','_is_leaf',
+    var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
         'type', 'pretty_properties', 'name', 'item',
-        'class','versionid','bl', 'ts','tags','data','properties','icon','collection']);
+        'class','versionid','ts','tags','data','properties','icon','collection']);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
@@ -172,6 +172,8 @@
         checkOnly: true
     });
 
+    var id_auto = Ext.id();
+
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
         stripeRows: false,
@@ -201,14 +203,14 @@
             scrollOffset: 2,
             forceFit: true
         },
-        master_column_id : 'item',
-        autoExpandColumn: 'item',
+        master_column_id : id_auto,
+        autoExpandColumn: id_auto,
         columns:[
             check_sm,
             { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
-            { id:'item', header: _('Item'), dataIndex: 'item', width: 230, renderer: render_item },
+            { id: id_auto, header: _('Item'), dataIndex: 'item', width: 230, renderer: render_item },
+            { id:'mid', header: _('ID'), width: 65, dataIndex: 'mid' },
             { header: _('Collection'), width: 160, dataIndex: 'collection' },
-            { header: _('ID'), width: 45, dataIndex: 'mid' },
             { header: _('Class'), hidden: true, width: 160, dataIndex: 'class' },
             { header: _('Baseline'), width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl },
             { header: _('Version'), width: 50, dataIndex: 'versionid' },
