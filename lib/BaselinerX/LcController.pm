@@ -165,7 +165,7 @@ sub changeset : Local {
     # get all the changes for this project + baseline
     my @cs;
 
-    if( $config->{show_changes_in_tree} ) { 
+    if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
         for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
             #push @cs, $class;
             my $prov = $provider->new( project=>$project );
