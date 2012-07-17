@@ -407,7 +407,6 @@
         }
     });
 	
-
 	// create the grid
 	var grid = new Ext.grid.GridPanel({
 			title: _('Dashboards'),
@@ -446,11 +445,11 @@
 				btn_edit,
 				btn_delete
 			]
-		});
+    });
 
-		grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-			init_buttons('enable');
-		});
+    grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+        init_buttons('enable');
+    });
 			
 	return grid;
 })

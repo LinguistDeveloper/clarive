@@ -272,9 +272,12 @@ Ext.onReady(function(){
 
     var tabpanel = Ext.getCmp('main-panel');
     var first_comp = tabpanel.getComponent( 0 );
-    /* if( first_comp != undefined ) {
-        tabpanel.changeTabIcon( first_comp, icon_home );
-    } */
+    if( first_comp != undefined ) {
+        if( first_comp.tab_icon ) 
+            tabpanel.changeTabIcon( first_comp, first_comp.tab_icon );
+        else
+            tabpanel.changeTabIcon( first_comp, icon_home );
+    }
 
 % if( $show_portal eq '1' ) {
     //viewport.on('show', function(){
