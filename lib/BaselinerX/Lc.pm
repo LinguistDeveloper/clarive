@@ -1,7 +1,13 @@
 package BaselinerX::Lc;
-use Moose;
+use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
+
+register 'config.lc' => {
+    metadata => [
+        { id=>'show_changes_in_tree', label=>'Show provider tags in the Lifecycle tree', default=>'0' },
+    ]
+};
 
 has 'lc' => (
     is      => 'rw',

@@ -3760,14 +3760,15 @@ msgstr "Una columna"
 msgid "Two columns"
 msgstr "Dos columnas"
 
+msgid "Data loss may occur"
+msgstr "Se podrán perder datos"
 
+msgid "Configuration Items"
+msgstr "Items de Configuración"
 
+msgid "Workspaces"
+msgstr "Áreas de Trabajo"
 
-
-
-
-
-
-
-
+msgid "Favorites"
+msgstr "Favoritos"
 

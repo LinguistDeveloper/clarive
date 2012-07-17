@@ -36,6 +36,7 @@
            msgTarget: 'under',
            allowBlank: false
         },
+        hidden: true,
         style: { 'margin-top':'30px' },
         title: _(params.collection),
         collapsible: true,
@@ -54,7 +55,7 @@
         items: [
             { xtype: 'container', html:_( txt, params.data.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
             { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name },
-            bl_combo,
+            ( params.has_bl > 0 ? bl_combo : [] ),
             //Baseliner.combo_baseline({ value: params.bl || '*' }),
             //{ xtype: 'hidden', name:'collection', value: params.collection },
             //{ xtype: 'hidden', name:'mid' , value: params.rec.mid },
@@ -66,9 +67,10 @@
         bl_combo.getStore().on( 'load', function(){
             bl_combo.setValue( params.rec.bl );
         });
-        if( params.component ) {
-            Baseliner.ajaxEval( params.component, params, function(res){
+        if( params.ci_form ) {
+            Baseliner.ajaxEval( params.ci_form, params, function(res){
                 if( res != undefined ) {
+                    fieldset.show();
                     fieldset.add( res );
                     fieldset.doLayout();
                     //form.getForm().loadRecord( params.rec );
@@ -79,13 +81,15 @@
         }
     });
     form.on('destroy', function(){
+        // reload parent grid
         var g = params._parent_grid;
         if( g != undefined ) {
             var sm = g.getSelectionModel();
             if( sm != undefined ) sm.clearSelections();
             var s = g.getStore();
-            if( s!=undefined ) s.load();
+            if( s!=undefined ) s.reload();
         }
     });
     return form;
 })
+

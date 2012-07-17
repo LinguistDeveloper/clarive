@@ -80,7 +80,7 @@ all within a transaction.
 
 Usage:
 
-    master_new 'bali_topic' => 'my_ci_name' => sub {
+    master_new 'topic' => 'my_ci_name' => sub {
        my $mid = shift;
        ...
     };

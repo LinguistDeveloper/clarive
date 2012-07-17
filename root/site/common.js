@@ -5,6 +5,11 @@ Baseliner.cookie = new Ext.state.CookieProvider({
 
 //Ext.state.Manager.setProvider(Baseliner.cookie);
 //Baseliner.cook= Ext.state.Manager.getProvider();
+Baseliner.unload_warning = function() {
+    var r = confirm( _("Are you sure you want to close the window?") );
+    return r;
+};
+
 
 // Errors
 Baseliner.errorWin = function( p_title, p_html ) {

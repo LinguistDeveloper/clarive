@@ -13,8 +13,8 @@ register 'menu.admin.dashboard' => {
     title    => _loc ('Admin Dashboard'),
     action   => 'action.admin.dashboard',
     url_comp => '/dashboard/grid',
-    icon     => '/static/images/icons/home.gif',
-    tab_icon => '/static/images/icons/home.gif'
+    icon     => '/static/images/icons/dashboard.png',
+    tab_icon => '/static/images/icons/dashboard.png'
 };
 
 register 'action.admin.dashboard' => { name=>'View and Admin dashboards' };
