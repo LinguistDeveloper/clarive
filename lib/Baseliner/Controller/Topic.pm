@@ -1133,7 +1133,7 @@ sub upload : Local {
                 };                        
             }
                 
-            $file_mid = $existing->mid;
+            #$file_mid = $existing->mid;
         }
         $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $p->{topic_mid}? '': $file_mid, };
     }
