@@ -5,8 +5,6 @@ use Cwd;
 use Net::OpenSSH;
 use namespace::autoclean;
 
-sub collection { 'ssh_agent' }
-
 has server => qw(is rw isa CI coerce 1);
 has port_num   => qw(is rw isa Any);
 has private_key => qw(is rw isa Any);

@@ -235,7 +235,7 @@ sub update : Local {
 			if(!$row){
 				my $user_mid;
 				my $user;
-				$user_mid = master_new 'bali_user' => $p->{username} => sub {
+				$user_mid = master_new 'user' => $p->{username} => sub {
 					my $mid = shift;
 					
 					$user = Baseliner->model('Baseliner::BaliUser')->create(

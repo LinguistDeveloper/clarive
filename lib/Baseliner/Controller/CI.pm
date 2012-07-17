@@ -14,38 +14,7 @@ register 'menu.tools.ci' => {
     actions  => ['action.ci.admin']
 };
 
-sub dispatch {
-    my ($self, $p) = @_;
-    my $parent = $p->{anode};
-    my $mid = $p->{mid};
-    my $total;
-    my @tree;
-
-    #if( ! length $p->{anode} ) {
-    if( ! length $p->{anode} && ! $p->{type} ) {
-        @tree = $self->tree_roles;
-    }
-    elsif( $p->{type} eq 'role' ) {
-        @tree = $self->tree_classes( role=>$p->{class}, parent=>$p->{anode} );
-    }
-    elsif( $p->{type} eq 'class' ) {
-        ($total, @tree) = $self->tree_objects( class=>$p->{class}, parent=>$p->{anode}, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
-    }
-    elsif( $p->{type} eq 'object' ) {
-        @tree = $self->tree_object_info( mid=>$p->{mid}, parent=>$p->{anode} );
-    }
-    elsif( $p->{type} eq 'depend_from' ) {
-        ($total, @tree) = $self->tree_object_depend( from=>$p->{mid}, parent=>$p->{anode} , start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}  );
-    }
-    elsif( $p->{type} eq 'depend_to' ) {
-        ($total, @tree) = $self->tree_object_depend( to=>$p->{mid}, parent=>$p->{anode} , start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}  );
-    }
-    
-    #_debug _dump( \@tree );
-    $total = scalar( @tree ) unless defined $total;
-    return ($total,@tree);
-}
-
+# gridtree - the adjacency list treegrid
 sub gridtree : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -54,12 +23,13 @@ sub gridtree : Local {
     $c->forward('View::JSON');
 }
 
+# list - used by the west navigator
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my ($total, @tree ) = $self->dispatch( $p );
 
-    @tree = map {
+    @tree = sort { lc $a->{text} cmp lc $b->{text} } map {
         my $n = {};
         $_->{anode} = $_->{_id};
         $n->{leaf} = $_->{type} =~ /role/ ? $_->{_is_leaf} : \1;
@@ -68,7 +38,11 @@ sub list : Local {
         #$_->{id} = $_->{_id};
         $n->{url} = '/ci/list';
         $n->{data} = $_;
-        $n->{data}{click} = { url=>'/comp/ci-gridtree.js', type=>'comp', icon=>$_->{icon} };
+        $n->{data}{click} = {
+            url  => '/comp/ci-gridtree.js',
+            type => 'comp',
+            icon => $_->{icon}
+        };
         $n;
     } @tree;
 
@@ -76,6 +50,52 @@ sub list : Local {
     $c->forward('View::JSON');
 }
 
+
+sub dispatch {
+    my ($self, $p) = @_;
+    my $parent = $p->{anode};
+    my $mid = $p->{mid};
+    my $total;
+    my @tree;
+
+    if ( !length $p->{anode} && !$p->{type} ) {
+        @tree = $self->tree_roles;
+    } elsif ( $p->{type} eq 'role' ) {
+        @tree = $self->tree_classes( role => $p->{class}, parent => $p->{anode} );
+    } elsif ( $p->{type} eq 'class' ) {
+        ( $total, @tree ) = $self->tree_objects(
+            class  => $p->{class},
+            parent => $p->{anode},
+            start  => $p->{start},
+            limit  => $p->{limit},
+            query  => $p->{query}
+        );
+    } elsif ( $p->{type} eq 'object' ) {
+        @tree = $self->tree_object_info( mid => $p->{mid}, parent => $p->{anode} );
+    } elsif ( $p->{type} eq 'depend_from' ) {
+        ( $total, @tree ) = $self->tree_object_depend(
+            from       => $p->{mid},
+            parent     => $p->{anode},
+            start      => $p->{start},
+            limit      => $p->{limit},
+            query      => $p->{query},
+            collection => $p->{collection}
+        );
+    } elsif ( $p->{type} eq 'depend_to' ) {
+        ( $total, @tree ) = $self->tree_object_depend(
+            to         => $p->{mid},
+            parent     => $p->{anode},
+            start      => $p->{start},
+            limit      => $p->{limit},
+            query      => $p->{query},
+            collection => $p->{collection}
+        );
+    }
+    
+    #_debug _dump( \@tree );
+    $total = scalar( @tree ) unless defined $total;
+    return ($total,@tree);
+}
 
 sub tree_roles {
     my ($self)=@_;
@@ -113,6 +133,7 @@ sub tree_classes {
     my @tree = map {
         my $item = $_;
         my $collection = $_->collection;
+        my $ci_form = $self->form_for_collection( $collection );
         $item =~ s/^BaselinerX::CI:://g;
         $cnt++;
         +{  _id        => ++$cnt,
@@ -122,14 +143,23 @@ sub tree_classes {
             #mid        => $cnt,
             item       => $item,
             collection => $collection,
+            ci_form  => $ci_form,
             class      => $_,
             icon       => $_->icon,
+            has_bl     => $_->has_bl,
             versionid    => '',
             ts         => '-',
             properties => '',
         }
     } packages_that_do( $role );
     return @tree; 
+}
+
+sub form_for_collection {
+    my ($self, $collection )=@_;
+    my $ci_form = sprintf "/ci/%s.js", $collection;
+    my $component_exists = -e Baseliner->path_to( 'root', $ci_form );
+    return $component_exists ? $ci_form : '';
 }
 
 sub tree_objects {
@@ -153,8 +183,7 @@ sub tree_objects {
     my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my @tree = map {
         my $data = _load( $_->{yaml} );
-        my $component = sprintf "/ci/%s.js", $_->{collection};
-        my $component_exists = -e Baseliner->path_to( 'root', $component );
+        my $ci_form = $self->form_for_collection( $_->{collection} );
         # list properties: field: value, field: value ...
         my $pretty = join(', ',map {
             my $d = $data->{$_};
@@ -169,8 +198,7 @@ sub tree_objects {
             mid               => $_->{mid},
             name              => ( $_->{name} // $noname ),
             item              => ( $_->{name} // $data->{name} // $noname ),
-            component         => $component,
-            component_exists  => $component_exists,
+            ci_form           => $ci_form,
             type              => 'object',
             class             => $class,
             icon              => $class->icon,
@@ -209,7 +237,7 @@ sub tree_object_depend {
     #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my $cnt = $p{parent} * 10;
     my @tree = map {
-        my $class = 'BaselinerX::CI::generic_server';  # TODO reverse lookup
+        my $class = "BaselinerX::CI::$p{collection}";
         my $data = _load( $_->{yaml} );
         my $bl = [ split /,/, $_->{bl} ];
         +{
@@ -355,6 +383,11 @@ sub ci_create_or_update {
     return $master_row->mid;
 };
 
+=head2 sync
+
+Used when external CIs come with no mid, but with ns.
+
+=cut
 sub sync : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
@@ -400,6 +433,11 @@ sub sync : Local {
     $c->forward('View::JSON');
 }
 
+=head2 update
+
+Create or update a CI.
+
+=cut
 sub update : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
@@ -409,21 +447,14 @@ sub update : Local {
     my $mid = delete $p->{mid};
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
+    my $class = "BaselinerX::CI::$collection";
 
     try {
         if( $action eq 'add' ) {
-            my $master_row = master_new $collection => $name => $p;
-            $mid = $master_row->mid;
+            $mid = $class->save( name=>$name, bl=>$bl, data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
-            my $row = $c->model('Baseliner::BaliMaster')->find( $mid );
-            if( $row ) {
-                $row->name( $name );
-                $row->yaml( _dump( $p ) );
-                $row->bl( join ',', _array $bl ); # TODO mid rel bl 
-                $row->update;
-                _log _dump { $row->get_columns };
-            }
+            $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, data => $p ); 
         }
         else {
             _fail _loc("Undefined action");
@@ -435,6 +466,26 @@ sub update : Local {
         $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
     };
 
+    $c->forward('View::JSON');
+}
+
+=head2 load
+
+Load a CI row.
+
+=cut
+sub load : Local {
+    my ($self, $c, $action) = @_;
+    my $p = $c->req->params;
+    my $mid = $p->{mid};
+    try {
+        my $obj = Baseliner::CI->new( $mid );
+        my $rec = $obj->load;
+        $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg=>_loc('CI load error: %1', $err ) };
+    };
     $c->forward('View::JSON');
 }
 

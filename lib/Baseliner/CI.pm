@@ -11,12 +11,9 @@ sub new {
     } elsif( @_ == 1 && ref $_[0] eq 'HASH' ) {
         %args = %{ $_[0] };
     } elsif( @_ == 1 && is_number( $_[0] ) ) {   # mid! a CI!
-        my $rec = Baseliner->model('Baseliner::BaliMaster')->find( $_[0] );
-        _throw _loc("Master object with mid '%1' not found", $_[0] ) unless ref $rec;
-        my $class = "BaselinerX::CI::" . $rec->collection;
-        my $d = _load( $rec->yaml ) ;
-        $d->{mid} = $_[0];
-        my $obj = $class->new( $d );
+        my $rec = Baseliner::Role::CI->load( $_[0] );
+        my $ci_class = $rec->{ci_class}; 
+        my $obj = $ci_class->new( $rec );
         return $obj;
     } elsif( @_ == 1 && ! ref $_[0] ) {
         $args{uri} = $_[0];
@@ -38,8 +35,8 @@ sub new {
     # load agent class
     my $agent_class =  "Baseliner::CI::" . $args{resource}->agent;
     unless ( is_loaded $agent_class ) {
-    eval "require $agent_class"; 
-    _throw _loc "Error loading node class %1: %2", $agent_class, $@ if $@;
+        eval "require $agent_class"; 
+        _throw _loc "Error loading node class %1: %2", $agent_class, $@ if $@;
     }
     # instantiate agent
     $agent_class->new( %args );
