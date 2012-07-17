@@ -333,7 +333,7 @@ sub update : Local {
 				my $project_mid;
 				my $project;
 				
-				$project_mid = master_new 'bali_project' => $p->{name} => sub {
+				$project_mid = master_new 'project' => $p->{name} => sub {
 					my $mid = shift;			
 					$project = $c->model('Baseliner::BaliProject')->create(
 								{

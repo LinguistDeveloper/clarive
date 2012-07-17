@@ -407,13 +407,13 @@
         }
     });
 	
-
 	// create the grid
 	var grid = new Ext.grid.GridPanel({
 			title: _('Dashboards'),
 			header: false,
 			stripeRows: true,
 			autoScroll: true,
+            tab_icon: '/static/images/icons/dashboard.png',
 			autoWidth: true,
 			store: store,
 			viewConfig: {
@@ -445,11 +445,11 @@
 				btn_edit,
 				btn_delete
 			]
-		});
+    });
 
-		grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-			init_buttons('enable');
-		});
+    grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+        init_buttons('enable');
+    });
 			
 	return grid;
 })

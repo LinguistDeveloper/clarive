@@ -4,8 +4,6 @@ use Baseliner::Utils;
 
 with 'Baseliner::Role::CI::Agent';
 
-sub collection { 'ftp_agent' }
-
 has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
     default => sub {
         my $self = shift;

@@ -28,7 +28,7 @@ sub update {
     given ( $action ) {
         when ( 'add' ) {
             event_new 'event.topic.create' => { username=>$p->{username} } => sub {
-                my $topic = master_new 'bali_topic' => $p->{title} => sub {
+                my $topic = master_new 'topic' => $p->{title} => sub {
                     $topic_mid = shift;    
                     Baseliner->model('Baseliner::BaliTopic')->create(
                         {   title              => $p->{title},
@@ -101,7 +101,7 @@ sub update {
                             $mid = $project->mid
                         }
                         else{
-                            my $project_mid = master_new 'bali_project' => $project->name => sub {
+                            my $project_mid = master_new 'project' => $project->name => sub {
                                 my $mid = shift;
                                 $project->mid($mid);
                                 $project->update();
@@ -124,7 +124,7 @@ sub update {
                             $mid = $user->mid
                         }
                         else{
-                        	my $user_mid = master_new 'bali_user' => $user->username => sub {
+                        	my $user_mid = master_new 'user' => $user->username => sub {
                                 my $mid = shift;
                                 $user->mid($mid);
                                 $user->update();
@@ -209,7 +209,7 @@ sub update {
                             $mid = $project->mid
                         }
                         else{
-                            my $project_mid = master_new 'bali_project' => $project->name => sub {
+                            my $project_mid = master_new 'project' => $project->name => sub {
                                 my $mid = shift;
                                 $project->mid($mid);
                                 $project->update();
@@ -232,7 +232,7 @@ sub update {
                             $mid = $user->mid
                         }
                         else{
-                        	my $user_mid = master_new 'bali_user' => $user->username => sub {
+                        	my $user_mid = master_new 'user' => $user->username => sub {
                                 my $mid = shift;
                                 $user->mid($mid);
                                 $user->update();

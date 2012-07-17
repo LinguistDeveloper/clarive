@@ -35,3 +35,7 @@ t/old
 mvsjobs
 .sonar
 root/identicon
+root/static/cal*
+root/static/dhtmlx*
+root/static/sch*
+root/static/images/glyph*

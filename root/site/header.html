@@ -262,7 +262,7 @@ Ext.onReady(function(){
 % if( $show_dashboard ) {
 %    $show_portal and print ',';
                 //{title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style', tab_icon: icon_home }
-                {title:_loc('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: icon_home }
+                {title:_loc('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' }
 % }
             ]
             })
@@ -273,7 +273,10 @@ Ext.onReady(function(){
     var tabpanel = Ext.getCmp('main-panel');
     var first_comp = tabpanel.getComponent( 0 );
     if( first_comp != undefined ) {
-        tabpanel.changeTabIcon( first_comp, icon_home );
+        if( first_comp.tab_icon ) 
+            tabpanel.changeTabIcon( first_comp, first_comp.tab_icon );
+        else
+            tabpanel.changeTabIcon( first_comp, icon_home );
     }
 
 % if( $show_portal eq '1' ) {
@@ -341,7 +344,12 @@ Ext.onReady(function(){
 	});
  }, 2050);
 
-    </script>
+    if( Ext.isIE6 || Ext.isIE7 ) {
+        window.onbeforeunload=  Baseliner.unload_warning;
+    } else {
+        window.onbeforeunload=  function(){ return '' };
+    }
+</script>
 
 <!-- TODO: No sería mala idea poder meter esto en las features -->
 <!-- Para poder incluir el Widget DatePickerPlus de Ext -->
@@ -355,7 +363,7 @@ Ext.onReady(function(){
 <!-- SOLO PARA DEPURAR EN IE -->
 <!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->    
 </head>
-<body>
+<body >
 <IFRAME id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></IFRAME>
 <div id='run-panel'></div>
 

@@ -48,11 +48,24 @@ var refresh_lc = function(){
     refresh_node( node );
 };
 
+var button_projects = new Ext.Button({
+    cls: 'x-btn-icon',
+    icon: '/static/images/icons/project.png',
+    handler: show_favorites,
+    tooltip: _('Projects'),
+    pressed: true,
+    toggleGroup: 'lc',
+    allowDepress: false,
+    enableToggle: true
+});
+
 var button_favorites = new Ext.Button({
     cls: 'x-btn-icon',
-    icon: '/static/images/icons/favorites.gif',
+    icon: '/static/images/icons/star-gray.png',
+    tooltip: _('Favorites'),
     handler: show_favorites,
     pressed: false,
+    allowDepress: false,
     toggleGroup: 'lc',
     enableToggle: true
 });
@@ -61,8 +74,10 @@ var button_workspaces = new Ext.Button({
     cls: 'x-btn-icon',
     icon: '/static/images/icons/connect.png',
     handler: show_workspaces,
+    tooltip: _('Workspaces'),
     toggleGroup: 'lc',
     pressed: false,
+    allowDepress: false,
     enableToggle: true
 });
 
@@ -70,12 +85,17 @@ var button_ci = new Ext.Button({
     cls: 'x-btn-icon',
     icon: '/static/images/ci/ci.png',
     handler: show_ci,
+    tooltip: _('Configuration Items'),
     toggleGroup: 'lc',
     pressed: false,
+    allowDepress: false,
     enableToggle: true
 });
 
 var button_menu = new Ext.Button({
+    //cls: 'x-btn-icon',
+    //icon: '/static/images/icons/config.gif',
+    tooltip: _('Config'),
     menu: [
         { text: _('Add Workspace'), handler: add_workspace }
     ]
@@ -87,11 +107,14 @@ Baseliner.lc_tbar = new Ext.Toolbar({
             cls: 'x-btn-text-icon',
             icon: '/static/images/icons/refresh.gif',
             handler: refresh_lc        },
+        button_projects,
         button_favorites,
         button_workspaces,
         button_ci,
         '->',
-        button_menu
+        button_menu,
+        '<div class="x-tool x-tool-expand-east" style="margin:-2px -4px 0px 0px" onclick="Baseliner.lifecycle.collapse()"></div>'
+        //{ xtype:'button', iconCls:'x-btn-icon x-tool x-tool-expand-east', handler:function(){ Baseliner.lifecycle.collapse() } }
     ]
 });
 
@@ -253,6 +276,7 @@ Baseliner.lifecycle = new Ext.tree.TreePanel({
     split: true,
     collapsible: true,
     title: _("Navigator"),
+    header: false,
     width: 250,
     useArrows: true,
     autoScroll: true,

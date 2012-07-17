@@ -1,8 +1,6 @@
 package BaselinerX::CI::ssh_script;
 use Moose;
 
-sub collection { 'ssh_script' }
-
 has server => qw(is rw isa CI coerce 1); # ssh_agent
 has script => qw(is rw isa Any);
 

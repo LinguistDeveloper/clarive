@@ -3,7 +3,7 @@
     var ps = 30;
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
-        'type', 'pretty_properties', 'name', 'item',
+        'type', 'pretty_properties', 'name', 'item', 'ci_form',
         'class','versionid','ts','tags','data','properties','icon','collection']);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
@@ -29,21 +29,28 @@
     var ci_edit = function(rec){
         var data = store_ci.baseParams;
         var classname = data.class ;
-        var collection = data.collection ;
-        var component = String.format('/ci/{0}.js' , collection );
-        Baseliner.add_tabcomp( '/ci/new.js', _('CI %1' , rec.name ), 
-            {
-                component: component,
-                collection: collection,
-                _parent_grid: ci_grid,
-                mid: rec.mid,
-                rec: rec,
-                data: data,
-                class: data.class,
-                tab_icon: rec.icon,
-                action: 'edit'
+        Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
+            if( res.success ) {
+                var rec = res.rec;
+                console.log( rec );
+                Baseliner.add_tabcomp( '/comp/ci-editor.js', _('CI %1' , rec.name ), 
+                    {
+                        _parent_grid: ci_grid,
+                        collection: data.collection,
+                        data: data,
+                        has_bl: data.has_bl,
+                        class: data.class,
+                        ci_form: rec.ci_form,
+                        mid: rec.mid,
+                        rec: rec,
+                        tab_icon: rec.icon,
+                        action: 'edit'
+                    }
+                );
+            } else {
+                Ext.Msg.alert( _('Error'), _(res.msg) );
             }
-        );
+        });
     };
 
     // only globals can be seen from grid
@@ -56,18 +63,17 @@
     var ci_add = function(){
         var data = store_ci.baseParams;
         var classname = data.class ;
-        var collection = data.collection ;
-        var component = String.format('/ci/{0}.js' , collection );
         var rec = {};
         if (check_sm.hasSelection()) {
            var sel = check_sm.getSelections();
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
-        }
-        Baseliner.add_tabcomp( '/ci/new.js', _('New: %1' , params.item ), {
-                component: component,
+        } 
+        Baseliner.add_tabcomp( '/comp/ci-editor.js', _('New: %1' , params.item ), {
                 _parent_grid: ci_grid,
-                collection: collection,
+                ci_form: data.ci_form,
+                collection: data.collection,
+                has_bl: data.has_bl,
                 rec: rec,
                 data: data,
                 class: data.class,
@@ -96,7 +102,7 @@
                 if( res.success ) {
                     Baseliner.message(_('CI'), res.msg );
                     check_sm.clearSelections();  // otherwise it refreshes current selected nodes
-                    ci_grid.getStore().load();
+                    ci_grid.getStore().reload();
                 } else {
                     Ext.Msg.alert( _('CI'), res.msg );
                 }
