@@ -3,7 +3,7 @@
     var ps = 30;
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
-        'type', 'pretty_properties', 'name', 'item',
+        'type', 'pretty_properties', 'name', 'item', 'component', 'component_exists',
         'class','versionid','ts','tags','data','properties','icon','collection']);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
@@ -29,12 +29,11 @@
     var ci_edit = function(rec){
         var data = store_ci.baseParams;
         var classname = data.class ;
-        var collection = data.collection ;
-        var component = String.format('/ci/{0}.js' , collection );
-        Baseliner.add_tabcomp( '/ci/new.js', _('CI %1' , rec.name ), 
+        Baseliner.add_tabcomp( '/comp/ci-editor.js', _('CI %1' , rec.name ), 
             {
-                component: component,
-                collection: collection,
+                component: rec.component,
+                component_exists: rec.component_exists,
+                collection: data.collection,
                 _parent_grid: ci_grid,
                 mid: rec.mid,
                 rec: rec,
@@ -56,18 +55,20 @@
     var ci_add = function(){
         var data = store_ci.baseParams;
         var classname = data.class ;
-        var collection = data.collection ;
-        var component = String.format('/ci/{0}.js' , collection );
         var rec = {};
         if (check_sm.hasSelection()) {
            var sel = check_sm.getSelections();
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
+        } else {
+            rec.component = '';
+            rec.component_exists = false;
         }
-        Baseliner.add_tabcomp( '/ci/new.js', _('New: %1' , params.item ), {
-                component: component,
+        Baseliner.add_tabcomp( '/comp/ci-editor.js', _('New: %1' , params.item ), {
                 _parent_grid: ci_grid,
-                collection: collection,
+                component: rec.component,
+                component_exists: rec.component_exists,
+                collection: data.collection,
                 rec: rec,
                 data: data,
                 class: data.class,

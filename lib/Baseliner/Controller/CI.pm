@@ -14,13 +14,11 @@ register 'menu.tools.ci' => {
     actions  => ['action.ci.admin']
 };
 
-sub gridtree : Local {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
+sub dispatch {
+    my ($self, $p) = @_;
     my $parent = $p->{anode};
     my $mid = $p->{mid};
     my $total;
-
     my @tree;
 
     #if( ! length $p->{anode} ) {
@@ -43,9 +41,15 @@ sub gridtree : Local {
         ($total, @tree) = $self->tree_object_depend( to=>$p->{mid}, parent=>$p->{anode} , start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}  );
     }
     
-    _debug _dump( \@tree );
-
+    #_debug _dump( \@tree );
     $total = scalar( @tree ) unless defined $total;
+    return ($total,@tree);
+}
+
+sub gridtree : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my ($total, @tree ) = $self->dispatch( $p );
     $c->stash->{json} = { total=>$total, totalCount=>$total, data=>\@tree, success=>\1 };
     $c->forward('View::JSON');
 }
@@ -53,35 +57,8 @@ sub gridtree : Local {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my $parent = $p->{anode};
-    my $mid = $p->{mid};
-    my $total;
-    #if( $parent > 0 ) {
-    #    $c->stash->{json} = { total=>0, data=>[], success=>\1 };
-    #    return $c->forward('View::JSON');
-    #}
+    my ($total, @tree ) = $self->dispatch( $p );
 
-    my @tree;
-
-    if( ! length $p->{anode} ) {
-        @tree = $self->tree_roles;
-    }
-    elsif( $p->{type} eq 'role' ) {
-        @tree = $self->tree_classes( role=>$p->{class}, parent=>$p->{anode} );
-    }
-    elsif( $p->{type} eq 'class' ) {
-        ($total, @tree) = $self->tree_objects( class=>$p->{class}, parent=>$p->{anode} );
-    }
-    elsif( $p->{type} eq 'object' ) {
-        @tree = $self->tree_object_info( mid=>$p->{mid}, parent=>$p->{anode} );
-    }
-    elsif( $p->{type} eq 'depend_from' ) {
-        @tree = $self->tree_object_depend( from=>$p->{mid}, parent=>$p->{anode} );
-    }
-    elsif( $p->{type} eq 'depend_to' ) {
-        @tree = $self->tree_object_depend( to=>$p->{mid}, parent=>$p->{anode} );
-    }
-    
     @tree = map {
         my $n = {};
         $_->{anode} = $_->{_id};
@@ -94,44 +71,11 @@ sub list : Local {
         $n->{data}{click} = { url=>'/comp/ci-gridtree.js', type=>'comp', icon=>$_->{icon} };
         $n;
     } @tree;
-    _debug _dump( \@tree );
 
-    #$c->stash->{json} = { total=>scalar(@tree), data=>\@tree, success=>\1 };
-    $total = scalar( @tree ) unless defined $total;
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }
 
-sub grid : Local {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
-    my $parent = $p->{anode};
-    my $mid = $p->{mid};
-    my $total;
-    my @tree;
-    if( $p->{type} eq 'class' ) {
-        ($total, @tree) = $self->tree_objects( class=>$p->{class}, parent=>$p->{anode}, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
-    }
-    elsif( $p->{type} eq 'object' ) {
-        @tree = $self->tree_object_info( mid=>$p->{mid}, parent=>$p->{anode}, start=>$p->{start}, limit=>$p->{limit}  );
-    }
-    elsif( $p->{type} eq 'depend_from' ) {
-        @tree = $self->tree_object_depend( from=>$p->{mid}, parent=>$p->{anode}, start=>$p->{start}, limit=>$p->{limit}  );
-    }
-    elsif( $p->{type} eq 'depend_to' ) {
-        @tree = $self->tree_object_depend( to=>$p->{mid}, parent=>$p->{anode}, start=>$p->{start}, limit=>$p->{limit}  );
-    }
-    @tree = map {
-        $_->{leaf} = $_->{type} =~ /role/ ? $_->{_is_leaf} : \1;
-        $_->{text} = $_->{item};
-        #$_->{id} = $_->{_id};
-        $_->{anode} = $_->{_id};
-        $_
-    } @tree;
-    $total = scalar( @tree ) unless defined $total;
-    $c->stash->{json} = { totalCount=>$total, data=>\@tree, success=>\1 };
-    $c->forward('View::JSON');
-}
 
 sub tree_roles {
     my ($self)=@_;
@@ -209,6 +153,8 @@ sub tree_objects {
     my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my @tree = map {
         my $data = _load( $_->{yaml} );
+        my $component = sprintf "/ci/%s.js", $_->{collection};
+        my $component_exists = -e Baseliner->path_to( 'root', $component );
         # list properties: field: value, field: value ...
         my $pretty = join(', ',map {
             my $d = $data->{$_};
@@ -223,6 +169,8 @@ sub tree_objects {
             mid               => $_->{mid},
             name              => ( $_->{name} // $noname ),
             item              => ( $_->{name} // $data->{name} // $noname ),
+            component         => $component,
+            component_exists  => $component_exists,
             type              => 'object',
             class             => $class,
             icon              => $class->icon,

@@ -36,6 +36,7 @@
            msgTarget: 'under',
            allowBlank: false
         },
+        hidden: true,
         style: { 'margin-top':'30px' },
         title: _(params.collection),
         collapsible: true,
@@ -66,9 +67,10 @@
         bl_combo.getStore().on( 'load', function(){
             bl_combo.setValue( params.rec.bl );
         });
-        if( params.component ) {
+        if( params.component && params.component_exists ) {
             Baseliner.ajaxEval( params.component, params, function(res){
                 if( res != undefined ) {
+                    fieldset.show();
                     fieldset.add( res );
                     fieldset.doLayout();
                     //form.getForm().loadRecord( params.rec );
@@ -89,3 +91,4 @@
     });
     return form;
 })
+
