@@ -72,14 +72,15 @@ sub list_dashboard : Local {
 	    # produce the grid
 
 		my @roles = map { $_->{id_role} } $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $r->id})->hashref->all;
-		my @dashlets = map {$_->{html} . '#' . $_->{url}} @{_load $r->dashlets};
+		#my @dashlets = map {$_->{html} . '#' . $_->{url} . '#' . $_->{config} } _array _load $r->dashlets;
+		my @dashlets = map {$_->{html} . '#' . $_->{url} } _array _load $r->dashlets;
 		
 		push @rows,
 			{
 				id 			=> $r->id,
 				name		=> $r->name,
 				description	=> $r->description,
-				is_main 	=>     $r->is_main,
+				is_main 	=> $r->is_main,
 				roles 		=> \@roles,
 				dashlets	=> \@dashlets,
 			};
@@ -130,11 +131,18 @@ sub list_dashlets : Local {
 	my @rows;
     for my $dash ( @dashlets ) {
         $c->forward( $dash->{metadata}->{url} );
+		my $config;
+		if ($dash->{metadata}->{config}) {
+			$config = $dash->{metadata}->{config};
+		}else{
+			$config = '';
+		}
 		push @rows,
 		  {
-			id			=> $dash->{metadata}->{html} .'#' . $dash->{metadata}->{url},
+			id			=> $dash->{metadata}->{html} . '#' . $dash->{metadata}->{url}, # . '#' . $dash->{metadata}->{config}, #. '#' . $config, 
 			name		=> $dash->{metadata}->{name},
 			description	=> $dash->{metadata}->{description},
+			config		=> $dash->{metadata}->{config}
 			
 		  };		
     }	
@@ -314,6 +322,29 @@ sub list : Local {
 	}
     
     $c->stash->{template} = '/comp/dashboard.html';
+}
+
+sub get_config : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my @rows = ();
+	
+	if($p->{config}){
+		my $config = $c->model('Registry')->get( $p->{config} )->metadata;
+		foreach my $row (_array $config){
+			push @rows,
+				{
+					id 			=> $row->{id},
+					name		=> '',
+					description	=> $row->{label},
+					value 	=> $row->{default}
+				};		
+		}
+	}
+	
+    $c->stash->{json} = { data=>\@rows};		
+    $c->forward('View::JSON');	
+	
 }
 
 sub list_baseline: Private{
