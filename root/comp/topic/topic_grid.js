@@ -540,9 +540,11 @@
         header: false,
         stripeRows: true,
         autoScroll: true,
-        enableHdMenu: false,
+        //enableHdMenu: false,
         store: store_topics,
         enableDragDrop: true,
+        autoSizeColumns: true,
+        deferredRender: true,
         ddGroup: 'lifecycle_dd',
         viewConfig: {forceFit: true},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
@@ -552,9 +554,11 @@
             { header: _('Status'), dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
             { header: _('Progress'), dataIndex: 'progress', width: 50, sortable: true, renderer: render_progress },
-            { header: '', dataIndex: 'numcomment', width: 45, renderer: render_comment },			
+            { header: '', sortable: false, dataIndex: 'numcomment', width: 45, renderer: render_comment },			
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
-            { header: _('Topic'), hidden: true, dataIndex: 'topic_mid'},    
+            { header: _('Topic ID'), hidden: true, dataIndex: 'topic_mid'},    
+            { header: _('Created On'), hidden: true, dataIndex: 'created_on'},
+            { header: _('Created By'), hidden: true, dataIndex: 'created_by'}
         ],
         tbar:   [ _('Search') + ' ', ' ',
                 search_field,
@@ -566,8 +570,6 @@
                 btn_comprimir
                 //btn_close
         ], 		
-        autoSizeColumns: true,
-        deferredRender:true,
         bbar: new Ext.PagingToolbar({
             store: store_topics,
             pageSize: ps,
@@ -785,12 +787,22 @@
 				expanded:true
 			});
 
+    this.collapse_me = function(obj) {
+        alert( 121 );
+        //Baseliner.ooo = obj;
+        ///console.log( obj );
+    };
+    var id_collapse = Ext.id();
 	var tree_filters = new Ext.tree.TreePanel({
 						region : 'east',
+                        header: false,
 						width: 180,
 						split: true,
 						collapsible: true,
-        tbar: [ '->', button_create_view, button_delete_view ],
+        tbar: [
+            '->', button_create_view, button_delete_view,
+            '<div class="x-tool x-tool-expand-west" style="margin:-2px -4px 0px 0px" id="'+id_collapse+'"></div>'
+        ],
 		dataUrl: "topic/filters_list",
 		split: true,
 		colapsible: true,
@@ -802,9 +814,8 @@
 		enableDD: true,
 		ddGroup: 'lifecycle_dd'
     });
-
+    
 	tree_filters.on('click', function(node, event){
-
 	});
 	
 	tree_filters.on('checkchange', function(node, checked) {
@@ -837,6 +848,14 @@
     // expand the whole tree
 	tree_filters.getLoader().on( 'load', function(){
         tree_root.expandChildNodes();
+
+        // draw the collapse button onclick event 
+        var el_collapse = Ext.get( id_collapse );
+        if( el_collapse )
+            el_collapse.dom.onclick = function(){ 
+                panel.body.dom.style.overflow = 'hidden'; // collapsing shows overflow, so we hide it
+                tree_filters.collapse();
+            };
     });
 		
     var panel = new Ext.Panel({
