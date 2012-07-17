@@ -414,6 +414,7 @@
 			header: false,
 			stripeRows: true,
 			autoScroll: true,
+            tab_icon: '/static/images/icons/dashboard.png',
 			autoWidth: true,
 			store: store,
 			viewConfig: {
