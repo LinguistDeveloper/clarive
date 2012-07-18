@@ -118,7 +118,7 @@ sub load {
     # setup the base data from master row
     my $data = { $row->get_columns };
     if( $storage eq 'yaml' ) {
-        $data = { %$data, _load( $row->yaml ) };
+        $data = { %$data, %{_load( $row->yaml )} };
     }
     elsif( $storage eq 'fields' ) {
        # TODO  

@@ -116,6 +116,7 @@ sub job_elements {
                 version  => $_->{version}
             );
         } @versions;
+        $log->debug(_loc("<b>Changeset:</B> Files detected for job"), data => _dump @elems);
 
         #Topic Files end
 
@@ -132,6 +133,7 @@ sub job_elements {
         my $git_checkouts;
 
         for ( @revisions ) {
+            $log->debug(_loc("<b>Revisions:</B> Treating revision"), data => _dump $_);
             my $rev  = Baseliner::CI->new( $_->{to_mid} );
             my $repo = $rev->{repo};
             push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev->{sha};
@@ -143,6 +145,7 @@ sub job_elements {
         } ## end for ( @revisions )
 
         for ( keys %{$revisions_shas} ) {
+            $log->debug(_loc("<b>Revisions:</B> Processing revision $_"));
             my $repo = Baseliner::CI->new( $_ );
             $repo->job( $job );
 
