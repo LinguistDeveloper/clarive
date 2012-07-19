@@ -103,6 +103,7 @@ sub list_dashboard : Local {
 				name		=> $r->name,
 				description	=> $r->description,
 				is_main 	=> $r->is_main,
+				type 		=> $r->is_columns eq '1' ? 'T':'O',
 				roles 		=> \@roles,
 				dashlets	=> \@dashlets
 			};
@@ -211,6 +212,7 @@ sub update : Local {
                                         name  => $p->{name},
                                         description => $p->{description},
 										is_main => $p->{dashboard_main_check} ? '1': '0',
+										is_columns => $p->{type} eq 'T' ? '1': '0',
 										dashlets => _dump \@dashlets,
 										
                                     });
@@ -241,6 +243,7 @@ sub update : Local {
                 $dashboard ->name( $p->{name} );
                 $dashboard ->description( $p->{description} );
 				$dashboard ->is_main ( $p->{dashboard_main_check} ? '1': '0');
+				$dashboard ->is_columns ( $p->{type} eq 'T' ? '1': '0');
 				$dashboard ->dashlets( _dump \@dashlets );
                 $dashboard ->update();
 
@@ -302,6 +305,7 @@ sub list : Local {
 		for my $dash ( @dashlets ) {
 			$c->forward( $dash->{url} . '/' . $dashboard_id );
 		}
+		$c->stash->{is_columns} = $dashboard->is_columns;
 		$c->stash->{dashboardlets} = \@dashlets;
 	}else{
 		my $dashboard = $c->model('Baseliner::BaliDashboard')->search( undef, {order_by => 'is_main desc'} );
@@ -315,6 +319,7 @@ sub list : Local {
 					for my $dash ( @dashlets ) {
 						$c->forward( $dash->{url} . '/' . $dashboard->id );
 					}
+					$c->stash->{is_columns} = $dashboard->is_columns;
 					$c->stash->{dashboardlets} = \@dashlets;
 				}else{
 					push @dashboard, { name => $dashboard->name,
@@ -351,6 +356,7 @@ sub list : Local {
 			}
 			for my $dash ( @dashlets ) {
 				$c->forward( $dash->{url} . '/' . $dashboard->id );
+				$c->stash->{is_columns} = $dashboard->is_columns;
 				$c->stash->{dashboardlets} = \@dashlets;
 			}	
 		}
@@ -389,7 +395,6 @@ sub get_config : Local {
 				{
 					id 			=> $key,
 					dashlet		=> $html_url[0],
-					name		=> '',
 					description	=> $key_description{$key},
 					value 		=> $dashlet_config{$key}
 				};		

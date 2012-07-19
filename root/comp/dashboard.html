@@ -23,13 +23,14 @@
 %}
     <div class="container_24" style="padding-top:10px;padding-left:10px;">
 
+%if($c->stash->{is_columns}){
+
         <div class="grid_10" style="margin-bottom: 5px;">
 % if($dashboardlets){        
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
 % if ($dash->{order} % 2 != 0){
     <& $dash->{html} &>
 % }}
-
         </div> 
 
         <div class="grid_1">&nbsp;</div>
@@ -41,6 +42,18 @@
     <& $dash->{html} &>
 % }}            
         </div>
+%}
+
+%}else{
+
+        <div class="grid_24" style="margin-bottom: 5px;">
+% if($dashboardlets){        
+% for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
+    <& $dash->{html} &>
+% }
+        </div> 
+%}
+
 %}
     </div>
 </div>

@@ -15,7 +15,8 @@
 			{  name: 'description' },
 			{  name: 'dashlets' },
 			{  name: 'roles' },
-			{  name: 'is_main' }
+			{  name: 'is_main' },
+			{  name: 'type' }
 		]
 	});
 	
@@ -261,6 +262,7 @@
 									params: { id_dashboard: dashboard_id, id: rec.data.id, dashlet: rec.data.dashlet },
 									success: function(f,a){
 										Baseliner.message(_('Success'), a.result.msg );
+										store_config.reload();
 									},
 									failure: function(f,a){
 									Ext.Msg.show({  
