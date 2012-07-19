@@ -80,7 +80,7 @@ sub save_data {
     return unless ref $data;
     my $storage = $self->storage;
     if( $storage eq 'yaml' ) {
-        _debug "==============================================>" . _dump( $data );
+        _debug "------------>" . _dump( $data );
         $master_row->yaml( _dump( $data ) );
         $master_row->update;
     }

@@ -19,6 +19,20 @@
 		]
 	});
 	
+	var store_config = new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/dashboard/get_config',
+		fields: [
+			{  name: 'id' },
+			{  name: 'name' },
+			{  name: 'description' },
+			{  name: 'value' }
+		]
+	});	
+	
 	var ps = 100; //page_size
 	store.load({params:{start:0 , limit: ps}});
 	
@@ -38,7 +52,7 @@
 			baseParams: {},
 			id: 'id', 
 			url: '/dashboard/list_dashlets',
-			fields: ['id','name','description'] 
+			fields: ['id','name','description', 'config'] 
 		 }, c));
 	};
 	Ext.extend( Baseliner.store.Dashlets, Ext.data.JsonStore );
@@ -107,8 +121,11 @@
 	var dashlets_box_store = new Baseliner.store.Dashlets();
 	var roles_box_store = new Baseliner.store.Roles();
 
+
+
 	var add_edit = function(rec) {
 		var win;
+		var config = new Array();
 		
         var dashlets_box = new Baseliner.model.Dashlets({
             store: dashlets_box_store
@@ -116,6 +133,10 @@
         dashlets_box_store.on('load',function(){
             dashlets_box.setValue( rec.dashlets ) ;            
         });
+		
+        dashlets_box.on('additem',function( obj, value, row){
+			config.push({"text": _(row.data.name) + ' (' + _(row.data.description) + ')', "leaf": true, "config": row.data.config });
+        });		
 		
         var roles_box = new Baseliner.model.Roles({
             store: roles_box_store
@@ -183,6 +204,111 @@
 			cls: 'x-btn-text-icon',
 			disabled: false,
 			handler: function() {
+				//var dashlets = new Array();
+				//for(var i=0; i<config.length;i++){
+				//	dashlets.push(Ext.util.JSON.encode(config[i]));
+				//}
+				
+				var treeRoot = new Ext.tree.AsyncTreeNode({
+					text: _('Configuration'),
+					expanded: true,
+					draggable: false,
+					children: config
+				});
+				
+		
+				var tree_dashlets = new Ext.tree.TreePanel({
+					title: _('Configuration Dashlets'),
+					split: true,
+					colapsible: true,
+					useArrows: true,
+					animate: true,
+					containerScroll: true,
+					autoScroll: true,
+					height:300,		    
+					rootVisible: true,
+					root: treeRoot
+				});
+				
+				tree_dashlets.on('click', function(node, checked) {
+					store_config.load({params: {config: node.attributes.config}});
+					//Baseliner.ajaxEval( '/dashboard/get_config', { dashlet: ''},
+					//	function(resp){
+					//		Baseliner.message( _('Success'), resp.msg );
+					//	}
+					//);
+				});				
+			
+				var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+				
+				var grid_config = new Ext.grid.GridPanel({
+					title: _('Configuration'),
+					store: store_config,
+					stripeRows: true,
+					autoScroll: true,
+					autoWidth: true,
+					viewConfig: {
+						forceFit: true
+					},		    
+					height:300,
+					columns: [
+						{ hidden: true, dataIndex:'id' }, 
+						{ header: _('Description'), dataIndex: 'description', width: 100},
+						{ header: _('Value'), dataIndex: 'value', width: 80}
+					],
+					autoSizeColumns: true
+				});
+		
+				var form_dashlets = new Ext.FormPanel({
+					name: form_dashlets,
+					url: '/user/update',
+					frame: true,
+					items   : [
+							   {
+								xtype: 'panel',
+								layout: 'column',
+								items:  [
+									{  
+									columnWidth: .49,
+									items:  tree_dashlets
+									},
+									{
+									columnWidth: .02,
+									items: blank_image
+									},
+									{  
+									columnWidth: .49,
+									items: grid_config
+								}]  
+								}
+							]
+				});
+				
+
+				
+				//alert(dashlets_box.getValue());
+				//var dashlets_store = dashlets_box.getStore();
+				//dashlets_box_store.each(function(row, index){
+				//			alert(row.get('id'));
+				//             
+				//});				
+				//var dashlet_ids = (dashlets_box.getValue()).split(",");
+				//for(var i=0; i<dashlet_ids.length; i++) {
+				//	//alert(dashlet_ids[i]);
+				//	////var dashlet = dashlets_store.getById(dashlet_ids[i]);
+				//	//var dashlet = dashlets_store.getById(dashlet_ids[i]);
+				//	//alert(dashlet);
+				//	//var dashlet = dashlets_store.getAt(1);
+				//	//alert( 'for: ' + dashlet_ids[i]);
+				//	//alert( 'id: ' + dashlet.data.id);
+				//	//if(dashlet.data.id == dashlet_ids[i]){
+				//	//	alert('passa');
+				//	//}
+				//	//alert(dashlet.data.id);
+				//}
+				//var dashlet = dashlets_store.getAt(0);
+				//alert(dashlet.data.id);
+				
 			//	var ta = new Ext.form.TextArea({
 			//		height: 300,
 			//		width: 500,
@@ -234,7 +360,7 @@
 			//	
 				var winYaml = new Ext.Window({
 					modal: true,
-					width: 500,
+					width: 800,
 					title: _('Parameters'),
 					tbar: [
 							//btn_grabar_config,
@@ -246,8 +372,8 @@
 									winYaml.close();
 								}
 							}           
-					]//,
-					//items: ta
+					],
+					items: form_dashlets
 				});
 				winYaml.show();
 			}
