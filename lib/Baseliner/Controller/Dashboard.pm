@@ -22,9 +22,7 @@ register 'action.admin.dashboard' => { name=>'View and Admin dashboards' };
 ##Configuración del dashboard
 register 'config.dashboard' => {
 	metadata => [
-	       { id=>'states', label=>'States for job statistics', default => 'DESA,IT,TEST,PREP,PROD' },
 	       { id=>'job_days', label=>'Days for job statistics', default => 7 },
-	       { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
 	    ]
 };
 
@@ -32,6 +30,30 @@ register 'config.dashlet.baselines' => {
 	metadata => [
 	       { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
 		   { id=>'states', label=>'States for job statistics', default => 'DESA,IT,TEST,PREP,PROD' },
+	    ]
+};
+
+register 'config.dashlet.lastjobs' => {
+	metadata => [
+	       { id=>'rows', label=>'Number of rows', default => 7 },
+	    ]
+};
+
+register 'config.dashlet.emails' => {
+	metadata => [
+	       { id=>'rows', label=>'Number of rows', default => 7 },
+	    ]
+};
+
+register 'config.dashlet.topics' => {
+	metadata => [
+	       { id=>'rows', label=>'Number of rows', default => 7 },
+	    ]
+};
+
+register 'config.dashlet.jobs' => {
+	metadata => [
+	       { id=>'rows', label=>'Number of rows', default => 7 },
 	    ]
 };
 
@@ -402,10 +424,14 @@ sub set_config : Local {
 }
 
 sub list_baseline: Private{
-    my ( $self, $c, $dashboard_id, $dashboard_url ) = @_;
+    my ( $self, $c, $dashboard_id ) = @_;
 	my $username = $c->username;
 	my (@jobs, $job, @datas, @temps, $SQL);
 	
+	
+	#######################################################################################################
+	#CONFIGURATION DASHLET
+	##########################################################################################################	
 	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
 	
 	if($dashboard_id){
@@ -418,6 +444,7 @@ sub list_baseline: Private{
 			};				
 		}		
 	}
+	##########################################################################################################	
 	
     my $bl_days = $default_config->{bl_days} // 7;
 	
@@ -484,7 +511,7 @@ sub list_baseline: Private{
 }
 
 sub list_lastjobs: Private{
-	my ( $self, $c ) = @_;
+	my ( $self, $c, $dashboard_id ) = @_;
 	my $order_by = 'STARTTIME DESC'; 
 	my $rs_search = $c->model('Baseliner::BaliJob')->search(
         undef,
@@ -494,8 +521,26 @@ sub list_lastjobs: Private{
 	);
 	my $numrow = 0;
 	my @lastjobs;
+	
+	#######################################################################################################
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.lastjobs');	
+	
+	if($dashboard_id){
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys $config_dashlet[0]->{params}){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}	
+	##########################################################################################################
+
 	while( my $rs = $rs_search->next ) {
-		if ($numrow >= 7) {last;}
+		if ($numrow >= $default_config->{rows}) {last;}
 	    push @lastjobs,{ 	id => $rs->id,
 							name => $rs->name,
 							type => $rs->type,
@@ -509,10 +554,28 @@ sub list_lastjobs: Private{
 }
 
 sub list_emails: Private{
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $dashboard_id ) = @_;
 	my $username = $c->username;
 	my (@emails, $email, @datas, $SQL);
 	
+	
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.emails');	
+	
+	if($dashboard_id){
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ 'list_emails'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys $config_dashlet[0]->{params}){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}	
+	##########################################################################################################	
+	
+	my $rows = $default_config->{rows};
 	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	$SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
@@ -520,11 +583,11 @@ sub list_emails: Private{
 					(SELECT * FROM ( SELECT ID_MESSAGE,  SENT
 										FROM BALI_MESSAGE_QUEUE
 										WHERE USERNAME = ? AND SWREADED = 0
-										ORDER BY SENT DESC ) WHERE ROWNUM < 6) B
+										ORDER BY SENT DESC ) WHERE ROWNUM <= ?) B
 				WHERE A.ID = B.ID_MESSAGE";
 				
 
-	@emails = $db->array_hash( $SQL , $username);
+	@emails = $db->array_hash( $SQL , $username, $rows);
 	foreach $email (@emails){
 	    push @datas, $email;
 	}	
@@ -533,11 +596,27 @@ sub list_emails: Private{
 }
 
 sub list_topics: Private{
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $dashboard_id ) = @_;
 	my $username = $c->username;
 	#my (@topics, $topic, @datas, $SQL);
 	
-	my $limit = 5;
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics');	
+	
+	if($dashboard_id){
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys $config_dashlet[0]->{params}){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}	
+	##########################################################################################################		
+	
+	my $limit = $default_config->{rows};
 	my @columns = ('topic_mid','title', 'category_name', 'created_on', 'created_by', 'category_status_name', 'numcomment');
 	my ($select, $as, $order_by,  $group_by) = ([map {'me.' . $_} @columns], #select
 												[@columns], #as
@@ -556,7 +635,7 @@ sub list_topics: Private{
 }
 
 sub list_jobs: Private {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $dashboard_id ) = @_;
 	my $username = $c->username;
 	my @datas;	
 	my $SQL;
@@ -568,6 +647,23 @@ sub list_jobs: Private {
 																			level => 1);
 	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
 	
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.jobs');	
+	
+	if($dashboard_id){
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ 'list_jobs'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys $config_dashlet[0]->{params}){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}	
+	##########################################################################################################
+	
+	my $rows = $default_config->{rows};
 	
 	$SQL = "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION
 						FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
@@ -598,8 +694,8 @@ sub list_jobs: Private {
 											   )
 								) B
 							WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
-				WHERE MY_ROW_NUM < 11";				
-	my @jobs = $db->array_hash( $SQL);
+				WHERE MY_ROW_NUM <= ?";				
+	my @jobs = $db->array_hash( $SQL, $rows);
 	
 	foreach my $job (@jobs){
 		my ($lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration);
