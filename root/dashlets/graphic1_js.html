@@ -1,0 +1,34 @@
+<!--
+name: Graphic1_js
+description: Graphic1 js
+html: /dashlets/graphic1_js.html
+---
+-->
+    <script>
+        Ext.onReady(function(){
+        
+            var p = new Baseliner.flot.Donut({ layout:'fit', 
+                width: 290, height: 300, 
+                data:[
+                    { label:'TEST',data:222},
+                    { label:'PREP', data:119},
+                    { label:'PROD', data:80 }
+                ] });    
+
+            var panel = new Ext.FlotPanel({
+
+                width:650,
+                height:400,
+                items: p,
+                renderTo: 'graphic1'
+            });	
+        });
+    </script>
+
+
+    <div>
+        <h2>Gráfico 1</h2>
+        <div id="graphic1"></div>
+    </div>
+
+
