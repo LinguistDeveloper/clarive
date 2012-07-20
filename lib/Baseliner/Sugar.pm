@@ -12,6 +12,7 @@ Some convenient sugar to over called methods.
 
 use strict;
 use Try::Tiny;
+use Baseliner::Utils;
 use Exporter::Tidy default => [qw/
     config_store
     config_get
@@ -79,27 +80,28 @@ all within a transaction.
 
 Usage:
 
-    master_new 'bali_topic' => sub {
+    master_new 'topic' => 'my_ci_name' => sub {
        my $mid = shift;
        ...
     };
 
 Or:
 
-    master_new 'something' => {  yada=>1234, etc=>'...' };
+    master_new 'something' => 'my_ci_name' => {  yada=>1234, etc=>'...' };
 
 =cut
 sub master_new {
-    my ($collection, $code ) =@_;
+    my ($collection, $name, $code ) =@_;
     if( ref $code eq 'HASH' ) {
-        my $master = Baseliner->model('Baseliner::BaliMaster')
-            ->create( { collection => $collection, yaml => Baseliner::Utils::_dump($code) } );
+        my $row = { collection => $collection, name => $name, yaml => Baseliner::Utils::_dump($code) };
+        $row->{bl} = $code->{bl} if defined $code->{bl};
+        my $master = Baseliner->model('Baseliner::BaliMaster')->create( $row );
         return $master;
     } elsif( ref $code eq 'CODE' ) {
         my $ret;
         Baseliner->model('Baseliner')->txn_do(sub{
             my $master = Baseliner->model('Baseliner::BaliMaster')->create({
-                collection => $collection,
+                collection => $collection, name=> $name
             });
             $ret = $code->( $master->mid, $master );
         });
@@ -125,25 +127,36 @@ sub master_rel {
 }
 
 sub event_new {
-    my ($key, $data, $code ) =@_;
+    my ($key, $data, $code, $catch ) =@_;
     $data ||= {};
-    _throw 'event_new is missing mid parameter' unless length $data->{mid};
     my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
     my $event_create = sub {
-        Baseliner->model('Baseliner::BaliEvent')->create({ event_key=>$key, event_data=>_dump( $data ), mid=>$data->{mid}, username=>$data->{username} });
+        my $ed = shift;
+        Baseliner->model('Baseliner::BaliEvent')
+            ->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
     };
-    if( ref $code eq 'CODE' ) {
-        try {
+    try {
+        if( ref $code eq 'CODE' ) {
+            # PRE
             $ev->pre->( $data ) if defined $ev->pre;
-            $code->( $data );
+            # RUN
+            my $rundata = $code->( $data );
+            ref $rundata eq 'HASH' and $data = { %$data, %$rundata };
+            _throw 'event_new is missing mid parameter' unless length $data->{mid};
+            # POST
             $ev->post->( $data ) if defined $ev->pre;
-            $event_create->();
-        } catch {  # no event if fails
-            ;
-        };
-    } else {
-        $event_create->();
-    }
+        }
+        # create the event on table
+        $event_create->( $data );
+    } catch {  # no event if fails
+        my $err = shift;
+        if( ref $catch eq 'CODE' ) {
+            $catch->( $err ) ;
+            _log "*** event_new: caught $key: $err";
+        } else {
+            _log "*** event_new: untrapped $key: $err";
+        }
+    };
 }
 
 sub events_by_key {

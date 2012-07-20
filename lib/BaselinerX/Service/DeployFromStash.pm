@@ -22,7 +22,7 @@ The service will detect and automatically deploy these during RUN.
 =cut
 use Baseliner::Plug;
 use Baseliner::Utils;
-use Baseliner::Node;
+use Baseliner::CI;
 use Baseliner::Sugar;
 use Try::Tiny;
 
@@ -72,6 +72,9 @@ sub deployments {
             my $name = $deployment->destination->uri;
             $log->info( _loc( "Running deployment: %1", $name ), dump=>$deployment );
             $deployment->destination->throw_errors( 0 );  # I'll catch them myself
+            my %vars;
+            $vars{bl} = $self->job->bl;
+            $deployment->push_vars( %vars );
 
             # now deploy and run scripts
             $deployment->deploy_and_run( callback=>sub {
@@ -97,7 +100,7 @@ sub deployments {
 Execute scripts from the stash.
 
     push @{ $job->job_stash->{deployment_scripts}->{'my.service.domain'} }, 
-        Baseliner::Node->new( 'ssh_script://user@host:port/path/script.sh?arg=aaa&arg=bbb' );
+        Baseliner::CI->new( 'ssh_script://user@host:port/path/script.sh?arg=aaa&arg=bbb' );
 
 Important: entries need to be keyed from source.
 

@@ -4,7 +4,7 @@
 </%perl>
 (function(){
     <& /comp/search_field.mas &>
-    var ps = 10; //page_size
+    var ps = 30; //page_size
     var filter_current;
 
     // Create store instances
@@ -22,13 +22,12 @@
     var init_buttons = function(action) {
         eval('btn_edit.' + action + '()');
         eval('btn_delete.' + action + '()');
-        //eval('btn_labels.' + action + '()');
     }
     
     var button_create_view = new Ext.Button({
         icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
-		text: _('Create view'),
+		tooltip: _('Create view'),
+        cls: 'x-btn-icon',
 		disabled: false,
         handler: function(){
 			add_view();
@@ -38,7 +37,9 @@
 	
 	
 	var button_delete_view = new Baseliner.Grid.Buttons.Delete({
-		text: _('Delete view'),
+		text: _(''),
+		tooltip: _('Delete view'),
+        cls: 'x-btn-icon',
 		disabled: true,
         handler: function() {
             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the views selected?'), 
@@ -440,7 +441,9 @@
 				var label = rec.data.labels[i].split(';');
 				var label_name = label[1];
 				var label_color = label[2];
-				tag_color_html = tag_color_html + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
+				tag_color_html = tag_color_html
+                    + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" 
+                    + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span></div>";				
             }
         }
 		if(btn_comprimir.pressed){
@@ -473,7 +476,7 @@
                 "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
                 rec.data.numcomment,
                 "</span>",
-                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
+                "<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ",
                 rec.data.numfile,
                 "</span>"
             ].join("");
@@ -503,11 +506,26 @@
         return ret;
     };
 
+    var render_progress = function(value,metadata,rec,rowIndex,colIndex,store){
+        if( value == 0 ) return '';
+        var cls = ( value < 20 ? 'danger' : ( value < 40 ? 'warning' : ( value < 80 ? 'info' : 'success' ) ) );
+        var ret =  [
+            '<span id="boot">',
+            '<div class="progress progress-'+ cls +'" style="height: 8px">',
+                '<div class="bar" style="width: '+value+'%">',
+                '</div>',
+            '</div>',
+            '</span>',
+        ].join('');
+        return ret;
+    };
+
     var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
         var id = rec.data.topic_mid; //Cambiarlo en un futuro por un contador de categorias
         var color = rec.data.category_color;
+        var cls = rec.data.is_release ? 'label' : 'badge';
         //if( color == undefined ) color = '#777';
-        var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + ' #' + id + '</span></div>';
+        var ret = '<div id="boot"><span class="'+cls+'" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + ' #' + id + '</span></div>';
         return ret;
     };
 
@@ -522,9 +540,11 @@
         header: false,
         stripeRows: true,
         autoScroll: true,
-        enableHdMenu: false,
+        //enableHdMenu: false,
         store: store_topics,
         enableDragDrop: true,
+        autoSizeColumns: true,
+        deferredRender: true,
         ddGroup: 'lifecycle_dd',
         viewConfig: {forceFit: true},
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
@@ -533,9 +553,12 @@
             { header: _('Category'), dataIndex: 'category_name', width: 80, sortable: true, renderer: render_category },
             { header: _('Status'), dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
-            { header: '', dataIndex: 'numcomment', width: 10, renderer: render_comment },			
+            { header: _('Progress'), dataIndex: 'progress', width: 50, sortable: true, renderer: render_progress },
+            { header: '', sortable: false, dataIndex: 'numcomment', width: 45, renderer: render_comment },			
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
-            { header: _('Topic'), hidden: true, dataIndex: 'topic_mid'},    
+            { header: _('Topic ID'), hidden: true, dataIndex: 'topic_mid'},    
+            { header: _('Created On'), hidden: true, dataIndex: 'created_on'},
+            { header: _('Created By'), hidden: true, dataIndex: 'created_by'}
         ],
         tbar:   [ _('Search') + ' ', ' ',
                 search_field,
@@ -547,8 +570,6 @@
                 btn_comprimir
                 //btn_close
         ], 		
-        autoSizeColumns: true,
-        deferredRender:true,
         bbar: new Ext.PagingToolbar({
             store: store_topics,
             pageSize: ps,
@@ -565,7 +586,7 @@
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
         var title = _(r.get( 'category_name' )) + ' #' + r.get('topic_mid');
-        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') , title , { topic_mid: r.get('topic_mid'), title: title } );
+        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') , title , { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
     });
     
     grid_topics.on( 'render', function(){
@@ -689,7 +710,7 @@
                 var attr = n.attributes;
 				if(attr.data){
 					if( typeof attr.data.id_project == 'undefined' ) {  // is a project?
-						Baseliner.message( _('Error'), _('Node is not a project'));
+						//Baseliner.message( _('Error'), _('Node is not a project'));
 					} else {
 						add_node(n);
 					}
@@ -698,7 +719,7 @@
 					if(n.parentNode.attributes.id == 'L'){
 						add_label(n);
 					}else{
-						Baseliner.message( _('Error'), _('Node is not a label'));
+						//Baseliner.message( _('Error'), _('Node is not a label'));
 					}
 					
 				}
@@ -766,8 +787,22 @@
 				expanded:true
 			});
 
+    this.collapse_me = function(obj) {
+        alert( 121 );
+        //Baseliner.ooo = obj;
+        ///console.log( obj );
+    };
+    var id_collapse = Ext.id();
 	var tree_filters = new Ext.tree.TreePanel({
-        tbar: [ button_create_view, button_delete_view ],
+						region : 'east',
+                        header: false,
+						width: 180,
+						split: true,
+						collapsible: true,
+        tbar: [
+            '->', button_create_view, button_delete_view,
+            '<div class="x-tool x-tool-expand-west" style="margin:-2px -4px 0px 0px" id="'+id_collapse+'"></div>'
+        ],
 		dataUrl: "topic/filters_list",
 		split: true,
 		colapsible: true,
@@ -779,9 +814,8 @@
 		enableDD: true,
 		ddGroup: 'lifecycle_dd'
     });
-
+    
 	tree_filters.on('click', function(node, event){
-
 	});
 	
 	tree_filters.on('checkchange', function(node, checked) {
@@ -814,6 +848,14 @@
     // expand the whole tree
 	tree_filters.getLoader().on( 'load', function(){
         tree_root.expandChildNodes();
+
+        // draw the collapse button onclick event 
+        var el_collapse = Ext.get( id_collapse );
+        if( el_collapse )
+            el_collapse.dom.onclick = function(){ 
+                panel.body.dom.style.overflow = 'hidden'; // collapsing shows overflow, so we hide it
+                tree_filters.collapse();
+            };
     });
 		
     var panel = new Ext.Panel({
@@ -828,21 +870,12 @@
 							grid_topics
 						]
 				    },   
-					{
-						region : 'east',
-						width: 250,
-						split: true,
-						collapsible: true,
-						items: [
-							tree_filters
-	
-						]
-					}
+                    tree_filters
         ]
     });
     
     var query_id = '<% $c->stash->{query_id} %>';
-    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>'}});
+    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>'}});
 	store_label.load();
     
     return panel;

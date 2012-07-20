@@ -3,6 +3,12 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Progress"
+msgstr "Avance"
+
+msgid "progress"
+msgstr "Avance"
+
 msgid "Inbox"
 msgstr "Buzón"
 
@@ -12,8 +18,26 @@ msgstr "Buzón %1"
 msgid "About..."
 msgstr "Acerca de..."
 
+msgid "Scheduling"
+msgstr "Planificación"
+
+msgid "Select the Action"
+msgstr "Seleccione la Acción"
+
+msgid "Select the Event"
+msgstr "Seleccione el Evento"
+
+msgid "Rules"
+msgstr "Reglas"
+
+msgid "Rule"
+msgstr "Regla"
+
 msgid "Data"
 msgstr "Datos"
+
+msgid "Back"
+msgstr "Atrás"
 
 msgid "Text"
 msgstr "Texto"
@@ -85,10 +109,10 @@ msgid "Login"
 msgstr "Login"
 
 msgid "Revision"
-msgstr "Elemento"
+msgstr "Revisión"
 
 msgid "Revisions"
-msgstr "Mis Elementos"
+msgstr "Revisiones"
 
 msgid "Login Failed"
 msgstr "Login Inválido"
@@ -453,6 +477,9 @@ msgstr "Última Actualización"
 msgid "Add to Favorites..."
 msgstr "Añadir a Favoritos..."
 
+msgid "Remove from Favorites"
+msgstr "Quitar de Favoritos"
+
 msgid "Tasks"
 msgstr "Tareas"
 
@@ -465,11 +492,23 @@ msgstr "Ramas"
 msgid "Deploy"
 msgstr "Desplegar"
 
+msgid "Deployable"
+msgstr "Desplegable"
+
 msgid "Promote"
 msgstr "Promoción"
 
 msgid "To Promote"
 msgstr "Promover"
+
+msgid "Promote to %1"
+msgstr "Promover a %1"
+
+msgid "Demote to %1"
+msgstr "Devolver a %1"
+
+msgid "Position"
+msgstr "Posición"
 
 msgid "Development"
 msgstr "Desarrollo"
@@ -1172,6 +1211,9 @@ msgid "finished"
 msgstr "finalizado"
 
 # Job Types
+
+msgid "none"
+msgstr "Ninguno"
 
 msgid "normal"
 msgstr "Normal"
@@ -2208,7 +2250,7 @@ msgstr "Naturaleza del proyecto (Ejemplos: J2EE, .NET)"
 
 # root/comp/Project_grid.js (209)
 msgid "A brief description of the project"
-msgstr "A breve descripción del proyecto"
+msgstr "Una breve descripción del proyecto"
 
 # root/comp/Project_grid.js (247)
 msgid "Create project"
@@ -2372,7 +2414,7 @@ msgstr "Debes salvar una cadea primero"
 
 # root/comp/chain_grid.js (548)
 msgid "A brief description of the service"
-msgstr "A breve descripcion del servicio"
+msgstr "Una breve descripcion del servicio"
 
 # root/comp/chain_grid.js (621)
 msgid "Do you want to save changes?"
@@ -2736,6 +2778,12 @@ msgstr "%1 publicó un comentario el %2: %3"
 msgid "%1 deleted a comment on %2: %3"
 msgstr "%1 borró un comentario el %2: %3"
 
+msgid "Depends On"
+msgstr "Dependo De"
+
+msgid "Depend On Me"
+msgstr "Dependen De Mí"
+
 msgid "File"
 msgstr "Fichero"
 
@@ -2774,6 +2822,9 @@ msgstr "estados"
 
 msgid "labels"
 msgstr "etiquetas"
+
+msgid "New Folder"
+msgstr "Crear Carpeta"
 
 msgid "Assigned To Me"
 msgstr "Assignadas a Mí"
@@ -2816,3 +2867,908 @@ msgstr "Sab"
 
 msgid "Sun"
 msgstr "Dom"
+
+msgid "Hostname or IP"
+msgstr "Nombre o IP de Host"
+
+msgid "New: %1"
+msgstr "Nuevo: %1"
+
+msgid "Copy of %1"
+msgstr "Copia de %1"
+
+msgid "Initial"
+msgstr "Inicial"
+
+msgid "Unassigned"
+msgstr "Sin assignar"
+
+msgid "Status From"
+msgstr "Estado Origen"
+
+msgid "Status To"
+msgstr "Estado Destino"
+
+msgid "From Status"
+msgstr "Estado Origen"
+
+msgid "To Status"
+msgstr "Estado Destino"
+
+msgid "Priorities"
+msgstr "Prioridades"
+
+msgid "Admin Topics"
+msgstr "Administración Tópicos"
+
+msgid "Fields"
+msgstr "Campos"
+
+msgid "Priority"
+msgstr "Prioridad"
+
+msgid "Response time"
+msgstr "Tiempo respuesta"
+
+msgid "Deadline"
+msgstr "Plazo límite"
+
+msgid "Create priority"
+msgstr "Crear prioridad"
+
+msgid "Months"
+msgstr "Meses"
+
+msgid "Weeks"
+msgstr "Semanas"
+
+msgid "Days"
+msgstr "Días"
+
+msgid "Hours"
+msgstr "Horas"
+
+msgid "Minutes"
+msgstr "Minutos"
+
+msgid "Name of priority"
+msgstr "Nombre de la prioridad"
+
+msgid "Priority added"
+msgstr "Prioridad creada"
+
+msgid "Edit priority"
+msgstr "Editar prioridad"
+
+msgid "Priority added"
+msgstr "Prioridad creada"
+
+msgid "Priority name already exists, introduce another priority name"
+msgstr "Prioridad ya existe, introduce otra prioridad"
+
+msgid "Error adding Priority: %1"
+msgstr "Error creando prioridad: %1"
+
+msgid "Priority modified"
+msgstr "Prioridad modificada"
+
+msgid "Error modifying Priority: %1"
+msgstr "Error modificando prioridad: %1"
+
+msgid "Priority modified"
+msgstr "Prioridad modificada"
+
+msgid "Priorities deleted"
+msgstr "Prioridades borradas"
+
+msgid "Error deleting Priorities"
+msgstr "Error borrando prioridades"
+
+msgid "Are you sure you want to delete the priorities selected?"
+msgstr "¿Seguro que quiere borrar las prioridades seleccionadas?"
+
+msgid "Changeset"
+msgstr "Cambio"
+
+msgid "Edit status"
+msgstr "Editar estado"
+
+msgid "Create status"
+msgstr "Crear estado"
+
+msgid "Name of status"
+msgstr "Nombre del estado"
+
+msgid "A brief description of the status"
+msgstr "Una breve descripción del proyecto"
+
+msgid "Status added"
+msgstr "Estado creado"
+
+msgid "Status name already exists, introduce another status name"
+msgstr "Estado ya existe, introduce otro estado"
+
+msgid "Error adding Status: %1"
+msgstr "Error creando estado"
+
+msgid "Status modified"
+msgstr "Estado modificado"
+
+msgid "Error modifying Status: %1"
+msgstr "Error modificando estado: %1"
+
+msgid "Statuses deleted"
+msgstr "Estados borrados"
+
+msgid "Error deleting Statuses"
+msgstr "Error borrando estados"
+
+msgid "Are you sure you want to delete the statuses selected?"
+msgstr "¿Seguro que quiere borrar los estados seleccionados?"
+
+msgid "Create fields"
+msgstr "Crear campos"
+
+msgid "Edit fields"
+msgstr "Editar campos"
+
+msgid "title"
+msgstr "Título"
+
+msgid "category"
+msgstr "Categoría"
+
+msgid "status"
+msgstr "Estado"
+
+msgid "priority"
+msgstr "Prioridad"
+
+msgid "projects"
+msgstr "Proyectos"
+
+msgid "assign_to"
+msgstr "Asignar a"
+
+msgid "labels"
+msgstr "Etiquetas"
+
+msgid "topics"
+msgstr "Tópicos"
+
+msgid "revisions"
+msgstr "Revisions"
+
+msgid "files"
+msgstr "Ficheros"
+
+msgid "description"
+msgstr "Descripción"
+
+msgid "Select forms to add to the category"
+msgstr "Seleccione formularios para añadir a la categoría"
+
+msgid "release"
+msgstr "Release"
+
+msgid "description"
+msgstr "Descripción"
+
+msgid "fields added"
+msgstr "Campos añadidos"
+
+msgid "fields modified"
+msgstr "Campos modificados"
+
+msgid "views"
+msgstr "vistas"
+
+msgid "Admin category"
+msgstr "Administrar categoría"
+
+msgid "Views"
+msgstr "Vistas"
+
+msgid "Statuses"
+msgstr "Estados"
+
+msgid "Name view"
+msgstr "Nombre vista"
+
+msgid "View added"
+msgstr "Vista añadida"
+
+msgid "View name already exists, introduce another view name"
+msgstr "Vista ya existe, introduce otro nombre de vista"
+
+msgid "Error adding View: %1"
+msgstr "Error añadiendo vista: %1"
+
+msgid "Views deleted"
+msgstr "Vistas borradas"
+
+msgid "Error deleting views"
+msgstr "Error borrando vistas"
+
+msgid "Are you sure you want to delete the views selected?"
+msgstr "¿Seguro que quiere borrar las vistas seleccionadas?"
+
+msgid "Forms"
+msgstr "Formularios"
+
+msgid "File already attached to topic"
+msgstr "Fichero ya esta adjunto"
+
+msgid "Error uploading file: "
+msgstr "Error subiendo fichero: "
+
+msgid "Uploaded file %1"
+msgstr "Fichero subido %1"
+
+msgid "File id %1 not found"
+msgstr "Fichero id %1 no encontrado"
+
+msgid "Deleting file"
+msgstr "Borrando fichero"
+
+msgid "File deleted ok"
+msgstr "Fichero borrado correctamente"
+
+msgid "Relationship deleted ok"
+msgstr "Relación borrada correctamente"
+
+msgid "File %1 not found"
+msgstr "Fichero %1 no encontrado"
+
+msgid "Drop files here to upload"
+msgstr "Arrastrar fichero aqui para subirlo"
+
+msgid "Upload File"
+msgstr "Subir fichero"
+
+msgid "Are you sure you want to delete these artifacts?"
+msgstr "¿Seguro que quiere borrar estos ficheros?"
+
+msgid "Deleted"
+msgstr "Borrado"
+
+msgid "Revision %1 is already assigned"
+msgstr "Revision %1 ya esta asignado"
+
+msgid "Node is not a revision"
+msgstr "No es una revisión"
+
+msgid "Node is not a project"
+msgstr "No es un proyecto"
+
+msgid "%1 created topic on %2"
+msgstr "%1 creó tópico el %2"
+
+msgid "%1 removed %2 on %3"
+msgstr "%1 borró el fichero %2 el %3"
+
+msgid "%1 attached %2 on %3"
+msgstr "%1 adjuntó el fichero %2 el %3"
+
+msgid "%1 modified topic on %3"
+msgstr "%1 modificó tópico el %3"
+
+msgid "%1 created topic '%2'"
+msgstr "%1 ha creado el tópico '%2'"
+
+msgid "%1 modified topic '%2'"
+msgstr "%1 ha modificado el tópico '%2'"
+
+msgid "select status..."
+msgstr "seleccione un estado..."
+
+msgid "select job type..."
+msgstr "seleccione el tipo de pase entre estados..."
+
+msgid "Accept"
+msgstr "Aceptar"
+
+msgid "Error deleting relationships: %1"
+msgstr "Error borrando relación: %1"
+
+msgid "Relationship deleted: %1"
+msgstr "Relaciones borradas: %1"
+
+msgid "Workflow: %1"
+msgstr "Workflow: %1"
+
+msgid "Providers"
+msgstr "Provedores"
+
+msgid "Readonly"
+msgstr "Sólo Lectura"
+
+msgid "Internal"
+msgstr "Interno"
+
+msgid "Ready"
+msgstr "Disponible"
+
+msgid "Enable Job"
+msgstr "Disponible para Pase"
+
+msgid "Are you sure you want to deploy/rollback %1 to baseline %2?"
+msgstr "¿Quiere mover %1 al entorno de %2?"
+
+msgid "Are you sure you want to delete the role %1?"
+msgstr "¿Seguro que quieres borrar el rol %1?"
+
+msgid "Update Baselines"
+msgstr "Actualiza Líneas Bases"
+
+msgid "Missing parameter revision"
+msgstr "Falta el parámetro revision"
+
+msgid "Missing parameter project"
+msgstr "Falta el parámetro project"
+
+msgid "Created job %1 of type %2 ok."
+msgstr "Creación de pase %1 de tipo %2 ok."
+
+msgid "Promoted baseline %1 to %2"
+msgstr "Línea Base promocionada de %1 a %2"
+
+msgid "Demoted baseline %1 to %2"
+msgstr "Línea Base devuelta de %1 a %2"
+
+msgid "Changes"
+msgstr "Cambios"
+
+msgid "File %1 does not exist"
+msgstr "Fichero %1 no existe"
+
+msgid "Job %1 created ok"
+msgstr "Pase %1 creado"
+
+msgid "Error creating job: %1"
+msgstr "Error creando pase: %1"
+
+msgid "Error creating job"
+msgstr "Error creando pase"
+
+msgid "Frozen"
+msgstr "Congelado"
+
+msgid "Directory"
+msgstr "Directorio"
+
+msgid "Deployments"
+msgstr "Despliegues"
+
+msgid "Scripts Single"
+msgstr "Scripts Individuales"
+
+msgid "Scripts Multi"
+msgstr "Scripts Globales"
+
+msgid "Deploy Job Items"
+msgstr "Despliegue de Ficheros"
+
+msgid "Mapping Order"
+msgstr "Orden de Mapeo"
+
+# lib/Baseliner/Utils.pm (475)
+msgid "Could not open template file %1"
+msgstr "No se ha podido abrir el fichero de plantilla %1"
+
+# lib/Baseliner/Utils.pm (480)
+msgid "Error loading template '%1': '%2'"
+msgstr "Error cargando plantilla '%1': '%2'"
+
+# lib/Baseliner/Utils.pm (543)
+msgid "Missing parameter %1"
+msgstr "Falta parámetro %1"
+
+# lib/Baseliner/Utils.pm (719)
+msgid "Could not open file %1: %2"
+msgstr "No se ha podido abrir el fichero %1: %2"
+
+# lib/Baseliner/Utils.pm (888)
+msgid "Unresolved vars: '%1' in %2"
+msgstr "Vars no resueltas: '%1' in %2"
+
+# lib/BaselinerX/LcController.pm (601)
+msgid "Favorite added ok"
+msgstr "Favorito añadido correctamente"
+
+# lib/BaselinerX/LcController.pm (615)
+msgid "Favorite removed ok"
+msgstr "Favorito eliminado correctamente"
+
+# lib/BaselinerX/Project.pm (25)
+msgid "Baseliner Project"
+msgstr "Proyecto Baseliner"
+
+# lib/BaselinerX/Project.pm (29)
+msgid "Baseliner Projects"
+msgstr "Proyectos Baseliner"
+
+# root/ci/ftp_agent.js (5)
+msgid "Server"
+msgstr "Servidor"
+
+# root/ci/ftp_agent.js (17)
+msgid "Password"
+msgstr "Contraseña"
+
+# root/ci/oracle_connection.js (17)
+msgid "SID"
+msgstr "SID"
+
+# root/ci/ssh_agent.js (20)
+msgid "Private Key"
+msgstr "Clave privada"
+
+# root/ci/ssh_dest.js (5)
+msgid "SSH Server"
+msgstr "Servidor SSH"
+
+# root/ci/ssh_script.js (5)
+msgid "SSH Destination"
+msgstr "Destino SSH"
+
+# root/ci/ssh_script.js (16)
+msgid "Script"
+msgstr "Script"
+
+# root/ci/windows_server.js (5)
+msgid "Domain"
+msgstr "Dominio"
+
+# root/ci/windows_server.js (6)
+msgid "NetBIOS Name"
+msgstr "Nombre NetBIOS"
+
+# root/comp/catalog_grid.js (144)
+msgid "YAML"
+msgstr "YAML"
+
+# root/comp/catalog_grid.js (242)
+msgid "Grouping"
+msgstr "Agrupación"
+
+# root/comp/catalog_grid.js (253)
+msgid "ID"
+msgstr "ID"
+
+# root/comp/catalog_grid.js (255)
+msgid "Package"
+msgstr "Paquete"
+
+# root/comp/chain_edit.mas (254)
+msgid "Switch"
+msgstr "Switch"
+
+# root/comp/chain_grid.js (463)
+msgid "Chains"
+msgstr "Cadenas"
+
+# root/comp/chain_grid.js (479)
+msgid "Servicio"
+msgstr "Servicio"
+
+# root/comp/chain_grid.mas (97)
+msgid "OK"
+msgstr "OK"
+
+# root/comp/chain_grid.mas (109)
+msgid "Saved"
+msgstr "Guardado"
+
+# root/comp/chain_grid.mas (129)
+msgid "New Chain"
+msgstr "Nueva cadena"
+
+# root/comp/chain_grid.mas (221)
+msgid "No rows selected"
+msgstr "Ninguna fila seleccionada"
+
+# root/comp/ci-grid.js (78)
+msgid "CI: %1"
+msgstr "IC: %1"
+
+# root/comp/ci-grid.js (97)
+msgid "Item"
+msgstr "Item"
+
+# root/comp/ci-grid.js (98)
+msgid "Collection"
+msgstr "Colección"
+
+# root/comp/ci-grid.js (100)
+msgid "Class"
+msgstr "Clase"
+
+# root/comp/ci-grid.js (104)
+msgid "Properties"
+msgstr "Propiedades"
+
+# root/comp/ci-gridtree.js (97)
+msgid "CI"
+msgstr "IC"
+
+# root/comp/ci-gridtree.js (174)
+msgid "CI Class: %1"
+msgstr "Clase IC: %1"
+
+# root/comp/ci-gridtree.js (210)
+msgid "Class"
+msgstr "Clase"
+
+# root/comp/ci-viewer.js (20)
+msgid "New %1"
+msgstr "Nuevo %1"
+
+# root/comp/daemon_grid.js (271)
+msgid "Config"
+msgstr "Configuración"
+
+# root/comp/daemon_grid.js (273)
+msgid "Running"
+msgstr "Ejecutando"
+
+# root/comp/daemon_grid.js (274)
+msgid "Last Process ID"
+msgstr "Último ID de proceso"
+
+# root/comp/dashboard.html (23)
+msgid "<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK"
+msgstr "<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK"
+
+# root/comp/dashboard.html (26)
+msgid "<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR"
+msgstr "<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR"
+
+# root/comp/dashboard.html (95)
+msgid "Log <%$lastjob->{name}%>"
+msgstr "Log <%$lastjob->{name}%>"
+
+# root/comp/dashboard.html (175)
+msgid "Log <%$job->{nameOk}%>"
+msgstr "Log <%$job->{nameOk}%>"
+
+# root/comp/dashboard.html (181)
+msgid "Log <%$job->{nameError}%>"
+msgstr "Log <%$job->{nameError}%>"
+
+# root/comp/dashboard_job.html (17)
+msgid "Log details <%$namejob%>"
+msgstr "Log detallado <%$namejob%>"
+
+# root/comp/dashboard_job.html (93)
+msgid "Log <%$service->{service}%>"
+msgstr "Log <%$service->{service}%>"
+
+# root/comp/dashboard_job.html (250)
+msgid "Elementos <%$namejob%>"
+msgstr "Elementos <%$namejob%>"
+
+# root/comp/feature_grid.mas (74)
+msgid "New Feature"
+msgstr "Nueva característica"
+
+# root/comp/jes_viewer.mas (62)
+msgid "Previous"
+msgstr "Anterior"
+
+# root/comp/jes_viewer.mas (69)
+msgid "Next"
+msgstr "Siguiente"
+
+# root/comp/jes_viewer.mas (103)
+msgid "JES Files"
+msgstr "Ficheros JES"
+
+# root/comp/jes_viewer.mas (159)
+msgid "JES Spool"
+msgstr "Spool JES"
+
+# root/comp/job_calendar_comp.mas (34)
+msgid "Ayuda"
+msgstr "Ayuda"
+
+# root/comp/job_calendar_edit.mas (104)
+msgid "Normal"
+msgstr "Normal"
+
+# root/comp/job_calendar_grid.mas (282)
+msgid "Previsualizar"
+msgstr "Previsualizar"
+
+# root/comp/job_calendar_grid.mas (310)
+msgid "Previsualizar Calendario"
+msgstr "Previsualizar Calendario"
+
+# root/comp/job_logfile.js (16)
+msgid "Logfile Open Error"
+msgstr "Error al abrir fichero de log"
+
+# root/comp/job_new.mas (217)
+msgid "Franja horaria"
+msgstr "Franja horaria"
+
+# root/comp/job_new.mas (376)
+msgid "Hora de pase Caducada"
+msgstr "Hora de pase Caducada"
+
+# root/comp/job_new.mas (377)
+msgid "Hora de pase Caducada"
+msgstr "Hora de pase Caducada"
+
+# root/comp/job_new.mas (391)
+msgid "Time off range %1"
+msgstr "Hora fuera de rango %1"
+
+# root/comp/job_new.mas (392)
+msgid "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase fuera de las ventanas permitidas"
+msgstr "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase fuera de las ventanas permitidas"
+
+# root/comp/job_new.mas (600)
+msgid "Not promotable to %1"
+msgstr "No promocionable a %1"
+
+# root/comp/job_stash.js (12)
+msgid "Stash Log"
+msgstr "Stash Log"
+
+# root/comp/log.html (74)
+msgid "Sort"
+msgstr "Ordenar"
+
+# root/comp/log.html (76)
+msgid "Chronological"
+msgstr "Cronológico"
+
+# root/comp/log.html (78)
+msgid "Reverse"
+msgstr "Inverso"
+
+# root/comp/log.html (82)
+msgid "No Data"
+msgstr "No hay datos"
+
+# root/comp/log.html (84)
+msgid "View Data"
+msgstr "Ver datos"
+
+# root/comp/log.html (122)
+msgid "view"
+msgstr "ver"
+
+# root/comp/log_grid.mas (202)
+msgid "Form Error"
+msgstr "Error de formulario"
+
+# root/comp/log_grid.mas (215)
+msgid "Severity"
+msgstr "Severidad"
+
+# root/comp/log_grid.mas (349)
+msgid "Do you wish to resume job %1"
+msgstr "Seguro que quiere reiniciar el job %1"
+
+# root/comp/log_grid.mas (369)
+msgid "Delete Log"
+msgstr "Borrar log"
+
+# lib/BaselinerX/Service/ChangesetServices.pm (11)
+msgid "Checkout files of a changeset"
+msgstr "Checkout de ficheros de un cambio"
+
+# lib/BaselinerX/Service/ChangesetServices.pm (16)
+msgid "Fill job_elements"
+msgstr "Rellenado de job_elements"
+
+# lib/BaselinerX/Service/ChangesetServices.pm (46)
+msgid "Changeset checkout: failed to write to file %1: %2"
+msgstr "Changeset checkout: fallo al escribir el fichero %1: %2"
+
+# lib/BaselinerX/Service/ChangesetServices.pm (51)
+msgid "Checked out files"
+msgstr "Ficheros descargados"
+
+# lib/BaselinerX/Service/ChangesetServices.pm (93)
+msgid "Elements included in job"
+msgstr "Elementos del job"
+
+# lib/BaselinerX/Service/ChangesetServices.pm (128)
+msgid "%1 %2 to %3"
+msgstr "%1 %2 a %3"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (56)
+msgid "Deployments detected"
+msgstr "Despliegues detectados"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (61)
+msgid "Deployment files for group %1"
+msgstr "Ficheros a desplegar del grupo %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (69)
+msgid "*resetting* deployment scripts - they were unset"
+msgstr "*Reiniciando* scripts de despliegue"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (73)
+msgid "Running deployment: %1"
+msgstr "Ejecutando despliegue: %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (80)
+msgid "Deployment error for %1"
+msgstr "Error en el despliegue %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (81)
+msgid "Error during deployment %1"
+msgstr "Errores durante el despliegue %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (84)
+msgid "Deployment ok for *%1* - %2"
+msgstr "Despliegue correcto para *%1* - %2"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (90)
+msgid "Deployed %1 files/dirs to `%2`"
+msgstr "Desplegados %1 ficheros/directorios a `%2`"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (112)
+msgid "Deployments Scripts detected"
+msgstr "Scripts de despliegue detectados"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (116)
+msgid "Deployment scripts for group *%1*"
+msgstr "Scripts de despliegue para el grupo *%1*"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (124)
+msgid "Error loading module %1"
+msgstr "Error al cargar el módulo %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (128)
+msgid "Running Deployment script %1..."
+msgstr "Ejecutando script de despliegue %1..."
+
+# lib/BaselinerX/Service/DeployFromStash.pm (132)
+msgid "Deployment script error for %1"
+msgstr "Error en el script de despliegue para %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (133)
+msgid "Error durante el script de despliegue %1"
+msgstr "Error during deployment script %1"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (135)
+msgid "Deployment scripts ok for *%1*"
+msgstr "Script de despliegue correcto para *%1*"
+
+# lib/BaselinerX/Service/DeployFromStash.pm (140)
+msgid "Finished running %1 scripts"
+msgstr "Finalizada la ejecución de %1 scripts"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (62)
+msgid "Item Deploy Mappings"
+msgstr "Mapeos de despliegue de items"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (107)
+msgid "Invalid job_root %1"
+msgstr "Root del job inválido %1"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (115)
+msgid "Mapping name %1 not active. Ignored"
+msgstr "Nombre del mapeo %1 no está activo. Ignorado"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (119)
+msgid "Checking if mapping for bl %1 applies"
+msgstr "Comprobando si el mapeo para el bl %1 aplica"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (129)
+msgid "Checking workspace `%1` for changes `%2` ..."
+msgstr "Comprobando cambios `%2` en el espacio de trabajo `%1`"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (137)
+msgid "Checking exclusions"
+msgstr "Comprobando exclusiones"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (140)
+msgid "Excluded workspace mapping %1"
+msgstr "Mapeo de espacio de trabajo excluido %1"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (145)
+msgid "After exclusions for %1"
+msgstr "Después de las exclusiones para %1"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (161)
+msgid "*%1* Included Elements for Deployment"
+msgstr "*%1* Elementos incluidos para el despliegue"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (164)
+msgid "Mapping to `%1` has no matching workspaces in elements"
+msgstr "El mapeo a `%1` no tiene elementos coincidentes"
+
+# lib/BaselinerX/Service/ItemDeploy.pm (199)
+msgid "*Pushed deployment* for `%1`"
+msgstr "*Despliegue añadido* para `%1`"
+
+msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
+msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
+
+msgid "Job element '%1' is in an active job: %2"
+msgstr "Item de pase '%1' está en un pase activo: %2"
+
+msgid "select or drop repository revisions"
+msgstr "seleccione o arrastre revisiones de repositorio"
+
+msgid "Dashboard added"
+msgstr "Dashboard creado"
+
+msgid "Dashboard name already exists, introduce another dashboard"
+msgstr "Dashboard ya existe, introduce otro nombre"
+
+msgid "Error adding dashboard: %1"
+msgstr "Error creando dashboard: %1"
+
+msgid "Dashboard modified"
+msgstr "Dashboard modificado"
+
+msgid "Error modifying dashboard: %1"
+msgstr "Error modificanco dashboard: %1"
+
+msgid "Dashboard deleted"
+msgstr "Dashboard borrado"
+
+msgid "Error deleting dashboard"
+msgstr "Error borrando dashboard"
+
+msgid "A brief description of the dashboard"
+msgstr "Una breve descripción del dashboard"
+
+msgid "Create dashboard"
+msgstr "Crear dashboard"
+
+msgid "Edit dashboard"
+msgstr "Editar dashboard"
+
+msgid "Are you sure you want to delete the dashboard"
+msgstr "¿Esta seguro de querer borrar el dashboard"
+
+msgid "Job statistics by baselines"
+msgstr "Estadísticas de pases por proyecto"
+
+msgid "List of last jobs by application"
+msgstr "Listado de los últimos pases por proyecto"
+
+msgid "List of last jobs"
+msgstr "Listado de los últimos pases"
+
+msgid "Software quality assurance by applications"
+msgstr "Control de calidad por proyecto"
+
+msgid "List of topics"
+msgstr "Listado de tópicos"
+
+msgid "List of emails"
+msgstr "Listado de emails"
+
+msgid "Admin Dashboard"
+msgstr "Administración Dashboard"
+
+msgid "Main dashboard"
+msgstr "Dashboard principal"
+
+msgid "One column"
+msgstr "Una columna"
+
+msgid "Two columns"
+msgstr "Dos columnas"
+
+msgid "Data loss may occur"
+msgstr "Se podrán perder datos"
+
+msgid "Configuration Items"
+msgstr "Items de Configuración"
+
+msgid "Workspaces"
+msgstr "Áreas de Trabajo"
+
+msgid "Favorites"
+msgstr "Favoritos"
+

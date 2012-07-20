@@ -460,7 +460,7 @@
     });
     
     var grid_services = new Ext.grid.GridPanel({
-        title: _('Chains'),
+        title: _('Job Chains'),
         header: false,
         stripeRows: true,
         autoScroll: true,
@@ -660,7 +660,7 @@
     }); 
     
     var grid_sequence = new Ext.grid.GridPanel({
-        title: _('Chains'),
+        title: _('Job Chains'),
         header: false,
         stripeRows: true,
         autoScroll: true,
@@ -833,7 +833,7 @@
 
     //create the grid
     var grid = new Ext.grid.GridPanel({
-        title: _('Chains'),
+        title: _('Job Chains'),
         header: false,
         stripeRows: true,
         autoScroll: true,

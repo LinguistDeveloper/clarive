@@ -62,5 +62,13 @@ Ext.onReady(function(){
      } else {
             login_form.getForm().findField('login').focus('',100);
      }
+
+     setTimeout(function(){
+        Ext.get('loading').remove();
+        Ext.get('loading-mask').fadeOut({
+            remove:true
+        });
+     }, 400);
+     
 });
 

@@ -44,8 +44,8 @@ register 'config.job' => {
 
 register 'action.job.create' => { name=>'Create New Jobs' };
 register 'menu.job' => { label => 'Jobs' };
-register 'menu.job.create' => { label => 'Create a new Job', url=>'/job/create', title=>'New Job',
-    icon=>'/static/images/star_on.gif', actions=>['action.job.create'] };
+register 'menu.job.create' => { label => 'Create a new Job', url_comp=>'/job/create', title=>'New Job',
+    icon=>'/static/images/icons/job.png', actions=>['action.job.create'] };
 #register 'menu.job.list' => { label => 'List Current Jobs', url=>'/maqueta/list.mas', title=>'Job Monitor' };
 #register 'menu.job.exec' => { label => 'Exec Current Jobs', url_run=>'/maqueta/list.mas', title=>'Job Monitor' };
 #register 'menu.job.hist' => { label => 'Historical Data', handler => 'function(){ Ext.Msg.alert("Hello"); }' };

@@ -1,7 +1,13 @@
 package BaselinerX::Lc;
-use Moose;
+use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
+
+register 'config.lc' => {
+    metadata => [
+        { id=>'show_changes_in_tree', label=>'Show provider tags in the Lifecycle tree', default=>'0' },
+    ]
+};
 
 has 'lc' => (
     is      => 'rw',
@@ -10,8 +16,10 @@ has 'lc' => (
         # loads the lc.yaml file on initialization
         my $feature = Baseliner->features->find( file => __FILE__ );
         my $file = _file( $feature->root, '..', 'etc', 'lc.yaml' );    # TODO to config
-        open my $ff, '<', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
-        my $lc = _load join '', <$ff>;
+        open my $ff, '<:encoding(UTF-8)', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
+        my $fi = join '', <$ff>;
+        utf8::downgrade( $fi );
+        my $lc = _load( $fi ); 
         close $ff;
         # now from config
         my $ch = Baseliner->config->{lifecycle} || {};
@@ -41,9 +49,34 @@ sub lc_for_project {
     my $lc = $self->lc;
     _log "LC==========> $lc , " . ref $lc;
     my $nodes = $lc->{nodes};
-    my $states = $lc->{lifecycle}->{default}->{states};
+    #my $states = $lc->{lifecycle}->{default}->{states};
+
+    # General bag for starting the deployment workflow
+    my @states = (
+        {   node   => _loc('(Stage)'),
+            type   => 'state',
+            active => 1,
+            bl     => 'new',
+            icon   => '/static/images/icons/lc/history.gif'
+        }
+    );
+
+    # States-Statuses with bl and type = D (Deployable)
+    push @states, map {
+        +{  node   => "$_->{name} [$_->{bl}]",
+            type   => 'state',
+            active => 1,
+            data => { id_status => $_->{id}, },
+            bl     => $_->{bl},
+            bl_to  => $_->{bl},                               # XXX
+            icon   => '/static/images/icons/lc/history.gif'
+            }
+        } Baseliner->model('Baseliner::BaliTopicStatus')
+        ->search( { bl => { '<>' => '*' }, type=>'D'  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+            
+
     no strict;
-    [ @$nodes, @$states ];
+    [ @$nodes, @states ];
 }
 
 =head2 project_repos project=>'...'

@@ -63,6 +63,7 @@ use Exporter::Tidy default => [
     _join_quoted
     case
     _utf8_on_all
+    _to_utf8
     _size_unit
     _dbis
     /
@@ -256,7 +257,7 @@ sub _log {
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
-    return unless $ENV{BASELINER_DEBUG};
+    return unless  $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ;
     _log_me($cl,$fi,$li,@_);
 }
 
@@ -591,7 +592,7 @@ sub _tmp_file {
     _mkpath( $tempdir );
     }
     my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} );
-    $ENV{BASELINER_DEBUG} and warn "Created tempfile $file\n";
+    ( $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ) and warn "Created tempfile $file\n";
     return $file;
 }
 
@@ -770,7 +771,7 @@ sub _to_json {
 }
 
 sub _from_json {
-    JSON::XS::decode_json( @_ );
+    goto &JSON::XS::decode_json;   
 }
 
 =head2 zip_files( files=>['file.txt', ... ] [, to=>'file.zip' ] )
@@ -940,9 +941,25 @@ sub case {
 }
 
 sub _utf8_on_all {
-    my $self = shift;
-    return map { Encode::_utf8_on( $_ ); $_ } @_;
+    #return map { _to_utf8( $_ ) } @_;
+    #map { _log "SSSSSSSSSSSSSS=".  utf8::valid( $_) } @_;
+    return map { Encode::_utf8_on( $_ ) if utf8::valid( $_); $_ } @_;
 }
+
+# decode sequences of octets in utf8 into Perl's internal form,
+# which is utf-8 with utf8 flag set if needed.  
+sub _to_utf8 {
+    my $str = shift;
+    return undef unless defined $str;
+    my $fallback_encoding = 'latin1';
+    if ( utf8::valid($str) ) {
+        utf8::decode($str);
+        return $str;
+    } else {
+        return Encode::decode( $fallback_encoding, $str, Encode::FB_DEFAULT );
+    }
+}
+
 
 sub _size_unit {
     my $size = shift;

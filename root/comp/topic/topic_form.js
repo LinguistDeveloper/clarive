@@ -24,6 +24,7 @@
         displayField: 'category_name',
         store: store_category,
         allowBlank: false,
+        hidden: rec.fields_form.show_category  ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){
                 combo_status.clearValue();
@@ -54,6 +55,7 @@
         hiddenName: 'status_new',
         displayField: 'name',
         valueField: 'id',
+        hidden: rec.fields_form.show_status ? false : true,
         //disabled: true,
         store: store_category_status
     });     
@@ -189,7 +191,8 @@
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
             onComplete: function(fu, filename, res){
-                Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
+                //Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
+                Baseliner.message(_('Upload File'), _(res.msg, filename) );
                 if(res.file_uploaded_mid){
                     var form2 = form_topic.getForm();
                     var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();
@@ -288,6 +291,7 @@
         displayField: 'name',
         valueField: 'id',
         store: store_priority,
+        hidden: rec.fields_form.show_priority ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){
                 load_txt_values_priority(rec);
@@ -328,10 +332,10 @@
             mode: 'local',
             fieldLabel: _('Topics'),
             typeAhead: true,
-            name: 'topics',
-            displayField: 'title',
-            hiddenName: 'topics',
-            valueField: 'mid',
+                name: 'topics',
+                displayField: 'title',
+                hiddenName: 'topics',
+                valueField: 'mid',
             tpl: tpl_list,
             displayFieldTpl: tpl_field,
             value: '/',
@@ -352,8 +356,23 @@
     };
     Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
 
-    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid } });
+    var release_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid, show_release: 1 } });
+    var release_box = new Baseliner.model.Topics({
+        hiddenName: 'release',
+        name: 'release',
+        fieldLabel: _('Release'),
+        singleMode: true,
+        hidden: rec.fields_form.show_release ? false : true,
+        store: release_box_store
+    });
+    release_box_store.on('load',function(){
+        release_box.setValue( rec.topics ) ;            
+    });
+
+
+    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: rec.topic_mid, show_release: 0} });
     var topic_box = new Baseliner.model.Topics({
+        hidden: rec.fields_form.show_topics ? false : true,
         store: topic_box_store
     });
     topic_box_store.on('load',function(){
@@ -365,6 +384,7 @@
     });
     
     var label_box = new Baseliner.model.Labels({
+        hidden: rec.fields_form.show_labels ? false : true,
         store: label_box_store 
     });
 
@@ -378,6 +398,7 @@
     });
     
     var user_box = new Baseliner.model.Users({
+        hidden: rec.fields_form.show_assign_to ? false : true,
         store: user_box_store 
     });
     
@@ -403,36 +424,23 @@
         }); 
     });
 
-	var commit_box_store = new Ext.data.JsonStore({
-		root: 'data' , 
-		id: 'id', 
-		//url: '/user/list',
-		fields: [
-            {  name: 'id' },
-			{  name: 'name' }
-		]
-	});
-    
-    
-    var commit_box = new Baseliner.model.Commits({
-        store: commit_box_store 
+    var revision_box = new Baseliner.model.RevisionsBoxDD({
+        name: 'revisions',
+        hidden: rec.fields_form.show_revisions ? false : true
     });
     
     var pb_panel = new Ext.Panel({
         layout: 'form',
         enableDragDrop: true,
         border: false,
+        hidden: rec.fields_form.show_projects ? false : true,
         //style: 'border-top: 0px',
         items: [ project_box ]
     });
     
-    var cb_panel = new Ext.Panel({
-        layout: 'form',
-        enableDragDrop: true,
-        border: false,
-        //style: 'border-top: 0px',
-        items: [ commit_box ]
-    });
+   var custom_form_container = new Ext.Container({ 
+      hidden: true
+   });
     
     var form_topic = new Ext.FormPanel({
         frame: false,
@@ -443,7 +451,6 @@
         buttons: [ ],
         defaults: { anchor:'70%'},
         items: [
-            label_box,
             {
                 xtype : "fieldset",
                 title : _("Main"),
@@ -461,13 +468,22 @@
                         style: { 'font-size': '16px' },
                         width: '100%',
                         height: 30,
-                        allowBlank: false
+                        allowBlank: false,
+                        hidden: rec.fields_form.show_title ? false : true
                     },
                     { xtype: 'hidden', name: 'txtcategory_old' },
                     combo_category,
                     { xtype: 'hidden', name: 'status', value: rec.status },
                     combo_status,
+                    release_box,
                     combo_priority,
+                    { xtype:'sliderfield', fieldLabel: _('Progress'), name: 'progress',
+                        value: rec.progress,
+                        hidden: !rec.fields_form.show_progress,
+                        anchor: '40%', tipText: function(thumb){
+                                return String(thumb.value) + '%';
+                        } 
+                    },
                     {
                         xtype:'textfield',
                         fieldLabel: _('Response'),
@@ -487,18 +503,23 @@
                     pb_panel,
                     user_box,
                     topic_box,
-                    cb_panel,
+                    revision_box,  
+                    //revision_box.field,  // hiddenfield for the revision items TODO needs to inherit from Field
+                    label_box,
                     {
                         xtype: 'panel',
                         border: false,
                         layout: 'form',
+                        hidden: rec.fields_form.show_files ? false : true,
                         items: [
                             filelist,
                             filedrop
                         ],
                         fieldLabel: _('Files')
                     },
+                    custom_form_container,
                     {   xtype:'panel', layout:'fit',
+                        hidden: rec.fields_form.show_description ? false : true,
                         items: [ //this panel is here to make the htmleditor fit
                             {
                                 xtype:'htmleditor',
@@ -547,6 +568,33 @@
         });        
     }
 
+    if( rec.forms != undefined ) {
+        var f = rec.forms;
+        for( var i=0; i<f.length; i++ ) {
+           var fieldset = new Ext.form.FieldSet({
+                defaults: { 
+                   anchor: '70%',
+                   msgTarget: 'under',
+                   allowBlank: false
+                },
+                style: { 'margin-top':'30px' },
+                title: _( f[i].form_name ),
+                collapsible: true,
+                autoHeight : true
+            });
+            Baseliner.ajaxEval( f[i].form_path, {}, function(res) {
+                if( res.xtype == 'fieldset' ) {
+                    custom_form_container.add( res ) ;
+                } else {
+                    fieldset.add( res );
+                    custom_form_container.add( fieldset) ;
+                }
+                if( ! custom_form_container.isVisible() ) custom_form_container.show();
+                form_topic.doLayout();
+            });
+        }
+    }
+
     pb_panel.on( 'afterrender', function(){
         var el = pb_panel.el.dom; //.childNodes[0].childNodes[1];
         var project_box_dt = new Ext.dd.DropTarget(el, {
@@ -584,56 +632,6 @@
         });
     });
     
-    cb_panel.on( 'afterrender', function(){
-        var el = cb_panel.el.dom; //.childNodes[0].childNodes[1];
-        var commit_box_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
-            copy: true,
-            notifyDrop: function(dd, e, id) {
-                var n = dd.dragData.node;
-                //var s = project_box.store;
-                var add_node = function(node) {
-                    var data = node.attributes.text;
-                    var swOk = true;
-                    commits = (commit_box.getValue()).split(",");
-                    for(var i=0; i<commits.length; i++) {
-                        if (commits[i] == data){
-                            swOk = false;
-                            break;
-                        }
-                    }
-                    if(swOk){
-                        var myStore = commit_box.store;
-                        var rec = new Ext.data.Record({'id':Ext.id(),'name':data}, '-1')
-                        //myStore.insert(0,rec);
-                        
-                        //myStore.loadData(rec);
-                        //commit_box.setValue(rec);
-                        //commits.push(data);
-                        //commit_box.setValue( commits );
-                    }else{
-                        Baseliner.message( _('Warning'), _('Commit %1 is already assigned', data));  
-                    }
-                };
-                var attr = n.attributes;
-                if( n.parentNode.attributes.text != 'commits' ) {  // is a project?
-                    Baseliner.message( _('Error'), _('Node is not a commit'));
-                } else {
-                    var myStore = commit_box.store;
-                    var rec1 = new Ext.data.Record({'id':1,'name':'prueba1'}, '0');
-                    myStore.insert(0,rec1);
-                
-                    var rec2 = new Ext.data.Record({'id':2,'name':'prueba2'}, '1');
-                    myStore.insert(1,rec2);
-                    commit_box.setValue( '1,2' );
-                    add_node(n);
-                }
-                // multiple? Ext.each(dd.dragData.selections, add_node );
-                return (true); 
-             }
-        });
-    }); 
-
     return form_topic;
 })
 

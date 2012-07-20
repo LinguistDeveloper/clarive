@@ -16,7 +16,7 @@ Then you can use it like this:
     $row->parents; # all parents
     $row->master;  # my master row
 
-    master_new 'post' => sub { my $mid = shift;
+    master_new 'post' => 'nanana' => sub { my $mid = shift;
         $row->add_to_posts({ text=>'nanana', created_by=>$c->username, mid=>$mid }, { rel_type=>'topic_post' });
     };
 
@@ -41,14 +41,23 @@ sub master_setup {
     $to_col //= 'mid';
 
     my $rel_type = $from_name .'_'. $to_name;
+    my $rel_type_inverse = $to_name .'_'. $from_name;
+    $rel_type_inverse = $rel_type_inverse . '2' if $rel_type eq $rel_type_inverse;
 
     my $foreign = "Baseliner::Schema::Baseliner::Result::$to_class";
 
     # especific 
-    Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to( $from_name, $self,
-        { "foreign.$from_col" => 'self.from_mid' } );
+    # topic_post (to get the related topic row)
     Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
-        $to_name , $foreign,
+        $rel_type, $self,
+        { "foreign.$from_col" => 'self.from_mid' } );
+    # topic_post_to (to get the related post row)
+    Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
+        "${rel_type}_to", $foreign,
+        { "foreign.$from_col" => 'self.to_mid' } );
+    # post_topic (inverse relationship)
+    Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
+        $rel_type_inverse , $foreign,
         { "foreign.$to_col" => 'self.to_mid' }
     );
     $self->has_many(
@@ -57,7 +66,7 @@ sub master_setup {
         { 'foreign.from_mid' => "self.$from_col", },
         { where=>{'rel_type' => $rel_type} }
     );
-    $self->many_to_many( $name, $rel_type, $to_name );
+    $self->many_to_many( $name, $rel_type, $rel_type_inverse );
 
     # generic 
     $self->has_one(

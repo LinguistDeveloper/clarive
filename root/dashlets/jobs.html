@@ -1,0 +1,49 @@
+<!--
+name: Jobs
+description: List of last jobs by application
+url: /dashboard/list_jobs
+html: /dashlets/jobs.html
+---
+-->
+<%perl>
+    use Baseliner::Utils;
+    my @jobs = $c->stash->{jobs};
+</%perl>
+
+    <div>
+        <h2>Pases</h2>
+        <table class="table table-bordered table-condensed dashboard">
+            <thead>
+                <tr>
+                    <th>Proyecto</th>
+                    <th>Entorno</th>
+                    <th>Ult. Exito</th>
+                    <th>Ult. Fallo</th>
+                    <th>Ult. Duración</th>
+                </tr>
+            </thead>
+            <tbody>
+%foreach my $job (_array @jobs){          
+                <tr>
+                    <td><%$job->{project}%></td>
+                    <td><%$job->{bl}%></td>
+%if($job->{idOk}){
+                    <td><%$job->{lastOk}%> dias (<b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<%$job->{idOk}%>&name=<%$job->{nameOk}%>', _('Log <%$job->{nameOk}%>') );" style="font-family: Tahoma;">#<%$job->{idOk}%></a></b>)</td>
+%}else{
+                    <td> ------------- </td>  
+%}
+%if($job->{idError}){
+                    <td><%$job->{lastError}%> dias (<b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<%$job->{idError}%>&name=<%$job->{nameError}%>', _('Log <%$job->{nameError}%>') );" style="font-family: Tahoma; color:red;">#<%$job->{idError}%></a></b>)</td>
+%}else{
+                    <td> ------------- </td>  
+%}
+                    <td><%$job->{lastDuration}%> min</td>
+                </tr>
+%}
+            </tbody>    
+        </table>
+    </div>
+
+
+
+

@@ -34,20 +34,37 @@ sub update_category : Local {
     my $action = $p->{action};
     my $idsstatus = $p->{idsstatus};
     my $type = $p->{type};
-
-    sub assign_type {
+    
+    my $assign_type = sub {
         my ($category) = @_;
-        $category->is_release('1') if $type eq 'R';
-        $category->is_changeset('1') if $type eq 'C';
-    }
+        given ($type) {
+            when ('R'){
+                $category->is_release('1');
+                $category->is_changeset('0');                
+            }
+            when ('C'){
+                $category->is_release('0');
+                $category->is_changeset('1');                
+            }
+            when ('N'){
+                $category->is_release('0');
+                $category->is_changeset('0');                
+            }            
+        }
+    };
 
     given ($action) {
         when ('add') {
             try{
                 my $row = $c->model('Baseliner::BaliTopicCategories')->search({name => $p->{name}})->first;
                 if(!$row){
-                    my $category = $c->model('Baseliner::BaliTopicCategories')->create({name  => $p->{name}, description=> $p->{description} ? $p->{description}:''});
-                    assign_type( $category );
+                    my $category = $c->model('Baseliner::BaliTopicCategories')->create(
+                        {   name           => $p->{name},
+                            color => $p->{category_color},
+                            description    => $p->{description} ? $p->{description} : ''
+                        }
+                    );
+                    $assign_type->($category);
                     $category->update;
                     
                     if($idsstatus){
@@ -74,9 +91,10 @@ sub update_category : Local {
             try{
                 my $id_category = $p->{id};
                 my $category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
-                assign_type( $category );
                 $category->name( $p->{name} );
+                $category->color( $p->{category_color} );
                 $category->description( $p->{description} );
+                $assign_type ->( $category );
                 $category->update();
                 
                 my $rs = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')->search({ id_category => $id_category });
@@ -127,7 +145,7 @@ sub list_status : Local {
     my $cnt;
     my $row;
     my @rows;
-    $row = $c->model('Baseliner::BaliTopicStatus')->search();
+    $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>{ -asc => ['seq' ] } });
     
     if($row){
         while( my $r = $row->next ) {
@@ -137,6 +155,8 @@ sub list_status : Local {
                 id          => $r->id,
                 name        => $r->name,
                 description => $r->description,
+                bl          => $r->bl,
+                seq         => $r->seq,
                 type        => $r->type
               };
         }  
@@ -157,7 +177,7 @@ sub update_status : Local {
             try{
                 my $row = $c->model('Baseliner::BaliTopicStatus')->search({name => $p->{name}})->first;
                 if(!$row){
-                    my $status = $c->model('Baseliner::BaliTopicStatus')->create({name  => $p->{name}, description=> $p->{description}, type=> $p->{type}});
+                    my $status = $c->model('Baseliner::BaliTopicStatus')->create({name  => $p->{name}, bl=>$p->{bl}, description=> $p->{description}, type=> $p->{type}});
                     $c->stash->{json} = { msg=>_loc('Status added'), success=>\1, status_id=> $status->id };
                 }
                 else{
@@ -174,6 +194,7 @@ sub update_status : Local {
                 my $status = $c->model('Baseliner::BaliTopicStatus')->find( $id_status );
                 $status->name( $p->{name} );
                 $status->description( $p->{description} );
+                $status->bl( $p->{bl} );
                 $status->type( $p->{type} );
                 $status->update();
                 
@@ -332,17 +353,20 @@ sub update_category_admin : Local {
     my $idsroles = $p->{idsroles};
     my $status_from = $p->{status_from};
     my $idsstatus_to = $p->{idsstatus_to};
+    my $job_type = $p->{job_type};
 
     foreach my $role (_array $idsroles){
-        my $category = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $idcategory, id_role => $role, id_status_from => $status_from});
-        if($category->first){
-            $category->delete;
+        my $rs = $c->model('Baseliner::BaliTopicCategoriesAdmin')
+            ->search( { id_category => $idcategory, id_role => $role, id_status_from => $status_from, id_status_to=>$idsstatus_to} );
+        if($rs->first){
+            $rs->delete;
             if($idsstatus_to){
                 foreach my $idstatus_to (_array $idsstatus_to){
                     my $category = $c->model('Baseliner::BaliTopicCategoriesAdmin')->create({
                                                                                             id_category => $idcategory,
                                                                                             id_role      => $role,
                                                                                             id_status_from  => $status_from,
+                                                                                            job_type  => $job_type,
                                                                                             id_status_to => $idstatus_to
                     });
         
@@ -357,6 +381,7 @@ sub update_category_admin : Local {
                                                                                             id_category => $idcategory,
                                                                                             id_role      => $role,
                                                                                             id_status_from  => $status_from,
+                                                                                            job_type  => $job_type,
                                                                                             id_status_to => $idstatus_to
                     });
         
@@ -374,24 +399,44 @@ sub list_categories_admin : Local {
     my $cnt;
     my @rows;
 
-    my $rows = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $p->{categoryId}},
-                                                                        {
-                                                                        select=>[qw/id_role id_status_from/],
-                                                                        group_by=>[qw/id_role id_status_from/], 
-                                                                        orderby => ['id_role ASC', 'id_status_from ASC']});
+    my $rows = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+        { id_category => $p->{categoryId} },
+        {   
+            select   => [qw/id_role id_status_from /],
+            group_by => [qw/id_role id_status_from /],
+            distinct => 1,
+            join     => ['statuses_from'],
+            orderby  => { -asc => [ 'id_role', 'id_status_from', 'statuses_from.seq' ] }
+        }
+    );
                                                                         
     if($rows){
         while( my $rec = $rows->next ) {
             
             my @statuses_to;
-            my $statuses_to = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $p->{categoryId},
-                                                                                        id_role => $rec->id_role,
-                                                                                        id_status_from => $rec->id_status_from});
+            my $statuses_to = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+                {   id_category    => $p->{categoryId},
+                    id_role        => $rec->id_role,
+                    id_status_from => $rec->id_status_from,
+                },
+                {
+                    join=>['statuses_from'],
+                    distinct=>1,
+                    order_by => { -asc => ['statuses_from.seq'] },
+                }
+            );
             
+            # Grid for workflow configuration: right side field
             while( my $status_to = $statuses_to->next ) {
-                push @statuses_to, $status_to->statuses_to->name;
+                my $name = $status_to->statuses_to->name;
+                # show 
+                my $job_type = $status_to->job_type;
+                if( $job_type && $job_type ne 'none' ) {
+                    $name = sprintf '%s [%s]', $name, lc( _loc($job_type) );
+                }
+                push @statuses_to,  $name;
             }
-            
+           _log _dump \@statuses_to; 
             push @rows, {
                          role      => $rec->roles->name,
                          status_from    => $rec->statuses_from->name,
@@ -405,4 +450,101 @@ sub list_categories_admin : Local {
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
+
+sub list_fields : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $cnt;
+    my @rows;
+
+    my $rows = $c->model('Baseliner::BaliFieldsCategory')->search(undef, {orderby => ['id ASC']});
+
+                                                                        
+    if($rows){
+        while( my $rec = $rows->next ) {
+            push @rows, {
+                         id      => $rec->id,
+                         name    => $rec->name
+                     };             
+
+        }
+    }
+    $cnt = $#rows + 1 ;
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->forward('View::JSON');
+}
+
+sub list_forms : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my @rows;
+
+    my $dir = _dir( $c->path_to('root/forms') );
+    if( $dir ) {
+        for my $f ( $dir->children ) {
+            my $name = $f->basename;
+            ($name) = $name =~ m{^(.*)(\..*?)$};
+            push @rows, {
+                form_name => $name,
+                form_path => "$f",
+            };
+        }
+    }
+    
+    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};
+    $c->forward('View::JSON');
+}
+
+sub update_fields : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $id_category = $p->{id};
+    my @ids_field = _array $p->{fields};
+
+    my $category = $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $id_category} );
+    if($category->count > 0){
+        $category->delete;
+    }
+    
+    foreach my $id_field (@ids_field){
+        my $fields_category = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
+                                                                                id_category => $id_category,
+                                                                                id_field    => $id_field
+        });
+    }    
+
+    if( $p->{forms} ) {
+        my $forms = join ',', _array $p->{forms};
+        my $row = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
+        $row->update({ forms=>$forms }) if ref $row;
+    }
+
+    $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
+    $c->forward('View::JSON');    
+}
+
+sub workflow : Local {
+    my ($self,$c, $action) = @_;
+    my $p = $c->request->parameters;
+    my $cnt;
+    if( $action eq 'delete' ) {
+        try {
+            my $rs = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+                {   id_category    => $p->{id},
+                    id_role        => $p->{idsroles},
+                    id_status_from => $p->{status_from},
+                    id_status_to   => $p->{idsstatus}
+                }
+            );
+            $cnt = $rs->count;
+            $rs->delete;
+        } catch {
+            $c->stash->{json} = { success => \0, msg=>_loc('Error deleting relationships: %1', shift() ) };
+        };
+    }
+    $c->stash->{json} = { success => \1, msg=>_loc('Relationship deleted: %1', $cnt) };
+    $c->forward('View::JSON');    
+}
+
 1;

@@ -1,21 +1,33 @@
 nodes:
     - 
-      node: Issues
+      node: Topics
       type: component
-      url : /issue/grid
+      url : /lifecycle/tree_topics_project
       data:
-          click:
-            url: /issue/grid
+          click: 
+            url: /topic/grid
             type: comp
-            icon: /static/images/icons/tasks.gif
-            title: Issues
-
-      icon: /static/images/icons/tasks.gif
+            icon: /static/images/icons/topic.png
+            title: Topics
+      icon: /static/images/icons/topic_lc.png
     - 
       node: Jobs
       type: component
       url : /job/monitor
       icon: /static/images/icons/job.png
+    - 
+      node: Files
+      type: component
+      url : /fileversion/tree_file_project
+      icon: /static/images/scm/icons/log_16.png
+      menu:
+         - 
+           text: New Folder
+           icon: /static/images/icons/folder.gif
+           url: /fileversion/new_folder
+      data:
+          on_drop:
+              url: /fileversion/drop
     - 
       node: Releases
       type: component

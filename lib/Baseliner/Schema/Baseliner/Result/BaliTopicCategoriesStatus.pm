@@ -1,54 +1,12 @@
 use utf8;
 package Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus;
-
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
-
-=head1 NAME
-
-Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus
-
-=cut
-
 use strict;
 use warnings;
 
 use base 'DBIx::Class::Core';
 
-=head1 COMPONENTS LOADED
-
-=over 4
-
-=item * L<DBIx::Class::InflateColumn::DateTime>
-
-=back
-
-=cut
-
 __PACKAGE__->load_components("InflateColumn::DateTime");
-
-=head1 TABLE: C<bali_topic_categories_status>
-
-=cut
-
 __PACKAGE__->table("bali_topic_categories_status");
-
-=head1 ACCESSORS
-
-=head2 id_category
-
-  data_type: 'number'
-  is_nullable: 0
-  size: 126
-
-=head2 id_status
-
-  data_type: 'number'
-  is_nullable: 0
-  size: 126
-
-=cut
-
 __PACKAGE__->add_columns(
   "id_category",
   {

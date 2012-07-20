@@ -113,6 +113,9 @@ sub new_from_id {
     $p{step} ||= $p{same_exec} ? 'POST' : 'RUN';
     my $service_name = $p{service_name} || '';
     my $exec = delete $p{exec};
+    # defer for when we have a logger
+    my $current_service = delete $p{current_service}; 
+    my $step = delete $p{step}; 
     # instantiate myself
     my $job = $class->new( %p );
     my $row = $job->row;
@@ -127,9 +130,10 @@ sub new_from_id {
     $job->exec( $row->exec );
     $job->job_type( $row->type );
     $job->job_data( { $row->get_columns } );
-    $job->current_service( $service_name );
     # setup the logger
     my $log = $job->logger( BaselinerX::Job::Log->new({ jobid=>$p{jobid}, job=>$job }) );
+    $job->current_service( $service_name );
+    $job->step( $step );
     #thaw job stash from table
     my $stash = $job->thaw;
     $log->info(_loc("Job revived"), data=>_dump($stash) );
