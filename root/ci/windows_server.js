@@ -1,5 +1,5 @@
 (function(params){
-    var data = params.rec.data;
+    var data = params.rec;
     return [
         { xtype: 'textfield', fieldLabel: _('Hostname or IP'), name:'hostname', allowBlank: false, value: data.domain },
         { xtype: 'textfield', fieldLabel: _('Domain'), name:'domain', allowBlank: false, value: data.domain },

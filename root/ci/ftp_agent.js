@@ -7,14 +7,14 @@
         hiddenName:'server', 
         allowBlank:false }); 
     server_store.on('load',function(){
-        if( params.rec.data.server != undefined ) 
-            server.setValue( params.rec.data.server ) ;            
+        if( params.rec.server != undefined ) 
+            server.setValue( params.rec.server ) ;            
     });
 
     return [
        server,
-       { xtype:'textfield', fieldLabel: _('User'), name:'user', value: params.rec.data.user },
-       { xtype:'textfield', inputType:'password', name:'password', fieldLabel: _('Password'), value: params.rec.data.password }
+       { xtype:'textfield', fieldLabel: _('User'), name:'user', value: params.rec.user },
+       { xtype:'textfield', inputType:'password', name:'password', fieldLabel: _('Password'), value: params.rec.password }
     ]
 })
 
