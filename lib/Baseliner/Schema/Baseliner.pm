@@ -90,7 +90,7 @@ sub deploy_schema {
             my $dbh = $schema->storage->dbh;
             $dbh->do( join '', @st );
         }
-    } elsif( $p{diff} ) {
+    } elsif( $p{diff} && $p{diff} ne '2schema' ) {
         my $sqltargs = {
             add_drop_table    => $p{drop},
             sources           => $p{schema},
@@ -170,7 +170,7 @@ sub deploy_schema {
         }
 
         return 0;
-    } elsif( 0 && $p{diff} ) {
+    } elsif( $p{diff} eq '2schema' ) {
         # diff with 2 schema comparison, done via DBIC-Loader
         my $sqltargs = {
             add_drop_table    => $p{drop},
