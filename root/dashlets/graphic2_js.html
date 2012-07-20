@@ -4,6 +4,10 @@ description: Graphic2 js
 html: /dashlets/graphic2_js.html
 ---
 -->
+<%perl>
+    use Baseliner::Utils;
+    my $graph_id = "graph2". _nowstamp;
+</%perl>
     <script>
         Ext.onReady(function(){
             var d1 = [];
@@ -21,7 +25,7 @@ html: /dashlets/graphic2_js.html
                 width:650,
                 height:400,
                 data:[ d1, d2, d3 ],
-                renderTo: 'graphic2'
+                renderTo: '<%$graph_id%>'
             });	
         });
     </script>
@@ -29,7 +33,7 @@ html: /dashlets/graphic2_js.html
 
     <div>
         <h2>Gráfico 2</h2>
-        <div id="graphic2"></div>
+        <div id="<%$graph_id%>"></div>
     </div>
 
 
