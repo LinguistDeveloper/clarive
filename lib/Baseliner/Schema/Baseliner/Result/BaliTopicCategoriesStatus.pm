@@ -10,13 +10,13 @@ __PACKAGE__->table("bali_topic_categories_status");
 __PACKAGE__->add_columns(
   "id_category",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },
   "id_status",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     size => 126,
   },

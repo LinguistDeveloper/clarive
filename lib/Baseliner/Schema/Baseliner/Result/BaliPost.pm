@@ -25,7 +25,7 @@ __PACKAGE__->table("bali_post");
 __PACKAGE__->add_columns(
   "mid",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     original => { data_type => "number" },
   },

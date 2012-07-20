@@ -170,7 +170,7 @@ sub list_dashlets : Local {
 		  };		
     }	
 	
-    $c->stash->{json} = { data=>\@rows };
+    $c->stash->{json} = { data=>\@rows };		
     $c->forward('View::JSON');
 }
 
@@ -197,8 +197,8 @@ sub update : Local {
 			if($config_dashlet[0]->{params}){
 				$_dashlet->{params} = $config_dashlet[0]->{params};
 			};			
-		}			
-			
+	}
+
 		push @dashlets, $_dashlet;
 		
 	}
@@ -307,7 +307,7 @@ sub list : Local {
 		for my $dash ( @dashlets ) {
 			if($dash->{url}){
 				$c->forward( $dash->{url} . '/' . $dashboard_id );
-			}
+		}
 		}
 		$c->stash->{is_columns} = $dashboard->is_columns;
 		$c->stash->{dashboardlets} = \@dashlets;
@@ -374,7 +374,7 @@ sub get_config : Local {
     my $p = $c->req->params;
     my @rows = ();
 	my @html_url = split(/#/, $p->{id});
-
+	
 	if($p->{config}){
 		my $default_config = $c->model('Registry')->get( $p->{config} )->metadata;
 		my %dashlet_config;
@@ -479,7 +479,8 @@ sub list_baseline: Private{
 					WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
 			GROUP BY BL";				
 	
-	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
+	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days)
+        if @ids_project;
 
 	#my @entornos = ('TEST', 'PREP', 'PROD');
     my $states     = my $bl_days = $default_config->{states};

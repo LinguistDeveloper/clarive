@@ -22,7 +22,7 @@ __PACKAGE__->table("bali_user");
 
 =head2 id
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
@@ -67,7 +67,7 @@ __PACKAGE__->table("bali_user");
 
 __PACKAGE__->add_columns(
   "mid", {
-    data_type => "numeric",
+    data_type => "number",
     is_nullable => 0,
     original => { data_type => "number" },
   },  

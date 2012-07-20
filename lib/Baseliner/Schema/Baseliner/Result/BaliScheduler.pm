@@ -22,7 +22,7 @@ __PACKAGE__->table("bali_scheduler");
 
 =head2 id
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
@@ -73,7 +73,7 @@ __PACKAGE__->table("bali_scheduler");
 
 =head2 workdays
 
-  data_type: 'numeric'
+  data_type: 'number'
   default_value: 0
   is_nullable: 1
   original: {data_type => "number"}
@@ -91,7 +91,7 @@ __PACKAGE__->table("bali_scheduler");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },
@@ -114,7 +114,7 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 20 },
   "workdays",
   {
-    data_type => "numeric",
+    data_type => "number",
     default_value => 0,
     is_nullable => 1,
     original => { data_type => "number" },
@@ -129,7 +129,7 @@ __PACKAGE__->add_columns(
   },
   "pid",
   {
-    data_type => "numeric",
+    data_type => "number",
     default_value => 0,
     is_nullable => 1,
     original => { data_type => "number" },
