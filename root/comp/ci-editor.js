@@ -55,7 +55,7 @@
         items: [
             { xtype: 'container', html:_( txt, params.data.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
             { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name },
-            { xtype: 'checkbox', boxLabel: _('Active'), name:'active', value: params.rec.active },
+            { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: params.rec.active, allowBlank: true },
             ( params.has_bl > 0 ? bl_combo : [] ),
             //Baseliner.combo_baseline({ value: params.bl || '*' }),
             //{ xtype: 'hidden', name:'collection', value: params.collection },
