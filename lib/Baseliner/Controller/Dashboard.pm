@@ -153,13 +153,13 @@ sub list_dashlets : Local {
 	
 	my @rows;
     for my $dash ( @dashlets ) {
-        $c->forward( $dash->{metadata}->{url} );
-		my $config;
-		if ($dash->{metadata}->{config}) {
-			$config = $dash->{metadata}->{config};
-		}else{
-			$config = '';
-		}
+        #$c->forward( $dash->{metadata}->{url} );
+		#my $config;
+		#if ($dash->{metadata}->{config}) {
+		#	$config = $dash->{metadata}->{config};
+		#}else{
+		#	$config = '';
+		#}
 		push @rows,
 		  {
 			id			=> $dash->{metadata}->{html} . '#' . $dash->{metadata}->{url},
@@ -184,21 +184,23 @@ sub update : Local {
 	
 	foreach my $dashlet (_array $p->{dashlets}){
 		my @html_url = split(/#/, $dashlet);
-		
-		my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{id});
-		my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
-		
+
 		my $_dashlet = {};
 		
 		$_dashlet->{html}	=	$html_url[0];
 		$_dashlet->{url}	=  $html_url[1];
 		$_dashlet->{order}	=  ++$i;
-		
-		if($config_dashlet[0]->{params}){
-			$_dashlet->{params} = $config_dashlet[0]->{params};
-        };
-		
+			
+		if($p->{id} != -1){
+			my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{id});
+			my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
+			if($config_dashlet[0]->{params}){
+				$_dashlet->{params} = $config_dashlet[0]->{params};
+			};			
+		}			
+			
 		push @dashlets, $_dashlet;
+		
 	}
 
     given ($action) {
@@ -303,7 +305,9 @@ sub list : Local {
 		my $dashboard = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
 		@dashlets = _array _load $dashboard->dashlets;
 		for my $dash ( @dashlets ) {
-			$c->forward( $dash->{url} . '/' . $dashboard_id );
+			if($dash->{url}){
+				$c->forward( $dash->{url} . '/' . $dashboard_id );
+			}
 		}
 		$c->stash->{is_columns} = $dashboard->is_columns;
 		$c->stash->{dashboardlets} = \@dashlets;
