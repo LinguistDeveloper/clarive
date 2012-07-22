@@ -1,0 +1,38 @@
+<!--
+name: Graphic1_js
+description: Graphic1 js
+html: /dashlets/graphic1_js.html
+---
+-->
+<%perl>
+    use Baseliner::Utils;
+    my $graph_id = "graph1". _nowstamp;
+</%perl>
+    <script>
+        Ext.onReady(function(){
+        
+            var p = new Baseliner.flot.Donut({ layout:'fit', 
+                width: 290, height: 300, 
+                data:[
+                    { label:'TEST',data:222},
+                    { label:'PREP', data:119},
+                    { label:'PROD', data:80 }
+                ] });    
+
+            var panel = new Ext.FlotPanel({
+
+                width:650,
+                height:400,
+                items: p,
+                renderTo: '<%$graph_id%>'
+            });	
+        });
+    </script>
+
+
+    <div>
+        <h2>Gráfico 1</h2>
+        <div id="<%$graph_id%>"></div>
+    </div>
+
+

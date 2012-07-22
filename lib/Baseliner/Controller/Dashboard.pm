@@ -321,7 +321,9 @@ sub list : Local {
 				if($i == 0){
 					@dashlets = @{_load $dashboard->dashlets};
 					for my $dash ( @dashlets ) {
-						$c->forward( $dash->{url} . '/' . $dashboard->id );
+						if($dash->{url}){
+							$c->forward( $dash->{url} . '/' . $dashboard->id );
+						}
 					}
 					$c->stash->{is_columns} = $dashboard->is_columns;
 					$c->stash->{dashboardlets} = \@dashlets;
