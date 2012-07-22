@@ -35,7 +35,9 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
   },
   "is_main",
-  { data_type => "char", is_nullable => 1, size => 1, default_value => '0'},  
+  { data_type => "char", is_nullable => 1, size => 1, default_value => '0'},
+  "is_columns",
+  { data_type => "char", is_nullable => 1, size => 1, default_value => '1'},    
 );
 
 
