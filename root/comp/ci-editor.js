@@ -73,7 +73,6 @@
                     fieldset.show();
                     fieldset.add( res );
                     fieldset.doLayout();
-                    //console.log( params.rec );
                     //form.getForm().loadRecord( params.rec );
                     form.getForm().setValues( params.rec );
                 }
