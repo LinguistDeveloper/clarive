@@ -21,7 +21,7 @@ var data = new Array();
 %}
 
 	// DEFAULT
-    $.plot($("#default"), data, 
+    $.plot($("#<%$graph_id%>"), data, 
 	{
         series: {
             pie: {
@@ -57,7 +57,7 @@ var data = new Array();
     </style>
     
     <h2><%$title%></h2><br>
-    <div id="default" class="graph"></div>
+    <div id="<%$graph_id%>" class="graph"></div>
 
 
 
