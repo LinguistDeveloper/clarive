@@ -17,7 +17,7 @@ html: /dashlets/topics_by_category_pie.html
 $(function () {
 var data = new Array();
 %foreach my $topic (_array @topics_by_category){
-    data.push({ label: "<%$topic->{category}%>",  data: [[1,<%$topic->{total}%>]]});
+    data.push({ label: "<%$topic->{category}%>",  color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
 %}
 
 	// DEFAULT
@@ -31,14 +31,14 @@ var data = new Array();
                     show: true,
                     radius: 3/4,
                     formatter: function(label, series){
-                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
+                        return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+Math.round(series.percent)+'%</div>';
                     },
                     background: { opacity: 0.5 }
                 }
             }
         },
         legend: {
-            show: false
+            show: true
         }
 	});
 });
