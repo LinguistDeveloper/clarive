@@ -321,7 +321,9 @@ sub list : Local {
 				if($i == 0){
 					@dashlets = @{_load $dashboard->dashlets};
 					for my $dash ( @dashlets ) {
-						$c->forward( $dash->{url} . '/' . $dashboard->id );
+						if($dash->{url}){
+							$c->forward( $dash->{url} . '/' . $dashboard->id );
+						}
 					}
 					$c->stash->{is_columns} = $dashboard->is_columns;
 					$c->stash->{dashboardlets} = \@dashlets;
@@ -838,5 +840,25 @@ sub viewjobs: Local{
 	$c->forward('/job/monitor/Dashboard');
 }
 
+sub topics_by_category: Local{
+	my ( $self, $c ) = @_;
+	my $p = $c->request->parameters;
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	my ($SQL, @topics_by_category, @datas);
+	
+	$SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME";
+	@topics_by_category = $db->array_hash( $SQL );
+
+	
+	foreach my $topic (@topics_by_category){
+		push @datas, {
+					total 			=> $topic->{total},
+					category		=> $topic->{category},
+				};
+ 	}
+	$c->stash->{topics_by_category} = \@datas;
+	$c->stash->{topics_by_category_title} = _loc('Topics by category');
+
+}
 
 1;
