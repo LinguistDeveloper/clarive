@@ -46,4 +46,10 @@ __PACKAGE__->belongs_to(
   { id => "id_status_to" },
 );
 
+__PACKAGE__->belongs_to(
+  "user_role",
+  "Baseliner::Schema::Baseliner::Result::BaliRoleuser",
+  { id_role => "id_role" },
+);
+
 1;

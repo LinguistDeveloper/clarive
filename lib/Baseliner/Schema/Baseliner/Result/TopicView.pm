@@ -13,7 +13,7 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(q{
 
     SELECT  T.MID TOPIC_MID, TITLE, T.CREATED_ON, T.CREATED_BY, STATUS,  NUMCOMMENT, C.ID CATEGORY_ID, C.NAME CATEGORY_NAME, PROGRESS,
-            ID_CATEGORY_STATUS CATEGORY_STATUS_ID, S.NAME CATEGORY_STATUS_NAME, ID_PRIORITY AS PRIORITY_ID, TP.NAME PRIORITY_NAME,
+            ID_CATEGORY_STATUS CATEGORY_STATUS_ID, S.NAME CATEGORY_STATUS_NAME, S.SEQ CATEGORY_STATUS_SEQ, ID_PRIORITY AS PRIORITY_ID, TP.NAME PRIORITY_NAME,
             RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, C.COLOR CATEGORY_COLOR, L.ID LABEL_ID, L.NAME LABEL_NAME, L.COLOR LABEL_COLOR,
             P.MID AS PROJECT_ID, P.NAME AS PROJECT_NAME, F.FILENAME AS FILE_NAME, PS.TEXT AS TEXT
             FROM  BALI_TOPIC T
@@ -48,6 +48,7 @@ __PACKAGE__->add_columns(
         category_name
         category_status_id
         category_status_name        
+        category_status_seq
         priority_id
         priority_name
         response_time_min

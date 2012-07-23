@@ -18,6 +18,7 @@ Ext.ux.Portal = Ext.extend(Ext.Panel, {
             validatedrop:true,
             beforedragover:true,
             dragover:true,
+            dragstart:true,
             beforedrop:true,
             drop:true
         });

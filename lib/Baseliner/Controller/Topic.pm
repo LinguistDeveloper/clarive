@@ -973,6 +973,11 @@ sub view_filter : Local {
     $c->forward('View::JSON');    
 }
 
+=head2 list_admin_category
+
+Lists the destination statuses for a given topic.
+
+=cut
 sub list_admin_category : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
@@ -1014,50 +1019,22 @@ sub list_admin_category : Local {
         }        
 
     }else{
+        my $username = $c->is_root ? '' : $c->username;
+        my @statuses = $c->model('Topic')->next_status_for_user(
+            id_category    => $p->{categoryId},
+            id_status_from => $p->{statusId},
+            username       => $username,
+        );
+        push @rows, { id => $p->{statusId}, name => $p->{statusName}, status => $p->{statusId}, status_name => $p->{statusName}  };
+        @rows = map {
+            +{
+                id          => $_->{id_status},
+                status      => $_->{id_status},
+                name        => $_->{status_name},
+                status_name => $_->{status_name},
+            }
+        } @statuses;
         
-            my $roles = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $p->{categoryId}, id_status_from => $p->{statusId}},
-                                                                                    {
-                                                                                        prefetch => ['roles','statuses_to'],
-                                                                                    }                                                                                    
-                                                                                );
-            my %roles;
-            my %status;
-            while( my $role = $roles->next ) {
-                $roles{$role->id_role} = $role->roles->role;
-                $status{$role->id_status_to} = $role->statuses_to->name;
-            }
-
-            #foreach my $role ( keys %roles ){
-            #    push @roles, $roles{$role};
-            #}
-            
-            push my @roles, ( keys %roles );
-            
-            my $swAllowed = 0;
-            my $roles_users = $c->model('Baseliner::BaliRoleUser')->search({username => $c->username, id_role =>\@roles});
-            if(($roles_users->count > 0) || ($c->username eq 'root')){
-                $swAllowed = 1;
-            }
-        
-            if($swAllowed){
-                push @rows, { id => $p->{statusId}, name => $p->{statusName}, status => $p->{statusId}, status_name => $p->{statusName}  };
-                foreach my $status ( keys %status ){
-                    push @rows, {
-                                    id  => $status,
-                                    name => $status{$status},
-                                    status => $status,
-                                    status_name    => $status{$status},
-
-                                    
-                                }
-                }
-            }
-            
-            #$statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}},
-            #                                                                            {
-            #                                                                            prefetch=>['status'],
-            #                                                                            }                                                                                 
-            #                                                                         );
     }
         
     $c->stash->{json} = { data=>\@rows};
@@ -1307,6 +1284,47 @@ sub newjob : Local {
         $job->stash_key( status_to => $p->{status_to} );
         $job->update;
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };
+    };
+    $c->forward('View::JSON');
+}
+
+sub kanban_status : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    my $topics = $p->{topics};
+    my $data = {};
+    my @columns;
+    $c->stash->{json} = try {
+        my $rs1 = $c->model('Baseliner::BaliTopic')->search({ 
+          mid=>$topics }, { select=>'id_category', distinct=>1 }); 
+
+        my $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->search(
+          { id_category=>{ -in => $rs1->as_query } },
+          { +select=>['status.id', 'status.name'], +as=>[qw/id name/], 
+            join=>['status'], order_by=>'status.seq', distinct=>1 }
+        );
+        my @statuses = $rs->hashref->all;
+
+        my $where = { mid => $topics };
+        $where->{'user_role.username'} = $c->username unless $c->is_root;
+        my @rs2 = $c->model('Baseliner::BaliTopic')->search(
+            $where,
+            {   join => { 'workflow' => [ 'user_role', 'statuses_to', 'statuses_from' ] },
+                +select  => [qw/mid workflow.id_status_from workflow.id_status_to statuses_to.name statuses_to.seq statuses_from.name statuses_from.seq/],
+                +as      => [qw/mid id_status_from id_status_to to_name to_seq from_name from_seq/],
+                distinct => 1,
+            }
+        )->hashref->all;
+        my %workflow;
+        for( @rs2 ) {
+            push @{ $workflow{ $_->{mid} } }, $_;
+        }
+        #my %statuses = map { $_->{id_status_to} => { name=>$_->{to_name}, id=>$_->{id_status_to}, seq=>$_->{to_seq} } } @rs2;
+        #{ success=>\1, msg=>'', statuses=>[ sort { $a->{seq} <=> $b->{seq} } values %statuses ] };
+        { success=>\1, msg=>'', statuses=>\@statuses, workflow=>\%workflow };
     } catch {
         my $err = shift;
         { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };
