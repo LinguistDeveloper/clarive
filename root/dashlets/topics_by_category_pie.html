@@ -9,7 +9,7 @@ html: /dashlets/topics_by_category_pie.html
     use Baseliner::Utils;
     my $graph_id = "topics_pie". _nowstamp;
     my @topics_by_category = $c->stash->{topics_by_category};
-    my $title = $c->stash->{topics_by_category_title}
+    my $title = $c->stash->{topics_by_category_title};
 </%perl>
 
 
