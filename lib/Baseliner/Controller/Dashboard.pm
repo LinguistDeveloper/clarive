@@ -857,6 +857,7 @@ sub topics_by_category: Local{
 				};
  	}
 	$c->stash->{topics_by_category} = \@datas;
+	$c->stash->{topics_by_category_title} = _loc('Topics by category');
 
 }
 

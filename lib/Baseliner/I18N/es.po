@@ -3772,3 +3772,10 @@ msgstr "Áreas de Trabajo"
 msgid "Favorites"
 msgstr "Favoritos"
 
+msgid "Chart pie (Topics by category)"
+msgstr "Gráfico circular (Tópicos por categorías)"
+
+msgid "Topics by category"
+msgstr "Tópicos por categorías"
+
+
