@@ -8,7 +8,8 @@ html: /dashlets/topics_by_category_pie.html
 <%perl>
     use Baseliner::Utils;
     my $graph_id = "topics_pie". _nowstamp;
-     my @topics_by_category = $c->stash->{topics_by_category};
+    my @topics_by_category = $c->stash->{topics_by_category};
+    my $title = $c->stash->{topics_by_category_title}
 </%perl>
 
 
@@ -55,7 +56,7 @@ var data = new Array();
 		}
     </style>
     
-    <h2>Topics by category</h2><br>
+    <h2><%$title%></h2><br>
     <div id="default" class="graph"></div>
 
 
