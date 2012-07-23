@@ -875,7 +875,8 @@
     });
     
     var query_id = '<% $c->stash->{query_id} %>';
-    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>'}});
+	//var category_id = '<% $c->stash->{category_id} %>';
+    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>', categories: '<% $c->stash->{category_id} %>'}});
 	store_label.load();
     
     return panel;

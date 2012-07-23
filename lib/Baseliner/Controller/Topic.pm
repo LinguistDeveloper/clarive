@@ -76,7 +76,8 @@ sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     $c->stash->{id_project} = $p->{id_project}; 
-    $c->stash->{query_id} = $p->{query};    
+    $c->stash->{query_id} = $p->{query};
+    $c->stash->{category_id} = $p->{category_id};
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
 

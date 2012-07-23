@@ -846,7 +846,7 @@ sub topics_by_category: Local{
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	my ($SQL, @topics_by_category, @datas);
 	
-	$SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR ORDER BY TOTAL DESC";
+	$SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
 	@topics_by_category = $db->array_hash( $SQL );
 
 	
@@ -854,7 +854,8 @@ sub topics_by_category: Local{
 		push @datas, {
 					total 			=> $topic->{total},
 					category		=> $topic->{category},
-					color			=> $topic->{color}
+					color			=> $topic->{color},
+					category_id		=> $topic->{id_category}
 				};
  	}
 	$c->stash->{topics_by_category} = \@datas;

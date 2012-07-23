@@ -16,14 +16,18 @@ html: /dashlets/topics_by_category_pie.html
 <script type="text/javascript">
 $(function () {
 var data = new Array();
+var category_id = new Array();
+
 %foreach my $topic (_array @topics_by_category){
-    data.push({ label: "<%$topic->{category}%>",  color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
+    data.push({ label: "<%$topic->{category}%>", category_id: "<%$topic->{category_id}%>", color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
+    category_id["<%$topic->{category}%>"] = <%$topic->{category_id}%>;
 %}
 
 	// DEFAULT
     $.plot($("#<%$graph_id%>"), data, 
 	{
         series: {
+            category_id: category_id,
             pie: {
                 show: true,
                 radius: 1,
@@ -39,9 +43,29 @@ var data = new Array();
         },
         legend: {
             show: true
-        }
+        },
+        grid: {
+            hoverable: true,
+            clickable: true
+        }        
 	});
+	$("#<%$graph_id%>").bind("plothover", pieHover);
+	$("#<%$graph_id%>").bind("plotclick", pieClick);    
 });
+
+function pieHover(event, pos, obj) 
+{
+	if (!obj)
+                return;
+	document.body.style.cursor='pointer';
+}
+
+function pieClick(event, pos, obj) 
+{
+	if (!obj)
+                return;
+    Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _('Topics'));
+}
 
 </script>
  
@@ -57,7 +81,7 @@ var data = new Array();
     </style>
     
     <h2><%$title%></h2><br>
-    <div id="<%$graph_id%>" class="graph"></div>
+    <div id="<%$graph_id%>" class="graph" onmouseout="document.body.style.cursor='default';"></div>
 
 
 
