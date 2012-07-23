@@ -387,7 +387,7 @@
                     store.each( function(rec) {
                         if( id_status != undefined && rec.data.category_status_id != id_status ) return;
                         var t = String.format('{0} #{1}', rec.data.category_name, rec.data.topic_mid );
-                        var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + rec.data.topic_mid + '</span></div>';
+                        var cat = '<div id="boot"><span class="badge" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + rec.data.topic_mid + '</span></div>';
                         var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, rec.data.title);
                         //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
                         var col = statuses_hash[ rec.data.category_status_name ];
