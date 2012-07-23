@@ -65,6 +65,17 @@ sub checkout {
     }
 
     # Git Checkouts End
+
+    # Svn Checkouts
+    my $svn_checkouts = $stash->{svn_checkouts};
+
+    for ( keys %{$svn_checkouts} ) {
+        my $repo = Baseliner::CI->new( $_ );
+        $repo->job( $job );
+        $repo->checkout( rev => $svn_checkouts->{$_}->{rev}, prj => $svn_checkouts->{$_}->{prj}, branch => $svn_checkouts->{$_}->{branch} );
+    }
+
+    # Svn Checkouts End
 } ## end sub checkout
 
 sub job_elements {
@@ -133,8 +144,9 @@ sub job_elements {
         my $git_checkouts;
 
         for ( @revisions ) {
-            $log->debug(_loc("<b>Revisions:</B> Treating revision"), data => _dump $_);
+            $log->debug(_loc("<b>GIT Revisions:</B> Treating revision"), data => _dump $_);
             my $rev  = Baseliner::CI->new( $_->{to_mid} );
+            next if ref $rev ne 'BaselinerX::CI::GitRevision';
             my $repo = $rev->{repo};
             push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev->{sha};
             my $topic     = Baseliner->model( 'Baseliner::BaliTopic' )->find( $_->{from_mid} );
@@ -145,7 +157,7 @@ sub job_elements {
         } ## end for ( @revisions )
 
         for ( keys %{$revisions_shas} ) {
-            $log->debug(_loc("<b>Revisions:</B> Processing revision $_"));
+            $log->debug(_loc("<b>GIT Revisions:</B> Processing revision $_"));
             my $repo = Baseliner::CI->new( $_ );
             $repo->job( $job );
 
@@ -164,6 +176,48 @@ sub job_elements {
     } ## end if ( @revisions )
 
     #Git revisions fin
+
+    #SVN revisions
+
+    if ( @revisions ) {
+
+        my $revisions_shas;
+        my $svn_checkouts;
+        my $branch;
+
+        for ( @revisions ) {
+            $log->debug(_loc("<b>SVN Revisions:</B> Treating revision"), data => _dump $_);
+            my $rev  = Baseliner::CI->new( $_->{to_mid} );
+            next if ref $rev ne 'BaselinerX::CI::SvnRevision';
+            $branch = $rev->{branch};
+            $log->debug(_loc("<b>SVN Revisions:</B> Branch of revision $rev->{sha} ... $branch"), data => _dump $rev);
+            my $repo = $rev->{repo};
+            push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev->{sha};
+            my $topic     = Baseliner->model( 'Baseliner::BaliTopic' )->find( $_->{from_mid} );
+            my $projectid = $topic->projects->search()->first->id;
+            my $prj       = Baseliner::Model::Projects->get_project_name( id => $projectid );
+            $revisions_shas->{$repo->{mid}}->{prj} = $prj;
+            $svn_checkouts->{$repo->{mid}}->{prj}  = $prj;
+            $svn_checkouts->{$repo->{mid}}->{branch}  = $branch;
+        } ## end for ( @revisions )
+
+        for ( keys %{$revisions_shas} ) {
+            $log->debug(_loc("<b>SVN Revisions:</B> Processing revision $_"));
+            my $repo = Baseliner::CI->new( $_ );
+            $repo->job( $job );
+
+            $log->debug(_loc("<b>SVN Revisions:</B> Calling revision $_ list_elements"));
+            my @svn_elements =
+                $repo->list_elements( repo => $repo, prj => $revisions_shas->{$_}->{prj}, commits => $revisions_shas->{$_}->{shas}, branch => $branch );
+            $log->debug( "<b>SVN Revisions:</B> Generated git list of elements", data => _dump @svn_elements );
+            push @elems, @svn_elements;
+            $svn_checkouts->{$_}->{rev} = $repo->last_commit( commits => $revisions_shas->{$_}->{shas} );
+        } ## end for ( keys %{$revisions_shas...})
+        $job->job_stash->{svn_checkouts} = $svn_checkouts;
+    } ## end if ( @revisions )
+
+    #SVN revisions fin
+
     my $e = $job->job_stash->{elements} || BaselinerX::Job::Elements->new;
     $e->push_elements( @elems );
 
