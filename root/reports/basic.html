@@ -1,0 +1,75 @@
+<%args>
+    $data
+    $title
+    $rows
+    $total_rows
+</%args>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><% _loc( 'Topic Report' ) %> : <% $title %></title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="/static/jquery/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="/static/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" /> 
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap-responsive.min.css" /> 
+    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
+    <style>
+        body {
+          position: relative;
+          padding-top: 20px;
+          background-color: #fff;
+          background-image: url(../img/grid-18px-masked.png);
+          background-repeat: repeat-x;
+          background-position: 0 40px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+        <div class="span3">
+            <h2><% _loc( 'Topic Report' ) %> :</h2>
+        </div>
+        <div class="span7">
+            <h2 style="color: #999"><% $title %></h2>
+        </div>
+  </div>
+  <div class="row">
+        <div class="span12">
+            <p>
+               <small><% _loc( "%1 of %2 total rows", $rows, $total_rows) %></small>
+               - <small><% _now() %></small>
+            </p>
+        </div>
+  </div>
+  <hr />
+  <div class="row">
+    <div class="span12">
+        <table class="table table-striped table-condensed" >
+        <thead>
+        <tr>
+% for my $col ( _array( $data->{columns} ) ) {
+            <th>
+                <% $col->{name} %>
+            </th>
+% }
+        </tr>
+        </thead>
+        <tbody>
+% for my $row ( _array( $data->{rows} ) ) {
+        <tr>
+%    for my $col ( _array( $data->{columns} ) ) {
+             <td>
+                <% $row->{ $col->{id} } %>
+             </td>
+%    }
+        </tr>
+% }
+        </tbody>
+        </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>
