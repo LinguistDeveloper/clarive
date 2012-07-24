@@ -270,6 +270,244 @@
         }		
     }); 
     
+    var kanban_show = function(){
+        var topics = [];
+        var statuses_hash = {};
+        store_topics.each( function(rec) {
+            topics.push( rec.data.topic_mid );
+        });
+        Baseliner.ajaxEval( '/topic/kanban_status', { topics: topics }, function(res){
+            if( res.success ) {
+                //console.log( res.workflow );
+                var statuses = res.statuses;
+                var workflow = res.workflow;
+                var col_num = statuses.length;
+                var col_width = 1 / col_num;
+                var cols = [];
+                var btns = [];
+                // Each column is a Panel (so that we have a title)
+                Baseliner.KanbanColumn = Ext.extend(Ext.Panel, {
+                    layout: 'anchor',
+                    autoEl: 'div',
+                    border: true,
+                    resizeable: true,
+                    tools: [{
+                        id:'close',
+                        hidden: true,
+                        handler: function(e, target, panel){
+                            panel.hide();
+                            //panel.ownerCt.remove(panel, true);
+                            kanban.reconfigure_columns();
+                            // remove check from menu
+                            var id_status = panel.initialConfig.id_status;
+                            status_btn.menu.items.each( function(i) {
+                                if( i.initialConfig.id_status == id_status  )
+                                    i.setChecked(  false );
+                            });
+                        }
+                    }],
+                    headerCfg: {
+                        style: { 'background-color': '#eee', color: '#555', height: '30px', 'text-transform': 'uppercase', 'font-weight':'bold',
+                            'margin-bottom': '10px', padding: '2px 2px 2px 2px', 'font-size':'10px' }
+                    },
+                    bodyCfg: { 
+                        style: { 'background-color': '#555' }
+                    },
+                    defaultType: 'portlet',
+                    cls:'x-portal-column'
+                });
+                Ext.reg('kanbancolumn', Baseliner.KanbanColumn);
+
+                var status_pressed = function(b){
+                    alert( b.initialConfig.id_cat );
+                };
+
+                var add_column = function( id_status, name ) {
+                   var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + name + '</span>';
+                   // create columns
+                   var col_obj = new Baseliner.KanbanColumn({
+                      xtype: 'kanbancolumn',
+                      title: status_title,
+                      columnWidth: col_width,
+                      id_status: id_status,
+                      style: 'padding:10px 0px 10px 10px' 
+                   });
+                   cols.push( col_obj );
+                };
+                for( var i=0; i<col_num; i++ ) {
+                    add_column( statuses[i].id, statuses[i].name );
+                    statuses_hash[ statuses[i].name ] = i;  // store colnum for status
+                }
+                var kanban =  new Ext.ux.Portal({
+                    margins:'5 5 5 0',
+                    height: 400, width: 800,
+                    items: cols,
+                    bodyCfg: { 
+                        style: { 'background-color': '#555' }
+                    },
+                    layoutCfg: {
+                        renderHidden: true
+                    },
+                    listeners: {
+                        'dragstart' : function(){ Baseliner.message( 'dkjfkd','jjkjk' ) },
+                        'beforedrop': function(e){
+                            var wk = workflow[ e.panel.initialConfig.mid ];
+                            var id_status_current = e.panel.initialConfig.id_status;
+                            var dests = {};
+                            for( var i=0; i<wk.length; i++ ) {
+                                if( wk[i].id_status_from == id_status_current ) 
+                                    dests[ wk[i].id_status_to ] = true;
+                            }
+                            //var col_obj = 
+                            var id_status_dest = e.column.initialConfig.id_status;
+                            //Baseliner.message('Portlet Dropped', e.panel.title + '<br />Column: ' + 
+                             // e.columnIndex + '<br />Position: ' + e.position);
+                            if( dests[ id_status_dest ] === true ) {
+                                e.panel.initialConfig.id_status = id_status_dest;
+                                return true;
+                            } 
+                            return false;
+                        }
+                    }
+                });
+                // method to reconfigure all columnwidths
+                kanban.reconfigure_columns = function(){
+                    var cols = kanban.items.items;
+                    var col_num = 0;
+                    for( var i = 0; i<cols.length; i++ ) {
+                        if( ! cols[i].hidden ) col_num++;
+                    }
+                    var col_width = 1/col_num;
+                    for( var i = 0; i<cols.length; i++ ) {
+                        cols[i].columnWidth = col_width;
+                    };
+                    kanban.doLayout();
+                };
+                kanban.load_store = function( store, id_status ){
+                    store.each( function(rec) {
+                        if( id_status != undefined && rec.data.category_status_id != id_status ) return;
+                        var t = String.format('{0} #{1}', rec.data.category_name, rec.data.topic_mid );
+                        var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + rec.data.topic_mid + '</span></div>';
+                        var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, rec.data.title);
+                        //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
+                        var col = statuses_hash[ rec.data.category_status_name ];
+                        add_comp({ 
+                          title: t,
+                          comp: new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true }), 
+                          mid: rec.data.topic_mid,
+                          id_status: rec.data.category_status_id,
+                          portlet_type: 'comp',
+                          col: col,
+                          url_portlet: 'http://xxxx', url_max: 'http://xxxx'
+                        });
+                    });
+                };
+                // add portlet to column
+                var add_comp = function( params ) {
+                        var col = params.col || 0;
+                        var comp = params.comp;
+                        comp.height = comp.height || 350;
+                        var title = comp.title || params.title || 'Portlet';
+                        //comp.collapsible = true;
+                        var column_obj = kanban.findById( cols[col].id );
+                        var portlet = {
+                            //collapsible: true,
+                            title: title,
+                            height: 50,
+                            mid: params.mid,
+                            id_status: params.id_status,
+                            //headerCfg: { style: 'background: #d44' },
+                            portlet_type: params.portlet_type,
+                            header: false,
+                            footer: false,
+                            footerCfg: { hide: true },
+                            //url_portlet: params.url_portlet,
+                            url_max: params.url_max,
+                            //tools: Baseliner.portalTools,  // tools are visible when header: true
+                            //collapsed: true,
+                            autoHeight: true,
+                            items: comp
+                        };
+                        column_obj.add( portlet );
+                        //column_obj.doLayout();
+                };
+
+                var remove_column = function(opt){
+                    var id_status = opt.initialConfig.id_status;
+                    kanban.items.each( function(i){
+                        if( i.initialConfig.id_status == id_status ) {
+                            if( opt.checked ) { // show
+                                i.show();
+                            } else { // hide
+                                i.hide();
+                            }
+                            kanban.reconfigure_columns();
+                        }
+                    });
+                };
+                var status_btn = new Ext.Button({ text:_('Statuses'), menu:[] });
+                for( var k=0; k< statuses.length; k++ ) {
+                    status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler:remove_column });
+                }
+
+                var kanban_win = new Ext.Window({
+                    //tbar: [ '->', { text:'[ X ]', handler: function(){ kanban_win.close() } } ],
+                    tbar: [ 
+                        //{ iconCls:'x-btn-icon', icon:'/static/
+                        '<img src="/static/images/icons/kanban.png" />',
+                        'KANBAN',
+                        '-',
+                        status_btn,
+                        '->', { text:'[ X ]', handler: function(){ kanban_win.close() } }
+                    ],
+                    header: false, border: false, closeable: false, draggable: false,
+                    frame:false,shadow:false,border:true,
+                    headerCfg: { hide: true },
+                    maximized: true,
+                    //, maximizable: true, maximized: true
+                    layout:'fit', items: kanban
+                });
+                kanban_win.on('afterrender', function(){
+                    kanban.load_store( store_topics );
+                    kanban.doLayout();
+                    // show/hide tools for the column 
+                    var cols = kanban.findByType( 'kanbancolumn' );
+                    for( var i = 0; i<cols.length; i++ ) {
+                        cols[i].header.on( 'mouseover', function(ev,obj){
+                            var col_obj = Ext.getCmp( obj.id );
+                            if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
+                            if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
+                            if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
+                            if( col_obj != undefined ) {
+                                var t = col_obj.getTool('close');
+                                var w = col_obj.el.dom.offsetWidth;
+                                t.setStyle('display','block');
+                                t.setStyle('position','absolute');
+                                t.setStyle('margin-left', w-30 );
+                            }
+                        });
+                        cols[i].header.on( 'mouseout', function(ev,obj){
+                            var col_obj = Ext.getCmp( obj.id );
+                            if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
+                            if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
+                            if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
+                            if( col_obj != undefined ) col_obj.getTool('close').hide();
+                        });
+                    };
+                });
+                kanban_win.show();
+            } else {
+            }
+        });
+    };
+	var btn_kanban = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/kanban.png',
+        cls: 'x-btn-text-icon',
+        //enableToggle: true,
+        pressed: false,
+        handler: kanban_show
+    }); 
+    
 	
 	//var btn_labels = new Ext.Toolbar.Button({
     //    text: _('Labels'),
@@ -567,6 +805,7 @@
                 btn_delete,
                 //btn_labels
                 '->',
+                btn_kanban,
                 btn_comprimir
                 //btn_close
         ], 		
@@ -875,7 +1114,8 @@
     });
     
     var query_id = '<% $c->stash->{query_id} %>';
-    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>'}});
+	//var category_id = '<% $c->stash->{category_id} %>';
+    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>', categories: '<% $c->stash->{category_id} %>'}});
 	store_label.load();
     
     return panel;

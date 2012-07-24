@@ -75,6 +75,7 @@
                     fieldset.add( res );
                     fieldset.doLayout();
                     //form.getForm().loadRecord( params.rec );
+                    form.getForm().setValues( params.rec );
                 }
             });
         } else {
