@@ -3778,4 +3778,32 @@ msgstr "Gráfico circular (Tópicos por categorías)"
 msgid "Topics by category"
 msgstr "Tópicos por categorías"
 
+msgid "Infinity"
+msgstr "Todos"
 
+msgid "Show"
+msgstr "Mostrar"
+
+msgid "rows/page"
+msgstr "filas/página"
+
+msgid "all rows"
+msgstr "todas"
+
+msgid "(no filter)"
+msgstr "(sin filtrar)"
+
+msgid "Topic ID"
+msgstr "ID de Tópico"
+
+msgid "Topic Report"
+msgstr "Informe de Tópicos"
+
+msgid "Code"
+msgstr "Código"
+
+msgid "Basic HTML Report"
+msgstr "HTML Básico"
+
+msgid "%1 of %2 total rows"
+msgstr "%1 de %2 filas totales"

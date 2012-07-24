@@ -145,7 +145,7 @@ Ext.onReady(function(){
             bc.show();
             //bc.expand();
         }
-        viewport.doLayout();
+        Baseliner.viewport.doLayout();
     };
     Baseliner.tabCalendar = function(){
         var tabpanel = Baseliner.tabpanel();
@@ -228,10 +228,8 @@ Ext.onReady(function(){
 
     lifecycle.hide();
 % }
-    var viewport = new Ext.Viewport({
+    Baseliner.main = new Ext.Panel({
         layout: 'border',
-        id: 'main-view',
-        renderTo: Ext.getBody(),
         items: [
 % if( $c->stash->{site_raw} ) {
             new Ext.TabPanel({ 
@@ -269,6 +267,14 @@ Ext.onReady(function(){
             })
 % } # site_raw
         ]
+    });
+    Baseliner.viewport = new Ext.Viewport({
+        layout: 'card',
+        activeItem: 0,
+        id: 'main-view',
+        //renderTo: Ext.getBody(),
+        renderTo: 'main-div',
+        items: [ Baseliner.main ]
     });
 
     var tabpanel = Ext.getCmp('main-panel');
@@ -367,6 +373,7 @@ Ext.onReady(function(){
 <body >
 <IFRAME id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></IFRAME>
 <div id='run-panel'></div>
+<div id='main-div'></div>
 
 <!-- Preloading some images used in grids -->
 <!-- & preload_images.html & -->

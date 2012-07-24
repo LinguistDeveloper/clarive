@@ -453,8 +453,8 @@
         items: [
             {
                 xtype : "fieldset",
-                title : _("Main"),
-                collapsible: true,
+                collapsible: false,
+                border: false,
                 autoHeight : true,
                 items: [
             
@@ -550,7 +550,8 @@
         //   combo_status.setValue( store_category_status.getAt(0).data.id );
         //});
         store_category_status.on('load', function(){
-            combo_status.setValue( store_category_status.getAt(0).id );
+            if( store_category_status!=undefined && store_category_status.getAt(0) != undefined )
+                combo_status.setValue( store_category_status.getAt(0).id );
         });
         store_category_status.load({
             params:{ 'change_categoryId': rec.new_category_id }

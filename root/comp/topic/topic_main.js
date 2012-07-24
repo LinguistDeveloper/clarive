@@ -287,7 +287,6 @@
     var cardpanel = new Ext.Panel({
         layout: 'card',
         activeItem: 0,
-        cardSwitchAnimation:'slide',
         title: params.title,
         tbar: tb,
         items: [ detail, form ]

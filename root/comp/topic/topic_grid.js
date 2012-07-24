@@ -3,14 +3,14 @@
     my $id = _nowstamp;
 </%perl>
 (function(){
-    <& /comp/search_field.mas &>
-    var ps = 30; //page_size
+    var ps = 25; //page_size
     var filter_current;
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
     var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList({
+        baseParams: { start: 0, limit: ps },
 		listeners: {
 			'beforeload': function( obj, opt ) {
 				if( opt !== undefined && opt.params !== undefined )
@@ -33,8 +33,6 @@
 			add_view();
         }
     });
-	
-	
 	
 	var button_delete_view = new Baseliner.Grid.Buttons.Delete({
 		text: _(''),
@@ -159,7 +157,7 @@
             autoSelect: true,
             selectOnFocus: true,
 			forceSelection: true,
-			emptyText: 'select a category',
+			emptyText: _('select a category'),
 			triggerAction: 'all',
 			fieldLabel: _('Category'),
 			name: 'category',
@@ -218,6 +216,86 @@
 		win.show();		
 	};
 	
+	
+    var make_title = function(){
+        var title = [];
+		var selNodes = tree_filters.getChecked();
+		Ext.each(selNodes, function(node){
+			//var type = node.parentNode.attributes.id;
+            title.push(node.text);
+        }); 
+        return title.length > 0 ? title.join(', ') : _('(no filter)');
+    };
+
+    var form_report = new Ext.form.FormPanel({
+        url: '/topic/report_html', renderTo:'run-panel', style:{ display: 'none'},
+        items: [
+           { xtype:'hidden', name:'data_json'},
+           { xtype:'hidden', name:'title' },
+           { xtype:'hidden', name:'rows' },
+           { xtype:'hidden', name:'total_rows' }
+        ]
+    });
+    
+    var form_report_submit = function(args) {
+        var data = { rows:[], columns:[] };
+        // find current columns
+        var cfg = grid_topics.getColumnModel().config;
+        //Baseliner.xx = grid_topics.getView();
+        //console.log( grid_topics.getView() );
+        for( var i=0; i<cfg.length; i++ ) {
+            if( ! cfg[i].hidden )
+                data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
+        }
+        // get the grid store data
+        store_topics.each( function(rec) {
+            var d = rec.data;
+            var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid )
+            d.topic_name = topic_name;
+            data.rows.push( d ); 
+        });
+        var form = form_report.getForm(); 
+        form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
+        form.findField('title').setValue( make_title() );
+        form.findField('rows').setValue( store_topics.getCount() );
+        form.findField('total_rows').setValue( store_topics.getTotalCount() );
+        var el = form.getEl().dom;
+        var target = document.createAttribute("target");
+        target.nodeValue = args.target || "_blank";
+        el.setAttributeNode(target);
+        el.action = args.url;
+        el.submit(); 
+    };
+
+	var btn_html = {
+        icon: '/static/images/icons/html.png',
+        text: _('Basic HTML Report'),
+		handler: function() {
+            form_report_submit({ url: '/topic/report_html' });
+        }
+	};
+
+	var btn_yaml = {
+        icon: '/static/images/icons/yaml.png',
+        text: _('YAML'),
+		handler: function() {
+            form_report_submit({ url: '/topic/report_yaml' });
+        }
+	};
+
+	var btn_csv = {
+        icon: '/static/images/icons/csv.png',
+        text: _('CSV'),
+		handler: function() {
+            form_report_submit({ url: '/topic/report_csv', target: 'FrameDownload' });
+        }
+	};
+
+	var btn_reports = new Ext.Button({
+        icon: '/static/images/icons/reports.png',
+        iconCls: 'x-btn-icon',
+        menu: [ btn_html, btn_csv, btn_yaml ]
+    });
 	
 	var btn_edit = new Baseliner.Grid.Buttons.Edit({
 		handler: function() {
@@ -285,6 +363,7 @@
                 var col_width = 1 / col_num;
                 var cols = [];
                 var btns = [];
+
                 // Each column is a Panel (so that we have a title)
                 Baseliner.KanbanColumn = Ext.extend(Ext.Panel, {
                     layout: 'anchor',
@@ -311,7 +390,10 @@
                             'margin-bottom': '10px', padding: '2px 2px 2px 2px', 'font-size':'10px' }
                     },
                     bodyCfg: { 
-                        style: { 'background-color': '#555' }
+                        style: {
+                            'background': "#555 url('/static/images/bg/grey070.jpg')", 
+                            'background-repeat': 'repeat'
+                        }
                     },
                     defaultType: 'portlet',
                     cls:'x-portal-column'
@@ -338,12 +420,43 @@
                     add_column( statuses[i].id, statuses[i].name );
                     statuses_hash[ statuses[i].name ] = i;  // store colnum for status
                 }
+
+                var status_btn = new Ext.Button({ text:_('Statuses'), menu:[] });
+                for( var k=0; k< statuses.length; k++ ) {
+                    status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler:remove_column });
+                }
+                var tab_btn = new Ext.Button({ 
+                    icon:'/static/images/icons/tab.png', iconCls:'x-btn-icon', handler: function(){
+                    kanban.in_tab = true;
+                    var id = Baseliner.addNewTabItem( kanban, 'Kanban', { tab_icon: '/static/images/icons/kanban.png' } );
+                    Baseliner.viewport.remove( kanban, false );
+                    Baseliner.main.getEl().show();
+                    Baseliner.viewport.getLayout().setActiveItem( 0 );
+                }});
+
                 var kanban =  new Ext.ux.Portal({
                     margins:'5 5 5 0',
                     height: 400, width: 800,
                     items: cols,
+                    tbar: [ 
+                        '<img src="/static/images/icons/kanban.png" />',
+                        'KANBAN',
+                        '-',
+                        status_btn,
+                        '->',
+                        tab_btn,
+                        { icon:'/static/images/icons/close.png', iconCls:'x-btn-icon', handler: function(){ 
+                                Baseliner.viewport.remove( kanban );
+                                Baseliner.main.getEl().show();
+                                Baseliner.viewport.getLayout().setActiveItem( 0 );
+                            }
+                        }
+                    ],
                     bodyCfg: { 
-                        style: { 'background-color': '#555' }
+                        style: {
+                         'background': "#555 url('/static/images/bg/grey070.jpg')", 
+                         'background-repeat': 'repeat'
+                        }
                     },
                     layoutCfg: {
                         renderHidden: true
@@ -391,9 +504,34 @@
                         var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, rec.data.title);
                         //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
                         var col = statuses_hash[ rec.data.category_status_name ];
+                        var comp = new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true, mid: rec.data.topic_mid });
+                        comp.on('afterrender', function(){ 
+                            this.ownerCt.body.on('dblclick',function(){ 
+                                var mid = rec.data.topic_mid;
+                                var title = rec.data.topic_name;
+                                var params = { topic_mid: mid, title: title };
+                                if( kanban.in_tab ) {
+                                    Baseliner.add_tabcomp( '/topic/view?topic_mid=' + mid, title, params );
+                                } else {
+                                    Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
+                                        var win = new Ext.Window({
+                                            layout: 'fit', 
+                                            autoScroll: true,
+                                            title: title,
+                                            height: 600, width: 800, 
+                                            maximizable: true,
+                                            items: topic_panel
+                                        });
+                                        //topic_panel.on('afterrender', function(){ topic_panel.header.hide() } );
+                                        topic_panel.title = undefined;
+                                        win.show();
+                                    });
+                                }
+                            });
+                        });
                         add_comp({ 
                           title: t,
-                          comp: new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true }), 
+                          comp: comp, 
                           mid: rec.data.topic_mid,
                           id_status: rec.data.category_status_id,
                           portlet_type: 'comp',
@@ -445,29 +583,8 @@
                         }
                     });
                 };
-                var status_btn = new Ext.Button({ text:_('Statuses'), menu:[] });
-                for( var k=0; k< statuses.length; k++ ) {
-                    status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler:remove_column });
-                }
 
-                var kanban_win = new Ext.Window({
-                    //tbar: [ '->', { text:'[ X ]', handler: function(){ kanban_win.close() } } ],
-                    tbar: [ 
-                        //{ iconCls:'x-btn-icon', icon:'/static/
-                        '<img src="/static/images/icons/kanban.png" />',
-                        'KANBAN',
-                        '-',
-                        status_btn,
-                        '->', { text:'[ X ]', handler: function(){ kanban_win.close() } }
-                    ],
-                    header: false, border: false, closeable: false, draggable: false,
-                    frame:false,shadow:false,border:true,
-                    headerCfg: { hide: true },
-                    maximized: true,
-                    //, maximizable: true, maximized: true
-                    layout:'fit', items: kanban
-                });
-                kanban_win.on('afterrender', function(){
+                kanban.on('afterrender', function(){
                     kanban.load_store( store_topics );
                     kanban.doLayout();
                     // show/hide tools for the column 
@@ -495,7 +612,14 @@
                         });
                     };
                 });
-                kanban_win.show();
+                //Baseliner.viewport.add( kanban );
+                /* Baseliner.main.getEl().fadeOut({ duration: .2, easing: 'easeOut', remove: false, callback: function() {
+                        Baseliner.viewport.add( kanban );
+                        Baseliner.viewport.getLayout().setActiveItem( 1 );
+                    }
+                }); */
+                Baseliner.viewport.add( kanban );
+                Baseliner.viewport.getLayout().setActiveItem( 1 );
             } else {
             }
         });
@@ -508,153 +632,6 @@
         handler: kanban_show
     }); 
     
-	
-	//var btn_labels = new Ext.Toolbar.Button({
-    //    text: _('Labels'),
-    //    icon:'/static/images/icons/color_swatch.png',
-    //    cls: 'x-btn-text-icon',
-    //    disabled: true,
-    //    handler: function() {
-    //        var sm = grid_topics.getSelectionModel();
-    //        if (sm.hasSelection()) {
-    //            var sel = sm.getSelected();
-    //            add_labels(sel);
-    //        }
-    //    }
-    //}); 
-    
-
-    //var btn_close = new Ext.Toolbar.Button({
-    //    text: _('Close'),
-    //    icon:'/static/images/icons/cerrar.png',
-    //    cls: 'x-btn-text-icon',
-    //    disabled: true,
-    //    handler: function() {
-    //        var sm = grid_topics.getSelectionModel();
-    //        var sel = sm.getSelected();
-    //        Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to close the topic') + ' <b># ' + sel.data.topic_mid + '</b>?', 
-    //        function(btn){ 
-    //            if(btn=='yes') {
-    //                Baseliner.ajaxEval( '/topic/update?action=close',{ id: sel.data.topic_mid },
-    //                    function(response) {
-    //                        if ( response.success ) {
-    //                            grid_topics.getStore().remove(sel);
-    //                            Baseliner.message( _('Success'), response.msg );
-    //                            init_buttons('disable');
-    //                        } else {
-    //                            Baseliner.message( _('ERROR'), response.msg );
-    //                        }
-    //                    }
-    //                
-    //                );
-    //            }
-    //        } );
-    //    }
-    //});
-
-//    var add_labels = function(rec) {
-//        var win;
-//        var title = 'Labels';
-//		
-//        var btn_cerrar_labels = new Ext.Toolbar.Button({
-////            icon:'/static/images/icons/door_out.png',
-//            cls: 'x-btn-text-icon',
-//            text: _('Close'),
-//            handler: function() {
-//                win.close();
-//            }
-//        });
-//        
-//        var btn_grabar_labels = new Ext.Toolbar.Button({
-//            icon:'/static/images/icons/database_save.png',
-//            cls: 'x-btn-text-icon',
-//            text: _('Save'),
-//            handler: function(){
-//                var labels_checked = new Array();
-//                check_ast_labels_sm.each(function(rec){
-//                    labels_checked.push(rec.get('id'));
-//                });
-//                Baseliner.ajaxEval( '/topic/update_topic_labels',{ topic_mid: rec.data.topic_mid, label_ids: labels_checked },
-//                    function(response) {
-//                        if ( response.success ) {
-//                            Baseliner.message( _('Success'), response.msg );
-//							loadfilters();
-//                        } else {
-//                            Baseliner.message( _('ERROR'), response.msg );
-//                        }
-//                    }
-//                );
-//            }
-//        });
-//
-//        var check_ast_labels_sm = new Ext.grid.CheckboxSelectionModel({
-//            singleSelect: false,
-//            sortable: false,
-//            checkOnly: true
-//        });
-//    
-//        
-//        var grid_ast_labels = new Ext.grid.GridPanel({
-//            title : _('Labels'),
-//            sm: check_ast_labels_sm,
-//            autoScroll: true,
-//            header: false,
-//            stripeRows: true,
-//            autoScroll: true,
-//            height: 300,
-//            enableHdMenu: false,
-//            store: store_label,
-//            viewConfig: {forceFit: true},
-//            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-//            loadMask:'true',
-//            columns: [
-//                { hidden: true, dataIndex:'id' },
-//                check_ast_labels_sm,
-//                { header: _('Color'), dataIndex: 'color', width:15, sortable: false, renderer: render_color },
-//                { header: _('Label'), dataIndex: 'name', sortable: false }
-//            ],
-//            autoSizeColumns: true,
-//            deferredRender:false,
-//            bbar: [
-//                btn_grabar_labels,
-//                btn_cerrar_labels
-//            ],
-//            listeners: {
-//                viewready: function() {
-//                    var me = this;
-//                    var datas = me.getStore();
-//                    var recs = [];
-//                    datas.each(function(row, index){
-//                        if(rec.data.labels){
-//                            for(i=0;i<rec.data.labels.length;i++){
-//								var label = rec.data.labels[i].split(';');
-//								var label_id = label[0];
-//                                if(row.get('id') == label_id){
-//                                    recs.push(index);   
-//                                }
-//                            }
-//                        }                       
-//                    });
-//                    me.getSelectionModel().selectRows(recs);                    
-//                
-//                }
-//            }       
-//        });
-//        
-//        //Ext.util.Observable.capture(grid_ast_labels, console.info);
-//    
-//        win = new Ext.Window({
-//            title: _(title),
-//            width: 400,
-//            modal: true,
-//            autoHeight: true,
-//            items: grid_ast_labels
-//        });
-//        
-//        win.show();
-//    };
-
-
     var render_id = function(value,metadata,rec,rowIndex,colIndex,store) {
         return "<div style='font-weight:bold; font-size: 14px; color: #808080'> #" + value + "</div>" ;
     };
@@ -759,20 +736,52 @@
     };
 
     var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
-        var id = rec.data.topic_mid; //Cambiarlo en un futuro por un contador de categorias
+        var mid = rec.data.topic_mid; //Cambiarlo en un futuro por un contador de categorias
+        var cat_name = rec.data.category_name; //Cambiarlo en un futuro por un contador de categorias
         var color = rec.data.category_color;
         var cls = rec.data.is_release ? 'label' : 'badge';
         //if( color == undefined ) color = '#777';
-        var ret = '<div id="boot"><span class="'+cls+'" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + ' #' + id + '</span></div>';
+        var ret = '<div id="boot"><span class="'+cls+'" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + cat_name + ' #' + mid + '</span></div>';
         return ret;
     };
 
-     var search_field = new Ext.app.SearchField({
-                store: store_topics,
-                params: {start: 0, limit: ps},
-                emptyText: _('<Enter your search string>')
+    var search_field = new Baseliner.SearchField({
+        store: store_topics,
+        params: {start: 0 },
+        emptyText: _('<Enter your search string>')
     });
- 
+    var ptool = new Ext.PagingToolbar({
+            store: store_topics,
+            pageSize: ps,
+            plugins:[
+                new Ext.ux.PageSizePlugin({
+                    editable: false,
+                    width: 90,
+                    data: [
+                        ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
+                        ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+                    ],
+                    beforeText: _('Show'),
+                    afterText: _('rows/page'),
+                    value: ps,
+                    listeners: {
+                        'select':function(c,rec) {
+                            ps = rec.data.value;
+                            if( rec.data.value < 0 ) {
+                                ptool.afterTextItem.hide();
+                            } else {
+                                ptool.afterTextItem.show();
+                            }
+                        }
+                    },
+                    forceSelection: true
+                })
+            ],
+            displayInfo: true,
+            displayMsg: _('Rows {0} - {1} of {2}'),
+            emptyMsg: _('There are no rows available')
+    });
+
     var grid_topics = new Ext.grid.GridPanel({
         title: _('Topics'),
         header: false,
@@ -788,34 +797,30 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _('Category'), dataIndex: 'category_name', width: 80, sortable: true, renderer: render_category },
-            { header: _('Status'), dataIndex: 'category_status_name', width: 50, renderer: render_status },
+            { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 80, sortable: true, renderer: render_category },
+            { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
+            { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
-            { header: _('Progress'), dataIndex: 'progress', width: 50, sortable: true, renderer: render_progress },
-            { header: '', sortable: false, dataIndex: 'numcomment', width: 45, renderer: render_comment },			
+            { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
+            { header: '', report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_comment },			
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
-            { header: _('Topic ID'), hidden: true, dataIndex: 'topic_mid'},    
-            { header: _('Created On'), hidden: true, dataIndex: 'created_on'},
-            { header: _('Created By'), hidden: true, dataIndex: 'created_by'}
+            { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
+            { header: _('Created On'), hidden: true, sortable: true, dataIndex: 'created_on'},
+            { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
         ],
-        tbar:   [ _('Search') + ' ', ' ',
+        tbar:   [ 
                 search_field,
                 btn_add,
                 btn_edit,
                 btn_delete,
                 //btn_labels
                 '->',
+                btn_reports,
                 btn_kanban,
                 btn_comprimir
                 //btn_close
         ], 		
-        bbar: new Ext.PagingToolbar({
-            store: store_topics,
-            pageSize: ps,
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
-        })
+        bbar: ptool
     });
     
     grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
@@ -974,19 +979,25 @@
         return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
     };  
 
-    function loadfilters(){
+    function loadfilters( unselected_node ){
 		var labels_checked = new Array();
 		var statuses_checked = new Array();
 		var categories_checked = new Array();
 		var priorities_checked = new Array();
 		var type;
-		var merge_filters = {};
+		var selected_views = { };
 		selNodes = tree_filters.getChecked();
-		Ext.each(selNodes, function(node){
+        for( var i=0; i<selNodes.length; i++ ) {
+            var node = selNodes[ i ];
 			type = node.parentNode.attributes.id;
 			switch (type){
 				//Views
-				case 'V':	merge_filters = Baseliner.merge(merge_filters, Ext.util.JSON.decode(node.attributes.filter));
+				case 'V':	
+                            var d = Ext.util.JSON.decode(node.attributes.filter);
+                            if( d.query !=undefined && selected_views.query !=undefined ) {
+                                d.query = d.query + ' ' + selected_views.query;
+                            }
+                            selected_views = Baseliner.merge(selected_views, d );
 							break;
 				//Labels
 				case 'L':  	labels_checked.push(node.attributes.idfilter);
@@ -1001,23 +1012,54 @@
 				case 'P':   priorities_checked.push(node.attributes.idfilter);
 							break;
 			}
-		});
-		//alert('merge views: ' + Ext.util.JSON.encode(merge_filters));
-		filtrar_topics(merge_filters, labels_checked, categories_checked, statuses_checked, priorities_checked);
+		}
+		//alert('merge views: ' + Ext.util.JSON.encode(selected_views));
+		filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
 	}
 	
-    function filtrar_topics(merge_filters, labels_checked, categories_checked, statuses_checked, priorities_checked){
+    function filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node){
+        // copy baseParams for merging
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { query: bp.query, start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir };
-        var filter = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir };
+        // object for merging with views 
+        var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
 		
-		//alert('filters: ' + Ext.util.JSON.encode(filter));
-		merge_filters = Baseliner.merge( merge_filters, filter);
-		filter_current = Baseliner.merge( merge_filters, base_params );
-        store_topics.baseParams = filter_current;
+		//alert('selected_views ' + Ext.util.JSON.encode(selected_views));
+		//alert('merge_filters: ' + Ext.util.JSON.encode(merge_filters));
+		//alert('bfilters: ' + Ext.util.JSON.encode(base_params));
+
+        // merge selected filters with views
+		var merge_filters = Baseliner.merge( selected_views, selected_filters);
+        // now merge baseparams (query, limit and start) over the resulting filters
+		var filter_final = Baseliner.merge( merge_filters, base_params );
+        // query and unselected
+        if( unselected_node != undefined ) {
+            var unselected_type = unselected_node.parentNode.attributes.id;
+            var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
+            if( unselected_type == 'V' ) {
+                if( bp.query == unselected_filter.query ) {
+                    filter_final.query = '';
+                } else {
+                    filter_final.query = bp.query.replace( unselected_filter.query, '' );
+                    filter_final.query = filter_final.query.replace( /^ +/, '' );
+                    filter_final.query = filter_final.query.replace( / +$/, '' );
+                }
+            }
+        }
+        else if( selected_views.query != undefined  && bp.query != undefined ) {
+            //filter_final.query = bp.query + ' ' + selected_views.query;
+        }
+
+		//alert('curr ' + Ext.util.JSON.encode(filter_final));
+        //if( base_params.query !== filter_final.query ) {
+            //delete filter_final['query'];    
+        //}
+        store_topics.baseParams = filter_final;
+        search_field.setValue( filter_final.query );
         store_topics.load();
+        filter_current = filter_final;
     };
 
 
@@ -1027,7 +1069,7 @@
 			});
 
     this.collapse_me = function(obj) {
-        alert( 121 );
+        //alert( 121 );
         //Baseliner.ooo = obj;
         ///console.log( obj );
     };
@@ -1057,7 +1099,7 @@
 	tree_filters.on('click', function(node, event){
 	});
 	
-	tree_filters.on('checkchange', function(node, checked) {
+	tree_filters.on('checkchange', function(node_selected, checked) {
 		var swDisable = true;
 		var selNodes = tree_filters.getChecked();
 		var tot_view_defaults = 1;
@@ -1081,7 +1123,11 @@
 		});
 		if (swDisable)
 			button_delete_view.disable();
-		loadfilters();
+        if( checked ) {
+            loadfilters();
+        } else {
+            loadfilters( node_selected );
+        }
 	});	
 		
     // expand the whole tree
