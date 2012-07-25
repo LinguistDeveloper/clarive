@@ -90,14 +90,50 @@ sub list : Local {
     $dir ||= 'desc';
     $start||= 0;
     $limit ||= 100;
+
+    # sort fixups 
+    $sort eq 'category_status_name' and $sort = 'category_status_seq'; # status orderby sequence
+    $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
+    $sort eq 'topic_mid' and $sort = '';
     
     my $page = to_pages( start=>$start, limit=>$limit );
     my $where = {};
 	my $query_limit = 300;
     
+    $query and $where = query_sql_build( query=>$query, fields=>{
+        map { $_ => "me.$_" } qw/
+        topic_mid 
+        title
+        created_on
+        created_by
+        status
+        numcomment
+        category_id
+        category_name
+        category_status_id
+        category_status_name        
+        category_status_seq
+        priority_id
+        priority_name
+        response_time_min
+        expr_response_time
+        deadline_min
+        expr_deadline
+        category_color
+        label_id
+        label_name
+        label_color
+        project_id
+        project_name
+        file_name
+        text
+        progress
+        /
+    });
+
     my ($select,$order_by, $as, $group_by) = $sort
     ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
-    : ([{ distinct=>'me.topic_mid'}], { -desc => "me.topic_mid" }, ['topic_mid'], ['topic_mid'] );
+    : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' }, { "-$dir" => "me.topic_mid" } ], ['topic_mid'], ['topic_mid'] );
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
     if( $username && ! $perm->is_root( $username )){
@@ -166,13 +202,19 @@ sub list : Local {
     }    
     
     # SELECT GROUP_BY MID:
-    my $rs = $c->model('Baseliner::TopicView')->search(  
-        $where,
-        { select=>$select, as=>$as, order_by=>$order_by, page=>$page, rows=>$limit, group_by=>$group_by }
-    );                                                             
+    my $args = { select=>$select, as=>$as, order_by=>$order_by, group_by=>$group_by };
+    if( $limit >= 0 ) {
+        $args->{page} = $page;
+        $args->{rows} = $limit;
+    }
+    my $rs = $c->model('Baseliner::TopicView')->search(  $where, $args );                                                             
     
-    my $pager = $rs->pager;
-	$cnt = $pager->total_entries;
+    if( $limit >= 0 ) {
+        my $pager = $rs->pager;
+        $cnt = $pager->total_entries;
+    } else {
+        $cnt = $rs->count;
+    }
     rs_hashref( $rs );
     my @mids = map { $_->{topic_mid} } $rs->all;
     
@@ -181,12 +223,21 @@ sub list : Local {
     my @rows;
     my %id_label;
     my %projects;
+    my %projects_report;
     my %mid_data;
-    for( @mid_data ) {
+    for (@mid_data) {
         $mid_data{ $_->{topic_mid} } = $_ unless exists $mid_data{ $_->{topic_mid} };
-        $mid_data{ $_->{topic_mid} }{is_closed} = $_->{status} eq 'C' ? \1 : \0;        
-        $_->{label_id} ? $id_label{ $_->{topic_mid} }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} }= (): $id_label{ $_->{topic_mid} } = {};
-        $_->{project_id} ? $projects{ $_->{topic_mid} }{ $_->{project_id} . ";" . $_->{project_name} } = (): $projects{ $_->{topic_mid} } = {};
+        $mid_data{ $_->{topic_mid} }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
+        $_->{label_id}
+            ? $id_label{ $_->{topic_mid} }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
+            : $id_label{ $_->{topic_mid} } = {};
+        if( $_->{project_id} ) {
+            $projects{ $_->{topic_mid} }{ $_->{project_id} . ";" . $_->{project_name} } = ();
+            $projects_report{ $_->{topic_mid} }{ $_->{project_name} } = ();
+        } else {
+            $projects{ $_->{topic_mid} } = {};
+            $projects_report{ $_->{topic_mid} } = {};
+        }
     }
     for my $mid (@mids) {
         my $data = $mid_data{$mid};
@@ -196,12 +247,15 @@ sub list : Local {
             title  => sprintf("%s #%d - %s", $data->{category_name}, $mid, $data->{title}),
             allDay => \1
         };
-        push @rows,
-            {
+        push @rows, {
             %$data,
+            topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
             labels   => [ keys $id_label{$mid} ],
             projects => [ keys $projects{$mid} ],
-            };
+            report_data => {
+                projects => join( ', ', keys $projects_report{$mid} )
+            },
+        };
     }
 
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
@@ -867,7 +921,7 @@ sub filters_list : Local {
     
     # Filter: Status
     my @statuses;
-    $row = $c->model('Baseliner::BaliTopicStatus')->search();
+    $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
     if($row){
         while( my $r = $row->next ) {
@@ -1331,6 +1385,67 @@ sub kanban_status : Local {
         { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };
     };
     $c->forward('View::JSON');
+}
+
+sub report_data_replace {
+    my ($self, $data ) = @_;
+    for( _array( $data->{rows} ) ) {
+        # find and replace report_data columns 
+        for my $col ( keys %{ $_->{report_data} || {} } ) {
+            $_->{ $col } = $_->{report_data}->{ $col };
+        }
+    }
+    return $data;
+}
+
+sub report_html : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    my $data = _decode_json $p->{data_json};
+    $data = $self->report_data_replace( $data );
+    $c->stash->{data} = $data;
+    $c->stash->{template} = '/reports/basic.html';
+}
+
+sub report_yaml : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    my $data_json = $p->{data_json};
+    my $data = _decode_json $data_json;
+    my $yaml = YAML::XS::Dump( $data );
+    #utf8::encode( $yaml );
+    $c->res->body( qq{<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n</head>\n<body>\n<pre>${yaml}</pre></body></html>} );
+    #$c->res->headers->header( 'content-type', 'plain/text' );
+    #$c->res->body( $yaml );
+}
+
+sub report_csv : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    my $data = _decode_json $p->{data_json};
+    $data = $self->report_data_replace( $data );
+    
+    my @csv;
+    my @cols;
+    for( _array( $data->{columns} ) ) {
+        push @cols, qq{"$_->{name}"}; #"
+    }
+    push @csv, join ',', @cols;
+
+    for my $row ( _array( $data->{rows} ) ) {
+        my @cells;
+        for my $col ( _array( $data->{columns} ) ) {
+            my $v = $row->{ $col->{id} };
+            $v =~ s{"}{""}g;
+            push @cells, qq{"$v"}; 
+        }
+        push @csv, join ',', @cells; 
+    }
+    my $body = join "\n", @csv;
+    #$c->res->body( $body );
+    $c->stash->{serve_body} = $body;
+    $c->stash->{serve_filename} = 'topics.csv';
+    $c->forward('/serve_file');
 }
 
 1;
