@@ -873,6 +873,7 @@ sub filters_list : Local {
                     id  => $i++,
                     idfilter      => $r->id,
                     text    => $r->name,
+                    color   => $r->color,
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     checked => \0,

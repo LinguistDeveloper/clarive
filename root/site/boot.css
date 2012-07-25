@@ -4413,9 +4413,9 @@
 }
 
 .forum.default {
-    font-weight:bold;
-    border:1px solid #fff;
+    font-style: italic;
 }
+
 .forum .x-tree-ec-icon {
     display:none;
 }
@@ -4425,6 +4425,7 @@
 .icon-no {
     background-image:url('') !important;
 }
+/*
 .x-tree-selected {
     border:1px dotted #a3bae9;
     background:#DFE8F6;
@@ -4434,3 +4435,4 @@
 	color:#15428b;
     font-weight:bold;
 }
+*/
