@@ -331,8 +331,7 @@ sub json : Local {
     ######################################################################################### 
     #Preguntar por el formulario de configuracion;
     my $id_category = $topic->id_category;    
-    my $field_hash;
-    map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category}, {prefetch => ['fields']})->hashref->all;
+    my $field_hash = $self->field_configuration( $id_category );
     my $row_category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
     my $forms;
     if( ref $row_category ) {
@@ -379,8 +378,7 @@ sub new_topic : Local {
     # my $id_category = $p->{new_category_id};
     
     my $id_category = $p->{new_category_id};
-    my $field_hash;
-    map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 }  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
+    my $field_hash = $self->field_configuration( $id_category );
     
     ##########################################################################################
 
@@ -497,11 +495,8 @@ sub view : Local {
     }
 
     if( $p->{html} ) {
-        #my @fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category=> $id_category }, {prefetch => ['fields']})->hashref->all;
-        #$c->stash->{fields} = @fields ? \@fields : [];
-        map { $c->stash->{ 'show_' . $_->{fields}->{name} } = \1 }
-            $c->model('Baseliner::BaliTopicFieldsCategory')
-            ->search( { id_category => $id_category }, { prefetch => ['fields'] } )->hashref->all;
+        my $field_hash = $self->field_configuration( $id_category );
+        map { $c->stash->{ $_ } = \1 } keys %$field_hash;
         
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
@@ -1446,6 +1441,34 @@ sub report_csv : Local {
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = 'topics.csv';
     $c->forward('/serve_file');
+}
+
+sub field_configuration {
+    my ($self, $id_category ) = @_;
+    defined $id_category or _throw _loc 'Missing parameter';
+    my $field_hash = {};
+    my @fields = Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category}, {prefetch => ['fields']})->hashref->all;
+    if( @fields > 0 ) {
+        map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 } @fields;
+    } else {
+        map { $field_hash->{"show_$_"} = \1 } qw/
+            assign_to
+            category
+            description
+            files
+            labels
+            priority
+            progress
+            projects
+            properties
+            release
+            revisions
+            status
+            title
+            topics
+        /;
+    }
+    return $field_hash;
 }
 
 1;
