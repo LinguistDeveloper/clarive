@@ -4411,6 +4411,11 @@
 .forum {
     border:1px solid #fff;
 }
+
+.forum.default {
+    font-weight:bold;
+    border:1px solid #fff;
+}
 .forum .x-tree-ec-icon {
     display:none;
 }

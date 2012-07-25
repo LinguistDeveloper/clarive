@@ -308,7 +308,8 @@ Baseliner.lifecycle.getLoader().on("beforeload", function(treeLoader, node) {
     loader.baseParams = node.attributes.data;
 });
 
-Baseliner.lifecycle.on('dblclick', function(n, ev){ 
+//Baseliner.lifecycle.on('dblclick', function(n, ev){
+Baseliner.lifecycle.on('click', function(n, ev){     
     //alert( JSON.stringify( n ) );
     if( n.attributes.data == undefined ) return;
     var c = n.attributes.data.click;
@@ -319,6 +320,7 @@ Baseliner.lifecycle.on('dblclick', function(n, ev){
         params.id_project = n.parentNode.attributes.data.id_project;
     }
     if( params.tab_icon == undefined ) params.tab_icon = c.icon;
+
     if( c.type == 'comp' ) {
         Baseliner.add_tabcomp( c.url, _(c.title), params );
         ev.stopEvent();
@@ -332,5 +334,6 @@ Baseliner.lifecycle.on('dblclick', function(n, ev){
         Baseliner.message( 'Invalid or missing click.type', '' );
     }
 });
+
 
 Baseliner.lifecycle.expand();

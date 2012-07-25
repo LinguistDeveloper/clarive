@@ -2,6 +2,7 @@
     use Baseliner::Utils;
     my $id = _nowstamp;
 </%perl>
+
 (function(){
     <& /comp/search_field.mas &>
     var ps = 30; //page_size
