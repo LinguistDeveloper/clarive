@@ -1103,7 +1103,10 @@
 				var style = document.createElement('style');
 				var head = document.getElementsByTagName('head')[0];
 				var rules = document.createTextNode(
-					'.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:' + returnOpposite(n.attributes.color.substr(1)) + ';background: ' + n.attributes.color + '; }'
+					
+					'.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:' +
+					returnOpposite(n.attributes.color.substr(1)) + ';background: ' + n.attributes.color +
+					';text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
 				);
 				style.type = 'text/css';
 				if(style.styleSheet) {

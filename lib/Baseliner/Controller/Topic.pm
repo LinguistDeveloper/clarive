@@ -931,7 +931,7 @@ sub filters_list : Local {
                     id  => $i++,
                     idfilter      => $r->id,
                     text    => $r->name,
-                    cls     => 'forum',
+                    cls     => 'forum status',
                     iconCls => 'icon-no',
                     checked => \0,
                     leaf    => 'true'
