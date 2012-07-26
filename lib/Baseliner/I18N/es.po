@@ -3799,6 +3799,9 @@ msgstr "ID de Tópico"
 msgid "Topic Report"
 msgstr "Informe de Tópicos"
 
+msgid "Open..."
+msgstr "Abrir..."
+
 msgid "Code"
 msgstr "Código"
 

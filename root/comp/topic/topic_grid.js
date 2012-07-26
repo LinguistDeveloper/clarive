@@ -642,9 +642,9 @@
     };
 
     function returnOpposite(hexcolor) {
-        var r = parseInt(hexcolor.substr(0,2),16);
-        var g = parseInt(hexcolor.substr(2,2),16);
-        var b = parseInt(hexcolor.substr(4,2),16);
+        var r = parseInt(hexcolor.substring(0,2),16);
+        var g = parseInt(hexcolor.substring(2,2),16);
+        var b = parseInt(hexcolor.substring(4,2),16);
         var yiq = ((r*299)+(g*587)+(b*114))/1000;
         return (yiq >= 128) ? '#000000' : '#FFFFFF';
     }
@@ -663,7 +663,7 @@
 				var label_color = label[2];
 				tag_color_html = tag_color_html
                     + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" 
-                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";				
+                    + returnOpposite(label_color.substring(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";				
             }
         }
 		if(btn_comprimir.pressed){
@@ -741,12 +741,32 @@
     };
 
     var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
-        var mid = rec.data.topic_mid; //Cambiarlo en un futuro por un contador de categorias
-        var cat_name = rec.data.category_name; //Cambiarlo en un futuro por un contador de categorias
-        var color = rec.data.category_color;
-        var cls = rec.data.is_release ? 'label' : 'badge';
+        var d = rec.data;
+        var mid = d.topic_mid; //Cambiarlo en un futuro por un contador de categorias
+        var cat_name = d.category_name; //Cambiarlo en un futuro por un contador de categorias
+        var color = d.category_color;
+        var cls = 'label';
+        var icon = d.category_icon;
+
+        // set default icons
+        if( icon==undefined && d.is_changeset > 0  ) {
+            icon = '/static/images/icons/package-white.png';
+        }
+        else if( icon==undefined && d.is_release > 0  ) {
+            icon = '/static/images/icons/release-white.png';
+        }
+
+        // prepare icon background
+        var style_str;
+        if( icon ) {
+            style_str = "float:left;padding:2px 8px 2px 18px;background: {0} url('{1}') no-repeat left 2px";
+        }
+        else {
+            style_str = "float:left;padding:2px 8px 2px 8px;background-color: {0}";
+        }
+        var style = String.format( style_str, color, icon );
         //if( color == undefined ) color = '#777';
-        var ret = '<div id="boot"><span class="'+cls+'" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + cat_name + ' #' + mid + '</span></div>';
+        var ret = String.format('<div id="boot"><span class="{0}" style="{1}">{2} #{3}</span></div>', cls, style, cat_name, mid );
         return ret;
     };
 
@@ -1100,17 +1120,28 @@
 		enableDD: true,
 		ddGroup: 'lifecycle_dd'
     });
+
+    Baseliner.aaa = function(){
+        alert( 555 );
+    };
     
 	tree_filters.on('beforechildrenrendered', function(node){
+        /* Changing node text
+        node.setText( String.format('<span>{0}</span><span style="float:right; margin-right:1px">{1}</span>',
+            node.text,
+            '<img src="/static/images/icons/config.gif" onclick="Baseliner.aaa()" />'  )
+        );
+        */
 		if(node.attributes.id == 'C' || node.attributes.id == 'L'){
 			node.eachChild(function(n) {
+                var color = n.attributes.color;
+                if( ! color ) color = '#999';
 				var style = document.createElement('style');
 				var head = document.getElementsByTagName('head')[0];
 				var rules = document.createTextNode(
-					
 					'.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:' +
-					returnOpposite(n.attributes.color.substr(1)) + ';background: ' + n.attributes.color +
-					';text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
+					returnOpposite( color.substring(1) ) + ';background: ' + color +
+					';font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
 				);
 				style.type = 'text/css';
 				if(style.styleSheet) {
