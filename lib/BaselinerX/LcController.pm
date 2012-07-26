@@ -90,7 +90,7 @@ sub tree_projects : Local {
                 id_project => $r->mid,
                 project    => $r->name,
                 click => {
-                    url   => '/project/dashboard/' . $r->name,
+                    url   => '/dashboard/list/project',
                     type  => 'html',
                     icon  => '/static/images/icons/project.png',
                     title => $r->name,

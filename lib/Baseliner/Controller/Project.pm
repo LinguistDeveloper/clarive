@@ -414,16 +414,6 @@ sub update : Local {
     $c->forward('View::JSON');
 }
 
-sub dashboard : Local {
-    my ( $self, $c, $project_name ) = @_;
-	
-	$c->stash->{project_name} = $project_name;
-    $c->stash->{template} = '/comp/dashboard_project.html';
-}
-
-
-
-
 
 
 ######################################################################################################################
