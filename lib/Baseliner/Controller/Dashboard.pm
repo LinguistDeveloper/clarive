@@ -305,9 +305,15 @@ sub list : Local {
 			my @dashlets = ({ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
 							{ html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
 						);
+			my @params;
+			my %valores;
+			$valores{projects} = $p->{id_project};
+			$valores{bl_days} = 365;
+			push @params, 'project'; 
+			push @params, \%valores;
 			
 			for my $dash ( @dashlets ) {
-				$c->forward( $dash->{url} . '/123' );
+				$c->forward( $dash->{url}, \@params );
 				$c->stash->{is_columns} = 2;
 				$c->stash->{dashboardlets} = \@dashlets;
 			}	
@@ -451,7 +457,7 @@ sub set_config : Local {
 }
 
 sub list_baseline: Private{
-    my ( $self, $c, $dashboard_id, $f, $t ) = @_;
+    my ( $self, $c, $dashboard_id, $params ) = @_;
 	my $username = $c->username;
 	my (@jobs, $job, @datas, @temps, $SQL);
 	
@@ -471,6 +477,15 @@ sub list_baseline: Private{
 		}		
 	}else{
 		_log ">>>>>>>>>>>>>>>>PARAMETROS: " . $dashboard_id;
+		_log ">>>>>>>>>>>>>>>>PARAMETROS: " . _dump $params;
+		my %params = _array $params;
+		if($params){
+			foreach my $key (keys %params){
+				_log ">>>>>>>>>>>>KEY: " . $key;
+				_log ">>>>>>>>>>>>VALUE: " . $params{$key};
+				$default_config->{$key} = $params{$key};
+			};				
+		}			
 	}
 	##########################################################################################################	
 	
@@ -483,6 +498,8 @@ sub list_baseline: Private{
 	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
+	
+	$ids_project = 'MID=' . $default_config->{projects};
 
 	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
@@ -497,6 +514,8 @@ sub list_baseline: Private{
 													(SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
 					WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
 			GROUP BY BL";				
+	
+	_log ">>>>>>>>>>>>>>SQL: " . $bl_days;
 	
 	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
 
