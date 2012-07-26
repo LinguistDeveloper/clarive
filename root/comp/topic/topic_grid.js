@@ -516,7 +516,10 @@
                                     Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
                                         var win = new Ext.Window({
                                             layout: 'fit', 
+                                            modal: true,
                                             autoScroll: true,
+                                            style: { overflow: 'hide' },
+                                            border: false,
                                             title: title,
                                             height: 600, width: 800, 
                                             maximizable: true,
@@ -584,9 +587,10 @@
                     });
                 };
 
-                kanban.on('afterrender', function(){
+                kanban.on('afterrender', function(cmp){
                     kanban.load_store( store_topics );
                     kanban.doLayout();
+                    
                     // show/hide tools for the column 
                     var cols = kanban.findByType( 'kanbancolumn' );
                     for( var i = 0; i<cols.length; i++ ) {
