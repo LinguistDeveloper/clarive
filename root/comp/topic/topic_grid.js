@@ -691,20 +691,37 @@
     
     var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
         var tag_comment_html;
-        if(rec.data.numcomment){
-            tag_comment_html = [
-                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
-                rec.data.numcomment,
-                "</span>",
-                "<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ",
-                rec.data.numfile,
-                "</span>"
-            ].join("");
-			//tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /></span>";
-        } else {       
-            tag_comment_html='';
-        }
-        return tag_comment_html;
+		var tag_comment_html = new Array();
+		var swGo = false;
+		if(rec.data.numcomment){
+			swGo = true;
+			tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
+			tag_comment_html.push(rec.data.numcomment);
+			tag_comment_html.push("</span>");
+		}
+		if(rec.data.num_file){
+			swGo = true;
+			tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
+			tag_comment_html.push(rec.data.num_file);
+			tag_comment_html.push("</span>");			
+		}
+		var str = swGo ? tag_comment_html.join(""):'';
+		
+//        if(rec.data.numcomment || rec.data.num_file){
+//            tag_comment_html = [
+//                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
+//                rec.data.numcomment ? rec.data.numcomment: '',
+//                "</span>",
+//                "<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ",
+//                rec.data.numfile ? rec.data.num_file: '',
+//                "</span>"
+//            ].join("");
+//			//tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /></span>";
+//        } else {       
+//            tag_comment_html='';
+//        }
+		
+        return str;
     };
     
     var render_project = function(value,metadata,rec,rowIndex,colIndex,store){

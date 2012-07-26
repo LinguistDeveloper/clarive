@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Core::DBI;
 use Try::Tiny;
+use Scalar::Util qw(looks_like_number);
 use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
@@ -30,6 +31,7 @@ register 'config.dashlet.baselines' => {
 	metadata => [
 	       { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
 		   { id=>'states', label=>'States for job statistics', default => 'DESA,IT,TEST,PREP,PROD' },
+		   { id=>'projects', label=>'Projects for job statistics', default => 'ALL' },
 	    ]
 };
 
@@ -153,13 +155,6 @@ sub list_dashlets : Local {
 	
 	my @rows;
     for my $dash ( @dashlets ) {
-        #$c->forward( $dash->{metadata}->{url} );
-		#my $config;
-		#if ($dash->{metadata}->{config}) {
-		#	$config = $dash->{metadata}->{config};
-		#}else{
-		#	$config = '';
-		#}
 		push @rows,
 		  {
 			id			=> $dash->{metadata}->{html} . '#' . $dash->{metadata}->{url},
@@ -305,8 +300,23 @@ sub list : Local {
 			_log "Carga del dashboard de proyectos.";
 			_log ">>>>>>>>>>>>>>>>>>>Id Project: " . $p->{id_project};
 			_log ">>>>>>>>>>>>>>>>>>>Name Project: " . $p->{project};
+		
+			##Dashlets para el dashboard de proyectos.
+			my @dashlets = ({ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
+							{ html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
+						);
+			my @params;
+			my %valores;
+			$valores{projects} = $p->{id_project};
+			$valores{bl_days} = 365;
+			push @params, 'project'; 
+			push @params, \%valores;
 			
-			
+			for my $dash ( @dashlets ) {
+				$c->forward( $dash->{url}, \@params );
+				$c->stash->{is_columns} = 2;
+				$c->stash->{dashboardlets} = \@dashlets;
+			}	
 		} #End Dashboard Project
 		default {
 			my $dashboard_id = $p->{dashboard_id};
@@ -447,17 +457,16 @@ sub set_config : Local {
 }
 
 sub list_baseline: Private{
-    my ( $self, $c, $dashboard_id ) = @_;
+    my ( $self, $c, $dashboard_id, $params ) = @_;
 	my $username = $c->username;
 	my (@jobs, $job, @datas, @temps, $SQL);
-	
 	
 	#######################################################################################################
 	#CONFIGURATION DASHLET
 	##########################################################################################################	
 	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
 	
-	if($dashboard_id){
+	if($dashboard_id && looks_like_number($dashboard_id)){
 		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
 		my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
 		
@@ -466,6 +475,17 @@ sub list_baseline: Private{
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
+	}else{
+		_log ">>>>>>>>>>>>>>>>PARAMETROS: " . $dashboard_id;
+		_log ">>>>>>>>>>>>>>>>PARAMETROS: " . _dump $params;
+		my %params = _array $params;
+		if($params){
+			foreach my $key (keys %params){
+				_log ">>>>>>>>>>>>KEY: " . $key;
+				_log ">>>>>>>>>>>>VALUE: " . $params{$key};
+				$default_config->{$key} = $params{$key};
+			};				
+		}			
 	}
 	##########################################################################################################	
 	
@@ -478,6 +498,8 @@ sub list_baseline: Private{
 	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
+	
+	$ids_project = 'MID=' . $default_config->{projects};
 
 	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
@@ -492,6 +514,8 @@ sub list_baseline: Private{
 													(SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
 					WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
 			GROUP BY BL";				
+	
+	_log ">>>>>>>>>>>>>>SQL: " . $bl_days;
 	
 	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
 
@@ -550,7 +574,7 @@ sub list_lastjobs: Private{
 	##########################################################################################################
 	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.lastjobs');	
 	
-	if($dashboard_id){
+	if($dashboard_id && looks_like_number($dashboard_id)){
 		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
 		my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array _load($dashboard_rs->dashlets);
 		
@@ -586,7 +610,7 @@ sub list_emails: Private{
 	##########################################################################################################
 	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.emails');	
 	
-	if($dashboard_id){
+	if($dashboard_id && looks_like_number($dashboard_id)){
 		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
 		my @config_dashlet = grep {$_->{url}=~ 'list_emails'} _array _load($dashboard_rs->dashlets);
 		
@@ -627,7 +651,7 @@ sub list_topics: Private{
 	##########################################################################################################
 	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics');	
 	
-	if($dashboard_id){
+	if($dashboard_id && looks_like_number($dashboard_id)){
 		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
 		my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array _load($dashboard_rs->dashlets);
 		
@@ -674,7 +698,7 @@ sub list_jobs: Private {
 	##########################################################################################################
 	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.jobs');	
 	
-	if($dashboard_id){
+	if($dashboard_id && looks_like_number($dashboard_id)){
 		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
 		my @config_dashlet = grep {$_->{url}=~ 'list_jobs'} _array _load($dashboard_rs->dashlets);
 		

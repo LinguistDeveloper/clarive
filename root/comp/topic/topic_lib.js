@@ -118,7 +118,8 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'response_time_min' },
                 {  name: 'expr_response_time' },
                 {  name: 'deadline_min' },
-                {  name: 'expr_deadline' }
+                {  name: 'expr_deadline' },
+                {  name: 'num_file' }                
                 
             ]
         },config);
