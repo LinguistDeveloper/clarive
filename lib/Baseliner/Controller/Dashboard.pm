@@ -292,82 +292,94 @@ sub update : Local {
 
 
 sub list : Local {
-    my ($self, $c) = @_;
+    my ($self, $c, $dashboard_name) = @_;
 	my $p = $c->req->params;
-	my $dashboard_id = $p->{dashboard_id};
 
-    # list dashboardlets, only active ones
-    #my @dashs = Baseliner->model('Registry')->search_for( key => 'dashboard.' ); #, allowed_actions => [@actions] );
-    #@dashs = grep { $_->active } @dashs;
-	my @dashlets;
+	# **********************************************************************************************************
+    # TODO: Hay que controlar los dashboards por perfil ********************************************************
+	# **********************************************************************************************************
 	
-	if ($dashboard_id){
-		my $dashboard = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-		@dashlets = _array _load $dashboard->dashlets;
-		for my $dash ( @dashlets ) {
-			if($dash->{url}){
-				$c->forward( $dash->{url} . '/' . $dashboard_id );
-			}
-		}
-		$c->stash->{is_columns} = $dashboard->is_columns;
-		$c->stash->{dashboardlets} = \@dashlets;
-	}else{
-		my $dashboard = $c->model('Baseliner::BaliDashboard')->search( undef, {order_by => 'is_main desc'} );
-		
-		if ($dashboard->count > 0){
-			my $i = 0;
-			my @dashboard;
-			while (my $dashboard = $dashboard->next){
-				if($i == 0){
-					@dashlets = @{_load $dashboard->dashlets};
-					for my $dash ( @dashlets ) {
-						if($dash->{url}){
-							$c->forward( $dash->{url} . '/' . $dashboard->id );
-						}
+	given ($dashboard_name) {
+		when ('project') {
+			
+			_log "Carga del dashboard de proyectos.";
+			_log ">>>>>>>>>>>>>>>>>>>Id Project: " . $p->{id_project};
+			_log ">>>>>>>>>>>>>>>>>>>Name Project: " . $p->{project};
+			
+			
+		} #End Dashboard Project
+		default {
+			my $dashboard_id = $p->{dashboard_id};
+			my @dashlets;
+			
+			if ($dashboard_id){
+				my $dashboard = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+				@dashlets = _array _load $dashboard->dashlets;
+				for my $dash ( @dashlets ) {
+					if($dash->{url}){
+						$c->forward( $dash->{url} . '/' . $dashboard_id );
 					}
-					$c->stash->{is_columns} = $dashboard->is_columns;
-					$c->stash->{dashboardlets} = \@dashlets;
-				}else{
-					push @dashboard, { name => $dashboard->name,
-									   id   => $dashboard->id,
-									 };
 				}
-				$i++;
-			}
-			$c->stash->{dashboards} = \@dashboard;
-			
-		}else{
-			##Dashboard proporcionado por clarive (default)
-			@dashlets = (	{ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
-							{ html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
-							{ html => '/dashlets/topics.html', url => '/dashboard/list_topics', order => 3},
-							{ html => '/dashlets/emails.html', url => '/dashboard/list_emails', order => 4},
-							{ html => '/dashlets/jobs.html', url => '/dashboard/list_jobs', order=> 5},
-							{ html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
-						);
-			
-			my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
-							{
-								name  => 'Clarive',
-								description => 'Demo dashboard Clarive configurable',
-								dashlets => _dump \@dashlets,
-							});
-			
-			if ($dashboard->id){
-				my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-									{
-										id_dashboard  => $dashboard->id,
-										id_role => 100, #Public
-									});
-			}
-			for my $dash ( @dashlets ) {
-				$c->forward( $dash->{url} . '/' . $dashboard->id );
 				$c->stash->{is_columns} = $dashboard->is_columns;
 				$c->stash->{dashboardlets} = \@dashlets;
-			}	
-		}
-	}
-    
+			}else{
+				my $dashboard = $c->model('Baseliner::BaliDashboard')->search( undef, {order_by => 'is_main desc'} );
+				
+				if ($dashboard->count > 0){
+					my $i = 0;
+					my @dashboard;
+					while (my $dashboard = $dashboard->next){
+						if($i == 0){
+							@dashlets = @{_load $dashboard->dashlets};
+							for my $dash ( @dashlets ) {
+								if($dash->{url}){
+									$c->forward( $dash->{url} . '/' . $dashboard->id );
+								}
+							}
+							$c->stash->{is_columns} = $dashboard->is_columns;
+							$c->stash->{dashboardlets} = \@dashlets;
+						}else{
+							push @dashboard, { name => $dashboard->name,
+											   id   => $dashboard->id,
+											 };
+						}
+						$i++;
+					}
+					$c->stash->{dashboards} = \@dashboard;
+					
+				}else{
+					##Dashboard proporcionado por clarive (default)
+					@dashlets = (	{ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
+									{ html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
+									{ html => '/dashlets/topics.html', url => '/dashboard/list_topics', order => 3},
+									{ html => '/dashlets/emails.html', url => '/dashboard/list_emails', order => 4},
+									{ html => '/dashlets/jobs.html', url => '/dashboard/list_jobs', order=> 5},
+									{ html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
+								);
+					
+					my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+									{
+										name  => 'Clarive',
+										description => 'Demo dashboard Clarive configurable',
+										dashlets => _dump \@dashlets,
+									});
+					
+					if ($dashboard->id){
+						my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+											{
+												id_dashboard  => $dashboard->id,
+												id_role => 100, #Public
+											});
+					}
+					for my $dash ( @dashlets ) {
+						$c->forward( $dash->{url} . '/' . $dashboard->id );
+						$c->stash->{is_columns} = $dashboard->is_columns;
+						$c->stash->{dashboardlets} = \@dashlets;
+					}	
+				}
+			}
+		} # End default
+	}	
     $c->stash->{template} = '/comp/dashboard.html';
 }
 

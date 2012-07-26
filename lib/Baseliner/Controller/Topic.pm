@@ -816,7 +816,7 @@ sub filters_list : Local {
         text    => _loc('Created Today'),
         filter  => '{"today":true}',
         default    => \1,
-        cls     => 'forum',
+        cls     => 'forum default',
         iconCls => 'icon-no',
         checked => \0,
         leaf    => 'true'
@@ -828,7 +828,7 @@ sub filters_list : Local {
         text    => _loc('Assigned To Me'),
         filter  => '{"assigned_to_me":true}',
         default    => \1,
-        cls     => 'forum',
+        cls     => 'forum default',
         iconCls => 'icon-no',
         checked => \0,
         leaf    => 'true'
@@ -873,6 +873,7 @@ sub filters_list : Local {
                     id  => $i++,
                     idfilter      => $r->id,
                     text    => $r->name,
+                    color   => $r->color,
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     checked => \0,
@@ -903,7 +904,7 @@ sub filters_list : Local {
                 idfilter      => $r->id,
                 text    => $r->name,
                 color   => $r->color,
-                cls     => 'forum',
+                cls     => 'forum label',
                 iconCls => 'icon-no',
                 checked => \0,
                 leaf    => 'true'
@@ -930,7 +931,7 @@ sub filters_list : Local {
                     id  => $i++,
                     idfilter      => $r->id,
                     text    => $r->name,
-                    cls     => 'forum',
+                    cls     => 'forum status',
                     iconCls => 'icon-no',
                     checked => \0,
                     leaf    => 'true'

@@ -87,8 +87,14 @@ sub tree_projects : Local {
             text       => $r->name,
             url        => '/lifecycle/tree_project',
             data       => {
-               id_project => $r->mid,
-               project    => $r->name,
+                id_project => $r->mid,
+                project    => $r->name,
+                click => {
+                    url   => '/dashboard/list/project',
+                    type  => 'html',
+                    icon  => '/static/images/icons/project.png',
+                    title => $r->name,
+                }               
             },
             icon       => '/static/images/icons/project_small.png',
             leaf       => \0,
