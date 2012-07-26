@@ -490,6 +490,7 @@ sub list_baseline: Private{
 	##########################################################################################################	
 	
     my $bl_days = $default_config->{bl_days} // 7;
+
 	
 	#Cojemos los proyectos que el usuario tiene permiso para ver jobs
 	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
@@ -498,8 +499,9 @@ sub list_baseline: Private{
 	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
-	
-	$ids_project = 'MID=' . $default_config->{projects};
+	if($default_config->{projects} ne 'ALL'){
+		$ids_project = 'MID=' . $default_config->{projects};
+	}
 
 	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
