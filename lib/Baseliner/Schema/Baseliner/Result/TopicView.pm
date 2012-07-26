@@ -15,7 +15,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
     SELECT  T.MID TOPIC_MID, TITLE, T.CREATED_ON, T.CREATED_BY, STATUS,  NUMCOMMENT, C.ID CATEGORY_ID, C.NAME CATEGORY_NAME, PROGRESS,
             ID_CATEGORY_STATUS CATEGORY_STATUS_ID, S.NAME CATEGORY_STATUS_NAME, S.SEQ CATEGORY_STATUS_SEQ, ID_PRIORITY AS PRIORITY_ID, TP.NAME PRIORITY_NAME,
             RESPONSE_TIME_MIN, EXPR_RESPONSE_TIME, DEADLINE_MIN, EXPR_DEADLINE, C.COLOR CATEGORY_COLOR, L.ID LABEL_ID, L.NAME LABEL_NAME, L.COLOR LABEL_COLOR,
-            P.MID AS PROJECT_ID, P.NAME AS PROJECT_NAME, F.FILENAME AS FILE_NAME, PS.TEXT AS TEXT
+            P.MID AS PROJECT_ID, P.NAME AS PROJECT_NAME, F.FILENAME AS FILE_NAME, PS.TEXT AS TEXT, NUM_FILE
             FROM  BALI_TOPIC T
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON ID_CATEGORY = C.ID
                     LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
@@ -27,6 +27,12 @@ __PACKAGE__->result_source_instance->view_definition(q{
                                         AND REL.TO_MID = B.MID
                                         AND REL.REL_TYPE = 'topic_post'
                                         GROUP BY A.MID) D ON T.MID = D.MID
+                    LEFT JOIN (SELECT COUNT(*) AS NUM_FILE, E.MID 
+                                        FROM BALI_TOPIC E, BALI_MASTER_REL REL1, BALI_FILE_VERSION G
+                                        WHERE E.MID = REL1.FROM_MID
+                                        AND REL1.TO_MID = G.MID
+                                        AND REL1.REL_TYPE = 'topic_file_version'
+                                        GROUP BY E.MID) H ON T.MID = H.MID                                         
                     LEFT JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID
                     LEFT JOIN BALI_MASTER_REL REL_PR ON REL_PR.FROM_MID = T.MID AND REL_PR.REL_TYPE = 'topic_project'
                     LEFT JOIN BALI_PROJECT P ON P.MID = REL_PR.TO_MID
@@ -64,6 +70,7 @@ __PACKAGE__->add_columns(
         file_name
         text
         progress
+        num_file
     )
 );
 
