@@ -476,13 +476,9 @@ sub list_baseline: Private{
 			};				
 		}		
 	}else{
-		_log ">>>>>>>>>>>>>>>>PARAMETROS: " . $dashboard_id;
-		_log ">>>>>>>>>>>>>>>>PARAMETROS: " . _dump $params;
 		my %params = _array $params;
 		if($params){
 			foreach my $key (keys %params){
-				_log ">>>>>>>>>>>>KEY: " . $key;
-				_log ">>>>>>>>>>>>VALUE: " . $params{$key};
 				$default_config->{$key} = $params{$key};
 			};				
 		}			
@@ -496,12 +492,17 @@ sub list_baseline: Private{
 	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
 																			action => 'action.job.viewall',
 																			level => 1);
-	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
+	my $ids_project;
+	if($default_config->{projects} ne 'ALL'){
+		$ids_project = 'MID=' . join ('', grep {$_ =~ $default_config->{projects}} @ids_project);
+	}
+	else{
+		$ids_project =  'MID=' . join (' OR MID=', @ids_project);	
+	}
+	
+	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 	
-	if($default_config->{projects} ne 'ALL'){
-		$ids_project = 'MID=' . $default_config->{projects};
-	}
 
 	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
