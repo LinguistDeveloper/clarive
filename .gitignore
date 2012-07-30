@@ -29,6 +29,7 @@ features/nature.ssrs
 features/gbp
 features/sonar
 features/checking
+features/svnscm
 inc
 t/balitest.db
 t/old
