@@ -373,6 +373,7 @@
         //enableToggle: true,
         pressed: false,
         handler: function(){
+            // kanban fullscreen
             Baseliner.kanban({ store: store_topics });
         }
     }); 
