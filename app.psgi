@@ -29,7 +29,7 @@ if( $@ ) {
     print "\nBaseliner Startup Error:\n";
     print "-------------------------\n";
     print $@;
-    print "-------------------------\n";
+    print "-------------------------\n\n";
     die $@;
 }
  
