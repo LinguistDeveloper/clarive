@@ -72,7 +72,7 @@ sub checkout {
     for ( keys %{$svn_checkouts} ) {
         my $repo = Baseliner::CI->new( $_ );
         $repo->job( $job );
-        $repo->checkout( rev => $svn_checkouts->{$_}->{rev}, prj => $svn_checkouts->{$_}->{prj}, branch => $svn_checkouts->{$_}->{branch} );
+        $repo->checkout( repo => $repo, rev => $svn_checkouts->{$_}->{rev}, prj => $svn_checkouts->{$_}->{prj}, branch => $svn_checkouts->{$_}->{branch} );
     }
 
     # Svn Checkouts End
@@ -159,6 +159,7 @@ sub job_elements {
         for ( keys %{$revisions_shas} ) {
             $log->debug(_loc("<b>GIT Revisions:</B> Processing revision $_"));
             my $repo = Baseliner::CI->new( $_ );
+            $log->debug("JOB", data => $job);
             $repo->job( $job );
 
             $log->debug( "Detecting last commit" );
@@ -208,7 +209,7 @@ sub job_elements {
 
             $log->debug(_loc("<b>SVN Revisions:</B> Calling revision $_ list_elements"));
             my @svn_elements =
-                $repo->list_elements( repo => $repo, prj => $revisions_shas->{$_}->{prj}, commits => $revisions_shas->{$_}->{shas}, branch => $branch );
+                $repo->list_elements( repo => $repo,  prj => $revisions_shas->{$_}->{prj}, commits => $revisions_shas->{$_}->{shas}, branch => $branch );
             $log->debug( "<b>SVN Revisions:</B> Generated git list of elements", data => _dump @svn_elements );
             push @elems, @svn_elements;
             $svn_checkouts->{$_}->{rev} = $repo->last_commit( commits => $revisions_shas->{$_}->{shas} );
@@ -281,6 +282,17 @@ sub update_baselines {
     }
 
     # Git Update Baselines
+
+    # Svn Update Baselines
+    my $svn_checkouts = $stash->{svn_checkouts};
+
+    for ( keys %{$svn_checkouts} ) {
+        my $repo = Baseliner::CI->new( $_ );
+        $repo->job( $job );
+        $repo->update_baselines( repo => $repo, branch => $svn_checkouts->{$_}->{branch}, rev => $svn_checkouts->{$_}->{rev} );
+    }
+
+    # Svn Update Baselines
 } ## end sub update_baselines
 
 package BaselinerX::ChangesetElement;
