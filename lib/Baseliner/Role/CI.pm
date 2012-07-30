@@ -81,6 +81,7 @@ sub save_data {
     return unless ref $data;
     my $storage = $self->storage;
     if( $storage eq 'yaml' ) {
+        _debug "------------>" . _dump( $data );
         $master_row->yaml( _dump( $data ) );
         $master_row->update;
     }
@@ -119,7 +120,7 @@ sub load {
     # setup the base data from master row
     my $data = { $row->get_columns };
     if( $storage eq 'yaml' ) {
-        $data = { %$data, %{_load( $row->yaml )} };
+        $data = { %$data, %{ _load( $row->yaml ) || {} } };
     }
     elsif( $storage eq 'fields' ) {
        # TODO  

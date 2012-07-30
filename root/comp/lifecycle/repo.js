@@ -97,7 +97,7 @@
         loader.baseParams = { path: node.attributes.path, repo_path: repo_path, bl: bl };
     });
 
-    tree.on('dblclick', function(node, ev){ 
+    tree.on('dblclick', function(node, ev){
         show_properties( node.attributes.path, node.attributes.item, node.attributes.version, node.leaf );
     });
 

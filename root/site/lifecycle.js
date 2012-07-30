@@ -186,41 +186,76 @@ Baseliner.lc_menu = new Ext.menu.Menu({
 //    builds the menu from node attributes and base menu
 var menu_click = function(node,event){
     node.select();
-    if( node.attributes.menu != undefined ) {
+    // menus and click events go in here
+    if( node.attributes.menu != undefined || node.attributes.data.click != undefined ) {
         var m = Baseliner.lc_menu;
         m.removeAll(); 
-        var node_menu = node.attributes.menu;
         var node_menu_items = new Array(); 
-        // create js handlers for menu items
-        for( var i = 0; i < node_menu.length; i++ ) {
-            var menu_item = node_menu[i];
-            menu_item.text = _( menu_item.text ); 
-            var url = "";
-            // component opener menu
-            if( menu_item.comp != undefined ) {
-                url = menu_item.comp.url; 
-                menu_item.click_data = { action: menu_item.comp }; // need this before to preserve scope
-                menu_item.handler = function(item) {
-                    item.click_data.node = item.node;   
-                    var d = { node: item.node, action: menu_item.comp };
-                    Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), d );
-                };
-            } else if( menu_item.eval != undefined ) {
-                url = menu_item.eval.url; 
-                menu_item.click_data = { action: menu_item.eval }; // need this before to preserve scope
-                menu_item.handler = function( item ) {
-                    item.click_data.node = item.node;
-                    Baseliner.ajaxEval( item.url, item.click_data , function(comp) {
-                        // no op
-                        var x = 0;
-                    });
-                };
+
+        // click turns into Open...
+        var click = node.attributes.data.click;
+        if( click != undefined && click.url != undefined ) {
+            var menu_item = new Ext.menu.Item({
+                text: _( 'Open...' ),
+                icon: '/static/images/icons/tab.png',
+                node: node,
+                handler: function(item){
+                    var n = item.node;
+                    var c = node.attributes.data.click;
+                    var params = n.attributes.data;
+                    
+                    if(n.attributes.text == _('Topics')){
+                        params.id_project = n.parentNode.attributes.data.id_project;
+                    }
+                    if( params.tab_icon == undefined ) params.tab_icon = c.icon;
+
+                    if( c.type == 'comp' ) {
+                        Baseliner.add_tabcomp( c.url, _(c.title), params );
+                    } else if( c.type == 'html' ) {
+                        Baseliner.add_tab( c.url, _(c.title), params );
+                    } else if( c.type == 'iframe' ) {
+                        Baseliner.add_iframe( c.url, _(c.title), params );
+                    } else {
+                        Baseliner.message( 'Invalid or missing click.type', '' );
+                    }
+                }
+            });
+            node_menu_items.push( menu_item );
+        }
+
+        if( node.attributes.menu ) {
+            var node_menu = node.attributes.menu;
+            // create js handlers for menu items
+            for( var i = 0; i < node_menu.length; i++ ) {
+                var menu_item = node_menu[i];
+                menu_item.text = _( menu_item.text ); 
+                var url = "";
+                // component opener menu
+                if( menu_item.comp != undefined ) {
+                    url = menu_item.comp.url; 
+                    menu_item.click_data = { action: menu_item.comp }; // need this before to preserve scope
+                    menu_item.handler = function(item) {
+                        item.click_data.node = item.node;   
+                        var d = { node: item.node, action: menu_item.comp };
+                        Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), d );
+                    };
+                } else if( menu_item.eval != undefined ) {
+                    url = menu_item.eval.url; 
+                    menu_item.click_data = { action: menu_item.eval }; // need this before to preserve scope
+                    menu_item.handler = function( item ) {
+                        item.click_data.node = item.node;
+                        Baseliner.ajaxEval( item.url, item.click_data , function(comp) {
+                            // no op
+                            var x = 0;
+                        });
+                    };
+                }
+                var item = new Ext.menu.Item(menu_item);
+                node_menu_items.push( item );
+                //item.node = node.attributes; // stash it here
+                item.node = node; // stash it here, otherwise things get out of scope
+                item.url  = url;
             }
-            var item = new Ext.menu.Item(menu_item);
-            node_menu_items.push( item );
-            //item.node = node.attributes; // stash it here
-            item.node = node; // stash it here, otherwise things get out of scope
-            item.url  = url;
         }
         m.add( node_menu_items );
         if( node_menu_items.length > 0 ) m.add('-');
@@ -308,7 +343,8 @@ Baseliner.lifecycle.getLoader().on("beforeload", function(treeLoader, node) {
     loader.baseParams = node.attributes.data;
 });
 
-Baseliner.lifecycle.on('dblclick', function(n, ev){ 
+//Baseliner.lifecycle.on('dblclick', function(n, ev){
+Baseliner.lifecycle.on('xxxclick', function(n, ev){     
     //alert( JSON.stringify( n ) );
     if( n.attributes.data == undefined ) return;
     var c = n.attributes.data.click;
@@ -319,6 +355,7 @@ Baseliner.lifecycle.on('dblclick', function(n, ev){
         params.id_project = n.parentNode.attributes.data.id_project;
     }
     if( params.tab_icon == undefined ) params.tab_icon = c.icon;
+
     if( c.type == 'comp' ) {
         Baseliner.add_tabcomp( c.url, _(c.title), params );
         ev.stopEvent();
@@ -332,5 +369,6 @@ Baseliner.lifecycle.on('dblclick', function(n, ev){
         Baseliner.message( 'Invalid or missing click.type', '' );
     }
 });
+
 
 Baseliner.lifecycle.expand();

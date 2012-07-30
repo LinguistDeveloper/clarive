@@ -177,7 +177,9 @@ sub update_status : Local {
             try{
                 my $row = $c->model('Baseliner::BaliTopicStatus')->search({name => $p->{name}})->first;
                 if(!$row){
-                    my $status = $c->model('Baseliner::BaliTopicStatus')->create({name  => $p->{name}, bl=>$p->{bl}, description=> $p->{description}, type=> $p->{type}});
+                    my $status = $c->model('Baseliner::BaliTopicStatus')
+                        ->create(
+                        { name => $p->{name}, bl => $p->{bl}, description => $p->{description}, type => $p->{type}, seq => $p->{seq} } );
                     $c->stash->{json} = { msg=>_loc('Status added'), success=>\1, status_id=> $status->id };
                 }
                 else{
@@ -196,6 +198,7 @@ sub update_status : Local {
                 $status->description( $p->{description} );
                 $status->bl( $p->{bl} );
                 $status->type( $p->{type} );
+                $status->seq( $p->{seq} );
                 $status->update();
                 
                 $c->stash->{json} = { msg=>_loc('Status modified'), success=>\1, status_id=> $id_status };

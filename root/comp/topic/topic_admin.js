@@ -1283,7 +1283,7 @@
         cls: 'x-btn-text-icon',
         handler: function() {
             if(label_box.getValue() != ''){
-                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl},
                     function(response) {
                         if ( response.success ) {
                             store_label.load();
@@ -1370,7 +1370,7 @@
     label_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
             if(f.getValue() != ''){
-                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: color_lbl},
+                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl},
                     function(response) {
                         if ( response.success ) {
                             store_label.load();

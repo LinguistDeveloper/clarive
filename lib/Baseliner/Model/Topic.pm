@@ -311,4 +311,25 @@ sub append_category {
     } @topics;
 }
 
+sub next_status_for_user {
+    my ($self, %p ) = @_;
+    my $user_roles;
+    my $where = { id_category => $p{id_category} };
+    $where->{id_status_from} = $p{id_status_from} if defined $p{id_status_from};
+    if( $p{username} ) {
+        $user_roles = Baseliner->model('Baseliner::BaliRoleUser')->search({ username => $p{username} },{ select=>'role' } )->as_query;
+        $where->{role} = { -in => $user_roles };
+    }
+    my @to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+        $where,
+        {   join     => [ 'roles', 'statuses_to' ],
+            distinct => 1,
+            +select => [ 'id_status_to', 'statuses_to.name', 'id_category' ],
+            +as     => [ 'id_status',    'status_name',             'id_category' ]
+        }
+    )->hashref->all;
+
+    return @to_status;
+}
+
 1;
