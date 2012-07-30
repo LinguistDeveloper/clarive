@@ -49,3 +49,6 @@
 [submodule "features/svnscm"]
 	path = features/svnscm
 	url = http://git.vasslabs.com/git/svnscm.git
+[submodule "features/cvsscm"]
+	path = features/cvsscm
+	url = http://git.vasslabs.com/git/cvsscm.git
