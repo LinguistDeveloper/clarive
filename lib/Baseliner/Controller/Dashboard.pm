@@ -489,9 +489,7 @@ sub list_baseline: Private{
 
 	
 	#Cojemos los proyectos que el usuario tiene permiso para ver jobs
-	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-																			action => 'action.job.viewall',
-																			level => 1);
+	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username, action => 'action.job.viewall', level => 1);
 	my $ids_project;
 	if($default_config->{projects} ne 'ALL'){
 		$ids_project = 'MID=' . join ('', grep {$_ =~ $default_config->{projects}} @ids_project);
@@ -627,7 +625,7 @@ sub list_emails: Private{
 	my $rows = $default_config->{rows};
 	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-	$SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
+	my $SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
 				FROM BALI_MESSAGE A,
 					(SELECT * FROM ( SELECT ID_MESSAGE,  SENT
 										FROM BALI_MESSAGE_QUEUE
@@ -636,8 +634,8 @@ sub list_emails: Private{
 				WHERE A.ID = B.ID_MESSAGE";
 				
 
-	@emails = $db->array_hash( $SQL , $username, $rows);
-	foreach $email (@emails){
+	my @emails = $db->array_hash( $SQL , $username, $rows);
+	foreach my $email (@emails){
 	    push @datas, $email;
 	}	
 		
@@ -691,9 +689,7 @@ sub list_jobs: Private {
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
 	#Cojemos los proyectos que el usuario tiene permiso para ver jobs
-	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-																			action => 'action.job.viewall',
-																			level => 1);
+	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username, action => 'action.job.viewall', level => 1);
 	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
 	
 	#CONFIGURATION DASHLET
@@ -744,7 +740,7 @@ sub list_jobs: Private {
 								) B
 							WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
 				WHERE MY_ROW_NUM <= ?";				
-	my @jobs = $db->array_hash( $SQL, $rows);
+	my @jobs = $db->array_hash( $SQL, $rows)
         if @ids_project;
 	
 	foreach my $job (@jobs){
