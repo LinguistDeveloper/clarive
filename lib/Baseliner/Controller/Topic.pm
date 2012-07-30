@@ -884,7 +884,7 @@ sub filters_list : Local {
 
     push @tree, {
         id          => 'C',
-        text        => _loc('categories'),
+        text        => _loc('Categories'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         expanded    => 'true',
