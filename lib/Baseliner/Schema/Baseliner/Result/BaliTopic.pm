@@ -132,7 +132,7 @@ sub my_releases {
             to_mid                    => $self->mid,
             'topic_topic.id_category' => { -in => $rels }
         },
-        { prefetch => [ 'topic_topic', 'topic_topic2' ] }
+        { prefetch => [ {topic_topic=>'categories'}, 'topic_topic2' ] }
     )
 }
 
