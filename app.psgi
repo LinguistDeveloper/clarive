@@ -26,10 +26,10 @@ eval {
     require Baseliner;
 };
 if( $@ ) {
-    print "\nBaseliner Startup Error:\n";
-    print "--------------------------\n";
+    print "\n\nBaseliner Startup Error:\n";
+    print "-------------------------\n";
     print $@;
-    print "--------------------------\n\n";
+    print "-------------------------\n\n";
     die $@;
 }
  
