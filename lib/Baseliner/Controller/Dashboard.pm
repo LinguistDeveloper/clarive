@@ -412,7 +412,7 @@ sub get_config : Local {
 		my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
 
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
 				$dashlet_config{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}
@@ -471,7 +471,7 @@ sub list_baseline: Private{
 		my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -579,7 +579,7 @@ sub list_lastjobs: Private{
 		my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -615,7 +615,7 @@ sub list_emails: Private{
 		my @config_dashlet = grep {$_->{url}=~ 'list_emails'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -656,7 +656,7 @@ sub list_topics: Private{
 		my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -703,7 +703,7 @@ sub list_jobs: Private {
 		my @config_dashlet = grep {$_->{url}=~ 'list_jobs'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		

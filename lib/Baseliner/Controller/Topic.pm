@@ -250,10 +250,10 @@ sub list : Local {
         push @rows, {
             %$data,
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
-            labels   => [ keys $id_label{$mid} ],
-            projects => [ keys $projects{$mid} ],
+            labels   => [ keys %{ $id_label{$mid} || {} } ],
+            projects => [ keys %{ $projects{$mid} || {} } ],
             report_data => {
-                projects => join( ', ', keys $projects_report{$mid} )
+                projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
             },
         };
     }
