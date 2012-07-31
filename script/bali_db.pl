@@ -23,22 +23,33 @@ sub pre {
 
 our $VERSION = '1.0';
 
+say "Baseliner DB Load/Dump Utility v.$VERSION";
+
+# get main action
 my $action = shift @ARGV;
 if( ! $action ) {  # help
     die join '',<DATA>;
     exit 0;
 }
-require Baseliner;
+
+# read args
 my %args = _get_options( @ARGV );
-my $dir = $args{dir} ||  _dir( Baseliner->path_to('etc/dump') );
+my $dir = _dir( $args{dir} ) ||  _dir( Baseliner->path_to('etc/dump') );
 my $format = 'yaml';
 
-say "Baseliner DB Load/Dump Utility v.$VERSION";
+# setup DB env
+my $env = $args{env} || $ENV{BALI_ENV} || 't';
+$env = @$env if ref $env eq 'ARRAY';
+$ENV{BALI_ENV} = $env;
+
+require Baseliner;
+
 say "dir: $dir";
 say "format: $format";
 
 sub db_dump {
     my %args = @_;
+    my $replace = _build_replace( %args );
     my @schemas = _array $args{schema};
     my %schemas;
     @schemas{ @schemas } = ();
@@ -55,6 +66,12 @@ sub db_dump {
        #_log $schema_name . " => " . ;
        try {
            my @rows = $src->resultset->search->hashref->all;
+           # replace keys
+           if( $replace ) {
+                @rows = map {
+                    { %$_, %$replace }
+                } @rows;
+           }
            open my $f, '>:raw', _file( $dir, "$schema_name.$format" );
            my $s = YAML::XS::Dump( \@rows );
            utf8::decode( $s );
@@ -67,6 +84,18 @@ sub db_dump {
     };
 }
 
+sub _build_replace {
+    my %args = @_;
+    my $ret;
+    if( exists $args{'replace-json'} ) {
+        $ret = _decode_json( $args{'replace-json'} );
+    }
+    elsif( exists $args{'replace-yaml'} ) {
+        $ret = YAML::XS::Load( $args{'replace-yaml'} );
+    }
+    $ret;
+}
+
 sub db_load {
     my %args = @_;
     my @schemas = _array $args{schema};
@@ -76,6 +105,7 @@ sub db_load {
         @schemas = map { $_->basename } $dir->children
     }
     my $sch = Baseliner->model('Baseliner')->schema;
+    my $replace = _build_replace( %args );
     for my $schema ( @schemas ) {
         ( my $schema_name = $schema ) =~ s{\.\w+}{};
         my $src = $sch->source( $schema_name );
@@ -88,6 +118,24 @@ sub db_load {
         my $s = join '',<$f>;
         utf8::encode( $s );
         my $rows = YAML::XS::Load( $s );
+        # if its insert mode, delete ids and mids
+        if( exists $args{insert} ) {
+            $rows = [
+                map {
+                    delete $_->{id};
+                    delete $_->{mid};
+                    $_
+                } _array $rows
+            ];
+        }
+        # replace keys
+        if( $replace ) {
+            $rows = [
+                map {
+                    { %$_, %$replace }
+                } _array $rows
+            ];
+        }
         _log _dump $rows if exists $args{v};
         $sch->populate( $schema_name, $rows );
     }
@@ -116,7 +164,12 @@ Usage:
 
 Options:
   -v                      : verbose - print data dumps
+  -insert                 : insert mode, deletes ids and tries to insert rows
   -truncate               : delete table before load
+  -replace-json           : replace column values in rows using a json hash in a string
+  -replace-yaml           : replace column values in rows using a yaml hash in a string
+  -env                    : sets BALI_ENV (local, test, prod, t, etc...)
+  -dir                    : output directory (otherwise: $BASELINER_HOME/etc/dump)
   -schema                 : schemas to deploy
                                 bali db load --schema BaliRepo --schema BaliRepoKeys 
 
@@ -124,7 +177,12 @@ Examples:
     bin/bali db dump
     bin/bali db load
     bin/bali db load --schema BaliTopic
+    bin/bali db load --schema BaliTopic --dir tmp/dump
     bin/bali db load --schema BaliTopic BaliMaster BaliMasterRel
     bin/bali db load --schema BaliTopic BaliMaster BaliMasterRel --truncate
+    bin/bali db load --schema BaliTopic BaliMaster BaliMasterRel --insert
+    bin/bali db load --schema BaliTopic BaliMaster BaliMasterRel --insert --replace-json '{ "title": "dummy title" }'
+    bin/bali db load --schema BaliTopic --insert --replace-yaml 'id_category: 2'
+    bin/bali db load --schema BaliTopic --insert --replace-yaml '{ id_category: 2, title: dummy title }'
 
 EOF
