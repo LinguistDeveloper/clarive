@@ -228,8 +228,7 @@ sub list : Local {
     rs_hashref( $rs );
     my @mids = map { $_->{topic_mid} } $rs->all;
     my $rs_sub = $rs->search(undef, { select=>'topic_mid'});
-            #_log _dump $rs_sub->as_query;
-
+            # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
     my @mid_data = $c->model('Baseliner::TopicView')->search({ topic_mid=>{ -in =>$rs_sub->as_query  } })->hashref->all;

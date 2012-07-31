@@ -1,0 +1,8 @@
+.x-grid3-body .x-grid3-td-checker {
+    background: none repeat-y scroll right center transparent;
+}
+
+.x-grid3-row-checker, .x-grid3-hd-checker {
+    background-image: url("/static/images/row-check-sprite.gif");
+}
+

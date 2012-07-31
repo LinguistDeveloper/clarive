@@ -552,6 +552,12 @@
             emptyMsg: _('There are no rows available')
     });
 
+    var check_sm = new Ext.grid.CheckboxSelectionModel({
+        singleSelect: false,
+        sortable: false,
+        checkOnly: true
+    });
+
     var grid_topics = new Ext.grid.GridPanel({
         title: _('Topics'),
         header: false,
@@ -559,14 +565,16 @@
         autoScroll: true,
         //enableHdMenu: false,
         store: store_topics,
-        enableDragDrop: true,
+        //enableDragDrop: true,
+        dropable: true,
         autoSizeColumns: true,
         deferredRender: true,
         ddGroup: 'lifecycle_dd',
         viewConfig: {forceFit: true},
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        sm: check_sm,
         loadMask:'true',
         columns: [
+            check_sm,
             { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 80, sortable: true, renderer: render_topic_name  },
             { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
             { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
