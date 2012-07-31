@@ -136,7 +136,7 @@ sub topic_contents : Local {
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
-    my $where = { active=> 1 };
+    my $where = { active=> 1, id_parent=>[undef,''] };
     if( ! $c->is_root ) {
         $where->{mid} = { -in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username ) };
     }
