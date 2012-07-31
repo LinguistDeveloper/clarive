@@ -2,6 +2,7 @@ baseliner_local.conf
 baseliner_topic.conf
 etc/bali_cache
 etc/repo
+etc/dump
 etc/export
 etc/artifacts
 etc/lc.yaml
