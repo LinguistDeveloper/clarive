@@ -38,6 +38,7 @@ __PACKAGE__->add_columns(
   # ns is here so that foreign objects may keep a unique key and avoid having 2 CIs for the same thing
   "ns",
   { data_type => "varchar2", default_value=>'', size => 2048, is_nullable=>1 },
+  "active", { data_type => "char", size => 1, default_value=>'1' },
 );
 
 __PACKAGE__->set_primary_key("mid");

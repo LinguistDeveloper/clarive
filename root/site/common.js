@@ -28,6 +28,7 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/model.js', 'js' );
     // Baseliner.loadFile( '/site/lifecycle.js', 'js' ); // doesnt work since the lifecycle is global
     Baseliner.loadFile( '/site/portal/Portal.js', 'js' );
+    Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
     Baseliner.loadFile( '/comp/topic/topic_lib.js', 'js' );
 
@@ -193,6 +194,71 @@ Baseliner.render_icon = function (val){
 Baseliner.render_bytes = function(value,metadata,rec,rowIndex,colIndex,store) {
     return Baseliner.byte_format( value );
 }
+
+/*
+    parameters:
+         {
+            mid:
+            category_name:
+            category_color: 
+            category_icon:
+            is_changeset: 1|0
+            is_release: 1|0
+         }
+*/
+Baseliner.topic_name = function(args) {
+        var mid = args.mid; //Cambiarlo en un futuro por un contador de categorias
+        if( ! mid ) 
+            mid = args.topic_mid; 
+        if( mid )
+            mid = '#' + mid;
+        else
+            mid = '';
+        var cat_name = args.category_name; //Cambiarlo en un futuro por un contador de categorias
+        if( cat_name )
+            cat_name = cat_name + ' ';
+        else
+            cat_name = ''
+        var color = args.category_color;
+        var cls = 'label';
+        var icon = args.category_icon;
+
+        var top,bot,img;
+        if( args.mini ) {
+            top=0, bot=2, img=0;
+        } else {
+            top=2, bot=4, img=2;
+        }
+
+        if( ! color ) 
+            color = '#999';
+
+        // set default icons
+        if( icon==undefined ) {
+            if( args.is_changeset > 0  ) {
+                icon = '/static/images/icons/package-white.png';
+            }
+            else if( args.is_release > 0  ) {
+                icon = '/static/images/icons/release-white.png';
+            }
+            else {
+                //icon = '/static/images/icons/topic-one-white.png';
+            }
+        }
+
+        // prepare icon background
+        var style_str;
+        if( icon ) {
+            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px";
+        }
+        else {
+            style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}";
+        }
+        var style = String.format( style_str, color, icon, top, bot, img );
+        //if( color == undefined ) color = '#777';
+        var ret = String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
+        return ret;
+};
 
 // from /root/static/images/icons/mime/*
 var extensions_available = {

@@ -187,12 +187,12 @@ Baseliner.lc_menu = new Ext.menu.Menu({
 var menu_click = function(node,event){
     node.select();
     // menus and click events go in here
-    if( node.attributes.menu != undefined || node.attributes.data.click != undefined ) {
+    if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
         var m = Baseliner.lc_menu;
         m.removeAll(); 
         var node_menu_items = new Array(); 
 
-        // click turns into Open...
+        // click turns into a menu-item Open...
         var click = node.attributes.data.click;
         if( click != undefined && click.url != undefined ) {
             var menu_item = new Ext.menu.Item({
@@ -342,33 +342,28 @@ Baseliner.lifecycle.getLoader().on("beforeload", function(treeLoader, node) {
     }
     loader.baseParams = node.attributes.data;
 });
-
-//Baseliner.lifecycle.on('dblclick', function(n, ev){
-Baseliner.lifecycle.on('xxxclick', function(n, ev){     
-    //alert( JSON.stringify( n ) );
-    if( n.attributes.data == undefined ) return;
-    var c = n.attributes.data.click;
-    if( c==undefined || c.url==undefined ) return;
-    var params = n.attributes.data;
     
-    if(n.attributes.text == _('Topics')){
-        params.id_project = n.parentNode.attributes.data.id_project;
-    }
-    if( params.tab_icon == undefined ) params.tab_icon = c.icon;
+Baseliner.lifecycle.on('beforechildrenrendered', function(node){
+    node.eachChild(function(n) {
+        if(n.attributes.topic_name ) {
+            var tn = n.attributes.topic_name;
+            n.setIconCls('no-icon');
 
-    if( c.type == 'comp' ) {
-        Baseliner.add_tabcomp( c.url, _(c.title), params );
-        ev.stopEvent();
-    } else if( c.type == 'html' ) {
-        Baseliner.add_tab( c.url, _(c.title), params );
-        ev.stopEvent();
-    } else if( c.type == 'iframe' ) {
-        Baseliner.add_iframe( c.url, _(c.title), params );
-        ev.stopEvent();
-    } else {
-        Baseliner.message( 'Invalid or missing click.type', '' );
-    }
+            //tn.style = 'font-size:10px';
+            tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
+
+            tn.mini = true;
+            var tn_span = Baseliner.topic_name(tn);
+            n.setText( tn_span + ' ' + n.text );
+            /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
+                n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
+        }
+    });
 });
 
+//Baseliner.lifecycle.on('dblclick', function(n, ev){
+
+Baseliner.lifecycle.on('click', function(n, ev){     
+});
 
 Baseliner.lifecycle.expand();

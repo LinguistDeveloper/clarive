@@ -1,16 +1,14 @@
-/*
- * Ext JS Library 2.3.0
- * Copyright(c) 2006-2009, Ext JS, LLC.
- * licensing@extjs.com
- * 
- * http://extjs.com/license
+/*!
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
+ * licensing@sencha.com
+ * http://www.sencha.com/license
  */
-
 Ext.ux.Portal = Ext.extend(Ext.Panel, {
-    layout: 'column',
-    autoScroll:true,
-    cls:'x-portal',
-    defaultType: 'portalcolumn',
+    layout : 'column',
+    autoScroll : true,
+    cls : 'x-portal',
+    defaultType : 'portalcolumn',
     
     initComponent : function(){
         Ext.ux.Portal.superclass.initComponent.call(this);
@@ -29,24 +27,25 @@ Ext.ux.Portal = Ext.extend(Ext.Panel, {
         this.dd = new Ext.ux.Portal.DropZone(this, this.dropConfig);
     },
     
-    beforeDestroy: function() {
+    beforeDestroy : function() {
         if(this.dd){
             this.dd.unreg();
         }
         Ext.ux.Portal.superclass.beforeDestroy.call(this);
     }
 });
+
 Ext.reg('portal', Ext.ux.Portal);
 
-
-Ext.ux.Portal.DropZone = function(portal, cfg){
-    this.portal = portal;
-    Ext.dd.ScrollManager.register(portal.body);
-    Ext.ux.Portal.DropZone.superclass.constructor.call(this, portal.bwrap.dom, cfg);
-    portal.body.ddScrollConfig = this.ddScrollConfig;
-};
-
-Ext.extend(Ext.ux.Portal.DropZone, Ext.dd.DropTarget, {
+Ext.ux.Portal.DropZone = Ext.extend(Ext.dd.DropTarget, {
+    
+    constructor : function(portal, cfg){
+        this.portal = portal;
+        Ext.dd.ScrollManager.register(portal.body);
+        Ext.ux.Portal.DropZone.superclass.constructor.call(this, portal.bwrap.dom, cfg);
+        portal.body.ddScrollConfig = this.ddScrollConfig;
+    },
+    
     ddScrollConfig : {
         vthresh: 50,
         hthresh: -1,
@@ -66,6 +65,11 @@ Ext.extend(Ext.ux.Portal.DropZone, Ext.dd.DropTarget, {
             rawEvent: e,
             status: this.dropAllowed
         };
+    },
+
+    notifyEnter : function(dd, e, data){
+        var overEvent = this.createEvent(dd, e, data );
+        this.portal.fireEvent('dragstart', overEvent);
     },
 
     notifyOver : function(dd, e, data){
@@ -152,24 +156,23 @@ Ext.extend(Ext.ux.Portal.DropZone, Ext.dd.DropTarget, {
         if(!this.lastPos){
             return;
         }
-        var c = this.lastPos.c, col = this.lastPos.col, pos = this.lastPos.p;
-
-        var dropEvent = this.createEvent(dd, e, data, col, c,
-            pos !== false ? pos : c.items.getCount());
+        var c = this.lastPos.c, 
+            col = this.lastPos.col, 
+            pos = this.lastPos.p,
+            panel = dd.panel,
+            dropEvent = this.createEvent(dd, e, data, col, c,
+                pos !== false ? pos : c.items.getCount());
 
         if(this.portal.fireEvent('validatedrop', dropEvent) !== false &&
            this.portal.fireEvent('beforedrop', dropEvent) !== false){
 
             dd.proxy.getProxy().remove();
-            dd.panel.el.dom.parentNode.removeChild(dd.panel.el.dom);
+            panel.el.dom.parentNode.removeChild(dd.panel.el.dom);
             
             if(pos !== false){
-                if(c == dd.panel.ownerCt && (c.items.items.indexOf(dd.panel) <= pos)){
-                    pos++;
-                }
-                c.insert(pos, dd.panel);
+                c.insert(pos, panel);
             }else{
-                c.add(dd.panel);
+                c.add(panel);
             }
             
             c.doLayout();
@@ -201,7 +204,8 @@ Ext.extend(Ext.ux.Portal.DropZone, Ext.dd.DropTarget, {
 
     // unregister the dropzone from ScrollManager
     unreg: function() {
-        //Ext.dd.ScrollManager.unregister(this.portal.body);
+        Ext.dd.ScrollManager.unregister(this.portal.body);
         Ext.ux.Portal.DropZone.superclass.unreg.call(this);
     }
 });
+
