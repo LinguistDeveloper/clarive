@@ -11,7 +11,6 @@ __PACKAGE__->add_columns(
   "id",
   {
     data_type => "NUMBER",
-    default_value => undef,
     is_nullable => 0,
     is_auto_increment => 1,
   },
@@ -32,7 +31,6 @@ __PACKAGE__->add_columns(
   "key",
   {
     data_type => "VARCHAR2",
-    default_value => undef,
     is_nullable => 0,
     size => 100,
   },
@@ -52,20 +50,17 @@ __PACKAGE__->add_columns(
   "ref",
   {
     data_type => "NUMBER",
-    default_value => undef,
     is_nullable => 1,
   },
   "reftable",
   {
     data_type => "VARCHAR2",
-    default_value => undef,
     is_nullable => 1,
     size => 100,
   },
   "data",
   {
-    data_type => "BLOB",
-    default_value => undef,
+    data_type => "CLOB",
     is_nullable => 1,
   },
   "parent_id",
@@ -77,10 +72,4 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("id");
 
-
-# Created by DBIx::Class::Schema::Loader v0.04006 @ 2010-03-22 20:53:18
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rSCbd0jBQRPBLHKt4kGO7g
-
-
-# You can replace this text with custom content, and it will be preserved on regeneration
 1;
