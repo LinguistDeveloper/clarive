@@ -16,6 +16,10 @@ has 'lc' => (
         # loads the lc.yaml file on initialization
         my $feature = Baseliner->features->find( file => __FILE__ );
         my $file = _file( $feature->root, '..', 'etc', 'lc.yaml' );    # TODO to config
+        unless( -e $file ) {
+            my $tfile = _file( $feature->root, '..', 'etc', 'lc.yaml.example' ); 
+            File::Copy::copy( $tfile, $file );
+        }
         open my $ff, '<:encoding(UTF-8)', "$file" or _throw _loc "Error loading file %1: %2", $file, $!;
         my $fi = join '', <$ff>;
         utf8::downgrade( $fi );
