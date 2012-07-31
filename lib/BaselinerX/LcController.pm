@@ -136,8 +136,13 @@ sub topic_contents : Local {
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
-    my @project_ids = Baseliner->model('Permissions')->all_projects();
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ mid=>\@project_ids, id_parent=>undef, active=>1 }, { order_by=>{ -asc => \'lower(name)' }  });
+    my $where = { active=> 1 };
+    if( ! $c->is_root ) {
+        $where->{mid} = { -in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username ) };
+    }
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search( 
+        $where ,
+        { order_by => { -asc => \'lower(name)' } } );
     while( my $r = $rs->next ) {
         push @tree, {
             text       => $r->name,

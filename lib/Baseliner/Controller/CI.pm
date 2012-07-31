@@ -446,8 +446,8 @@ sub update : Local {
     my $name = delete $p->{name};
     my $bl = delete $p->{bl};
     my $mid = delete $p->{mid};
-    my $active = delete $p->{active};
-    $active = $active eq 'on' ? 1 : 0;
+    my $active = $p->{active};
+    $p->{active} = $active = $active eq 'on' ? 1 : 0;
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";

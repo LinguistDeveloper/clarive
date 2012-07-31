@@ -260,6 +260,14 @@ sub user_projects {
     } );
 }
 
+sub user_projects_query {
+    my ( $self, %p ) = @_;
+    _throw 'Missing username' unless exists $p{ username };
+    Baseliner->model( 'Baseliner::BaliRoleuser' )
+        ->search( { username => $p{username} },
+        { distinct=>1, select => [ 'id' ] } )->as_query ;
+}
+
 =head2 user_projects_ids( username=>Str )
 
 Returns an array of project ids for the projects the user has access to.
