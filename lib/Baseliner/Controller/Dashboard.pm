@@ -526,7 +526,7 @@ sub list_baseline: Private{
 		my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}			
