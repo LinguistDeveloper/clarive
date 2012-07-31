@@ -397,34 +397,34 @@
 		newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
 		tabpanel = Ext.getCmp('main-panel');
 	    }
-            //var tabpanel = Ext.getCmp('main-panel');
-            var tab = tabpanel.add( newpanel );
-            tabpanel.setActiveTab(tab); 
-            if( params == undefined ) params={};
-            if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
-            params.fail_on_auth = true;
-            newpanel.load({
-                url: purl,
-                scripts:true,
-                params: params,
-                callback: function(el,success,res,opts){
-                    if( success ) {
-                        var id = tab.getId();
-                        Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script' };
-                        if( params.callback != undefined ) params.callback();
+        //var tabpanel = Ext.getCmp('main-panel');
+        var tab = tabpanel.add( newpanel );
+        tabpanel.setActiveTab(tab); 
+        if( params == undefined ) params={};
+        if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
+        params.fail_on_auth = true;
+        newpanel.load({
+            url: purl,
+            scripts:true,
+            params: params,
+            callback: function(el,success,res,opts){
+                if( success ) {
+                    var id = tab.getId();
+                    Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params };
+                    if( params.callback != undefined ) params.callback();
+                } else {
+                    Ext.getCmp('main-panel').remove( newpanel );
+                    if( res.status == 401 ) {
+                        Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewTab(purl,ptitle,params)} });
                     } else {
-                        Ext.getCmp('main-panel').remove( newpanel );
-                        if( res.status == 401 ) {
-                            Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewTab(purl,ptitle,params)} });
-                        } else {
-                            //Baseliner.message( _('Error %1', res.status), res.responseText );
-                            Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
-                        }
+                        //Baseliner.message( _('Error %1', res.status), res.responseText );
+                        Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
                     }
-
                 }
-            }); 
-    };
+
+            }
+        });
+    };   
 
     Baseliner.addNewWindow = function(purl, ptitle, params ){
         var newpanel = new Ext.Panel({ layout: 'fit' });
@@ -674,6 +674,7 @@
     Baseliner.add_tab = function( comp_url, ptitle, params ){
         if( params == undefined ) params = {};
         Baseliner.addNewTab( comp_url, ptitle, params );
+
     };
     Baseliner.add_tabcomp = function( comp_url, ptitle, params ){
         if( params == undefined ) params = {};
@@ -839,6 +840,7 @@
         var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
+        
         if( info!=undefined ) {
             if( info.params==undefined ) info.params={};
             info.params.tab_index = activeTabIndex;
@@ -846,10 +848,10 @@
                 tabpanel.remove( panel );
                 Baseliner.addNewTabComp( info.url, info.title, info.params );
             }
-            else if( info.type=='script' ) {
+            else if( info.type=='script') {
                 tabpanel.remove( panel );
                 Baseliner.addNewTab( info.url, info.title, info.params );
-            }
+            } 
         } else {
             // non-components: portal, dashboard, etc.
             var closable = panel.initialConfig.closable;
