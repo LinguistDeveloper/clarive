@@ -61,6 +61,7 @@ sub db_dump {
            _log $s if exists $args{v};
            print $f $s;
         } catch {
+            say shift();
             say "Schema $schema_name ignored...";
         };
     };
