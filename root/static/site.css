@@ -1,3 +1,9 @@
+/* Used to hide TreePanel icons - node.setIconCls('no-icon') */
+.no-icon {
+	display : none;
+	background-image:url('ext/resources/images/default/s.gif') !important;
+}
+
 /* Scrollbars */
 
 ::-webkit-scrollbar {

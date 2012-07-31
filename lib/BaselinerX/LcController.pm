@@ -40,7 +40,7 @@ sub tree_topic_get_files : Local {
                   id_topic => $id_topic,
                   sw_get_files =>\1
                },
-               icon       => '/static/images/icons/log_16.png',
+               icon       => '/static/images/icons/files.gif',
                leaf       => \0,
                expandable => \1
            };           
@@ -57,17 +57,73 @@ sub tree_topics_project : Local {
 
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
-    my @topics_project = map {$_->{from_mid}} $c->model('Baseliner::BaliMasterRel')->search({ to_mid=>$id_project, collection =>'bali_topic' }, {join => ['master_from']})->hashref->all;
-    my $topics = $c->model('Baseliner::BaliTopic')->search( {mid =>\@topics_project} );
-    while ( my $topic = $topics->next ) {
+    my @topics = $c->model('Baseliner::BaliMasterRel')->search(
+        { to_mid => $id_project },
+        { prefetch => {'topic_project'=>'categories'} }
+    )->hashref->all;
+    for( @topics ) {
+        my $is_release = $_->{topic_project}{categories}{is_release};
+        my $is_changeset = $_->{topic_project}{categories}{is_changeset};
+        my $icon = $is_release ? '/static/images/icons/release_lc.png'
+            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic_one_lc.png' ;
+        push @tree,
+            {
+            text       =>  $_->{topic_project}{title},
+            topic_name => {
+                mid             => $_->{from_mid},
+                category_color => $_->{topic_project}{categories}{color},
+                is_release     => $is_release,
+                is_changeset   => $is_changeset,
+            },
+            children => [
+                {   text => _loc('Files'),
+                    icon => '/static/images/icons/files.gif',
+                    leaf => \0,
+                    url  => '/lifecycle/tree_topic_get_files',
+                    data => {
+                        id_topic     => $_->{from_mid},
+                        sw_get_files => \1
+                    },
+                }
+            ],
+            icon       => $icon,
+            leaf       => \0,
+            expandable => \1
+            };
+    }
+
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
+sub topic_contents : Local {
+    my ($self,$c) = @_;
+    my @tree;
+    my $topic_mid = $c->req->params->{topic_mid};
+    my @topics = $c->model('Baseliner::BaliMasterRel')->search(
+        { from_mid => $topic_mid },
+        { prefetch => {'topic_topic2'=>'categories'} }
+    )->hashref->all;
+    for ( @topics ) {
+        my $is_release = $_->{topic_topic2}{categories}{is_release};
+        my $is_changeset = $_->{topic_topic2}{categories}{is_changeset};
+        my $icon = $is_release ? '/static/images/icons/release_lc.png'
+            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic_one_lc.png' ;
+
         push @tree, {
-            text       => $topic->categories->name . ' #' . $topic->mid,
+            text       => $_->{topic_topic2}{title},
+            topic_name => {
+                mid             => $_->{from_mid},
+                category_color => $_->{topic_topic2}{categories}{color},
+                is_release     => $is_release,
+                is_changeset   => $is_changeset,
+            },
             url        => '/lifecycle/tree_topic_get_files',
             data       => {
-               id_topic => $topic->mid
+               id_topic => $_->{topic_topic2}{mid}
             },
-            icon       => '/static/images/icons/topic_lc.png',
-            leaf       => \0,
+            icon       => $icon, 
+            leaf       => \1,
             expandable => \1
         };
     }
@@ -87,8 +143,14 @@ sub tree_projects : Local {
             text       => $r->name,
             url        => '/lifecycle/tree_project',
             data       => {
-               id_project => $r->mid,
-               project    => $r->name,
+                id_project => $r->mid,
+                project    => $r->name,
+                click => {
+                    url   => '/dashboard/list/project',
+                    type  => 'html',
+                    icon  => '/static/images/icons/project.png',
+                    title => $r->name,
+                }               
             },
             icon       => '/static/images/icons/project_small.png',
             leaf       => \0,
@@ -226,7 +288,6 @@ sub changeset : Local {
             $where,
             { prefetch=>['categories','children','master'] }
         )->all;
-        _log "IN CYCLE"; 
     } else {
         # Available 
         $where->{'status.bl'} = '*';
@@ -241,21 +302,26 @@ sub changeset : Local {
     }
 
     for my $topic (@changes) {
-        my @rels = $topic->my_releases->hashref->all;
-        my $td = { $topic->get_columns() };
+        my @rels = $topic->my_releases->hashref->all;  # slow! join me!
+        my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
         if( @rels ) {
             #$td->{id_category_status} = $rels[0]->{topic_topic}{id_category_status};
             #$td->{id_status} = $rels[0]->{topic_topic}{id_status};
         }
         # get the menus for the changeset
         my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
-        my $topicid = "$td->{categories}{name} #$td->{mid}";
         my $node = {
-            url  => '/lifecycle/repo',
-            icon => '/static/images/icons/topic_lc.png',
-            text => "[$topicid] $td->{title}",
+            url  => '/lifecycle/topic_contents',
+            icon => '/static/images/icons/changeset_lc.png',
+            text => $td->{title},
             leaf => \1,
             menu => $menu,
+            topic_name => {
+                mid             => $td->{mid},
+                category_color => $topic->categories->color,
+                is_release     => $td->{categories}{is_release},
+                is_changeset   => $td->{categories}{is_changeset},
+            },
             data => {
                 ns           => 'changeset/' . $td->{mid},
                 bl           => $bl,
@@ -269,7 +335,7 @@ sub changeset : Local {
                     url   => sprintf('/comp/topic/topic_main.js'),
                     type  => 'comp',
                     icon  => '/static/images/icons/topic.png',
-                    title => "$topicid",
+                    title => sprintf("%s #%d", $td->{categories}{name}, $td->{mid}),
                 }
             },
         };
@@ -277,11 +343,15 @@ sub changeset : Local {
             for my $rel ( @rels ) {
                 my $title = $rel->{topic_topic}{title};
                 $node->{text} = $title;
+                $node->{leaf} = \0;
                 $node->{icon} = '/static/images/icons/release_lc.png';
-                $node->{click} = {
+                $node->{topic_name}{is_release} = \1;
+                $node->{topic_name}{category_color} = $rel->{topic_topic}{categories}{color};
+                $node->{data}{topic_mid} = $rel->{from_mid};
+                $node->{data}{click} = {
                     url   => sprintf('/comp/topic/topic_main.js'),
                     type  => 'comp',
-                    icon  => '/static/images/icons/topic.png',
+                    icon  => '/static/images/icons/release.png',
                     title => $title,
                 },
                 push @tree, $node;

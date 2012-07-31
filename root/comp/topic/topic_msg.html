@@ -136,7 +136,7 @@ padding: 2px 4px 2px 7px;
               <tr>
 %#if($c->stash->{show_category}){                
                 <th width="1" style="vertical-align: middle">
-                    <span class="badge" style="background: <% $category_color %>"><% $category %> #<% $topic_mid %></span>
+                    <span class="label" style="background: <% $category_color %>"><% $category %> #<% $topic_mid %></span>
                 </th>
 %#}                
 %if($c->stash->{show_title}){
@@ -284,7 +284,7 @@ padding: 2px 4px 2px 7px;
                       <li class="">
 % foreach my $topic ( _array( $topics ) ) {
                       <li style="margin: 6px 0px 6px 0px">
-                          <span class="badge" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
+                          <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
                             style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
                             &nbsp;&nbsp;<b><% $topic->{title} %></b>
                       </li>

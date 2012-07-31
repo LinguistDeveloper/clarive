@@ -94,6 +94,12 @@ __PACKAGE__->belongs_to(
   { id => "id_priority" },
 );
 
+__PACKAGE__->has_many(
+  "workflow",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesAdmin",
+  { 'foreign.id_category' => 'self.id_category' },
+);
+
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
 __PACKAGE__->master_setup( 'files', ['topic','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid'] );
@@ -126,7 +132,7 @@ sub my_releases {
             to_mid                    => $self->mid,
             'topic_topic.id_category' => { -in => $rels }
         },
-        { prefetch => [ 'topic_topic', 'topic_topic2' ] }
+        { prefetch => [ {topic_topic=>'categories'}, 'topic_topic2' ] }
     )
 }
 
