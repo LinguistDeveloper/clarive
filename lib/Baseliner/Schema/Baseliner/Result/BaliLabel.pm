@@ -37,7 +37,7 @@ __PACKAGE__->table("bali_label");
 
 =head2 id
 
-  data_type: 'numeric'
+  data_type: 'number'
   is_auto_increment: 1
   is_nullable: 0
   original: {data_type => "number"}
@@ -61,7 +61,7 @@ __PACKAGE__->table("bali_label");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },

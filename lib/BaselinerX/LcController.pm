@@ -136,8 +136,13 @@ sub topic_contents : Local {
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
-    my @project_ids = Baseliner->model('Permissions')->all_projects();
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ mid=>\@project_ids, id_parent=>undef, active=>1 }, { order_by=>{ -asc => \'lower(name)' }  });
+    my $where = { active=> 1 };
+    if( ! $c->is_root ) {
+        $where->{mid} = { -in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username ) };
+    }
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search( 
+        $where ,
+        { order_by => { -asc => \'lower(name)' } } );
     while( my $r = $rs->next ) {
         push @tree, {
             text       => $r->name,
@@ -301,66 +306,67 @@ sub changeset : Local {
             )->all;
     }
 
-    for my $topic (@changes) {
-        my @rels = $topic->my_releases->hashref->all;  # slow! join me!
-        my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
-        if( @rels ) {
-            #$td->{id_category_status} = $rels[0]->{topic_topic}{id_category_status};
-            #$td->{id_status} = $rels[0]->{topic_topic}{id_status};
-        }
-        # get the menus for the changeset
-        my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
-        my $node = {
-            url  => '/lifecycle/topic_contents',
-            icon => '/static/images/icons/changeset_lc.png',
-            text => $td->{title},
-            leaf => \1,
-            menu => $menu,
-            topic_name => {
-                mid             => $td->{mid},
-                category_color => $topic->categories->color,
-                is_release     => $td->{categories}{is_release},
-                is_changeset   => $td->{categories}{is_changeset},
-            },
-            data => {
-                ns           => 'changeset/' . $td->{mid},
-                bl           => $bl,
-                name         => $td->{title},
-                promotable   => $promotable,
-                demotable    => $demotable,
-                state_name   => $state_name,
-                topic_mid    => $td->{mid},
-                topic_status => $td->{id_category_status},
-                click        => {
-                    url   => sprintf('/comp/topic/topic_main.js'),
-                    type  => 'comp',
-                    icon  => '/static/images/icons/topic.png',
-                    title => sprintf("%s #%d", $td->{categories}{name}, $td->{mid}),
-                }
-            },
-        };
-        if( @rels ) {
-            for my $rel ( @rels ) {
-                my $title = $rel->{topic_topic}{title};
-                $node->{text} = $title;
-                $node->{leaf} = \0;
-                $node->{icon} = '/static/images/icons/release_lc.png';
-                $node->{topic_name}{is_release} = \1;
-                $node->{topic_name}{category_color} = $rel->{topic_topic}{categories}{color};
-                $node->{data}{topic_mid} = $rel->{from_mid};
-                $node->{data}{click} = {
-                    url   => sprintf('/comp/topic/topic_main.js'),
-                    type  => 'comp',
-                    icon  => '/static/images/icons/release.png',
-                    title => $title,
+    if ( $bl ne '*' ) {
+        for my $topic (@changes) {
+            my @rels = $topic->my_releases->hashref->all;  # slow! join me!
+            my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
+            if( @rels ) {
+                #$td->{id_category_status} = $rels[0]->{topic_topic}{id_category_status};
+                #$td->{id_status} = $rels[0]->{topic_topic}{id_status};
+            }
+            # get the menus for the changeset
+            my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
+            my $node = {
+                url  => '/lifecycle/topic_contents',
+                icon => '/static/images/icons/changeset_lc.png',
+                text => $td->{title},
+                leaf => \1,
+                menu => $menu,
+                topic_name => {
+                    mid             => $td->{mid},
+                    category_color => $topic->categories->color,
+                    is_release     => $td->{categories}{is_release},
+                    is_changeset   => $td->{categories}{is_changeset},
                 },
+                data => {
+                    ns           => 'changeset/' . $td->{mid},
+                    bl           => $bl,
+                    name         => $td->{title},
+                    promotable   => $promotable,
+                    demotable    => $demotable,
+                    state_name   => $state_name,
+                    topic_mid    => $td->{mid},
+                    topic_status => $td->{id_category_status},
+                    click        => {
+                        url   => sprintf('/comp/topic/topic_main.js'),
+                        type  => 'comp',
+                        icon  => '/static/images/icons/topic.png',
+                        title => sprintf("%s #%d", $td->{categories}{name}, $td->{mid}),
+                    }
+                },
+            };
+            if( @rels ) {
+                for my $rel ( @rels ) {
+                    my $title = $rel->{topic_topic}{title};
+                    $node->{text} = $title;
+                    $node->{leaf} = \0;
+                    $node->{icon} = '/static/images/icons/release_lc.png';
+                    $node->{topic_name}{is_release} = \1;
+                    $node->{topic_name}{category_color} = $rel->{topic_topic}{categories}{color};
+                    $node->{data}{topic_mid} = $rel->{from_mid};
+                    $node->{data}{click} = {
+                        url   => sprintf('/comp/topic/topic_main.js'),
+                        type  => 'comp',
+                        icon  => '/static/images/icons/release.png',
+                        title => $title,
+                    },
+                    push @tree, $node;
+                }
+            } else {
                 push @tree, $node;
             }
-        } else {
-            push @tree, $node;
         }
     }
-
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }

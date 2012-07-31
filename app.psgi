@@ -22,7 +22,16 @@ BEGIN {
 }
 use lib "$ENV{BASELINER_HOME}/lib";
 use Plack::Builder;
-use Baseliner;
+eval {
+    require Baseliner;
+};
+if( $@ ) {
+    print "\n\nBaseliner Startup Error:\n";
+    print "-------------------------\n";
+    print $@;
+    print "-------------------------\n\n";
+    die $@;
+}
  
 builder {
     Baseliner->psgi_app;

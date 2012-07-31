@@ -45,6 +45,7 @@ BEGIN {
 
 use Catalyst @modules;
 use Time::HiRes qw(gettimeofday tv_interval);
+use Baseliner::CI;
 my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 our $VERSION = '5.2.0';

@@ -444,7 +444,7 @@ sub get_config : Local {
 		
 
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
 				$dashlet_config{$key} = $config_dashlet[0]->{params}->{$key};
 			};
 		}
@@ -504,7 +504,7 @@ sub get_config_dashlet{
 		my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -668,7 +668,7 @@ sub list_lastjobs: Private{
 		my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -692,7 +692,7 @@ sub list_lastjobs: Private{
 sub list_emails: Private{
     my ( $self, $c, $dashboard_id ) = @_;
 	my $username = $c->username;
-	my (@emails, $email, @datas, $SQL);
+    my @datas;
 	
 	
 	#CONFIGURATION DASHLET
@@ -704,7 +704,7 @@ sub list_emails: Private{
 		my @config_dashlet = grep {$_->{url}=~ 'list_emails'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -714,7 +714,7 @@ sub list_emails: Private{
 	my $rows = $default_config->{rows};
 	
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-	$SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
+	my $SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
 				FROM BALI_MESSAGE A,
 					(SELECT * FROM ( SELECT ID_MESSAGE,  SENT
 										FROM BALI_MESSAGE_QUEUE
@@ -723,8 +723,8 @@ sub list_emails: Private{
 				WHERE A.ID = B.ID_MESSAGE";
 				
 
-	@emails = $db->array_hash( $SQL , $username, $rows);
-	foreach $email (@emails){
+	my @emails = $db->array_hash( $SQL , $username, $rows);
+	foreach my $email (@emails){
 	    push @datas, $email;
 	}	
 		
@@ -745,7 +745,7 @@ sub list_topics: Private{
 		my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -792,7 +792,7 @@ sub list_jobs: Private {
 		my @config_dashlet = grep {$_->{url}=~ 'list_jobs'} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}		
@@ -831,7 +831,8 @@ sub list_jobs: Private {
 								) B
 							WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
 				WHERE MY_ROW_NUM <= ?";				
-	my @jobs = $db->array_hash( $SQL, $rows);
+	my @jobs = $db->array_hash( $SQL, $rows)
+        if @ids_project;
 	
 	foreach my $job (@jobs){
 		my ($lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration);

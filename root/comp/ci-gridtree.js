@@ -3,7 +3,7 @@
     var ps = 30;
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
-        'type', 'pretty_properties', 'name', 'item', 'ci_form',
+        'type', 'pretty_properties', 'name', 'item', 'ci_form', 'active',
         'class','versionid','ts','tags','data','properties','icon','collection']);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
@@ -32,7 +32,7 @@
         Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
             if( res.success ) {
                 var rec = res.rec;
-                console.log( rec );
+                //console.log( rec );
                 Baseliner.add_tabcomp( '/comp/ci-editor.js', _('CI %1' , rec.name ), 
                     {
                         _parent_grid: ci_grid,
@@ -120,6 +120,7 @@
         }
     };
     var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var active = rec.data.active;
         if( rec.data.type == 'class' ) {
             // we create objects
             value = String.format('<a href="javascript:Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
@@ -127,7 +128,7 @@
         var ed = String.format('Baseliner.ci_edit(\'{0}\',{1})', ci_grid.id, rowIndex, value );
         var ret = '<table><tr><td width="1">';
         ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
-        ret += '</td><td><b><a href="javascript:'+ed+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'text-decoration: line-through;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {

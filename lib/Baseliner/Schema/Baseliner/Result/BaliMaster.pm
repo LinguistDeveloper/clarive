@@ -12,7 +12,7 @@ __PACKAGE__->table("bali_master");
 __PACKAGE__->add_columns(
   "mid",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     sequence => "bali_master_seq",
@@ -31,6 +31,7 @@ __PACKAGE__->add_columns(
     original      => { data_type => "date", default_value => \"sysdate" },
   },
   "versionid", { data_type => "varchar2", is_nullable => 0, size => 255, default_value=>'1' },
+  "active", { data_type => "char", is_nullable => 1, size => 1, default_value=>'1' },
   "username",
   { data_type => "varchar2", default_value=>'html', size => 1024, is_nullable=>1 },
   "yaml",

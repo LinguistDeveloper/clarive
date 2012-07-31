@@ -35,7 +35,7 @@ sub save {
     use Baseliner::Utils;
     use Baseliner::Sugar;
     my ( $self, %p ) = @_;
-    my ($mid,$name,$data,$bl) = @{\%p}{qw/mid name data bl/};
+    my ($mid,$name,$data,$bl,$active) = @{\%p}{qw/mid name data bl active/};
     my $collection = $self->collection;
     my $ret = $mid;
 
@@ -47,6 +47,7 @@ sub save {
             my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
             $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
             $row->name( $name ) if defined $name;
+            $row->active( $active ) if defined $active;
             $row->update;
             if( $row ) {
                 $self->save_data( $row, $data );
@@ -59,7 +60,7 @@ sub save {
             ######## new
             _debug "****************** CI NEW: $collection";
             my $row = Baseliner->model('Baseliner::BaliMaster')->create({
-                collection => $collection, name=> $name
+                collection => $collection, name=> $name, active => $active,
             });
             my $mid = $row->mid;
             $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
@@ -75,6 +76,7 @@ sub save {
     return $ret;  # mid
 }
 
+# save data to table or yaml
 sub save_data {
     my ( $self, $master_row, $data ) = @_;
     return unless ref $data;

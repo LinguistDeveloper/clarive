@@ -204,6 +204,7 @@ sub tree_objects {
             icon              => $class->icon,
             ts                => $_->{ts},
             bl                => $_->{bl},
+            active            => ( $_->{active} eq 1 ? \1 : \0 ),
             data              => $data,
             properties        => $_->{yaml},
             pretty_properties => $pretty,
@@ -445,16 +446,18 @@ sub update : Local {
     my $name = delete $p->{name};
     my $bl = delete $p->{bl};
     my $mid = delete $p->{mid};
+    my $active = $p->{active};
+    $p->{active} = $active = $active eq 'on' ? 1 : 0;
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";
 
     try {
         if( $action eq 'add' ) {
-            $mid = $class->save( name=>$name, bl=>$bl, data=> $p ); 
+            $mid = $class->save( name=>$name, bl=>$bl, active=>$active, data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
-            $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, data => $p ); 
+            $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, data => $p ); 
         }
         else {
             _fail _loc("Undefined action");
@@ -481,6 +484,7 @@ sub load : Local {
     try {
         my $obj = Baseliner::CI->new( $mid );
         my $rec = $obj->load;
+        $rec->{active} = $rec->{active} ? \1 : \0;
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
     } catch {
         my $err = shift;

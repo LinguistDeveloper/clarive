@@ -182,6 +182,26 @@ Baseliner.lc_menu = new Ext.menu.Menu({
     }
 });
 
+                var click_handler = function(item){
+                    var n = item.node;
+                    var c = n.attributes.data.click;
+                    var params = n.attributes.data;
+                    
+                    if(n.attributes.text == _('Topics')){
+                        params.id_project = n.parentNode.attributes.data.id_project;
+                    }
+                    if( params.tab_icon == undefined ) params.tab_icon = c.icon;
+
+                    if( c.type == 'comp' ) {
+                        Baseliner.add_tabcomp( c.url, _(c.title), params );
+                    } else if( c.type == 'html' ) {
+                        Baseliner.add_tab( c.url, _(c.title), params );
+                    } else if( c.type == 'iframe' ) {
+                        Baseliner.add_iframe( c.url, _(c.title), params );
+                    } else {
+                        Baseliner.message( 'Invalid or missing click.type', '' );
+                    }
+                };
 // Main event that gets fired everytime a node is right-clicked
 //    builds the menu from node attributes and base menu
 var menu_click = function(node,event){
@@ -199,26 +219,7 @@ var menu_click = function(node,event){
                 text: _( 'Open...' ),
                 icon: '/static/images/icons/tab.png',
                 node: node,
-                handler: function(item){
-                    var n = item.node;
-                    var c = node.attributes.data.click;
-                    var params = n.attributes.data;
-                    
-                    if(n.attributes.text == _('Topics')){
-                        params.id_project = n.parentNode.attributes.data.id_project;
-                    }
-                    if( params.tab_icon == undefined ) params.tab_icon = c.icon;
-
-                    if( c.type == 'comp' ) {
-                        Baseliner.add_tabcomp( c.url, _(c.title), params );
-                    } else if( c.type == 'html' ) {
-                        Baseliner.add_tab( c.url, _(c.title), params );
-                    } else if( c.type == 'iframe' ) {
-                        Baseliner.add_iframe( c.url, _(c.title), params );
-                    } else {
-                        Baseliner.message( 'Invalid or missing click.type', '' );
-                    }
-                }
+                handler: click_handler
             });
             node_menu_items.push( menu_item );
         }
@@ -363,7 +364,9 @@ Baseliner.lifecycle.on('beforechildrenrendered', function(node){
 
 //Baseliner.lifecycle.on('dblclick', function(n, ev){
 
-Baseliner.lifecycle.on('click', function(n, ev){     
+Baseliner.lifecycle.on('dblclick', function(n, ev){     
+    if( n.leaf ) 
+        click_handler({ node: n });
 });
 
 Baseliner.lifecycle.expand();
