@@ -462,15 +462,32 @@ sub list_fields : Local {
 
     my $rows = $c->model('Baseliner::BaliFieldsCategory')->search(undef, {orderby => ['id ASC']});
 
-                                                                        
-    if($rows){
-        while( my $rec = $rows->next ) {
-            push @rows, {
-                         id      => $rec->id,
-                         name    => $rec->name
-                     };             
+    while( my $rec = $rows->next ) {
+        push @rows, {
+                     id      => $rec->id,
+                     name    => $rec->name
+                 };             
 
-        }
+    }
+    
+    unless( @rows ) {
+        my $i = 0;
+        @rows  = map { +{ id=>$i++, name=>$_ } } qw/
+            assign_to
+            category
+            description
+            files
+            labels
+            priority
+            progress
+            projects
+            properties
+            release
+            revisions
+            status
+            title
+            topics
+        /;
     }
     $cnt = $#rows + 1 ;
     
