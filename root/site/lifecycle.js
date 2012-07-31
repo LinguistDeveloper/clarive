@@ -8,6 +8,7 @@ var which_tree = function() {
     if( root.attributes.data == undefined ) root.attributes.data = {}; 
     root.attributes.data.favorites =  button_favorites.pressed;
     root.attributes.data.show_workspaces = button_workspaces.pressed;
+    root.attributes.data.show_ci = button_ci.pressed;
     root.attributes.data.favorites =  button_favorites.pressed;
     Baseliner.lifecycle.getSelectionModel().clearSelections();
     refresh_lc();
@@ -21,13 +22,15 @@ var show_workspaces = function() {
     which_tree();
 };
 
+var show_ci = function() {
+    which_tree();
+};
+
 var add_workspace = function() {
     Baseliner.ajaxEval( '/comp/lifecycle/workspace_new.js', {}, function(){} );
 };
 
-var refresh_lc = function(){
-    var sm = Baseliner.lifecycle.getSelectionModel();
-    var node = sm.getSelectedNode();
+var refresh_node = function(node){
     var loader = Baseliner.lifecycle.getLoader();
     loader.dataUrl = Baseliner.lc.dataUrl;
     if( node != undefined ) {
@@ -39,11 +42,30 @@ var refresh_lc = function(){
     }
 };
 
+var refresh_lc = function(){
+    var sm = Baseliner.lifecycle.getSelectionModel();
+    var node = sm.getSelectedNode();
+    refresh_node( node );
+};
+
+var button_projects = new Ext.Button({
+    cls: 'x-btn-icon',
+    icon: '/static/images/icons/project.png',
+    handler: show_favorites,
+    tooltip: _('Projects'),
+    pressed: true,
+    toggleGroup: 'lc',
+    allowDepress: false,
+    enableToggle: true
+});
+
 var button_favorites = new Ext.Button({
     cls: 'x-btn-icon',
-    icon: '/static/images/icons/favorites.gif',
+    icon: '/static/images/icons/star-gray.png',
+    tooltip: _('Favorites'),
     handler: show_favorites,
     pressed: false,
+    allowDepress: false,
     toggleGroup: 'lc',
     enableToggle: true
 });
@@ -52,12 +74,28 @@ var button_workspaces = new Ext.Button({
     cls: 'x-btn-icon',
     icon: '/static/images/icons/connect.png',
     handler: show_workspaces,
+    tooltip: _('Workspaces'),
     toggleGroup: 'lc',
     pressed: false,
+    allowDepress: false,
+    enableToggle: true
+});
+
+var button_ci = new Ext.Button({
+    cls: 'x-btn-icon',
+    icon: '/static/images/ci/ci.png',
+    handler: show_ci,
+    tooltip: _('Configuration Items'),
+    toggleGroup: 'lc',
+    pressed: false,
+    allowDepress: false,
     enableToggle: true
 });
 
 var button_menu = new Ext.Button({
+    //cls: 'x-btn-icon',
+    //icon: '/static/images/icons/config.gif',
+    tooltip: _('Config'),
     menu: [
         { text: _('Add Workspace'), handler: add_workspace }
     ]
@@ -69,10 +107,14 @@ Baseliner.lc_tbar = new Ext.Toolbar({
             cls: 'x-btn-text-icon',
             icon: '/static/images/icons/refresh.gif',
             handler: refresh_lc        },
+        button_projects,
         button_favorites,
         button_workspaces,
+        button_ci,
         '->',
-        button_menu
+        button_menu,
+        '<div class="x-tool x-tool-expand-east" style="margin:-2px -4px 0px 0px" onclick="Baseliner.lifecycle.collapse()"></div>'
+        //{ xtype:'button', iconCls:'x-btn-icon x-tool x-tool-expand-east', handler:function(){ Baseliner.lifecycle.collapse() } }
     ]
 });
 
@@ -140,40 +182,81 @@ Baseliner.lc_menu = new Ext.menu.Menu({
     }
 });
 
+                var click_handler = function(item){
+                    var n = item.node;
+                    var c = n.attributes.data.click;
+                    var params = n.attributes.data;
+                    
+                    if(n.attributes.text == _('Topics')){
+                        params.id_project = n.parentNode.attributes.data.id_project;
+                    }
+                    if( params.tab_icon == undefined ) params.tab_icon = c.icon;
+
+                    if( c.type == 'comp' ) {
+                        Baseliner.add_tabcomp( c.url, _(c.title), params );
+                    } else if( c.type == 'html' ) {
+                        Baseliner.add_tab( c.url, _(c.title), params );
+                    } else if( c.type == 'iframe' ) {
+                        Baseliner.add_iframe( c.url, _(c.title), params );
+                    } else {
+                        Baseliner.message( 'Invalid or missing click.type', '' );
+                    }
+                };
 // Main event that gets fired everytime a node is right-clicked
 //    builds the menu from node attributes and base menu
 var menu_click = function(node,event){
     node.select();
-    if( node.attributes.menu != undefined ) {
+    // menus and click events go in here
+    if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
         var m = Baseliner.lc_menu;
         m.removeAll(); 
-        var node_menu = node.attributes.menu;
         var node_menu_items = new Array(); 
-        // create js handlers for menu items
-        for( var i = 0; i < node_menu.length; i++ ) {
-            var menu_item = node_menu[i];
-            menu_item.text = _( menu_item.text ); 
-            var url = "";
-            // component opener menu
-            if( menu_item.comp != undefined ) {
-                url = menu_item.comp.url; 
-                menu_item.handler = function(item) {
-                    Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), item.node );
-                };
-            } else if( menu_item.eval != undefined ) {
-                url = menu_item.eval.url; 
-                menu_item.handler = function( item ) {
-                    Baseliner.ajaxEval( item.url, item.node , function(comp) {
-                        // no op
-                        var x = 0;
-                    });
-                };
+
+        // click turns into a menu-item Open...
+        var click = node.attributes.data.click;
+        if( click != undefined && click.url != undefined ) {
+            var menu_item = new Ext.menu.Item({
+                text: _( 'Open...' ),
+                icon: '/static/images/icons/tab.png',
+                node: node,
+                handler: click_handler
+            });
+            node_menu_items.push( menu_item );
+        }
+
+        if( node.attributes.menu ) {
+            var node_menu = node.attributes.menu;
+            // create js handlers for menu items
+            for( var i = 0; i < node_menu.length; i++ ) {
+                var menu_item = node_menu[i];
+                menu_item.text = _( menu_item.text ); 
+                var url = "";
+                // component opener menu
+                if( menu_item.comp != undefined ) {
+                    url = menu_item.comp.url; 
+                    menu_item.click_data = { action: menu_item.comp }; // need this before to preserve scope
+                    menu_item.handler = function(item) {
+                        item.click_data.node = item.node;   
+                        var d = { node: item.node, action: menu_item.comp };
+                        Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), d );
+                    };
+                } else if( menu_item.eval != undefined ) {
+                    url = menu_item.eval.url; 
+                    menu_item.click_data = { action: menu_item.eval }; // need this before to preserve scope
+                    menu_item.handler = function( item ) {
+                        item.click_data.node = item.node;
+                        Baseliner.ajaxEval( item.url, item.click_data , function(comp) {
+                            // no op
+                            var x = 0;
+                        });
+                    };
+                }
+                var item = new Ext.menu.Item(menu_item);
+                node_menu_items.push( item );
+                //item.node = node.attributes; // stash it here
+                item.node = node; // stash it here, otherwise things get out of scope
+                item.url  = url;
             }
-            var item = new Ext.menu.Item(menu_item);
-            node_menu_items.push( item );
-            //item.node = node.attributes; // stash it here
-            item.node = node; // stash it here, otherwise things get out of scope
-            item.url  = url;
         }
         m.add( node_menu_items );
         if( node_menu_items.length > 0 ) m.add('-');
@@ -190,25 +273,59 @@ var menu_click = function(node,event){
     Baseliner.lc_menu.showAt(event.xy);
 }
 
+var drop_handler = function(e) {
+    // from node:1 , to_node:2
+    e.cancel = true;
+    e.dropStatus = true;
+    var n1 = e.source.dragData.node;
+    var n2 = e.target;
+    if( n1 == undefined || n2 == undefined ) return false;
+    
+    var node_data1 = n1.attributes.data;
+    var node_data2 = n2.attributes.data;
+    if( node_data1 == undefined ) node_data1={};
+    if( node_data2 == undefined ) return false;
+    //alert( JSON.stringify( node_data2 ) );
+    if( node_data2.on_drop != undefined ) {
+        var on_drop = node_data2.on_drop;
+        if( on_drop.url != undefined ) {
+            var id_project = n2.parentNode.attributes.data.id_project
+            Baseliner.ajaxEval( on_drop.url, { id_file: node_data1.id_file, id_project: id_project  }, function(res){
+                if( res.success ) {
+                    Baseliner.message(  _('Drop'), res.msg );
+                    //e.target.appendChild( n1 );
+                    //e.target.expand();
+                    refresh_node( e.target );
+                } else {
+                    Baseliner.message( _('Drop'), res.msg );
+                    //Ext.Msg.alert( _('Error'), res.msg );
+                    return false;
+                }
+            });
+        }
+    }
+    return true;
+};
 
 Baseliner.lifecycle = new Ext.tree.TreePanel({
     region: 'west',
     split: true,
     collapsible: true,
-    title: _("Lifecycle"),
-    ddGroup: 'lifecycle_dd',
+    title: _("Navigator"),
+    header: false,
     width: 250,
     useArrows: true,
     autoScroll: true,
     animate: true,
-    baseArgs: {
-        singleClickExpand: true
+    enableDD: true,
+    ddGroup: 'lifecycle_dd',
+    listeners: {
+        beforenodedrop: { fn: drop_handler },
+        contextmenu: menu_click
     },
     containerScroll: true,
-    listeners: { contextmenu: menu_click },
     rootVisible: false,
     dataUrl: Baseliner.lc.dataUrl,
-    enableDD: true,
     tbar: Baseliner.lc_tbar,
     root: {
         nodeType: 'async',
@@ -226,26 +343,30 @@ Baseliner.lifecycle.getLoader().on("beforeload", function(treeLoader, node) {
     }
     loader.baseParams = node.attributes.data;
 });
+    
+Baseliner.lifecycle.on('beforechildrenrendered', function(node){
+    node.eachChild(function(n) {
+        if(n.attributes.topic_name ) {
+            var tn = n.attributes.topic_name;
+            n.setIconCls('no-icon');
 
-Baseliner.lifecycle.on('dblclick', function(n, ev){ 
-    //alert( JSON.stringify( n ) );
-    if( n.attributes.data == undefined ) return;
-    var c = n.attributes.data.click;
-    if( c==undefined || c.url==undefined ) return;
-    var params = n.attributes.data;
-    if( params.tab_icon == undefined ) params.tab_icon = c.icon;
-    if( c.type == 'comp' ) {
-        Baseliner.add_tabcomp( c.url, _(c.title), params );
-        ev.stopEvent();
-    } else if( c.type == 'html' ) {
-        Baseliner.add_tab( c.url, _(c.title), params );
-        ev.stopEvent();
-    } else if( c.type == 'iframe' ) {
-        Baseliner.add_iframe( c.url, _(c.title), params );
-        ev.stopEvent();
-    } else {
-        Baseliner.message( 'Invalid or missing click.type', '' );
-    }
+            //tn.style = 'font-size:10px';
+            tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
+
+            tn.mini = true;
+            var tn_span = Baseliner.topic_name(tn);
+            n.setText( tn_span + ' ' + n.text );
+            /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
+                n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
+        }
+    });
+});
+
+//Baseliner.lifecycle.on('dblclick', function(n, ev){
+
+Baseliner.lifecycle.on('dblclick', function(n, ev){     
+    if( n.leaf ) 
+        click_handler({ node: n });
 });
 
 Baseliner.lifecycle.expand();

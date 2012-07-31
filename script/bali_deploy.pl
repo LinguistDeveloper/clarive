@@ -139,7 +139,7 @@ Baseliner::Schema::Baseliner->deploy_schema(
     version         => exists $args{'version'},
     install_version => exists $args{'installversion'},
     upgrade         => exists $args{ upgrade },
-    diff            => exists $args{ diff },
+    diff            => $args{ diff },
     downgrade       => exists $args{ downgrade },
     show_config     => !exists $args{show_config},
     deploy_now      => $deploy_now,

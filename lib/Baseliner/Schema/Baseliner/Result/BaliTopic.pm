@@ -70,6 +70,7 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 255 },
   "expr_deadline",
   { data_type => "varchar2", is_nullable => 1, size => 255 },
+  "progress", { data_type => "number", is_nullable => 1, default_value=>0 },  
 );
 
 
@@ -93,12 +94,51 @@ __PACKAGE__->belongs_to(
   { id => "id_priority" },
 );
 
+__PACKAGE__->has_many(
+  "workflow",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesAdmin",
+  { 'foreign.id_category' => 'self.id_category' },
+);
+
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
 __PACKAGE__->master_setup( 'files', ['topic','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid'] );
 __PACKAGE__->master_setup( 'projects', ['topic','mid'] => ['project', 'BaliProject','mid'] );
-__PACKAGE__->master_setup( 'topics', ['topic','mid'] => ['topic', 'BaliTopic','mid'] );
+__PACKAGE__->master_setup( 'topics', ['topic','mid'] => ['topic', 'BaliTopic','mid'] );  # topic_topic
+__PACKAGE__->master_setup( 'revisions' => ['topic','mid'] => ['revision', 'BaliMaster','mid'] );  # topic_revision
 
+sub badge_name {
+    my ($self) =@_;
+    my $cat = $self->categories;
+    if( $cat->is_release ) {
+        my $title = $self->title;
+        $title =~ s{^(\w+\s+\w+)\s+.*$}{$1};
+        return $title;
+    } else {
+        return sprintf '%s #%s', $cat->name, $self->mid;
+    }
+}
 
+sub full_name {
+    my ($self) =@_;
+    sprintf '[%s] %s', $self->badge_name, $self->title;
+}
+
+sub my_releases {
+    my ($self) = @_;
+    my $rels = Baseliner->model('Baseliner::BaliTopicCategories')->search( { is_release => 1 }, { select => ['id'] } )->as_query;
+    Baseliner->model('Baseliner::BaliMasterRel')->search(
+        {   rel_type                  => 'topic_topic',
+            to_mid                    => $self->mid,
+            'topic_topic.id_category' => { -in => $rels }
+        },
+        { prefetch => [ {topic_topic=>'categories'}, 'topic_topic2' ] }
+    )
+}
+
+sub is_in_release {
+    my ($self) = @_;
+    $self->my_releases->count();
+}
 
 1;

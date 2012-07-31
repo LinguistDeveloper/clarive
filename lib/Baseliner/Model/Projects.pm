@@ -42,4 +42,10 @@ sub add_item {
     }
 }
 
+sub get_project_name {
+    my ( $self, %p ) = @_;
+
+    my $project = Baseliner->model('Baseliner::BaliProject')->search({ mid=>$p{id} })->first->name;
+}
+
 1;

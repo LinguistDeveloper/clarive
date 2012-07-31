@@ -24,7 +24,7 @@
 
     <script type="text/javascript" src="/site/stacktrace.js"></script>
 
-    <script type="text/javascript" src="/static/ext/adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="/static/ext/adapter/ext/ext-base<% $debug %>.js"></script>
     <script type="text/javascript" src="/static/ext/ext-all<% $debug %>.js"></script>
     <!-- script type="text/javascript" src="/static/ext/jitx<% $debug %>.js"></script -->
 
@@ -37,10 +37,17 @@
 % if( my $theme_dir = $c->stash->{theme_dir} ) {
     <link rel="stylesheet" type="text/css" href="/static<% $theme_dir %>/style.css" />
 % }
+
+    <div id="loading-mask"></div>
+    <div id="loading">
+      <div class="loading-indicator"><img src="/static/gui/icons/loading-balls.gif" style="margin-right:8px;" align="absmiddle"/><% _loc('Loading...') %></div>
+    </div>
+
     <!--script type="text/javascript" src="/static/ext/air/ext-air.js"></script-->
     <!-- link rel="stylesheet" type="text/css" href="/static/ext/air/resources/ext-air.css" /-->
 
     <style type="text/css">
     </style>
 
+    <script type="text/javascript" src="/site/globals.js"></script>
     <script type="text/javascript" src="/site/common.js"></script>

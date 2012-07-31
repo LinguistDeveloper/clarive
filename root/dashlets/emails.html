@@ -1,0 +1,34 @@
+<!--
+name: Emails
+description: List of emails
+config: config.dashlet.emails
+url: /dashboard/list_emails
+html: /dashlets/emails.html
+---
+-->
+<%perl>
+    use Baseliner::Utils;
+    my @emails = $c->stash->{emails};
+</%perl>
+
+    <div>
+        <h2>Mensajes </h2>
+        <table class="table table-bordered table-condensed dashboard">
+            <thead>
+                <tr>
+                    <th colspan="3">Asunto</th>
+                    <th>De</th>
+                    <th>Enviado</th>
+                </tr>
+            </thead>
+            <tbody>
+%foreach my $email (_array @emails){
+                <tr>
+                    <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );"><%$email->{subject}%></a></b></td>
+                    <td><%$email->{sender}%></td>
+                    <td><%$email->{sent}%></td>
+                </tr>
+%}
+            </tbody>
+        </table>
+    </div>

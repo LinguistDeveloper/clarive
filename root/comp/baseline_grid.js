@@ -98,7 +98,7 @@
         });                 
 
         var ta = new Ext.form.TextArea({
-            name: 'desciption',
+            name: 'description',
             height: 130,
             enableKeyEvents: true,
             fieldLabel: _('Description'),

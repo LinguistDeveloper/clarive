@@ -32,6 +32,14 @@ register 'menu.development.gui_designer' =>
 register 'menu.development.baliref' =>
     { label => 'Baseliner Reference', url_browser_window => '/pod', title => 'Baseliner Reference', index => 999 };
 
+register 'menu.development.js_reload' => {
+    label    => 'JS Reload',
+    url_eval => '/site/js-reload.js',
+    title    => 'JS Reload',
+    action   => 'action.admin.develop',
+    icon     => '/static/images/icons/js-reload.png',
+};
+
 sub test : Local {
     my ($self, $c ) = @_;
     $c->response->body( "hola");

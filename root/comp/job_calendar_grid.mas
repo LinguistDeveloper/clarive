@@ -157,7 +157,7 @@
 													grid.getStore().load();
 													win.close(); 
 												},
-												failure: function(form, action) { Ext.Msg.alert("<% _loc('Failure') %>", action.result.msg); }
+												failure: function(form, action) { Ext.Msg.alert("<% _loc('Error') %>", action.result.msg); }
 											});										
 										}
 									}

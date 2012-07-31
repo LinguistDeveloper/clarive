@@ -31,6 +31,8 @@ Baseliner.Topic.StoreStatus = Ext.extend(Ext.data.JsonStore, {
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'description' },
+                {  name: 'bl' },
+                {  name: 'seq' },
                 {  name: 'type' }                
             ]
         }, config);
@@ -52,7 +54,11 @@ Baseliner.Topic.StoreCategory = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'color' },
                 {  name: 'description' },
                 {  name: 'type' },
-                {  name: 'statuses' }
+                {  name: 'statuses' },
+                {  name: 'forms' },
+                {  name: 'is_release' },
+                {  name: 'is_changeset' },
+                {  name: 'fields' }
             ]
         },config);
         Baseliner.Topic.StoreCategory.superclass.constructor.call(this, config);
@@ -70,6 +76,7 @@ Baseliner.Topic.StoreCategoryStatus = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'type' },
+                {  name: 'bl' },
                 {  name: 'description' }
             ]
         },config);
@@ -86,6 +93,7 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
             url: '/topic/list',
             fields: [ 
                 {  name: 'topic_mid' },
+                {  name: 'topic_name' },
                 {  name: 'title' },
                 //{  name: 'description' },
                 {  name: 'created_on', type: 'date', dateFormat: 'c' },        
@@ -93,17 +101,25 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'numcomment' },
                 {  name: 'category_id' },
                 {  name: 'category_color' },
+                {  name: 'is_release' },
+                {  name: 'is_changeset' },
                 {  name: 'category_name' },
                 {  name: 'calevent' },
                 {  name: 'projects' },          
                 {  name: 'labels' },
                 {  name: 'status' },
+                {  name: 'progress' },
+                {  name: 'revisions' },
+                {  name: 'report_data' },
                 {  name: 'category_status_name' },
+                {  name: 'category_status_seq' },
+                {  name: 'category_status_id' },
                 {  name: 'priority_id' },
                 {  name: 'response_time_min' },
                 {  name: 'expr_response_time' },
                 {  name: 'deadline_min' },
-                {  name: 'expr_deadline' }
+                {  name: 'expr_deadline' },
+                {  name: 'num_file' }                
                 
             ]
         },config);

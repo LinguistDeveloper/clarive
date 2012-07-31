@@ -1,14 +1,17 @@
 <%perl>
-    my $ii = int rand 9999999999999999999;
+    use Baseliner::Utils;
+    my $ii = Baseliner::Utils::_nowstamp();
     my $swEdit = $c->stash->{swEdit};
-
 </%perl>
+
 (function(params){
     var view_is_dirty = false;
     var form_is_loaded = false;
     var ii = "<% $ii %>";  // used by the detail page
     var btn_form_ok = new Ext.Button({
-            text: _('Accept'),
+            text: _('Save'),
+            icon:'/static/images/icons/save.png',
+            cls: 'x-btn-icon-text',
             type: 'submit',
             hidden: true,
             handler: function() {
@@ -23,6 +26,10 @@
                             
                             form2.findField("topic_mid").setValue(a.result.topic_mid);
                             form2.findField("status").setValue(a.result.topic_status);
+
+                            if( params._parent_grid != undefined && params._parent_grid.getStore()!=undefined ) {
+                                params._parent_grid.getStore().reload();
+                            }
                             
                             var store = form2.findField("status_new").getStore();
                             store.load({
@@ -119,7 +126,10 @@
                 load_form( rec );
             });
         } else {
-            load_form({ new_category_id: params.new_category_id, new_category_name: params.new_category_name });
+            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name }, function(rec) {
+                load_form( rec );
+            });
+            //load_form({ new_category_id: params.new_category_id, new_category_name: params.new_category_name });
         }
           
         cardpanel.getLayout().setActiveItem( 1 );
@@ -266,18 +276,17 @@
             btn_edit,
             '-',
             btn_comment,
-            '-',
+            btn_form_ok
+            //'-',
             //_('Estado') + ': ',
             //{ xtype: 'combo', value: 'New' },
-            '->',
-            btn_form_ok
+            //'->'
             //btn_form_reset
         ]
     });
     var cardpanel = new Ext.Panel({
         layout: 'card',
         activeItem: 0,
-        cardSwitchAnimation:'slide',
         title: params.title,
         tbar: tb,
         items: [ detail, form ]

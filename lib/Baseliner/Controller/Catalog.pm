@@ -7,7 +7,7 @@ use Baseliner::Sugar;
 use Try::Tiny;
 
 register 'action.admin.catalog' => { name=>'Catalog Admin' };
-register 'menu.nature.baseline' => {
+register 'menu.tools.catalog' => {
     label    => _loc('Catalog'),
     url_comp => '/catalog/grid',
     icon => '/static/images/icons/catalog.gif',

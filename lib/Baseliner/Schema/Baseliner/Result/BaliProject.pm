@@ -5,6 +5,14 @@ use warnings;
 use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
+
+=head1 NAME
+
+Baseliner::Schema::Baseliner::Result::BaliProject
+
+=cut
+
 __PACKAGE__->table("bali_project");
 __PACKAGE__->add_columns(
   "mid", {
@@ -64,5 +72,7 @@ __PACKAGE__->belongs_to(
   "Baseliner::Schema::Baseliner::Result::BaliProject",
   { mid => "id_parent" },
 );
+
+__PACKAGE__->master_setup( 'files', ['project','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 
 1;

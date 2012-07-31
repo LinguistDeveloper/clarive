@@ -1,1 +1,16 @@
-Run script/baseliner_server.pl to test the application.
+***********************************************************************************
+*  Baseliner v5.5                                                                 *
+*  Copyright(c) VASS Software Labs                                                *
+*  This software is distributed AS IS, without warranties of any kind.            *
+*  License: GPLv3 (www.baseliner.org/license)                                     *
+*                                                                                 * 
+***********************************************************************************
+
+To run the server in debug mode, execute the following command: 
+
+BASELINER_DEBUG=1 BALI_ENV=t plackup -S twiggy -R lib,etc,features/gitscm/lib --port 3000
+
+Production server:
+
+BALI_ENV=t plackup -S Starman --port 3000
+

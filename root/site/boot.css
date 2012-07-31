@@ -4411,6 +4411,19 @@
 .forum {
     border:1px solid #fff;
 }
+
+.forum.default {
+    font-style: italic;
+}
+
+.forum.status a span {
+  text-transform:uppercase;
+  font-family:Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-size: xx-small;
+  font-weight:bolder;
+  color:#555;
+}
+
 .forum .x-tree-ec-icon {
     display:none;
 }
@@ -4420,6 +4433,8 @@
 .icon-no {
     background-image:url('') !important;
 }
+
+/*
 .x-tree-selected {
     border:1px dotted #a3bae9;
     background:#DFE8F6;
@@ -4429,3 +4444,4 @@
 	color:#15428b;
     font-weight:bold;
 }
+*/

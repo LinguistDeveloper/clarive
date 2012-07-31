@@ -4,6 +4,7 @@
     $show_dashboard => 1
     $show_menu => 1
     $show_lifecycle => 1
+    $show_js_reload => 0
 </%args>
 
 <%perl>
@@ -27,6 +28,15 @@
     <script type="text/javascript" src="/site/panelresizer.js"></script>
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
     <script type="text/javascript" src="/i18n/js"></script>
+
+    <!-- Flot -->
+    <script src="/static/flot/excanvas.min.js"></script>
+    <script src="/static/flot/jquery.flot.js"></script>
+    <script src="/static/flot/jquery.flot.pie.js"></script>
+    <script src="/static/flot/jquery.flot.orderBars.js"></script>
+    <script src="/static/flot/jquery.flot.resize.js"></script>
+    <script src="/static/flot/flot.js"></script>
+
 
     <!-- CodeMirror -->
     <link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
@@ -85,7 +95,7 @@
     <!--<link rel="stylesheet/less" type="text/css" href="/site/960-Grid-System/code/css/reset.css" />-->
     <!--<link rel="stylesheet/less" type="text/css" href="/site/960-Grid-System/code/css/text.css" />-->
     <!-- link rel="stylesheet" type="text/css" href="/site/960-Grid-System/code/css/demo.css" / -->
-    <script type="text/javascript" src="/site/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
     <link rel="stylesheet" type="text/css" href="/site/boot.css" /> 
     <!-- #reset namespace
     <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
@@ -135,7 +145,7 @@ Ext.onReady(function(){
             bc.show();
             //bc.expand();
         }
-        viewport.doLayout();
+        Baseliner.viewport.doLayout();
     };
     Baseliner.tabCalendar = function(){
         var tabpanel = Baseliner.tabpanel();
@@ -161,6 +171,9 @@ Ext.onReady(function(){
             '->',
             search_box,
             Baseliner.help_button,
+% if( $show_js_reload ) {
+            '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload()" onmouseover="this.style.cursor=\'pointer\'" />',
+% }
             '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />',
             '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
@@ -180,7 +193,7 @@ Ext.onReady(function(){
                     if($user ne 'root'){
                      $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
                     }
-                    $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/users.gif' } );
+                    $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/icons/users.gif' } );
                     print js_dumper { text=>$c->username , menu=> [
             sort {
                 $a->{index}||=0;
@@ -215,10 +228,8 @@ Ext.onReady(function(){
 
     lifecycle.hide();
 % }
-    var viewport = new Ext.Viewport({
+    Baseliner.main = new Ext.Panel({
         layout: 'border',
-        id: 'main-view',
-        renderTo: Ext.getBody(),
         items: [
 % if( $c->stash->{site_raw} ) {
             new Ext.TabPanel({ 
@@ -250,18 +261,29 @@ Ext.onReady(function(){
 % if( $show_dashboard ) {
 %    $show_portal and print ',';
                 //{title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style', tab_icon: icon_home }
-                {title:_loc('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: icon_home }
+                {title:_loc('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' }
 % }
             ]
             })
 % } # site_raw
         ]
     });
+    Baseliner.viewport = new Ext.Viewport({
+        layout: 'card',
+        activeItem: 0,
+        id: 'main-view',
+        //renderTo: Ext.getBody(),
+        renderTo: 'main-div',
+        items: [ Baseliner.main ]
+    });
 
     var tabpanel = Ext.getCmp('main-panel');
     var first_comp = tabpanel.getComponent( 0 );
     if( first_comp != undefined ) {
-        tabpanel.changeTabIcon( first_comp, icon_home );
+        if( first_comp.tab_icon ) 
+            tabpanel.changeTabIcon( first_comp, first_comp.tab_icon );
+        else
+            tabpanel.changeTabIcon( first_comp, icon_home );
     }
 
 % if( $show_portal eq '1' ) {
@@ -322,7 +344,19 @@ Ext.onReady(function(){
        
 });
         
-    </script>
+ setTimeout(function(){
+	Ext.get('loading').remove();
+	Ext.get('loading-mask').fadeOut({
+		remove:true
+	});
+ }, 2050);
+
+    if( Ext.isIE6 || Ext.isIE7 ) {
+        window.onbeforeunload=  Baseliner.unload_warning;
+    } else {
+        window.onbeforeunload=  function(){ return '' };
+    }
+</script>
 
 <!-- TODO: No sería mala idea poder meter esto en las features -->
 <!-- Para poder incluir el Widget DatePickerPlus de Ext -->
@@ -336,9 +370,10 @@ Ext.onReady(function(){
 <!-- SOLO PARA DEPURAR EN IE -->
 <!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->    
 </head>
-<body>
+<body >
 <IFRAME id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></IFRAME>
 <div id='run-panel'></div>
+<div id='main-div'></div>
 
 <!-- Preloading some images used in grids -->
 <!-- & preload_images.html & -->

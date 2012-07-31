@@ -1,4 +1,5 @@
 baseliner_local.conf
+baseliner_topic.conf
 etc/bali_cache
 etc/repo
 etc/export
@@ -22,12 +23,21 @@ xx
 templates
 Makefile
 tmp
+features/#*
 features/nature.tp
 features/nature.ssrs
 features/gbp
+features/sonar
+features/checking
+features/svnscm
+features/cvsscm
 inc
 t/balitest.db
 t/old
 mvsjobs
 .sonar
 root/identicon
+root/static/cal*
+root/static/dhtmlx*
+root/static/sch*
+root/static/images/glyph*

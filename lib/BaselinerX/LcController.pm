@@ -7,14 +7,126 @@ BEGIN { extends 'Catalyst::Controller' };
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
-sub tree_file_project : Local {
+sub tree_topic_get_files : Local {
+    my ($self,$c) = @_;
+    my @tree;
+
+    my $id_topic = $c->req->params->{id_topic} ;
+    my $sw_get_files = $c->req->params->{sw_get_files} ;
+    
+    if ($sw_get_files){
+        my $files = $c->model('Baseliner::BaliTopic')->find($id_topic)->files->search();
+            while (my $file = $files->next){
+                push @tree, {
+                    text       => $file->filename . '(v' . $file->versionid . ')',
+                    #url        => '/lifecycle/tree_topic_get_files',
+                    data       => {
+                       id_file => $file->mid,
+                       #sw_get_files =>\1
+                    },
+                    #icon       => '/static/images/icons/project_small.png',
+                    leaf       => \1,
+                    expandable => \0
+                };
+        }
+    }
+    else{
+        my $files = $c->model('Baseliner::BaliTopic')->find($id_topic)->files->search()->count;
+        if ($files > 0){
+            push @tree, {
+               text       => _loc ('Files'),
+               url        => '/lifecycle/tree_topic_get_files',
+               data       => {
+                  id_topic => $id_topic,
+                  sw_get_files =>\1
+               },
+               icon       => '/static/images/icons/files.gif',
+               leaf       => \0,
+               expandable => \1
+           };           
+        }
+    }
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
+
+sub tree_topics_project : Local {
     my ($self,$c) = @_;
     my @tree;
 
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
-    
-    _log ">>>>>>>>>>project: " . $id_project . "\n";
+    my @topics = $c->model('Baseliner::BaliMasterRel')->search(
+        { to_mid => $id_project },
+        { prefetch => {'topic_project'=>'categories'} }
+    )->hashref->all;
+    for( @topics ) {
+        my $is_release = $_->{topic_project}{categories}{is_release};
+        my $is_changeset = $_->{topic_project}{categories}{is_changeset};
+        my $icon = $is_release ? '/static/images/icons/release_lc.png'
+            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic_one_lc.png' ;
+        push @tree,
+            {
+            text       =>  $_->{topic_project}{title},
+            topic_name => {
+                mid             => $_->{from_mid},
+                category_color => $_->{topic_project}{categories}{color},
+                is_release     => $is_release,
+                is_changeset   => $is_changeset,
+            },
+            children => [
+                {   text => _loc('Files'),
+                    icon => '/static/images/icons/files.gif',
+                    leaf => \0,
+                    url  => '/lifecycle/tree_topic_get_files',
+                    data => {
+                        id_topic     => $_->{from_mid},
+                        sw_get_files => \1
+                    },
+                }
+            ],
+            icon       => $icon,
+            leaf       => \0,
+            expandable => \1
+            };
+    }
+
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
+sub topic_contents : Local {
+    my ($self,$c) = @_;
+    my @tree;
+    my $topic_mid = $c->req->params->{topic_mid};
+    my @topics = $c->model('Baseliner::BaliMasterRel')->search(
+        { from_mid => $topic_mid },
+        { prefetch => {'topic_topic2'=>'categories'} }
+    )->hashref->all;
+    for ( @topics ) {
+        my $is_release = $_->{topic_topic2}{categories}{is_release};
+        my $is_changeset = $_->{topic_topic2}{categories}{is_changeset};
+        my $icon = $is_release ? '/static/images/icons/release_lc.png'
+            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic_one_lc.png' ;
+
+        push @tree, {
+            text       => $_->{topic_topic2}{title},
+            topic_name => {
+                mid             => $_->{from_mid},
+                category_color => $_->{topic_topic2}{categories}{color},
+                is_release     => $is_release,
+                is_changeset   => $is_changeset,
+            },
+            url        => '/lifecycle/tree_topic_get_files',
+            data       => {
+               id_topic => $_->{topic_topic2}{mid}
+            },
+            icon       => $icon, 
+            leaf       => \1,
+            expandable => \1
+        };
+    }
 
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
@@ -24,15 +136,26 @@ sub tree_file_project : Local {
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
-    my @project_ids = Baseliner->model('Permissions')->all_projects();
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ mid=>\@project_ids, id_parent=>undef, active=>1 }, { order_by=>{ -asc => \'lower(name)' }  });
+    my $where = { active=> 1 };
+    if( ! $c->is_root ) {
+        $where->{mid} = { -in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username ) };
+    }
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search( 
+        $where ,
+        { order_by => { -asc => \'lower(name)' } } );
     while( my $r = $rs->next ) {
         push @tree, {
             text       => $r->name,
             url        => '/lifecycle/tree_project',
             data       => {
-               id_project => $r->mid,
-               project    => $r->name,
+                id_project => $r->mid,
+                project    => $r->name,
+                click => {
+                    url   => '/dashboard/list/project',
+                    type  => 'html',
+                    icon  => '/static/images/icons/project.png',
+                    title => $r->name,
+                }               
             },
             icon       => '/static/images/icons/project_small.png',
             leaf       => \0,
@@ -61,6 +184,7 @@ sub tree_project : Local {
             text       => _loc( $node->{name} // $node->{node} ),  # name is official, node is deprecated
             url        => $node->{url} || '/lifecycle/changeset',
             icon       => $node->{icon},
+            menu       => $node->{menu},
             data       => {
                 project    => $project,
                 id_project => $id_project,
@@ -72,6 +196,7 @@ sub tree_project : Local {
             expandable => \0
         };
     }
+
     # get sub projects TODO make this recurse over the previous controller (or into a model)
     my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project, active=>1 });
     while( my $r = $rs_prj->next ) {
@@ -102,33 +227,37 @@ sub changeset : Local {
     my $state_name = $p->{state_name} or _throw 'missing state name';
     my $id_project = $p->{id_project} or _throw 'missing project id';
 
+    my $config = config_get 'config.lc';
     # provider-by-provider:
     # get all the changes for this project + baseline
     my @cs;
-    for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
-        #push @cs, $class;
-        my $prov = $provider->new( project=>$project );
-        my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
-        _log _loc "---- provider $provider has %1 changesets", scalar @changes;
-        push @cs, @changes
-    }
 
-    # loop through the changeset objects (such as BaselinerX::GitChangeset)
-    for my $cs ( @cs ) {
-        my $menu = [];
-        # get menu extensions (find packages that do)
-        # get node menu
-        ref $cs->node_menu and push @$menu, _array $cs->node_menu;
-        push @tree, {
-            url        => $cs->node_url,
-            data       => $cs->node_data,
-            parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
-            menu       => $menu,
-            icon       => $cs->icon,
-            text       => $cs->text || $cs->name,
-            leaf       => \0,
-            expandable => \0
-        };
+    if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
+        for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
+            #push @cs, $class;
+            my $prov = $provider->new( project=>$project );
+            my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
+            _log _loc "---- provider $provider has %1 changesets", scalar @changes;
+            push @cs, @changes
+        }
+
+        # loop through the changeset objects (such as BaselinerX::GitChangeset)
+        for my $cs ( @cs ) {
+            my $menu = [];
+            # get menu extensions (find packages that do)
+            # get node menu
+            ref $cs->node_menu and push @$menu, _array $cs->node_menu;
+            push @tree, {
+                url        => $cs->node_url,
+                data       => $cs->node_data,
+                parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
+                menu       => $menu,
+                icon       => $cs->icon,
+                text       => $cs->text || $cs->name,
+                leaf       => \0,
+                expandable => \0
+            };
+        }
     }
 
     ## add what's in this baseline 
@@ -154,8 +283,167 @@ sub changeset : Local {
               },
         } for @repos;
     }
+
+    # topic changes
+    my $where = { -or=>[ {is_changeset => 1},{is_release=>1} ], rel_type=>'topic_project', to_mid=>$id_project };
+    my @changes;
+    if( defined $p->{id_status} ) {
+        $where->{id_category_status} = $p->{id_status};
+        @changes = $c->model('Baseliner::BaliTopic')->search(
+            $where,
+            { prefetch=>['categories','children','master'] }
+        )->all;
+    } else {
+        # Available 
+        $where->{'status.bl'} = '*';
+        $where->{id_category_status} = { -in => $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+                { 'statuses_to.bl' => { '<>' => '*' } },
+                { +select=>['id_status_from'], join=>['statuses_to'] }
+            )->as_query };
+        @changes = $c->model('Baseliner::BaliTopic')->search(
+                $where,
+                { prefetch=>['categories','children','master','status'] }
+            )->all;
+    }
+
+    for my $topic (@changes) {
+        my @rels = $topic->my_releases->hashref->all;  # slow! join me!
+        my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
+        if( @rels ) {
+            #$td->{id_category_status} = $rels[0]->{topic_topic}{id_category_status};
+            #$td->{id_status} = $rels[0]->{topic_topic}{id_status};
+        }
+        # get the menus for the changeset
+        my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
+        my $node = {
+            url  => '/lifecycle/topic_contents',
+            icon => '/static/images/icons/changeset_lc.png',
+            text => $td->{title},
+            leaf => \1,
+            menu => $menu,
+            topic_name => {
+                mid             => $td->{mid},
+                category_color => $topic->categories->color,
+                is_release     => $td->{categories}{is_release},
+                is_changeset   => $td->{categories}{is_changeset},
+            },
+            data => {
+                ns           => 'changeset/' . $td->{mid},
+                bl           => $bl,
+                name         => $td->{title},
+                promotable   => $promotable,
+                demotable    => $demotable,
+                state_name   => $state_name,
+                topic_mid    => $td->{mid},
+                topic_status => $td->{id_category_status},
+                click        => {
+                    url   => sprintf('/comp/topic/topic_main.js'),
+                    type  => 'comp',
+                    icon  => '/static/images/icons/topic.png',
+                    title => sprintf("%s #%d", $td->{categories}{name}, $td->{mid}),
+                }
+            },
+        };
+        if( @rels ) {
+            for my $rel ( @rels ) {
+                my $title = $rel->{topic_topic}{title};
+                $node->{text} = $title;
+                $node->{leaf} = \0;
+                $node->{icon} = '/static/images/icons/release_lc.png';
+                $node->{topic_name}{is_release} = \1;
+                $node->{topic_name}{category_color} = $rel->{topic_topic}{categories}{color};
+                $node->{data}{topic_mid} = $rel->{from_mid};
+                $node->{data}{click} = {
+                    url   => sprintf('/comp/topic/topic_main.js'),
+                    type  => 'comp',
+                    icon  => '/static/images/icons/release.png',
+                    title => $title,
+                },
+                push @tree, $node;
+            }
+        } else {
+            push @tree, $node;
+        }
+    }
+
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
+}
+
+sub cs_menu {
+    my ($self, $topic, $bl_state, $state_name ) = @_;
+    return [] if $bl_state eq '*';
+    my @menu;
+    my $sha = ''; #try { $self->head->{commit}->id } catch {''};
+
+    push @menu, {
+        text => 'Deploy',
+        eval => {
+            url            => '/comp/lifecycle/deploy.js',
+            title          => 'Deploy',
+            bl_to          => $bl_state,
+            status_to      => '',                            # id?
+            status_to_name => $state_name,                            # name?
+            job_type       => 'static'
+        },
+        icon => '/static/images/silk/arrow_right.gif'
+    };
+
+    # Promote
+    my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+        { id_category => $topic->{id_category}, id_status_from => $topic->{id_category_status}, job_type => 'promote' },
+        {   join     => [ 'statuses_from', 'statuses_to' ],
+            distinct => 1,
+            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id/],
+            order_by => { -asc => 'statuses_to.seq' }
+        }
+    )->hashref->all;
+
+    my $promotable={};
+    for my $status ( @status_to ) {
+        $promotable->{ $status->{statuses_to}{bl} } = \1;
+        push @menu, {
+            text => _loc( 'Promote to %1', _loc( $status->{statuses_to}{name} ) ),
+            eval => {
+                url      => '/comp/lifecycle/deploy.js',
+                title    => 'To Promote',
+                job_type => 'promote',
+                bl_to => $status->{statuses_to}{bl},
+                status_to => $status->{statuses_to}{id},
+                status_to_name => $status->{statuses_to}{name},
+            },
+            icon => '/static/images/silk/arrow_down.gif'
+        };
+    }
+
+    # Demote
+    my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+        { id_category => $topic->{id_category}, id_status_from => $topic->{id_category_status}, job_type => 'demote' },
+        {   join     => [ 'statuses_from', 'statuses_to' ],
+            distinct => 1,
+            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id/],
+            order_by => { -asc => 'statuses_to.seq' }
+        }
+    )->hashref->all;
+
+    my $demotable={};
+    for my $status ( @status_from ) {
+        $demotable->{ $status->{statuses_to}{bl} } = \1;
+        push @menu, {
+            text => _loc( 'Demote to %1', _loc( $status->{statuses_to}{name} ) ),
+            eval => {
+                url      => '/comp/lifecycle/deploy.js',
+                title    => 'Demote',
+                job_type => 'demote',
+                bl_to => $status->{statuses_to}{bl},
+                status_to => $status->{statuses_to}{id},
+                status_to => $status->{statuses_to}{id},
+                status_to_name => $status->{statuses_to}{name},
+            },
+            icon => '/static/images/silk/arrow_up.gif'
+        };
+    }
+    ( $promotable, $demotable, \@menu );
 }
 
 sub repo : Local {
@@ -257,6 +545,8 @@ sub tree : Local {
         $c->forward( 'tree_favorites' );
     } elsif( $p->{show_workspaces} eq 'true' ) {
         $c->forward( 'tree_workspaces' );
+    } elsif( $p->{show_ci} eq 'true' ) {
+        $c->forward( '/ci/list' );
     } else {
         $c->forward( 'tree_all' );
     }
@@ -277,7 +567,9 @@ sub tree_all : Local {
             $c->stash->{node} = $node;
             $c->forward( $type );
         } else {
-            $c->forward('tree_lifecycle');
+            #$c->forward('tree_lifecycle');
+             $c->stash->{json} = {};
+             $c->forward( 'View::JSON' );
         }
     }
 
@@ -306,7 +598,7 @@ sub agent_ftp : Local {
     my $dir = $p->{dir};
 
     # TODO : from user workspace repo
-    my ($user, $pass, $host) = ( 'ICDMPA0', 'FEB01FEB', '192.168.107.2' );
+    my ($user, $pass, $host) = ( 'IBMUSER', 'SYS1', '192.168.200.1' );
 
     my @tree;
 
@@ -324,9 +616,8 @@ sub agent_ftp : Local {
     for my $i ( $ftp->dir ) {
         next if $k++ == 0;
         my @f = split /[\s|\t]+/, $i;
-        my $vol = $f[0];
         
-        next if ($vol eq 'Migrated');
+        next if ($f[0] eq 'Migrated');
 
         my ($vol, $unit, $ref, $ext, $used, $fmt, $lrecl, $blksz, $dsorg, $dsname ) = @f;
         _log "FFFFFFFFFFFFFF=" . join ',', @f;
@@ -363,7 +654,7 @@ sub view_file : Local {
     my $local = _tmp_file;
 
     # TODO : from user workspace repo
-    my ($user, $pass, $host) = ( 'ICDMPA0', 'FEB01FEB', '192.168.107.2' );
+    my ($user, $pass, $host) = ( 'IBMUSER', 'SYS1', '192.168.200.1' );
 
     use Net::FTP; 
     my $ftp=Net::FTP->new( $host );
@@ -380,7 +671,7 @@ sub list_workspaces : Private {
     my ($self, %args) = @_;
 
     +{
-        text => '192.168.107.2:ICDMPA0',
+        text => 'HERCULES:IBMUSER',
         leaf => \0,
         url  => '/lifecycle/agent_ftp',
         data => { dir=>'/' },

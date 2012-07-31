@@ -12,7 +12,7 @@ Runs a list of scripts on each node.
 
 =cut
 use Moose;
-use Baseliner::Node;
+use Baseliner::CI;
 use Path::Class;
 use Moose::Util::TypeConstraints;
 use Baseliner::Utils;
@@ -27,7 +27,7 @@ has origin  => qw/is ro isa ArrayRef[PathClass] required 1/,
                traits  => ['Array'],
                handles => { each_origin => 'map', count=>'count' };
 
-has destination => qw/is ro does Baseliner::Role::Node::Filesys required 1/;
+has destination => qw/is ro does Baseliner::Role::CI::Destination required 1/;
 
 # base dir or regex to copy from origin path to destination path
 has base => qw/is ro isa Str default/ => '';
@@ -46,7 +46,7 @@ around BUILDARGS => sub {
     } else {
         %args = @_;
     }
-    ref $args{destination} or $args{destination} = Baseliner::Node->new( $args{destination} );
+    ref $args{destination} or $args{destination} = Baseliner::CI->new( $args{destination} );
     $class->$orig( %args ); 
 };
 
@@ -76,10 +76,10 @@ sub deploy {
             $base_path = _file( $base_path )->dir;
             $self->push_vars( %captures );
             # now use captures as variables in the remote base path
-            my $remote = $node->home;
-            $remote = $self->parse_vars( $remote );
-            $node->home( $remote );
         }
+        my $remote = $node->home;
+        $remote = $self->parse_vars( $remote );
+        $node->home( $remote );
         if( $f->is_dir ) {
             $node->put_dir( local=>$f, add_path=>$base_path );
             ref $cb and $cb->( $node, $f );
@@ -102,7 +102,7 @@ sub run {
     $self->each_script( sub {
        my $uri = $_;
        # instanciate just in case
-       my $s = ref $uri ? $uri : Baseliner::Node->new( $uri );
+       my $s = ref $uri ? $uri : Baseliner::CI->new( $uri );
        # now run it
        my $ret = $s->run;
        ref $cb and $cb->( $s, $uri );

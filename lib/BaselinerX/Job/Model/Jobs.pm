@@ -272,7 +272,7 @@ sub _create {
             # check contents job status
             _log "Checking if in active job: " . $item->{ns};
             my $active_job = $self->is_in_active_job( $item->{ns} );
-            _throw _loc("Job element '%1' is in an active job: %2", $item->{ns}, $active_job->name)
+            _fail _loc("Job element '%1' is in an active job: %2", $item->{ns}, $active_job->name)
                 if ref $active_job;
                     # item => $item->{ns},
             my $provider=$1 if $item->{provider} =~ m/^namespace\.(.*)$/g;
@@ -569,22 +569,25 @@ sub get_contents {
             push @{$result->{packages}->{$ns->{ns_data}->{project}}}, { name => $ns->{ns_name}, type => $ns->{ns_type} };
             push @{$result->{elements}},
                 map { 
-                    $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
-                    #_log $_->path;
-                    my $tech = $1;
-                    $technologies{$tech} = '';
-                    {name => $_->name, status => $_->status, path => $_->path} 
+                    try {
+                        $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
+                        #_log $_->path;
+                        my $tech = $1;
+                        $technologies{$tech} = '';
+                        {name => $_->name, status => $_->status, path => $_->path} 
+                    } catch {
+                        +{}
+                    };
                 } @elements_list;
     
             my $rs_topics =
                 Baseliner->model( 'Baseliner::BaliRelationship' )->search( {from_ns => $ns->{ns_type}.'/'.$ns->{ns_name}} );
     
             while ( my $topic = $rs_topics->next ) {
-                # _log _dump $topic;
                 my $row_topics =
                     Baseliner->model( 'Baseliner::BaliTopic' )->search( {mid => $topic->to_id} )->first;
-                $topics{$topic->to_id} = $row_topics->title;
-                ##$topics{$topic->to_id} = $row_topics->title if $row_topics && $row_topics->title;
+                ##$topics{$topic->to_id} = $row_topics->title;
+                $topics{$topic->to_id} = $row_topics->title if $row_topics && $row_topics->title;
             }
         } ## end while ( my $row = $rs->next)
     

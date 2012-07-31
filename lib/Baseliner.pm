@@ -45,6 +45,7 @@ BEGIN {
 
 use Catalyst @modules;
 use Time::HiRes qw(gettimeofday tv_interval);
+use Baseliner::CI;
 my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 our $VERSION = '5.2.0';
@@ -64,8 +65,11 @@ __PACKAGE__->config->{static}->{dirs} = [
         'static',
         qr/images/,
     ];
+# __PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = __PACKAGE__->config->{static}->{dirs};
+
 __PACKAGE__->config->{static}->{ignore_extensions} 
         = [ qw/mas html js json css less/ ];    
+# __PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = __PACKAGE__->config->{static}->{ignore_extensions};
 
 __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
 
@@ -183,11 +187,10 @@ if( $ENV{BALI_FAST} ) {
 }
 
 __PACKAGE__->setup();
+
 # Capture Signals
 $SIG{INT} = \&signal_interrupt;
 $SIG{KILL} = \&signal_interrupt;
-
-#Class::C3::initialize();
 
 # Setup date formating for Oracle
 my $dbh = __PACKAGE__->model('Baseliner')->storage->dbh;
@@ -334,6 +337,11 @@ sub username {
         warn "No user id.";
         return undef;   
     } and return $user;
+}
+
+sub has_action {
+    my ($c,$action) = @_;
+    $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
 }
 
 sub is_root {
