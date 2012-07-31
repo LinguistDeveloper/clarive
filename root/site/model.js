@@ -1260,7 +1260,7 @@ Baseliner.KanbanColumn = Ext.extend(Ext.Panel, {
         style: {
             margin: '0px 0px 0px 0px',
             padding: '2px 2px 2px 2px',
-            'background': "#555 url('/static/images/bg/grey070.jpg')", 
+            'background': "transparent",
             'background-repeat': 'repeat'
         }
     },
@@ -1307,7 +1307,7 @@ Baseliner.kanban = function( args ){
         ],
         bodyCfg: { 
             style: {
-             'background': "#555 url('/static/images/bg/grey070.jpg')", 
+             'background': "#555 url('/static/images/bg/cork.jpg')", 
              'background-repeat': 'repeat'
             }
         },
@@ -1335,6 +1335,8 @@ Baseliner.kanban = function( args ){
                     if( h > max_height )
                         max_height = h;
                 });
+                if( kanban.body.getHeight() -10  > max_height )
+                    max_height = kanban.body.getHeight() - 10;
                 Ext.each( cols, function(c){
                     var el = c.getEl();
                     el.setHeight( max_height );  // so that the mask have the full length
@@ -1363,10 +1365,30 @@ Baseliner.kanban = function( args ){
             },
             'drop': function(e){
                 // update portlet data
-                e.panel.initialConfig.id_status = e.column.initialConfig.id_status;
+                var portlet = e.panel;
+                var previous_id_status = portlet.initialConfig.id_status;
+                portlet.initialConfig.id_status = e.column.initialConfig.id_status;
+                setTimeout( function(){
+                    console.log( previous_id_status ); 
+                }, 2000);
             }
         }
     });
+
+    var check_column = function(opt){
+        var id_status = opt.initialConfig.id_status;
+        kanban.items.each( function(i){
+            if( i.initialConfig.id_status == id_status ) {
+                if( opt.checked && ! i.isVisible() ) { // show
+                    i.show();
+                } else if( i.isVisible() ) { // hide
+                    i.hide();
+                }
+                kanban.reconfigure_columns();
+            }
+        });
+    };
+
 
     Baseliner.ajaxEval( '/topic/kanban_status', { topics: topics }, function(res){
         if( res.success ) {
@@ -1395,7 +1417,7 @@ Baseliner.kanban = function( args ){
             }
 
             for( var k=0; k< statuses.length; k++ ) {
-                status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler:remove_column });
+                status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler: check_column });
             }
             // method to reconfigure all columnwidths
             kanban.reconfigure_columns = function(){
@@ -1487,20 +1509,6 @@ Baseliner.kanban = function( args ){
                     var portlet_obj = column_obj.add( portlet );
                     return portlet_obj;
                     //column_obj.doLayout();
-            };
-
-            var remove_column = function(opt){
-                var id_status = opt.initialConfig.id_status;
-                kanban.items.each( function(i){
-                    if( i.initialConfig.id_status == id_status ) {
-                        if( opt.checked ) { // show
-                            i.show();
-                        } else { // hide
-                            i.hide();
-                        }
-                        kanban.reconfigure_columns();
-                    }
-                });
             };
 
             kanban.on('afterrender', function(cmp){
