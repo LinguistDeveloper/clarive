@@ -76,6 +76,7 @@ sub save {
     return $ret;  # mid
 }
 
+# save data to table or yaml
 sub save_data {
     my ( $self, $master_row, $data ) = @_;
     return unless ref $data;
