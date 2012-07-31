@@ -37,7 +37,15 @@ __PACKAGE__->add_columns(
   "is_main",
   { data_type => "char", is_nullable => 1, size => 1, default_value => '0'},
   "is_columns",
-  { data_type => "char", is_nullable => 1, size => 1, default_value => '1'},    
+  { data_type => "char", is_nullable => 1, size => 1, default_value => '1'},
+  "is_system",
+  { data_type => "char", is_nullable => 1, size => 1, default_value => '0'},
+  "system_params",
+  {
+    data_type => "CLOB",
+    default_value => undef,
+    is_nullable => 1,
+  },  
 );
 
 

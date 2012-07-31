@@ -16,7 +16,8 @@
 			{  name: 'dashlets' },
 			{  name: 'roles' },
 			{  name: 'is_main' },
-			{  name: 'type' }
+			{  name: 'type' },
+			{  name: 'is_system' }
 		]
 	});
 	
@@ -80,7 +81,7 @@
 			allowBlank: false,
 			msgTarget: 'under',
 			allowAddNewData: true,
-			addNewDataOnBlur: true, 
+			addNewDataOnBlur: false, 
 			//emptyText: _('Enter or select topics'),
 			triggerAction: 'all',
 			resizable: true,
@@ -129,347 +130,324 @@
 		var win;
 		var config = new Array();
 		
-        var dashlets_box = new Baseliner.model.Dashlets({
-            store: dashlets_box_store
-        });
-        dashlets_box_store.on('load',function(){
-            dashlets_box.setValue( rec.dashlets ) ;            
-        });
-		
-        dashlets_box.on('additem',function( obj, value, row){
-			if(row.data.config){
-				config.push({"text": _(row.data.name) + ' (' + _(row.data.description) + ')', "leaf": true, "config": row.data.config, "id": row.data.id, "dashboard_id": rec.data.id });	
-			}
-        });		
-		
-        var roles_box = new Baseliner.model.Roles({
-            store: roles_box_store
-        });
-        roles_box_store.on('load',function(){
-            roles_box.setValue( rec.roles ) ;            
-        });  		
-
-		var btn_cerrar = new Ext.Toolbar.Button({
-			text: _('Close'),
-			width: 50,
-			handler: function() {
-				win.close();
-				store.load();
-				grid.getSelectionModel().clearSelections();
-			}
-		})
-		
-		var btn_grabar_dashboard = 	new Ext.Toolbar.Button({
-			text: _('Save'),
-			width: 50,
-			handler: function(){
-				var form = form_dashboard.getForm();
-				var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-				
-				if (form.isValid()) {
-					form.submit({
-						params: { action: action },
-						success: function(f,a){
-							Baseliner.message(_('Success'), a.result.msg );
-							form.findField("id").setValue(a.result.dashboard_id);
-							win.setTitle(_('Edit dashboard'));							
-							
-							
-						},
-						failure: function(f,a){
-						Ext.Msg.show({  
-							title: _('Information'), 
-							msg: a.result.msg , 
-							buttons: Ext.Msg.OK, 
-							icon: Ext.Msg.INFO
-						}); 						
-						}
-					});
-				}
-			}
-		})
-		
-		var dashboard_main_check = new Ext.form.Checkbox({
-			name: 'dashboard_main_check',
-			boxLabel: _('Main dashboard')
-        });		
-
-		var ta = new Ext.form.TextArea({
-			name: 'description',
-			height: 130,
-			enableKeyEvents: true,
-			fieldLabel: _('Description'),
-			emptyText: _('A brief description of the dashboard')
-		});
-		
-		var btn_config_dashlets = new Ext.Toolbar.Button({
-			text: _('Parameters'),
-			icon:'/static/images/icons/cog_edit.png',
-			cls: 'x-btn-text-icon',
-			disabled: false,
-			handler: function() {
-				store_config.removeAll();
-				
-				var treeRoot = new Ext.tree.AsyncTreeNode({
-					text: _('Configuration'),
-					expanded: true,
-					draggable: false,
-					children: config
-				});
-				
-		
-				var tree_dashlets = new Ext.tree.TreePanel({
-					title: _('Configuration Dashlets'),
-					split: true,
-					colapsible: true,
-					useArrows: true,
-					animate: true,
-					containerScroll: true,
-					autoScroll: true,
-					height:300,		    
-					rootVisible: true,
-					root: treeRoot
-				});
-				
-				tree_dashlets.on('click', function(node, checked) {
-					store_config.load({params: {config: node.attributes.config, id: node.attributes.id, dashboard_id: node.attributes.dashboard_id }});
-				});				
+			var dashlets_box = new Baseliner.model.Dashlets({
+				store: dashlets_box_store,
+				hidden: rec.data.is_system
+			});
 			
-				var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
-				
-				var edit_config = function(rec) {
-					var win_config;
-
-					var btn_cerrar_config = new Ext.Toolbar.Button({
-						text: _('Close'),
-						width: 50,
-						handler: function() {
-							win_config.close();
-						}
-					})
-					
-					var btn_grabar_config = new Ext.Toolbar.Button({
-						text: _('Save'),
-						width: 50,
-						handler: function(){
-							var form = form_config.getForm();
-							
-							var ff_dashboard = form_dashboard.getForm();
-							var dashboard_id = ff_dashboard.findField("id").getValue();
-							
-							if (form.isValid()) {
-								form.submit({
-									params: { id_dashboard: dashboard_id, id: rec.data.id, dashlet: rec.data.dashlet },
-									success: function(f,a){
-										Baseliner.message(_('Success'), a.result.msg );
-										store_config.reload();
-									},
-									failure: function(f,a){
-									Ext.Msg.show({  
-										title: _('Information'), 
-										msg: a.result.msg , 
-										buttons: Ext.Msg.OK, 
-										icon: Ext.Msg.INFO
-									}); 						
-									}
-								});
-							}
-						}
-					})					
-					
-					var form_config = new Ext.FormPanel({
-						name: form_dashlets,
-						url: '/dashboard/set_config',
-						frame: true,
-						buttons: [btn_grabar_config, btn_cerrar_config],
-						defaults:{anchor:'100%'},
-						items   : [
-									{ fieldLabel: _(rec.data.id), name: 'value', xtype: 'textfield', allowBlank:false}
-								]
-					});
-
-					if(rec){
-						var ff = form_config.getForm();
-						ff.loadRecord( rec );
-						title = 'Edit configuration';
-					}
-
-					win_config = new Ext.Window({
-						title: _(title),
-						autoHeight: true,
-						width: 400,
-						closeAction: 'close',
-						modal: true,
-						items: [
-							form_config
-						]
-					});
-					win_config.show();
-					
+			dashlets_box_store.on('load',function(){
+				dashlets_box.setValue( rec.data.dashlets ) ;            
+			});
+			
+			dashlets_box.on('additem',function( obj, value, row){
+				if(row.data.config){
+					config.push({"text": _(row.data.name) + ' (' + _(row.data.description) + ')', "leaf": true, "config": row.data.config, "id": row.data.id, "dashboard_id": rec.data.id });	
 				}
-				
-				var grid_config = new Ext.grid.GridPanel({
-					title: _('Configuration'),
-					store: store_config,
-					stripeRows: true,
-					autoScroll: true,
-					autoWidth: true,
-					viewConfig: {
-						forceFit: true
-					},		    
-					height:300,
-					columns: [
-						{ header: _('Description'), dataIndex: 'description', width: 100},
-						{ header: _('Value'), dataIndex: 'value', width: 80}
-					],
-					autoSizeColumns: true
-				});
-				
-				grid_config.on("rowdblclick", function(grid, rowIndex, e ) {
-					var sel = grid.getStore().getAt(rowIndex);
-					edit_config(sel);
-				});				
-		
-				var form_dashlets = new Ext.FormPanel({
-					name: form_dashlets,
-					url: '/user/update',
-					frame: true,
-					items   : [
-							   {
-								xtype: 'panel',
-								layout: 'column',
-								items:  [
-									{  
-									columnWidth: .49,
-									items:  tree_dashlets
-									},
-									{
-									columnWidth: .02,
-									items: blank_image
-									},
-									{  
-									columnWidth: .49,
-									items: grid_config
-								}]  
-								}
-							]
-				});
-				
-				var winYaml = new Ext.Window({
-					modal: true,
-					width: 800,
-					title: _('Parameters'),
-					tbar: [
-							{   xtype:'button',
-								text: _('Close'),
-								iconCls:'x-btn-text-icon',
-								icon:'/static/images/icons/door_out.png',
-								handler: function(){
-									winYaml.close();
-								}
-							}           
-					],
-					items: form_dashlets
-				});
-				winYaml.show();
-			}
-		});
-		
-		
-		var form_dashboard = new Ext.FormPanel({
-			name: form_dashboard,
-			url: '/dashboard/update',
-			frame: true,
-			buttons: [btn_grabar_dashboard, btn_cerrar],
-			defaults:{anchor:'100%'},
-			items   : [
-						{ xtype: 'hidden', name: 'id', value: -1 },
-						{fieldLabel: _('Name'), name: 'name', emptyText: 'name', xtype: 'textfield', allowBlank:false},
-						ta,
-						{
-						// column layout with 2 columns
-						layout:'column'
-						,defaults:{
-							columnWidth:0.5
-							,layout:'form'
-							,border:false
-							,xtype:'panel'
-						}
-						,items:[{
-							// left column
-							defaults:{anchor:'100%'}
-							,items: [ dashboard_main_check ],
+			});		
+			
+			var roles_box = new Baseliner.model.Roles({
+				store: roles_box_store,
+				hidden: rec.data.is_system  //*******************************************************************
+			});
+			
+			roles_box_store.on('load',function(){
+				roles_box.setValue( rec.data.roles ) ;            
+			});  		
+	
+			var btn_cerrar = new Ext.Toolbar.Button({
+				text: _('Close'),
+				width: 50,
+				handler: function() {
+					win.close();
+					store.load();
+					grid.getSelectionModel().clearSelections();
+				}
+			})
+			
+			var btn_grabar_dashboard = 	new Ext.Toolbar.Button({
+				text: _('Save'),
+				width: 50,
+				hidden: rec.data.is_system,
+				handler: function(){
+					var form = form_dashboard.getForm();
+					var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+					
+					if (form.isValid()) {
+						form.submit({
+							params: { action: action },
+							success: function(f,a){
+								Baseliner.message(_('Success'), a.result.msg );
+								form.findField("id").setValue(a.result.dashboard_id);
+								win.setTitle(_('Edit dashboard'));							
+								
+								
 							},
-							{
-							// right column
-							defaults:{anchor:'100%'}
-							,items:[
-									{
-										xtype: 'radiogroup',
-										id: 'columnsgroup',
-										defaults: {xtype: "radio",name: "type"},
-										items: [
-											{boxLabel: _('One column'), inputValue: 'O'},
-											{boxLabel: _('Two columns'), inputValue: 'T', checked: true}
-										]
+							failure: function(f,a){
+							Ext.Msg.show({  
+								title: _('Information'), 
+								msg: a.result.msg , 
+								buttons: Ext.Msg.OK, 
+								icon: Ext.Msg.INFO
+							}); 						
+							}
+						});
+					}
+				}
+			})
+			
+			var dashboard_main_check = new Ext.form.Checkbox({
+				name: 'dashboard_main_check',
+				boxLabel: _('Main dashboard')
+			});		
+	
+			var ta = new Ext.form.TextArea({
+				name: 'description',
+				height: 130,
+				enableKeyEvents: true,
+				fieldLabel: _('Description'),
+				emptyText: _('A brief description of the dashboard')
+			});
+			
+			var btn_config_dashlets = new Ext.Toolbar.Button({
+				text: _('Parameters'),
+				icon:'/static/images/icons/cog_edit.png',
+				cls: 'x-btn-text-icon',
+				handler: function() {
+					store_config.removeAll();
+					
+					var treeRoot = new Ext.tree.AsyncTreeNode({
+						text: _('Configuration'),
+						expanded: true,
+						draggable: false,
+						children: config
+					});
+					
+			
+					var tree_dashlets = new Ext.tree.TreePanel({
+						title: _('Configuration Dashlets'),
+						split: true,
+						colapsible: true,
+						useArrows: true,
+						animate: true,
+						containerScroll: true,
+						autoScroll: true,
+						height:300,		    
+						rootVisible: true,
+						root: treeRoot
+					});
+					
+					tree_dashlets.on('click', function(node, checked) {
+						store_config.load({params: {config: node.attributes.config, id: node.attributes.id, dashboard_id: node.attributes.dashboard_id, system: rec.data.is_system }});
+					});				
+				
+					var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+					
+					var edit_config = function(rec) {
+						var win_config;
+	
+						var btn_cerrar_config = new Ext.Toolbar.Button({
+							text: _('Close'),
+							width: 50,
+							handler: function() {
+								win_config.close();
+							}
+						})
+						
+						var btn_grabar_config = new Ext.Toolbar.Button({
+							text: _('Save'),
+							width: 50,
+							handler: function(){
+								var form = form_config.getForm();
+								
+								var ff_dashboard = form_dashboard.getForm();
+								var dashboard_id = ff_dashboard.findField("id").getValue();
+								
+								if (form.isValid()) {
+									form.submit({
+										params: { id_dashboard: dashboard_id, id: rec.data.id, dashlet: rec.data.dashlet },
+										success: function(f,a){
+											Baseliner.message(_('Success'), a.result.msg );
+											store_config.reload();
+										},
+										failure: function(f,a){
+										Ext.Msg.show({  
+											title: _('Information'), 
+											msg: a.result.msg , 
+											buttons: Ext.Msg.OK, 
+											icon: Ext.Msg.INFO
+										}); 						
+										}
+									});
+								}
+							}
+						})					
+						
+						var form_config = new Ext.FormPanel({
+							name: form_dashlets,
+							url: '/dashboard/set_config',
+							frame: true,
+							buttons: [btn_grabar_config, btn_cerrar_config],
+							defaults:{anchor:'100%'},
+							items   : [
+										{ fieldLabel: _(rec.data.id), name: 'value', xtype: 'textfield', allowBlank:false}
+									]
+						});
+	
+						if(rec){
+							var ff = form_config.getForm();
+							ff.loadRecord( rec );
+							title = 'Edit configuration';
+						}
+	
+						win_config = new Ext.Window({
+							title: _(title),
+							autoHeight: true,
+							width: 400,
+							closeAction: 'close',
+							modal: true,
+							items: [
+								form_config
+							]
+						});
+						win_config.show();
+						
+					}
+					
+					var grid_config = new Ext.grid.GridPanel({
+						title: _('Configuration'),
+						store: store_config,
+						stripeRows: true,
+						autoScroll: true,
+						autoWidth: true,
+						viewConfig: {
+							forceFit: true
+						},		    
+						height:300,
+						columns: [
+							{ header: _('Description'), dataIndex: 'description', width: 100},
+							{ header: _('Value'), dataIndex: 'value', width: 80}
+						],
+						autoSizeColumns: true
+					});
+					
+					grid_config.on("rowdblclick", function(grid, rowIndex, e ) {
+						var sel = grid.getStore().getAt(rowIndex);
+						edit_config(sel);
+					});				
+			
+					var form_dashlets = new Ext.FormPanel({
+						name: form_dashlets,
+						url: '/user/update',
+						frame: true,
+						items   : [
+								   {
+									xtype: 'panel',
+									layout: 'column',
+									items:  [
+										{  
+										columnWidth: .49,
+										items:  tree_dashlets
+										},
+										{
+										columnWidth: .02,
+										items: blank_image
+										},
+										{  
+										columnWidth: .49,
+										items: grid_config
+									}]  
 									}
 								]
-							}
-						]
-						},						
-						roles_box,
-						{
-						// column layout with 2 columns
-						layout:'column'
-						,defaults:{
-							//columnWidth:0.5
-							layout:'form'
-							,border:false
-							,xtype:'panel'
-							,bodyStyle:'padding:0 2px 0 0'
-						}
-						,items:[{
-							// left column
-							columnWidth:0.86,
-							defaults:{anchor:'100%'}
-							,items:[
-								dashlets_box
-								]
-							},
+					});
+					
+					var winYaml = new Ext.Window({
+						modal: true,
+						width: 800,
+						title: _('Parameters'),
+						tbar: [
+								{   xtype:'button',
+									text: _('Close'),
+									iconCls:'x-btn-text-icon',
+									icon:'/static/images/icons/door_out.png',
+									handler: function(){
+										winYaml.close();
+									}
+								}           
+						],
+						items: form_dashlets
+					});
+					winYaml.show();
+				}
+			});
+
+			var form_dashboard = new Ext.FormPanel({
+				name: form_dashboard,
+				url: '/dashboard/update',
+				frame: true,
+				buttons: [btn_config_dashlets, btn_grabar_dashboard, btn_cerrar],
+				defaults:{anchor:'100%'},
+				items   : [
+							{ xtype: 'hidden', name: 'id', value: -1 },
+							{fieldLabel: _('Name'), name: 'name', emptyText: 'name', xtype: 'textfield', allowBlank:false},
+							ta,
 							{
-							columnWidth:0.14,
-							// right column
-							defaults:{anchor:'100%'},
-							items:[
-								btn_config_dashlets
-							]
+							// column layout with 2 columns
+							layout:'column',
+							hidden: rec.data.is_system  //*******************************************************
+							,defaults:{
+								columnWidth:0.5
+								,layout:'form'
+								,border:false
+								,xtype:'panel'
 							}
+							,items:[{
+								// left column
+								defaults:{anchor:'100%'}
+								,items: [ dashboard_main_check ],
+								},
+								{
+								// right column
+								defaults:{anchor:'100%'}
+								,items:[
+										{
+											xtype: 'radiogroup',
+											id: 'columnsgroup',
+											defaults: {xtype: "radio",name: "type"},
+											items: [
+												{boxLabel: _('One column'), inputValue: 'O'},
+												{boxLabel: _('Two columns'), inputValue: 'T', checked: true}
+											]
+										}
+									]
+								}
+							]
+							},						
+							roles_box,
+							dashlets_box,
 						]
-						}						
-					]
-		});
+			});
+			
+			var title = 'Create dashboard';
+			
+			if(rec){
+				var ff = form_dashboard.getForm();
+				ff.loadRecord( rec );
+				dashboard_main_check.setValue( rec.data.is_main );
+				//alert(rec.data.is_main);
+				title = 'Edit dashboard';
+			}
 		
-		var title = 'Create dashboard';
-		
-		if(rec){
-			var ff = form_dashboard.getForm();
-			ff.loadRecord( rec );
-			dashboard_main_check.setValue( rec.data.is_main );
-			//alert(rec.data.is_main);
-			title = 'Edit dashboard';
-		}
-	
-		win = new Ext.Window({
-		    title: _(title),
-		    autoHeight: true,
-		    width: 730,
-		    closeAction: 'close',
-		    modal: true,
-		    items: [
-			    form_dashboard
-		    ]
-		});
-		win.show();
+			win = new Ext.Window({
+				title: _(title),
+				autoHeight: true,
+				width: 730,
+				closeAction: 'close',
+				modal: true,
+				items: [
+					form_dashboard
+				]
+			});
+			win.show();
 	};
 	
  
@@ -527,6 +505,15 @@
         }
     });
 	
+	var render_system = function(value,metadata,rec,rowIndex,colIndex,store) {
+    	if(rec.data.is_system){
+			str = '<span style="color: #808080">' + value + '</span>';
+		}else{
+			str = value;
+		}
+		return str;
+	}
+	
 	// create the grid
 	var grid = new Ext.grid.GridPanel({
 			title: _('Dashboards'),
@@ -543,8 +530,8 @@
 			loadMask:'true',
 			columns: [
 				{ header: _('Id'), hidden: true, dataIndex: 'id' },
-				{ header: _('Dashboard'), width: 120, dataIndex: 'name', sortable: true},
-				{ header: _('Description'), width: 350, dataIndex: 'description', sortable: true }
+				{ header: _('Dashboard'), width: 120, dataIndex: 'name', sortable: true, renderer: render_system},
+				{ header: _('Description'), width: 350, dataIndex: 'description', sortable: true, renderer: render_system }
 			],
 			autoSizeColumns: true,
 			deferredRender:true,

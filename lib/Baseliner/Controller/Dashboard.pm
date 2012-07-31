@@ -105,6 +105,7 @@ sub list_dashboard : Local {
 				name		=> $r->name,
 				description	=> $r->description,
 				is_main 	=> $r->is_main,
+				is_system	=> \$r->is_system,
 				type 		=> $r->is_columns eq '1' ? 'T':'O',
 				roles 		=> \@roles,
 				dashlets	=> \@dashlets
@@ -301,22 +302,57 @@ sub list : Local {
 			_log ">>>>>>>>>>>>>>>>>>>Id Project: " . $p->{id_project};
 			_log ">>>>>>>>>>>>>>>>>>>Name Project: " . $p->{project};
 		
-			##Dashlets para el dashboard de proyectos.
-			my @dashlets = ({ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
-							{ html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
-						);
+			my $system_dashboard = $c->model('Baseliner::BaliDashboard')->search({name => 'Clarive projects'})->first();
+			my @dashlets;
+			my $is_columns;
+			my $dashboard_id;
+			
+			if($system_dashboard){
+				@dashlets = _array _load $system_dashboard->dashlets;
+				$is_columns = $system_dashboard->is_columns;
+				$dashboard_id = $system_dashboard->id;
+			}
+			else{
+				##Dashlets para el dashboard de proyectos.
+				@dashlets = ({ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
+							 { html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
+							);
+				$is_columns = '1';
+				
+				my @params = qw /projects/; #Aqui van las variables no configurables por el usuario.
+				my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+								{
+									name  => 'Clarive projects',
+									description => 'System dashboard',
+									dashlets => _dump (\@dashlets),
+									is_columns => '1',
+									is_system => '1',
+									system_params => _dump (\@params),
+									
+								});
+				$dashboard_id = $dashboard->id;
+				if ($dashboard->id){
+					my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+										{
+											id_dashboard  => $dashboard->id,
+											id_role => 100, #Public
+										});
+				}
+			}
+	
+			
 			my @params;
 			my %valores;
 			$valores{projects} = $p->{id_project};
-			$valores{bl_days} = 365;
-			push @params, 'project'; 
+			push @params, 'system/' . $dashboard_id; 
 			push @params, \%valores;
 			
 			for my $dash ( @dashlets ) {
 				$c->forward( $dash->{url}, \@params );
-				$c->stash->{is_columns} = 2;
+				$c->stash->{is_columns} = $is_columns;
 				$c->stash->{dashboardlets} = \@dashlets;
-			}	
+			}			
+	
 		} #End Dashboard Project
 		default {
 			my $dashboard_id = $p->{dashboard_id};
@@ -340,7 +376,7 @@ sub list : Local {
 					my @dashboard;
 					while (my $dashboard = $dashboard->next){
 						if($i == 0){
-							@dashlets = @{_load $dashboard->dashlets};
+							@dashlets = _array _load $dashboard->dashlets;
 							for my $dash ( @dashlets ) {
 								if($dash->{url}){
 									$c->forward( $dash->{url} . '/' . $dashboard->id );
@@ -410,13 +446,20 @@ sub get_config : Local {
 		
 		my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{dashboard_id});
 		my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
+		
 
 		if($config_dashlet[0]->{params}){
 			foreach my $key (keys $config_dashlet[0]->{params}){
 				$dashlet_config{$key} = $config_dashlet[0]->{params}->{$key};
-			};				
+			};
 		}
-	
+		
+		if($p->{system} eq 'true'){
+			foreach my $system_id (_array _load($dashboard->system_params)){
+				delete $dashlet_config{$system_id};
+				delete $key_description{$system_id};
+			};			
+		}
 		
 		foreach my $key (keys %dashlet_config){
 			push @rows,
@@ -476,6 +519,18 @@ sub list_baseline: Private{
 			};				
 		}		
 	}else{
+		
+		my @dashboard_system_id = split "/", $dashboard_id;		
+		
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_system_id[1]);
+		my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys $config_dashlet[0]->{params}){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}			
+		
 		my %params = _array $params;
 		if($params){
 			foreach my $key (keys %params){
@@ -487,6 +542,8 @@ sub list_baseline: Private{
 	
     my $bl_days = $default_config->{bl_days} // 7;
 
+	
+	_log ">>>>>>>>>>>>>>>>>Parametro bl_days: " . $bl_days; 
 	
 	#Cojemos los proyectos que el usuario tiene permiso para ver jobs
 	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
@@ -517,8 +574,6 @@ sub list_baseline: Private{
 													(SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
 					WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
 			GROUP BY BL";				
-	
-	_log ">>>>>>>>>>>>>>SQL: " . $bl_days;
 	
 	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
 
