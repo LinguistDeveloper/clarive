@@ -222,6 +222,7 @@ Baseliner.topic_name = function(args) {
         var color = args.category_color;
         var cls = 'label';
         var icon = args.category_icon;
+        var size = args.size ? args.size : '10';
 
         var top,bot,img;
         if( args.mini ) {
@@ -249,12 +250,12 @@ Baseliner.topic_name = function(args) {
         // prepare icon background
         var style_str;
         if( icon ) {
-            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px";
+            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
         }
         else {
-            style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}";
+            style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}; font-size: {5}px";
         }
-        var style = String.format( style_str, color, icon, top, bot, img );
+        var style = String.format( style_str, color, icon, top, bot, img, size );
         //if( color == undefined ) color = '#777';
         var ret = String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
         return ret;

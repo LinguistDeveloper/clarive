@@ -358,7 +358,7 @@
         }
     });
     
-    var btn_comprimir = new Ext.Toolbar.Button({
+    var btn_mini = new Ext.Toolbar.Button({
         icon:'/static/images/icons/updown_.gif',
         cls: 'x-btn-text-icon',
         enableToggle: true, pressed: false, allowDepress: true,
@@ -407,8 +407,8 @@
                     + returnOpposite(label_color.substring(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
             }
         }
-        if(btn_comprimir.pressed){
-            return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div>";          
+        if(btn_mini.pressed){
+            return tag_color_html + "<div style='font-weight:bold; font-size: 12px; "+strike+"' >" + value + "</div>";          
         }else{
             return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>";                        
         }
@@ -478,8 +478,10 @@
     };
 
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
-        var ret = 
-            '<small><b><span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#555">' + value + '</span></b></small>';
+        var size = btn_mini.pressed ? '8' : '8';
+        var ret = String.format(
+            '<b><span style="font-size: {0}px; text-transform:uppercase;font-family:Helvetica Neue,Verdana,Helvetica,Arial,sans-serif;color:#555">{1}</span></b>',
+            size, value );
            //+ '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background:#ddd;color:#222;font-weight:normal;text-transform:lowercase;text-shadow:none;"><small>' + value + '</small></span></div>'
         return ret;
     };
@@ -498,10 +500,11 @@
         return ret;
     };
 
-    var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
+    var render_topic_name = function(value,metadata,rec,rowIndex,colIndex,store){
         var d = rec.data;
         return Baseliner.topic_name({
             mid: d.topic_mid, 
+            size: btn_mini.pressed ? '9' : '11',
             category_name: d.category_name,
             category_color:  d.category_color,
             category_icon: d.category_icon,
@@ -559,10 +562,10 @@
         deferredRender: true,
         ddGroup: 'lifecycle_dd',
         viewConfig: {forceFit: true},
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:false}),
         loadMask:'true',
         columns: [
-            { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 80, sortable: true, renderer: render_category },
+            { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 80, sortable: true, renderer: render_topic_name  },
             { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
             { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
@@ -582,7 +585,7 @@
                 '->',
                 btn_reports,
                 btn_kanban,
-                btn_comprimir
+                btn_mini
                 //btn_close
         ],      
         bbar: ptool
