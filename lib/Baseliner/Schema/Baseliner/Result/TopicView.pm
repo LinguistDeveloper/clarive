@@ -24,6 +24,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
             ID_CATEGORY_STATUS CATEGORY_STATUS_ID,
             S.NAME CATEGORY_STATUS_NAME,
             S.SEQ CATEGORY_STATUS_SEQ,
+            S.TYPE CATEGORY_STATUS_TYPE,
             ID_PRIORITY AS PRIORITY_ID,
             TP.NAME PRIORITY_NAME,
             TP.RESPONSE_TIME_MIN,
@@ -80,6 +81,7 @@ __PACKAGE__->add_columns(
         category_status_id
         category_status_name        
         category_status_seq
+        category_status_type
         priority_id
         priority_name
         response_time_min

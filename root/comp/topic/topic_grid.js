@@ -488,6 +488,8 @@
 
     var render_progress = function(value,metadata,rec,rowIndex,colIndex,store){
         if( value == 0 ) return '';
+        if( rec.data.category_status_type == 'I'  ) return '';  // no progress if its in a initial state
+
         var cls = ( value < 20 ? 'danger' : ( value < 40 ? 'warning' : ( value < 80 ? 'info' : 'success' ) ) );
         var ret =  [
             '<span id="boot">',
@@ -562,7 +564,7 @@
         deferredRender: true,
         ddGroup: 'lifecycle_dd',
         viewConfig: {forceFit: true},
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:false}),
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
             { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 80, sortable: true, renderer: render_topic_name  },

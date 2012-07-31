@@ -114,6 +114,7 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'category_status_name' },
                 {  name: 'category_status_seq' },
                 {  name: 'category_status_id' },
+                {  name: 'category_status_type' },
                 {  name: 'priority_id' },
                 {  name: 'response_time_min' },
                 {  name: 'expr_response_time' },
