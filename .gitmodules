@@ -1,9 +1,6 @@
 [submodule "features/gitscm"]
 	path = features/gitscm
 	url = http://git.vasslabs.com/git/gitscm.git
-[submodule "features/sqa"]
-	path = features/sqa
-	url = http://git.vasslabs.com/git/sqa.git
 [submodule "features/zos"]
 	path = features/zos
 	url = http://git.vasslabs.com/git/zos.git
@@ -16,36 +13,9 @@
 [submodule "features/clarive.core"]
 	path = features/clarive.core
 	url = http://git.vasslabs.com/git/clarive.core.git
-[submodule "features/clarive.ispf"]
-	path = features/clarive.ispf
-	url = http://git.vasslabs.com/git/zos-ispf.git
 [submodule "features/uploader"]
 	path = features/uploader
 	url = http://git.vasslabs.com/git/uploader.git
-[submodule "features/bcv"]
-	path = features/bcv
-	url = http://git.vasslabs.com/git/bcv.git
-[submodule "features/powercenter"]
-	path = features/powercenter
-	url = http://git.vasslabs.com/git/powercenter.git
-[submodule "features/ca.harvest"]
-	path = features/ca.harvest
-	url = http://git.vasslabs.com/git/ca.harvest.git
-[submodule "features/cia"]
-	path = features/cia
-	url = http://git.vasslabs.com/git/cia.git
-[submodule "features/bde.core"]
-	path = features/bde.core
-	url = http://git.vasslabs.com/git/bde.core.git
-[submodule "features/sonar"]
-	path = features/sonar
-	url = http://git.vasslabs.com/git/sonar.git
-[submodule "features/checking"]
-	path = features/checking
-	url = http://git.vasslabs.com/git/checking.git
-[submodule "features/reports"]
-	path = features/reports
-	url = http://git.vasslabs.com/git/reports.git
 [submodule "features/svnscm"]
 	path = features/svnscm
 	url = http://git.vasslabs.com/git/svnscm.git
