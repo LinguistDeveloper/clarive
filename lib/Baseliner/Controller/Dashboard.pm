@@ -297,11 +297,6 @@ sub list : Local {
 	
 	given ($dashboard_name) {
 		when ('project') {
-			
-			_log "Carga del dashboard de proyectos.";
-			_log ">>>>>>>>>>>>>>>>>>>Id Project: " . $p->{id_project};
-			_log ">>>>>>>>>>>>>>>>>>>Name Project: " . $p->{project};
-		
 			my $system_dashboard = $c->model('Baseliner::BaliDashboard')->search({name => 'Clarive projects'})->first();
 			my @dashlets;
 			my $is_columns;
@@ -369,7 +364,7 @@ sub list : Local {
 				$c->stash->{is_columns} = $dashboard->is_columns;
 				$c->stash->{dashboardlets} = \@dashlets;
 			}else{
-				my $dashboard = $c->model('Baseliner::BaliDashboard')->search( undef, {order_by => 'is_main desc'} );
+				my $dashboard = $c->model('Baseliner::BaliDashboard')->search( {is_system=>'0'}, {order_by => 'is_main desc'} );
 				
 				if ($dashboard->count > 0){
 					my $i = 0;
@@ -499,19 +494,14 @@ sub set_config : Local {
 	
 }
 
-sub list_baseline: Private{
-    my ( $self, $c, $dashboard_id, $params ) = @_;
-	my $username = $c->username;
-	my (@jobs, $job, @datas, @temps, $SQL);
+sub get_config_dashlet{
+	my ($parent_method, $dashboard_id, $params) = @_;
 	
-	#######################################################################################################
-	#CONFIGURATION DASHLET
-	##########################################################################################################	
 	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
-	
+
 	if($dashboard_id && looks_like_number($dashboard_id)){
-		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-		my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
+		my $dashboard_rs = Baseliner->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
 			foreach my $key (keys $config_dashlet[0]->{params}){
@@ -522,8 +512,8 @@ sub list_baseline: Private{
 		
 		my @dashboard_system_id = split "/", $dashboard_id;		
 		
-		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_system_id[1]);
-		my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
+		my $dashboard_rs = Baseliner->model('Baseliner::BaliDashboard')->find($dashboard_system_id[1]);
+		my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
 			foreach my $key (keys $config_dashlet[0]->{params}){
@@ -538,20 +528,61 @@ sub list_baseline: Private{
 			};				
 		}			
 	}
+	return $default_config;
+}
+
+sub list_baseline: Private{
+    my ( $self, $c, $dashboard_id, $params ) = @_;
+	my $username = $c->username;
+	my (@jobs, $job, @datas, @temps, $SQL);
+	
+	my $config = get_config_dashlet('list_baseline', $dashboard_id, $params);
+	
+	#######################################################################################################
+	#CONFIGURATION DASHLET
+	##########################################################################################################	
+	#my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
+	#
+	#if($dashboard_id && looks_like_number($dashboard_id)){
+	#	my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+	#	my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
+	#	
+	#	if($config_dashlet[0]->{params}){
+	#		foreach my $key (keys $config_dashlet[0]->{params}){
+	#			$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+	#		};				
+	#	}		
+	#}else{
+	#	
+	#	my @dashboard_system_id = split "/", $dashboard_id;		
+	#	
+	#	my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_system_id[1]);
+	#	my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
+	#	
+	#	if($config_dashlet[0]->{params}){
+	#		foreach my $key (keys $config_dashlet[0]->{params}){
+	#			$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+	#		};				
+	#	}			
+	#	
+	#	my %params = _array $params;
+	#	if($params){
+	#		foreach my $key (keys %params){
+	#			$default_config->{$key} = $params{$key};
+	#		};				
+	#	}			
+	#}
 	##########################################################################################################	
 	
-    my $bl_days = $default_config->{bl_days} // 7;
-
-	
-	_log ">>>>>>>>>>>>>>>>>Parametro bl_days: " . $bl_days; 
+    my $bl_days = $config->{bl_days} // 7;
 	
 	#Cojemos los proyectos que el usuario tiene permiso para ver jobs
 	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
 																			action => 'action.job.viewall',
 																			level => 1);
 	my $ids_project;
-	if($default_config->{projects} ne 'ALL'){
-		$ids_project = 'MID=' . join ('', grep {$_ =~ $default_config->{projects}} @ids_project);
+	if($config->{projects} ne 'ALL'){
+		$ids_project = 'MID=' . join ('', grep {$_ =~ $config->{projects}} @ids_project);
 	}
 	else{
 		$ids_project =  'MID=' . join (' OR MID=', @ids_project);	
@@ -578,7 +609,7 @@ sub list_baseline: Private{
 	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
 
 	#my @entornos = ('TEST', 'PREP', 'PROD');
-    my $states     = my $bl_days = $default_config->{states};
+    my $states     = $config->{states};
 	my @entornos = split ",", $states;
 	
 	foreach my $entorno (@entornos){
@@ -915,6 +946,8 @@ sub viewjobs: Local{
 	my ($status, @jobs, $job, $jobsid, $SQL);
 	my $jobsid = '';
 	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
+	
 	
 	if($p->{ent} eq 'All'){
 		$SQL = "SELECT ID FROM BALI_JOB WHERE STATUS = 'RUNNING' AND USERNAME = ?";
