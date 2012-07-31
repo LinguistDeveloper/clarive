@@ -34,8 +34,6 @@ if( ! $action ) {  # help
 
 # read args
 my %args = _get_options( @ARGV );
-my $dir = _dir( $args{dir} ) ||  _dir( Baseliner->path_to('etc/dump') );
-my $format = 'yaml';
 
 # setup DB env
 my $env = $args{env} || $ENV{BALI_ENV} || 't';
@@ -44,6 +42,8 @@ $ENV{BALI_ENV} = $env;
 
 require Baseliner;
 
+my $dir = _dir( $args{dir} ) ||  _dir( Baseliner->path_to('etc/dump') );
+my $format = 'yaml';
 say "dir: $dir";
 say "format: $format";
 
