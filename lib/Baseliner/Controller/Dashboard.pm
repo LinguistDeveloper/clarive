@@ -516,7 +516,7 @@ sub get_config_dashlet{
 		my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
 		
 		if($config_dashlet[0]->{params}){
-			foreach my $key (keys $config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
 				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
 			};				
 		}			
