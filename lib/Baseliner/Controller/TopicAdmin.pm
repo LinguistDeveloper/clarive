@@ -567,4 +567,15 @@ sub workflow : Local {
     $c->forward('View::JSON');    
 }
 
+sub get_config_priority : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    
+    _log ">>>>>>>>>ID PRIORITY: " . $p->{id};
+
+    my @rows;
+    $c->stash->{json} = { data=>\@rows};
+    $c->forward('View::JSON');    
+}
+
 1;
