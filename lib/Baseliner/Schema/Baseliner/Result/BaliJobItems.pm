@@ -137,6 +137,13 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => 1024,
   },
+  "id_project",
+  {
+    data_type => "NUMBER",
+    default_value => undef,
+    is_nullable => 1,
+    size => 1024,
+  },  
 );
 __PACKAGE__->set_primary_key("id");
 
