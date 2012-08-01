@@ -91,11 +91,6 @@ sub list : Local {
     $start||= 0;
     $limit ||= 100;
 
-    # sort fixups 
-    $sort eq 'category_status_name' and $sort = 'category_status_seq'; # status orderby sequence
-    $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
-    $sort eq 'topic_mid' and $sort = '';
-    
     my $page = to_pages( start=>$start, limit=>$limit );
     my $where = {};
 	my $query_limit = 300;
@@ -131,9 +126,24 @@ sub list : Local {
         /
     });
 
-    my ($select,$order_by, $as, $group_by) = $sort
-    ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
-    : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' }, { "-$dir" => "me.topic_mid" } ], ['topic_mid'], ['topic_mid'] );
+    my ($select,$order_by, $as, $group_by);
+    if( $sort eq 'category_status_name' ) {
+        $sort = 'category_status_seq'; # status orderby sequence
+        ($select, $order_by, $as, $group_by) = (
+            [{ distinct=>'me.topic_mid'} , 'category_status_seq', 'category_status_name' ],
+            [{ "-$dir" => 'category_status_seq'},{ "-$dir" => 'category_status_name'}, {-desc => 'me.topic_mid' }],
+            ['topic_mid', 'category_status_seq', 'category_status_name' ],
+            ['topic_mid', 'category_status_seq', 'category_status_name' ]
+        );
+    } else {
+        # sort fixups 
+        $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
+        $sort eq 'topic_mid' and $sort = '';
+        
+        ($select,$order_by, $as, $group_by) = $sort
+        ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
+        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' }, { "-$dir" => "me.topic_mid" } ], ['topic_mid'], ['topic_mid'] );
+    }
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
     if( $username && ! $perm->is_root( $username )){
@@ -217,9 +227,11 @@ sub list : Local {
     }
     rs_hashref( $rs );
     my @mids = map { $_->{topic_mid} } $rs->all;
+    my $rs_sub = $rs->search(undef, { select=>'topic_mid'});
+            # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my @mid_data = $c->model('Baseliner::TopicView')->search({ topic_mid=>\@mids })->hashref->all;
+    my @mid_data = $c->model('Baseliner::TopicView')->search({ topic_mid=>{ -in =>$rs_sub->as_query  } })->hashref->all;
     my @rows;
     my %id_label;
     my %projects;

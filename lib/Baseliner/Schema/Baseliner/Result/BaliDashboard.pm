@@ -17,7 +17,7 @@ __PACKAGE__->table("bali_dashboard");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "numeric",
+    data_type => "number",
     is_auto_increment => 1,
     is_nullable => 0,
     original => { data_type => "number" },
