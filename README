@@ -1,10 +1,46 @@
 ***********************************************************************************
 *  Baseliner v5.5                                                                 *
-*  Copyright(c) VASS Software Labs                                                *
+*  Copyright(c) 2009 VASS Software Labs                                           *
 *  This software is distributed AS IS, without warranties of any kind.            *
 *  License: GPLv3 (www.baseliner.org/license)                                     *
 *                                                                                 * 
 ***********************************************************************************
+
+Baseliner is a framework for developing application lifecycle
+and release management applications. 
+
+Base Software Requirements:
+
+    - Perl 5.10 
+    - A database (SQLite3 will suffice)
+    - Many CPAN module dependencies
+
+======== INSTALLING THE BASE SOFTWARE =========
+
+Make sure you have an internet connection. 
+Baseliner comes loaded with a copy of App::cpanminus and
+a auto-installer that tries its best to guess which 
+modules are needed. 
+
+Run this command to get started with the cpan auto installer.
+
+bin/bali auto-install
+
+=========== DEPLOYING A DATABASE ==============
+
+1) Create a config file for your database connection
+
+vim baseliner_mine.conf
+
+2) Deploy the database schema
+
+BALI_ENV=mine bin/bali deploy --deploy
+
+3) Load it with some sample data
+
+BALI_ENV=mine bin/bali db load --dir db/sample/es 
+
+========= FIRING UP THE WEB SERVER ============
 
 To run the server in debug mode, execute the following command: 
 
@@ -13,4 +49,3 @@ BASELINER_DEBUG=1 BALI_ENV=t plackup -S twiggy -R lib,etc,features/gitscm/lib --
 Production server:
 
 BALI_ENV=t plackup -S Starman --port 3000
-
