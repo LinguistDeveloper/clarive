@@ -1,10 +1,10 @@
 <%args>
     $row 
 </%args>
-	xtype: 'radiogroup',
-	columns: 2,
-	vertical: false,
-	items: [
-	{boxLabel: 'Verdadero', name: '<% $row->{name} %>' , inputValue: 'True', checked: true},
-	{boxLabel: 'Falso', name: '<% $row->{name} %>', inputValue: 'False'},
-	],
+    xtype: 'radiogroup',
+    columns: 2,
+    vertical: false,
+    items: [
+    {boxLabel: 'Verdadero', name: '<% $row->{name} %>' , inputValue: 'True', checked: true},
+    {boxLabel: 'Falso', name: '<% $row->{name} %>', inputValue: 'False'},
+    ],

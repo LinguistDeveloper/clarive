@@ -20,19 +20,19 @@ our %next_state  = ( PRE => 'READY', RUN => 'READY', POST => 'FINISHED' );
 # executes jobs sent by the daemon in an independent process
 
 sub job_init {
-	my ($self,$c,$config)=@_;
-	
-	my $job = $c->stash->{job};
-	my $log = $job->logger;
+    my ($self,$c,$config)=@_;
+    
+    my $job = $c->stash->{job};
+    my $log = $job->logger;
 
-	my $job_dir = $self->root_path( job=>$job, config=>$config );
-	$log->debug( 'Creando directorio de pase ' . $job_dir );
-	unless( -e $job_dir ) {
-		mkdir $job_dir;
-	} else {
+    my $job_dir = $self->root_path( job=>$job, config=>$config );
+    $log->debug( 'Creando directorio de pase ' . $job_dir );
+    unless( -e $job_dir ) {
+        mkdir $job_dir;
+    } else {
         remove_tree $job_dir, { keep_root=>1 };
     }
-	#$job->job_stash->{path} = $job_dir;
+    #$job->job_stash->{path} = $job_dir;
 }
 
 sub root_path {
@@ -40,8 +40,8 @@ sub root_path {
     _throw 'Missing parameter job'
         unless exists $args{job};
     $args{config} ||= config_get 'config.job.runner';
-	my $job_dir = File::Spec->catdir( $args{config}->{root}, $args{job}->name );
-	$args{job}->job_stash->{path} = $job_dir;
+    my $job_dir = File::Spec->catdir( $args{config}->{root}, $args{job}->name );
+    $args{job}->job_stash->{path} = $job_dir;
 }
 
 1;

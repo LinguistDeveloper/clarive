@@ -6,7 +6,7 @@ BEGIN { extends 'Catalyst::Controller' };
 use utf8;
 
 sub begin : Private {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $api_key = $ENV{BASELINER_API_KEY};
     if( defined $api_key ) {
         if( $c->req->params->{api_key} eq $api_key ) {
@@ -18,30 +18,30 @@ sub begin : Private {
 }
 
 sub list_services : Path('/admin/type/service/list_services') {
-	my ($self,$c)=@_;
-	$c->res->body( "<pre>" . _dump( $c->registry->starts_with( 'service' ) ) );
+    my ($self,$c)=@_;
+    $c->res->body( "<pre>" . _dump( $c->registry->starts_with( 'service' ) ) );
 }
 
 sub rest : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
-	_log "=== Iniciando Servicio $p->{service}";
-	_log _dump $p;
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
+    _log "=== Iniciando Servicio $p->{service}";
+    _log _dump $p;
 
-	my $quiet_mode = exists $p->{quiet_mode};
+    my $quiet_mode = exists $p->{quiet_mode};
 
-	# create a temporary logger
-	local $Baseliner::_thrower = sub { 
-		die @_,"\n";
-	} if $quiet_mode;
-	local $Baseliner::_logger = sub { 
-		my ($cl,$li,$fi,@msg) = @_;
-		print STDERR @msg, "\n";
-	} if $quiet_mode;
+    # create a temporary logger
+    local $Baseliner::_thrower = sub { 
+        die @_,"\n";
+    } if $quiet_mode;
+    local $Baseliner::_logger = sub { 
+        my ($cl,$li,$fi,@msg) = @_;
+        print STDERR @msg, "\n";
+    } if $quiet_mode;
 
 
-	# run the service, capturing output
-	my ($output ,$stderr, $stdout);
+    # run the service, capturing output
+    my ($output ,$stderr, $stdout);
     #open(my $olderr, ">&STDERR") ;
     #open(my $oldout, ">&STDOUT") ;
     #close STDOUT;
@@ -49,36 +49,36 @@ sub rest : Local {
     #open(STDOUT, ">>", $tf) or die "Can't open STDOUT: $!";
     #open(STDERR, ">>", $tf) or die "Can't open STDERR: $!";
     
-	#$output= capture_merged {
+    #$output= capture_merged {
     use IO::CaptureOutput;
     IO::CaptureOutput::capture( sub {
     require Baseliner::Core::Logger::Quiet;
     my $logger = Baseliner::Core::Logger::Quiet->new;
-		try {
+        try {
         Baseliner->model('Services')->launch(
-					$p->{service},
+                    $p->{service},
                 logger       => $logger,
-					quiet        => 1,
-					data         => $p
-				);
-			$c->stash->{json} = { msg=>$logger->msg, rc=>$logger->rc };
-		} catch {
-			my $err = shift;
+                    quiet        => 1,
+                    data         => $p
+                );
+            $c->stash->{json} = { msg=>$logger->msg, rc=>$logger->rc };
+        } catch {
+            my $err = shift;
         $c->stash->{json} = { msg=>$logger->msg . "\n$err", rc=>255 };
-		};
+        };
     }, \$output, \$output );
-	#};
+    #};
     #$output = $stdout . $stderr;
     #open(STDOUT, ">&", $oldout);
     #open(STDERR, ">&", $olderr);
 
-	utf8::downgrade( $output );
-	$c->stash->{json}->{output} = $output;
-	$c->forward('View::JSON');
+    utf8::downgrade( $output );
+    $c->stash->{json}->{output} = $output;
+    $c->forward('View::JSON');
 }
 
 sub launch : Regex('^service.') {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $service_name = $c->request->path;
     my $ns = $c->request->params->{ns} || '/';
     my $bl = $c->request->params->{bl} || '*';
@@ -95,7 +95,7 @@ sub launch : Regex('^service.') {
 }
 
 sub tree : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $list = $c->registry->starts_with( 'service' ) ;
     my $p = $c->req->params;
     my @tree;
@@ -137,7 +137,7 @@ sub tree : Local {
 # }
 
 sub combo : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $list = $c->registry->starts_with( 'service' ) ;
     my $p = $c->req->params;
     my $query = qr/$p->{query}/ if defined $p->{query};

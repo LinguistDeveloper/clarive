@@ -6,7 +6,7 @@ sub approve {
 }
 
 sub is_approval_active {
-	return Baseliner->model('Request')->approvals_active;
+    return Baseliner->model('Request')->approvals_active;
 }
 
 sub reject {
@@ -15,7 +15,7 @@ sub reject {
 
 sub is_verified {
     my ($self) = @_;
-	my $rm = Baseliner->model('Request');
+    my $rm = Baseliner->model('Request');
     return 1 if ! $rm->approvals_active;
     return defined $rm->last_status( ns=>$self->ns );
 }
@@ -27,21 +27,21 @@ sub request_status {
  
 sub is_pending {
     my ($self) = @_;
-	my $rm = Baseliner->model('Request');
+    my $rm = Baseliner->model('Request');
     return 0 unless $rm->approvals_active;
     'pending' eq $rm->last_status( ns=>$self->ns );
 }
 
 sub is_approved {
     my ($self) = @_;
-	my $rm = Baseliner->model('Request');
+    my $rm = Baseliner->model('Request');
     return 1 unless $rm->approvals_active;
     'approved' eq $rm->last_status( ns=>$self->ns );
 }
 
 sub is_rejected {
     my ($self) = @_;
-	my $rm = Baseliner->model('Request');
+    my $rm = Baseliner->model('Request');
     return 0 unless $rm->approvals_active;
     'rejected' eq $rm->last_status( ns=>$self->ns );
 }

@@ -1,6 +1,6 @@
 // Cookies
 Baseliner.cookie = new Ext.state.CookieProvider({
-		expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
+        expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
 });
 
 //Ext.state.Manager.setProvider(Baseliner.cookie);
@@ -13,11 +13,11 @@ Baseliner.unload_warning = function() {
 
 // Errors
 Baseliner.errorWin = function( p_title, p_html ) {
-	var win = new Ext.Window({ layout: 'fit', 
-		autoScroll: true, title: p_title,
-		height: 600, width: 1000, 
-		html: p_html });
-	win.show();
+    var win = new Ext.Window({ layout: 'fit', 
+        autoScroll: true, title: p_title,
+        height: 600, width: 1000, 
+        html: p_html });
+    win.show();
 };
 
 Baseliner.js_reload = function() {
@@ -56,22 +56,22 @@ Baseliner.error = function(title, format){
 };
 
 Baseliner.message = function(title, format){
-	Baseliner.messageRaw({ title: title, pause: 2 }, format );
+    Baseliner.messageRaw({ title: title, pause: 2 }, format );
 };
 
 Baseliner.messageRaw = function(params, format){
-	var title = params.title;
+    var title = params.title;
     var pause = params.pause || 2;
     var width = params.width || 200;
-	var msgCt;
-	if(!msgCt){
-		msgCt = Ext.DomHelper.insertFirst(document.body, {id:'msg-div'}, true);
-	}
-	msgCt.alignTo(document, 't-t');
-	var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
-	var m = Ext.DomHelper.append(msgCt, {html:createBox(title, s)}, true);
+    var msgCt;
+    if(!msgCt){
+        msgCt = Ext.DomHelper.insertFirst(document.body, {id:'msg-div'}, true);
+    }
+    msgCt.alignTo(document, 't-t');
+    var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
+    var m = Ext.DomHelper.append(msgCt, {html:createBox(title, s)}, true);
     msgCt.setWidth( width );
-	m.slideIn('t').pause(pause).ghost("t", {remove:true});
+    m.slideIn('t').pause(pause).ghost("t", {remove:true});
 };
 
 Baseliner.confirm = function( msg, foo ) {
@@ -88,15 +88,15 @@ Baseliner.now = function() {
 }
 
 Baseliner.logout = function() {
-	Ext.Ajax.request({
-		url: '/logout',
-		success: function(xhr) {
+    Ext.Ajax.request({
+        url: '/logout',
+        success: function(xhr) {
             document.location.href='/';
-		},
-		failure: function(xhr) {
-		   Baseliner.errorWin( 'Logout Error', xhr.responseText );
-		}
-	});
+        },
+        failure: function(xhr) {
+           Baseliner.errorWin( 'Logout Error', xhr.responseText );
+        }
+    });
 };
 
 // Renderers
@@ -184,6 +184,10 @@ Baseliner.render_bl = function (val){
     if( val == null || val == undefined ) return '';
     if( val == '*' ) val = _('Common');
     return String.format('<b>{0}</b>', val );
+}
+
+Baseliner.render_loc = function (val){
+    return _(val);
 }
 
 Baseliner.render_icon = function (val){

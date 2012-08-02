@@ -1,186 +1,186 @@
 <%init>
-	my $id = 'jj-calendar-' . rand;  ## makes a random id that we can refresh later
-	my $cal = $c->stash->{calendar};
-	my $ns = $c->session->{preview_ns}; 
-	my $bl = $c->session->{preview_bl};
+    my $id = 'jj-calendar-' . rand;  ## makes a random id that we can refresh later
+    my $cal = $c->stash->{calendar};
+    my $ns = $c->session->{preview_ns}; 
+    my $bl = $c->session->{preview_bl};
 </%init>
 (function(){	
-	function showLoading(){
-		var _datePickerCmp = Ext.getCmp('container-<% $id %>').getEl();//Ext.getCmp('_mCalendar<% $id %>').getEl();
-		if(_datePickerCmp!=undefined) Baseliner.showLoadingMask(_datePickerCmp,"Calculando fechas...");
-	}
-	
-	var _CurrentDate = new Date();
-	var _isOnRequest = false;
-	function _updateEvents(picker){
-		if(!_isOnRequest){		
-		 showLoading();
-		_isOnRequest = true;
-		Ext.Ajax.request({
-						url: '/calendar/event_nopase_dates',
-						params: { date:dateToString(_CurrentDate), ns:'<%$ns%>',bl:'<%$bl%>' },
-						success: function(xhr) {
-							_isOnRequest = false;
-							Baseliner.hideLoadingMask();
-							var _raw = eval( "("+xhr.responseText+")" );
-							var dates = eval("[" + _raw.data + "]");	
-							var dateEvents = new Array(dates.length);
-							//Este codigo se puede obviar, simplemente se usa para cambiar el tooltip del evento o poner otro estilo
-							for(var i=0;i<dates.length; i++){
-								dateEvents[i] = {
-									date:dates[i],
-									text: "No pase/Urgente",
-									cls: "x-datepickerplus-eventdates-nopase"						
-								};
-							}						
-							picker.setEventDates (dateEvents,true);
-							picker.update(picker.activeDate, true, true);
-						},
-						failure: function(xhr) {
-							_isOnRequest = false;
-							Baseliner.hideLoadingMask();
-							alert('ko');
-						   //Baseliner.errorWin( 'Logout Error', xhr.responseText );
-						}
-					});	
-	}					
-	}
-	
-	function addMonths(d,n){
-		var day = 1;
-		var month = d.getMonth()+n;
-		var year = d.getFullYear();
-		if(month>11){
-			month = 0;
-			year++;
-		}else {
-			if(month<0){
-				month = 11;
-				year--;			
-			}
-		}
-		return new Date(year, month, day);
-	}
-	
-	function dateToString(d){
-		return d.getDate() + "/" + (d.getMonth()+1) + "/" + d.getFullYear();
-	}
-	
-	function _selectWeek(picker,t){
-		var dd = new Date(t.dateValue);
-		var startweekdate = new Date( t.dateValue).getFirstDateOfWeek();
-		var daycell = t.dayCell - dd.getDay() + 1;							
-		var amount = 7;
-		var reverseAdd = false;
-		var monthcell = t.monthCell;
-		
-		for (var i=0,ni;i<amount;++i) {
-			curmonth = startweekdate.getMonth();
-			ni = (reverseAdd ? amount-1-i : i);
-			if (amount == 7 || curmonth === startmonth) {
-				picker.markDateAsSelected(startweekdate.clearTime().getTime(),true,monthcell,daycell+ni,false);
-			}
-			startweekdate = startweekdate.add(Date.DAY,1);
-		}	
-	}
-	
-	function _setSelectedWeek(picker, date){
-		var _dates = [];
-		var startweekdate = date.getFirstDateOfWeek();
-		var amount = 7;		
-		for (var i=0,ni;i<amount;++i) {
-			_dates.push(startweekdate);
-			startweekdate = startweekdate.add(Date.DAY,1);
-		}	
-		picker.clearSelectedDates();
-		picker.setSelectedDates(_dates);		
-	}
-	
-	var panel = new Ext.Panel({
+    function showLoading(){
+        var _datePickerCmp = Ext.getCmp('container-<% $id %>').getEl();//Ext.getCmp('_mCalendar<% $id %>').getEl();
+        if(_datePickerCmp!=undefined) Baseliner.showLoadingMask(_datePickerCmp,"Calculando fechas...");
+    }
+    
+    var _CurrentDate = new Date();
+    var _isOnRequest = false;
+    function _updateEvents(picker){
+        if(!_isOnRequest){		
+         showLoading();
+        _isOnRequest = true;
+        Ext.Ajax.request({
+                        url: '/calendar/event_nopase_dates',
+                        params: { date:dateToString(_CurrentDate), ns:'<%$ns%>',bl:'<%$bl%>' },
+                        success: function(xhr) {
+                            _isOnRequest = false;
+                            Baseliner.hideLoadingMask();
+                            var _raw = eval( "("+xhr.responseText+")" );
+                            var dates = eval("[" + _raw.data + "]");	
+                            var dateEvents = new Array(dates.length);
+                            //Este codigo se puede obviar, simplemente se usa para cambiar el tooltip del evento o poner otro estilo
+                            for(var i=0;i<dates.length; i++){
+                                dateEvents[i] = {
+                                    date:dates[i],
+                                    text: "No pase/Urgente",
+                                    cls: "x-datepickerplus-eventdates-nopase"						
+                                };
+                            }						
+                            picker.setEventDates (dateEvents,true);
+                            picker.update(picker.activeDate, true, true);
+                        },
+                        failure: function(xhr) {
+                            _isOnRequest = false;
+                            Baseliner.hideLoadingMask();
+                            alert('ko');
+                           //Baseliner.errorWin( 'Logout Error', xhr.responseText );
+                        }
+                    });	
+    }					
+    }
+    
+    function addMonths(d,n){
+        var day = 1;
+        var month = d.getMonth()+n;
+        var year = d.getFullYear();
+        if(month>11){
+            month = 0;
+            year++;
+        }else {
+            if(month<0){
+                month = 11;
+                year--;			
+            }
+        }
+        return new Date(year, month, day);
+    }
+    
+    function dateToString(d){
+        return d.getDate() + "/" + (d.getMonth()+1) + "/" + d.getFullYear();
+    }
+    
+    function _selectWeek(picker,t){
+        var dd = new Date(t.dateValue);
+        var startweekdate = new Date( t.dateValue).getFirstDateOfWeek();
+        var daycell = t.dayCell - dd.getDay() + 1;							
+        var amount = 7;
+        var reverseAdd = false;
+        var monthcell = t.monthCell;
+        
+        for (var i=0,ni;i<amount;++i) {
+            curmonth = startweekdate.getMonth();
+            ni = (reverseAdd ? amount-1-i : i);
+            if (amount == 7 || curmonth === startmonth) {
+                picker.markDateAsSelected(startweekdate.clearTime().getTime(),true,monthcell,daycell+ni,false);
+            }
+            startweekdate = startweekdate.add(Date.DAY,1);
+        }	
+    }
+    
+    function _setSelectedWeek(picker, date){
+        var _dates = [];
+        var startweekdate = date.getFirstDateOfWeek();
+        var amount = 7;		
+        for (var i=0,ni;i<amount;++i) {
+            _dates.push(startweekdate);
+            startweekdate = startweekdate.add(Date.DAY,1);
+        }	
+        picker.clearSelectedDates();
+        picker.setSelectedDates(_dates);		
+    }
+    
+    var panel = new Ext.Panel({
 
-		id: 'container-<% $id %>',
-		style: 'padding: 5px',
-		autoScroll:true,
-		items: [	
-			{			
-				xtype: 'panel',
-				height: 250,
-				border:false,
-				items: [
-				{
-					xtype: 'datepickerplus',
-					id:'_mCalendar<% $id %>',
-					value: _CurrentDate,	
-					noOfMonth : 4, //(Ext.lib.Dom.getViewHeight()>600?9:4), //9 ,
-					noOfMonthPerRow : 4, //(Ext.lib.Dom.getViewWidth()>1024?3:2), //4,
-					multiSelection: true,
-					allowMouseWheel:false,
-					showWeekNumber: true,
-					weekendText: '',
-					showActiveDate:false,
-					summarizeHeader:true,
-					listeners:{
-						'beforedateclick':function(picker,t){	
-							this.currentDateRef = t;							
-							//_updateEvents(picker);							
-						},						
-						'beforerender':function(picker){
-							_setSelectedWeek(picker, _CurrentDate);		
-							_updateEvents(picker);				
-						},
-						'afterdateclick':function(picker,t){							
-							_setSelectedWeek(picker, t);
-							var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
-							Ext.get('<% $id %>').load({url: '/job/preview_calendar_show', params: { panel: '<% $id %>', ns: '<%$ns%>', bl:'<%$bl%>', date: fecha}});
-						},
-						'afterweekclick':function(picker,t){
-							_setSelectedWeek(picker, t);	
-							var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
-							Ext.get('<% $id %>').load({url: '/job/preview_calendar_show', params: { panel: '<% $id %>', ns: '<%$ns%>', bl:'<%$bl%>', date: fecha}});
-						},
-						'aftermonthchange':function(picker,oldMonth,newMonth){
-							_CurrentDate = addMonths(_CurrentDate,(oldMonth>newMonth)?-1:1);							
-							_updateEvents(picker);							
-						}
-						
-					} 
+        id: 'container-<% $id %>',
+        style: 'padding: 5px',
+        autoScroll:true,
+        items: [	
+            {			
+                xtype: 'panel',
+                height: 250,
+                border:false,
+                items: [
+                {
+                    xtype: 'datepickerplus',
+                    id:'_mCalendar<% $id %>',
+                    value: _CurrentDate,	
+                    noOfMonth : 4, //(Ext.lib.Dom.getViewHeight()>600?9:4), //9 ,
+                    noOfMonthPerRow : 4, //(Ext.lib.Dom.getViewWidth()>1024?3:2), //4,
+                    multiSelection: true,
+                    allowMouseWheel:false,
+                    showWeekNumber: true,
+                    weekendText: '',
+                    showActiveDate:false,
+                    summarizeHeader:true,
+                    listeners:{
+                        'beforedateclick':function(picker,t){	
+                            this.currentDateRef = t;							
+                            //_updateEvents(picker);							
+                        },						
+                        'beforerender':function(picker){
+                            _setSelectedWeek(picker, _CurrentDate);		
+                            _updateEvents(picker);				
+                        },
+                        'afterdateclick':function(picker,t){							
+                            _setSelectedWeek(picker, t);
+                            var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
+                            Ext.get('<% $id %>').load({url: '/job/preview_calendar_show', params: { panel: '<% $id %>', ns: '<%$ns%>', bl:'<%$bl%>', date: fecha}});
+                        },
+                        'afterweekclick':function(picker,t){
+                            _setSelectedWeek(picker, t);	
+                            var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
+                            Ext.get('<% $id %>').load({url: '/job/preview_calendar_show', params: { panel: '<% $id %>', ns: '<%$ns%>', bl:'<%$bl%>', date: fecha}});
+                        },
+                        'aftermonthchange':function(picker,oldMonth,newMonth){
+                            _CurrentDate = addMonths(_CurrentDate,(oldMonth>newMonth)?-1:1);							
+                            _updateEvents(picker);							
+                        }
+                        
+                    } 
 /*					eventDates : function(year) {
-						var dates = [
-						{
-							date: new Date(2008,4,14), //fixed date marked only on 2008/01/02
-							text: "My cat died 7 years ago",
-							cls: "x-datepickerplus-eventdates"
-						},
-						{
-							date: new Date(year,4,11), //will be marked every year on 05/11
-							text: "May 11th, Author's Birthday (Age:"+(year-1973)+")",
-							cls: "x-datepickerplus-eventdates"									
-						}
-								
-						];
-						return dates;
-					}
+                        var dates = [
+                        {
+                            date: new Date(2008,4,14), //fixed date marked only on 2008/01/02
+                            text: "My cat died 7 years ago",
+                            cls: "x-datepickerplus-eventdates"
+                        },
+                        {
+                            date: new Date(year,4,11), //will be marked every year on 05/11
+                            text: "May 11th, Author's Birthday (Age:"+(year-1973)+")",
+                            cls: "x-datepickerplus-eventdates"									
+                        }
+                                
+                        ];
+                        return dates;
+                    }
 */					
-				}
-				]
-			},
-			{		
-				xtype: 'panel',
-				id: '<% $id %>',				
-				height:400,				
-				autoLoad: { url: '/job/preview_calendar_show', params: { panel: '<% $id %>', ns: '<%$ns%>', bl:'<%$bl%>', date: dateToString(_CurrentDate) }, scripts: true  },
-				border:false
-			}			
-		],
-		destroy: function()
-		{
-			//Esta linea es muy importante, debido a un bug en Ext el autoDestroy no funciona correctamente en el TabPanel
-			//La manera de solventar esto es asignar id al panel y obtener la coleccion completa con Ext.get
-			//Sobrescribimos la funcion destroy para gestionar la eliminacion correcta del panel y todos sus items
-			Ext.get('container-<% $id %>').remove();
-		} 		
-	});
+                }
+                ]
+            },
+            {		
+                xtype: 'panel',
+                id: '<% $id %>',				
+                height:400,				
+                autoLoad: { url: '/job/preview_calendar_show', params: { panel: '<% $id %>', ns: '<%$ns%>', bl:'<%$bl%>', date: dateToString(_CurrentDate) }, scripts: true  },
+                border:false
+            }			
+        ],
+        destroy: function()
+        {
+            //Esta linea es muy importante, debido a un bug en Ext el autoDestroy no funciona correctamente en el TabPanel
+            //La manera de solventar esto es asignar id al panel y obtener la coleccion completa con Ext.get
+            //Sobrescribimos la funcion destroy para gestionar la eliminacion correcta del panel y todos sus items
+            Ext.get('container-<% $id %>').remove();
+        } 		
+    });
 
-	return panel;
+    return panel;
 })();
 

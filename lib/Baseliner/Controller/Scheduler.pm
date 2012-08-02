@@ -37,8 +37,8 @@ sub json : Local {
     $dir ||= 'asc';
     
     my $page = to_pages( start => $start, limit => $limit );
-	my $where = {}; 
-	my $args;
+    my $where = {}; 
+    my $args;
     
     $query and $where = query_sql_build(
         query  => $query,
@@ -225,12 +225,12 @@ sub update_conf : Local {
     
     my $service = Baseliner->model('Baseliner::BaliScheduler')->find( $id );
     if( ref $service ) {
-	$service->parameters( $p->{conf} );
-	$service->update;
-	$c->stash->{json} = { success => \1, msg => _loc("Configuration changed") };
+    $service->parameters( $p->{conf} );
+    $service->update;
+    $c->stash->{json} = { success => \1, msg => _loc("Configuration changed") };
     }
     else{
-	$c->stash->{json} = { success => \0, msg => _loc('Error changing the configuration') };
+    $c->stash->{json} = { success => \0, msg => _loc('Error changing the configuration') };
     }
     $c->forward('View::JSON');
 }

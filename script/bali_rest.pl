@@ -55,13 +55,13 @@ sub _get_args {
 # turns option=>[]  into option=>''
 #    required for sending emptyness over an http request
 sub clean_empty_arrays {
-	my %opts = @_;
-	for( %opts ) {
-		if( ref $opts{$_} eq 'ARRAY' ) {
-			$opts{$_} = '' if @{$opts{$_}} == 0;
-		}
-	}
-	return %opts;
+    my %opts = @_;
+    for( %opts ) {
+        if( ref $opts{$_} eq 'ARRAY' ) {
+            $opts{$_} = '' if @{$opts{$_}} == 0;
+        }
+    }
+    return %opts;
 }
 
 package main;
@@ -93,7 +93,7 @@ if ( ! defined $res ) {
     print STDERR "***REST Error: " . $!;
     exit 99;
 } else {
-	print $res->{output};
+    print $res->{output};
     if ( $res->{rc} > 0 ) {
         print STDERR $res->{msg};
     }

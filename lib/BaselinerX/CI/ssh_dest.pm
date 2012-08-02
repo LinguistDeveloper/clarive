@@ -8,7 +8,7 @@ with 'Baseliner::Role::CI::Destination';
 
 sub error {  }
 sub rc {
-	my $self = shift;
+    my $self = shift;
     $self->error ? 1 : 0;
 }
 

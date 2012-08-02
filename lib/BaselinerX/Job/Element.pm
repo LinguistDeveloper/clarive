@@ -10,15 +10,15 @@ has 'version' => ( is=>'rw', isa=>'Str' );
 has 'modified_on' => ( is=>'rw', isa=>'DateTime' );
 has 'mid' => ( is=>'rw', isa=>'Str' );
 has 'handled_by' => (
-	is=>'ro',
-	isa=>'ArrayRef[Str]',
-	default    => sub { [] },
-	traits=>['Array'],
-	handles => {
-		'add_handler' => 'push',
-		'count_handler' => 'count',
-		'has_handler' => 'is_empty',
-	}
+    is=>'ro',
+    isa=>'ArrayRef[Str]',
+    default    => sub { [] },
+    traits=>['Array'],
+    handles => {
+        'add_handler' => 'push',
+        'count_handler' => 'count',
+        'has_handler' => 'is_empty',
+    }
 );
 
 sub path_parts {
@@ -42,10 +42,10 @@ version number.
 
 =cut
 sub long_path {
-	my $self = shift;
-	my $long_path = $self->path . '/' . $self->name . ';' . $self->version;
-	$long_path =~ s{\\}{\/}g;
-	return $long_path;
+    my $self = shift;
+    my $long_path = $self->path . '/' . $self->name . ';' . $self->version;
+    $long_path =~ s{\\}{\/}g;
+    return $long_path;
 }
 
 
@@ -81,7 +81,7 @@ Returns the fullpath to the file, including the name
 
 =cut
 sub filepath {
-	my $self = shift;
+    my $self = shift;
     require File::Spec;
     return File::Spec::Unix->catfile( $self->path, $self->name );
 }

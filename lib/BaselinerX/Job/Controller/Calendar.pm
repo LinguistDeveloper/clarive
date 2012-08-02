@@ -76,11 +76,11 @@ sub calendar_list : Path('/job/calendar_list') {
     my ( $self, $c ) = @_;
 
     #$c->stash->{ns_query} = { does=>['Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
-	$c->stash->{can_edit} = 
-		$c->model('Permissions')->is_root( $c->username ) 
-		||
-		$c->model('Permissions')
-			->user_has_action( username=>$c->username, action=>'action.job.calendar.edit', bl=>'*' );
+    $c->stash->{can_edit} = 
+        $c->model('Permissions')->is_root( $c->username ) 
+        ||
+        $c->model('Permissions')
+            ->user_has_action( username=>$c->username, action=>'action.job.calendar.edit', bl=>'*' );
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
     $c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
@@ -97,12 +97,12 @@ sub calendar_update : Path( '/job/calendar_update' ) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-		if( $p->{action} eq 'create' ) {
+        if( $p->{action} eq 'create' ) {
             my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } );
             if ( my $r = $r1->first ) {
                 _fail _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->name, $p->{ ns }, $p->{ bl } );
-			} else {
-				my $row = $c->model('Baseliner::BaliCalendar')->create({
+            } else {
+                my $row = $c->model('Baseliner::BaliCalendar')->create({
                         name        => $p->{ name },
                         description => $p->{ description },
                         ns          => $p->{ ns },
@@ -751,10 +751,10 @@ sub time_range_intersec : Private {
                 my $found = 0;
 
                 while ( my $r2 = $rs2->next ) {
-						my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
+                        my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
                     if ( $r2->active == 1 ) {
                         push @slots_validos, $slot;
-						  }else{
+                          }else{
                         push @range_disabled, $slot;
                     }
                     push @range_disabled, $slot if ( $found eq 0 );
@@ -773,7 +773,7 @@ sub time_range_intersec : Private {
 
         my $displayText = $start_time . ' - ' . $end_time;    # . ' - ' . (($type eq 'N')? _loc 'Normal Window' : _loc 'Urgent Window');
         my $valueJson = '{ start_time: "' . $start_time . '", end_time: "' . $end_time . '", type: "' . $type . '"}';
-		push @range_enabled,{start_time=>$start_time, end_time=>$end_time, type=>$type, displayText => $displayText, valueJson=>$valueJson};
+        push @range_enabled,{start_time=>$start_time, end_time=>$end_time, type=>$type, displayText => $displayText, valueJson=>$valueJson};
     }
 
     $c->stash->{ time_range } = \@range_enabled;
@@ -852,7 +852,7 @@ sub time_range : Private {
                     if ( not ref $rs2 or not $rs2->next );
                 $rs2->reset();
                 while ( my $r2 = $rs2->next ) {
-						my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
+                        my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
                     my $calendar_type = $r->type;
                     $lastType = $calendar_type;
                     if ( $r2->active == 1 ) {

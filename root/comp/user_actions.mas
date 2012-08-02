@@ -1,41 +1,41 @@
 (function(){
     var username = '<% $c->stash->{username} %>' ;
-	var store=new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		url: '/user/actions_list',
-		baseParams: {  username: username },
-		fields: [ 
-			{  name: 'role' },
-			{  name: 'description' },
-			{  name: 'action' },
-			{  name: 'ns' }
-		]
-	});
-	store.load();
+    var store=new Ext.data.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        url: '/user/actions_list',
+        baseParams: {  username: username },
+        fields: [ 
+            {  name: 'role' },
+            {  name: 'description' },
+            {  name: 'action' },
+            {  name: 'ns' }
+        ]
+    });
+    store.load();
 
-	var grid = new Ext.grid.EditorGridPanel({
-		header: false,
-		autoScroll: true,
-		autoWidth: true,
-		autoSizeColumns: true,
-		autoExpandColumn: 'ns',
-		deferredRender:true,
-		clicksToEdit: 'auto',
-		store: store,
-		viewConfig: [{
-				forceFit: true
-		}],
-		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		loadMask:'true',
-		columns: [
-			{ header: '<% _loc('Role') %>', width: 150, dataIndex: 'role', sortable: true },	
-			{ header: '<% _loc('Description') %>', width: 150, dataIndex: 'description', sortable: true },	
-			{ header: '<% _loc('Action') %>', width: 150, dataIndex: 'action', sortable: true },	
-			{ id: 'ns', header: '<% _loc('Namespace') %>', width: 100, dataIndex: 'ns', sortable: true }	
-		]
-	});
-	return grid;
+    var grid = new Ext.grid.EditorGridPanel({
+        header: false,
+        autoScroll: true,
+        autoWidth: true,
+        autoSizeColumns: true,
+        autoExpandColumn: 'ns',
+        deferredRender:true,
+        clicksToEdit: 'auto',
+        store: store,
+        viewConfig: [{
+                forceFit: true
+        }],
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        loadMask:'true',
+        columns: [
+            { header: '<% _loc('Role') %>', width: 150, dataIndex: 'role', sortable: true },	
+            { header: '<% _loc('Description') %>', width: 150, dataIndex: 'description', sortable: true },	
+            { header: '<% _loc('Action') %>', width: 150, dataIndex: 'action', sortable: true },	
+            { id: 'ns', header: '<% _loc('Namespace') %>', width: 100, dataIndex: 'ns', sortable: true }	
+        ]
+    });
+    return grid;
 })();
 

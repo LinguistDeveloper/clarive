@@ -27,10 +27,10 @@ use YAML;
 use TheSchwartz::Moosified;
 my $client = TheSchwartz::Moosified->new( verbose => 1);
 Baseliner->model('Bali')->storage->dbh_do(
-	sub {
-		my ($storage, $dbh) = @_;
-		$client->databases([$dbh]) or die $!;  	
-	} );
+    sub {
+        my ($storage, $dbh) = @_;
+        $client->databases([$dbh]) or die $!;  	
+    } );
 
 $client->insert('Baseliner::WorkerX', { args1 => 1212, args2 => 21212 } ) or die $!;
 print "Inserted\n";

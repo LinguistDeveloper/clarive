@@ -134,7 +134,7 @@
         } ), { xtype: 'button', text:_('Close'), handler:function(){ Baseliner.close_parent(panel) } } ],
         items: [ form ]
     });
-	return panel;
+    return panel;
 })
 
 

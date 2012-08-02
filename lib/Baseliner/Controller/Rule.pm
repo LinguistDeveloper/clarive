@@ -29,7 +29,7 @@ sub list : Local {
 }
 
 sub actions : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $list = $c->registry->starts_with( 'service' ) ;
     my $p = $c->req->params;
     my @tree;
@@ -54,7 +54,7 @@ sub actions : Local {
 }
 
 sub tree : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $p = $c->req->params;
 
     my @tree;
@@ -81,7 +81,7 @@ sub tree : Local {
 }
 
 sub save : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $p = $c->req->params;
     $c->model('Baseliner::BaliRule')->create({ rule_name=>$p->{rule_name} })
         if $p->{rule_name};

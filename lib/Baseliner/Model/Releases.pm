@@ -13,20 +13,20 @@ are lists of releases where the item belongs.
 
 =cut
 sub release_items {
-	my ($self, %p ) = @_;
+    my ($self, %p ) = @_;
     my %releases;
-	my $search = \%p;
+    my $search = \%p;
     my $rs_rel = Baseliner->model('Baseliner::BaliRelease')->search($search,{ prefetch=>'bali_release_items' });
-	$rs_rel->result_class('DBIx::Class::ResultClass::HashRefInflator');
-	while( my $r = $rs_rel->next ) {
+    $rs_rel->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    while( my $r = $rs_rel->next ) {
         try {
             for my $item ( _array $r->{bali_release_items} ) {
                 my $ns = $item->{ns};
                 push @{ $releases{ $ns } }, { name=>$r->{name}, id=>$r->{id} };
             }
         };
-	}
-	return %releases;
+    }
+    return %releases;
 }
 
 # makes sure all releases are updated
@@ -38,7 +38,7 @@ sub update_bl {
             my $id = $rel->ns_id;
             return unless $id;
             my $row = Baseliner->model('Baseliner::BaliRelease')->find( $id ); 
-			return unless ref $row;
+            return unless ref $row;
             my $bl = $rel->bl_from_contents;
             return unless $bl;
             $row->bl( $bl );

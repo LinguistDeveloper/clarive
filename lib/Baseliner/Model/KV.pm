@@ -18,13 +18,13 @@ sub set {
     my $ns           = $p->{ns} || $p->{provider} . '/' . _clsid() ;
     my $data         = $p->{data};
     my ( $domain, $item ) = ns_split($ns);
-	my $now = _dt();
+    my $now = _dt();
     my $row = Baseliner->model('Baseliner::BaliRepo')->update_or_create(
         {
             ns       => $ns,
-			item     => $p->{item} || $item,
+            item     => $p->{item} || $item,
             provider => $domain || $package,
-			ts       => $now, #\'sysdate',
+            ts       => $now, #\'sysdate',
             class    => $package
         }
     );
@@ -44,7 +44,7 @@ sub get {
     my $p    = _parameters(@_);
     $p->{ns} || $p->{provider} or _throw "Missing either 'ns' or 'provider'";
     my $row = $self->record( %$p );
-	return undef unless ref $row;
+    return undef unless ref $row;
     return $row->load_kv( %$p );
 }
 
@@ -72,18 +72,18 @@ sub top {
     my ( $package, ) = caller();
     return Baseliner->model('Baseliner::BaliRepo')->search(
         { provider => $p->{domain}||$p->{provider} || $package, },
-		{ order_by => 'ts desc' },
+        { order_by => 'ts desc' },
     )->first;
 }
 
 sub all {
-	my $self = shift;
+    my $self = shift;
     my $p    = _parameters(@_);
     _check_parameters( $p, qw/provider/ );
     my $args = { order_by => 'ns' };
     $args->{select} = $p->{select} if defined $p->{select};
-	my $rr = Baseliner->model('Baseliner::BaliRepo')->search( { provider=>$p->{provider} }, $args );
-	rs_hashref( $rr );
+    my $rr = Baseliner->model('Baseliner::BaliRepo')->search( { provider=>$p->{provider} }, $args );
+    rs_hashref( $rr );
     return map {
         $_->{data} = $_->kv;
         $_
@@ -91,27 +91,27 @@ sub all {
 }
 
 sub item_hash {
-	my $self = shift;
-	my @all = $self->all( @_ );
-	my %hash = map { $_->{item} => $_->{data} } @all ;
-	return %hash;
+    my $self = shift;
+    my @all = $self->all( @_ );
+    my %hash = map { $_->{item} => $_->{data} } @all ;
+    return %hash;
 }
 
 sub delete_all {
-	my $self = shift;
+    my $self = shift;
     my $p    = _parameters(@_);
     _check_parameters( $p, qw/provider/ );
     my $rs = Baseliner->model('Baseliner::BaliRepo')->search( { provider=>$p->{provider} } );
     my $count;
-	while( my $row = $rs->next ) {
-		$row->delete;
+    while( my $row = $rs->next ) {
+        $row->delete;
         $count++;
-	}
+    }
     $count
 }
 
 sub bulk_replace {
-	my $self = shift;
+    my $self = shift;
     my $p    = _parameters(@_);
     _check_parameters( $p, qw/provider data/ );
     my %data = %{ $p->{data} || {} };
@@ -126,11 +126,11 @@ sub bulk_replace {
 }
 
 sub delete {
-	my $self = shift;
+    my $self = shift;
     my $p    = _parameters(@_);
     _check_parameters( $p, qw/ns/ );
     my $r = Baseliner->model('Baseliner::BaliRepo')->search( { ns=>$p->{ns} } );
-	$r->delete if ref $r;
+    $r->delete if ref $r;
     unless( $p->{keep_relations} ) {
         Baseliner->model('Relationships')->delete( from=>$p->{ns} );
         Baseliner->model('Relationships')->delete( to=>$p->{ns} );
@@ -138,20 +138,20 @@ sub delete {
 }
 
 sub list {
-	my $self = shift;
+    my $self = shift;
     my $p    = _parameters(@_);
     _check_parameters( $p, qw/provider/ );
     my $rs = Baseliner->model('Baseliner::BaliRepo')->search( { provider=>$p->{provider} });
-	$rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
-	my @ns;
-	while( my $row = $rs->next ) {
-		push @ns, $row->{ns};
-	}
-	return @ns;
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    my @ns;
+    while( my $row = $rs->next ) {
+        push @ns, $row->{ns};
+    }
+    return @ns;
 }
 
 sub search {
-	my $self = shift;
+    my $self = shift;
     return Baseliner->model('Baseliner::BaliRepo')->search( @_ );
 }
 
@@ -159,9 +159,9 @@ sub record {
     my $self = shift;
     my $p    = _parameters(@_);
     my $row = Baseliner->model('Baseliner::BaliRepo')->find( $p->{ns} );
-	_debug 'Not found: ' . $p->{ns} unless ref $row;
-	return undef unless ref $row;
-	$row->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    _debug 'Not found: ' . $p->{ns} unless ref $row;
+    return undef unless ref $row;
+    $row->result_class('DBIx::Class::ResultClass::HashRefInflator');
     return $row;
 }
 
@@ -169,13 +169,13 @@ sub record {
 
 Store NS data locally.
 
-	my $repo = Baseliner->model('KV');
+    my $repo = Baseliner->model('KV');
 
-	$repo->set( ns=>'package/P123', data=> { ... } );
+    $repo->set( ns=>'package/P123', data=> { ... } );
 
-	$repo->set( backend=>'fich_backup', ns=>'package/P123', data=> { ... } );
+    $repo->set( backend=>'fich_backup', ns=>'package/P123', data=> { ... } );
 
-	my $data = $repo->get( backend=>'fich_backup', ns=>'package/P123' );
+    my $data = $repo->get( backend=>'fich_backup', ns=>'package/P123' );
 
 =cut
 

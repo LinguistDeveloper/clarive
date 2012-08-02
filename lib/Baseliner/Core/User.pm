@@ -9,16 +9,16 @@ has 'languages' => ( is=>'rw', isa=>'ArrayRef',  );
 has 'root_user' => ( is=>'rw', isa=>'Bool' );
 
 around BUILDARGS => sub {
-	my $orig = shift;
-	my $class = shift;
+    my $orig = shift;
+    my $class = shift;
     my %args = @_;
     my $out = {};
 
-	if( ref $args{user} ) {
+    if( ref $args{user} ) {
         my $user = $args{user};
-		try { $out->{username} = $user->username };
-		try { $out->{username} = $user->id };
-	}
+        try { $out->{username} = $user->username };
+        try { $out->{username} = $user->id };
+    }
     return $class->$orig($out);
 };
 

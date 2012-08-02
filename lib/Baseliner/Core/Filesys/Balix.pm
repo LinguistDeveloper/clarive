@@ -16,10 +16,10 @@ has 'os'   => ( is => 'rw', isa => 'Str', default  => 'unix' );
 has 'balix'   => ( is => 'rw', isa => 'BaselinerX::Comm::Balix' );
 
 register 'config.filesys.balix' => {
-	metadata=>[
-		{ id=>'key', type=>'text', default=>'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr' },
-		{ id=>'port', type=>'text', default=>32100 },
-	]
+    metadata=>[
+        { id=>'key', type=>'text', default=>'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr' },
+        { id=>'port', type=>'text', default=>32100 },
+    ]
 };
 
 # perl -MBaseliner::Core::Filesys::Balix -le '$b=Baseliner::Core::Filesys::Balix->new( home=>"balix://OAM7315R@B0007502554107:32100=C:\\" ); print $b->execute("dir");'
@@ -29,7 +29,7 @@ register 'config.filesys.balix' => {
 sub BUILD {
     my $self = shift;
     my $home = $self->home;
-	my $os = $self->os;
+    my $os = $self->os;
     my ( $user, $host, $port, $home_real ) =
       ($1,$2,$3,$4) if( $home =~ m/^(\w+)\@(\.+?)\:(\d+)\=(\w+)/ );
 
@@ -39,32 +39,32 @@ sub BUILD {
     $self->home($home_real);
     $self->os($os);
 
-	#my $balix = BaselinerX::Comm::Balix->open( $host,$port,'win' ); 
-	my $balix = BaselinerX::Comm::Balix->new( host=>$host, port=>$port, key=>'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr', os=>$os,  timeout=>10 );
-	$self->balix($balix);
+    #my $balix = BaselinerX::Comm::Balix->open( $host,$port,'win' ); 
+    my $balix = BaselinerX::Comm::Balix->new( host=>$host, port=>$port, key=>'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr', os=>$os,  timeout=>10 );
+    $self->balix($balix);
 }
 
 sub execute {
-	my $self = shift;
-	my %p  =  %{ shift() } if ref $_[0];
-	
+    my $self = shift;
+    my %p  =  %{ shift() } if ref $_[0];
+    
     return $self->balix->execute($p{cmd});
 }
 
 sub get {
-	my ($self, %P)=@_;
-	my $remoteFile = $P{from};
-	my $localFile = $P{to} || $P{to_file};
-	my $os = $P{os};
-	return $self->balix->getFile( $remoteFile, $localFile, $os );
+    my ($self, %P)=@_;
+    my $remoteFile = $P{from};
+    my $localFile = $P{to} || $P{to_file};
+    my $os = $P{os};
+    return $self->balix->getFile( $remoteFile, $localFile, $os );
 }
 
 sub put {
-	my ($self, %P)=@_;
-	my $remoteFile = $P{to} || $P{to_file};
-	my $localFile = $P{from};
-	my $os = $P{os};
-	return $self->balix->sendFile( $localFile, $remoteFile, $os );
+    my ($self, %P)=@_;
+    my $remoteFile = $P{to} || $P{to_file};
+    my $localFile = $P{from};
+    my $os = $P{os};
+    return $self->balix->sendFile( $localFile, $remoteFile, $os );
 }
 
 sub copy {
@@ -72,12 +72,12 @@ sub copy {
 }
 
 sub end {
-	my ($self)=@_;
-	$self->balix->end();
+    my ($self)=@_;
+    $self->balix->end();
 }
 
 sub mkpath {
-	my ($self, $path)=@_;
+    my ($self, $path)=@_;
     $self->execute( qq{mkdir -p "$path"} );
 }
 1;

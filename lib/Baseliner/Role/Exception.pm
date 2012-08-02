@@ -11,14 +11,14 @@ has 'stack' => ( is=>'ro', isa=>'Str' );
 
 sub BUILDARGS {
     my $class = shift;
-	my $p = _parameters(@_);
+    my $p = _parameters(@_);
 
     my ($package, $filename, $line) = caller 2;
 
-	$p->{caller} = "$package $filename;$line";
-	$p->{stack} = Carp::longmess;
+    $p->{caller} = "$package $filename;$line";
+    $p->{stack} = Carp::longmess;
 
-	return $p;
+    return $p;
 }
 
 1;

@@ -41,7 +41,7 @@
         width: 500,
         height: 300,
         lines: true,
-		stripeRows: true,
+	    stripeRows: true,
         enableSort: false,
         enableDD: true,
         dataUrl: '/lifecycle/repo_data',
@@ -233,8 +233,8 @@
     var panel = new Ext.Panel({
         layout: 'border',
         items: [
-				tree,
-				properties ]
+			    tree,
+			    properties ]
     });
     return panel;
 })

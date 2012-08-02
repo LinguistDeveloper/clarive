@@ -15,10 +15,10 @@ has 'id' => (is=>'rw', isa=>'Str', default=>'');
 
 =head1 SYNTAX
 
-	register 'form.test.movies' => {
-		table => 'tab',
-		primary_key => 'formobjid',
+    register 'form.test.movies' => {
+        table => 'tab',
+        primary_key => 'formobjid',
 
-	};
+    };
 
 =cut
