@@ -1,0 +1,12 @@
+---
+- active: '1'
+  bl: '*'
+  data: ~
+  description: una prueba
+  domain: ~
+  id_parent: ~
+  mid: 1
+  name: prueba
+  nature: ~
+  ns: /
+  ts: 2012-07-31 11:21:15
