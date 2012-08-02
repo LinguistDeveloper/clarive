@@ -573,26 +573,35 @@ sub get_config_priority : Local {
     my $priority_id = $p->{id};
     my $category_id = $p->{category_id};
     
-    my @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search(
-                                {id_category=> $category_id, id_priority=> $priority_id},
-                                {join=>['priority'], 
-                                select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
-                                as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
-    if(!@category_priority){
-        my @priority_default = $c->model('Baseliner::BaliTopicPriority')->search({id=> $priority_id})->hashref->all;
-        foreach my $field (@priority_default){
-            push @category_priority, { name => $field->{name},
-                              id_category => $category_id,
-                              id => $field->{id},
-                              response_time_min => $field->{response_time_min},
-                              expr_response_time => $field->{expr_response_time},
-                              deadline_min => $field->{deadline_min},
-                              expr_deadline => $field->{expr_deadline},
-                              is_active => 0,
-                              }
+    my @category_priority;
+    
+    if($p->{active}){
+        @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search(
+                                    {id_category=> $category_id, is_active=>1},
+                                    {join=>['priority'], 
+                                    select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
+                                    as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
+    }else{
+        @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search(
+                                    {id_category=> $category_id, id_priority=> $priority_id},
+                                    {join=>['priority'], 
+                                    select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
+                                    as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
+        if(!@category_priority){
+            my @priority_default = $c->model('Baseliner::BaliTopicPriority')->search({id=> $priority_id})->hashref->all;
+            foreach my $field (@priority_default){
+                push @category_priority, { name => $field->{name},
+                                  id_category => $category_id,
+                                  id => $field->{id},
+                                  response_time_min => $field->{response_time_min},
+                                  expr_response_time => $field->{expr_response_time},
+                                  deadline_min => $field->{deadline_min},
+                                  expr_deadline => $field->{expr_deadline},
+                                  is_active => 0,
+                                  }
+            }
         }
     }
-
     $c->stash->{json} = { data=>\@category_priority};
     $c->forward('View::JSON');    
 }
