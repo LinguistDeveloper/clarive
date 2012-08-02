@@ -42,7 +42,8 @@ var category_id = new Array();
             }
         },
         legend: {
-            show: true
+            show: true,
+            container: '#<%$graph_id%>legend'
         },
         grid: {
             hoverable: true,
@@ -75,13 +76,15 @@ function pieClick(event, pos, obj)
 		{
 			width: 400px;
 			height: 300px;
-			float: left;
+			float: right;
 			border: 1px dashed gainsboro;
 		}
     </style>
     
     <h2><%$title%></h2><br>
     <div id="<%$graph_id%>" class="graph" onmouseout="document.body.style.cursor='default';"></div>
+    <div id="<%$graph_id%>legend"></div>
+    
 
 
 
