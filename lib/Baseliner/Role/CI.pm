@@ -91,19 +91,25 @@ sub save_data {
     }
     else {  # dbic result source
         my $rs = Baseliner->model("Baseliner::$storage");
-        $data->{name} = $master_row->name;
+        $data->{name} //= $master_row->name;
         my $pk = $self->storage_pk;
-        $data->{ $pk } = $master_row->mid;
-        # find or create
-        if( my $row = $rs->find( $master_row->mid ) ) {
-            _debug "************* CI DATA: " . _dump $data;
-            $row->update( $data );
-        } else {
-            $rs->create( $data );
-        }
+        $data->{ $pk } //= $master_row->mid;
+        $self->table_update_or_create( $rs, $master_row->mid, $data );
     }
     return $master_row->mid;
 }
+
+sub table_update_or_create {
+    my ($self, $rs, $mid, $data ) = @_;
+    # find or create
+    if( my $row = $rs->find( $mid ) ) {
+        return $self->table_update( $row, $data );
+    } else {
+        return $self->table_create( $rs, $data );
+    }
+} 
+sub table_create { $_[1]->create( $_[2] ) } 
+sub table_update { $_[1]->update( $_[2] ) } 
 
 sub load {
     use Baseliner::Utils;
@@ -129,7 +135,8 @@ sub load {
     else {  # dbic result source
         my $rs = Baseliner->model("Baseliner::$storage");
         my $storage_row = $rs->find( $mid );
-        $data = { %$data, $storage_row->get_columns };
+        my %tab_data = ref $storage_row ? $storage_row->get_columns : ();
+        $data = { %$data, %tab_data };
     }
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form;

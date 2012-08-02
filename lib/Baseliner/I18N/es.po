@@ -573,6 +573,12 @@ msgstr "Modificado"
 msgid "Created By"
 msgstr "Creado Por"
 
+msgid "Assignee"
+msgstr "Asignado A"
+
+msgid "Assigned To"
+msgstr "Asignado A"
+
 msgid "Modified By"
 msgstr "Modificado Por"
 
