@@ -6,18 +6,18 @@ Catalyst::Plugin::CommandLine - Catalyst plugin to make $c available also for sc
 
 =head1 SYNOPSIS
 
-	# in MyCatalystApp.pm
-	use Catalyst qw( CommandLine );
+    # in MyCatalystApp.pm
+    use Catalyst qw( CommandLine );
 
-	# in a script
-	use MyCatalystApp;
+    # in a script
+    use MyCatalystApp;
 
-	my $c = MyCatalystApp->commandline;
-	
-	$c->stash->{ ...
-	$c->model( ...
-	$c->controller( ...
-	$c->view( ...
+    my $c = MyCatalystApp->commandline;
+    
+    $c->stash->{ ...
+    $c->model( ...
+    $c->controller( ...
+    $c->view( ...
 
 =head1 DESCRIPTION
 
@@ -54,46 +54,46 @@ sub commandline {
     my $class;
     my $c;
 
-	# if called as constructor then contruct the object
+    # if called as constructor then contruct the object
     if (ref $_[0] eq '') {
-    	$class = shift;
-    	$c = $class->new();
+        $class = shift;
+        $c = $class->new();
     }
     # otherwise get "$self"
     else {
-	    $c = shift;
-	    
-	    # prevent reinitializing
-	    return $c if $c->commandline_mode;
+        $c = shift;
+        
+        # prevent reinitializing
+        return $c if $c->commandline_mode;
     }
     
-	my $uri_path = '/';
-	my $uri = \$uri_path;
-	bless $uri, 'URI::http';
+    my $uri_path = '/';
+    my $uri = \$uri_path;
+    bless $uri, 'URI::http';
 
-	my $base = \$c->config->{'base'};
-	bless $base, 'URI::http';
+    my $base = \$c->config->{'base'};
+    bless $base, 'URI::http';
 
-	$c->stash({ CommandLine => 1 });
-	$c->request(Catalyst::Request->new({
-		'cookies' => {},
-		'base'    => $base,
-		'uri'     => $uri,
-		'secure'  => 1,
-		'headers' => HTTP::Headers->new,
-	}));
-	$c->response(Catalyst::Response->new({
-		'cookies' => {},
-		'headers' => HTTP::Headers->new,
-	}));
+    $c->stash({ CommandLine => 1 });
+    $c->request(Catalyst::Request->new({
+        'cookies' => {},
+        'base'    => $base,
+        'uri'     => $uri,
+        'secure'  => 1,
+        'headers' => HTTP::Headers->new,
+    }));
+    $c->response(Catalyst::Response->new({
+        'cookies' => {},
+        'headers' => HTTP::Headers->new,
+    }));
 
-	# execute the root auto method
-	if( ref $c->controller('Root') ) {
-		$c->controller('Root')->auto($c)
-			if $c->controller('Root')->can('auto');
-	}	
+    # execute the root auto method
+    if( ref $c->controller('Root') ) {
+        $c->controller('Root')->auto($c)
+            if $c->controller('Root')->can('auto');
+    }	
 
-	return $c;
+    return $c;
 }
 
 
@@ -104,10 +104,10 @@ Returns true/false if catalyst is running in commandline mode.
 =cut
 
 sub commandline_mode {
-	my $c = shift;
-	
-	return 1 if ($c->stash and $c->stash->{'CommandLine'});
-	return 0;
+    my $c = shift;
+    
+    return 1 if ($c->stash and $c->stash->{'CommandLine'});
+    return 0;
 }
 
 1;

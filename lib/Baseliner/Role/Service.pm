@@ -5,11 +5,11 @@ has 'log' => (
     is      => 'rw',
     does    => 'Baseliner::Role::Logger',
     lazy    => 1,
-	default=>sub {
+    default=>sub {
         my $self = shift; 
-		require Baseliner::Core::Logger::Base;
-		return Baseliner::Core::Logger::Base->new();
-	}
+        require Baseliner::Core::Logger::Base;
+        return Baseliner::Core::Logger::Base->new();
+    }
 );
 
 has 'job' => ( 

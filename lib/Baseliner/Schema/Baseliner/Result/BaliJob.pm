@@ -414,15 +414,15 @@ sub stash {
             $stash = $self->bali_job_stashes->create({ stash => $data });
         }
         $stash->update;
-		$self->id_stash( $stash->id );
+        $self->id_stash( $stash->id );
         $self->update;
     } else {
-		return try {
-			my $stash = $self->job_stash; # the foreign key row
-			ref $stash ? $stash->stash : undef;
-		} catch {
-			undef;
-		};
+        return try {
+            my $stash = $self->job_stash; # the foreign key row
+            ref $stash ? $stash->stash : undef;
+        } catch {
+            undef;
+        };
     }
 }
 
@@ -445,30 +445,31 @@ sub stash_key {
             $self->stash( Baseliner::Utils::_dump( $stash ) );
         }
     }
+    return $stash;
 }
 
 sub last_log {
     my ( $self, $data ) = @_;
 
-	my $logs = $self->bali_log->search( undef, { order_by => 'id desc' })->first;
-	#my $max_id = $self->bali_log->get_column('id')->max;
-	return $logs; 
+    my $logs = $self->bali_log->search( undef, { order_by => 'id desc' })->first;
+    #my $max_id = $self->bali_log->get_column('id')->max;
+    return $logs; 
 }
 
 sub last_log_message {
-	my $self = shift;
-	use Baseliner::Core::DBI;
-	my $db = Baseliner::Core::DBI->new( dbi=>$self->result_source->storage->dbh );
-	my $id = $self->id;
-	return $db->value("select rtrim(text) from bali_log
-		where id=(select max(id) from bali_log bl where bl.id_job=$id and bl.lev<>'debug')");
-	#return bali_log->first->text
+    my $self = shift;
+    use Baseliner::Core::DBI;
+    my $db = Baseliner::Core::DBI->new( dbi=>$self->result_source->storage->dbh );
+    my $id = $self->id;
+    return $db->value("select rtrim(text) from bali_log
+        where id=(select max(id) from bali_log bl where bl.id_job=$id and bl.lev<>'debug')");
+    #return bali_log->first->text
 }
 
 # is_active means it is ready to run, or running
 sub is_active {
     my $self = shift;
-    return $self->status =~ m/^IN-EDIT|^READY|^RUNNING|^SUSPENDED/ ;
+    return $self->status =~ m/^IN-EDIT|^READY|^RUNNING|^PAUSED|^SUSPENDED|^WAITING/ ;
 }
 
 # returns the key column, if not exists then create it, commit and return

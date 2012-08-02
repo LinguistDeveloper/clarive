@@ -11,9 +11,9 @@ requires 'namespace';    # the package class it works with
 requires 'domain';       # for identifying its objects
 
 sub not_implemented {
-	my $self = shift;
-	my ($package, $filename, $line) = caller;
-	_throw $self->domain . " not implemented yet.";
+    my $self = shift;
+    my ($package, $filename, $line) = caller;
+    _throw $self->domain . " not implemented yet.";
 }
 
 # search? as in ->search( 'owner', /dude/ );

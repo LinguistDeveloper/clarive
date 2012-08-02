@@ -6,10 +6,10 @@ use lib "$FindBin::Bin/../lib";
 require Baseliner;
 if( !@ARGV ) {
 
-	print "Baseliner 1.0\n";
-	my $serv = Baseliner::Core::Registry->Services ;
-	print "===Available services===\n", join( "\n", map { $_ . " - " . ( $serv->{$_}->{name} || "$_ service" ) } keys %$serv );
-	exit 0;
+    print "Baseliner 1.0\n";
+    my $serv = Baseliner::Core::Registry->Services ;
+    print "===Available services===\n", join( "\n", map { $_ . " - " . ( $serv->{$_}->{name} || "$_ service" ) } keys %$serv );
+    exit 0;
 } 
 
 

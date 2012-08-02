@@ -34,7 +34,7 @@
     Baseliner.user_actions = function() {
         Ext.Ajax.request({
             //url: '/user/actions',
-	    url: '/user/info',
+        url: '/user/info',
             success: function(xhr) {
                 try {
                     var comp = eval(xhr.responseText);
@@ -43,8 +43,8 @@
                         autoScroll: true,
                         title: "<% _loc('User Actions') %>",
                         //height: 400,
-			autoHeight: true,
-			width: 730, 
+            autoHeight: true,
+            width: 730, 
                         items: [ { 
                                 //xtype: 'panel', 
                                 //layout: 'fit', 
@@ -180,77 +180,77 @@
             labelWidth: 100, 
             timeout: 120,
             defaults: { width: 175,
-			inputType:'password'
-	    },
-	    defaultType: 'textfield',	    
-	    items: [
-	    {
-	      fieldLabel: _('Old Password'),
-	      name: 'oldpass'
-	    },		
-	    {
-	      fieldLabel: _('New Password'),
-	      name: 'newpass',
-	      id: 'newpass'
-	    },{
-	      fieldLabel: _('Confirm Password'),
-	      name: 'pass-cfrm',
-	      vtype: 'password',
-	      initialPassField: 'newpass'
-	    }],
+            inputType:'password'
+        },
+        defaultType: 'textfield',	    
+        items: [
+        {
+          fieldLabel: _('Old Password'),
+          name: 'oldpass'
+        },		
+        {
+          fieldLabel: _('New Password'),
+          name: 'newpass',
+          id: 'newpass'
+        },{
+          fieldLabel: _('Confirm Password'),
+          name: 'pass-cfrm',
+          vtype: 'password',
+          initialPassField: 'newpass'
+        }],
             buttons: [
                 { text: _('Aceptar'),
                   handler: function() {
-			var form = change_pass_form.getForm();
-			
-			if (form.isValid()) {
-			       form.submit({
-				   success: function(f,a){
-					Baseliner.message(_('Success'), a.result.msg );
-					win_change.close(); 
-				   },
-				   failure: function(f,a){
-				       Ext.Msg.show({  
-					   title: _('Information'), 
-					   msg: a.result.msg , 
-					   buttons: Ext.Msg.OK, 
-					   icon: Ext.Msg.INFO
-				       }); 						
-				   }
-			       });
-			}
-		  }
+            var form = change_pass_form.getForm();
+            
+            if (form.isValid()) {
+                   form.submit({
+                   success: function(f,a){
+                    Baseliner.message(_('Success'), a.result.msg );
+                    win_change.close(); 
+                   },
+                   failure: function(f,a){
+                       Ext.Msg.show({  
+                       title: _('Information'), 
+                       msg: a.result.msg , 
+                       buttons: Ext.Msg.OK, 
+                       icon: Ext.Msg.INFO
+                       }); 						
+                   }
+                   });
+            }
+          }
                 },
                 { text: _('Cancelar'),
                   handler: function() {
-			    win_change.close();  
+                win_change.close();  
                            }
                 }
             ]	    
         });
        
         var win_change = new Ext.Window({
-	    id: 'win_change',
+        id: 'win_change',
             title: _('Change password'),
             width: 350,
-	    modal: true,
-	    autoHeight: true,
+        modal: true,
+        autoHeight: true,
             items: [ change_pass_form ]
          });
-	
+    
         win_change.show();       
     }
     
     Ext.apply(Ext.form.VTypes, {
-	password : function(val, field) {
-	    if (field.initialPassField) {
-		var pwd = Ext.getCmp(field.initialPassField);
-		return (val == pwd.getValue());
-	    }
-	    return true;
-	},
+    password : function(val, field) {
+        if (field.initialPassField) {
+        var pwd = Ext.getCmp(field.initialPassField);
+        return (val == pwd.getValue());
+        }
+        return true;
+    },
     
-	passwordText : 'Passwords do not match'
+    passwordText : 'Passwords do not match'
     });    
 
 
@@ -356,7 +356,7 @@
     Baseliner.addNewTabItem = function( comp, title, params ) {
         if( params == undefined ) params = { active: true };
         var tabpanel = Ext.getCmp('main-panel');
-		var tab;
+        var tab;
         if( params.tab_index != undefined ) {
             tab = tabpanel.insert( params.tab_index, comp );
         } else {
@@ -387,16 +387,16 @@
     //adds a new fragment component with html or <script>...</script>
     Baseliner.addNewTab = function(purl, ptitle, params, obj_tab ){
         //Baseliner.
-	    var tabpanel;
+        var tabpanel;
             var newpanel; 
-	    if(obj_tab) {
-		newpanel = new Ext.Panel({ layout: 'fit', title: ptitle, closable:true });
-		tabpanel = obj_tab;
-	    }
-	    else{
-		newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
-		tabpanel = Ext.getCmp('main-panel');
-	    }
+        if(obj_tab) {
+        newpanel = new Ext.Panel({ layout: 'fit', title: ptitle, closable:true });
+        tabpanel = obj_tab;
+        }
+        else{
+        newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
+        tabpanel = Ext.getCmp('main-panel');
+        }
         //var tabpanel = Ext.getCmp('main-panel');
         var tab = tabpanel.add( newpanel );
         tabpanel.setActiveTab(tab); 
@@ -537,12 +537,12 @@
 
     Baseliner.addNewTabSearch = function(purl, ptitle, params ){
             var search = new Ext.app.TextSearchField({
-							emptyText: _('<Enter your search string>')
+                            emptyText: _('<Enter your search string>')
                         });
             var tabpanel = new Ext.Panel({
                     layout: 'fit', 
                     autoLoad: {url: purl, scripts:true }, 
-					tbar: [
+                    tbar: [
                         search, 
                         { icon: '/static/images/icons/html.gif', style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
                             handler: function(){
@@ -996,11 +996,11 @@
     Baseliner.server_failure = function( text ) {
         //Ext.Msg.alert( _('Error'), _('Server communication failure. Check your connection.<br>%1', text) );
         // using ext to show an alert is ugly, since it can't find some of its images
-		if( text==undefined || text.length <= 40 ) {  //TODO Server communication failure
-			alert( _('Server communication failure. Check your connection.') );
-		} else {
+        if( text==undefined || text.length <= 40 ) {  //TODO Server communication failure
+            alert( _('Server communication failure. Check your connection.') );
+        } else {
             Baseliner.errorWin(_('Error Rendering Component'), text );
-		}
+        }
     };
 
     // grabs an Ext component and does a show() on it - ie. a Window

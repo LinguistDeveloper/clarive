@@ -72,7 +72,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
 });
 
 __PACKAGE__->add_columns(
-	qw(
+    qw(
         topic_mid 
         title
         created_on

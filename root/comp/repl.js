@@ -102,23 +102,23 @@ To do:
     var search = new Baseliner.SearchField({
         width: 180,
         params: {start: 0, limit: 100 },
-		onTrigger1Click : function(){ // clear button
-			if(this.hasSearch){
-				this.el.dom.value = '';
-			    var v = this.getRawValue();
+	    onTrigger1Click : function(){ // clear button
+		    if(this.hasSearch){
+			    this.el.dom.value = '';
+		        var v = this.getRawValue();
                 // reset tree
                 reload_root();
                 // hide clear button
-				this.triggers[0].hide();
-				this.hasSearch = false;
-			}
-		},
-		onTrigger2Click : function(){  // search button or enter
-			var v = this.getRawValue();
-			if(v.length < 1){ //>
-				this.onTrigger1Click();
-				return;
-			}
+			    this.triggers[0].hide();
+			    this.hasSearch = false;
+		    }
+	    },
+	    onTrigger2Click : function(){  // search button or enter
+		    var v = this.getRawValue();
+		    if(v.length < 1){ //>
+			    this.onTrigger1Click();
+			    return;
+		    }
 
             tree.root.collapseChildNodes();
             var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:'/static/images/icons/folder_magnify.png' });
@@ -137,9 +137,9 @@ To do:
                     }
                 });
             });
-			this.hasSearch = true;
-			this.triggers[0].show();
-		}
+		    this.hasSearch = true;
+		    this.triggers[0].show();
+	    }
     });
     search.on('click', function(){ alert('ok') });
     

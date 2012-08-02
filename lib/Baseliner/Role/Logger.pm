@@ -4,10 +4,10 @@ use Baseliner::Utils;
 use Carp;
 
 {
-	package Baseliner::Core::LogEntry;
-	use Moose;
-	has 'msg'   => ( is=>'rw', isa=>'Str', default=>'' );
-	has 'level' => ( is=>'rw', isa=>'Str', default=>'info' );
+    package Baseliner::Core::LogEntry;
+    use Moose;
+    has 'msg'   => ( is=>'rw', isa=>'Str', default=>'' );
+    has 'level' => ( is=>'rw', isa=>'Str', default=>'info' );
 }
 
 # unique logger id
@@ -32,10 +32,10 @@ has 'fatal_callback' => (
     default => sub { sub {
         my $self   = shift;
         my $method = $self->fatal_method;
-		no strict;
-		local $Carp::CarpLevel = _find_level;
+        no strict;
+        local $Carp::CarpLevel = _find_level;
         &$method(@_);
-	} }
+    } }
 );
 
 # also print

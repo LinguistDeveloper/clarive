@@ -6,8 +6,8 @@ has 'actions' => ( is=>'rw', isa=>'HashRef', default=>sub{{}} );
 
 sub username {
     my $self = shift;
-	return $self->id if( $self->id );
-	$self->next::method;
+    return $self->id if( $self->id );
+    $self->next::method;
 }
 
 sub reset_actions {

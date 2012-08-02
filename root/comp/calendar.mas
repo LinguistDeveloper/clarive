@@ -9,36 +9,36 @@
 <LINK rel="stylesheet" type="text/css" href="comun/estilos.css">
 <script language="JavaScript" src="comun/funciones.js"></script>
 <script language="JavaScript">
-	function goModificar() {
-		document.infForm.action="infventana_edit.jsp";
-		document.infForm.submit();
-	}
-	function editSlot(dia,ini,fin) {
-		window.open("infventana_edit.jsp?dia=" + dia + "&ini=" + ini + "&fin=" + fin,
-				 "ventana_edit",
- 				"height=220, width=380, left=400, top=300, location=no, menubar=no, "
-				+ "resizable=no, scrollbars=no, status=no, toolbar=no");
-	}
-	function editId(id) {
-		window.open("infventana_edit.jsp?id=" + id,
-				 "ventana_edit",
- 				"height=220, width=380, left=400, top=300, location=no, menubar=no, "
-				+ "resizable=no, scrollbars=no, status=no, toolbar=no");
-	}
+    function goModificar() {
+        document.infForm.action="infventana_edit.jsp";
+        document.infForm.submit();
+    }
+    function editSlot(dia,ini,fin) {
+        window.open("infventana_edit.jsp?dia=" + dia + "&ini=" + ini + "&fin=" + fin,
+                 "ventana_edit",
+                 "height=220, width=380, left=400, top=300, location=no, menubar=no, "
+                + "resizable=no, scrollbars=no, status=no, toolbar=no");
+    }
+    function editId(id) {
+        window.open("infventana_edit.jsp?id=" + id,
+                 "ventana_edit",
+                 "height=220, width=380, left=400, top=300, location=no, menubar=no, "
+                + "resizable=no, scrollbars=no, status=no, toolbar=no");
+    }
 </script>
 <style>
-	td.normal { background-color: #70E080; }
-	td.urgente { background-color: #F08080; }
-	td.nopase { background-color: #D0D0D0; }
-	td.normalHover { background-color: #80C080; }
-	td.urgenteHover { background-color: #C08080; }
-	td.nopaseHover { background-color: #B0B0B0; }
-	td.normalDes { background-color: #A0B0A0; }
-	td.urgenteDes { background-color: #B0A0A0; }
-	td.nopaseDes { background-color: #E0E0E0; }
-	td.normalDesHover { background-color: #80C080; }
-	td.urgenteDesHover { background-color: #C08080; }
-	td.nopaseDesHover { background-color: #B0B0B0; }
+    td.normal { background-color: #70E080; }
+    td.urgente { background-color: #F08080; }
+    td.nopase { background-color: #D0D0D0; }
+    td.normalHover { background-color: #80C080; }
+    td.urgenteHover { background-color: #C08080; }
+    td.nopaseHover { background-color: #B0B0B0; }
+    td.normalDes { background-color: #A0B0A0; }
+    td.urgenteDes { background-color: #B0A0A0; }
+    td.nopaseDes { background-color: #E0E0E0; }
+    td.normalDesHover { background-color: #80C080; }
+    td.urgenteDesHover { background-color: #C08080; }
+    td.nopaseDesHover { background-color: #B0B0B0; }
 </style>
 </HEAD>
 
@@ -55,11 +55,11 @@
 </TABLE>
 
 <%doc>
-		InfVentana iv = new InfVentana();
-		if( !iv.loadVentanas(conn) ) {
-			//no hay ventanas - creo una por lo menos pa que se visualice el grid
-			iv.addVentana("LUN","00:00","24:00","X","-1","1");
-		}
+        InfVentana iv = new InfVentana();
+        if( !iv.loadVentanas(conn) ) {
+            //no hay ventanas - creo una por lo menos pa que se visualice el grid
+            iv.addVentana("LUN","00:00","24:00","X","-1","1");
+        }
 
 </%doc>
 <DIV style="overflow:auto; height:70%; border-top:0; border-color:maroon; border-left:0; border-right:0; border-bottom:2;border-color:maroon; border-style:solid; background-color:" class=scrollchulo>
@@ -69,90 +69,90 @@
 </%perl>
 <%doc>
 
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMinimumIntegerDigits(2);
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMinimumIntegerDigits(2);
 
-		char lastctipo=0,ctipo=0; 
-		String lastid="-1";
-		boolean activa=false,lastactiva=false;
-		int ktipos=0,rowspan=0;
-		String[][] grid = new String[7][48];
-		for(int dd=0; dd<7; dd++) {
-			int row=0;
-			rowspan=0;
-			String lastHora="00:00";
-			String hora="";
-			for(int hh=0; hh<24; hh++) {
-				for(int mm=0; mm<60; mm+=30) {
-					if( hh>=24 && mm>0 ) break;
-					hora = nf.format(hh) + ":" + nf.format(mm);
-					InfVentana.Ventana ven = iv.getVentana(dd,hora);
-					String id = "-1";
-					ctipo='X';
-					activa=false;
-					if(ven!=null) {  
-						ctipo = ven.tipo.charAt(0);
-						id = ven.id;
-						activa=ven.activa;
-					}
-					if( lastctipo != ctipo ) {
-						if( ktipos!=0 ) {
-							//System.out.println("CTIPO=" + ctipo + ",LCTIPO=" + lastctipo + ",DIA=" + dd + ",LH=" + lastHora + ",HORA=" + hora  + ",HASTA=" + horaHasta );
-							String clase = (lastctipo=='N'?"normal":(lastctipo=='U'?"urgente":"nopase"));
-							clase += lastactiva?"":"Des";
-							String td ="<TD style='cursor:hand' rowspan="+rowspan
-									+ " onmouseover='javascript:this.className=\""+clase+"Hover\";' onmouseout='javascript:this.className=\""+clase+"\";' "
-									+ " align=center CLASS='"+clase+"' ";
-							if( lastctipo=='X' )
-								td+= " onclick='javascript:editSlot(\""+dd+"\",\""+lastHora+"\",\""+hora+"\")'>";
-							else 
-								td+= " onclick='javascript:editId("+lastid+")'>";
-						
-							td += lastHora+" - "+hora+"</TD>";						
-							grid[dd][row-rowspan]=td;
-							rowspan=0;
-						}
-						lastctipo=ctipo;
-						lastid=id;
-						lastactiva=activa;
-						lastHora=hora; 
-						ktipos++;
-					}
-					rowspan++; //cuenta cuántas filas han pasado, para el rowspan
-					row++;
-				}
-			}
-			//System.out.println("CTIPO=" + ctipo + ",LCTIPO=" + lastctipo + ",DIA=" + dd + ",LH=" + lastHora + ",HORA=" + hora + ",HASTA=" + horaHasta);
-			if( !lastHora.equals("24:00") ) {
-				String clase = (lastctipo=='N'?"normal":(lastctipo=='U'?"urgente":"nopase"));
-				clase += lastactiva?"":"Des";
-				String td = "<TD style='cursor:hand' "
-					+ " onmouseover='javascript:this.className=\""+clase+"Hover\";' onmouseout='javascript:this.className=\""+clase+"\";' "
-					+ " rowspan="+rowspan+" align=center CLASS='"+clase+"'";
-				if( lastctipo=='X' )
-					td+= " onclick='javascript:editSlot(\""+dd+"\",\""+lastHora+"\",\"24:00\")'>";
-				else 
-					td+= " onclick='javascript:editId("+lastid+")'>";
-				td+= lastHora+" - 24:00 </TD>";						
-				grid[dd][row-rowspan]=td;
-			}
-		}
+        char lastctipo=0,ctipo=0; 
+        String lastid="-1";
+        boolean activa=false,lastactiva=false;
+        int ktipos=0,rowspan=0;
+        String[][] grid = new String[7][48];
+        for(int dd=0; dd<7; dd++) {
+            int row=0;
+            rowspan=0;
+            String lastHora="00:00";
+            String hora="";
+            for(int hh=0; hh<24; hh++) {
+                for(int mm=0; mm<60; mm+=30) {
+                    if( hh>=24 && mm>0 ) break;
+                    hora = nf.format(hh) + ":" + nf.format(mm);
+                    InfVentana.Ventana ven = iv.getVentana(dd,hora);
+                    String id = "-1";
+                    ctipo='X';
+                    activa=false;
+                    if(ven!=null) {  
+                        ctipo = ven.tipo.charAt(0);
+                        id = ven.id;
+                        activa=ven.activa;
+                    }
+                    if( lastctipo != ctipo ) {
+                        if( ktipos!=0 ) {
+                            //System.out.println("CTIPO=" + ctipo + ",LCTIPO=" + lastctipo + ",DIA=" + dd + ",LH=" + lastHora + ",HORA=" + hora  + ",HASTA=" + horaHasta );
+                            String clase = (lastctipo=='N'?"normal":(lastctipo=='U'?"urgente":"nopase"));
+                            clase += lastactiva?"":"Des";
+                            String td ="<TD style='cursor:hand' rowspan="+rowspan
+                                    + " onmouseover='javascript:this.className=\""+clase+"Hover\";' onmouseout='javascript:this.className=\""+clase+"\";' "
+                                    + " align=center CLASS='"+clase+"' ";
+                            if( lastctipo=='X' )
+                                td+= " onclick='javascript:editSlot(\""+dd+"\",\""+lastHora+"\",\""+hora+"\")'>";
+                            else 
+                                td+= " onclick='javascript:editId("+lastid+")'>";
+                        
+                            td += lastHora+" - "+hora+"</TD>";						
+                            grid[dd][row-rowspan]=td;
+                            rowspan=0;
+                        }
+                        lastctipo=ctipo;
+                        lastid=id;
+                        lastactiva=activa;
+                        lastHora=hora; 
+                        ktipos++;
+                    }
+                    rowspan++; //cuenta cuántas filas han pasado, para el rowspan
+                    row++;
+                }
+            }
+            //System.out.println("CTIPO=" + ctipo + ",LCTIPO=" + lastctipo + ",DIA=" + dd + ",LH=" + lastHora + ",HORA=" + hora + ",HASTA=" + horaHasta);
+            if( !lastHora.equals("24:00") ) {
+                String clase = (lastctipo=='N'?"normal":(lastctipo=='U'?"urgente":"nopase"));
+                clase += lastactiva?"":"Des";
+                String td = "<TD style='cursor:hand' "
+                    + " onmouseover='javascript:this.className=\""+clase+"Hover\";' onmouseout='javascript:this.className=\""+clase+"\";' "
+                    + " rowspan="+rowspan+" align=center CLASS='"+clase+"'";
+                if( lastctipo=='X' )
+                    td+= " onclick='javascript:editSlot(\""+dd+"\",\""+lastHora+"\",\"24:00\")'>";
+                else 
+                    td+= " onclick='javascript:editId("+lastid+")'>";
+                td+= lastHora+" - 24:00 </TD>";						
+                grid[dd][row-rowspan]=td;
+            }
+        }
 </%doc>
-	<TABLE>
-		<TR><TD>&nbsp;</TD>
+    <TABLE>
+        <TR><TD>&nbsp;</TD>
 % print "<TH width='100'>$dd</TH>" for my $dd ( $c->stash->{weekdays} );
-		</TR>
+        </TR>
 <%perl>
-	my $grid = $c->stash->{grid};
-	for my $row ( 0..47 ) {
-		print "<TR style='height:3px;'><td rowspan=1></td>";
-		for my $dd ( 0..6 ) {
-			print $grid->{$dd}->{$row};	
-		}
-		print "</TR>";
-	}
+    my $grid = $c->stash->{grid};
+    for my $row ( 0..47 ) {
+        print "<TR style='height:3px;'><td rowspan=1></td>";
+        for my $dd ( 0..6 ) {
+            print $grid->{$dd}->{$row};	
+        }
+        print "</TR>";
+    }
 </%perl>
-	</TABLE>
+    </TABLE>
 
 </FORM>
 </DIV>
@@ -160,31 +160,31 @@
 <TR>
 <TR>
 <TD align="left">
-	<TABLE><TR>
-		<TD><B>Leyenda: </B>
-		<TD width=20>
-		<TD class="normal" width=15>
-		<TD>Ventana Normal
-		<TD width=15>
-		<TD class="urgente" width=15>
-		<TD>Ventana Urgente
-		<TD width=15>
-		<TD class="nopase" width=15>
-		<TD>No hay pases
-	</TR></TABLE>
+    <TABLE><TR>
+        <TD><B>Leyenda: </B>
+        <TD width=20>
+        <TD class="normal" width=15>
+        <TD>Ventana Normal
+        <TD width=15>
+        <TD class="urgente" width=15>
+        <TD>Ventana Urgente
+        <TD width=15>
+        <TD class="nopase" width=15>
+        <TD>No hay pases
+    </TR></TABLE>
 </TD>
 </TR>
 <TR>
 <TD align="left">
-	<TABLE><TR>
-		<TD><B>Leyenda: </B>
-		<TD width=20>
-		<TD class="normalDes" width=15>
-		<TD>Normal Inactiva
-		<TD width=15>
-		<TD class="urgenteDes" width=15>
-		<TD>Urgente Inactiva
-	</TR></TABLE>
+    <TABLE><TR>
+        <TD><B>Leyenda: </B>
+        <TD width=20>
+        <TD class="normalDes" width=15>
+        <TD>Normal Inactiva
+        <TD width=15>
+        <TD class="urgenteDes" width=15>
+        <TD>Urgente Inactiva
+    </TR></TABLE>
 </TD>
 </TR>
 <TD align="right">
@@ -203,22 +203,22 @@
         try { out.println( ex.getMessage());  } catch(Exception e1) {};
         ex.printStackTrace();
     }
-	finally {
-	    // Always make sure result sets and statements are closed,
-	    // and the connection is returned to the pool
-	    if (rs != null) {
-	      try { rs.close(); } catch (SQLException e) { ; }
-	      rs = null;
-	    }
-	    if (stmt != null) {
-	      try { stmt.close(); } catch (SQLException e) { ; }
-	      stmt = null;
-	    }
-	    if (conn != null) {
-	      try { conn.close(); } catch (SQLException e) { ; }
-	      conn = null;
-	    }
-	}    
+    finally {
+        // Always make sure result sets and statements are closed,
+        // and the connection is returned to the pool
+        if (rs != null) {
+          try { rs.close(); } catch (SQLException e) { ; }
+          rs = null;
+        }
+        if (stmt != null) {
+          try { stmt.close(); } catch (SQLException e) { ; }
+          stmt = null;
+        }
+        if (conn != null) {
+          try { conn.close(); } catch (SQLException e) { ; }
+          conn = null;
+        }
+    }    
 </%doc>
 </BODY>
 </HTML>

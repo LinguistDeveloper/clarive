@@ -109,11 +109,11 @@ sub list : Local {
     : undef;
     
     my $rs = $c->model('Baseliner::BaliBaseline')->search(  $where,
-							{ page => $page,
-							  rows => $limit,
-							  order_by => $sort ? "$sort $dir" : undef
-							}
-						);
+	                        { page => $page,
+	                          rows => $limit,
+	                          order_by => $sort ? "$sort $dir" : undef
+	                        }
+                        );
     
     my $pager = $rs->pager;
     $cnt = $pager->total_entries;
@@ -211,12 +211,12 @@ sub update_sequence{
     my $seq = 1;
     
     foreach my $sequence_service (_array $sequence_services){
-	my $service = Baseliner->model('Baseliner::BaliBaseline')->find( $sequence_service );
-	if( ref $service ) {
-	    $service->seq( $seq );
-	    $service->update;
-	}
-	$seq ++
+    my $service = Baseliner->model('Baseliner::BaliBaseline')->find( $sequence_service );
+    if( ref $service ) {
+        $service->seq( $seq );
+        $service->update;
+    }
+    $seq ++
     }
 }
 

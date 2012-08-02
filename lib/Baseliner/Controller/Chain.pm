@@ -41,9 +41,9 @@ sub list : Local {
 
 sub edit : Local {
     my ( $self, $c ) = @_;
-	my $p = $c->request->parameters;
-	$c->stash->{id_chain} = $p->{id};
-	$c->stash->{template} = '/comp/chain_edit.mas';
+    my $p = $c->request->parameters;
+    $c->stash->{id_chain} = $p->{id};
+    $c->stash->{template} = '/comp/chain_edit.mas';
 }
 
 # Added by Eric (q74613x) @ [may 24, 2011 12:53]
@@ -173,27 +173,27 @@ sub grid : Local {
 
 sub detail : Local {
     my ( $self, $c ) = @_;
-	my $p = $c->request->parameters;
+    my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
-	my @order_by;
-	if( $sort ) {
- 		@order_by = ("$sort $dir");
-		$sort ne 'seq' && push( @order_by, 'seq');
-	} else {
- 		@order_by = qw/step seq /;
-	}
-	my @rows;
-	my $rs = $c->model('Baseliner::BaliChainedService')->search({},{ order_by=>\@order_by }) ;
-	$rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
-	while( my $r = $rs->next ) {
-		warn _dump $r;
-		push @rows, $r;
-	}
-	$c->stash->{json} = {
-		totalCount=>scalar @rows,
-		data=>\@rows
-	};
-	$c->forward('View::JSON');
+    my @order_by;
+    if( $sort ) {
+         @order_by = ("$sort $dir");
+        $sort ne 'seq' && push( @order_by, 'seq');
+    } else {
+         @order_by = qw/step seq /;
+    }
+    my @rows;
+    my $rs = $c->model('Baseliner::BaliChainedService')->search({},{ order_by=>\@order_by }) ;
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    while( my $r = $rs->next ) {
+        warn _dump $r;
+        push @rows, $r;
+    }
+    $c->stash->{json} = {
+        totalCount=>scalar @rows,
+        data=>\@rows
+    };
+    $c->forward('View::JSON');
 }
 
 sub delete : Local {
@@ -203,11 +203,11 @@ sub delete : Local {
         my $chain = Baseliner->model('Baseliner::BaliChain')->find( $p->{id} );
         $chain->delete;
         $chain->update;
-		$c->stash->{json} = { success => \1, msg => _loc("Chain '%1' deleted", $p->{name} ) };
+        $c->stash->{json} = { success => \1, msg => _loc("Chain '%1' deleted", $p->{name} ) };
     } catch {
-		$c->stash->{json} = { success => \0, msg => _loc("Error deleting the chain '%1': %2", $p->{name}, shift) };
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting the chain '%1': %2", $p->{name}, shift) };
     };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 sub create : Local {
@@ -219,11 +219,11 @@ sub create : Local {
 
         $p->{active} = $p->{active} eq 'true' ? 1 : 0;
         my $chain = Baseliner->model('Baseliner::BaliChain')->create( $p );
-		$c->stash->{json} = { success => \1, msg => _loc("Chain '%1' created", $p->{name} ) };
+        $c->stash->{json} = { success => \1, msg => _loc("Chain '%1' created", $p->{name} ) };
     } catch {
-		$c->stash->{json} = { success => \0, msg => _loc("Error creating the chain '%1': %2", $p->{name}, shift) };
+        $c->stash->{json} = { success => \0, msg => _loc("Error creating the chain '%1': %2", $p->{name}, shift) };
     };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 sub add : Local {
@@ -243,13 +243,13 @@ sub change_active : Local {
     
     my $chain = Baseliner->model('Baseliner::BaliChain')->find( $id );
     if( ref $chain ) {
-	$chain->active( $action eq 'start' ? 1 : 0 );
-	$chain->update;
-	$c->stash->{json} = { success => \1, msg => _loc("Chain $msg_active") };
+    $chain->active( $action eq 'start' ? 1 : 0 );
+    $chain->update;
+    $c->stash->{json} = { success => \1, msg => _loc("Chain $msg_active") };
     }
     else{
-	
-	$c->stash->{json} = { success => \0, msg => _loc('Error modifying the chain') };
+    
+    $c->stash->{json} = { success => \0, msg => _loc('Error modifying the chain') };
     }
     $c->forward('View::JSON');
 }
@@ -323,61 +323,61 @@ sub update_service : Local {
     my $seq;
 
     given ($action) {
-	when ('add') {
-	    try{
-		$service = $c->model('Baseliner::BaliChainedService')->search({chain_id => $p->{id_chain}, step => $p->{step}},
-									      {order_by=> 'seq desc'})->first;
-		if(ref $service){
-		    $seq = $service -> seq + 1;
-		}else{
-		    $seq = 1
-		}
-		    
-	        $service = $c->model('Baseliner::BaliChainedService')->create(
-						    {
-							key	=> $p->{service},
-							chain_id => $p->{id_chain},
-							description => $p->{description},
-							seq => $seq,
-							step => $p->{step},
-							active 	=> $p->{state},
-							data => $p->{txt_conf} ? $p->{txt_conf}: undef
-						    });
-		    
-		$c->stash->{json} = { msg=>_loc('Service added'), success=>\1, service_id=> $service->id };
+    when ('add') {
+        try{
+        $service = $c->model('Baseliner::BaliChainedService')->search({chain_id => $p->{id_chain}, step => $p->{step}},
+			                              {order_by=> 'seq desc'})->first;
+        if(ref $service){
+            $seq = $service -> seq + 1;
+        }else{
+            $seq = 1
+        }
+            
+            $service = $c->model('Baseliner::BaliChainedService')->create(
+                            {
+	                        key	=> $p->{service},
+	                        chain_id => $p->{id_chain},
+	                        description => $p->{description},
+	                        seq => $seq,
+	                        step => $p->{step},
+	                        active 	=> $p->{state},
+	                        data => $p->{txt_conf} ? $p->{txt_conf}: undef
+                            });
+            
+        $c->stash->{json} = { msg=>_loc('Service added'), success=>\1, service_id=> $service->id };
 
-	    }
-	    catch{
-		$c->stash->{json} = { msg=>_loc('Error adding Service: %1', shift()), failure=>\1 }
-	    }
-	}
-	when ('update') {
-	    try{
-		my $id = $p->{id};
-		my $service = $c->model('Baseliner::BaliChainedService')->find( $id );
-		$service->description( $p->{description} );
-		$service->step( $p->{step} );
-		$service->active( $p->{state} );
-		
-		$service->update();
-		$c->stash->{json} = { msg=>_loc('Service modified'), success=>\1, service_id=> $service->id };
-	    }
-	    catch{
-		$c->stash->{json} = { msg=>_loc('Error modifying Service: %1', shift()), failure=>\1 };
-	    }
-	}
-	when ('delete') {
-	    my $id_chain = $p->{id};
-	    try{
-		my $row = $c->model('Baseliner::BaliChain')->find( $id_chain );
-		$row->delete;
-	
-		$c->stash->{json} = { success => \1, msg=>_loc('Chain deleted') };
-	    }
-	    catch{
-		$c->stash->{json} = { success => \0, msg=>_loc('Error deleting Chain') };
-	    }
-	}
+        }
+        catch{
+        $c->stash->{json} = { msg=>_loc('Error adding Service: %1', shift()), failure=>\1 }
+        }
+    }
+    when ('update') {
+        try{
+        my $id = $p->{id};
+        my $service = $c->model('Baseliner::BaliChainedService')->find( $id );
+        $service->description( $p->{description} );
+        $service->step( $p->{step} );
+        $service->active( $p->{state} );
+        
+        $service->update();
+        $c->stash->{json} = { msg=>_loc('Service modified'), success=>\1, service_id=> $service->id };
+        }
+        catch{
+        $c->stash->{json} = { msg=>_loc('Error modifying Service: %1', shift()), failure=>\1 };
+        }
+    }
+    when ('delete') {
+        my $id_chain = $p->{id};
+        try{
+        my $row = $c->model('Baseliner::BaliChain')->find( $id_chain );
+        $row->delete;
+    
+        $c->stash->{json} = { success => \1, msg=>_loc('Chain deleted') };
+        }
+        catch{
+        $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Chain') };
+        }
+    }
     }
     
     $c->forward('View::JSON');
@@ -411,9 +411,9 @@ sub getconfig : Local {
     my $txtconfig;
     my $config_key = try { $c->model('Registry')->get( $id )->{registry_node}->{param}->{config} };
     if( $config_key ) {
-	$txtconfig = config_get( $config_key );
+    $txtconfig = config_get( $config_key );
     } else {
-	$txtconfig = undef ;
+    $txtconfig = undef ;
     };
      
     $c->stash->{json} = { success => \1, msg => _loc("Chain txtconfig"), yaml => $txtconfig?_dump($txtconfig):undef };
@@ -428,12 +428,12 @@ sub update_conf : Local {
     
     my $service = Baseliner->model('Baseliner::BaliChainedService')->find( $id );
     if( ref $service ) {
-	$service->data( $p->{conf} );
-	$service->update;
-	$c->stash->{json} = { success => \1, msg => _loc("Configuration changed") };
+    $service->data( $p->{conf} );
+    $service->update;
+    $c->stash->{json} = { success => \1, msg => _loc("Configuration changed") };
     }
     else{
-	$c->stash->{json} = { success => \0, msg => _loc('Error changing the configuration') };
+    $c->stash->{json} = { success => \0, msg => _loc('Error changing the configuration') };
     }
     $c->forward('View::JSON');
 }
@@ -445,12 +445,12 @@ sub update_sequence : Local {
     my $seq = 1;
     
     foreach my $sequence_service (_array $sequence_services){
-	my $service = Baseliner->model('Baseliner::BaliChainedService')->find( $sequence_service );
-	if( ref $service ) {
-	    $service->seq( $seq );
-	    $service->update;
-	}
-	$seq ++
+    my $service = Baseliner->model('Baseliner::BaliChainedService')->find( $sequence_service );
+    if( ref $service ) {
+        $service->seq( $seq );
+        $service->update;
+    }
+    $seq ++
     }
     $c->stash->{json} = { msg=>_loc('Sequence changed'), success=>\1 };
    

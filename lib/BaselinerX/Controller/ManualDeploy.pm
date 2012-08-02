@@ -6,7 +6,7 @@ use Baseliner::Sugar;
 use Try::Tiny;
 
 sub save : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $p = $c->request->params;
     try {
         $p->{name} or _throw(_loc("Missing parameter %1", 'name' ));

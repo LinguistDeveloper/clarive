@@ -8,19 +8,19 @@ use Baseliner::Core::Namespace;
 register_class 'namespace' => __PACKAGE__;
 
 register 'namespace.root' => {
-	name => 'Root Namespace',
-	root => '/',
-	handler => sub {
-		return [ new Baseliner::Core::Namespace({
-					ns      => '/',
-					ns_name => 'root',
-					ns_type => _loc( 'Root Namespace' ),
-					ns_id   => 0,
-					ns_parent => 0,
-					ns_data => {},
-				})
-		];
-	},
+    name => 'Root Namespace',
+    root => '/',
+    handler => sub {
+        return [ new Baseliner::Core::Namespace({
+                    ns      => '/',
+                    ns_name => 'root',
+                    ns_type => _loc( 'Root Namespace' ),
+                    ns_id   => 0,
+                    ns_parent => 0,
+                    ns_data => {},
+                })
+        ];
+    },
 };
 has 'name'    => ( is => 'rw', isa => 'Str' );
 has 'root'    => ( is => 'rw', isa => 'Str' );
@@ -41,14 +41,14 @@ sub BUILD {
 sub get {
     my $self = shift;
     my $item = shift;
-	my $module = $self->module;
+    my $module = $self->module;
 
     return $module->new->get( $item ); #$finder->( bless( $self, $module ), $item ); 
 }
 
 sub list {
     my $self = shift;
-	my $module = $self->module;
+    my $module = $self->module;
 
     if( my $handler = $self->handler ) {
         return $module->new->handler(); #return $handler->( bless($self, $module) ); 

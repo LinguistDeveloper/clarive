@@ -31,14 +31,14 @@
     
     <& /comp/search_field.mas &>
     
-	var init_buttons = function(action) {
-		eval('btn_edit.' + action + '()');
-		eval('btn_delete.' + action + '()');
-	}
+    var init_buttons = function(action) {
+	    eval('btn_edit.' + action + '()');
+	    eval('btn_delete.' + action + '()');
+    }
 
     var add_edit = function(rec) {
-		var win;
-		var title = 'Create baseline';
+	    var win;
+	    var title = 'Create baseline';
         
         store_baseline.load({params:{start:0 , limit: ps}});
         
@@ -65,7 +65,7 @@
         });
      
           
-    	grid_baseline.on('afterrender', function(grid, rowIndex, columnIndex, e) {
+        grid_baseline.on('afterrender', function(grid, rowIndex, columnIndex, e) {
             var ddrow = new Ext.dd.DropTarget(grid_baseline.getView().mainBody, {  
                ddGroup : 'mygrid-dd',  
                notifyDrop : function(dd, e, data){  
@@ -133,9 +133,9 @@
             icon:'/static/images/icons/door_out.png',
             cls: 'x-btn-text-icon',
             text: _('Close'),
-			handler: function() {
-				win.close();
-				//grid.getSelectionModel().clearSelections();
+		    handler: function() {
+			    win.close();
+			    //grid.getSelectionModel().clearSelections();
             }
         });
         
@@ -144,8 +144,8 @@
             cls: 'x-btn-text-icon',
             text: _('Save'),
             handler: function(){
-				var form = form_baseline.getForm();
-				var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+			    var form = form_baseline.getForm();
+			    var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
                 
                 var st = grid_baseline.getStore();  
                 var sequence_baseline = new Array();
@@ -153,7 +153,7 @@
                     sequence_baseline.push(rec.get('id'));
                 });                
 
-				if (form.isValid()) {
+			    if (form.isValid()) {
                         form.submit({
                             params: {action: action, sq: sequence_baseline },
                             success: function(f,a){
@@ -174,16 +174,16 @@
                                 }); 						
                             }
                         });
-				}    
+			    }    
             }
         });
 
-		//Para cuando se envia el formulario no coja el atributo emptytext de los textfields
-		Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
-		    Ext.applyIf(this.options, {
-			submitEmptyText:false
-		    });
-		});
+	    //Para cuando se envia el formulario no coja el atributo emptytext de los textfields
+	    Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+	        Ext.applyIf(this.options, {
+		    submitEmptyText:false
+	        });
+	    });
 
         var form_baseline = new Ext.FormPanel({
             url: '/baseline/update',
@@ -206,12 +206,12 @@
             ]
         });       
 
-		if(rec){
-			var ff = form_baseline.getForm();
-			ff.loadRecord( rec );
-			title = 'Edit baseline';
-		}
-	
+	    if(rec){
+		    var ff = form_baseline.getForm();
+		    ff.loadRecord( rec );
+		    title = 'Edit baseline';
+	    }
+    
  
         win = new Ext.Window({
             title: _(title),
@@ -221,7 +221,7 @@
             items: form_baseline
         });
  
-		win.show();
+	    win.show();
     };
     
     var btn_add = new Ext.Toolbar.Button({
@@ -278,47 +278,47 @@
         }
     });
 
-	// create the grid
-	var grid = new Ext.grid.GridPanel({
-		title: _('Baseline'),
-		header: false,
-		stripeRows: true,
-		autoScroll: true,
-		autoWidth: true,
-		store: store,
-		viewConfig: {forceFit: true},
-		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		loadMask:'true',
-		columns: [
+    // create the grid
+    var grid = new Ext.grid.GridPanel({
+	    title: _('Baseline'),
+	    header: false,
+	    stripeRows: true,
+	    autoScroll: true,
+	    autoWidth: true,
+	    store: store,
+	    viewConfig: {forceFit: true},
+	    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+	    loadMask:'true',
+	    columns: [
             { header: _('Baseline'), width: 200, dataIndex: 'bl', sortable: true },    
             { header: _('Name'), width: 200, dataIndex: 'name', sortable: true },    
             { header: _('Description'), width: 300, dataIndex: 'description', sortable: true }  
-		],
-		autoSizeColumns: true,
-		deferredRender:true,
-		bbar: new Ext.PagingToolbar({
-			store: store,
-			pageSize: ps,
-			displayInfo: true,
-			displayMsg: _('Rows {0} - {1} of {2}'),
-			emptyMsg: _('There are no rows available')
-		}),
-		tbar: [ _('Search') + ': ', ' ',
-				new Ext.app.SearchField({
-				store: store,
-				params: {start: 0, limit: ps},
-				emptyText: _('<Enter your search string>')
-			}),
-			btn_add,
-			btn_edit,
-			btn_delete,
-			'->'
-		]
-	});
+	    ],
+	    autoSizeColumns: true,
+	    deferredRender:true,
+	    bbar: new Ext.PagingToolbar({
+		    store: store,
+		    pageSize: ps,
+		    displayInfo: true,
+		    displayMsg: _('Rows {0} - {1} of {2}'),
+		    emptyMsg: _('There are no rows available')
+	    }),
+	    tbar: [ _('Search') + ': ', ' ',
+			    new Ext.app.SearchField({
+			    store: store,
+			    params: {start: 0, limit: ps},
+			    emptyText: _('<Enter your search string>')
+		    }),
+		    btn_add,
+		    btn_edit,
+		    btn_delete,
+		    '->'
+	    ]
+    });
     
-	grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-		init_buttons('enable');
-	});    
+    grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+	    init_buttons('enable');
+    });    
     
     return grid;
 })

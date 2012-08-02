@@ -16,12 +16,12 @@ register 'menu.tools.catalog' => {
 };
 
 sub grid : Local {
-	my ($self,$c)=@_;
-	$c->stash->{template} = '/comp/catalog_grid.js';
+    my ($self,$c)=@_;
+    $c->stash->{template} = '/comp/catalog_grid.js';
 }
 
 sub json : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my @data;
     my $p = $c->request->parameters;
     my $query = delete $p->{query};
@@ -53,7 +53,7 @@ sub json : Local {
         }
     }
     #@data = ( { type=>'Manual Deployment', description=>'Deploy Files Manually by manual intervention', for => 'Path: /J2EE', mapping=>'action: action.manual_deploy' });
-	$c->stash->{json} = {
+    $c->stash->{json} = {
         totalCount => scalar(@data),
         data => \@data,
     };
@@ -61,7 +61,7 @@ sub json : Local {
 }
 
 sub types : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my @data = map {
         {
             name => $_->catalog_name,
@@ -70,7 +70,7 @@ sub types : Local {
         }
     } sort { $a->catalog_seq <=> $b->catalog_seq }
         packages_that_do( 'Baseliner::Role::Catalog' ) ;
-	$c->stash->{json} = {
+    $c->stash->{json} = {
         totalCount => scalar(@data),
         data => \@data,
     };
@@ -78,7 +78,7 @@ sub types : Local {
 }
 
 sub delete : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $p = $c->request->parameters;
     try {
         my $pkg = $p->{pkg} or _throw 'Missing package';

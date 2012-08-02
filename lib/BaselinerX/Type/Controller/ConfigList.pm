@@ -8,61 +8,61 @@ BEGIN { extends 'Catalyst::Controller' };
 register 'menu.admin.config_list' => { label=>'Config List', url_comp=>'/configlist/grid', title=>'Config List', icon=>'/static/images/icons/config.gif' };
 
 sub grid : Local {
-	my ($self,$c)=@_;
-	$c->forward('/baseline/load_baselines');
-	$c->stash->{template} = '/comp/configlist/grid.mas';
+    my ($self,$c)=@_;
+    $c->forward('/baseline/load_baselines');
+    $c->stash->{template} = '/comp/configlist/grid.mas';
 }
 
 sub delete : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
-	try {
-		$c->model('ConfigStore')->delete( id=>$p->{id} );
-		$c->stash->{json} = { success => \1, msg => _loc("Config value %1 deleted", $$ ) };
-	} catch {
-		my $err = shift;
-		$c->stash->{json} = { success => \0, msg => _loc("Error deleting config value %1: %2", $p->{key}, $err ) };
-	};
-	$c->forward('View::JSON');	
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
+    try {
+        $c->model('ConfigStore')->delete( id=>$p->{id} );
+        $c->stash->{json} = { success => \1, msg => _loc("Config value %1 deleted", $$ ) };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting config value %1: %2", $p->{key}, $err ) };
+    };
+    $c->forward('View::JSON');	
 }
 
 sub resolve : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
-	try {
-		my $value = $c->model('ConfigStore')->get( $p->{key}, ns=>$p->{ns}, bl=>$p->{bl}, long_key=>1, value=>1 );
-		$c->stash->{json} = { success => \1, msg => $value };
-	} catch {
-		my $err = shift;
-		$c->stash->{json} = { success => \0, msg => _loc("Error deleting config value %1: %2", $p->{key}, $err ) };
-	};
-	$c->forward('View::JSON');	
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
+    try {
+        my $value = $c->model('ConfigStore')->get( $p->{key}, ns=>$p->{ns}, bl=>$p->{bl}, long_key=>1, value=>1 );
+        $c->stash->{json} = { success => \1, msg => $value };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting config value %1: %2", $p->{key}, $err ) };
+    };
+    $c->forward('View::JSON');	
 }
 
 sub update : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
-	try {
-		if( $p->{id} ) {
-			# update
-			$c->model('ConfigStore')->set( id=>$p->{id}, key=>$p->{key}, value=>$p->{value}, bl=>$p->{bl}, ns=>$p->{ns} );
-		} else {
-			# create
-			$c->model('ConfigStore')->set( key=>$p->{key}, value=>$p->{value}, bl=>$p->{bl}, ns=>$p->{ns} );
-		}
-		$c->stash->{json} = { success => \1, msg => _loc("Config value %1 saved", $p->{key} ) };
-	} catch {
-		my $err = shift;
-		$c->stash->{json} = { success => \0, msg => _loc("Error storing config value %1: %2", $$, $err ) };
-	};
-	$c->forward('View::JSON');	
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
+    try {
+        if( $p->{id} ) {
+            # update
+            $c->model('ConfigStore')->set( id=>$p->{id}, key=>$p->{key}, value=>$p->{value}, bl=>$p->{bl}, ns=>$p->{ns} );
+        } else {
+            # create
+            $c->model('ConfigStore')->set( key=>$p->{key}, value=>$p->{value}, bl=>$p->{bl}, ns=>$p->{ns} );
+        }
+        $c->stash->{json} = { success => \1, msg => _loc("Config value %1 saved", $p->{key} ) };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error storing config value %1: %2", $$, $err ) };
+    };
+    $c->forward('View::JSON');	
 }
 
 sub json : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
 
-	if( $p->{original} eq 'true' ) {
+    if( $p->{original} eq 'true' ) {
         $c->forward('json_original') ;
     } elsif( $p->{modified} eq 'true' ) {
         $c->forward('json_modified') ;
@@ -72,8 +72,8 @@ sub json : Local {
 }
 
 sub json_combined : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
     $sort ||= 'key';
     $dir ||= 'asc';
@@ -99,10 +99,10 @@ sub json_combined : Local {
         }
     }
     for( _array( $res2->{data} ) ) {
-		my $orig = $original{ $_->{key} };
+        my $orig = $original{ $_->{key} };
         next if ref $orig
-			&& $orig->{ns} eq $_->{ns}
-			&& $orig->{bl} eq $orig->{bl}; 
+            && $orig->{ns} eq $_->{ns}
+            && $orig->{bl} eq $orig->{bl}; 
         $_->{status} = 'missing';
         push @ret, $_;
     }
@@ -118,12 +118,12 @@ sub json_combined : Local {
         data =>  \@ret,
         totalCount => scalar @ret
     };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 sub json_original : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
     $start||=0;
     $limit||=50;
@@ -132,12 +132,12 @@ sub json_original : Local {
         data => $res->{data},
         totalCount => $res->{total},
     };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 sub json_modified : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
     $start||=0;
     $limit||=50;
@@ -146,21 +146,21 @@ sub json_modified : Local {
         data =>  $res->{data},
         totalCount => $res->{total},
     };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 # save to a file in /etc
 sub save : Local {
-	my ($self,$c)=@_;
-	my $p = $c->req->parameters;
-	try {
-		$c->model('ConfigStore')->export_to_file;
-		$c->stash->{json} = { success => \1, msg => _loc("Config data exported") };
-	} catch {
-		my $err = shift;
-		$c->stash->{json} = { success => \0, msg => _loc("Error exporting config data: %1", $err ) };
-	};
-	$c->forward('View::JSON');
+    my ($self,$c)=@_;
+    my $p = $c->req->parameters;
+    try {
+        $c->model('ConfigStore')->export_to_file;
+        $c->stash->{json} = { success => \1, msg => _loc("Config data exported") };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error exporting config data: %1", $err ) };
+    };
+    $c->forward('View::JSON');
 }
 
 

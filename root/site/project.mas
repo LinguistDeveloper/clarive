@@ -1,19 +1,19 @@
 <%args>
-	$id
+    $id
 </%args>
 <%perl>
 
     my $prj =Baseliner->model('Baseliner::BaliProject')->find( $id );
-	my $name = $prj->name;
-	my $appname = 'application/' . $name;
+    my $name = $prj->name;
+    my $appname = 'application/' . $name;
 
-	my $rs_items = Baseliner->model('Baseliner::BaliJobItems')->search({ application=>$appname },{ select=>[qw/id id_job application item/] } );
-	rs_hashref( $rs_items );
-	my %apps;
-	my %jobs;
-	for my $item (  $rs_items->all ) {
-		$apps{ $item->{application} }= $item->{id_job} ;
-	}
+    my $rs_items = Baseliner->model('Baseliner::BaliJobItems')->search({ application=>$appname },{ select=>[qw/id id_job application item/] } );
+    rs_hashref( $rs_items );
+    my %apps;
+    my %jobs;
+    for my $item (  $rs_items->all ) {
+	    $apps{ $item->{application} }= $item->{id_job} ;
+    }
 </%perl>
 
 
@@ -78,7 +78,7 @@
 }
 
 #project a {
-	color: #44a4f0;
+    color: #44a4f0;
 }
 
 #project tfoot {
@@ -168,11 +168,11 @@
 }
 
 /*
-	 Footer styles
+     Footer styles
 */
 
 /*
-	Body Styles
+    Body Styles
 */
 
 hr + hr {
@@ -180,21 +180,21 @@ hr + hr {
 }
 
 /*
-	Sidebar Styles
+    Sidebar Styles
 */
 
 #sidebar {
 }
 
 #sidebar ul {
-	list-style: none inside;
+    list-style: none inside;
   margin: 0px;
   padding: 0px;
 }
 
 #sidebar ul li {
-	text-transform: none;
-	padding-bottom: .5em;
+    text-transform: none;
+    padding-bottom: .5em;
 }
 
 #sidebar .search {
@@ -202,23 +202,23 @@ hr + hr {
 }
 
 ul.errors {
-	color: #000;
-	background: #fff url(/images/information.png) center no-repeat;
-	background-position: 15px 50%;
-	float: right;
-	width: 580px;
-	text-align: left;
-	padding: 5px;
-	padding-top: 10px;
-	padding-bottom: 10px;
-	margin: 0px;
-	margin-bottom: 20px;
-	list-style: none;
-	border: 2px solid #2a6fb5;
+    color: #000;
+    background: #fff url(/images/information.png) center no-repeat;
+    background-position: 15px 50%;
+    float: right;
+    width: 580px;
+    text-align: left;
+    padding: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin: 0px;
+    margin-bottom: 20px;
+    list-style: none;
+    border: 2px solid #2a6fb5;
 }
 
 ul.errors li {
-	padding-left: 40px;
+    padding-left: 40px;
 }
 
 /*
@@ -226,42 +226,42 @@ ul.errors li {
 */
 
 #flash_notice, #flash_warning, #flash_error, .document-flag, .document-info {
-	background-color: #f0f0f0;
-	background-repeat: no-repeat;
-	background-position: 15px 50%;
-	text-align: left;
-	padding: 10px 20px 10px 45px;
-	font-weight: bold;
-	border: 2px solid #cccccc;
-	margin-bottom: 10px;
+    background-color: #f0f0f0;
+    background-repeat: no-repeat;
+    background-position: 15px 50%;
+    text-align: left;
+    padding: 10px 20px 10px 45px;
+    font-weight: bold;
+    border: 2px solid #cccccc;
+    margin-bottom: 10px;
 }
 
 #flash_notice, #flash_warning {
-	background-color: #fff6bf;
-	border: 2px solid #ffd324;
+    background-color: #fff6bf;
+    border: 2px solid #ffd324;
 }
 
 #flash_notice {
   background-image: url(/images/simplebits/blue/info.gif);
-	background-color: #e5f4fd;
-	border: 2px solid #a8f4fd;
+    background-color: #e5f4fd;
+    border: 2px solid #a8f4fd;
 }
 
 #flash_warning {
   background-image: url(/images/simplebits/blue/info.gif);
-	background-color: #fff6bf;
-	border: 2px solid #ffd324;
+    background-color: #fff6bf;
+    border: 2px solid #ffd324;
 }
 
 #flash_error {
   background-image: url(/images/simplebits/red/exclamation.gif);
-	background-color: #fbe3e4;
-	border: 2px solid #fbc2c4;
+    background-color: #fbe3e4;
+    border: 2px solid #fbc2c4;
 }
 
 .document-flag, .document-info {
-	background-color: #f0f0f0;
-	border: 1px solid #cccccc;
+    background-color: #f0f0f0;
+    border: 1px solid #cccccc;
 }
 .document-flag {
   background-image: url(/images/simplebits/red/flag.gif);
@@ -270,61 +270,61 @@ ul.errors li {
   background-image: url(/images/simplebits/black/info.gif);
 }
 .user-summary img {
-	float: left;
-	margin-right: 5px;
+    float: left;
+    margin-right: 5px;
 }
 
 /*
-	Pagination Styles 
+    Pagination Styles 
 */
 
 #project .pagination {
-	font-size: 100%;
-	text-align: center;
-	padding: 3px;
-	margin: 3px;
+    font-size: 100%;
+    text-align: center;
+    padding: 3px;
+    margin: 3px;
 }
 #project .pagination a {
-	padding: 2px 5px 2px 5px;
-	margin: 2px;
-	text-decoration: none;
-	color: #44a4f0;
+    padding: 2px 5px 2px 5px;
+    margin: 2px;
+    text-decoration: none;
+    color: #44a4f0;
 }
 #project .pagination a:hover, .pagination a:active {
-	background-color: #44a4f0;
-	color: #fff;
+    background-color: #44a4f0;
+    color: #fff;
 }
 #project .pagination span.current {
-	font-size: 100%;
-	padding: 2px 5px 2px 5px;
-	margin: 2px;
-	font-weight: bold;
-	padding: 2px 5px 2px 5px;
-	background-color: #fff;
-	color: #000;
+    font-size: 100%;
+    padding: 2px 5px 2px 5px;
+    margin: 2px;
+    font-weight: bold;
+    padding: 2px 5px 2px 5px;
+    background-color: #fff;
+    color: #000;
 }
 #project .pagination span.disabled {
-	font-size: 100%;
-	padding: 2px 5px 2px 5px;
-	margin: 2px;
-	color: #ccc;
+    font-size: 100%;
+    padding: 2px 5px 2px 5px;
+    margin: 2px;
+    color: #ccc;
 }
 
 #reset {
-	clear: both;
-	margin: 0;
-	padding: 0;
+    clear: both;
+    margin: 0;
+    padding: 0;
 }
 
 
 
 #project .benchmark-desc {
-	font-size: 10px;
+    font-size: 10px;
 }
 
 #project .benchmark-desc, .submit-time {
   font-weight: normal;
-	color: #777;
+    color: #777;
 }
 
 #project .submit-time {
@@ -399,14 +399,14 @@ ul.errors li {
 }
 
 #project .benchmark-bar {
-	background-color: #44a4f0;
-	background-image: url(/static/images/graph-background.png);
-	height: 30px;
+    background-color: #44a4f0;
+    background-image: url(/static/images/graph-background.png);
+    height: 30px;
 }
 
 #project .alt .benchmark-bar {
-	background-color: #c0fd6b;
-	background-image: url(/static/images/graph-background2.png);
+    background-color: #c0fd6b;
+    background-image: url(/static/images/graph-background2.png);
 }
 
 #project .summary-table * .benchmark-bar {
@@ -414,11 +414,11 @@ ul.errors li {
 }
 
 /*
-	Table Styles
+    Table Styles
 */
 
 .browse_table, .summary-table, .system-table, .benchmark-table {
-	width: 100%;
+    width: 100%;
 }
 
 .browse_table {
@@ -426,7 +426,7 @@ ul.errors li {
 }
 
 .system-table, .benchmark-table {
-	margin-bottom: 18px;
+    margin-bottom: 18px;
 }
 
 .summary-table {
@@ -440,15 +440,15 @@ ul.errors li {
 }
 
 .browse_table * th, .summary-table * th, .system-table * th, .benchmark-table * th {
-	padding: 8px;
-	line-height: 1.5em;
-	text-align: left;
-	font-weight: bold;
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
 }
 
 .browse_table * td, .summary-table * td, .system-table * td, .benchmark-table * td {
-	padding: 6px;
-	line-height: 1.2em;
+    padding: 6px;
+    line-height: 1.2em;
 }
 
 .browse_table * td {
@@ -456,7 +456,7 @@ ul.errors li {
 }
 
 /*
-	Summary Table
+    Summary Table
 */
 
 .summary-table * th {
@@ -464,11 +464,11 @@ ul.errors li {
 }
 
 .summary-table * .section-name {
-	width: 20%;
+    width: 20%;
 }
 
 .summary-table * .section-graph {
-	width: 40%;
+    width: 40%;
 }
 
 .summary-table * .section-score {
@@ -476,29 +476,29 @@ ul.errors li {
 }
 
 .summary-table * th {
-	border-top: #ccc 1px solid;
-	border-bottom: #ccc 1px solid;
+    border-top: #ccc 1px solid;
+    border-bottom: #ccc 1px solid;
 }
 
 .summary-table * th.first-child {
-	border-left: #ccc 1px solid;
+    border-left: #ccc 1px solid;
 }
 
 .summary-table * th.last-child {
-	border-right: #ccc 1px solid;
+    border-right: #ccc 1px solid;
 }
 
 .summary-table * td.first-child, .summary-table * td.last-child {
-	border-left: #ccc 1px solid;
+    border-left: #ccc 1px solid;
   border-right: #ccc 1px solid;
 }
 
 .summary-table * tr.last-child td {
-	border-bottom: #ccc 1px solid;
+    border-bottom: #ccc 1px solid;
 }
 
 .summary-table * td.section-name {
-	background-color: #f0f0f0;
+    background-color: #f0f0f0;
 }
 
 .summary-table * td.section-description {
@@ -506,17 +506,17 @@ ul.errors li {
 
 .summary-table * td.section-score {
   width: 15%;
-	text-align: center;
+    text-align: center;
 }
 
 .browse_table * td.overall-score, .summary-table * td.overall-score {
   width: 25%;
   font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
-	font-size: 48px;
-	text-align: center;
-	vertical-align: middle;
-	border-right: #ccc 1px solid;
-	border-bottom: #ccc 1px solid;
+    font-size: 48px;
+    text-align: center;
+    vertical-align: middle;
+    border-right: #ccc 1px solid;
+    border-bottom: #ccc 1px solid;
 }
 
 .browse_table * td.overall-score {
@@ -524,25 +524,25 @@ ul.errors li {
 }
 
 .summary-table tfoot * td {
-	border-left: #ccc 1px solid;
-	border-right: #ccc 1px solid;
-	border-bottom: #ccc 1px solid;
+    border-left: #ccc 1px solid;
+    border-right: #ccc 1px solid;
+    border-bottom: #ccc 1px solid;
 }
 
 /*
-	Browse Table and System Table
+    Browse Table and System Table
 */
 
 .browse_table, .system-table {
-	border-collapse: collapse;
-	border: #ccc 1px solid;
+    border-collapse: collapse;
+    border: #ccc 1px solid;
 }
 
 .system-table * td {
 }
 
 .browse_table * .system-name, .browse_table * .header, .system-table * .system-name {
-	background-color: #f0f0f0;
+    background-color: #f0f0f0;
 }
 
 
@@ -591,38 +591,38 @@ ul.errors li {
 }
 
 /* 
-	Benchmark Table
+    Benchmark Table
 */
 
 .benchmark-table {
-	border-collapse: collapse;
-	border: #ccc 1px solid;					
+    border-collapse: collapse;
+    border: #ccc 1px solid;					
 }
 
 .benchmark-table * th {
-	background-color: #fff !important;
-	border-width: 0px 0px 1px 0px !important; 
-	border-bottom: #ccc 1px solid !important;
-	font-size: 125%;
+    background-color: #fff !important;
+    border-width: 0px 0px 1px 0px !important; 
+    border-bottom: #ccc 1px solid !important;
+    font-size: 125%;
 }
 
 .benchmark-table * .benchmark-name {
-	width: 20%;
-	background-color: #f0f0f0;
+    width: 20%;
+    background-color: #f0f0f0;
 }
 
 .benchmark-table * .benchmark-score {
-	border-top: #ccc 1px solid;
-	border-left: #ccc 1px solid;										
-	border-bottom: #ccc 1px solid;					
-	width: 20%;
+    border-top: #ccc 1px solid;
+    border-left: #ccc 1px solid;										
+    border-bottom: #ccc 1px solid;					
+    width: 20%;
 }
 
 .benchmark-table * .benchmark-graph {
-	border-top: #ccc 1px solid;
-	border-right: #ccc 1px solid;										
-	border-bottom: #ccc 1px solid;										
-	width: 60%;
+    border-top: #ccc 1px solid;
+    border-right: #ccc 1px solid;										
+    border-bottom: #ccc 1px solid;										
+    width: 60%;
 }
 
 </style>
@@ -640,51 +640,51 @@ ul.errors li {
 <h3>Summary</h3>
 
 <table class="summary-table" cellspacing="0">
-	<thead>
-		<tr>
-			<th class="first-child section-name">Section</th>
-			<th class="section-description">Description</th>
+    <thead>
+	    <tr>
+		    <th class="first-child section-name">Section</th>
+		    <th class="section-description">Description</th>
 
-			<th class="section-score">Score</th>
-			<th class="last-child">Geekbench Score</th>
-		</tr>
-	</thead>
+		    <th class="section-score">Score</th>
+		    <th class="last-child">Geekbench Score</th>
+	    </tr>
+    </thead>
 
-	<tfoot>
-		<tr>
-			<td colspan="4">
+    <tfoot>
+	    <tr>
+		    <td colspan="4">
 
-				Geekbench 2.1.8 for Mac OS X x86 (32-bit)
-			</td>
-		</tr>
-	</tfoot>
+			    Geekbench 2.1.8 for Mac OS X x86 (32-bit)
+		    </td>
+	    </tr>
+    </tfoot>
 
-	<tbody>
-		<tr>
-			<td class="first-child section-name">Integer</td>
-			<td class="section-description">Processor integer performance</td>
+    <tbody>
+	    <tr>
+		    <td class="first-child section-name">Integer</td>
+		    <td class="section-description">Processor integer performance</td>
 
-			<td class="last-child section-score">2185</td>
-			<td class="overall-score" rowspan="4">2692</td>
-		</tr>
-		<tr>
-			<td class="first-child section-name">Floating Point</td>
-			<td class="section-description">Processor floating point performance</td>
-			<td class="last-child section-score">3659</td>
+		    <td class="last-child section-score">2185</td>
+		    <td class="overall-score" rowspan="4">2692</td>
+	    </tr>
+	    <tr>
+		    <td class="first-child section-name">Floating Point</td>
+		    <td class="section-description">Processor floating point performance</td>
+		    <td class="last-child section-score">3659</td>
 
-		</tr>
-		<tr>
-			<td class="first-child section-name">Memory</td>
-			<td class="section-description">Memory performance</td>
-			<td class="last-child section-score">2408</td>
-		</tr>
-		<tr class="last-child">
+	    </tr>
+	    <tr>
+		    <td class="first-child section-name">Memory</td>
+		    <td class="section-description">Memory performance</td>
+		    <td class="last-child section-score">2408</td>
+	    </tr>
+	    <tr class="last-child">
 
-			<td class="first-child section-name">Stream</td>
-			<td class="section-description">Memory bandwidth performance</td>
-			<td class="last-child section-score">1659</td>
-		</tr>
-	</tbody>
+		    <td class="first-child section-name">Stream</td>
+		    <td class="section-description">Memory bandwidth performance</td>
+		    <td class="last-child section-score">1659</td>
+	    </tr>
+    </tbody>
 </table>
 
   
@@ -762,35 +762,35 @@ ul.errors li {
 
 <h3>Pases</h3>
 <table class="benchmark-table" cellspacing="0">
-	<thead>
-		<tr>
-			<th class="benchmark-name first-child">Floating Point</th>
-			<th class="benchmark-score alt">3659</th>
-			<th class="benchmark-graph last-child"></th>
+    <thead>
+	    <tr>
+		    <th class="benchmark-name first-child">Floating Point</th>
+		    <th class="benchmark-score alt">3659</th>
+		    <th class="benchmark-graph last-child"></th>
 
-		</tr>
-	</thead>
-	<tbody>	
-			
+	    </tr>
+    </thead>
+    <tbody>	
+		    
 % my $cnt = 0;
 % for my $job ( keys %jobs ) {
 %    my $alt = $cnt % 2;
-				<tr class="<% $alt ? 'alt' : '' %>">
-					<td class="benchmark-name">Mandelbrot<br />
-						<span class="benchmark-desc">single-threaded scalar</span>
-					</td>
-					<td class="benchmark-score alt">1387<br />
+			    <tr class="<% $alt ? 'alt' : '' %>">
+				    <td class="benchmark-name">Mandelbrot<br />
+					    <span class="benchmark-desc">single-threaded scalar</span>
+				    </td>
+				    <td class="benchmark-score alt">1387<br />
 
-						<span class="benchmark-desc">923.0 Mflops</span>
-					</td>
-					<td class="benchmark-graph">
-						<div class="benchmark-bar" style="width:13%">&nbsp;</div>
-					</td>
-				</tr>
+					    <span class="benchmark-desc">923.0 Mflops</span>
+				    </td>
+				    <td class="benchmark-graph">
+					    <div class="benchmark-bar" style="width:13%">&nbsp;</div>
+				    </td>
+			    </tr>
 % }
-			
-		
-	</tbody>
+		    
+	    
+    </tbody>
 </table>
 
 </div>

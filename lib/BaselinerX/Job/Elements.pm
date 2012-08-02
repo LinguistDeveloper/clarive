@@ -25,47 +25,47 @@ sub push_element { push_elements(@_) }
 sub push_elements {
     my $self = shift;
     $self->elements( [ _array($self->elements) , @_ ] )
-		if( scalar @_ );
+        if( scalar @_ );
 }
 
 sub recent_elements {
-	my ( $self ) = @_;
-	my @elements;
-	my %hash = $self->hash;
-	for my $element ( @_ ) {
-		if( $hash{ $element->long_path } ) {
-			if( $self->is_more_recent( $element ) ) { 
-				push @elements, $element;
-			}
-		} else {
-			push @elements, $element;
-		}
-	}
-	return @elements;
+    my ( $self ) = @_;
+    my @elements;
+    my %hash = $self->hash;
+    for my $element ( @_ ) {
+        if( $hash{ $element->long_path } ) {
+            if( $self->is_more_recent( $element ) ) { 
+                push @elements, $element;
+            }
+        } else {
+            push @elements, $element;
+        }
+    }
+    return @elements;
 }
 
 sub hash_by_path {
-	my ( $self ) = @_;
-	my %hash;
-	for my $element ( _array $self->elements ) {
-		my $key = $element->long_path;
-		$hash{ $key } = $element;	
-	}
-	return %hash;
+    my ( $self ) = @_;
+    my %hash;
+    for my $element ( _array $self->elements ) {
+        my $key = $element->long_path;
+        $hash{ $key } = $element;	
+    }
+    return %hash;
 }
 
 sub hash_by_version {
-	my ( $self ) = @_;
-	my %hash;
-	for my $element ( _array $self->elements ) {
-		my $key = $element->long_path;
-		$hash{ $key } = $element;	
-	}
-	return %hash;
+    my ( $self ) = @_;
+    my %hash;
+    for my $element ( _array $self->elements ) {
+        my $key = $element->long_path;
+        $hash{ $key } = $element;	
+    }
+    return %hash;
 }
 
 sub paths {
-	my $self = shift;
+    my $self = shift;
     map { $_->filepath } $self->all;
 }
 
@@ -78,13 +78,13 @@ that do not match a given path regex.
 
 =cut
 sub exclude_regex {
-	my $self = shift;
+    my $self = shift;
     my $split = $self->split_on_regex( @_ );
     return __PACKAGE__->new( elements=>$split->{dont} );
 }
 
 sub include_regex {
-	my $self = shift;
+    my $self = shift;
     my $split = $self->split_on_regex( @_ );
     return __PACKAGE__->new( elements=>$split->{match} );
 }
@@ -102,7 +102,7 @@ one array with elements that didn't match any.
 
 =cut
 sub split_on_regex {
-	my $self = shift;
+    my $self = shift;
     my @match;
     my @dont;
     my @regexes = map { ref $_ eq 'Regexp' ? $_ : qr/$_/ } @_;
@@ -122,7 +122,7 @@ Returns a new clone of elements that match a given path regex.
 
 =cut
 sub cut_to_path_regex {
-	my ( $self, $regex ) = @_;
+    my ( $self, $regex ) = @_;
     _throw 'Missing argument regex' unless $regex;
     my @ok;
     $regex = qr/$regex/ unless ref $regex eq 'Regexp';
@@ -133,7 +133,7 @@ sub cut_to_path_regex {
 }
 
 sub extract_variables {
-	my ( $self, $regex ) = @_;
+    my ( $self, $regex ) = @_;
     _throw 'Missing argument regex' unless $regex;
     my @ok;
     my %vars = ();
@@ -164,9 +164,9 @@ sub list_part {
             my %parts = $e->path_parts;
             push @list, $parts{$part} if $parts{$part};
             try {  ## may die if method $part doesn't exist
-				if( $e->meta->has_method($part) ) {
-					push @list, $e->$part;
-				}
+                if( $e->meta->has_method($part) ) {
+                    push @list, $e->$part;
+                }
             } catch {};
         }
         return _unique @list; 
@@ -212,7 +212,7 @@ sub subset {
         if( $parts{$part} eq $value ) {
             push @subset, $e;
         } else {
-			next unless $e->meta->has_method($part);
+            next unless $e->meta->has_method($part);
             eval {  ## may die if method $part doesn't exist
                 push @subset, $e if $e->$part eq $value;
             };
@@ -236,11 +236,11 @@ elsif( $elems_sin->count > 0 ) { hay parcial }
 sub split_by_extension {
     my ($self, @exts ) = @_;
     my (@match,@unmatch);
-	my $exts_str = '(.' . join( '$)|(.', @exts ) . ')';
-	my $re = qr/$exts_str/;
+    my $exts_str = '(.' . join( '$)|(.', @exts ) . ')';
+    my $re = qr/$exts_str/;
     for my $e ( _array $self->elements ) {
-		if( $e->name =~ $re ) { push( @match, $e ); next }
-		push @unmatch, $e;
+        if( $e->name =~ $re ) { push( @match, $e ); next }
+        push @unmatch, $e;
     }
     my $matching = __PACKAGE__->new( elements=>\@match );
     my $unmatching = __PACKAGE__->new( elements=>\@unmatch );

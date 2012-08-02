@@ -89,17 +89,17 @@ Ext.onReady(function(){
         {header: _('Description'), width: 350, sortable: true, dataIndex: 'text'}
     ]);
 % unless( $c->stash->{id} ) {
-	// it's a new form
+    // it's a new form
     var ds_grid = new Ext.data.Store({});
 % } else {
-	// get form contents
-	var ds_grid = new Ext.data.JsonStore({
+    // get form contents
+    var ds_grid = new Ext.data.JsonStore({
             root: 'data' , 
             remoteSort: false,
             baseParams: { id: id_release },
             url: '/release/contents/json',
             fields: [ 'item', 'provider', 'ns', 'ns_name', 'ns_type', 'provider', 'date', 'user', 'icon' ]
-	});
+    });
     ds_grid.load();
 % }
 
@@ -345,14 +345,14 @@ Ext.onReady(function(){
 
     var field_id = new Ext.form.Hidden({ name: 'id_rel', value: '<% $c->stash->{id} %>' });
 
-	var store_tasks =new Ext.data.JsonStore({
-		root: 'data', 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/tasks/json',
-		fields: [ 'name', 'category', 'assigned', 'description' ]
-	});
+    var store_tasks =new Ext.data.JsonStore({
+        root: 'data', 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id', 
+        url: '/tasks/json',
+        fields: [ 'name', 'category', 'assigned', 'description' ]
+    });
     
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var conf;
@@ -523,7 +523,7 @@ Ext.onReady(function(){
                     buttons: { cancel: true },
                     title: _('Blocked'),
                     msg: _('Item cannot be added to release') + ":<br>" + record.get('why_not')
-				});
+                });
                 return false;
             }
             var rfc = record.get('rfc');

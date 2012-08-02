@@ -29,11 +29,11 @@ register 'service.job.dummy' => {
 };
 
 register 'config.job.daemon' => {
-	metadata=> [
-		{  id=>'frequency', label=>'Job Server Frequency', type=>'int', default=>10 },
-		{  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'spawn' },
-		{  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
-	]
+    metadata=> [
+        {  id=>'frequency', label=>'Job Server Frequency', type=>'int', default=>10 },
+        {  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'spawn' },
+        {  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
+    ]
 };
 
 
@@ -194,7 +194,7 @@ sub check_job_expired {
     while( my $row = $rs->next ) {
         _log( _loc("Job %1 expired (maxstartime=%2)" , $row->name, $row->maxstarttime ) );
         $row->status('EXPIRED');
-	$row->endtime( _now );
+        $row->endtime( _now );
         $row->update;
     }
     $rs = $c->model('Baseliner::BaliJob')->search({ status => 'RUNNING', pid=>{'>', 0} });

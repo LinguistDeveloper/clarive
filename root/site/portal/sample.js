@@ -27,7 +27,7 @@ Ext.onReady(function(){
         }
     }];
 
-	var portlet_content = 'naaaaaaaaaaaa';
+    var portlet_content = 'naaaaaaaaaaaa';
 
     var viewport = new Ext.Viewport({
         layout:'border',

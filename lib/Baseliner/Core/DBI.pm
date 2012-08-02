@@ -31,11 +31,11 @@ sub BUILD {
     if( ref $self->dbi ) {
         $self->model('');
     }
-	# set params, if any
-	my %dbh_params = %{ $self->dbh_params || {} };
- 	for my $param ( %dbh_params ) {
- 		$self->dbh->{$param} =  $dbh_params{$param};
-	}
+    # set params, if any
+    my %dbh_params = %{ $self->dbh_params || {} };
+     for my $param ( %dbh_params ) {
+         $self->dbh->{$param} =  $dbh_params{$param};
+    }
 }
 
 sub dbh {
@@ -118,35 +118,35 @@ sub array {
 
 sub ora_func {
     my ($self,$sql) = @_;
-	my $ret = ();
-	my $stmt = $self->dbh->prepare("BEGIN 
-					$sql;
-				END;");
-				
+    my $ret = ();
+    my $stmt = $self->dbh->prepare("BEGIN 
+                    $sql;
+                END;");
+                
     #$stmt->bind_param_inout(1, \$ret, 1 );
-	$stmt->execute;
-	return $ret;
+    $stmt->execute;
+    return $ret;
 }
 
 sub ora_proc {
     my ($self,$sql) = @_;
-	my $stmt = $self->dbh->prepare("BEGIN 
-					:1 := $sql;
-				END;");
+    my $stmt = $self->dbh->prepare("BEGIN 
+                    :1 := $sql;
+                END;");
     my $sth2='';
     my %ret;
     eval q{ require DBD::Oracle qw(:ora_types) };
     _throw(__PACKAGE__.": Oracle perl libraries not available.")
         if( $@ );
     my $type = eval "{ ora_type => ORA_RSET }";
-	$stmt->bind_param_inout(1, \$sth2, 0, $type );
-	$stmt->execute();
-	while ( my @row = $sth2->fetchrow_array ) { 
-		    my $key = shift @row;
+    $stmt->bind_param_inout(1, \$sth2, 0, $type );
+    $stmt->execute();
+    while ( my @row = $sth2->fetchrow_array ) { 
+            my $key = shift @row;
             $ret{$key} = ( [ @row ] );
-	}
+    }
     $stmt->finish;
-	return %ret;
+    return %ret;
 }
 
 # Legacy

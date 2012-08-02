@@ -5,8 +5,8 @@
         items: Baseliner.portal
     });
 
-	//Baseliner.portalAddComp({ col: 1, comp: cc });
-	return panel;
+    //Baseliner.portalAddComp({ col: 1, comp: cc });
+    return panel;
 })()
 
 
