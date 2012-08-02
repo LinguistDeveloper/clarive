@@ -72,6 +72,7 @@ sub tree_topics_project : Local {
             topic_name => {
                 mid             => $_->{from_mid},
                 category_color => $_->{topic_project}{categories}{color},
+                category_name  => $_->{topic_project}{categories}{name},
                 is_release     => $is_release,
                 is_changeset   => $is_changeset,
             },
@@ -86,6 +87,10 @@ sub tree_topics_project : Local {
                     },
                 }
             ],
+            data =>{
+                topic_mid => $_->{from_mid},
+                click => $self->click_for_topic(  $_->{topic_project}{categories}{name}, $_->{from_mid} )
+            },
             icon       => $icon,
             leaf       => \0,
             expandable => \1
@@ -115,6 +120,7 @@ sub topic_contents : Local {
             topic_name => {
                 mid             => $_->{from_mid},
                 category_color => $_->{topic_topic2}{categories}{color},
+                category_name => $_->{topic_topic2}{categories}{name},
                 is_release     => $is_release,
                 is_changeset   => $is_changeset,
             },
@@ -325,8 +331,9 @@ sub changeset : Local {
                 topic_name => {
                     mid             => $td->{mid},
                     category_color => $topic->categories->color,
-                    is_release     => $td->{categories}{is_release},
-                    is_changeset   => $td->{categories}{is_changeset},
+                    category_name => $topic->categories->name,
+                    is_release     => $topic->categories->is_release,
+                    is_changeset     => $topic->categories->is_changeset,
                 },
                 data => {
                     ns           => 'changeset/' . $td->{mid},
@@ -337,12 +344,7 @@ sub changeset : Local {
                     state_name   => $state_name,
                     topic_mid    => $td->{mid},
                     topic_status => $td->{id_category_status},
-                    click        => {
-                        url   => sprintf('/comp/topic/topic_main.js'),
-                        type  => 'comp',
-                        icon  => '/static/images/icons/topic.png',
-                        title => sprintf("%s #%d", $td->{categories}{name}, $td->{mid}),
-                    }
+                    click        => $self->click_for_topic(  $topic->categories->name, $td->{mid} )
                 },
             };
             if( @rels ) {
@@ -352,14 +354,10 @@ sub changeset : Local {
                     $node->{leaf} = \0;
                     $node->{icon} = '/static/images/icons/release_lc.png';
                     $node->{topic_name}{is_release} = \1;
+                    $node->{topic_name}{category_name} = $rel->{topic_topic}{categories}{name};
                     $node->{topic_name}{category_color} = $rel->{topic_topic}{categories}{color};
-                    $node->{data}{topic_mid} = $rel->{from_mid};
-                    $node->{data}{click} = {
-                        url   => sprintf('/comp/topic/topic_main.js'),
-                        type  => 'comp',
-                        icon  => '/static/images/icons/release.png',
-                        title => $title,
-                    },
+                    $node->{data}{topic_mid} = $rel->{topic_topic}{mid};
+                    $node->{data}{click} = $self->click_for_topic(  $rel->{topic_topic}{categories}{name}, $rel->{topic_topic}{mid} );
                     push @tree, $node;
                 }
             } else {
@@ -729,5 +727,15 @@ sub favorite_del : Local {
         { success=>\0, msg=>shift() }
     };
     $c->forward( 'View::JSON' );
+}
+
+sub click_for_topic {
+    my ($self, $catname, $mid ) = @_;
+    +{ 
+        url   => sprintf('/comp/topic/topic_main.js'),
+        type  => 'comp',
+        icon  => '/static/images/icons/topic.png',
+        title => sprintf( "%s #%d", $catname, $mid ),
+    };
 }
 1;
