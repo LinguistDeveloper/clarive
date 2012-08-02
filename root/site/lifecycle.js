@@ -344,18 +344,34 @@ Baseliner.lifecycle.getLoader().on("beforeload", function(treeLoader, node) {
     loader.baseParams = node.attributes.data;
 });
     
+Baseliner.lc_topic_style = [
+    '<span style="font-size:0px;',
+    'padding: 8px 8px 0px 0px;',
+    'margin : 0px 4px 0px 0px;',
+    'border : 2px solid {0};',
+    'background-color: transparent;',
+    'color:{0};',
+    'border-radius:0px"></span>'
+].join('');
+
 Baseliner.lifecycle.on('beforechildrenrendered', function(node){
     node.eachChild(function(n) {
         if(n.attributes.topic_name ) {
             var tn = n.attributes.topic_name;
             n.setIconCls('no-icon');
 
+            if( !tn.category_color ) 
+                tn.category_color = '#999';
             //tn.style = 'font-size:10px';
-            tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
+            //tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
+            //tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
+            var span = String.format( Baseliner.lc_topic_style, tn.category_color );
 
-            tn.mini = true;
-            var tn_span = Baseliner.topic_name(tn);
-            n.setText( tn_span + ' ' + n.text );
+            //tn.mini = true;
+            //var tn_span = Baseliner.topic_name(tn);
+
+            n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
+
             /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
                 n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
         }

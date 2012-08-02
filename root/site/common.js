@@ -242,22 +242,27 @@ Baseliner.topic_name = function(args) {
             else if( args.is_release > 0  ) {
                 icon = '/static/images/icons/release-white.png';
             }
-            else {
-                //icon = '/static/images/icons/topic-one-white.png';
+            else if( args.mini ) {
+                icon = '/static/images/icons/topic-one-white.png';
             }
         }
 
         // prepare icon background
         var style_str;
         if( icon ) {
-            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
+            if( args.mini ) 
+                style_str = "padding:0px 10px 4px 7px;background: {0} url('{1}') no-repeat left 1px; font-size: {5}px";
+            else
+                style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
         }
         else {
             style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}; font-size: {5}px";
         }
         var style = String.format( style_str, color, icon, top, bot, img, size );
         //if( color == undefined ) color = '#777';
-        var ret = String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
+        var ret = args.mini 
+            ? String.format('<span id="boot"><span class="{0}" style="{1}"></span></span>', cls, [style,args.style].join(';'), cat_name, mid )
+            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
         return ret;
 };
 

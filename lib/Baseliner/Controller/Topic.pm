@@ -227,7 +227,7 @@ sub list : Local {
     }
     rs_hashref( $rs );
     my @mids = map { $_->{topic_mid} } $rs->all;
-    my $rs_sub = $rs->search(undef, { select=>'topic_mid'});
+    my $rs_sub = $rs->search(undef, { select=>'topic_mid', distinct=>1});
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
@@ -236,20 +236,23 @@ sub list : Local {
     my %id_label;
     my %projects;
     my %projects_report;
+    my %assignee;
     my %mid_data;
     for (@mid_data) {
-        $mid_data{ $_->{topic_mid} } = $_ unless exists $mid_data{ $_->{topic_mid} };
-        $mid_data{ $_->{topic_mid} }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
+        my $mid = $_->{topic_mid};
+        $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
+        $mid_data{ $mid }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
         $_->{label_id}
-            ? $id_label{ $_->{topic_mid} }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
-            : $id_label{ $_->{topic_mid} } = {};
+            ? $id_label{ $mid }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
+            : $id_label{ $mid } = {};
         if( $_->{project_id} ) {
-            $projects{ $_->{topic_mid} }{ $_->{project_id} . ";" . $_->{project_name} } = ();
-            $projects_report{ $_->{topic_mid} }{ $_->{project_name} } = ();
+            $projects{ $mid }{ $_->{project_id} . ";" . $_->{project_name} } = ();
+            $projects_report{ $mid }{ $_->{project_name} } = ();
         } else {
-            $projects{ $_->{topic_mid} } = {};
-            $projects_report{ $_->{topic_mid} } = {};
+            $projects{ $mid } = {};
+            $projects_report{ $mid } = {};
         }
+        $assignee{ $mid }{ $_->{assignee} } = () if defined $_->{assignee};
     }
     for my $mid (@mids) {
         my $data = $mid_data{$mid};
@@ -264,6 +267,7 @@ sub list : Local {
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
             labels   => [ keys %{ $id_label{$mid} || {} } ],
             projects => [ keys %{ $projects{$mid} || {} } ],
+            assignee => [ keys %{ $assignee{$mid} || {} } ],
             report_data => {
                 projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
             },
