@@ -1269,7 +1269,9 @@
 			
 			var form_config_priority = new Baseliner.form.Priority({
 				url:'/topicadmin/update_category_priority'}
-			);			
+			);
+			var form = form_config_priority.getForm();
+			form.findField("name").readOnly = true;			
 		
 			if(rec){
 				var ff = form_config_priority.getForm();
@@ -1761,6 +1763,10 @@
 			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
 		});
 
+		var priority_active_check = new Ext.form.Checkbox({
+			name: 'priority_active_check',
+			boxLabel: _('Active')
+		});
 		
 		Baseliner.form.Priority.superclass.constructor.call(this, Ext.apply({
 					frame: true,
@@ -1820,7 +1826,8 @@
 													]
 												}
 										]
-									}
+									},
+									priority_active_check
 							]
 						}
 					]
@@ -1915,15 +1922,16 @@
 			url:'/topicadmin/update_priority'}
 		);
 		
+		var form = form_priority.getForm();
+		form.findField("priority_active_check").hidden = true;
+		
         if(rec){
             var ff = form_priority.getForm();
             ff.loadRecord( rec );
             load_cbx(ff, rec);
             title = 'Edit priority';
         }
-        
-		
-		
+ 	
         win = new Ext.Window({
             title: _(title),
             width: 450,

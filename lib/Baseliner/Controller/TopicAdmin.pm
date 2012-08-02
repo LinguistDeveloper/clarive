@@ -622,7 +622,8 @@ sub update_category_priority : Local {
                                                                                 response_time_min => $rsptime[1],
                                                                                 expr_response_time => $rsptime[0],
                                                                                 deadline_min => $deadline[1],
-                                                                                expr_deadline => $deadline[0]
+                                                                                expr_deadline => $deadline[0],
+                                                                                is_active => $p->{priority_active_check} ? 1:0,
                                                                                 });
                     
                 $c->stash->{json} = { msg=>_loc('Priority added'), success=>\1 };
