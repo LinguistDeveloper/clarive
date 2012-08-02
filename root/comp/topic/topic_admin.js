@@ -1219,7 +1219,8 @@
 		store_config_priority.removeAll();
 		
 		store_priority.each(function(row, index){
-			config.push({"text": _(row.data.name), "leaf": true, "id": row.data.id, "category_id": rec.data.id });	
+			var ok = rec.data.priorities.indexOf(row.data.id);
+			config.push({"text": _(row.data.name), "leaf": true, "id": row.data.id, "category_id": rec.data.id, "cls": ok != -1 ?'priority':'' });	
 		});
 		
 		var treeRoot = new Ext.tree.AsyncTreeNode({
@@ -1277,6 +1278,8 @@
 				var ff = form_config_priority.getForm();
 				ff.loadRecord( rec );
 				load_cbx(ff, rec);
+				ff.findField("name").readOnly = true;
+				ff.findField("priority_active_check").setValue( rec.data.is_active );
 				title = 'Edit configuration';
 			}
 		
@@ -1308,7 +1311,15 @@
 										success: function(f,a){
 											Baseliner.message(_('Success'), a.result.msg );
 											form.findField("id").setValue(a.result.priority_id);
-											store_priority.load();
+											store_config_priority.reload();
+											var node = tree_priorities.getSelectionModel().getSelectedNode();
+											if(form.findField("priority_active_check").getValue()){
+												node.setCls('priority');
+											}else{
+												node.setCls('');
+											}
+
+											
 											win.setTitle(_('Edit priority'));
 										},
 										failure: function(f,a){
@@ -1363,13 +1374,7 @@
 					]
 		});
 					
-
-        if(rec){
-            //var ff = form_category_admin.getForm();
-            //ff.loadRecord( rec );
-            //title = 'Edit category';
-        }
-        
+       
         win = new Ext.Window({
             title: _(title),
             width: 800,

@@ -58,7 +58,8 @@ Baseliner.Topic.StoreCategory = Ext.extend( Ext.data.JsonStore, {
                 {  name: 'forms' },
                 {  name: 'is_release' },
                 {  name: 'is_changeset' },
-                {  name: 'fields' }
+                {  name: 'fields' },
+                {  name: 'priorities' }
             ]
         },config);
         Baseliner.Topic.StoreCategory.superclass.constructor.call(this, config);

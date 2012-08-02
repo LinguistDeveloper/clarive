@@ -656,7 +656,10 @@ sub list_category : Local {
                 my $type = $r->is_changeset ? 'C' : $r->is_release ? 'R' : 'N';
                 
                 my @fields = map { $_->id_field } 
-                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $r->id}, {order_by=> {'-asc'=> 'id_field'}} )->all;        
+                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $r->id}, {order_by=> {'-asc'=> 'id_field'}} )->all;
+                    
+                my @priorities = map { $_->id_priority } 
+                    $c->model('Baseliner::BaliTopicCategoriesPriority')->search( {id_category => $r->id, is_active=>1}, {order_by=> {'-asc'=> 'id_priority'}} )->all;
 
                 my $forms = $self->form_build( $r->forms );
                 
@@ -672,7 +675,8 @@ sub list_category : Local {
                     is_changeset  => $r->is_changeset,
                     description   => $r->description,
                     statuses      => \@statuses,
-                    fields        => \@fields
+                    fields        => \@fields,
+                    priorities    => \@priorities
                 };
             }  
         }
