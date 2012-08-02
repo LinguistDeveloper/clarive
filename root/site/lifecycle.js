@@ -72,7 +72,7 @@ var button_favorites = new Ext.Button({
 
 var button_workspaces = new Ext.Button({
     cls: 'x-btn-icon',
-    icon: '/static/images/icons/connect.png',
+    icon: '/static/images/icons/workspaces.png',
     handler: show_workspaces,
     tooltip: _('Workspaces'),
     toggleGroup: 'lc',
@@ -83,7 +83,7 @@ var button_workspaces = new Ext.Button({
 
 var button_ci = new Ext.Button({
     cls: 'x-btn-icon',
-    icon: '/static/images/ci/ci.png',
+    icon: '/static/images/ci/ci-grey.png',
     handler: show_ci,
     tooltip: _('Configuration Items'),
     toggleGroup: 'lc',
@@ -105,7 +105,7 @@ Baseliner.lc_tbar = new Ext.Toolbar({
     items: [
         { xtype:'button', 
             cls: 'x-btn-text-icon',
-            icon: '/static/images/icons/refresh.gif',
+            icon: '/static/images/icons/refresh-grey.gif',
             handler: refresh_lc        },
         button_projects,
         button_favorites,
@@ -122,7 +122,7 @@ var base_menu_items = [ ];
 
 var menu_favorite_add = {
     text: _('Add to Favorites...'),
-    icon: '/static/images/icons/favorites.gif',
+    icon: '/static/images/icons/favorite.png',
     handler: function(n) {
         var sm = Baseliner.lifecycle.getSelectionModel();
         var node = sm.getSelectedNode();
@@ -150,7 +150,7 @@ var menu_favorite_add = {
 
 var menu_favorite_del = {
     text: _('Remove from Favorites'),
-    icon: '/static/images/icons/favorites.gif',
+    icon: '/static/images/icons/favorite.png',
     handler: function(n) {
         var sm = Baseliner.lifecycle.getSelectionModel();
         var node = sm.getSelectedNode();
