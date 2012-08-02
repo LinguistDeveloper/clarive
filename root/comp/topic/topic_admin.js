@@ -33,8 +33,13 @@
 		url: '/topicadmin/get_config_priority',
 		fields: [
 			{  name: 'id' },
+			{  name: 'id_category' },
 			{  name: 'name' },
-			{  name: 'value' }
+			{  name: 'response_time_min' },
+			{  name: 'expr_response_time' },
+			{  name: 'deadline_min' },
+			{  name: 'expr_deadline' },
+			{  name: 'is_active' }  
 		]
 	});		
     
@@ -1211,9 +1216,10 @@
         var win;
         var title = _('Priorities' );
 		var config = new Array();
+		store_config_priority.removeAll();
 		
 		store_priority.each(function(row, index){
-			config.push({"text": _(row.data.name), "leaf": true, "id": row.data.id });	
+			config.push({"text": _(row.data.name), "leaf": true, "id": row.data.id, "category_id": rec.data.id });	
 		});
 		
 		var treeRoot = new Ext.tree.AsyncTreeNode({
@@ -1222,7 +1228,6 @@
 			draggable: false,
 			children: config
 		});
-		
 		
 		var tree_priorities = new Ext.tree.TreePanel({
 			title: _('Configuration Priorities'),
@@ -1238,7 +1243,7 @@
 		});
 		
 		tree_priorities.on('click', function(node, checked) {
-			store_config_priority.load({params: {id: node.attributes.id}});
+			store_config_priority.load({params: {id: node.attributes.id, category_id: node.attributes.category_id}});
 		});				
 							
 		var grid_config_priorities = new Ext.grid.GridPanel({
@@ -1252,15 +1257,83 @@
 			},		    
 			height:300,
 			columns: [
+				
 				{ header: _('Response time'), dataIndex: 'expr_response_time', sortable: false, renderer: show_expr },
 				{ header: _('Deadline'), dataIndex: 'expr_deadline', sortable: false, renderer: show_expr } 
 			],
 			autoSizeColumns: true
 		});
 		
+		var edit_config_priority = function(rec) {
+			var win_config;
+			
+			var form_config_priority = new Baseliner.form.Priority({
+				url:'/topicadmin/update_category_priority'}
+			);			
+		
+			if(rec){
+				var ff = form_config_priority.getForm();
+				ff.loadRecord( rec );
+				load_cbx(ff, rec);
+				title = 'Edit configuration';
+			}
+		
+			win_config = new Ext.Window({
+				title: _(title),
+				autoHeight: true,
+				width: 400,
+				closeAction: 'close',
+				modal: true,
+				items: [
+					form_config_priority
+				],
+				buttons: [
+						{
+							text: _('Accept'),
+							type: 'submit',
+							handler: function() {
+								var form = form_config_priority.getForm();
+								var action = form.getValues()['id'] >= 0 ? 'update' : 'add';								
+								
+								var rsptime = new Array();
+								var deadline = new Array();
+							
+								getvalues_priority(form,rsptime,deadline);
+								
+								if (form.isValid()) {
+									form.submit({
+										params: {action: action, rsptime: rsptime, deadline: deadline},
+										success: function(f,a){
+											Baseliner.message(_('Success'), a.result.msg );
+											form.findField("id").setValue(a.result.priority_id);
+											store_priority.load();
+											win.setTitle(_('Edit priority'));
+										},
+										failure: function(f,a){
+											Ext.Msg.show({  
+												title: _('Information'), 
+												msg: a.result.msg , 
+												buttons: Ext.Msg.OK, 
+												icon: Ext.Msg.INFO
+											});                         
+										}
+									});
+								}
+							}
+						},
+						{
+						text: _('Close'),
+						handler: function() {win_config.close();}
+						}
+				]
+			});
+			win_config.show();
+		}
+		
+					
 		grid_config_priorities.on("rowdblclick", function(grid, rowIndex, e ) {
-			//var sel = grid.getStore().getAt(rowIndex);
-			//edit_config(sel);
+			var sel = grid.getStore().getAt(rowIndex);
+			edit_config_priority(sel);
 		});				
 
 		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
@@ -1329,81 +1402,6 @@
             } else {
                 Baseliner.message( _('ERROR'), _('Select at least one row'));    
             };          
-			
-
-
-					//
-					//var edit_config = function(rec) {
-					//	var win_config;
-					//
-					//	var btn_cerrar_config = new Ext.Toolbar.Button({
-					//		text: _('Close'),
-					//		width: 50,
-					//		handler: function() {
-					//			win_config.close();
-					//		}
-					//	})
-					//	
-					//	var btn_grabar_config = new Ext.Toolbar.Button({
-					//		text: _('Save'),
-					//		width: 50,
-					//		handler: function(){
-					//			var form = form_config.getForm();
-					//			
-					//			var ff_dashboard = form_dashboard.getForm();
-					//			var dashboard_id = ff_dashboard.findField("id").getValue();
-					//			
-					//			if (form.isValid()) {
-					//				form.submit({
-					//					params: { id_dashboard: dashboard_id, id: rec.data.id, dashlet: rec.data.dashlet },
-					//					success: function(f,a){
-					//						Baseliner.message(_('Success'), a.result.msg );
-					//						//store_config.reload();
-					//					},
-					//					failure: function(f,a){
-					//					Ext.Msg.show({  
-					//						title: _('Information'), 
-					//						msg: a.result.msg , 
-					//						buttons: Ext.Msg.OK, 
-					//						icon: Ext.Msg.INFO
-					//					}); 						
-					//					}
-					//				});
-					//			}
-					//		}
-					//	})					
-					//	
-					//	var form_config = new Ext.FormPanel({
-					//		name: form_dashlets,
-					//		url: '/dashboard/set_config',
-					//		frame: true,
-					//		buttons: [btn_grabar_config, btn_cerrar_config],
-					//		defaults:{anchor:'100%'},
-					//		items   : [
-					//					{ fieldLabel: _(rec.data.id), name: 'value', xtype: 'textfield', allowBlank:false}
-					//				]
-					//	});
-					//
-					//	if(rec){
-					//		var ff = form_config.getForm();
-					//		ff.loadRecord( rec );
-					//		title = 'Edit configuration';
-					//	}
-					//
-					//	win_config = new Ext.Window({
-					//		title: _(title),
-					//		autoHeight: true,
-					//		width: 400,
-					//		closeAction: 'close',
-					//		modal: true,
-					//		items: [
-					//			form_config
-					//		]
-					//	});
-					//	win_config.show();
-					//	
-					//}
-					//
 		}
     }); 	
     
@@ -1701,247 +1699,222 @@
         }
     });
     
+	
+	Baseliner.form.Priority = function(c) {
+		var txt_rsptime_months = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_months',
+			fieldLabel: _('Months'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
+		});
+		
+		var txt_rsptime_weeks = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_weeks',
+			fieldLabel: _('Weeks'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
+		});
+		
+		var txt_rsptime_days = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_days',
+			fieldLabel: _('Days'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
+		});
+		
+		var txt_rsptime_hours = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_hours',
+			fieldLabel: _('Hours'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
+		});
+		
+		var txt_rsptime_minutes = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_minutes',
+			fieldLabel: _('Minutes'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
+		});
+		
+		var txt_deadline_months = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_months',
+			fieldLabel: _('Months'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
+		});
+		
+		var txt_deadline_weeks = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_weeks',
+			fieldLabel: _('Weeks'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
+		});
+		
+		var txt_deadline_days = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_days',
+			fieldLabel: _('Days'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
+		});     
+		
+		var txt_deadline_hours = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_hours',
+			fieldLabel: _('Hours'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
+		});
+		
+		var txt_deadline_minutes = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_minutes',
+			fieldLabel: _('Minutes'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
+		});
+
+		
+		Baseliner.form.Priority.superclass.constructor.call(this, Ext.apply({
+					frame: true,
+					bodyStyle:'padding:10px 10px 0',
+					defaults: { anchor:'100%'},
+					items: [
+						{ xtype: 'hidden', name: 'id', value: -1 },
+						{ xtype: 'hidden', name: 'id_category', value: -1 },
+						{ xtype:'textfield', name:'name', fieldLabel:_('Priority'), allowBlank:false, emptyText:_('Name of priority') },
+						{
+							// column layout with 2 columns
+							layout:'column'
+							,defaults:{
+								columnWidth:0.5
+								,layout:'form'
+								,border:false
+								,xtype:'panel'
+								,bodyStyle:'padding:0 10px 0 0'
+							}
+							,items:[
+									{
+										// left column
+										defaults:{anchor:'100%'}
+										,items:[
+												{
+													xtype:'fieldset',
+													title: _('Response time'),
+													autoHeight:true,
+													defaults: {width: 40},
+													defaultType: 'textfield',
+													items :[
+														txt_rsptime_months,
+														txt_rsptime_weeks,
+														txt_rsptime_days,
+														txt_rsptime_hours,
+														txt_rsptime_minutes
+													]
+												}
+										]
+									},
+									{
+										// right column
+										defaults:{anchor:'100%'}
+										,items:[
+												{
+													xtype:'fieldset',
+													title: _('Deadline'),
+													autoHeight:true,
+													defaults: {width: 40},
+													defaultType: 'textfield',
+													items :[
+														txt_deadline_months,
+														txt_deadline_weeks,
+														txt_deadline_days,
+														txt_deadline_hours,
+														txt_deadline_minutes
+													]
+												}
+										]
+									}
+							]
+						}
+					]
+		}, c));
+	};
+	Ext.extend( Baseliner.form.Priority, Ext.FormPanel );	
+	
+	function load_cbx(form, rec){
+		var expr = rec.data.expr_response_time.split(':');
+		for (i=0; i < expr.length; i++){
+			var value = expr[i].substr(0, expr[i].length - 1);
+			if(value != 0){
+				var type =  expr[i].substr(expr[i].length - 1, 1);
+				switch (type){
+					case 'M':   form.findField("txt_rsptime_months").setValue(value);
+								break;
+					case 'W':   form.findField("txt_rsptime_weeks").setValue(value);
+								break;
+					case 'D':   form.findField("txt_rsptime_days").setValue(value);
+								break;
+					case 'h':   form.findField("txt_rsptime_hours").setValue(value);
+								break;
+					case 'm':   form.findField("txt_rsptime_minutes").setValue(value);
+								break;
+				}
+			}
+			
+		}
+		expr = rec.data.expr_deadline.split(':');
+		for (i=0; i < expr.length; i++){
+			var value = expr[i].substr(0, expr[i].length - 1);
+			if(value != 0){
+				var type =  expr[i].substr(expr[i].length - 1, 1);
+				switch (type){
+					case 'M':   form.findField("txt_deadline_months").setValue(value);
+								break;
+					case 'W':   form.findField("txt_deadline_weeks").setValue(value);
+								break;
+					case 'D':   form.findField("txt_deadline_days").setValue(value);
+								break;
+					case 'h':   form.findField("txt_deadline_hours").setValue(value);
+								break;
+					case 'm':   form.findField("txt_deadline_minutes").setValue(value);
+								break;
+				}
+			}
+			
+		}
+		
+	}
+				
+	function getvalues_priority(form,rsptime,deadline){
+		//var rsptime = new Array();
+		//var deadline = new Array();
+		
+		var txt_rsptime_months =  form.findField("txt_rsptime_months").getValue();
+		var txt_rsptime_weeks =  form.findField("txt_rsptime_weeks").getValue();
+		var txt_rsptime_days =  form.findField("txt_rsptime_days").getValue();
+		var txt_rsptime_hours =  form.findField("txt_rsptime_hours").getValue();
+		var txt_rsptime_minutes =  form.findField("txt_rsptime_minutes").getValue();
+
+		var txt_deadline_months =  form.findField("txt_deadline_months").getValue();
+		var txt_deadline_weeks =  form.findField("txt_deadline_weeks").getValue();
+		var txt_deadline_days =  form.findField("txt_deadline_days").getValue();
+		var txt_deadline_hours =  form.findField("txt_deadline_hours").getValue();
+		var txt_deadline_minutes =  form.findField("txt_deadline_minutes").getValue();
+		
+		txt_rsptime_months =  txt_rsptime_months ? txt_rsptime_months : 0;
+		txt_rsptime_weeks =  txt_rsptime_weeks ? txt_rsptime_weeks : 0;
+		txt_rsptime_days =  txt_rsptime_days ? txt_rsptime_days : 0;
+		txt_rsptime_hours =  txt_rsptime_hours ? txt_rsptime_hours : 0;
+		txt_rsptime_minutes =  txt_rsptime_minutes ? txt_rsptime_minutes : 0;
+
+		txt_deadline_months =  txt_deadline_months ? txt_deadline_months : 0;
+		txt_deadline_weeks =  txt_deadline_weeks ? txt_deadline_weeks : 0;
+		txt_deadline_days =  txt_deadline_days ? txt_deadline_days : 0;
+		txt_deadline_hours =  txt_deadline_hours ? txt_deadline_hours : 0;
+		txt_deadline_minutes =  txt_deadline_minutes ? txt_deadline_minutes : 0;
+		
+		rsptime[0] = txt_rsptime_months + 'M:' + txt_rsptime_weeks + 'W:' + txt_rsptime_days + 'D:' + txt_rsptime_hours + 'h:' + txt_rsptime_minutes + 'm';
+		rsptime[1] = (txt_rsptime_months * 31 * 24 * 60 ) + (txt_rsptime_weeks * 7 * 24 * 60 ) + (txt_rsptime_days * 24 * 60 ) + (txt_rsptime_hours * 60) + txt_rsptime_minutes;
+		
+		deadline[0] = txt_deadline_months + 'M:' + txt_deadline_weeks + 'W:' + txt_deadline_days + 'D:' + txt_deadline_hours + 'h:' + txt_deadline_minutes + 'm';
+		deadline[1] = (txt_deadline_months * 31 * 24 * 60 ) + (txt_deadline_weeks * 7 * 24 * 60 ) + (txt_deadline_days * 24 * 60 ) + (txt_deadline_hours * 60) + txt_deadline_minutes;
+	}
+	
     var add_edit_priority = function(rec) {
         var win;
         var title = 'Create priority';
-        
-        function load_cbx(form, rec){
-            var expr = rec.data.expr_response_time.split(':');
-            for (i=0; i < expr.length; i++){
-                var value = expr[i].substr(0, expr[i].length - 1);
-                if(value != 0){
-                    var type =  expr[i].substr(expr[i].length - 1, 1);
-                    switch (type){
-                        case 'M':   form.findField("txt_rsptime_months").setValue(value);
-                                    break;
-                        case 'W':   form.findField("txt_rsptime_weeks").setValue(value);
-                                    break;
-                        case 'D':   form.findField("txt_rsptime_days").setValue(value);
-                                    break;
-                        case 'h':   form.findField("txt_rsptime_hours").setValue(value);
-                                    break;
-                        case 'm':   form.findField("txt_rsptime_minutes").setValue(value);
-                                    break;
-                    }
-                }
-                
-            }
-            expr = rec.data.expr_deadline.split(':');
-            for (i=0; i < expr.length; i++){
-                var value = expr[i].substr(0, expr[i].length - 1);
-                if(value != 0){
-                    var type =  expr[i].substr(expr[i].length - 1, 1);
-                    switch (type){
-                        case 'M':   form.findField("txt_deadline_months").setValue(value);
-                                    break;
-                        case 'W':   form.findField("txt_deadline_weeks").setValue(value);
-                                    break;
-                        case 'D':   form.findField("txt_deadline_days").setValue(value);
-                                    break;
-                        case 'h':   form.findField("txt_deadline_hours").setValue(value);
-                                    break;
-                        case 'm':   form.findField("txt_deadline_minutes").setValue(value);
-                                    break;
-                    }
-                }
-                
-            }
-            
-        }
 
-        var txt_rsptime_months = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_months',
-            fieldLabel: _('Months'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
-        });
-        
-        var txt_rsptime_weeks = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_weeks',
-            fieldLabel: _('Weeks'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
-        });
-        
-        var txt_rsptime_days = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_days',
-            fieldLabel: _('Days'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
-        });
-        
-        var txt_rsptime_hours = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_hours',
-            fieldLabel: _('Hours'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
-        });
-        
-        var txt_rsptime_minutes = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_minutes',
-            fieldLabel: _('Minutes'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
-        });
-        
-        var txt_deadline_months = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_months',
-            fieldLabel: _('Months'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
-        });
-        
-        var txt_deadline_weeks = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_weeks',
-            fieldLabel: _('Weeks'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
-        });
-        
-        var txt_deadline_days = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_days',
-            fieldLabel: _('Days'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
-        });     
-        
-        var txt_deadline_hours = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_hours',
-            fieldLabel: _('Hours'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
-        });
-        
-        var txt_deadline_minutes = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_minutes',
-            fieldLabel: _('Minutes'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
-        });     
-        
-        var form_priority = new Ext.FormPanel({
-            frame: true,
-            url:'/topicadmin/update_priority',
-            bodyStyle:'padding:10px 10px 0',
-            buttons: [
-                    {
-                        text: _('Accept'),
-                        type: 'submit',
-                        handler: function() {
-                            var form = form_priority.getForm();
-                            var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-                            var rsptime = new Array();
-                            var deadline = new Array();
-                            
-                            var txt_rsptime_months =  form.findField("txt_rsptime_months").getValue();
-                            var txt_rsptime_weeks =  form.findField("txt_rsptime_weeks").getValue();
-                            var txt_rsptime_days =  form.findField("txt_rsptime_days").getValue();
-                            var txt_rsptime_hours =  form.findField("txt_rsptime_hours").getValue();
-                            var txt_rsptime_minutes =  form.findField("txt_rsptime_minutes").getValue();
-
-                            var txt_deadline_months =  form.findField("txt_deadline_months").getValue();
-                            var txt_deadline_weeks =  form.findField("txt_deadline_weeks").getValue();
-                            var txt_deadline_days =  form.findField("txt_deadline_days").getValue();
-                            var txt_deadline_hours =  form.findField("txt_deadline_hours").getValue();
-                            var txt_deadline_minutes =  form.findField("txt_deadline_minutes").getValue();
-                            
-                            txt_rsptime_months =  txt_rsptime_months ? txt_rsptime_months : 0;
-                            txt_rsptime_weeks =  txt_rsptime_weeks ? txt_rsptime_weeks : 0;
-                            txt_rsptime_days =  txt_rsptime_days ? txt_rsptime_days : 0;
-                            txt_rsptime_hours =  txt_rsptime_hours ? txt_rsptime_hours : 0;
-                            txt_rsptime_minutes =  txt_rsptime_minutes ? txt_rsptime_minutes : 0;
-
-                            txt_deadline_months =  txt_deadline_months ? txt_deadline_months : 0;
-                            txt_deadline_weeks =  txt_deadline_weeks ? txt_deadline_weeks : 0;
-                            txt_deadline_days =  txt_deadline_days ? txt_deadline_days : 0;
-                            txt_deadline_hours =  txt_deadline_hours ? txt_deadline_hours : 0;
-                            txt_deadline_minutes =  txt_deadline_minutes ? txt_deadline_minutes : 0;
-                            
-                            rsptime[0] = txt_rsptime_months + 'M:' + txt_rsptime_weeks + 'W:' + txt_rsptime_days + 'D:' + txt_rsptime_hours + 'h:' + txt_rsptime_minutes + 'm';
-                            rsptime[1] = (txt_rsptime_months * 31 * 24 * 60 ) + (txt_rsptime_weeks * 7 * 24 * 60 ) + (txt_rsptime_days * 24 * 60 ) + (txt_rsptime_hours * 60) + txt_rsptime_minutes;
-                            
-                            deadline[0] = txt_deadline_months + 'M:' + txt_deadline_weeks + 'W:' + txt_deadline_days + 'D:' + txt_deadline_hours + 'h:' + txt_deadline_minutes + 'm';
-                            deadline[1] = (txt_deadline_months * 31 * 24 * 60 ) + (txt_deadline_weeks * 7 * 24 * 60 ) + (txt_deadline_days * 24 * 60 ) + (txt_deadline_hours * 60) + txt_deadline_minutes;
-                            
-                            
-                            if (form.isValid()) {
-                                form.submit({
-                                    params: {action: action, rsptime: rsptime, deadline: deadline},
-                                    success: function(f,a){
-                                        Baseliner.message(_('Success'), a.result.msg );
-                                        form.findField("id").setValue(a.result.priority_id);
-                                        store_priority.load();
-                                        win.setTitle(_('Edit priority'));
-                                    },
-                                    failure: function(f,a){
-                                        Ext.Msg.show({  
-                                            title: _('Information'), 
-                                            msg: a.result.msg , 
-                                            buttons: Ext.Msg.OK, 
-                                            icon: Ext.Msg.INFO
-                                        });                         
-                                    }
-                                });
-                            }
-                        }
-                    },
-                    {
-                    text: _('Close'),
-                    handler: function(){ 
-                            win.close();
-                        }
-                    }
-            ],
-            defaults: { anchor:'100%'},
-            items: [
-                { xtype: 'hidden', name: 'id', value: -1 },
-                { xtype:'textfield', name:'name', fieldLabel:_('Priority'), allowBlank:false, emptyText:_('Name of priority') },
-                {
-                    // column layout with 2 columns
-                    layout:'column'
-                    ,defaults:{
-                        columnWidth:0.5
-                        ,layout:'form'
-                        ,border:false
-                        ,xtype:'panel'
-                        ,bodyStyle:'padding:0 10px 0 0'
-                    }
-                    ,items:[
-                            {
-                                // left column
-                                defaults:{anchor:'100%'}
-                                ,items:[
-                                        {
-                                            xtype:'fieldset',
-                                            title: _('Response time'),
-                                            autoHeight:true,
-                                            defaults: {width: 40},
-                                            defaultType: 'textfield',
-                                            items :[
-                                                txt_rsptime_months,
-                                                txt_rsptime_weeks,
-                                                txt_rsptime_days,
-                                                txt_rsptime_hours,
-                                                txt_rsptime_minutes
-                                            ]
-                                        }
-                                ]
-                            },
-                            {
-                                // right column
-                                defaults:{anchor:'100%'}
-                                ,items:[
-                                        {
-                                            xtype:'fieldset',
-                                            title: _('Deadline'),
-                                            autoHeight:true,
-                                            defaults: {width: 40},
-                                            defaultType: 'textfield',
-                                            items :[
-                                                txt_deadline_months,
-                                                txt_deadline_weeks,
-                                                txt_deadline_days,
-                                                txt_deadline_hours,
-                                                txt_deadline_minutes
-                                            ]
-                                        }
-                                ]
-                            }
-                    ]
-                }
-            ]
-        });
-
+		var form_priority = new Baseliner.form.Priority({
+			url:'/topicadmin/update_priority'}
+		);
+		
         if(rec){
             var ff = form_priority.getForm();
             ff.loadRecord( rec );
@@ -1949,11 +1922,52 @@
             title = 'Edit priority';
         }
         
+		
+		
         win = new Ext.Window({
             title: _(title),
             width: 450,
             autoHeight: true,
-            items: form_priority
+            items: form_priority,
+		    buttons: [
+					{
+						text: _('Accept'),
+						type: 'submit',
+						handler: function() {
+							var form = form_priority.getForm();
+							var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+							
+							var rsptime = new Array();
+							var deadline = new Array();
+							
+							getvalues_priority(form,rsptime,deadline);
+							
+							if (form.isValid()) {
+								form.submit({
+									params: {action: action, rsptime: rsptime, deadline: deadline},
+									success: function(f,a){
+										Baseliner.message(_('Success'), a.result.msg );
+										form.findField("id").setValue(a.result.priority_id);
+										store_priority.load();
+										win.setTitle(_('Edit priority'));
+									},
+									failure: function(f,a){
+										Ext.Msg.show({  
+											title: _('Information'), 
+											msg: a.result.msg , 
+											buttons: Ext.Msg.OK, 
+											icon: Ext.Msg.INFO
+										});                         
+									}
+								});
+							}
+						}
+					},
+					{
+					text: _('Close'),
+					handler: function() {win.close();}
+					}
+			]
         });
         win.show();     
     };

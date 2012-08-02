@@ -570,12 +570,74 @@ sub workflow : Local {
 sub get_config_priority : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    my $priority_id = $p->{id};
+    my $category_id = $p->{category_id};
     
-    _log ">>>>>>>>>ID PRIORITY: " . $p->{id};
+    my @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search({id_category=> $category_id, id_priority=> $priority_id})->hashref->all;
+    if(!@category_priority){
+        my @priority_default = $c->model('Baseliner::BaliTopicPriority')->search({id=> $priority_id})->hashref->all;
+        foreach my $field (@priority_default){
+            push @category_priority, { name => $field->{name},
+                              id_category => $category_id,
+                              id => $field->{id},
+                              response_time_min => $field->{response_time_min},
+                              expr_response_time => $field->{expr_response_time},
+                              deadline_min => $field->{deadline_min},
+                              expr_deadline => $field->{expr_deadline},
+                              is_active => 0,
+                              }
+                             
+        }
+    }else{
+        my $config = $category_priority[0];
+        $config->{id} = $config->{id_priority};
+    }
 
-    my @rows;
-    $c->stash->{json} = { data=>\@rows};
+    $c->stash->{json} = { data=>\@category_priority};
     $c->forward('View::JSON');    
 }
+
+sub update_category_priority : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $action = $p->{action};
+    my @rsptime = _array $p->{rsptime};
+    my @deadline = _array $p->{deadline};
+    my $priority_id = $p->{id};
+    my $category_id = $p->{id_category};    
+    
+    given ($action) {
+        when ('add') {
+
+        }
+        when ('update') {
+            try{
+                my $category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search({id_category=> $category_id, id_priority=> $priority_id})->first;
+                if($category_priority){
+                    $category_priority->delete();
+                }
+                my $priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->create({
+                                                                                id_category => $category_id,
+                                                                                id_priority => $priority_id,
+                                                                                response_time_min => $rsptime[1],
+                                                                                expr_response_time => $rsptime[0],
+                                                                                deadline_min => $deadline[1],
+                                                                                expr_deadline => $deadline[0]
+                                                                                });
+                    
+                $c->stash->{json} = { msg=>_loc('Priority added'), success=>\1 };
+
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error adding Priority: %1', shift()), failure=>\1 }
+            }            
+        }
+        when ('delete') {
+        }
+    }
+    
+    $c->forward('View::JSON');    
+}
+
 
 1;
