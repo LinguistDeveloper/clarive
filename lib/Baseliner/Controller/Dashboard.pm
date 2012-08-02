@@ -22,41 +22,41 @@ register 'action.admin.dashboard' => { name=>'View and Admin dashboards' };
 
 ##Configuración del dashboard
 register 'config.dashboard' => {
-    metadata => [
-           { id=>'job_days', label=>'Days for job statistics', default => 7 },
-        ]
+	metadata => [
+	       { id=>'job_days', label=>'Days for job statistics', default => 7 },
+	    ]
 };
 
 register 'config.dashlet.baselines' => {
-    metadata => [
-           { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
-           { id=>'states', label=>'States for job statistics', default => 'DESA,IT,TEST,PREP,PROD' },
-           { id=>'projects', label=>'Projects for job statistics', default => 'ALL' },
-        ]
+	metadata => [
+	       { id=>'bl_days', label=>'Days for baseline graph', default => 7 },
+		   { id=>'states', label=>'States for job statistics', default => 'DESA,IT,TEST,PREP,PROD' },
+		   { id=>'projects', label=>'Projects for job statistics', default => 'ALL' },
+	    ]
 };
 
 register 'config.dashlet.lastjobs' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-        ]
+	metadata => [
+	       { id=>'rows', label=>'Number of rows', default => 7 },
+	    ]
 };
 
 register 'config.dashlet.emails' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-        ]
+	metadata => [
+	       { id=>'rows', label=>'Number of rows', default => 7 },
+	    ]
 };
 
 register 'config.dashlet.topics' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-        ]
+	metadata => [
+	       { id=>'rows', label=>'Number of rows', default => 7 },
+	    ]
 };
 
 register 'config.dashlet.jobs' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-        ]
+	metadata => [
+	       { id=>'rows', label=>'Number of rows', default => 7 },
+	    ]
 };
 
 sub grid : Local {
@@ -83,33 +83,33 @@ sub list_dashboard : Local {
         : undef;   
     
     my $rs = $c->model('Baseliner::BaliDashboard')->search( $where,
-									                        { page => $page,
-									                          rows => $limit,
-									                          order_by => $sort ? { "-$dir" => $sort } : undef
-									                        }
-							                        );
-    
-    my $pager = $rs->pager;
-    $cnt = $pager->total_entries;		
-    
+															{ page => $page,
+															  rows => $limit,
+															  order_by => $sort ? { "-$dir" => $sort } : undef
+															}
+													);
+	
+	my $pager = $rs->pager;
+	$cnt = $pager->total_entries;		
+	
     my @rows;
     while( my $r = $rs->next ) {
-        # produce the grid
+	    # produce the grid
 
-        my @roles = map { $_->{id_role} } $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $r->id})->hashref->all;
-        my @dashlets = map {$_->{html} . '#' . $_->{url} } sort { $a->{order} <=> $b->{order} } _array _load $r->dashlets;
-        
-        push @rows,
-            {
-                id 			=> $r->id,
-                name		=> $r->name,
-                description	=> $r->description,
-                is_main 	=> $r->is_main,
-                is_system	=> \$r->is_system,
-                type 		=> $r->is_columns eq '1' ? 'T':'O',
-                roles 		=> \@roles,
-                dashlets	=> \@dashlets
-            };
+		my @roles = map { $_->{id_role} } $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $r->id})->hashref->all;
+		my @dashlets = map {$_->{html} . '#' . $_->{url} } sort { $a->{order} <=> $b->{order} } _array _load $r->dashlets;
+		
+		push @rows,
+			{
+				id 			=> $r->id,
+				name		=> $r->name,
+				description	=> $r->description,
+				is_main 	=> $r->is_main,
+				is_system	=> \$r->is_system,
+				type 		=> $r->is_columns eq '1' ? 'T':'O',
+				roles 		=> \@roles,
+				dashlets	=> \@dashlets
+			};
     }
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
     $c->forward('View::JSON');
@@ -120,52 +120,52 @@ sub list_dashlets : Local {
     my $p = $c->request->parameters;
 
     
-    my @dash_dirs = 
-    map {
-        _dir( $_->root, 'dashlets' )->stringify  
-    } Baseliner->features->list;
-    push @dash_dirs, $c->path_to( 'root/dashlets' ) . "";
-    @dash_dirs = grep { -d } @dash_dirs;
-    my @dashlets = map {
-        my @ret;
-        for my $f ( grep { -f } _dir( $_ )->children ) { 
-        my $d = $f->slurp;
-        my ( $yaml, $html ) = $d =~ /^<!--(.*)\n---.?\n(.*)$/gs;
-       
-        my $metadata;
-        if(length $yaml && length $html ) {
-            $metadata =  _load( $yaml );    
-        } else {
-            $metadata = {};
-            $html = $d; 
-        }
-        my @rows = map {
-            +{  field=>$_, value => $metadata->{$_} } 
-        } keys %{ $metadata || {} };
-        push @ret, {
-            file => "$f",
-            html => $html,
-            yaml => $yaml,
-            metadata => $metadata,
-            rows => \@rows,
-        };
-        }
-       @ret;
-    } @dash_dirs;
-    @dashlets;
-    
-    my @rows;
+	my @dash_dirs = 
+	map {
+		_dir( $_->root, 'dashlets' )->stringify  
+	} Baseliner->features->list;
+	push @dash_dirs, $c->path_to( 'root/dashlets' ) . "";
+	@dash_dirs = grep { -d } @dash_dirs;
+	my @dashlets = map {
+		my @ret;
+		for my $f ( grep { -f } _dir( $_ )->children ) { 
+		my $d = $f->slurp;
+		my ( $yaml, $html ) = $d =~ /^<!--(.*)\n---.?\n(.*)$/gs;
+	   
+		my $metadata;
+		if(length $yaml && length $html ) {
+			$metadata =  _load( $yaml );    
+		} else {
+			$metadata = {};
+			$html = $d; 
+		}
+		my @rows = map {
+			+{  field=>$_, value => $metadata->{$_} } 
+		} keys %{ $metadata || {} };
+		push @ret, {
+			file => "$f",
+			html => $html,
+			yaml => $yaml,
+			metadata => $metadata,
+			rows => \@rows,
+		};
+		}
+	   @ret;
+	} @dash_dirs;
+	@dashlets;
+	
+	my @rows;
     for my $dash ( @dashlets ) {
-        push @rows,
-          {
-            id			=> $dash->{metadata}->{html} . '#' . $dash->{metadata}->{url},
-            name		=> $dash->{metadata}->{name},
-            description	=> $dash->{metadata}->{description},
-            config		=> $dash->{metadata}->{config}
-            
-          };		
+		push @rows,
+		  {
+			id			=> $dash->{metadata}->{html} . '#' . $dash->{metadata}->{url},
+			name		=> $dash->{metadata}->{name},
+			description	=> $dash->{metadata}->{description},
+			config		=> $dash->{metadata}->{config}
+			
+		  };		
     }	
-    
+	
     $c->stash->{json} = { data=>\@rows };
     $c->forward('View::JSON');
 }
@@ -174,56 +174,56 @@ sub update : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $action = $p->{action};
-    my (@dashlets);
-    
-    my $i = 0;
-    
-    foreach my $dashlet (_array $p->{dashlets}){
-        my @html_url = split(/#/, $dashlet);
+	my (@dashlets);
+	
+	my $i = 0;
+	
+	foreach my $dashlet (_array $p->{dashlets}){
+		my @html_url = split(/#/, $dashlet);
 
-        my $_dashlet = {};
-        
-        $_dashlet->{html}	=	$html_url[0];
-        $_dashlet->{url}	=  $html_url[1];
-        $_dashlet->{order}	=  ++$i;
-            
-        if($p->{id} != -1){
-            my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{id});
-            my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
-            if($config_dashlet[0]->{params}){
-                $_dashlet->{params} = $config_dashlet[0]->{params};
-            };			
-        }			
-            
-        push @dashlets, $_dashlet;
-        
-    }
+		my $_dashlet = {};
+		
+		$_dashlet->{html}	=	$html_url[0];
+		$_dashlet->{url}	=  $html_url[1];
+		$_dashlet->{order}	=  ++$i;
+			
+		if($p->{id} != -1){
+			my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{id});
+			my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
+			if($config_dashlet[0]->{params}){
+				$_dashlet->{params} = $config_dashlet[0]->{params};
+			};			
+		}			
+			
+		push @dashlets, $_dashlet;
+		
+	}
 
     given ($action) {
         when ('add') {
             try{
-                my $row;
+				my $row;
                 $row = $c->model('Baseliner::BaliDashboard')->search( {name => $p->{name}} )->first;
                 if(!$row){
                     my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
                                     {
                                         name  => $p->{name},
                                         description => $p->{description},
-				                        is_main => $p->{dashboard_main_check} ? '1': '0',
-				                        is_columns => $p->{type} eq 'T' ? '1': '0',
-				                        dashlets => _dump \@dashlets,
-				                        
+										is_main => $p->{dashboard_main_check} ? '1': '0',
+										is_columns => $p->{type} eq 'T' ? '1': '0',
+										dashlets => _dump \@dashlets,
+										
                                     });
-                    
-                    if ($dashboard->id){
-                        foreach my $role (_array $p->{roles}){
-	                        my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-						                        {
-							                        id_dashboard  => $dashboard->id,
-							                        id_role => $role,
-						                        });
-                        }
-                    }
+					
+					if ($dashboard->id){
+						foreach my $role (_array $p->{roles}){
+							my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+												{
+													id_dashboard  => $dashboard->id,
+													id_role => $role,
+												});
+						}
+					}
                     
                     $c->stash->{json} = { msg => _loc('Dashboard added'), success => \1, dashboard_id => $dashboard->id };
                 }else{
@@ -240,22 +240,22 @@ sub update : Local {
                 my $dashboard = $c->model('Baseliner::BaliDashboard')->find( $dashboard_id );
                 $dashboard ->name( $p->{name} );
                 $dashboard ->description( $p->{description} );
-                $dashboard ->is_main ( $p->{dashboard_main_check} ? '1': '0');
-                $dashboard ->is_columns ( $p->{type} eq 'T' ? '1': '0');
-                $dashboard ->dashlets( _dump \@dashlets );
+				$dashboard ->is_main ( $p->{dashboard_main_check} ? '1': '0');
+				$dashboard ->is_columns ( $p->{type} eq 'T' ? '1': '0');
+				$dashboard ->dashlets( _dump \@dashlets );
                 $dashboard ->update();
 
-                my $dashboard = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
-                $dashboard->delete();
-                
-                foreach my $role (_array $p->{roles}){
-                    my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-				                        {
-					                        id_dashboard  => $dashboard_id,
-					                        id_role => $role,
-				                        });
-                }				
-                
+				my $dashboard = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
+				$dashboard->delete();
+				
+				foreach my $role (_array $p->{roles}){
+					my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+										{
+											id_dashboard  => $dashboard_id,
+											id_role => $role,
+										});
+				}				
+				
                 
                 $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $dashboard_id };
             }
@@ -269,12 +269,12 @@ sub update : Local {
             try{
                 my $row = $c->model('Baseliner::BaliDashboard')->find( $dashboard_id );
                 $row->delete;
-                
-                $row = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
-                if($row){
-                    $row->delete;	
-                }
-                
+				
+				$row = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
+				if($row){
+					$row->delete;	
+				}
+				
                 
                 $c->stash->{json} = { success => \1, msg=>_loc('Dashboard deleted') };
             }
@@ -289,138 +289,138 @@ sub update : Local {
 
 sub list : Local {
     my ($self, $c, $dashboard_name) = @_;
-    my $p = $c->req->params;
+	my $p = $c->req->params;
 
-    # **********************************************************************************************************
+	# **********************************************************************************************************
     # TODO: Hay que controlar los dashboards por perfil ********************************************************
-    # **********************************************************************************************************
-    
-    given ($dashboard_name) {
-        when ('project') {
-            my $system_dashboard = $c->model('Baseliner::BaliDashboard')->search({name => 'Clarive projects'})->first();
-            my @dashlets;
-            my $is_columns;
-            my $dashboard_id;
-            
-            if($system_dashboard){
-                @dashlets = _array _load $system_dashboard->dashlets;
-                $is_columns = $system_dashboard->is_columns;
-                $dashboard_id = $system_dashboard->id;
-            }
-            else{
-                ##Dashlets para el dashboard de proyectos.
-                @dashlets = ({ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
-	                         { html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
-	                        );
-                $is_columns = '1';
-                
-                my @params = qw /projects/; #Aqui van las variables no configurables por el usuario.
-                my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
-		                        {
-			                        name  => 'Clarive projects',
-			                        description => 'System dashboard',
-			                        dashlets => _dump (\@dashlets),
-			                        is_columns => '1',
-			                        is_system => '1',
-			                        system_params => _dump (\@params),
-			                        
-		                        });
-                $dashboard_id = $dashboard->id;
-                if ($dashboard->id){
-                    my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-				                        {
-					                        id_dashboard  => $dashboard->id,
-					                        id_role => 100, #Public
-				                        });
-                }
-            }
-    
-            
-            my @params;
-            my %valores;
-            $valores{projects} = $p->{id_project};
-            push @params, 'system/' . $dashboard_id; 
-            push @params, \%valores;
-            
-            for my $dash ( @dashlets ) {
-                $c->forward( $dash->{url}, \@params );
-                $c->stash->{is_columns} = $is_columns;
-                $c->stash->{dashboardlets} = \@dashlets;
-            }			
-    
-        } #End Dashboard Project
-        default {
-            my $dashboard_id = $p->{dashboard_id};
-            my @dashlets;
-            
-            if ($dashboard_id){
-                my $dashboard = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-                @dashlets = _array _load $dashboard->dashlets;
-                for my $dash ( @dashlets ) {
-                    if($dash->{url}){
-                        $c->forward( $dash->{url} . '/' . $dashboard_id );
-                    }
-                }
-                $c->stash->{is_columns} = $dashboard->is_columns;
-                $c->stash->{dashboardlets} = \@dashlets;
-            }else{
-                my $dashboard = $c->model('Baseliner::BaliDashboard')->search( {is_system=>'0'}, {order_by => 'is_main desc'} );
-                
-                if ($dashboard->count > 0){
-                    my $i = 0;
-                    my @dashboard;
-                    while (my $dashboard = $dashboard->next){
-                        if($i == 0){
-	                        @dashlets = _array _load $dashboard->dashlets;
-	                        for my $dash ( @dashlets ) {
-		                        if($dash->{url}){
-			                        $c->forward( $dash->{url} . '/' . $dashboard->id );
-		                        }
-	                        }
-	                        $c->stash->{is_columns} = $dashboard->is_columns;
-	                        $c->stash->{dashboardlets} = \@dashlets;
-                        }else{
-	                        push @dashboard, { name => $dashboard->name,
-					                           id   => $dashboard->id,
-					                         };
-                        }
-                        $i++;
-                    }
-                    $c->stash->{dashboards} = \@dashboard;
-                    
-                }else{
-                    ##Dashboard proporcionado por clarive (default)
-                    @dashlets = (	{ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
-			                        { html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
-			                        { html => '/dashlets/topics.html', url => '/dashboard/list_topics', order => 3},
-			                        { html => '/dashlets/emails.html', url => '/dashboard/list_emails', order => 4},
-			                        { html => '/dashlets/jobs.html', url => '/dashboard/list_jobs', order=> 5},
-			                        { html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
-		                        );
-                    
-                    my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
-			                        {
-				                        name  => 'Clarive',
-				                        description => 'Demo dashboard Clarive configurable',
-				                        dashlets => _dump \@dashlets,
-			                        });
-                    
-                    if ($dashboard->id){
-                        my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-					                        {
-						                        id_dashboard  => $dashboard->id,
-						                        id_role => 100, #Public
-					                        });
-                    }
-                    for my $dash ( @dashlets ) {
-                        $c->forward( $dash->{url} . '/' . $dashboard->id );
-                        $c->stash->{is_columns} = $dashboard->is_columns;
-                        $c->stash->{dashboardlets} = \@dashlets;
-                    }	
-                }
-            }
-        } # End default
-    }	
+	# **********************************************************************************************************
+	
+	given ($dashboard_name) {
+		when ('project') {
+			my $system_dashboard = $c->model('Baseliner::BaliDashboard')->search({name => 'Clarive projects'})->first();
+			my @dashlets;
+			my $is_columns;
+			my $dashboard_id;
+			
+			if($system_dashboard){
+				@dashlets = _array _load $system_dashboard->dashlets;
+				$is_columns = $system_dashboard->is_columns;
+				$dashboard_id = $system_dashboard->id;
+			}
+			else{
+				##Dashlets para el dashboard de proyectos.
+				@dashlets = ({ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
+							 { html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
+							);
+				$is_columns = '1';
+				
+				my @params = qw /projects/; #Aqui van las variables no configurables por el usuario.
+				my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+								{
+									name  => 'Clarive projects',
+									description => 'System dashboard',
+									dashlets => _dump (\@dashlets),
+									is_columns => '1',
+									is_system => '1',
+									system_params => _dump (\@params),
+									
+								});
+				$dashboard_id = $dashboard->id;
+				if ($dashboard->id){
+					my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+										{
+											id_dashboard  => $dashboard->id,
+											id_role => 100, #Public
+										});
+				}
+			}
+	
+			
+			my @params;
+			my %valores;
+			$valores{projects} = $p->{id_project};
+			push @params, 'system/' . $dashboard_id; 
+			push @params, \%valores;
+			
+			for my $dash ( @dashlets ) {
+				$c->forward( $dash->{url}, \@params );
+				$c->stash->{is_columns} = $is_columns;
+				$c->stash->{dashboardlets} = \@dashlets;
+			}			
+	
+		} #End Dashboard Project
+		default {
+			my $dashboard_id = $p->{dashboard_id};
+			my @dashlets;
+			
+			if ($dashboard_id){
+				my $dashboard = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+				@dashlets = _array _load $dashboard->dashlets;
+				for my $dash ( @dashlets ) {
+					if($dash->{url}){
+						$c->forward( $dash->{url} . '/' . $dashboard_id );
+					}
+				}
+				$c->stash->{is_columns} = $dashboard->is_columns;
+				$c->stash->{dashboardlets} = \@dashlets;
+			}else{
+				my $dashboard = $c->model('Baseliner::BaliDashboard')->search( {is_system=>'0'}, {order_by => 'is_main desc'} );
+				
+				if ($dashboard->count > 0){
+					my $i = 0;
+					my @dashboard;
+					while (my $dashboard = $dashboard->next){
+						if($i == 0){
+							@dashlets = _array _load $dashboard->dashlets;
+							for my $dash ( @dashlets ) {
+								if($dash->{url}){
+									$c->forward( $dash->{url} . '/' . $dashboard->id );
+								}
+							}
+							$c->stash->{is_columns} = $dashboard->is_columns;
+							$c->stash->{dashboardlets} = \@dashlets;
+						}else{
+							push @dashboard, { name => $dashboard->name,
+											   id   => $dashboard->id,
+											 };
+						}
+						$i++;
+					}
+					$c->stash->{dashboards} = \@dashboard;
+					
+				}else{
+					##Dashboard proporcionado por clarive (default)
+					@dashlets = (	{ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
+									{ html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
+									{ html => '/dashlets/topics.html', url => '/dashboard/list_topics', order => 3},
+									{ html => '/dashlets/emails.html', url => '/dashboard/list_emails', order => 4},
+									{ html => '/dashlets/jobs.html', url => '/dashboard/list_jobs', order=> 5},
+									{ html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
+								);
+					
+					my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+									{
+										name  => 'Clarive',
+										description => 'Demo dashboard Clarive configurable',
+										dashlets => _dump \@dashlets,
+									});
+					
+					if ($dashboard->id){
+						my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+											{
+												id_dashboard  => $dashboard->id,
+												id_role => 100, #Public
+											});
+					}
+					for my $dash ( @dashlets ) {
+						$c->forward( $dash->{url} . '/' . $dashboard->id );
+						$c->stash->{is_columns} = $dashboard->is_columns;
+						$c->stash->{dashboardlets} = \@dashlets;
+					}	
+				}
+			}
+		} # End default
+	}	
     $c->stash->{template} = '/comp/dashboard.html';
 }
 
@@ -428,566 +428,567 @@ sub get_config : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my @rows = ();
-    my @html_url = split(/#/, $p->{id});
+	my @html_url = split(/#/, $p->{id});
 
-    if($p->{config}){
-        my $default_config = $c->model('Registry')->get( $p->{config} )->metadata;
-        my %dashlet_config;
-        my %key_description;
-        foreach my $field (_array $default_config){
-            $dashlet_config{$field->{id}} = $field->{default};
-            $key_description{$field->{id}} = $field->{label};
-        }		
-        
-        my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{dashboard_id});
-        my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
-        
+	if($p->{config}){
+		my $default_config = $c->model('Registry')->get( $p->{config} )->metadata;
+		my %dashlet_config;
+		my %key_description;
+		foreach my $field (_array $default_config){
+			$dashlet_config{$field->{id}} = $field->{default};
+			$key_description{$field->{id}} = $field->{label};
+		}		
+		
+		my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{dashboard_id});
+		my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
+		
 
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
-                $dashlet_config{$key} = $config_dashlet[0]->{params}->{$key};
-            };
-        }
-        
-        if($p->{system} eq 'true'){
-            foreach my $system_id (_array _load($dashboard->system_params)){
-                delete $dashlet_config{$system_id};
-                delete $key_description{$system_id};
-            };			
-        }
-        
-        foreach my $key (keys %dashlet_config){
-            push @rows,
-                {
-                    id 			=> $key,
-                    dashlet		=> $html_url[0],
-                    description	=> $key_description{$key},
-                    value 		=> $dashlet_config{$key}
-                };		
-        }
-    }
-    
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
+				$dashlet_config{$key} = $config_dashlet[0]->{params}->{$key};
+			};
+		}
+		
+		if($p->{system} eq 'true'){
+			foreach my $system_id (_array _load($dashboard->system_params)){
+				delete $dashlet_config{$system_id};
+				delete $key_description{$system_id};
+			};			
+		}
+		
+		foreach my $key (keys %dashlet_config){
+			push @rows,
+				{
+					id 			=> $key,
+					dashlet		=> $html_url[0],
+					description	=> $key_description{$key},
+					value 		=> $dashlet_config{$key}
+				};		
+		}
+	}
+	
     $c->stash->{json} = { data=>\@rows};		
     $c->forward('View::JSON');	
-    
+	
 }
 
 sub set_config : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    
-    my $dashboard_id = $p->{id_dashboard};
-    my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-    my $dashlet = $p->{dashlet};
+	
+	my $dashboard_id = $p->{id_dashboard};
+	my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+	my $dashlet = $p->{dashlet};
 
-    my @dashlet = grep {$_->{html}=~ $dashlet} _array _load($dashboard_rs->dashlets);
-    $dashlet[0]->{params}->{$p->{id}} = $p->{value};
-    
-    my @dashlets = grep {$_->{html}!~ $dashlet} _array _load($dashboard_rs->dashlets);
+	my @dashlet = grep {$_->{html}=~ $dashlet} _array _load($dashboard_rs->dashlets);
+	$dashlet[0]->{params}->{$p->{id}} = $p->{value};
+	
+	my @dashlets = grep {$_->{html}!~ $dashlet} _array _load($dashboard_rs->dashlets);
 
-    push @dashlets, @dashlet;
-    $dashboard_rs->dashlets(_dump \@dashlets);
-    $dashboard_rs->update();
-    
-    $c->stash->{json} = { success => \1, msg=>_loc('Configuration changed') };	
+	push @dashlets, @dashlet;
+	$dashboard_rs->dashlets(_dump \@dashlets);
+	$dashboard_rs->update();
+	
+	$c->stash->{json} = { success => \1, msg=>_loc('Configuration changed') };	
     $c->forward('View::JSON');	
-    
+	
 }
 
 sub get_config_dashlet{
-    my ($parent_method, $dashboard_id, $params) = @_;
-    
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
+	my ($parent_method, $dashboard_id, $params) = @_;
+	
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
 
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = Baseliner->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }		
-    }else{
-        
-        my @dashboard_system_id = split "/", $dashboard_id;		
-        
-        my $dashboard_rs = Baseliner->model('Baseliner::BaliDashboard')->find($dashboard_system_id[1]);
-        my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }			
-        
-        my %params = _array $params;
-        if($params){
-            foreach my $key (keys %params){
-                $default_config->{$key} = $params{$key};
-            };				
-        }			
-    }
-    return $default_config;
+	if($dashboard_id && looks_like_number($dashboard_id)){
+		$default_config->{dashboard_id} = $dashboard_id;
+		
+		my $dashboard_rs = Baseliner->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}else{
+		
+		my @dashboard_system_id = split "/", $dashboard_id;		
+		$default_config->{dashboard_id} = $dashboard_system_id[1];
+		
+		my $dashboard_rs = Baseliner->model('Baseliner::BaliDashboard')->find($dashboard_system_id[1]);
+		my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}			
+		
+		my %params = _array $params;
+		if($params){
+			foreach my $key (keys %params){
+				$default_config->{$key} = $params{$key};
+			};				
+		}			
+	}
+	return $default_config;
 }
 
 sub list_baseline: Private{
     my ( $self, $c, $dashboard_id, $params ) = @_;
-    my $username = $c->username;
-    my (@jobs, $job, @datas, @temps, $SQL);
-    
-    my $config = get_config_dashlet('list_baseline', $dashboard_id, $params);
-    
-    #######################################################################################################
-    #CONFIGURATION DASHLET
-    ##########################################################################################################	
-    #my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
-    #
-    #if($dashboard_id && looks_like_number($dashboard_id)){
-    #	my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-    #	my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
-    #	
-    #	if($config_dashlet[0]->{params}){
-    #		foreach my $key (keys $config_dashlet[0]->{params}){
-    #			$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-    #		};				
-    #	}		
-    #}else{
-    #	
-    #	my @dashboard_system_id = split "/", $dashboard_id;		
-    #	
-    #	my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_system_id[1]);
-    #	my @config_dashlet = grep {$_->{url}=~ 'list_baseline'} _array _load($dashboard_rs->dashlets);
-    #	
-    #	if($config_dashlet[0]->{params}){
-    #		foreach my $key (keys $config_dashlet[0]->{params}){
-    #			$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-    #		};				
-    #	}			
-    #	
-    #	my %params = _array $params;
-    #	if($params){
-    #		foreach my $key (keys %params){
-    #			$default_config->{$key} = $params{$key};
-    #		};				
-    #	}			
-    #}
-    ##########################################################################################################	
-    
-    my $bl_days = $config->{bl_days} // 7;
-    
-    #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-													                        action => 'action.job.viewall',
-													                        level => 1);
-    my $ids_project;
-    if($config->{projects} ne 'ALL'){
-        $ids_project = 'MID=' . join ('', grep {$_ =~ $config->{projects}} @ids_project);
-    }
-    else{
-        $ids_project =  'MID=' . join (' OR MID=', @ids_project);	
-    }
-    
-    
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
+	my $username = $c->username;
+	my (@jobs, $job, @datas, @temps, $SQL);
+	
+	#######################################################################################################
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $config = get_config_dashlet('list_baseline', $dashboard_id, $params);	
+	##########################################################################################################	
+	$c->stash->{dashboard_id}=$config->{dashboard_id};
+	
+    my $bl_days = $config->{bl_days};
+	
+	#Cojemos los proyectos que el usuario tiene permiso para ver jobs
+	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
+																			action => 'action.job.viewall',
+																			level => 1);
+	my $ids_project;
+	$c->stash->{projects} = $config->{projects};
+	
+	if($config->{projects} ne 'ALL'){
+		$ids_project = 'MID=' . join ('', grep {$_ =~ $config->{projects}} @ids_project);
+	}
+	else{
+		$ids_project =  'MID=' . join (' OR MID=', @ids_project);	
+	}
+	
+	
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
 
-    $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+	$SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
-                        AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-								                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+						AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+														(SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
                         WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
                 GROUP BY BL
-            UNION				
-            SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-            WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
-                    AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-							                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
-                    WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
-            GROUP BY BL";				
-    
-    @jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
+			UNION				
+			SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+			WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
+					AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+													(SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+					WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
+			GROUP BY BL";				
+	
+	@jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
 
-    #my @entornos = ('TEST', 'PREP', 'PROD');
+	#my @entornos = ('TEST', 'PREP', 'PROD');
     my $states     = $config->{states};
-    my @entornos = split ",", $states;
-    
-    foreach my $entorno (@entornos){
-        my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
-        @temps = grep { ($_->{bl}) =~ $entorno } @jobs;
-        foreach my $temp (@temps){
-            $bl = $temp->{bl};
-            if($temp->{result} eq 'OK'){
-                $totOk = $temp->{tot};
-            }else{
-                $totError = $temp->{tot};
-            }
-        }
-        $total = $totOk + $totError;
-        if($total){
-            $porcentOk = $totOk * 100/$total;
-            $porcentError = $totError * 100/$total;
-        }else{
-            $bl = $entorno;
-            $totOk = '';
-            $totError = '';
-            $porcentOk = 0;
-            $porcentError = 0;			
-        }
-        push @datas, {
-                        bl 				=> $bl,
-                        porcentOk		=> $porcentOk,
-                        totOk			=> $totOk,
-                        total			=> $total,
-                        totError		=> $totError,
-                        porcentError	=> $porcentError
-                    };			
-    }
-    $c->stash->{entornos} =\@datas;
+	my @entornos = split ",", $states;
+	
+	foreach my $entorno (@entornos){
+		my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
+		@temps = grep { ($_->{bl}) =~ $entorno } @jobs;
+		foreach my $temp (@temps){
+			$bl = $temp->{bl};
+			if($temp->{result} eq 'OK'){
+				$totOk = $temp->{tot};
+			}else{
+				$totError = $temp->{tot};
+			}
+		}
+		$total = $totOk + $totError;
+		if($total){
+			$porcentOk = $totOk * 100/$total;
+			$porcentError = $totError * 100/$total;
+		}else{
+			$bl = $entorno;
+			$totOk = '';
+			$totError = '';
+			$porcentOk = 0;
+			$porcentError = 0;			
+		}
+		push @datas, {
+						bl 				=> $bl,
+						porcentOk		=> $porcentOk,
+						totOk			=> $totOk,
+						total			=> $total,
+						totError		=> $totError,
+						porcentError	=> $porcentError
+					};			
+	}
+	$c->stash->{entornos} =\@datas;
 }
 
 sub list_lastjobs: Private{
-    my ( $self, $c, $dashboard_id ) = @_;
-    my $order_by = 'STARTTIME DESC'; 
-    my $rs_search = $c->model('Baseliner::BaliJob')->search(
+	my ( $self, $c, $dashboard_id ) = @_;
+	my $order_by = 'STARTTIME DESC'; 
+	my $rs_search = $c->model('Baseliner::BaliJob')->search(
         undef,
-        {
-            order_by => $order_by,
-        }
-    );
-    my $numrow = 0;
-    my @lastjobs;
-    
-    #######################################################################################################
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.lastjobs');	
-    
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array _load($dashboard_rs->dashlets);
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }		
-    }	
-    ##########################################################################################################
+		{
+			order_by => $order_by,
+		}
+	);
+	my $numrow = 0;
+	my @lastjobs;
+	
+	#######################################################################################################
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.lastjobs');	
+	
+	if($dashboard_id && looks_like_number($dashboard_id)){
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}	
+	##########################################################################################################
 
-    while( my $rs = $rs_search->next ) {
-        if ($numrow >= $default_config->{rows}) {last;}
-        push @lastjobs,{ 	id => $rs->id,
-	                        name => $rs->name,
-	                        type => $rs->type,
-	                        rollback => $rs->rollback,
-	                        status => $rs->status,
-	                        starttime => $rs->starttime,
-	                        endtime=> $rs->endtime};
-        $numrow = $numrow + 1;
-    }
-    $c->stash->{lastjobs} =\@lastjobs;
+	while( my $rs = $rs_search->next ) {
+		if ($numrow >= $default_config->{rows}) {last;}
+	    push @lastjobs,{ 	id => $rs->id,
+							name => $rs->name,
+							type => $rs->type,
+							rollback => $rs->rollback,
+							status => $rs->status,
+							starttime => $rs->starttime,
+							endtime=> $rs->endtime};
+		$numrow = $numrow + 1;
+	}
+	$c->stash->{lastjobs} =\@lastjobs;
 }
 
 sub list_emails: Private{
     my ( $self, $c, $dashboard_id ) = @_;
-    my $username = $c->username;
+	my $username = $c->username;
     my @datas;
-    
-    
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.emails');	
-    
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_emails'} _array _load($dashboard_rs->dashlets);
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }		
-    }	
-    ##########################################################################################################	
-    
-    my $rows = $default_config->{rows};
-    
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    my $SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
-                FROM BALI_MESSAGE A,
-                    (SELECT * FROM ( SELECT ID_MESSAGE,  SENT
-				                        FROM BALI_MESSAGE_QUEUE
-				                        WHERE USERNAME = ? AND SWREADED = 0
-				                        ORDER BY SENT DESC ) WHERE ROWNUM <= ?) B
-                WHERE A.ID = B.ID_MESSAGE";
-                
+	
+	
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.emails');	
+	
+	if($dashboard_id && looks_like_number($dashboard_id)){
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ 'list_emails'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}	
+	##########################################################################################################	
+	
+	my $rows = $default_config->{rows};
+	
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	my $SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
+				FROM BALI_MESSAGE A,
+					(SELECT * FROM ( SELECT ID_MESSAGE,  SENT
+										FROM BALI_MESSAGE_QUEUE
+										WHERE USERNAME = ? AND SWREADED = 0
+										ORDER BY SENT DESC ) WHERE ROWNUM <= ?) B
+				WHERE A.ID = B.ID_MESSAGE";
+				
 
-    my @emails = $db->array_hash( $SQL , $username, $rows);
-    foreach my $email (@emails){
-        push @datas, $email;
-    }	
-        
-    $c->stash->{emails} =\@datas;
+	my @emails = $db->array_hash( $SQL , $username, $rows);
+	foreach my $email (@emails){
+	    push @datas, $email;
+	}	
+		
+	$c->stash->{emails} =\@datas;
 }
 
 sub list_topics: Private{
     my ( $self, $c, $dashboard_id ) = @_;
-    my $username = $c->username;
-    #my (@topics, $topic, @datas, $SQL);
-    
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics');	
-    
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array _load($dashboard_rs->dashlets);
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }		
-    }	
-    ##########################################################################################################		
-    
-    my $limit = $default_config->{rows};
-    my @columns = ('topic_mid','title', 'category_name', 'created_on', 'created_by', 'category_status_name', 'numcomment');
-    my ($select, $as, $order_by,  $group_by) = ([map {'me.' . $_} @columns], #select
-						                        [@columns], #as
-						                        [{-desc => 'me.created_on' }], #order_by
-						                        [@columns] #group_by
-						                        );
-    my $where = {};
+	my $username = $c->username;
+	#my (@topics, $topic, @datas, $SQL);
+	
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics');	
+	
+	if($dashboard_id && looks_like_number($dashboard_id)){
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}	
+	##########################################################################################################		
+	
+	my $limit = $default_config->{rows};
+	my @columns = ('topic_mid','title', 'category_name', 'created_on', 'created_by', 'category_status_name', 'numcomment');
+	my ($select, $as, $order_by,  $group_by) = ([map {'me.' . $_} @columns], #select
+												[@columns], #as
+												[{-desc => 'me.created_on' }], #order_by
+												[@columns] #group_by
+												);
+	my $where = {};
     $where->{'me.status'} = 'O';
-    
-    my @datas = $c->model('Baseliner::TopicView')->search(  
+	
+	my @datas = $c->model('Baseliner::TopicView')->search(  
         $where,
         { select=>$select, as=>$as, order_by=>$order_by, rows=>$limit, group_by=>$group_by }
     )->hashref->all; 	
-    
-    $c->stash->{topics} =\@datas;
+	
+	$c->stash->{topics} =\@datas;
 }
 
 sub list_jobs: Private {
     my ( $self, $c, $dashboard_id ) = @_;
-    my $username = $c->username;
-    my @datas;	
-    my $SQL;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	my $username = $c->username;
+	my @datas;	
+	my $SQL;
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
-    #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-													                        action => 'action.job.viewall',
-													                        level => 1);
-    my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
-    
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.jobs');	
-    
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_jobs'} _array _load($dashboard_rs->dashlets);
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }		
-    }	
-    ##########################################################################################################
-    
-    my $rows = $default_config->{rows};
-    
-    $SQL = "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION
-                        FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
-	                        FROM BALI_JOB_ITEMS A, BALI_JOB B
-	                        WHERE A.ID_JOB = B.ID
-	                        GROUP BY  SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))), BL) C,
-                        (SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
-	                        FROM BALI_JOB_ITEMS A,
-		                        (SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
-							                        FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
-									                        FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
-												                        FROM BALI_JOB
-												                        WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-																									                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
-																							                        WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
-												                        
-												                        
-												                        
-												                        
-								                          UNION
-								                          SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
-															                        WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-																												                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
-																										                        WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
-								                         
-								                         
-								                         )
-					                           )
-		                        ) B
-	                        WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
-                WHERE MY_ROW_NUM <= ?";				
-    my @jobs = $db->array_hash( $SQL, $rows)
+	#Cojemos los proyectos que el usuario tiene permiso para ver jobs
+	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
+																			action => 'action.job.viewall',
+																			level => 1);
+	my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
+	
+	#CONFIGURATION DASHLET
+	##########################################################################################################
+	my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.jobs');	
+	
+	if($dashboard_id && looks_like_number($dashboard_id)){
+		my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+		my @config_dashlet = grep {$_->{url}=~ 'list_jobs'} _array _load($dashboard_rs->dashlets);
+		
+		if($config_dashlet[0]->{params}){
+			foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+				$default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+			};				
+		}		
+	}	
+	##########################################################################################################
+	
+	my $rows = $default_config->{rows};
+	
+	$SQL = "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION
+						FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
+							FROM BALI_JOB_ITEMS A, BALI_JOB B
+							WHERE A.ID_JOB = B.ID
+							GROUP BY  SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))), BL) C,
+						(SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
+							FROM BALI_JOB_ITEMS A,
+								(SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
+													FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
+															FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
+																		FROM BALI_JOB
+																		WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+																															(SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+																													WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
+																		
+																		
+																		
+																		
+														  UNION
+														  SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
+																					WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+																																		(SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+																																WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
+														 
+														 
+														 )
+											   )
+								) B
+							WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
+				WHERE MY_ROW_NUM <= ?";				
+	my @jobs = $db->array_hash( $SQL, $rows)
         if @ids_project;
-    
-    foreach my $job (@jobs){
-        my ($lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration);
-        given ($job->{status}) {
-            when ('RUNNING') {
-                my @jobError = get_last_jobError($job->{project1},$job->{bl},$username);
+	
+	foreach my $job (@jobs){
+		my ($lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration);
+		given ($job->{status}) {
+			when ('RUNNING') {
+				my @jobError = get_last_jobError($job->{project1},$job->{bl},$username);
 
-                if(@jobError){
-                    foreach my $jobError (@jobError){
-                        $idError = $jobError->{id};
-                        $lastError = $jobError->{dias};
-                        $nameError = $jobError->{name};
-                        $lastDuration = $jobError->{duration};
-                    }
-                }
-                my @jobOk = get_last_jobOk($job->{project1},$job->{bl},$username);
-                
-                if(@jobOk){
-                    foreach my $jobOk (@jobOk){
-                        $idOk = $jobOk->{id};
-                        $lastOk = $jobOk->{dias};
-                        $nameOk = $jobOk->{name};
-                        if($lastOk < $lastError){
-	                        $lastDuration = $jobOk->{duration};	
-                        }
-                    }
-                }				
-                
-            }
-            when ('FINISHED') {
-                $idOk = $job->{id};
-                $lastOk = $job->{dias};
-                $nameOk = $job->{name};
-                $lastDuration = $job->{duration};
-                
-                my @jobError = get_last_jobError($job->{project1},$job->{bl});
+				if(@jobError){
+					foreach my $jobError (@jobError){
+						$idError = $jobError->{id};
+						$lastError = $jobError->{dias};
+						$nameError = $jobError->{name};
+						$lastDuration = $jobError->{duration};
+					}
+				}
+				my @jobOk = get_last_jobOk($job->{project1},$job->{bl},$username);
+				
+				if(@jobOk){
+					foreach my $jobOk (@jobOk){
+						$idOk = $jobOk->{id};
+						$lastOk = $jobOk->{dias};
+						$nameOk = $jobOk->{name};
+						if($lastOk < $lastError){
+							$lastDuration = $jobOk->{duration};	
+						}
+					}
+				}				
+				
+			}
+			when ('FINISHED') {
+				$idOk = $job->{id};
+				$lastOk = $job->{dias};
+				$nameOk = $job->{name};
+				$lastDuration = $job->{duration};
+				
+				my @jobError = get_last_jobError($job->{project1},$job->{bl});
 
-                if(@jobError){
-                    foreach my $jobError (@jobError){
-                        $idError = $jobError->{id};
-                        $lastError = $jobError->{dias};
-                        $nameError = $jobError->{name};
-                    }
-                }
-                
-            }
-            when ('ERROR' || 'CANCELLED' || 'KILLED') {
-                $idError = $job->{id};
-                $lastError = $job->{dias};
-                $nameError = $job->{name};
-                $lastDuration = $job->{duration};
+				if(@jobError){
+					foreach my $jobError (@jobError){
+						$idError = $jobError->{id};
+						$lastError = $jobError->{dias};
+						$nameError = $jobError->{name};
+					}
+				}
+				
+			}
+			when ('ERROR' || 'CANCELLED' || 'KILLED') {
+				$idError = $job->{id};
+				$lastError = $job->{dias};
+				$nameError = $job->{name};
+				$lastDuration = $job->{duration};
 
-                my @jobOk = get_last_jobOk($job->{project1},$job->{bl});
-                
-                if(@jobOk){
-                    foreach my $jobOk (@jobOk){
-                        $idOk = $jobOk->{id};
-                        $lastOk = $jobOk->{dias};
-                        $nameOk = $jobOk->{name};
-                    }
-                }
-            }
-        }
-            
-        push @datas, {
-                    project 		=> $job->{project1},
-                    bl				=> $job->{bl},
-                    lastOk			=> $lastOk,
-                    idOk			=> $idOk,
-                    nameOk			=> $nameOk,
-                    idError			=> $idError,
-                    lastError		=> $lastError,
-                    nameError		=> $nameError,
-                    lastDuration 	=> $lastDuration
-                };	
-    }	
-    
-    $c->stash->{jobs} =\@datas;
+				my @jobOk = get_last_jobOk($job->{project1},$job->{bl});
+				
+				if(@jobOk){
+					foreach my $jobOk (@jobOk){
+						$idOk = $jobOk->{id};
+						$lastOk = $jobOk->{dias};
+						$nameOk = $jobOk->{name};
+					}
+				}
+			}
+		}
+			
+		push @datas, {
+					project 		=> $job->{project1},
+					bl				=> $job->{bl},
+					lastOk			=> $lastOk,
+					idOk			=> $idOk,
+					nameOk			=> $nameOk,
+					idError			=> $idError,
+					lastError		=> $lastError,
+					nameError		=> $nameError,
+					lastDuration 	=> $lastDuration
+				};	
+	}	
+	
+	$c->stash->{jobs} =\@datas;
 }
 
 sub get_last_jobOk: Private{
-    my $project = shift;
-    my $bl = shift;
-    my $username = shift;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    my $SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS, ROUND ((ENDTIME - STARTTIME) * 24 * 60) AS DURATION 
-		                        FROM BALI_JOB_ITEMS A, BALI_JOB B 
-		                        WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
-				                        AND BL = ? AND STATUS = 'FINISHED' AND ENDTIME IS NOT NULL)
-                    WHERE MY_ROW_NUM < 2";
-    return $db->array_hash( $SQL, $project, $bl);
+	my $project = shift;
+	my $bl = shift;
+	my $username = shift;
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
+	my $SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS, ROUND ((ENDTIME - STARTTIME) * 24 * 60) AS DURATION 
+								FROM BALI_JOB_ITEMS A, BALI_JOB B 
+								WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
+										AND BL = ? AND STATUS = 'FINISHED' AND ENDTIME IS NOT NULL)
+					WHERE MY_ROW_NUM < 2";
+	return $db->array_hash( $SQL, $project, $bl);
 }
 
 sub get_last_jobError: Private{
-    my $project = shift;
-    my $bl = shift;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    my $SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS, ROUND ((ENDTIME - STARTTIME) * 24 * 60) AS DURATION 
-		                        FROM BALI_JOB_ITEMS A, BALI_JOB B 
-		                        WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
-				                        AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND ENDTIME IS NOT NULL)
-                    WHERE MY_ROW_NUM < 2";
-    return $db->array_hash( $SQL, $project, $bl );	
+	my $project = shift;
+	my $bl = shift;
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	
+	my $SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS, ROUND ((ENDTIME - STARTTIME) * 24 * 60) AS DURATION 
+								FROM BALI_JOB_ITEMS A, BALI_JOB B 
+								WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
+										AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND ENDTIME IS NOT NULL)
+					WHERE MY_ROW_NUM < 2";
+	return $db->array_hash( $SQL, $project, $bl );	
 }
 
 sub viewjobs: Local{
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    my $username = $c->username;
-    my ($status, @jobs, $job, $jobsid, $SQL);
-    my $jobsid = '';
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    
-    
-    if($p->{ent} eq 'All'){
-        $SQL = "SELECT ID FROM BALI_JOB WHERE STATUS = 'RUNNING' AND USERNAME = ?";
-        @jobs = $db->array_hash( $SQL, $username );
-    }else{
-        my $job_days = config_get('config.dashboard')->{bl_days};
-        $SQL = $p->{swOk} ?
-                "SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND BL = ? AND STATUS = 'FINISHED' AND USERNAME = ?" :
-                "SELECT ID FROM BALI_JOB WHERE TO_NUMBER(SYSDATE - ENDTIME) <= ? AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND USERNAME = ?";
-        @jobs = $db->array_hash( $SQL, $job_days, $p->{ent}, $username );
-    }
-    
-    foreach $job (@jobs){
-        $jobsid .= $job->{id} . ",";
-     }
-    $c->stash->{jobs} =$jobsid;
-    $c->forward('/job/monitor/Dashboard');
+	my ( $self, $c, $dashboard_id, $projects, $type, $bl ) = @_;
+	my $p = $c->request->parameters;
+
+	my $config = get_config_dashlet('list_baseline', $dashboard_id);
+	$config->{projects} = $projects;
+
+	#Cojemos los proyectos que el usuario tiene permiso para ver jobs
+	my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
+																			action => 'action.job.viewall',
+																			level => 1);
+	
+	#Filtramos por la parametrización cuando no son todos
+	if($config->{projects} ne 'ALL'){
+		@ids_project = grep {$_ =~ $config->{projects}} @ids_project;
+	}
+	
+	my $states    = $config->{states};
+	my @baselines = split ",", $states;
+	
+	
+	my @jobs;
+	
+	if($type){
+		my @status;
+		given ($type) {
+	        when ('ok') {
+				@status = ('FINISHED');
+			}
+			when ('nook'){
+				@status = ('ERROR','CANCELLED','KILLED');
+			}
+		}
+		
+		my $jobs = 	$c->model('Baseliner::BaliJobItems')
+					->search(	{id_project => \@ids_project, status=>\@status, bl=>$bl}, 
+								{join=>['id_job']});
+					
+		@jobs = $jobs->search_literal('TO_NUMBER(SYSDATE - ENDTIME) <= ?',$config->{bl_days})->hashref->all;
+		
+		
+		
+	}else{
+		@jobs = $c->model('Baseliner::BaliJobItems')
+				->search(	{id_project=>\@ids_project, status=>'RUNNING', bl=>\@baselines },
+							{select=>['id_job'], distinct=>'me.id_job', join=>['id_job']})
+				->hashref->all;	
+	}
+	
+	my $jobsid = join(',', map {$_->{id_job}} @jobs);
+
+	$c->stash->{jobs} = @jobs ? join(',', map {$_->{id_job}} @jobs) : -1;
+	$c->forward('/job/monitor/Dashboard');
 }
 
 sub topics_by_category: Local{
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    my ($SQL, @topics_by_category, @datas);
-    
-    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
-    @topics_by_category = $db->array_hash( $SQL );
+	my ( $self, $c ) = @_;
+	my $p = $c->request->parameters;
+	my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+	my ($SQL, @topics_by_category, @datas);
+	
+	$SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
+	@topics_by_category = $db->array_hash( $SQL );
 
-    
-    foreach my $topic (@topics_by_category){
-        push @datas, {
-                    total 			=> $topic->{total},
-                    category		=> $topic->{category},
-                    color			=> $topic->{color},
-                    category_id		=> $topic->{id_category}
-                };
-     }
-    $c->stash->{topics_by_category} = \@datas;
-    $c->stash->{topics_by_category_title} = _loc('Topics by category');
+	
+	foreach my $topic (@topics_by_category){
+		push @datas, {
+					total 			=> $topic->{total},
+					category		=> $topic->{category},
+					color			=> $topic->{color},
+					category_id		=> $topic->{id_category}
+				};
+ 	}
+	$c->stash->{topics_by_category} = \@datas;
+	$c->stash->{topics_by_category_title} = _loc('Topics by category');
 
 }
 
