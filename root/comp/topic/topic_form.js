@@ -8,7 +8,24 @@
         url:'/topic/list_admin_category'
     });
     
-    var store_priority = new Baseliner.Topic.StorePriority();
+	var store_category_priority = new Ext.data.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/topicadmin/get_config_priority',
+		fields: [
+			{  name: 'id' },
+			{  name: 'id_category' },
+			{  name: 'name' },
+			{  name: 'response_time_min' },
+			{  name: 'expr_response_time' },
+			{  name: 'deadline_min' },
+			{  name: 'expr_deadline' },
+			{  name: 'is_active' }  
+		]
+	});	    
+
     var store_project = new Baseliner.Topic.StoreProject();
     
     var combo_category = new Ext.form.ComboBox({
@@ -281,7 +298,7 @@
     
     var combo_priority = new Ext.form.ComboBox({
         value: rec.priority_name,
-        mode: 'remote',
+        mode: 'local',
         forceSelection: true,
         emptyText: 'select a priority',
         triggerAction: 'all',
@@ -290,7 +307,7 @@
         hiddenName: 'priority',
         displayField: 'name',
         valueField: 'id',
-        store: store_priority,
+        store: store_category_priority,
         hidden: rec.fields_form.show_priority ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){
@@ -556,13 +573,14 @@
         store_category_status.load({
             params:{ 'change_categoryId': rec.new_category_id }
         });            
-        store_priority.load();
+        store_category_priority.load({params:{'active':1, 'category_id': rec.new_category_id}});
         var form2 = form_topic.getForm();
         form2.findField("topic_mid").setValue(-1);
     }else {
         store_category.on("load", function() {
             combo_category.setValue(rec.category);
         });
+        store_category_priority.load({params:{'active':1, 'category_id': rec.category}});
         store_category.load();
         store_category_status.load({
                 params:{ 'categoryId': rec.category, 'statusId': rec.status, 'statusName': rec.status_name }
