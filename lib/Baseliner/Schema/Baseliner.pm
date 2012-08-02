@@ -52,9 +52,9 @@ my $filter =  sub {
                 $col->data_type( 'VARCHAR(max)' ) if $col->data_type =~ /.LOB/i;
                 $col->default_value( \'GETDATE()') if ref($def) eq 'SCALAR' && $$def =~ /SYSDATE/i;
             }
-	    if( $dbd eq 'Oracle') {
+        if( $dbd eq 'Oracle') {
                 $col->size( 0 ) if $col->data_type =~ /.LOB/i;
-	    }
+        }
         }
     }
 };
