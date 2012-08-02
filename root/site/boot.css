@@ -4434,6 +4434,10 @@
     background-image:url('') !important;
 }
 
+.priority a span {
+    font-weight:bold;
+    color:green;
+}
 /*
 .x-tree-selected {
     border:1px dotted #a3bae9;
