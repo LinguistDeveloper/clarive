@@ -126,7 +126,8 @@ sub topic_contents : Local {
             },
             url        => '/lifecycle/tree_topic_get_files',
             data       => {
-               id_topic => $_->{topic_topic2}{mid}
+               topic_mid   => $_->{from_mid},
+               click       => $self->click_for_topic(  $_->{topic_topic2}{categories}{name}, $_->{from_mid} ),
             },
             icon       => $icon, 
             leaf       => \1,
