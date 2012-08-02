@@ -9,18 +9,18 @@ BEGIN { extends 'Catalyst::Controller' };
 register 'menu.admin.config_panel' => { label=>'Config Form', url_comp=>'/config/main', title=>'Config Form', icon=>'/static/images/config.png', active=>0 };
 
 sub generate_form : Path('/config/generate_form') {
-	my ($self,$c, $key )=@_;
+    my ($self,$c, $key )=@_;
 
-	$c->stash->{ns_filter} = { start=>0, limit=>100 }; 	
+    $c->stash->{ns_filter} = { start=>0, limit=>100 }; 	
     #$c->forward('/namespace/load_namespaces');
-	$c->forward('/baseline/load_baselines');
+    $c->forward('/baseline/load_baselines');
 
     $key ||= $c->stash->{key};
 
-	my $config = $c->registry->get( $key || 'config.nature.j2ee.build' );
-	$c->stash->{metadata} = $config->metadata;
-		
-	$c->stash->{template} = '/comp/config/config_form.mas';
+    my $config = $c->registry->get( $key || 'config.nature.j2ee.build' );
+    $c->stash->{metadata} = $config->metadata;
+        
+    $c->stash->{template} = '/comp/config/config_form.mas';
 }
 
 =head2 form
@@ -29,7 +29,7 @@ Returns an Ext component for eval - accepts a config key as stash or param
 
 =cut
 sub form : Path('/config/form') {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $key = $c->stash->{key};
     if( ref $key eq 'ARRAY' ) {
        my @meta;
@@ -47,18 +47,18 @@ sub form : Path('/config/form') {
 }
 
 sub form_render : Private {
-	my ($self,$c)=@_;
-	$c->stash->{ns_filter} = { start=>0, limit=>100 }; 	
+    my ($self,$c)=@_;
+    $c->stash->{ns_filter} = { start=>0, limit=>100 }; 	
     #$c->forward('/namespace/load_namespaces');
-	$c->forward('/baseline/load_baselines');
+    $c->forward('/baseline/load_baselines');
     $c->stash->{url_submit} = '/config/submit';
     $c->stash->{url_store} = '/config/json';
-	$c->stash->{template} = '/comp/config/config_panel.mas';
+    $c->stash->{template} = '/comp/config/config_panel.mas';
 }
 
 # saves form data
 sub submit : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $p = $c->req->params;
     my $ret;
     try {
@@ -78,7 +78,7 @@ sub submit : Local {
 
 # feeds form with data
 sub json : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $p = $c->request->parameters;
     my $key = $c->request->params->{key};
     my $data;
@@ -102,7 +102,7 @@ sub json : Local {
 }
 
 sub config_tree : Path('/config/tree') {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $list = $c->registry->starts_with( 'config' ) ;
     my @tree;
     foreach my $key ( $c->registry->starts_with( 'config' ) ) {
@@ -119,12 +119,12 @@ sub config_tree : Path('/config/tree') {
 }
 
 sub list_services : Local {
-	my ($self,$c)=@_;
-	$c->res->body( "<pre>"._dump( $c->registry->starts_with( 'service' ) ) );
+    my ($self,$c)=@_;
+    $c->res->body( "<pre>"._dump( $c->registry->starts_with( 'service' ) ) );
 }
 
 sub ns_panel : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $ns = $c->request->parameters->{ns};
     my $filter = $c->request->parameters->{filter};
     my @filter;
@@ -138,7 +138,7 @@ sub ns_panel : Local {
 }
 
 sub field : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $key = $c->request->parameters->{key};
     for my $config ( $c->model('ConfigStore')->all ) {
         my @metadata = $config->metadata_filter( $key );
@@ -148,14 +148,14 @@ sub field : Local {
             $c->stash->{metadata_row} = $row;
         }
     }
-	$c->stash->{single_comp} = 1;
-	$c->stash->{template} = '/comp/config/config_selector.mas';
+    $c->stash->{single_comp} = 1;
+    $c->stash->{template} = '/comp/config/config_selector.mas';
 }
 
 sub main : Local {
-	my ($self,$c)=@_;
-	$c->forward('/baseline/load_baselines');
-	$c->stash->{template} = '/comp/config/config_main.mas';
+    my ($self,$c)=@_;
+    $c->forward('/baseline/load_baselines');
+    $c->stash->{template} = '/comp/config/config_main.mas';
 }
 
 1;

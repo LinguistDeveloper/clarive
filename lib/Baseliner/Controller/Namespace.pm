@@ -16,10 +16,10 @@ Returns a stashed Core::Namespace object list.
 
 =cut
 sub list : Private {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $p = $c->stash->{ns_query};
-	$p->{username} = $c->username;
-	$c->stash->{ns_list} = [ $c->model('Namespaces')->namespaces($p) ];
+    $p->{username} = $c->username;
+    $c->stash->{ns_list} = [ $c->model('Namespaces')->namespaces($p) ];
 }
 
 =head2 load_namespaces
@@ -30,7 +30,7 @@ Check /namespace/list for parameters.
 
 =cut
 sub load_namespaces : Private {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     $c->forward( '/namespace/list' );
     my @ns_arr = ();
     foreach my $n ( @{ $c->stash->{ns_list} || [] } ) {
@@ -41,27 +41,27 @@ sub load_namespaces : Private {
 }
 
 sub json : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $p = $c->stash->{ns_query};
-	my @ns = $c->model('Namespaces')->namespaces($p);
+    my @ns = $c->model('Namespaces')->namespaces($p);
     my @ns_hash = map { my %h; @h{keys %{$_}}=values %{$_}; \%h } @ns; 
-	$c->stash->{json} = { 
+    $c->stash->{json} = { 
         totalCount=> scalar @ns,
         data => [ @ns_hash ],
      };	
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 # Namespace Tree 
 #TODO this should be opened on request by level
 sub ns_list : Path('/core/namespaces') {
-	my ($self,$c)=@_;
-	my @ns_list = $c->model('Namespaces')->namespaces();
-	my $res='<pre>';
-	for my $n ( @ns_list ) {
-		$res.= Dump $n
-	}
-	$c->res->body($res);
+    my ($self,$c)=@_;
+    my @ns_list = $c->model('Namespaces')->namespaces();
+    my $res='<pre>';
+    for my $n ( @ns_list ) {
+        $res.= Dump $n
+    }
+    $c->res->body($res);
 }
 
 sub ns_tree_push {
@@ -91,10 +91,10 @@ sub ns_tree_fold {
 }
 
 sub ns_tree : Path('/ns/tree') {
-	my ($self,$c)=@_;
-	my @ns_list = $c->model('Namespaces')->namespaces();
+    my ($self,$c)=@_;
+    my @ns_list = $c->model('Namespaces')->namespaces();
     my $tree={};
-	for my $n ( @ns_list ) {
+    for my $n ( @ns_list ) {
         my $ns=$n->{ns};
         my @s = split /\//, $ns;
         shift @s if( $s[0] eq '' );
@@ -112,7 +112,7 @@ sub ns_tree : Path('/ns/tree') {
 }
 
 sub tree : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my $node = $c->request->parameters->{node};
     my @ret; 
     my $ns = $c->model('Namespaces')->get( $node );

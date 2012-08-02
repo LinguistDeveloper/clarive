@@ -26,7 +26,7 @@ sub BUILDARGS {
             rs_hashref( $rs );
             $rs->all;
         } catch { () };
-		return {
+        return {
                 ns      => 'release/' . $r->id,
                 ns_name => $r->name,
                 ns_info => $r->description || $r->name,
@@ -36,7 +36,7 @@ sub BUILDARGS {
                 icon_off=> '/static/images/scm/release.gif',
                 service => 'service.runner.release',
                 provider=> 'namespace.release',
-				inspector  => Baseliner::Core::URL->new(
+                inspector  => Baseliner::Core::URL->new(
                 type  => 'page',
                 title => $r->name,
                 url   => '/release/edit?id_rel=' . $r->id
@@ -57,44 +57,44 @@ sub row {
 
 sub can_job {
     my ( $self, %p ) = @_;
-	my $bl = $p{bl};
-	my $job_type = $p{job_type};
+    my $bl = $p{bl};
+    my $job_type = $p{job_type};
 
-	# check if it's active
-	unless( $self->ns_data->{active} ) {
-		$self->why_not( 'Release not active' );
-		return $self->_can_job( 0 );
-	}
+    # check if it's active
+    unless( $self->ns_data->{active} ) {
+        $self->why_not( 'Release not active' );
+        return $self->_can_job( 0 );
+    }
 
- 	# check if it's pending to approve  
-	# warn "RELEASE NS: " . $self->ns;
-	unless ( $bl ne 'PROD'
-		|| Baseliner->model('Request')->approvals_active
-		|| Baseliner->model('Request')->list (ns=>$self->ns, pending=>1)->{count} eq 0 ) {
-		$self->why_not( _loc('Release %1 is pending to approve.', $self->ns_name) );
-		# $self->why_not( 'Release is pending to approve.' );
-		return $self->_can_job( 0 );
-	}
-	
+     # check if it's pending to approve  
+    # warn "RELEASE NS: " . $self->ns;
+    unless ( $bl ne 'PROD'
+        || Baseliner->model('Request')->approvals_active
+        || Baseliner->model('Request')->list (ns=>$self->ns, pending=>1)->{count} eq 0 ) {
+        $self->why_not( _loc('Release %1 is pending to approve.', $self->ns_name) );
+        # $self->why_not( 'Release is pending to approve.' );
+        return $self->_can_job( 0 );
+    }
+    
     # check can_job of contents
     my $can_job = 1;
     my @why;
     for my $item ( $self->contents ) {
-		#use Data::Dumper;warn $self->ns_name . "\n" . Dumper $item;
+        #use Data::Dumper;warn $self->ns_name . "\n" . Dumper $item;
         next unless ref $item;
-		next if $item->isa( 'Baseliner::Core::Namespace' );
+        next if $item->isa( 'Baseliner::Core::Namespace' );
         unless( $item->can_job( bl=>$bl, job_type=>$job_type, ns=>$self->ns ) ) {
             push @why, $item->why_not;
             $can_job = 0;
         }
     }
     $self->why_not( join ', ', @why ) unless $can_job;
-	return $self->_can_job( $can_job );
+    return $self->_can_job( $can_job );
 }
 
 sub user_can_edit {
     my ( $self, $username ) = @_;
-	if( $username && ! Baseliner->model('Permissions')->is_root( $username ) ) {
+    if( $username && ! Baseliner->model('Permissions')->is_root( $username ) ) {
         my @ns = Baseliner->model('Permissions')->user_namespaces( $username ); 
         return 0 unless @ns;
         return 0 unless @ns->any eq $self->related->any;
@@ -106,14 +106,14 @@ sub contents {
     my $self = shift;
     my @items;
 
-	# load contents data
+    # load contents data
     unless( ref $self->ns_data->{contents} ) { 
         my $rs = Baseliner->model('Baseliner::BaliReleaseItems')->search({ id_rel=> $self->ns_data->{id} });
-		rs_hashref( $rs );
-		$self->ns_data->{contents} = [ $rs->all ];
-	}
+        rs_hashref( $rs );
+        $self->ns_data->{contents} = [ $rs->all ];
+    }
 
-	# map it to namespaces
+    # map it to namespaces
     if( ref $self->ns_data->{contents} ) { # from constructor?
         @items = map {
             my $ns = $_;
@@ -130,24 +130,24 @@ sub contents {
             $ns
         } _array( $self->ns_data->{contents} );
     } 
-	return @items;
+    return @items;
 }
 
 sub bl {
     my $self = shift;
-	my $rel = $self->row;
-	return ref $rel ? $rel->bl : $self->bl_from_contents || '*';
+    my $rel = $self->row;
+    return ref $rel ? $rel->bl : $self->bl_from_contents || '*';
 }
 
 sub bl_from_contents {
     my $self = shift;
-	my @contents = $self->contents;
-	return $self->bl unless @contents;	
+    my @contents = $self->contents;
+    return $self->bl unless @contents;	
     my $bl = '*';
     my @bl;
-	for my $item ( @contents ) {
+    for my $item ( @contents ) {
         next unless ref $item;
-		next if $item->isa( 'Baseliner::Core::Namespace' );
+        next if $item->isa( 'Baseliner::Core::Namespace' );
         push @bl, $item->bl;
     }
     @bl = _unique @bl;
@@ -156,51 +156,51 @@ sub bl_from_contents {
 
 sub locked {
     my $self = shift;
-	if( $self->bl eq 'PROD' ) {
-		$self->locked_reason( 'Release in production' );
-		return 1;
-	} else {
-		return 0;
-	}
+    if( $self->bl eq 'PROD' ) {
+        $self->locked_reason( 'Release in production' );
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 sub created_on {
     my $self = shift;
-	return $self->ns_data->{ts};
+    return $self->ns_data->{ts};
 }
 
 sub created_by {
     my $self = shift;
-	my $rel = $self->find;
-	return ref $rel ? $rel->username : '';
+    my $rel = $self->find;
+    return ref $rel ? $rel->username : '';
 }
 
 sub checkout { }
 
 sub transition {
-	my $self = shift;
-	my $p = _parameters( @_);
-	#TODO transition content
+    my $self = shift;
+    my $p = _parameters( @_);
+    #TODO transition content
 }
 
 sub promote {
-	my $self = shift;
-	$self->transition( 'promote', @_ );
+    my $self = shift;
+    $self->transition( 'promote', @_ );
 }
 
 sub demote {
-	my $self = shift;
-	$self->transition( 'demote', @_ );
+    my $self = shift;
+    $self->transition( 'demote', @_ );
 }
 
 sub nature {
-	my $self = shift;
-	#TODO package natures
-	#return map { 'nature/' . uc } grep { length > 0 } @folders;
+    my $self = shift;
+    #TODO package natures
+    #return map { 'nature/' . uc } grep { length > 0 } @folders;
 }
 
 sub state {
-	#TODO what is this for? it's in 2 roles at least
+    #TODO what is this for? it's in 2 roles at least
 }
 
 sub path {
@@ -220,25 +220,25 @@ sub application {
 
 sub rfc {
     my $self = shift;
-	my @p = split /\./, $self->ns_name;
-	return $p[2];	
+    my @p = split /\./, $self->ns_name;
+    return $p[2];	
 }
 
 sub text {
     my $self = shift;
-	my @p = split /\./, $self->ns_name;
-	return $p[3];	
+    my @p = split /\./, $self->ns_name;
+    return $p[3];	
 }
 
 sub active {
     my ($self,$active) = @_;
-	my $id = $self->ns_data->{id};
-	return unless $id;
-	my $row = Baseliner->model('Baseliner::BaliRelease')->find( $id );
-	return unless ref $row;
-	$row->active( $active );
-	$row->update;
-	return $active;
+    my $id = $self->ns_data->{id};
+    return unless $id;
+    my $row = Baseliner->model('Baseliner::BaliRelease')->find( $id );
+    return unless ref $row;
+    $row->active( $active );
+    $row->update;
+    return $active;
 }
 
 1;

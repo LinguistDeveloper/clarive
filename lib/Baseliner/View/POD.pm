@@ -34,11 +34,11 @@ sub runpod2html {
     @dirs = split("/", $html);
     $dir  = "$htmldir/";
     for ($i = 0; $i < $#dirs; $i++) {
-	if (! -d "$dir$dirs[$i]") {
-	    mkdir("$dir$dirs[$i]", 0755) ||
-		die "$0: error creating directory $dir$dirs[$i]: $!\n";
-	}
-	$dir .= "$dirs[$i]/";
+    if (! -d "$dir$dirs[$i]") {
+        mkdir("$dir$dirs[$i]", 0755) ||
+        die "$0: error creating directory $dir$dirs[$i]: $!\n";
+    }
+    $dir .= "$dirs[$i]/";
     }
 
     # invoke pod2html

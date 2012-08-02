@@ -58,7 +58,7 @@ Adds an action to a role.
 =cut
 sub add_action {
     my ($self, $action, $role_name, %p ) = @_;
-	my $bl = $p{bl} || '*';
+    my $bl = $p{bl} || '*';
     my $role = Baseliner->model('Baseliner::BaliRole')->search({ role=>$role_name })->first;
     if( ref $role ) {
         my $actions = $role->bali_roleactions->search({ action=>$action })->first;
@@ -212,14 +212,14 @@ sub user_has_action {
 
     my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$username }, { prefetch=>['role'] } );
     rs_hashref( $rs );
-	my $mail="";
-	if ( my $r=$rs->next ) {
-		$mail = $r->{role}->{mailbox} ;
+    my $mail="";
+    if ( my $r=$rs->next ) {
+        $mail = $r->{role}->{mailbox} ;
     }
 
-	my $ret = 0;
+    my $ret = 0;
     $ret = scalar grep(/$mail/, @users) if $mail;
-	$ret += scalar grep /$username/, @users;
+    $ret += scalar grep /$username/, @users;
     return $ret;
 }
 
@@ -314,10 +314,10 @@ sub user_projects_with_action {
         my $db = new Baseliner::Core::DBI( { model => 'Baseliner' } );
         my @data = $db->array(
             qq{
-				select distinct p.id
-				from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra, BALI_PROJECT p
-				WHERE  r.ID = ru.ID_ROLE AND
-	        	r.ID = ra.ID_ROLE AND
+                select distinct p.id
+                from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra, BALI_PROJECT p
+                WHERE  r.ID = ru.ID_ROLE AND
+                r.ID = ra.ID_ROLE AND
                 username = ? AND
                 action = ? AND
                  (
@@ -326,8 +326,8 @@ sub user_projects_with_action {
                        ( ru.NS = '/' )
                     ) AND
                 p.id_parent IS NULL
-				$bl_filter
-	        	ORDER BY 1
+                $bl_filter
+                ORDER BY 1
             }, $username, $action
         );
         if ( @data && $data[0] eq '/' ) {
@@ -366,15 +366,15 @@ sub user_projects_with_action {
 
 #### Ricardo (21/6/2011): Listado de todos los proyectos
 sub all_projects {
-	my @projects = [];
-	my $rs = Baseliner->model('Baseliner::BaliProject')->search( undef, { select=>['mid'] } );
-	rs_hashref($rs);
-	
-	@projects = map {
-		$_->{mid}
-	} $rs->all;
-	
-	return @projects;
+    my @projects = [];
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search( undef, { select=>['mid'] } );
+    rs_hashref($rs);
+    
+    @projects = map {
+        $_->{mid}
+    } $rs->all;
+    
+    return @projects;
 }
 
 
@@ -391,8 +391,8 @@ sub user_grants {
     $where->{username} = $username unless $root_user;
     $p{action} and $where->{action} = $p{action};
     $p{ns} and $where->{action} = $p{ns};
-	my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search( $where, { prefetch=>['role'] } );
-	rs_hashref( $rs );
+    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search( $where, { prefetch=>['role'] } );
+    rs_hashref( $rs );
     my @ret;
     while( my $r = $rs->next ) {
         $root_user and $r->{username} = $username;
@@ -416,7 +416,7 @@ which means that there's some role in there
 sub user_namespaces {
     my ($self, $username ) = @_;
     my @perms = Baseliner->model('Permissions')->user_grants( $username );
-	return sort { $a cmp $b } _unique( map { $_->{ns} } @perms );
+    return sort { $a cmp $b } _unique( map { $_->{ns} } @perms );
 }
 
 =head2 list
@@ -433,48 +433,48 @@ List users that have an action
 sub list {
     my ( $self, %p ) = @_;
     my $ns = defined $p{ns} ? $p{ns} : 'any';
-	ref $ns eq 'ARRAY' and _throw "Parameter ns: ARRAY of namespaces not supported yet.";
+    ref $ns eq 'ARRAY' and _throw "Parameter ns: ARRAY of namespaces not supported yet.";
     my $bl = $p{bl} || 'any';
 
     $p{recurse} = defined $p{recurse} ? $p{recurse} : 1;
     $p{action} or $p{username} or die _loc( 'No action or username specified' );
 
-	# if its root, gimme all actions period.
+    # if its root, gimme all actions period.
     return map { $_->{key} } Baseliner->model('Actions')->list
       if $p{username} && $self->is_root( $p{username} );
 
-	# build query
+    # build query
     my $query = $p{action}
         ? { action=> [ -or => [ $p{action}, { -like => "$p{action}.%" } ] ] }
         : { username=>$p{username} };
-	
-	$query->{bl} = [ -or => [ $bl, '*' ] ]
-		unless $bl eq 'any';
+    
+    $query->{bl} = [ -or => [ $bl, '*' ] ]
+        unless $bl eq 'any';
 
-	$query->{ns} = [ -or => [ $ns, '/' ] ]
-		unless $ns eq 'any';
+    $query->{ns} = [ -or => [ $ns, '/' ] ]
+        unless $ns eq 'any';
 
-	# search roles
+    # search roles
     my $roles = Baseliner->model('Baseliner::BaliRole')->search(
         $query,
         { join     => ['bali_roleusers', 'bali_roleactions'],
-		  prefetch=>[ $p{action} ? 'bali_roleusers' : 'bali_roleactions']
-		}
+          prefetch=>[ $p{action} ? 'bali_roleusers' : 'bali_roleactions']
+        }
     );
 
-	$roles->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    $roles->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
-	# now, foreach role
+    # now, foreach role
     my @list;
     while( my $role = $roles->next ) {
-		my $role_name = $role->{role};
-		# if asked for, don't include certain roles
-		next if $p{role_filter} and ! grep( /$role_name/i, _array($p{role_filter}) );
-		# return either users or roles, depending on the query
-		my $data= $p{action} ? $role->{bali_roleusers} : $role->{bali_roleactions};
-		
+        my $role_name = $role->{role};
+        # if asked for, don't include certain roles
+        next if $p{role_filter} and ! grep( /$role_name/i, _array($p{role_filter}) );
+        # return either users or roles, depending on the query
+        my $data= $p{action} ? $role->{bali_roleusers} : $role->{bali_roleactions};
+        
         push @list,
-			# map { $p{action} ? $_->{username} : $_->{action} }
+            # map { $p{action} ? $_->{username} : $_->{action} }
             map { $p{action} ? ( $role->{mailbox} ? $role->{mailbox} : $_->{username} ) : $_->{action} }
             grep { $p{username} ? 1 : $ns eq 'any' ? 1 : ns_match( $_->{ns}, $ns) }
             _array( $data );
@@ -484,23 +484,23 @@ sub list {
     if( $p{recurse} && $ns ne 'any' ) {
         my $item = Baseliner->model('Namespaces')->get( $ns );
         _throw "No he podido encontrar el item '$ns'" unless ref $item;
-		if (blessed $item && $item->does('Baseliner::Role::Namespace') ) {
-			for my $parent ( _array $item->parents ) {		
-				next if $parent eq '/';
-				push @list,
-				$self->list(
-					ns          => $parent,
-					bl          => $bl,
-					role_filter => $p{role_filter},
-					recurse     => 0,
-					(
-						$p{action}
-						? ( action => $p{action} )
-						: ( username => $p{username} )
-					)
-				);
-			}
-		}
+        if (blessed $item && $item->does('Baseliner::Role::Namespace') ) {
+            for my $parent ( _array $item->parents ) {		
+                next if $parent eq '/';
+                push @list,
+                $self->list(
+                    ns          => $parent,
+                    bl          => $bl,
+                    role_filter => $p{role_filter},
+                    recurse     => 0,
+                    (
+                        $p{action}
+                        ? ( action => $p{action} )
+                        : ( username => $p{username} )
+                    )
+                );
+            }
+        }
     }
     # _log "LIST: $p{username} got \n";_log Dumper _unique @list;
     return _unique @list;
@@ -537,18 +537,18 @@ Returns an array of actions for a given role.
 =cut
 sub role {
     my ( $self, $role ) = @_;
-	$role or _throw 'Missing argument role';	
-	my @roles;
+    $role or _throw 'Missing argument role';	
+    my @roles;
     my $rs = Baseliner->model('Baseliner::BaliRole')->search({ role => $role });
     while( my $role = $rs->next ) {
-		my @actions;
+        my @actions;
         my $actions = $role->bali_roleactions;
         while( my $action = $actions->next ) {
             push @actions, $action->action;
         }
-		push @roles, { role=>$role->role, description=>$role->description, actions=>[ @actions ] };
+        push @roles, { role=>$role->role, description=>$role->description, actions=>[ @actions ] };
     }
-	return shift @roles;
+    return shift @roles;
 }
 
 =head2 user_roles
@@ -558,22 +558,22 @@ Returns everything a user has.
 =cut
 sub user_roles {
     my ( $self, $username ) = @_;
-	$username or _throw 'Missing parameter username';	
-	my @roles;
+    $username or _throw 'Missing parameter username';	
+    my @roles;
     my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username => $username });
 
     while( my $r = $rs->next ) {
         my $role = $r->id_role;
         my $ns = $r->ns;
-		my @actions;
+        my @actions;
         my $actions = $role->bali_roleactions;
         while( my $action = $actions->next ) {
             push @actions, $action->action;
         }
-		push @roles, { role=>$role->role, ns=>$ns, description=>$role->description, actions=>[ @actions ] };
+        push @roles, { role=>$role->role, ns=>$ns, description=>$role->description, actions=>[ @actions ] };
     }
-	# _log "user_roles: $username got \n";_log Dumper _unique @roles;
-	return @roles;
+    # _log "user_roles: $username got \n";_log Dumper _unique @roles;
+    return @roles;
 }
 
 =head2 all_users
@@ -583,13 +583,13 @@ List all users that have roles
 =cut
 sub all_users {
     my ( $self ) = @_;
-	my @users;
-	my $rs = Baseliner->model('Baseliner::BaliRoleUser')->search;
-	return unless ref $rs;
-	while( my $r = $rs->next ) {
-		push @users, $r->username;
-	}
-	return _unique @users;
+    my @users;
+    my $rs = Baseliner->model('Baseliner::BaliRoleUser')->search;
+    return unless ref $rs;
+    while( my $r = $rs->next ) {
+        push @users, $r->username;
+    }
+    return _unique @users;
 }
 
 =head2 user_has_action_fast
@@ -599,10 +599,10 @@ Checks a user has an action... only faster.
 =cut
 sub user_has_action_fast {
     my ( $self, %p ) = @_;
-	my $username = delete $p{username};
-	return unless $username;
-	return 1 if $self->is_root( $username );
-	return grep { $username eq $_ } $self->list( %p );
+    my $username = delete $p{username};
+    return unless $username;
+    return 1 if $self->is_root( $username );
+    return grep { $username eq $_ } $self->list( %p );
 }
 
 1;

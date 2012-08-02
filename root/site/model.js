@@ -107,11 +107,11 @@ Baseliner.model.Users = function(c) {
 };
 Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 
-		Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
-		    Ext.applyIf(this.options, {
-			submitEmptyText:false
-		    });
-		});
+        Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+            Ext.applyIf(this.options, {
+            submitEmptyText:false
+            });
+        });
 Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
@@ -547,12 +547,12 @@ Baseliner.Calendar =  function(c) {
     }, c ));
 
     cal_div.on('afterrender', function(){
-		var date = new Date();
-		var d = date.getDate();
-		var m = date.getMonth();
-		var y = date.getFullYear();
-		var el = cal_div.getEl() ;
-		var id = el.id ;
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+        var el = cal_div.getEl() ;
+        var id = el.id ;
         var dt = new Ext.dd.DropTarget(el, {
             ddGroup: 'lifecycle_dd',
             copy: true,
@@ -569,7 +569,7 @@ Baseliner.Calendar =  function(c) {
                     //revertDuration: 0  //  original position after the drag
                 });
                 panel.calendar.getView().dragStart(el.dom, ev.browserEvent, null);
-				return true;              
+                return true;              
             },
             notifyDrop: function(ddSource, ev, data) {
                 var el = ddSource.getProxy().getGhost();
@@ -1153,14 +1153,14 @@ Baseliner.flot.Donut = function(c) {
     }
     Baseliner.flot.Donut.superclass.constructor.call(this, Ext.apply({
         plotConfig: Ext.apply({
-		   colors: ["#F90", "#222", "#777", "#AAA"],
-	        series: {
-	            pie: { 
-	                innerRadius: 0.5,
-	                show: true
-	            }
-	        }
-	    }, c.plotConfig),
+           colors: ["#F90", "#222", "#777", "#AAA"],
+            series: {
+                pie: { 
+                    innerRadius: 0.5,
+                    show: true
+                }
+            }
+        }, c.plotConfig),
         data: data    
     }, c ));
 };
@@ -1192,22 +1192,22 @@ Baseliner.flot.Area = function(c) {
         }
         data = [ getRandomData() ];
     }
-	// setup plot
-	var options = {
-		yaxis: { min: 0, max: 100 },
-		xaxis: { min: 0, max: 100 },
-		colors: ["#F90", "#222", "#666", "#BBB"],
-		series: {
-				   lines: { 
-						lineWidth: 2, 
-						fill: true,
-						fillColor: { colors: [ { opacity: 0.6 }, { opacity: 0.2 } ] },
-						steps: false
+    // setup plot
+    var options = {
+        yaxis: { min: 0, max: 100 },
+        xaxis: { min: 0, max: 100 },
+        colors: ["#F90", "#222", "#666", "#BBB"],
+        series: {
+                   lines: { 
+                        lineWidth: 2, 
+                        fill: true,
+                        fillColor: { colors: [ { opacity: 0.6 }, { opacity: 0.2 } ] },
+                        steps: false
 
-					}
-			   }
-	};
-	
+                    }
+               }
+    };
+    
     Baseliner.flot.Area.superclass.constructor.call(this, Ext.apply({
         plotConfig: Ext.apply( options, c.plotConfig),
         data: data    

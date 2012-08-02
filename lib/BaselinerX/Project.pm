@@ -64,29 +64,29 @@ sub list {
     my $query = $p->{query};
     my $sql_query;
 
-	_log "provider list started...";
+    _log "provider list started...";
 
-	# paging 
-	my %range = defined $p->{start} && defined $p->{limit}
-		? ( page => (abs( $p->{start} / $p->{limit} ) + 1), rows=>$p->{limit} )
-		: ();
-	
-	my $rs = Baseliner->model('Baseliner::BaliProject')->search( {  }, { %range });
-	my @ns;
-	while( my $r = $rs->next ) {
+    # paging 
+    my %range = defined $p->{start} && defined $p->{limit}
+        ? ( page => (abs( $p->{start} / $p->{limit} ) + 1), rows=>$p->{limit} )
+        : ();
+    
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search( {  }, { %range });
+    my @ns;
+    while( my $r = $rs->next ) {
             push @ns, BaselinerX::Project->new({
                 ns      => 'project/' . $r->mid,
                 ns_name => $r->name,
-				ns_type => _loc('Baseliner Project'),
-				ns_id   => $r->mid,
-				ns_data => { $r->get_columns },
+                ns_type => _loc('Baseliner Project'),
+                ns_id   => $r->mid,
+                ns_data => { $r->get_columns },
                 provider=> 'namespace.project',
                 related => [ ],
-			});
-	}
-	my $cnt = scalar @ns;
-	my $total = $rs->is_paged ? $rs->pager->total_entries : $cnt;
-	_log "provider list finished (records=$cnt/$total).";
+            });
+    }
+    my $cnt = scalar @ns;
+    my $total = $rs->is_paged ? $rs->pager->total_entries : $cnt;
+    _log "provider list finished (records=$cnt/$total).";
     return { data=>\@ns, total=>$total, count=>$cnt };
 }
 

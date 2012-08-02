@@ -16,7 +16,7 @@ GetOptions(
 );
 
 sub LWP::Debug::trace {
-	return;
+    return;
 }
 
 use WWW::Mechanize::Timed;
@@ -25,30 +25,30 @@ use HTTP::Cookies;
 #cookie: JSESSIONID=0000lHsBlAeuI-NqNcU98ps2qEH:-1
 @ARGV || die('missing param url');
 for my $url ( @ARGV) {
-	print "\n---- $url ----\n";
-	my $total=0;
-	my @data;
-	for(1..$loop) {
-		print "Test $_...\n";
-		my $ua = WWW::Mechanize::Timed->new();
-		#$ua->add_header(  cookie=> 'JSESSIONID=0000vqZOZlXThYRXxULvgwlcP_X:-1' ); 
+    print "\n---- $url ----\n";
+    my $total=0;
+    my @data;
+    for(1..$loop) {
+        print "Test $_...\n";
+        my $ua = WWW::Mechanize::Timed->new();
+        #$ua->add_header(  cookie=> 'JSESSIONID=0000vqZOZlXThYRXxULvgwlcP_X:-1' ); 
 
-		$ua->get( $url ) or die "\nCould not get $url: $!\n\n";
-		print "Headers Request : ".Dump($ua) if (($headers && !$total) || $echo);
-		print "Headers Response: ".Dump($ua->response()->headers()) if (($headers && !$total) || $echo);
-		print "Response: ".$ua->content() if (($content && !$total) || $echo);
-		#print "Total time: " . $ua->client_total_time . "\n";
-		my $et =  $ua->client_elapsed_time;
-		print "Elapsed time: " . $et . "\n" if($verbose);
-		$total += $et;
-		push @data, $et;
-	}
+        $ua->get( $url ) or die "\nCould not get $url: $!\n\n";
+        print "Headers Request : ".Dump($ua) if (($headers && !$total) || $echo);
+        print "Headers Response: ".Dump($ua->response()->headers()) if (($headers && !$total) || $echo);
+        print "Response: ".$ua->content() if (($content && !$total) || $echo);
+        #print "Total time: " . $ua->client_total_time . "\n";
+        my $et =  $ua->client_elapsed_time;
+        print "Elapsed time: " . $et . "\n" if($verbose);
+        $total += $et;
+        push @data, $et;
+    }
 
-	print "Total: $total\n";
+    print "Total: $total\n";
 
-	use Statistics::Basic qw(:all);;
-	print "Avg: ".($total / @data)."\n";
-	print "Median: ".median(@data)."\n";
-	print "Req/s: ".( $loop/$total)."\n";
+    use Statistics::Basic qw(:all);;
+    print "Avg: ".($total / @data)."\n";
+    print "Median: ".median(@data)."\n";
+    print "Req/s: ".( $loop/$total)."\n";
 }
 

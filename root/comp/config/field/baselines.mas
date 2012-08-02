@@ -23,14 +23,14 @@
             var pPanelForm = combo.findParentByType('form');
             var parentForm = pPanelForm.getForm();
             var frmItems = parentForm.items.items;
-			var currentNS = "/";
-			var currentBL = "*";			
+            var currentNS = "/";
+            var currentBL = "*";			
             for(var i=0; i < frmItems.length; i++){  
                 if(frmItems[i].name!=undefined && frmItems[i].value!=undefined){
                     nsUrl = nsUrl +frmItems[i].name + '=' + frmItems[i].value + '&';
-					if(frmItems[i].name.toLowerCase() == "ns")currentNS = frmItems[i].value;
-					if(frmItems[i].name.toLowerCase() == "bl")currentBL = frmItems[i].value;								
-					
+                    if(frmItems[i].name.toLowerCase() == "ns")currentNS = frmItems[i].value;
+                    if(frmItems[i].name.toLowerCase() == "bl")currentBL = frmItems[i].value;								
+                    
                 }
             }
             parentForm.load({url:nsUrl
@@ -39,8 +39,8 @@
                 var pComponents = pPanelForm.findByType(Ext.grid.GridPanel);
                 for(var i=0;i < pComponents.length;i++){	
                     if(pComponents[i].store != null){								
-						pComponents[i].store.removeAll();																
-						pComponents[i].store.load({params:{ns:currentNS,bl:currentBL}});
+                        pComponents[i].store.removeAll();																
+                        pComponents[i].store.load({params:{ns:currentNS,bl:currentBL}});
                     }					
                 }
             }

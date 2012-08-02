@@ -2,11 +2,11 @@
 <& /site/header.html, "main=0" &>
 <script type="text/JavaScript">
 Ext.onReady(function(){
-		var tabpanel = Ext.getCmp('main-panel');
-		var comp = <& $c->stash->{url} &>
-		var tab = tabpanel.add(comp);
-		tab.setTitle( "<% $c->stash->{title} %>" );
-		tabpanel.setActiveTab(comp);
+        var tabpanel = Ext.getCmp('main-panel');
+        var comp = <& $c->stash->{url} &>
+        var tab = tabpanel.add(comp);
+        tab.setTitle( "<% $c->stash->{title} %>" );
+        tabpanel.setActiveTab(comp);
 });
 </script>
 

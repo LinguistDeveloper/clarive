@@ -13,9 +13,31 @@ Some utilities shared by different Baseliner modules and plugins.
 =cut 
 
 use Exporter::Tidy default => [
-    qw/_loc _loc_raw _cut _log _debug _utf8 _tz slashFwd slashBack slashSingle
-    _loc_ansi _utf8_to_ansi _guess_utf8 _loc_unaccented _loc_decoded
-    _unique _throw _say _dt _now _now_ora _nowstamp parse_date parse_dt
+    qw/
+    _loc
+    _loc_raw
+    _cut
+    _log
+    _debug
+    _utf8
+    _tz
+    slashFwd
+    slashBack
+    slashSingle
+    _loc_ansi
+    _utf8_to_ansi
+    _guess_utf8
+    _loc_unaccented
+    _loc_decoded
+    _unique
+    _throw
+    _say
+    _dt
+    _now
+    _now_ora
+    _nowstamp
+    parse_date
+    parse_dt
     _logts
     _logt0
     _unac
@@ -24,7 +46,7 @@ use Exporter::Tidy default => [
     _parse_template
     _get_options
     _decode_json
-    _check_parameters 
+    _check_parameters
     _mkpath
     _rmpath
     _mktmp
@@ -32,20 +54,26 @@ use Exporter::Tidy default => [
     _tmp_file
     _damn
     _parameters
-    _notify_address _replace_tags 
+    _notify_address
+    _replace_tags
     is_oracle
     is_number
-    _dump _load _trim
+    _dump
+    _load
+    _trim
     _array
-    ns_match ns_split domain_match
+    ns_match
+    ns_split
+    domain_match
     to_pages
     to_base64
     rs_hashref
-    packages_that_do 
-    query_array _db_setup
+    packages_that_do
+    query_array
+    _db_setup
     query_sql_build
     _file
-    _dir 
+    _dir
     _slurp
     _fail
     _mason

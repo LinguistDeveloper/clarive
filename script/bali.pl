@@ -51,7 +51,7 @@ if( !@ARGV ) {
     my $version = $c->config->{About}->{version};
     print "Baseliner $version\n";
     #TODO list service name, if available and perl package
-	my @serv = sort $c->registry->starts_with('service');
+    my @serv = sort $c->registry->starts_with('service');
     print "===Available services===\n", join( "\n", @serv ), "\n";
     exit 0;
 }
@@ -86,7 +86,6 @@ elsif( $service_name =~ /^shut|shutdown$/i ) {
 
 print "Starting $service_name...\n";
 require Baseliner;
-use Carp::Always;
 my $c = Baseliner::Cmd->new;
 Baseliner->app( $c );
 use Baseliner::Utils;
@@ -104,7 +103,7 @@ if( 1 ) {
     $opts{ arg_list } = { map { $_ => () } keys %opts }; # so that we can differentiate between defaults and user-fed data
     $opts{ args } = \%opts;
     my $logger = $c->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
-	exit ref $logger ? $logger->rc : $logger;
+    exit ref $logger ? $logger->rc : $logger;
 }
 
 #pod2usage(1) if $help;

@@ -1,36 +1,36 @@
 (function(){
     var ps = 9999999999;
-	var store=new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/configlist/json',
-		fields: [ 
-			{  name: 'id' },
-			{  name: 'ns' },
-			{  name: 'bl' },
-			{  name: 'bl_text' },
-			{  name: 'config_name' },
-			{  name: 'config_key' },
-			{  name: 'config_module' },
-			{  name: 'config_label' },
-			{  name: 'config_type' },
-			{  name: 'config_default' },
-			{  name: 'key' },
-			{  name: 'value' },
-			{  name: 'ts' },
-			{  name: 'ref' },
-			{  name: 'ref_table' },
-			{  name: 'status' }
-		]
-	});
+    var store=new Ext.data.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id', 
+        url: '/configlist/json',
+        fields: [ 
+            {  name: 'id' },
+            {  name: 'ns' },
+            {  name: 'bl' },
+            {  name: 'bl_text' },
+            {  name: 'config_name' },
+            {  name: 'config_key' },
+            {  name: 'config_module' },
+            {  name: 'config_label' },
+            {  name: 'config_type' },
+            {  name: 'config_default' },
+            {  name: 'key' },
+            {  name: 'value' },
+            {  name: 'ts' },
+            {  name: 'ref' },
+            {  name: 'ref_table' },
+            {  name: 'status' }
+        ]
+    });
 
     <& /comp/configlist/edit_value.mas &>
 
     <& /comp/search_field.mas &>
 
-	var view_change = function( item, checked ) {
+    var view_change = function( item, checked ) {
         var val = item.value;
         if( val.length > 0 ) {
             store.baseParams[val] = checked;
@@ -40,123 +40,123 @@
         }
         //store.baseParams = { 
     };
-	var menu_view = new Ext.Toolbar.Button({
+    var menu_view = new Ext.Toolbar.Button({
         text: _('View'),
         menu: [
             { text: _('All'), value: '', checked: true, group: 'view', checkHandler: view_change },
             { text: _('Original Values'), value: 'original', checked: false, group: 'view', checkHandler: view_change },
             { text: _('Modified Values'), value: 'modified', checked: false, group: 'view', checkHandler: view_change }
         ]
-	});
-		var ps = 99999999999; //page_size
+    });
+        var ps = 99999999999; //page_size
 
-		// create the grid
-		var grid = new Ext.grid.GridPanel({
-			title: _('Config'),
-			header: false,
+        // create the grid
+        var grid = new Ext.grid.GridPanel({
+            title: _('Config'),
+            header: false,
             stripeRows: true,
-			autoScroll: true,
-			autoWidth: true,
-			wait: 'loading...',
-			store: store,
-			viewConfig: [{
-					forceFit: true
-			}],
-			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-			loadMask:'true',
-			columns: [
-				{ header: _('Key'), width: 150, dataIndex: 'key', sortable: true },	
-				{ header: _('Name'), width: 100, dataIndex: 'config_label', sortable: true },
-				{ header: _('Value'), width: 250, dataIndex: 'value', sortable: true, renderer: Baseliner.columnWrap },
-				{ header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },	
-				{ header: _('Namespace'), width: 50, dataIndex: 'ns', sortable: true },	
-				{ header: _('Config'), width: 100, dataIndex: 'config_name', sortable: true },
-				{ header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
-				{ header: _('Default Value'), width: 200, dataIndex: 'config_default', sortable: true, hidden:true },
-				{ header: _('Module'), width: 100, dataIndex: 'config_module', sortable: true, hidden:true },
-				{ header: _('ChangeStatus'), width: 100, dataIndex: 'status', sortable: true, hidden:true },
-				{ header: _('Type'), width: 100, dataIndex: 'config_type', sortable: true, hidden:true }	
+            autoScroll: true,
+            autoWidth: true,
+            wait: 'loading...',
+            store: store,
+            viewConfig: [{
+                    forceFit: true
+            }],
+            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+            loadMask:'true',
+            columns: [
+                { header: _('Key'), width: 150, dataIndex: 'key', sortable: true },	
+                { header: _('Name'), width: 100, dataIndex: 'config_label', sortable: true },
+                { header: _('Value'), width: 250, dataIndex: 'value', sortable: true, renderer: Baseliner.columnWrap },
+                { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },	
+                { header: _('Namespace'), width: 50, dataIndex: 'ns', sortable: true },	
+                { header: _('Config'), width: 100, dataIndex: 'config_name', sortable: true },
+                { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
+                { header: _('Default Value'), width: 200, dataIndex: 'config_default', sortable: true, hidden:true },
+                { header: _('Module'), width: 100, dataIndex: 'config_module', sortable: true, hidden:true },
+                { header: _('ChangeStatus'), width: 100, dataIndex: 'status', sortable: true, hidden:true },
+                { header: _('Type'), width: 100, dataIndex: 'config_type', sortable: true, hidden:true }	
             ],
-			autoSizeColumns: true,
-			deferredRender:true,
-			bbar: new Ext.PagingToolbar({
-								store: store,
-								pageSize: ps,
-								displayInfo: true,
-								displayMsg: _('Rows {0} - {1} of {2}'),
-								emptyMsg: "No hay registros disponibles"
-						}),        
-			tbar: [ _('Search') + ': ', ' ',
-				new Ext.app.SearchField({
-					store: store,
-					params: {start: 0, limit: ps},
-					emptyText: _('<Enter your search string>')
-				}),
+            autoSizeColumns: true,
+            deferredRender:true,
+            bbar: new Ext.PagingToolbar({
+                                store: store,
+                                pageSize: ps,
+                                displayInfo: true,
+                                displayMsg: _('Rows {0} - {1} of {2}'),
+                                emptyMsg: "No hay registros disponibles"
+                        }),        
+            tbar: [ _('Search') + ': ', ' ',
+                new Ext.app.SearchField({
+                    store: store,
+                    params: {start: 0, limit: ps},
+                    emptyText: _('<Enter your search string>')
+                }),
                 menu_view,
-				new Ext.Toolbar.Button({
-					text: _('Add'),
-					icon:'/static/images/drop-add.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						edit_config();
-					}
-				}),
-				new Ext.Toolbar.Button({
-					text: _('Edit'),
-					icon:'/static/images/drop-edit2.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel(); if (sm.hasSelection()) {
-							var rec = sm.getSelected();
-							edit_config(rec);
-						} else {
-							Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');	
-						};
-				}
-				}),
-				new Ext.Toolbar.Button({
-					text: _('Delete'),
-					icon:'/static/images/del.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();						
-						var row = sm.getSelected();
-						Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config entry') + ' ' + row.data.key + '?', 
-							function(btn){ 
-								if(btn=='yes') {
-									var conn = new Ext.data.Connection();
-									conn.request({
-										url: '/configlist/delete',
-										params: { id: row.data.id, key: row.data.key },
-										success: function(resp,opt) { grid.getStore().remove(row); },
-										failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the config key')); }
-									});	
-								}
-							} );
-					}
-				}),
-				new Ext.Toolbar.Button({
-					text: _('Export'),
-					icon:'/static/images/download.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
-							if( resp.success ) {
-								Baseliner.message( _('Export'), resp.msg );
-							} else {
-								Baseliner.message( _('Export') + " " + _('Error'), "resp.msg" );
-							}
-						});
-					}
-				}),
-				'->'
-				]
-		});
+                new Ext.Toolbar.Button({
+                    text: _('Add'),
+                    icon:'/static/images/drop-add.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        edit_config();
+                    }
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Edit'),
+                    icon:'/static/images/drop-edit2.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel(); if (sm.hasSelection()) {
+                            var rec = sm.getSelected();
+                            edit_config(rec);
+                        } else {
+                            Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');	
+                        };
+                }
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Delete'),
+                    icon:'/static/images/del.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();						
+                        var row = sm.getSelected();
+                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config entry') + ' ' + row.data.key + '?', 
+                            function(btn){ 
+                                if(btn=='yes') {
+                                    var conn = new Ext.data.Connection();
+                                    conn.request({
+                                        url: '/configlist/delete',
+                                        params: { id: row.data.id, key: row.data.key },
+                                        success: function(resp,opt) { grid.getStore().remove(row); },
+                                        failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the config key')); }
+                                    });	
+                                }
+                            } );
+                    }
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Export'),
+                    icon:'/static/images/download.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
+                            if( resp.success ) {
+                                Baseliner.message( _('Export'), resp.msg );
+                            } else {
+                                Baseliner.message( _('Export') + " " + _('Error'), "resp.msg" );
+                            }
+                        });
+                    }
+                }),
+                '->'
+                ]
+        });
 
-	   grid.getView().forceFit = true;
+       grid.getView().forceFit = true;
 
        grid.getView().getRowClass = function(rec, index){
-			var css;
+            var css;
             var status = rec.data.status;
             if( status == 'modified' ) 
                 css = 'config-row-modified';
@@ -165,11 +165,11 @@
             return css;
        }; 
 
-		grid.on("rowdblclick", function(grid, rowIndex, e ) {
-			var rec = grid.getStore().getAt(rowIndex);
-			edit_config(rec);
-			// Baseliner.addNewTabComp('/job/log/list?id_job=' + r.get('id') , '<% _loc('Log') %>' + ' ' + r.get('name') );
-		});		
+        grid.on("rowdblclick", function(grid, rowIndex, e ) {
+            var rec = grid.getStore().getAt(rowIndex);
+            edit_config(rec);
+            // Baseliner.addNewTabComp('/job/log/list?id_job=' + r.get('id') , '<% _loc('Log') %>' + ' ' + r.get('name') );
+        });		
 
 
         grid.on("activate", function(){
@@ -188,6 +188,6 @@
         store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask(); } }); 
         */
 
-	return grid;
+    return grid;
 })();
 

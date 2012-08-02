@@ -8,11 +8,11 @@ register 'action.job.calendar.view' => { name=>'View Job Calendar' };
 register 'action.job.calendar.edit' => { name=>'Edit Job Calendar' };
 
 register 'config.job.calendar' => {
-	metadata=> [
-		{ id=>'name', label => 'Calendar', type=>'text', width=>200 },
-		{ id=>'ns', label => 'Namespace', type=>'text', width=>300 },
-		{ id=>'ns_desc', label => 'Namespace Description', type=>'text', width=>300 },
-	],
+    metadata=> [
+        { id=>'name', label => 'Calendar', type=>'text', width=>200 },
+        { id=>'ns', label => 'Namespace', type=>'text', width=>300 },
+        { id=>'ns_desc', label => 'Namespace Description', type=>'text', width=>300 },
+    ],
 };
 
 

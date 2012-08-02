@@ -139,7 +139,7 @@ sub load_kv {
     } else {
         $rs = $self->keys;
     }
-	$rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
     while( my $r = $rs->next ) {
         next if defined $p{select}
             && !grep { lc $r->{k} eq $_ } _array( $p{select} );

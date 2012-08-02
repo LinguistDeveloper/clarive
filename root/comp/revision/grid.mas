@@ -1,10 +1,10 @@
 /* Revision Grid */
 (function(){
-	var is_portlet = '<% $c->stash->{is_portlet} %>';
-	var start = 0;
+    var is_portlet = '<% $c->stash->{is_portlet} %>';
+    var start = 0;
     var ps = is_portlet ? 5 : 15; //page_size
 
-	var filter_current = '<% $c->stash->{filter} %>' || 'approval';
+    var filter_current = '<% $c->stash->{filter} %>' || 'approval';
     var filter_key = 'revision_filter';
     var filter_cookie = Baseliner.cookie.get( filter_key );
     var filter_obj = filter_cookie || {
@@ -13,81 +13,81 @@
         PROD      : false
     };
 
- 	var reader = new Ext.data.JsonReader({
+     var reader = new Ext.data.JsonReader({
             root: 'data',
-			remoteSort: true,
+            remoteSort: true,
             totalProperty: 'totalCount',
             id: 'id'
         },
-		[
-			{name: 'provider' },
-			{name: 'related' },
-			{name: 'ns_type' },
-			{name: 'recordCls' },
-			{name: 'why_not' },
-			{name: 'can_job' },
+        [
+            {name: 'provider' },
+            {name: 'related' },
+            {name: 'ns_type' },
+            {name: 'recordCls' },
+            {name: 'why_not' },
+            {name: 'can_job' },
             {name: 'can_delete' },
             {name: 'can_rename' },
-			{name: 'item' },
-			{name: 'user' },
-			{name: 'service' },
-			{name: 'last_job' },
-			{name: 'id_job' },
-			{name: 'release' },
-			{name: 'id_rel' },
-			{name: 'status' },
-			{name: 'status_type' },
-			{name: 'id_req' },
-			{name: 'id_message' },
-			{name: 'action' },
-			{name: 'inspector' },
-			{name: 'ns' },
-			{name: 'bl' },
-			{name: 'date' },
-			{name: 'icon' },
-			{name: 'data' },
-			{name: 'text' }
-		]
-	);
+            {name: 'item' },
+            {name: 'user' },
+            {name: 'service' },
+            {name: 'last_job' },
+            {name: 'id_job' },
+            {name: 'release' },
+            {name: 'id_rel' },
+            {name: 'status' },
+            {name: 'status_type' },
+            {name: 'id_req' },
+            {name: 'id_message' },
+            {name: 'action' },
+            {name: 'inspector' },
+            {name: 'ns' },
+            {name: 'bl' },
+            {name: 'date' },
+            {name: 'icon' },
+            {name: 'data' },
+            {name: 'text' }
+        ]
+    );
 
-	var group_field = 'ns_type';
+    var group_field = 'ns_type';
 
-	var store = new Ext.data.GroupingStore({
+    var store = new Ext.data.GroupingStore({
             reader: reader,
-			url: '/revision/list',
-			baseParams: { limit: ps, grid_view: filter_current },
+            url: '/revision/list',
+            baseParams: { limit: ps, grid_view: filter_current },
             sortInfo: {field: 'item', direction: "ASC"},
             groupField: group_field
-	});
-	
-	store.on("load", function(s,rec){
-		start = store.getTotalCount(); // ajust for next load
-	});
+    });
+    
+    store.on("load", function(s,rec){
+        start = store.getTotalCount(); // ajust for next load
+    });
 
     <& /comp/search_field.mas &>
 
-	<& /comp/show_email.js &>
+    <& /comp/show_email.js &>
 
     //************* Filtering
-	store.on( 'beforeload', function( obj, opt ) {
+    store.on( 'beforeload', function( obj, opt ) {
         var f = Ext.util.JSON.encode( filter_obj );
-		obj.baseParams.filter_bl = f;
-	});
+        obj.baseParams.filter_bl = f;
+    });
 
-	var filter_button_text = function() {
-		var bl_active = [];
-		try {
-			for( var bl in filter_obj ) {
-				if( filter_obj[bl] ) bl_active.push(bl);
-			}
-			filter_button.setText( _('Baseline')
-				+ ": " + ( bl_active.length > 0 ? bl_active.join(",") : '-' ) );
-		} catch(e) {
-		}
-	};
+    var filter_button_text = function() {
+        var bl_active = [];
+        try {
+            for( var bl in filter_obj ) {
+                if( filter_obj[bl] ) bl_active.push(bl);
+            }
+            filter_button.setText( _('Baseline')
+                + ": " + ( bl_active.length > 0 ? bl_active.join(",") : '-' ) );
+        } catch(e) {
+        }
+    };
     var filter_me = function( item, checked ) {
         filter_obj[ item.id ] = checked;
-		filter_button_text();
+        filter_button_text();
         Baseliner.cookie.set( filter_key , filter_obj ); 
         store.load();
     };
@@ -98,31 +98,31 @@
             { id: 'PROD', text: _('PROD'),checked: filter_obj['PROD'] , checkHandler: filter_me }
         ]
     });
-	var filter_button = new Ext.Button({
-		text: _('Baseline'),
-		menu: filter_menu
-	});
-	filter_button_text();
+    var filter_button = new Ext.Button({
+        text: _('Baseline'),
+        menu: filter_menu
+    });
+    filter_button_text();
 
-	//************ Approval
-	var approval_request = function() {
-			var sm = grid.getSelectionModel();
-			var sel = sm.getSelected();
-			var action = 'approval'; // approved, rejected, cancelled
-			var msg = _("Are you sure you want to approve %1?", sel.data.item );
-			Ext.Msg.confirm('<% _loc('Confirmation') %>',  msg, 
-				function(btn){ 
-					if(btn=='yes') {
-						var conn = new Ext.data.Connection();
-						conn.request({
-							url: '/revision/request',
-							params: { action: action, item: sel.data.ns },
-							success: function(resp,opt) { grid.getStore().reload(); },
-							failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _("Error during action %1", action) ); }
-						});	
-					}
-					} );
-	};
+    //************ Approval
+    var approval_request = function() {
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            var action = 'approval'; // approved, rejected, cancelled
+            var msg = _("Are you sure you want to approve %1?", sel.data.item );
+            Ext.Msg.confirm('<% _loc('Confirmation') %>',  msg, 
+                function(btn){ 
+                    if(btn=='yes') {
+                        var conn = new Ext.data.Connection();
+                        conn.request({
+                            url: '/revision/request',
+                            params: { action: action, item: sel.data.ns },
+                            success: function(resp,opt) { grid.getStore().reload(); },
+                            failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _("Error during action %1", action) ); }
+                        });	
+                    }
+                    } );
+    };
     var approval_menu = new Ext.menu.Menu({
         items: [
             { id: 'request', text: _("Request Approval"), handler: approval_request },
@@ -132,13 +132,13 @@
         ]
     });
 
-	//************ Actions
-	var release_remove = function() {
-			var sm = grid.getSelectionModel();
-			var rec = sm.getSelected();
-			if( rec == undefined ) return;
-			if( rec.data.release == undefined ) { Baseliner.message(_('Error'), _('%1 is not in a release.', rec.data.item ) ); return; }
-			if( rec.data.release == '' ) { Baseliner.message(_('Error'), _('%1 is not in a release.', rec.data.item ) );  return;}
+    //************ Actions
+    var release_remove = function() {
+            var sm = grid.getSelectionModel();
+            var rec = sm.getSelected();
+            if( rec == undefined ) return;
+            if( rec.data.release == undefined ) { Baseliner.message(_('Error'), _('%1 is not in a release.', rec.data.item ) ); return; }
+            if( rec.data.release == '' ) { Baseliner.message(_('Error'), _('%1 is not in a release.', rec.data.item ) );  return;}
             Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to remove %1 from the release %2?', rec.data.item, rec.data.release), 
                 function(btn){ 
                     if(btn=='yes') {
@@ -147,79 +147,79 @@
                             url: '/release/remove_item',
                             params: { action: 'delete', ns: rec.data.ns, id_rel: rec.data.id_rel },
                             success: function(resp,opt) {
-								Baseliner.message(_('OK'), _('%1 removed', rec.data.item) );
-								store.load({params:{start: 0, limit: ps }});
-								rec.data.release=''; rec.data.id_rel='';
-							},
+                                Baseliner.message(_('OK'), _('%1 removed', rec.data.item) );
+                                store.load({params:{start: 0, limit: ps }});
+                                rec.data.release=''; rec.data.id_rel='';
+                            },
                             failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', _('Could not remove the item: %1', resp) ); }
                         });	
                     }
                 } );
     };
-	var release_add = function() {
-			var sm = grid.getSelectionModel();
-			var rec = sm.getSelected();
-			if( rec == undefined ) return;
-			if( rec.data.provider==null || ! /package/.test(rec.data.provider) ) {
-				Baseliner.message(_("Error"), _("Cannot add item of type %1 to releases.", rec.data.provider));
-				return;
-			}
-			if( rec.data.release != undefined && rec.data.release!='' ) {
+    var release_add = function() {
+            var sm = grid.getSelectionModel();
+            var rec = sm.getSelected();
+            if( rec == undefined ) return;
+            if( rec.data.provider==null || ! /package/.test(rec.data.provider) ) {
+                Baseliner.message(_("Error"), _("Cannot add item of type %1 to releases.", rec.data.provider));
+                return;
+            }
+            if( rec.data.release != undefined && rec.data.release!='' ) {
                 Baseliner.message(_('Error'), _('%1 is already in a release.', rec.data.item ) );
                 return; 
             }
-			//TODO check if it's addable
-			var rel_combo = new Ext.form.ComboBox({
-				   name: 'id', 
-				   hiddenName: 'id',
-				   fieldLabel: _("Releases"),
-				   mode: 'remote', 
-				   store: new Ext.data.JsonStore({
-							root: 'data' , 
-							remoteSort: true,
-							autoLoad: true,
-							totalProperty:"totalCount", 
-							baseParams: { all: true, bl: rec.data.bl },
-							id: 'rownum', 
-							url: '/release/json',
-							fields: [ 
-								{  name: 'id' },
-								{  name: 'name' }
-							]
-						}),
-				   valueField: 'id',
-				   displayField:'name', 
-				   editable: false,
-				   forceSelection: true,
-				   triggerAction: 'all',
-				   allowBlank: false,
-				   width: 300
-			});
+            //TODO check if it's addable
+            var rel_combo = new Ext.form.ComboBox({
+                   name: 'id', 
+                   hiddenName: 'id',
+                   fieldLabel: _("Releases"),
+                   mode: 'remote', 
+                   store: new Ext.data.JsonStore({
+                            root: 'data' , 
+                            remoteSort: true,
+                            autoLoad: true,
+                            totalProperty:"totalCount", 
+                            baseParams: { all: true, bl: rec.data.bl },
+                            id: 'rownum', 
+                            url: '/release/json',
+                            fields: [ 
+                                {  name: 'id' },
+                                {  name: 'name' }
+                            ]
+                        }),
+                   valueField: 'id',
+                   displayField:'name', 
+                   editable: false,
+                   forceSelection: true,
+                   triggerAction: 'all',
+                   allowBlank: false,
+                   width: 300
+            });
 
-			var rel_form = new Ext.FormPanel({
-				frame: true,
+            var rel_form = new Ext.FormPanel({
+                frame: true,
                 buttons: [
                     {
                         text: _('Add to Release'),
                         type: 'submit',
                         handler: function(){
-			     
+                 
                             var id_rel_combo = rel_combo.getValue();
-							if( id_rel_combo == undefined || id_rel_combo == '' ) {
-								return;
-							}
-							Baseliner.ajaxEval('/release/add_item',
-								{ ns: rec.data.ns, id_rel: id_rel_combo, bl: rec.data.bl },
-								function(resp) {
-									if( resp.success ) {
-										Baseliner.message(_('OK'), _('%1 added', rec.data.item) );
-										win.close();
-										store.load({params:{start: 0, limit: ps }});
-									} else {
-										Ext.Msg.alert(_('Error'), _('Could not add the item: %1', resp.msg ) );
-									}
+                            if( id_rel_combo == undefined || id_rel_combo == '' ) {
+                                return;
+                            }
+                            Baseliner.ajaxEval('/release/add_item',
+                                { ns: rec.data.ns, id_rel: id_rel_combo, bl: rec.data.bl },
+                                function(resp) {
+                                    if( resp.success ) {
+                                        Baseliner.message(_('OK'), _('%1 added', rec.data.item) );
+                                        win.close();
+                                        store.load({params:{start: 0, limit: ps }});
+                                    } else {
+                                        Ext.Msg.alert(_('Error'), _('Could not add the item: %1', resp.msg ) );
+                                    }
                                 }
-							); 
+                            ); 
                         }
                     },
                     {
@@ -229,17 +229,17 @@
                         }
                     }
                 ],
-				items: [ rel_combo ]
-			});
-			var win = new Ext.Window({
-				layout: 'fit', 
-				autoScroll: true,
-				title: _("Add Item to Release") + " (" + _(rec.data.bl) + ")",
-				height: 150, width: 450, 
-				items: [ rel_form ]
-			});
-			win.show();
-	};
+                items: [ rel_combo ]
+            });
+            var win = new Ext.Window({
+                layout: 'fit', 
+                autoScroll: true,
+                title: _("Add Item to Release") + " (" + _(rec.data.bl) + ")",
+                height: 150, width: 450, 
+                items: [ rel_form ]
+            });
+            win.show();
+    };
     var action_menu = new Ext.menu.Menu({
         items: [
             { id: 'release_add', text: _("Add to Release"), handler: release_add },
@@ -295,7 +295,7 @@
         } ] });
         var win = new Ext.Window({
             title: _('Create Revision'),
-	    width: 450,
+        width: 450,
             items: form_create
         });
         win.on('show',function(){
@@ -389,33 +389,33 @@
         '<tpl for="."><div class="search-item {recordCls}">',
             '<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{item}</h3>',
             '{text}',
-			'<tpl if="why_not">',
-				'<br />{why_not}',
-			'</tpl>',
+            '<tpl if="why_not">',
+                '<br />{why_not}',
+            '</tpl>',
         '</div></tpl>'
     );
 
-	Baseliner.renderItem = function(value,metadata,rec,rowIndex,colIndex,store) {
-		var url = rec.data.inspector;
-		var a=value;
-		if( url!=null && url!='' ) {
-		   var urla = url.split(':');
-		   var type = urla[0]=='page'? 'Baseliner.addNewTab':'Baseliner.addNewTabComp';
-		   a= "<a href='javascript:"+type+"(\""+ Baseliner.quote(urla[2])+"\",\""+Baseliner.quote(urla[1])+"\")' >"+ value+"</a>";
-		   //a= "<a href='javascript:"+type+"(\""+ Baseliner.quote(urla[2])+"\")' >"+ value+"</a>";
-		}
-		var icon = rec.data.icon || 'package.gif';
-		return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + a + "</b>" ;
-	};
+    Baseliner.renderItem = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var url = rec.data.inspector;
+        var a=value;
+        if( url!=null && url!='' ) {
+           var urla = url.split(':');
+           var type = urla[0]=='page'? 'Baseliner.addNewTab':'Baseliner.addNewTabComp';
+           a= "<a href='javascript:"+type+"(\""+ Baseliner.quote(urla[2])+"\",\""+Baseliner.quote(urla[1])+"\")' >"+ value+"</a>";
+           //a= "<a href='javascript:"+type+"(\""+ Baseliner.quote(urla[2])+"\")' >"+ value+"</a>";
+        }
+        var icon = rec.data.icon || 'package.gif';
+        return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + a + "</b>" ;
+    };
     var itemTpl = function(value,metadata,rec,rowIndex,colIndex,store) {
-		var icon = rec.data.icon || 'package.gif';
-		return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + value + "</b>" ;
+        var icon = rec.data.icon || 'package.gif';
+        return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + value + "</b>" ;
     };
-	
+    
     var render_email = function(value,metadata,rec,rowIndex,colIndex,store) {
-		return "<a href='javascript:Baseliner.show_email({ id_message: "+ rec.data.id_message +", id_req: "+rec.data.id_req+" })' alt='"+ _("View Email") +"'>" + value + "</a>" ;
+        return "<a href='javascript:Baseliner.show_email({ id_message: "+ rec.data.id_message +", id_req: "+rec.data.id_req+" })' alt='"+ _("View Email") +"'>" + value + "</a>" ;
     };
-	
+    
     var jobTpl = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value!=undefined && value!='' ) {
             var id_job = rec.data.id_job;
@@ -434,76 +434,76 @@
             return '';
         }
     };
-	var toolbar = new Ext.Toolbar({
-		items: [ 'Buscar: ', ' ',
-			new Ext.app.SearchField({
-				store: store,
-				params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
-				emptyText: '<% _loc('<Enter your search string>') %>'
-			}),
-			filter_button,
-			//{ text: _("Approvals"), menu: approval_menu },
-			{ text: _("Actions"), menu: action_menu },
+    var toolbar = new Ext.Toolbar({
+        items: [ 'Buscar: ', ' ',
+            new Ext.app.SearchField({
+                store: store,
+                params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
+                emptyText: '<% _loc('<Enter your search string>') %>'
+            }),
+            filter_button,
+            //{ text: _("Approvals"), menu: approval_menu },
+            { text: _("Actions"), menu: action_menu },
             button_create, button_del, button_rename,
-			'->'
-		]
-	});
+            '->'
+        ]
+    });
 
-	/* 
-	//TODO put the provider buttons on the toolbar
-	Baseliner.ajaxEval('/revision/list_providers',{},function(res){
-		//for( var i in res.list ) {
-			//toolbar.insertButton({ text: res.list[i] });
-		//}
-	});
-	*/
+    /* 
+    //TODO put the provider buttons on the toolbar
+    Baseliner.ajaxEval('/revision/list_providers',{},function(res){
+        //for( var i in res.list ) {
+            //toolbar.insertButton({ text: res.list[i] });
+        //}
+    });
+    */
 
-	var grid = new Ext.grid.GridPanel({
-		title: _("Revisions"),
-		header: false,
+    var grid = new Ext.grid.GridPanel({
+        title: _("Revisions"),
+        header: false,
         tab_icon: '/static/images/icons/revision.gif',
-		stripeRows: true,
-		autoScroll: true,
+        stripeRows: true,
+        autoScroll: true,
         tpl: resultTpl,
-		autoWidth: true,
-		autoSizeColumns: true,
-		deferredRender:true,
-		clicksToEdit: 'auto',
-		store: store,
+        autoWidth: true,
+        autoSizeColumns: true,
+        deferredRender:true,
+        clicksToEdit: 'auto',
+        store: store,
         viewConfig: {
-				forceFit: true
+                forceFit: true
         },
         view: new Ext.grid.GroupingView({
             forceFit: true,
-			hideGroupedColumn: true,
+            hideGroupedColumn: true,
             groupTextTpl: '{text}'
             //groupTextTpl: '{[ values.rs[0].data["ns_type"] ]}'
             //groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "Items" : "Item"]})'
         }),
 
-		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		loadMask: true,
-		columns: [
-			{ header: _("Item"), width: 250, dataIndex: 'item', sortable: true, renderer: Baseliner.renderItem  },	
-			{ header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true , hidden: is_portlet ? true : false},	
-			{ header: _("Baseline"), width: 120, dataIndex: 'bl', sortable: true },	
-			{ header: _("Approval"), width: 120, dataIndex: 'status', sortable: true, renderer: render_email },	
-			{ header: _("Type"), width: 120, dataIndex: 'status_type', sortable: true , hidden: is_portlet ? true : false},	
-			{ header: _("Application"), width: 120, dataIndex: 'related', sortable: true , hidden: is_portlet ? true : false},	
-			{ header: _("Last Job"), width: 130, dataIndex: 'last_job', sortable: true, renderer: jobTpl },	
-			{ header: _("Release"), width: 150, dataIndex: 'release', sortable: true, renderer: relTpl },	
-			{ id: 'icon', header: _("Icon"), width: 120, dataIndex: 'icon', hidden: true, sortable: false },	
-			{ header: _("Description"), width: 150, dataIndex: 'text', sortable: true, cls: 'nowrapgrid' , hidden: is_portlet ? true : false }
-		],
-		bbar: new Ext.PagingToolbar({
-							store: store,
-							pageSize: ps,
-							displayInfo: true,
-							displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
-							emptyMsg: "No hay registros disponibles"
-					}),        
-		tbar: is_portlet ? [] : toolbar
-	});
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        loadMask: true,
+        columns: [
+            { header: _("Item"), width: 250, dataIndex: 'item', sortable: true, renderer: Baseliner.renderItem  },	
+            { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true , hidden: is_portlet ? true : false},	
+            { header: _("Baseline"), width: 120, dataIndex: 'bl', sortable: true },	
+            { header: _("Approval"), width: 120, dataIndex: 'status', sortable: true, renderer: render_email },	
+            { header: _("Type"), width: 120, dataIndex: 'status_type', sortable: true , hidden: is_portlet ? true : false},	
+            { header: _("Application"), width: 120, dataIndex: 'related', sortable: true , hidden: is_portlet ? true : false},	
+            { header: _("Last Job"), width: 130, dataIndex: 'last_job', sortable: true, renderer: jobTpl },	
+            { header: _("Release"), width: 150, dataIndex: 'release', sortable: true, renderer: relTpl },	
+            { id: 'icon', header: _("Icon"), width: 120, dataIndex: 'icon', hidden: true, sortable: false },	
+            { header: _("Description"), width: 150, dataIndex: 'text', sortable: true, cls: 'nowrapgrid' , hidden: is_portlet ? true : false }
+        ],
+        bbar: new Ext.PagingToolbar({
+                            store: store,
+                            pageSize: ps,
+                            displayInfo: true,
+                            displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
+                            emptyMsg: "No hay registros disponibles"
+                    }),        
+        tbar: is_portlet ? [] : toolbar
+    });
 
     var first_load = true;
     grid.on("activate", function() {
@@ -519,9 +519,9 @@
         if( rec.data.can_rename ) button_rename.enable();
             else button_rename.disable();
     });
-	store.load({params:{start: 0, limit: ps }, callback: function() {  Baseliner.hideLoadingMask(); } });
+    store.load({params:{start: 0, limit: ps }, callback: function() {  Baseliner.hideLoadingMask(); } });
 
-	return grid;
+    return grid;
 })();
 
 

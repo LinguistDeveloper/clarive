@@ -3,27 +3,27 @@ Ext.ns('Baseliner');
 Baseliner.getMessages = function() {
     
     var fields = [ 
-			{  name: 'id' },
-			{  name: 'id_message' },
-			{  name: 'subject' },
-			{  name: 'message' },
-			{  name: 'sender' },
-			{  name: 'active' },
-			{  name: 'to' },
-			{  name: 'cc' },
-			{  name: 'sent' },
-			{  name: 'received' },
-			{  name: 'type' }
+            {  name: 'id' },
+            {  name: 'id_message' },
+            {  name: 'subject' },
+            {  name: 'message' },
+            {  name: 'sender' },
+            {  name: 'active' },
+            {  name: 'to' },
+            {  name: 'cc' },
+            {  name: 'sent' },
+            {  name: 'received' },
+            {  name: 'type' }
     ];
 
-	var store=new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/message/im_json',
-		fields: fields
-	});
+    var store=new Ext.data.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id', 
+        url: '/message/im_json',
+        fields: fields
+    });
     
     store.on('load', function(obj, rec, options ) {
         try {

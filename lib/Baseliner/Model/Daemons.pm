@@ -24,7 +24,7 @@ sub request_start_stop {
     my ( $self, %p ) = @_;
     my $id = $p{id};
     my $action = $p{action};
-	my $daemon = Baseliner->model('Baseliner::BaliDaemon')->find( $id );
+    my $daemon = Baseliner->model('Baseliner::BaliDaemon')->find( $id );
     if( ref $daemon ) {
         $daemon->active( $action eq 'start' ? 1 : 0 );
         $daemon->update;
@@ -81,26 +81,26 @@ sub service_start_forked {
     _throw 'No service specified' unless @services;
 
     my %params = _array $p{params}, $p{param};
-	my $params = join ' ', map { "$_=$params{$_}" } keys %params;
+    my $params = join ' ', map { "$_=$params{$_}" } keys %params;
 
     my @started;
     for my $service_name ( @services ) {
-		my $pid = fork;
-		unless( $pid ) {
-			$SIG{HUP} = 'DEFAULT';
-			$SIG{TERM} = 'DEFAULT';
-			$SIG{STOP} = 'DEFAULT';
-			$0 = "perl $0 $service_name $params";
-			if( exists $p{frequency} ) { 
-				while(1) {
-					Baseliner->launch( $service_name, data=>\%params );
-					sleep $p{frequency};
-				}
-			} else {
-				Baseliner->launch( $service_name, data=>\%params );
-			}
-			exit 0;  #FIXME this leaves zombies behind - use POSIX::_exit() instead?
-		}
+        my $pid = fork;
+        unless( $pid ) {
+            $SIG{HUP} = 'DEFAULT';
+            $SIG{TERM} = 'DEFAULT';
+            $SIG{STOP} = 'DEFAULT';
+            $0 = "perl $0 $service_name $params";
+            if( exists $p{frequency} ) { 
+                while(1) {
+                    Baseliner->launch( $service_name, data=>\%params );
+                    sleep $p{frequency};
+                }
+            } else {
+                Baseliner->launch( $service_name, data=>\%params );
+            }
+            exit 0;  #FIXME this leaves zombies behind - use POSIX::_exit() instead?
+        }
         push @started,
           {
             service => $service_name,
@@ -120,19 +120,19 @@ Just kill it. Optionally 'kill it' with a signal.
 sub kill_daemon {
     my ( $self, $daemon, $signal ) = @_;
 
-	$signal ||= 9;
+    $signal ||= 9;
     $self->mark_as_pending( id=>$daemon->id );
 
-	if( kill $signal,$daemon->pid ) {
-		$daemon->pid( 0 );
-		$daemon->update;
-		_log "Daemon " . $daemon->service . " stopped";
-	} else {
-		_log "Could not kill daemon "
-			. $daemon->service
-			. " with pid "
-			. $daemon->pid;
-	}
+    if( kill $signal,$daemon->pid ) {
+        $daemon->pid( 0 );
+        $daemon->update;
+        _log "Daemon " . $daemon->service . " stopped";
+    } else {
+        _log "Could not kill daemon "
+            . $daemon->service
+            . " with pid "
+            . $daemon->pid;
+    }
 }
 
 =head2 mark_as_pending

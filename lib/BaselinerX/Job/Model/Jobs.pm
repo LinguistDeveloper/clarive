@@ -29,27 +29,27 @@ sub search_query {
         end      =>"me.endtime",
         items    =>"bali_job_items.item",
     });
-	my $rs_search = Baseliner->model('Baseliner::BaliJob')->search(
+    my $rs_search = Baseliner->model('Baseliner::BaliJob')->search(
         $where,
-		{
-			select => [ { distinct=>'me.id'}, 'starttime' ],
-			as => [ 'id', 'starttime' ],
-			join => [ 'bali_job_items' ],	
-			page=>0, rows=>$p{query_limit} || 20,
-			order_by => { -desc => 'me.starttime' },
-		}
-	);
-	rs_hashref( $rs_search );
-	my @ids = map { $_->{id} } $rs_search->all; 
-	my $rs = Baseliner->model('Baseliner::BaliJob')->search(
+        {
+            select => [ { distinct=>'me.id'}, 'starttime' ],
+            as => [ 'id', 'starttime' ],
+            join => [ 'bali_job_items' ],	
+            page=>0, rows=>$p{query_limit} || 20,
+            order_by => { -desc => 'me.starttime' },
+        }
+    );
+    rs_hashref( $rs_search );
+    my @ids = map { $_->{id} } $rs_search->all; 
+    my $rs = Baseliner->model('Baseliner::BaliJob')->search(
         { 'me.id'=>{ -in =>\@ids } },
-		{
-			page=>$p{page} // 1, rows=>$p{limit} // 20,
-			order_by => { -desc => 'me.starttime' },
-		}
-	);
-	my $pager = $rs->pager;
-	my $cnt = $pager->total_entries;
+        {
+            page=>$p{page} // 1, rows=>$p{limit} // 20,
+            order_by => { -desc => 'me.starttime' },
+        }
+    );
+    my $pager = $rs->pager;
+    my $cnt = $pager->total_entries;
     return map { 
         my %res = $_->get_columns;
         my $text = join ', ', 

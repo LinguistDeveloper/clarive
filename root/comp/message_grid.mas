@@ -1,45 +1,45 @@
 
 (function(){
-	var username = '<% $c->stash->{username} %>';
+    var username = '<% $c->stash->{username} %>';
     var fields = [ 'id', 'id_message', 'subject',
         'body', 'sender', 'to', 'cc', 'sent', 'received', 'type', 'swreaded'
     ];
-	var store=new Ext.data.JsonStore({
-		url: '/message/inbox_json',
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty: 'totalCount', 
-		id: 'id', 
-		baseParams: { username: username },
-		fields: fields
-	});
+    var store=new Ext.data.JsonStore({
+        url: '/message/inbox_json',
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty: 'totalCount', 
+        id: 'id', 
+        baseParams: { username: username },
+        fields: fields
+    });
 
     ///////////////// Message Single Row
-	var message_data_store=new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/message/detail',
-		fields: fields 
-	});
+    var message_data_store=new Ext.data.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id', 
+        url: '/message/detail',
+        fields: fields 
+    });
 
 Ext.override(Ext.form.HtmlEditor, {
-	/**
-	 * Set a readonly mask over the editor
-	 * @param {Boolean} readOnly - True to set the read only property, False to switch to the editor
-	 */
-	setReadOnly: function(readOnly){
-		if(readOnly){
-			this.syncValue();			
-			this.el.dom.readOnly = true;
-		} else {
-			if(this.rendered){
-				this.wrap.unmask();
-			}
-			this.el.dom.readOnly = false;
-		}
-	},
+    /**
+     * Set a readonly mask over the editor
+     * @param {Boolean} readOnly - True to set the read only property, False to switch to the editor
+     */
+    setReadOnly: function(readOnly){
+        if(readOnly){
+            this.syncValue();			
+            this.el.dom.readOnly = true;
+        } else {
+            if(this.rendered){
+                this.wrap.unmask();
+            }
+            this.el.dom.readOnly = false;
+        }
+    },
    // private
     onRender : function(ct, position){
         Ext.form.HtmlEditor.superclass.onRender.call(this, ct, position);
@@ -54,8 +54,8 @@ Ext.override(Ext.form.HtmlEditor, {
         });
 
         this.createToolbar(this);
-		
-		this.tb.hide();
+        
+        this.tb.hide();
         var iframe = document.createElement('iframe');
         iframe.name = Ext.id();
         iframe.frameBorder = 'no';
@@ -97,11 +97,11 @@ Ext.override(Ext.form.HtmlEditor, {
             this.setSize(this.el.getSize());
         }
 
-		this.setReadOnly(this.readOnly);
+        this.setReadOnly(this.readOnly);
 
     }
 });
-	
+    
     var message_body = new Ext.Component({
        fieldLabel: _('Message'),
         autoEl: {
@@ -125,7 +125,7 @@ Ext.override(Ext.form.HtmlEditor, {
         title: _('Message'),
         region: 'south',
         collapsible: true,
-		split: true,
+        split: true,
         resizeable: true,
         height: 350,
         frame: true,
@@ -156,116 +156,116 @@ Ext.override(Ext.form.HtmlEditor, {
 
     <& /comp/search_field.mas &>
 
-		var ps = 30; //page_size
-		store.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>' }});
+        var ps = 30; //page_size
+        store.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>' }});
 
-		var render_subject = function(value, metadata, rec, rowIndex, colIndex, store) {
-			if(rec.get('swreaded') == '1'){
-				return value;
-			}else{
-				return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;				
-			}
-		};
+        var render_subject = function(value, metadata, rec, rowIndex, colIndex, store) {
+            if(rec.get('swreaded') == '1'){
+                return value;
+            }else{
+                return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;				
+            }
+        };
 
 
 
-		// create the grid
-		var grid = new Ext.grid.GridPanel({
+        // create the grid
+        var grid = new Ext.grid.GridPanel({
             region: 'center',
-			title: _('Inbox'),
-			header: false,
+            title: _('Inbox'),
+            header: false,
             stripeRows: true,
-			autoScroll: true,
-			autoWidth: true,
-			iconCls: 'icon-inbox',
-			store: store,
-			viewConfig: [{
-					forceFit: true
-			}],
-			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-			loadMask:'true',
-			columns: [
-				{ header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	
-				{ header: _('Message Id'), width: 80, dataIndex: 'id_message', hidden: true, sortable: true },	
-				{ header: _('From'), width: 200, dataIndex: 'sender', sortable: true },	
-				{ header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true, renderer: render_subject },	
-				{ header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },	
-				{ header: _('Message'), width: 300, dataIndex: 'body', sortable: true },	
-				{ header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
-				{ header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }	
-			],
-			autoSizeColumns: true,
-			deferredRender:true,
-			bbar: new Ext.PagingToolbar({
-								store: store,
-								pageSize: ps,
-								displayInfo: true,
-								displayMsg: _('Rows {0} - {1} de {2}'),
-								emptyMsg: _('There are no rows available')
-						}),        
-			tbar: [ _('Search') + ': ', ' ',
-				new Ext.app.SearchField({
-					store: store,
-					params: {start: 0, limit: ps},
-					emptyText: _('<Enter your search string>')
-				}),
-				new Ext.Toolbar.Button({
-					text: _('View'),
-					icon:'/static/images/drop-yes.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection()) {
-							var sel = sm.getSelected();
+            autoScroll: true,
+            autoWidth: true,
+            iconCls: 'icon-inbox',
+            store: store,
+            viewConfig: [{
+                    forceFit: true
+            }],
+            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+            loadMask:'true',
+            columns: [
+                { header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	
+                { header: _('Message Id'), width: 80, dataIndex: 'id_message', hidden: true, sortable: true },	
+                { header: _('From'), width: 200, dataIndex: 'sender', sortable: true },	
+                { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true, renderer: render_subject },	
+                { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },	
+                { header: _('Message'), width: 300, dataIndex: 'body', sortable: true },	
+                { header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
+                { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }	
+            ],
+            autoSizeColumns: true,
+            deferredRender:true,
+            bbar: new Ext.PagingToolbar({
+                                store: store,
+                                pageSize: ps,
+                                displayInfo: true,
+                                displayMsg: _('Rows {0} - {1} de {2}'),
+                                emptyMsg: _('There are no rows available')
+                        }),        
+            tbar: [ _('Search') + ': ', ' ',
+                new Ext.app.SearchField({
+                    store: store,
+                    params: {start: 0, limit: ps},
+                    emptyText: _('<Enter your search string>')
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('View'),
+                    icon:'/static/images/drop-yes.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        if (sm.hasSelection()) {
+                            var sel = sm.getSelected();
                             message_view(sel.data.id, sel.data.id_message);
-						} else {
-							Ext.Msg.alert('Error', _('Select at least one row'));	
-						};
-					}
-				}),
-				new Ext.Toolbar.Button({
-					text: _('Delete'),
-					icon:'/static/images/del.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						var sel = sm.getSelected();
-						Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the message') + ' <b>' + sel.data.subject + '</b>?', 
-							function(btn){ 
-								if(btn=='yes') {
-									var conn = new Ext.data.Connection();
-									conn.request({
-										url: '/message/delete',
-										params: { id_message: sel.data.id_message },
-										success: function(resp,opt) { grid.getStore().remove(sel); },
-										failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the message')); }
-									});	
-								}
-							} );
-					}
-				}),
-				'->'
-				]
-		});
+                        } else {
+                            Ext.Msg.alert('Error', _('Select at least one row'));	
+                        };
+                    }
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Delete'),
+                    icon:'/static/images/del.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        var sel = sm.getSelected();
+                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the message') + ' <b>' + sel.data.subject + '</b>?', 
+                            function(btn){ 
+                                if(btn=='yes') {
+                                    var conn = new Ext.data.Connection();
+                                    conn.request({
+                                        url: '/message/delete',
+                                        params: { id_message: sel.data.id_message },
+                                        success: function(resp,opt) { grid.getStore().remove(sel); },
+                                        failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the message')); }
+                                    });	
+                                }
+                            } );
+                    }
+                }),
+                '->'
+                ]
+        });
 
-	grid.getView().forceFit = true;
+    grid.getView().forceFit = true;
 
-	grid.on("rowclick", function(grid, rowIndex, e ) {
-			var row = grid.getStore().getAt(rowIndex);
+    grid.on("rowclick", function(grid, rowIndex, e ) {
+            var row = grid.getStore().getAt(rowIndex);
             message_view( row.get('id'), row.get('id_message') );
-			var cell = grid.getView().getCell(rowIndex,3);
-			if(row.get('swreaded') == '0'){
-				Ext.fly(cell).update('<div style="padding-left: 5px;padding-top: 3px">' + row.get('subject') + '</div>', false);				
-			}
-	});
-	
+            var cell = grid.getView().getCell(rowIndex,3);
+            if(row.get('swreaded') == '0'){
+                Ext.fly(cell).update('<div style="padding-left: 5px;padding-top: 3px">' + row.get('subject') + '</div>', false);				
+            }
+    });
+    
     var panel = new Ext.Panel({
         layout: 'border',
         items: [ grid, message_form ]
     });
 
-	panel.setTitle(_("Inbox for %1", username) );
-	return panel;
+    panel.setTitle(_("Inbox for %1", username) );
+    return panel;
 })();
 
 

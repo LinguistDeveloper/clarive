@@ -1,9 +1,9 @@
 Ext.onReady(function(){
-	Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
-	Ext.QuickTips.init();
+    Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
+    Ext.QuickTips.init();
 
-	var after_login = "<% $c->stash->{after_login} %>";
-	Ext.Ajax.timeout = 60000;
+    var after_login = "<% $c->stash->{after_login} %>";
+    Ext.Ajax.timeout = 60000;
 
     Baseliner.doLoginForm = function(){
                                 var ff = login_form.getForm();
@@ -15,9 +15,9 @@ Ext.onReady(function(){
                                              },
                                     failure: function(form, action) {
                                                     Ext.Msg.alert('<% _loc('Login Failed') %>', action.result.msg );
-													login_form.getForm().findField('login').focus('',100);
+			                                        login_form.getForm().findField('login').focus('',100);
                                                     //login_form.getForm().findField('password').getValue() == ''
-													//	? login_form.getForm().findField('login').focus('',100)
+			                                        //	? login_form.getForm().findField('login').focus('',100)
                                                     //	: login_form.getForm().findField('password').focus('',100);
                                               }
                                 });
@@ -25,12 +25,12 @@ Ext.onReady(function(){
 
     var login_form = new Ext.FormPanel({
             url: '/login',
-			id: 'lf',
+            id: 'lf',
             frame: true,
             labelWidth: 60, 
-			renderTo: document.body,
-			bodyStyle:'padding:5px 5px 0',
-			cls: 'centered',
+            renderTo: document.body,
+            bodyStyle:'padding:5px 5px 0',
+            cls: 'centered',
             defaults: { width: 150 },
             buttons: [
                 { text: '<% _loc('Login') %>',
@@ -49,7 +49,7 @@ Ext.onReady(function(){
             ]
         });
 
-	 var map = new Ext.KeyMap(document, [{
+     var map = new Ext.KeyMap(document, [{
             key : [10, 13],
             fn : Baseliner.doLoginForm
         }]); 
