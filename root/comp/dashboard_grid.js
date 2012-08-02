@@ -129,10 +129,11 @@
     var add_edit = function(rec) {
 	    var win;
 	    var config = new Array();
+		var show = rec ? rec.data.is_system : false;
 	    
 		    var dashlets_box = new Baseliner.model.Dashlets({
 			    store: dashlets_box_store,
-			    hidden: rec.data.is_system
+			    hidden: show //********************************************************************************* 
 		    });
 		    
 		    dashlets_box_store.on('load',function(){
@@ -147,7 +148,7 @@
 		    
 		    var roles_box = new Baseliner.model.Roles({
 			    store: roles_box_store,
-			    hidden: rec.data.is_system  //*******************************************************************
+			    hidden: show  //*******************************************************************
 		    });
 		    
 		    roles_box_store.on('load',function(){
@@ -167,7 +168,7 @@
 		    var btn_grabar_dashboard = 	new Ext.Toolbar.Button({
 			    text: _('Save'),
 			    width: 50,
-			    hidden: rec.data.is_system,
+			    hidden: show, //**************************************************************
 			    handler: function(){
 				    var form = form_dashboard.getForm();
 				    var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
@@ -393,7 +394,7 @@
 						    {
 						    // column layout with 2 columns
 						    layout:'column',
-						    hidden: rec.data.is_system  //*******************************************************
+						    hidden: show  //*******************************************************
 						    ,defaults:{
 							    columnWidth:0.5
 							    ,layout:'form'
