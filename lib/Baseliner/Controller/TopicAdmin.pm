@@ -573,7 +573,11 @@ sub get_config_priority : Local {
     my $priority_id = $p->{id};
     my $category_id = $p->{category_id};
     
-    my @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search({id_category=> $category_id, id_priority=> $priority_id})->hashref->all;
+    my @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search(
+                                {id_category=> $category_id, id_priority=> $priority_id},
+                                {join=>['priority'], 
+                                select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
+                                as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
     if(!@category_priority){
         my @priority_default = $c->model('Baseliner::BaliTopicPriority')->search({id=> $priority_id})->hashref->all;
         foreach my $field (@priority_default){
@@ -586,11 +590,7 @@ sub get_config_priority : Local {
                               expr_deadline => $field->{expr_deadline},
                               is_active => 0,
                               }
-                             
         }
-    }else{
-        my $config = $category_priority[0];
-        $config->{id} = $config->{id_priority};
     }
 
     $c->stash->{json} = { data=>\@category_priority};

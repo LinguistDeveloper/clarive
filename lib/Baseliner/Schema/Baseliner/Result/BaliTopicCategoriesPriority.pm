@@ -117,7 +117,13 @@ __PACKAGE__->add_columns(
 
 =cut
 
+__PACKAGE__->set_primary_key("id_category", "id_priority");
 
+__PACKAGE__->belongs_to(
+  "priority",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicPriority",
+  { id => "id_priority" },
+);
 
 # Created by DBIx::Class::Schema::Loader v0.07012 @ 2012-01-17 18:19:57
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kPypxdTqp7bcXeLkSRdC7A
