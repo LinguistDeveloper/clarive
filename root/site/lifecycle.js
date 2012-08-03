@@ -72,7 +72,7 @@ var button_favorites = new Ext.Button({
 
 var button_workspaces = new Ext.Button({
     cls: 'x-btn-icon',
-    icon: '/static/images/icons/connect.png',
+    icon: '/static/images/icons/workspaces.png',
     handler: show_workspaces,
     tooltip: _('Workspaces'),
     toggleGroup: 'lc',
@@ -83,7 +83,7 @@ var button_workspaces = new Ext.Button({
 
 var button_ci = new Ext.Button({
     cls: 'x-btn-icon',
-    icon: '/static/images/ci/ci.png',
+    icon: '/static/images/ci/ci-grey.png',
     handler: show_ci,
     tooltip: _('Configuration Items'),
     toggleGroup: 'lc',
@@ -105,7 +105,7 @@ Baseliner.lc_tbar = new Ext.Toolbar({
     items: [
         { xtype:'button', 
             cls: 'x-btn-text-icon',
-            icon: '/static/images/icons/refresh.gif',
+            icon: '/static/images/icons/refresh-grey.gif',
             handler: refresh_lc        },
         button_projects,
         button_favorites,
@@ -122,7 +122,7 @@ var base_menu_items = [ ];
 
 var menu_favorite_add = {
     text: _('Add to Favorites...'),
-    icon: '/static/images/icons/favorites.gif',
+    icon: '/static/images/icons/favorite.png',
     handler: function(n) {
         var sm = Baseliner.lifecycle.getSelectionModel();
         var node = sm.getSelectedNode();
@@ -150,7 +150,7 @@ var menu_favorite_add = {
 
 var menu_favorite_del = {
     text: _('Remove from Favorites'),
-    icon: '/static/images/icons/favorites.gif',
+    icon: '/static/images/icons/favorite.png',
     handler: function(n) {
         var sm = Baseliner.lifecycle.getSelectionModel();
         var node = sm.getSelectedNode();
@@ -344,18 +344,34 @@ Baseliner.lifecycle.getLoader().on("beforeload", function(treeLoader, node) {
     loader.baseParams = node.attributes.data;
 });
     
+Baseliner.lc_topic_style = [
+    '<span style="font-size:0px;',
+    'padding: 8px 8px 0px 0px;',
+    'margin : 0px 4px 0px 0px;',
+    'border : 2px solid {0};',
+    'background-color: transparent;',
+    'color:{0};',
+    'border-radius:0px"></span>'
+].join('');
+
 Baseliner.lifecycle.on('beforechildrenrendered', function(node){
     node.eachChild(function(n) {
         if(n.attributes.topic_name ) {
             var tn = n.attributes.topic_name;
             n.setIconCls('no-icon');
 
+            if( !tn.category_color ) 
+                tn.category_color = '#999';
             //tn.style = 'font-size:10px';
-            tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
+            //tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
+            //tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
+            var span = String.format( Baseliner.lc_topic_style, tn.category_color );
 
-            tn.mini = true;
-            var tn_span = Baseliner.topic_name(tn);
-            n.setText( tn_span + ' ' + n.text );
+            //tn.mini = true;
+            //var tn_span = Baseliner.topic_name(tn);
+
+            n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
+
             /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
                 n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
         }

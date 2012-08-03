@@ -6,12 +6,12 @@ use Moose;
 
 # loads the stash object with data from the registry metadata
 sub load {
-	my $self=shift;
+    my $self=shift;
 }
 
 sub run {
-	my ($self,%p)=@_;	
-	
+    my ($self,%p)=@_;	
+    
 }
 
 1;

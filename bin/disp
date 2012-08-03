@@ -1,10 +1,10 @@
 #!/bin/sh
 
 if [ "$BASELINER_LOGHOME" != "" ]; then
-	LOGDIR=$BASELINER_LOGHOME
+    LOGDIR=$BASELINER_LOGHOME
 else
-	LOGDIR=$BASELINER_HOME/tmp/log
-	mkdir -p $LOGDIR
+    LOGDIR=$BASELINER_HOME/tmp/log
+    mkdir -p $LOGDIR
         echo "Log directory set to $LOGDIR"
         export BASELINER_LOGHOME=$LOGDIR
 fi
@@ -21,9 +21,9 @@ LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
 LOGFILE=$LOGDIR/$LOGFILENAME.log
 
 ren_log() {
-	mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
-	gzip $LOGFILEOLD 2>/dev/null
-	echo "Log file: $LOGFILE"
+    mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
+    gzip $LOGFILEOLD 2>/dev/null
+    echo "Log file: $LOGFILE"
 }
 
 message="Baseliner Dispatcher starting in background..."
@@ -31,7 +31,7 @@ if [ "$1" == "restart" ];
 then
         bali stop service.dispatcher 
         echo $message
-		ren_log
+	    ren_log
         shift
         exec balid service.dispatcher $*
         exit 0
@@ -46,7 +46,7 @@ fi
 
 if [ "$1" == "start" ];
 then
-		ren_log
+	    ren_log
         echo $message
         shift
         exec balid service.dispatcher $*

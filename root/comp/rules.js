@@ -366,7 +366,7 @@
         autoScroll: true,
         animate: true,
         lines: true,
-		stripeRows: true,
+	    stripeRows: true,
         enableSort: false,
         enableDD: true,
         dataUrl: '/rule/tree',

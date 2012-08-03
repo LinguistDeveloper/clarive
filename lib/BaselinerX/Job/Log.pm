@@ -9,12 +9,12 @@ with 'Baseliner::Role::Logger';
 
 register 'menu.job.logs' => { label => _loc('Job Logs'), url_comp => '/job/log/list', title=>_loc('Job Logs') };
 register 'config.job.log' => {
-	metadata => [
-		{ id=>'job_id', label=>'Job', width=>200 },
-		{ id=>'log_id', label=>'Id', width=>80 },
-		{ id=>'lev', label=>_loc('Level'), width=>80 },
-		{ id=>'text', label=>_loc('Message'), width=>200 },
-	]
+    metadata => [
+        { id=>'job_id', label=>'Job', width=>200 },
+        { id=>'log_id', label=>'Id', width=>80 },
+        { id=>'lev', label=>_loc('Level'), width=>80 },
+        { id=>'text', label=>_loc('Message'), width=>200 },
+    ]
 
 };
 
@@ -24,9 +24,9 @@ Handles all job logging.
 
 The basics:
 
-	my $job = $c->stash->{job};
-	my $log = $job->logger;
-	$log->error( "An error" );
+    my $job = $c->stash->{job};
+    my $log = $job->logger;
+    $log->error( "An error" );
 
 With data:
 
@@ -60,15 +60,15 @@ has max_step_level    => ( is => 'rw', isa => 'Int', default => 2 );
 
 # set the execution number for this log roll
 sub BUILD {
-	my ($self,$params) = @_;
+    my ($self,$params) = @_;
     my $jobid = $self->jobid;
-	my $job_row = Baseliner->model('Baseliner::BaliJob')->find( $jobid );
+    my $job_row = Baseliner->model('Baseliner::BaliJob')->find( $jobid );
     if( my $job = $self->job ) {
         $self->current_service( $job->current_service ); 
     }
-	if( ref $job_row ) {
+    if( ref $job_row ) {
         $self->exec( $job_row->exec ); # unless defined $self->exec;
-	}
+    }
 }
 
 =head2 common_log
@@ -79,63 +79,63 @@ All data is compressed.
 
 =cut
 sub common_log {
-	my ( $lev, $self, $text )=( shift, shift, shift);
+    my ( $lev, $self, $text )=( shift, shift, shift);
     my ($package, $filename, $line) = caller 1;
     my $module = "$package - $filename ($line)";
     my %p = ( 1 == scalar @_ ) ? ( data=>shift ) : @_; # if it's only a single param, its a data, otherwise expect param=>value,...  
-	$p{data}||='';
+    $p{data}||='';
     ref $p{data} and $p{data}=_dump( $p{data} );  # auto dump data if its a ref
     $p{'dump'} and $p{data}=_dump( delete $p{'dump'} );  # auto dump data if its a ref
-	my $job_exec = $self->exec;
-	my $jobid = $self->jobid;
-	my $row;
+    my $job_exec = $self->exec;
+    my $jobid = $self->jobid;
+    my $row;
     # set max level
     if( my $log_level = $self->log_levels->{ $lev } ) {
         $self->max_service_level( $log_level ) if $log_level > $self->max_service_level;
         $self->max_step_level( $log_level ) if $log_level > $self->max_step_level;
     }
-	if( length($text) > 2000 ) {
-		# publish exceeding log to data
-		$p{data}.= '=' x 50;
-		$p{data}.= "\n$text";
-		# rewrite text message
-		$text = substr( $text, 0, 2000 );
-		$text .= '=' x 20;
-		$text .= "\n(continue...)";
-	}
-	try {
-		$row = Baseliner->model('Baseliner::BaliLog')->create({ id_job =>$jobid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec }); 
+    if( length($text) > 2000 ) {
+        # publish exceeding log to data
+        $p{data}.= '=' x 50;
+        $p{data}.= "\n$text";
+        # rewrite text message
+        $text = substr( $text, 0, 2000 );
+        $text .= '=' x 20;
+        $text .= "\n(continue...)";
+    }
+    try {
+        $row = Baseliner->model('Baseliner::BaliLog')->create({ id_job =>$jobid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec }); 
 
-		$p{data} && $row->data( compress $p{data} );  ##TODO even with compression, too much data breaks around here - use dbh directly?
-		defined $p{more} && $row->more( $p{more} );
-		$p{data_name} && $row->data_name( $p{data_name} );
-		$p{data} && $row->data_length( length( $p{data} ) );
-		$p{prefix} and $row->prefix( $p{prefix} );
-		$p{milestone} and $row->milestone( $p{milestone} );
-		$row->service_key( $self->current_service );
+        $p{data} && $row->data( compress $p{data} );  ##TODO even with compression, too much data breaks around here - use dbh directly?
+        defined $p{more} && $row->more( $p{more} );
+        $p{data_name} && $row->data_name( $p{data_name} );
+        $p{data} && $row->data_length( length( $p{data} ) );
+        $p{prefix} and $row->prefix( $p{prefix} );
+        $p{milestone} and $row->milestone( $p{milestone} );
+        $row->service_key( $self->current_service );
 
-		# print out too
+        # print out too
         Baseliner::Utils::_log_lev( 5, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );
         Baseliner::Utils::_log_lev( 5, substr($p{data},0,1024*10) )
             if $ENV{BASELINER_DEBUG} && defined $p{data} && !$p{data_name} # no files wanted!;
 
-		# store the current section
+        # store the current section
         ;
         $p{username} && $lev eq 'comment'
             ? $row->section( $p{username} )
             : $row->section( $self->current_section );
 
-		# store the current step
-		my $step = $row->job->step;
-		$row->step( $step ) if $step;
+        # store the current step
+        my $step = $row->job->step;
+        $row->step( $step ) if $step;
 
-		$row->update;
-		$self->last_log( $row->get_columns ) if $lev ne 'debug';
-	} catch {
-		my $err = shift;
-		_log "*** Error writing log entry: $err";
-		_log "*** Log text: $text (lev=$lev, jobid=$jobid)";
-	};
+        $row->update;
+        $self->last_log( $row->get_columns ) if $lev ne 'debug';
+    } catch {
+        my $err = shift;
+        _log "*** Error writing log entry: $err";
+        _log "*** Log text: $text (lev=$lev, jobid=$jobid)";
+    };
     return $row;
 }
 

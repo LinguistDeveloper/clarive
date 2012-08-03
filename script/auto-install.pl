@@ -2446,9 +2446,9 @@ $fatpacked{"CPAN/DistnameInfo.pm"} = <<'CPAN_DISTNAMEINFO';
     my ($dist, $version) = $file =~ /^
       ((?:[-+.]*(?:[A-Za-z0-9]+|(?<=\D)_|_(?=\D))*
        (?:
-  	[A-Za-z](?=[^A-Za-z]|$)
-  	|
-  	\d(?=-)
+      [A-Za-z](?=[^A-Za-z]|$)
+      |
+      \d(?=-)
        )(?<![._-][vV])
       )+)(.*)
     $/xs or return ($file,undef,undef);
@@ -5235,22 +5235,22 @@ $fatpacked{"CPAN/Meta/YAML.pm"} = <<'CPAN_META_YAML';
   # UTF Support?
   sub HAVE_UTF8 () { $] >= 5.007003 }
   BEGIN {
-  	if ( HAVE_UTF8 ) {
-  		# The string eval helps hide this from Test::MinimumVersion
-  		eval "require utf8;";
-  		die "Failed to load UTF-8 support" if $@;
-  	}
+      if ( HAVE_UTF8 ) {
+          # The string eval helps hide this from Test::MinimumVersion
+          eval "require utf8;";
+          die "Failed to load UTF-8 support" if $@;
+      }
   
-  	# Class structure
-  	require 5.004;
-  	require Exporter;
-  	require Carp;
-  	@CPAN::Meta::YAML::ISA       = qw{ Exporter  };
-  	@CPAN::Meta::YAML::EXPORT    = qw{ Load Dump };
-  	@CPAN::Meta::YAML::EXPORT_OK = qw{ LoadFile DumpFile freeze thaw };
+      # Class structure
+      require 5.004;
+      require Exporter;
+      require Carp;
+      @CPAN::Meta::YAML::ISA       = qw{ Exporter  };
+      @CPAN::Meta::YAML::EXPORT    = qw{ Load Dump };
+      @CPAN::Meta::YAML::EXPORT_OK = qw{ LoadFile DumpFile freeze thaw };
   
-  	# Error storage
-  	$CPAN::Meta::YAML::errstr    = '';
+      # Error storage
+      $CPAN::Meta::YAML::errstr    = '';
   }
   
   # The character class of all characters we need to escape
@@ -5260,25 +5260,25 @@ $fatpacked{"CPAN/Meta/YAML.pm"} = <<'CPAN_META_YAML';
   # Printed form of the unprintable characters in the lowest range
   # of ASCII characters, listed by ASCII ordinal position.
   my @UNPRINTABLE = qw(
-  	z    x01  x02  x03  x04  x05  x06  a
-  	x08  t    n    v    f    r    x0e  x0f
-  	x10  x11  x12  x13  x14  x15  x16  x17
-  	x18  x19  x1a  e    x1c  x1d  x1e  x1f
+      z    x01  x02  x03  x04  x05  x06  a
+      x08  t    n    v    f    r    x0e  x0f
+      x10  x11  x12  x13  x14  x15  x16  x17
+      x18  x19  x1a  e    x1c  x1d  x1e  x1f
   );
   
   # Printable characters for escapes
   my %UNESCAPES = (
-  	z => "\x00", a => "\x07", t    => "\x09",
-  	n => "\x0a", v => "\x0b", f    => "\x0c",
-  	r => "\x0d", e => "\x1b", '\\' => '\\',
+      z => "\x00", a => "\x07", t    => "\x09",
+      n => "\x0a", v => "\x0b", f    => "\x0c",
+      r => "\x0d", e => "\x1b", '\\' => '\\',
   );
   
   # Special magic boolean words
   my %QUOTE = map { $_ => 1 } qw{
-  	null Null NULL
-  	y Y yes Yes YES n N no No NO
-  	true True TRUE false False FALSE
-  	on On ON off Off OFF
+      null Null NULL
+      y Y yes Yes YES n N no No NO
+      true True TRUE false False FALSE
+      on On ON off Off OFF
   };
   
   
@@ -5290,496 +5290,496 @@ $fatpacked{"CPAN/Meta/YAML.pm"} = <<'CPAN_META_YAML';
   
   # Create an empty CPAN::Meta::YAML object
   sub new {
-  	my $class = shift;
-  	bless [ @_ ], $class;
+      my $class = shift;
+      bless [ @_ ], $class;
   }
   
   # Create an object from a file
   sub read {
-  	my $class = ref $_[0] ? ref shift : shift;
+      my $class = ref $_[0] ? ref shift : shift;
   
-  	# Check the file
-  	my $file = shift or return $class->_error( 'You did not specify a file name' );
-  	return $class->_error( "File '$file' does not exist" )              unless -e $file;
-  	return $class->_error( "'$file' is a directory, not a file" )       unless -f _;
-  	return $class->_error( "Insufficient permissions to read '$file'" ) unless -r _;
+      # Check the file
+      my $file = shift or return $class->_error( 'You did not specify a file name' );
+      return $class->_error( "File '$file' does not exist" )              unless -e $file;
+      return $class->_error( "'$file' is a directory, not a file" )       unless -f _;
+      return $class->_error( "Insufficient permissions to read '$file'" ) unless -r _;
   
-  	# Slurp in the file
-  	local $/ = undef;
-  	local *CFG;
-  	unless ( open(CFG, $file) ) {
-  		return $class->_error("Failed to open file '$file': $!");
-  	}
-  	my $contents = <CFG>;
-  	unless ( close(CFG) ) {
-  		return $class->_error("Failed to close file '$file': $!");
-  	}
+      # Slurp in the file
+      local $/ = undef;
+      local *CFG;
+      unless ( open(CFG, $file) ) {
+          return $class->_error("Failed to open file '$file': $!");
+      }
+      my $contents = <CFG>;
+      unless ( close(CFG) ) {
+          return $class->_error("Failed to close file '$file': $!");
+      }
   
-  	$class->read_string( $contents );
+      $class->read_string( $contents );
   }
   
   # Create an object from a string
   sub read_string {
-  	my $class  = ref $_[0] ? ref shift : shift;
-  	my $self   = bless [], $class;
-  	my $string = $_[0];
-  	eval {
-  		unless ( defined $string ) {
-  			die \"Did not provide a string to load";
-  		}
+      my $class  = ref $_[0] ? ref shift : shift;
+      my $self   = bless [], $class;
+      my $string = $_[0];
+      eval {
+          unless ( defined $string ) {
+              die \"Did not provide a string to load";
+          }
   
-  		# Byte order marks
-  		# NOTE: Keeping this here to educate maintainers
-  		# my %BOM = (
-  		#     "\357\273\277" => 'UTF-8',
-  		#     "\376\377"     => 'UTF-16BE',
-  		#     "\377\376"     => 'UTF-16LE',
-  		#     "\377\376\0\0" => 'UTF-32LE'
-  		#     "\0\0\376\377" => 'UTF-32BE',
-  		# );
-  		if ( $string =~ /^(?:\376\377|\377\376|\377\376\0\0|\0\0\376\377)/ ) {
-  			die \"Stream has a non UTF-8 BOM";
-  		} else {
-  			# Strip UTF-8 bom if found, we'll just ignore it
-  			$string =~ s/^\357\273\277//;
-  		}
+          # Byte order marks
+          # NOTE: Keeping this here to educate maintainers
+          # my %BOM = (
+          #     "\357\273\277" => 'UTF-8',
+          #     "\376\377"     => 'UTF-16BE',
+          #     "\377\376"     => 'UTF-16LE',
+          #     "\377\376\0\0" => 'UTF-32LE'
+          #     "\0\0\376\377" => 'UTF-32BE',
+          # );
+          if ( $string =~ /^(?:\376\377|\377\376|\377\376\0\0|\0\0\376\377)/ ) {
+              die \"Stream has a non UTF-8 BOM";
+          } else {
+              # Strip UTF-8 bom if found, we'll just ignore it
+              $string =~ s/^\357\273\277//;
+          }
   
-  		# Try to decode as utf8
-  		utf8::decode($string) if HAVE_UTF8;
+          # Try to decode as utf8
+          utf8::decode($string) if HAVE_UTF8;
   
-  		# Check for some special cases
-  		return $self unless length $string;
-  		unless ( $string =~ /[\012\015]+\z/ ) {
-  			die \"Stream does not end with newline character";
-  		}
+          # Check for some special cases
+          return $self unless length $string;
+          unless ( $string =~ /[\012\015]+\z/ ) {
+              die \"Stream does not end with newline character";
+          }
   
-  		# Split the file into lines
-  		my @lines = grep { ! /^\s*(?:\#.*)?\z/ }
-  			    split /(?:\015{1,2}\012|\015|\012)/, $string;
+          # Split the file into lines
+          my @lines = grep { ! /^\s*(?:\#.*)?\z/ }
+                  split /(?:\015{1,2}\012|\015|\012)/, $string;
   
-  		# Strip the initial YAML header
-  		@lines and $lines[0] =~ /^\%YAML[: ][\d\.]+.*\z/ and shift @lines;
+          # Strip the initial YAML header
+          @lines and $lines[0] =~ /^\%YAML[: ][\d\.]+.*\z/ and shift @lines;
   
-  		# A nibbling parser
-  		while ( @lines ) {
-  			# Do we have a document header?
-  			if ( $lines[0] =~ /^---\s*(?:(.+)\s*)?\z/ ) {
-  				# Handle scalar documents
-  				shift @lines;
-  				if ( defined $1 and $1 !~ /^(?:\#.+|\%YAML[: ][\d\.]+)\z/ ) {
-  					push @$self, $self->_read_scalar( "$1", [ undef ], \@lines );
-  					next;
-  				}
-  			}
+          # A nibbling parser
+          while ( @lines ) {
+              # Do we have a document header?
+              if ( $lines[0] =~ /^---\s*(?:(.+)\s*)?\z/ ) {
+                  # Handle scalar documents
+                  shift @lines;
+                  if ( defined $1 and $1 !~ /^(?:\#.+|\%YAML[: ][\d\.]+)\z/ ) {
+                      push @$self, $self->_read_scalar( "$1", [ undef ], \@lines );
+                      next;
+                  }
+              }
   
-  			if ( ! @lines or $lines[0] =~ /^(?:---|\.\.\.)/ ) {
-  				# A naked document
-  				push @$self, undef;
-  				while ( @lines and $lines[0] !~ /^---/ ) {
-  					shift @lines;
-  				}
+              if ( ! @lines or $lines[0] =~ /^(?:---|\.\.\.)/ ) {
+                  # A naked document
+                  push @$self, undef;
+                  while ( @lines and $lines[0] !~ /^---/ ) {
+                      shift @lines;
+                  }
   
-  			} elsif ( $lines[0] =~ /^\s*\-/ ) {
-  				# An array at the root
-  				my $document = [ ];
-  				push @$self, $document;
-  				$self->_read_array( $document, [ 0 ], \@lines );
+              } elsif ( $lines[0] =~ /^\s*\-/ ) {
+                  # An array at the root
+                  my $document = [ ];
+                  push @$self, $document;
+                  $self->_read_array( $document, [ 0 ], \@lines );
   
-  			} elsif ( $lines[0] =~ /^(\s*)\S/ ) {
-  				# A hash at the root
-  				my $document = { };
-  				push @$self, $document;
-  				$self->_read_hash( $document, [ length($1) ], \@lines );
+              } elsif ( $lines[0] =~ /^(\s*)\S/ ) {
+                  # A hash at the root
+                  my $document = { };
+                  push @$self, $document;
+                  $self->_read_hash( $document, [ length($1) ], \@lines );
   
-  			} else {
-  				die \"CPAN::Meta::YAML failed to classify the line '$lines[0]'";
-  			}
-  		}
-  	};
-  	if ( ref $@ eq 'SCALAR' ) {
-  		return $self->_error(${$@});
-  	} elsif ( $@ ) {
-  		require Carp;
-  		Carp::croak($@);
-  	}
+              } else {
+                  die \"CPAN::Meta::YAML failed to classify the line '$lines[0]'";
+              }
+          }
+      };
+      if ( ref $@ eq 'SCALAR' ) {
+          return $self->_error(${$@});
+      } elsif ( $@ ) {
+          require Carp;
+          Carp::croak($@);
+      }
   
-  	return $self;
+      return $self;
   }
   
   # Deparse a scalar string to the actual scalar
   sub _read_scalar {
-  	my ($self, $string, $indent, $lines) = @_;
+      my ($self, $string, $indent, $lines) = @_;
   
-  	# Trim trailing whitespace
-  	$string =~ s/\s*\z//;
+      # Trim trailing whitespace
+      $string =~ s/\s*\z//;
   
-  	# Explitic null/undef
-  	return undef if $string eq '~';
+      # Explitic null/undef
+      return undef if $string eq '~';
   
-  	# Single quote
-  	if ( $string =~ /^\'(.*?)\'(?:\s+\#.*)?\z/ ) {
-  		return '' unless defined $1;
-  		$string = $1;
-  		$string =~ s/\'\'/\'/g;
-  		return $string;
-  	}
+      # Single quote
+      if ( $string =~ /^\'(.*?)\'(?:\s+\#.*)?\z/ ) {
+          return '' unless defined $1;
+          $string = $1;
+          $string =~ s/\'\'/\'/g;
+          return $string;
+      }
   
-  	# Double quote.
-  	# The commented out form is simpler, but overloaded the Perl regex
-  	# engine due to recursion and backtracking problems on strings
-  	# larger than 32,000ish characters. Keep it for reference purposes.
-  	# if ( $string =~ /^\"((?:\\.|[^\"])*)\"\z/ ) {
-  	if ( $string =~ /^\"([^\\"]*(?:\\.[^\\"]*)*)\"(?:\s+\#.*)?\z/ ) {
-  		# Reusing the variable is a little ugly,
-  		# but avoids a new variable and a string copy.
-  		$string = $1;
-  		$string =~ s/\\"/"/g;
-  		$string =~ s/\\([never\\fartz]|x([0-9a-fA-F]{2}))/(length($1)>1)?pack("H2",$2):$UNESCAPES{$1}/gex;
-  		return $string;
-  	}
+      # Double quote.
+      # The commented out form is simpler, but overloaded the Perl regex
+      # engine due to recursion and backtracking problems on strings
+      # larger than 32,000ish characters. Keep it for reference purposes.
+      # if ( $string =~ /^\"((?:\\.|[^\"])*)\"\z/ ) {
+      if ( $string =~ /^\"([^\\"]*(?:\\.[^\\"]*)*)\"(?:\s+\#.*)?\z/ ) {
+          # Reusing the variable is a little ugly,
+          # but avoids a new variable and a string copy.
+          $string = $1;
+          $string =~ s/\\"/"/g;
+          $string =~ s/\\([never\\fartz]|x([0-9a-fA-F]{2}))/(length($1)>1)?pack("H2",$2):$UNESCAPES{$1}/gex;
+          return $string;
+      }
   
-  	# Special cases
-  	if ( $string =~ /^[\'\"!&]/ ) {
-  		die \"CPAN::Meta::YAML does not support a feature in line '$string'";
-  	}
-  	return {} if $string =~ /^{}(?:\s+\#.*)?\z/;
-  	return [] if $string =~ /^\[\](?:\s+\#.*)?\z/;
+      # Special cases
+      if ( $string =~ /^[\'\"!&]/ ) {
+          die \"CPAN::Meta::YAML does not support a feature in line '$string'";
+      }
+      return {} if $string =~ /^{}(?:\s+\#.*)?\z/;
+      return [] if $string =~ /^\[\](?:\s+\#.*)?\z/;
   
-  	# Regular unquoted string
-  	if ( $string !~ /^[>|]/ ) {
-  		if (
-  			$string =~ /^(?:-(?:\s|$)|[\@\%\`])/
-  			or
-  			$string =~ /:(?:\s|$)/
-  		) {
-  			die \"CPAN::Meta::YAML found illegal characters in plain scalar: '$string'";
-  		}
-  		$string =~ s/\s+#.*\z//;
-  		return $string;
-  	}
+      # Regular unquoted string
+      if ( $string !~ /^[>|]/ ) {
+          if (
+              $string =~ /^(?:-(?:\s|$)|[\@\%\`])/
+              or
+              $string =~ /:(?:\s|$)/
+          ) {
+              die \"CPAN::Meta::YAML found illegal characters in plain scalar: '$string'";
+          }
+          $string =~ s/\s+#.*\z//;
+          return $string;
+      }
   
-  	# Error
-  	die \"CPAN::Meta::YAML failed to find multi-line scalar content" unless @$lines;
+      # Error
+      die \"CPAN::Meta::YAML failed to find multi-line scalar content" unless @$lines;
   
-  	# Check the indent depth
-  	$lines->[0]   =~ /^(\s*)/;
-  	$indent->[-1] = length("$1");
-  	if ( defined $indent->[-2] and $indent->[-1] <= $indent->[-2] ) {
-  		die \"CPAN::Meta::YAML found bad indenting in line '$lines->[0]'";
-  	}
+      # Check the indent depth
+      $lines->[0]   =~ /^(\s*)/;
+      $indent->[-1] = length("$1");
+      if ( defined $indent->[-2] and $indent->[-1] <= $indent->[-2] ) {
+          die \"CPAN::Meta::YAML found bad indenting in line '$lines->[0]'";
+      }
   
-  	# Pull the lines
-  	my @multiline = ();
-  	while ( @$lines ) {
-  		$lines->[0] =~ /^(\s*)/;
-  		last unless length($1) >= $indent->[-1];
-  		push @multiline, substr(shift(@$lines), length($1));
-  	}
+      # Pull the lines
+      my @multiline = ();
+      while ( @$lines ) {
+          $lines->[0] =~ /^(\s*)/;
+          last unless length($1) >= $indent->[-1];
+          push @multiline, substr(shift(@$lines), length($1));
+      }
   
-  	my $j = (substr($string, 0, 1) eq '>') ? ' ' : "\n";
-  	my $t = (substr($string, 1, 1) eq '-') ? ''  : "\n";
-  	return join( $j, @multiline ) . $t;
+      my $j = (substr($string, 0, 1) eq '>') ? ' ' : "\n";
+      my $t = (substr($string, 1, 1) eq '-') ? ''  : "\n";
+      return join( $j, @multiline ) . $t;
   }
   
   # Parse an array
   sub _read_array {
-  	my ($self, $array, $indent, $lines) = @_;
+      my ($self, $array, $indent, $lines) = @_;
   
-  	while ( @$lines ) {
-  		# Check for a new document
-  		if ( $lines->[0] =~ /^(?:---|\.\.\.)/ ) {
-  			while ( @$lines and $lines->[0] !~ /^---/ ) {
-  				shift @$lines;
-  			}
-  			return 1;
-  		}
+      while ( @$lines ) {
+          # Check for a new document
+          if ( $lines->[0] =~ /^(?:---|\.\.\.)/ ) {
+              while ( @$lines and $lines->[0] !~ /^---/ ) {
+                  shift @$lines;
+              }
+              return 1;
+          }
   
-  		# Check the indent level
-  		$lines->[0] =~ /^(\s*)/;
-  		if ( length($1) < $indent->[-1] ) {
-  			return 1;
-  		} elsif ( length($1) > $indent->[-1] ) {
-  			die \"CPAN::Meta::YAML found bad indenting in line '$lines->[0]'";
-  		}
+          # Check the indent level
+          $lines->[0] =~ /^(\s*)/;
+          if ( length($1) < $indent->[-1] ) {
+              return 1;
+          } elsif ( length($1) > $indent->[-1] ) {
+              die \"CPAN::Meta::YAML found bad indenting in line '$lines->[0]'";
+          }
   
-  		if ( $lines->[0] =~ /^(\s*\-\s+)[^\'\"]\S*\s*:(?:\s+|$)/ ) {
-  			# Inline nested hash
-  			my $indent2 = length("$1");
-  			$lines->[0] =~ s/-/ /;
-  			push @$array, { };
-  			$self->_read_hash( $array->[-1], [ @$indent, $indent2 ], $lines );
+          if ( $lines->[0] =~ /^(\s*\-\s+)[^\'\"]\S*\s*:(?:\s+|$)/ ) {
+              # Inline nested hash
+              my $indent2 = length("$1");
+              $lines->[0] =~ s/-/ /;
+              push @$array, { };
+              $self->_read_hash( $array->[-1], [ @$indent, $indent2 ], $lines );
   
-  		} elsif ( $lines->[0] =~ /^\s*\-(\s*)(.+?)\s*\z/ ) {
-  			# Array entry with a value
-  			shift @$lines;
-  			push @$array, $self->_read_scalar( "$2", [ @$indent, undef ], $lines );
+          } elsif ( $lines->[0] =~ /^\s*\-(\s*)(.+?)\s*\z/ ) {
+              # Array entry with a value
+              shift @$lines;
+              push @$array, $self->_read_scalar( "$2", [ @$indent, undef ], $lines );
   
-  		} elsif ( $lines->[0] =~ /^\s*\-\s*\z/ ) {
-  			shift @$lines;
-  			unless ( @$lines ) {
-  				push @$array, undef;
-  				return 1;
-  			}
-  			if ( $lines->[0] =~ /^(\s*)\-/ ) {
-  				my $indent2 = length("$1");
-  				if ( $indent->[-1] == $indent2 ) {
-  					# Null array entry
-  					push @$array, undef;
-  				} else {
-  					# Naked indenter
-  					push @$array, [ ];
-  					$self->_read_array( $array->[-1], [ @$indent, $indent2 ], $lines );
-  				}
+          } elsif ( $lines->[0] =~ /^\s*\-\s*\z/ ) {
+              shift @$lines;
+              unless ( @$lines ) {
+                  push @$array, undef;
+                  return 1;
+              }
+              if ( $lines->[0] =~ /^(\s*)\-/ ) {
+                  my $indent2 = length("$1");
+                  if ( $indent->[-1] == $indent2 ) {
+                      # Null array entry
+                      push @$array, undef;
+                  } else {
+                      # Naked indenter
+                      push @$array, [ ];
+                      $self->_read_array( $array->[-1], [ @$indent, $indent2 ], $lines );
+                  }
   
-  			} elsif ( $lines->[0] =~ /^(\s*)\S/ ) {
-  				push @$array, { };
-  				$self->_read_hash( $array->[-1], [ @$indent, length("$1") ], $lines );
+              } elsif ( $lines->[0] =~ /^(\s*)\S/ ) {
+                  push @$array, { };
+                  $self->_read_hash( $array->[-1], [ @$indent, length("$1") ], $lines );
   
-  			} else {
-  				die \"CPAN::Meta::YAML failed to classify line '$lines->[0]'";
-  			}
+              } else {
+                  die \"CPAN::Meta::YAML failed to classify line '$lines->[0]'";
+              }
   
-  		} elsif ( defined $indent->[-2] and $indent->[-1] == $indent->[-2] ) {
-  			# This is probably a structure like the following...
-  			# ---
-  			# foo:
-  			# - list
-  			# bar: value
-  			#
-  			# ... so lets return and let the hash parser handle it
-  			return 1;
+          } elsif ( defined $indent->[-2] and $indent->[-1] == $indent->[-2] ) {
+              # This is probably a structure like the following...
+              # ---
+              # foo:
+              # - list
+              # bar: value
+              #
+              # ... so lets return and let the hash parser handle it
+              return 1;
   
-  		} else {
-  			die \"CPAN::Meta::YAML failed to classify line '$lines->[0]'";
-  		}
-  	}
+          } else {
+              die \"CPAN::Meta::YAML failed to classify line '$lines->[0]'";
+          }
+      }
   
-  	return 1;
+      return 1;
   }
   
   # Parse an array
   sub _read_hash {
-  	my ($self, $hash, $indent, $lines) = @_;
+      my ($self, $hash, $indent, $lines) = @_;
   
-  	while ( @$lines ) {
-  		# Check for a new document
-  		if ( $lines->[0] =~ /^(?:---|\.\.\.)/ ) {
-  			while ( @$lines and $lines->[0] !~ /^---/ ) {
-  				shift @$lines;
-  			}
-  			return 1;
-  		}
+      while ( @$lines ) {
+          # Check for a new document
+          if ( $lines->[0] =~ /^(?:---|\.\.\.)/ ) {
+              while ( @$lines and $lines->[0] !~ /^---/ ) {
+                  shift @$lines;
+              }
+              return 1;
+          }
   
-  		# Check the indent level
-  		$lines->[0] =~ /^(\s*)/;
-  		if ( length($1) < $indent->[-1] ) {
-  			return 1;
-  		} elsif ( length($1) > $indent->[-1] ) {
-  			die \"CPAN::Meta::YAML found bad indenting in line '$lines->[0]'";
-  		}
+          # Check the indent level
+          $lines->[0] =~ /^(\s*)/;
+          if ( length($1) < $indent->[-1] ) {
+              return 1;
+          } elsif ( length($1) > $indent->[-1] ) {
+              die \"CPAN::Meta::YAML found bad indenting in line '$lines->[0]'";
+          }
   
-  		# Get the key
-  		unless ( $lines->[0] =~ s/^\s*([^\'\" ][^\n]*?)\s*:(\s+(?:\#.*)?|$)// ) {
-  			if ( $lines->[0] =~ /^\s*[?\'\"]/ ) {
-  				die \"CPAN::Meta::YAML does not support a feature in line '$lines->[0]'";
-  			}
-  			die \"CPAN::Meta::YAML failed to classify line '$lines->[0]'";
-  		}
-  		my $key = $1;
+          # Get the key
+          unless ( $lines->[0] =~ s/^\s*([^\'\" ][^\n]*?)\s*:(\s+(?:\#.*)?|$)// ) {
+              if ( $lines->[0] =~ /^\s*[?\'\"]/ ) {
+                  die \"CPAN::Meta::YAML does not support a feature in line '$lines->[0]'";
+              }
+              die \"CPAN::Meta::YAML failed to classify line '$lines->[0]'";
+          }
+          my $key = $1;
   
-  		# Do we have a value?
-  		if ( length $lines->[0] ) {
-  			# Yes
-  			$hash->{$key} = $self->_read_scalar( shift(@$lines), [ @$indent, undef ], $lines );
-  		} else {
-  			# An indent
-  			shift @$lines;
-  			unless ( @$lines ) {
-  				$hash->{$key} = undef;
-  				return 1;
-  			}
-  			if ( $lines->[0] =~ /^(\s*)-/ ) {
-  				$hash->{$key} = [];
-  				$self->_read_array( $hash->{$key}, [ @$indent, length($1) ], $lines );
-  			} elsif ( $lines->[0] =~ /^(\s*)./ ) {
-  				my $indent2 = length("$1");
-  				if ( $indent->[-1] >= $indent2 ) {
-  					# Null hash entry
-  					$hash->{$key} = undef;
-  				} else {
-  					$hash->{$key} = {};
-  					$self->_read_hash( $hash->{$key}, [ @$indent, length($1) ], $lines );
-  				}
-  			}
-  		}
-  	}
+          # Do we have a value?
+          if ( length $lines->[0] ) {
+              # Yes
+              $hash->{$key} = $self->_read_scalar( shift(@$lines), [ @$indent, undef ], $lines );
+          } else {
+              # An indent
+              shift @$lines;
+              unless ( @$lines ) {
+                  $hash->{$key} = undef;
+                  return 1;
+              }
+              if ( $lines->[0] =~ /^(\s*)-/ ) {
+                  $hash->{$key} = [];
+                  $self->_read_array( $hash->{$key}, [ @$indent, length($1) ], $lines );
+              } elsif ( $lines->[0] =~ /^(\s*)./ ) {
+                  my $indent2 = length("$1");
+                  if ( $indent->[-1] >= $indent2 ) {
+                      # Null hash entry
+                      $hash->{$key} = undef;
+                  } else {
+                      $hash->{$key} = {};
+                      $self->_read_hash( $hash->{$key}, [ @$indent, length($1) ], $lines );
+                  }
+              }
+          }
+      }
   
-  	return 1;
+      return 1;
   }
   
   # Save an object to a file
   sub write {
-  	my $self = shift;
-  	my $file = shift or return $self->_error('No file name provided');
+      my $self = shift;
+      my $file = shift or return $self->_error('No file name provided');
   
-  	# Write it to the file
-  	open( CFG, '>' . $file ) or return $self->_error(
-  		"Failed to open file '$file' for writing: $!"
-  		);
-  	print CFG $self->write_string;
-  	close CFG;
+      # Write it to the file
+      open( CFG, '>' . $file ) or return $self->_error(
+          "Failed to open file '$file' for writing: $!"
+          );
+      print CFG $self->write_string;
+      close CFG;
   
-  	return 1;
+      return 1;
   }
   
   # Save an object to a string
   sub write_string {
-  	my $self = shift;
-  	return '' unless @$self;
+      my $self = shift;
+      return '' unless @$self;
   
-  	# Iterate over the documents
-  	my $indent = 0;
-  	my @lines  = ();
-  	foreach my $cursor ( @$self ) {
-  		push @lines, '---';
+      # Iterate over the documents
+      my $indent = 0;
+      my @lines  = ();
+      foreach my $cursor ( @$self ) {
+          push @lines, '---';
   
-  		# An empty document
-  		if ( ! defined $cursor ) {
-  			# Do nothing
+          # An empty document
+          if ( ! defined $cursor ) {
+              # Do nothing
   
-  		# A scalar document
-  		} elsif ( ! ref $cursor ) {
-  			$lines[-1] .= ' ' . $self->_write_scalar( $cursor, $indent );
+          # A scalar document
+          } elsif ( ! ref $cursor ) {
+              $lines[-1] .= ' ' . $self->_write_scalar( $cursor, $indent );
   
-  		# A list at the root
-  		} elsif ( ref $cursor eq 'ARRAY' ) {
-  			unless ( @$cursor ) {
-  				$lines[-1] .= ' []';
-  				next;
-  			}
-  			push @lines, $self->_write_array( $cursor, $indent, {} );
+          # A list at the root
+          } elsif ( ref $cursor eq 'ARRAY' ) {
+              unless ( @$cursor ) {
+                  $lines[-1] .= ' []';
+                  next;
+              }
+              push @lines, $self->_write_array( $cursor, $indent, {} );
   
-  		# A hash at the root
-  		} elsif ( ref $cursor eq 'HASH' ) {
-  			unless ( %$cursor ) {
-  				$lines[-1] .= ' {}';
-  				next;
-  			}
-  			push @lines, $self->_write_hash( $cursor, $indent, {} );
+          # A hash at the root
+          } elsif ( ref $cursor eq 'HASH' ) {
+              unless ( %$cursor ) {
+                  $lines[-1] .= ' {}';
+                  next;
+              }
+              push @lines, $self->_write_hash( $cursor, $indent, {} );
   
-  		} else {
-  			Carp::croak("Cannot serialize " . ref($cursor));
-  		}
-  	}
+          } else {
+              Carp::croak("Cannot serialize " . ref($cursor));
+          }
+      }
   
-  	join '', map { "$_\n" } @lines;
+      join '', map { "$_\n" } @lines;
   }
   
   sub _write_scalar {
-  	my $string = $_[1];
-  	return '~'  unless defined $string;
-  	return "''" unless length  $string;
-  	if ( $string =~ /[\x00-\x08\x0b-\x0d\x0e-\x1f\"\'\n]/ ) {
-  		$string =~ s/\\/\\\\/g;
-  		$string =~ s/"/\\"/g;
-  		$string =~ s/\n/\\n/g;
-  		$string =~ s/([\x00-\x1f])/\\$UNPRINTABLE[ord($1)]/g;
-  		return qq|"$string"|;
-  	}
-  	if ( $string =~ /(?:^\W|\s)/ or $QUOTE{$string} ) {
-  		return "'$string'";
-  	}
-  	return $string;
+      my $string = $_[1];
+      return '~'  unless defined $string;
+      return "''" unless length  $string;
+      if ( $string =~ /[\x00-\x08\x0b-\x0d\x0e-\x1f\"\'\n]/ ) {
+          $string =~ s/\\/\\\\/g;
+          $string =~ s/"/\\"/g;
+          $string =~ s/\n/\\n/g;
+          $string =~ s/([\x00-\x1f])/\\$UNPRINTABLE[ord($1)]/g;
+          return qq|"$string"|;
+      }
+      if ( $string =~ /(?:^\W|\s)/ or $QUOTE{$string} ) {
+          return "'$string'";
+      }
+      return $string;
   }
   
   sub _write_array {
-  	my ($self, $array, $indent, $seen) = @_;
-  	if ( $seen->{refaddr($array)}++ ) {
-  		die "CPAN::Meta::YAML does not support circular references";
-  	}
-  	my @lines  = ();
-  	foreach my $el ( @$array ) {
-  		my $line = ('  ' x $indent) . '-';
-  		my $type = ref $el;
-  		if ( ! $type ) {
-  			$line .= ' ' . $self->_write_scalar( $el, $indent + 1 );
-  			push @lines, $line;
+      my ($self, $array, $indent, $seen) = @_;
+      if ( $seen->{refaddr($array)}++ ) {
+          die "CPAN::Meta::YAML does not support circular references";
+      }
+      my @lines  = ();
+      foreach my $el ( @$array ) {
+          my $line = ('  ' x $indent) . '-';
+          my $type = ref $el;
+          if ( ! $type ) {
+              $line .= ' ' . $self->_write_scalar( $el, $indent + 1 );
+              push @lines, $line;
   
-  		} elsif ( $type eq 'ARRAY' ) {
-  			if ( @$el ) {
-  				push @lines, $line;
-  				push @lines, $self->_write_array( $el, $indent + 1, $seen );
-  			} else {
-  				$line .= ' []';
-  				push @lines, $line;
-  			}
+          } elsif ( $type eq 'ARRAY' ) {
+              if ( @$el ) {
+                  push @lines, $line;
+                  push @lines, $self->_write_array( $el, $indent + 1, $seen );
+              } else {
+                  $line .= ' []';
+                  push @lines, $line;
+              }
   
-  		} elsif ( $type eq 'HASH' ) {
-  			if ( keys %$el ) {
-  				push @lines, $line;
-  				push @lines, $self->_write_hash( $el, $indent + 1, $seen );
-  			} else {
-  				$line .= ' {}';
-  				push @lines, $line;
-  			}
+          } elsif ( $type eq 'HASH' ) {
+              if ( keys %$el ) {
+                  push @lines, $line;
+                  push @lines, $self->_write_hash( $el, $indent + 1, $seen );
+              } else {
+                  $line .= ' {}';
+                  push @lines, $line;
+              }
   
-  		} else {
-  			die "CPAN::Meta::YAML does not support $type references";
-  		}
-  	}
+          } else {
+              die "CPAN::Meta::YAML does not support $type references";
+          }
+      }
   
-  	@lines;
+      @lines;
   }
   
   sub _write_hash {
-  	my ($self, $hash, $indent, $seen) = @_;
-  	if ( $seen->{refaddr($hash)}++ ) {
-  		die "CPAN::Meta::YAML does not support circular references";
-  	}
-  	my @lines  = ();
-  	foreach my $name ( sort keys %$hash ) {
-  		my $el   = $hash->{$name};
-  		my $line = ('  ' x $indent) . "$name:";
-  		my $type = ref $el;
-  		if ( ! $type ) {
-  			$line .= ' ' . $self->_write_scalar( $el, $indent + 1 );
-  			push @lines, $line;
+      my ($self, $hash, $indent, $seen) = @_;
+      if ( $seen->{refaddr($hash)}++ ) {
+          die "CPAN::Meta::YAML does not support circular references";
+      }
+      my @lines  = ();
+      foreach my $name ( sort keys %$hash ) {
+          my $el   = $hash->{$name};
+          my $line = ('  ' x $indent) . "$name:";
+          my $type = ref $el;
+          if ( ! $type ) {
+              $line .= ' ' . $self->_write_scalar( $el, $indent + 1 );
+              push @lines, $line;
   
-  		} elsif ( $type eq 'ARRAY' ) {
-  			if ( @$el ) {
-  				push @lines, $line;
-  				push @lines, $self->_write_array( $el, $indent + 1, $seen );
-  			} else {
-  				$line .= ' []';
-  				push @lines, $line;
-  			}
+          } elsif ( $type eq 'ARRAY' ) {
+              if ( @$el ) {
+                  push @lines, $line;
+                  push @lines, $self->_write_array( $el, $indent + 1, $seen );
+              } else {
+                  $line .= ' []';
+                  push @lines, $line;
+              }
   
-  		} elsif ( $type eq 'HASH' ) {
-  			if ( keys %$el ) {
-  				push @lines, $line;
-  				push @lines, $self->_write_hash( $el, $indent + 1, $seen );
-  			} else {
-  				$line .= ' {}';
-  				push @lines, $line;
-  			}
+          } elsif ( $type eq 'HASH' ) {
+              if ( keys %$el ) {
+                  push @lines, $line;
+                  push @lines, $self->_write_hash( $el, $indent + 1, $seen );
+              } else {
+                  $line .= ' {}';
+                  push @lines, $line;
+              }
   
-  		} else {
-  			die "CPAN::Meta::YAML does not support $type references";
-  		}
-  	}
+          } else {
+              die "CPAN::Meta::YAML does not support $type references";
+          }
+      }
   
-  	@lines;
+      @lines;
   }
   
   # Set error
   sub _error {
-  	$CPAN::Meta::YAML::errstr = $_[1];
-  	undef;
+      $CPAN::Meta::YAML::errstr = $_[1];
+      undef;
   }
   
   # Retrieve error
   sub errstr {
-  	$CPAN::Meta::YAML::errstr;
+      $CPAN::Meta::YAML::errstr;
   }
   
   
@@ -5790,43 +5790,43 @@ $fatpacked{"CPAN/Meta/YAML.pm"} = <<'CPAN_META_YAML';
   # YAML Compatibility
   
   sub Dump {
-  	CPAN::Meta::YAML->new(@_)->write_string;
+      CPAN::Meta::YAML->new(@_)->write_string;
   }
   
   sub Load {
-  	my $self = CPAN::Meta::YAML->read_string(@_);
-  	unless ( $self ) {
-  		Carp::croak("Failed to load YAML document from string");
-  	}
-  	if ( wantarray ) {
-  		return @$self;
-  	} else {
-  		# To match YAML.pm, return the last document
-  		return $self->[-1];
-  	}
+      my $self = CPAN::Meta::YAML->read_string(@_);
+      unless ( $self ) {
+          Carp::croak("Failed to load YAML document from string");
+      }
+      if ( wantarray ) {
+          return @$self;
+      } else {
+          # To match YAML.pm, return the last document
+          return $self->[-1];
+      }
   }
   
   BEGIN {
-  	*freeze = *Dump;
-  	*thaw   = *Load;
+      *freeze = *Dump;
+      *thaw   = *Load;
   }
   
   sub DumpFile {
-  	my $file = shift;
-  	CPAN::Meta::YAML->new(@_)->write($file);
+      my $file = shift;
+      CPAN::Meta::YAML->new(@_)->write($file);
   }
   
   sub LoadFile {
-  	my $self = CPAN::Meta::YAML->read($_[0]);
-  	unless ( $self ) {
-  		Carp::croak("Failed to load YAML document from '" . ($_[0] || '') . "'");
-  	}
-  	if ( wantarray ) {
-  		return @$self;
-  	} else {
-  		# Return only the last document to match YAML.pm, 
-  		return $self->[-1];
-  	}
+      my $self = CPAN::Meta::YAML->read($_[0]);
+      unless ( $self ) {
+          Carp::croak("Failed to load YAML document from '" . ($_[0] || '') . "'");
+      }
+      if ( wantarray ) {
+          return @$self;
+      } else {
+          # Return only the last document to match YAML.pm, 
+          return $self->[-1];
+      }
   }
   
   
@@ -5837,23 +5837,23 @@ $fatpacked{"CPAN/Meta/YAML.pm"} = <<'CPAN_META_YAML';
   # Use Scalar::Util if possible, otherwise emulate it
   
   BEGIN {
-  	eval {
-  		require Scalar::Util;
-  		*refaddr = *Scalar::Util::refaddr;
-  	};
-  	eval <<'END_PERL' if $@;
+      eval {
+          require Scalar::Util;
+          *refaddr = *Scalar::Util::refaddr;
+      };
+      eval <<'END_PERL' if $@;
   # Failed to load Scalar::Util	
   sub refaddr {
-  	my $pkg = ref($_[0]) or return undef;
-  	if ( !! UNIVERSAL::can($_[0], 'can') ) {
-  		bless $_[0], 'Scalar::Util::Fake';
-  	} else {
-  		$pkg = undef;
-  	}
-  	"$_[0]" =~ /0x(\w+)/;
-  	my $i = do { local $^W; hex $1 };
-  	bless $_[0], $pkg if defined $pkg;
-  	$i;
+      my $pkg = ref($_[0]) or return undef;
+      if ( !! UNIVERSAL::can($_[0], 'can') ) {
+          bless $_[0], 'Scalar::Util::Fake';
+      } else {
+          $pkg = undef;
+      }
+      "$_[0]" =~ /0x(\w+)/;
+      my $i = do { local $^W; hex $1 };
+      bless $_[0], $pkg if defined $pkg;
+      $i;
   }
   END_PERL
   
@@ -8378,16 +8378,16 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
       my $err = '';
         foreach my $p ( @$packages ) {
           if ( defined( $p->{version} ) ) {
-    	if ( defined( $version ) ) {
-     	  if ( $compare_versions->( $version, '!=', $p->{version} ) ) {
-    	    $err .= "  $p->{file} ($p->{version})\n";
-    	  } else {
-    	    # same version declared multiple times, ignore
-    	  }
-    	} else {
-    	  $file    = $p->{file};
-    	  $version = $p->{version};
-    	}
+        if ( defined( $version ) ) {
+           if ( $compare_versions->( $version, '!=', $p->{version} ) ) {
+            $err .= "  $p->{file} ($p->{version})\n";
+          } else {
+            # same version declared multiple times, ignore
+          }
+        } else {
+          $file    = $p->{file};
+          $version = $p->{version};
+        }
           }
           $file ||= $p->{file} if defined( $p->{file} );
         }
@@ -8463,45 +8463,45 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
         if ( exists( $prime{$package} ) ) { # primary package selected
     
           if ( $result->{err} ) {
-    	# Use the selected primary package, but there are conflicting
-    	# errors among multiple alternative packages that need to be
-    	# reported
+        # Use the selected primary package, but there are conflicting
+        # errors among multiple alternative packages that need to be
+        # reported
             log_info {
-    	    "Found conflicting versions for package '$package'\n" .
-    	    "  $prime{$package}{file} ($prime{$package}{version})\n" .
-    	    $result->{err}
+            "Found conflicting versions for package '$package'\n" .
+            "  $prime{$package}{file} ($prime{$package}{version})\n" .
+            $result->{err}
             };
     
           } elsif ( defined( $result->{version} ) ) {
-    	# There is a primary package selected, and exactly one
-    	# alternative package
+        # There is a primary package selected, and exactly one
+        # alternative package
     
-    	if ( exists( $prime{$package}{version} ) &&
-    	     defined( $prime{$package}{version} ) ) {
-    	  # Unless the version of the primary package agrees with the
-    	  # version of the alternative package, report a conflict
-    	  if ( $compare_versions->(
+        if ( exists( $prime{$package}{version} ) &&
+             defined( $prime{$package}{version} ) ) {
+          # Unless the version of the primary package agrees with the
+          # version of the alternative package, report a conflict
+          if ( $compare_versions->(
                    $prime{$package}{version}, '!=', $result->{version}
                  )
                ) {
   
               log_info {
                 "Found conflicting versions for package '$package'\n" .
-    	      "  $prime{$package}{file} ($prime{$package}{version})\n" .
-    	      "  $result->{file} ($result->{version})\n"
+              "  $prime{$package}{file} ($prime{$package}{version})\n" .
+              "  $result->{file} ($result->{version})\n"
               };
-    	  }
+          }
     
-    	} else {
-    	  # The prime package selected has no version so, we choose to
-    	  # use any alternative package that does have a version
-    	  $prime{$package}{file}    = $result->{file};
-    	  $prime{$package}{version} = $result->{version};
-    	}
+        } else {
+          # The prime package selected has no version so, we choose to
+          # use any alternative package that does have a version
+          $prime{$package}{file}    = $result->{file};
+          $prime{$package}{version} = $result->{version};
+        }
     
           } else {
-    	# no alt package found with a version, but we have a prime
-    	# package so we use it whether it has a version or not
+        # no alt package found with a version, but we have a prime
+        # package so we use it whether it has a version or not
           }
     
         } else { # No primary package was selected, use the best alternative
@@ -8509,7 +8509,7 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
           if ( $result->{err} ) {
             log_info {
               "Found conflicting versions for package '$package'\n" .
-    	    $result->{err}
+            $result->{err}
             };
           }
     
@@ -8517,7 +8517,7 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
           # something rather than nothing
           $prime{$package}{file}    = $result->{file};
           $prime{$package}{version} = $result->{version}
-    	  if defined( $result->{version} );
+          if defined( $result->{version} );
         }
       }
     
@@ -8599,9 +8599,9 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
     foreach my $dir ( @$dirs ) {
       my $testfile = File::Spec->catfile($dir, $file);
       return [ File::Spec->rel2abs( $testfile ), $dir ]
-  	if -e $testfile and !-d _;  # For stuff like ExtUtils::xsubpp
+      if -e $testfile and !-d _;  # For stuff like ExtUtils::xsubpp
       return [ File::Spec->rel2abs( "$testfile.pm" ), $dir ]
-  	if -e "$testfile.pm";
+      if -e "$testfile.pm";
     }
     return;
   }
@@ -8670,16 +8670,16 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
       if ( $in_pod || $line =~ /^=cut/ ) {
   
         if ( $line =~ /^=head\d\s+(.+)\s*$/ ) {
-  	push( @pod, $1 );
-  	if ( $self->{collect_pod} && length( $pod_data ) ) {
+      push( @pod, $1 );
+      if ( $self->{collect_pod} && length( $pod_data ) ) {
             $pod{$pod_sect} = $pod_data;
             $pod_data = '';
           }
-  	$pod_sect = $1;
+      $pod_sect = $1;
   
   
         } elsif ( $self->{collect_pod} ) {
-  	$pod_data .= "$line\n";
+      $pod_data .= "$line\n";
   
         }
   
@@ -8690,7 +8690,7 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
   
         # parse $line to see if it's a $VERSION declaration
         my( $vers_sig, $vers_fullname, $vers_pkg ) =
-  	  $self->_parse_version_expression( $line );
+        $self->_parse_version_expression( $line );
   
         if ( $line =~ $PKG_REGEXP ) {
           $pkg = $1;
@@ -8700,51 +8700,51 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
   
         # VERSION defined with full package spec, i.e. $Module::VERSION
         } elsif ( $vers_fullname && $vers_pkg ) {
-  	push( @pkgs, $vers_pkg ) unless grep( $vers_pkg eq $_, @pkgs );
-  	$need_vers = 0 if $vers_pkg eq $pkg;
+      push( @pkgs, $vers_pkg ) unless grep( $vers_pkg eq $_, @pkgs );
+      $need_vers = 0 if $vers_pkg eq $pkg;
   
-  	unless ( defined $vers{$vers_pkg} && length $vers{$vers_pkg} ) {
-  	  $vers{$vers_pkg} =
-  	    $self->_evaluate_version_line( $vers_sig, $vers_fullname, $line );
-  	} else {
-  	  # Warn unless the user is using the "$VERSION = eval
-  	  # $VERSION" idiom (though there are probably other idioms
-  	  # that we should watch out for...)
-  	  warn <<"EOM" unless $line =~ /=\s*eval/;
+      unless ( defined $vers{$vers_pkg} && length $vers{$vers_pkg} ) {
+        $vers{$vers_pkg} =
+          $self->_evaluate_version_line( $vers_sig, $vers_fullname, $line );
+      } else {
+        # Warn unless the user is using the "$VERSION = eval
+        # $VERSION" idiom (though there are probably other idioms
+        # that we should watch out for...)
+        warn <<"EOM" unless $line =~ /=\s*eval/;
   Package '$vers_pkg' already declared with version '$vers{$vers_pkg}',
   ignoring subsequent declaration on line $line_num.
   EOM
-  	}
+      }
   
         # first non-comment line in undeclared package main is VERSION
         } elsif ( !exists($vers{main}) && $pkg eq 'main' && $vers_fullname ) {
-  	$need_vers = 0;
-  	my $v =
-  	  $self->_evaluate_version_line( $vers_sig, $vers_fullname, $line );
-  	$vers{$pkg} = $v;
-  	push( @pkgs, 'main' );
+      $need_vers = 0;
+      my $v =
+        $self->_evaluate_version_line( $vers_sig, $vers_fullname, $line );
+      $vers{$pkg} = $v;
+      push( @pkgs, 'main' );
   
         # first non-comment line in undeclared package defines package main
         } elsif ( !exists($vers{main}) && $pkg eq 'main' && $line =~ /\w+/ ) {
-  	$need_vers = 1;
-  	$vers{main} = '';
-  	push( @pkgs, 'main' );
+      $need_vers = 1;
+      $vers{main} = '';
+      push( @pkgs, 'main' );
   
         # only keep if this is the first $VERSION seen
         } elsif ( $vers_fullname && $need_vers ) {
-  	$need_vers = 0;
-  	my $v =
-  	  $self->_evaluate_version_line( $vers_sig, $vers_fullname, $line );
+      $need_vers = 0;
+      my $v =
+        $self->_evaluate_version_line( $vers_sig, $vers_fullname, $line );
   
   
-  	unless ( defined $vers{$pkg} && length $vers{$pkg} ) {
-  	  $vers{$pkg} = $v;
-  	} else {
-  	  warn <<"EOM";
+      unless ( defined $vers{$pkg} && length $vers{$pkg} ) {
+        $vers{$pkg} = $v;
+      } else {
+        warn <<"EOM";
   Package '$pkg' already declared with version '$vers{$pkg}'
   ignoring new version '$v' on line $line_num.
   EOM
-  	}
+      }
   
         }
   
@@ -8886,10 +8886,10 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
       my $mod  = shift || $self->{module};
       my $vers;
       if ( defined( $mod ) && length( $mod ) &&
-  	 exists( $self->{versions}{$mod} ) ) {
-  	return $self->{versions}{$mod};
+       exists( $self->{versions}{$mod} ) ) {
+      return $self->{versions}{$mod};
       } else {
-  	return undef;
+      return undef;
       }
   }
   
@@ -8897,10 +8897,10 @@ $fatpacked{"Module/Metadata.pm"} = <<'MODULE_METADATA';
       my $self = shift;
       my $sect = shift;
       if ( defined( $sect ) && length( $sect ) &&
-  	 exists( $self->{pod}{$sect} ) ) {
-  	return $self->{pod}{$sect};
+       exists( $self->{pod}{$sect} ) ) {
+      return $self->{pod}{$sect};
       } else {
-  	return undef;
+      return undef;
       }
   }
   
@@ -8919,18 +8919,18 @@ $fatpacked{"Parse/CPAN/Meta.pm"} = <<'PARSE_CPAN_META';
   sub IO_LAYER () { $] >= 5.008001 ? ":utf8" : "" }  
   
   BEGIN {
-  	if ( HAVE_UTF8 ) {
-  		# The string eval helps hide this from Test::MinimumVersion
-  		eval "require utf8;";
-  		die "Failed to load UTF-8 support" if $@;
-  	}
+      if ( HAVE_UTF8 ) {
+          # The string eval helps hide this from Test::MinimumVersion
+          eval "require utf8;";
+          die "Failed to load UTF-8 support" if $@;
+      }
   
-  	# Class structure
-  	require 5.004;
-  	require Exporter;
-  	$Parse::CPAN::Meta::VERSION   = '1.4401';
-  	@Parse::CPAN::Meta::ISA       = qw{ Exporter      };
-  	@Parse::CPAN::Meta::EXPORT_OK = qw{ Load LoadFile };
+      # Class structure
+      require 5.004;
+      require Exporter;
+      $Parse::CPAN::Meta::VERSION   = '1.4401';
+      @Parse::CPAN::Meta::ISA       = qw{ Exporter      };
+      @Parse::CPAN::Meta::EXPORT_OK = qw{ Load LoadFile };
   }
   
   sub load_file {
@@ -9045,8 +9045,8 @@ $fatpacked{"Try/Tiny.pm"} = <<'TRY_TINY';
   use vars qw(@EXPORT @EXPORT_OK $VERSION @ISA);
   
   BEGIN {
-  	require Exporter;
-  	@ISA = qw(Exporter);
+      require Exporter;
+      @ISA = qw(Exporter);
   }
   
   $VERSION = "0.09";
@@ -9062,110 +9062,110 @@ $fatpacked{"Try/Tiny.pm"} = <<'TRY_TINY';
   # context & not a scalar one
   
   sub try (&;@) {
-  	my ( $try, @code_refs ) = @_;
+      my ( $try, @code_refs ) = @_;
   
-  	# we need to save this here, the eval block will be in scalar context due
-  	# to $failed
-  	my $wantarray = wantarray;
+      # we need to save this here, the eval block will be in scalar context due
+      # to $failed
+      my $wantarray = wantarray;
   
-  	my ( $catch, @finally );
+      my ( $catch, @finally );
   
-  	# find labeled blocks in the argument list.
-  	# catch and finally tag the blocks by blessing a scalar reference to them.
-  	foreach my $code_ref (@code_refs) {
-  		next unless $code_ref;
+      # find labeled blocks in the argument list.
+      # catch and finally tag the blocks by blessing a scalar reference to them.
+      foreach my $code_ref (@code_refs) {
+          next unless $code_ref;
   
-  		my $ref = ref($code_ref);
+          my $ref = ref($code_ref);
   
-  		if ( $ref eq 'Try::Tiny::Catch' ) {
-  			$catch = ${$code_ref};
-  		} elsif ( $ref eq 'Try::Tiny::Finally' ) {
-  			push @finally, ${$code_ref};
-  		} else {
-  			use Carp;
-  			confess("Unknown code ref type given '${ref}'. Check your usage & try again");
-  		}
-  	}
+          if ( $ref eq 'Try::Tiny::Catch' ) {
+              $catch = ${$code_ref};
+          } elsif ( $ref eq 'Try::Tiny::Finally' ) {
+              push @finally, ${$code_ref};
+          } else {
+              use Carp;
+              confess("Unknown code ref type given '${ref}'. Check your usage & try again");
+          }
+      }
   
-  	# save the value of $@ so we can set $@ back to it in the beginning of the eval
-  	my $prev_error = $@;
+      # save the value of $@ so we can set $@ back to it in the beginning of the eval
+      my $prev_error = $@;
   
-  	my ( @ret, $error, $failed );
+      my ( @ret, $error, $failed );
   
-  	# FIXME consider using local $SIG{__DIE__} to accumulate all errors. It's
-  	# not perfect, but we could provide a list of additional errors for
-  	# $catch->();
+      # FIXME consider using local $SIG{__DIE__} to accumulate all errors. It's
+      # not perfect, but we could provide a list of additional errors for
+      # $catch->();
   
-  	{
-  		# localize $@ to prevent clobbering of previous value by a successful
-  		# eval.
-  		local $@;
+      {
+          # localize $@ to prevent clobbering of previous value by a successful
+          # eval.
+          local $@;
   
-  		# failed will be true if the eval dies, because 1 will not be returned
-  		# from the eval body
-  		$failed = not eval {
-  			$@ = $prev_error;
+          # failed will be true if the eval dies, because 1 will not be returned
+          # from the eval body
+          $failed = not eval {
+              $@ = $prev_error;
   
-  			# evaluate the try block in the correct context
-  			if ( $wantarray ) {
-  				@ret = $try->();
-  			} elsif ( defined $wantarray ) {
-  				$ret[0] = $try->();
-  			} else {
-  				$try->();
-  			};
+              # evaluate the try block in the correct context
+              if ( $wantarray ) {
+                  @ret = $try->();
+              } elsif ( defined $wantarray ) {
+                  $ret[0] = $try->();
+              } else {
+                  $try->();
+              };
   
-  			return 1; # properly set $fail to false
-  		};
+              return 1; # properly set $fail to false
+          };
   
-  		# copy $@ to $error; when we leave this scope, local $@ will revert $@
-  		# back to its previous value
-  		$error = $@;
-  	}
+          # copy $@ to $error; when we leave this scope, local $@ will revert $@
+          # back to its previous value
+          $error = $@;
+      }
   
-  	# set up a scope guard to invoke the finally block at the end
-  	my @guards =
+      # set up a scope guard to invoke the finally block at the end
+      my @guards =
       map { Try::Tiny::ScopeGuard->_new($_, $failed ? $error : ()) }
       @finally;
   
-  	# at this point $failed contains a true value if the eval died, even if some
-  	# destructor overwrote $@ as the eval was unwinding.
-  	if ( $failed ) {
-  		# if we got an error, invoke the catch block.
-  		if ( $catch ) {
-  			# This works like given($error), but is backwards compatible and
-  			# sets $_ in the dynamic scope for the body of C<$catch>
-  			for ($error) {
-  				return $catch->($error);
-  			}
+      # at this point $failed contains a true value if the eval died, even if some
+      # destructor overwrote $@ as the eval was unwinding.
+      if ( $failed ) {
+          # if we got an error, invoke the catch block.
+          if ( $catch ) {
+              # This works like given($error), but is backwards compatible and
+              # sets $_ in the dynamic scope for the body of C<$catch>
+              for ($error) {
+                  return $catch->($error);
+              }
   
-  			# in case when() was used without an explicit return, the C<for>
-  			# loop will be aborted and there's no useful return value
-  		}
+              # in case when() was used without an explicit return, the C<for>
+              # loop will be aborted and there's no useful return value
+          }
   
-  		return;
-  	} else {
-  		# no failure, $@ is back to what it was, everything is fine
-  		return $wantarray ? @ret : $ret[0];
-  	}
+          return;
+      } else {
+          # no failure, $@ is back to what it was, everything is fine
+          return $wantarray ? @ret : $ret[0];
+      }
   }
   
   sub catch (&;@) {
-  	my ( $block, @rest ) = @_;
+      my ( $block, @rest ) = @_;
   
-  	return (
-  		bless(\$block, 'Try::Tiny::Catch'),
-  		@rest,
-  	);
+      return (
+          bless(\$block, 'Try::Tiny::Catch'),
+          @rest,
+      );
   }
   
   sub finally (&;@) {
-  	my ( $block, @rest ) = @_;
+      my ( $block, @rest ) = @_;
   
-  	return (
-  		bless(\$block, 'Try::Tiny::Finally'),
-  		@rest,
-  	);
+      return (
+          bless(\$block, 'Try::Tiny::Finally'),
+          @rest,
+      );
   }
   
   {
@@ -9634,8 +9634,8 @@ $fatpacked{"version.pm"} = <<'VERSION';
   
   my $LAX_DECIMAL_VERSION =
       qr/ $LAX_INTEGER_PART (?: \. | $FRACTION_PART $LAX_ALPHA_PART? )?
-  	|
-  	$FRACTION_PART $LAX_ALPHA_PART?
+      |
+      $FRACTION_PART $LAX_ALPHA_PART?
       /x;
   
   # Lax dotted-decimal version number.  Distinguished by having either
@@ -9646,9 +9646,9 @@ $fatpacked{"version.pm"} = <<'VERSION';
   
   my $LAX_DOTTED_DECIMAL_VERSION =
       qr/
-  	v $LAX_INTEGER_PART (?: $LAX_DOTTED_DECIMAL_PART+ $LAX_ALPHA_PART? )?
-  	|
-  	$LAX_INTEGER_PART? $LAX_DOTTED_DECIMAL_PART{2,} $LAX_ALPHA_PART?
+      v $LAX_INTEGER_PART (?: $LAX_DOTTED_DECIMAL_PART+ $LAX_ALPHA_PART? )?
+      |
+      $LAX_INTEGER_PART? $LAX_DOTTED_DECIMAL_PART{2,} $LAX_ALPHA_PART?
       /x;
   
   # Complete lax version number syntax -- should generally be used
@@ -9672,11 +9672,11 @@ $fatpacked{"version.pm"} = <<'VERSION';
       *version::declare = \&version::vpp::declare;
       *version::_VERSION = \&version::vpp::_VERSION;
       if ($] >= 5.009000 && $] < 5.011004) {
-  	no strict 'refs';
-  	*version::stringify = \&version::vpp::stringify;
-  	*{'version::(""'} = \&version::vpp::stringify;
-  	*version::new = \&version::vpp::new;
-  	*version::parse = \&version::vpp::parse;
+      no strict 'refs';
+      *version::stringify = \&version::vpp::stringify;
+      *{'version::(""'} = \&version::vpp::stringify;
+      *version::new = \&version::vpp::new;
+      *version::parse = \&version::vpp::parse;
       }
   }
   else { # use XS module
@@ -9687,11 +9687,11 @@ $fatpacked{"version.pm"} = <<'VERSION';
       *version::_VERSION = \&version::vxs::_VERSION;
       *version::vcmp = \&version::vxs::VCMP;
       if ($] >= 5.009000 && $] < 5.011004) {
-  	no strict 'refs';
-  	*version::stringify = \&version::vxs::stringify;
-  	*{'version::(""'} = \&version::vxs::stringify;
-  	*version::new = \&version::vxs::new;
-  	*version::parse = \&version::vxs::parse;
+      no strict 'refs';
+      *version::stringify = \&version::vxs::stringify;
+      *{'version::(""'} = \&version::vxs::stringify;
+      *version::new = \&version::vxs::new;
+      *version::parse = \&version::vxs::parse;
       }
   
   }
@@ -9703,55 +9703,55 @@ $fatpacked{"version.pm"} = <<'VERSION';
   
       # Set up any derived class
       unless ($class eq 'version') {
-  	local $^W;
-  	*{$class.'::declare'} =  \&version::declare;
-  	*{$class.'::qv'} = \&version::qv;
+      local $^W;
+      *{$class.'::declare'} =  \&version::declare;
+      *{$class.'::qv'} = \&version::qv;
       }
   
       my %args;
       if (@_) { # any remaining terms are arguments
-  	map { $args{$_} = 1 } @_
+      map { $args{$_} = 1 } @_
       }
       else { # no parameters at all on use line
-      	%args = 
-  	(
-  	    qv => 1,
-  	    'UNIVERSAL::VERSION' => 1,
-  	);
+          %args = 
+      (
+          qv => 1,
+          'UNIVERSAL::VERSION' => 1,
+      );
       }
   
       my $callpkg = caller();
       
       if (exists($args{declare})) {
-  	*{$callpkg.'::declare'} = 
-  	    sub {return $class->declare(shift) }
-  	  unless defined(&{$callpkg.'::declare'});
+      *{$callpkg.'::declare'} = 
+          sub {return $class->declare(shift) }
+        unless defined(&{$callpkg.'::declare'});
       }
   
       if (exists($args{qv})) {
-  	*{$callpkg.'::qv'} =
-  	    sub {return $class->qv(shift) }
-  	  unless defined(&{$callpkg.'::qv'});
+      *{$callpkg.'::qv'} =
+          sub {return $class->qv(shift) }
+        unless defined(&{$callpkg.'::qv'});
       }
   
       if (exists($args{'UNIVERSAL::VERSION'})) {
-  	local $^W;
-  	*UNIVERSAL::VERSION 
-  		= \&version::_VERSION;
+      local $^W;
+      *UNIVERSAL::VERSION 
+          = \&version::_VERSION;
       }
   
       if (exists($args{'VERSION'})) {
-  	*{$callpkg.'::VERSION'} = \&version::_VERSION;
+      *{$callpkg.'::VERSION'} = \&version::_VERSION;
       }
   
       if (exists($args{'is_strict'})) {
-  	*{$callpkg.'::is_strict'} = \&version::is_strict
-  	  unless defined(&{$callpkg.'::is_strict'});
+      *{$callpkg.'::is_strict'} = \&version::is_strict
+        unless defined(&{$callpkg.'::is_strict'});
       }
   
       if (exists($args{'is_lax'})) {
-  	*{$callpkg.'::is_lax'} = \&version::is_lax
-  	  unless defined(&{$callpkg.'::is_lax'});
+      *{$callpkg.'::is_lax'} = \&version::is_lax
+        unless defined(&{$callpkg.'::is_lax'});
       }
   }
   
@@ -10176,8 +10176,8 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $class = ref($self) || $self;
   
       my $obj = {
-  	string  => [split(//,$string)],
-  	current => 0,
+      string  => [split(//,$string)],
+      current => 0,
       };
       return bless $obj, $class;
   }
@@ -10187,10 +10187,10 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $last = $#{$self->{string}};
       my $curr = $self->{current};
       if ($curr >= 0 && $curr <= $last) {
-  	return $self->{string}->[$curr];
+      return $self->{string}->[$curr];
       }
       else {
-  	return '';
+      return '';
       }
   }
   
@@ -10227,7 +10227,7 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   sub spaceship {
       my ($left, $right, $swapped) = @_;
       unless (ref($right)) { # not an object already
-  	$right = $left->new($right);
+      $right = $left->new($right);
       }
       return $left->{current} <=> $right->{current};
   }
@@ -10235,10 +10235,10 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   sub cmp {
       my ($left, $right, $swapped) = @_;
       unless (ref($right)) { # not an object already
-  	if (length($right) == 1) { # comparing single character only
-  	    return $left->thischar cmp $right;
-  	}
-  	$right = $left->new($right);
+      if (length($right) == 1) { # comparing single character only
+          return $left->thischar cmp $right;
+      }
+      $right = $left->new($right);
       }
       return $left->currstr cmp $right->currstr;
   }
@@ -10252,8 +10252,8 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   sub clone {
       my ($left, $right, $swapped) = @_;
       $right = {
-  	string  => [@{$left->{string}}],
-  	current => $left->{current},
+      string  => [@{$left->{string}}],
+      current => $left->{current},
       };
       return bless $right, ref($left);
   }
@@ -10263,7 +10263,7 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $curr = $self->{current};
       my $last = $#{$self->{string}};
       if (defined($s) && $s->{current} < $last) {
-  	$last = $s->{current};
+      $last = $s->{current};
       }
   
       my $string = join('', @{$self->{string}}[$curr..$last]);
@@ -10290,9 +10290,9 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   eval "use warnings";
   if ($@) {
       eval '
-  	package warnings;
-  	sub enabled {return $^W;}
-  	1;
+      package warnings;
+      sub enabled {return $^W;}
+      1;
       ';
   }
   
@@ -10320,7 +10320,7 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   sub BADVERSION {
       my ($s, $errstr, $error) = @_;
       if ($errstr) {
-  	$$errstr = $error;
+      $$errstr = $error;
       }
       return $s;
   }
@@ -10335,194 +10335,194 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $d = $s;
   
       if ($qv && isDIGIT($d)) {
-  	goto dotted_decimal_version;
+      goto dotted_decimal_version;
       }
   
       if ($d eq 'v') { # explicit v-string
-  	$d++;
-  	if (isDIGIT($d)) {
-  	    $qv = TRUE;
-  	}
-  	else { # degenerate v-string
-  	    # requires v1.2.3
-  	    return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions require at least three parts)");
-  	}
+      $d++;
+      if (isDIGIT($d)) {
+          $qv = TRUE;
+      }
+      else { # degenerate v-string
+          # requires v1.2.3
+          return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions require at least three parts)");
+      }
   
   dotted_decimal_version:
-  	if ($strict && $d eq '0' && isDIGIT($d+1)) {
-  	    # no leading zeros allowed
-  	    return BADVERSION($s,$errstr,"Invalid version format (no leading zeros)");
-  	}
+      if ($strict && $d eq '0' && isDIGIT($d+1)) {
+          # no leading zeros allowed
+          return BADVERSION($s,$errstr,"Invalid version format (no leading zeros)");
+      }
   
-  	while (isDIGIT($d)) { 	# integer part
-  	    $d++;
-  	}
+      while (isDIGIT($d)) { 	# integer part
+          $d++;
+      }
   
-  	if ($d eq '.')
-  	{
-  	    $saw_decimal++;
-  	    $d++; 		# decimal point
-  	}
-  	else
-  	{
-  	    if ($strict) {
-  		# require v1.2.3
-  		return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions require at least three parts)");
-  	    }
-  	    else {
-  		goto version_prescan_finish;
-  	    }
-  	}
+      if ($d eq '.')
+      {
+          $saw_decimal++;
+          $d++; 		# decimal point
+      }
+      else
+      {
+          if ($strict) {
+          # require v1.2.3
+          return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions require at least three parts)");
+          }
+          else {
+          goto version_prescan_finish;
+          }
+      }
   
-  	{
-  	    my $i = 0;
-  	    my $j = 0;
-  	    while (isDIGIT($d)) {	# just keep reading
-  		$i++;
-  		while (isDIGIT($d)) {
-  		    $d++; $j++;
-  		    # maximum 3 digits between decimal
-  		    if ($strict && $j > 3) {
-  			return BADVERSION($s,$errstr,"Invalid version format (maximum 3 digits between decimals)");
-  		    }
-  		}
-  		if ($d eq '_') {
-  		    if ($strict) {
-  			return BADVERSION($s,$errstr,"Invalid version format (no underscores)");
-  		    }
-  		    if ( $alpha ) {
-  			return BADVERSION($s,$errstr,"Invalid version format (multiple underscores)");
-  		    }
-  		    $d++;
-  		    $alpha = TRUE;
-  		}
-  		elsif ($d eq '.') {
-  		    if ($alpha) {
-  			return BADVERSION($s,$errstr,"Invalid version format (underscores before decimal)");
-  		    }
-  		    $saw_decimal++;
-  		    $d++;
-  		}
-  		elsif (!isDIGIT($d)) {
-  		    last;
-  		}
-  		$j = 0;
-  	    }
-  	
-  	    if ($strict && $i < 2) {
-  		# requires v1.2.3
-  		return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions require at least three parts)");
-  	    }
-  	}
+      {
+          my $i = 0;
+          my $j = 0;
+          while (isDIGIT($d)) {	# just keep reading
+          $i++;
+          while (isDIGIT($d)) {
+              $d++; $j++;
+              # maximum 3 digits between decimal
+              if ($strict && $j > 3) {
+              return BADVERSION($s,$errstr,"Invalid version format (maximum 3 digits between decimals)");
+              }
+          }
+          if ($d eq '_') {
+              if ($strict) {
+              return BADVERSION($s,$errstr,"Invalid version format (no underscores)");
+              }
+              if ( $alpha ) {
+              return BADVERSION($s,$errstr,"Invalid version format (multiple underscores)");
+              }
+              $d++;
+              $alpha = TRUE;
+          }
+          elsif ($d eq '.') {
+              if ($alpha) {
+              return BADVERSION($s,$errstr,"Invalid version format (underscores before decimal)");
+              }
+              $saw_decimal++;
+              $d++;
+          }
+          elsif (!isDIGIT($d)) {
+              last;
+          }
+          $j = 0;
+          }
+      
+          if ($strict && $i < 2) {
+          # requires v1.2.3
+          return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions require at least three parts)");
+          }
+      }
       } 					# end if dotted-decimal
       else
       {					# decimal versions
-  	# special $strict case for leading '.' or '0'
-  	if ($strict) {
-  	    if ($d eq '.') {
-  		return BADVERSION($s,$errstr,"Invalid version format (0 before decimal required)");
-  	    }
-  	    if ($d eq '0' && isDIGIT($d+1)) {
-  		return BADVERSION($s,$errstr,"Invalid version format (no leading zeros)");
-  	    }
-  	}
+      # special $strict case for leading '.' or '0'
+      if ($strict) {
+          if ($d eq '.') {
+          return BADVERSION($s,$errstr,"Invalid version format (0 before decimal required)");
+          }
+          if ($d eq '0' && isDIGIT($d+1)) {
+          return BADVERSION($s,$errstr,"Invalid version format (no leading zeros)");
+          }
+      }
   
-  	# consume all of the integer part
-  	while (isDIGIT($d)) {
-  	    $d++;
-  	}
+      # consume all of the integer part
+      while (isDIGIT($d)) {
+          $d++;
+      }
   
-  	# look for a fractional part
-  	if ($d eq '.') {
-  	    # we found it, so consume it
-  	    $saw_decimal++;
-  	    $d++;
-  	}
-  	elsif (!$d || $d eq ';' || isSPACE($d) || $d eq '}') {
-  	    if ( $d == $s ) {
-  		# found nothing
-  		return BADVERSION($s,$errstr,"Invalid version format (version required)");
-  	    }
-  	    # found just an integer
-  	    goto version_prescan_finish;
-  	}
-  	elsif ( $d == $s ) {
-  	    # didn't find either integer or period
-  	    return BADVERSION($s,$errstr,"Invalid version format (non-numeric data)");
-  	}
-  	elsif ($d eq '_') {
-  	    # underscore can't come after integer part
-  	    if ($strict) {
-  		return BADVERSION($s,$errstr,"Invalid version format (no underscores)");
-  	    }
-  	    elsif (isDIGIT($d+1)) {
-  		return BADVERSION($s,$errstr,"Invalid version format (alpha without decimal)");
-  	    }
-  	    else {
-  		return BADVERSION($s,$errstr,"Invalid version format (misplaced underscore)");
-  	    }
-  	}
-  	elsif ($d) {
-  	    # anything else after integer part is just invalid data
-  	    return BADVERSION($s,$errstr,"Invalid version format (non-numeric data)");
-  	}
+      # look for a fractional part
+      if ($d eq '.') {
+          # we found it, so consume it
+          $saw_decimal++;
+          $d++;
+      }
+      elsif (!$d || $d eq ';' || isSPACE($d) || $d eq '}') {
+          if ( $d == $s ) {
+          # found nothing
+          return BADVERSION($s,$errstr,"Invalid version format (version required)");
+          }
+          # found just an integer
+          goto version_prescan_finish;
+      }
+      elsif ( $d == $s ) {
+          # didn't find either integer or period
+          return BADVERSION($s,$errstr,"Invalid version format (non-numeric data)");
+      }
+      elsif ($d eq '_') {
+          # underscore can't come after integer part
+          if ($strict) {
+          return BADVERSION($s,$errstr,"Invalid version format (no underscores)");
+          }
+          elsif (isDIGIT($d+1)) {
+          return BADVERSION($s,$errstr,"Invalid version format (alpha without decimal)");
+          }
+          else {
+          return BADVERSION($s,$errstr,"Invalid version format (misplaced underscore)");
+          }
+      }
+      elsif ($d) {
+          # anything else after integer part is just invalid data
+          return BADVERSION($s,$errstr,"Invalid version format (non-numeric data)");
+      }
   
-  	# scan the fractional part after the decimal point
-  	if ($d && !isDIGIT($d) && ($strict || ! ($d eq ';' || isSPACE($d) || $d eq '}') )) {
-  		# $strict or lax-but-not-the-end
-  		return BADVERSION($s,$errstr,"Invalid version format (fractional part required)");
-  	}
+      # scan the fractional part after the decimal point
+      if ($d && !isDIGIT($d) && ($strict || ! ($d eq ';' || isSPACE($d) || $d eq '}') )) {
+          # $strict or lax-but-not-the-end
+          return BADVERSION($s,$errstr,"Invalid version format (fractional part required)");
+      }
   
-  	while (isDIGIT($d)) {
-  	    $d++;
-  	    if ($d eq '.' && isDIGIT($d-1)) {
-  		if ($alpha) {
-  		    return BADVERSION($s,$errstr,"Invalid version format (underscores before decimal)");
-  		}
-  		if ($strict) {
-  		    return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions must begin with 'v')");
-  		}
-  		$d = $s; # start all over again
-  		$qv = TRUE;
-  		goto dotted_decimal_version;
-  	    }
-  	    if ($d eq '_') {
-  		if ($strict) {
-  		    return BADVERSION($s,$errstr,"Invalid version format (no underscores)");
-  		}
-  		if ( $alpha ) {
-  		    return BADVERSION($s,$errstr,"Invalid version format (multiple underscores)");
-  		}
-  		if ( ! isDIGIT($d+1) ) {
-  		    return BADVERSION($s,$errstr,"Invalid version format (misplaced underscore)");
-  		}
-  		$d++;
-  		$alpha = TRUE;
-  	    }
-  	}
+      while (isDIGIT($d)) {
+          $d++;
+          if ($d eq '.' && isDIGIT($d-1)) {
+          if ($alpha) {
+              return BADVERSION($s,$errstr,"Invalid version format (underscores before decimal)");
+          }
+          if ($strict) {
+              return BADVERSION($s,$errstr,"Invalid version format (dotted-decimal versions must begin with 'v')");
+          }
+          $d = $s; # start all over again
+          $qv = TRUE;
+          goto dotted_decimal_version;
+          }
+          if ($d eq '_') {
+          if ($strict) {
+              return BADVERSION($s,$errstr,"Invalid version format (no underscores)");
+          }
+          if ( $alpha ) {
+              return BADVERSION($s,$errstr,"Invalid version format (multiple underscores)");
+          }
+          if ( ! isDIGIT($d+1) ) {
+              return BADVERSION($s,$errstr,"Invalid version format (misplaced underscore)");
+          }
+          $d++;
+          $alpha = TRUE;
+          }
+      }
       }
   
   version_prescan_finish:
       while (isSPACE($d)) {
-  	$d++;
+      $d++;
       }
   
       if ($d && !isDIGIT($d) && (! ($d eq ';' || $d eq '}') )) {
-  	# trailing non-numeric data
-  	return BADVERSION($s,$errstr,"Invalid version format (non-numeric data)");
+      # trailing non-numeric data
+      return BADVERSION($s,$errstr,"Invalid version format (non-numeric data)");
       }
   
       if (defined $sqv) {
-  	$$sqv = $qv;
+      $$sqv = $qv;
       }
       if (defined $swidth) {
-  	$$swidth = $width;
+      $$swidth = $width;
       }
       if (defined $ssaw_decimal) {
-  	$$ssaw_decimal = $saw_decimal;
+      $$ssaw_decimal = $saw_decimal;
       }
       if (defined $salpha) {
-  	$$salpha = $alpha;
+      $$salpha = $alpha;
       }
       return $d;
   }
@@ -10542,158 +10542,158 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       $s = new charstar $s;
   
       while (isSPACE($s)) { # leading whitespace is OK
-  	$s++;
+      $s++;
       }
   
       $last = prescan_version($s, FALSE, \$errstr, \$qv, \$saw_decimal,
-  	\$width, \$alpha);
+      \$width, \$alpha);
   
       if ($errstr) {
-  	# 'undef' is a special case and not an error
-  	if ( $s ne 'undef') {
-  	    use Carp;
-  	    Carp::croak($errstr);
-  	}
+      # 'undef' is a special case and not an error
+      if ( $s ne 'undef') {
+          use Carp;
+          Carp::croak($errstr);
+      }
       }
   
       $start = $s;
       if ($s eq 'v') {
-  	$s++;
+      $s++;
       }
       $pos = $s;
   
       if ( $qv ) {
-  	$$rv->{qv} = $qv;
+      $$rv->{qv} = $qv;
       }
       if ( $alpha ) {
-  	$$rv->{alpha} = $alpha;
+      $$rv->{alpha} = $alpha;
       }
       if ( !$qv && $width < 3 ) {
-  	$$rv->{width} = $width;
+      $$rv->{width} = $width;
       }
       
       while (isDIGIT($pos)) {
-  	$pos++;
+      $pos++;
       }
       if (!isALPHA($pos)) {
-  	my $rev;
+      my $rev;
   
-  	for (;;) {
-  	    $rev = 0;
-  	    {
-    		# this is atoi() that delimits on underscores
-    		my $end = $pos;
-    		my $mult = 1;
-  		my $orev;
+      for (;;) {
+          $rev = 0;
+          {
+            # this is atoi() that delimits on underscores
+            my $end = $pos;
+            my $mult = 1;
+          my $orev;
   
-  		#  the following if() will only be true after the decimal
-  		#  point of a version originally created with a bare
-  		#  floating point number, i.e. not quoted in any way
-  		#
-   		if ( !$qv && $s > $start && $saw_decimal == 1 ) {
-  		    $mult *= 100;
-   		    while ( $s < $end ) {
-  			$orev = $rev;
-   			$rev += $s * $mult;
-   			$mult /= 10;
-  			if (   (abs($orev) > abs($rev)) 
-  			    || (abs($rev) > $VERSION_MAX )) {
-  			    warn("Integer overflow in version %d",
-  					   $VERSION_MAX);
-  			    $s = $end - 1;
-  			    $rev = $VERSION_MAX;
-  			    $vinf = 1;
-  			}
-   			$s++;
-  			if ( $s eq '_' ) {
-  			    $s++;
-  			}
-   		    }
-    		}
-   		else {
-   		    while (--$end >= $s) {
-  			$orev = $rev;
-   			$rev += $end * $mult;
-   			$mult *= 10;
-  			if (   (abs($orev) > abs($rev)) 
-  			    || (abs($rev) > $VERSION_MAX )) {
-  			    warn("Integer overflow in version");
-  			    $end = $s - 1;
-  			    $rev = $VERSION_MAX;
-  			    $vinf = 1;
-  			}
-   		    }
-   		} 
-    	    }
+          #  the following if() will only be true after the decimal
+          #  point of a version originally created with a bare
+          #  floating point number, i.e. not quoted in any way
+          #
+           if ( !$qv && $s > $start && $saw_decimal == 1 ) {
+              $mult *= 100;
+               while ( $s < $end ) {
+              $orev = $rev;
+               $rev += $s * $mult;
+               $mult /= 10;
+              if (   (abs($orev) > abs($rev)) 
+                  || (abs($rev) > $VERSION_MAX )) {
+                  warn("Integer overflow in version %d",
+                         $VERSION_MAX);
+                  $s = $end - 1;
+                  $rev = $VERSION_MAX;
+                  $vinf = 1;
+              }
+               $s++;
+              if ( $s eq '_' ) {
+                  $s++;
+              }
+               }
+            }
+           else {
+               while (--$end >= $s) {
+              $orev = $rev;
+               $rev += $end * $mult;
+               $mult *= 10;
+              if (   (abs($orev) > abs($rev)) 
+                  || (abs($rev) > $VERSION_MAX )) {
+                  warn("Integer overflow in version");
+                  $end = $s - 1;
+                  $rev = $VERSION_MAX;
+                  $vinf = 1;
+              }
+               }
+           } 
+            }
   
-    	    # Append revision
-  	    push @av, $rev;
-  	    if ( $vinf ) {
-  		$s = $last;
-  		last;
-  	    }
-  	    elsif ( $pos eq '.' ) {
-  		$s = ++$pos;
-  	    }
-  	    elsif ( $pos eq '_' && isDIGIT($pos+1) ) {
-  		$s = ++$pos;
-  	    }
-  	    elsif ( $pos eq ',' && isDIGIT($pos+1) ) {
-  		$s = ++$pos;
-  	    }
-  	    elsif ( isDIGIT($pos) ) {
-  		$s = $pos;
-  	    }
-  	    else {
-  		$s = $pos;
-  		last;
-  	    }
-  	    if ( $qv ) {
-  		while ( isDIGIT($pos) ) {
-  		    $pos++;
-  		}
-  	    }
-  	    else {
-  		my $digits = 0;
-  		while ( ( isDIGIT($pos) || $pos eq '_' ) && $digits < 3 ) {
-  		    if ( $pos ne '_' ) {
-  			$digits++;
-  		    }
-  		    $pos++;
-  		}
-  	    }
-  	}
+            # Append revision
+          push @av, $rev;
+          if ( $vinf ) {
+          $s = $last;
+          last;
+          }
+          elsif ( $pos eq '.' ) {
+          $s = ++$pos;
+          }
+          elsif ( $pos eq '_' && isDIGIT($pos+1) ) {
+          $s = ++$pos;
+          }
+          elsif ( $pos eq ',' && isDIGIT($pos+1) ) {
+          $s = ++$pos;
+          }
+          elsif ( isDIGIT($pos) ) {
+          $s = $pos;
+          }
+          else {
+          $s = $pos;
+          last;
+          }
+          if ( $qv ) {
+          while ( isDIGIT($pos) ) {
+              $pos++;
+          }
+          }
+          else {
+          my $digits = 0;
+          while ( ( isDIGIT($pos) || $pos eq '_' ) && $digits < 3 ) {
+              if ( $pos ne '_' ) {
+              $digits++;
+              }
+              $pos++;
+          }
+          }
+      }
       }
       if ( $qv ) { # quoted versions always get at least three terms
-  	my $len = $#av;
-  	#  This for loop appears to trigger a compiler bug on OS X, as it
-  	#  loops infinitely. Yes, len is negative. No, it makes no sense.
-  	#  Compiler in question is:
-  	#  gcc version 3.3 20030304 (Apple Computer, Inc. build 1640)
-  	#  for ( len = 2 - len; len > 0; len-- )
-  	#  av_push(MUTABLE_AV(sv), newSViv(0));
-  	# 
-  	$len = 2 - $len;
-  	while ($len-- > 0) {
-  	    push @av, 0;
-  	}
+      my $len = $#av;
+      #  This for loop appears to trigger a compiler bug on OS X, as it
+      #  loops infinitely. Yes, len is negative. No, it makes no sense.
+      #  Compiler in question is:
+      #  gcc version 3.3 20030304 (Apple Computer, Inc. build 1640)
+      #  for ( len = 2 - len; len > 0; len-- )
+      #  av_push(MUTABLE_AV(sv), newSViv(0));
+      # 
+      $len = 2 - $len;
+      while ($len-- > 0) {
+          push @av, 0;
+      }
       }
   
       # need to save off the current version string for later
       if ( $vinf ) {
-  	$$rv->{original} = "v.Inf";
-  	$$rv->{vinf} = 1;
+      $$rv->{original} = "v.Inf";
+      $$rv->{vinf} = 1;
       }
       elsif ( $s > $start ) {
-  	$$rv->{original} = $start->currstr($s);
-  	if ( $qv && $saw_decimal == 1 && $start ne 'v' ) {
-  	    # need to insert a v to be consistent
-  	    $$rv->{original} = 'v' . $$rv->{original};
-  	}
+      $$rv->{original} = $start->currstr($s);
+      if ( $qv && $saw_decimal == 1 && $start ne 'v' ) {
+          # need to insert a v to be consistent
+          $$rv->{original} = 'v' . $$rv->{original};
+      }
       }
       else {
-  	$$rv->{original} = '0';
-  	push(@av, 0);
+      $$rv->{original} = '0';
+      push(@av, 0);
       }
   
       # And finally, store the AV in the hash
@@ -10701,7 +10701,7 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   
       # fix RT#19517 - special case 'undef' as string
       if ($s eq 'undef') {
-  	$s += 5;
+      $s += 5;
       }
   
       return $s;
@@ -10709,57 +10709,57 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   
   sub new
   {
-  	my ($class, $value) = @_;
-  	my $self = bless ({}, ref ($class) || $class);
-  	my $qv = FALSE;
-  	
-  	if ( ref($value) && eval('$value->isa("version")') ) {
-  	    # Can copy the elements directly
-  	    $self->{version} = [ @{$value->{version} } ];
-  	    $self->{qv} = 1 if $value->{qv};
-  	    $self->{alpha} = 1 if $value->{alpha};
-  	    $self->{original} = ''.$value->{original};
-  	    return $self;
-  	}
+      my ($class, $value) = @_;
+      my $self = bless ({}, ref ($class) || $class);
+      my $qv = FALSE;
+      
+      if ( ref($value) && eval('$value->isa("version")') ) {
+          # Can copy the elements directly
+          $self->{version} = [ @{$value->{version} } ];
+          $self->{qv} = 1 if $value->{qv};
+          $self->{alpha} = 1 if $value->{alpha};
+          $self->{original} = ''.$value->{original};
+          return $self;
+      }
   
-  	my $currlocale = setlocale(LC_ALL);
+      my $currlocale = setlocale(LC_ALL);
   
-  	# if the current locale uses commas for decimal points, we
-  	# just replace commas with decimal places, rather than changing
-  	# locales
-  	if ( localeconv()->{decimal_point} eq ',' ) {
-  	    $value =~ tr/,/./;
-  	}
+      # if the current locale uses commas for decimal points, we
+      # just replace commas with decimal places, rather than changing
+      # locales
+      if ( localeconv()->{decimal_point} eq ',' ) {
+          $value =~ tr/,/./;
+      }
   
-  	if ( not defined $value or $value =~ /^undef$/ ) {
-  	    # RT #19517 - special case for undef comparison
-  	    # or someone forgot to pass a value
-  	    push @{$self->{version}}, 0;
-  	    $self->{original} = "0";
-  	    return ($self);
-  	}
+      if ( not defined $value or $value =~ /^undef$/ ) {
+          # RT #19517 - special case for undef comparison
+          # or someone forgot to pass a value
+          push @{$self->{version}}, 0;
+          $self->{original} = "0";
+          return ($self);
+      }
   
-  	if ( $#_ == 2 ) { # must be CVS-style
-  	    $value = $_[2];
-  	    $qv = TRUE;
-  	}
+      if ( $#_ == 2 ) { # must be CVS-style
+          $value = $_[2];
+          $qv = TRUE;
+      }
   
-  	$value = _un_vstring($value);
+      $value = _un_vstring($value);
   
-  	# exponential notation
-  	if ( $value =~ /\d+.?\d*e[-+]?\d+/ ) {
-  	    $value = sprintf("%.9f",$value);
-  	    $value =~ s/(0+)$//; # trim trailing zeros
-  	}
-  	
-  	my $s = scan_version($value, \$self, $qv);
+      # exponential notation
+      if ( $value =~ /\d+.?\d*e[-+]?\d+/ ) {
+          $value = sprintf("%.9f",$value);
+          $value =~ s/(0+)$//; # trim trailing zeros
+      }
+      
+      my $s = scan_version($value, \$self, $qv);
   
-  	if ($s) { # must be something left over
-  	    warn("Version string '%s' contains invalid data; "
+      if ($s) { # must be something left over
+          warn("Version string '%s' contains invalid data; "
                          ."ignoring: '%s'", $value, $s);
-  	}
+      }
   
-  	return ($self);
+      return ($self);
   }
   
   *parse = \&new;
@@ -10768,8 +10768,8 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   {
       my ($self) = @_;
       unless (_verify($self)) {
-  	require Carp;
-  	Carp::croak("Invalid version object");
+      require Carp;
+      Carp::croak("Invalid version object");
       }
       my $width = $self->{width} || 3;
       my $alpha = $self->{alpha} || "";
@@ -10778,28 +10778,28 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $string = sprintf("%d.", $digit );
   
       for ( my $i = 1 ; $i < $len ; $i++ ) {
-  	$digit = $self->{version}[$i];
-  	if ( $width < 3 ) {
-  	    my $denom = 10**(3-$width);
-  	    my $quot = int($digit/$denom);
-  	    my $rem = $digit - ($quot * $denom);
-  	    $string .= sprintf("%0".$width."d_%d", $quot, $rem);
-  	}
-  	else {
-  	    $string .= sprintf("%03d", $digit);
-  	}
+      $digit = $self->{version}[$i];
+      if ( $width < 3 ) {
+          my $denom = 10**(3-$width);
+          my $quot = int($digit/$denom);
+          my $rem = $digit - ($quot * $denom);
+          $string .= sprintf("%0".$width."d_%d", $quot, $rem);
+      }
+      else {
+          $string .= sprintf("%03d", $digit);
+      }
       }
   
       if ( $len > 0 ) {
-  	$digit = $self->{version}[$len];
-  	if ( $alpha && $width == 3 ) {
-  	    $string .= "_";
-  	}
-  	$string .= sprintf("%0".$width."d", $digit);
+      $digit = $self->{version}[$len];
+      if ( $alpha && $width == 3 ) {
+          $string .= "_";
+      }
+      $string .= sprintf("%0".$width."d", $digit);
       }
       else # $len = 0
       {
-  	$string .= sprintf("000");
+      $string .= sprintf("000");
       }
   
       return $string;
@@ -10809,8 +10809,8 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   {
       my ($self) = @_;
       unless (_verify($self)) {
-  	require Carp;
-  	Carp::croak("Invalid version object");
+      require Carp;
+      Carp::croak("Invalid version object");
       }
       my $alpha = $self->{alpha} || "";
       my $len = $#{$self->{version}};
@@ -10818,24 +10818,24 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $string = sprintf("v%d", $digit );
   
       for ( my $i = 1 ; $i < $len ; $i++ ) {
-  	$digit = $self->{version}[$i];
-  	$string .= sprintf(".%d", $digit);
+      $digit = $self->{version}[$i];
+      $string .= sprintf(".%d", $digit);
       }
   
       if ( $len > 0 ) {
-  	$digit = $self->{version}[$len];
-  	if ( $alpha ) {
-  	    $string .= sprintf("_%0d", $digit);
-  	}
-  	else {
-  	    $string .= sprintf(".%0d", $digit);
-  	}
+      $digit = $self->{version}[$len];
+      if ( $alpha ) {
+          $string .= sprintf("_%0d", $digit);
+      }
+      else {
+          $string .= sprintf(".%0d", $digit);
+      }
       }
   
       if ( $len <= 2 ) {
-  	for ( $len = 2 - $len; $len != 0; $len-- ) {
-  	    $string .= sprintf(".%0d", 0);
-  	}
+      for ( $len = 2 - $len; $len != 0; $len-- ) {
+          $string .= sprintf(".%0d", 0);
+      }
       }
   
       return $string;
@@ -10845,14 +10845,14 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   {
       my ($self) = @_;
       unless (_verify($self)) {
-  	require Carp;
-  	Carp::croak("Invalid version object");
+      require Carp;
+      Carp::croak("Invalid version object");
       }
       return exists $self->{original} 
-      	? $self->{original} 
-  	: exists $self->{qv} 
-  	    ? $self->normal
-  	    : $self->numify;
+          ? $self->{original} 
+      : exists $self->{qv} 
+          ? $self->normal
+          : $self->numify;
   }
   
   sub vcmp
@@ -10861,19 +10861,19 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my ($left,$right,$swap) = @_;
       my $class = ref($left);
       unless ( UNIVERSAL::isa($right, $class) ) {
-  	$right = $class->new($right);
+      $right = $class->new($right);
       }
   
       if ( $swap ) {
-  	($left, $right) = ($right, $left);
+      ($left, $right) = ($right, $left);
       }
       unless (_verify($left)) {
-  	require Carp;
-  	Carp::croak("Invalid version object");
+      require Carp;
+      Carp::croak("Invalid version object");
       }
       unless (_verify($right)) {
-  	require Carp;
-  	Carp::croak("Invalid version object");
+      require Carp;
+      Carp::croak("Invalid version object");
       }
       my $l = $#{$left->{version}};
       my $r = $#{$right->{version}};
@@ -10883,42 +10883,42 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $retval = 0;
       my $i = 0;
       while ( $i <= $m && $retval == 0 ) {
-  	$retval = $left->{version}[$i] <=> $right->{version}[$i];
-  	$i++;
+      $retval = $left->{version}[$i] <=> $right->{version}[$i];
+      $i++;
       }
   
       # tiebreaker for alpha with identical terms
       if ( $retval == 0 
-  	&& $l == $r 
-  	&& $left->{version}[$m] == $right->{version}[$m]
-  	&& ( $lalpha || $ralpha ) ) {
+      && $l == $r 
+      && $left->{version}[$m] == $right->{version}[$m]
+      && ( $lalpha || $ralpha ) ) {
   
-  	if ( $lalpha && !$ralpha ) {
-  	    $retval = -1;
-  	}
-  	elsif ( $ralpha && !$lalpha) {
-  	    $retval = +1;
-  	}
+      if ( $lalpha && !$ralpha ) {
+          $retval = -1;
+      }
+      elsif ( $ralpha && !$lalpha) {
+          $retval = +1;
+      }
       }
   
       # possible match except for trailing 0's
       if ( $retval == 0 && $l != $r ) {
-  	if ( $l < $r ) {
-  	    while ( $i <= $r && $retval == 0 ) {
-  		if ( $right->{version}[$i] != 0 ) {
-  		    $retval = -1; # not a match after all
-  		}
-  		$i++;
-  	    }
-  	}
-  	else {
-  	    while ( $i <= $l && $retval == 0 ) {
-  		if ( $left->{version}[$i] != 0 ) {
-  		    $retval = +1; # not a match after all
-  		}
-  		$i++;
-  	    }
-  	}
+      if ( $l < $r ) {
+          while ( $i <= $r && $retval == 0 ) {
+          if ( $right->{version}[$i] != 0 ) {
+              $retval = -1; # not a match after all
+          }
+          $i++;
+          }
+      }
+      else {
+          while ( $i <= $l && $retval == 0 ) {
+          if ( $left->{version}[$i] != 0 ) {
+              $retval = +1; # not a match after all
+          }
+          $i++;
+          }
+      }
       }
   
       return $retval;  
@@ -10943,8 +10943,8 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $value = shift;
       my $class = 'version';
       if (@_) {
-  	$class = ref($value) || $value;
-  	$value = shift;
+      $class = ref($value) || $value;
+      $value = shift;
       }
   
       $value = _un_vstring($value);
@@ -10964,13 +10964,13 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   sub _verify {
       my ($self) = @_;
       if ( ref($self)
-  	&& eval { exists $self->{version} }
-  	&& ref($self->{version}) eq 'ARRAY'
-  	) {
-  	return 1;
+      && eval { exists $self->{version} }
+      && ref($self->{version}) eq 'ARRAY'
+      ) {
+      return 1;
       }
       else {
-  	return 0;
+      return 0;
       }
   }
   
@@ -10978,9 +10978,9 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $s = shift;
       $s = new charstar $s;
       while ($s) {
-  	return 0 if isSPACE($s); # early out
-  	return 1 unless (isALPHA($s) || isDIGIT($s) || $s =~ /[.-]/);
-  	$s++;
+      return 0 if isSPACE($s); # early out
+      return 1 unless (isALPHA($s) || isDIGIT($s) || $s =~ /[.-]/);
+      $s++;
       }
       return 0;
   }
@@ -10989,19 +10989,19 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $value = shift;
       # may be a v-string
       if ( length($value) >= 3 && $value !~ /[._]/ 
-  	&& _is_non_alphanumeric($value)) {
-  	my $tvalue;
-  	if ( $] ge 5.008_001 ) {
-  	    $tvalue = _find_magic_vstring($value);
-  	    $value = $tvalue if length $tvalue;
-  	}
-  	elsif ( $] ge 5.006_000 ) {
-  	    $tvalue = sprintf("v%vd",$value);
-  	    if ( $tvalue =~ /^v\d+(\.\d+){2,}$/ ) {
-  		# must be a v-string
-  		$value = $tvalue;
-  	    }
-  	}
+      && _is_non_alphanumeric($value)) {
+      my $tvalue;
+      if ( $] ge 5.008_001 ) {
+          $tvalue = _find_magic_vstring($value);
+          $value = $tvalue if length $tvalue;
+      }
+      elsif ( $] ge 5.006_000 ) {
+          $tvalue = sprintf("v%vd",$value);
+          if ( $tvalue =~ /^v\d+(\.\d+){2,}$/ ) {
+          # must be a v-string
+          $value = $tvalue;
+          }
+      }
       }
       return $value;
   }
@@ -11013,14 +11013,14 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
       my $sv = B::svref_2object(\$value);
       my $magic = ref($sv) eq 'B::PVMG' ? $sv->MAGIC : undef;
       while ( $magic ) {
-  	if ( $magic->TYPE eq 'V' ) {
-  	    $tvalue = $magic->PTR;
-  	    $tvalue =~ s/^v?(.+)$/v$1/;
-  	    last;
-  	}
-  	else {
-  	    $magic = $magic->MOREMAGIC;
-  	}
+      if ( $magic->TYPE eq 'V' ) {
+          $tvalue = $magic->PTR;
+          $tvalue =~ s/^v?(.+)$/v$1/;
+          last;
+      }
+      else {
+          $magic = $magic->MOREMAGIC;
+      }
       }
       return $tvalue;
   }
@@ -11031,53 +11031,53 @@ $fatpacked{"version/vpp.pm"} = <<'VERSION_VPP';
   
       no strict 'refs';
       if ( exists $INC{"$class.pm"} and not %{"$class\::"} and $] >= 5.008) {
-  	 # file but no package
-  	require Carp;
-  	Carp::croak( "$class defines neither package nor VERSION"
-  	    ."--version check failed");
+       # file but no package
+      require Carp;
+      Carp::croak( "$class defines neither package nor VERSION"
+          ."--version check failed");
       }
   
       my $version = eval "\$$class\::VERSION";
       if ( defined $version ) {
-  	local $^W if $] <= 5.008;
-  	$version = version::vpp->new($version);
+      local $^W if $] <= 5.008;
+      $version = version::vpp->new($version);
       }
   
       if ( defined $req ) {
-  	unless ( defined $version ) {
-  	    require Carp;
-  	    my $msg =  $] < 5.006 
-  	    ? "$class version $req required--this is only version "
-  	    : "$class does not define \$$class\::VERSION"
-  	      ."--version check failed";
+      unless ( defined $version ) {
+          require Carp;
+          my $msg =  $] < 5.006 
+          ? "$class version $req required--this is only version "
+          : "$class does not define \$$class\::VERSION"
+            ."--version check failed";
   
-  	    if ( $ENV{VERSION_DEBUG} ) {
-  		Carp::confess($msg);
-  	    }
-  	    else {
-  		Carp::croak($msg);
-  	    }
-  	}
+          if ( $ENV{VERSION_DEBUG} ) {
+          Carp::confess($msg);
+          }
+          else {
+          Carp::croak($msg);
+          }
+      }
   
-  	$req = version::vpp->new($req);
+      $req = version::vpp->new($req);
   
-  	if ( $req > $version ) {
-  	    require Carp;
-  	    if ( $req->is_qv ) {
-  		Carp::croak( 
-  		    sprintf ("%s version %s required--".
-  			"this is only version %s", $class,
-  			$req->normal, $version->normal)
-  		);
-  	    }
-  	    else {
-  		Carp::croak( 
-  		    sprintf ("%s version %s required--".
-  			"this is only version %s", $class,
-  			$req->stringify, $version->stringify)
-  		);
-  	    }
-  	}
+      if ( $req > $version ) {
+          require Carp;
+          if ( $req->is_qv ) {
+          Carp::croak( 
+              sprintf ("%s version %s required--".
+              "this is only version %s", $class,
+              $req->normal, $version->normal)
+          );
+          }
+          else {
+          Carp::croak( 
+              sprintf ("%s version %s required--".
+              "this is only version %s", $class,
+              $req->stringify, $version->stringify)
+          );
+          }
+      }
       }
   
       return defined $version ? $version->stringify : undef;

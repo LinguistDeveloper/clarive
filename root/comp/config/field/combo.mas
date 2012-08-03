@@ -6,4 +6,4 @@
     triggerAction: "all",
     lazyRender: "true",
     listClass: "x-combo-list-small",
-	store: <% js_dumper( $row->{store} ) %>,
+    store: <% js_dumper( $row->{store} ) %>,

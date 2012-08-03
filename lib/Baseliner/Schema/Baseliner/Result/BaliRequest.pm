@@ -279,10 +279,10 @@ use Baseliner::Utils;
 use Try::Tiny;
 
 sub data_hash {
-	my $self = shift;
-	my $data = $self->data;
-	return {} unless $data;
-	return _load( $data );
+    my $self = shift;
+    my $data = $self->data;
+    return {} unless $data;
+    return _load( $data );
 }
 
 =head2 load_data
@@ -293,7 +293,7 @@ Return ns info and localization into the data field.
 
 =cut
 sub load_data {
-	my ($self, %p ) = @_;
+    my ($self, %p ) = @_;
     my $data = {};
     if( exists $p{data}  ) {
         $data = ref $p{data} ? $p{data} : _load( $p{data} ); 
@@ -338,7 +338,7 @@ sub load_data {
     # localize
     $data->{type} ||= _loc( exists $p{data} ? $data->{type} : $self->type );
     $self->data( $data ) unless exists $p{data} || $p{no_data};
-	return $data;
+    return $data;
 }
 
 =head2 save_data
@@ -349,7 +349,7 @@ Returns the data hash.
 
 =cut
 sub save_data {
-	my ($self, %p ) = @_;
+    my ($self, %p ) = @_;
     if( my $data = $self->load_data ) {
         $self->data( _dump( $data ) );
         $self->update;

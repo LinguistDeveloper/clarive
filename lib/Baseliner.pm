@@ -85,11 +85,11 @@ __PACKAGE__->config->{ 'Plugin::ConfigLoader' }->{ substitutions } = {
     decrypt => sub {
         my $c = shift;
         require Crypt::Blowfish::Mod;
-        my $key = $c->config->{decrypt_key};
+        my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
         die "Error: missing 'decrypt_key' config parameter" unless length $key;
-        #my $key = '1234567';
+
         my $b = Crypt::Blowfish::Mod->new( $key );
-        $b->decrypt( @_ ); 
+        $b->decrypt( @_ );
     }
 };
 
@@ -119,21 +119,6 @@ __PACKAGE__->config(
 );
 
 ## Authentication
-  
-#    __PACKAGE__->config(
-#        'authentication' => {
-#            realms => {
-#                local => {
-#                    store => {
-#                        class               => "DBIx::Class",
-#                        user_class          => "Baseliner::BaliUser",
-#           password_type => 'clear',
-#                    },
-#                },
-#            },
-#        },
-#    );
-    
     __PACKAGE__->config(
         'authentication' => {
             realms => {

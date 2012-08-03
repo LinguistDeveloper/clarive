@@ -13,26 +13,26 @@ use Package::Alias Registry => 'Baseliner::Core::Registry';
 use Moose::Exporter;
 
 Moose::Exporter->setup_import_methods( 
-	with_caller => [ 'register','register_class' ],
-	also => [ 'Moose' ]
+    with_caller => [ 'register','register_class' ],
+    also => [ 'Moose' ]
 );
 
 sub register {
-	my $package = shift;
-	my $key = shift;
-	my $obj = shift;
-	Baseliner::Core::Registry->add( $package, $key, $obj);
+    my $package = shift;
+    my $key = shift;
+    my $obj = shift;
+    Baseliner::Core::Registry->add( $package, $key, $obj);
 }
 
 sub register_class {
-	my $package = shift;
-	my $key = shift;
-	my $obj = shift;
-	Baseliner::Core::Registry->add_class( $package, $key, $obj);
+    my $package = shift;
+    my $key = shift;
+    my $obj = shift;
+    Baseliner::Core::Registry->add_class( $package, $key, $obj);
 }
 
 sub registry {
-	return 'Baseliner::Core::Registry';
+    return 'Baseliner::Core::Registry';
 }
 
 1;

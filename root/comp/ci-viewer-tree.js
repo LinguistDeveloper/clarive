@@ -62,7 +62,7 @@
         animate: true,
         collapsible: true,
         lines: true,
-		stripeRows: true,
+	    stripeRows: true,
         enableSort: false,
         enableDD: true,
         dataUrl: '/ci/list',

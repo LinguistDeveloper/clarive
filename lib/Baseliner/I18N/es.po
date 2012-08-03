@@ -91,7 +91,7 @@ msgid "New Name"
 msgstr "Nuevo Nombre"
 
 msgid "About Baseliner"
-msgstr "Acerca de Distribuidor"
+msgstr "Acerca del Baseliner"
 
 msgid "Server communication failure. Check your connection."
 msgstr "Error de communicación con el servidor. Compruebe su conexión."
@@ -1215,6 +1215,13 @@ msgstr "iniciado"
 
 msgid "finished"
 msgstr "finalizado"
+
+# Job actions
+msgid "Job revived"
+msgstr "Continuando la ejecución del Pase"
+
+msgid "Job stash stored ok"
+msgstr "Almacenada correctamente la información del Pase"
 
 # Job Types
 
@@ -3816,3 +3823,6 @@ msgstr "HTML Básico"
 
 msgid "%1 of %2 total rows"
 msgstr "%1 de %2 filas totales"
+
+msgid "Include into"
+msgstr "Incluido en"

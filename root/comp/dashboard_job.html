@@ -80,21 +80,21 @@
         if ( $servicios->{$step} ) {
             my @services = _array $servicios->{$step};
             my $tot_services = scalar @services;
-        	my $first = 1;
-        	for my $service ( @services ) {
-        		if ( $first ) {
+            my $first = 1;
+            for my $service ( @services ) {
+        	    if ( $first ) {
 </%perl>
                     <tr>
                         <td class="section-paso" rowspan="<%$tot_services%>"><% $step %></td>
 <%perl>
                     $first = 0;
-        		}
+        	    }
 </%perl>
                         <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
                     </tr>
 <%perl>
-        	}
+            }
         }
     }
 </%perl>
@@ -166,7 +166,7 @@
     my @ficheros = _array $salida->{outputs};
     my $data;
     my $row = 0;
-	for my $fichero (@ficheros){
+    for my $fichero (@ficheros){
         $row = $row + 1;
         if ($fichero->{more}->{data}){
             $data = 1;
@@ -188,7 +188,7 @@
                     </script>                        
 <%perl>                        
         }
-	}                
+    }                
 </%perl>                        
                 </tbody>    
             </table>
@@ -290,12 +290,12 @@
 <script language="javascript">
     function render_level ( ) {
         var icon;
-		var bold = false;
-		var status = "<% $resumen->{status} %>";
-		var type   = '<% $resumen->{type} %>';
-		var rollback = '<% $resumen->{rollback} %>';
-		var div1   = '<div style="white-space:normal !important;">';
-    	var div2   = '</div>';
+	    var bold = false;
+	    var status = "<% $resumen->{status} %>";
+	    var type   = '<% $resumen->{type} %>';
+	    var rollback = '<% $resumen->{rollback} %>';
+	    var div1   = '<div style="white-space:normal !important;">';
+        var div2   = '</div>';
         if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
         else if( status=='READY' ) icon='log_d.gif';
         else if( status=='APPROVAL' ) icon='verify.gif';
@@ -313,12 +313,12 @@
             value = ' <% _loc("Rollback Failed") %>';
         }
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
-		if( status == 'APPROVAL' ) { // add a link to the approval main
-			//value = '<a href="javascript:Baseliner.addNewTabComp(' + '"/request/main", '<% _loc("Approvals") %>, value ); 
-			value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status ); 
-		}
-    	//alert(icon);
-		var tdStatus = document.getElementById('<% $status_id %>');
+	    if( status == 'APPROVAL' ) { // add a link to the approval main
+		    //value = '<a href="javascript:Baseliner.addNewTabComp(' + '"/request/main", '<% _loc("Approvals") %>, value ); 
+		    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status ); 
+	    }
+        //alert(icon);
+	    var tdStatus = document.getElementById('<% $status_id %>');
         if( icon!=undefined ) {
             tdStatus.innerHTML = div1 
                 + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/"+icon+"' />"

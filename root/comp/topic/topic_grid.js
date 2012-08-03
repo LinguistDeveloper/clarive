@@ -320,12 +320,11 @@
         handler: function() {
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
-                    var r = sm.getSelected();
-                    var topic_mid = r.get('topic_mid');
-                    var title = _(r.get( 'category_name' )) + ' #' + topic_mid;
-                    
-                    Baseliner.add_tabcomp('/topic/view?topic_mid=' + topic_mid + '&swEdit=1', title , { topic_mid: topic_mid, title: title } );
-                    
+                    Ext.each( sm.getSelections(), function(r) {
+                        var topic_mid = r.get('topic_mid');
+                        var title = _(r.get( 'category_name' )) + ' #' + topic_mid;
+                        Baseliner.add_tabcomp('/topic/view?topic_mid=' + topic_mid + '&swEdit=1', title , { topic_mid: topic_mid, title: title } );
+                    });
                 } else {
                     Baseliner.message( _('ERROR'), _('Select at least one row'));    
                 };
@@ -336,25 +335,27 @@
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
-            var topico = sel.data.category_name + ' ' + sel.data.topic_mid;
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + topico + '</b>?', 
-                function(btn){ 
-                    if(btn=='yes') {
-                        Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: sel.data.topic_mid },
-                            function(response) {
-                                if ( response.success ) {
-                                    grid_topics.getStore().remove(sel);
-                                    Baseliner.message( _('Success'), response.msg );
-                                    init_buttons('disable');
-                                } else {
-                                    Baseliner.message( _('ERROR'), response.msg );
+            Ext.each( sm.getSelections(), function(sel){
+                var topico = sel.data.category_name + ' ' + sel.data.topic_mid;
+                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + topico + '</b>?', 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: sel.data.topic_mid },
+                                function(response) {
+                                    if ( response.success ) {
+                                        grid_topics.getStore().remove(sel);
+                                        Baseliner.message( _('Success'), response.msg );
+                                        init_buttons('disable');
+                                    } else {
+                                        Baseliner.message( _('ERROR'), response.msg );
+                                    }
                                 }
-                            }
-                        
-                        );
+                            
+                            );
+                        }
                     }
-                }
-            );
+                );
+            });
         }
     });
     
@@ -383,9 +384,9 @@
     };
 
     function returnOpposite(hexcolor) {
-        var r = parseInt(hexcolor.substring(0,2),16);
-        var g = parseInt(hexcolor.substring(2,2),16);
-        var b = parseInt(hexcolor.substring(4,2),16);
+        var r = parseInt(hexcolor.substr(0,2),16);
+        var g = parseInt(hexcolor.substr(2,2),16);
+        var b = parseInt(hexcolor.substr(4,2),16);
         var yiq = ((r*299)+(g*587)+(b*114))/1000;
         return (yiq >= 128) ? '#000000' : '#FFFFFF';
     }
@@ -404,7 +405,7 @@
                 var label_color = label[2];
                 tag_color_html = tag_color_html
                     + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" 
-                    + returnOpposite(label_color.substring(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
+                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
             }
         }
         if(btn_mini.pressed){
@@ -892,7 +893,7 @@
                 var head = document.getElementsByTagName('head')[0];
                 var rules = document.createTextNode(
                     '.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:' +
-                    returnOpposite( color.substring(1) ) + ';background: ' + color +
+                    returnOpposite( color.substr(1) ) + ';background: ' + color +
                     ';font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
                 );
                 style.type = 'text/css';

@@ -1,12 +1,12 @@
 <%args>
-	$metadataKey => 'metadata'
+    $metadataKey => 'metadata'
     $metadata => ''
 </%args>
 [
 <%perl>
-	use JavaScript::Dumper;
-	my $cnt = 0;
-	
+    use JavaScript::Dumper;
+    my $cnt = 0;
+    
     if( $c->stash->{config} ) {  #it's an array of arrays!
         for my $config ( @{ $c->stash->{config} || [] } ) {
 </%perl>
@@ -37,12 +37,12 @@
     }
 </%perl>
 % if( $c->stash->{ns} ) {		
-	{  xtype: 'hidden', name: 'ns', value: '<% $c->stash->{ns} %>' },
+    {  xtype: 'hidden', name: 'ns', value: '<% $c->stash->{ns} %>' },
 % }
 % if( $c->stash->{bl} ) {		
-	{  xtype: 'hidden', name: 'bl', value: '<% $c->stash->{bl} %>' },
+    {  xtype: 'hidden', name: 'bl', value: '<% $c->stash->{bl} %>' },
 % }
-	{  type: 'Submit', name: 'Sb' }
+    {  type: 'Submit', name: 'Sb' }
 ]		
 
 <%filter>

@@ -4,9 +4,9 @@
 </%doc>
 [
 <%perl>
-	use JavaScript::Dumper;
-	my $cnt = 0;
-	
+    use JavaScript::Dumper;
+    my $cnt = 0;
+    
     for my $config ( $c->model('ConfigStore')->all ) {
         my @metadata = $config->metadata_filter( @{ $c->stash->{metadata_filter} || [] } );
         if( scalar @metadata ) {  

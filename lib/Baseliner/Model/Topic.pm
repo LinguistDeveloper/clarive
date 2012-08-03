@@ -124,7 +124,7 @@ sub update {
                             $mid = $user->mid
                         }
                         else{
-                        	my $user_mid = master_new 'user' => $user->username => sub {
+                            my $user_mid = master_new 'user' => $user->username => sub {
                                 my $mid = shift;
                                 $user->mid($mid);
                                 $user->update();
@@ -152,7 +152,7 @@ sub update {
         } ## end when ( 'add' )
         when ( 'update' ) {
             event_new 'event.topic.modify' => { username=>$p->{username} } => sub {
-				my @field;
+                my @field;
                 $topic_mid = $p->{topic_mid};
                 my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 if ($topic->title ne $p->{title}){ push @field, _loc('title');}
@@ -163,7 +163,7 @@ sub update {
                 $topic->id_category( $p->{category} ) if is_number( $p->{category} ) ;
                 if ($topic->id_category_status ne $p->{status_new}){ push @field, _loc('status');}
                 $topic->id_category_status( $p->{status_new} ) if is_number( $p->{status_new} );
-				if ($topic->id_priority ne $p->{priority}){ push @field, _loc('priority');}
+                if ($topic->id_priority ne $p->{priority}){ push @field, _loc('priority');}
                 $topic->id_priority( $p->{priority} )          if is_number( $p->{priority} );
                 $topic->response_time_min( $rsptime[1] );
                 $topic->expr_response_time( $rsptime[0] );
@@ -232,7 +232,7 @@ sub update {
                             $mid = $user->mid
                         }
                         else{
-                        	my $user_mid = master_new 'user' => $user->username => sub {
+                            my $user_mid = master_new 'user' => $user->username => sub {
                                 my $mid = shift;
                                 $user->mid($mid);
                                 $user->update();
@@ -305,7 +305,7 @@ sub update {
 sub append_category {
     my ($self, @topics ) =@_;
     return map {
-        $_->{name} = $_->{categories}->{name} . ' #' . $_->{mid};
+        $_->{name} = $_->{categories}->{name} ? $_->{categories}->{name} . ' #' . $_->{mid}: $_->{name} . ' #' . $_->{mid} ;
         $_->{color} = $_->{categories}->{color};
         $_
     } @topics;
