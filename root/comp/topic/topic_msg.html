@@ -18,6 +18,7 @@
     $release => ''
     $release_row => {}
     $topics
+    $parents_topics
     $projects
     $revisions
     $labels
@@ -196,7 +197,7 @@ padding: 2px 4px 2px 7px;
 %}              
 
 %if( _array($dates) || ( ($show_projects || $show_assign_to || $show_topics || $show_files)
-%       && ( _array($projects) || _array( $users ) || _array( $files ) || _array( $topics ) ) ) ) {                    
+%       && ( _array($projects) || _array( $users ) || _array( $files ) || _array( $topics ) || _array( $parents_topics ) ) ) ) {                    
               <tr>
                 <td colspan="2">
 %if( $show_projects ){                    
@@ -291,6 +292,29 @@ padding: 2px 4px 2px 7px;
 % }
                     </ul>
 % }
+
+% if( _array( $parents_topics ) ) {
+                    <ul class="nav nav-list">
+                      <li class="nav-header">
+                        <% _loc("Include into") %>
+                      </li>
+                    </ul>
+                    <ul class="" style="margin-left: 20px">
+                      <li class="">
+% foreach my $topic ( _array( $parents_topics ) ) {
+                      <li style="margin: 6px 0px 6px 0px">
+                          <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
+                            style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
+                            &nbsp;&nbsp;<b><% $topic->{title} %></b>
+                      </li>
+% }
+                    </ul>
+% }
+
+
+
+
+
 % }
 
 

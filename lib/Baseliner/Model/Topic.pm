@@ -305,7 +305,7 @@ sub update {
 sub append_category {
     my ($self, @topics ) =@_;
     return map {
-        $_->{name} = $_->{categories}->{name} . ' #' . $_->{mid};
+        $_->{name} = $_->{categories}->{name} ? $_->{categories}->{name} . ' #' . $_->{mid}: $_->{name} . ' #' . $_->{mid} ;
         $_->{color} = $_->{categories}->{color};
         $_
     } @topics;

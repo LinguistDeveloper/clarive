@@ -459,6 +459,14 @@ sub view : Local {
         @topics = $c->model('Topic')->append_category( @topics );
         $c->stash->{topics} = @topics ? \@topics : []; 
 
+        #topics_parents
+        my @parents_topics = $c->model('Baseliner::BaliTopic')->search(
+                                { rel_type=>'topic_topic', to_mid=>$topic_mid },
+                                { join=>['categories','children','master'], select=>['mid','title', 'categories.name', 'categories.color'], as=>['mid','title','name','color'] }
+                                )->hashref->all;
+        @parents_topics = $c->model('Topic')->append_category( @parents_topics );
+        $c->stash->{parents_topics} = @parents_topics ? \@parents_topics : []; 
+
         # dates
         my @dates = $c->model('Baseliner::BaliMasterCal')->search({ mid=> $topic_mid })->hashref->all;
         $c->stash->{dates} = \@dates;
