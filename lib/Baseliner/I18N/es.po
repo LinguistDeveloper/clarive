@@ -3827,3 +3827,6 @@ msgstr "HTML Básico"
 
 msgid "%1 of %2 total rows"
 msgstr "%1 de %2 filas totales"
+
+msgid "Include into"
+msgstr "Incluido en"

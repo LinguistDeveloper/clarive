@@ -393,9 +393,9 @@
     };
 
     function returnOpposite(hexcolor) {
-        var r = parseInt(hexcolor.substring(0,2),16);
-        var g = parseInt(hexcolor.substring(2,2),16);
-        var b = parseInt(hexcolor.substring(4,2),16);
+        var r = parseInt(hexcolor.substr(0,2),16);
+        var g = parseInt(hexcolor.substr(2,2),16);
+        var b = parseInt(hexcolor.substr(4,2),16);
         var yiq = ((r*299)+(g*587)+(b*114))/1000;
         return (yiq >= 128) ? '#000000' : '#FFFFFF';
     }
@@ -414,7 +414,7 @@
                 var label_color = label[2];
                 tag_color_html = tag_color_html
                     + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" 
-                    + returnOpposite(label_color.substring(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
+                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
             }
         }
         if(btn_mini.pressed){
@@ -902,7 +902,7 @@
                 var head = document.getElementsByTagName('head')[0];
                 var rules = document.createTextNode(
                     '.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:' +
-                    returnOpposite( color.substring(1) ) + ';background: ' + color +
+                    returnOpposite( color.substr(1) ) + ';background: ' + color +
                     ';font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
                 );
                 style.type = 'text/css';
