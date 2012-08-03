@@ -287,7 +287,12 @@ sub update : Local {
     
     try  {    
         my ($msg, $topic_mid, $status) = Baseliner::Model::Topic->update( $p );
-        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_mid => $topic_mid, topic_status => $status };
+        $c->stash->{json} = {
+            success      => \1,
+            msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
+            topic_mid    => $topic_mid,
+            topic_status => $status
+        };
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };

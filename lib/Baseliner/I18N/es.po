@@ -2600,6 +2600,8 @@ msgstr "Error modificando tópico: %1"
 msgid "Topic deleted"
 msgstr "Tópico borrado"
 
+msgid "%1 topic(s) deleted"
+msgstr "%1 tópico(s) borrado(s)"
 
 # lib/Baseliner/Model/Topic.pm (66)
 msgid "Error deleting topic: %1"
@@ -2617,9 +2619,11 @@ msgstr "Error cerrando tópico: %1"
 
 
 # root/comp/topic_grid.js (116)
-msgid "Are you sure you want to delete the topic"
+msgid "Are you sure you want to delete the topic(s)"
 msgstr "¿Seguro que quiere borrar tópico"
 
+msgid " (and %1 more)"
+msgstr " (y %1 más)"
 
 # root/comp/topic_grid.js (156)
 msgid "Are you sure you want to close the topic"

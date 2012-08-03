@@ -335,15 +335,24 @@
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
+            var topic_names=[];
+            var topic_mids=[];
             Ext.each( sm.getSelections(), function(sel){
-                var topico = sel.data.category_name + ' ' + sel.data.topic_mid;
-                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + topico + '</b>?', 
+                topic_names.push( sel.data.category_name + ' #' + sel.data.topic_mid );
+                topic_mids.push( sel.data.topic_mid );
+            });
+            if( topic_names.length > 0 ) {
+                var names = topic_names.slice(0,10).join(',');
+                if( topic_names.length > 10 ) {
+                    names += _(' (and %1 more)', topic_names.length-10 );
+                }
+                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic(s)') + ': <br /><b>' + names + '</b>?', 
                     function(btn){ 
                         if(btn=='yes') {
-                            Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: sel.data.topic_mid },
+                            Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: topic_mids },
                                 function(response) {
                                     if ( response.success ) {
-                                        grid_topics.getStore().remove(sel);
+                                        grid_topics.getStore().remove(sm.getSelections());
                                         Baseliner.message( _('Success'), response.msg );
                                         init_buttons('disable');
                                     } else {
@@ -355,7 +364,7 @@
                         }
                     }
                 );
-            });
+            }
         }
     });
     
