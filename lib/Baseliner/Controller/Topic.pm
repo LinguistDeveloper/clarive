@@ -467,7 +467,7 @@ sub view : Local {
         #topics_parents
         my @parents_topics = $c->model('Baseliner::BaliTopic')->search(
                                 { rel_type=>'topic_topic', to_mid=>$topic_mid },
-                                { join=>['categories','children','master'], select=>['mid','title', 'categories.name', 'categories.color'], as=>['mid','title','name','color'] }
+                                { join=>['categories','children','master'], select=>['mid','title', 'progress', 'categories.name', 'categories.color'], as=>['mid','title','progress','name','color'] }
                                 )->hashref->all;
         @parents_topics = $c->model('Topic')->append_category( @parents_topics );
         $c->stash->{parents_topics} = @parents_topics ? \@parents_topics : []; 
