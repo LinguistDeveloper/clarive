@@ -447,13 +447,13 @@
         if(rec.data.numcomment){
             swGo = true;
             tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
-            tag_comment_html.push(rec.data.numcomment);
+            tag_comment_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>');
             tag_comment_html.push("</span>");
         }
         if(rec.data.num_file){
             swGo = true;
             tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
-            tag_comment_html.push(rec.data.num_file);
+            tag_comment_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>');
             tag_comment_html.push("</span>");           
         }
         var str = swGo ? tag_comment_html.join(""):'';
@@ -516,6 +516,7 @@
         var d = rec.data;
         return Baseliner.topic_name({
             mid: d.topic_mid, 
+            mini: btn_mini.pressed,
             size: btn_mini.pressed ? '9' : '11',
             category_name: d.category_name,
             category_color:  d.category_color,

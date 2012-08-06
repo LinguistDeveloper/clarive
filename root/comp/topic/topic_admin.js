@@ -1434,7 +1434,6 @@
         enableHdMenu: false,
         store: store_category,
         viewConfig: {forceFit: true, scrollOffset: 2},
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
             { hidden: true, dataIndex:'id' },

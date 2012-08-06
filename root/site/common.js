@@ -229,11 +229,7 @@ Baseliner.topic_name = function(args) {
         var size = args.size ? args.size : '10';
 
         var top,bot,img;
-        if( args.mini ) {
-            top=0, bot=2, img=0;
-        } else {
-            top=2, bot=4, img=2;
-        }
+        top=2, bot=4, img=2;
 
         if( ! color ) 
             color = '#999';
@@ -246,18 +242,12 @@ Baseliner.topic_name = function(args) {
             else if( args.is_release > 0  ) {
                 icon = '/static/images/icons/release-white.png';
             }
-            else if( args.mini ) {
-                icon = '/static/images/icons/topic-one-white.png';
-            }
         }
 
         // prepare icon background
         var style_str;
-        if( icon ) {
-            if( args.mini ) 
-                style_str = "padding:0px 10px 4px 7px;background: {0} url('{1}') no-repeat left 1px; font-size: {5}px";
-            else
-                style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
+        if( icon && ! args.mini ) {
+            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
         }
         else {
             style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}; font-size: {5}px";
@@ -265,8 +255,8 @@ Baseliner.topic_name = function(args) {
         var style = String.format( style_str, color, icon, top, bot, img, size );
         //if( color == undefined ) color = '#777';
         var ret = args.mini 
-            ? String.format('<span id="boot"><span class="{0}" style="{1}"></span></span>', cls, [style,args.style].join(';'), cat_name, mid )
-            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
+            ? String.format('<span id="boot" style="background: transparent"><span class="{0}" style="{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="font-weight:bolder;font-size:11px">{2}{3}</span></span></span>', cls, [style,args.style].join(';'), cat_name, mid )
+            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span>', cls, [style,args.style].join(';'), cat_name, mid );
         return ret;
 };
 
