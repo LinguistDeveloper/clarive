@@ -84,12 +84,7 @@ __PACKAGE__->config( {
 __PACKAGE__->config->{ 'Plugin::ConfigLoader' }->{ substitutions } = {
     decrypt => sub {
         my $c = shift;
-        require Crypt::Blowfish::Mod;
-        my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
-        die "Error: missing 'decrypt_key' config parameter" unless length $key;
-
-        my $b = Crypt::Blowfish::Mod->new( $key );
-        $b->decrypt( @_ );
+        $c->decrypt( @_ );
     }
 };
 
@@ -224,7 +219,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR "Baseliner Server v" . Baseliner->config->{About}->{version} . ". Startup time: " . tv_interval($t0) . "s.\n";
+    print STDERR "Baseliner Server v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . ". Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
         print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
@@ -308,8 +303,18 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         return \%data;
     }
 
-# user shortcut
 use Try::Tiny;
+sub decrypt {
+    my $c = shift;
+    require Crypt::Blowfish::Mod;
+    my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
+    die "Error: missing 'decrypt_key' config parameter" unless length $key;
+
+    my $b = Crypt::Blowfish::Mod->new( $key );
+    $b->decrypt( @_ );
+}
+
+# user shortcut
 sub username {
     my $c = shift;
     my $user;
