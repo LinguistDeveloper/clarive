@@ -468,10 +468,6 @@ Baseliner.isArray = function(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
 };
 
-Baseliner.isFunction = function(obj) {
-};
-
-
 // Multiple provider search
 Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     initComponent : function(){
