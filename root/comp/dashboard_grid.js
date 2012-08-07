@@ -3,7 +3,7 @@
     my $id = _nowstamp;
 </%perl>
 (function(){
-    var store = new Ext.data.JsonStore({
+    var store = new Baseliner.JsonStore({
 	    root: 'data' , 
 	    remoteSort: true,
 	    totalProperty:"totalCount", 
@@ -21,7 +21,7 @@
 	    ]
     });
     
-    var store_config = new Ext.data.JsonStore({
+    var store_config = new Baseliner.JsonStore({
 	    root: 'data' , 
 	    remoteSort: true,
 	    totalProperty:"totalCount", 
@@ -58,7 +58,7 @@
 		    fields: ['id','name','description', 'config'] 
 	     }, c));
     };
-    Ext.extend( Baseliner.store.Dashlets, Ext.data.JsonStore );
+    Ext.extend( Baseliner.store.Dashlets, Baseliner.JsonStore );
     
     Baseliner.store.Roles = function(c) {
 	     Baseliner.store.Roles.superclass.constructor.call(this, Ext.apply({

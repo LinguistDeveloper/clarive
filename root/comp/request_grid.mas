@@ -38,7 +38,7 @@
             {  name: 'id_message' },
             {  name: 'text_wiki' }
     ];
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -54,7 +54,7 @@
     });
 
     ///////////////// Request Single Row
-    var request_data_store=new Ext.data.JsonStore({
+    var request_data_store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 

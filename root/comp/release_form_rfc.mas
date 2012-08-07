@@ -22,7 +22,7 @@ Ext.onReady(function(){
        data : <% js_dumper( $c->stash->{baselines} ) %>
     }); 
 
-    var ns_store = new Ext.data.JsonStore({
+    var ns_store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 

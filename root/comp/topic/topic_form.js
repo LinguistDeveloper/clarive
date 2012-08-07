@@ -8,7 +8,7 @@
         url:'/topic/list_admin_category'
     });
     
-	var store_category_priority = new Ext.data.JsonStore({
+	var store_category_priority = new Baseliner.JsonStore({
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
@@ -328,7 +328,7 @@
             fields: ['mid','name', 'title','description','color'] 
          }, c));
     };
-    Ext.extend( Baseliner.store.Topics, Ext.data.JsonStore );
+    Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
 
     Baseliner.model.Topics = function(c) {
         //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );

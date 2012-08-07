@@ -52,7 +52,7 @@
 
     var group_field = 'ns_type';
 
-    var store = new Ext.data.GroupingStore({
+    var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/revision/list',
             baseParams: { limit: ps, grid_view: filter_current },
@@ -174,7 +174,7 @@
                    hiddenName: 'id',
                    fieldLabel: _("Releases"),
                    mode: 'remote', 
-                   store: new Ext.data.JsonStore({
+                   store: new Baseliner.JsonStore({
                             root: 'data' , 
                             remoteSort: true,
                             autoLoad: true,
@@ -252,7 +252,7 @@
                hiddenName: 'url',
                fieldLabel: _("Providers"),
                mode: 'remote', 
-               store: new Ext.data.JsonStore({
+               store: new Baseliner.JsonStore({
                         root: 'data' , 
                         remoteSort: true,
                         autoLoad: true,

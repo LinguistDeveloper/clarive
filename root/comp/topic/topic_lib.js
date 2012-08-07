@@ -20,7 +20,7 @@ Baseliner.Topic.StoreProject = Ext.extend(Ext.data.Store, {
     }
 }); 
 
-Baseliner.Topic.StoreStatus = Ext.extend(Ext.data.JsonStore, {
+Baseliner.Topic.StoreStatus = Ext.extend(Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
             root: 'data' , 
@@ -40,7 +40,7 @@ Baseliner.Topic.StoreStatus = Ext.extend(Ext.data.JsonStore, {
     }
 }); 
     
-Baseliner.Topic.StoreCategory = Ext.extend( Ext.data.JsonStore, {
+Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
             root: 'data' , 
@@ -66,7 +66,7 @@ Baseliner.Topic.StoreCategory = Ext.extend( Ext.data.JsonStore, {
     }
 });
 
-Baseliner.Topic.StoreCategoryStatus = Ext.extend( Ext.data.JsonStore, {
+Baseliner.Topic.StoreCategoryStatus = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
             root: 'data' , 
@@ -85,7 +85,7 @@ Baseliner.Topic.StoreCategoryStatus = Ext.extend( Ext.data.JsonStore, {
     }
 });
 
-Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
+Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
             root: 'data' , 
@@ -129,7 +129,7 @@ Baseliner.Topic.StoreList = Ext.extend( Ext.data.JsonStore, {
     }
 });
 
-Baseliner.Topic.StoreLabel = Ext.extend( Ext.data.JsonStore, {
+Baseliner.Topic.StoreLabel = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
             root: 'data' , 
@@ -146,7 +146,7 @@ Baseliner.Topic.StoreLabel = Ext.extend( Ext.data.JsonStore, {
     }
 });
 
-Baseliner.Topic.StorePriority = Ext.extend( Ext.data.JsonStore, {
+Baseliner.Topic.StorePriority = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
             root: 'data' , 
@@ -183,7 +183,7 @@ Baseliner.Topic.comment_delete = function(id_com, id_div ) {
     });
 };
 
-Baseliner.Topic.StoreUsers = Ext.extend( Ext.data.JsonStore, {
+Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
         config = Ext.apply({
             root: 'data' , 

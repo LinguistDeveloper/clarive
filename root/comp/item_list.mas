@@ -24,7 +24,7 @@
       ]);
 
     // create the Data Store
-    var store<% $c->stash->{$componentId}{id} %> = new Ext.data.JsonStore({
+    var store<% $c->stash->{$componentId}{id} %> = new Baseliner.JsonStore({
         url: '<% $c->stash->{$componentId}{json_url} %>',
         root:'data',
         fields: [ 

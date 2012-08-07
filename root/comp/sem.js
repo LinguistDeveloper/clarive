@@ -2,7 +2,7 @@
     var ps = 9999;
     <& /comp/search_field.mas &>
     
-    var store_sem=new Ext.data.JsonStore({
+    var store_sem=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -40,7 +40,7 @@
             {  name: 'bl' }
         ]
     );
-    var store_queue = new Ext.data.GroupingStore({
+    var store_queue = new Baseliner.GroupingStore({
         id: 'id',
         reader: reader_queue,
         remoteGroup: false,

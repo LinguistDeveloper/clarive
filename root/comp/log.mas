@@ -1,6 +1,6 @@
 (function(){
     // La fuente de Datos JSON con todos el listado:
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
         root: 'cat' , 
         remoteSort: true,
         totalProperty:"totalCount", 

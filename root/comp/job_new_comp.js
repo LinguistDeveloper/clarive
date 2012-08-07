@@ -186,7 +186,7 @@
 
     function _setDatePicker(picker){_datePicker = picker;}
 
-    var time_store = new Ext.data.JsonStore({
+    var time_store = new Baseliner.JsonStore({
         root: 'data',
         url: '/job/check_time',
         fields: [
