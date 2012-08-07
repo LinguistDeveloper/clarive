@@ -87,6 +87,9 @@ msgstr "Proyecto"
 msgid "Projects"
 msgstr "Proyectos"
 
+msgid "Scheduler"
+msgstr "Planificador"
+
 msgid "New Name"
 msgstr "Nuevo Nombre"
 
@@ -774,6 +777,9 @@ msgstr "Nuevo Pase"
 msgid "Cancel Job"
 msgstr "Cancelar Pase"
 
+msgid "Delete Job"
+msgstr "Borrar Pase"
+
 msgid "View Log"
 msgstr "Ver Log de Pase"
 
@@ -1199,6 +1205,9 @@ msgstr "Reiniciado"
 
 msgid "SUSPENDED"
 msgstr "Suspendido"
+
+msgid "WAITING"
+msgstr "Esperando CHM"
 
 msgid "DONE"
 msgstr "Finalizado"
