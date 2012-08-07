@@ -226,7 +226,7 @@ sub update : Local {
     my $user_key; # (Public key + Username al revés)
     $user_key = $c->config->{decrypt_key}.reverse ($p->{username});
 
-	                        
+                            
     given ($action) {
     when ('add') {
         try{
@@ -240,13 +240,13 @@ sub update : Local {
                     
                     $user = Baseliner->model('Baseliner::BaliUser')->create(
                         {
-	                        mid			=> $mid,
-	                        username    => $p->{username},
-	                        realname  	=> $p->{realname},
-	                        password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
-	                        alias	=> $p->{alias},
-	                        email	=> $p->{email},
-	                        phone	=> $p->{phone}
+                            mid			=> $mid,
+                            username    => $p->{username},
+                            realname  	=> $p->{realname},
+                            password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
+                            alias	=> $p->{alias},
+                            email	=> $p->{email},
+                            phone	=> $p->{phone}
                         }
                     );
                 };
@@ -376,30 +376,30 @@ sub tratar_proyectos{
         my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
         $rs->delete;
         my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-		                            {	username => $user_name,
-			                            id_role => $role,
-			                            ns => '/'
-		                            },
-		                            { key => 'primary' });
+                                    {	username => $user_name,
+                                        id_role => $role,
+                                        ns => '/'
+                                    },
+                                    { key => 'primary' });
         $role_user->update();
         last				
         }else{
         my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
-				                         id_role => $role,
-				                         ns => '/'
-				                        },
-				                        { key => 'primary' });
+                                         id_role => $role,
+                                         ns => '/'
+                                        },
+                                        { key => 'primary' });
         if($all_projects){
             my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>'/'});
             $rs->delete;
         }
         
         my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-		                            {	username => $user_name,
-			                        id_role => $role,
-			                        ns => 'project/' . $project
-		                            },
-		                            { key => 'primary' });
+                                    {	username => $user_name,
+                                    id_role => $role,
+                                    ns => 'project/' . $project
+                                    },
+                                    { key => 'primary' });
         $role_user->update();
         }
     }
@@ -446,25 +446,25 @@ sub tratar_proyectos_padres(){
             }
             foreach my $role ( @roles_checked){
                 my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(
-				                        {username => $user_name,
-				                         id_role => $role,
-				                         ns => '/'
-				                        },
-				                        { key => 'primary' });
+                                        {username => $user_name,
+                                         id_role => $role,
+                                         ns => '/'
+                                        },
+                                        { key => 'primary' });
                 if(!$all_projects){
                     foreach my $project (_array $projects_parents_checked){
                         $sth->bind_param( 1, $project );
                         $sth->execute();
-	                        while(my @row = $sth->fetchrow_array){
-		                        my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-							                           {
-							                        username => $user_name,
-							                        id_role => $role,
-							                        ns => 'project/' . $row[0]
-							                           },
-							                           { key => 'primary' });
-		                        $role_user->update();
-	                        }
+                            while(my @row = $sth->fetchrow_array){
+                                my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+                                                       {
+                                                    username => $user_name,
+                                                    id_role => $role,
+                                                    ns => 'project/' . $row[0]
+                                                       },
+                                                       { key => 'primary' });
+                                $role_user->update();
+                            }
                     }
                 }
             
@@ -478,9 +478,9 @@ sub tratar_proyectos_padres(){
                     $sth->bind_param( 1, $project );
                     $sth->execute();
                     my @ns_projects = _unique
-	                          map { 'project/' . $_->[0] }
-	                          _array $sth->fetchall_arrayref;
-	                          
+                              map { 'project/' . $_->[0] }
+                              _array $sth->fetchall_arrayref;
+                              
                     $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
                     $rs->delete;
                     }
@@ -491,9 +491,9 @@ sub tratar_proyectos_padres(){
                     $sth->bind_param( 1, $project );
                     $sth->execute();
                     my @ns_projects = _unique
-	                          map { 'project/' . $_->[0] }
-	                          _array $sth->fetchall_arrayref;
-	                          
+                              map { 'project/' . $_->[0] }
+                              _array $sth->fetchall_arrayref;
+                              
                     $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, ns=>\@ns_projects });
                     $rs->delete;
                 }

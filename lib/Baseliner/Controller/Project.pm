@@ -336,14 +336,14 @@ sub update : Local {
                 $project_mid = master_new 'project' => $p->{name} => sub {
                     my $mid = shift;			
                     $project = $c->model('Baseliner::BaliProject')->create(
-		                        {
-			                        mid			=> $mid,
-			                        name        => $p->{name},
-			                        id_parent   => $p->{id_parent} eq '/' ? undef : $p->{id_parent},
-			                        nature      => $p->{nature},
-			                        description => $p->{description},
-			                        active      => '1',
-		                        });
+                                {
+                                    mid			=> $mid,
+                                    name        => $p->{name},
+                                    id_parent   => $p->{id_parent} eq '/' ? undef : $p->{id_parent},
+                                    nature      => $p->{nature},
+                                    description => $p->{description},
+                                    active      => '1',
+                                });
                 };
                 
                 $c->stash->{json} = { msg=>_loc('Project added'), success=>\1, project_id=> $project->mid };
@@ -389,7 +389,7 @@ sub update : Local {
                         FROM BALI_PROJECT AS NPLUS1, N
                         WHERE N.MID = NPLUS1.ID_PARENT AND NPLUS1.ACTIVE = 1)
                         SELECT ROW_NUMBER() OVER(ORDER BY N.MID ASC) AS FILA, LEVEL AS NIVEL, N.MID, N.NAME,
-	                        N.DESCRIPTION, N.NATURE FROM N ';		    
+                            N.DESCRIPTION, N.NATURE FROM N ';		    
                     
                 }
                 @datas = $db->array_hash( $SQL, $id_project );
