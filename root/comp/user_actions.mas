@@ -1,6 +1,6 @@
 (function(){
     var username = '<% $c->stash->{username} %>' ;
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 

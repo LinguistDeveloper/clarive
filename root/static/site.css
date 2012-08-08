@@ -89,38 +89,6 @@
     height: 50px;
 }
 
-/*
-::-webkit-scrollbar { 
-    width:6px;
-    height:9px;
-}
-
-::-webkit-scrollbar-button:start:decrement,::-webkit-scrollbar-button:end:increment {
-    display:block;
-    height:0;
-    background-color:transparent;
-}
-
-::-webkit-scrollbar-track-piece {
-    margin:10px 0;
-    -webkit-border-radius:0;
-    -webkit-border-bottom-right-radius:1px;
-    -webkit-border-bottom-left-radius:1px;
-}
-
-::-webkit-scrollbar-thumb:vertical {
-    height:50px;
-    background-color:rgba(0,0,0,0.12);
-    -webkit-border-radius:1px
-}
-
-::-webkit-scrollbar-thumb:horizontal { 
-    width: 50px;
-    background-color: rgba(0,0,0,0.12);
-    -webkit-border-radius: 1px
-}
-*/
-
 /*  Job Items Search */
 .tab-style {
         padding: 10px;
@@ -147,6 +115,26 @@
     width:100px;
     display:block;
     clear:none;
+}
+
+.search-title {
+    font:bold 10px tahoma, arial, helvetica, sans-serif;
+    white-space:normal;
+    width:600px;
+}
+
+.search-r {
+    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    white-space:normal;
+    color:#555;
+    width:450px;
+}
+
+.search-l {
+    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    white-space:normal;
+    color:#555;
+    width:300px;
 }
 
 .curved {
@@ -224,6 +212,7 @@ pre { font-family: Consolas, Courier New, mono; }
     font-size: 11px;
     font-family: "Trebuchet MS",Verdana,sans-serif; /* Georgia, Times New Roman; */
     padding: 5px 5px 5px 5px;
+    overflow: auto;
 }
 #baseliner-help-win p {
     font-size: 11px;

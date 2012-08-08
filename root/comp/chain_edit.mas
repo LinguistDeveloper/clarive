@@ -122,7 +122,7 @@
            {name: 'active', type: 'bool'}
       ]);
 
-    var store2=new Ext.data.JsonStore({
+    var store2=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 

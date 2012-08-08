@@ -45,7 +45,7 @@
 
     var group_field = 'grouping';
 
-    var store = new Ext.data.GroupingStore({
+    var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/monitor_json',
             baseParams: { limit: ps },
@@ -214,10 +214,11 @@
         var type   = rec.data.type_raw;
         var rollback = rec.data.rollback;
         if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
-        else if( status=='READY' ) icon='log_d.gif';
+        else if( status=='READY' ) icon='waiting.png';
         else if( status=='APPROVAL' ) icon='verify.gif';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.gif';
+        else if( status=='WAITING' ) icon='waiting.png';
         else { icon='log_e.gif'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
 
@@ -274,14 +275,12 @@
             {
                 xtype: 'datefield',
                 fieldLabel: '<% _loc('Date') %>', 
-                id:'_job_calendar',
                 name:'_job_calendar',
                 value: new Date(),
                 format: 'd/m/y'
             },
           {
             xtype: 'uxspinner', 
-            id: '_job_time', 					
             name: '_job_time', 					
             fieldLabel: '<% _loc('Time') %>', 
             allowBlank: false,
@@ -371,7 +370,7 @@
                 { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },	
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
                 { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
-                { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }	
+                { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }
             ],
         bbar: paging,        
         tbar: is_portlet ? [] : [ _('Search') + ': ', ' ',
@@ -566,7 +565,7 @@
     var first_load = true;
 
     // Yellow row selection
-    row_sel.on('rowselect', function(row, index, rec) {
+        row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
         if( rec.data.status_code === 'CANCELLED' ) {
             button_cancel.setText( msg_cancel_delete[1] );
@@ -592,8 +591,6 @@
     grid.on('destroy', function(){
         autorefresh.stop(task);
     });
-
-
     return grid;
 })();
 

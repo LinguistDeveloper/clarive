@@ -1,6 +1,6 @@
 (function(){
   var add_form, add_window, column_action, column_active, column_bl, column_chain, column_desc, column_init, column_job, column_ns, el_active, el_button_cancel, el_button_ok, el_desc, el_job_type, el_name, el_paging_tb, el_searchfield, el_text, fn_update, grid, ps, render_name, render_plugin, store, toolbar_delete, toolbar_details, toolbar_switch, yesno;
-  store = new Ext.data.JsonStore({
+  store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
     totalProperty: 'totalCount',

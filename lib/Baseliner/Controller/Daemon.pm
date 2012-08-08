@@ -32,11 +32,11 @@ sub list : Local {
     : undef;
     
     my $rs = $c->model('Baseliner::BaliDaemon')->search(  $where,
-	                        { page => $page,
-	                          rows => $limit,
-	                          order_by => $sort ? { "-$dir" => "$sort" } : undef
-	                        }
-	                        );
+                            { page => $page,
+                              rows => $limit,
+                              order_by => $sort ? { "-$dir" => "$sort" } : undef
+                            }
+                            );
     my $pager = $rs->pager;
     $cnt = $pager->total_entries;
     $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
@@ -78,9 +78,9 @@ sub update : Local {
         try{
             my $daemon = $c->model('Baseliner::BaliDaemon')->create(
                             {
-	                        service	=> $p->{service},
-	                        hostname => $p->{hostname},
-	                        active 	=> $p->{state},
+                            service	=> $p->{service},
+                            hostname => $p->{hostname},
+                            active 	=> $p->{state},
                             });
             
         $c->stash->{json} = { msg=>_loc('Daemon added'), success=>\1, daemon_id=> $daemon->id };

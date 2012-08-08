@@ -326,7 +326,7 @@ sub update_service : Local {
     when ('add') {
         try{
         $service = $c->model('Baseliner::BaliChainedService')->search({chain_id => $p->{id_chain}, step => $p->{step}},
-			                              {order_by=> 'seq desc'})->first;
+                                          {order_by=> 'seq desc'})->first;
         if(ref $service){
             $seq = $service -> seq + 1;
         }else{
@@ -335,13 +335,13 @@ sub update_service : Local {
             
             $service = $c->model('Baseliner::BaliChainedService')->create(
                             {
-	                        key	=> $p->{service},
-	                        chain_id => $p->{id_chain},
-	                        description => $p->{description},
-	                        seq => $seq,
-	                        step => $p->{step},
-	                        active 	=> $p->{state},
-	                        data => $p->{txt_conf} ? $p->{txt_conf}: undef
+                            key	=> $p->{service},
+                            chain_id => $p->{id_chain},
+                            description => $p->{description},
+                            seq => $seq,
+                            step => $p->{step},
+                            active 	=> $p->{state},
+                            data => $p->{txt_conf} ? $p->{txt_conf}: undef
                             });
             
         $c->stash->{json} = { msg=>_loc('Service added'), success=>\1, service_id=> $service->id };

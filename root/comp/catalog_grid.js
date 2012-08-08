@@ -26,7 +26,7 @@
         ]
     );
 
-    var store = new Ext.data.GroupingStore({
+    var store = new Baseliner.GroupingStore({
         id: 'id',
         reader: reader_cat,
         remoteGroup: true,

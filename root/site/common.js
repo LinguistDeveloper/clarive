@@ -39,9 +39,9 @@ Baseliner.alert = function(title, format){
     var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
     Ext.Msg.alert({
         title: title,
-        msg: s
+        msg: s,
+        icon: Ext.Msg.WARNING
         //buttons: Ext.Msg.OK,
-        //icon: Ext.Msg.ERROR
     });
 };
 
@@ -288,6 +288,46 @@ Baseliner.render_extensions = function(value,metadata,rec,rowIndex,colIndex,stor
     return _('<img src="%1" alt="%2">', '/static/images/icons/mime/file_extension_' + value + '.png', value );
 }
 
+// JsonStore with Error Handling
+Baseliner.store_exception_handler = function( proxy, type, action, opts, res, arg ) {
+    var store = this;
+    // type = response
+    try {
+        var r = Ext.util.JSON.decode( res.responseText );
+        if( r.logged_out ) {
+            Baseliner.login({ no_reload: 1, scope: store, on_login: function(s){ s.reload() } });
+        } 
+        else if( r.msg ) {
+            Ext.Msg.alert( _('Server Error'), r.msg );
+        }
+    } catch(e) {
+        Ext.Msg.alert( _('Server Error'), _('Error getting response from server. Code: %1. Status: %2', res.status, res.statusText ) );
+        if( console != undefined ) console.log( res );
+        //Ext.Msg.alert( _('Server Error'), _('Error getting response from server: %1', res.responseText ) );
+    }
+    //alert( String.format('TYPE={0}, ACTION={1}, {2}' , type, action, Ext.util.JSON.encode( res )  ) );
+};
+Baseliner.store_exception_params = function( store, opts ) {
+    opts.params['_bali_notify_valid_session'] = true;
+    opts.params['_bali_client_context'] = 'json';
+}
+
+Baseliner.JsonStore = Ext.extend( Ext.data.JsonStore, {
+    listeners: {
+        exception: Baseliner.store_exception_handler,
+        beforeload: Baseliner.store_exception_params 
+    }
+});
+
+Baseliner.GroupingStore = Ext.extend( Ext.data.GroupingStore, {
+    listeners: {
+        exception: Baseliner.store_exception_handler,
+        beforeload: Baseliner.store_exception_params 
+    }
+});
+
+
+// deprecated:
 Baseliner.json_store = Ext.extend( Ext.data.JsonStore, {
     root: 'data', 
     remoteSort: true,
@@ -467,10 +507,6 @@ Baseliner.array_field = function( args ) {
 Baseliner.isArray = function(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
 };
-
-Baseliner.isFunction = function(obj) {
-};
-
 
 // Multiple provider search
 Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {

@@ -11,7 +11,7 @@
     my $fields_str = js_dumper [ map {  { name => $_ } } @{ $fields || [] } ];
 </%perl>
 
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
         root: '<% $root %>' , 
         remoteSort: <% js_dumper \$remoteSort %>,
         totalProperty: '<% $totalProperty %>',

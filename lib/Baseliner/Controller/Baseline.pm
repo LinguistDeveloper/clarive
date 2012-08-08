@@ -109,10 +109,10 @@ sub list : Local {
     : undef;
     
     my $rs = $c->model('Baseliner::BaliBaseline')->search(  $where,
-	                        { page => $page,
-	                          rows => $limit,
-	                          order_by => $sort ? "$sort $dir" : undef
-	                        }
+                            { page => $page,
+                              rows => $limit,
+                              order_by => $sort ? "$sort $dir" : undef
+                            }
                         );
     
     my $pager = $rs->pager;

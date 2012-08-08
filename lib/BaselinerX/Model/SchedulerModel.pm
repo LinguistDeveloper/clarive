@@ -1,12 +1,3 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
-#
-#	CAM .............................. @(#)[project]
-#	Pase ............................. @(#)[pase]
-#	Fecha de pase .................... @(#)[pasefechahora]
-#	Ubicación del elemento ........... @(#)[item]
-#	Versión del elemento ............. @(#)[version]
-#	Propietario de la version ........ @(#)[user]
-
 package BaselinerX::Model::SchedulerModel;
 use Moose;
 use Baseliner::Utils;

@@ -60,9 +60,9 @@ sub get_users_friends_by_username{
     }
     
     my $rs_users = Baseliner->model('Baseliner::BaliRoleuser')->search(
-										                        $where,
-										                        { select => {distinct => 'username'}, as => ['username'] } #, order_by => 'username asc' }
-								                        );
+                                                                $where,
+                                                                { select => {distinct => 'username'}, as => ['username'] } #, order_by => 'username asc' }
+                                                        );
     
     while( my $user = $rs_users->next ) {
         push @users_friends, $user->username;
@@ -79,9 +79,9 @@ sub get_users_friends_by_projects{
         my @ns_projects = map { 'project/' . $_ } _array $projects;	
         my $where = { ns => \@ns_projects };
         my $rs_users = Baseliner->model('Baseliner::BaliRoleuser')->search(
-											                        $where,
-											                        { select => {distinct => 'username'}, as => ['username'] } #, order_by => 'username asc' }
-									                        );
+                                                                    $where,
+                                                                    { select => {distinct => 'username'}, as => ['username'] } #, order_by => 'username asc' }
+                                                            );
         
         while( my $user = $rs_users->next ) {
             push @users_friends, $user->username;

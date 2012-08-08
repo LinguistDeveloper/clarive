@@ -1,5 +1,5 @@
 (function(){
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -16,7 +16,7 @@
     });
     
     ////////// Role Single Row
-    var role_data_store=new Ext.data.JsonStore({
+    var role_data_store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
