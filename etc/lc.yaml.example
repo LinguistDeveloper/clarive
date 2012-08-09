@@ -23,8 +23,9 @@ nodes:
       menu:
          - 
            text: New Folder
-           icon: /static/images/icons/folder.gif
-           url: /fileversion/new_folder
+           icon: /static/images/icons/folder_new.gif
+           eval:
+             handler: new_folder
       data:
           on_drop:
               url: /fileversion/drop
