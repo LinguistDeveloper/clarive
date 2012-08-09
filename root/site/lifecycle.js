@@ -228,14 +228,14 @@ function new_folder(node){
                             };
                             var menu_new_folder = [{
                                                         text: _('New Folder'),
-                                                        icon: '/static/images/icons/folder.gif',
+                                                        icon: '/static/images/icons/folder_new.gif',
                                                         eval:   {
                                                                 handler: 'new_folder'
                                                         }
                                                     },
                                                     {
                                                         text: _('Delete Folder'),
-                                                        icon: '/static/images/icons/folder.gif',
+                                                        icon: '/static/images/icons/folder_delete.gif',
                                                         eval:   {
                                                                 handler: 'delete_folder'
                                                         }

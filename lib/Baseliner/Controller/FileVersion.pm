@@ -146,14 +146,14 @@ sub build_item_file(){
 sub get_menu_folder(){
     my @menu_folder;
     my $item_new_folder = { text => _loc('New Folder'),
-                            icon => '/static/images/icons/folder.gif',
+                            icon => '/static/images/icons/folder_new.gif',
                             eval => {
                                 handler => 'new_folder'
                             }
                         };
     
     my $item_delete_folder = {  text => _loc('Delete Folder'),
-                                icon => '/static/images/icons/folder.gif',
+                                icon => '/static/images/icons/folder_delete.gif',
                                 eval => {
                                     handler => 'delete_folder'
                                 }
