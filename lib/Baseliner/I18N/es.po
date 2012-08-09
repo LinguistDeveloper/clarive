@@ -3842,3 +3842,25 @@ msgstr "Incluido en"
 
 msgid "Delete Folder"
 msgstr "Borrar Carpeta"
+
+msgid "File moved"
+msgstr "Fichero movido"
+
+msgid "Folder moved"
+msgstr "Carpeta movido"
+
+msgid "Folder deleted"
+msgstr "Carpeta borrada"
+
+msgid "Error deleting folder: %1"
+msgstr "Error borrando carpeta: %1"
+
+msgid "Folder added"
+msgstr "Carpeta creada"
+
+msgid "Error adding folder: %1"
+msgstr "Error creando carpeta: %1"
+
+
+
+

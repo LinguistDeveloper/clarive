@@ -98,6 +98,45 @@ sub new_folder : Local {
     $c->forward('View::JSON');
 }
 
+sub delete_folder : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    
+    my $directory_id = $p->{id_directory};
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my $dbh = $db->dbh;
+    my $SQL;
+    my @directories;    
+    
+    try{
+        if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
+            $SQL = "SELECT ID FROM BALI_PROJECT_DIRECTORIES START WITH ID = ? CONNECT BY PRIOR ID = ID_PARENT";
+            @directories = $db->array_hash( $SQL, $directory_id );
+        }
+        else{
+            $SQL = "WITH N(ID) AS (SELECT ID FROM BALI_PROJECT_DIRECTORIES WHERE ID = ?
+                            UNION ALL
+                            SELECT NPLUS1.ID FROM BALI_PROJECT_DIRECTORIES AS NPLUS1, N WHERE N.ID = NPLUS1.ID_PARENT)
+                            SELECT N.ID FROM N ";
+            @directories = $db->array_hash( $SQL, $directory_id );
+        }
+        @directories = map {$_->{id} } @directories;
+        my $directories = $c->model("Baseliner::BaliProjectDirectories")->search({id => \@directories});
+        $directories->delete();
+        my $directories_files = $c->model("Baseliner::BaliProjectDirectoriesFiles")->search({id_directory => \@directories});
+        $directories_files->delete();
+        #$sth->bind_param( 1, $directory_id );
+        #$sth->execute();
+        
+        $c->stash->{json} = { msg=>_loc('Folder deleted'), success=>\1};
+    }
+    catch{
+        $c->stash->{json} = { msg=>_loc('Error deleting folder: %1', shift()), failure=>\1 }
+    };                   
+
+    $c->forward('View::JSON');
+}
+
 sub get_folders(){
     my $query = shift;
     my @folders = Baseliner->model('Baseliner::BaliProjectDirectories')->search( $query )->hashref->all;
@@ -173,7 +212,7 @@ sub move_directory : Local {
     $rs->update();    
     
     
-    $c->stash->{json} = { success=>\1, msg=>_loc('Directory moved') };
+    $c->stash->{json} = { success=>\1, msg=>_loc('Folder moved') };
     $c->forward('View::JSON');
 }
 

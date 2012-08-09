@@ -282,7 +282,18 @@ function new_folder(node){
 }
 
 function delete_folder(node){
-    alert('borrar');
+    Baseliner.ajaxEval( '/fileversion/delete_folder',{ id_directory: node.attributes.data.id_directory },
+        function(response) {
+            if ( response.success ) {
+                Baseliner.message( _('Success'), response.msg );
+                refresh_node(node.parentNode);
+                //node.remove();
+            } else {
+                Baseliner.message( _('ERROR'), response.msg );
+            }
+        }
+    
+    );    
 }
 
 Baseliner.lc_menu = new Ext.menu.Menu({
@@ -296,10 +307,6 @@ Baseliner.lc_menu = new Ext.menu.Menu({
                         n.remove();
                     }
                     break;
-                //case 'new_folder':
-                //    new_folder(item);
-                //    break;
-                    
             }
         }
     }
@@ -420,11 +427,6 @@ function move_item(node_data1, node_data2){
             function(response) {
                 if ( response.success ) {
                     Baseliner.message( _('Success'), response.msg );
-                    //init_buttons_status('disable');
-                    //store_status.load();
-                    //var labels_checked = getLabels();
-                    //var categories_checked = getCategories();
-                    //filtrar_topics(labels_checked, categories_checked);
                 } else {
                     Baseliner.message( _('ERROR'), response.msg );
                 }
