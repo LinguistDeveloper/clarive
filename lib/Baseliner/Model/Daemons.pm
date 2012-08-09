@@ -91,6 +91,7 @@ sub service_start_forked {
             $SIG{TERM} = 'DEFAULT';
             $SIG{STOP} = 'DEFAULT';
             $0 = "perl $0 $service_name $params";
+            _debug "Model/Daemons.pm: --- Starting service forked command '$0'";
             if( exists $p{frequency} ) { 
                 while(1) {
                     Baseliner->launch( $service_name, data=>\%params );

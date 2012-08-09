@@ -1,7 +1,7 @@
 (function(){
     var role = '<% $c->stash->{role} %>' ;
 
-    var action_store=new Ext.data.JsonStore({
+    var action_store=new Baseliner.JsonStore({
     root: 'data' , 
     remoteSort: true,
     totalProperty:"totalCount", 

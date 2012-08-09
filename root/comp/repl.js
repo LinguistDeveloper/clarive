@@ -11,7 +11,7 @@ To do:
 (function(){
     var last_name = "";
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
-    var saved_store = new Ext.data.JsonStore({
+    var saved_store = new Baseliner.JsonStore({
         url: '/repl/list_saved',
         root: 'data',
         fields: ['id', 'ns', 'code', 'output' ]

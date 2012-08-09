@@ -7,7 +7,7 @@
     var store_status = new Baseliner.Topic.StoreStatus();
     var store_category = new Baseliner.Topic.StoreCategory();
     
-    var store_roles = new Ext.data.JsonStore({
+    var store_roles = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -25,7 +25,7 @@
     var store_label = new Baseliner.Topic.StoreLabel();
     var store_priority = new Baseliner.Topic.StorePriority();
 	
-	var store_config_priority = new Ext.data.JsonStore({
+	var store_config_priority = new Baseliner.JsonStore({
 		root: 'data' , 
 		remoteSort: true,
 		totalProperty:"totalCount", 
@@ -810,7 +810,7 @@
             ]
         );
         
-        var store_categories_admin = new Ext.data.GroupingStore({           
+        var store_categories_admin = new Baseliner.GroupingStore({           
             reader: reader,
             url: '/topicadmin/list_categories_admin',
             groupField: 'role',
@@ -1032,7 +1032,7 @@
 			fields: ['id','name'] 
 		 }, c));
 	};
-	Ext.extend( Baseliner.store.Fields, Ext.data.JsonStore );
+	Ext.extend( Baseliner.store.Fields, Baseliner.JsonStore );
     
 	Baseliner.model.Fields = function(c) {
 		//var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
@@ -1079,7 +1079,7 @@
         });     
 
         // --------------- Forms 
-        var form_category_store = new Ext.data.JsonStore({
+        var form_category_store = new Baseliner.JsonStore({
             root: 'data' , 
             remoteSort: true,
             autoLoad: true,
@@ -1434,7 +1434,6 @@
         enableHdMenu: false,
         store: store_category,
         viewConfig: {forceFit: true, scrollOffset: 2},
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
             { hidden: true, dataIndex:'id' },

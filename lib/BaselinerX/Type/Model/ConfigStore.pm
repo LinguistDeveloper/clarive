@@ -181,6 +181,7 @@ sub _expand {
     return undef unless $value;
 
     return try {
+        $value = $value->() if ref $value eq 'CODE';
         if( $type eq 'hash' ) {
             return { } unless $value;
             return eval "{ $value }";

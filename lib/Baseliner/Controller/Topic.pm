@@ -287,7 +287,12 @@ sub update : Local {
     
     try  {    
         my ($msg, $topic_mid, $status) = Baseliner::Model::Topic->update( $p );
-        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_mid => $topic_mid, topic_status => $status };
+        $c->stash->{json} = {
+            success      => \1,
+            msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
+            topic_mid    => $topic_mid,
+            topic_status => $status
+        };
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
@@ -462,7 +467,7 @@ sub view : Local {
         #topics_parents
         my @parents_topics = $c->model('Baseliner::BaliTopic')->search(
                                 { rel_type=>'topic_topic', to_mid=>$topic_mid },
-                                { join=>['categories','children','master'], select=>['mid','title', 'categories.name', 'categories.color'], as=>['mid','title','name','color'] }
+                                { join=>['categories','children','master'], select=>['mid','title', 'progress', 'categories.name', 'categories.color'], as=>['mid','title','progress','name','color'] }
                                 )->hashref->all;
         @parents_topics = $c->model('Topic')->append_category( @parents_topics );
         $c->stash->{parents_topics} = @parents_topics ? \@parents_topics : []; 

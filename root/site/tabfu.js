@@ -712,10 +712,8 @@
             var height = params.height || comp.height;
             if( height != undefined ) height += 20;
             height = (height==undefined ? '80%' : height );
-            //if( comp.width!=undefined ) comp.width -= 10;
             var win = new Ext.Window({ 
                 title: ptitle || comp.title,
-                //autoScroll:true,
                 height: height,
                 width: (comp.width==undefined ? '80%' : comp.width) ,
                 items: comp 
@@ -748,7 +746,7 @@
     //grabs any eval stuff and feeds it to foo(comp)
     Baseliner.ajaxEval = function( url, params, foo ){
         if(params == undefined ) params = {};
-        params['notify_valid_session'] = true;
+        params['_bali_notify_valid_session'] = true;
         var the_request = function() { Ext.Ajax.request({
             url: url,
             params: params,

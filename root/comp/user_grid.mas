@@ -1,5 +1,5 @@
 (function(){
-    var store = new Ext.data.JsonStore({
+    var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -20,7 +20,7 @@
             }		
     });
     
-    var store_roles = new Ext.data.JsonStore({
+    var store_roles = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -122,7 +122,7 @@
         var win;
         var username_readonly = false;
         
-        var store_user_roles_projects = new Ext.data.JsonStore({
+        var store_user_roles_projects = new Baseliner.JsonStore({
             root: 'data' , 
             remoteSort: true,
             totalProperty:"totalCount", 
@@ -494,7 +494,7 @@
             displayField: 'name',
             valueField: 'value',
             //En un futuro se cargaran los distintos Host
-            store: 	new Ext.data.JsonStore({
+            store: 	new Baseliner.JsonStore({
                     fields : ['name', 'value'],
                     data   : [
                           {name : 'spanish',   value: 'localhost'},

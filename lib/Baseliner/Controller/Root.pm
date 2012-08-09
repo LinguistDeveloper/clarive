@@ -56,7 +56,7 @@ sub begin : Private {
 
 sub auto : Private {
     my ( $self, $c ) = @_;
-    my $notify_valid_session = delete $c->request->params->{notify_valid_session};
+    my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     return 1 if $c->stash->{auth_skip};
     return 1 if $c->user_exists;
     my $path = $c->request->{path} || $c->request->path;
@@ -304,6 +304,18 @@ Renders a Mason view by default, passing it all parameters as <%args>.
 
 sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
+    # check for controlled errors in DEBUG mode
+    if( Baseliner->debug && _array( $c->error ) > 0 ) {
+        if( $c->req->params->{_bali_client_context} eq 'json' ) {
+            _debug "ERROR handled as JSON...";
+            my $err = join ',', _array $c->error ;
+            $c->log->error( $_ ) for _array $c->error ;
+            $c->res->status( 500 );
+            $c->clear_errors; # return call as normal
+            $c->stash->{json} = { msg=>$err };
+            $c->forward( 'View::JSON');
+        }
+    }
     $c->stash->{$_}=$c->request->parameters->{$_} 
         foreach( keys %{ $c->req->parameters || {} });
 }

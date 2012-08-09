@@ -16,7 +16,7 @@ Baseliner.getMessages = function() {
             {  name: 'type' }
     ];
 
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 

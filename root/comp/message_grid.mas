@@ -4,7 +4,7 @@
     var fields = [ 'id', 'id_message', 'subject',
         'body', 'sender', 'to', 'cc', 'sent', 'received', 'type', 'swreaded'
     ];
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
         url: '/message/inbox_json',
         root: 'data' , 
         remoteSort: true,
@@ -15,7 +15,7 @@
     });
 
     ///////////////// Message Single Row
-    var message_data_store=new Ext.data.JsonStore({
+    var message_data_store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 

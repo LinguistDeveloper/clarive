@@ -72,6 +72,7 @@ sub service_start_forked {
             $SIG{TERM} = 'DEFAULT';
             $SIG{STOP} = 'DEFAULT';
             $0 = "perl $0 $service_name $params";
+            _debug "Model/Daemon.pm: --- Starting service forked command '$0'";
             Baseliner->launch( $service_name, data=>\%params );
             exit 0;  #FIXME this leaves zombies behind - use POSIX::_exit() instead?
         }

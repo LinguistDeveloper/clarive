@@ -1,6 +1,6 @@
 (function(){
     var ps = 40;
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
 	    root: 'data', 
 	    remoteSort: true,
 	    totalProperty:"totalCount", 

@@ -3,7 +3,7 @@
     var id_chain;
     var step;
     
-    var store = new Ext.data.JsonStore({
+    var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty: 'totalCount',
@@ -26,7 +26,7 @@
         }       
     });
     
-    var store_services = new Ext.data.JsonStore({
+    var store_services = new Baseliner.JsonStore({
         root: 'rows' , 
         remoteSort: true,
         totalProperty: 'totalCount',
@@ -47,7 +47,7 @@
         }   
     });
     
-    var store_sequence = new Ext.data.JsonStore({
+    var store_sequence = new Baseliner.JsonStore({
         root: 'rows' , 
         remoteSort: true,
         totalProperty: 'totalCount',
@@ -166,7 +166,7 @@
         displayField: 'name',
         valueField: 'value',
         //Tipos de pase
-        store: new Ext.data.JsonStore({
+        store: new Baseliner.JsonStore({
                 fields : ['name', 'value'],
                 data   : [{name : 'promote',   value: 'promote'},
                       {name : 'demote',   value: 'demote'},
@@ -357,7 +357,7 @@
         displayField: 'name',
         valueField: 'value',
         //Tipos de pase
-        store: new Ext.data.JsonStore({
+        store: new Baseliner.JsonStore({
             fields : ['name', 'value'],
             data   : [{name : 'CHECK',   value: 'CHECK'},
                   {name : 'INIT',   value: 'INIT'},
@@ -620,7 +620,7 @@
         displayField: 'name',
         valueField: 'value',
         //Tipos de pase
-        store: new Ext.data.JsonStore({
+        store: new Baseliner.JsonStore({
             fields : ['name', 'value'],
             data   : [  {name : 'CHECK',   value: 'CHECK'},
                         {name : 'INIT',   value: 'INIT'},

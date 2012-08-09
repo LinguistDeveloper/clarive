@@ -148,6 +148,35 @@ var menu_favorite_add = {
     }
 };
 
+
+var menu_prueba_add = {
+    text: _('Add to Prueba...'),
+    icon: '/static/images/icons/favorite.png',
+    handler: function(n) {
+        var sm = Baseliner.lifecycle.getSelectionModel();
+        var node = sm.getSelectedNode();
+        if( node != undefined ) {
+            var name = new Array();
+            node.bubble( function(pnode){
+               if( pnode.text != '/' && pnode.text != undefined ) 
+                  name.unshift( pnode.text ); 
+            });
+            Baseliner.ajaxEval( '/lifecycle/favorite_add',
+                {
+                    text: name.join(':'),
+                    url: node.attributes.url,
+                    icon: node.attributes.icon,
+                    data: Ext.encode( node.attributes.data ),
+                    menu: Ext.encode( node.attributes.menu )
+                },
+                function(res) {
+                    Baseliner.message( _('Favorite'), res.msg );
+                }
+            );
+        }
+    }
+};
+
 var menu_favorite_del = {
     text: _('Remove from Favorites'),
     icon: '/static/images/icons/favorite.png',
@@ -166,6 +195,107 @@ var menu_favorite_del = {
     }
 };
 
+
+function new_folder(node){
+    var btn_cerrar = new Ext.Toolbar.Button({
+        text: _('Close'),
+        width: 50,
+        handler: function() {
+            win.close();
+        }
+    })
+    
+    var btn_grabar = new Ext.Toolbar.Button({
+        text: _('Save'),
+        width: 50,
+        handler: function(){
+            var form = form_folder.getForm();
+            var data = node.attributes.data;
+
+            if (form.isValid()) {
+                form.submit({
+                    params: { parent_id: data.id_directory, project_id: data.id_project },
+                    success: function(f,a){
+                        Baseliner.message(_('Success'), a.result.msg );
+                        if(node.isExpanded()){
+                            var data_attributes = {
+                                id_directory: a.result.directory_id,
+                                id_project: data.id_project,
+                                type: 'directory',
+                                on_drop: {
+                                    handler: 'move_item'
+                                }
+                            };
+                            var menu_new_folder = [{
+                                                        text: _('New Folder'),
+                                                        icon: '/static/images/icons/folder_new.gif',
+                                                        eval:   {
+                                                                handler: 'new_folder'
+                                                        }
+                                                    },
+                                                    {
+                                                        text: _('Delete Folder'),
+                                                        icon: '/static/images/icons/folder_delete.gif',
+                                                        eval:   {
+                                                                handler: 'delete_folder'
+                                                        }
+                                                    }                                                    
+                                                    ];
+                            
+                            
+                            node.appendChild({ text:a.result.folder, icon: '/static/images/icons/folder.gif', data: data_attributes, menu: menu_new_folder, leaf: false});
+                        };
+                    },
+                    failure: function(f,a){
+                    Ext.Msg.show({  
+                        title: _('Information'), 
+                        msg: a.result.msg , 
+                        buttons: Ext.Msg.OK, 
+                        icon: Ext.Msg.INFO
+                    }); 						
+                    }
+                });
+            }
+        }
+    })    
+    
+    var form_folder = new Ext.FormPanel({
+						    name: form_folder,
+						    url: '/fileversion/new_folder',
+						    frame: true,
+						    buttons: [btn_grabar, btn_cerrar],
+						    defaults:{anchor:'100%'},
+						    items   : [
+									    { fieldLabel: _('Folder'), name: 'folder', xtype: 'textfield', allowBlank:false}
+								    ]
+	});
+    
+    var win = new Ext.Window({
+        title: _('New Folder'),
+        width: 300,
+        autoHeight: true,
+        modal: true,
+        items: form_folder
+    });
+    
+    win.show();  
+}
+
+function delete_folder(node){
+    Baseliner.ajaxEval( '/fileversion/delete_folder',{ id_directory: node.attributes.data.id_directory },
+        function(response) {
+            if ( response.success ) {
+                Baseliner.message( _('Success'), response.msg );
+                refresh_node(node.parentNode);
+                //node.remove();
+            } else {
+                Baseliner.message( _('ERROR'), response.msg );
+            }
+        }
+    
+    );    
+}
+
 Baseliner.lc_menu = new Ext.menu.Menu({
     items: base_menu_items,
     listeners: {
@@ -181,6 +311,7 @@ Baseliner.lc_menu = new Ext.menu.Menu({
         }
     }
 });
+
 
                 var click_handler = function(item){
                     var n = item.node;
@@ -206,8 +337,10 @@ Baseliner.lc_menu = new Ext.menu.Menu({
 //    builds the menu from node attributes and base menu
 var menu_click = function(node,event){
     node.select();
+    
     // menus and click events go in here
     if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
+
         var m = Baseliner.lc_menu;
         m.removeAll(); 
         var node_menu_items = new Array(); 
@@ -233,7 +366,7 @@ var menu_click = function(node,event){
                 var url = "";
                 // component opener menu
                 if( menu_item.comp != undefined ) {
-                    url = menu_item.comp.url; 
+                    url = menu_item.comp.url;
                     menu_item.click_data = { action: menu_item.comp }; // need this before to preserve scope
                     menu_item.handler = function(item) {
                         item.click_data.node = item.node;   
@@ -241,14 +374,22 @@ var menu_click = function(node,event){
                         Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), d );
                     };
                 } else if( menu_item.eval != undefined ) {
-                    url = menu_item.eval.url; 
+                    url = menu_item.eval.url;
                     menu_item.click_data = { action: menu_item.eval }; // need this before to preserve scope
                     menu_item.handler = function( item ) {
                         item.click_data.node = item.node;
-                        Baseliner.ajaxEval( item.url, item.click_data , function(comp) {
-                            // no op
-                            var x = 0;
-                        });
+                        //Preguntar comportamiento a rodrigo, accion cliente ¿?
+                        //***************************************************************************************
+                        if(item.eval.handler){
+                            eval(item.eval.handler + '(item.node);');
+                        }
+                        else{
+                            Baseliner.ajaxEval( item.url, item.click_data , function(comp) {
+                                // no op
+                                var x = 0;
+                            });
+                            
+                        }
                     };
                 }
                 var item = new Ext.menu.Item(menu_item);
@@ -273,6 +414,30 @@ var menu_click = function(node,event){
     Baseliner.lc_menu.showAt(event.xy);
 }
 
+function move_item(node_data1, node_data2){
+    if(node_data2.attributes.data.type != 'file'){
+        node_data2.appendChild( node_data1 );
+
+        data_from = node_data1.attributes.data;
+        data_to = node_data2.attributes.data;
+        Baseliner.ajaxEval( '/fileversion/move_' + data_from.type,{ from_file: data_from.id_file,
+                                                                    from_directory: data_from.id_directory,
+                                                                    to_directory: data_to.id_directory,
+                                                                    project: data_to.id_project},
+            function(response) {
+                if ( response.success ) {
+                    Baseliner.message( _('Success'), response.msg );
+                } else {
+                    Baseliner.message( _('ERROR'), response.msg );
+                }
+            }
+        
+        );    
+    }else{
+        Baseliner.message( _('ERROR'), _('Error moving file') );
+    }
+}
+
 var drop_handler = function(e) {
     // from node:1 , to_node:2
     e.cancel = true;
@@ -285,7 +450,6 @@ var drop_handler = function(e) {
     var node_data2 = n2.attributes.data;
     if( node_data1 == undefined ) node_data1={};
     if( node_data2 == undefined ) return false;
-    //alert( JSON.stringify( node_data2 ) );
     if( node_data2.on_drop != undefined ) {
         var on_drop = node_data2.on_drop;
         if( on_drop.url != undefined ) {
@@ -302,6 +466,10 @@ var drop_handler = function(e) {
                     return false;
                 }
             });
+        }else{
+            if(on_drop.handler != undefined ){
+                eval(on_drop.handler + '(n1, n2);');                
+            }
         }
     }
     return true;

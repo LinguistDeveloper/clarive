@@ -354,9 +354,7 @@ Ext.onReady(function(){
     });
  }, 2050);
 
-    if( Ext.isIE6 || Ext.isIE7 ) {
-        window.onbeforeunload=  Baseliner.unload_warning;
-    } else {
+    if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
         window.onbeforeunload=  function(){ return '' };
     }
 </script>
@@ -373,7 +371,7 @@ Ext.onReady(function(){
 <!-- SOLO PARA DEPURAR EN IE -->
 <!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->    
 </head>
-<body >
+<body>
 <IFRAME id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></IFRAME>
 <div id='run-panel'></div>
 <div id='main-div'></div>

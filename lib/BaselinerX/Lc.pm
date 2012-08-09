@@ -16,7 +16,8 @@ has 'lc' => (
         # loads the lc.yaml file on initialization
         my $feature = Baseliner->features->find( file => __FILE__ );
         my $file = _file( $feature->root, '..', 'etc', 'lc.yaml' );    # TODO to config
-        unless( -e $file ) {
+        if( ! -e $file ) {
+            return {};
             my $tfile = _file( $feature->root, '..', 'etc', 'lc.yaml.example' ); 
             File::Copy::copy( $tfile, $file );
         }

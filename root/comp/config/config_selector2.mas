@@ -56,7 +56,7 @@
                     xtype:"editorgrid",
                     id: '<% $row->{id} %>',
                     name: '<% $row->{id} %>',
-                    store: new Ext.data.JsonStore({
+                    store: new Baseliner.JsonStore({
                         url: '<% $row->{json_url} %>',
                         root:'data',
                         fields: [ 
@@ -102,7 +102,7 @@
                             var __grid = Ext.getCmp('<% $row->{id} %>');
                             //__grid.stopEditing();
                             if(__grid.getStore() == null){
-                                __grid.setStore(new Ext.data.JsonStore({
+                                __grid.setStore(new Baseliner.JsonStore({
                                     url: '<% $row->{json_url} %>',
                                     root:'data',
                                     fields: [ 

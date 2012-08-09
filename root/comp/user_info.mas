@@ -4,7 +4,7 @@
     var title_action_grid = _('Actions User');
     var action_role = ' ( ' + _('All') + ' )';
 
-    var store_roles_projects_user = new Ext.data.JsonStore({
+    var store_roles_projects_user = new Baseliner.JsonStore({
     root: 'data' , 
     remoteSort: true,
     totalProperty:"totalCount", 
@@ -17,7 +17,7 @@
         ]
     });
   
-    var store_actions_user = new Ext.data.JsonStore({
+    var store_actions_user = new Baseliner.JsonStore({
     root: 'data' , 
     remoteSort: true,
     totalProperty:"totalCount", 

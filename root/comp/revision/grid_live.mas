@@ -27,7 +27,7 @@
 
     var group_field = 'related';
 
-    var store = new Ext.data.GroupingStore({
+    var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/package/list',
             baseParams: { limit: ps },

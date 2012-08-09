@@ -1,7 +1,7 @@
 (function(params) {
     if( params==undefined ) params={};
     Baseliner.help_push({ title: _('Manual Deploy'), path: '/manualdeploy' });
-    var store_roles = new Ext.data.JsonStore({
+    var store_roles = new Baseliner.JsonStore({
         root: 'data', remoteSort: true, autoLoad: true,
         totalProperty:"totalCount", baseParams: {}, id: 'id', 
         url: '/role/all', fields: ['id','role','role_hash','description', 'role_name'] 

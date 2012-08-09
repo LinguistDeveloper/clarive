@@ -90,7 +90,7 @@
     });
     
 
-    var store_ci = new Ext.data.JsonStore({
+    var store_ci = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 

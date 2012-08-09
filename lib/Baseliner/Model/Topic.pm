@@ -273,12 +273,15 @@ sub update {
         when ( 'delete' ) {
             $topic_mid = $p->{topic_mid};
             try {
-                my $row = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
+                my $row = ref $topic_mid eq 'ARRAY'
+                    ? Baseliner->model( 'Baseliner::BaliTopic' )->search({ mid=>$topic_mid })
+                    : Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
+                _fail _loc('Topic not found') unless ref $row;
                 #my $row2 = Baseliner->model( 'Baseliner::BaliMaster' )->find( $row->mid );
                 $row->delete;
                 $topic_mid    = $topic_mid;
                 
-                $return = 'Topic deleted';
+                $return = '%1 topic(s) deleted';
             } ## end try
             catch {
                 _throw _loc( 'Error deleting topic: %1', shift() );

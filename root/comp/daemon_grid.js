@@ -1,6 +1,6 @@
 (function(){
     var ps = 100; //page_size
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
 	    root: 'data' , 
 	    remoteSort: true,
 	    totalProperty:"totalCount", 
@@ -169,7 +169,7 @@
 		    displayField: 'name',
 		    valueField: 'value',
 		    //En un futuro se cargaran los distintos Host
-		    store: 	new Ext.data.JsonStore({
+		    store: 	new Baseliner.JsonStore({
 				    fields : ['name', 'value'],
 				    data   : [{name : 'localhost',   value: 'localhost'}]
 			    })

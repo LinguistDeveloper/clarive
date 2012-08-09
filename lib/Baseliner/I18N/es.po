@@ -87,6 +87,9 @@ msgstr "Proyecto"
 msgid "Projects"
 msgstr "Proyectos"
 
+msgid "Scheduler"
+msgstr "Planificador"
+
 msgid "New Name"
 msgstr "Nuevo Nombre"
 
@@ -774,6 +777,9 @@ msgstr "Nuevo Pase"
 msgid "Cancel Job"
 msgstr "Cancelar Pase"
 
+msgid "Delete Job"
+msgstr "Borrar Pase"
+
 msgid "View Log"
 msgstr "Ver Log de Pase"
 
@@ -1199,6 +1205,9 @@ msgstr "Reiniciado"
 
 msgid "SUSPENDED"
 msgstr "Suspendido"
+
+msgid "WAITING"
+msgstr "Esperando CHM"
 
 msgid "DONE"
 msgstr "Finalizado"
@@ -2600,6 +2609,8 @@ msgstr "Error modificando tópico: %1"
 msgid "Topic deleted"
 msgstr "Tópico borrado"
 
+msgid "%1 topic(s) deleted"
+msgstr "%1 tópico(s) borrado(s)"
 
 # lib/Baseliner/Model/Topic.pm (66)
 msgid "Error deleting topic: %1"
@@ -2617,9 +2628,11 @@ msgstr "Error cerrando tópico: %1"
 
 
 # root/comp/topic_grid.js (116)
-msgid "Are you sure you want to delete the topic"
+msgid "Are you sure you want to delete the topic(s)"
 msgstr "¿Seguro que quiere borrar tópico"
 
+msgid " (and %1 more)"
+msgstr " (y %1 más)"
 
 # root/comp/topic_grid.js (156)
 msgid "Are you sure you want to close the topic"
@@ -3826,3 +3839,28 @@ msgstr "%1 de %2 filas totales"
 
 msgid "Include into"
 msgstr "Incluido en"
+
+msgid "Delete Folder"
+msgstr "Borrar Carpeta"
+
+msgid "File moved"
+msgstr "Fichero movido"
+
+msgid "Folder moved"
+msgstr "Carpeta movido"
+
+msgid "Folder deleted"
+msgstr "Carpeta borrada"
+
+msgid "Error deleting folder: %1"
+msgstr "Error borrando carpeta: %1"
+
+msgid "Folder added"
+msgstr "Carpeta creada"
+
+msgid "Error adding folder: %1"
+msgstr "Error creando carpeta: %1"
+
+
+
+

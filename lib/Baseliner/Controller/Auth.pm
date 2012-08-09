@@ -42,9 +42,9 @@ sub login_local : Local {
     my $auth = $c->authenticate({ id=>$c->stash->{login}, password=> Digest::MD5::md5_hex( $c->stash->{password} ) }, 'local');
     
     if( ref $auth ) {
-    $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-    $c->session->{username} = $c->stash->{login};
-    $c->stash->{json} = { success => \1, msg => _loc("OK") };
+        $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+        $c->session->{username} = $c->stash->{login};
+        $c->stash->{json} = { success => \1, msg => _loc("OK") };
     } else {
         $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
     }
@@ -73,11 +73,13 @@ sub login : Global {
     my $p = $c->req->params;
     my $login= $p->{login};
     my $password = $p->{password};
-
+    my $case = $c->config->{user_case};
+    $login= $case eq 'uc' ? uc($login)
+     : ( $case eq 'lc' ) ? lc($login) : $login;
+     
     _log "LOGIN: " . $p->{login};
     #_log "PW   : " . $p->{password}; #TODO only for testing!
 
-    #if( $login && $password ) {
     if( $login ) {
         if( $login =~ /^local\/(.*)$/i ) {
             $c->stash->{login} = $1;
@@ -123,7 +125,7 @@ sub error : Private {
     my ( $self, $c, $username ) = @_;
     $c->stash->{error_msg} = _loc( 'Invalid User.' );
     $c->stash->{error_msg} .= ' '._loc( "User '%1' not found", $username ) if( $username );
-    $c->stash->{template} = '/site/error.html';
+    $c->stash->{template} = $c->config->{error_page} || '/site/error.html';
 }
 
 sub logout : Global {
