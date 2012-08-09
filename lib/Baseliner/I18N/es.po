@@ -9,6 +9,18 @@ msgstr "Avance"
 msgid "progress"
 msgstr "Avance"
 
+msgid "Advanced"
+msgstr "Avanzado"
+
+msgid "View Stash"
+msgstr "Ver Stash"
+
+msgid "View Logfile"
+msgstr "Ver Fichero de Log"
+
+msgid "View Stash"
+msgstr "Ver Stash"
+
 msgid "Inbox"
 msgstr "Buzón"
 

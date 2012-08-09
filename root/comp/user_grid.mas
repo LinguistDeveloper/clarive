@@ -8,6 +8,7 @@
         fields: [
             {  name: 'id' },
             {  name: 'username' },
+            {  name: 'role' },
             {  name: 'realname' },
             {  name: 'alias' },
             {  name: 'email' },

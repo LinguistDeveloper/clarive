@@ -454,8 +454,8 @@
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
-                button_resume,
 % if( $c->stash->{user_action}->{'action.admin.default'} ) {
+                button_resume,
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),
                     icon: '/static/images/icons/advanced.png', 

@@ -3,6 +3,25 @@ Baseliner.cookie = new Ext.state.CookieProvider({
         expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
 });
 
+// In-edit counter - keep the window for closing if it's more than > 0
+Baseliner.is_in_edit = function(){
+    var flag = false;
+    if( console ) console.log( Baseliner.in_edit );
+    for( var k in Baseliner.in_edit ) {
+        if( Baseliner.in_edit[k] ) flag=true;
+    }
+    return flag;
+}
+// Watch when something blocks the window from closing
+Baseliner.edit_check = function( comp, auto_start ){
+    var id = comp.id;
+    if( auto_start == undefined ) auto_start = true;
+    comp.edit_start = function(){ Baseliner.in_edit[ id ] = true }
+    comp.edit_end = function(){ Baseliner.in_edit[ id ] = false }
+    comp.on('afterrender', function(){ comp.edit_start() });
+    comp.on('destroy', function() { delete Baseliner.in_edit[ id ]  } );
+}
+
 //Ext.state.Manager.setProvider(Baseliner.cookie);
 //Baseliner.cook= Ext.state.Manager.getProvider();
 Baseliner.unload_warning = function() {
@@ -328,7 +347,7 @@ Baseliner.GroupingStore = Ext.extend( Ext.data.GroupingStore, {
 
 
 // deprecated:
-Baseliner.json_store = Ext.extend( Ext.data.JsonStore, {
+Baseliner.json_store = Ext.extend( Baseliner.JsonStore, {
     root: 'data', 
     remoteSort: true,
     totalProperty: 'totalCount', 
@@ -338,7 +357,7 @@ Baseliner.json_store = Ext.extend( Ext.data.JsonStore, {
 
 Baseliner.new_jsonstore = function(params) {
     if( params == undefined ) params={};
-    var store = new Ext.data.JsonStore({
+    var store = new Baseliner.JsonStore({
         root: 'data', 
         remoteSort: true,
         totalProperty: params.totalProperty || 'totalCount', 

@@ -15,9 +15,9 @@ Ext.onReady(function(){
                                              },
                                     failure: function(form, action) {
                                                     Ext.Msg.alert('<% _loc('Login Failed') %>', action.result.msg );
-			                                        login_form.getForm().findField('login').focus('',100);
+	                                                login_form.getForm().findField('login').focus('',100);
                                                     //login_form.getForm().findField('password').getValue() == ''
-			                                        //	? login_form.getForm().findField('login').focus('',100)
+	                                                //	? login_form.getForm().findField('login').focus('',100)
                                                     //	: login_form.getForm().findField('password').focus('',100);
                                               }
                                 });

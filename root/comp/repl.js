@@ -11,20 +11,6 @@ To do:
 (function(){
     var last_name = "";
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
-    var saved_store = new Baseliner.JsonStore({
-        url: '/repl/list_saved',
-        root: 'data',
-        fields: ['id', 'ns', 'code', 'output' ]
-    });
-    saved_store.on('load', function(s,r,o) {
-        tsave_delete_all();
-        s.each( function(rec){
-            var ns = rec.data.ns;
-            var child = new Ext.tree.TreeNode({text:ns, draggable : false, need_load: true });
-            tsave.appendChild( child );
-        });
-        tsave.expand();
-    });
 
     // setup defaults
     if( Baseliner.editor_defaults == undefined ) Baseliner.editor_defaults = { theme: 'lesser-dark', mode: { name:'perl' } };
@@ -90,14 +76,12 @@ To do:
         editor = editor_gen(); 
     });
 
+    /*
     var thist = new Ext.tree.TreeNode({text:'History',draggable : false, expandable:true, leaf:false, url:'/repl/tree_hist' });
     var tclass = new Ext.tree.TreeNode({text:'Classes',draggable : false, expandable:true, leaf:false, url:'/repl/tree_class' });
     var tsave = new Ext.tree.TreeNode({text:'Saved',draggable : false, expandable:true, leaf:false, url:'/repl/tree_saved' });
-   
     var tsave_delete_all = function() { var delNode; while (delNode = tsave.childNodes[0]) tsave.removeChild(delNode); }
-
-    // this is needed to load the Baseliner.SearchField class XXX
-    <!-- & /comp/search_field.mas & -->
+    */
 
     var search = new Baseliner.SearchField({
         width: 180,
@@ -196,7 +180,10 @@ To do:
     tree.on('click', function(n,e) {
         if( n.attributes.url_click != undefined ) {
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
-                if( res.code != undefined ) { editor.setValue( res.code ); code.setValue( res.code ); }
+                if( res.code != undefined ) { 
+                    last_name= n.text;
+                    editor.setValue( res.code ); code.setValue( res.code );
+                }
                 if( res.output != undefined ) set_output( res.output );
                 if( res.div != undefined ) {
                     var tab = cons.add({ xtype:'panel', closable: true,
@@ -289,21 +276,19 @@ To do:
         cons.expand(true);
     }
 
-    function save(params) {
+    var save = function(params) {
         var dt = new Date();
         var short = params.c.substring(0,20);
         var node_name = params.tx || dt.format("Y-m-d H:i:s") + ": " + short;
-        var child = new Ext.tree.TreeNode({text:node_name, draggable : false, code: params.c, output: params.o });
         if( params.save!=undefined && params.save ) {
             last_name = node_name;
+            code.setValue( editor.getValue() );  // copy from codemirror to textarea
             var f = form.getForm();
             f.submit({ url:'/repl/save', params: { id: params.tx, output: params.o } });
         }
-        params.t.appendChild( child );
-        tsave.expand();
     }
 
-    function submit(parms) {
+    var submit = function(parms) {
         //Baseliner.showLoadingMask(form.getEl(), _("Loading") );
         var f = form.getForm();
         set_output( "" );
@@ -455,7 +440,7 @@ To do:
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
                         if (btn == 'ok'){
-                            save({ t: tsave, c: code.getValue(), o: output.getValue(), tx: text, save: true });
+                            save({ c: code.getValue(), o: output.getValue(), tx: text, save: true });
                         }
                     }, undefined, false, last_name );
                 }
@@ -489,7 +474,8 @@ To do:
                                         url: '/repl/delete',
                                         params: { ns: ns }, 
                                         success: function(xhr) {
-                                            saved_store.load();
+                                            //saved_store.load();
+                                            reload_root();
                                         }
                                     });
                                 }
@@ -530,6 +516,8 @@ To do:
         layout: 'border',
         items: [ tree, panel_center ]
     });
+
+    Baseliner.edit_check( panel, true );  // block window closing from the beginning
 
     tree.expand();
 

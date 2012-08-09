@@ -24,13 +24,12 @@ Ext.onReady(function(){
     var bl_edit = '<% $c->stash->{bl} %>';
     var readonly_all = <% $c->stash->{can_edit} ? 'false' : 'true' %>;
 
-    var state_bl_map =  <% js_dumper( $c->stash->{state_bl_map} || { 'Desarrollo'=>'DESA' } ) %>;
-    var bl_state_map =  <% js_dumper( $c->stash->{bl_state_map} || { 'DESA' => 'Desarrollo' } ) %>;
+    var state_bl_map =  <% js_dumper( $c->stash->{state_bl_map} ) %>;
+    var bl_state_map =  <% js_dumper( $c->stash->{bl_state_map} ) %>;
 
     var release_states = new Ext.data.SimpleStore({ 
        fields: ['id','state'], 
-       //data : <% js_dumper( $c->stash->{release_states} || [ ['Desarrollo', 'Desarrollo' ] ] ) %>
-       data : <% js_dumper( [ ['Desarrollo', 'Desarrollo' ] ] ) %>
+       data : <% js_dumper( $c->stash->{release_states} ) %>
     }); 
     var release_state = bl_edit ? bl_state_map[bl_edit] : release_states.getAt(0).data.state;
 
@@ -52,24 +51,6 @@ Ext.onReady(function(){
             {  name: 'ns' }
         ]
     });
-    var app_combo2 = new Ext.form.ComboBox({
-           name: 'ns', 
-           hiddenName: 'ns',
-           fieldLabel: _('Application'), 
-           mode: 'remote', 
-           store: ns_store, 
-           valueField: 'ns',
-           value: '',
-           typeAhead: false,
-           minChars: 1,
-           displayField:'name', 
-           editable: true,
-           forceSelection: true,
-           triggerAction: 'all',
-           allowBlank: false,
-           width: 120 
-    });
-
     var app_combo = Baseliner.combo_project();
     app_combo.on('change', function(){
         rfc_field.markInvalid( _("Pendiente de validar") );
