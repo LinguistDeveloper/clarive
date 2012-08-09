@@ -267,8 +267,10 @@ padding: 2px 4px 2px 7px;
 % foreach my $date ( _array( $dates ) ) {
 %  my $s = $date->{start_date};
 %  $s =~ s{00:00:00}{}g;
+%  my $e = $date->{end_date};
+%  $e =~ s{00:00:00}{}g;
                       <li style="margin: 6px 0px 6px 0px">
-                          <% $s %>
+                          <% $s."-".$e %>
                       </li>
 % }
                     </ul>
