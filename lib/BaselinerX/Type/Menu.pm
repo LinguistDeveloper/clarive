@@ -2,6 +2,7 @@ package BaselinerX::Type::Menu;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use JavaScript::Dumper;
+use utf8;
 with 'Baseliner::Core::Registrable';
 
 register_class 'menu' => __PACKAGE__;

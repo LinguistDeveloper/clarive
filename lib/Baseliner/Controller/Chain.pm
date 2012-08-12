@@ -11,10 +11,13 @@ BEGIN { extends 'Catalyst::Controller' }
 
 #register 'menu.admin.chain' => { label => ' Chains' };
 
-register 'menu.admin.chain' => { label    => 'Job Chains',
-                                 url_comp => '/chain/grid',
-                                 title    => 'Chains',
-                                 icon     => '/static/images/icons/chain.gif' };
+register 'menu.admin.chain' => {
+  label    => 'Job Chains',
+  url_comp => '/chain/grid',
+  title    => 'Chains',
+  icon     => '/static/images/icons/chain.gif',
+  action   => 'action.admin.view_distribution_chains'
+};
 
 # register 'menu.admin.features.install' => { label    => 'Install Features',
 #                                             url_comp => '/feature/install',
@@ -24,7 +27,8 @@ register 'menu.admin.chain' => { label    => 'Job Chains',
 sub list : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my ( $start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/,0};
+    my ( $start, $limit, $query, $dir, $sort, $cnt ) =
+      @{$p}{qw/start limit query dir sort/};
     my $where = {};
     $sort ||= 'id';
     $limit ||= 50;
@@ -48,15 +52,16 @@ sub edit : Local {
 
 # Added by Eric (q74613x) @ [may 24, 2011 12:53]
 sub edit_test : Local {
-  my ( $self, $c ) = @_;
+  my ($self, $c) = @_;
   my $p = $c->request->parameters;
 
   $c->stash->{id_chain} = $p->{id};
-  $c->stash->{template} = '/comp/grid-filter.js'; }
+  $c->stash->{template} = '/comp/grid-filter.js';
+}
 
 # Added by Eric (q74613x) @ [may 24, 2011 15:04]
 sub data_grid_filter : Local {
-  my ( $self, $c ) = @_;
+  my ($self, $c) = @_;
   my $params   = $c->request->parameters();
   my $show_all = $params->{show_all};
   my $chain_id = $params->{chain_id};
@@ -78,9 +83,9 @@ sub data_grid_filter : Local {
 # Added by Eric (q74613x) @ [may 25, 2011 11:48]
 sub view_dsl : Local {
   # Shows a textarea with the current DSL for a given filter.
-  my ( $self, $c ) = @_;
-  my $p = $c->request->parameters;
-  my $id = $p->{id};
+  my ($self, $c) = @_;
+  my $p      = $c->request->parameters;
+  my $id     = $p->{id};
   my $active = $p->{id};
 
   # Get data from schema...
@@ -96,33 +101,35 @@ sub view_dsl : Local {
   my $code = $row->{code};
 
   # Fix some stuff...
-  $dsl  =~ s/'/\\'/gx;      # Quotation marks...
-  $code =~ s/'/\\'/gx;      # ...
-  $code =~ s/\n//gx;        # Delete existing neutral return characters...
-  $code =~ s/\r/\\n/gx;     # Force SQL return characters to neutral...
+  $dsl  =~ s/'/\\'/gx;     # Quotation marks...
+  $code =~ s/'/\\'/gx;     # ...
+  $code =~ s/\n//gx;       # Delete existing neutral return characters...
+  $code =~ s/\r/\\n/gx;    # Force SQL return characters to neutral...
 
   # Send back...
   $c->stash->{id}       = $id;
   $c->stash->{active}   = $active;
-  $c->stash->{dsl}      = "'$dsl'";      # Force string...
-  $c->stash->{code}     = "'$code'";     # Force string...
-  $c->stash->{template} = '/comp/dsl.js' }
+  $c->stash->{dsl}      = "'$dsl'";         # Force string...
+  $c->stash->{code}     = "'$code'";        # Force string...
+  $c->stash->{template} = '/comp/dsl.js';
+}
 
 # Added by Eric (q74613x) @ [may 25, 2011 15:58]
 # This stuff should go in a model but oh well...
 sub save_dsl : Local {
   # Saves content of textarea into the database.
-  my ( $self, $c ) = @_;
+  my ($self, $c) = @_;
   my $args = $c->request->parameters;
   my $code = $self->filter_dsl( $args->{dsl_code} );
   my $id   = $args->{id};
 
   # Update...
-  my $rs = Baseliner->model('Baseliner::BaliChainedRule')
-             ->search( { id => $id } );
-  $rs->update( { dsl_code => $code } );
+  my $rs =
+    Baseliner->model('Baseliner::BaliChainedRule')->search({id => $id});
+  $rs->update({dsl_code => $code});
 
-  return }
+  return;
+}
 
 # Added by Eric (q74613x) @ [jun 01, 2011 12:39]
 sub filter_dsl : Local {
@@ -134,12 +141,13 @@ sub filter_dsl : Local {
   $code =~ s/\n/\r/gx;                           # Force neutral return character
   $code =~ s/print\s(.+);/\$log->debug($1);/gx;  # Turn print into log
   for my $word (@forbidden_words) { $code =~ s/$word\s(.+);//gx }
-  $code }
+  $code;
+}
 
 # Added by Eric (q74613x) @ [may 25, 2011 17:28]
 sub delete_row : Local {
   # Deletes selected row in BaliChainedRule.
-  my ( $self, $c ) = @_;
+  my ($self, $c) = @_;
   my $params = $c->request->parameters;
   my $id     = $params->{id};
 
@@ -148,12 +156,13 @@ sub delete_row : Local {
              ->search( { id => $id } );
   $rs->delete;
 
-  return }
+  return;
+}
 
 # Added by Eric (q74613x) @ [26 may, 2011 10:45]
 sub modify_active : Local {
   # Modifies active column for a given chain.
-  my ( $self, $c ) = @_;
+  my ($self, $c) = @_;
   my $p     = $c->request->parameters;
   my $id    = $p->{id};
   my $value = $p->{value};
@@ -164,7 +173,8 @@ sub modify_active : Local {
   $rs->update( { active => $value } );
 
   # Explicit return...
-  return; }
+  return;
+}
 
 sub grid : Local {
     my ( $self, $c ) = @_;

@@ -116,17 +116,17 @@
         },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         columns: [
-            { dataIndex: 'icon', width: 16, hidden: false, sortable: false, renderer: render_icon },    
-            { header: _('ID'), width: 35, dataIndex: 'id', sortable: true, hidden: true },  
-            { header: _('Release'), width: 250, dataIndex: 'name', sortable: true, renderer: render_item }, 
-            { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.columnWrap }, 
-            { header: _('Application'), width: 70, dataIndex: 'application', sortable: true },  
-            { header: _('User'), width: 70, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field }, 
+            { dataIndex: 'icon', width: 16, hidden: false, sortable: false, renderer: render_icon },
+            { header: _('ID'), width: 35, dataIndex: 'id', sortable: true, hidden: true },
+            { header: _('Release'), width: 250, dataIndex: 'name', sortable: true, renderer: render_item },
+            { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.columnWrap },
+            { header: _('Application'), width: 70, dataIndex: 'application', sortable: true },
+            { header: _('User'), width: 70, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },
             { header: _('Active'), width: 50, hidden: true, dataIndex: 'active', sortable: true , renderer: Baseliner.render_active },
             { header: _('Locked'), width: 80, dataIndex: 'locked', sortable: true , renderer: render_locked },
-            { header: _('Baseline'), width: 100, dataIndex: 'bl_name', sortable: true, renderer: render_bl },   
-            { header: _('Created On'), width: 150, dataIndex: 'ts', sortable: true },   
-            { header: _('Contents'), width: 350, hidden:true, dataIndex: 'contents', sortable: true, renderer: render_content_list }    
+            { header: _('Baseline'), width: 100, dataIndex: 'bl_name', sortable: true, renderer: render_bl },
+            { header: _('Created On'), width: 150, dataIndex: 'ts', sortable: true },
+            { header: _('Contents'), width: 350, hidden:true, dataIndex: 'contents', sortable: true, renderer: render_content_list }
         ],
         bbar: new Ext.PagingToolbar({
                             store: store,
@@ -168,7 +168,7 @@
                         var sel = sm.getSelected();
                         Baseliner.addNewTab('/release/edit?id_rel=' + sel.data.id , sel.data.name);
                     } else {
-                        Ext.Msg.alert('Error', 'Falta seleccionar una fila');   
+                        Ext.Msg.alert('Error', 'Falta seleccionar una fila');
                     };
                     
                 }
@@ -189,7 +189,7 @@
                                     params: { action: 'delete', id_rel: sel.data.id },
                                     success: function(resp,opt) { grid.getStore().remove(sel); },
                                     failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the release.') ); }
-                                }); 
+                                });
                             }
                         } );
                 }
@@ -201,7 +201,7 @@
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
         Baseliner.addNewTab('/release/edit?id_rel=' + r.get('id') , r.get('name') );
-    });     
+    });	
 
     return grid;
 })();

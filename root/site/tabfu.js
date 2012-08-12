@@ -1,3 +1,9 @@
+/*
+
+ tabfu.js - window, tab and component management
+
+*/
+
     Baseliner.tabpanel = function() { return Ext.getCmp('main-panel') };
 
     Baseliner.eventKey = function(key) {
@@ -417,8 +423,13 @@
                     if( res.status == 401 ) {
                         Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewTab(purl,ptitle,params)} });
                     } else {
-                        //Baseliner.message( _('Error %1', res.status), res.responseText );
-                        Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
+                        Ext.getCmp('main-panel').remove( newpanel );
+                        if( res.status == 401 ) {
+                            Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewTab(purl,ptitle,params)} });
+                        } else {
+                            //Baseliner.message( _('Error %1', res.status), res.responseText );
+                            Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
+                        }
                     }
                 }
 
@@ -768,15 +779,22 @@
                             if( comp.logged_out ) {
                                 Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo)} });
                             } else {
-                                    try { foo(comp); } catch(ef1) { err_foo = ef1 }
+                                try { foo(comp); } catch(ef1) { err_foo = ef1 }
                             }
                         } catch(e2) { throw e1; }
                     }
                 } catch(err) {
                     if( xhr.responseText.indexOf('dhandler') > -1 ) {
-                        Ext.Msg.alert("Page not found: ", url + '<br>' + xhr.responseText );
+                        Ext.Msg.alert( _("Page not found: %1", url ) + '<br>' + xhr.responseText );
                     } else {
-                        Baseliner.error_parse( err, xhr );
+                       Baseliner.error_parse( err, xhr );
+                       if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) {
+                            console.log( err );
+                            console.log( xhr );
+                       }
+                       if( Baseliner.DEBUG ) {
+                            Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging
+                       }
                     }
                 }
                     if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently

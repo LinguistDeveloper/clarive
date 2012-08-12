@@ -149,7 +149,7 @@
     store.load({params:{start:0 , limit: ps}}); 
 
     var render_name = function(value, metadata, rec, rowIndex, colIndex, store) {
-        return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
+        return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + value + "</div>" ;
     };
 
     // create the grid
@@ -179,14 +179,14 @@
         loadMask:'true',
         columns: [
             { header: _('Name'), width: 300, dataIndex: 'name', sortable: true, renderer: render_name },   
-            { header: _('Service'), width: 100, dataIndex: 'service', sortable: true },   
+            { header: _('Status'), width: 60, dataIndex: 'status', sortable: true },
             { header: _('Next execution'), width: 100, dataIndex: 'next_exec', sortable: true },   
             { header: _('Last execution'), width: 100, dataIndex: 'last_exec', sortable: true },
             { header: _('PID'), width: 60, dataIndex: 'pid', sortable: true },
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
             { header: _('Frequency'), width: 60, dataIndex: 'frequency', sortable: true },
-            { header: _('State'), width: 60, dataIndex: 'status', sortable: true },
-            { header: _('Workdays'), width: 60, dataIndex: 'workdays', sortable: true }
+            { header: _('Workdays'), width: 60, dataIndex: 'workdays', sortable: true },
+            { header: _('Service'), width: 100, dataIndex: 'service', sortable: true }   
         ],
         autoSizeColumns: true,
         deferredRender:true,      
