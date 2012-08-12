@@ -46,6 +46,11 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("mid");
 
+__PACKAGE__->has_many(
+  "file_projects",
+  "Baseliner::Schema::Baseliner::Result::BaliProjectDirectoriesFiles",
+  { "foreign.id_file" => "self.mid" },
+);
 
 1;
 
