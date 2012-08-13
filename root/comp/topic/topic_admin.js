@@ -41,6 +41,19 @@
 			{  name: 'expr_deadline' },
 			{  name: 'is_active' }  
 		]
+	});
+	
+	var store_config_field = new Baseliner.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/topicadmin/get_config_field',
+		fields: [
+			{  name: 'id' },
+			{  name: 'description' },
+			{  name: 'value' }
+		]
 	});		
     
     var init_buttons_category = function(action) {
@@ -1070,13 +1083,21 @@
     var edit_form_category = function(rec) {
         var win;
         var title = _('Create fields');
+		var config = new Array();
         
         var field_box = new Baseliner.model.Fields({
             store: field_box_store
         });
+		
         field_box_store.on('load',function(){
-            field_box.setValue( rec.fields ) ;            
-        });     
+            field_box.setValue( rec.data.fields ) ;            
+        });
+		
+		field_box.on('additem',function( obj, value, row){
+			//if(row.data.config){
+				config.push({"text": _(row.data.name) , "leaf": true,  "id": row.data.id, "config": row.data.name });	
+			//}
+		});			
 
         // --------------- Forms 
         var form_category_store = new Baseliner.JsonStore({
@@ -1112,6 +1133,186 @@
             displayFieldTpl: fc_tpl_field,
             extraItemCls: 'x-tag'
         });
+		
+		
+		    var btn_config_fields = new Ext.Toolbar.Button({
+			    text: _('Parameters'),
+			    icon:'/static/images/icons/cog_edit.png',
+			    cls: 'x-btn-text-icon',
+			    handler: function() {
+					
+				    store_config_field.removeAll();
+				    
+				    var treeRoot = new Ext.tree.AsyncTreeNode({
+					    text: _('Configuration'),
+					    expanded: true,
+					    draggable: false,
+					    children: config
+				    });
+				    
+		    
+				    var tree_fields = new Ext.tree.TreePanel({
+					    title: _('Configuration Fields'),
+					    split: true,
+					    colapsible: true,
+					    useArrows: true,
+					    animate: true,
+					    containerScroll: true,
+					    autoScroll: true,
+					    height:300,		    
+					    rootVisible: true,
+					    root: treeRoot
+				    });
+				    
+				    tree_fields.on('click', function(node, checked) {
+					    store_config_field.load({params: {config: node.attributes.config, id: node.attributes.id }});
+				    });				
+			    
+				    var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+				    
+				    var edit_config = function(rec) {
+					    var win_config;
+    
+					    var btn_cerrar_config = new Ext.Toolbar.Button({
+						    text: _('Close'),
+						    width: 50,
+						    handler: function() {
+							    win_config.close();
+						    }
+					    })
+					    
+					    var btn_grabar_config = new Ext.Toolbar.Button({
+						    text: _('Save'),
+						    width: 50,
+						    handler: function(){
+							//    var form = form_config.getForm();
+							//    
+							//    var ff_dashboard = form_dashboard.getForm();
+							//    var dashboard_id = ff_dashboard.findField("id").getValue();
+							//    
+							//    if (form.isValid()) {
+							//	    form.submit({
+							//		    params: { id_dashboard: dashboard_id, id: rec.data.id, dashlet: rec.data.dashlet },
+							//		    success: function(f,a){
+							//			    Baseliner.message(_('Success'), a.result.msg );
+							//			    store_config.reload();
+							//		    },
+							//		    failure: function(f,a){
+							//		    Ext.Msg.show({  
+							//			    title: _('Information'), 
+							//			    msg: a.result.msg , 
+							//			    buttons: Ext.Msg.OK, 
+							//			    icon: Ext.Msg.INFO
+							//		    }); 						
+							//		    }
+							//	    });
+							//    }
+						    }
+					    })					
+					    
+					    var form_config = new Ext.FormPanel({
+						    name: form_dashlets,
+						    url: '/dashboard/set_config',
+						    frame: true,
+						    buttons: [btn_grabar_config, btn_cerrar_config],
+						    defaults:{anchor:'100%'},
+						    items   : [
+									    { fieldLabel: _(rec.data.id), name: 'value', xtype: 'textfield', allowBlank:false}
+								    ]
+					    });
+    
+					    if(rec){
+						    var ff = form_config.getForm();
+						    ff.loadRecord( rec );
+						    title = 'Edit configuration';
+					    }
+    
+					    win_config = new Ext.Window({
+						    title: _(title),
+						    autoHeight: true,
+						    width: 400,
+						    closeAction: 'close',
+						    modal: true,
+						    items: [
+							    form_config
+						    ]
+					    });
+					    win_config.show();
+					    
+				    }
+				    
+				    var grid_config = new Ext.grid.GridPanel({
+					    title: _('Configuration'),
+					    store: store_config_field,
+					    stripeRows: true,
+					    autoScroll: true,
+					    autoWidth: true,
+					    viewConfig: {
+						    forceFit: true
+					    },		    
+					    height:300,
+					    columns: [
+						    { header: _('Property'), dataIndex: 'id', width: 100},
+						    { header: _('Value'), dataIndex: 'value', width: 80}
+					    ],
+					    autoSizeColumns: true
+				    });
+				    
+				    grid_config.on("rowdblclick", function(grid, rowIndex, e ) {
+					    var sel = grid.getStore().getAt(rowIndex);
+					    edit_config(sel);
+				    });				
+		    
+				    var form_dashlets = new Ext.FormPanel({
+					    name: form_dashlets,
+					    url: '/user/update',
+					    frame: true,
+					    items   : [
+							       {
+								    xtype: 'panel',
+								    layout: 'column',
+								    items:  [
+									    {  
+									    columnWidth: .49,
+									    items:  tree_fields
+									    },
+									    {
+									    columnWidth: .02,
+									    items: blank_image
+									    },
+									    {  
+									    columnWidth: .49,
+									    items: grid_config
+								    }]  
+								    }
+							    ]
+				    });
+				    
+				    var winYaml = new Ext.Window({
+					    modal: true,
+					    width: 800,
+					    title: _('Parameters'),
+					    tbar: [
+							    {   xtype:'button',
+								    text: _('Close'),
+								    iconCls:'x-btn-text-icon',
+								    icon:'/static/images/icons/door_out.png',
+								    handler: function(){
+									    winYaml.close();
+								    }
+							    }           
+					    ],
+					    items: form_dashlets
+				    });
+				    winYaml.show();
+			    }
+		    });
+		
+		
+		
+		
+		
+		
         var form_category = new Ext.FormPanel({
             frame: false,
             border: false,
@@ -1119,6 +1320,7 @@
             //itemCls: 'boot',
             bodyStyle:'padding: 10px 0px 0px 10px',
             buttons: [
+					btn_config_fields,
                     {
                         text: _('Accept'),
                         type: 'submit',
