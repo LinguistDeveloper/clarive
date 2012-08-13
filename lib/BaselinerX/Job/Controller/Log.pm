@@ -195,8 +195,8 @@ sub log_html : Path('/job/log/html') {
 
     # load from hash
     if( $job_key ) {
-        my $job = $c->model('Baseliner::BaliJob')->search({ key=>$job_key })->first;
-        _throw "Job key not found (key=$job_key)" unless ref $job;
+        my $job = $c->model('Baseliner::BaliJob')->search({ job_key=>$job_key })->first;
+        _throw "Job key not found (job_key=$job_key)" unless ref $job;
         $p->{id_job} = $job->id;
         $p->{job_exec} ||= $job->exec;
         $p->{levels} = [ 'info', 'warn', 'error' ];
@@ -222,7 +222,7 @@ sub logs_json : Path('/job/log/json') {
     my ( $self,$c )=@_;
     my $p = $c->request->parameters;
     my ($job, @rows ) = $self->log_rows( $c );
-    my $job_key = $job->key;
+    my $job_key = $job->job_key;
     $c->stash->{json} = {
         totalCount => scalar(@rows),
         data       => \@rows,

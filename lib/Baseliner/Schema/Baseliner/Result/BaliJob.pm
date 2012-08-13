@@ -311,7 +311,7 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => 50,
   },
-  "key",
+  "job_key",
   {
     data_type => "VARCHAR2",
     default_value => undef,
@@ -475,8 +475,8 @@ sub is_active {
 # returns the key column, if not exists then create it, commit and return
 sub hash_key {
     my $self = shift;
-    $self->key and return $self->key;
-    $self->key( Baseliner::Utils::_md5 );
+    $self->job_key and return $self->job_key;
+    $self->job_key( Baseliner::Utils::_md5 );
     $self->update;
 }
 
