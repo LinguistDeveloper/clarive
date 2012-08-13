@@ -168,6 +168,17 @@ if( $ENV{BALI_FAST} ) {
 
 __PACKAGE__->setup();
 
+# setup the DB package
+
+{
+    no strict;
+    *DB::schema = sub { Baseliner->model('Baseliner')->schema; };
+    for my $n (  DB->schema->sources ) {
+        my $package = "DB::$n";
+        *{$package} = sub { Baseliner->model("Baseliner::$n") }
+    }
+}
+
 # Capture Signals
 $SIG{INT} = \&signal_interrupt;
 $SIG{KILL} = \&signal_interrupt;
@@ -193,7 +204,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     $ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
     $ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
 
-    {
+    if( ! Baseliner->debug ) {
         # make immutable for speed
         my %cl=Class::MOP::get_all_metaclasses;
 
@@ -205,7 +216,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
             my $meta = $cl{ $package };
             next if ref $meta eq 'Moose::Meta::Role';
             #eval { $package->meta->make_immutable; };
-            $meta->make_immutable unless $meta->is_immutable;
+            $meta->make_immutable unless $meta->is_immutable;   # slow loadup... ~1s
         }
 
         #my %pkgs;
@@ -403,6 +414,34 @@ sub _comp_names_search_prefixes {
     return @result;
 }
 
+=head2 dump_these
+
+Replace the C<password> field in the debug log with asterisks.
+
+=cut
+if( Baseliner->debug ) {
+    around dump_these => sub {
+        my $orig = shift;
+        my $c = shift;
+
+        my @vars = $c->$orig( @_ );
+        my @ret;
+        for my $d ( @vars ) {
+            my ($type,$obj)=@$d;
+            if( $type eq 'Request' ){
+                if( $obj->{_log}{_body} =~ m{(password\s+\|\s+)(.+?)(\s+)}s ) {
+                   my $p = $2;
+                   my $np = '*' x length($p) ;
+                   $obj->{_log}{_body} =~ s{$p}{$np}gsm;
+                }
+                push @ret, $d;
+            } else {
+                push @ret, $d;
+            }
+        }
+        return @ret;
+    };
+}
 
 =head1 NAME
 

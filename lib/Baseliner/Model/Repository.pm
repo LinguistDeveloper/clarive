@@ -109,8 +109,9 @@ sub delete {
 sub list {
     my $self = shift;
     my $p    = _parameters(@_);
-    _check_parameters( $p, qw/provider/ );
-    my $rs = Baseliner->model('Baseliner::BaliRepo')->search( { provider=>$p->{provider} });
+    my $domain = $p->{domain} || $p->{provider};
+    _throw 'Missing domain or provider' unless $domain;
+    my $rs = Baseliner->model('Baseliner::BaliRepo')->search( { provider=>$domain });
     $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
     my @ns;
     while( my $row = $rs->next ) {

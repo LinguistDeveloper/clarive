@@ -211,7 +211,6 @@ sub key {
 }
 
 sub checkRC {
-    use Baseliner::Utils; # XXX
     my ($self) = @_;
     my ($buf,$ret); 
     my $socket = $self->{socket};

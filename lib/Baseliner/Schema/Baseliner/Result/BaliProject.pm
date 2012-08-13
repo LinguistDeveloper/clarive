@@ -19,7 +19,6 @@ __PACKAGE__->add_columns(
     data_type => "NUMBER",
     is_nullable => 0,
     is_auto_increment => 1,
-    original => { data_type => "number" },
   },     
   "name",
   { data_type => "varchar2", is_nullable => 0, size => 1024 },

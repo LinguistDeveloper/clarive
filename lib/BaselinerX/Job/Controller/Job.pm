@@ -352,7 +352,7 @@ sub monitor_json : Path('/job/monitor_json') {
         totalCount=> $cnt,
         #next_start => $results->{next_start},
         data => \@sorted
-     };	
+     };
     $c->forward('View::JSON');
 }
 
