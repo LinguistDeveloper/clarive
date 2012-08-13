@@ -16,6 +16,7 @@ use Baseliner::Utils;
 use Exporter::Tidy default => [qw/
     config_store
     config_get
+    config_value
     bali_rs
     repo
     kv
@@ -41,6 +42,7 @@ sub mdl {  }
 
 sub config_store { Baseliner->model('ConfigStore') }
 sub config_get { Baseliner->model('ConfigStore')->get(@_) }
+sub config_value { Baseliner->model('ConfigStore')->get($_[0], value=>1) }
 
 sub repo { Baseliner->model('Repository') }
 sub kv { Baseliner->model('KV') }
