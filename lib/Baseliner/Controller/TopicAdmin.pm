@@ -21,6 +21,13 @@ register 'menu.admin.topic' => {
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };
 
+register 'config.field.title' => {
+    metadata => [
+           { id=>'visibility', label=>'', default => 'ALL' },
+           { id=>'readonly', label=>'', default => 'NONE' },
+        ]
+};
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -582,23 +589,25 @@ sub get_config_priority : Local {
                                     select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
                                     as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
     }else{
-        @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search(
-                                    {id_category=> $category_id, id_priority=> $priority_id},
-                                    {join=>['priority'], 
-                                    select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
-                                    as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
-        if(!@category_priority){
-            my @priority_default = $c->model('Baseliner::BaliTopicPriority')->search({id=> $priority_id})->hashref->all;
-            foreach my $field (@priority_default){
-                push @category_priority, { name => $field->{name},
-                                  id_category => $category_id,
-                                  id => $field->{id},
-                                  response_time_min => $field->{response_time_min},
-                                  expr_response_time => $field->{expr_response_time},
-                                  deadline_min => $field->{deadline_min},
-                                  expr_deadline => $field->{expr_deadline},
-                                  is_active => 0,
-                                  }
+        if($category_id){
+            @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search(
+                                        {id_category=> $category_id, id_priority=> $priority_id},
+                                        {join=>['priority'], 
+                                        select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
+                                        as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
+            if(!@category_priority){
+                my @priority_default = $c->model('Baseliner::BaliTopicPriority')->search({id=> $priority_id})->hashref->all;
+                foreach my $field (@priority_default){
+                    push @category_priority, { name => $field->{name},
+                                      id_category => $category_id,
+                                      id => $field->{id},
+                                      response_time_min => $field->{response_time_min},
+                                      expr_response_time => $field->{expr_response_time},
+                                      deadline_min => $field->{deadline_min},
+                                      expr_deadline => $field->{expr_deadline},
+                                      is_active => 0,
+                                      }
+                }
             }
         }
     }
@@ -649,5 +658,37 @@ sub update_category_priority : Local {
     $c->forward('View::JSON');    
 }
 
+sub get_config_field : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my @rows;
+    
+    if($p->{config}){
+        try{
+            my $default_config = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
+            my %dashlet_config;
+            my %key_description;
+            foreach my $field (_array $default_config){
+                $dashlet_config{$field->{id}} = $field->{default};
+                $key_description{$field->{id}} = $field->{label};
+            }		
+            
+            foreach my $key (keys %dashlet_config){
+                push @rows,
+                    {
+                        id 			=> $key,
+                        description	=> $key_description{$key},
+                        value 		=> $dashlet_config{$key}
+                    };		
+            }
+        }
+        catch{
+            $c->stash->{json} = { data => undef};  
+        };
+    }    
+    
+    $c->stash->{json} = { data => \@rows};
+    $c->forward('View::JSON');    
+}
 
 1;
