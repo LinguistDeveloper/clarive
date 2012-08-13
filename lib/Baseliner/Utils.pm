@@ -218,11 +218,17 @@ sub _unique {
 
 sub _load {
     utf8::encode( @_ ) if utf8::valid( @_ );
-    return YAML::XS::Load( @_ );
+    return try { YAML::XS::Load( @_ ) } catch { 
+        require YAML::Syck;
+        YAML::Syck::Load( @_ );
+    };
 }
 
 sub _dump {
-    return YAML::XS::Dump( @_ );
+    return try { YAML::XS::Dump( @_ ) } catch { 
+        require YAML::Syck;
+        YAML::Syck::Dump( @_ );
+    };
 }
 
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
