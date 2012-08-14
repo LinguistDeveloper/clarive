@@ -316,6 +316,10 @@ sub end : ActionClass('RenderView') {
             $c->forward( 'View::JSON');
         }
     }
+    #if( $c->res->content_type eq 'text/html' ) {
+    #    _debug _dump $c->req;
+    #    $c->res->content_type( 'text/css' );
+    #}
     $c->stash->{$_}=$c->request->parameters->{$_} 
         foreach( keys %{ $c->req->parameters || {} });
 }
