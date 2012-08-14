@@ -168,6 +168,26 @@ if( $ENV{BALI_FAST} ) {
 
 __PACKAGE__->setup();
 
+# Capture Signals
+$SIG{INT} = \&signal_interrupt;
+$SIG{KILL} = \&signal_interrupt;
+
+# check if DB connected, retry
+if( my $retry = Baseliner->config->{db_retry} ) {
+    use Try::Tiny;
+    my $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
+    if( ! $connected ) {
+        my $freq = Baseliner->config->{db_retry_frequency} // 30;
+        my $i = 0;
+        while( !$connected && ( $retry < 0 || $i++ <  $retry ) ) {
+            sleep $freq;
+            warn "Retrying Database Connection ($i for $retry retries)...\n";
+            $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
+        }
+        warn "DB Reconected ok.\n";
+    }
+}
+
 # setup the DB package
 
 {
@@ -178,10 +198,6 @@ __PACKAGE__->setup();
         *{$package} = sub { Baseliner->model("Baseliner::$n") }
     }
 }
-
-# Capture Signals
-$SIG{INT} = \&signal_interrupt;
-$SIG{KILL} = \&signal_interrupt;
 
 # Setup date formating for Oracle
 my $dbh = __PACKAGE__->model('Baseliner')->storage->dbh;
@@ -330,12 +346,12 @@ sub username {
     my $c = shift;
     my $user;
     $user = try { return $c->session->{username} } and return $user;
-    warn "No session user";
+    Baseliner::Utils::_debug "No session user";
     $user = try { return $c->user->username } and return $c->session->{username} = $user;
-    warn "No user user";
+    Baseliner::Utils::_debug "No user user";
     $user = try { return $c->user->id
     } catch {
-        warn "No user id.";
+        Baseliner::Utils::_error "No user id.";
         return undef;   
     } and return $user;
 }

@@ -1,9 +1,9 @@
 <%args>
-    $show_main => 0
-    $show_portal => 0
-    $show_dashboard => 1
-    $show_menu => 1
-    $show_lifecycle => 1
+    $show_main => $c->config->{site}{show_main} // 0
+    $show_portal => $c->config->{site}{show_portal} // 0
+    $show_dashboard => $c->config->{site}{show_dashboard} // 1
+    $show_menu => $c->config->{site}{show_menu} // 1
+    $show_lifecycle => $c->config->{site}{show_lifecycle} // 1
     $show_js_reload => 0
 </%args>
 

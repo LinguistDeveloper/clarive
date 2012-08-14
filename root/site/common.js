@@ -51,6 +51,8 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
     Baseliner.loadFile( '/comp/topic/topic_lib.js', 'js' );
 
+    Baseliner.loadFile( '/static/site.css', 'css' );
+
     Baseliner.message(_('JS'), _('Reloaded successfully') );  
 };
 
@@ -414,6 +416,54 @@ Baseliner.close_parent = function(comp) {
     }
 };
 
+/*
+
+    Baseliner.combo_project({ value:'project/11221' });
+
+*/
+Baseliner.combo_project = function(params) {
+    if( params==undefined) params={};
+    var store = new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty:"totalCount", 
+        baseParams: params.request || {},
+        id: 'ns', 
+        url: '/project/user_projects',
+        fields: ['ns','name','description'] 
+    });
+    var valueField = params.valueField || 'ns';
+    var combo = new Ext.form.ComboBox({
+           fieldLabel: _("Project"),
+           name: params.name || 'ns',
+           hiddenName: params.hiddenName || 'ns',
+           valueField: valueField, 
+           displayField: params.displayField || 'name',
+           typeAhead: false,
+           minChars: 1,
+           mode: 'remote', 
+           store: store,
+           editable: true,
+           forceSelection: true,
+           triggerAction: 'all',
+           allowBlank: false
+    });
+    if( params.select_first ) {
+        combo.store.on('load',function(store) {
+            combo.setValue(store.getAt(0).get( valueField ));
+        });
+    } else if( params.value ) {
+        combo.store.on('load',function(store) {
+            var ix = store.find( valueField, params.value ); 
+            if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
+        });
+    }
+    if( params.on_select ) {
+        combo.on( 'select', params.on_select );
+    }
+    return combo;
+};
 
 Baseliner.array_field = function( args ) {
     var field_name = args.name;
@@ -523,6 +573,50 @@ Baseliner.array_field = function( args ) {
     return { data: fdata, grid: fgrid };
 };
 
+Baseliner.combo_baseline = function(params) {
+    if( params==undefined) params={};
+    var store = new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty:"totalCount", 
+        baseParams: params.request || {},
+        id: 'id', 
+        url: '/baseline/json',
+        fields: ['id','name','description', 'active'] 
+    });
+    var valueField = params.valueField || 'id';
+    var combo = new Ext.form.ComboBox({
+           fieldLabel: _("Baseline"),
+           name: params.name || 'bl',
+           hiddenName: params.hiddenName || 'bl',
+           valueField: valueField, 
+           displayField: params.displayField || 'name',
+           typeAhead: false,
+           minChars: 1,
+           mode: 'remote', 
+           store: store,
+           editable: true,
+           forceSelection: true,
+           triggerAction: 'all',
+           allowBlank: false
+    });
+    if( params.select_first ) {
+        combo.store.on('load',function(store) {
+            combo.setValue(store.getAt(0).get( valueField ));
+        });
+    } else if( params.value ) {
+        combo.store.on('load',function(store) {
+            var ix = store.find( valueField, params.value ); 
+            if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
+        });
+    }
+    if( params.on_select ) {
+        combo.on( 'select', params.on_select );
+    }
+    return combo;
+};
+
 Baseliner.isArray = function(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
 };
@@ -545,6 +639,7 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     hideTrigger1:true,
     width:280,
     hasSearch : false,
+    emptyText: _('<Enter your search string>'),
     paramName : 'query',
 
     onTrigger1Click : function(){

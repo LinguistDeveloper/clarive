@@ -40,7 +40,7 @@ __PACKAGE__->add_columns(
   "active",
   { data_type => "char", default_value => "1", is_nullable => 0, size => 1 },
   "ns",
-  { data_type => "char", default_value => '*', is_nullable => 0, size => 20 },
+  { data_type => "char", default_value => '/', is_nullable => 0, size => 20 },
   "bl",
   { data_type => 'varchar2', default_value => "*", size => 1024 },
   "service",
