@@ -22,9 +22,11 @@ register 'config.user.view' => {
         { id=>'theme', label=>'Theme', type=>'combo', default=>Baseliner->config->{default_theme}, store=>['gray','blue','slate']  },
     ]
 };
-register 'menu.admin.users' => { label => 'Users', url_comp=>'/user/grid', actions=>['action.admin.role'], title=>'Users', index=>80, icon=>'/static/images/icons/user.gif' };
-register 'action.maintenance.users' => {
-    name => 'User maintenance',
+register 'menu.admin.users' => { label => 'Users',
+    url_comp=>'/comp/user_main.js', actions=>['action.admin.role'],
+    title=>'Users', index=>80, icon=>'/static/images/icons/user.gif' };
+register 'action.admin.users' => {
+    name => 'User Admin',
 };
 
 sub preferences : Local {
@@ -35,7 +37,7 @@ sub preferences : Local {
     $c->stash->{title} = _loc 'User Preferences';
     if( @config ) {
         $c->stash->{metadata} = [ map { $_->metadata } @config ];
-    $c->stash->{ns_query} = { does=>'Baseliner::Role::Namespace::User' }; 
+        $c->stash->{ns_query} = { does=>'Baseliner::Role::Namespace::User' }; 
         $c->forward('/config/form_render'); 
     }
 }
@@ -189,30 +191,6 @@ sub infoactions : Local {
     $c->stash->{json} =  { data=>\@actions};
     $c->forward('View::JSON');   
 }
-
-##sub infodetailactions : Local {
-##    my ($self, $c) = @_;
-##    my $p = $c->request->parameters;
-##    my $role = $p->{role};
-##
-##    if( defined $role ) {
-##        my $r = $c->model('Baseliner::BaliRole')->search({ role=>$role })->first;
-##        if( $r ) {
-##            my @actions;
-##            my $rs_actions = $r->bali_roleactions;
-##            while( my $ra = $rs_actions->next ) {
-##                my $desc = $ra->action;
-##                eval { # it may fail for keys that are not in the registry
-##                    my $action = $c->model('Registry')->get( $ra->action );
-##                    $desc = $action->name;
-##                }; 
-##                push @actions,{ action=>$ra->action, description=>$desc, bl=>$ra->bl };
-##            }
-##            $c->stash->{json} =  { data=>\@actions};
-##            $c->forward('View::JSON');
-##        }
-##    }
-##}
 
 sub update : Local {
     my ($self,$c)=@_;
@@ -609,7 +587,7 @@ sub grid : Local {
     $c->forward('/user/can_surrogate');
     $c->forward('/user/can_maintenance');
     $c->forward('/baseline/load_baselines');
-    $c->stash->{template} = '/comp/user_grid.mas';
+    $c->stash->{template} = '/comp/user_grid.js';
 }
 
 sub can_surrogate : Local {
@@ -621,7 +599,7 @@ sub can_surrogate : Local {
 sub can_maintenance : Local {
     my ( $self, $c ) = @_;
     return 0 unless $c->username;
-    $c->stash->{can_maintenance} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.maintenance.users' );
+    $c->stash->{can_maintenance} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.admin.users' );
 }
 
 sub projects_list : Local {
@@ -711,35 +689,72 @@ sub list : Local {
     my $page = to_pages( start=>$start, limit=>$limit );
     
     
-    my $where = $query
-        ? { 'lower(username||realname||alias)' => { -like => "%".lc($query)."%" }, active => 1 }
-        : { active => 1 };   
-    
-    my $rs = $c->model('Baseliner::BaliUser')->search(
-    $where,
-    { page => $page,
-      rows => $limit,
-      order_by => $sort ? { "-$dir" => $sort } : undef
-    }
+    my $where={};
+    $query and $where = query_sql_build( query=>$query, fields=>[qw(username realname alias)] );
+
+    $where->{active} = 1 if $p->{active_only};
+
+    my $rs = DB->BaliUser->search(
+        $where,
+        { page => $page,
+          rows => $limit,
+          select=>[qw(username realname alias email active phone)],
+          distinct => 1,
+          order_by => $sort ? { "-$dir" => $sort } : undef
+        }
     );
+
+    # my %userdata = DB->BaliRoleuser->search(
+    #         { username=>{ -in => $rs->as_query } },
+    #         { prefetch=>['role'] })->hash_on( 'username' );
     
     my $pager = $rs->pager;
     $cnt = $pager->total_entries;	
     
-    my @rows;
-    while( my $r = $rs->next ) {
-    # produce the grid
-    push @rows,
-      {
-        id 		=> $r->id,
-        username	=> $r->username,
-        realname	=> $r->realname,
-        alias	=> $r->alias,
-        email	=> $r->email,
-        phone	=> $r->phone
-      };
-    }
+    my @rows = map {
+        $_
+    } $rs->hashref->all;
+
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
+    $c->forward('View::JSON');
+}
+
+sub list_all : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    $sort ||= 'username';
+    $dir ||= 'asc';
+    $start||= 0;
+    $limit ||= 100;
+
+    my $page = to_pages( start=>$start, limit=>$limit );
+    
+    
+    my $where={};
+    $query and $where = query_sql_build( query=>$query, fields=>[qw( me.username role.description realname alias projects.name email actions.action)] );
+
+    $where->{active} = 1 if $p->{active_only};
+
+    my $rs = DB->BaliUser->search(
+        $where,
+        { 
+          page => $page,
+          rows => $limit,
+          +select => [ qw( me.username me.mid me.realname me.email me.alias me.active role.role role.description actions.action projects.name ) ],
+          +as => [ qw( username mid realname email alias active role role_desc action project ) ],
+          join => [ { 'roles' => ['role', 'actions','projects'] } ],
+          order_by => [ { "-$dir" => "me.$sort" } , { -asc=>'role' }, { -asc=>'project' } ] 
+        }
+    );
+
+   my $id = 1;
+    my @rows = map { 
+        $_->{project} ||= _loc('(all projects)');
+        $_->{id} = $id++;
+        $_;
+    } $rs->hashref->all;
+    $c->stash->{json} = { data=>\@rows, totalCount=>try { $rs->pager->total_entries } catch { scalar @rows } };		
     $c->forward('View::JSON');
 }
 

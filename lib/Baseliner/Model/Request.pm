@@ -152,7 +152,7 @@ sub list {
     $p{action} and $where->{action} = $p{action};
     my $from = {};
     $p{dir} ||= 'asc';
-    $from->{order_by} = { "-$p{dir}" => "me.$p{sort}" } || { -desc => "me.id" };
+    $from->{order_by} = $p{sort} ? { "-$p{dir}" => "me.$p{sort}" } : { -desc => "me.id" };
     #$from->{order_by} = 'me.' . $from->{order_by} unless $from->{order_by} =~ /^me/;
     if( exists($p{start}) && exists($p{limit}) ) {
         my $page = to_pages( start=>$p{start}, limit=>$p{limit} );

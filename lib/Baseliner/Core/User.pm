@@ -38,15 +38,6 @@ sub actions {
     return @actions;
 }
 
-sub has_actionx {
-    my $self = shift;
-    _throw 'Missing argument action' unless @_;
-    my %p = @_ == 1 ? ( action=>shift ) : @_;
-    _log "has_action $p{action}, " . $self->username;
-    return 1 if $self->is_root;
-    return Baseliner->model('Permissions')->user_has_action( action=>$p{action}, username=>$self->username );
-}
-
 sub has_action {
     my $self = shift;
     _throw 'Missing argument action' unless @_;

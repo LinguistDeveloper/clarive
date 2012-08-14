@@ -7,7 +7,14 @@ use Try::Tiny;
 use Moose::Autobox;
 use JSON::XS;
 
-register 'menu.job.revisions' => { label => 'Revisions', url_comp=>'/revision/grid', title=>'Revisions', icon=>'/static/images/scm/package.gif' }; #, actions=>['action.package.view'] };
+register 'action.job.view_job_revisions' => {name => "Can view job revisions"};
+
+register 'menu.job.revisions' => {label    => 'Revisions',
+                                  url_comp => '/revision/grid',
+                                  title    => 'Revisions',
+                                  icon     => '/static/images/scm/package.gif',
+                                  action   => 'action.job.view_job_revisions'};
+
 register 'portlet.revisions' =>
     { label => 'Revisions', url_comp=>'/revision/grid_portlet',
         url_max=>'/revision/grid',

@@ -657,18 +657,18 @@
     };
 
     Baseliner.error_parse = function( err, xhr ) {
-        var str=""; 
-        var trace ="";
-        //**from stacktrace.js :
-        //trace = printStackTrace({ e: err });
-        //trace = '<li>' + trace.join('<li>');
+        var arr=[]; 
         for(var i in err) {
-            str+="<li>" + i + "=" + err[i]; 
+            arr.push(  i + "=" + err[i] );
         }
+        if( err.message ) arr.push(  "Message =" + err['message'] );
+        if( err.line ) arr.push(  "Line Num =" + err['line'] );
+
+        str = "<li>" + arr.join('</li><li>') + '</li>';
         var res = xhr.responseText;
         res.replace(/\</,'&lt;');
         res.replace(/\>/,'&gt;');
-        str += "<hr><pre>" + trace + "\n\n" + res;
+        str += "<hr><pre>" + res;
         Baseliner.errorWin("<% _loc('Error Rendering Tab Component') %>", str);
     };
 
@@ -797,7 +797,7 @@
                        }
                     }
                 }
-                    if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
+                if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
             },
             failure: function(xhr) {
                 Baseliner.server_failure( xhr.responseText );

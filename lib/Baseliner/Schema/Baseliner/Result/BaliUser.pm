@@ -14,15 +14,6 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
     original => { data_type => "number" },
   },  
-  "id",
-  {
-    data_type => "integer",
-    is_auto_increment => 1,
-    is_nullable => 0,
-    original => { data_type => "number" },
-    #sequence => "bali_user_seq",
-    size => 126,
-  },
   "username",
   { data_type => "varchar2", is_nullable => 0, size => 45 },
   "password",
@@ -42,7 +33,7 @@ __PACKAGE__->add_columns(
   "active",
   { data_type => "char", is_nullable => 1, size => 1, default => 1 },  
 );
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key("mid");
 
 __PACKAGE__->has_many(
   "roles",
@@ -53,5 +44,7 @@ __PACKAGE__->has_many(
 __PACKAGE__->add_unique_constraint(
   username => [ qw/username/ ],
 );
+
+sub id { $_[0]->mid; }   # for backwards compatibility
 
 1;

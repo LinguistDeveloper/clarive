@@ -195,8 +195,17 @@ sub deploy_schema {
         my $diff = $obj->produce_diff_sql;
         $diff =~ s{"}{}gs;
 
+        # grep ? 
+        if( defined $p{'grep'} ) {
+            my @lines = split/\n/, $diff;
+            my $re = $p{'grep'};
+            for my $r ( _array $re ) {
+                @lines = grep /$r/i, @lines;
+            }
+            $diff = join "\n", @lines;
+        }
         # execute ALL?
-        print $diff, "\n";
+        print "\n\n$diff", "\n";
         if( _ask_me("Execute ALL diff?") ) {
             $dbh->do( $diff );
         }

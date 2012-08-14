@@ -73,9 +73,9 @@
             autoScroll: true,
             autoWidth: true,
             store: store,
-            viewConfig: [{
+            viewConfig: {
                     forceFit: true
-            }],
+            },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
@@ -95,11 +95,10 @@
                                 displayMsg: _('Rows {0} - {1} de {2}'),
                                 emptyMsg: _('There are no rows available')
                         }),        
-            tbar: [ _loc('Search') + ': ', ' ',
-                new Ext.app.SearchField({
+            tbar: [ 
+                new Baseliner.SearchField({
                     store: store,
-                    params: {start: 0, limit: ps},
-                    emptyText: _('<Enter your search string>')
+                    params: {start: 0, limit: ps}
                 }),
                 new Ext.Toolbar.Button({
                     text: _('View'),

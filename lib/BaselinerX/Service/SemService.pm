@@ -1,6 +1,7 @@
 package BaselinerX::Service::SemService;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
@@ -12,6 +13,7 @@ register 'config.sem.server' => {
         { id=>'wait_for',  default=>5 },
         { id=>'host',  default=>'localhost' },
         { id=>'auto_purge',  default=>0 },
+        { id=>'iterations', default=>100},
     ],
 };
 
@@ -54,11 +56,11 @@ register 'service.sem.dummy_job' => {
 sub request {
     my ($self, $c, $config) = @_;
     my $sm = Baseliner->model('Semaphores');
-    _log "Requested semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
+    _debug "Requested semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
     my $sem = $sm->request( %$config );
-    _log "Granted semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
+    _debug "Granted semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
     sleep $config->{sleep};
-    _log "Releasing semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
+    _debug "Releasing semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
     $sem->release;
 }
 
@@ -78,10 +80,19 @@ sub run_once {
 sub run_daemon {
     my ($self, $c, $config) = @_;
     my $freq = $config->{frequency} || 10;
-    while( 1 ) {
-        $self->run_once( $c, $config );
+    my $iterations = $config->{iterations} || 100;
+
+    _log "Sem daemon started";
+    for ( 1 .. $iterations ) {
+        try {
+            $self->run_once( $c, $config );            
+        } catch {
+            my $err = shift;
+            _debug "ERROR: $err";
+        };
         sleep $freq; 
     }
+    _log "Sem daemon finished";
 }
 
 sub sem_list {
