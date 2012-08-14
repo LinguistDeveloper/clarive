@@ -327,7 +327,7 @@ sub user_projects_names {
     my ( $self, %p ) = @_;
     my @ns = $self->user_projects( %p );
     my @ids=map{ my ($d,$it)=ns_split($_); $it } _array @ns;
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ id=>\@ids });
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search({ mid=>\@ids });
     rs_hashref( $rs );
     my $parentcache;
     my @ret;
@@ -336,20 +336,20 @@ sub user_projects_names {
         push @ret, qq{application/$r->{name}};
     } else {
         if ( ! $parentcache->{$r->{id_parent}} ) {
-            my $parent = Baseliner->model('Baseliner::BaliProject')->search( { id=>$r->{id_parent} } )->first;
-            $parent and $parentcache->{$parent->id}={
-                name=>$parent->name,
-                parent=>$parent->id_parent,
-                id=>$parent->id
+            my $parent = Baseliner->model('Baseliner::BaliProject')->search( { mid=>$r->{id_parent} } )->first;
+            $parent and $parentcache->{$parent->mid}={
+                name    =>$parent->name,
+                parent  =>$parent->id_parent,
+                id      =>$parent->mid
                 };
             }
         if ($r->{nature}) {
             if ( ! $parentcache->{$parentcache->{$r->{id_parent}}->{parent}} ) {
-                my $cam = Baseliner->model('Baseliner::BaliProject')->search( { id=>$parentcache->{$r->{id_parent}}->{parent} } )->first;
-                $cam and $parentcache->{$cam->id}={
-                    name=>$cam->name,
-                    parent=>$cam->id_parent,
-                    id=>$cam->id
+                my $cam = Baseliner->model('Baseliner::BaliProject')->search( { mid=>$parentcache->{$r->{id_parent}}->{parent} } )->first;
+                $cam and $parentcache->{$cam->mid}={
+                    name   =>$cam->name,
+                    parent =>$cam->id_parent,
+                    id     =>$cam->mid
                     };
                 }
             push @ret, qq{nature/$parentcache->{$parentcache->{$r->{id_parent}}->{parent}}->{name}/$parentcache->{$r->{id_parent}}->{name}/$r->{nature}} ;
@@ -367,7 +367,7 @@ sub user_projects_names {
 List of projects for which a user has a given action.
 
 =cut
-#### Ricardo (21/6/2011): Listado de proyectos para los que el usuario tiene una acción
+
 sub user_projects_with_action {
     my ( $self, %p ) = @_;
     _check_parameters( \%p, qw/username action/ );
@@ -385,7 +385,7 @@ sub user_projects_with_action {
         my $db = new Baseliner::Core::DBI( { model => 'Baseliner' } );
         my @data = $db->array(
             qq{
-                select distinct p.id
+                select distinct p.mid
                 from BALI_ROLE r, BALI_ROLEUSER ru, BALI_ROLEACTION ra, BALI_PROJECT p
                 WHERE  r.ID = ru.ID_ROLE AND
                 r.ID = ra.ID_ROLE AND
@@ -503,7 +503,7 @@ sub user_namespaces_name {
         push @appId, $1 if ($_->{ns} =~ m{project/(.+)});
         }
         
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search( { id=>{ 'in' => [ _unique @appId ] } } );
+    my $rs = Baseliner->model('Baseliner::BaliProject')->search( { mid=>{ 'in' => [ _unique @appId ] } } );
     rs_hashref( $rs );
     my @ret;
     my $parentcache;
@@ -512,20 +512,20 @@ sub user_namespaces_name {
             push @ret, qq{application/$r->{name}};
         } else {
             if ( ! $parentcache->{$r->{id_parent}} ) {
-                my $parent = Baseliner->model('Baseliner::BaliProject')->search( { id=>$r->{id_parent} } )->first;
-                $parent and $parentcache->{$parent->id}={
+                my $parent = Baseliner->model('Baseliner::BaliProject')->search( { mid=>$r->{id_parent} } )->first;
+                $parent and $parentcache->{$parent->mid}={
                     name=>$parent->name,
                     parent=>$parent->id_parent,
-                    id=>$parent->id
+                    id=>$parent->mid
                     };
                 }
             if ($r->{nature}) {
                 if ( ! $parentcache->{$parentcache->{$r->{id_parent}}->{parent}} ) {
-                    my $cam = Baseliner->model('Baseliner::BaliProject')->search( { id=>$parentcache->{$r->{id_parent}}->{parent} } )->first;
-                    $cam and $parentcache->{$cam->id}={
+                    my $cam = Baseliner->model('Baseliner::BaliProject')->search( { mid=>$parentcache->{$r->{id_parent}}->{parent} } )->first;
+                    $cam and $parentcache->{$cam->mid}={
                         name=>$cam->name,
                         parent=>$cam->id_parent,
-                        id=>$cam->id
+                        id=>$cam->mid
                         };
                     }
                 push @ret, qq{nature/$parentcache->{$parentcache->{$r->{id_parent}}->{parent}}->{name}/$parentcache->{$r->{id_parent}}->{name}/$r->{nature}} ;
@@ -594,8 +594,14 @@ sub list {
         
         push @list,
             # map { $p{action} ? $_->{username} : $_->{action} }
-            map { $p{action} ? ( $role->{mailbox} ? $role->{mailbox} : $_->{username} ) : $_->{action} }
-            grep { $p{username} ? 1 : $ns eq 'any' ? 1 : ns_match( $_->{ns}, $ns) }
+            map { $p{action} ? ( $role->{mailbox} ? split ",",$role->{mailbox} : $_->{username} ) : $_->{action} }
+            
+            ####
+            # Ricardo 2011/11/03 ... no hace falta quitar los ns.  Ya están filtrados en la query
+            #
+            #grep { $p{username} ? 1 : $ns eq 'any' || $ns eq '/' ? 1 : ns_match( $_->{ns}, $ns) }
+            #####
+            
             _array( $data );
     }
 

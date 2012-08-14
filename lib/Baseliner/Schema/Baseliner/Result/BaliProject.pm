@@ -74,4 +74,6 @@ __PACKAGE__->belongs_to(
 
 __PACKAGE__->master_setup( 'files', ['project','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 
+sub id { $_[0]->mid; }   # for backwards compatibility
+
 1;

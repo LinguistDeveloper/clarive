@@ -6,6 +6,7 @@ use Baseliner::Utils;
 sub create {
     my ($self, %p) = @_;
     $p{data} = _dump( $p{data} );
+    $p{mid} //= delete $p{id};
 
     my $row = Baseliner->model('Baseliner::BaliProject')->search({ name=>$p{name} })->first;
     if( ref $row ) {
@@ -19,6 +20,7 @@ sub create {
 
 sub data {
     my ($self, %p) = @_;
+    $p{mid} //= delete $p{id};
     my $prj = Baseliner->model('Baseliner::BaliProject')->search(\%p)->first;
 
     if( ref $prj ) {
@@ -44,8 +46,9 @@ sub add_item {
 
 sub get_project_name {
     my ( $self, %p ) = @_;
+    $p{mid} //= delete $p{id};
 
-    my $project = Baseliner->model('Baseliner::BaliProject')->search({ mid=>$p{id} })->first->name;
+    my $project = Baseliner->model('Baseliner::BaliProject')->search({ mid=>$p{mid} })->first->name;
 }
 
 1;

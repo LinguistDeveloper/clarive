@@ -203,15 +203,7 @@ sub event_hook {
     my ( $keys, $when, $code ) = @_;
     my $pkg = caller();
     my @keys = ref $keys eq 'ARRAY' ? @$keys : ($keys);
-    my $regs = Baseliner->model('Registry');
-    unless( $regs ) {
-        require Baseliner::Model::Registry unless $regs;
-        $regs = Baseliner->model('Registry');
-        if( ! $regs ) {
-            _error _loc('Could not install event hooks') ;
-            return;
-        }
-    }
+    my $regs = 'Baseliner::Core::Registry';  # Baseliner->model('Registry') not available on startup
     for my $key ( @keys ) {
         my $regkey = "$key._hooks";
         if( my $hooks = $regs->get_node( $regkey ) ) {

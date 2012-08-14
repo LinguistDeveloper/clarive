@@ -5,7 +5,6 @@ use MooseX::ClassAttribute;
 use Moose::Exporter;
 use Try::Tiny;
 use Carp;
-use YAML;
 use Baseliner::Utils;
 
 Moose::Exporter->setup_import_methods();
@@ -59,6 +58,7 @@ sub _registrar {
 sub add {
     my ($self, $pkg, $key, $param)=@_;
     my $reg = $self->registrar;
+    $param //= {};
     if( ref $param eq 'HASH' ) {
         $param->{key}=$key unless($param->{key});
         $param->{short_name} = $key; 
@@ -156,7 +156,7 @@ sub get { return $_[0]->get_instance($_[1]); }
 
 sub get_instance {
     my ($self,$key)=@_;
-    my $node = $self->get_node($key) || die "Error: Could not find key '$key' in the registry\n";
+    my $node = $self->get_node($key) || die "Could not find key '$key' in the registry";
     my $obj = $node->instance;
     return ( ref $obj ? $obj : $self->instantiate( $node ) );
 }
@@ -173,8 +173,7 @@ sub dir {
 }
 
 sub dump_yaml {
-    use YAML;
-    Dump( shift->registrar );
+    _dump( shift->registrar );
 }
 
 sub load_enabled_list {
@@ -206,17 +205,26 @@ sub is_enabled {
 
 Search for registered objs with matching attributes
 
+Configuration:
+
+    <registry>
+        disabled_key menu.admin.users
+        disabled_key menu.admin.files
+    </registry>
+
 =cut
 sub search_for_node {
     my ($self,%query)=@_;
     my @found = ();
 
     # query parameters
-    my $check_enabled = delete $query{check_enabled};
+    my $check_enabled = delete $query{check_enabled} // 1;
     my $has_attribute = delete $query{has_attribute};
     my $key_prefix = delete $query{key} || '';
     my $q_depth = delete $query{depth};
     my $allowed_actions = delete $query{allowed_actions};
+    my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
+    $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
     my @allowed;
     foreach my $action ( _array $allowed_actions ) {
@@ -232,11 +240,7 @@ sub search_for_node {
     OUTER: for my $key ( $self->starts_with( $key_prefix ) ) {
         my $depth = ( my @ss = split /\./,$key ) -1 ;
         next if( $depth gt $q_depth );
-        if( $allowed_actions && ref $self->registrar->{$key}->actions ) {
-            #warn "..............ref ($key): " . join ',', @{ $self->registrar->{$key}->actions || [] } ;
-            #warn "..............all ($key): " . join ',', @{ $allowed_actions || [] } ;
-            #warn ".............GREP ($key): " . grep { my $a=$_; grep /^$a$/,@{$allowed_actions||[]} } @{ $self->registrar->{$key}->actions || [] };
-        }
+        next if $check_enabled && exists $disabled_keys->{ $key };
 
         # skip nodes that the user has no access to
         next if( $allowed_actions

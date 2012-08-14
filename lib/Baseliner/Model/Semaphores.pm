@@ -4,6 +4,7 @@ extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 use Baseliner::Exception::Semaphore::Cancelled;
 use Proc::Exists qw(pexists);
+use Try::Tiny;
 
 =head1 NAME
 
@@ -73,9 +74,10 @@ sub create {
         id_job      => $p->{id_job},
         sem         => $p->{sem},   
         run_now     => $p->{run_now} || 0,   
-        bl          => $p->{bl},    
+        bl          => $p->{bl} || '*',    
         host        => $p->{host} || $config->{host}, 
         pid         => $$,
+        status    => "waiting"
     });
     #$req->seq( $req->id );
     $req->update;
@@ -108,49 +110,38 @@ sub wait_for {
 }
 
 sub process_queue {
-    my ($self, %args ) = @_;
-    my $semaphores = Baseliner->model('Baseliner::BaliSem')->search({ 'me.active'=>1, slots=>{ '>' => 0 }  });
-    my $data={};
-    while( my $sem = $semaphores->next ) {
-        # check slot availability
-        my $slots = $sem->slots;
-        my $occupied = $sem->occupied;
-        my $free_slots = $slots - $occupied;
-        #_log sprintf "SEM=%s, slots=%s, occ=%s" , $sem->sem, $sem->slots, $sem->occupied;
-        next if $occupied >= $slots && $sem->queue_mode ne 'free';
+    my ( $self, %args ) = @_;
+    my $reqs = Baseliner->model('Baseliner::BaliSemQueue')->search( { status => 'waiting', active => 1 }, { order_by => 'sem ASC, id ASC' } );
+    my $sem_ant = '';
+    my $sem;
+    my $slots;
+    my $occupied;
+    my $free_slots;
 
-        # grant to queue
-        $data->{$sem->sem} = $self->grant_slots( sem=>$sem, free_slots=>$free_slots, host=>$args{host}, show_only=>$args{show_only} );
-    }
-    return $data;
-}
+    while ( my $req = $reqs->next ) {
 
-sub grant_slots {
-    my ($self, %p ) = @_;
-    my @queue_data;
-    my $sem = $p{sem} or _throw "Missing parameter 'sem'";
-    my $free_slots = defined $p{free_slots}
-        ? $p{free_slots} : $sem->slots - $sem->occupied;
-    # get the queue for this semaphore
-    my $queue = $sem->bl_queue->search(
-        { 'active'=>1, 'status'=>'waiting' },
-        {
-            order_by=>[ { -desc => 'seq' }, { -asc => 'id' } ],
+        my $sem_txt = $req->sem;
+        my $bl      = $req->bl;
+
+        $ENV{BASELINER_DEBUG} and _log "Processing request for semaphore " . $sem_txt;
+
+        if ( $sem_txt ne $sem_ant ) {
+            $sem        = Baseliner->model('Baseliner::BaliSem')->search( { sem => $sem_txt, bl => $bl } )->first;
+            $slots      = $sem->slots;
+            $occupied   = $sem->occupied;
+            $free_slots = $slots - $occupied;
         }
-    );
-    # process queue one by one
-    while( my $q = $queue->next  ) {
-        last unless $free_slots > 0;
-        #_log $q->id, " => ", $q->sem;
-        unless( $p{show_only} ) {
-            $q->status( 'granted' );
-            $q->update;
-        } 
-        push @queue_data, { $q->get_columns };
-        -- $free_slots;
-        _log _loc("Granted slot to %1-%2 (pid=%3)", $q->sem, $q->bl, $q->pid );
+
+        if ( $free_slots > 0 || $sem->queue_mode eq 'free' || $sem->active == 0 ) {
+            $req->status('granted');
+            $req->update;
+            --$free_slots;
+            $ENV{BASELINER_DEBUG} and _log $req->id . " granted";
+        }
+        else {
+            $ENV{BASELINER_DEBUG} and _log $req->id . " not granted.  No free slots in semaphore " . $req->{sem};
+        }
     }
-    return \@queue_data;
 }
 
 sub list_queue {
@@ -163,15 +154,33 @@ sub deadlock_check {
     # 2. list pid for slot owners and see if pids are waiting
 }
 
-sub find_or_create {
-    my $self = shift;
-    my $p = _parameters(@_);
+sub find_or_create
+{
+    my $self   = shift;
+    my $p      = _parameters(@_);
     my $rs_sem = Baseliner->model('Baseliner::BaliSem');
-    my $sem = $rs_sem->search({ sem=>$p->{sem}, bl=>$p->{bl}||'*' })->first;
-    if( ref $sem ) {
-        $p->{description} and $sem->description( $p->{description} ), $sem->update;
-    } else {
-        $sem = $rs_sem->create({ sem=>$p->{sem}, bl=>$p->{bl}||'*' });
+    my $sem    = $rs_sem->search({sem => $p->{sem}, bl => $p->{bl} || '*'})->first;
+    if (ref $sem)
+    {
+        $p->{description}
+          and $sem->description($p->{description}), $sem->update;
+    }
+    else
+    {
+        try
+        {
+            $sem = $rs_sem->create(
+                                   {
+                                    sem    => $p->{sem},
+                                    active => exists $p->{active} ? $p->{active} : 0,
+                                    bl     => $p->{bl} || '*'
+                                   }
+                                  );
+        }
+        catch
+        {
+            _log _loc("Something wrong when creating the semaphore " . $p->{sem} . ".  Probably it's already there");
+        };
     }
     return $sem;
 }
@@ -187,12 +196,17 @@ sub cancel {
 
 sub check_for_roadkill {
     my ($self, %p ) = @_;
-    my $host = $p{host} || Baseliner->config->{host} || 'localhost' ;
-    my $rs = Baseliner->model('Baseliner::BaliSemQueue')->search({ status=>['waiting', 'idle'], host=>$host });
+    
+    #TODO: Semaphores in other hosts than in BALI server
+    
+    $ENV{ BASELINER_DEBUG } && _log _loc("RUNNING sem_check_for_roadkill");
+    my $rs = Baseliner->model('Baseliner::BaliSemQueue')->search({ status=>['waiting', 'idle', 'granted', 'busy'] });
     while( my $r = $rs->next ) {
         my $pid = $r->pid;
-        next unless $pid > 0;
+        #next unless $pid > 0;
+        _debug _loc("Checking if process $pid exists");
         next if pexists( $pid );
+        _debug _loc("Process $pid does not exist");
         _log _loc("Detected killed semaphore %1-%2", $r->sem, $r->bl);
         $r->status('killed');
         $r->update;
@@ -209,7 +223,7 @@ sub del_roadkill {
 
 sub purge {
     my ($self, %p ) = @_;
-    my $statuses = $p{statuses} || ['killed', 'cancelled', 'done'];
+    my $statuses = $p{statuses} || ['killed', 'cancel', 'done'];
     my $rs = Baseliner->model('Baseliner::BaliSemQueue')->search({ status=>$statuses });
     while( my $r = $rs->next ) {
         $r->delete;

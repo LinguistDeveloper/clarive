@@ -27,7 +27,6 @@
     <script type="text/javascript" src="/comp/lib/main.js"></script>
     <script type="text/javascript" src="/site/panelresizer.js"></script>
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
-    <script type="text/javascript" src="/i18n/js"></script>
 
     <!-- Flot -->
     <script src="/static/flot/excanvas.min.js"></script>
@@ -167,7 +166,7 @@ Ext.onReady(function(){
         //height: 26,
         height: <% $c->config->{toolbar_height} // 26 %>,
         items: [
-            '<img src="/static<% $c->stash->{theme_dir} %>/images/logo.jpg" style="border:0px;"/>',
+            '<img src="/static<% $c->stash->{theme_dir} %>/images/<% $c->config->{logo_filename} || 'logo.jpg' %>" style="border:0px;"/>',
             '-',
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
             ,

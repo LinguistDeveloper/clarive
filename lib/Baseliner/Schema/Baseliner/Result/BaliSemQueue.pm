@@ -34,7 +34,7 @@ __PACKAGE__->add_columns(
     data_type => "VARCHAR2",
     default_value => undef,
     is_nullable => 1,
-    size => 255,
+    size => 1024,
   },
   "host",
   {
