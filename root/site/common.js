@@ -795,3 +795,9 @@ Ext.extend(Ext.ux.PageSizePlugin, Ext.form.ComboBox, {
     }
 });
 
+Baseliner.open_topic = function(mid,opts) {
+    if( ! opts ) opts = {};
+    var title = opts.title || opts.topic_name || String.format('#{0}', mid );
+    Baseliner.add_tabcomp( '/comp/topic/topic_main.js', title, { topic_mid:mid, _parent_grid: opts.grid });
+    return false;
+};
