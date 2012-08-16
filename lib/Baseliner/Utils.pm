@@ -218,22 +218,22 @@ sub _unique {
 
 sub _load {
     my @args = @_;
-    try {
+    return try {
         utf8::encode( @_ ) if utf8::valid( @_ );
-        return YAML::XS::Load( @args )
+        YAML::XS::Load( @args )
     } catch { 
         require YAML::Syck;
-        return YAML::Syck::Load( @args );
+        YAML::Syck::Load( @args );
     };
 }
 
 sub _dump {
     my @args = @_;
     return try { 
-        return YAML::XS::Dump( @args )
+        YAML::XS::Dump( @args )
     } catch { 
         require YAML::Syck;
-        return YAML::Syck::Dump( @args );
+        YAML::Syck::Dump( @args );
     };
 }
 
