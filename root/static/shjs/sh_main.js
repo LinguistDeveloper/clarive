@@ -334,7 +334,7 @@ function sh_extractTags(element, tags) {
 }
 
 /**
-Merges the original tags from an element with the tags produced by highlighting.
+erges the original tags from an element with the tags produced by highlighting.
 @param  originalTags  an array containing the original tags
 @param  highlightTags  an array containing the highlighting tags - these must not overlap
 @result  an array containing the merged tags

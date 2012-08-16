@@ -4,14 +4,14 @@
  *
  * See test.html in the stex mode for examples.
  */
-ModeTest = {};
+odeTest = {};
 
-ModeTest.modeOptions = {};
-ModeTest.modeName = CodeMirror.defaults.mode;
+odeTest.modeOptions = {};
+odeTest.modeName = CodeMirror.defaults.mode;
 
 /* keep track of results for printSummary */
-ModeTest.tests = 0;
-ModeTest.passes = 0;
+odeTest.tests = 0;
+odeTest.passes = 0;
 
 /**
  * Run a test; prettyprints the results using document.write().
@@ -22,7 +22,7 @@ ModeTest.passes = 0;
  *
  * @param token[i] expected value for the i'th token in string
  */
-ModeTest.test = function() {
+odeTest.test = function() {
   ModeTest.tests += 1;
 
   var mode = CodeMirror.getMode(ModeTest.modeOptions, ModeTest.modeName);
@@ -76,7 +76,7 @@ ModeTest.test = function() {
  *
  * @return array of [style, token] pairs
  */
-ModeTest.highlight = function(string, mode) {
+odeTest.highlight = function(string, mode) {
   var state = mode.startState()
 
   var lines = string.replace(/\r\n/g,'\n').split('\n');
@@ -105,7 +105,7 @@ ModeTest.highlight = function(string, mode) {
  *
  * @return boolean; true iff outputs equal
  */
-ModeTest.highlightOutputsEqual = function(o1, o2) {
+odeTest.highlightOutputsEqual = function(o1, o2) {
   var eq = (o1.length == o2.length);
   if (eq) {
     for (var j in o1) {
@@ -124,7 +124,7 @@ ModeTest.highlightOutputsEqual = function(o1, o2) {
  *
  * @return html string
  */
-ModeTest.prettyPrintOutputTable = function(output) {
+odeTest.prettyPrintOutputTable = function(output) {
   var s = '<table class="mt-output">';
   s += '<tr>';
   for (var i = 0; i < output.length; ++i) {
@@ -149,14 +149,14 @@ ModeTest.prettyPrintOutputTable = function(output) {
 /**
  * Print how many tests have run so far and how many of those passed.
  */
-ModeTest.printSummary = function() {
+odeTest.printSummary = function() {
   document.write(ModeTest.passes + ' passes for ' + ModeTest.tests + ' tests');
 }
 
 /**
  * Basic HTML escaping.
  */
-ModeTest.htmlEscape = function(str) {
+odeTest.htmlEscape = function(str) {
   str = str.toString();
   return str.replace(/[<&]/g,
       function(str) {return str == "&" ? "&amp;" : "&lt;";});

@@ -54,7 +54,7 @@ series: {
 	}
 }
 
-More detail and specific examples can be found in the included HTML file.
+ore detail and specific examples can be found in the included HTML file.
 
 */
 
