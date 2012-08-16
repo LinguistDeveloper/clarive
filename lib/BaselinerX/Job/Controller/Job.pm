@@ -326,7 +326,7 @@ sub monitor_json : Path('/job/monitor_json') {
             comments     => $r->get_column('comments'),
             username     => $r->get_column('username'),
             rollback     => $r->get_column('rollback'),
-            key          => $r->get_column('key'),
+            key          => $r->get_column('job_key'),
             last_log     => $last_log_message,
             grouping     => $grouping,
             day          => ucfirst( $day->[1] ),
@@ -352,7 +352,7 @@ sub monitor_json : Path('/job/monitor_json') {
         totalCount=> $cnt,
         #next_start => $results->{next_start},
         data => \@sorted
-     };	
+     };
     $c->forward('View::JSON');
 }
 

@@ -14,7 +14,7 @@ __PACKAGE__->add_columns(
   "version", { data_type => "NUMBER", default_value => 0, is_nullable => 1, size => 38 },
   "datatype", { data_type => "VARCHAR2", default_value => '', is_nullable => 1, size => 50, },
   "k", { data_type => "VARCHAR2", default_value => undef, is_nullable => 0, size => 255 },
-  "v", { data_type => "CLOB", default_value => undef, is_nullable => 0 },
+  "v", { data_type => "CLOB", default_value => undef, is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key(qw/ns bl k version/);
 

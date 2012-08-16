@@ -1,4 +1,3 @@
-
 (function(){
     var username = '<% $c->stash->{username} %>';
     var fields = [ 'id', 'id_message', 'subject',
@@ -154,8 +153,6 @@ Ext.override(Ext.form.HtmlEditor, {
         show_message_body( id_message );
     };
 
-    <& /comp/search_field.mas &>
-
         var ps = 30; //page_size
         store.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>' }});
 
@@ -203,8 +200,8 @@ Ext.override(Ext.form.HtmlEditor, {
                                 displayMsg: _('Rows {0} - {1} de {2}'),
                                 emptyMsg: _('There are no rows available')
                         }),        
-            tbar: [ _('Search') + ': ', ' ',
-                new Ext.app.SearchField({
+            tbar: [ 
+                new Baseliner.SearchField({
                     store: store,
                     params: {start: 0, limit: ps},
                     emptyText: _('<Enter your search string>')

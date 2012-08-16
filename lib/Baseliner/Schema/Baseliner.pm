@@ -150,7 +150,7 @@ sub deploy_schema {
             #quote_table_names => 0,
             #quote_field_names => 0,
             trace             => 1,
-            filters           => [ $filter_to_generic, \&_filter_diff ],
+            filters           => [ $filter_to_generic, $filter_to_driver, \&_filter_diff ],
             format_table_name   => sub {my $t= shift; return lc($t)},
             %p
         };
@@ -195,8 +195,17 @@ sub deploy_schema {
         my $diff = $obj->produce_diff_sql;
         $diff =~ s{"}{}gs;
 
+        # grep ? 
+        if( defined $p{'grep'} ) {
+            my @lines = split/\n/, $diff;
+            my $re = $p{'grep'};
+            for my $r ( _array $re ) {
+                @lines = grep /$r/i, @lines;
+            }
+            $diff = join "\n", @lines;
+        }
         # execute ALL?
-        print $diff, "\n";
+        print "\n\n$diff", "\n";
         if( _ask_me("Execute ALL diff?") ) {
             $dbh->do( $diff );
         }

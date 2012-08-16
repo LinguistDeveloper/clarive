@@ -1,4 +1,7 @@
-(function(){
+(function(params){
+    if( ! params ) params={};
+    if( ! params.tbar ) params.tbar={};
+
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
@@ -18,7 +21,7 @@
             'load': function(){
                 init_buttons('disable');
                 }
-            }		
+            }       
     });
     
     var store_roles = new Baseliner.JsonStore({
@@ -132,13 +135,13 @@
             fields: [ 
             {name: 'role' },
             {name: 'description' },
-            {name: 'projects' }			
+            {name: 'projects' }         
             ],
             listeners: {
                 'load': function(){
                     control_buttons();
                     }
-                }	    
+                }       
         });
 
         var btn_asignar_roles_projects = new Ext.Toolbar.Button({
@@ -148,13 +151,13 @@
                 disabled: true,
                 handler: function() {
                     var form = form_user.getForm();
-                    var action = 'update';					
+                    var action = 'update';                  
                     var projects_checked = new Array();
                     var projects_parents_checked = new Array();
                     var roles_checked = new Array();
                     check_roles_sm.each(function(rec){
                         roles_checked.push(rec.get('id'));
-                    });							
+                    });                         
                 
                     selNodes = tree_projects.getChecked();
                     Ext.each(selNodes, function(node){
@@ -191,7 +194,7 @@
                                msg: a.result.msg , 
                                buttons: Ext.Msg.OK, 
                                icon: Ext.Msg.INFO
-                               }); 						
+                               });                      
                            }
                            });
                     }
@@ -201,7 +204,7 @@
                             msg: _('You must save the user before'), 
                             buttons: Ext.Msg.OK, 
                             icon: Ext.Msg.INFO
-                        }); 						
+                        });                         
                     }
                 }
         })
@@ -213,13 +216,13 @@
             disabled: true,
             handler: function() {
                 var form = form_user.getForm();
-                var action = 'delete_roles_projects';					
+                var action = 'delete_roles_projects';                   
                 var projects_checked = new Array();
                 var projects_parents_checked = new Array();
                 var roles_checked = new Array();
                 check_roles_sm.each(function(rec){
                     roles_checked.push(rec.get('id'));
-                });							
+                });                         
             
                 selNodes = tree_projects.getChecked();
                 Ext.each(selNodes, function(node){
@@ -256,7 +259,7 @@
                                msg: a.result.msg , 
                                buttons: Ext.Msg.OK, 
                                icon: Ext.Msg.INFO
-                               }); 						
+                               });                      
                            }
                            });
                     }
@@ -266,7 +269,7 @@
                             msg: _("User doesn't exist"), 
                             buttons: Ext.Msg.OK, 
                             icon: Ext.Msg.INFO
-                        }); 						
+                        });                         
                     }
                 }
                 //////////////////////////////////////////////////////////////////////////
@@ -284,7 +287,7 @@
             }
         })
         
-        var btn_grabar_user = 	new Ext.Toolbar.Button({
+        var btn_grabar_user =   new Ext.Toolbar.Button({
             text: _('Save'),
             width: 50,
             handler: function(){
@@ -302,7 +305,7 @@
                                        icon: Ext.Msg.INFO
                                        });
                             swDo = false;
-                        };					
+                        };                  
                     }
                     if (swDo){
                         form.submit({
@@ -323,13 +326,13 @@
                                 msg: a.result.msg , 
                                 buttons: Ext.Msg.OK, 
                                 icon: Ext.Msg.INFO
-                            }); 						
+                            });                         
                             }
                         });
                     }
                 }
             }
-        }) 		
+        })      
 
         var check_roles_sm = new Ext.grid.CheckboxSelectionModel({
             singleSelect: false,
@@ -346,7 +349,7 @@
             autoWidth: true,
             viewConfig: {
                 forceFit: true
-            },		    
+            },          
             height:200,
             columns: [
                 check_roles_sm,
@@ -368,7 +371,7 @@
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
-                { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },	
+                { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },   
                 { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
                 { header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
             ],
@@ -379,7 +382,7 @@
         
         grid_roles.on('rowclick', function(grid, rowIndex, columnIndex, e) {
             control_buttons();
-        });		
+        });     
     
         var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
     
@@ -407,7 +410,7 @@
             enableDrag: true,
             containerScroll: true,
             autoScroll: true,
-            height:200,		    
+            height:200,         
             rootVisible: true,
             preloadChildren: true,
             root: treeRoot
@@ -431,14 +434,14 @@
                 n.getUI().toggleCheck(checked);
             });
             
-            control_buttons();		
+            control_buttons();      
         });
         
         //tree_projects.on('click', function(node, event){
-        //	//node.getUI().toggleCheck(!node.attributes.checked);
-        //	//node.attributes.data.parent_checked = (!node.attributes.checked)?1:0;
-        //	//node.attributes.data.parent_checked = 1;
-        //	//alert(node.attributes.data.parent_checked);
+        //  //node.getUI().toggleCheck(!node.attributes.checked);
+        //  //node.attributes.data.parent_checked = (!node.attributes.checked)?1:0;
+        //  //node.attributes.data.parent_checked = 1;
+        //  //alert(node.attributes.data.parent_checked);
         //});
 
         var control_buttons = function (){
@@ -473,7 +476,7 @@
                     
                 }
             }
-        }	
+        }   
 
 
         //Para cuando se envia el formulario no coja el atributo emptytext de los textfields
@@ -495,14 +498,14 @@
             displayField: 'name',
             valueField: 'value',
             //En un futuro se cargaran los distintos Host
-            store: 	new Baseliner.JsonStore({
+            store:  new Baseliner.JsonStore({
                     fields : ['name', 'value'],
                     data   : [
                           {name : 'spanish',   value: 'localhost'},
                           {name : 'english',   value: 'localhost'}
                           ]
                 })
-        });	    	
+        });         
 
         var form_user = new Ext.FormPanel({
             name: form_user,
@@ -584,7 +587,7 @@
                     ]
                     },
                     
-                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield'},					
+                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield'},                   
                     {
                     // column layout with 2 columns
                     layout:'column'
@@ -599,7 +602,7 @@
                         // left column
                         defaults:{anchor:'100%'}
                         ,items:[
-                            combo_language							
+                            combo_language                          
                             //{ fieldLabel: _('Alias'), name: 'alias1', emptyText: 'Alias', xtype: 'textfield'}
                             ]
                         },
@@ -640,7 +643,7 @@
                 }
             ]
             },
-            blank_image	
+            blank_image 
             ,
             {
             xtype: 'panel',
@@ -648,7 +651,7 @@
             bbar: [
                    btn_asignar_roles_projects,
                    btn_desasignar_roles_projects
-            ],			
+            ],          
             items:  [
                 {  
                 columnWidth: .49,
@@ -677,7 +680,7 @@
             },
         
             passwordText : _('Passwords do not match')
-        });		
+        });     
         
         var username = '';
         var title = 'Create user';
@@ -701,7 +704,7 @@
             ]
         });
         store_roles.load({params:{start:0 , limit: ps}});
-        store_user_roles_projects.load({ params: {username: username} });		
+        store_user_roles_projects.load({ params: {username: username} });       
         win.show();
     };
     
@@ -804,11 +807,12 @@
                     displayMsg: _('Rows {0} - {1} of {2}'),
                     emptyMsg: _('There are no rows available')
             }),        
-            tbar: [ _('Search') + ': ', ' ',
-                new Ext.app.SearchField({
+            tbar: [ 
+                params.tbar,
+                '-',
+                new Baseliner.SearchField({
                     store: store,
-                    params: {start: 0, limit: ps},
-                    emptyText: _('<Enter your search string>')
+                    params: {start: 0, limit: ps}
                 }),
 % if ($c->stash->{can_surrogate}) { 
                     btn_surrogate,
@@ -829,4 +833,3 @@
             
     return grid;
 })
-
