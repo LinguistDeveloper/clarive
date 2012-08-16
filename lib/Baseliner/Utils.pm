@@ -288,6 +288,7 @@ sub _utf8_to_ansi {
 
 # Logging
 
+# used by Job::Log.pm (why?)
 sub _log_lev {
     my $lev = shift;
     return unless any { $_ } @_;
@@ -295,6 +296,28 @@ sub _log_lev {
     $cl =~ s{^Baseliner}{B};
     my $pid = sprintf('%s', $$);
     print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
+}
+
+# internal log engine used by _log and _debug
+sub _log_me {
+    my ($lev, $cl,$fi,$li, @msgs ) = @_;
+    my $logger = Baseliner->app ? Baseliner->app->{_logger} : '';
+    if( ref $logger eq 'CODE' ) { # logger override
+        $logger->($cl,$fi,$li, @msgs );
+    } else {
+        my $first = shift @msgs;
+        if( my $rf = ref $first ) {
+            $first = sprintf '[DUMP ref=%s]%s', $rf , "\n" . _dump( $first );
+        }
+        $cl =~ s{^Baseliner}{B};
+        my $pid = sprintf('%s', $$);
+        my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
+        if( my $cat_log = Baseliner->log ) {
+            $cat_log->$lev( $msg );
+        } else {
+            print STDERR $msg , "\n"; 
+        }
+    }
 }
 
 sub _log {
@@ -314,24 +337,6 @@ sub _debug {
     my ($cl,$fi,$li) = caller(0);
     return unless $ENV{BASELINER_DEBUG} || $ENV{BALI_DEBUG} || $ENV{CATALYST_DEBUG};
     _log_me( 'debug', $cl,$fi,$li,@_);
-}
-
-# internal log engine used by _log and _debug
-sub _log_me {
-    my ($lev, $cl,$fi,$li, @msgs ) = @_;
-    my $logger = Baseliner->app ? Baseliner->app->{_logger} : '';
-    if( ref $logger eq 'CODE' ) { # logger override
-        $logger->($cl,$fi,$li, @msgs );
-    } else {
-        $cl =~ s{^Baseliner}{B};
-        my $pid = sprintf('%s', $$);
-        my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", @msgs ;
-        if( my $cat_log = Baseliner->log ) {
-            $cat_log->$lev( $msg );
-        } else {
-            print STDERR $msg , "\n"; 
-        }
-    }
 }
 
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
@@ -445,7 +450,7 @@ sub parse_date {
 sub parse_dt {
     my ( $format, $date ) = @_;
     use DateTime::Format::Strptime;
-    my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak' );
+    my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak', time_zone=>_tz() );
     return $parser->parse_datetime( $date );
 }
 
