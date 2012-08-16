@@ -75,7 +75,7 @@ sub _hooks {
     my $type = shift or _throw 'Missing hook type';
     my $key = sprintf '%s._hooks', $self->key;
     if( my $hooks = Baseliner->model('Registry')->get_node( $key ) ) {
-        return @{ $hooks->{ $type } };
+        return _array $hooks->{ $type };
     }
     return ();
 }
