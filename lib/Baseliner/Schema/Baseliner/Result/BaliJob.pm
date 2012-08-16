@@ -16,7 +16,13 @@ __PACKAGE__->add_columns(
     default_value => undef,
     is_auto_increment => 1,
     is_nullable => 0,
-    size => 38,
+  },
+  "mid",
+  {
+    data_type => "NUMBER",
+    default_value => undef,
+    is_auto_increment => 1,
+    is_nullable => 1,
   },
   "name",
   {
@@ -216,6 +222,12 @@ __PACKAGE__->belongs_to(
   "job_stash",
   "Baseliner::Schema::Baseliner::Result::BaliJobStash",
   { "foreign.id" => "self.id_stash" },
+);
+
+__PACKAGE__->belongs_to(
+  "master",
+  "Baseliner::Schema::Baseliner::Result::BaliMaster",
+  { "foreign.mid" => "self.mid" },
 );
 
 __PACKAGE__->has_many(
