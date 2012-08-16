@@ -175,33 +175,19 @@ sub monitor_json : Path('/job/monitor_json') {
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = @{$p}{qw/start limit query query_id dir sort/};
     $start||=0;
     $limit||=50;
-    defined $query and $query =~ s/\*/%/g;
+
     my ($select,$order_by, $as) = $sort
-        ? ([{ distinct=>'me.id'} ,$sort]         , { "-$dir" => $sort, -desc => 'me.starttime' }, ['id'])
-        : ([{ distinct=>'me.id'} ,'me.starttime'], { -desc => "me.starttime" }, ['id', 'starttime']);
+        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' } ], [ 'id', $sort ])
+        : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" } ] , ['id', 'starttime'] );
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
 
     my $page = to_pages( start=>$start, limit=>$limit );
-    my $where = {};
-    my $query_limit = 300;
 
-    # user content
-    if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-        my @user_apps = $perm->user_namespaces( $username ); # user apps
-        $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
-        # username can view jobs where the user has access to view the jobcontents corresponding app
-        # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
-    }
-    
-    #Cuando viene por el dashboard
-    if($query_id){
-        my @arreglo = split(",",$query_id);
-        $where->{'me.id'} = \@arreglo;
-    }
-    
-    
+    ### WHERE
     _log "Job search...";
+    my $where = {};
+    defined $query and $query =~ s/\*/%/g;
     $query and $where = query_sql_build( query=>$query, fields=>{
         name     =>'me.name',
         id       =>'to_char(me.id)',
@@ -213,69 +199,94 @@ sub monitor_json : Path('/job/monitor_json') {
         end      =>"me.endtime",
         items    =>"bali_job_items.item",
     });
-    my $rs_search = $c->model('Baseliner::BaliJob')->search(
-        $where,
-        {
-            select => $select,
-            as => $as,
-            join => [ 'bali_job_items' ],	
-            page=>0, 
-        #	rows=>$query_limit,
-            order_by => $order_by,
-        }
-    );
-    rs_hashref( $rs_search );
-    my @ids = map { $_->{id} } $rs_search->all; 
-    _log "Job search end.";
-    my $rs = $c->model('Baseliner::BaliJob')->search(
-        { 'me.id'=>{ -in =>\@ids } },
+    if( exists $p->{job_state_filter} ) {
+        my @job_state_filters = do {
+                my $job_state_filter = decode_json $p->{job_state_filter};
+                _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
+        };
+        $where->{status} = \@job_state_filters;
+    }
+
+    # Filter by nature
+    if (exists $p->{current_nature}) {      
+      $where->{'bali_job_items.item'} = $p->{current_nature};
+    }
+
+    # Filter by environment name:
+    if (exists $p->{env_filter}) {      
+      $where->{bl} = $p->{env_filter};
+    }
+
+    #dashboard
+    if($query_id){
+        my @arreglo = split(",",$query_id);
+        $where->{'me.id'} = \@arreglo;
+    }  
+
+    # user content
+    if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
+        my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
+        $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
+        # username can view jobs where the user has access to view the jobcontents corresponding app
+        # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
+    }
+    _debug $where;
+
+    ### FROM 
+    my $from = {
+        select   => 'me.id',
+        as       => $as,
+        join     => [ 'bali_job_items' ],   
+    };
+    _debug $from;
+    my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
+    # rs_hashref( $rs_search );
+    # my @ids = map { $_->{id} } $rs_search->all; 
+    my $id_rs = $rs_search->search( undef, { select=>[ 'me.id' ] } );
+
+    #_error _dump $id_rs->as_query ;
+
+    _debug "Job search end.";
+    my $rs_paged = $c->model('Baseliner::BaliJob')->search(
+        { 'me.id'=>{ -in => $id_rs->as_query } },
         {
             page=>$page, rows=>$limit,
             order_by => $order_by,
         }
     );
-    my $pager = $rs->pager;
+    my $pager = $rs_paged->pager;
     $cnt = $pager->total_entries;
-    #$cnt = $query ? $pager->total_entries : $query_limit;
-    #$cnt = 1000;
 
     # Job items cache
-    _log "Items cache start...";
-    my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>\@ids },{ select=>[qw/id id_job application item/] } );
-    rs_hashref( $rs_items );
-    my %job_items;
-    for( $rs_items->all ) {
-        push @{ $job_items{ $_->{id_job} } }, $_;
-    }
-    _log "Items cache end.";
-=head1
-    my $results = $self->rs_filter( rs=>$rs, start=>$start, limit=>$limit, query=>$query, filter=>sub {
-        return 1 unless $query;	
-        my $r = shift;
-        my $step = _loc( $r->step );
-        my $status = _loc( $r->status );
-        my $type = _loc( $r->type );
-        my $last_log_message = ""; #$r->last_log_message;
-        return !( $query && !query_array($query, $last_log_message, $status, $step, $r->name, $r->comments, $r->type, $type, $r->bl, $r->owner, $r->username ) );
-    });
-=cut
+    _log "Job data start...";
+    my %job_items = $c->model('Baseliner::BaliJobItems')
+        ->search(
+            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
+            { select=>[qw/id id_job application item/] }
+    )->hash_on( 'id_job' );
+    _log "Job data end.";
+
     my @rows;
     #while( my $r = $rs->next ) {
     my $now = _dt();
-    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0 ) ; 
-    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute ) ; 
+    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ; 
+    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ; 
 
     #foreach my $r ( _array $results->{data} ) {
-    while( my $r = $rs->next ) {
-        my $step = _loc( $r->step );
-        my $status = _loc( $r->status );
-        my $type = _loc( $r->type );
+    _debug "Looping start...";
+    for my $r ( $rs_paged->hashref->all ) {
+        my $step = _loc( $r->{step} );
+        my $status = _loc( $r->{status} );
+        my $type = _loc( $r->{type} );
         my %app;
-        my @items = _array $job_items{$r->id};
-        # TODO make this mid - master_rel relationship
+        my @items = _array $job_items{ $r->{id} };
         my $contents = @items ? [
               map {
                   $app{ $_->{application} }=() if defined $_->{application};
+                  #bde: 
+                  #my ($type,$name) = ns_split( $_->{item} );
+                  #$type eq 'harvest.package'? '<img src="/static/images/package.gif">&nbsp;' . $name : '<img src="/static/images/changeman/package.gif">&nbsp;' . $name if $type =~ m{.*\.package$} 
+
                   my ( $dom,$nsid) = ns_split( $_->{item} );
                   my $ret;
                   if( $dom eq 'changeset' ) {
@@ -287,14 +298,26 @@ sub monitor_json : Path('/job/monitor_json') {
               } @items
           ] : [];
         my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
-        my $last_log_message = $r->last_log_message;
+        my $last_log_message = $r->{last_log_message};
+
+        my @subapps = map {
+            (ns_split( $_->{item} ))[1];
+        } grep {
+            $_->{item} =~ /^subap/
+        } _array $job_items{ $r->{id} };
+
+        my @natures = map {
+            (ns_split( $_->{item} ))[1];
+        } grep {
+            $_->{item} =~ /^nature/
+        } _array $job_items{ $r->{id} };
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
         my $grouping='';
         my $day;  
-        my $dur =  $today - $r->starttime ; 
-        my $sdt = $r->starttime;
-        $sdt->{locale} = DateTime::Locale->load( $c->languages->[0] || 'en' );
+        my $sdt = parse_dt( '%Y-%m-%d %H:%M', $r->{starttime}  );
+        my $dur =  $today - $sdt; 
+        $sdt->{locale} = DateTime::Locale->load( $c->languages->[0] || 'en' ); # day names in local language
         $day =
             $dur->{months} > 3 ? [ 90, _loc('Older') ]
           : $dur->{months} > 2 ? [ 80, _loc( '%1 Months', 3 ) ]
@@ -309,49 +332,51 @@ sub monitor_json : Path('/job/monitor_json') {
           : $dur->{days} == 3   ? [ 4,  _loc( $sdt->day_name ) ]
           : $dur->{days} == 2   ? [ 3,  _loc( $sdt->day_name ) ]
           : $dur->{days} == 1   ? [ 2,  _loc( $sdt->day_name ) ]
-          : $dur->{days} == 0  ? $r->starttime < $today ? [ 2,  _loc( $sdt->day_name ) ]
-                               : $r->starttime > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
+          : $dur->{days} == 0  ? $sdt < $today ? [ 2,  _loc( $sdt->day_name ) ]
+                               : $sdt > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
           :                      [ 0,  _loc('Upcoming') ];
         $grouping = $day->[0];
 
         push @rows, {
-            id           => $r->id,
-            name         => $r->name,
-            bl           => $r->bl,
-            bl_text      => $r->bl,                        #TODO resolve bl name
-            starttime    => $r->get_column('starttime'),
-            schedtime    => $r->get_column('schedtime'),
-            maxstarttime => $r->get_column('maxstarttime'),
-            endtime      => $r->get_column('endtime'),
-            comments     => $r->get_column('comments'),
-            username     => $r->get_column('username'),
-            rollback     => $r->get_column('rollback'),
-            key          => $r->get_column('job_key'),
+            id           => $r->{id},
+            mid           => $r->{mid},
+            name         => $r->{name},
+            bl           => $r->{bl},
+            bl_text      => $r->{bl},                        #TODO resolve bl name
+            starttime    => $r->{starttime},
+            schedtime    => $r->{schedtime},
+            maxstarttime => $r->{maxstarttime},
+            endtime      => $r->{endtime},
+            comments     => $r->{comments},
+            username     => $r->{username},
+            rollback     => $r->{rollback},
+            key          => $r->{job_key},
             last_log     => $last_log_message,
             grouping     => $grouping,
             day          => ucfirst( $day->[1] ),
             contents     => $contents,
             applications => $apps,
             step         => $step,
-            step_code    => $r->step,
-            exec         => $r->get_column('exec'),
-            pid          => $r->get_column('pid'),
-            owner        => $r->get_column('owner'),
-            host         => $r->get_column('host'),
+            step_code    => $r->{step},
+            exec         => $r->{'exec'},
+            pid          => $r->{pid},
+            owner        => $r->{owner},
+            host         => $r->{host},
             status       => $status,
-            status_code  => $r->status,
-            type_raw     => $r->get_column('type'),
+            status_code  => $r->{status},
+            type_raw     => $r->{type},
             type         => $type,
-            runner       => $r->runner,
+            runner       => $r->{runner},
+            natures      => \@natures,
+            subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
-    
-    my @sorted = sort { $b->{grouping}<=>$a->{grouping} || $b->{starttime} cmp $a->{starttime} } @rows;
-    
+    _debug "Looping end ";
+
     $c->stash->{json} = { 
         totalCount=> $cnt,
         #next_start => $results->{next_start},
-        data => \@sorted
+        data => \@rows,
      };
     $c->forward('View::JSON');
 }
