@@ -106,19 +106,19 @@ sub job_elements {
     } else {
 
         #Topic Files
-        @versions = $c->model( 'Baseliner::BaliMasterRel' )->search(
+        my $versions_ref = $c->model( 'Baseliner::BaliMasterRel' )->search(
             {from_mid => \@changesets, rel_type => 'topic_file_version'},
             {
-                join    => [ 'topic_file_version_to' ],
+                join    => { 'topic_file_version_to' => { 'file_projects' => { 'directory' } } },
                 +select => [
                     'topic_file_version_to.filename', 'max(topic_file_version_to.versionid)',
-                    'max(topic_file_version_to.mid)'
+                    'max(topic_file_version_to.mid)', 'max(directory.name)'
                 ],
-                +as      => [ 'filename', 'version', 'mid' ],
+                +as      => [ 'filename', 'version', 'mid', 'path' ],
                 group_by => 'topic_file_version_to.filename',
             }
         )->hashref->all;
-
+        
         @elems = map {
             BaselinerX::ChangesetElement->new(
                 mid      => $_->{mid},
