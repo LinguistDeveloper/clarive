@@ -217,17 +217,23 @@ sub _unique {
 }
 
 sub _load {
-    utf8::encode( @_ ) if utf8::valid( @_ );
-    return try { YAML::XS::Load( @_ ) } catch { 
+    my @args = @_;
+    try {
+        utf8::encode( @_ ) if utf8::valid( @_ );
+        return YAML::XS::Load( @args )
+    } catch { 
         require YAML::Syck;
-        YAML::Syck::Load( @_ );
+        return YAML::Syck::Load( @args );
     };
 }
 
 sub _dump {
-    return try { YAML::XS::Dump( @_ ) } catch { 
+    my @args = @_;
+    return try { 
+        return YAML::XS::Dump( @args )
+    } catch { 
         require YAML::Syck;
-        YAML::Syck::Dump( @_ );
+        return YAML::Syck::Dump( @args );
     };
 }
 
