@@ -22,7 +22,7 @@ Baseliner.store.AllProjects = function(c) {
         fields: ['ns','name','description'] 
      }, c));
 };
-Ext.extend( Baseliner.store.AllProjects, Ext.data.JsonStore );
+Ext.extend( Baseliner.store.AllProjects, Baseliner.JsonStore );
 
 Baseliner.store.UserProjects = function(c) {
     Baseliner.store.UserProjects.superclass.constructor.call(this, Ext.apply({
@@ -70,7 +70,7 @@ Ext.extend( Baseliner.model.Projects, Ext.ux.form.SuperBoxSelect );
 
 Baseliner.combo_baseline = function(params) {
     if( params==undefined) params={};
-    var store = new Ext.data.JsonStore({
+    var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         autoLoad: true,
@@ -197,7 +197,7 @@ Baseliner.project_select_trees = function(params) {
 */
 Baseliner.combo_project = function(params) {
     if( params==undefined) params={};
-    var store = new Ext.data.JsonStore({
+    var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         autoLoad: true,
@@ -249,7 +249,7 @@ Baseliner.combo_revision = function(params) {
         base.checkin = true;
         base.does    = 'Baseliner::Role::Namespace::Checkin';
     }
-    var rev_store = new Ext.data.JsonStore({
+    var rev_store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -283,7 +283,7 @@ Baseliner.combo_revision = function(params) {
 
 Baseliner.combo_tasks = function(params) {
     if( params == undefined ) params = {};
-    var store_tasks =new Ext.data.JsonStore({
+    var store_tasks =new Baseliner.JsonStore({
         root: 'data', 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -329,7 +329,7 @@ Baseliner.combo_tasks = function(params) {
 
 Baseliner.combo_services = function(params) {
     if( params==undefined) params={};
-    var store = new Ext.data.JsonStore({
+    var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         autoLoad: true,

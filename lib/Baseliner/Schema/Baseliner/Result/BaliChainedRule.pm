@@ -110,6 +110,8 @@ __PACKAGE__->add_columns(
   "active",
   { data_type => "char", default_value => \"NULL", is_nullable => 0, size => 1 },
   "ns",
+  { data_type => "char", default_value => \"NULL", is_nullable => 0, size => 20 },
+  "bl",
   { data_type => 'varchar2', default_value => "\\", size => 1024 },
   "service",
   { data_type => 'varchar2', size => 1024 }

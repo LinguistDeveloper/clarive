@@ -24046,6 +24046,9 @@ Ext.data.Store = Ext.extend(Ext.util.Observable, {
 
     
     singleSort: function(fieldName, dir) {
+    	if (!this.fields) { // Eric -- Filtramos un poco esto por si llega vacío...
+    		return false;
+    	}
         var field = this.fields.get(fieldName);
         if (!field) {
             return false;

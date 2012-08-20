@@ -165,13 +165,22 @@
       value: 'unix'
     }, {
       xtype: 'container',
-      height: 50,
+      height: 40,
       width: 500,
       autoEl: {
         tag: 'div',
         html: _('%1 File Deployment Setup', 'Unix')
       },
       cls: 'form-label-1'
+    }, {
+      xtype: 'container',
+      height: 85,
+      width: 505,
+      autoEl: {
+    	tag: 'div',
+    	html: "Si existe herencia de grupo en el directorio de destino, no se aplicará el grupo seleccionado a continuación sino el existente en el sistema de archivos.<br><br>En este caso, además únicamente se aplicarán los permisos seleccionados a los ficheros, no a los directorios."
+      },
+      cls: 'form-label-2'
     },
     combo_ns, combo_bl, combo_from,
     //{ xtype:'textfield', name: 'from', fieldLabel: _('From Path'), allowBlank: false, value: params.action },

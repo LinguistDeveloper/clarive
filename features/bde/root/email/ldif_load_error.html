@@ -1,0 +1,23 @@
+<%args>
+  $error_str
+  $message
+</%args>
+
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+</head>
+
+<body>
+<% $message %>
+<p>
+Fallo en la carga de usuarios: <% $error_str %>
+</body>
+
+<style>
+body {
+	font-family: arial;
+	font-size: 10pt;
+}
+</style>

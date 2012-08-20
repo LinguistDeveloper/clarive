@@ -27,7 +27,8 @@ register 'config.job' => {
         { id=>'endtime', label => 'EndDate', type=>'text' },
         { id=>'status', label => 'Status', type=>'text', default=>'READY' },
         { id=>'mask', label => 'Job Naming Mask', type=>'text', default=>'%s.%s-%08d' },
-        { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.simple.chain' } },
+        # { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.simple.chain' } },
+        { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.chained.rule' } }, # Eric
         { id=>'comment', label => 'Comment', type=>'text' },
         { id=>'check_rfc', label => 'Check RFC on creation', type=>'text', default=>0 },
         { id=>'step', label => 'Which phase of the job, pre, post or run', default => 'RUN' },
@@ -42,10 +43,17 @@ register 'config.job' => {
     ],
 };
 
-register 'action.job.create' => { name=>'Create New Jobs' };
 register 'menu.job' => { label => 'Jobs' };
-register 'menu.job.create' => { label => 'Create a new Job', url=>'/job/create', title=>'New Job',
-    icon=>'/static/images/star_on.gif', actions=>['action.job.create'] };
+
+register 'action.job.create' => {name => 'Create New Jobs'};
+
+register 'menu.job.create' => {label   => 'Create a new Job',
+                               url     => '/job/create',
+                               title   => 'New Job',
+                               icon    => '/static/images/star_on.gif',
+                             # actions => ['action.job.create'],
+                               action  => 'action.job.create'};
+
 #register 'menu.job.list' => { label => 'List Current Jobs', url=>'/maqueta/list.mas', title=>'Job Monitor' };
 #register 'menu.job.exec' => { label => 'Exec Current Jobs', url_run=>'/maqueta/list.mas', title=>'Job Monitor' };
 #register 'menu.job.hist' => { label => 'Historical Data', handler => 'function(){ Ext.Msg.alert("Hello"); }' };

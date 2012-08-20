@@ -10,86 +10,86 @@ BEGIN { extends 'Catalyst::Controller' }
 
 sub logs_list : Path('/job/log/list') {
     my ( $self, $c ) = @_;
-	my $p = $c->req->params;
+        my $p = $c->req->params;
     $c->stash->{id_job} = $p->{id_job};
     $c->stash->{annotate_now} = $p->{annotate_now};
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>" . $p->{id_job};
-	my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
-	$c->stash->{job_exec} = ref $job ? $job->exec : 1;
+    #_log ">>>>>>>>>>>>>>>>>>>>>>>>" . $p->{id_job};
+        my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+        $c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $c->stash->{template} = '/comp/log_grid.mas';
 }
 
 sub _select_words {
-	my ($self,$text,$cnt)=@_;
-	my @ret=();
-	for( $text =~ /(\w+)/g ) {
-		next if length( $_ ) <= 3;
-		push @ret, $_;
-		last if @ret >= $cnt;
-	}
-	return join '_', @ret;
+        my ($self,$text,$cnt)=@_;
+        my @ret=();
+        for( $text =~ /(\w+)/g ) {
+                next if length( $_ ) <= 3;
+                push @ret, $_;
+                last if @ret >= $cnt;
+        }
+        return join '_', @ret;
 }
 
 sub auto_refresh : Path('/job/log/auto_refresh') {
-	my ( $self,$c )=@_;
-	my $p = $c->request->parameters;
+        my ( $self,$c )=@_;
+        my $p = $c->request->parameters;
     my $filter = $p->{filter};
        $filter = decode_json( $filter ) if $filter;
     my $where = { id_job => $p->{ id_job }, 'me.exec' => $p->{ job_exec } || 1 };
     #_log _dump ( $filter );
     $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
         if ref($filter) eq 'HASH';
-    _log _dump $where;
+    #_log _dump $where;
     my $rs = $c->model( 'Baseliner::BaliLog' )->search( $where, { order_by=>'me.id desc', join=>['job'] } );
     my $top = $rs->first;
     my $stop_now = $top->job->status ne 'RUNNING' ? \1 : \0;
     $c->stash->{json} = { count => $rs->count, top_id=>$top->id, stop_now=>$stop_now };
-	$c->forward('View::JSON');
+        $c->forward('View::JSON');
 }
 
 sub logs_json : Path('/job/log/json') {
-	my ( $self,$c )=@_;
+        my ( $self,$c )=@_;
     _db_setup;
-	my $p = $c->request->parameters;
+        my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $filter, $cnt ) = @{$p}{qw/start limit query dir sort filter/};
     $limit||=50;
     $filter = decode_json( $filter ) if $filter;
-	my $config = $c->registry->get( 'config.job.log' );
-	my @rows = ();
+        my $config = $c->registry->get( 'config.job.log' );
+        my @rows = ();
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
 
-	my $where = $p->{id_job} ? { id_job=>$p->{id_job} } : {};
-	my $from = {   order_by=> $sort ? "$sort $dir" : 'me.id',
-					#page => to_pages( start=>$start, limit=>$limit ),
-					#rows => $limit,
-				#	prefetch => ['job']
+        my $where = $p->{id_job} ? { id_job=>$p->{id_job} } : {};
+        my $from = {   order_by=> $sort ? "$sort $dir" : 'me.id',
+                                        #page => to_pages( start=>$start, limit=>$limit ),
+                                        #rows => $limit,
+                                #       prefetch => ['job']
                 };
-	#TODO use the blob 'data' somehow .. change to clob?
-	if( $query ) {
-		$where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
-	} else {
-		my $job_exec;
-		if( exists $p->{job_exec} ) {
-			$job_exec = $p->{job_exec};
-		} else {
-			$job_exec = ref $job ? $job->exec : 1;
-		}
-		$where->{'me.exec'} = $job_exec;
-		# faster: $from->{join} = [ 'jobexec' ];
-	}
+        #TODO use the blob 'data' somehow .. change to clob?
+        if( $query ) {
+                $where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
+        } else {
+                my $job_exec;
+                if( exists $p->{job_exec} ) {
+                        $job_exec = $p->{job_exec};
+                } else {
+                        $job_exec = ref $job ? $job->exec : 1;
+                }
+                $where->{'me.exec'} = $job_exec;
+                # faster: $from->{join} = [ 'jobexec' ];
+        }
     $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
         if ref($filter) eq 'HASH';
 
     #TODO    store filter preferences in a session instead of a cookie, on a by id_job basis
     #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$p->{id_job} })->first;
     my $rs = $c->model( 'Baseliner::BaliLog')->search( $where , $from );
-	#my $pager = $rs->pager;
-	#$cnt = $pager->total_entries;
+        #my $pager = $rs->pager;
+        #$cnt = $pager->total_entries;
 
-	my $qre = qr/\.\w+$/;
-	while( my $r = $rs->next ) {
+        my $qre = qr/\.\w+$/;
+        while( my $r = $rs->next ) {
         #my $data = uncompress( $r->data ) || $r->data;
-		my $data = '';
+                my $data = '';
         #next if( $query && !query_array($query, $r->job->name, $r->get_column('timestamp'), $r->text, $r->provider, $r->lev, $r->data_name, $data, $r->ns ));
         #if( $filter ) { next if defined($filter->{$r->lev}) && !$filter->{$r->lev}; }
 
@@ -117,32 +117,32 @@ sub logs_json : Path('/job/log/json') {
             section  => $r->section,
             ns       => $r->ns,
             provider => $r->provider,
-			datalen  => $data_len,
+                        datalen  => $data_len,
             more     => { more=>$more, data_name=> $r->data_name, data=> $r->data ? \1 : \0, file=>$file },
           } #if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
-	}
-	$c->stash->{json} = {
+        }
+        $c->stash->{json} = {
         totalCount => scalar(@rows),
         data       => \@rows,
         job        => { ref $job ? $job->get_columns : () },
      };
     # CORE::warn Dump $c->stash->{json};
-	$c->forward('View::JSON');
+        $c->forward('View::JSON');
 }
 
 sub log_data : Path('/job/log/data') {
     my ( $self, $c, $id ) = @_;
     _db_setup;
-	my $p = $c->req->params;
-	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
-	$c->res->body( "<pre>" . (uncompress($log->data) || $log->data)  . " " );
+        my $p = $c->req->params;
+        my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
+        $c->res->body( "<pre>" . (uncompress($log->data) || $log->data)  . " " );
 }
 
 sub jesSpool : Path('/job/log/jesSpool') {
     my ( $self, $c ) = @_;
     _db_setup;
     my $p = $c->req->params;
-    _log _dump $p;
+    #_log _dump $p;
     $c->stash->{jobStore} = '/job/log/jobList?logId='.$p->{id}.'&jobId='.$p->{jobId}.'&jobName='.$p->{jobName};
     $c->stash->{jobName} = '/job/log/jesFile';
     # $c->stash->{template} = '/comp/repl.mas';
@@ -151,112 +151,159 @@ sub jesSpool : Path('/job/log/jesSpool') {
 
 sub jobList : Path('/job/log/jobList') {
     my ( $self, $c ) = @_;
-    my (@sites, @jobs, @files)=((),(),());
+    my (@sites, @jobs, @files, @packages)=((),(),(),());
     my $p = $c->req->params;
     my $log;
     # _log _dump $p;
+    my $pkgIcon='/static/images/changeman/package.gif';
     my $siteIcon='/static/images/site.gif';
     my $jobIcon='/static/images/book.gif';
     my $spoolIcon='/static/images/page.gif';
+    my $infoIcon='/static/images/log_i.gif';
     _db_setup;
     if (ref $p->{logId}) {
-        $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{logId} }, { order_by=>'name asc' });
+        $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{logId} }, { order_by=>'path, id' });
     } else {
-        $log = $c->model('Baseliner::BaliLogData')->search({ id_job=> $p->{jobId} }, { order_by=>'name asc' });
+        $log = $c->model('Baseliner::BaliLogData')->search({ id_job=> $p->{jobId} }, { order_by=>'path, id' });
         }
-    my ($site, $parent, $lastSite, $lastParent)=(undef,undef,undef,undef,undef,undef) ;
+    my ($package, $site, $parent, $lastSite, $lastParent, $lastPackage)=(undef,undef,undef,undef,undef,undef,undef) ;
 
     while (my $rec=$log->next) {
-        my ($null,$siteText,$parentText,$file)=split /\//, $rec->name;
-        $parent={
-            key=>"/$siteText/$parentText",
-            text=>$parentText
-            };
-        $site={
-            key=>"/$siteText",
-            text=>$siteText
-            };
+       if ( $rec->name =~ m{\/(.*)\/.*\/(fin(..))}i ) {
+          push @sites,
+             {
+             id       => "$1$3",
+             cls      => 'x-tree-node-leaf',
+             icon     => $infoIcon,
+             leaf     => 1,
+             text     => $2,
+             data     => $3
+             } ;
+          next;
+       }
 
-        # _log $rec->name ."=> ". _dump $parent ." ne ". _dump $lastParent;
-        if ($parent->{key} ne $lastParent->{key}) {
-            push @jobs,
-                {
-                id       => $lastParent->{id},
-                cls      => 'x-tree-node',
-                icon     => $jobIcon,
-                leaf     => $lastParent->{text} !~ m{siteok|siteko|finok|finko}?0:1,
-                text     => $lastParent->{text},
-                children => [@files]
-                } if $lastParent->{text};
-            @files=();
-            $lastParent={
-                text=>$parent->{text},
-                key=>$parent->{key},
-                id=>$rec->id
-                };
-            }
-        if ($site->{key} ne $lastSite->{key}) {
-        _log $site->{key}." vs ".$lastSite->{key};
-            push @sites,
-                {
-                id       => $lastSite->{text},
-                cls      => 'x-tree-node',
-                icon     => $lastSite->{text} !~ m{siteok|siteko|finok|finko}?$siteIcon:$spoolIcon,
-                leaf     => $lastSite->{text} !~ m{siteok|siteko|finok|finko}?0:1,
-                text     => $lastSite->{text},
-                children => [@jobs]
-                } if $lastSite->{text};
-            @jobs=();
-            $lastSite={
-                text=>$site->{text},
-                key=>$site->{key},
-                id=>$rec->id
-                };
-            }
-        push @files,
-            {
-            id       => $rec->id,
-            cls      => 'x-tree-node-leaf',
-            icon     => $spoolIcon,
-            leaf     => 1,
-            needLoad => 1,
-            text     => $file,
-            data     => ''
-            } if length $file > 0 && $parent->{text} !~ m{siteok|siteko|finok|finko};
-        }
-    push @jobs,
+       my ($root,$packageText,$siteText,$parentText,$file)=split /\//, $rec->name;
+
+       $parent={
+          key=>"/$packageText/$siteText/$parentText",
+          text=>$parentText
+       };
+       $site={
+          key=>"/$packageText/$siteText",
+          text=>$siteText
+       };
+       $package={
+          key=>"/$packageText",
+          text=>$packageText
+       };
+
+       if ($parent->{key} ne $lastParent->{key}) {
+          #_log $rec->name ."=". _dump $parent . ".." . _dump $lastParent;
+           push @jobs,
+              {
+              id       => $lastParent->{text} !~ m{siteok|siteko}i?$lastParent->{id}:'~'.$lastParent->{id},
+              cls      => 'x-tree-node',
+              icon     => $lastParent->{text} !~ m{siteok|siteko}i?$jobIcon:$infoIcon,
+              leaf     => $lastParent->{text} !~ m{siteok|siteko}i?0:1,
+              text     => $lastParent->{text},
+              children => [@files]
+              } if $lastParent->{text};
+          @files=();
+          $lastParent={
+             text=>$parent->{text},
+             key=>$parent->{key},
+             id=>$parent->{key}
+          };
+       }
+       if ($site->{key} ne $lastSite->{key}) {
+       # _log $site->{key}." vs ".$lastSite->{key};
+          push @sites,
+             {
+             id       => $lastSite->{key},
+             cls      => 'x-tree-node',
+             icon     => $siteIcon,
+             leaf     => 0,
+             text     => $lastSite->{text},
+             children => [@jobs]
+             } if $lastSite->{text};
+         @jobs=();
+         $lastSite={
+            text=>$site->{text},
+            key=>$site->{key},
+            id=>$site->{key}
+         };
+      }
+
+      if ($package->{key} ne $lastPackage->{key}) {
+          push @packages,
+             {
+             id       => $lastPackage->{text},
+             cls      => 'x-tree-node',
+             icon     => $pkgIcon,
+             leaf     => 0,
+             text     => $lastPackage->{text},
+             children => [@sites]
+             } if $lastPackage->{text};
+         @sites=();
+         $lastPackage={
+            text=>$package->{text},
+            key=>$package->{key},
+            id=>$package->{key}
+         };
+      }
+      push @files,
+         {
+         id       => $rec->id,
+         cls      => 'x-tree-node-leaf',
+         icon     => $spoolIcon,
+         leaf     => 1,
+         needLoad => 1,
+         text     => $file,
+         data     => ''
+         } if length $file > 0 && $parent->{text} !~ m{siteok|siteko}i;
+   }
+   push @jobs,
+     {
+     id       => $lastParent->{text} !~ m{siteok|siteko}i?$lastParent->{id}:'~'.$lastParent->{id},
+     cls      => 'x-tree-node',
+     icon     => $lastParent->{text} !~ m{siteok|siteko}i?$jobIcon:$infoIcon,
+     leaf     => $lastParent->{text} !~ m{siteok|siteko}i?0:1,
+     text     => $lastParent->{text},
+     children => [@files]
+     };
+
+   push @sites,
       {
-      id       => $lastParent->{id},
+      id       => $lastSite->{key},
       cls      => 'x-tree-node',
-      icon     => $jobIcon,
-      leaf     => $lastParent->{text} !~ m{siteok|siteko|finok|finko}?0:1,
-      text     => $lastParent->{text},
-      children => [@files]
+      icon     => $siteIcon,
+      leaf     => 0,
+      text     => $lastSite->{text},
+      children => [@jobs]
+      } if $lastSite->{text};
+
+   push @packages,
+      {
+      id       => $lastPackage->{text},
+      cls      => 'x-tree-node',
+      icon     => $pkgIcon,
+      leaf     => 0,
+      text     => $lastPackage->{text},
+      children => [@sites]
+      } if $lastPackage->{text};
+
+   push my @ret,
+      {
+      id       => 'first',
+      text     => _loc('Executed JOBS for <b>%1</b>', $p->{jobName} ),
+      cls      => 'x-tree-node',
+      leaf     => 0,
+      children     => [@packages]
       };
 
-    _log $site->{key}." vs ".$lastSite->{key};
-    push @sites,
-        {
-        id       => $lastSite->{text},
-        cls      => 'x-tree-node',
-        icon     => $lastSite->{text} !~ m{siteok|siteko|finok|finko}?$siteIcon:$spoolIcon,
-        leaf     => $lastSite->{text} !~ m{siteok|siteko|finok|finko}?0:1,
-        text     => $lastSite->{text},
-        children => [@jobs]
-        };
-
-    push my @ret,
-        {
-        id       => 'first',
-        text     => _loc('Executed JOBS for %1', $p->{jobName} ),
-        cls      => 'x-tree-node',
-        leaf     => 0,
-        children     => [@sites]
-        };
-
-    $c->stash->{json} = [ @ret ];
-    $c->forward('View::JSON');
-    }
+   $c->stash->{json} = [ @ret ];
+   $c->forward('View::JSON');
+}
 
 sub jesFile : Path('/job/log/jesFile') {
     my ( $self, $c ) = @_;
@@ -271,39 +318,39 @@ sub jesFile : Path('/job/log/jesFile') {
 sub log_highlight : Path('/job/log/highlight') {
     my ( $self, $c, $id ) = @_;
     _db_setup;
-	my $p = $c->req->params;
-	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
+        my $p = $c->req->params;
+        my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
     if( my $viewer_key = $log->provider ) {
         if( my $viewer = $c->model('Registry')->get( $viewer_key ) ) {
             # viewer options
         }
     }
-	$c->stash->{class} = $log->data_length > 1000000 ? '' : $log->{highlight_class} || 'spool';
-	$c->stash->{style} = $log->{highlight_style} || 'golden';
-	$c->stash->{data} = (uncompress($log->data) || $log->data)  . " ";
-	$c->stash->{template} = '/site/highlight.html';
+        $c->stash->{class} = $log->data_length > 1000000 ? '' : $log->{highlight_class} || 'spool';
+        $c->stash->{style} = $log->{highlight_style} || 'golden';
+        $c->stash->{data} = (uncompress($log->data) || $log->data)  . " ";
+        $c->stash->{template} = '/site/highlight.html';
 }
 
 sub log_data_search : Path('/job/log/data_search') {
     my ( $self, $c ) = @_;
     _db_setup;
-	my $p = $c->req->params;
-	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
-	$c->stash->{log_data} = uncompress($log->data) || $log->data;
-	$c->stash->{template} = '/comp/log_search.mas';
+        my $p = $c->req->params;
+        my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
+        $c->stash->{log_data} = uncompress($log->data) || $log->data;
+        $c->stash->{template} = '/comp/log_search.mas';
 }
 
 sub log_file : Path('/job/log/download_data') {
     my ( $self, $c ) = @_;
     _db_setup;
-	my $p = $c->req->params;
-	my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
+        my $p = $c->req->params;
+        my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
     my $file_id = $log->id_job.'-'.$p->{id};
     my $filename = $file_id . '-' . ( $p->{file_name} || $log->data_name || 'attachment.txt' );
     $c->res->header('Content-Disposition', qq[attachment; filename="$filename"]);
-	#$c->res->content_type('text/plain;charset=utf-8');
-	$c->res->content_type('application-download;charset=utf-8');
-	$c->res->body( uncompress($log->data) || $log->data );
+        #$c->res->content_type('text/plain;charset=utf-8');
+        $c->res->content_type('application-download;charset=utf-8');
+        $c->res->body( uncompress($log->data) || $log->data );
 }
 
 sub annotate : Path('/job/log/annotate') {

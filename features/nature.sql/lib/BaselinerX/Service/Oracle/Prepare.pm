@@ -61,7 +61,7 @@ sub main {
       my $packagename     = $data->{packagename};
       push @envs, $environmentname;
       unless ($SQA) {
-        $log->debug("Ahora debería estar dentro...");  # XXX
+        # $log->debug("Ahora debería estar dentro...");  # XXX
         my @packagegroups = BaselinerX::CA::Harvest::DB
                              ->pkggrpname_packagename($packagename);
         unless ($self->release) {  # Don't bother the DB if we already have one.

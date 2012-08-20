@@ -1,0 +1,82 @@
+<%args>
+  $mail_data
+  $message
+</%args>
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+	<& /email/style.css &>
+</head>
+
+<style>
+body {
+	font-family: arial;
+	font-size: 10pt;
+}
+.backGroundPrimeraFila {
+	font-family: Verdana;
+	font-size: 8pt;
+	font-weight: bold;
+	color: #CCCCCC;
+	background-color: #666666;
+	vertical-align: middle;
+}
+.backGroundFilaDatos {
+	font-family: Verdana;
+	font-size: 8pt;
+	color: #111111;
+	background-color: #ffffff;
+	vertical-align: top;
+}
+</style>
+<body> 
+<div id="tablaContenedor_div">
+<TABLE cellpadding="0" cellspacing="0" width="100%">
+	<TR height="20">
+		<TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">
+			&nbsp;Baseliner SCM
+		</TD>
+	</TR>
+</TABLE>
+</div>
+
+<table border=0 cellspacing=2>
+	<tr>
+		<td>
+			<h3><% $message %></h3>
+		</td>
+	</tr>
+</table>
+
+<table border=1 cellspacing=1 cellpadding="2">
+	<tr>
+        <td class="backGroundPrimeraFila">Código de Pase</td>
+        <td class="backGroundPrimeraFila">CAM</td>
+        <td class="backGroundPrimeraFila">Estado</td>
+        <td class="backGroundPrimeraFila">Entorno</td>
+        <td class="backGroundPrimeraFila">Tecnolog�a</td>
+        <td class="backGroundPrimeraFila">Subaplicación</td>
+        <td class="backGroundPrimeraFila">Usuario</td>
+        <td class="backGroundPrimeraFila">Desde</td>
+        <td class="backGroundPrimeraFila">Hasta</td>
+        <td class="backGroundPrimeraFila">Paquetes / Motivos</td>
+        <!-- <td class="backGroundPrimeraFila">Acciones</td> -->
+	</tr>
+% for my $row (@{$mail_data}) {
+	<tr class="backGroundFilaDatos">
+        <td class="backGroundFilaDatos"><A=href"http://prusv053:42998/raw/job/log/list?id_job=<% $row->{job_id} %>"><% $row->{job_name} %></A></td>
+        <td class="backGroundFilaDatos"><% join '<br>', @{$row->{cam_list}} %></td>
+        <td class="backGroundFilaDatos"><% $row->{status} %></td>
+        <td class="backGroundFilaDatos"><% $row->{environment} %></td>
+        <td class="backGroundFilaDatos"><% join '<br>', @{$row->{nature_list}} %></td>
+        <td class="backGroundFilaDatos"><% join '<br>', @{$row->{subapps_list}} %></td>
+        <td class="backGroundFilaDatos"><% $row->{username} %></td>
+        <td class="backGroundFilaDatos"><% $row->{start_time} %></td>
+        <td class="backGroundFilaDatos"><% $row->{end_time} %></td>
+        <td class="backGroundFilaDatos"><% join '<br>*&nbsp;', @{$row->{package_list}} %></td>
+        <!-- <td class="backGroundFilaDatos"><% 'acciones aqui' %></td> -->
+	</tr>
+% }
+</table>
+</body>

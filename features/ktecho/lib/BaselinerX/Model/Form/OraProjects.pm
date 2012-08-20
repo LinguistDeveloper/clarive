@@ -509,16 +509,18 @@ sub add_despliegue {
 
 sub add_instancia {
   my ($self, $p) = @_;
-  my $rs = Baseliner->model('Inf::Infvar')
-                        ->search({valor   => $p->{instancia}}, 
+  $p->{instancia} = do {
+  	my $model = Baseliner->model('Inf::Infvar');
+    my $rs = $model->search({valor   => $p->{instancia}}, 
                                  {columns => [qw/variable/]});
   rs_hashref($rs);
-  $p->{instancia} = $rs->next->{variable};
+    $rs->next->{variable};  	
+  };
   my $ver = Baseliner->config->{'Model::Harvest'}->{db_version} || 7;
-  if ($ver == 7) {
+  # if ($ver == 7) {
     $p->{red} = 'LN' if $p->{red} eq 'I';
     $p->{red} = 'W3' if $p->{red} eq 'W';
-  }
+  # }
   Baseliner->model('Inf::InfCamOrainst')->create($p);
   return;
 }
@@ -549,17 +551,16 @@ sub delete_ins {
   my ($self, $p) = @_;
   $p->{red} = ($p->{red} eq 'Internet') ? 'W'
             : ($p->{red} eq 'Interna')  ? 'I'
-            :                             'G'
-            ;
-  my $ver = Baseliner->config->{'Model::Harvest'}->{db_version} || 7;
-  if ($ver == 7) {
+            :                             'G';
     $p->{red} = 'LN' if $p->{red} eq 'I';
     $p->{red} = 'W3' if $p->{red} eq 'W';
-  }
-  my $rs = Baseliner->model('Inf::Infvar')->search({valor   => $p->{instancia}}, 
+  $p->{instancia} = do {
+  	my $m  = Baseliner->model('Inf::Infvar');
+    my $rs = $m->search({valor   => $p->{instancia}}, 
                                                    {columns => [qw/variable/]});
   rs_hashref($rs);
-  $p->{instancia} = $rs->next->{variable};
+    $rs->next->{variable};  # Se devuelve la instancia sin resolver.
+  };
   my $row = Baseliner->model('Inf::InfCamOrainst')->search($p);
   $row->delete;
   return;

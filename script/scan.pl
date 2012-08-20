@@ -32,13 +32,13 @@ $ext and $usual and die "options -e and -u are mutually exclusive\n";
 
 my @find_re;
 for my $find ( @find ) {
-	push @find_re, qr/$find/i;
+    push @find_re, qr/$find/i;
 }
 
 if( $ext ) {
-	$ext =~ s{\.}{\\\.}g;
-	$ext =~ s{\*}{\.\*}g;
-	$ext =~ s{,}{\|}g;
+    $ext =~ s{\.}{\\\.}g;
+    $ext =~ s{\*}{\.\*}g;
+    $ext =~ s{,}{\|}g;
 }
 my $re = $usual ? qr/^.*\.(pm|mas|pl|js|html|t|po)$/i
 : $ext ? qr/^.*$ext$/i : qr//;
@@ -49,52 +49,52 @@ execute_cmd(@processed) if $exe;
 exit 0;
 
 sub process {
-	my $path = shift;
-	-d $path ? process_dir($path) : process_file($path);
+    my $path = shift;
+    -d $path ? process_dir($path) : process_file($path);
 }
 
 sub process_dir {
-	my $path = shift;
-	
-	my $dir = Path::Class::dir($path);
+    my $path = shift;
+    
+    my $dir = Path::Class::dir($path);
 
-	$dir->recurse( callback => sub {
-			my $p = shift;
-			my $path = $p->stringify;
-			return if $path =~ m/system volume/i;
-			return if $p->is_dir;
-			process_file( $p );
-	});
+    $dir->recurse( callback => sub {
+            my $p = shift;
+            my $path = $p->stringify;
+            return if $path =~ m/system volume/i;
+            return if $p->is_dir;
+            process_file( $p );
+    });
 }
 
 sub process_file {
-	my $p = shift;
-	my $f = $p->basename;
-	return if $ext && $f!~ $re;
-	scalar(@find) and (find_string($p) or return);
-	$convert ? convert( $p ) : $delete ? delete_file($p) : undef;
-	push @processed, $p->stringify;
+    my $p = shift;
+    my $f = $p->basename;
+    return if $ext && $f!~ $re;
+    scalar(@find) and (find_string($p) or return);
+    $convert ? convert( $p ) : $delete ? delete_file($p) : undef;
+    push @processed, $p->stringify;
 }
 
 sub delete_file {
-	my $file = shift;
-	print STDERR "d $file\n";
-	return if $test;
-	unlink $file;
+    my $file = shift;
+    print STDERR "d $file\n";
+    return if $test;
+    unlink $file;
 }
 
 sub find_string {
-	my $file = shift;
-	return if -B $file;
-	open my $in, '<', $file or die $!;
-	my $curr ;
-	my $flag ;
+    my $file = shift;
+    return if -B $file;
+    open my $in, '<', $file or die $!;
+    my $curr ;
+    my $flag ;
     my @lines = <$in>;
     my $i=0;
     chomp @lines;
-	foreach( @lines ) {
-		if( found($_) ) {
-			$flag ||= 1;
+    foreach( @lines ) {
+        if( found($_) ) {
+            $flag ||= 1;
             $curr = $_;
             unless( $list ) {
                if( $block_view ) {
@@ -104,12 +104,12 @@ sub find_string {
                     $list or print "$file: $curr\n";
                }
             }
-		}
+        }
         $i++;
-	}
-	close $in;
-	$list and $flag and print "$file\n" ;
-	return $flag;
+    }
+    close $in;
+    $list and $flag and print "$file\n" ;
+    return $flag;
 }
 
 sub format_line {
@@ -128,59 +128,59 @@ sub format_line {
 }
 
 sub found {
-	my $s = shift;
-	my $ok = 1;
-	for my $re ( @find_re ) {
-		$ok = 0 unless $s=~ m/$re/g;
-	}
-	return $ok;
+    my $s = shift;
+    my $ok = 1;
+    for my $re ( @find_re ) {
+        $ok = 0 unless $s=~ m/$re/g;
+    }
+    return $ok;
 }
 
 sub convert {
-	my $file = shift;
-	open my $in, "<:raw",  $file or die "$file: $!";
-	my $d;
-	{ 
-		local $/;
-		$d = <$in>;
-		$d=~ s{\r}{}g;
-	}
-	close $in;
+    my $file = shift;
+    open my $in, "<:raw",  $file or die "$file: $!";
+    my $d;
+    { 
+        local $/;
+        $d = <$in>;
+        $d=~ s{\r}{}g;
+    }
+    close $in;
 
-	my $enc = guess_encoding( $d );
-	my $name = ref $enc ? $enc->name : '?' ;
+    my $enc = guess_encoding( $d );
+    my $name = ref $enc ? $enc->name : '?' ;
 
-	if( $name eq 'utf8' ) {
-		print "lf $file (" . $name . " - lf only )";
-		write_encoding( $file, $d );
-		print "\n";
-	} else {
-		print "c $file ($name)";
-		write_encoding( $file, $d, ':utf8' );
-		print "\n";
-	}
-	
+    if( $name eq 'utf8' ) {
+        print "lf $file (" . $name . " - lf only )";
+        write_encoding( $file, $d );
+        print "\n";
+    } else {
+        print "c $file ($name)";
+        write_encoding( $file, $d, ':utf8' );
+        print "\n";
+    }
+    
 }
 
 sub write_encoding {
-	my ($file , $d, $enc) = @_;
+    my ($file , $d, $enc) = @_;
 
-	return if $test;
+    return if $test;
 
-	my $file2 = "${file}.new" ;
-	open my $out, ">$enc", $file2  or die $!;
-	print { $out } $d or die $!;
-	close $out;
-	unless( $new_only ) {
-		unlink $file;
-		rename $file2, $file;
-	}
+    my $file2 = "${file}.new" ;
+    open my $out, ">$enc", $file2  or die $!;
+    print { $out } $d or die $!;
+    close $out;
+    unless( $new_only ) {
+        unlink $file;
+        rename $file2, $file;
+    }
 }
 sub execute_cmd {
-	return unless @_;
-	my $cmd = $exe . ' "' . join('" "',@_) . '" ';
-	$cmd = "start $cmd" if $^O =~ m/mswin/i ;
-	system($cmd);
+    return unless @_;
+    my $cmd = $exe . ' "' . join('" "',@_) . '" ';
+    $cmd = "start $cmd" if $^O =~ m/mswin/i ;
+    system($cmd);
 }
 
 =head1 NAME

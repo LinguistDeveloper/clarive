@@ -115,10 +115,10 @@ register 'config.sqa.purge' => {
 register 'config.sqa' => {
     metadata => [
         { id => 'server', label => 'SQA Server', default => 'svm0759', },
-        { id => 'port', label => 'SQA Server Port', default => '48999', },
+        { id => 'port', label => 'SQA Server Port', default => '58765', },
         { id => 'key', label => 'SQA Server Key', default =>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE='  },
-        { id => 'dist_server', label => 'Dist Server', default => 'expsv066', },
-        { id => 'dist_port', label => 'Dist Server Port', default => '48999', },        
+        { id => 'dist_server', label => 'Dist Server', default => 'prusv063', },
+        { id => 'dist_port', label => 'Dist Server Port', default => '58765', },        
         { id => 'dist_key', label => 'Dist Server Key', default =>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE='  },
         { id => 'dist_udp_dir', label => 'Directorio de scripts', default => '/home/apst/scm/servidor/udp', },
         { id => 'dist_user', label => 'Dist Server', default => 'vtscm', },
@@ -158,8 +158,8 @@ register 'config.sqa' => {
         { id => 'url_scm', label=>'URL del servidor de scm', default=>'http://wbetest.bde.es/scm_inf'},
         { id => 'send_mail_sqa_owner', label=>'Se enviará correo al solicitante del análisis desde SQA', default=>'1'},
         { id => 'send_mail_scm_owner', label=>'Se enviará correo al solicitante del pase desde SCM', default=>'0'},
-        { id => 'job.host', label => 'Host donde mirara si existen los jobs.', default => 'expsv066' },
-        { id => 'job.port', label => 'El puerto del host <config.sqa.job.host>.', default => '48999' },
+        { id => 'job.host', label => 'Host donde mirara si existen los jobs.', default => 'prusv063' },
+        { id => 'job.port', label => 'El puerto del host <config.sqa.job.host>.', default => '58765' },
    ]
 };
 

@@ -9,13 +9,13 @@ use Exporter::Tidy default => [
     sub_apps )
 ];
 
-sub tiene_java { inf($_[0])->tiene_java }
+sub tiene_java { inf(shift)->tiene_java }
 
-sub entornos { @{inf($_[0])->entornos} }
+sub entornos { @{inf(shift)->entornos} }
 
-sub public { inf($_[0])->is_public_bool }
+sub public { inf(shift)->is_public_bool }
 
-sub tiene_ante { inf($_[0])->tiene_ante }
+sub tiene_ante { inf(shift)->tiene_ante }
 
 sub sub_apps {
   # Returns an array of every sub-application (java + .net)

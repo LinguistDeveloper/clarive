@@ -145,7 +145,10 @@
   store_combo_ins_entorno.on('load', function() {
     combo_ins_entorno.setValue(this.getAt(0).get('entorno'));
     c_ins_entorno = this.getAt(0).get('entorno');
-    load_owners();
+    if (c_ins_entorno != '' && c_ins_red != '') {
+      load_owners();  // Evitamos que se llame cuando alguno de los campos está vacío.
+    }
+    // load_owners();
     load_ins_instancia();
     return;
   });
@@ -165,7 +168,10 @@
   store_combo_ins_red.on('load', function() {
     combo_ins_red.setValue(this.getAt(0).get('show'));
     c_ins_red = this.getAt(0).get('value');
-    load_owners();
+    if (c_ins_entorno != '' && c_ins_red != '') {
+      load_owners();  // Evitamos que se llame cuando alguno de los campos está vacío.
+    }
+    // load_owners();
     return;
   });
   store_combo_ins_owner = new Ext.data.JsonStore({
@@ -180,8 +186,9 @@
     ]
   });
   store_combo_ins_owner.on('load', function() {
-    combo_ins_owner.setValue(this.getAt(0).get('owner'));
-    c_ins_owner = this.getAt(0).get('owner');
+	var val = this.getAt(0).get('owner');
+    combo_ins_owner.setValue(val);
+    c_ins_owner = val;
     return;
   });
   store_combo_ins_instancia = new Ext.data.JsonStore({
@@ -324,7 +331,7 @@
     listeners: {
       select: function() {
         c_ins_red = this.getValue();
-        load_owners;
+        load_owners();
         return;
       }
     }
@@ -375,11 +382,13 @@
         ora_fullname: c_des_folder,
         del_instancia: c_des_instancia,
         cam: "<% $cam %>"
-      }
-    });
-    store_grid_des.load({
-      params: {
-        cam: "<% $cam %>"
+      },
+      success: function () {
+	    store_grid_des.load({
+	      params: {
+	        cam: "<% $cam %>"
+	      }
+	    });
       }
     });
     return;
@@ -394,11 +403,13 @@
         propietario: c_ins_owner,
         instancia: c_ins_instancia,
         cam: "<% $cam %>"
-      }
-    });
-    store_grid_ins.load({
-      params: {
-        cam: "<% $cam %>"
+      },
+      success: function () {
+	    store_grid_ins.load({
+	      params: {
+	        cam: "<% $cam %>"
+	      }
+	    });
       }
     });
     return;
@@ -413,11 +424,13 @@
         propietario: ins_propietario,
         red: ins_red,
         cam: "<% $cam %>"
-      }
-    });
-    store_grid_ins.load({
-      params: {
-        cam: "<% $cam %>"
+      },
+      success: function () {
+	    store_grid_ins.load({
+	      params: {
+	        cam: "<% $cam %>"
+	      }
+	    });
       }
     });
     return;
@@ -432,13 +445,15 @@
         ora_fullname: ora_fullname,
         ora_instancia: ora_instancia,
         cam: "<% $cam %>"
+      },
+      success: function () {
+	    store_grid_des.load({
+	      params: {
+	        cam: "<% $cam %>"
+	      }
+	    }); 
       }
     });
-    store_grid_des.load({
-      params: {
-        cam: "<% $cam %>"
-      }
-    }); 
     return;
   };
   handler_button_desplegar = function() {

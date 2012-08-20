@@ -26,34 +26,34 @@ has 'icon_on'  => ( is=>'rw', isa=>'Str', default=> '/static/images/scm/ns.gif' 
 has 'icon_off' => ( is=>'rw', isa=>'Str', default=> '/static/images/scm/ns_off.gif' );
 
 sub icon {
-	my $self = shift;
+    my $self = shift;
     return $self->icon_on;
 }
 
 sub parents {   #TODO this should be a require, but for now just override in classes
-	my $self = shift;
+    my $self = shift;
     my @parents = ('/');
     return @parents;
 }
 
 sub compose_path {
-	my $self = shift;
+    my $self = shift;
     return '/' . join '/', @_;
 }
 
 sub ns_text {
-	my $self = shift;
-	return $self->ns_type if( $self->ns eq '/');
-	return $self->ns_name . " (" . $self->ns_type . ")";
+    my $self = shift;
+    return $self->ns_type if( $self->ns eq '/');
+    return $self->ns_name . " (" . $self->ns_type . ")";
 }
 
 sub name {
-	my $self = shift;
-	return $self->ns_name;
+    my $self = shift;
+    return $self->ns_name;
 }
 
 sub active {
-	# placeholder 
+    # placeholder 
 }
 
 1;

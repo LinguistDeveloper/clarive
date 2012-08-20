@@ -5,13 +5,12 @@ use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::Dist::Utils;
+use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.raise.flag.need_rollback' => {
-  name    => 'Raise need_rollback',
-  handler => \&main
-};
+register 'service.raise.flag.need_rollback' => {name    => 'Raise need_rollback',
+                                                handler => \&main};
 
 sub main {
   my ($self, $c, $config) = @_;

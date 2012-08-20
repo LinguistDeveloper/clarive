@@ -616,6 +616,77 @@ sub set_nature {
     return;
 }
 
+sub captura_log {
+  my ($self, $logfile) = @_;
+  my @RET;
+  my $RET;
+  push @RET, @_;
+  if ((-e $logfile) && (open(LOG, "<$logfile"))) {
+    my @LogFile = <LOG>;    # Lee el esqueleto del SQL
+    close(LOG);
+    unlink $logfile unless ($logfile eq "");
+    push @RET, @LogFile;
+  }
+  $RET .= "$_" foreach (@RET);
+  return $RET;
+}
+
+sub delete_R_versions {
+  # Deletes reserved versions of a package.
+  my $self = shift;
+  my ($EnvironmentName, $Package) = @_;
+  if (($EnvironmentName ne "") && ($Package ne "")) {
+    my $cnt = $self->db->do(qq{
+      DELETE FROM harversions v
+            WHERE TRIM (v.versionstatus) = 'R'
+              AND EXISTS (SELECT *
+                            FROM harpackage p, harenvironment e
+                           WHERE p.envobjid = e.envobjid
+                             AND TRIM (e.environmentname) = '$EnvironmentName'
+                             AND TRIM (p.packagename) = '$Package'
+                             AND v.packageobjid = p.packageobjid)
+    });
+    return $cnt;
+  }
+  return -1;
+}
+
+sub get_package_info {
+  my ($self, $PackageName) = @_;
+  my @results = ();
+  my $SQL     = qq{
+    SELECT environmentname, statename
+      FROM harstate s, harpackage pk, harenvironment e
+     WHERE s.stateobjid = pk.stateobjid
+       AND s.envobjid = e.envobjid
+       AND TRIM (pk.packagename) = TRIM ('$PackageName')
+  };
+  @results = $self->db->array($SQL);
+  @results;
+}
+
+sub packagenames_pathfullnames {
+    my ($self, @packagenames) = @_;
+    # my $packagenames_in = '(' . (join ', ',  map { "'$1'" if $_ =~ /(.+?)\s/ } @packagenames) . ')';
+    # print $packagenames_in;
+    my $query = qq{
+        SELECT DISTINCT pathfullname
+                   FROM harenvironment e,
+                        harpackage p,
+                        harpathfullname pa,
+                        harversions v,
+                        haritems i
+                  WHERE p.envobjid = e.envobjid
+                    AND p.packagename IN ( ? )
+                    AND p.packageobjid = v.packageobjid
+                    AND i.itemobjid = v.itemobjid
+                    AND i.parentobjid = pa.itemobjid
+    };
+    $self->db->array($query, join(', ', @packagenames)); 
+}
+
+1;
+
 sub n_files_inside_subapl {
   my ($self, $project, $subapl) = @_;
   $project = uc $project;

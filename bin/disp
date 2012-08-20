@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 
 if [ "$BASELINER_LOGHOME" != "" ]; then
 	LOGDIR=$BASELINER_LOGHOME
@@ -6,8 +6,6 @@ else
 	LOGDIR=$BASELINER_HOME/tmp/log
 	mkdir -p $LOGDIR
 fi
-
-echo "Directorio de log: $LOGDIR"
 
 if [ "$BALI_ENV" != "" ]; then
 	export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
@@ -20,9 +18,7 @@ LOGFILE=$LOGDIR/$LOGFILENAME.log
 
 ren_log() {
 	mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
-	echo "Renamed file: $LOGFILE to $LOGFILEOLD"
 	gzip $LOGFILEOLD 2>/dev/null
-	echo "$LOGFILEOLD zipped"
 	echo "Log file: $LOGFILE"
 }
 
@@ -32,7 +28,7 @@ then
 		bali stop service.dispatcher 
         echo $message
 		ren_log
-		exec bali start service.dispatcher --fork
+		exec bali start service.dispatcher 
         exit 0
 fi
 

@@ -12,20 +12,18 @@ has 'id'   => (is => 'ro', isa => 'Int', required => 1);
 has 'name' => (is => 'rw', isa => 'Str', required => 1);
 has 'path' => (is => 'rw', isa => 'Str', required => 1);
 
-### get_maps : Self Str -> Hash
-sub get_maps {
+sub get_maps { # Str -> Hash
   my ($self, $os) = @_;
   my %ret;
   for my $ns (repo->list(provider => 'filedist')) {
     my $map = repo->get(ns => $ns);
     push @{$ret{$map->{from}}},
-         { path  => $map->{to}
-         , host  => $map->{host}
-         , mask  => $map->{mask}
-         , os    => $map->{os}
-         , user  => $map->{user}
-         , group => $map->{group}
-         } if $map->{os} eq $os;
+      {path  => $map->{to},
+       host  => $map->{host},
+       mask  => $map->{mask},
+       os    => $map->{os},
+       user  => $map->{user},
+       group => $map->{group}} if $map->{os} eq $os;
   }
   %ret;
 }
@@ -35,8 +33,7 @@ sub yaml_to_hashref {
   _load($data);
 }
 
-### item_list_iterator : Self ArrayRef[HashRef] -> CodeRef
-sub item_list_iterator {
+sub item_list_iterator { # ArrayRef[HashRef] -> CodeRef
   my ($self, $item_list) = @_;
   my @items = @{$item_list};
   sub { my $element = shift @items;
@@ -44,12 +41,10 @@ sub item_list_iterator {
         || {} };
 }
 
-### iterate_items_by : Self ArrayRef Str -> CodeRef
-sub iterate_items_by {
-  # Sugar for item_list_iterator(), useful when you just
-  # want to return one single item attribute. Note that
-  # this is not useful for building arrays, as a map
-  # function will be faster and less verbose.
+sub iterate_items_by { # ArrayRef Str -> CodeRef
+  # Sugar for item_list_iterator(), useful when you just want to return one
+  # single item attribute. Note that this is not useful for building arrays,
+  # as a map function will be faster and less verbose.
   my ($self, $item_list, $attr) = @_;
   my $iterator = $self->item_list_iterator($item_list);
   sub { my $hashref = $iterator->();
@@ -57,13 +52,11 @@ sub iterate_items_by {
           ? $hashref->{$attr} 
           : 0 } }
 
-### iterate_items_by : Self ArrayRef[HashRef] Str -> Any|ArrayRef[Str]
-sub map_item_list_by {
-  # Builds a list given an list of items and the attribute you want it
-  # to be based on.
+sub map_item_list_by { # ArrayRef[HashRef] Str -> Any|ArrayRef[Str]
+  # Builds a list given an list of items and the attribute you want it to be
+  # based on.
   my ($self, $item_list, $attr) = @_;
-  my @packages = map { $self->yaml_to_hashref($_->{data})->{$attr} } 
-                       @{$item_list};
+  my @packages = map { $self->yaml_to_hashref($_->{data})->{$attr} } @{$item_list};
   wantarray ? @packages : \@packages;
 }
 
@@ -298,16 +291,7 @@ sub map_elements_type_os {
 
 sub os_from_path {
   my ($self, $path) = @_;
-  $path =~ m/
-              \/
-              .+?    # CAM
-              \/
-              .+?    # Nature
-              \/
-              (.+?)  # Capture Operating System
-              \/
-             /x;
-  $1;
+  _pathxs $path, 3;
 }
 
 sub which_os {
@@ -315,8 +299,7 @@ sub which_os {
   exists $hashref->{user} ? 'UNIX' : 'WIN';
 }
 
-### map_elements : Self HashRef -> Any|ArrayRef
-sub map_elements {
+sub map_elements { # HashRef -> Any|ArrayRef
   my ($self, $params) = @_;
   my $env          = $params->{env};
   my $package_list = $params->{package};
@@ -370,9 +353,8 @@ sub create_tar {
 }
 
 sub create_file {
-  # This is the file used to compose the tar. It contains
-  # all elements ready to be distributed.
-  # It also contains the list of elements to be deleted...
+  # This is the file used to compose the tar. It contains all elements ready
+  # to be distributed.  It also contains the list of elements to be deleted...
   my ($self, $path, $element_list, $type) = @_;
   open my $fh, '>', "$path/${type}_element_list";
   for my $element (@{$element_list}) {
@@ -392,12 +374,12 @@ sub exists_tar {
   `ls $path` =~ /\.tar/xi ? 1 : 0;
 }
 
-### list_job_items : Self Maybe[Int] -> [Hashref]|ArrayRef
-sub list_job_items {
+sub list_job_items { # Maybe[Int] -> [Hashref]|ArrayRef
   # A YAML of all items for a given job.
   my $self   = shift;
   my $job_id = shift || $self->id;
-  my $where  = {id_job => $job_id};
+  my $where = {id_job               => $job_id,
+               "substr(item, 0, 6)" => {'!=' => 'nature'}};
   my $args   = {select => ['id', 'data']};
   my $rs = Baseliner->model('Baseliner::BaliJobItems')->search($where, $args);
   rs_hashref($rs);
@@ -439,7 +421,7 @@ sub demoted_elements {
 
 sub promoted_elements {
   my $self = shift;
-  my $job  = shift || $self->id;
+  my $job = shift || $self->id;
   my @data = $self->harvest_sync_elements({env          => $self->job_env($job),
                                            package_list => $self->job_package_list($job),
                                            mode         => 'promote'});
@@ -454,8 +436,7 @@ sub job_env {
   substr($package, 0, 3);
 }
 
-### has_nature : Self Int Str -> Bool
-sub has_nature {
+sub has_nature { # Int Str -> Bool
   # Checks if a job has a given nature.
   my ($self, $job, $nature) = @_;
   my $elements = $self->promoted_elements($job);
@@ -465,22 +446,19 @@ sub has_nature {
   0;
 }
 
-### win_tar_elements : Self Maybe[Int] -> HashRef
-sub win_tar_elements {
+sub win_tar_elements { # Maybe[Int] -> HashRef
   my $self = shift;
   my $job  = shift || $self->id;
   $self->tar_friendly_elements($job, 'win', 'new');
 }
 
-### unix_tar_elements : Self Maybe[Int] -> HashRef
-sub unix_tar_elements {
+sub unix_tar_elements { # Maybe[Int] -> HashRef
   my $self = shift;
   my $job  = shift || $self->id;
   $self->tar_friendly_elements($job, 'unix', 'new');
 }
 
-### tar_friendly_elements : Self Int Str Str -> HashRef
-sub tar_friendly_elements {
+sub tar_friendly_elements { # Int Str Str -> HashRef
   my ($self, $job, $os, $type) = @_;
   my @elements;
   if ($type eq 'new') {

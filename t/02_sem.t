@@ -33,5 +33,13 @@ my $m = Baseliner->model('Semaphores');
     my $req = $sem->bl_queue->first;
     is( $req->status, 'done', 'auto destroy' );
 }
+{
+    my $sem = Baseliner->model('Semaphores')->create( sem=>'test.sem2' );
+    my $var = 0;
+    eval { $sem->wait_for( frequency=>2, callback=>sub{ $var++ }, timeout=>5 ); };
+    ok( $@ =~ m/Timeout/i, 'sem wait_for timeout' );
+    is( $var, 3, 'sem callback count' );
+    $sem->release;
+}
 
 done_testing;

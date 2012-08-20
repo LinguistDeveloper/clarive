@@ -36,9 +36,22 @@ unless($id) {  #si es nuevo, se permiten rangos
 	#				<OPTION VALUE="L-D" ><% $from_to_2 %></OPTION>
 }
 
+# Eric -- Calculamos hh y mm de las fechas de inicio y fin. Hay que evitar que el
+# usuario pueda crear ventanas más fuera del rango actual.
+use BaselinerX::Calendar::Utils;
+# my $_inicio = $inicio;
+# my $_fin    = $fin;
+# $inicio     = floor $dia, $id_cal, $_inicio, $_fin;
+# $fin        = ceiling $dia, $id_cal, $_inicio, $_fin; 
+my ($_ini_hh, $_ini_mm) = ($1, $2) if (floor $dia, $id_cal, $inicio, $fin)   =~ m/(..):(..)/x;
+my ($_fin_hh, $_fin_mm) = ($1, $2) if (ceiling $dia, $id_cal, $inicio, $fin) =~ m/(..):(..)/x;
+
+
 # ven_ini
-for(my $hh=0; $hh<=23; $hh++) {
+# for(my $hh=0; $hh<=23; $hh++) {
+for(my $hh=$_ini_hh; $hh<=$_fin_hh; $hh++) { # Eric
 	for(my $mm=0; $mm<59; $mm+=30) {
+	    last if $hh == $_fin_hh && $mm == $_fin_mm; # Eric
 		my $hora = sprintf("%02d:%02d", $hh, $mm);
 		my $hora_corta = sprintf("%d:%02d", $hh, $mm);
 		push @ven_ini, [ $hora, $hora_corta  ];
@@ -46,8 +59,14 @@ for(my $hh=0; $hh<=23; $hh++) {
 }
 
 # ven_fin
-for(my $hh=0; $hh<=24; $hh++) {
+# for(my $hh=0; $hh<=24; $hh++) {
+for(my $hh = $_ini_hh; $hh <= $_fin_hh; $hh++) { # Eric
 	for(my $mm=0; $mm<59; $mm+=30) {
+	    # Eric
+	    next if $hh == $_ini_hh && $mm == $_ini_mm;
+        last if ($hh > $_fin_hh);
+        last if ($hh == $_fin_hh && $mm != $_fin_mm);
+        # End
 		last if( $hh==24 && $mm==30 );
 		my $hora = sprintf("%02d:%02d", $hh, $mm);
 		my $hora_corta = sprintf("%d:%02d", $hh, $mm);
@@ -82,7 +101,8 @@ for(my $hh=0; $hh<=24; $hh++) {
 				upd.update( { 
 					url: '/job/calendar_show', params: { id_cal: '<% $id_cal %>', panel: '<% $panel %>'  }, scripts: true ,
 					callback: function(el,success,res,opt){
-						pan.setTitle('<% _loc('Calendar Windows') %>');
+					    // Eric -- Esto peta y no parece muy importante. No encuentra el método .setTitle
+						// pan.setTitle('<% _loc('Calendar Windows') %>');
 					}
 				});
 				win.close();

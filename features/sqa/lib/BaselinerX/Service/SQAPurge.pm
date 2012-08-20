@@ -1,8 +1,8 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000055425
-#	Fecha de pase .................... 2011/12/14 17:20:04
+#	Pase ............................. N.TEST0000054283
+#	Fecha de pase .................... 2011/11/21 19:27:21
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Service/SQAPurge.pm
 #	Versión del elemento ............. 0
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)

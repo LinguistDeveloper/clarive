@@ -2,6 +2,7 @@ package BaselinerX::Job::Service::ChainedRule;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
+use Baseliner::Sugar;
 use Carp;
 use Data::Dumper;
 use Try::Tiny;
@@ -26,8 +27,18 @@ sub chain_dsl {
   my $args  = {order_by => 'seq'};
   my $rs    = Baseliner->model(table)->search($where, $args);
   rs_hashref($rs);
-  my @data = $rs->all;
-  sub { shift @data || last }
+  $rs->all;
+#  my @data = $rs->all;
+#  sub { shift @data || last }
+}
+
+sub _job_nature_ns {
+  my $job_id = shift;
+  my $where  = {id_job => $job_id};
+  my $args   = {select => 'item'};
+  my $rs = Baseliner->model('Baseliner::BaliJobItems')->search($where, $args);
+  rs_hashref($rs);
+  grep /^nature/, map { $_->{item} } $rs->all;
 }
 
 sub exists_chain {
@@ -37,8 +48,6 @@ sub exists_chain {
               ->search({id => shift})->first;
   ref $ref ? 1 : 0;
 }
-
-sub cdr { shift; @_ }
 
 sub proper_ns { # Str -> Maybe[Str]
   join '', cdr split '', $_[0];
@@ -61,7 +70,13 @@ sub launch {
                ? $job->job_stash->{step} 
                : 'PRE';
 
-  my $chain = chain_dsl($chain_id, $step);
+#  my @chain = ( exists $job->job_stash->{chain} and scalar @{$job->job_stash->{chain}} )
+#              ? _array _load $job->job_stash->{chain}
+#              : chain_dsl($chain_id, $step);
+#
+  my @chain = ( exists $job->job_stash->{chain} and scalar @{$job->job_stash->{chain}} )
+               ? _array $job->job_stash->{chain}
+               : chain_dsl($chain_id, $step);
 
   sub stash {
     no warnings;
@@ -92,13 +107,15 @@ sub launch {
   # Iterate every element in the chain until it runs out, if the DSL happens
   # to be Perl eval its code (if active).
   RUNNER:
-  while (1) { 
-    my $rule = $chain->();
+  while ( @chain ) { 
+    $job->stash->{chain}=\@chain;
+    bali_rs('Job')->find( $job->jobid )->stash( _dump $job->stash ); ## Realmente hace falta guardarlo en BBDD?
+    my $rule = shift @chain;
     if ($rule->{active} == 1 && $rule->{dsl} =~ m/perl/i) {
-      eval_row($rule) if $rule->{ns} eq '/'              #    generic namespace
-                      || proper_ns($rule->{ns})          # OR ns without '/'
-                         ~~                              #    belongs to
-                         @{$job->job_stash->{natures}};  #    the list of natures
+      my @job_nature_ns = _job_nature_ns $job->{job_data}->{id};
+      eval_row($rule)
+        if    ($rule->{ns} eq '/' || ($rule->{ns} ~~ @job_nature_ns))          # Filter by namespace
+           && ($rule->{bl} eq '*' || ($rule->{bl} eq $job->{job_data}->{bl})); # Filter by baseline
     } 
   }
   return; 

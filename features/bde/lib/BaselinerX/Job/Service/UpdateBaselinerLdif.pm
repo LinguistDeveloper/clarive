@@ -6,6 +6,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use Class::Date qw/date now/;
+use Try::Tiny;
 use utf8;
 
 with 'Baseliner::Role::Service';
@@ -38,12 +39,13 @@ sub init {
     my $err_msg = 'Something went wrong when parsing ldif files.';
     _log $err_msg;
     _throw $err_msg;
+    notify_ldif_error $err_msg;
     return;
   }
 
   _log "Inserting new projects...";
   my @added_projects;
-  for my $cam (sort @{unique map { substr($_, 0, 3) } keys %{$config->{groups}}}) {
+  for my $cam (sort @{_unique map { substr($_, 0, 3) } keys %{$config->{groups}}}) {
     unless ($self->exists_project($cam)) {
       $self->insert_project($cam) unless $self->exists_project($cam);
       push @added_projects, $cam;
@@ -55,7 +57,12 @@ sub init {
   
    # It's not a bad idea to update the projects now.
    _log "Applying changes...";
+   try {
    $c->launch('service.load.bali.project_once');
+   }
+   catch {
+   	 notify_ldif_error 'Error al actualizar los proyectos en Baseliner.';
+   };
    _log "Baseliner Projects fully updated";
 
   # We have to delete all users and their roles as they can be deleted from the

@@ -138,7 +138,7 @@ sub delete_ins : Local {
   my ($self, $c) = @_;
   my $cam = $c->request->parameters->{cam};
   my $p   = $c->request->parameters;
-  _log 'parameters :: ' . Data::Dumper::Dumper $p;
+#  _log 'parameters :: ' . Data::Dumper::Dumper $p;
   $p->{cam} = $cam;
   $c->model('Form::OraProjects')->delete_ins($p);
   return;

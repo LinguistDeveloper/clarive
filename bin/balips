@@ -1,4 +1,4 @@
 #!/bin/sh
 
-ps uwwx | grep perl | grep "ba.*pl"
+ps uwwx | grep -E "ba.*pl|baseliner|perl.*ba.*pl"
 

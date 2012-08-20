@@ -5,13 +5,12 @@ use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::Dist::Utils;
+use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.apply.permissions' => {
-  name    => 'Apply Permissions',
-  handler => \&main
-};
+register 'service.apply.permissions' => {name    => 'Apply Permissions',
+                                         handler => \&main};
 
 sub main
 {

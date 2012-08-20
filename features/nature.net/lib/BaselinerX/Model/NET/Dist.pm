@@ -296,7 +296,7 @@ sub netBuild {
             if ( $dirsCopia{"PUB"} ) {
                 ## RECUPERAMOS EL FICHERO DE VERSION
                 my @RETORNO = `mkdir "$buildhome/PUB"`;
-                my @RETORNO = `mkdir "$buildhome/PUB/$VersionPublica"`;
+                @RETORNO = `mkdir "$buildhome/PUB/$VersionPublica"`;
                 $log->debug("Al crear el directorio PUBLICO en local me ha salido un RC=$?");
                 ( $RC, $RET ) = $balix->getFile( "$destpasedir\\$subAplicacion\\PUB\\$VersionPublica.tar", "$buildhome/PUB/$VersionPublica.tar", "win" );
 
@@ -1267,7 +1267,7 @@ sub buildFile {
 
                                 ## BUSCAMOS LA URL CON LA QUE SE EJECUTARA EL PROCESO DE PUBLICACIÓN
                                 # ($url) = getInfSub( $CAM, $subAplicacion, "${Entorno}_WIN_URL_DISTR" );
-                                my $url = $inf->get_inf( { sub_apl => $subAplicacion }, [ { column_name => 'NET_URL_DISTR', idred => $PaseRed, ident => $Entorno } ] );
+                                $url = $inf->get_inf( { sub_apl => $subAplicacion }, [ { column_name => 'NET_URL_DISTR', idred => $PaseRed, ident => $Entorno } ] );
                                 _log "my \$url = \$inf->get_inf({sub_apl => $subAplicacion}, [{column_name => 'NET_URL_DISTR', idred => $PaseRed, ident => $Entorno}]);\n" . "url: $url";
                                 $url .= uc($subAplicacion) . "/appdeploy/";
 
@@ -1394,7 +1394,7 @@ sub buildFile {
                                 # RECUPERAMOS LOS DATOS DEL SERVIDOR DE DESTINO DEL FORMULARIO DE INFRAESTRUCTURA
 
                                 # my ($maquinaDestino) = getInf( $CAM, "${Entorno}_WIN_SERVER" );
-                                my $maquinaDestino = $inf->get_inf( undef, [ { column_name => 'WIN_SERVER', idred => $PaseRed, ident => $Entorno } ] );
+                                $maquinaDestino = $inf->get_inf( undef, [ { column_name => 'WIN_SERVER', idred => $PaseRed, ident => $Entorno } ] );
                                 _log "my \$maquinaDestino = \$inf->get_inf(undef, [{column_name => 'WIN_SERVER', idred => $PaseRed, ident => $Entorno}]);\n" . "maquinaDestino: $maquinaDestino";
 
                                 # $maquinaDestino = infResolveVars( $maquinaDestino, $CAM, $Entorno );
@@ -1446,7 +1446,7 @@ sub buildFile {
                                     if ( $RC eq 0 ) {
                                         my @dirs = "";
                                         ## lo meto en un array para recorrerlo
-                                        my @dirs = split( /\n/, $Listadeversiones );
+                                        @dirs = split( /\n/, $Listadeversiones );
                                         $mantieneCO = 2 if ( !$mantieneCO );
                                         $log->debug("Clickonce IIS: buscando versiones para borrar, manteniendo las $mantieneCO últimas...");
                                         $LogDelete .= "Clickonce IIS: buscando versiones para borrar, manteniendo las $mantieneCO últimas...\n";
@@ -1903,7 +1903,7 @@ sub buildFile {
                 my @lineas       = ();
                 my @webDirBin    = ();
                 my $iiswebdirbin = $self->iiswebdirbin;
-                my @webDirBin    = split( ",", $iiswebdirbin );
+                @webDirBin    = split( ",", $iiswebdirbin );
                 my $dir          = "";
                 if ( $slnVersion eq "2003" ) {
                     foreach $linea (<PROY>) {

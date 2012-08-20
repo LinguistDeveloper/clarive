@@ -1,12 +1,13 @@
 package BaselinerX::Job::Controller::Job;
+use Baseliner::Core::Namespace;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use BaselinerX::BdeUtils;    # natures_json...
 use DateTime;
-use YAML;
-use JavaScript::Dumper;
-use Baseliner::Core::Namespace;
 use JSON::XS;
+use JavaScript::Dumper;
 use Try::Tiny;
+use YAML;
 use utf8;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -18,6 +19,14 @@ BEGIN {
 register 'action.job.viewall' => { name=>'View All Jobs' };
 register 'action.job.restart' => { name=>'Restart Jobs' };
 
+register 'config.job.states' => {
+  metadata => [
+    { id      => "states",
+      default => [qw/EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED WAITING/]
+    }
+  ]
+};
+
 sub job_create : Path('/job/create')  {
     my ( $self, $c ) = @_;
     #$c->stash->{ns_query} = { does=> 'Baseliner::Role::JobItem' };
@@ -27,7 +36,7 @@ sub job_create : Path('/job/create')  {
     push @baselines, $c->model('Permissions')->user_baselines_for_action(username=>$c->username, action=>'action.job.create.Z');
     
     # @baselines=_unique @baselines;
-    _log _dump @baselines;
+    _debug _dump @baselines;
     $c->stash->{baselines} =  \@baselines;
     $c->stash->{template} = '/comp/job_new.mas';
 }
@@ -92,7 +101,7 @@ sub job_items_json : Path('/job/items/json') {
             moreInfo           => exists $n->{moreInfo} ? $n->{moreInfo} : q{},
             user               => $n->user,
             service            => $n->service,
-            text               => $n->ns_info,
+            text               => do { my $a = $n->ns_info; Encode::from_to($a, 'utf8', 'iso-8859-1'); $a },
             date               => $n->date,
             can_job            => $can_job,
             recordCls          => $can_job ? q{} : 'cannot-job',
@@ -245,7 +254,8 @@ sub monitor_json : Path('/job/monitor_json') {
         my $contents = @items ? [
               map {
                   $app{ $_->{application} }=() if defined $_->{application};
-                  ( ns_split( $_->{item} ) )[1]
+                  my ($type,$name) = ns_split( $_->{item} );
+                  $type eq 'harvest.package'? '<img src="/static/images/package.gif">&nbsp;' . $name : '<img src="/static/images/changeman/package.gif">&nbsp;' . $name if $type =~ m{.*\.package$} 
               } @items
           ] : [];
         my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
@@ -276,6 +286,10 @@ sub monitor_json : Path('/job/monitor_json') {
           :                      [ 0,  _loc('Upcoming') ];
         $grouping = $day->[0];
 
+        # Eric -- Let's show only the contents that are packages, and pretty print them.
+        # my @builder = map { '<img src="/static/images/package.gif">&nbsp;' . $_ } grep packagep, @{$contents};
+        # $contents = \@builder;
+
         push @rows, {
             id           => $r->id,
             name         => $r->name,
@@ -304,10 +318,67 @@ sub monitor_json : Path('/job/monitor_json') {
             type_raw     => $r->get_column('type'),
             type         => $type,
             runner       => $r->runner,
+            # Eric -- So I have to add a 'nature' column to the monitor grid. The ideal way
+            # would be editing the horrid sql statement build above but time is tight. Come
+            # back later!
+            natures      => do {
+              my $model = Baseliner->model('Baseliner::BaliJobItems');
+              my $where = {id_job => $r->id, 'substr(item, 0, 6)' => 'nature'};  # Format is: nature/${nature}
+              my $args  = {select => {distinct => 'item'}, as => 'nature'};
+              my $rs    = $model->search($where, $args);
+              rs_hashref($rs); 
+              my @natures = map { lc substr($_->{nature}, length 'nature/', length $_->{nature}) } $rs->all;
+              join '<br>', map { '<img src="/static/images/nature.' 
+                               . ($_ eq 'oracle' ? 'sql' : $_ eq 'ficheros' ? 'files' : $_) # Filter according to icon name.
+                               . '.png">&nbsp;&nbsp;' . uc($_) 
+                               } @natures;
+            },
+            # Eric -- Adding subapps as well...
+            subapps      => do {
+              my $model = Baseliner->model('Baseliner::BaliJobItems');
+              my $where = {id_job => $r->id, 'substr(item, 0, 7)' => 'subappl'};
+              my $args  = {select => {distinct => 'item'}, as => 'subappl'};
+              my $rs    = $model->search($where, $args);
+              rs_hashref($rs);
+              join '<br>', map { _pathxs $_->{subappl}, 1 } $rs->all;
+            }
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
-    
-    my @sorted = sort { $b->{grouping}<=>$a->{grouping} || $b->{starttime} cmp $a->{starttime} } @rows;
+
+    # -- Added by Eric @ 2011/11/14
+    # Filter by nature:
+    if (exists $p->{current_nature}) {
+      unless ($p->{current_nature} eq 'ALL') { # In case the user clicked on show all.
+      my @ids_with_nature = do {
+        my $filter_nature = $p->{current_nature};
+        my $where         = {item => $filter_nature};
+        my $args          = {select => 'id_job'};
+        my $m             = Baseliner->model('Baseliner::BaliJobItems');
+        my $rs            = $m->search($where, $args);
+        rs_hashref($rs);
+        map { $_->{id_job} } $rs->all;
+      };
+      @rows = grep { $_->{id} ~~ @ids_with_nature } @rows;
+      $cnt  = scalar @rows;
+    }
+    }
+    # Filter by job state:
+    if (exists $p->{job_state_filter}) {
+      my @job_state_filters = do {
+        my $job_state_filter = decode_json $p->{job_state_filter};
+        grep { $job_state_filter->{$_} } keys %$job_state_filter;
+      };
+      @rows = grep { $_->{status_code} ~~ @job_state_filters } @rows;
+      $cnt  = scalar @rows;
+    }
+    # Filter by environment name:
+    if (exists $p->{env_filter}) {      
+      @rows = grep { $_->{bl} eq $p->{env_filter} } @rows;
+      $cnt  = scalar @rows;
+    }
+    # End
+
+    my @sorted = sort { $b->{grouping} <=> $a->{grouping} || $b->{starttime} cmp $a->{starttime} } @rows;
     
     $c->stash->{json} = { 
         totalCount=> $cnt,
@@ -490,6 +561,16 @@ sub job_check_time : Path('/job/check_time') {
 
         $c->stash->{bl} = $p->{bl};
         $c->stash->{ns} = $self->get_namespaces_calendar($c);
+        
+        # Eric 10/01/2012 -- This will be needed in order to calculate the 
+        # natures by packagename in Calendar::time_range_intersec.
+        # Eric 27/01/2012 -- This should expect an array, we will need the
+        # packagenames of all the grid, as we have to merge the calendars.
+        # $c->stash->{packagename} = $contents->[0]->{data}->{packagename};
+        my @packagenames = map { $_->{data}->{packagename} } @{$contents};
+        $c->stash->{packagename} = \@packagenames;
+        # End 27/01/2012
+        
         $c->forward('/calendar/time_range_intersec');
         #warn Dump $c->stash->{calendar_range_expand} ; 
         $c->stash->{json} = {success=>\1, data => $c->stash->{time_range} };    
@@ -523,7 +604,8 @@ sub job_submit : Path('/job/submit') {
 
                 # CANCELAR JOB EN CHANGEMAN SI PROCEDE
                 my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
-                my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, user=>$cfgChangeman->{user}, password=>sub{ require BaselinerX::BdeUtils; BaselinerX::BdeUtils->chm_token } );
+                my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
+                ## my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, user=>$cfgChangeman->{user}, password=>sub{ require BaselinerX::BdeUtils; BaselinerX::BdeUtils->chm_token } );
                 my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>$job->id, provider =>'namespace.changeman.package' } );
                 rs_hashref($rs_items);
                 my @pkgs;
@@ -531,17 +613,17 @@ sub job_submit : Path('/job/submit') {
                     my $name=$1 if $row->{item} =~ m{changeman.package/(.*)};
                     push @pkgs, $name if $name;
                     }
-                    
-                    _log "Cancelando". _dump @pkgs ;
                 if (scalar @pkgs) { 
                     my $ret= $chm->xml_cancelJob(job=>$job->name, items=>@pkgs) ;
-                    _log "CANCEL CHM JOB " . _dump $ret;
                     if ($ret->{ReturnCode} ne '00') {
-                        $c->stash->{json} = { success => \0, msg => _loc("Error canceling Changeman Job:<br>%1",$ret->{Message}) };
-                    } else {
                         $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
-                        $job->update;
+                    } else {
+                        $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled<br>Changeman package(s) desassociated)", $job_name) };
                         }
+                    $job->update;
+                    ## Al cancelar el job, quitamos las relaciones de BaliRelationship
+                    my $relation=Baseliner->model('Baseliner::BaliRelationship')->search({type=>'Changeman.PDS.to.JobId', to_ns=>"job/".$job->id});
+                    ref $relation && $relation->delete;
                 } else {
                     $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
                     $job->update;
@@ -553,7 +635,8 @@ sub job_submit : Path('/job/submit') {
 
                 # CANCELAR JOB EN CHANGEMAN SI PROCEDE
                 my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
-                my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, user=>$cfgChangeman->{user}, password=>sub{ require BaselinerX::BdeUtils; BaselinerX::BdeUtils->chm_token } );
+                # my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, user=>$cfgChangeman->{user}, password=>sub{ require BaselinerX::BdeUtils; BaselinerX::BdeUtils->chm_token } );
+                my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
                 my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>$job->id, provider =>'namespace.changeman.package' } );
                 rs_hashref($rs_items);
                 my @pkgs;
@@ -562,18 +645,18 @@ sub job_submit : Path('/job/submit') {
                     push @pkgs, $name if $name;
                     }
                     
-                    _log "Cancelando". _dump @pkgs ;
+                # _log "Cancelando". _dump @pkgs ;
                 if (scalar @pkgs) { 
                     my $ret= $chm->xml_cancelJob(job=>$job->name, items=>@pkgs) ;
-                    _log "CANCEL CHM JOB " . _dump $ret;
+                    # _log "CANCEL CHM JOB " . _dump $ret;
                     if ($ret->{ReturnCode} ne '00') {
                         $c->stash->{json} = { success => \0, msg => _loc("Error canceling Changeman Job:<br>%1",$ret->{Message}) };
                     } else {
                         $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
+                    }
                         $job->update;
                         my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
                         $log->error(_loc("Job cancelled by user %1", $username));
-                        }
                 } else {
                     $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
                     $job->update;
@@ -642,6 +725,9 @@ sub job_submit : Path('/job/submit') {
                     $job->delete;
                 } else {
                     ##TODO: Si requiere aprobación de host por refresco de linklist crear la aprobacion
+                    # $job->bali_job_items->create({item => 'nature/zos'}); 
+                    my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
+                    $log->debug(_loc("Changeman package(s) has been associated to SCM job %1", $job_name ));
                     $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
                     }
             } else {
@@ -686,6 +772,13 @@ sub monitor : Path('/job/monitor') {
     $c->languages( ['es'] );
     my $config = $c->registry->get( 'config.job' );
     $c->forward('/permissions/load_user_actions');
+
+    # Filtros de job BdE
+    $c->stash->{natures_json}    = natures_json;
+    $c->stash->{job_states_json} = job_states_json;
+    $c->stash->{envs_json}       = envs_json;
+    $c->stash->{types_json}      = types_json; # Tipo de elementos en Monitor. SCM|SQA.
+
     $c->stash->{template} = '/comp/monitor_grid.mas';
 }
 

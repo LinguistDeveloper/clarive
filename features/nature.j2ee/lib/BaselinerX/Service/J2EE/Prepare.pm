@@ -87,7 +87,7 @@ sub main {
           , PackageName     => $_->{package}
           , SystemName      => undef
           , SubSystemName   => undef
-          , DSName          => 'INTERNA',  # TODO
+          , DSName          => do { my @a = _pathxs($_->{path}); join '\\', @a[3..$#a] }
           , Extension       => do { $_->{fullpath} =~ /\/.+\/(.+)/; $1 =~ /\./ ? do { $_->{fullpath} =~ /\/.+\/(.+)/; $1 =~ /\.(.+)/ } : undef }
           , ElementState    => $_->{tag}
           , ElementVersion  => $_->{version}
@@ -100,8 +100,9 @@ sub main {
           , HarvestState    => $HarvestState
           , HarvestUser     => $_->{modifier}
           , ModifiedTime    => $_->{modified_on}
-          , project         => $env_name
-          , subapl          => _pathxs($_->{fullpath}, 3)
+          , project         => _pathxs($_->{path}, 3)
+          , subapl          => do { my $a = _pathxs($_->{path}, 3); my $ret; if ($a =~ /(.+)_BATCH$/) { $ret = $1; } else { $ret = $a; } $ret; }
+          , Element         => $_->{fullpath} =~ /\/.+\/(.+)/
           }
          ), @elements;
 
@@ -149,7 +150,7 @@ sub main {
     @subapls = @subapl_j2ee_java;
     $harvest_db->set_subapl($pass, $_) foreach @subapls;
     
-    _log "\n\nparams antes de comprobaci髇 IAS: " . Data::Dumper::Dumper \%params;
+    _log "\n\nparams antes de comprobaci贸n IAS: " . Data::Dumper::Dumper \%params;
 
     # Is it defined as IAS?
     my $inf = BaselinerX::Model::InfUtil->new(cam => $env_name);
@@ -160,7 +161,7 @@ sub main {
       }
     }
     
-    _log "\n\nparams despu閟 de comprobaci髇 IAS: " . Data::Dumper::Dumper \%params;
+    _log "\n\nparams despu茅s de comprobaci贸n IAS: " . Data::Dumper::Dumper \%params;
 
     # Batch?
     $params{IAS} ||= grep /_BATCH$/, keys %projects;
@@ -214,6 +215,15 @@ sub main {
     $log->debug("Directorio destino IAS => $IAS_dir_dest");
     my $cmd = "ls $IAS_dir_pass 2>/dev/null";
     _log "\ncmd: $cmd\n";
+
+    my $ls_cmd = "ls $path/$env_name/" . $self->suffix;
+    _log "ls_cmd $ls_cmd";
+    my @ls_ret = `$ls_cmd`;
+    _log "\n\nls_ret: " . Data::Dumper::Dumper \@ls_ret;
+
+    my @ret = `$cmd`;
+    _log "\n\nretorno: " . Data::Dumper::Dumper \@ret;
+
     if ((my @iaspase = `$cmd`) > 0) {
       my $cmd_ret = "cp -Rf $IAS_dir_pass/" . "$IAS_dir_dest" . " 2>&1";
       _log "\ncmd: $cmd_ret\n";
@@ -231,7 +241,11 @@ sub main {
     # PONGO EL SEMAFORO PARA QUE NO HAYA DISTRIBUCION PLUGIN ECLIPSE
     #  semUp($Pase, "$Entorno-ECLIPSE");  NO
     ## GENERAR proyecto de pase - parte de eclipseDist.pm
-    my ($pGen, $pDir) = generaProyectoPase(\%data, $path, $env_name, $env, $self->suffix, "", "J2EE");
+    _log "\n\nInstancio dispatcher eclipse...\n";
+    my $eclipse_dist = BaselinerX::Model::Eclipse::Dist->new(log => $log, pase => $pass);
+    _log "\n\nLlamo a generaProyectoPase...\n";
+    my ($pGen, $pDir) = $eclipse_dist->generaProyectoPase(\%data, $path, $env_name, $env, $self->suffix, "", "J2EE");
+    _log "\n\nOK!\n";
     my @generado = ();
     @generado = @{$pGen};    ## listado de proyectos generados
     my @dirpase = ();
@@ -243,6 +257,7 @@ sub main {
     $precompilacion = 'S';
   }
 
+  # meter esto en un servicio!
   ## SCRIPTS PRE
   # TODO SQA
   # unless ($PaseNodist){
@@ -265,15 +280,17 @@ sub main {
   $DIST{entorno}      = $env;
   $DIST{sufijo}       = $self->suffix;
   $DIST{envname}      = $env_name;
-  $DIST{tipopase}     = $job->job_data->{type};
+# $DIST{tipopase}     = $job->job_data->{type};
+  $DIST{tipopase}     = substr($pass, 0, 1);
   $DIST{subapl_check} = $is_checkeable;
   $DIST{inf_subapl}   = \%inf_subapl;
   $DIST{buildhome}    = $build_home;
-  $DIST{cam}          = $env_name;
-  $DIST{CAM}          = $env_name;
+  $DIST{cam}          = lc($env_name);
+  $DIST{CAM}          = uc($env_name);
   $DIST{vista_co}     = $estado_vista{$estado_checkout{$to_state} || $entorno_estado{$env}};
   $DIST{ciclo}        = ($to_state =~ m/Correctivo/i ? 'C' : 'N');
   $DIST{PrecompIAS}   = $precompilacion eq 'S' ? 'S' : 'N';
+  $DIST{nodist}       = 0;  # XXX
   # $DIST{nodist}       = $PaseNodist;  # TODO
 
   ## IAS-BATCH
@@ -290,6 +307,7 @@ sub main {
 
   ## BUILD
   $dist->webBuild(\%DIST, \%data, \%params);
+  _log "Configuraci贸n final de despliegue" . Data::Dumper::Dumper \%DIST;
   $log->debug("Configuraci贸n final de despliegue", Dumper \%DIST);
   $log->debug("Proyectos procesados: " . join(',', @{$DIST{prjlist}})) if ($DIST{prjlist} && @{$DIST{prjlist}});
   $log->debug("Archivos creados: " . join(',', @{$DIST{genfiles}})) if ($DIST{genfiles} && @{$DIST{genfiles}});
@@ -297,33 +315,48 @@ sub main {
   # TODO SQA
 
   # DEPLOY
-  if (config_get('config.bde')->{ias_activo}) {
-    iasBatchDist(dist      => \%DIST,
-                 elements  => \%data,
-                 params    => \%params,
-                 proyectos => \@proyectos_batch);
+  _log "Deployment...";
+
+  if (_bde_conf 'ias_batch_activo') {
+    _log "ias activo, llamamos a ias_batch_dist...";
+    BaselinerX::J2EE::IAS->ias_batch_dist($log,
+                                          {dist      => \%DIST,
+                                           elements  => \%data,
+                                           params    => \%params,
+                                           proyectos => \@proyectos_batch});
+    _log "everything ok!";
   }
 
   # ficheros de configuraci贸n no tienen genfiles.
+  $log->debug("Comprobando si los ficheros de configuracion tienen genfiles...");
   if ((!$DIST{genfiles}) || (!@{$DIST{genfiles}})) {    
     $log->warn("No hay ficheros J2EE generados en la construcci贸n. Distribuci贸n J2EE terminada.");
   }
   else {
     ## PUBLICA
     if ($params{PUB}) {
+      _log "La aplicacion es publica";
+      _log "Iniciando release...";
       my @release;
-      push @release, getPackageGroups($_) foreach @{$packages};
+      my $har_db = BaselinerX::CA::Harvest::DB->new;
+      _log "Llamando a get_package_groups...";
+      push @release, $har_db->get_package_groups($_) foreach @{$packages};
       my %saw;
       @saw{@release} = ();
+      _log "Ordeno release...";
       @release = sort keys %saw;    ##nombres de pkggroup unicos
       if (@release > 1) {
+      	$log->error("Error: aplicaci贸n $env_name tiene m谩s de una release (package group) asociada: " . join(', ', @release));
         _throw "Error: aplicaci贸n $env_name tiene m谩s de una release (package group) asociada: @release";
       }
       elsif (!@release) {
-        _throw "Error: aplicaci贸n $env_name no tiene una release asociada a los paquetes del pase: @{$packages}";
+      	$log->error("Error: aplicaci贸n $env_name no tiene una release asociada a los paquetes del pase");
+      	_throw "Error: aplicaci贸n $env_name no tiene una release asociada a los paquetes del pase";
       }
       my $release = $release[0];
-      pubDist($path, $env_name, $env, "PUBLICO", $release, "J2EE");
+      $log->debug("Llamando a distribucion publica");
+      # pubDist($path, $env_name, $env, "PUBLICO", $release, "J2EE");
+      $c->launch('service.public.distribute', data => {path => $path, env_name => $env_name, env => $env, suffix => "PUBLICO", release => $release, tipos => "J2EE"});
     }
     elsif (($DIST{nivel} eq 'EAR') && (!@{$DIST{prjlist}})) {
       $log->warn("No tengo aplicaciones de empresa para generar un EAR para la aplicaci贸n '$env_name'.");
@@ -331,7 +364,8 @@ sub main {
     ## DEPLOY
     $DIST{pub} = $params{PUB};
     $dist->webDist(\%DIST);  # ???
-    $harvest_db->dist_entornos_write(%DIST);
+    _log "Llamando a dist_entornos_write...";
+    $harvest_db->dist_entornos_write(%DIST); # Meter esto en otro servicio?
     $log->debug("Registrado informaci贸n hist贸rica de despliegues", Dumper \%DIST);
   }
   ## SCRIPTS POST
@@ -358,34 +392,6 @@ sub _is_checkeable {
 }
 
 sub _build_subapl_check { config_get('config.bde')->{subapl_check} }
-
-# sub hash_elements {
-#   my $self = shift;
-#   my %elements = %{shift @_};
-#   my %ret;
-
-#   foreach my $version_id (sort keys %elements) {
-#     my $hash = {};
-#     $hash->{VersionId} = $version_id;
-#     ( $hash->{Element},        $hash->{ElementName},
-#       $hash->{PackageName},    $hash->{SystemName},
-#       $hash->{SubSystemName},  $hash->{DSName},
-#       $hash->{ElementType},    $hash->{ElementState},
-#       $hash->{ElementVersion}, $hash->{ElementPriority},
-#       $hash->{ElementPath},    $hash->{ElementID},
-#       $hash->{ParCompIni},     $hash->{NewID},
-#       $hash->{HarvestProject}, $hash->{HarvestState},
-#       $hash->{HarvestUser},    $hash->{ModifiedTime}
-#     ) = @{$elements{$version_id}};
-
-#     # a帽ado unas cositas m谩s
-#     $hash->{project} = project_from_itempath($hash->{ElementPath});
-#     $hash->{subapl}  = subapl($hash->{project});
-
-#     $ret{$version_id} = $hash;
-#   }
-#   return %ret;
-# }
 
 1;
 

@@ -1,10 +1,11 @@
 package BaselinerX::BdeUtils;
 use strict;
-use warnings;
+use warnings; 
 use 5.010;
 use Baseliner::Sugar;
 use Baseliner::Utils;
 use BaselinerX::Dist::Utils;
+use Data::Dumper;
 use JSON;
 use feature "switch";
 use POSIX;
@@ -758,7 +759,7 @@ sub envs_json {
 }
 
 sub existsp { # String HashRef -> Predicate
-  # Dado un modelo<str> y unos parámetros, devuelve
+  # Dado un modelo<str> y unos pará­¥tros, devuelve
   # un predicado que indica si ya existen registros
   # en dicha tabla.
   my ($model, $args) = @_;
@@ -810,7 +811,7 @@ sub _har_db {
 sub natures_from_packagenames {
   my (@packagenames) = @_;
   my $har_db = _har_db();
-  unique map { _pathxs $_, 2 } $har_db->packagenames_pathfullnames(@packagenames);
+  _unique map { _pathxs $_, 2 } $har_db->packagenames_pathfullnames(@packagenames);
 }
 
 sub types_json {
@@ -932,7 +933,7 @@ An array with all the natures registered in Baseliner.
 
 =cut
 sub bali_natures {
-  unique map { $_->{name} } 
+  _unique map { $_->{name} } 
          map { Baseliner::Core::Registry->get($_) } 
          Baseliner->registry->starts_with('nature');
 }
@@ -959,7 +960,7 @@ sub packagenames_to_natures {
   my @packages     = @_;
   my @paths        = (_har_db)->packagenames_pathfullnames(@packages);
   my @bali_natures = bali_natures;
-  unique grep { $_ ~~ @bali_natures } grep { $_ } map { _pathxs $_, 2 } @paths;
+  _unique grep { $_ ~~ @bali_natures } grep { $_ } map { _pathxs $_, 2 } @paths;
 }
 
 sub sql_date {

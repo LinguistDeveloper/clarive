@@ -1,7 +1,10 @@
 package BaselinerX::CA::Harvest::Service::Job;
+use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
-
+use DateTime;
+use BaselinerX::BdeUtils;
+use BaselinerX::Calendar::Utils;
 use utf8;
 
 with 'Baseliner::Role::Service';
@@ -43,6 +46,8 @@ sub run {
 	my $job_type = $p->{job_type};
 	_throw "Parameter --to_state needs a --job_type of either 'promote' or 'demote'" 
 		if( $p->{to_state} && $job_type !~ m/promote|demote/ );
+    
+    if (!! $self->can_distribute_p($bl, $p->{package})) {
 	#_log _dump \@contents;
     my $job = $c->model('Jobs')->create(
         bl       => $bl,
@@ -63,6 +68,40 @@ sub run {
 
 	$self->log->info( _loc("Created job %1 of type %2 ok.", $job->name, $job->type) );
 }
+}
+
+## can_distribute_p : -> Bool
+## Checks the calendar window for the current time frame. Returns a boolean 
+## indicating whether we can distribute. This might change in the future as
+## we have to consider urgent jobs.
+sub can_distribute_p {                 # Eric 21 feb 2012
+  my ($self, $bl, $package) = @_;
+  my @natures = packagenames_to_natures $package 
+    or _throw "No se han encontrado naturalezas para el paquete $package";
+  my @calendar_ids = do {
+  	my $m     = Baseliner->model('Baseliner::BaliCalendar');
+  	my $where = {ns => [map { "harvest.nature/$_" } @natures], bl => $bl};
+  	my $rs    = $m->search($where, {select => 'id'});
+  	rs_hashref($rs);
+  	map { $_->{id} } $rs->all;
+  };
+  my $day_of_week = do {
+  	my $date = DateTime->now;
+  	$date->day_of_week() - 1;           # Index starts at 0.
+  };
+  my $kind_of_window = current_distribution_type merge_calendars $day_of_week, @calendar_ids;
+  given ($kind_of_window) {
+  	when ('N') { return 1 }
+  	when ('G') { say "No existe ventana horaria para este pase." }
+  	when ('U') { say "El tipo de ventana horaria es urgente." }
+  	default { _throw "Tipo de ventana desconocido." }
+  }
+  return 0;
+}
+
+1;
+
+__END__
 
 =head1 USAGE
 
@@ -76,4 +115,3 @@ perl f:\dev\baseliner\script\bali.pl harvest.job.new
 	--packages ["package"]
 
 =cut
-1;

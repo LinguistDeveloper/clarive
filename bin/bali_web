@@ -48,6 +48,14 @@ if [ "$1" = "start" ]; then
                 rm $PIDFILE
         fi
     fi
+
+    # Eric -- rotando algunos logs...
+    POLL_DIR=/home/apst/scm/servidor/vass/logs/
+    mv ${POLL_DIR}poll.log ${POLL_DIR}poll_${NOW}.log
+    gzip ${POLL_DIR}poll_${NOW}.log
+    touch ${POLL_DIR}poll.log
+    # end Eric
+
     mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
     gzip $LOGFILEOLD 2>/dev/null
     echo "Log file: $LOGFILE"

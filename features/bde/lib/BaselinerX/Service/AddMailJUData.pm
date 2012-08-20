@@ -1,0 +1,57 @@
+package BaselinerX::Service::AddMailJUData;
+use strict;
+use warnings;
+use 5.010;
+use Baseliner::Plug;
+use Baseliner::Utils;
+use BaselinerX::BdeUtils;
+use BaselinerX::Dist::Utils;
+use utf8;
+
+with 'Baseliner::Role::Service';
+
+register 'service.add.mail-ju.data' => {name    => 'Add JU mail notificacion data',
+                                        handler => \&main};
+
+sub main {
+  my ($self, $c, $config) = @_;
+  
+  # Prerequisites.
+  my $job      = $c->stash->{job};
+  my $log      = $job->logger;
+  my @elements = @{$job->job_stash->{elements}->{elements}};
+  
+  # Set data.
+  my $data = {
+  	job_id       => $job->{jobid},
+    environment  => $job->job_data->{bl},
+    job_name     => $job->job_data->{name},
+    status       => $job->job_data->{status},
+    username     => $job->job_data->{username},
+    start_time   => $job->job_data->{startime},
+    end_time     => $job->job_data->{endtime},
+    cam_list     => [_unique map { _pathxs $_->{fullpath}, 1 } @elements],
+    nature_list  => [get_job_natures $job->{jobid}],
+    package_list => [_unique map { $_->{package} } @elements],
+    subapps_list => [get_job_subapps $job->{jobid}]
+  };
+  # Turn it to utf8.
+  # Encode::from_to($_, 'iso-8859-1', 'utf8') for values %$data;
+  
+  # Calculate date so we can identify ns allowing for faster search results.
+  my ($Second, $Minute, $Hour, $Day, $Month, $Year, $WeekDay, $DayOfYear, $IsDST) = localtime(time);
+  $Year  += 1900;
+  $Month += 1;
+  $Month = '0' . $Month if $Month < 10;
+  $Day   = '0' . $Day if $Day < 10;
+  
+  # Set data in Baseliner Repository.
+  my $repo = Baseliner->model('Repository');
+  my $provider = 'informepase.ju_email';
+  my $cnt = (scalar Baseliner->model('Repository')->list(provider => $provider)) + 1;
+  my $ns = "$provider/$Year$Month$Day#$cnt";
+  _log "ns -> $ns";
+  $repo->set(ns => $ns, data => $data);
+}
+
+1;

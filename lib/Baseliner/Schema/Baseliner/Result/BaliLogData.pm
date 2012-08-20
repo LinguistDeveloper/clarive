@@ -79,6 +79,13 @@ __PACKAGE__->table("bali_log_data");
   is_nullable: 0
   size: 38
 
+=head2 path
+
+  data_type: VARCHAR2
+  default_value: undef
+  is_nullable: 1
+  size: 2048
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -140,6 +147,13 @@ __PACKAGE__->add_columns(
     is_foreign_key => 1,
     is_nullable => 1,
     size => 38,
+  },
+  "path",
+  {
+    data_type => "VARCHAR2",
+    default_value => undef,
+    is_nullable => 1,
+    size => 2048,
   },
   
 );

@@ -7,8 +7,8 @@ requires 'contents';
 has 'content' => ( is=>'rw', isa=>'ArrayRef', default=>sub{[]} );
 
 sub items {
-	my $self = shift;
-	return $self->content;
+    my $self = shift;
+    return $self->content;
 }
 
 1;

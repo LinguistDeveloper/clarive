@@ -1,12 +1,11 @@
 package BaselinerX::CA::Harvest::Provider::Package;
-use utf8;
 use Baseliner::Plug;
-use Baseliner::Utils;
 use Baseliner::Sugar;
-use BaselinerX::CA::Harvest::Namespace::Package;
+use Baseliner::Utils;
 use BaselinerX::CA::Harvest::DB;
-use utf8;
+use BaselinerX::CA::Harvest::Namespace::Package;
 use Try::Tiny;
+use utf8;
 
 with 'Baseliner::Role::Provider';
 with 'Baseliner::Role::Namespace::Create';
@@ -102,7 +101,7 @@ sub list {
         $where->{packagename} = { -like => "\%$rfc%" };
     }
 
-    _log _dump $where;
+    #_log _dump $where;
     my $rs = Baseliner->model('Harvest::Harpackage')->search(
         $where,
         {
@@ -151,6 +150,9 @@ sub list {
         else {
           push @ns, $item;
         }
+
+        #_log Data::Dumper::Dumper $item;  # XXX
+
         $repo->set( ns=>$item->{ns}, provider=>$domain, data=>$item->{ns_data} ); #TODO bulk set this outside
     }
     my $cnt = scalar @ns;

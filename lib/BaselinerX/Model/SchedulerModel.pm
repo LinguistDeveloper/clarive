@@ -1,10 +1,10 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000055425
-#	Fecha de pase .................... 2011/12/14 17:20:10
+#	Pase ............................. N.TEST0000055933
+#	Fecha de pase .................... 2011/12/22 18:53:14
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/lib/BaselinerX/Model/SchedulerModel.pm
-#	Versión del elemento ............. 2
+#	Versión del elemento ............. 1
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Model::SchedulerModel;
@@ -93,7 +93,6 @@ sub run_task {
     my $status = $task->status;
 
     _log "Running task ".$task->description;
-
     $self->set_last_execution( taskid=>$taskid, when=>$self->now );
     $self->set_task_data( taskid=>$taskid, status=>'RUNNING', pid=>$pid );
     my $out = Baseliner->launch( $task->service, data=>$task->parameters );

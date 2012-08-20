@@ -1,8 +1,8 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000061805
-#	Fecha de pase .................... 2012/04/02 16:01:51
+#	Pase ............................. N.TEST0000060854
+#	Fecha de pase .................... 2012/03/15 09:31:52
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Service/SQAFeed.pm
 #	Versión del elemento ............. 2
 #	Propietario de la version ........ q74613x (Q74613X - ERIC LORENZANA CANALES)

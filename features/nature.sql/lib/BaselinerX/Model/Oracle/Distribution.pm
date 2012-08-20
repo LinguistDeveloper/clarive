@@ -5,6 +5,7 @@ use Baseliner::Sugar;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use BaselinerX::Dist::Utils;
+# use BaselinerX::Ktecho::CamUtils;
 use BaselinerX::SQL::Utils;
 use Data::Dumper;
 use Moose;
@@ -16,7 +17,7 @@ has 'cam',             is => 'ro', isa => 'Str',     required   => 1;
 has 'DatoDesp',        is => 'rw', isa => 'Any';
 has 'env',             is => 'ro', isa => 'Str',     required   => 1;
 has 'gnutar',          is => 'ro', isa => 'Str',     lazy_build => 1;
-has 'inf',             is => 'rw',                   lazy_build => 1;
+# has 'inf',             is => 'rw',                   lazy_build => 1;
 has 'log',             is => 'rw', isa => 'Object',  required   => 1;
 has 'Objects',         is => 'rw', isa => 'Any';
 has 'Objects',         is => 'rw';
@@ -52,7 +53,8 @@ sub sqlBuild {
   }
   $OraRed =~ s/[\$\[\]]//g;
   my $buildhome = "$PaseDir/$CAM/$Sufijo";
-  my $sigoSinBackup = $self->inf->get_inf(undef, [{column_name => 'SCM_SEGUIR_SIN_BACKUP'}]);
+  my $inf = inf $self->cam;
+  my $sigoSinBackup = $inf->get_inf(undef, [{column_name => 'SCM_SEGUIR_SIN_BACKUP'}]);
   if ($self->ValidaDDL(\%Elements, $PaseDir) eq 0) {
     $log->info("Validados con éxito los elementos del pase $Pase");
     if ($self->GenerarScriptBackup(\%Elements, $PaseDir, $CAM, $Entorno, $Pase, $EnvironmentName, $sigoSinBackup) eq 0) {
@@ -390,7 +392,8 @@ sub GenerarScriptBackup {
     $self->DatoDesp($self->resolver->get_solved_value($dato));
     $self->PREFIX($self->OraServer . "\_" . substr($self->DatoDesp, 3));
 
-    $puerto = $self->inf->get_unix_server_info({server => $self->OraServer, env => substr($self->env, 0, 1)}, 'HARAX_PORT');
+    my $inf = inf $self->cam;
+    $puerto = $inf->get_unix_server_info({server => $self->OraServer, env => substr($self->env, 0, 1)}, 'HARAX_PORT');
 
     try {
       $log->debug("Intentando conexión a " . $self->OraServer . " por el puerto $puerto.\nInstancia ORACLE: " . $self->OraInstancia . "\nUsuario: " . $self->OraUser);
@@ -562,6 +565,7 @@ sub GenerarScriptBackup {
       $log->info("Recogiendo las salidas del Servidor'. Espere...");
       ($RC, $RET) = $balix_pool->conn($self->OraServer)->getFile("$haraxDir/" . $self->PREFIX . ".tar.gz", "$PaseDir/BackUp/" . $self->PREFIX . ".tar.gz");
       if ($RC ne 0) {
+        $balix_pool->conn($self->OraServer)->executeas($self->OraUser, "rm -Rf /tmp/$Pase");    ## Eliminamos archivos del temp, GDF #71604 -- 17 FEB 2012
         if ($SeguirSinBu ne "Si") {
           $log->error("Error al recoger el fichero tar " . $self->PREFIX . ".tar.gz: $RET");
           _throw "Error al enviar fichero tar " . $self->PREFIX . ".tar.gz: $RET";
@@ -896,7 +900,8 @@ sub GenerarScriptDeploy {
     _log "Element: $Element";      # XXX
     my $OWNER = uc($Owner);
     #($puerto) = getUnixServerInfo($Servidor, "HARAX_PORT");
-    $puerto = $self->inf->get_unix_server_info({server => $Servidor, env => $self->env}, 'HARAX_PORT');
+    my $inf = inf $self->cam;
+    $puerto = $inf->get_unix_server_info({server => $Servidor, env => $self->env}, 'HARAX_PORT');
     $Retorno = 0;
     $Warn    = 0;
     try {
@@ -935,7 +940,8 @@ sub GenerarScriptDeploy {
       }
       ## DESCOMPRIME
       $cmd = qq{cd $haraxDir ; rm -f "$haraxDir/$Element.ora"; gzip -f -d "$haraxDir/$Element.ora.tar.gz" ; tar xmvf "$haraxDir/$Element.ora.tar"; rm -f "$haraxDir/$Element.ora.tar"};
-      $log->debug($cmd);
+      # $log->debug($cmd);
+      _log $cmd;
       ($RC, $RET) = $balix_pool->conn($Servidor)->executeas($self->OraUser, $cmd);
       if (($RC ne 0) or ($RET =~ m/no space/i)) {
         $log->error("Error al descomprimir $Element.ora.tar.gz (¿Falta espacio en disco en el servidor $Server?): $RET");
@@ -948,7 +954,8 @@ sub GenerarScriptDeploy {
       $log->info("Realizando DESPLIEGUE de los elementos del pase en $Instancia ($Owner)");
       sleep 5;
       $cmd = qq{cd $haraxDir ; . /home/aps/dba/scripts/dbas001 $Instancia ; export NLS_LANG=SPANISH_SPAIN.UTF8 ; sqlplus -l / \@$Element.ora};
-      $log->debug($cmd);
+      # $log->debug($cmd);
+      _log $cmd;
       ($RC, $RET) = $balix_pool->conn($Servidor)->executeas($self->OraUser, $cmd);
       if ($RC ne 0) {
         $log->error("Error ejecutado el script $Element.ora || ", $RET);
@@ -969,7 +976,8 @@ sub GenerarScriptDeploy {
     my $tarExecutable;
 
     my $cmd = " ls '" . $self->tar_dest_aix . "' ";
-    $log->debug($cmd);
+    # $log->debug($cmd);
+    _log $cmd;
     ($RC, $RET) = $balix_pool->conn($Servidor)->executeas($self->OraUser, $cmd);
     if ($RC ne 0) {    # No tenemos tar especial en esta máquina, así que nos llevamos uno
       $log->info("Esta máquina no dispone de tar especial de IBM. Usaremos el tar de la máquina.", $RET);
@@ -982,7 +990,8 @@ sub GenerarScriptDeploy {
 
     ## COMPRIME LAS SALIDAS DE SQLPLUS
     $cmd = qq{cd $haraxDir ; $tarExecutable cvf $Element.tar $Element.ora.* ; gzip -f $Element.tar};
-    $log->debug($cmd);
+    # $log->debug($cmd);
+    _log $cmd;
     ($RC, $RET) = $balix_pool->conn($Servidor)->executeas($self->OraUser, $cmd);
     if ($RC ne 0) {
       if ($RET !~ m/no existe/i) {
@@ -1156,6 +1165,7 @@ sub GenerarScriptDeploy {
 
 sub restoreSQL {
   my $self = shift;
+  my $inf = inf $self->cam;
   my $log = $self->log;
   my $EnvironmentName = shift @_;
   my $Entorno         = shift @_;
@@ -1188,7 +1198,8 @@ sub restoreSQL {
   foreach my $bu (keys %BACKUPS) {
     my $bufile = $1 if $bu =~ m/(.*).tar.gz/;
     my $cmd = "cd $localdir ; gzip -f -d \"./$bufile.tar.gz\" ; " . $self->gnutar . " xvf \"./$bufile.tar\"; rm -f \"./$bufile.tar\" ";
-    $log->debug($cmd);
+    # $log->debug($cmd);
+    _log $cmd;
     my $RET = system($cmd);
   }
 
@@ -1204,7 +1215,8 @@ sub restoreSQL {
     mkdir "$localdir/$cadena";
 
     my $cmd = " cd $localdir/$cadena ; gzip -f -d \"../$cadena.tar.gz\" ; " . $self->gnutar . " xvf \"../$cadena.tar\" ";
-    $log->debug($cmd);
+    # $log->debug($cmd);
+    _log $cmd;
     my $RET = system($cmd);
 
     $RETFINAL .= "exec DBMS_OUTPUT.put_line(to_char(sysdate,'yyyymmdd hh24:mi:ss') || ': Inicio del proceso de creacion de Objetos');\n";
@@ -1312,7 +1324,8 @@ sub restoreSQL {
 
     ## HARAX
     #($Puerto) = getUnixServerInfo($Servidor, "HARAX_PORT");
-    $Puerto  = $self->inf->get_unix_server_info({server => $Servidor, env => substr($self->env, 0, 1)}, 'HARAX_PORT');
+    my $inf = inf $self->cam;
+    $Puerto  = $inf->get_unix_server_info({server => $Servidor, env => substr($self->env, 0, 1)}, 'HARAX_PORT');
     $Retorno = 0;
     $Warn    = 0;
     try {
@@ -1355,7 +1368,8 @@ sub restoreSQL {
 
       ## DESCOMPRIME
       $cmd = qq{cd $haraxDir ; rm -f "$haraxDir/$cadena.sql"; gzip -f -d "$haraxDir/$cadena.sql.tar.gz" ; tar xmvf "$haraxDir/$cadena.sql.tar"; rm -f "$haraxDir/$cadena.sql.tar"};
-      $log->debug($cmd);
+      # $log->debug($cmd);
+      _log $cmd;
       ($RC, $RET) = $balix_pool->conn($Servidor)->executeas($self->OraUser, $cmd);
       # ($RC, $RET) = $harax->executeas($self->OraUser, $cmd);
       if (($RC ne 0) or ($RET =~ m/no space/i)) {
@@ -1368,7 +1382,8 @@ sub restoreSQL {
       ## EJECUTA SQLPLUS
       $log->info("Realizando RESTORE de los elementos del pase en $Instancia");
       $cmd = qq{cd $haraxDir ; . /home/aps/dba/scripts/dbas001 $Instancia ; export NLS_LANG=SPANISH_SPAIN.UTF8 ; sqlplus -l / \@$haraxDir/$cadena.sql};
-      $log->debug($cmd);
+      # $log->debug($cmd);
+      _log $cmd;
       ($RC, $RET) = $balix_pool->conn($Servidor)->executeas($self->OraUser, $cmd);
       if ($RC ne 0) {
         $log->error("Error ejecutando script $haraxDir/$cadena.sql:",   $RET);
@@ -1388,7 +1403,8 @@ sub restoreSQL {
     my $tarExecutable;
 
     $cmd = "ls " . $self->tar_dest_aix;
-    $log->debug($cmd);
+    # $log->debug($cmd);
+    _log $cmd;
     ($RC, $RET) = $balix_pool->conn($Servidor)->executeas($self->OraUser, $cmd);
 
     if ($RC ne 0) {    # No tenemos tar especial en esta máquina, así que nos llevamos uno
@@ -1402,7 +1418,8 @@ sub restoreSQL {
 
     ## COMPRIME LAS SALIDAS DE SQLPLUS
     $cmd = qq{cd $haraxDir ; $tarExecutable cvf $cadena.sql.OUT.tar $cadena.sql.* ; gzip -f "$haraxDir/$cadena.sql.OUT.tar"};
-    $log->debug($cmd);
+    # $log->debug($cmd);
+    _log $cmd;
     ($RC, $RET) = $balix_pool->conn($Servidor)->executeas($self->OraUser, $cmd);
 
     if ($RC ne 0) {
@@ -1573,10 +1590,10 @@ sub _build_TypesDDL {
   config_get('config.sql.types.dll');
 }
 
-sub _build_inf {
-  my $self = shift;
-  BaselinerX::Model::InfUtil->new(cam => $self->cam);
-}
+# sub _build_inf {
+#   my $self = shift;
+#   BaselinerX::Model::InfUtil->new(cam => $self->cam);
+# }
 
 sub _build_resolver {
   my $self = shift;

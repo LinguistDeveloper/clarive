@@ -40,7 +40,7 @@ sub iniciar : Local {
     #XXX
     my $whoami                = 'q73898x';
     my $perl_temp             = '/home/aps/scm/servidor/tmp';
-    my $broker                = 'alfsv061';
+    my $broker                = 'alfsv053';
     my $udp_home              = '/home/aps/scm/servidor/udp';
     my $ftp_server            = 'prue';
     my $ldif_remote_directory = '/tmp/eric/ficheros';

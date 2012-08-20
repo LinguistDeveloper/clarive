@@ -15,19 +15,18 @@ This module is the main bridge between Baseliner and Changeman.
 
 =head1 METHODS 
 
-
 =cut
 use Moose;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use MVS::USS;
+use Try::Tiny;
 use Encode;
 
 has 'host' => ( is=>'rw', isa=>'Str', required=>1 );
 has 'port' => ( is=>'rw', isa=>'Str', required=>1, default=>58765 );
 has 'key' => ( is=>'rw', isa=>'Str|CodeRef', default=>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-
 
 =head2 list_pkgs ( filter=>Str, job_type=> p|m, to_env=> 'PROD|PREP...', projects=>Array )
 
@@ -35,14 +34,14 @@ Get a package using a USS REXX routine.
 
 =cut
 sub get_pkg {
-	my ($self, %args) = @_;
+    my ($self, %args) = @_;
     my $host = $self->host; #'prue';
     my $port = $self->port; #58765;
     my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
     my $timeout;
     my $prompt;
 
-    _log _dump %args;
+    # _log _dump %args;
     
     # critical section
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
@@ -52,21 +51,14 @@ sub get_pkg {
     my $filter = $args{filter} || '*';
     # my $job_type = $args{job_type} || 'p';
     # my $to = $args{to_env} eq 'ANTE'?'PREP':$args{to_env};
-
-    my $cmd = '/u/aps/chm/llpackage' . ' ' . $filter;
-
-    _log 'get_pkg' . $cmd;
     
-    my $flag=0;
-    my ($RC,$RET)=$bx->execute( $cmd );
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'llpackage' );
+    my $cmd = $utility . ' ' . $filter;
 
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
-
-    my $out = join '', grep { 
-		$flag = 1 if !$flag && /^\</; 
-		$flag;
-		} map { s{\n}{}g; $_ } $RET;
+    # _log 'get_pkg' . $cmd;
+    
+    return $self->execute_cmd( $bx, $cmd );
 }
 
 =head2 xml_getPkg
@@ -103,7 +95,7 @@ List packages using a USS REXX routine.
 
 =cut
 sub list_pkgs {
-	my ($self, %args) = @_;
+    my ($self, %args) = @_;
     my $host = $self->host; #'prue';
     my $port = $self->port; #58765;
     my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
@@ -119,25 +111,20 @@ sub list_pkgs {
 
     # *,p|m,PREP|FORM|PROD,CAM1 CAM2
     # *,p,PROD,XXX SCT
-    my $filter = $args{filter} || '*';
+    my $filter = '"'.($args{filter} || '*').'"';
     my $job_type = $args{job_type} || 'p';
     # my $to = $args{to_env} || 'PROD';
-    my $to = $args{to_env} eq 'ANTE'?'PREP':$args{to_env};
+    my $to = $args{to_env};
     my $apps = join ' ', _array( $args{projects} );
-    my $cmd = '/u/aps/chm/ll01' . ' ' . join(',', $filter, $job_type, $to, $apps ) ;
-
-    _log  "list_pkgs: " . $cmd;
     
-    my $flag=0;
-    my ($RC,$RET)=$bx->execute( $cmd );
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'll01' );
+    my $cmd = $utility . ' ' . join(',', $filter, $job_type, $to, $apps ) ;
 
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
+    #_log  "list_pkgs: " . $cmd;
+    
+    return $self->execute_cmd( $bx, $cmd );
 
-    my $out = join '', grep { 
-		$flag = 1 if !$flag && /^\</; 
-		$flag;
-		} map { s{\n}{}g; $_ } $RET;
 }
 
 =head2 xml_pkgs
@@ -182,47 +169,32 @@ sub addToJob {
     my $prompt;
 
     my $job = Baseliner->model('Baseliner::BaliJob')->search({ name=>$args{job} })->first;
-    
+
     # critical section
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
     my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
-    
-    # N.TEST-00000250,p|m,PREP|FORM|PROD,S|N, YYYYMMDDHHMISS, PACKAGE_1, PACKAGE_2,... PACKAGE_N
+
+    # N.TEST-00000250,p|m,PREP|FORM|PROD, R, YYYYMMDDHHMISS, PACKAGE_1, PACKAGE_2,... PACKAGE_N
     my $pase = $job->name;
     my $date = $job->starttime->strftime("%Y%m%d%H%M%S");
     my $job_type = $job->type eq 'promote'?'p':'m';
-    my $to = $job->bl eq 'ANTE'?'PREP':$job->bl;
-    my $refresh='N';
+    my $to = $job->bl;
+    my $refresh='R';
     my $items=undef;
-    
-    if ($to eq 'PROD') {
-        foreach (_array $args{options}) {
-            if ($_ =~ 'chm_rf_ll') {
-                $refresh='S';
-                last;
-                }
-            }
-        }
+
     foreach ( _array $args{items} ) {
         $items.=$_->{item}."," if $_->{provider} eq 'namespace.changeman.package';
-        }
-        chop $items;
+    }
+    chop $items;
 
-    my $cmd = '/u/aps/chm/ll02' . ' ' . join(',', $pase, $job_type, $to, $refresh, $date, $items ) ;
-    
-    _log "AddToJob: $cmd";
-    
-    my ($RC,$RET)=$bx->execute( $cmd );
-   
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
-    
-    my $flag=0;
-    my $out = join '', grep { 
-		$flag = 1 if !$flag && /^\</; 
-		$flag;
-		} map { s{\n}{}g; $_ } $RET;
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'll02' );
+    my $cmd = $utility . ' ' . join(',', $pase, $job_type, $to, $refresh, $date, $items ) ;
+
+    #_log "AddToJob: $cmd";
+
+    return $self->execute_cmd( $bx, $cmd );
 }
 
 =head2 xml_addToJob
@@ -270,21 +242,15 @@ sub cancelJob {
     # N.TEST-00000250, PACKAGE_1, PACKAGE_2,... PACKAGE_N
     my $pase = $job->name;
     my $job_type = $job->type eq 'promote'?'p':'m';
-    my $to = $job->bl eq 'ANTE'?'PREP':$job->bl;
+    my $to = $job->bl;
 
-    my $cmd = '/u/aps/chm/ll05' . ' ' . join(',', $job_type, $to, $pase, $args{items} ) ;
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'll05' );
+    my $cmd = $utility . ' ' . join(',', $job_type, $to, $pase, _array( $args{items} ) ) ;
 
-    _log "cancelJob: $cmd";
+    #_log "cancelJob: $cmd";
     
-    my ($RC,$RET)=$bx->execute( $cmd );
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
-    
-    my $flag=0;
-    my $out = join '', grep { 
-		$flag = 1 if !$flag && /^\</; 
-		$flag;
-		} map { s{\n}{}g; $_ } $RET;
+    return $self->execute_cmd( $bx, $cmd );
 }
 
 =head2 xml_addToJob
@@ -302,7 +268,13 @@ sub xml_cancelJob {
     my ($self, %args) = @_;
     my $xml_str = $self->cancelJob( %args );
     require XML::Simple;
-    my $xml = XML::Simple::XMLin( $xml_str );
+    my $xml = try {
+        XML::Simple::XMLin( $xml_str );
+    } catch {
+        my $err = shift;
+        _throw _loc_xml_chm( $err, 'cancel_job', $xml_str, _dump(\%args)  );
+    };
+
 
     # _log "cancelJob: " . _dump $xml;
 
@@ -331,20 +303,13 @@ sub runPackageInJob {
     my $to = $args{bl};
     my $package = $args{package};
     
-    my $cmd = '/u/aps/chm/ll03' . ' ' . join(',', $job_type, $to, $package, $job ) ;
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'll03' );
+    my $cmd = $utility . ' ' . join(',', $job_type, $to, $package, $job ) ;
     
-    _log "runPackageInJob: $cmd";
+    #_log "runPackageInJob: $cmd";
     
-    my ($RC,$RET)=$bx->execute( $cmd );
-   
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
-    
-    my $flag=0;
-    my $out = join '', grep { 
-		$flag = 1 if !$flag && /^\</; 
-		$flag;
-		} map { s{\n}{}g; $_ } $RET;
+    return $self->execute_cmd( $bx, $cmd );
 }
 
 =head2 xml_runPackageInJob
@@ -362,7 +327,12 @@ sub xml_runPackageInJob {
     my ($self, %args) = @_;
     my $xml_str = $self->runPackageInJob( %args );
     require XML::Simple;
-    my $xml = XML::Simple::XMLin( $xml_str );
+    my $xml = try {
+        XML::Simple::XMLin( $xml_str );
+    } catch {
+        my $err = shift;
+        _throw _loc_xml_chm( $err, 'runpackageinjob', $xml_str, _dump(\%args) );
+    };
 
     # _log "runPackageInJob: " . _dump $xml;
     
@@ -380,25 +350,19 @@ sub refreshLLA {
     my $port = $self->port; #58765;
     my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
 
+    _throw 'Missing sites' unless length $args{sites};
+
     # critical section
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
     my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
     
-    my $cmd = '/u/aps/chm/llreflla' ;
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'llreflla' );
+    my $cmd = $utility;
     
-    _log "refreshLLA: $cmd";
-    
-    my ($RC,$RET)=$bx->execute( $cmd );
-   
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
-    
-    my $flag=0;
-    my $out = join '', grep { 
-		$flag = 1 if !$flag && /^\</; 
-		$flag;
-		} map { s{\n}{}g; $_ } $RET;
+    #_log "refreshLLA: $cmd";
+    return $self->execute_cmd( $bx, "$cmd $args{sites}" );
 }
 
 =head2 xml_refreshLLA
@@ -416,7 +380,12 @@ sub xml_refreshLLA {
     my ($self, %args) = @_;
     my $xml_str = $self->refreshLLA( %args );
     require XML::Simple;
-    my $xml = XML::Simple::XMLin( $xml_str );
+    my $xml = try {
+        XML::Simple::XMLin( $xml_str );
+    } catch {
+        my $err = shift;
+        _throw _loc_xml_chm( $err, 'refreshlla', $xml_str, _dump(\%args)  );
+    };
 
     # _log "refreshLLA: " . _dump $xml;
     
@@ -442,16 +411,11 @@ sub cache {
     my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
     
-    my $cmd = '/u/aps/chm/llcache' ;
-    my ($RC,$RET)=$bx->execute( $cmd );
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
-    
-    my $flag=0;
-    my $out = join '', grep { 
-		$flag = 1 if !$flag && /^\</; 
-		$flag;
-		} map { s{\n}{}g; $_ } $RET;
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'llcache' );
+    my $cmd = $utility;
+
+    return $self->execute_cmd( $bx, $cmd );
 }
 
 =head2 xml_cache
@@ -471,7 +435,12 @@ sub xml_cache {
     # _log "cache: " . _dump $xml_str;
     require XML::Simple;
     # my $xml = XML::Simple::XMLin( $xml_str );
-    my $xml = XML::Simple::XMLin( $xml_str, ForceArray => [qw(Package MarchaAtras Promote content)] );
+    my $xml = try {
+        XML::Simple::XMLin( $xml_str, ForceArray => [qw(Package MarchaAtras Promote content)] );
+    } catch {
+        my $err = shift;
+        _throw _loc_xml_chm( $err, 'cache', $xml_str );
+    };
 
     # # _log "cache: " . _dump $xml;
 
@@ -496,18 +465,12 @@ sub listApplications {
     my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
     #$sem->release;
     
-    my $cmd = '/u/aps/chm/llaplics' ;
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'llaplics' );
+    my $cmd = $utility;
 
     # _log "aplications: $cmd";
-    my ($RC,$RET)=$bx->execute( $cmd );
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
-    
-    my $flag=0;
-    my $out = join '', grep { 
-		$flag = 1 if !$flag && /^\</; 
-		$flag;
-		} map { s{\n}{}g; $_ } $RET;
+    return $self->execute_cmd( $bx, $cmd );
 }
 =head2 xml_applications
 
@@ -525,10 +488,104 @@ sub xml_applications {
     my $xml_str = $self->listApplications();
     # _log "applications: " . _dump $xml_str;
     require XML::Simple;
-    my $xml = XML::Simple::XMLin( $xml_str );
+    my $xml = try { 
+        XML::Simple::XMLin( $xml_str );
+    } catch {
+        my $err = shift;
+        _throw _loc_xml_chm( $err, 'applications', $xml_str );
+    };
 
     # _log "applications: " . _dump $xml;
 
     $xml
 }
+
+=head2 listComponents
+
+Recover Changeman Package components
+
+=cut
+sub listComponents {
+    my ($self, %args) = @_;
+    my $host = $self->host; #'prue';
+    my $port = $self->port; #58765;
+    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
+    my $timeout;
+    my $prompt;
+
+    # critical section
+    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
+    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
+    #$sem->release;
+    
+    my $package = $args{package};
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $utility=File::Spec->catfile($utildir, 'llcomponentes' );
+    my $cmd = $utility . ' ' . $package;
+
+    #_log "components: $cmd";
+    return $self->execute_cmd( $bx, $cmd );
+}
+=head2 xml_components
+
+Wrapper for cache to return the generated xml 
+as a Hash with the following structure:
+
+   Name: "Changeman service name"
+   ReasonCode: 00
+   ReturnCode: 00
+   Xmlserv: {}
+
+=cut
+sub xml_components {
+    my ($self, %args) = @_;
+    my $xml_str = $self->listComponents( %args );
+    #_log "Components: " . _dump $xml_str;
+    require XML::Simple;
+    my $xml = try {
+        XML::Simple::XMLin( $xml_str, ForceArray => [qw(result)] );
+    } catch {
+        my $err = shift;
+        _throw _loc_xml_chm( $err, 'components', $xml_str, _dump(\%args)  );
+    };
+
+
+    #_log "Components: " . _dump $xml;
+
+    $xml
+}
+
+# ( xmlerr, modulename, data_received )
+sub _loc_xml_chm {
+   my ( $xmlerr, $modulename, $data_received, $sent ) = @_;
+   $xmlerr = 'empty data' if $xmlerr eq 'File does not exist';
+   my $log_msg = _loc('Changeman xml parse error (Module: %1. Data received: %2): %3. Data sent: %4', $modulename, $data_received, $xmlerr, $sent );
+   BaselinerX::ChangemanUtils->log( _loc('Changeman xml parse error in %1', $modulename),
+       data_received=>$data_received, xmlerr=>$xmlerr, sent=>$sent, );
+   $log_msg;
+}
+
+sub execute_cmd {
+    my ($self, $bx, $cmd ) = @_;
+    my ($RC,$RET)=$bx->execute( $cmd );
+    my $top; 
+    my @cal = caller(1);
+    my $oper = $cal[3];  # calling sub name 
+    if( ref $oper ) {
+        $oper='__ANON__';
+    } else {
+        $oper=~s{^.*::(.*?)$}{$1}g;
+    }
+    $RET =~ s/IKJ566(.*?)\n//s;
+    Encode::from_to($RET,"iso-8859-1", "utf8");
+    my ($top,$xml) = $RET =~ m{^(.*)(\<\?xml.*)$}gs;
+    # log this to the repository
+    my ($basecmd) = $cmd =~ m{^.*/(\w+) .*$};
+    $basecmd ||= $cmd;
+    if( $oper ne 'get_pkg' || length $top ) {
+        BaselinerX::ChangemanUtils->log( _loc('%2: USS command "%1"', $basecmd, $oper), cmd=>$cmd, top=>$top, xml=>$xml);
+    }
+    return $xml;
+}
+
 1;

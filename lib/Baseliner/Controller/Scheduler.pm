@@ -23,8 +23,8 @@ register 'menu.admin.scheduler' => {
 
 sub grid : Local {
     my ($self, $c) = @_;
-    ## $c->forward('/namespace/load_namespaces');
-    ## $c->forward('/baseline/load_baselines');
+    #$c->forward('/namespace/load_namespaces');
+    #$c->forward('/baseline/load_baselines');
     $c->stash->{template} = '/comp/scheduler_grid.js';
 }
 
@@ -62,7 +62,7 @@ sub json : Local {
     my $rs = $c->model('Baseliner::BaliScheduler')->search($where, $args);
 
     my $pager = $rs->pager;
-    my $cnt   = $pager->total_entries;
+    $cnt = $pager->total_entries;
 
     my @rows;
     while (my $r = $rs->next) {
@@ -79,7 +79,7 @@ sub json : Local {
             workdays    => $r->workdays,
             status      => $r->status,
             pid         => $r->pid
-          };
+            }
     }
     $c->stash->{json} = {data => \@rows, totalCount => $cnt};
     $c->forward('View::JSON');
@@ -89,15 +89,16 @@ sub delete_schedule : Local {
     my ($self, $c) = @_;
     my $user = $c->username;
     my $p    = $c->request->params;
+
     my $id   = $p->{id};
+
     try {
         if ($id) {
             my $row = $c->model('Baseliner::BaliScheduler')->find($id);
             $row->delete;
         }
         $c->stash->{json} = {msg => 'ok', success => \1};
-    }
-    catch {
+    } catch {
         my $err = shift;
         $c->stash->{json} = {msg => _loc("Error deleting schedule: %1", $err), success => \0};
     };
@@ -109,14 +110,15 @@ sub run_schedule : Local {
     my ($self, $c) = @_;
     my $user = $c->username;
     my $p    = $c->request->params;
+
     my $id   = $p->{id};
+
     try {
         if ($id) {
             BaselinerX::Model::SchedulerModel->schedule_task(taskid => $id, when => 'now');
         }
         $c->stash->{json} = {msg => 'ok', success => \1};
-    }
-    catch {
+    } catch {
         my $err = shift;
         $c->stash->{json} = {msg => _loc("Error deleting schedule: %1", $err), success => \0};
     };
@@ -130,7 +132,6 @@ sub save_schedule : Local {
     my $p    = $c->request->params;
 
     _log "Ejecutando save_schedule";
-
     my $id          = $p->{id};
     my $name        = $p->{name};
     my $service     = $p->{service};
@@ -141,22 +142,21 @@ sub save_schedule : Local {
     my $workdays    = $p->{workdays} && $p->{workdays} eq 'on' ? 1 : 0;
 
     _log "Valor de workdays: $workdays";
-    _log _dump $p;
+
+    #_log _dump $p;
 
     try {
         if (!$id) {
-            $c->model('Baseliner::BaliScheduler')->create(
-                {   name        => $name,
+            $c->model('Baseliner::BaliScheduler')->create( { 
+                name => $name, 
                     service     => $service,
                     next_exec   => $next_exec,
                     parameters  => $parameters,
                     frequency   => $frequency,
                     description => $description,
                     workdays    => $workdays
-                }
-            );
-        }
-        else {
+            } );
+        } else {
             my $row = $c->model('Baseliner::BaliScheduler')->find($id);
             $row->name($name);
             $row->service($service);
@@ -169,8 +169,7 @@ sub save_schedule : Local {
         }
 
         $c->stash->{json} = {msg => 'ok', success => \1};
-    }
-    catch {
+    } catch {
         my $err = shift;
         $c->stash->{json} = {msg => _loc("Error saving configuration schedule: %1", $err), success => \0};
     };
@@ -191,8 +190,7 @@ sub toggle_activation : Local {
             $new_status = BaselinerX::Model::SchedulerModel->toggle_activation(taskid => $id, status => $status);
         }
         $c->stash->{json} = {msg => 'Task is now ' . $new_status, success => \1};
-    }
-    catch {
+    } catch {
         my $err = shift;
         $c->stash->{json} = {msg => _loc("Error changing activation: %1", $err), success => \0};
     };
@@ -211,12 +209,12 @@ sub kill_schedule : Local {
             BaselinerX::Model::SchedulerModel->kill_schedule(taskid => $id);
         }
         $c->stash->{json} = {msg => 'Task killed', success => \1};
-    }
-    catch {
+    } catch {
         my $err = shift;
         $c->stash->{json} = {msg => _loc("Error killing task: %1", $err), success => \0};
     };
     $c->forward('View::JSON');
+
 }
 
 1;

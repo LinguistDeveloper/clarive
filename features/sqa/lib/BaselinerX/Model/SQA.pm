@@ -1,11 +1,11 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000068135
-#	Fecha de pase .................... 2012/07/23 16:07:36
+#	Pase ............................. N.TEST0000055933
+#	Fecha de pase .................... 2011/12/22 18:53:14
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
 #	Versión del elemento ............. 1
-#	Propietario de la version ........ q74613x (Q74613X - ERIC LORENZANA CANALES)
+#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Model::SQA;
 use Moose;
@@ -1266,7 +1266,7 @@ sub grab_package_results {    # recupera resultados
 
 sub request_analysis {
 	my ( $self, %p ) = @_;
-    ## _log 'params => ' . Data::Dumper::Dumper \%p;
+
 	my $config     = Baseliner->model('ConfigStore')->get('config.sqa');
 	my $project    = $p{project};
 	my $subproject = $p{subproject};

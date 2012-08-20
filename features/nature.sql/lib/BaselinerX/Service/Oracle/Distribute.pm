@@ -50,7 +50,8 @@ sub main {
                    }
                   ), @{$sql_elements};
 
-  $log->debug("Everything seems to be ok... distributing SQL Oracle files");
+  # $log->debug("Everything seems to be ok... distributing SQL Oracle files");
+  _log "Everything seems to be ok... distributing SQL Oracle files";
   my $ora_dist = BaselinerX::Model::Oracle::Distribution->new(cam => $env_name, env => $env, log => $log);
   $ora_dist->sqlBuild(\%data, $pass, $path, $env_name, $env, $suffix, $packages);
   return;

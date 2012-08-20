@@ -14,7 +14,7 @@ register 'service.update.users' => {
   name    => 'Carga de usuarios y sus permisos',
   handler => \&run
 };
- 
+
 sub run  {
   my ($self) = @_;
   my $config_bde = Baseliner->model('ConfigStore')->get('config.bde');
@@ -38,7 +38,7 @@ sub run  {
   _log "harvest_user: $harvest_user";
 
   my $harvest_password = q{};
-  
+
   my %initial_users = Baseliner->model('CargaLdif')->all_users();
 
   my $secret = `racxtk 01 $whoami ftp $ftp_server`;
@@ -47,8 +47,15 @@ sub run  {
 
   _log "Got ticket: $secret";
 
-  my @files = (qw/grp_adminis.ldif  grp_analist.ldif grp_progrm.ldif
-                  grp_cfuentes.ldif infra_plat.txt   grp_soporte.ldif/);
+  # my @files = (qw/grp_adminis.ldif  grp_analist.ldif grp_progrm.ldif
+  #                 grp_cfuentes.ldif infra_plat.txt   grp_soporte.ldif/);
+
+  my @files = (qw/grp_adminis.ldif   grp_analist.ldif
+                  grp_progrm.ldif    grp_cfuentes.ldif
+                  infra_plat.txt     grp_soporte.ldif
+                  grp_analist_z.ldif grp_progrm_z.ldif
+                  /);
+
 
   _log(BaselinerX::Comm::Balix->ahora() . " Downloading FTP files...");
   my $ftp = Net::FTP->new($ftp_server, Debug => 0);
@@ -137,7 +144,7 @@ sub run  {
   for my $grp (keys %group) {
     my $cnt = Baseliner->model('CargaLdif')->group_count($grp);
     if ($cnt == 0) {
-      _log(BaselinerX::Comm::Balix->ahora() . " New group: $grp"); 
+      _log(BaselinerX::Comm::Balix->ahora() . " New group: $grp");
       my $group_id = Baseliner->model('CargaLdif')->group_id();
       Baseliner->model('CargaLdif')->new_group( group_id     => $group_id
                                        , group_name   => $grp
@@ -145,7 +152,7 @@ sub run  {
                                        );
     }
   }
-  _log(BaselinerX::Comm::Balix->ahora() . " Updating users..."); 
+  _log(BaselinerX::Comm::Balix->ahora() . " Updating users...");
   #open my $fusr, '>', "${perl_temp}/karga$$";
   my $fusr = "${perl_temp}/carga$$";
   open FUSR, ">$fusr";
@@ -153,21 +160,21 @@ sub run  {
   for my $user (keys %user_group) {
     my $user_count = Baseliner->model('CargaLdif')->user_count($user);
     if ($user_count == 0) {
-      _log(BaselinerX::Comm::Balix->ahora() . " New user: $user"); 
+      _log(BaselinerX::Comm::Balix->ahora() . " New user: $user");
       my $usrgrp = join('|', @{$user_group{$user}});
-      print FUSR "$user||$user|0000|999|000|$user\@correo.interno|$user|$usrgrp\n"; 
+      print FUSR "$user||$user|0000|999|000|$user\@correo.interno|$user|$usrgrp\n";
     }
     else {
-      _log(BaselinerX::Comm::Balix->ahora() . " Updating user: $user"); 
+      _log(BaselinerX::Comm::Balix->ahora() . " Updating user: $user");
       my $user_id = Baseliner->model('CargaLdif')->user_id($user);
       my $usrgrp = join(',', @{$user_group2{$user}});
       my $admin_count = Baseliner->model('CargaLdif')->count_admins($user_id);
-	  Baseliner->model('CargaLdif')->del_harusersingroup($user_id, $usrgrp) if $admin_count == 0;
+          Baseliner->model('CargaLdif')->del_harusersingroup($user_id, $usrgrp) if $admin_count == 0;
       for my $group_name (@{$user_group2{$user}}) {
         my $cnt = Baseliner->model('CargaLdif')->count_harusersingroup($user_id, $group_name);
         Baseliner->model('CargaLdif')->insert_harusersingroup($user_id, $group_name) if $cnt == 0;
-      } 
-    } 
+      }
+    }
   }
   # Delete users not included in LDIF.
   my %harusers = Baseliner->model('CargaLdif')->harusers();
@@ -175,7 +182,7 @@ sub run  {
   for my $har_id (keys %harusers) {
     my ($harvest_user, $real_name) = @{$harusers{$har_id}};
     if (!($user_group{lc($harvest_user)} || $user_group{uc($harvest_user)})) {
-      _log(BaselinerX::Comm::Balix->ahora() . " Deleting user $harvest_user (${real_name}) in Harvest"); 
+      _log(BaselinerX::Comm::Balix->ahora() . " Deleting user $harvest_user (${real_name}) in Harvest");
       Baseliner->model('CargaLdif')->delete_haruser(uc($harvest_user));
       $del_count++;
     }

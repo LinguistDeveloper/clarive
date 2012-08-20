@@ -27,6 +27,9 @@ msgstr "Forzar refresco LinkList"
 msgid "Changeman Force DB2 Refresh"
 msgstr "Forzar refresco DB2"
 
+msgid "<b>Changeman</b> Job Elements"
+msgstr "Listado de elementos de Changeman"
+
 msgid "Execution for changeman package %1 correctly submitted"
 msgstr "Aprobaci贸n del paquete Changeman %1 solicitada correctamente"
 
@@ -39,8 +42,8 @@ msgstr "Refresco de LinkList solicitado correctamente"
 msgid "Can't execute Linklist refresh"
 msgstr "Se ha producido un error durante la solicitud del refresco de la LinkList"
 
-msgid "Recovered output for job %1 in PDS %2"
-msgstr "Recuperada salida del job %1 en el particionado %2"
+msgid "Recovered output for job %1"
+msgstr "Recuperada salida del job %1"
 
 msgid "Changeman job for package %1 in site %2 finished successfully"
 msgstr "Instalaci贸n del paquete Changeman %1 en el site %2 finaliz贸 correctamente"
@@ -78,7 +81,215 @@ msgstr "El job %1 que contiene el(los) paquete(s):"
 msgid "Notify when job needs to refresh the linklist"
 msgstr "Notificar cuando un job necesite refrescar la linklist"
 
+msgid "File %1 can't assign to any SCM job"
+msgstr "No puedo asociar el fichero %1 con ning煤n job de SCM"
 
+msgid "Can't create job because %1"
+msgstr "No se puede crear el job: <br>%1"
 
+msgid "Package %1 does not exists in Changeman"
+msgstr "El paquete %1 no existe en Changeman"
 
+msgid "ERROR looking for active job"
+msgstr "Error recuperando jobs activos"
+
+msgid "Can't create job for file %1 because we don't know user who creates it"
+msgstr "No se puede crear el job para el fichero %1 porque no conocemos el owner"
+
+msgid "Package is in job %1 with status %2"
+msgstr "El paquete est谩 asociado al job %1 con estado %2"
+
+msgid "Fill job_elements"
+msgstr "Recupera los componentes de un paquete"
+
+msgid "Execute package <b>%1</b> type <b>%2</b> to site <b>%3</b>"
+msgstr "Operaci贸n de <b>%2</b> al site <b>%3</b> sobre el paquete <b>%1</b> "
+
+msgid "<b>Changeman</b> package %1 will not be installed in site <b>%2</b> until <b>%3</b>"
+msgstr "El paquete Changeman <b>%1</b> no se instalar谩 en el site <b>%2</b> hasta <b>%3</b>"
+
+msgid "<b>Changeman</b> Job Elements from package %1"
+msgstr "Listado de elementos de Changeman del paquete <b>%1</b>"
+
+msgid "Package <b>%1</b> does not exists in Changeman"
+msgstr "El paquete <b>%1</b> no existe en Changeman"
+
+msgid "Package <b>%1</b> is in active job <b>%2</b>"
+msgstr "El paquete <b>%1</b> est谩 en el job <b>%2</b>"
+
+msgid "Can't create job because %1"
+msgstr "No se puede crear el job: %1"
+
+msgid "Recovered spool outputs for job <b>%1</b>"
+msgstr "Recuperadas salidas de JES para el job <b>%1</b>"
+
+msgid "User <b>%1</b> creates <b>PROMOTION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
+msgstr "El usuario <b>%1</b> crea un job de <b>PROMOCI脫N</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+
+msgid "Promotion for package <b>%1</b> to <b>%2</b> finished successfully"
+msgstr "La promoci贸n del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
+
+msgid "Promotion for package <b>%1</b> to <b>%2</b> finished with error"
+msgstr "La promoci贸n del paquete <b>%1</b> a <b>%2</b> finaliza  con error"
+
+msgid "User <b>%1</b> creates <b>DEMOTION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
+msgstr "El usuario <b>%1</b> crea un job de <b>DEVOLUCI脫N</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+
+msgid "Demotion for package <b>%1</b> to <b>%2</b> finished successfully"
+msgstr "La devoluci贸n del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
+
+msgid "Demotion for package <b>%1</b> to <b>%2</b> finished with error"
+msgstr "La devoluci贸n del paquete <b>%1</b> a <b>%2</b> finaliza  con error"
+
+msgid "User <b>%1</b> creates <b>INSTALLATION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
+msgstr "El usuario <b>%1</b> crea un job de <b>INSTALACI脫N</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+
+msgid "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully"
+msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> en el site <b>%3</b> con 茅xito"
+
+msgid "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error"
+msgstr "Se ha producido un error al cambiar el paquete <b>%1</b> al estado <b>%2</b> en el site <b>%3</b>"
+
+msgid "Package <b>%1</b> put into <b>%2</b> state finished successfully"
+msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> con 茅xito"
+
+msgid "Package <b>%1</b> put into <b>%2</b> state finished with error"
+msgstr "Se ha producido un error al cambiar el paquete <b>%1</b> al estado <b>%2</b>"
+
+msgid "Package %1 can not be dessassociatted from job %2"
+msgstr "El paquete <b>%1</b> no se puede liberar del pase <b>%2</b>"
+
+msgid "Package %1 dessassociatted from job %2"
+msgstr "El paquete <b>%1</b> se ha liberado del pase <b>%2</b>"
+
+msgid "Changeman package(s) has been associated to SCM job %1"
+msgstr "El paquete se ha asociado al pase <b>%1</b>"
+
+# features/changeman/lib/BaselinerX/ChangemanUtils.pm (113)
+msgid "Error retrieving file %1: %2"
+msgstr "Error recuperando fichero %1: %2"
+
+# features/changeman/lib/BaselinerX/Changeman.pm (563)
+msgid "Changeman xml parse error in %1"
+msgstr "Error de parseo xml de Change en %1"
+
+# features/changeman/lib/BaselinerX/ChangemanController.pm (95)
+msgid "File id not found: %1"
+msgstr "File id not found: %1"
+
+# features/changeman/root/changeman/main.js (26)
+msgid "View file"
+msgstr "Ver fichero"
+
+# features/changeman/root/changeman/main.js (45)
+msgid "File Date"
+msgstr "Fecha-Fichero"
+
+# features/changeman/root/changeman/main.js (46)
+msgid "JobName"
+msgstr "NombreJob"
+
+# features/changeman/root/changeman/main.js (47)
+msgid "Order"
+msgstr "Orden"
+
+# features/changeman/root/changeman/main.js (139)
+msgid "Where"
+msgstr "D髇de"
+
+# features/changeman/lib/BaselinerX/Changeman/Namespace/Package.pm (106)
+msgid "Error during %1: %2"
+msgstr "Error durante %1: %2"
+
+# features/changeman/lib/BaselinerX/Changeman/Provider/Nature.pm (52)
+msgid "Changeman Nature"
+msgstr "Naturaleza Changeman"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/deploy.pm (87)
+msgid "Invalid job for Changeman"
+msgstr "Invalid job for Changeman"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/deploy.pm (98)
+msgid "Error during changeman execution"
+msgstr "Error during changeman execution"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/deploy.pm (129)
+msgid "Error during changeman execution"
+msgstr "Error during changeman execution"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/deploy.pm (191)
+msgid "<b>Changeman</b> package %1 will not be installed in site <b>%2</b> until <b>%3</b> "
+msgstr "<b>Changeman</b> package %1 will not be installed in site <b>%2</b> until <b>%3</b> "
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobOutputDaemon.pm (153)
+msgid "JOB for package $chmPKG created in Baseliner but not Found"
+msgstr "JOB for package $chmPKG created in Baseliner but not Found"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobOutputDaemon.pm (169)
+msgid "JOB for package $chmPKG created in Baseliner but not Found"
+msgstr "JOB for package $chmPKG created in Baseliner but not Found"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobOutputDaemon.pm (203)
+msgid "Recovered output for job %1 in PDS %2"
+msgstr "Recovered output for job %1 in PDS %2"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobOutputDaemon.pm (298)
+msgid "Changeman job for package %1 finished with error"
+msgstr "Changeman job for package %1 finished with error"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (85)
+msgid "Package <b>%1</b> does not exist in Changeman"
+msgstr "Paquete <b>%1</b> no existe en Changeman"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (94)
+msgid "Relationship added to job %1: %2"
+msgstr "Relationship added to job %1: %2"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (100)
+msgid "Job cancelled. There's more recent activity with Changeman package %1"
+msgstr "Job cancelled. There's more recent activity with Changeman package %1"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (137)
+msgid "Error: Can't create job: %1"
+msgstr "Error: No se puede crear el pase: %1"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (215)
+msgid "FILE ALREADY PROCESSED, NO JOB FOR ROW %1 - %2"
+msgstr "FILE ALREADY PROCESSED, NO JOB FOR ROW %1 - %2"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (217)
+msgid "NO RELATIONSHIP match with job %1"
+msgstr "NO RELATIONSHIP match with job %1"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (334)
+msgid "User <b>%1</b> creates <b>ROLLBACK</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
+msgstr "User <b>%1</b> creates <b>ROLLBACK</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (347)
+msgid "Package <b>%1</b> has been <b>%2</b> successfully"
+msgstr "Package <b>%1</b> has been <b>%2</b> successfully"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (349)
+msgid "Package <b>%1</b> has been <b>%2</b> with error"
+msgstr "Package <b>%1</b> has been <b>%2</b> with error"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (402)
+msgid "Daemon Processed. Action: %1"
+msgstr "Daemon Processed. Action: %1"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (410)
+msgid "Package %1 can not be desassociatted from job %2"
+msgstr "Paquete %1 no se puede desasociar del pase %2"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (413)
+msgid "Package %1 desassociatted from job %2"
+msgstr "Paquete %1 desasociado del pase %2"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (420)
+msgid "FIN from Daemon. Job: %1. Return Code: %2. Action: %3"
+msgstr "FIN from Daemon. Job: %1. Return Code: %2. Action: %3"
+
+# features/changeman/lib/BaselinerX/Changeman/Service/notify.pm (48)
+msgid "No users found for action %1"
+msgstr "Usuarios no encontrados para la acci髇 %1"
 

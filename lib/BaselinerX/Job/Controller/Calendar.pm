@@ -384,7 +384,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                         . $ven->{ fin }
                         . " currentDate: $currentDate";
 
-                    #Inicio está en una ventana ya existente
+                    #Inicio est en una ventana ya existente
                     die(      "<h5>Error: la hora de inicio de ventana ($ven_ini) se solapa con la siguiente ventana:<br>"
                             . "-----------VENTANA: ven: $ven id: $id tipo: "
                             . $ven->{ tipo }
@@ -412,7 +412,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                         && !$currentDate )
                     {
 
-                        #Fin está en una ventana ya existente
+                        #Fin est en una ventana ya existente
                         die(      "<h5>Error: la hora de fin de ventana ($ven_fin) se solapa con la siguiente ventana: "
                                 . "-----------VENTANA: ven: $ven id: $id tipo: "
                                 . $ven->{ tipo }
@@ -527,7 +527,7 @@ sub calendar_range : Private {
     my $day = $c->stash->{ day };
     my @ns = @{ $c->stash->{ ns } || [] };
     my @range;
-    _log "CAL----VOY: " . _dump( \@ns );
+    #_log "CAL----VOY: " . _dump( \@ns );
     my $date = parse_date( 'dd/mm/Y', $day );
     my $week_day = $date->day_of_week() - 1;
 
@@ -719,65 +719,85 @@ sub date_intersec_range : Private {
 
 sub time_range_intersec : Private {
     my ( $self, $c ) = @_;
-    my $date  = $c->stash->{ date_selected };
-    my @ns    = @{ $c->stash->{ ns } || [] };
-    my $count = scalar @ns;
-    use Calendar::Slots;
-    my @range_enabled;
-    my @range_disabled;
-    my @slots_validos;
-    my %valid_slots = ();
-    my $cal         = Calendar::Slots->new;
+#    my $date  = $c->stash->{ date_selected };
+#    my @ns    = @{ $c->stash->{ ns } || [] };
+#    my $count = scalar @ns;
+#    use Calendar::Slots;
+#    my @range_enabled;
+#    my @range_disabled;
+#    my @slots_validos;
+#    my %valid_slots = ();
+#    my $cal         = Calendar::Slots->new;
+#
+#    for my $ns ( $c->model( 'Namespaces' )->sort_ns( { asc => 1 }, @ns ) ) {
+#        my $ns_desc = $c->model( 'Namespaces' )->find_text( $ns );
+#
+#        #Parche temporal BORRAME CUANDO SE ARREGLEN LOS NS
+#        $ns =~ s/_DESA|_CORR//g if ( $ns =~ /_DESA|_CORR/ );
+#        for my $bl ( $c->stash->{ bl } ? ( '*', $c->stash->{ bl } ) : '*' ) {
+#            my $bl_desc = Baseliner::Core::Baseline->name( $bl );
+#            my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $bl } );
+#            $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => "*" } ) if ( not ref $rs or not $rs->next );
+#            $rs->reset();
+#
+#            while ( my $r = $rs->next ) {
+#                my $week_day = $date->day_of_week() - 1;
+#                my $rs2;
+#                $rs2 =
+#                    $c->model( 'Baseliner::BaliCalendarWindow' )
+#                    ->search( { id_cal => $r->id, start_date => $self->parseDateTimeToDbix( $date ) } );
+#                $rs2 = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $r->id, day => $week_day, start_date => undef } )
+#                    if ( not ref $rs2 or not $rs2->next );
+#                $rs2->reset();
+#                my $found = 0;
+#
+#                while ( my $r2 = $rs2->next ) {
+#						my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
+#                    if ( $r2->active == 1 ) {
+#                        push @slots_validos, $slot;
+#						  }else{
+#                        push @range_disabled, $slot;
+#                    }
+#                    push @range_disabled, $slot if ( $found eq 0 );
+#
+#                }
+#            }
+#        }
+#    }
+#
+#    addSlots( $cal, @slots_validos );
+#
+#    for my $time_range ( $cal->sorted() ) {
+#        my $start_time = $self->parse_time( $time_range->start );
+#        my $end_time   = $self->parse_time( $time_range->end );
+#        my $type       = $time_range->name;
+#
+#        my $displayText = $start_time . ' - ' . $end_time;    # . ' - ' . (($type eq 'N')? _loc 'Normal Window' : _loc 'Urgent Window');
+#        my $valueJson = '{ start_time: "' . $start_time . '", end_time: "' . $end_time . '", type: "' . $type . '"}';
+#		push @range_enabled,{start_time=>$start_time, end_time=>$end_time, type=>$type, displayText => $displayText, valueJson=>$valueJson};
+#    }
 
-    for my $ns ( $c->model( 'Namespaces' )->sort_ns( { asc => 1 }, @ns ) ) {
-        my $ns_desc = $c->model( 'Namespaces' )->find_text( $ns );
+    # Eric -- No me entero de nada de lo de arriba, lo hago desde cero...
+    my @just_another_range_enabled = do {
+      use BaselinerX::Calendar::Utils;
+      my $day_of_week  = $c->stash->{date_selected}->{local_c}->{day_of_week} - 1;
+      my @ns           = @{$c->stash->{ns} || []};
+      my $bl           = $c->stash->{bl} || '*';
+      # my $packagename  = $c->stash->{packagename};
+      my @packagename  = @{$c->stash->{packagename}}; # Eric 27/01/2012
+      # _log 'packagenames -> ' . join ', ', @packagename;
+      # _log "day_of_week -> $day_of_week";
+      # _log 'ns -> ' . join ', ', @ns;
+      # _log "bl -> $bl";
+      # my @calendar_ids = calendar_ids $packagename, $bl, @ns;
+      my @calendar_ids = unique map { calendar_ids $_, $bl, @ns } @packagename; # Eric 27/01/2012
+      # _log 'calendar_ids -> [' . (join ', ', @calendar_ids) . ']';
+      calendar_json merge_calendars $day_of_week, @calendar_ids;
+    };
 
-        #Parche temporal BORRAME CUANDO SE ARREGLEN LOS NS
-        $ns =~ s/_DESA|_CORR//g if ( $ns =~ /_DESA|_CORR/ );
-        for my $bl ( $c->stash->{ bl } ? ( '*', $c->stash->{ bl } ) : '*' ) {
-            my $bl_desc = Baseliner::Core::Baseline->name( $bl );
-            my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $bl } );
-            $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => "*" } ) if ( not ref $rs or not $rs->next );
-            $rs->reset();
-
-            while ( my $r = $rs->next ) {
-                my $week_day = $date->day_of_week() - 1;
-                my $rs2;
-                $rs2 =
-                    $c->model( 'Baseliner::BaliCalendarWindow' )
-                    ->search( { id_cal => $r->id, start_date => $self->parseDateTimeToDbix( $date ) } );
-                $rs2 = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $r->id, day => $week_day, start_date => undef } )
-                    if ( not ref $rs2 or not $rs2->next );
-                $rs2->reset();
-                my $found = 0;
-
-                while ( my $r2 = $rs2->next ) {
-						my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
-                    if ( $r2->active == 1 ) {
-                        push @slots_validos, $slot;
-						  }else{
-                        push @range_disabled, $slot;
-                    }
-                    push @range_disabled, $slot if ( $found eq 0 );
-
-                }
-            }
-        }
-    }
-
-    addSlots( $cal, @slots_validos );
-
-    for my $time_range ( $cal->sorted() ) {
-        my $start_time = $self->parse_time( $time_range->start );
-        my $end_time   = $self->parse_time( $time_range->end );
-        my $type       = $time_range->name;
-
-        my $displayText = $start_time . ' - ' . $end_time;    # . ' - ' . (($type eq 'N')? _loc 'Normal Window' : _loc 'Urgent Window');
-        my $valueJson = '{ start_time: "' . $start_time . '", end_time: "' . $end_time . '", type: "' . $type . '"}';
-		push @range_enabled,{start_time=>$start_time, end_time=>$end_time, type=>$type, displayText => $displayText, valueJson=>$valueJson};
-    }
-
-    $c->stash->{ time_range } = \@range_enabled;
+    # $c->stash->{ time_range } = \@range_enabled;
+    $c->stash->{time_range} = \@just_another_range_enabled;
+    #_log 'time range -> ' . Data::Dumper::Dumper \@just_another_range_enabled;
 }
 
 
@@ -1121,11 +1141,31 @@ sub grid : Private {
     my $date        = $c->stash->{ fecha_date };
     my $grid        = {};
     my $currentDate = $c->stash->{ fecha_primer_dia_semana };
-
     foreach my $dd ( 0 .. 6 ) {
-        $grid->{ $dd } = get_all_windows( $id_cal, $dd, $currentDate );
+        # $grid->{ $dd } = get_all_windows( $id_cal, $dd, $currentDate );
+        # Eric -- 27/01/2012 
+        # We have to fix the bug of the first window starting at zero and the
+        # consecutive one getting the wrong start_date, which meses the
+        # calendar up.
+        # Get the normal data.
+        my $aref = get_all_windows($id_cal, $dd, $currentDate);
+        # Sort by start_time and end_time, to make sure that windows don't overlap.
+        my @ll = sort { $a->{start_time} gt $b->{start_time} && $a->{end_time} gt $b->{end_time} } @{$aref};
+        # Start at index 1, we don't have to check the first item.
+        for (my $i = 1 ; $i < scalar @ll ; $i++) {
+          # Sometimes, usually when the first window starts at zero, the next
+          # no-distribution window starts at 00:00 instead of the end time of the
+          # first window.
+          if ($ll[$i - 1]->{start_time} eq $ll[$i]->{start_time}) {
+          	# In this case the window is totally wrong. I don't know which
+          	# causes this, but it serves no purpose.
+            delete $ll[$i];
+          }
+        }
+        # Get rid of empty hashrefs.
+        $grid->{$dd} = [grep {scalar keys %{$_}} @ll];
+        # End
         $currentDate = $self->addDaysToDateTime( $currentDate, 1 );
-
     }
     return $grid;
 }
@@ -1274,7 +1314,7 @@ sub get_all_windows {
             $inserted_00 = 1;
         }
         if ( ref $last_ventana ) {
-            if ( $last_ventana->{ end_time } < $ventana->{ start_time } ) {
+            if ( $last_ventana->{ end_time } lt $ventana->{ start_time } ) {
                 push @new_windows, {  
                     type       => 'X',
                     id         => undef,

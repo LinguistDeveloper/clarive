@@ -5,15 +5,13 @@ use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::Dist::Utils;
-use Data::Dumper;
 use File::Slurp;
+use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.list.dirs.change.permissions' => {
-  name    => 'Change Permissions',
-  handler => \&main
-};
+register 'service.list.dirs.change.permissions' => {name    => 'Change Permissions',
+                                                    handler => \&main};
 
 sub main {
   my ($self, $c, $config) = @_;
@@ -91,6 +89,7 @@ sub main {
     }
   }
   $job->job_stash->{permission_files} = \@data;
+  _log Data::Dumper::Dumper \@data;
 
   return;
 }

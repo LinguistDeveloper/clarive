@@ -4,15 +4,16 @@ use SQL::Abstract;
 use Baseliner::Core::DBI;
 use Baseliner::Utils;
 
-has 'dbh' => ( is=>'ro', isa=>'DBI::db' );
-has 'db' => ( is=>'rw', isa=>'Baseliner::Core::DBI',
-    default=>sub{ Baseliner::Core::DBI->new( model=>'Harvest' ) } );
-
-sub BUILD {
-    my $self = shift;
-    $self->db( Baseliner::Core::DBI->new( dbi=>$self->dbh ) )
-        unless ref $self->db;
-}
+# Eric 12/01/2012 -- Comento esto. Lo veo innecesario y da problemas tras el cambio a R12.
+#has 'dbh' => ( is=>'ro', isa=>'DBI::db' );
+#has 'db' => ( is=>'rw', isa=>'Baseliner::Core::DBI',
+#    default=>sub{ Baseliner::Core::DBI->new( model=>'Harvest' ) } );
+#
+#sub BUILD {
+#    my $self = shift;
+#    $har_db( Baseliner::Core::DBI->new( dbi=>$har_dbh ) )
+#        unless ref $har_db;
+#}
 
 sub elements {
     my ($self,%p)=@_;
@@ -54,6 +55,7 @@ sub status {
 
 sub versions {
     my $self = shift;
+    my $har_db = BaselinerX::CA::Harvest::DB->new; # Eric 12/01/2012
     my %p = @_;
 	$p{mode} or die "Missing 'mode' parameter (promote/demote/static)";
     my $sa = SQL::Abstract->new( cmp => 'like' );
@@ -61,11 +63,11 @@ sub versions {
     my @envs;
 
     if( @pkgs == 0 ) {
-		@envs = $self->db->array( $sa->select( 'harenvironment', 'envobjid', { environmentname=>$p{env} } ) ); 
+		@envs = $har_db->array( $sa->select( 'harenvironment', 'envobjid', { environmentname=>$p{env} } ) ); 
         if( exists $p{package} ) {
-            @pkgs = $self->db->array( $sa->select( 'harpackage', 'packageobjid', { packagename=>$p{package}, envobjid=>\@envs } ) ); 
+            @pkgs = $har_db->array( $sa->select( 'harpackage', 'packageobjid', { packagename=>$p{package}, envobjid=>\@envs } ) ); 
         } elsif( exists $p{state} ) {
-			@pkgs = $self->db->array( $sa->select( ['harpackage p', 'harstate s'], 'packageobjid', { -bool=>\'s.stateobjid=p.stateobjid', statename=>$p{state}, 's.envobjid'=>\@envs } ) ); 
+			@pkgs = $har_db->array( $sa->select( ['harpackage p', 'harstate s'], 'packageobjid', { -bool=>\'s.stateobjid=p.stateobjid', statename=>$p{state}, 's.envobjid'=>\@envs } ) ); 
         } else {
             die "Missing 'package' or 'state' parameters";
         }
@@ -73,10 +75,10 @@ sub versions {
     my @views = _array( $p{viewobjid} );
     if( exists $p{view} ) {
         die "Missing 'env' parameter to find view." unless @envs > 0;
-        @views = $self->db->array( $sa->select( 'harview', 'viewobjid', { viewname=>$p{view}, envobjid=>\@envs } ) ); 
+        @views = $har_db->array( $sa->select( 'harview', 'viewobjid', { viewname=>$p{view}, envobjid=>\@envs } ) ); 
 	} elsif( @views == 0 ) {
 		# guess view from package's own
-		@views = $self->db->array( $sa->select( 'harpackage', 'viewobjid', { packageobjid=>\@pkgs } ) ); 
+		@views = $har_db->array( $sa->select( 'harpackage', 'viewobjid', { packageobjid=>\@pkgs } ) ); 
     }
     my $pkgs = join ',',@pkgs;
     my $views = join ',',@views;
@@ -84,7 +86,7 @@ sub versions {
     my $sql = $p{mode} =~ /demote|rollback/i
         ? $self->backout_elements( $pkgs, $views)
         : $self->add_elements( $pkgs, $views);
-    return $self->db->array_hash( $sql );
+    return $har_db->array_hash( $sql );
 }
 
 sub add_elements {

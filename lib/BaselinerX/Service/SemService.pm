@@ -56,11 +56,11 @@ register 'service.sem.dummy_job' => {
 sub request {
     my ($self, $c, $config) = @_;
     my $sm = Baseliner->model('Semaphores');
-    _log "Requested semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
+    _debug "Requested semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
     my $sem = $sm->request( %$config );
-    _log "Granted semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
+    _debug "Granted semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
     sleep $config->{sleep};
-    _log "Releasing semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
+    _debug "Releasing semaphore client for " . "sem=" . $config->{sem} . ", bl=" . $config->{bl};
     $sem->release;
 }
 
@@ -88,7 +88,7 @@ sub run_daemon {
             $self->run_once( $c, $config );            
         } catch {
             my $err = shift;
-            _log "ERROR: $err";
+            _debug "ERROR: $err";
         };
         sleep $freq; 
     }

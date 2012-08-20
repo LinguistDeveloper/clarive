@@ -4,14 +4,12 @@ use warnings;
 use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
-use Data::Dumper;
+use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.generate.tars' => {
-  name    => 'Generate tars',
-  handler => \&main
-};
+register 'service.generate.tars' => {name    => 'Generate tars',
+                                     handler => \&main};
 
 sub main {
   my ($self, $c, $config) = @_;

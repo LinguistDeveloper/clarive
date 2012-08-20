@@ -4,14 +4,15 @@ use SQL::Abstract;
 use Baseliner::Core::DBI;
 use Baseliner::Utils;
 
-has 'dbh' => ( is=>'ro', isa=>'DBI::db' );
-has 'db' => ( is=>'rw', isa=>'Baseliner::Core::DBI' );
-
-sub BUILD {
-    my $self = shift;
-    $self->db( Baseliner::Core::DBI->new( dbi=>$self->dbh ) )
-        unless ref $self->db;
-}
+# Eric 12/01/2012 -- Comento esto. Lo veo innecesario y da problemas tras el cambio a R12.
+#has 'dbh' => ( is=>'ro', isa=>'DBI::db' );
+#has 'db' => ( is=>'rw', isa=>'Baseliner::Core::DBI' );
+#
+#sub BUILD {
+#    my $self = shift;
+#    $har_db->db( Baseliner::Core::DBI->new( dbi=>$har_db->dbh ) )
+#        unless ref $har_db->db;
+#}
 
 sub elements {
     my ($self,%p)=@_;
@@ -90,16 +91,17 @@ sub status {
 
 sub versions {
     my $self = shift;
+    my $har_db = BaselinerX::CA::Harvest::DB->new; # Eric 12/01/2012
     my %p = @_;
     my $sa = SQL::Abstract->new( cmp => 'like' );
     my @pkgs = _array( $p{packageobjid} );
     my @envs;
     if( @pkgs == 0 ) {
-        @envs = $self->db->array( $sa->select( 'harenvironment', 'envobjid', { environmentname=>$p{env} } ) ); 
+        @envs = $har_db->db->array( $sa->select( 'harenvironment', 'envobjid', { environmentname=>$p{env} } ) ); 
         if( exists $p{package} ) {
-            @pkgs = $self->db->array( $sa->select( 'harpackage', 'packageobjid', { packagename=>$p{package}, envobjid=>\@envs } ) ); 
+            @pkgs = $har_db->db->array( $sa->select( 'harpackage', 'packageobjid', { packagename=>$p{package}, envobjid=>\@envs } ) ); 
         } elsif( exists $p{state} ) {
-            @pkgs = $self->db->array( $sa->select( ['harpackage p', 'harstate s'], 'packageobjid', { -bool=>\'s.stateobjid=p.stateobjid', statename=>$p{state}, 's.envobjid'=>\@envs } ) ); 
+            @pkgs = $har_db->db->array( $sa->select( ['harpackage p', 'harstate s'], 'packageobjid', { -bool=>\'s.stateobjid=p.stateobjid', statename=>$p{state}, 's.envobjid'=>\@envs } ) ); 
         } else {
             die "Missing 'package' or 'state' parameters";
         }
@@ -107,10 +109,10 @@ sub versions {
     my @views = _array( $p{viewobjid} );
     if( exists $p{view} ) {
         die "Missing 'env' parameter to find view." unless @envs > 0;
-        @views = $self->db->array( $sa->select( 'harview', 'viewobjid', { viewname=>$p{view}, envobjid=>\@envs } ) ); 
+        @views = $har_db->db->array( $sa->select( 'harview', 'viewobjid', { viewname=>$p{view}, envobjid=>\@envs } ) ); 
     } elsif( @views == 0 ) {
         # guess view from package's own
-        @views = $self->db->array( $sa->select( 'harpackage', 'viewobjid', { packageobjid=>\@pkgs } ) ); 
+        @views = $har_db->db->array( $sa->select( 'harpackage', 'viewobjid', { packageobjid=>\@pkgs } ) ); 
     }
     my $pkgs = join ',',@pkgs;
     my $views = join ',',@views;
@@ -180,7 +182,7 @@ sub versions {
             v3 where v3.itemobjid=v1.itemobjid and v3.versionstatus<>'R' and v3.packageobjid IN ( $pkgs ) ) ) AND p.packageobjid IN ( $pkgs ) ) )
         ) main
     }; 
-    return $self->db->array_hash( $sql );
+    return $har_db->db->array_hash( $sql );
 }
 
 1;

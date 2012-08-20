@@ -67,14 +67,14 @@ __PACKAGE__->has_many(
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8ipVWsLgWJHmnqWRqlGuoQ
 
 sub namespace {
-	my $self = shift;
-	use BaselinerX::Release::Namespace::Release;
-	return BaselinerX::Release::Namespace::Release->new({ row=>$self });
+    my $self = shift;
+    use BaselinerX::Release::Namespace::Release;
+    return BaselinerX::Release::Namespace::Release->new({ row=>$self });
 }
 
 sub item {
-	my $self = shift;
-	return 'release/' . $self->id
+    my $self = shift;
+    return 'release/' . $self->id
 }
 
 1;

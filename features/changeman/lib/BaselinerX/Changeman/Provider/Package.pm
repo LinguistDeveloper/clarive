@@ -36,10 +36,14 @@ register 'config.changeman.connection' => {
 		{ id=>'port', label=>'Changeman Port', type=>'text', default=>'58765' },
 		{ id=>'key', label=>'Changeman Key', type=>'text', default=>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=' },
 		{ id=>'workdir', label=>'Changeman workdir', type=>'text', default=>'/u/aps/chm/scm/tmp' },
-        { id=>'stateMap', label=>'Map states between Changeman and Baseliner', type=>'hash', default=>qq{{TEST=>'TEST', PREP=>'ANTE', FORM=>'PROD', ALFA=>'PROD', EXPL=>'PROD', PRUE=>'PROD', CINF=>'PROD', XXXX=>'PROD'}} },
+        { id=>'stateMap', label=>'Map states between Changeman and Baseliner', type=>'hash',
+            default=>qq{{TEST=>'TEST', PREP=>'ANTE', ANTE=>'ANTE', CURS=>'CURS', FORM=>'PROD', ALFA=>'PROD', EXPL=>'PROD', PRUE=>'PROD', CINF=>'PROD', XXXX=>'PROD'}} },
         { id=>'frequency', label=>'Jes spool daemon frequency', type=>'text', default=>'15' },
         { id=>'iterations', label=>'Jes spool daemon iterations', type=>'text', default=>'100' },
         { id=>'clean', label=>'Clean command', type=>'text', default=>'RENAME' },
+        { id=>'utildir', label=>'Path to CHM utilities', type=>'text', default=>'/u/aps/chm/test' },
+        { id=>'typedef', label=>'Changeman type definition', type=>'hash',
+            default=>qq{ASM=>'Fuentes Assembler',BSL=>'Load Mapas',BSM=>'Fuentes Mapas',CLE=>'Clist EBA',CLG=>'Fuentes C',CPA=>'Copys Cobol uso general',CPE=>'Copys uso general ASSEMBLER',CPP=>'Copys uso general PLI',CPY=>'Copys Cobol/Assembler/PLI por aplicacion',CTC=>'Sysin de JCLs',DAT=>'Libreria Datos CMN',DBR=>'Componentes DBRM',DMS=>'Fuentes DMS',JCC=>'JCLs para CONTROL-M',JCE=>'JCLs EBA',JCL=>'JCLs ISPF',JCS=>'JCLs SAT',JCT=>'JCLs EBA y SAT',LOA=>'Load CICS',LOB=>'Load Batch',LOD=>'Load CICS para NEA Capa de DATOS',LOG=>'Load Batch Uso General',LON=>'Load CICS para NEA Capa de NEGOCIOS',LOR=>'Load CICS para NEA resto',LST=>'Compressed Stage Listings',MAC=>'Macros de Arquitectura NEA',MSG=>'Mensajes ISPF',NIA=>'Analisis de Impacto EDM',NMI=>'NEA-Registros tabla NEA910',NPA=>'Copys Cobol uso general NEA',NPY=>'Copys Cobol por aplicacion NEA',NRC=>'Fuentes Cobol NEA',NRR=>'Fuentes Cobol NEA terminados en R',NSM=>'Fuentes Mapas NEA',NTL=>'Capa de listado de patron batch',N80=>'NEA-Registros tabla NEA980',N90=>'NEA-Registros tabla NEA900',PAN=>'Paneles ISPF',PKG=>'Sentencias Bind Package',PLI=>'Fuentes PL/I',PRD=>'Productos',PRG=>'Productos de uso General',REX=>'Fuentes REXX y CLIST',SAS=>'Fuentes SAS',SKL=>'Skeletos ISPF',SRC=>'Fuentes Cobol',VSM=>'Definiciones ficheros VSAM'} },
 		# { id=>'role', label=>'Changeman role for test', type=>'hash', default=>"Z=>['AZ','PZ'], T=>['AN','PR'] "},
 	]
 };
@@ -66,6 +70,7 @@ sub find {
 	my $pkg_data = Baseliner->model('Repository')->get( ns=>$self->domain . '/' . $pkg );
 	return undef unless( ref $pkg_data );
 
+    ref $pkg_data->{user} and $pkg_data->{user} = _loc('Unknown');
     return BaselinerX::Changeman::Namespace::Package->new($pkg_data);
     }
 
@@ -102,7 +107,7 @@ sub getPkg {
             my $tipoPkg     = 'Changeman';
             $tipoPkg.='/DB2' if $db2 eq 'SI';
             $tipoPkg.='/linkList' if $linklist eq 'SI';
-            my $label=$motivo eq 'PRO'?'Proyecto: ':$motivo eq 'PET'?'Petición: ':$motivo eq 'MTO'?'Mantenimiento: ':'Incidencia: ';
+            my $label=$motivo eq 'PRO'?'Proyecto: ':$motivo eq 'PET'?'Peticin: ':$motivo eq 'MTO'?'Mantenimiento: ':'Incidencia: ';
             
             my $data={  icon_on  => '/static/images/changeman/package.gif',
                         icon_off => '/static/images/changeman/package_off.gif',
@@ -133,7 +138,7 @@ sub getPkg {
                         why_not  => ""
                     };
 
-            # Añadimos al repositorio el paquete...
+            # Aadimos al repositorio el paquete...
             try {
                 Baseliner->model('Repository')->set( ns=>"changeman.package/$_", data=>$data );
             } catch {
@@ -160,21 +165,25 @@ sub list {
     if ($c->model('Permissions')->user_has_action(username=>$p->{username}, action=>'action.admin.root')) {
         push @projects, '*';
     } else {
-        foreach my $id (_array $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create', bl=>$bl)) {
-            my $project=$c->model('Baseliner::BaliProject')->search({id=>$id, id_parent=>undef, nature=>undef})->first;
-            push @projects, $project->name . 'T' if $project;
-            }
-        foreach my $id (_array $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create.Z', bl=>$bl)) {
-            my $project=$c->model('Baseliner::BaliProject')->search({id=>$id, id_parent=>undef, nature=>undef})->first;
-            push @projects, $project->name . 'Z' if $project;
-            }
+        my $user_prj = $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create', bl=>$bl);
+        my $user_prj_z = $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create.Z', bl=>$bl);
+        if( _array $user_prj ) {
+            my @prjs = $c->model('Baseliner::BaliProject')->search({id=>$user_prj, id_parent=>undef, nature=>undef}, { select=>['name'] })->hashref->all;
+            push @projects, map { $_->{name} . 'T' } @prjs;
         }
+        if( _array $user_prj_z ) {
+            my @prjs = $c->model('Baseliner::BaliProject')->search({id=>$user_prj_z, id_parent=>undef, nature=>undef}, { select=>['name'] })->hashref->all;
+            push @projects, map { $_->{name} . 'Z' } @prjs;
+        }
+    }
     
-    _log "Looking for Changeman packages in : " . join(" ", @projects);
+    # _log "Looking for Changeman packages in : " . join(" ", @projects);
 
     my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
     my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
+    _debug "START xml_pkgs";
     my $pkgs = $chm->xml_pkgs( filter=>$query, to_env=>$bl, job_type=>$job_type eq 'promote'?'P':'M', projects=>[@projects] );
+    _debug "END xml_pkgs";
 
     my @ns;
     my ($cnt,$total)=(0,0);
@@ -205,7 +214,7 @@ sub list {
             my $tipoPkg     = 'Changeman';
             $tipoPkg.='/DB2' if $db2 eq 'SI';
             $tipoPkg.='/linkList' if $linklist eq 'SI';
-            my $label=$motivo eq 'PRO'?'Proyecto: ':$motivo eq 'PET'?'Petición: ':$motivo eq 'MTO'?'Mantenimiento: ':'Incidencia: ';
+            my $label=$motivo eq 'PRO'?'Proyecto: ':$motivo eq 'PET'?'Peticin: ':$motivo eq 'MTO'?'Mantenimiento: ':'Incidencia: ';
             
             # searching 
             if( $rfc ) {
@@ -250,15 +259,15 @@ sub list {
                         # moreInfo => qq{<table>
                                           # <tr><td class="search-l">Tipo: $tipoPkg</td><td class="search-r">RC Audit: $audit</td></tr>
                                           # <tr><td class="search-l">Origen: $promote</td><td class="search-r">Destino: $site</td></tr>
-                                          # <tr><td class="search-l">Código: $motivo</td><td class="search-r">Motivo: $codigo</td></tr>
+                                          # <tr><td class="search-l">Cdigo: $motivo</td><td class="search-r">Motivo: $codigo</td></tr>
                                        # </table>}, # $pkgInfo->{$_}->{descripcion},
 
                     # _log Dumper $data;
             push @ns, BaselinerX::Changeman::Namespace::Package->new($data);
 
-            # Añadimos al repositorio el paquete...
+            # Aadimos al repositorio el paquete...
             try {
-                Baseliner->model('Repository')->set( ns=>"changeman.package/$_", data=>$data );
+               Baseliner->model('Repository')->set( ns=>"changeman.package/$_", data=>$data );
             } catch {
                 my $error = shift;
                 # _log $error;
@@ -268,7 +277,7 @@ sub list {
 
     # _log "provider list finished (records=".scalar (@ns)."/$total).";
     return { data=>\@ns, total=>$total, count=>scalar(@ns) };
-    }
+}
 
 1;
 

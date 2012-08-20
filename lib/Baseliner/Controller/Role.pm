@@ -72,7 +72,7 @@ sub json : Local {
             };
         }
         my $actions_txt = \@actions;
-        _log _dump $actions_txt;
+        #_log _dump $actions_txt;
 #        # related users
 #        my $rs_users = $r->bali_roleusers;
 #        my @users;

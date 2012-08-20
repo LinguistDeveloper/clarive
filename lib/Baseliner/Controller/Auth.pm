@@ -8,27 +8,27 @@ use MIME::Base64;
 use Baseliner::Core::User;
 
 register 'action.surrogate' => {
-	name => 'Become a different user',
+    name => 'Become a different user',
 };
 
 sub login_from_url : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-	my $username = $c->stash->{username};
+    my $username = $c->stash->{username};
     if( $username ) {  
-		try {
-			die if $c->config->{ldap} eq 'no';
-			$c->authenticate({ id=>$username }, 'ldap_no_pw');
-			$c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
-			$c->session->{username} = $username;
-		} catch {
-			# failed to find ldap, just let him in ??? TODO
-			my $err = shift;
-			_log $err;
-			$c->authenticate({ id=>$username }, 'none');
-			$c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
-			$c->session->{username} = $username;
-		};
+        try {
+            die if $c->config->{ldap} eq 'no';
+            $c->authenticate({ id=>$username }, 'ldap_no_pw');
+            $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
+            $c->session->{username} = $username;
+        } catch {
+            # failed to find ldap, just let him in ??? TODO
+            my $err = shift;
+            _log $err;
+            $c->authenticate({ id=>$username }, 'none');
+            $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
+            $c->session->{username} = $username;
+        };
     }
     if( ref $c->user ) {
         $c->forward('/index');
@@ -38,14 +38,14 @@ sub login_from_url : Local {
 sub login_local : Local {
     my ( $self, $c, $login, $password ) = @_;
     my $p = $c->req->params;
-	my $auth = $c->authenticate({ id=>$c->stash->{login}, password=>$c->stash->{password} }, 'local');
-	if( ref $auth ) {
-		$c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-		$c->session->{username} = $c->stash->{login};
-		$c->stash->{json} = { success => \1, msg => _loc("OK") };
-	} else {
-		$c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
-	}
+    my $auth = $c->authenticate({ id=>$c->stash->{login}, password=>$c->stash->{password} }, 'local');
+    if( ref $auth ) {
+        $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+        $c->session->{username} = $c->stash->{login};
+        $c->stash->{json} = { success => \1, msg => _loc("OK") };
+    } else {
+        $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
+    }
 }
 
 sub surrogate : Local {
@@ -54,16 +54,16 @@ sub surrogate : Local {
     my $case = $c->config->{user_case};
     my $username= $case eq 'uc' ? uc($p->{login}) 
      : ( $case eq 'lc' ) ? lc($p->{login}) : $p->{login};
-	
-	try {
-		$c->authenticate({ id=>$username }, 'none');
-		$c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-		$c->session->{username} = $username;
-		$c->stash->{json} = { success => \1, msg => _loc("Login Ok") };
-	} catch {
-		$c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
-	};
-	$c->forward('View::JSON');	
+    
+    try {
+        $c->authenticate({ id=>$username }, 'none');
+        $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+        $c->session->{username} = $username;
+        $c->stash->{json} = { success => \1, msg => _loc("Login Ok") };
+    } catch {
+        $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
+    };
+    $c->forward('View::JSON');	
 }
 
 sub login : Global {
@@ -78,30 +78,30 @@ sub login : Global {
     _log "LOGIN: " . $p->{login};
     #_log "PW   : " . $p->{password}; #TODO only for testing!
 
-	if( $login && $password ) {
-		if( $login =~ /^local\/(.*)$/i ) {
-			$c->stash->{login} = $1;
-			$c->stash->{password} = $password;
-			$c->forward('/auth/login_local');
-		} else {
-			my $auth = $c->authenticate({
-					id          => $login, 
-					password    => $password,
-					});
-			if( ref $auth ) {
-				$c->stash->{json} = { success => \1, msg => _loc("OK") };
+    if( $login ) {
+        if( $login =~ /^local\/(.*)$/i ) {
+            $c->stash->{login} = $1;
+            $c->stash->{password} = $password;
+            $c->forward('/auth/login_local');
+        } else {
+            my $auth = $c->authenticate({
+                    id          => $login, 
+                    password    => $password,
+                    });
+            if( ref $auth ) {
+                $c->stash->{json} = { success => \1, msg => _loc("OK") };
                 $c->session->{username} = $login;
-				$c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-			} else {
-				$c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
-			}
-		}
+                $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+            } else {
+                $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
+            }
+        }
     } else {
         # invalid form input
-		$c->stash->{json} = { success => \0, msg => _loc("Missing User or Password") };
-	}
-	_log '------Login in: '  . $c->username ;
-	$c->forward('View::JSON');	
+        $c->stash->{json} = { success => \0, msg => _loc("Missing User or Password") };
+    }
+    _log '------Login in: '  . $c->username ;
+    $c->forward('View::JSON');	
     #$c->res->body("Welcome " . $c->user->username || $c->user->id . "!");
 }
 
@@ -126,7 +126,7 @@ sub logoff : Global {
 
 sub logon : Global {
     my ( $self, $c ) = @_;
-	$c->stash->{template} = $c->config->{login_page} || '/site/login.html';
+    $c->stash->{template} = $c->config->{login_page} || '/site/login.html';
 }
 
 sub saml_check : Private {
@@ -152,6 +152,5 @@ sub saml_check : Private {
                 return 0;
         };
 }
-
 
 1;

@@ -1,12 +1,13 @@
 package BaselinerX::Model::InfUtil;
-use Moose;
+use Baseliner::Core::DBI;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
-use Baseliner::Core::DBI;
+use BaselinerX::Dist::Utils;
 use Compress::Zlib;
 use Data::Dumper;
+use Moose;
 use Try::Tiny;
-use BaselinerX::Dist::Utils;
+use utf8;
 
 has 'cam',            is => 'rw', isa => 'Str';
 has 'whoami',         is => 'ro', isa => 'Str',      lazy_build => 1;
@@ -410,12 +411,18 @@ sub inf_es_publica {
 }
 
 sub inf_es_IAS {
+  # DFEATURE my $f_;
   my ($self, $env_name, $sub_apl) = @_;
+  
+  # DREQUIRE length($env_name) == 3, 
+   #         "CAM length must be 3 chars ($env_name length is " . length($env_name) . ")";
+  
   my $value = $self->inf_es_($env_name, 'JAVA_APPL_TECH', $sub_apl);
-  $value =~ m/IAS/ix 
-    ? do { _log "\n$sub_apl ($env_name) is IAS.";     return 1 }
-    : do { _log "\n$sub_apl ($env_name) is not IAS."; return 0 }
-    ;
+  $value =~ m/IAS/ix ? 1 : 0;
+ 
+  _log $value ? "$env_name is IAS" : "$env_name is NOT IAS";
+  
+  # DVAL $value;
 }
 
 sub inf_es_EDW4J {    #JAVA_APPL_TECH
@@ -549,6 +556,7 @@ sub get_inf_subred {
 
 ## get_inf_destinos : destino de distrib. unix
 sub get_inf_destinos {
+  # DFEATURE my $f_;
   my ( $self, $env, $sub_apl ) = @_;
 
   $env = $env =~ m/^T/xi ? 'T'    # TEST    => T
@@ -559,7 +567,7 @@ sub get_inf_destinos {
 
   my $cam_uc = uc($self->cam);
   undef my %destino;
-  my $es_IAS = $self->inf_es_IAS($env, $sub_apl);
+  my $es_IAS = $self->inf_es_IAS($cam_uc, $sub_apl);
   my $red = $self->get_inf_subred($env, $sub_apl);
   my $red_txt = $red =~ m/I/ix ? 'Interna' 
               : $red =~ m/W/xi ? 'Internet' 
@@ -955,10 +963,10 @@ sub _build_nets_oracle_r7 { # -> Str
   my $self = shift;
   my @nets = @{$self->nets_oracle};
 
-  return qw/I W/ ~~ @nets ? 'LN|W3'  # If has both
+  return 'I' ~~ @nets && 'W' ~~ @nets ? 'LN|W3'  # If has both
        : 'I'     ~~ @nets ? 'LN'     # ... or Interna
        : 'W'     ~~ @nets ? 'W3'     # ... or Internet
-       : q{}                         # ... else null.
+       : undef                                   # ... else null.
        ;
 }
 

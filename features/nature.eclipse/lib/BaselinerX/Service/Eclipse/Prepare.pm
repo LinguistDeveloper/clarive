@@ -46,6 +46,7 @@ sub main {
     : _throw "No hay paquetes!";
 
   my $HarvestState = bl_statename($env);
+  # Nota: Copiar de J2EE.
   my %data = map +($_->{versiondataobjid} =>
                    { FileName        => $_->{fullpath} =~ /\/.+\/(.+)/
                    , ObjectName      => do { $_->{fullpath} =~ /\/.+\/(.+)/; $1 =~ /(.+)\./; uc($1) }

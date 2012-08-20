@@ -1,11 +1,11 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000067210
-#	Fecha de pase .................... 2012/07/05 16:03:12
+#	Pase ............................. N.TEST0000059155
+#	Fecha de pase .................... 2012/02/17 15:48:01
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
 #	Versión del elemento ............. 2
-#	Propietario de la version ........ qbborro (QBBORRO - BLANCA BEATRIZ BORRO ESCRIBANO)
+#	Propietario de la version ........ q74613x (Q74613X - ERIC LORENZANA CANALES)
 
 package BaselinerX::Controller::SQA;
 use Baseliner::Plug;

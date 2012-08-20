@@ -5,14 +5,12 @@ use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::Dist::Utils;
-use Data::Dumper;
+use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.remove.items' => {
-  name    => 'Process Elements',
-  handler => \&main
-};
+register 'service.remove.items' => {name    => 'Process Elements',
+                                    handler => \&main};
 
 ### main : Self Ref Ref -> Undef
 sub main {
@@ -104,7 +102,7 @@ sub rem_unix {
       # Delete file.
       $cmd = "rm -rf $item";
       $log->debug($cmd);
-      $rc, $ret = $balix->executeas($href->{user}, $cmd);
+      ($rc, $ret) = $balix->executeas($href->{user}, $cmd);
       _throw "Cannot delete ${item}, unknow error." if $rc;
     }
   }

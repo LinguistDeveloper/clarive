@@ -21,6 +21,7 @@ Usage, from the command line:
     bali deploy --feature ca.harvest [ --feature ... ]
 
 =cut
+
 use v5.10;
 use strict;
 use warnings;
@@ -66,14 +67,32 @@ Usage:
   bali deploy [options]
 
 Options:
-  -h          : this help
-  -deploy     : actually execute statements in the db
-                  bali deploy --deploy
-  -quote      : quote table names
-  -drop       : add drop statements
-  -env        : sets BALI_ENV (local, test, prod, t, etc...)
-  -schema     : schemas to deploy 
-                  bali deploy --schema BaliRepo --schema BaliRepoKeys 
+  -h                      : this help
+  -deploy                 : actually execute statements in the db
+                              bali deploy --deploy
+  -run                    : Run DB statements interactively or from STDIN
+  -quote                  : quote table names
+  -drop                   : add drop statements
+  -env                    : sets BALI_ENV (local, test, prod, t, etc...)
+  -schema                 : schemas to deploy (does not work for migrations)
+                                bali deploy --schema BaliRepo --schema BaliRepoKeys 
+
+Versioning Options:
+  --diff                  : diffs this schema against the database and generates a diff
+  --installversion        : installs versioning tables if needed
+  --upgrade               : upgrades database version
+  --from <version>        : from version (replaces current db version)
+  --to <version>          : to version (replaces current schema version)
+
+Examples:
+    bin/bali deploy --env t   
+    bin/bali deploy --env t --diff
+    bin/bali deploy --env t --diff --deploy
+    bin/bali deploy --env t --installversion   
+    bin/bali deploy --env t --upgrade                   # print migration scripts only, no changes made
+    bin/bali deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
+    bin/bali deploy --env t --upgrade --show --to 2     # same, but with schema version 2
+    bin/bali deploy --env t --upgrade --show --from 1   # same, but with db version 2
 
 EOF
     exit 0;
@@ -87,6 +106,7 @@ say pre . "Deploying schema " . join', ', _array($args{schema});
 say pre . "Starting DB deploy...";
 $Baseliner::Schema::Baseliner::DB_DRIVER = 'SQLite';
 my $env = $args{env} || $ENV{BALI_ENV} || 't';
+$env = @$env if ref $env eq 'ARRAY';
 my $cfg_file = "$Bin/../baseliner_$env.conf";
 say pre . "Config file: $cfg_file";
 
@@ -99,9 +119,9 @@ if( $args{schema} ) {
 }
 
 my $dropping= exists $args{drop} ? ' (with DROP)' : '';
-if( exists $args{drop} && ! @{ $args{schema} } ) {
+if( exists $args{drop} && ! @{ $args{schema} || [] } && ! exists $args{installversion} ) {
     say "\n*** Warning: Drop specified and no --schema parameter found.";
-    say "*** All tables in the schema will be dropped. Data loss will sue.";
+    say "*** All tables in the schema will be dropped. Data loss will ensue.";
     print "*** Are you sure [y/N]: ";
     unless( (my $yn = <STDIN>) =~ /^y/i ) {
         say "Aborted.";
@@ -110,14 +130,26 @@ if( exists $args{drop} && ! @{ $args{schema} } ) {
 }
 say pre . "Deploying started$dropping.";
 
+my $deploy_now = exists $args{deploy};
+say pre . "No deployments will run. Only printing information." unless $deploy_now;
+
 Baseliner::Schema::Baseliner->deploy_schema(
-    config      => { $cfg->getall },
-    show_config => !exists $args{ show_config },
-    show        => !exists $args{ deploy },
-    drop        => exists $args{ drop },
-    schema      => $args{ schema }
+    config          => { $cfg->getall },
+    run             => exists $args{run},
+    version         => exists $args{'version'},
+    install_version => exists $args{'installversion'},
+    upgrade         => exists $args{ upgrade },
+    diff            => $args{ diff },
+    downgrade       => exists $args{ downgrade },
+    show_config     => !exists $args{show_config},
+    deploy_now      => $deploy_now,
+    from            => $args{from}, # from version num
+    to              => $args{to},  # to version num
+    drop            => exists $args{drop},
+    schema          => $args{schema}
 ) and die pre . "Errors while deploying DB. Aborted\n";
 
-say pre . "Done Deploying DB.";
+say pre . "No DB statements were executed. Use --deploy to actually deploy/migrate the schema. " unless $deploy_now;
+say pre . "Done.";
 
 exit 0;

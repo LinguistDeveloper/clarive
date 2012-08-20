@@ -259,7 +259,21 @@ sub job_run {
 
         # now, rollback if needed
         unless( $self->rollback ) { # if we are already rolling back, skip
-            if( scalar keys %{ $self->job_stash->{rollback} } ) { # is there something to rollback?
+
+            # Changes by Eric Lorenzana @ 2011-11-04
+            # Distributions from development to testing (at dev state) are not allowed in BdE.
+
+            my $from_state = [values %{$self->job_stash->{rollback}->{transition}->{state}}]->[0]; 
+            my $to_state   = [values %{$self->job_stash->{rollback}->{transition}->{to_state}}]->[0];
+
+            _log "from_state: $from_state";
+            _log "to_state:   $to_state";
+
+            if(   (scalar keys %{ $self->job_stash->{rollback} })  # Is there something to rollback?
+               && ($from_state ne 'Desarrollo')                    # Am I not promoting from state Desarrollo?
+               && ($to_state ne 'Pruebas')                         # Am I not promoting to state Pruebas?
+              )  # End of changes
+            { 
                 # prepare rollback:
                 $self->logger->info( _loc('Starting job rollback for step %1', $step) );
                 my $r = $self->row;
@@ -274,7 +288,9 @@ sub job_run {
                 return; # no messages yet
             } else {
                 # no rollback needed
-                $self->logger->debug( _loc('No rollback data found in the stash') );
+                scalar keys %{$self->job_stash->{rollback}}
+                  ? $self->logger->debug(_loc('There are no rollbacks in TEST environments'))
+                  : $self->logger->debug(_loc('No rollback data found in the stash'));
                 $self->status('ERROR');
                 $self->finish($self->status);
                 $self->freeze;

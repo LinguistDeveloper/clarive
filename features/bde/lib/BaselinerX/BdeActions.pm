@@ -15,4 +15,7 @@ register 'action.bde.view_disk_report' =>
 register 'action.bde.view_distribution_chains' =>
   {name => 'Can access and modify distribution chains'};
 
+register 'action.bde.receive.ldif_errors' =>
+  {name => 'Receives mails with information regarding Ldif file load errors'};
+
 1;

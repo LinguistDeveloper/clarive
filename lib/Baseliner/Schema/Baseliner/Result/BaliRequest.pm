@@ -280,10 +280,10 @@ __PACKAGE__->has_many(
 use Baseliner::Utils;
 
 sub data_hash {
-	my $self = shift;
-	my $data = $self->data;
-	return {} unless $data;
-	return _load( $data );
+    my $self = shift;
+    my $data = $self->data;
+    return {} unless $data;
+    return _load( $data );
 }
 
 1;

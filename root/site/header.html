@@ -21,7 +21,6 @@
     <script type="text/javascript" src="/site/runner.js"></script>
     <script type="text/javascript" src="/site/panelresizer.js"></script>
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
-    <script type="text/javascript" src="/i18n/js"></script>
 
     <!-- Portal Stuff -->
     <script type="text/javascript" src="/site/portal/Portal.js"></script>
@@ -74,6 +73,7 @@ Ext.onReady(function(){
             Baseliner.help_button,
 //          '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
 //          '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
+            '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '-', 
             <%perl>
                 my $user = $c->username;
@@ -114,7 +114,6 @@ Ext.onReady(function(){
                 enableTabScroll: true,
                 layoutOnTabChange: true,
                 //resizeTabs: true,
-                autoScroll: true,
                 activeTab: 0
             })
 % } else {
@@ -123,7 +122,6 @@ Ext.onReady(function(){
                 defaults: { closable: true, autoScroll: true }, 
                 enableTabScroll: true,
                 layoutOnTabChange: true,
-                autoScroll: true,
                 activeTab: 0, 
                 items: 
 % if( $show_main eq '1' ) {
@@ -182,9 +180,18 @@ Ext.onReady(function(){
        
 });
         
-    </script>
+ setTimeout(function(){
+    Ext.get('loading').remove();
+    Ext.get('loading-mask').fadeOut({
+	    remove:true
+    });
+ }, 2050);
 
-%# <link href="/static/style2.css" type="text/css" rel="stylesheet"></link>
+    if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
+        window.onbeforeunload=  function(){ return '' };
+    }
+</script>
+
 <!-- TODO: No sería mala idea poder meter esto en las features -->
 <!-- Para poder incluir el Widget DatePickerPlus de Ext -->
     <script type="text/javascript" src="/static/ext.ux.datepickerplus/ext.ux.datepickerplus.js"></script> 
@@ -200,9 +207,11 @@ Ext.onReady(function(){
 <body>
 <IFRAME id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></IFRAME>
 <div id='run-panel'></div>
+<div id='main-div'></div>
 
 <!-- Preloading some images used in grids -->
 <!-- & preload_images.html & -->
 
 <%init>
 </%init>
+

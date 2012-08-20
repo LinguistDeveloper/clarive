@@ -60,8 +60,7 @@
     value: "\\<% $cam %>"
   });
   boton_agregar_handler = function() {
-    var insert_fullname;
-    insert_fullname = textfield_carpeta_destino.getValue();
+    var insert_fullname = textfield_carpeta_destino.getValue();
     conn.request({
       url: '/form/reportingservices/add_row',
       method: 'POST',
@@ -69,13 +68,16 @@
         item: insert_item,
         fullname: insert_fullname,
         cam: "<% $cam %>"
+      },
+      success: function () {
+    	grid_store.load({
+	      params: {
+	        cam: "<% $cam %>"
+	      }
+	    });
       }
     });
-    return grid_store.load({
-      params: {
-        cam: "<% $cam %>"
-      }
-    });
+    return;
   };
   boton_agregar = new Ext.Button({
     text: 'Agregar',
@@ -90,11 +92,13 @@
         env: delete_env,
         item: delete_item,
         fullname: delete_fullname
-      }
-    });
-    grid_store.load({
-      params: {
-        cam: "<% $cam %>"
+      },
+      success: function () {
+	    grid_store.load({
+	      params: {
+	        cam: "<% $cam %>"
+    	  }
+    	});
       }
     });
     return;

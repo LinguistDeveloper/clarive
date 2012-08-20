@@ -11,12 +11,12 @@ no Moose;
 ## ----- static methods
 
 register 'config.baseline' => {
-	name => _loc('Config global baselines'),
-	array => 1,
-	metadata => [
-		{ id=>'id', label=>_loc('Baseline Identifier'), },
-		{ id=>'name', label=>_loc('Baseline Name'), },
-	],
+    name => _loc('Config global baselines'),
+    array => 1,
+    metadata => [
+        { id=>'id', label=>_loc('Baseline Identifier'), },
+        { id=>'name', label=>_loc('Baseline Name'), },
+    ],
 };
 
 =head2 find_text 
@@ -26,29 +26,29 @@ Finds a descriptive representation for the Namespace. Heavly used, heavly memoiz
 =cut
 our %bl_text_cache;
 sub name {
-	my $self = shift; 
+    my $self = shift; 
     my $bl = shift;
     return $bl_text_cache{$bl} if defined $bl_text_cache{$bl}; 
-	my $r = Baseliner->model('Baseliner::BaliBaseline')->search({ bl=> $bl })->first;
-	return $bl unless ref $r;
-	return $bl_text_cache{$bl} = _loc($r->name) || $bl;
+    my $r = Baseliner->model('Baseliner::BaliBaseline')->search({ bl=> $bl })->first;
+    return $bl unless ref $r;
+    return $bl_text_cache{$bl} = _loc($r->name) || $bl;
 }
 
 sub baselines {
-	my $self = shift; 
-	my $rs = Baseliner->model('Baseliner::BaliBaseline')->search({}, { order_by => 'id asc' });
-	my @bls; 
-	while( my $r=$rs->next ) {
-		push @bls, { bl=>$r->bl, name=>_loc($r->name) }; 	
-	}
-	return @bls;
+    my $self = shift; 
+    my $rs = Baseliner->model('Baseliner::BaliBaseline')->search({}, { order_by => 'id asc' });
+    my @bls; 
+    while( my $r=$rs->next ) {
+        push @bls, { bl=>$r->bl, name=>_loc($r->name) }; 	
+    }
+    return @bls;
 }
 
 sub baselines_no_root {
-	my $self = shift;
-	my @arr = $self->baselines();
-	shift @arr if $arr[0]->{bl} eq '*';
-	return @arr;
+    my $self = shift;
+    my @arr = $self->baselines();
+    shift @arr if $arr[0]->{bl} eq '*';
+    return @arr;
 }
 1;
 

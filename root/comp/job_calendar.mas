@@ -104,7 +104,12 @@ Ext.onReady(function(){
 						$has_date{$ventana->{day}} = $ventana->{start_date} if ($ventana->{start_date});
 						
 						#my $clase_final = ($ventana->{active} ) ? $clase{$tipo} : $clase{$tipo} .'Des';
-						my $clase_final = ($tipo eq 'X' ) ? 'nopase' : ( $ventana->{active} ? 'normal' : 'urgente');
+						#my $clase_final = ($tipo eq 'X' ) ? 'nopase' : ( $ventana->{active} ? 'normal' : 'urgente');
+						# Eric -- Cambio la lógica un poco... Si no es activo o es X, no se pasa nada. Lo ponemos a gris.
+						#         Si es N, pues nada, go for it. A verde.
+						#         Si es U, urgente, you shall not pass!!!!11. A rojo.
+						#         Todo lo demás, por si llegan cosas raras, lo ponemos a gris y aquí no ha pasado nada.
+						my $clase_final = $tipo eq 'X' || !$ventana->{active} ? 'nopase' : $tipo eq 'N' ? 'normal' : $tipo eq 'U' ? 'urgente' : 'nopase';
 						print qq{<TR><TD style='cursor:hand' height='$porcentualHeight'};
 						print " onmouseover='javascript:this.className=\"" . $clase_final . "Hover\";'";
 						print " onmouseout='javascript:this.className=\"$clase_final\";'"; 
@@ -163,10 +168,15 @@ Ext.onReady(function(){
 		<TD>Pase</TD>
 		<TD width=10>&nbsp;</TD>
 		<TD class="urgente" width=20>&nbsp;</TD>
-		<TD>No pase/Urgente</TD>
+		<!-- Eric :: Ahora mismo está un poco raro... Se intuye que no pase significa que no se -->
+		<!--         puede distribuir, por lo que rompe totalmente con la idea de un pase       -->
+		<!--         urgente. Lo mejor sería dejar no pase como vacío y urgente en color rojo.  -->
+		<!-- <TD>No pase/Urgente</TD> -->
+		<TD>Urgente</TD>
 		<TD width=10>&nbsp;</TD>
 		<TD class="nopase" width=20>&nbsp;</TD>
-		<TD>Vacio/Urgente</TD>
+		<!-- <TD>Vacio/Urgente</TD> -->
+		<TD>Vacío</TD>
 		<TD>&nbsp;</TD>
 		<TD>&nbsp;</TD>
 		<TD>&nbsp;</TD>

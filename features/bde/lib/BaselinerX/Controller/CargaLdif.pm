@@ -21,7 +21,7 @@ register 'menu.admin.cargaldif' => {
 
 sub init : Path {
     my ($self, $c) = @_;
-    $c->launch('service.update.users');
+    $c->launch('service.load.ldif.ftp.files');
     return;
 }
 

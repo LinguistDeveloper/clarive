@@ -96,7 +96,7 @@ register 'config.bde.lifecycle' => {
 
 register 'config.form.lifecycle.sistemas' => {
     metadata => [
-        { id => 'N', default => 'Sistemas' },
+    { id => 'N', default => 'Sistemas' }
     ]
 };
 
@@ -175,8 +175,14 @@ register 'config.harvest' => {
             description => 'Usuario TAM para la ejecución de UDP (Si -eh ......dfo se utilizará'
                 . ' el fichero dfo)'
         },
+        {   id          => 'password',
+            default     => '-',
+            label       => 'Password TAM',
+            description => 'Password TAM del usuario vpscm (en blanco utilizará el fichero dfo). '
+                . 'Valido para la ejecución de UDPS'
+        },
         {   id          => 'broker',
-            default     => 'alfsv061',
+            default     => 'prusv063',
             label       => 'Servidor Harvest',
             description => 'Nombre del servidor Harvest'
         },
@@ -197,19 +203,22 @@ register 'config.bde' => {
         {   id          => 'ldifmaq',
             default     => 'prue',
             label       => 'Maquina FTP',
-            description => 'Nombre de la máquina donde la carga de usuarios se conectará por FTP'
-                . ' para descargar el fichero de usuarios (por defecto: prue)'
+            description => 'Nombre de la máquina donde la carga de usuarios se conectará por FTP para descargar el fichero de usuarios (por defecto: prue)'
         },
-        {   id          => 'ldifremdir',
-            default     => '/tmp/eric/ficheros',
+        {   id          => 'ldif_remote_directory',
+            default     => '/u/grp/tds/salidas_tds02',
             label       => 'Directorio servidor remoto',
             description => 'Directorio en el servidor remoto desde donde se cargarán los ficheros'
         },
-        {   id          => 'ldifhome',
-            default     => '/tmp/eric/ldif',
+        {   id          => 'ldif_home_directory',
+            default     => '/home/grp/scm/datos/ldif',
             label       => 'Directorio objetivo',
-            description => 'Directorio de datos donde se dejarán los ficheros LDIF importados'
-                . ' para su tratamiento'
+            description => 'Directorio de datos donde se dejarán los ficheros LDIF importados para su tratamiento'
+        },
+		{   id          => 'harpwd',
+            default     => '-',
+            label       => 'Password TAM',
+            description => 'Password TAM del usuario vpscm (en blanco utilizará el fichero dfo). Valido para la ejecución de UDPS'
         },
         {   id          => 'ldif_updates_harvest',
             default     => 0,
@@ -247,21 +256,158 @@ register 'config.bde' => {
         {   id          => 'package_promote_wait',
             default     => 10,
             label       => 'Tiempo espera',
-            description => 'Tiempo de espera para segundo intento de verificacion de si los '
-                . 'paquetes están en el estado correspondiente. V. x Defecto = 10'
+            description => 'Tiempo de espera para segundo intento de verificacion de si los paquetes están en el estado correspondiente. V. x Defecto = 10'
         },
         {   id          => 'hardist',
             default     => 'http://wbeprod.bde.es/scm_hardist',
             label       => 'URL Hardist',
             description => 'URL de hardist via webseal'
         },
-        {id => 'kill_chain', default => 1},
+        {   id          => 'kill_chain', 
+            default     => 1,
+            label       => 'Matar pase en caso de error',
+            description => 'Finaliza el pase en cuanto se detecte un error, con el estado "ERROR"'
+        },
+        {
+        	id          => 'temp',
+        	default     => '/home/aps/scm/servidor/tmp',
+        	label       => 'Directorio tempora gen�rico.',
+        	description => 'Directorio tempora gen�rico.'
+        },
+        {
+        	id          => 'pasehome',
+        	default     => '/home/aps/scm/servidor/pase',
+        	label       => 'Directorio de trabajo de pases.',
+        	description => 'Directorio de trabajo de pases.'
+        },
+        {
+        	id          => 'backuphome',
+        	default     => '/home/grp/scm/bkpase',
+        	label       => 'Directorio de backup de pases.',
+        	description => 'Directorio de backup de pases.'
+        },
+        {
+        	id          => 'purga_dirpase',
+        	default     => 2,
+        	label       => 'Número de días que permanecerá el pase en el directorio de backup de pases antes de borrarlo.',
+        	description => 'Número de días que permanecerá el pase en el directorio de backup de pases antes de borrarlo.'
+        },
+        {
+        	id          => 'temp_harax',
+        	default     => '/home/grpt/scm',
+        	label       => 'Directorio temporal de importación de distribuciones CLICK-ONCE.',
+        	description => 'Directorio temporal de importación de distribuciones CLICK-ONCE.'
+        },
+        {
+        	id          => 'purga_releases_borradas',
+        	default     => 1,
+        	label       => 'Un 1 Indica que la purga debe borrar los dirs de release en la carpeta PUBLICO de los staging si la release ha sido borrada en Harvest.',
+        	description => 'Un 1 Indica que la purga debe borrar los dirs de release en la carpeta PUBLICO de los staging si la release ha sido borrada en Harvest.'
+        },
+        {
+        	id          => 'pubname',
+        	default     => 'PUBLICO',
+        	label       => 'Nombre del proyecto Harvest de aplicaciones publicas.',
+        	description => 'Nombre del proyecto Harvest de aplicaciones publicas.'
+        },
+        {
+        	id          => 'stawin',
+        	default     => 'svm0210',
+        	label       => 'Nombre del servidor de Staging .NET SVM0210 o SVM0609',
+        	description => 'Nombre del servidor de Staging .NET SVM0210 o SVM0609'
+        },
+        {
+        	id          => 'stawindir',
+        	default     => '/home/aps/scm/servidor/staging',
+        	label       => 'Directorio de trabajo del servidor de Staging UNIX.',
+        	description => 'Directorio de trabajo del servidor de Staging UNIX.'
+        },
+        {
+        	id          => 'stawinport',
+        	default     => 58765,
+        	label       => 'Puerto de conexión Harax en el servidor de Staging UNIX.',
+        	description => 'Puerto de conexión Harax en el servidor de Staging UNIX.'
+        },
+        {
+        	id          => 'stawindirpublico',
+        	default     => 'C:/APS/SCM/SERVIDOR/PUBLICO',
+        	label       => 'Directorio de publicación de las aplicaciones públicas en el Staging Windows.',
+        	description => 'Directorio de publicación de las aplicaciones públicas en el Staging Windows.'
+        },
+        {
+        	id          => 'sta_eclipse_staging',
+        	default     => 'E:/APSDAT/SCM/STAGING/PUBLICO/ECLIPSE',
+        	label       => 'Path en Staging windows donde se dejará la versión de feature compilada y sus plugins para que lo utilice posteriormente la compilación de IAS, etc. P.Ej.: E:/APSDAT/SCM/STAGING/PUBLICO/ECLIPSE',
+        	description => 'Path en Staging windows donde se dejará la versión de feature compilada y sus plugins para que lo utilice posteriormente la compilación de IAS, etc. P.Ej.: E:/APSDAT/SCM/STAGING/PUBLICO/ECLIPSE'
+        },
+        {
+        	id          => 'stawinbizserver',
+        	default     => 'SVM0132',
+        	label       => 'Staging para Biztalk',
+        	description => 'Staging para Biztalk'
+        },
+        {
+        	id          => 'stawinbizport',
+        	default     => '58765'
+        },
+        {
+        	id          => 'stawinbizdir',
+        	default     => 'E:\APSDAT\SCM',
+        	label       => 'Directorio de trabajo del servidor de Staging BizTalk',
+        	description => 'Directorio de trabajo del servidor de Staging BizTalk'
+        },
+        {
+        	id          => 'loghome',
+        	default     => '/home/aps/scm/servidor/logs',
+        	label       => 'Directorio de logs donde se creará el log del Dispatcher.',
+        	description => 'Directorio de logs donde se creará el log del Dispatcher.'
+        },
+        {
+        	id          => 'harvesthome',
+        	default     => '/home/apst/scm/servidor/logs'
+        },
+        {
+        	id          => 'scminfreal',
+        	default     => 'http://prusvc61:52024/scm_inf',
+        	label       => 'url verdadera de scm_inf',
+        	description => 'url verdadera de scm_inf'
+        },
+        {
+        	id          => 'poll_log_dir',
+        	default     => '/home/apst/scm/servidor/vass/logs',
+        	label       => 'Directorio donde está localizado el log del script poll.',
+        	description => 'Directorio donde está localizado el log del script poll.'
+        },
+        {
+        	id          => 'poll_log_name',
+        	default     => 'poll.log',
+        	label       => 'Nombre del fichero de log del script poll.',
+        	description => 'Nombre del fichero de log del script poll.'
+        },
+        {
+        	id          => 'log_dias_baseliner',
+        	default     => 30,
+        	label       => 'Máximo de días en los que se guardarán los logs de Baseliner.',
+        	description => 'Máximo de días en los que se guardarán los logs de Baseliner.'
+        },
+        {
+        	id          => 'log_dias_baseliner_pase',
+        	default     => 30,
+        	label       => 'Máximo de días en los que se guardarán los pases de Baseliner en disco.',
+        	description => 'Máximo de días en los que se guardarán los pases de Baseliner en disco.'
+        },
         {
         	id          => 'root_username',
         	default     => 'admin',
         	label       => 'Usuario con permisos de root',
         	description => 'Usuario con permisos de root'
         },
+        {
+        	id          => 'natures_with_subapps',
+        	default     => [qw/J2EE .NET BIZTALK VIGNETTE/],
+        	label       => 'Naturalezas con subaplicaciones.',
+        	description => 'Naturalezas con subaplicaciones.'
+        }, 
         {
             id          => 'dailyqainterval',
             default     => 600,

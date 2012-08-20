@@ -43,58 +43,77 @@ sub begin : Private {
 
     _db_setup;  # make sure LongReadLen is set after forking
 
-	$c->forward('/theme');
+    $c->forward('/theme');
 
-	#my $logged_on = defined $c->username;
-	# catch invalid user object sessions
-	#try {
-		#die unless $c->session->{user} || $c->stash->{auth_skip};
-	##} catch {
-		#my $path = $c->request->{path} || $c->request->path;
-	#};
+    #my $logged_on = defined $c->username;
+    # catch invalid user object sessions
+    #try {
+        #die unless $c->session->{user} || $c->stash->{auth_skip};
+    ##} catch {
+        #my $path = $c->request->{path} || $c->request->path;
+    #};
 }
 
 sub auto : Private {
     my ( $self, $c ) = @_;
-	my $notify_valid_session = delete $c->request->params->{notify_valid_session};
-	return 1 if $c->stash->{auth_skip};
-	return 1 if $c->user_exists;
-	return 1 if length($c->username);
-	my $path = $c->request->{path} || $c->request->path;
-	return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
-	# saml?
-	if( $c->config->{saml_auth} eq 'on' ) {
-		my $saml_username= $c->forward('/auth/saml_check');
-		return 1 if $saml_username;
-	}
-	# reject request
-	if( $notify_valid_session ) {
-		$c->stash->{auto_stop_processing} = 1;
-		$c->stash->{json} = { success=>\0, logged_out => \1, msg => _loc("Not Logged on") };
-		$c->forward('View::JSON');
-	} elsif( $c->request->params->{fail_on_auth} ) {
-		$c->response->status( 401 );
-		$c->response->body("Unauthorized");
-	} else {
-		$c->forward('/auth/logoff');
-		$c->stash->{after_login} = '/' . $path;
-		$c->response->status( 401 );
+    my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
+    return 1 if $c->stash->{auth_skip};
+    return 1 if $c->user_exists;
+    my $path = $c->request->{path} || $c->request->path;
+    return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
+    # saml?
+    if( $c->config->{saml_auth} eq 'on' ) {
+        my $saml_username= $c->forward('/auth/saml_check');
+        return 1 if $saml_username;
+    }
+    # reject request
+    if( $notify_valid_session ) {
+        $c->stash->{auto_stop_processing} = 1;
+        $c->stash->{json} = { success=>\0, logged_out => \1, msg => _loc("Not Logged on") };
+        $c->forward('View::JSON');
+    } elsif( $c->request->params->{fail_on_auth} ) {
+        $c->response->status( 401 );
+        $c->response->body("Unauthorized");
+    } else {
+        $c->forward('/auth/logoff');
+        $c->stash->{after_login} = '/' . $path;
+        $c->response->status( 401 );
         $c->forward('/auth/logon');
-		#$c->detach('/end');
-	}
-	return 0;
+        #$c->detach('/end');
+    }
+    return 0;
+}
+
+sub serve_file : Private {
+    my ( $self, $c ) = @_;
+    my $filename = $c->stash->{serve_filename} or _throw 'Missing filename on stash';
+    my $file= $c->stash->{serve_file};
+    my $body= $c->stash->{serve_body};
+    if( defined $file ) {
+        $c->serve_static_file( $file );
+    } 
+    elsif( defined $body ) {
+        $c->res->body( $body );
+    }
+    else {
+        _throw 'Missing serve_file or serve_body on stash';
+    }
+    $c->res->headers->remove_header('Cache-Control');
+    $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
+    $c->res->headers->remove_header('Pragma');
+    $c->res->content_type('application-download;charset=utf-8');
 }
 
 sub theme : Private {
     my ( $self, $c ) = @_;
 
-	# check if theme dir is in the session already
-	if( $c->session->{theme_dir} && !$c->config->{force_theme} ) {
-		$c->stash->{theme_dir} = $c->session->{theme_dir}; 
-		return;
-	}
+    # check if theme dir is in the session already
+    if( $c->session->{theme_dir} && !$c->config->{force_theme} ) {
+        $c->stash->{theme_dir} = $c->session->{theme_dir}; 
+        return;
+    }
 
-	# nope... so let's get the users preference
+    # nope... so let's get the users preference
     my $prefs = {};
     if( defined $c->user && !defined $c->config->{force_theme} ) {
         my $username = $c->username;
@@ -106,7 +125,7 @@ sub theme : Private {
     my $theme = $prefs->{theme} ? '_' . $prefs->{theme} : '';
     my $theme_dir = $prefs->{theme} ? '/themes/' . $prefs->{theme} : '';
     $c->stash->{theme_dir} = $theme_dir;
-	$c->session->{theme_dir} = $theme_dir;
+    $c->session->{theme_dir} = $theme_dir;
 }
 
 sub whoami : Local {
@@ -129,17 +148,17 @@ sub models : Local {
 
 sub raw : LocalRegex( '^raw/(.*)$' ) {
     my ( $self, $c, $arg ) = @_;
-	my $path = $c->req->captures->[0];
-	$c->stash->{site_raw} = 1;
-	push @{ $c->stash->{tab_list} }, { url=>"/$path", title=>"/$path", type=>'comp' };
-	$c->forward('/index');
+    my $path = $c->req->captures->[0];
+    $c->stash->{site_raw} = 1;
+    push @{ $c->stash->{tab_list} }, { url=>"/$path", title=>"/$path", type=>'comp' };
+    $c->forward('/index');
 }
 
 sub tab : LocalRegex( '^tab/(.*)$' ) {
     my ( $self, $c, $arg ) = @_;
-	my $path = $c->req->captures->[0];
-	push @{ $c->stash->{tab_list} }, { url=>"/$path", title=>"/$path", type=>'comp' };
-	$c->forward('/index');
+    my $path = $c->req->captures->[0];
+    push @{ $c->stash->{tab_list} }, { url=>"/$path", title=>"/$path", type=>'comp' };
+    $c->forward('/index');
 }
 
 sub index:Private {
@@ -160,9 +179,9 @@ sub index:Private {
             if( $username ) {
                 my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
                 $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-				if( ref $c->session->{user} ) {
-					$c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-				}
+                if( ref $c->session->{user} ) {
+                    $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+                }
             }
         }
     }
@@ -171,12 +190,12 @@ sub index:Private {
     my @menus;
     $c->forward('/user/can_surrogate');
     if( $c->username ) {
-		my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
+        my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
         $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>[ @actions ]);
         $c->stash->{portlets} = [
-			grep { $_->active }
-			$c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>[ @actions ])
-		];
+            grep { $_->active }
+            $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>[ @actions ])
+        ];
         my @features_list = Baseliner->features->list;
         # header_include hooks
         $c->stash->{header_include} = [
@@ -184,8 +203,12 @@ sub index:Private {
             _unique
             grep { -e $_ } map { "" . Path::Class::dir( $_->path, 'root', 'include', 'head.html') }
                     @features_list 
-		];
-    } 
+        ];
+    }
+    $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
+
+    $c->stash->{show_js_reload} = $ENV{BASELINER_DEBUG} && $c->has_action('action.admin.develop');
+
     $c->stash->{template} = '/site/index.html';
 }
 
@@ -231,6 +254,48 @@ sub help_load : Path('/help/load') {
     $c->response->body( $body || _loc('Help file parsing error') );
 }
 
+=head2 to_yaml
+
+Turns the parameters into a beautiful YAML.
+
+=cut
+sub to_yaml : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        { success=>\1, msg=>'ok', yaml=>_dump($p) };
+    } catch {
+        { success=>\0, msg=>"" . shift() };
+    };
+    $c->forward('View::JSON');
+}
+
+=head2 from_yaml
+
+Turns YAML encoded text parameter C<yaml>
+into a JSON response:
+
+    { 
+        success: true|false,
+        msg: <error message>,
+        json: the json object 
+    }
+
+=cut
+sub from_yaml : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        $p->{yaml} or _fail "Missing parameter 'yaml'";
+        my $data = _load $p->{yaml};
+        { success=>\1, msg=>'ok', json=>$data };
+    } catch {
+        { success=>\0, msg=>"" . shift() };
+    };
+    $c->forward('View::JSON');
+}
+
+
 =head2 end
 
 Renders a Mason view by default, passing it all parameters as <%args>.
@@ -239,8 +304,20 @@ Renders a Mason view by default, passing it all parameters as <%args>.
 
 sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
+    # check for controlled errors in DEBUG mode
+    if( Baseliner->debug && _array( $c->error ) > 0 ) {
+        if( $c->req->params->{_bali_client_context} eq 'json' ) {
+            _debug "ERROR handled as JSON...";
+            my $err = join ',', _array $c->error ;
+            $c->log->error( $_ ) for _array $c->error ;
+            $c->res->status( 500 );
+            $c->clear_errors; # return call as normal
+            $c->stash->{json} = { msg=>$err };
+            $c->forward( 'View::JSON');
+        }
+    }
     $c->stash->{$_}=$c->request->parameters->{$_} 
-    	foreach( keys %{ $c->req->parameters || ()});
+        foreach( keys %{ $c->req->parameters || {} });
 }
 
 =head1 LICENCE AND COPYRIGHT

@@ -8,7 +8,15 @@ use JSON::XS;
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.request.manage' => { name => 'Manage Requests' };
-register 'menu.job.request' => { label => 'Approvals', url_comp => '/request/main', title=>'Approvals', icon=>'/static/images/drop-yes.gif' }; #actions=>['action.approve.item','action.approve.job','action.approve.package'] };
+
+register 'action.job.view_job_approvals' => {name => 'Can view job approvals'};
+
+register 'menu.job.request' => {label    => 'Approvals',
+                                url_comp => '/request/main',
+                                title    => 'Approvals',
+                                icon     => '/static/images/drop-yes.gif',
+                              # actions  => ['action.approve.item', 'action.approve.job', 'action.approve.package'],
+                                action   => 'action.job.view_job_approvals'};
 
 sub reject : Local : Args(1) {
     my ( $self, $c, $key ) = @_;

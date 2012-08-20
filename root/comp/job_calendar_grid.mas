@@ -281,6 +281,7 @@
 				new Ext.Toolbar.Button({
 					text: '<% _loc('Previsualizar') %>',
 					icon:'/static/gui/extjs/resources/images/default/shared/calendar.gif',
+					hidden: true,  // Eric -- We won't need this once the project namespace is disabled from calendar creation.
 					cls: 'x-btn-text-icon',
 					handler: function() {
 						var sm = grid.getSelectionModel();

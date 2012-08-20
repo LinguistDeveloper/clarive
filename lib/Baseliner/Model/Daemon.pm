@@ -62,19 +62,20 @@ sub service_start_forked {
     _throw 'No service specified' unless @services;
 
     my %params = _array $p{params}, $p{param};
-	my $params = join ' ', map { "$_=$params{$_}" } keys %params;
+    my $params = join ' ', map { "$_=$params{$_}" } keys %params;
 
     my @started;
     for my $service_name ( @services ) {
-		my $pid = fork;
-		unless( $pid ) {
-			$SIG{HUP} = 'DEFAULT';
-			$SIG{TERM} = 'DEFAULT';
-			$SIG{STOP} = 'DEFAULT';
-			$0 = "perl $0 $service_name $params";
-			Baseliner->launch( $service_name, data=>\%params );
-			exit 0;  #FIXME this leaves zombies behind - use POSIX::_exit() instead?
-		}
+        my $pid = fork;
+        unless( $pid ) {
+            $SIG{HUP} = 'DEFAULT';
+            $SIG{TERM} = 'DEFAULT';
+            $SIG{STOP} = 'DEFAULT';
+            $0 = "perl $0 $service_name $params";
+            _debug "Model/Daemon.pm: --- Starting service forked command '$0'";
+            Baseliner->launch( $service_name, data=>\%params );
+            exit 0;  #FIXME this leaves zombies behind - use POSIX::_exit() instead?
+        }
         push @started,
           {
             service => $service_name,

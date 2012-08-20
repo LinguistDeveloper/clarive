@@ -20,7 +20,7 @@ By default messages are sent by both email and instant messaging.
     $c->model('Messaging')->notify(
         subject=>'Job Started',
         message=>'Maybe you want to take a look',
-		[ template_type => 'mason|text' ],
+        [ template_type => 'mason|text' ],
         type=> ['email', 'instant']
         to_user=> [qw/U1 U2/],
         to_actions=> [{ ns=>'/application/AAA0001', action=>'action.notify.job.end' }]
@@ -35,7 +35,7 @@ sub create {
     my ($self,%p)=@_;
 
     my $body = $p{body};
-	$p{template_engine} ||= 'text';
+    $p{template_engine} ||= 'text';
 
     _throw "No subject specified" unless $p{subject};
 
@@ -49,24 +49,24 @@ sub create {
                 use File::Spec;
                 use HTML::Mason::Interp;
                 my $comp_root = [ [ root=>"". Baseliner->config->{root} ], @features ];
-				my $data_dir = File::Spec->catdir(
-					File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
-				my $m = HTML::Mason::Interp->new(
-					comp_root  => $comp_root,
-					data_dir   => $data_dir,
-					out_method => \$body,
-				);
-				$m->exec( "/$template", %p, %{ $p{vars} || {} } );
-			} catch {
-				_log "Error in Mason Email engine: " . shift;
-				_log _whereami;
-				$body = _dump( $p{vars} );
-			};
-		} else {
-			$template = Baseliner->path_to('root', $p{template} )
-				unless -e $template;
-			$body = _parse_template( $template, %{ $p{vars} || {} } );
-		}
+                my $data_dir = File::Spec->catdir(
+                    File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
+                my $m = HTML::Mason::Interp->new(
+                    comp_root  => $comp_root,
+                    data_dir   => $data_dir,
+                    out_method => \$body,
+                );
+                $m->exec( "/$template", %p, %{ $p{vars} || {} } );
+            } catch {
+                _log "Error in Mason Email engine: " . shift;
+                _log _whereami;
+                $body = _dump( $p{vars} );
+            };
+        } else {
+            $template = Baseliner->path_to('root', $p{template} )
+                unless -e $template;
+            $body = _parse_template( $template, %{ $p{vars} || {} } );
+        }
     }
 
     $p{sender} ||= _loc('internal');
@@ -129,7 +129,7 @@ sub notify {
     my ($self,%p)=@_;
 
     my @carriers = _array( $p{carriers} , $p{carrier} );
-	_throw 'Missing carrier' unless @carriers;
+    _throw 'Missing carrier' unless @carriers;
 
     my %users;
 
@@ -144,27 +144,27 @@ sub notify {
 
         my @actions = _array( $dest->{actions}, $dest->{action} ); 
         for my $action ( @actions ) {
-			_log "Looking for users for action $action";
+            _log "Looking for users for action $action";
             my @users = Baseliner->model('Permissions')->list(
                 action => $action,
                 bl     => ( $dest->{bl} || 'any' ),
                 ns     => ( $dest->{ns} || 'any' )
             );
-			_log "Found: " . join',',@users;
+            _log "Found: " . join',',@users;
             push @{ $users{$param} }, @users; 
         }
     }
 
-	# create the message
+    # create the message
     my $msg = $self->create(%p);
 
-	# create the queue entries
+    # create the queue entries
     for my $carrier ( @carriers ) {
         for my $param ( qw/to cc bcc/ ) {
             for my $username ( _array $users{$param} ) {
-				_log "Creating message for username=$username, carrier=$carrier";
+                _log "Creating message for username=$username, carrier=$carrier";
                 $msg->bali_message_queues->create({ username=>$username, carrier=>$carrier, carrier_param=>$param });
-				#TODO make TO fields have the full TO list, so users can see who else was notified
+                #TODO make TO fields have the full TO list, so users can see who else was notified
             }
         }
     }
@@ -173,9 +173,9 @@ sub notify {
 
 sub notify_admin {
     my ($self,%p)=@_;
-	my $type = $p{to} ? 'cc' : 'to' ;
-	$p{$type} = { action => 'action.notify.admin' };
-	$self->notify( %p );
+    my $type = $p{to} ? 'cc' : 'to' ;
+    $p{$type} = { action => 'action.notify.admin' };
+    $self->notify( %p );
 }
 
 =head2 inbox
@@ -199,7 +199,7 @@ sub inbox {
     my $opts = $p{sort} ? { order_by => "$p{sort} $p{dir}" } : { order_by => 'id desc' };
     if( defined $p{start} && defined $p{limit} ) {
         $opts->{page} = to_pages( start=>$p{start}, limit=>$p{limit} );
-		$opts->{rows} = $p{limit} || 30;
+        $opts->{rows} = $p{limit} || 30;
     }
 
     $search->{active} = 1 unless $p{all};
@@ -224,7 +224,7 @@ sub inbox {
             $r->deliver_now;
         }
     }
-	my $total = $rs->is_paged ? $rs->pager->total_entries : scalar @messages;
+    my $total = $rs->is_paged ? $rs->pager->total_entries : scalar @messages;
     return { data=>\@messages, total=>$total };
 }
 
