@@ -55,8 +55,8 @@ sub proper_ns { # Str -> Maybe[Str]
 
 sub launch {
   my ($self, $c, $config) = @_;
-  my $job  = $c->stash->{job};
-  my $log  = $job->logger;
+  my $job = $c->stash->{job};
+  my $log = $job->logger;
   my $data = $job->job_data;
   $log->debug("Initializing Rule-Chain Runner with PID: $data->{pid}");
 

@@ -63,12 +63,9 @@ __PACKAGE__->add_columns(
     data_type => "CLOB",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
-  "seq", { data_type => "NUMBER", default_value => 0, is_nullable => 1, size => 38, sequence=>'bali_dummy_seq', },
 );
 __PACKAGE__->set_primary_key("ns");
-__PACKAGE__->sequence("bali_dummy_seq");
 
 
 __PACKAGE__->has_many(
@@ -79,6 +76,12 @@ __PACKAGE__->has_many(
 
 use Baseliner::Utils;
 use namespace::clean;
+
+sub hash {
+    my ($self,%p) = @_;
+    return _load( $self->data ) if defined $self->data;
+    return {};
+}
 
 =head2 kv data=>HashRef, merge=>Bool, search=>HashRef, select=>ArrayRef
 
@@ -105,18 +108,22 @@ sub kv {
     my ($self,%p) = @_;
     my $data = $p{data};
     if( ref $data eq 'HASH' ) {
-        Baseliner->model('Baseliner')->txn_do( sub {
-            $self->keys->delete unless $p{add} || $p{merge};
-            for my $k ( keys %$data ) {
-                my $row = $self->keys->search({ k => $k })->first;
-                if( ref $row ) {
-                    $row->v( $data->{$k} );
-                    $row->update;
-                } else {
-                    $self->keys->create({ k => $k, v => $data->{$k} });
-                }
+        $self->keys->delete unless $p{add} || $p{merge};
+        for my $k ( keys %$data ) {
+            my $datatype='';
+            if( ref($data->{$k}) =~ /ARRAY|HASH/  ) {
+                $data->{$k} = _dump $data->{$k};
+                $datatype='yaml';
             }
-        });
+            my $row = $self->keys->search({ k => $k })->first;
+            if( ref $row ) {
+                $row->datatype( $datatype );
+                $row->v( $data->{$k} );
+                $row->update;
+            } else {
+                $self->keys->create({ k => $k, v => $data->{$k}, datatype=>$datatype });
+            }
+        }
     } else {
         return $self->load_kv( %p );
     }
@@ -136,6 +143,9 @@ sub load_kv {
     while( my $r = $rs->next ) {
         next if defined $p{select}
             && !grep { lc $r->{k} eq $_ } _array( $p{select} );
+        # deserialize if needed
+        $r->{v} = _load( $r->{v} )
+            if defined $r->{v} && $r->{datatype} eq 'yaml';
         $data->{ $r->{k} } = $r->{v} ;
     }
     return $data;

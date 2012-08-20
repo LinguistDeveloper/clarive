@@ -1,0 +1,83 @@
+========================================================
+ Baseliner INSTALL guide
+========================================================
+
+perl -Mlocal::lib=$PERL_LOCAL_LIB -MCPAN -e shell
+
+Bundle::CPAN
+YAML::XS
+Path::Class
+
+========================================================
+ Setting up Environment variables
+========================================================
+
+Put the following in your .profile or .bashrc file:
+
+Unix:
+
+export BASELINER_HOME=/path/to/baseliner
+export BASELINER_ENV=<conf_file_suffix>
+export PATH=$BASELINER_HOME/bin:$PATH
+
+Windows:
+
+set BASELINER_HOME=drive:\path\to\baseliner
+set BASELINER_ENV=<conf_file_suffix>
+set PATH=$BASELINER_HOME\bin;%PATH%
+
+========================================================
+ Upgrading the Database
+========================================================
+
+Use the following Baseliner utility to upgrade the 
+database after updating the Baseliner version:
+
+bali deploy --env '<conf_suffix>' --diff
+
+Nothing will run until you tell it to do so. 
+
+========================================================
+ Checking for installed dependencies
+========================================================
+
+Use the following Baseliner utility:
+
+bali perldeps --check
+
+That reports uninstalled Perl packages found in Baseliner.
+
+========================================================
+ AIX
+========================================================
+
+## Manual Install
+
+cpanm -n DBI DBD::Oracle
+cpanm -n Catalyst::Engine::CGI
+cpanm -n Catalyst::Engine::HTTP::Prefork
+
+## HTTP::HeaderParser::XS
+
+It comes configured with the g++ compiler by default,
+which, in case you're using the IBM VAC suite compilers, 
+may not be available. 
+
+Try this:
+
+cpanm --look HTTP::HeaderParser::XS
+make CC="xlc_r -+" LD=xlc_r
+
+## DBD::Oracle
+
+To avoid OCIPing problem, which is missing from
+the 10.2 Oracle client in AIX machines, you may 
+need to set the client as 10.0. 
+
+cpanm --look DBD::Oracle
+perl Makefile.PL -V 10.0  
+
+You may also need this:
+
+cpanm -n Math::Base36
+cpanm -n DateTime::Format::Oracle

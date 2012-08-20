@@ -111,12 +111,12 @@ sub index {
     # fácil insertar  en la tabla,  ya que lo que  realmente necesitamos es el
     # ID!
     my $bali_project_rs =
-        Baseliner->model('Baseliner::BaliProject')->search( undef, { select => [qw/ id name /] } );
+        Baseliner->model('Baseliner::BaliProject')->search( undef, { select => [qw/ mid name /] } );
     rs_hashref($bali_project_rs);
     my @bali_projects_data = $bali_project_rs->all;
     my %bali_project;
     for my $ref (@bali_projects_data) {
-        $bali_project{ $ref->{name} } = $ref->{id};
+        $bali_project{ $ref->{name} } = $ref->{mid};
     }
 
     # Hacemos lo  mismo con bali_role...  en este caso  tenemos que volverla a

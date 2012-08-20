@@ -1,12 +1,12 @@
 (function(){
   var add_form, add_window, column_action, column_active, column_bl, column_chain, column_desc, column_init, column_job, column_ns, el_active, el_button_cancel, el_button_ok, el_desc, el_job_type, el_name, el_paging_tb, el_searchfield, el_text, fn_update, grid, ps, render_name, render_plugin, store, toolbar_delete, toolbar_details, toolbar_switch, yesno;
-  store = new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
+  store = new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
     totalProperty: 'totalCount',
-		id: 'rownum', 
-		url: '/chain/list',
-		fields: [ 
+        id: 'rownum', 
+        url: '/chain/list',
+        fields: [ 
       {
         name: 'id'
       }, {
@@ -24,14 +24,14 @@
       }, {
         name: 'bl'
       }
-		]
-	});
+        ]
+    });
   <& /comp/search_field.mas &>;
   render_name = function(value, metadata, rec, rowIndex, colIndex, store) {
-		return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
+        return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
     };
   render_plugin = function(value, metadata, rec, rowIndex, colIndex, store) {
-		return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/chain.jpg' />" ;
+        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/chain.jpg' />" ;
     };
   ps = 15;
   store.load({
@@ -88,10 +88,10 @@
   };
   add_form = new Ext.FormPanel({
         url: '/chain/create',
-		frame: true,
+        frame: true,
         height: '100%',
     items: [el_name, el_desc, el_active, el_job_type]
-	});
+    });
   el_button_ok = {
     xtype: 'button',
     text: _('OK'),
@@ -292,5 +292,5 @@
   grid.on('activate', function() {
     return grid.setTitle("<% _loc('Job Chains') %>");
     });
-	return grid;
+    return grid;
 }).call(this);

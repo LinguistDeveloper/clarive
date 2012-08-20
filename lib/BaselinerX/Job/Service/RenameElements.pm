@@ -1,4 +1,4 @@
-package BaselinerX::Job::Service::RenameElements;
+﻿package BaselinerX::Job::Service::RenameElements;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Carp;
@@ -61,6 +61,8 @@ sub rename {
     my ($self, $bl, $item) = @_;
     my $newname = $item;
     $newname =~ s/{$bl}//g;
+    $newname =~ s/{ALL}//g;
+    $newname =~ s/{ANY}//g;
     return $newname;
 }
 

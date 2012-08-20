@@ -19,6 +19,7 @@ use Exporter::Tidy default => [
     _cut
     _log
     _debug
+    _error
     _utf8
     _tz
     slashFwd
@@ -80,13 +81,25 @@ use Exporter::Tidy default => [
     _textile
     _pathxs
     _uacc
-    unique
-    inc
-    bool
-    dir_existsp
-    ts
-    ts_log
+    _markup
+    _markdown
+    zip_files
+    hash_flatten
+    parse_vars
+    _to_json
+    _from_json
+    _repl
     _md5
+    _html_escape
+    _join_quoted
+    case
+    _utf8_on_all
+    _to_utf8
+    _size_unit
+    _dbis
+    _hook
+    _read_password
+    _load_features_lib
 /];
 
 # setup I18n
@@ -120,8 +133,10 @@ use Locale::Maketext::Simple (
 
 #use Carp::Clan qw(^Baseliner:: ^BaselinerX::);
 use utf8;
+use v5.10;
 use Carp::Tidy -clan=>['Baseliner']; #,'Catalyst'];
 use DateTime;
+use Class::Date;
 use YAML::XS;
 use List::MoreUtils qw(:all);
 use Try::Tiny;
@@ -193,7 +208,7 @@ sub slashBack {
 sub slashSingle {
     (my $path = $_[0]) =~ s{//}{/}g ;
     $path =~ s{\\\\}{\\}g ;
-    return $path;	
+    return $path;
 }
 
 sub _unique {
@@ -202,12 +217,24 @@ sub _unique {
 }
 
 sub _load {
-    utf8::encode( @_ ) if utf8::valid( @_ );
-    return YAML::XS::Load( @_ );
+    my @args = @_;
+    return try {
+        utf8::encode( @_ ) if utf8::valid( @_ );
+        YAML::XS::Load( @args )
+    } catch { 
+        require YAML::Syck;
+        YAML::Syck::Load( @args );
+    };
 }
 
 sub _dump {
-    return YAML::XS::Dump( @_ );
+    my @args = @_;
+    return try { 
+        YAML::XS::Dump( @args )
+    } catch { 
+        require YAML::Syck;
+        YAML::Syck::Dump( @args );
+    };
 }
 
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
@@ -224,14 +251,14 @@ sub _loc {
     if( $context->{'$c'} && ref ${ $context->{'$c'} } ) {
         return try {
             my $c = ${ $context->{'$c'} };
-            return loc(@args) if $c->commandline_mode;
-            return loc(@args) unless defined $c->request;
+            return _loc_decoded(@args) if $c->commandline_mode;
+            return _loc_decoded(@args) unless defined $c->request;
             if( ref $c->session->{user} ) {
                 $c->languages( $c->session->{user}->languages );
             }
             $c->localize( @args );
         } catch {
-            loc(@args);
+            _loc_decoded(@args);
         };
     } else {
         return loc( @args );
@@ -261,6 +288,7 @@ sub _utf8_to_ansi {
 
 # Logging
 
+# used by Job::Log.pm (why?)
 sub _log_lev {
     my $lev = shift;
     return unless any { $_ } @_;
@@ -270,30 +298,45 @@ sub _log_lev {
     print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
 }
 
+# internal log engine used by _log and _debug
+sub _log_me {
+    my ($lev, $cl,$fi,$li, @msgs ) = @_;
+    my $logger = Baseliner->app ? Baseliner->app->{_logger} : '';
+    if( ref $logger eq 'CODE' ) { # logger override
+        $logger->($cl,$fi,$li, @msgs );
+    } else {
+        my $first = shift @msgs;
+        if( my $rf = ref $first ) {
+            $first = sprintf '[DUMP ref=%s]%s', $rf , "\n" . _dump( $first );
+        }
+        $cl =~ s{^Baseliner}{B};
+        my $pid = sprintf('%s', $$);
+        my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
+        if( my $cat_log = Baseliner->log ) {
+            $cat_log->$lev( $msg );
+        } else {
+            print STDERR $msg , "\n"; 
+        }
+    }
+}
+
 sub _log {
     return unless any { $_ } @_;
     my ($cl,$fi,$li) = caller(0);
-    _log_me( $cl, $fi, $li, @_ );
+    _log_me( 'info', $cl, $fi, $li, @_ );
+}
+
+sub _error {
+    return unless any { $_ } @_;
+    my ($cl,$fi,$li) = caller(0);
+    _log_me( 'error', $cl, $fi, $li, @_ );
 }
 
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
     return unless $ENV{BASELINER_DEBUG} || $ENV{BALI_DEBUG} || $ENV{CATALYST_DEBUG};
-    _log_me($cl,$fi,$li,@_);
-}
-
-# internal log engine used by _log and _debug
-sub _log_me {
-    my ($cl,$fi,$li) = (shift,shift,shift);
-    my $logger = Baseliner->app->{_logger};
-    if( ref $logger eq 'CODE' ) { # logger override
-        $logger->($cl,$fi,$li, @_);
-    } else {
-        $cl =~ s{^Baseliner}{B};
-        my $pid = sprintf('%s', $$);
-        print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
-    }
+    _log_me( 'debug', $cl,$fi,$li,@_);
 }
 
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
@@ -356,10 +399,21 @@ sub _say {
 } 
 
 sub _tz {
-    return Baseliner->config->{time_zone} || 'CET';
+    my $tz = try { Baseliner->config->{time_zone} } catch {''};
+    $tz || 'CET';
 }
 
 sub _dt { DateTime->now(time_zone=>_tz);  }
+
+# same as _now, but with hi res in debug mode
+sub _now_log {
+    if( Baseliner->debug ) {
+        my @t=split /\./, Time::HiRes::time(); 
+        return sprintf "%s.%03d", Class::Date::date( $t[0]), substr $t[1], 0, 3;
+    } else {
+        return _now();
+    }
+}
 
 sub _now {
     my $now = DateTime->now(time_zone=>_tz);
@@ -368,7 +422,7 @@ sub _now {
 }
 
 sub _nowstamp {
-    (my $t = _now )=~ s{\:|\/|\\|\s}{}g;
+    (my $t = _now )=~ s{-|\:|\/|\\|\s}{}g;
     return $t;
 }
 
@@ -396,7 +450,7 @@ sub parse_date {
 sub parse_dt {
     my ( $format, $date ) = @_;
     use DateTime::Format::Strptime;
-    my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak' );
+    my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak', time_zone=>_tz() );
     return $parser->parse_datetime( $date );
 }
 
@@ -426,7 +480,7 @@ sub _db_setup {
     if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         $dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
         $dbh->{LongReadLen} =  Baseliner->config->{LongReadLen} || 100000000; #64 * 1024;
-        $dbh->{LongTruncOk} = Baseliner->config->{LongTruncOk}; # do not accept truncated LOBs	
+        $dbh->{LongTruncOk} = Baseliner->config->{LongTruncOk}; # do not accept truncated LOBs
     }
 }
 
@@ -537,14 +591,14 @@ sub _get_options {
             $hash{$last_opt} = [] unless ref $hash{$last_opt};
         }
         else {
-            $opt = 	Encode::encode_utf8($opt) if Encode::is_utf8($opt);
+            $opt = Encode::encode_utf8($opt) if Encode::is_utf8($opt);
             push @{ $hash{$last_opt} }, $opt; 
         }
     }
     # convert single option => scalar
     for( keys %hash ) {
         if( @{ $hash{$_} } == 1 ) {
-            $hash{$_} = $hash{$_}->[0];	
+            $hash{$_} = $hash{$_}->[0];
         }
     }
     return %hash;
@@ -567,16 +621,21 @@ sub _check_parameters {
 
 sub _mkpath {
     my $dir = File::Spec->catfile( @_ );
-    
     return if( -e $dir );
-    use File::Path;
-    
+    require File::Path;
     File::Path::make_path( $dir ) or _throw "Error creating directory $dir: $!";
+}
+
+sub _rmpath {
+    my $dir = _dir( @_ );
+    return unless -e $dir;
+    $dir->rmtree;
 }
 
 # returns the official tmp dir
 sub _tmp_dir {
-    Baseliner->config->{tempdir} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir || $ENV{TEMP};
+    my $tmp_dir = try { Baseliner->config->{tempdir} } catch {};
+    $tmp_dir || $ENV{BASELINER_TEMP} || File::Spec->tmpdir || $ENV{TEMP};
 }
 
 =head2 _mktmp( suffix=>$str )
@@ -590,17 +649,25 @@ sub _mktmp {
    return _dir( _tmp_dir(), join( '_', _nowstamp, $$, int( rand( 100000 ) ), @$suffix ) );
 }
 
-# returns a temp file name 
+=head2 _tmp_file( prefix=>'myprefix', extension=>'zip' )
+
+Returns a temp file name, creating the temp directory if needed. 
+
+=cut
 sub _tmp_file {
     my $p = _parameters(@_);
-    _check_parameters( $p, qw/prefix/ );
+    $p->{prefix} ||= [ caller(0) ]->[2];  # get the subname
+    $p->{prefix} =~ s/\W/_/g;
     my $tempdir = $p->{tempdir} || _tmp_dir();
     $p->{dir}||='';
+    $p->{extension} ||='log';
     my $dir  = File::Spec->catdir($tempdir, $p->{dir} );
+    unless( -d $tempdir ) {
     warn "Creating temp dir $tempdir";
     _mkpath( $tempdir );
-    my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$.log" );
-    warn "Returning tempfile $file";
+    }
+    my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} );
+    ( $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ) and warn "Created tempfile $file\n";
     return $file;
 }
 
@@ -781,27 +848,160 @@ sub _uacc {
     }
 }
 
-sub unique {
-  my @ls = keys %{{map { $_ => 1 } @_}};
-  wantarray ? @ls : \@ls;
+=head2 _markup
+
+Baseliner flavored markup.
+
+=cut
+sub _markup {
+    my $txt = shift;
+    $txt =~ s{\*\*(.*?)\*\*}{<span><b>$1</b></span>}g;
+    $txt =~ s{\*(.*?)\*}{<b>$1</b>}g;
+    $txt =~ s{\`(.*?)\`}{<code>$1</code>}g;
+    $txt ;
 }
 
-sub inc { $_[0] + 1 }
-
-sub bool { !!$_[0] } # Any -> Bool
-
-sub dir_existsp { # Object Str -> Bool
-  my ($balix, $dir) = @_;
-  # Return 1 if found, 0 if not found.
-  my ($rc, $ret) = $balix->execute("[ -d $dir ] && echo 1 || echo 0");
-  return $ret ? 1 : 0;
+sub _to_json {
+    goto &JSON::XS::encode_json;
 }
 
-sub file_existsp {
-  my ($balix, $file_path) = @_;
-  # Return 1 if found, 0 if not found.
-  my ($rc, $ret) = $balix->execute("[ -f $file_path ] && echo 1 || echo 0");
-  return $ret ? 1 : 0;
+sub _from_json {
+    goto &JSON::XS::decode_json;   
+}
+
+=head2 zip_files( files=>['file.txt', ... ] [, to=>'file.zip' ] )
+
+Write a zip file.
+
+    prefix     => zipfile name prefix
+    base       => basepath to be subtracted from each file 
+    pathprefix => basepath to be appended to each file, in case they are
+                already relative
+
+=cut
+sub zip_files {
+    my %p = @_;
+    require Archive::Zip;
+    $p{to} ||= _tmp_file( extension=>'zip', prefix=>$p{prefix} || 'zipfiles' );
+    my $zip = Archive::Zip->new();
+    for my $file ( _array $p{files} ) {
+        my $filepath;
+        $p{base} and $filepath = _file($file)->relative( $p{base} ); 
+        $p{pathprefix} and do {
+            $filepath = $file;
+            $file = File::Spec->catfile( $p{pathprefix}, $file );
+        };
+        _log "ZIP ADD $file, $filepath";
+        $zip->addFile( $file, $filepath );
+    }
+    $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
+        or _throw "Error writing zip file $p{to}: $!";
+    return $p{to};
+}
+
+=head2 hash_flatten ( \%stash, $prefix )
+
+Deeply flatten the keys in a HASH. Turns arrays into comma-separated lists.
+Ignores objects.
+
+    $h->{foo}->{bar} = 10;
+    $h->{arr} = [ 1,2,3 ];
+
+    $h = hash_flatten $h;
+
+    $h->{foo.bar} == 10;
+    $h->{arr} eq '1,2,3';
+
+=cut
+sub hash_flatten {
+    my ( $stash, $prefix ) = @_;
+    ref $stash eq 'HASH' or _throw "Missing stash hashref parameter";
+    $prefix ||= '';
+    my %flat;
+    while( my ($k,$v) = each %$stash ) {
+        if( ref $v eq 'HASH') {
+            my %flat_sub = hash_flatten( $v, "$prefix$k." );
+            %flat = ( %flat, %flat_sub );
+        } elsif( ref $v eq 'ARRAY') {
+            $flat{$prefix . $k} = join ',', @$v;
+        } elsif( ! ref $v ) {
+            $flat{$prefix . $k} = $v;
+        }
+    }
+    return wantarray ? %flat : \%flat;
+}
+
+=head2 parse_vars
+
+Parse vars in a string. Replace them if we can. Return
+the replaced string.
+
+Options:
+
+    throw    => die on missing variables
+    cleanup  => remove unresolved variables
+
+Default action for unresolved variables is to leave them in.
+
+=cut
+sub parse_vars {
+    my ( $data, $vars, %args ) = @_;
+
+    # flatten keys
+    $vars = hash_flatten( $vars );
+
+    parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
+}
+
+sub parse_vars_raw {
+    my %args = @_;
+    my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
+    if( ref $data eq 'HASH' ) {
+        my %ret;
+        for my $k ( keys %$data ) {
+            my $v = $data->{$k};
+            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
+        }
+        return \%ret;
+    } elsif( ref $data eq 'ARRAY' ) {
+        my @tmp;
+        for my $i ( @$data ) {
+            push @tmp, parse_vars_raw( data=>$i, vars=>$vars, throw=>$throw );
+        }
+        return \@tmp;
+    } elsif( ! ref $data ) {
+        # string
+        return $data unless $data =~ m/\$\{.+\}/;
+        my $str = "$data";
+        for my $k ( keys %$vars ) {
+            my $v = $vars->{$k};
+            $str =~ s/\$\{$k\}/$v/g;
+        }
+        # cleanup or throw unresolved vars
+        if( $throw ) { 
+            if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {
+                _throw _loc( "Unresolved vars: '%1' in %2", join( "', '", @unresolved ), $str );
+            }
+        } elsif( $cleanup ) {
+            $str =~ s/\$\{.*?\}//g; 
+        }
+        return $str;
+    } else {
+        return $data;
+    }
+}
+
+=head2 _repl
+
+Stops execution and opens a REPL.
+
+    ^D  - resumes execution
+    ^C  - kills baseliner
+
+=cut
+sub _repl {
+    require Carp::REPL;
+    goto &Carp::REPL::repl;
 }
 
 sub _md5 {
@@ -810,19 +1010,111 @@ sub _md5 {
     Digest::MD5::md5_hex( $str );
 }
 
-# Copia de BaselinerX::Comm::Balix
-sub ts {
-  my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime(time);
-  $year += 1900;
-  $mon  += 1;
-  sprintf "%04d/%02d/%02d %02d:%02d:%02d", ${year}, ${mon}, ${mday}, ${hour}, ${min}, ${sec};
+sub _html_escape {
+    my $data = shift;
+    $data =~ s/\&/&amp;/gs;
+    $data =~ s/</&lt;/gs;
+    $data =~ s/>/&gt;/gs;
+    $data
 }
 
-sub ts_log {
-  my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime(time);
-  $year += 1900;
-  $mon  += 1;
-  sprintf "%04d/%02d/%02d-%02d:%02d:%02d", ${year}, ${mon}, ${mday}, ${hour}, ${min}, ${sec};
+sub _join_quoted {
+    return '' unless @_;
+    return '"' . join( '" "', @_ ) . '"';
+}
+
+
+sub case {
+    my ($val, %opts) = @_;
+    for my $key ( keys %opts ) {
+        if( $key ~~ $val ) {
+           ref $opts{$key} eq 'CODE' and return $opts{$key}->();
+           return $opts{$key};
+        }
+    }
+    return;
+}
+
+sub _utf8_on_all {
+    #return map { _to_utf8( $_ ) } @_;
+    #map { _log "SSSSSSSSSSSSSS=".  utf8::valid( $_) } @_;
+    return map { Encode::_utf8_on( $_ ) if utf8::valid( $_); $_ } @_;
+}
+
+# decode sequences of octets in utf8 into Perl's internal form,
+# which is utf-8 with utf8 flag set if needed.  
+sub _to_utf8 {
+    my $str = shift;
+    return undef unless defined $str;
+    my $fallback_encoding = 'latin1';
+    if ( utf8::valid($str) ) {
+        utf8::decode($str);
+        return $str;
+    } else {
+        return Encode::decode( $fallback_encoding, $str, Encode::FB_DEFAULT );
+    }
+}
+
+
+sub _size_unit {
+    my $size = shift;
+    use constant MB => (1024*1024);
+    use constant GB => (1024* MB);
+    my $units = $size >= GB ? 'GB' : $size >= MB ? 'MB' :  $size > 1024 ? 'KB' : 'bytes';
+    my $divisor = { GB=>(1024*1024*1024), MB=>(1024*1024), KB=>1024, bytes=>1 }->{ $units };
+    my $size = $size / $divisor;
+    $size = ($units =~ /bytes|KB/i) ? int( $size) : sprintf( "%.02f", $size );
+    return ( $size, $units );
+}
+
+sub _dbis {
+    require DBIx::Simple;
+    return DBIx::Simple->connect( Baseliner->model('Baseliner')->storage->dbh );
+}
+
+=head2 _hook
+
+Hook around Moose methods. Supports around, before and after.
+
+    _hook around => 'BaselinerX::Job::Controller::Job' => job_submit_cancel => sub {
+        ...
+    };
+
+=cut
+sub _hook {
+    my $type = shift;
+    my $class_name = shift;
+    my $code = pop @_;
+    my $meth = "add_${type}_method_modifier";
+    eval qq{require $class_name};
+    if( $@ ) {
+        _throw $@;
+    } else {
+        $class_name->meta->$meth( $_, $code ) for @_;
+    }
+}
+
+sub _read_password {
+    my $prompt = shift || 'PASSWORD: ';
+    require Term::ReadKey;
+    print $prompt;
+    Term::ReadKey::ReadMode('noecho');
+    my $pass = Term::ReadKey::ReadLine(0);
+    Term::ReadKey::ReadMode(0); # reset
+    chomp $pass;
+    say '';
+    $pass;
+}
+
+sub _load_features_lib {
+    my $features = Path::Class::dir('./features');
+    if( -d $features ) {
+        for my $dir ( map { Path::Class::dir( $_, 'lib' ) } $features->children ) {
+            next unless -d $dir;
+            eval "use lib '$dir'";
+            die $@ if $@;
+        }
+    }
 }
 
 1;
@@ -846,3 +1138,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 =cut
+

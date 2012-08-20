@@ -2,46 +2,46 @@
     var ps = 9999;
     <& /comp/search_field.mas &>
     
-	var store_sem=new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/semaphore/sems',
-		fields: [ 
-			{  name: 'sem' },
-			{  name: 'active' },
-			{  name: 'slots' },
-			{  name: 'occupied' },
-			{  name: 'waiting' },
-			{  name: 'bl' }
-		]
-	});
+    var store_sem=new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id', 
+        url: '/semaphore/sems',
+        fields: [ 
+            {  name: 'sem' },
+            {  name: 'active' },
+            {  name: 'slots' },
+            {  name: 'occupied' },
+            {  name: 'waiting' },
+            {  name: 'bl' }
+        ]
+    });
 
-	var reader_queue = new Ext.data.JsonReader({
+    var reader_queue = new Ext.data.JsonReader({
             root: 'data', 
             remoteSort: true,
             totalProperty:'totalCount', 
             id: 'id' 
         },
-		[ 
-			{  name: 'id' },
-			{  name: 'sem_bl' },
-			{  name: 'sem' },
-			{  name: 'who' },
-			{  name: 'status' },
-			{  name: 'active' },
-			{  name: 'host' },
-			{  name: 'pid' },
-			{  name: 'caller' },
-			{  name: 'ts_request' },
-			{  name: 'ts_grant' },
-			{  name: 'ts_release' },
-			{  name: 'bl' }
-		]
-	);
-	var store_queue = new Ext.data.GroupingStore({
-		id: 'id',
+        [ 
+            {  name: 'id' },
+            {  name: 'sem_bl' },
+            {  name: 'sem' },
+            {  name: 'who' },
+            {  name: 'status' },
+            {  name: 'active' },
+            {  name: 'host' },
+            {  name: 'pid' },
+            {  name: 'caller' },
+            {  name: 'ts_request' },
+            {  name: 'ts_grant' },
+            {  name: 'ts_release' },
+            {  name: 'bl' }
+        ]
+    );
+    var store_queue = new Baseliner.GroupingStore({
+        id: 'id',
         reader: reader_queue,
         remoteGroup: false,
         url: '/semaphore/queue',
@@ -161,7 +161,7 @@
         var sem = value;
         var bl = rec.data.bl;
         if( bl != '*' ) sem = sem + " (" + _(bl) + ")";
-		return "<div style='font-weight:bold; font-size: 12px;'>" + sem + "</div><br />" ;
+        return "<div style='font-weight:bold; font-size: 12px;'>" + sem + "</div><br />" ;
     };
 
     var render_sem_data = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -260,16 +260,16 @@
                         else
                             css = index % 2 > 0 ? 'level-row warn-odd' : 'level-row warn-even' ;
 
-						//p.body = '<p>'+_(rec.data.bl)+'</p>';
-						//return css + ' x-grid3-row-expanded';
-						return ' x-grid3-row-expanded';
-				}
+                        //p.body = '<p>'+_(rec.data.bl)+'</p>';
+                        //return css + ' x-grid3-row-expanded';
+                        return ' x-grid3-row-expanded';
+                }
         },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { width: 1, sortable: false, renderer: function() { return '<img src="/static/images/icons/traffic_lights.png" width="16px" />' } },	
-            { header: _('Semaphore'), width: 100, dataIndex: 'sem', sortable: true, renderer: render_sem },	
+            { width: 1, sortable: false, renderer: function() { return '<img src="/static/images/icons/traffic_lights.png" width="16px" />' } },    
+            { header: _('Semaphore'), width: 100, dataIndex: 'sem', sortable: true, renderer: render_sem }, 
             { width: 50, dataIndex: 'sem', renderer: render_sem_actions  }
         ]
     });
@@ -285,7 +285,7 @@
         ]
     });
     var grouping = 'sem_bl';
-	var gview = new Ext.grid.GroupingView({
+    var gview = new Ext.grid.GroupingView({
         forceFit: true,
         enableRowBody: true,
         autoWidth: true,
@@ -294,7 +294,7 @@
         startCollapsed: false,
         hideGroupedColumn: true,
         groupTextTpl: '{[ values.rs[0].data["' + grouping + '"] ]}'
-	});
+    });
     var grid_queue = new Ext.grid.GridPanel({
         region: 'center',
         header: false,
@@ -320,16 +320,16 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _('Semaphore'), width: 200, hidden: true, dataIndex: 'sem', sortable: false, menuDisabled: true },	
-            { header: _('SemaphoreBL'), width: 200, dataIndex: 'sem_bl', sortable: false, menuDisabled: true },	
-            { header: _('Baseline'), width: 100, hidden: true, dataIndex: 'bl', sortable: false, menuDisabled: true },	
+            { header: _('Semaphore'), width: 200, hidden: true, dataIndex: 'sem', sortable: false, menuDisabled: true },    
+            { header: _('SemaphoreBL'), width: 200, dataIndex: 'sem_bl', sortable: false, menuDisabled: true }, 
+            { header: _('Baseline'), width: 100, hidden: true, dataIndex: 'bl', sortable: false, menuDisabled: true },  
             { width: 30, dataIndex: 'status', sortable: false, renderer: render_status, menuDisabled: true},
-            { header: _('Who'), width: 200, dataIndex: 'who', sortable: false , menuDisabled: true},	
-            { header: _('Process'), width: 60, dataIndex: 'pid', sortable: false , menuDisabled: true},	
-            { header: _('Status Text'), width: 100, dataIndex: 'status', hidden: true, sortable: false , menuDisabled: true},	
-            { header: _('Requested On'), width: 100, dataIndex: 'ts_request', sortable: false , menuDisabled: true},	
-            { header: _('Granted On'), width: 100, dataIndex: 'ts_grant', sortable: false , menuDisabled: true},	
-            { header: _('Released On'), width: 100, dataIndex: 'ts_release', sortable: false, menuDisabled: true },	
+            { header: _('Who'), width: 200, dataIndex: 'who', sortable: false , menuDisabled: true},    
+            { header: _('Process'), width: 60, dataIndex: 'pid', sortable: false , menuDisabled: true}, 
+            { header: _('Status Text'), width: 100, dataIndex: 'status', hidden: true, sortable: false , menuDisabled: true},   
+            { header: _('Requested On'), width: 100, dataIndex: 'ts_request', sortable: false , menuDisabled: true},    
+            { header: _('Granted On'), width: 100, dataIndex: 'ts_grant', sortable: false , menuDisabled: true},    
+            { header: _('Released On'), width: 100, dataIndex: 'ts_release', sortable: false, menuDisabled: true }, 
             { header: _('Active'), width: 50, dataIndex: 'active', sortable: false, menuDisabled: true, renderer: Baseliner.render_active},
             { width: 100, renderer: render_actions, menuDisabled: true }
         ]

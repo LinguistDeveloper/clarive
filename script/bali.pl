@@ -14,6 +14,7 @@ BEGIN {
 }
 use Baseliner::Trace;
 use Pod::Usage;
+use Hash::Merge::Simple qw/merge/;
 
 chdir "$FindBin::Bin/..";
 

@@ -75,11 +75,11 @@ sub calendar_list : Path('/job/calendar_list') {
     my ( $self, $c ) = @_;
 
     #$c->stash->{ns_query} = { does=>['Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
-	$c->stash->{can_edit} = 
-		$c->model('Permissions')->is_root( $c->username ) 
-		||
-		$c->model('Permissions')
-			->user_has_action( username=>$c->username, action=>'action.job.calendar.edit', bl=>'*' );
+    $c->stash->{can_edit} = 
+        $c->model('Permissions')->is_root( $c->username ) 
+        ||
+        $c->model('Permissions')
+            ->user_has_action( username=>$c->username, action=>'action.job.calendar.edit', bl=>'*' );
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
     $c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
@@ -96,12 +96,12 @@ sub calendar_update : Path( '/job/calendar_update' ) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     eval {
-		if( $p->{action} eq 'create' ) {
+        if( $p->{action} eq 'create' ) {
             my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } );
             if ( my $r = $r1->first ) {
                 die _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->name, $p->{ ns }, $p->{ bl } );
-			} else {
-				my $row = $c->model('Baseliner::BaliCalendar')->create({
+            } else {
+                my $row = $c->model('Baseliner::BaliCalendar')->create({
                         name        => $p->{ name },
                         description => $p->{ description },
                         ns          => $p->{ ns },
@@ -384,7 +384,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                         . $ven->{ fin }
                         . " currentDate: $currentDate";
 
-                    #Inicio est en una ventana ya existente
+                    #Inicio esta en una ventana ya existente
                     die(      "<h5>Error: la hora de inicio de ventana ($ven_ini) se solapa con la siguiente ventana:<br>"
                             . "-----------VENTANA: ven: $ven id: $id tipo: "
                             . $ven->{ tipo }
@@ -412,7 +412,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
                         && !$currentDate )
                     {
 
-                        #Fin est en una ventana ya existente
+                        #Fin esta en una ventana ya existente
                         die(      "<h5>Error: la hora de fin de ventana ($ven_fin) se solapa con la siguiente ventana: "
                                 . "-----------VENTANA: ven: $ven id: $id tipo: "
                                 . $ven->{ tipo }
@@ -779,7 +779,7 @@ sub time_range_intersec : Private {
 
     # Eric -- No me entero de nada de lo de arriba, lo hago desde cero...
     my @just_another_range_enabled = do {
-      use BaselinerX::Calendar::Utils;
+      use BaselinerX::Job::CalendarUtils;
       my $day_of_week  = $c->stash->{date_selected}->{local_c}->{day_of_week} - 1;
       my @ns           = @{$c->stash->{ns} || []};
       my $bl           = $c->stash->{bl} || '*';
@@ -790,7 +790,7 @@ sub time_range_intersec : Private {
       # _log 'ns -> ' . join ', ', @ns;
       # _log "bl -> $bl";
       # my @calendar_ids = calendar_ids $packagename, $bl, @ns;
-      my @calendar_ids = unique map { calendar_ids $_, $bl, @ns } @packagename; # Eric 27/01/2012
+      my @calendar_ids = _unique map { calendar_ids $_, $bl, @ns } @packagename; # Eric 27/01/2012
       # _log 'calendar_ids -> [' . (join ', ', @calendar_ids) . ']';
       calendar_json merge_calendars $day_of_week, @calendar_ids;
     };
@@ -874,7 +874,7 @@ sub time_range : Private {
                     if ( not ref $rs2 or not $rs2->next );
                 $rs2->reset();
                 while ( my $r2 = $rs2->next ) {
-						my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
+                        my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
                     my $calendar_type = $r->type;
                     $lastType = $calendar_type;
                     if ( $r2->active == 1 ) {
@@ -1157,8 +1157,8 @@ sub grid : Private {
           # no-distribution window starts at 00:00 instead of the end time of the
           # first window.
           if ($ll[$i - 1]->{start_time} eq $ll[$i]->{start_time}) {
-          	# In this case the window is totally wrong. I don't know which
-          	# causes this, but it serves no purpose.
+            # In this case the window is totally wrong. I don't know which
+            # causes this, but it serves no purpose.
             delete $ll[$i];
           }
         }

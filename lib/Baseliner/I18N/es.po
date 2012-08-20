@@ -1,4 +1,4 @@
-msgid "" 
+﻿msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -930,6 +930,15 @@ msgstr "Descripción"
 
 msgid "Calendar Name"
 msgstr "Nombre del Calendario"
+
+msgid "Manage"
+msgstr "Gestionar"
+
+msgid "Flat View"
+msgstr "Vista Plana"
+
+msgid "(all projects)"
+msgstr "(todas)"
 
 msgid "All"
 msgstr "Todos"
@@ -3851,3 +3860,28 @@ msgstr "%1 de %2 filas totales"
 
 msgid "Include into"
 msgstr "Incluido en"
+
+msgid "Delete Folder"
+msgstr "Borrar Carpeta"
+
+msgid "File moved"
+msgstr "Fichero movido"
+
+msgid "Folder moved"
+msgstr "Carpeta movido"
+
+msgid "Folder deleted"
+msgstr "Carpeta borrada"
+
+msgid "Error deleting folder: %1"
+msgstr "Error borrando carpeta: %1"
+
+msgid "Folder added"
+msgstr "Carpeta creada"
+
+msgid "Error adding folder: %1"
+msgstr "Error creando carpeta: %1"
+
+
+
+

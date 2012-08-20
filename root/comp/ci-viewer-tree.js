@@ -1,0 +1,143 @@
+(function(params) {
+    /*  Renderers */
+    var render_tags = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( typeof value == 'object' ) {
+            var va = value.slice(0); // copy array
+            return Baseliner.render_tags( va, metadata, rec );
+        } else {
+            return Baseliner.render_tags( value, metadata, rec );
+        }
+    };
+    var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( rec.data.type == 'class' ) {
+            // we create objects
+            value = String.format('<a href="#" onclick="Baseliner.ci_add({0})">{1}</a>', rowIndex, value );
+        }
+        value = '<table><tr><td width="1"><img style="margin-top:-2px" src="' + rec.data.icon + '" alt="" /></td><td>' + value + '</td></tr></table>';
+        return value;
+    };
+    var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( value == undefined ) return '';
+        return '<pre style="font-size:9px">' + value + '</pre>';
+    };
+    var render_mapping_long = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( value == undefined ) return '';
+        if( typeof value == 'string' ) return '';
+        var ret = '';
+        var k = 0;
+        var ary =[];
+        for( var k in value ) {
+            if( value[k]==undefined ) value[k]='';
+            if( value[k]=='' ) continue;
+            ary.push( String.format('<b>{0}</b>: <code>{1}</code>',  _(k), value[k] ) );
+        }
+        return ary.join(', ');
+    };
+    var render_mapping = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( value == undefined ) return '';
+        if( typeof value == 'string' ) return '';
+        var ret = '<table>';
+        ret += '<tr>'; 
+        var k = 0;
+        for( var k in value ) {
+            if( value[k]==undefined ) value[k]='';
+            ret += '<td style="font-size: 10px;font-weight: bold;padding: 1px 3px 1px 3px;">' + _(k) + '</td>'
+            ret += '<td width="80px" style="font-size: 10px; background: #f5f5f5;padding: 1px 3px 1px 3px;"><code>' + value[k] + '</code></td>'
+            if( k % 2 ) {
+                ret += '</tr>'; 
+                ret += '<tr>'; 
+            }
+        }
+        ret += '</table>';
+        return ret;
+    };
+
+
+    //var tree = new Ext.ux.tree.TreeGrid({
+    var tree = new Ext.tree.TreePanel({
+        region: 'west',
+        width: 300,
+        split: true,
+        autoScroll: true,
+        animate: true,
+        collapsible: true,
+        lines: true,
+	    stripeRows: true,
+        enableSort: false,
+        enableDD: true,
+        dataUrl: '/ci/list',
+        rootVisible: false,
+        useArrows: true,
+        root: { nodeType: 'async', text: 'Ext JS', draggable: false, id: 'root' }
+        //dataUrl: '/cia/data.json',
+        /* columns:[
+            { id:'item', header: _('Item'), dataIndex: 'item', width: 230 },
+            { header: _('Collection'), width: 160, dataIndex: 'collection' },
+            { header: _('Class'), width: 160, dataIndex: 'class' }
+        ] */
+    });
+    tree.getLoader().on("beforeload", function(treeLoader, node) {
+        var loader = tree.getLoader();
+        //loader.baseParams = { anode:node.attributes.anode, type:node.attributes.type, class:node.attributes };
+        loader.baseParams = node.attributes;
+    });
+    tree.on('click', function(n, ev){ 
+        //alert( JSON.stringify( n ) );
+        //alert( n.attributes.anode );
+        store_ci.load({ params: n.attributes });
+        if( n.attributes.data == undefined ) return;
+        var c = n.attributes.data.click;
+    });
+    
+
+    var store_ci = new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        url: '/ci/grid',
+        fields: [ 'mid','_id','_parent','_is_leaf','type', 'item','class','versionid','ts','tags','data','properties','icon','collection']
+    });
+
+    var search_field = new Baseliner.SearchField({
+        store: store_ci,
+        params: {start: 0, limit: 100 },
+        emptyText: _('<Enter your search string>')
+    });
+
+    var check_sm = new Ext.grid.CheckboxSelectionModel({
+        singleSelect: false,
+        sortable: false,
+        checkOnly: true
+    });
+
+    var grid = new Ext.grid.GridPanel({
+        region: 'center',
+        store: store_ci,
+        sm: check_sm,
+        tbar: [ search_field,
+            { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: 'Etiquetar', icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: 'Exportar', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
+        ],
+        columns:[
+            check_sm,
+            { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
+            { id:'item', header: _('Item'), dataIndex: 'item', width: 230, renderer: render_item },
+            { header: _('Collection'), width: 160, dataIndex: 'collection' },
+            { header: _('ID'), width: 30, dataIndex: 'mid' },
+            { header: _('Class'), hidden: true, width: 160, dataIndex: 'class' },
+            { header: _('Version'), width: 50, dataIndex: 'versionid' },
+            { header: _('Timestamp'), width: 80, dataIndex: 'ts' },
+            { header: _('Tags'), width: 140, dataIndex: 'tags', renderer: render_tags },
+            { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties },
+            { header: _('Data'), hidden: false, width: 250, dataIndex: 'data', renderer: render_mapping_long }
+        ]
+    });
+
+    var panel = new Ext.Panel({
+        layout: 'border',
+        items: [ tree, grid ]
+    });
+    return panel;
+})

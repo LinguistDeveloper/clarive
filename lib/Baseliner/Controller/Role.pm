@@ -12,7 +12,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.admin.role' => { name=>'Admin Roles' };
 register 'menu.admin.role' => { label => 'Roles', url_comp=>'/role/grid', actions=>['action.admin.role'], title=>'Roles', index=>81,
-    icon=>'/static/images/users.gif' };
+    icon=>'/static/images/icons/users.gif' };
 
 sub role_detail_json : Local {
     my ($self,$c) = @_;
@@ -50,7 +50,8 @@ sub json : Local {
     
     my $page = to_pages( start => $start, limit => $limit );
     
-    my $rs = $c->model('Baseliner::BaliRole')->search(undef, { order_by => $sort ? "$sort $dir" : undef, page => $page, rows => $limit });
+    my $rs = $c->model('Baseliner::BaliRole')->search(undef, { order_by => $sort ? { "-$dir" => "$sort" } : undef,
+        page => $page, rows => $limit });
     my @rows;
 
     my $pager = $rs->pager;
@@ -118,7 +119,9 @@ sub update : Local {
     my $p = $c->req->params;
     eval {
         my $role_actions = decode_json(encode('UTF-8', $p->{role_actions}));
-        my $role = $c->model('Baseliner::BaliRole')->find_or_create({ id=>$p->{id}>=0 ? $p->{id} : undef, role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox} });
+        my $row = {  role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox} };
+        $row->{id} = $p->{id} if $p->{id} >= 0;
+        my $role = $c->model('Baseliner::BaliRole')->find_or_create( $row );
         $role->role( $p->{name} );
         $role->description( $p->{description} );
         $role->mailbox( $p->{mailbox} );

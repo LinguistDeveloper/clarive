@@ -65,9 +65,11 @@ sub catalog_url { '/comp/catalog/manual_deploy.js' }
 sub catalog_list { 
     my ($class, %p)=@_;
     my @list;
+    my $query = qr/$p{query}/i;
     my $rs = kv->find( provider=>'manual_deploy' );
     while( my $r = $rs->next ) {
         my $d = $r->kv;
+        next if $p{query} && join('',%$d) !~ $query;
         my (@roles, @role_hash);
         for( _array( $d->{role} ) ) {
             my $role = Baseliner->model('Baseliner::BaliRole')->find( $_ );

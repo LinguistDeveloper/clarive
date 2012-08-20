@@ -1,3 +1,9 @@
+<%args>
+  $natures_json    => $ARGS{natures_json} 
+  $job_states_json => $ARGS{job_states_json}
+  $envs_json       => $ARGS{envs_json}
+  $types_json      => $ARGS{types_json}
+</%args>
 (function(){
    
     // Eric
@@ -91,11 +97,13 @@
         }, 
         [ 
             {  name: 'id' },
+            {  name: 'mid' },
             {  name: 'name' },
             {  name: 'type_raw' },
             {  name: 'type' },
             {  name: 'bl' },
             {  name: 'bl_text' },
+            {  name: 'key' },
             {  name: 'starttime' },
             {  name: 'schedtime' },
             {  name: 'last_log' },
@@ -135,8 +143,9 @@
       return {
         text: nature_name,
         icon: '/static/images/' + x.icon + '.png',
-        handler: function () { 
-          alert("Filtrando por naturaleza " + nature_name);
+        handler: function (item) { 
+            item.parentMenu.setText( '>> ' + nature_name );
+          // alert("Filtrando por naturaleza " + nature_name);
           store.load({
             params: {
               current_nature: x.key
@@ -150,7 +159,7 @@
       icon: '/static/images/nature.all.png',
       text: 'TODAS',
       handler: function () {
-        alert("Mostrando todas las naturalezas.");
+        // alert("Mostrando todas las naturalezas.");
         store.load({
           params: {
             current_nature: 'ALL'
@@ -250,11 +259,12 @@
 
     var group_field = 'grouping';
 
-    var store = new Ext.data.GroupingStore({
+    var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/monitor_json',
             baseParams: { limit: ps },
-            sortInfo: {field: 'starttime', direction: "DESC"},
+            remoteSort: true,
+            sortInfo: { field: 'starttime', direction: "DESC" },
             groupField: group_field
     });
     
@@ -262,7 +272,7 @@
             store: store,
             pageSize: ps,
             displayInfo: true,
-            displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
+            displayMsg: _('Rows {0} - {1} of {2}'),
             emptyMsg: "No hay registros disponibles"
     });
     paging.on('beforechange', function(){ refresh_stop(); });
@@ -352,6 +362,51 @@
         autorefresh.stop(task);
     };
 
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
+        style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
+        handler: function(){
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            if( sel != undefined && sel.data.key != undefined ) {
+                var win = window.open( '/job/log/html/' + sel.data.key  );
+            }
+        } 
+    });
+
+    var msg_cancel_delete = [ _('Cancel Job'), _('Delete Job') ];
+    var button_cancel = new Ext.Toolbar.Button({
+        text: msg_cancel_delete[0],
+        icon:'/static/images/del.gif',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            var mode;
+            if( sel.data.status_code == 'RUNNING' ) {
+                msg = '<% _loc('Killing the job will interrupt current local processing but no remote processes') %>';
+                msg += "\n" + _('Are you sure you want to %1 the job?', _('kill') );
+                mode = 'kill';
+            } else if( sel.data.status_code == 'CANCELLED' ) {
+                msg = _('Are you sure you want to %1 the job?', _('delete') );
+                mode = 'delete';
+            } else {
+                msg = _('Are you sure you want to %1 the job?', _('cancel') );
+                mode = 'cancel';
+            }
+            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
+                function(btn){ 
+                    if(btn=='yes') {
+                        var conn = new Ext.data.Connection();
+                        conn.request({
+                            url: '/job/submit',
+                            params: { action: 'delete', mode: mode, id_job: sel.data.id },
+                            success: function(resp,opt) { grid.getStore().reload(); },
+                            failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the job.') ); }
+                        }); 
+                    }
+                } );
+        }
+    });
     //------------ Renderers
     var render_contents = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value.length < 2 ) return value[0];
@@ -361,8 +416,25 @@
 
     var render_app = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value.length < 2 ) return value[0];
-        return "Santa's coming to town.";
-        //return value.join('<br />');
+        return value.join('<br />');
+    };
+
+    var render_nature = function(v,meta,rec,rowIndex,colIndex,store) {
+        if( ! v ) return '' ;
+        var ret = new Array();
+        Ext.each( v, function( r ) {
+            if( ! r ) return;
+            ret.push( 
+                String.format('<div style="height:20px;"><img style="float:left" src="/static/images/icons/nature/{0}.png" />&nbsp;{1}</div>', r, r.toUpperCase() )
+            );
+        });
+        return ret.join('');
+    };
+
+    var render_subapp = function(v,meta,rec,rowIndex,colIndex,store) {
+        if( ! v ) return '';
+        if( typeof v != 'object' ) return v;
+        return Baseliner.render_wrap( v.join(', ') );
     };
 
     var render_job = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -509,12 +581,14 @@
         view: gview,
         selModel: row_sel, 
         columns: [
-                { header: _('Job'), width: 130, dataIndex: 'name', sortable: true, renderer: render_topic },	
+                { header: _('ID'), width: 30, dataIndex: 'id', sortable: true, hidden: true },
+                { header: _('MID'), width: 30, dataIndex: 'mid', sortable: true, hidden: true },
+                { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
-                { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: true }, // Eric
-                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: true }, // Eric
+                { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: true, renderer: render_nature }, // Eric
+                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: true, renderer: render_subapp }, // Eric
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
                 { header: _('Step'), width: 80, dataIndex: 'step', sortable: true , hidden: true },	
@@ -558,40 +632,12 @@
                             var sel = sm.getSelected();
                             Baseliner.addNewTabComp('/job/log/list?id_job=' + sel.data.id, '<% _loc('Log') %>'+ ' ' + sel.data.name );
                         } else {
-                            Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');	
+                            Ext.Msg.alert(_('Error'), _('Select a row first'));   
                         };
                     }
                 }),
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
-                new Ext.Toolbar.Button({
-                    text: _('Cancel Job'),
-                    icon:'/static/images/del.gif',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        var sel = sm.getSelected();
-                        if( sel.data.status_code == 'RUNNING' ) {
-                            msg = '<% _loc('Killing the job will interrupt current local processing but no remote processes') %>';
-                            msg += "\n" + _('Are you sure you want to %1 the job?', _('kill') );
-                        } else if( sel.data.status_code == 'CANCELLED' ) {
-                            msg = _('Are you sure you want to %1 the job?', _('delete') );
-                        } else {
-                            msg = _('Are you sure you want to %1 the job?', _('cancel') );
-                        }
-                        Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
-                            function(btn){ 
-                                if(btn=='yes') {
-                                    var conn = new Ext.data.Connection();
-                                    conn.request({
-                                        url: '/job/submit',
-                                        params: { action: 'delete', id_job: sel.data.id },
-                                        success: function(resp,opt) { grid.getStore().reload(); },
-                                        failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the job.') %>'); }
-                                    });	
-                                }
-                            } );
-                    }
-                }),
+                button_cancel,
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} ) {
                 new Ext.Toolbar.Button({
@@ -711,7 +757,7 @@
                             fupdatepanel.getForm().findField("_job_calendar").setValue(fecha.format("d/m/Y"));
                             //fupdatepanel.getForm().findField("_job_timer").setValue(fecha.format("H:i"));
                         } else {
-                            Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');	
+                            Ext.Msg.alert(_('Error'), _('Select a row first'));   
                         };
                     }
                 }),
@@ -726,9 +772,10 @@
                         {
                             var sel = sm.getSelected();
                             Baseliner.message( _('Job Export'), _('Job export started. Wait a few minutes...') );
-                            document.all.FrameDownload.src =  '/job/export?id_job=' + sel.data.id ;
+                            var fd = document.all.FD || document.all.FrameDownload;
+                            fd.src =  '/job/export?id_job=' + sel.data.id ;
                         } else {
-                            Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');	
+                            Ext.Msg.alert(_('Error'), _('Select a row first'));   
                         };
                     }
                 }),
@@ -750,8 +797,13 @@
     var first_load = true;
 
     // Yellow row selection
-    row_sel.on('rowselect', function(row, index, rec) {
+        row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
+        if( rec.data.status_code === 'CANCELLED' ) {
+            button_cancel.setText( msg_cancel_delete[1] );
+        } else {
+            button_cancel.setText( msg_cancel_delete[0] );
+        }
     });
     row_sel.on('rowdeselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).removeClass('x-grid3-row-selected-yellow');
@@ -772,10 +824,3 @@
     });
     return grid;
 })();
-
-<%args>
-  $natures_json    => $ARGS{natures_json} 
-  $job_states_json => $ARGS{job_states_json}
-  $envs_json       => $ARGS{envs_json}
-  $types_json      => $ARGS{types_json}
-</%args>

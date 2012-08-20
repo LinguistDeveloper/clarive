@@ -63,11 +63,11 @@ sub main {
   my $duration   = convertInterval %{getInterval $start_time, $end_time}, ConvertTo => 'seconds';
   my @natures_with_subapps = @{_bde_conf 'natures_with_subapps'};
   # Consider getting from bali job items instead.
-  my @natures = unique map { $_->{name} } 
+  my @natures = _unique map { $_->{name} } 
                 grep $_->can_i_haz_nature($elements), 
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
   # Capture the providers so we can identify whether it is a ZOS job.
-  my $is_zos_p = 'namespace.changeman.package' ~~ unique map { $_->{provider} } @{$job->job_stash->{contents}};
+  my $is_zos_p = 'namespace.changeman.package' ~~ _unique map { $_->{provider} } @{$job->job_stash->{contents}};
   $log->info("Capturando informacion del pase.");
   my $month_converter = Month::Convert->new;
   my $addf = sub {
@@ -90,7 +90,7 @@ sub main {
                        : map  { $addf->($_) } # Add the rest of the stuff
                          grep { $_->{technology} ~~ @natures } # Remove unwanted natures, get only those that are registered
                          map +{project => $_->[0], subapplication => $_->[1], technology => $_->[2]}, # Hashify!
-                         map  { [split '#', $_] } unique map { join '#', @{$_} } # Remove duplicates
+                         map  { [split '#', $_] } _unique map { join '#', @{$_} } # Remove duplicates
                          map  { $self->data_tuple($_->{fullpath}, @natures_with_subapps) } @{$elements}; # Make tuple
   $log->info("Creando reportes de pase.");
   my $m = Baseliner->model('Baseliner::BaliJobReport');

@@ -120,7 +120,7 @@ sub main {
   
   my @subapl_from_ears = @{$subapl_types->{ears} || []};
   my @subapl_from_jars = @{$subapl_types->{jars} || []};
-  my @subapl_j2ee_java = unique @subapl_from_ears, @subapl_from_jars;
+  my @subapl_j2ee_java = _unique @subapl_from_ears, @subapl_from_jars;
   $log->info("Subaplicaciones detectadas en el workspace: " . join ', ', @subapl_j2ee_java);
 
   # Check job sub-apls.

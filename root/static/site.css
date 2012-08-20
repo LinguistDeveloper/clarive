@@ -1,4 +1,12 @@
 /* Used to hide TreePanel icons - node.setIconCls('no-icon') */
+.bali-icon-active {
+    background: transparent url(/static/images/icons/active.gif) no-repeat center;
+}
+
+.bali-icon-inactive {
+    background: transparent url(/static/images/icons/inactive.gif) no-repeat center;
+}
+
 .no-icon {
 	display : none;
 	background-image:url('ext/resources/images/default/s.gif') !important;

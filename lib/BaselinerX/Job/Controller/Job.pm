@@ -7,7 +7,6 @@ use DateTime;
 use JSON::XS;
 use JavaScript::Dumper;
 use Try::Tiny;
-use YAML;
 use utf8;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -154,34 +153,70 @@ sub rs_filter {
     return { data=>\@ret, skipped=>$skipped, next_start=>$curr_rec + $processed };
 }
 
+sub job_logfile : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    $c->stash->{json}  = try {
+        my $file = _load( $job->stash )->{logfile};
+        _fail _log "Error: logfile not found or invalid: %1", $file if ! -f $file;
+        my $data = _file( $file )->slurp; 
+        { data=>$data, success=>\1 };
+    } catch {
+        { success=>\0, msg=>"".shift() };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub job_stash : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    $c->stash->{json}  = try {
+        my $stash = $job->stash;
+        $c->stash->{job_stash} = $stash;
+        { stash=>$stash, success=>\1 };
+    } catch {
+        { success=>\0 };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub job_stash_save : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    $c->stash->{json}  = try {
+        $job->stash( $p->{stash} );
+        { msg=>_loc( "Stash saved ok"), success=>\1 };
+    } catch {
+        { success=>\0, msg=>shift() };
+    };
+    $c->forward( 'View::JSON' );
+}
+
 sub monitor_json : Path('/job/monitor_json') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my $username = $c->username;
     my $perm = $c->model('Permissions');
 
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
+    my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = @{$p}{qw/start limit query query_id dir sort/};
     $start||=0;
     $limit||=50;
-    defined $query and $query =~ s/\*/%/g;
+
     my ($select,$order_by, $as) = $sort
-        ? ([{ distinct=>'me.id'} ,$sort]         , "$sort $dir, me.starttime desc", ['id'])
-        : ([{ distinct=>'me.id'} ,'me.starttime'], "me.starttime desc"            , ['id', 'starttime']);
+        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' } ], [ 'id', $sort ])
+        : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" } ] , ['id', 'starttime'] );
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
 
     my $page = to_pages( start=>$start, limit=>$limit );
-    my $where = {};
-    my $query_limit = 300;
 
-    # user content
-    if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-        my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
-        $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
-        # username can view jobs where the user has access to view the jobcontents corresponding app
-        # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
-    }
+    ### WHERE
     _log "Job search...";
+    my $where = {};
+    defined $query and $query =~ s/\*/%/g;
     $query and $where = query_sql_build( query=>$query, fields=>{
         name     =>'me.name',
         id       =>'to_char(me.id)',
@@ -193,51 +228,73 @@ sub monitor_json : Path('/job/monitor_json') {
         end      =>"me.endtime",
         items    =>"bali_job_items.item",
     });
-    my $rs_search = $c->model('Baseliner::BaliJob')->search(
-        $where,
-        {
-            select => $select,
-            as => $as,
-            join => [ 'bali_job_items' ],   
-            page=>0, rows=>$query_limit,
-            order_by => $order_by,
-        }
-    );
-    rs_hashref( $rs_search );
-    my @ids = map { $_->{id} } $rs_search->all; 
-    _log "Job search end.";
-    my $rs = $c->model('Baseliner::BaliJob')->search(
-        { 'me.id'=>{ -in =>\@ids } },
+    if( exists $p->{job_state_filter} ) {
+        my @job_state_filters = do {
+                my $job_state_filter = decode_json $p->{job_state_filter};
+                _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
+        };
+        $where->{status} = \@job_state_filters;
+    }
+
+    # Filter by nature
+    if (exists $p->{current_nature}) {      
+      $where->{'bali_job_items.item'} = $p->{current_nature};
+    }
+
+    # Filter by environment name:
+    if (exists $p->{env_filter}) {      
+      $where->{bl} = $p->{env_filter};
+    }
+
+    #dashboard
+    if($query_id){
+        my @arreglo = split(",",$query_id);
+        $where->{'me.id'} = \@arreglo;
+    }  
+
+    # user content
+    if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
+        my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
+        $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
+        # username can view jobs where the user has access to view the jobcontents corresponding app
+        # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
+    }
+    _debug $where;
+
+    ### FROM 
+    my $from = {
+        select   => 'me.id',
+        as       => $as,
+        join     => [ 'bali_job_items' ],   
+    };
+    _debug $from;
+    my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
+    # rs_hashref( $rs_search );
+    # my @ids = map { $_->{id} } $rs_search->all; 
+    my $id_rs = $rs_search->search( undef, { select=>[ 'me.id' ] } );
+
+    #_error _dump $id_rs->as_query ;
+
+    _debug "Job search end.";
+    my $rs_paged = $c->model('Baseliner::BaliJob')->search(
+        { 'me.id'=>{ -in => $id_rs->as_query } },
         {
             page=>$page, rows=>$limit,
             order_by => $order_by,
         }
     );
-    my $pager = $rs->pager;
+    my $pager = $rs_paged->pager;
     $cnt = $pager->total_entries;
-    #$cnt = $query ? $pager->total_entries : $query_limit;
-    #$cnt = 1000;
 
     # Job items cache
-    _log "Items cache start...";
-    my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>\@ids},{ select=>[qw/id id_job application item/] } );
-    rs_hashref( $rs_items );
-    my %job_items;
-    for( $rs_items->all ) {
-        push @{ $job_items{ $_->{id_job} } }, $_;
-    }
-    _log "Items cache end.";
-=head1
-    my $results = $self->rs_filter( rs=>$rs, start=>$start, limit=>$limit, query=>$query, filter=>sub {
-        return 1 unless $query; 
-        my $r = shift;
-        my $step = _loc( $r->step );
-        my $status = _loc( $r->status );
-        my $type = _loc( $r->type );
-        my $last_log_message = ""; #$r->last_log_message;
-        return !( $query && !query_array($query, $last_log_message, $status, $step, $r->name, $r->comments, $r->type, $type, $r->bl, $r->owner, $r->username ) );
-    });
-=cut
+    _log "Job data start...";
+    my %job_items = $c->model('Baseliner::BaliJobItems')
+        ->search(
+            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
+            { select=>[qw/id id_job application item/] }
+    )->hash_on( 'id_job' );
+    _log "Job data end.";
+
     my @rows;
     #while( my $r = $rs->next ) {
     my $now = _dt();
@@ -245,12 +302,13 @@ sub monitor_json : Path('/job/monitor_json') {
     my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ; 
 
     #foreach my $r ( _array $results->{data} ) {
-    while( my $r = $rs->next ) {
-        my $step = _loc( $r->step );
-        my $status = _loc( $r->status );
-        my $type = _loc( $r->type );
+    _debug "Looping start...";
+    for my $r ( $rs_paged->hashref->all ) {
+        my $step = _loc( $r->{step} );
+        my $status = _loc( $r->{status} );
+        my $type = _loc( $r->{type} );
         my %app;
-        my @items = _array $job_items{$r->id};
+        my @items = _array $job_items{ $r->{id} };
         my $contents = @items ? [
               map {
                   $app{ $_->{application} }=() if defined $_->{application};
@@ -259,14 +317,26 @@ sub monitor_json : Path('/job/monitor_json') {
               } @items
           ] : [];
         my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
-        my $last_log_message = $r->last_log_message;
+        my $last_log_message = $r->{last_log_message};
+
+        my @subapps = _unique map {
+            (ns_split( $_->{item} ))[1];
+        } grep {
+            $_->{item} =~ /^subap/
+        } _array $job_items{ $r->{id} };
+
+        my @natures = _unique map {
+            (ns_split( $_->{item} ))[1];
+        } grep {
+            $_->{item} =~ /^nature/
+        } _array $job_items{ $r->{id} };
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
         my $grouping='';
         my $day;  
-        my $dur =  $today - $r->starttime ; 
-        my $sdt = $r->starttime;
-        $sdt->{locale} = DateTime::Locale->load( $c->languages->[0] || 'en' );
+        my $sdt = parse_dt( '%Y-%m-%d %H:%M', $r->{starttime}  );
+        my $dur =  $today - $sdt; 
+        $sdt->{locale} = DateTime::Locale->load( $c->languages->[0] || 'en' ); # day names in local language
         $day =
             $dur->{months} > 3 ? [ 90, _loc('Older') ]
           : $dur->{months} > 2 ? [ 80, _loc( '%1 Months', 3 ) ]
@@ -281,110 +351,52 @@ sub monitor_json : Path('/job/monitor_json') {
           : $dur->{days} == 3   ? [ 4,  _loc( $sdt->day_name ) ]
           : $dur->{days} == 2   ? [ 3,  _loc( $sdt->day_name ) ]
           : $dur->{days} == 1   ? [ 2,  _loc( $sdt->day_name ) ]
-          : $dur->{days} == 0  ? $r->starttime < $today ? [ 2,  _loc( $sdt->day_name ) ]
-                               : $r->starttime > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
+          : $dur->{days} == 0  ? $sdt < $today ? [ 2,  _loc( $sdt->day_name ) ]
+                               : $sdt > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
           :                      [ 0,  _loc('Upcoming') ];
         $grouping = $day->[0];
 
-        # Eric -- Let's show only the contents that are packages, and pretty print them.
-        # my @builder = map { '<img src="/static/images/package.gif">&nbsp;' . $_ } grep packagep, @{$contents};
-        # $contents = \@builder;
-
         push @rows, {
-            id           => $r->id,
-            name         => $r->name,
-            bl           => $r->bl,
-            bl_text      => $r->bl,                        #TODO resolve bl name
-            starttime    => $r->get_column('starttime'),
-            schedtime    => $r->get_column('schedtime'),
-            maxstarttime => $r->get_column('maxstarttime'),
-            endtime      => $r->get_column('endtime'),
-            comments     => $r->get_column('comments'),
-            username     => $r->get_column('username'),
-            rollback     => $r->get_column('rollback'),
+            id           => $r->{id},
+            mid           => $r->{mid},
+            name         => $r->{name},
+            bl           => $r->{bl},
+            bl_text      => $r->{bl},                        #TODO resolve bl name
+            starttime    => $r->{starttime},
+            schedtime    => $r->{schedtime},
+            maxstarttime => $r->{maxstarttime},
+            endtime      => $r->{endtime},
+            comments     => $r->{comments},
+            username     => $r->{username},
+            rollback     => $r->{rollback},
+            key          => $r->{job_key},
             last_log     => $last_log_message,
             grouping     => $grouping,
             day          => ucfirst( $day->[1] ),
             contents     => $contents,
             applications => $apps,
             step         => $step,
-            step_code    => $r->step,
-            exec         => $r->get_column('exec'),
-            pid          => $r->get_column('pid'),
-            owner        => $r->get_column('owner'),
-            host         => $r->get_column('host'),
+            step_code    => $r->{step},
+            exec         => $r->{'exec'},
+            pid          => $r->{pid},
+            owner        => $r->{owner},
+            host         => $r->{host},
             status       => $status,
-            status_code  => $r->status,
-            type_raw     => $r->get_column('type'),
+            status_code  => $r->{status},
+            type_raw     => $r->{type},
             type         => $type,
-            runner       => $r->runner,
-            # Eric -- So I have to add a 'nature' column to the monitor grid. The ideal way
-            # would be editing the horrid sql statement build above but time is tight. Come
-            # back later!
-            natures      => do {
-              my $model = Baseliner->model('Baseliner::BaliJobItems');
-              my $where = {id_job => $r->id, 'substr(item, 0, 6)' => 'nature'};  # Format is: nature/${nature}
-              my $args  = {select => {distinct => 'item'}, as => 'nature'};
-              my $rs    = $model->search($where, $args);
-              rs_hashref($rs); 
-              my @natures = map { lc substr($_->{nature}, length 'nature/', length $_->{nature}) } $rs->all;
-              join '<br>', map { '<img src="/static/images/nature.' 
-                               . ($_ eq 'oracle' ? 'sql' : $_ eq 'ficheros' ? 'files' : $_) # Filter according to icon name.
-                               . '.png">&nbsp;&nbsp;' . uc($_) 
-                               } @natures;
-            },
-            # Eric -- Adding subapps as well...
-            subapps      => do {
-              my $model = Baseliner->model('Baseliner::BaliJobItems');
-              my $where = {id_job => $r->id, 'substr(item, 0, 7)' => 'subappl'};
-              my $args  = {select => {distinct => 'item'}, as => 'subappl'};
-              my $rs    = $model->search($where, $args);
-              rs_hashref($rs);
-              join '<br>', map { _pathxs $_->{subappl}, 1 } $rs->all;
-            }
+            runner       => $r->{runner},
+            natures      => \@natures,
+            subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
+    _debug "Looping end ";
 
-    # -- Added by Eric @ 2011/11/14
-    # Filter by nature:
-    if (exists $p->{current_nature}) {
-      unless ($p->{current_nature} eq 'ALL') { # In case the user clicked on show all.
-      my @ids_with_nature = do {
-        my $filter_nature = $p->{current_nature};
-        my $where         = {item => $filter_nature};
-        my $args          = {select => 'id_job'};
-        my $m             = Baseliner->model('Baseliner::BaliJobItems');
-        my $rs            = $m->search($where, $args);
-        rs_hashref($rs);
-        map { $_->{id_job} } $rs->all;
-      };
-      @rows = grep { $_->{id} ~~ @ids_with_nature } @rows;
-      $cnt  = scalar @rows;
-    }
-    }
-    # Filter by job state:
-    if (exists $p->{job_state_filter}) {
-      my @job_state_filters = do {
-        my $job_state_filter = decode_json $p->{job_state_filter};
-        grep { $job_state_filter->{$_} } keys %$job_state_filter;
-      };
-      @rows = grep { $_->{status_code} ~~ @job_state_filters } @rows;
-      $cnt  = scalar @rows;
-    }
-    # Filter by environment name:
-    if (exists $p->{env_filter}) {      
-      @rows = grep { $_->{bl} eq $p->{env_filter} } @rows;
-      $cnt  = scalar @rows;
-    }
-    # End
-
-    my @sorted = sort { $b->{grouping} <=> $a->{grouping} || $b->{starttime} cmp $a->{starttime} } @rows;
-    
     $c->stash->{json} = { 
         totalCount=> $cnt,
         #next_start => $results->{next_start},
-        data => \@sorted
-     }; 
+        data => \@rows,
+     };
     $c->forward('View::JSON');
 }
 
@@ -395,7 +407,7 @@ sub monitor_json_from_config : Path('/job/monitor_json_from_config') {
     my @rows = $config->rows( query=> $p->{query}, sort_field=> $p->{'sort'}, dir=>$p->{dir}  );
     #my @jobs = qw/N0001 N0002 N0003/;
     #push @rows, { job=>$_, start_date=>'22/10/1974', status=>'Running' } for( $p->{dir} eq 'ASC' ? reverse @jobs : @jobs );
-    $c->stash->{json} = { cat => \@rows };  
+    $c->stash->{json} = { cat => \@rows };
     $c->forward('View::JSON');
 }
 
@@ -425,14 +437,14 @@ sub refresh_now : Local {
             }
             $where->{'me.id'} = { '>' => $p->{top} };
             delete $where->{id} if defined $where->{id}; # leftover from seesion object
-            my $row = $c->model('Baseliner::BaliJob')->search( $where, { join=>['bali_job_items'], order_by=>'me.id desc' })->first;
+            my $row = $c->model('Baseliner::BaliJob')->search( $where, { join=>['bali_job_items'], order_by=>{ -desc =>'me.id' } })->first;
             if( ref $row ) {
                 $need_refresh = 1;
             }
         }
         if( $p->{ids} ) {
             # are there more info for current jobs?
-            my $rs = $c->model('Baseliner::BaliJob')->search({ id=>$p->{ids} }, { order_by=>'id desc' });
+            my $rs = $c->model('Baseliner::BaliJob')->search({ id=>$p->{ids} }, { order_by=>{ -desc =>'id' } });
             my $data ='';
             while( my $r = $rs->next ) {
                 $data.=$r->status . $r->last_log_message; 
@@ -440,7 +452,7 @@ sub refresh_now : Local {
             $magic = String::CRC32::crc32( $data );
         }
     } catch { _log shift };
-    $c->stash->{json} = { magic=>$magic, need_refresh => $need_refresh, stop_now=>\0 }; 
+    $c->stash->{json} = { magic=>$magic, need_refresh => $need_refresh, stop_now=>\0 };	
     $c->forward('View::JSON');
 }
 
@@ -463,7 +475,7 @@ sub refresh_now : Local {
     # $c->stash->{ns} = \@ns;
     # $c->forward('/calendar/calendar_range');
 #    warn Dump $c->stash->{calendar_range_expand} ; 
-    # $c->stash->{json} = { data => $c->stash->{calendar_range_expand} };   
+    # $c->stash->{json} = { data => $c->stash->{calendar_range_expand} };	
     # $c->forward('View::JSON');
 # }
 
@@ -491,7 +503,6 @@ sub get_namespaces_calendar{
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my $contents = _decode_json $p->{job_contents};
-    
     my @ns;
     my @ns_list;
     # $contents = $c->model('Jobs')->container_expand( $contents );
@@ -522,7 +533,7 @@ sub job_check_date : Path('/job/check_date') {
     my $date = $p->{job_date};
     my $contents = _decode_json $p->{job_contents};
     $contents = $c->model('Jobs')->container_expand( $contents );
-    my $month_days = 31;    
+    my $month_days = 31;	
  
     try {
         #warn "....................NS: " . join ',', @ns;
@@ -538,10 +549,10 @@ sub job_check_date : Path('/job/check_date') {
         _debug "------Checking dates for namespaces: " . _dump($c->stash->{ns});
         $c->forward('/calendar/date_intersec_range');
         _debug _dump( $c->stash->{calendar_range_expand} ); 
-        $c->stash->{json} = {success=>\1, data => $c->stash->{range_enabled} }; 
+        $c->stash->{json} = {success=>\1, data => $c->stash->{range_enabled} };	
     } catch {
         my $error = shift;
-        $c->stash->{json} = {success=>\0, data => $error }; 
+        $c->stash->{json} = {success=>\0, data => $error };
     };
     $c->forward('View::JSON');
 }
@@ -573,13 +584,17 @@ sub job_check_time : Path('/job/check_time') {
         
         $c->forward('/calendar/time_range_intersec');
         #warn Dump $c->stash->{calendar_range_expand} ; 
-        $c->stash->{json} = {success=>\1, data => $c->stash->{time_range} };    
+        $c->stash->{json} = {success=>\1, data => $c->stash->{time_range} };
     } catch {
         my $error = shift;
-        $c->stash->{json} = {success=>\0, data => $error }; 
+        $c->stash->{json} = {success=>\0, data => $error };
     };
     $c->forward('View::JSON');
 }
+
+register 'event.job.delete';
+register 'event.job.cancel';
+register 'event.job.cancel_running';
 
 sub job_submit : Path('/job/submit') {
     my ( $self, $c ) = @_;
@@ -589,103 +604,58 @@ sub job_submit : Path('/job/submit') {
     my $job_name;
     my $username = $c->user ? $c->user->username || $c->user->id : '';
     
-	#TODO move this whole thing to the Model Jobs
-	try {
-		if( $p->{action} eq 'delete' ) {
-			my $job = $c->model('Baseliner::BaliJob')->search({ id=> $p->{id_job} })->first;
-			if( $job->status =~ /CANCELLED|KILLED/ ) {
-				# cancel pending requests
-				$c->model('Request')->cancel_for_job( id_job=>$job->id );
-				$job->delete;
-				$job->update;
-			} elsif ( $job->status =~ /RUNNING/ ) {
-				$job->status( 'CANCELLED' );
-				$c->model('Request')->cancel_for_job( id_job=>$job->id );
+    #TODO move this whole thing to the Model Jobs
+    try {
+        use Baseliner::Sugar;
+        if( $p->{action} eq 'delete' ) {
+            my $job = $c->model('Baseliner::BaliJob')->search({ id=> $p->{id_job} })->first;
+            if( $job->status =~ /CANCELLED|KILLED/ ) {
 
-                # CANCELAR JOB EN CHANGEMAN SI PROCEDE
-                my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
-                my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
-                ## my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, user=>$cfgChangeman->{user}, password=>sub{ require BaselinerX::BdeUtils; BaselinerX::BdeUtils->chm_token } );
-                my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>$job->id, provider =>'namespace.changeman.package' } );
-                rs_hashref($rs_items);
-                my @pkgs;
-                while (my $row=$rs_items->next) {
-                    my $name=$1 if $row->{item} =~ m{changeman.package/(.*)};
-                    push @pkgs, $name if $name;
-                    }
-                if (scalar @pkgs) { 
-                    my $ret= $chm->xml_cancelJob(job=>$job->name, items=>@pkgs) ;
-                    if ($ret->{ReturnCode} ne '00') {
-                        $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
-                    } else {
-                        $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled<br>Changeman package(s) desassociated)", $job_name) };
-                        }
+                event_new 'event.job.delete' => sub {
+                    # be careful: may be cancelled already
+                    $p->{mode} ne 'delete' and die _loc('Job already cancelled'); 
+                    # cancel pending requests
+                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
+                    $job->delete;
                     $job->update;
-                    ## Al cancelar el job, quitamos las relaciones de BaliRelationship
-                    my $relation=Baseliner->model('Baseliner::BaliRelationship')->search({type=>'Changeman.PDS.to.JobId', to_ns=>"job/".$job->id});
-                    ref $relation && $relation->delete;
-                } else {
-                    $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
-                    $job->update;
-                    }
-			} else {
-				$job->status( 'CANCELLED' );
-				# cancel pending requests
-				$c->model('Request')->cancel_for_job( id_job=>$job->id );
-
-                # CANCELAR JOB EN CHANGEMAN SI PROCEDE
-                my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
-                # my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, user=>$cfgChangeman->{user}, password=>sub{ require BaselinerX::BdeUtils; BaselinerX::BdeUtils->chm_token } );
-                my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
-                my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>$job->id, provider =>'namespace.changeman.package' } );
-                rs_hashref($rs_items);
-                my @pkgs;
-                while (my $row=$rs_items->next) {
-                    my $name=$1 if $row->{item} =~ m{changeman.package/(.*)};
-                    push @pkgs, $name if $name;
-                    }
-                    
-                # _log "Cancelando". _dump @pkgs ;
-                if (scalar @pkgs) { 
-                    my $ret= $chm->xml_cancelJob(job=>$job->name, items=>@pkgs) ;
-                    # _log "CANCEL CHM JOB " . _dump $ret;
-                    if ($ret->{ReturnCode} ne '00') {
-                        $c->stash->{json} = { success => \0, msg => _loc("Error canceling Changeman Job:<br>%1",$ret->{Message}) };
-                    } else {
-                        $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
-                    }
-                        $job->update;
-                        my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-                        $log->error(_loc("Job cancelled by user %1", $username));
-                } else {
-                    $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
-                    $job->update;
-                    # $job->update;
-                    my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-                    $log->error(_loc("Job cancelled by user %1", $username));
-                    }
-                }
+                };
             }
-		elsif( $p->{action} eq 'rerun' ) {
-			my $job = $c->model('Jobs')->rerun( jobid=>$p->{id_job}, username=>$username ); 
-		}
-		else { # new job
-			my $bl = $p->{bl};
-			my $comments = $p->{comments};
-			my $job_date = $p->{job_date};
-			my $job_time = $p->{job_time};
-			my $job_type = $p->{job_type};
-			my $job_options = $p->{combo_joboptionsglobal};
+            elsif( $job->status =~ /RUNNING/ ) {
+                event_new 'event.job.cancel_running' => sub {
+                    $job->status( 'CANCELLED' );
+                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
+
+                    sub job_submit_cancel_running : Private {};
+                    $c->forward( 'job_submit_cancel_running', $job, $job_name, $username );
+                };
+            } else {
+                event_new 'event.job.cancel' => sub {
+                    $job->status( 'CANCELLED' );
+                    # cancel pending requests
+                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
+
+                };
+            }
+        } elsif( $p->{action} eq 'rerun' ) {
+            my $job = $c->model('Jobs')->rerun( jobid=>$p->{id_job}, username=>$username ); 
+        }
+        else { # new job
+            my $bl = $p->{bl};
+            my $comments = $p->{comments};
+            my $job_date = $p->{job_date};
+            my $job_time = $p->{job_time};
+            my $job_type = $p->{job_type};
+            my $job_options = $p->{combo_joboptionsglobal};
             
-			my $contents = _decode_json $p->{job_contents};
-			die _loc('No job contents') if( !$contents );
-			# create job
-			#my $start = parse_date('Y-mm-dd hh:mi', "$job_date $job_time");
-			my $start = parse_dt( '%Y-%m-%d %H:%M', "$job_date $job_time");
-			#$start->set_time_zone('CET');
-			my $end = $start->clone->add( hours => 1 );
-			my $ora_start =  $start->strftime('%Y-%m-%d %T');
-			my $ora_end =  $end->strftime('%Y-%m-%d %T');
+            my $contents = _decode_json $p->{job_contents};
+            die _loc('No job contents') if( !$contents );
+            # create job
+            #my $start = parse_date('Y-mm-dd hh:mi', "$job_date $job_time");
+            my $start = parse_dt( '%Y-%m-%d %H:%M', "$job_date $job_time");
+            #$start->set_time_zone('CET');
+            my $end = $start->clone->add( hours => 1 );
+            my $ora_start =  $start->strftime('%Y-%m-%d %T');
+            my $ora_end =  $end->strftime('%Y-%m-%d %T');
             my $approval = undef;
             
             # not in an authorized calendar
@@ -708,11 +678,11 @@ sub job_submit : Path('/job/submit') {
                     ns           => '/',
                     bl           => $bl,
                     username     => $username,
-					runner       => $runner,
-					comments     => $comments,
-					items        => $contents, 
+                    runner       => $runner,
+                    comments     => $comments,
+                    items        => $contents, 
                     options      => [$job_options]
-			);
+            );
             $job_name = $job->name;
 
             #Procesamos items de Changeman
@@ -724,7 +694,7 @@ sub job_submit : Path('/job/submit') {
                     $c->stash->{json} = { success => \0, msg => _loc("Error creating Changeman Job:<br>%1",$ret->{Message}) };
                     $job->delete;
                 } else {
-                    ##TODO: Si requiere aprobación de host por refresco de linklist crear la aprobacion
+                    ##TODO: Si requiere aprobacion de host por refresco de linklist crear la aprobacion
                     # $job->bali_job_items->create({item => 'nature/zos'}); 
                     my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
                     $log->debug(_loc("Changeman package(s) has been associated to SCM job %1", $job_name ));
@@ -734,17 +704,17 @@ sub job_submit : Path('/job/submit') {
                 $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
                 }
             
-			#$job_name = $c->model('Jobs')->job_name({ mask=>'%s.%s%08d', type=>$job_type, bl=>$bl, id=>$job->id });
-			#$job->name( $job_name );
-			#$job->update;
-		}
-	} catch {
-		my $err = shift;
-		_log "Error during job creation: $err";
-		$err =~ s{DBIx.*\(\):}{}g;
-		$c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
-	};
-	$c->forward('View::JSON');	
+            #$job_name = $c->model('Jobs')->job_name({ mask=>'%s.%s%08d', type=>$job_type, bl=>$bl, id=>$job->id });
+            #$job->name( $job_name );
+            #$job->update;
+        }
+    } catch {
+        my $err = shift;
+        _log "Error during job creation: $err";
+        $err =~ s{DBIx.*\(\):}{}g;
+        $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
+    };
+    $c->forward('View::JSON');	
 }
 
 sub restart : Local {
@@ -764,11 +734,11 @@ sub restart : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
     };
-    $c->forward('View::JSON');  
+    $c->forward('View::JSON');
 }
 
 sub monitor : Path('/job/monitor') {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $dashboard ) = @_;
     $c->languages( ['es'] );
     my $config = $c->registry->get( 'config.job' );
     $c->forward('/permissions/load_user_actions');

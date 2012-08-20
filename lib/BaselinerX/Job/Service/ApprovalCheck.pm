@@ -42,7 +42,7 @@ sub run_once {
     my ( $self, $c, $config ) = @_;
 
     # jobs awaiting approval
-    my $rs = Baseliner->model('Baseliner::BaliJob')->search({ status=>'APPROVAL' }, { order_by=>'starttime asc' });
+    my $rs = Baseliner->model('Baseliner::BaliJob')->search({ status=>'APPROVAL' }, { order_by=>{ -asc => 'starttime' } });
     my $final_status;
     my ($job_status, $job_req_status, $job_req_who );
 
@@ -62,7 +62,7 @@ sub run_once {
                     action => { -like => 'action.job%' },
                     ns     => $ns,
                 },
-                { order_by => 'id desc' }
+                { order_by => { -desc => 'id' } }
         );
         # get the last approval status for the job
         my $req = $reqs->first;
@@ -91,7 +91,7 @@ sub run_once {
         if( $final_status eq 'no requests' || $final_status eq 'approved' ) {
             foreach my $item ( @items ) {
                 # get the item job status
-                my $req = Baseliner->model('Baseliner::BaliRequest')->search({ ns=>$item, status=>{ '<>' => 'cancelled' } }, { order_by=>'id desc' })->first;
+                my $req = Baseliner->model('Baseliner::BaliRequest')->search({ ns=>$item, status=>{ '<>' => 'cancelled' } }, { order_by=>{ -desc => 'id' } })->first;
                 if( ref $req ) {
                     $approvers{$item} = { 
                         _loc('result') => _loc($req->status),

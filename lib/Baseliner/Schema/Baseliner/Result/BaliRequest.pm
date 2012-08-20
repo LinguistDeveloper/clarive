@@ -133,7 +133,6 @@ __PACKAGE__->table("bali_request");
   data_type: CLOB
   default_value: undef
   is_nullable: 1
-  size: 2147483647
 
 =head2 callback
 
@@ -252,7 +251,6 @@ __PACKAGE__->add_columns(
     data_type => "CLOB",
     default_value => undef,
     is_nullable => 1,
-    size => 2147483647,
   },
   "callback",
   {
@@ -278,12 +276,85 @@ __PACKAGE__->has_many(
 );
 
 use Baseliner::Utils;
+use Try::Tiny;
 
 sub data_hash {
     my $self = shift;
     my $data = $self->data;
     return {} unless $data;
     return _load( $data );
+}
+
+=head2 load_data
+
+Return ns info and localization into the data field.
+
+    no_data => 1  - no $self->data($data) loading (slow)
+
+=cut
+sub load_data {
+    my ($self, %p ) = @_;
+    my $data = {};
+    if( exists $p{data}  ) {
+        $data = ref $p{data} ? $p{data} : _load( $p{data} ); 
+    } elsif( length $self->data ) {
+        $data = _load( $self->data );
+    } elsif( $p{no_data} ) {
+        my $db = Baseliner->model('Baseliner')->dbi;
+        $data = $db->value('select data from bali_request where id=?', $self->id );
+        $data = _load( $data ) if $data;
+    }
+
+    # get ns data only if needed
+    unless( $data->{ns_name} && $data->{ns_icon} ) {
+        my $namespaces = $p{model_namespaces} || Baseliner->model('Namespaces'); # for perf
+        # get the request ns
+        my $nsid = exists $p{data} ? $data->{ns} : $self->ns;
+        my $ns = try { $namespaces->get( $nsid ) } catch { };
+        my ($ns_name, $ns_icon );
+        if( ref $ns ) {
+            $ns_name = $ns->ns_name . " (" . $ns->ns_type . ")";
+            $ns_icon = try { $ns->icon } catch { '' };
+        } else {
+            _log _loc "Error: request %1 has an invalid namespace %2", $self->id, $self->ns;
+            $ns = {};
+            my $domain;
+            ($domain, $ns_name)  = ns_split $nsid; 	
+            $ns_icon = try {
+                Baseliner->model('Registry')->get( 'namespace.endevor.package' )->registry_node->instance->module->icon
+            } catch {
+                '/static/images/icons/help.png';
+            };
+        }
+        # get the request ns name and icon
+        $data = {
+           %$data,
+           %$ns,
+           ns_name => $ns_name, 
+           ns_icon => $ns_icon,
+        };
+    } 
+
+    # localize
+    $data->{type} ||= _loc( exists $p{data} ? $data->{type} : $self->type );
+    $self->data( $data ) unless exists $p{data} || $p{no_data};
+    return $data;
+}
+
+=head2 save_data
+
+Push ns info and localization into the data field.
+
+Returns the data hash. 
+
+=cut
+sub save_data {
+    my ($self, %p ) = @_;
+    if( my $data = $self->load_data ) {
+        $self->data( _dump( $data ) );
+        $self->update;
+        return $data;
+    }
 }
 
 1;

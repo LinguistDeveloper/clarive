@@ -4,7 +4,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use DateTime;
 use BaselinerX::BdeUtils;
-use BaselinerX::Calendar::Utils;
+use BaselinerX::Job::CalendarUtils;
 use utf8;
 
 with 'Baseliner::Role::Service';

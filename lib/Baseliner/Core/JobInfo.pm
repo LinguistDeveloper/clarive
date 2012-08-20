@@ -1,12 +1,3 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
-#
-#	CAM .............................. SCM
-#	Pase ............................. N.ANTE0000048962
-#	Fecha de pase .................... 2011/08/04 20:17:43
-#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/lib/Baseliner/Core/JobInfo.pm
-#	Versión del elemento ............. 3
-#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
-
 package Baseliner::Core::JobInfo;
 use Moose;
 use YAML;

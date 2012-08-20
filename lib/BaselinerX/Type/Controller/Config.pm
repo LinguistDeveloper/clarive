@@ -2,23 +2,22 @@ package BaselinerX::Type::Controller::Config;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use JavaScript::Dumper;
-use Try::Tiny;
 use YAML::Syck;
-use utf8;
+use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };
 
 #register 'menu.admin.config_panel' => { label=>'Config Form', url_comp=>'/config/main', title=>'Config Form', icon=>'/static/images/config.png', active=>0 };
 
 sub generate_form : Path('/config/generate_form') {
-    my ($self,$c, $config_key )=@_;
+    my ($self,$c, $key )=@_;
 
     $c->stash->{ns_filter} = { start=>0, limit=>100 }; 	
     #$c->forward('/namespace/load_namespaces');
     $c->forward('/baseline/load_baselines');
 
-    $config_key ||= $c->stash->{config_key};
+    $key ||= $c->stash->{key};
 
-    my $config = $c->registry->get( $config_key || 'config.nature.j2ee.build' );
+    my $config = $c->registry->get( $key || 'config.nature.j2ee.build' );
     $c->stash->{metadata} = $config->metadata;
         
     $c->stash->{template} = '/comp/config/config_form.mas';
@@ -31,17 +30,17 @@ Returns an Ext component for eval - accepts a config key as stash or param
 =cut
 sub form : Path('/config/form') {
     my ($self,$c)=@_;
-    my $config_key = $c->stash->{config_key};
-    if( ref $config_key eq 'ARRAY' ) {
+    my $key = $c->stash->{key};
+    if( ref $key eq 'ARRAY' ) {
        my @meta;
-       for( @{ $config_key || [] } ) {
+       for( @{ $key || [] } ) {
            my $config = $c->model('Registry')->get( $_ );
            push @meta, $config->metadata if ref $config; 
        }
        $c->stash->{config} = \@meta;
     } else {
-        $config_key ||= $c->request->parameters->{config_key};
-        my $config = $c->model('Registry')->get( $config_key );
+        $key ||= $c->request->parameters->{key};
+        my $config = $c->model('Registry')->get( $key );
         $c->stash->{metadata} = $config->metadata;
     }
     $c->forward('/config/form_render');
@@ -106,14 +105,14 @@ sub config_tree : Path('/config/tree') {
     my ($self,$c)=@_;
     my $list = $c->registry->starts_with( 'config' ) ;
     my @tree;
-    foreach my $config_key ( $c->registry->starts_with( 'config' ) ) {
-        my $config = Baseliner::Core::Registry->get( $config_key );
+    foreach my $key ( $c->registry->starts_with( 'config' ) ) {
+        my $config = Baseliner::Core::Registry->get( $key );
         my @children;
         foreach my $m ( @{ $config->{metadata} || [] } ) {
-            my $id = $config_key.'.'.$m->{id};
+            my $id = $key.'.'.$m->{id};
             push @children, { id=>$id, leaf=>\1, attributes=>{ key=>$id }, text=>($m->{label} || $m->{id}) };
         }
-        push @tree, { id=>$config_key, leaf=>\0, text=>($config->{name} || $config_key), attributes=>{ key=>$config_key }, children=> \@children };
+        push @tree, { id=>$key, leaf=>\0, text=>($config->{name} || $key), attributes=>{ key=>$key }, children=> \@children };
     }
     $c->stash->{json} = [ sort { $a->{text} cmp $b->{text} } @tree ];
     $c->forward("View::JSON");
@@ -144,7 +143,7 @@ sub field : Local {
     for my $config ( $c->model('ConfigStore')->all ) {
         my @metadata = $config->metadata_filter( $key );
         if( scalar @metadata ) {  
-            $c->stash->{config_key} = $key;
+            $c->stash->{key} = $key;
             my $row = shift @metadata;   # we can only handle one key
             $c->stash->{metadata_row} = $row;
         }

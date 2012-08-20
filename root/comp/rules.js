@@ -79,13 +79,21 @@
         var store_status =new Ext.data.SimpleStore({
             fields: ['status'],
             data:[ 
-                [ 'Nuevo' ],
-                [ 'Análisis' ],
-                [ 'Desarrollo' ],
-                [ 'Preproducción' ],
-                [ 'Integración' ],
-                [ 'En curso' ],
                 [ 'Cerrado' ],
+                [ 'Integración' ],
+                [ 'Preproducción' ],
+                [ 'Producción' ],
+                [ 'Desarrollo' ],
+                [ 'Nuevo' ],
+                [ 'Desestimado' ],
+                [ 'Elaboración de requerimientos' ],
+                [ 'Recepción de requerimientos' ],
+                [ 'Validación' ],
+                [ 'Parametrización' ],
+                [ 'Validar parche de datos' ],
+                [ 'UAT Parche de datos' ],
+                [ 'Chequeo parche de datos' ],
+                [ 'Aceptado' ]
             ]
         });
         var combo_status = new Ext.form.ComboBox({
@@ -105,14 +113,23 @@
         var store_cat =new Ext.data.SimpleStore({
             fields: ['cat'],
             data:[ 
-                [ 'Inicidencia' ],
-                [ 'Petición' ],
-                [ 'Release' ],
-                [ 'Cambio' ],
-                [ 'Tarea' ],
-                [ 'Caso de Prueba' ],
-                [ 'Requerimiento' ],
-                [ 'Funcionalidad' ],
+                [ 'Nueva codificación' ],
+                [ 'Parametrización no estándar' ],
+                [ 'Desarrollo' ],
+                [ 'Nuevo colectivo' ],
+                [ 'Apertura/Restricción C4T' ],
+                [ 'Versión base' ],
+                [ 'Versión de datos' ],
+                [ 'Nuevo código cuenta canal' ],
+                [ 'Nuevo código canal' ],
+                [ 'Activación/Desactivación básica' ],
+                [ 'Conjunto completo de promociones' ],
+                [ 'Comunicaciones en factura' ],
+                [ 'Actualizaciones country codes/tarifas' ],
+                [ 'Pequeños cambios en portal web' ],
+                [ 'Parche de datos' ],
+                [ 'Entrega independiente' ],
+                [ 'Bug' ]
             ]
         });
         var combo_cat = new Ext.form.ComboBox({
@@ -135,7 +152,7 @@
             defaults: { anchor:'80%' },
             items: [
                 { border:false, html:'<span id="boot"><p><h4>'+_('Configuración') + ':</h4></p>' },
-                { xtype: 'textfield', name:'tt', fieldLabel:_('Tiempo de inactividad (D)'), anchor:'50%' },
+//                { xtype: 'textfield', name:'tt', fieldLabel:_('Tiempo de inactividad (D)'), anchor:'50%' },
                 combo_cat,
                 combo_status
             ]

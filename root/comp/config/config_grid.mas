@@ -32,7 +32,6 @@
 
     var config_form = new Ext.FormPanel({
         url: '/role/update',
-        title: '<% _loc('Config') %>',
         region: 'south',
         collapsible: true,
         resizeable: true,
@@ -55,7 +54,7 @@
                 var ff = config_form.getForm();
                 ff.loadRecord( rec );
             } catch(e) {
-                Ext.Msg.alert("<% _loc('Error') %>", "<% _loc('Could not load config form data') %>: " + e.description );
+                Ext.Msg.alert( _('Error'), _('Could not load config form data') + ": " + e.description );
             }
         });
         config_data_store.load({ params:{ id: id }});
@@ -69,24 +68,23 @@
         // create the grid
         var grid = new Ext.grid.GridPanel({
             region: 'center',
-            title: '<% _loc('Inbox') %>',
             header: false,
             stripeRows: true,
             autoScroll: true,
             autoWidth: true,
             store: store,
-            viewConfig: [{
+            viewConfig: {
                     forceFit: true
-            }],
+            },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
-                { header: '<% _loc('From') %>', width: 200, dataIndex: 'sender', sortable: true },	
-                { header: '<% _loc('Subject') %>', width: 300, dataIndex: 'subject', sortable: true },	
-                { header: '<% _loc('To') %>', width: 150, dataIndex: 'to', sortable: true, hidden: true },	
-                { header: '<% _loc('Config') %>', width: 300, dataIndex: 'config', sortable: true },	
-                { header: '<% _loc('Sent') %>', width: 150, dataIndex: 'sent', sortable: true } ,
-                { header: '<% _loc('Received') %>', width: 150, dataIndex: 'received', sortable: true, hidden: true }	
+                { header: _('From'), width: 200, dataIndex: 'sender', sortable: true }, 
+                { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true }, 
+                { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true }, 
+                { header: _('Config'), width: 300, dataIndex: 'config', sortable: true },   
+                { header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
+                { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }  
             ],
             autoSizeColumns: true,
             deferredRender:true,
@@ -94,17 +92,16 @@
                                 store: store,
                                 pageSize: ps,
                                 displayInfo: true,
-                                displayMsg: '<% _loc('Rows {0} - {1} de {2}') %>',
-                                emptyMsg: "No hay registros disponibles"
+                                displayMsg: _('Rows {0} - {1} de {2}'),
+                                emptyMsg: _('There are no rows available')
                         }),        
-            tbar: [ 'Buscar: ', ' ',
-                new Ext.app.SearchField({
+            tbar: [ 
+                new Baseliner.SearchField({
                     store: store,
-                    params: {start: 0, limit: ps},
-                    emptyText: '<% _loc('<Enter your search string>') %>'
+                    params: {start: 0, limit: ps}
                 }),
                 new Ext.Toolbar.Button({
-                    text: '<% _loc('View') %>',
+                    text: _('View'),
                     icon:'/static/images/drop-yes.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
@@ -113,7 +110,7 @@
                             var sel = sm.getSelected();
                             config_view(sel.data.id);
                         } else {
-                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');    
                         };
                     }
                 }),
@@ -124,7 +121,7 @@
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         var sel = sm.getSelected();
-                        Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the config') %>' + ' <b>' + sel.data.subject + '</b>?', 
+                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config') + ' <b>' + sel.data.subject + '</b>?', 
                             function(btn){ 
                                 if(btn=='yes') {
                                     var conn = new Ext.data.Connection();
@@ -132,8 +129,8 @@
                                         url: '/config/delete',
                                         params: { id_config: sel.data.id_config },
                                         success: function(resp,opt) { grid.getStore().remove(sel); },
-                                        failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the config') %>'); }
-                                    });	
+                                        failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the config') ); }
+                                    }); 
                                 }
                             } );
                     }
@@ -147,7 +144,7 @@
         grid.on("rowclick", function(grid, rowIndex, e ) {
             var row = grid.getStore().getAt(rowIndex);
             config_view( row.get('id') );
-        });		
+        });     
     
     var panel = new Ext.Panel({
         layout: 'border',

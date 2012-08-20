@@ -14,6 +14,7 @@ __PACKAGE__->add_columns(
     default_value => undef,
     is_nullable => 0,
     size => 126,
+    is_auto_increment => 1,
   },
   "chain_id",
   {
@@ -52,6 +53,8 @@ __PACKAGE__->add_columns(
   },
   "active",
   { data_type => "NUMBER", default_value => 1, is_nullable => 1, size => 126 },
+  "data",
+  { data_type => "clob", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("id");
 

@@ -38,10 +38,16 @@ register 'catalog.type.manual_deploy' => {
 
 # register 'action.manual.
 
+register 'service.manual_deploy.request' => {
+    name => 'Check and Send Requests for Manual Deployments',
+    config=> 'config.manual_deploy',
+    handler => \&send_requests 
+};
+
 register 'service.manual_deploy' => {
     name => 'Job Service for Manual Deployments',
     config=> 'config.manual_deploy',
-    handler => \&run 
+    handler => \&run_and_suspend,
 };
 
 register 'service.manual_deploy.check' => {
@@ -50,7 +56,7 @@ register 'service.manual_deploy.check' => {
     handler => \&check_paths 
 };
 
-sub run {
+sub run_and_suspend {
     my ($self,$c,$config) =@_;
 
     my $job = $c->stash->{job};
@@ -92,10 +98,13 @@ sub check_paths {
         for my $path ( split /,/, $paths ) {
             $log->debug( _loc("Processing path %1, action %2", $path, $data->{action} ) ); 
         # if( $elements
+            my @checked;
+            _log "Checking regex started...";
             my @elements = grep {
-                _log "Checking " . $_->filepath . " =~ $path";
-                $_->filepath =~ $path
-            } _array( $elements->elements );
+                push @checked, "Checking " . $_ . " =~ $path";
+                $_ =~ $path
+            } map { $_->filepath } _array( $elements->elements );
+            _log "Checking regex finished. " . join "\n", @checked;
         if( @elements ) {
                 my $key = $data->{action} ;
                 push @{ $actions{ $key }{path} }, $path;
@@ -104,8 +113,9 @@ sub check_paths {
                 # publish file to log
                 my @files;
                 for my $elem ( @elements ) {
-                    my $file = _file( $job->root, $elem->filepath );
-                    _log "Manual deploy file '$file'";
+                    my $file = _file( $job->root, $elem );
+                    next if $file->is_dir;
+                    next if -d "$file";
                     if( -e "$file" ) {
                         push @files, "$file";
                         $log->debug( _loc("File <code>%1</code> zipped for manual deploy", "$file" ) );
@@ -123,7 +133,7 @@ sub check_paths {
                     );
                     my $zipname = $job->name . '_manualdeploy.zip';
                     $log->info(
-                        _loc( "Publishing file <code>%1</code> for manual deploy", $zipname ),
+                        _loc( "Publishing file %1 for manual deploy", "<b><code>$zipname</code></b>" ),
                         data      => _slurp( $zip ),
                         more      => 'zip',
                         data_name => $zipname,
@@ -144,12 +154,6 @@ sub check_paths {
     return %actions; 
 }
 
-register 'service.manual_deploy.request' => {
-    name => 'Send Requests Manual Deployments',
-    config=> 'config.manual_deploy',
-    handler => \&send_requests 
-};
-
 sub send_requests {
     my ($self,$c,$config) =@_;
 
@@ -163,7 +167,7 @@ sub send_requests {
         my $desc = $action->{data}{description};
         my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid ); 
         my $reason = _loc('Manual deploy action: %1', $name);
-        $log->info( _loc('Requesting manual deploy for job %1, baseline %2: %3', $job->name, $bl, $reason ) );
+        $log->info( _loc('Requesting manual deploy for job %1, baseline %2: %3', $job->name , $bl, '<b>' . $reason . '</b>') );
         try {
             Baseliner->model('Request')->request(
                 name            => _loc( "Manual Deploy for %1", $job->name ),

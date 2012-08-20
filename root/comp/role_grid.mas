@@ -1,36 +1,36 @@
 (function(){
-	var store=new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'rownum', 
-		url: '/role/json',
-		fields: [ 
-			{  name: 'id' },
-			{  name: 'role' },
-			{  name: 'actions' },
-			//{  name: 'users' },
-			{  name: 'description' },
-			{  name: 'mailbox' }
-		]
-	});
+    var store=new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'rownum', 
+        url: '/role/json',
+        fields: [ 
+            {  name: 'id' },
+            {  name: 'role' },
+            {  name: 'actions' },
+            //{  name: 'users' },
+            {  name: 'description' },
+            {  name: 'mailbox' }
+        ]
+    });
     
     ////////// Role Single Row
-	var role_data_store=new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'rownum', 
-		url: '/role/role_detail_json',
-		fields: [ 
-			{  name: 'id' },
-			{  name: 'name' },
-			{  name: 'actions' },
-			{  name: 'bl' },
-			{  name: 'description' },
-			{  name: 'mailbox' }
-		]
-	});
+    var role_data_store=new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'rownum', 
+        url: '/role/role_detail_json',
+        fields: [ 
+            {  name: 'id' },
+            {  name: 'name' },
+            {  name: 'actions' },
+            {  name: 'bl' },
+            {  name: 'description' },
+            {  name: 'mailbox' }
+        ]
+    });
 
     ////////// Single Role Data Load
     var role_detail_edit = function(id_role) {
@@ -78,7 +78,7 @@
                 {  xtype: 'hidden', name: 'id', value: -1 }, 
                 {  xtype: 'textfield', name: 'name', fieldLabel: '<% _loc('Role Name') %>' }, 
                 {  xtype: 'textarea', name: 'description', height: 100, fieldLabel: '<% _loc('Description') %>' },
-				{  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') } 
+                {  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') } 
             ]
         });
 
@@ -112,7 +112,7 @@
         var tree_check = function(node) {
                 if( node.isLeaf() ) {
                     //TODO: activar cuando metamos metodo que compruebe todas las bl
-					//tree_check_in_grid( node );
+                    //tree_check_in_grid( node );
                     tree_check_folder_enabled(node.parentNode);
                 } else {
                     node.eachChild( function(child) {
@@ -158,35 +158,35 @@
         //////////////// Actions belonging to a role
         var action_store=new Ext.data.Store({ fields: [ {  name: 'action' }, {  name: 'description' }, { name: 'bl' } ] });
         
-	    var baselines = new Ext.data.SimpleStore({ 
-		   fields: ['bl', 'name'], 
-		   data : <% js_dumper( $c->stash->{baselines} ) %>
-	    }); 
+        var baselines = new Ext.data.SimpleStore({ 
+           fields: ['bl', 'name'], 
+           data : <% js_dumper( $c->stash->{baselines} ) %>
+        }); 
 
-	    var cm = new Ext.grid.ColumnModel({
-			defaults: {
-				sortable: true // columns are not sortable by default           
-			},
-			columns: [
-					{ header: _('Action'), width: 200, dataIndex: 'action', sortable: true },	
-					{ header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_loc },
-					{ header: _('Baseline'), width: 150, dataIndex: 'bl', sortable: true,
-							  editor: new Ext.form.ComboBox({
-								  typeAhead: true,
-								  triggerAction: 'all',
-								  mode: 'local',
-								  valueField: 'bl',
-								  value: '<% $c->stash->{baselines}->[0]->[0] %>',
-								  displayField:'name', 
-								  //lazyRender: true,
-								  store: baselines,
-								  listClass: 'x-combo-list-small',
-								  editable: false
-							  })
-					}
-			]
-		});
-		
+        var cm = new Ext.grid.ColumnModel({
+            defaults: {
+                sortable: true // columns are not sortable by default           
+            },
+            columns: [
+                    { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },	
+                    { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_loc },
+                    { header: _('Baseline'), width: 150, dataIndex: 'bl', sortable: true,
+                              editor: new Ext.form.ComboBox({
+                                  typeAhead: true,
+                                  triggerAction: 'all',
+                                  mode: 'local',
+                                  valueField: 'bl',
+                                  value: '<% $c->stash->{baselines}->[0]->[0] %>',
+                                  displayField:'name', 
+                                  //lazyRender: true,
+                                  store: baselines,
+                                  listClass: 'x-combo-list-small',
+                                  editable: false
+                              })
+                    }
+            ]
+        });
+        
         var grid_role = new Ext.grid.EditorGridPanel({
             title: _('Role Actions'),
             region: 'south',
@@ -197,9 +197,9 @@
             viewConfig: {
                 forceFit: true
             },
-			clicksToEdit: 1,
+            clicksToEdit: 1,
             width: 350,
-			cm: cm,
+            cm: cm,
             bbar: [ 
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
@@ -242,7 +242,7 @@
         var win = new Ext.Window({
             layout: 'border',
             height: 550, width: 700,
-			maximizable: true,
+            maximizable: true,
             closeAction: 'close',
             autoDestroy: true,
             title: '<% _loc('Create Role') %>',
@@ -280,35 +280,35 @@
             autoDestroy: true,
             title: '<% _loc('Create Role') %>',
               items : [
-			  	{ xtype: 'form',
-				  items: [
-					   new Ext.form.ComboBox({
-								name: 'bl', 
-								hiddenName: 'bl',
-								fieldLabel: '<% _loc('Baseline') %>', 
-								mode: 'local', 
-								store: baselines, 
-								valueField: 'bl',
-								value: '<% $c->stash->{baselines}->[0]->[0] %>',
-								displayField:'name', 
-								editable: false,
-								forceSelection: true,
-								triggerAction: 'all',
-								allowBlank: false,
-								listeners: {
-								   select: { fn: function(combo,rec,index){
-													form.getForm().load({
-															 url:  '/config/json',
-															 params: { bl: rec.data.bl  }
-													});
-											      }
-										   }
-							    }, 
-								width: 120 
-							})
-				        ]	
-					 }
-				  ] 
+                  { xtype: 'form',
+                  items: [
+                       new Ext.form.ComboBox({
+                                name: 'bl', 
+                                hiddenName: 'bl',
+                                fieldLabel: '<% _loc('Baseline') %>', 
+                                mode: 'local', 
+                                store: baselines, 
+                                valueField: 'bl',
+                                value: '<% $c->stash->{baselines}->[0]->[0] %>',
+                                displayField:'name', 
+                                editable: false,
+                                forceSelection: true,
+                                triggerAction: 'all',
+                                allowBlank: false,
+                                listeners: {
+                                   select: { fn: function(combo,rec,index){
+	                                                form.getForm().load({
+			                                                 url:  '/config/json',
+			                                                 params: { bl: rec.data.bl  }
+	                                                });
+                                                  }
+                                           }
+                                }, 
+                                width: 120 
+                            })
+                        ]	
+                     }
+                  ] 
         });
 
         // Eric
@@ -338,13 +338,13 @@
                                 s.add(rec);
                                 //s.sort('action', 'ASC');
                                 var parent_node = node.parentNode;
-                                // Quito esto, ver GDF #blablabla
+                                // issue (GDF) fix ?
                                 // node.disable();
                                 tree_check_folder_enabled(parent_node);
                             //}
                         };
 
-                        // Eric -- Aquí hay que hacer una comprobación
+                        // Eric -- Aqui hay que hacer una comprobacion
                         // iterando si en el store del grid_role ya existe el
                         // elemento que vamos a añadir.
                         if (node_exists_p(s, n)) {
@@ -381,75 +381,75 @@
     }
 
 
-		var ps = 30; //page_size
-		store.load({params:{start:0 , limit: ps}}); 
+        var ps = 30; //page_size
+        store.load({params:{start:0 , limit: ps}}); 
 
-		// create the grid
-		var grid = new Ext.grid.GridPanel({
-			renderTo: 'main-panel',
-			title: '<% _loc('Roles') %>',
-			header: false,
+        // create the grid
+        var grid = new Ext.grid.GridPanel({
+            renderTo: 'main-panel',
+            title: '<% _loc('Roles') %>',
+            header: false,
             stripeRows: true,
-			autoScroll: true,
-			autoWidth: true,
-			store: store,
-			viewConfig: [{
-					forceFit: true
-			}],
-			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-			loadMask:'true',
-			columns: [
-				{ header: _('Role'), width: 200, dataIndex: 'role', sortable: true },	
-				{ header: _('Description'), width: 200, dataIndex: 'description', sortable: true },	
-				{ header: _('Mailbox'), width: 200, dataIndex: 'mailbox', sortable: true },
-				{ header: _('Actions'), width: 400, dataIndex: 'actions', sortable: true, renderer: render_actions } 
+            autoScroll: true,
+            autoWidth: true,
+            store: store,
+            viewConfig: [{
+                    forceFit: true
+            }],
+            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+            loadMask:'true',
+            columns: [
+                { header: _('Role'), width: 200, dataIndex: 'role', sortable: true },	
+                { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },	
+                { header: _('Mailbox'), width: 200, dataIndex: 'mailbox', sortable: true },
+                { header: _('Actions'), width: 400, dataIndex: 'actions', sortable: true, renderer: render_actions } 
               //, { header: _('Members'), width: 150, dataIndex: 'users', sortable: true }	
-			],
-			autoSizeColumns: true,
-			deferredRender:true,
-			bbar: new Ext.PagingToolbar({
-								store: store,
-								pageSize: ps,
-								displayInfo: true,
-								displayMsg: _('Rows {0} - {1} de {2}'),
-								emptyMsg: "No hay registros disponibles"
-						}),        
-			tbar: [ _('Search') + ': ', ' ',
-				new Ext.app.SearchField({
-					store: store,
-					params: {start: 0, limit: ps},
-					emptyText: _('<Enter your search string>')
-				}),
-				new Ext.Toolbar.Button({
-					text: _('Add'),
-					icon:'/static/images/drop-add.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
+            ],
+            autoSizeColumns: true,
+            deferredRender:true,
+            bbar: new Ext.PagingToolbar({
+                                store: store,
+                                pageSize: ps,
+                                displayInfo: true,
+                                displayMsg: _('Rows {0} - {1} de {2}'),
+                                emptyMsg: "No hay registros disponibles"
+                        }),        
+            tbar: [ _('Search') + ': ', ' ',
+                new Ext.app.SearchField({
+                    store: store,
+                    params: {start: 0, limit: ps},
+                    emptyText: _('<Enter your search string>')
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Add'),
+                    icon:'/static/images/drop-add.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
                         role_detail();
                     }
-				}),
-				new Ext.Toolbar.Button({
-					text: _('Edit'),
-					icon:'/static/images/icons/write.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection()) {
-							var sel = sm.getSelected();
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Edit'),
+                    icon:'/static/images/icons/write.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        if (sm.hasSelection()) {
+                            var sel = sm.getSelected();
                             role_detail_edit(sel.data.id);
-						} else {
-							Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
-						};
-					}
-				}),
-				new Ext.Toolbar.Button({
-					text: _('Duplicate'),
-					icon:'/static/images/icons/copy.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection()) {
-							var sel = sm.getSelected();
+                        } else {
+                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+                        };
+                    }
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Duplicate'),
+                    icon:'/static/images/icons/copy.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        if (sm.hasSelection()) {
+                            var sel = sm.getSelected();
                             var conn = new Ext.data.Connection();
                             conn.request({
                                 url: '/role/duplicate',
@@ -457,44 +457,44 @@
                                 success: function(resp,opt) { grid.getStore().load(); },
                                 failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not duplicate the role') %>'); }
                             });	
-						} else {
-							Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
-						};
-					}
-				}),
-				new Ext.Toolbar.Button({
-					text: _('Delete'),
-					icon:'/static/images/del.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();						
-						var sel = sm.getSelected();
-						Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the role') %>' + ' ' + sel.data.role + '?', 
-							function(btn){ 
-								if(btn=='yes') {
-									var conn = new Ext.data.Connection();
-									conn.request({
-										url: '/role/delete',
-										params: { id_role: sel.data.id },
-										success: function(resp,opt) { grid.getStore().remove(sel); },
-										failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the role') %>'); }
-									});	
-								}
-							} );
-					}
-				}),
-				'->'
-				]
-		});
+                        } else {
+                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+                        };
+                    }
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Delete'),
+                    icon:'/static/images/del.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();						
+                        var sel = sm.getSelected();
+                        Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the role') %>' + ' ' + sel.data.role + '?', 
+                            function(btn){ 
+                                if(btn=='yes') {
+                                    var conn = new Ext.data.Connection();
+                                    conn.request({
+                                        url: '/role/delete',
+                                        params: { id_role: sel.data.id },
+                                        success: function(resp,opt) { grid.getStore().remove(sel); },
+                                        failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the role') %>'); }
+                                    });	
+                                }
+                            } );
+                    }
+                }),
+                '->'
+                ]
+        });
 
-	grid.getView().forceFit = true;
+    grid.getView().forceFit = true;
 
-	grid.on("rowdblclick", function(grid, rowIndex, e ) {
-			var row = grid.getStore().getAt(rowIndex);
+    grid.on("rowdblclick", function(grid, rowIndex, e ) {
+            var row = grid.getStore().getAt(rowIndex);
             role_detail_edit( row.get('id') );
-		});		
-		
-	return grid;
+        });		
+        
+    return grid;
 })();
 
 

@@ -41,7 +41,8 @@ __PACKAGE__->result_source_instance->view_definition(q{
             P.NAME AS PROJECT_NAME,
             F.FILENAME AS FILE_NAME,
             PS.TEXT AS TEXT,
-            NUM_FILE
+            NUM_FILE,
+            U.USERNAME ASSIGNEE
             FROM  BALI_TOPIC T
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON ID_CATEGORY = C.ID
                     LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
@@ -66,6 +67,8 @@ __PACKAGE__->result_source_instance->view_definition(q{
                     LEFT JOIN BALI_FILE_VERSION F ON F.MID = REL_F.TO_MID
                     LEFT JOIN BALI_MASTER_REL REL_PS ON REL_PS.FROM_MID = T.MID AND REL_PS.REL_TYPE = 'topic_post'
                     LEFT JOIN BALI_POST PS ON PS.MID = REL_PS.TO_MID
+                    LEFT JOIN BALI_MASTER_REL REL_USER ON REL_USER.FROM_MID = T.MID AND REL_USER.REL_TYPE = 'topic_users'
+                    LEFT JOIN BALI_USER U ON U.MID = REL_USER.TO_MID
 });
 
 __PACKAGE__->add_columns(
@@ -100,6 +103,7 @@ __PACKAGE__->add_columns(
         text
         progress
         num_file
+        assignee
     )
 );
 

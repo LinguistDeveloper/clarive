@@ -16,7 +16,7 @@ sub run {
   my $elements = $job->job_stash->{elements}->{elements};
   my $jobid    = $job->{jobid};
   my $natures_with_subapps = natures_with_subapps();
-  my @subappls = map { "subappl/$_" } grep { $_ } unique map { (_pathxs $_->{path}, 3) if (_pathxs $_->{path}, 2) ~~ @{$natures_with_subapps} } @{$elements}; # (Sorry)
+  my @subappls = map { "subappl/$_" } grep { $_ } _unique map { (_pathxs $_->{path}, 3) if (_pathxs $_->{path}, 2) ~~ @{$natures_with_subapps} } @{$elements}; # (Sorry)
   my $row = $job->row;
   for my $subapp (@subappls) {
     $row->bali_job_items->create({item => $subapp});

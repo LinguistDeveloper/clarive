@@ -9,6 +9,8 @@
     my $hm =  $now->strftime('%H:%M');
 </%perl>
 (function(){
+    var bl_edit;
+    
     var store=new Baseliner.JsonStore({
         root: 'data', 
         remoteSort: true,
@@ -146,31 +148,45 @@
     
     store.load({params:{start:0 , limit: ps}}); 
 
+    var render_name = function(value, metadata, rec, rowIndex, colIndex, store) {
+        return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + value + "</div>" ;
+    };
+
     // create the grid
     var grid = new Ext.grid.GridPanel({
-        renderTo: 'main-panel',
-        title: '<% _loc('Roles') %>',
         header: false,
         stripeRows: true,
         autoScroll: true,
         autoWidth: true,
         store: store,
         viewConfig: {
-                forceFit: true
+            enableRowBody: true,
+            getRowClass: function(record, index, p, store){
+                var css='';
+                p.body='';
+                var parms = record.data.parameters;
+                if( parms != undefined ) {
+                    p.body +='<p><div style="color: #333; font-weight: bold; margin: 0 0 5 30;">';
+                    p.body += '<pre>' + parms + '</pre></div></p>';
+                    css += ' x-grid3-row-expanded '; 
+                }
+                //css += index % 2 > 0 ? ' level-row info-odd ' : ' level-row info-even ' ;
+                return css;
+            },
+            forceFit: true
         },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _('Name'), width: 200, dataIndex: 'name', sortable: true },   
-            { header: _('Service'), width: 200, dataIndex: 'service', sortable: true },   
-            { header: _('Parameters'), width: 200, dataIndex: 'parameters', sortable: true },   
-            { header: _('Next execution'), width: 200, dataIndex: 'next_exec', sortable: true },   
-            { header: _('Last execution'), width: 200, dataIndex: 'last_exec', sortable: true },
-            { header: _('PID'), width: 200, dataIndex: 'pid', sortable: true },
+            { header: _('Name'), width: 300, dataIndex: 'name', sortable: true, renderer: render_name },   
+            { header: _('Status'), width: 60, dataIndex: 'status', sortable: true },
+            { header: _('Next execution'), width: 100, dataIndex: 'next_exec', sortable: true },   
+            { header: _('Last execution'), width: 100, dataIndex: 'last_exec', sortable: true },
+            { header: _('PID'), width: 60, dataIndex: 'pid', sortable: true },
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
-            { header: _('Frequency'), width: 200, dataIndex: 'frequency', sortable: true },
-            { header: _('State'), width: 200, dataIndex: 'status', sortable: true },
-            { header: _('Workdays'), width: 200, dataIndex: 'workdays', sortable: true }
+            { header: _('Frequency'), width: 60, dataIndex: 'frequency', sortable: true },
+            { header: _('Workdays'), width: 60, dataIndex: 'workdays', sortable: true },
+            { header: _('Service'), width: 100, dataIndex: 'service', sortable: true }   
         ],
         autoSizeColumns: true,
         deferredRender:true,      
@@ -202,7 +218,7 @@
             button_toggle_activation.setIcon( '/static/images/silk/clock_go.png');
             button_toggle_activation.show();
             button_delete_schedule.show();
-            button_run_schedule.hide();
+            button_run_schedule.show();
             button_kill_schedule.hide();
         } else if ( r.data.status == 'RUNNING' ) {
             button_toggle_activation.hide();
@@ -225,8 +241,6 @@
         width: 150,
         labelWidth: 250
     });
-
-    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
 
     var schedule_description = new Ext.form.TextArea({
         name: 'description',
@@ -287,7 +301,113 @@
         name: 'workdays',
         fieldLabel: _('Workdays only')
     });
-           
+
+
+    var txtconfig;
+    
+    var btn_config_service = new Ext.Toolbar.Button({
+        text: _('Parameters'),
+        icon:'/static/images/icons/cog_edit.png',
+        cls: 'x-btn-text-icon',
+        disabled: true,
+        handler: function() {
+            var ta = new Ext.form.TextArea({
+                height: 300,
+                width: 500,
+                enableKeyEvents: true,
+                style: { 'font-family': 'Consolas, Courier, monotype' },
+                value: txtconfig
+            });
+            
+            ta.on('keypress', function(TextField, e) {
+                btn_save_config.enable();
+            });             
+            
+            var title;
+            var img_icon;
+            var bl_save = false;
+            title = 'Apply';
+            img_icon = '/static/images/icons/cog_edit.png';		
+            
+            form = schedule_form.getForm();
+            var id = form.findField('id').value;
+
+            if (bl_edit){
+                title = 'Save';
+                img_icon = '/static/images/icons/database_save.png';
+                bl_save = true;
+            }
+    
+            var btn_save_config = new Ext.Toolbar.Button({
+                text: _(title),
+                icon: img_icon,
+                cls: 'x-btn-text-icon',
+                handler: function() {
+                    if(bl_save){
+                       Baseliner.ajaxEval( '/scheduler/update_conf', { id: id, conf: ta.getValue() },
+                           function(resp){
+                                    Baseliner.message( _('Success'), resp.msg );
+                                    store.load({params:{ limit: ps }});
+                                    form = schedule_form.getForm();
+                                    form.findField("txt_conf").setValue(ta.getValue());
+                                    txtconfig = ta.getValue();
+                                    btn_save_config.disable();
+                           }
+                       );
+                    }else{
+                       form = schedule_form.getForm();
+                       form.findField("txt_conf").setValue(ta.getValue());
+                       btn_save_config.disable();
+                       
+                    }                   
+                }
+            });
+
+            var winYaml = new Ext.Window({
+                modal: true,
+                width: 500,
+                title: _("Parameters"),
+                tbar: [ 
+                    btn_save_config,
+                    { xtype:'button', text: _('Close'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/door_out.png',
+                        handler: function(){
+                            winYaml.close();
+                        }
+                    }			
+                ],
+                items: ta
+            });
+            winYaml.show();
+        }
+    });
+      
+    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
+    
+    function check_configuration(id_service){
+        Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
+            if( !res.success ) {
+                //Baseliner.error( _('YAML'), res.msg );
+            } else {
+                // saved ok
+                //Baseliner.message( _('YAML'), res.msg );
+                if(res.yaml){
+                    txtconfig = res.yaml;
+                    btn_config_service.enable();
+                }
+                else{
+                    btn_config_service.disable();
+                }
+                
+            }
+        });
+    };
+
+    schedule_service.on('select', function(field, newValue, oldValue) {
+        form = schedule_form.getForm();
+        form.findField("txt_conf").setValue('');       
+        check_configuration(newValue.data.id);
+    });
+    
     var schedule_form = new Ext.FormPanel({
         frame: true,
         url:'/scheduler/save_schedule',
@@ -304,6 +424,7 @@
                         ff.submit({
                                 success: function(form, action) { 
                                     store.load({params:{ limit: ps }});
+                                    ff.reset();
                                 },
                                 failure: function(form, action) { 
                                     Ext.Msg.alert(_('Failure'), action.result.msg);
@@ -321,20 +442,51 @@
                 }
             }
         ],
-        defaults: { width: 400 },
-        items: [ schedule_id, schedule_name, schedule_service,
-            schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
+        defaults:{anchor:'100%'},
+        items: [ schedule_id, schedule_name,
+                 //schedule_service,
+                { name: 'txt_conf', xtype: 'textarea', hidden: 'true' },
+                {
+                // column layout with 2 columns
+                layout:'column'
+                ,defaults:{
+                        //columnWidth:0.5
+                        layout:'form'
+                        ,border:false
+                        ,xtype:'panel'
+                        ,bodyStyle:'padding:0 2px 0 0'
+                }
+                ,items:[{
+                        // left column
+                        columnWidth:0.86,
+                        defaults:{anchor:'100%'}
+                        ,items:[
+                                schedule_service
+                                ]
+                        },
+                        {
+                        columnWidth:0.14,
+                        // right column
+                        defaults:{anchor:'100%'},
+                        items:[
+                                btn_config_service
+                        ]
+                        }
+                ]
+                },                 
+                 schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
     });
 
     var win = new Ext.Window({
         autoScroll: true,
         title: _("Schedule information"),
-        width: 550, 
+        width: 650, 
         closeAction: 'hide',
         items: [ schedule_form ]
     });
 
     var new_schedule = function () {
+        bl_edit = false;
         schedule_id.setValue(undefined);
         schedule_name.setValue(undefined);
         schedule_service.setValue(undefined);
@@ -349,12 +501,24 @@
     };
 
     var edit_schedule = function () {
+        bl_edit = true;
         var sm = grid.getSelectionModel();
         if ( sm.hasSelection() ){
             var r = sm.getSelected();
             schedule_id.setValue(r.data.id);
             schedule_name.setValue(r.data.name);
             schedule_service.setValue(r.data.service);
+            
+            form = schedule_form.getForm();
+            if(r.data.parameters){
+                txtconfig = r.data.parameters;
+                form.findField("txt_conf").setValue(r.data.parameters);                
+                btn_config_service.enable();
+            }else{
+                form.findField("txt_conf").setValue('');
+                check_configuration(r.data.service);
+            }			    
+            
             if ( r.data.next_exec ) {
                 schedule_date.setValue(r.data.next_exec.substring(0,10));
                 schedule_time.setValue(r.data.next_exec.substring(11,16));
@@ -422,6 +586,17 @@
             schedule_id.setValue(undefined);
             schedule_name.setValue(r.data.name+'_copy');
             schedule_service.setValue(r.data.service);
+            
+            form = schedule_form.getForm();
+            if(r.data.parameters){
+                txtconfig = r.data.parameters;
+                form.findField("txt_conf").setValue(r.data.parameters);                
+                btn_config_service.enable();
+            }else{
+                form.findField("txt_conf").setValue('');
+                check_configuration(r.data.service);
+            }	            
+            
             if ( r.data.next_exec ) {
                 schedule_date.setValue(r.data.next_exec.substring(0,10));
                 schedule_time.setValue(r.data.next_exec.substring(11,16));
@@ -459,26 +634,25 @@
 
     var kill_schedule = function () {
         var sm = grid.getSelectionModel();
-        if (sm.hasSelection()) {
-            Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function (btn, text) {
-                if (btn == 'yes') {
-                    alert('go ahead');
+        if ( sm.hasSelection() ){
+            Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text){
+                if (btn == 'yes'){
+                //alert('go ahead');
+                //} else {
                     var r = sm.getSelected();
-                    Baseliner.ajaxEval('/scheduler/kill_schedule', {
-                        id: r.data.id
-                    }, function (response) {
-                        if (response.success) {
-                            Baseliner.message(_('SUCCESS'), _('Task killed'));
-                            store.load({
-                                params: {
-                                    limit: ps
+                    //alert(r.data.id);
+                    Baseliner.ajaxEval( '/scheduler/kill_schedule', 
+                            { id: r.data.id }, 
+                            function(response) {
+                                if ( response.success ) {
+                                    Baseliner.message( _('SUCCESS'), _('Task killed') );
+                                    store.load({params:{ limit: ps }});
+                                } else {
+                                    Baseliner.message( _('ERROR'), _('Could not kill task') );
                                 }
-                            });
-                        } else {
-                            Baseliner.message(_('ERROR'), _('Could not kill task'));
-                        }
-                        myMask.hide();
-                    });
+                                myMask.hide();
+                            }
+                    );
                 }
             });
         }
@@ -496,6 +670,10 @@
         }
         return true;
     };
+    
+    grid.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
+        edit_schedule();
+    });
     
     return grid;
 })();

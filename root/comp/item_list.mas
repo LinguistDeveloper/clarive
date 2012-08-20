@@ -1,5 +1,5 @@
 <%args>
-	$componentId => 'itemList'
+    $componentId => 'itemList'
 </%args>
 (function(theForm<% $c->stash->{$componentId}{id} %>){
     // shorthand alias
@@ -24,15 +24,15 @@
       ]);
 
     // create the Data Store
-	var store<% $c->stash->{$componentId}{id} %> = new Ext.data.JsonStore({
-		url: '<% $c->stash->{$componentId}{json_url} %>',
-		root:'data',
-		fields: [ 
-			{  name: '<% $c->stash->{$componentId}{itemName} %>' }
-		]
-	});
-	
-	                 var rowSelMod<% $c->stash->{$componentId}{id} %>=new Ext.grid.RowSelectionModel({singleSelect:true}); 
+    var store<% $c->stash->{$componentId}{id} %> = new Baseliner.JsonStore({
+        url: '<% $c->stash->{$componentId}{json_url} %>',
+        root:'data',
+        fields: [ 
+            {  name: '<% $c->stash->{$componentId}{itemName} %>' }
+        ]
+    });
+    
+                     var rowSelMod<% $c->stash->{$componentId}{id} %>=new Ext.grid.RowSelectionModel({singleSelect:true}); 
                          rowSelMod<% $c->stash->{$componentId}{id} %>.addListener('rowselect', 
                                              function (grid, rowIndex, e) 
                                              {
@@ -44,8 +44,8 @@
 
     // create the editor grid
     var grid<% $c->stash->{$componentId}{id} %> = new Ext.grid.EditorGridPanel({
-    	id: '<% $c->stash->{$componentId}{itemName} %>',
-    	name: '<% $c->stash->{$componentId}{itemName} %>[]',
+        id: '<% $c->stash->{$componentId}{itemName} %>',
+        name: '<% $c->stash->{$componentId}{itemName} %>[]',
         store: store<% $c->stash->{$componentId}{id} %>,
         cm: cm<% $c->stash->{$componentId}{id} %>,
         sm: rowSelMod<% $c->stash->{$componentId}{id} %>,
@@ -59,7 +59,7 @@
         tbar: [{
             text: '<% $c->stash->{$componentId}{newLabel} %>',
             icon: '/static/ext/resources/images/default/dd/drop-add.gif',
-           	cls: 'x-btn-text-icon',
+               cls: 'x-btn-text-icon',
             handler : function(){
                 var p = new record<% $c->stash->{$componentId}{id} %>({
                     '<% $c->stash->{$componentId}{id} %>': '<% $c->stash->{$componentId}{newLabel} %>'
@@ -71,11 +71,11 @@
             {
             text: '<% $c->stash->{$componentId}{delLabel} %>',
             icon: '/static/ext/resources/images/default/dd/del.gif',
-           	cls: 'x-btn-text-icon',
+               cls: 'x-btn-text-icon',
             handler : function(){     
                 var selectedRecord = grid<% $c->stash->{$componentId}{id} %>.getSelectionModel().getSelected();
                 if(selectedRecord!=null){
-                	grid<% $c->stash->{$componentId}{id} %>.getStore().remove(selectedRecord);
+                    grid<% $c->stash->{$componentId}{id} %>.getStore().remove(selectedRecord);
                 }
                 
             }
@@ -84,13 +84,13 @@
     
     theForm<% $c->stash->{$componentId}{id} %>.addListener('beforeaction',
                 function(frm) {
-             		var myStore = store<% $c->stash->{$componentId}{id} %>;
-             		var vals = "";
-             		for(var i=0;i<myStore.getCount();i++){
-             			vals = vals + myStore.getAt(i).data.<% $c->stash->{$componentId}{id} %> + ";";
-             		}
-             		if(vals!="")
-             			frm.setValues({<% $c->stash->{$componentId}{id} %>:vals});
+                     var myStore = store<% $c->stash->{$componentId}{id} %>;
+                     var vals = "";
+                     for(var i=0;i<myStore.getCount();i++){
+                         vals = vals + myStore.getAt(i).data.<% $c->stash->{$componentId}{id} %> + ";";
+                     }
+                     if(vals!="")
+                         frm.setValues({<% $c->stash->{$componentId}{id} %>:vals});
                     
                 }
         );

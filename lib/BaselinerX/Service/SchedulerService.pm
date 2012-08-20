@@ -1,12 +1,3 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
-#
-#	CAM .............................. SCM
-#	Pase ............................. N.TEST0000055933
-#	Fecha de pase .................... 2011/12/22 18:53:14
-#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/lib/BaselinerX/Service/SchedulerService.pm
-#	Versión del elemento ............. 1
-#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
-
 package BaselinerX::Service::SchedulerService;
 use Baseliner::Plug;
 use Baseliner::Utils;

@@ -39,7 +39,7 @@ sub main {
                    map  { _pathxs $_, 1 } Baseliner->model('Repository')->list(provider => $provider);
 
   # # Cogemos un listado de la aplicaciones que han sido distribuidas hoy.
-  # my @cams = sort { $a lt $b } unique map { map { $_ } @{$_->{cam_list}} } @data_store;
+  # my @cams = sort { $a lt $b } _unique map { map { $_ } @{$_->{cam_list}} } @data_store;
 
   # Construimos users con key: username, values: [data].
   my %users;
@@ -71,7 +71,7 @@ sub main {
 sub build_users {
   my ($environment, @projects) = @_;
   my $p_model = Baseliner->model('Permissions');
-  unique map { 
+  _unique map { 
     $p_model->list(action => 'action.informepase.ju_mail',
                    ns     => "project/$_",
                    bl     => $environment)

@@ -151,7 +151,8 @@ sub list_json : Path('/request/list_json') {
                 project =>$p->{manage} ? '' : [ $c->model('Permissions')->user_projects( username=>$username ) ],
                 start   =>$start, limit=>999999,
                 query   =>'',
-                sort    =>"$sort $dir",
+                sort    =>$sort,
+                dir     => $dir,
                 filter  =>$filter,
         );
         my $namespaces = $c->model('Namespaces');

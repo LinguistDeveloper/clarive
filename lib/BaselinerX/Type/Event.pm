@@ -52,11 +52,12 @@ with 'Baseliner::Core::Registrable';
 register_class 'event' => __PACKAGE__;
 
 has 'id'=> (is=>'rw', isa=>'Str', default=>'');
-has 'text' => ( is=> 'rw', isa=> 'Str', required=>1 );
+has 'text' => ( is=> 'rw', isa=> 'Str', lazy=>1, default=>sub { 
+    my $self = shift;
+    sprintf "Event %s occurred", $self->key;
+} );
 has 'vars' => ( is=> 'rw', isa=> 'ArrayRef', default=>sub{[]}, lazy=>1 );
 has 'filter' => ( is=> 'rw', isa=> 'CodeRef' );
-has 'pre' => ( is=> 'rw', isa=> 'CodeRef' );
-has 'post' => ( is=> 'rw', isa=> 'CodeRef' );
 
 sub event_text {
     my ($self, $data ) = @_;
@@ -68,6 +69,19 @@ sub event_text {
     }
     _loc( @all );
 }
+
+sub _hooks {
+    my $self = shift;
+    my $type = shift or _throw 'Missing hook type';
+    my $key = sprintf '%s._hooks', $self->key;
+    if( my $hooks = Baseliner->model('Registry')->get_node( $key ) ) {
+        return _array $hooks->{ $type };
+    }
+    return ();
+}
+
+sub before_hooks { $_[0]->_hooks( 'before' ) }
+sub after_hooks { $_[0]->_hooks( 'after' ) }
 
 1;
 

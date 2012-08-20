@@ -1,6 +1,7 @@
 package BaselinerX::Job::Service::Init;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Carp;
 use Try::Tiny;
 use File::Spec;
@@ -10,7 +11,8 @@ use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.init' => { name => 'Job Runner Initializer', config => 'config.job.runner', handler => \&job_init, };
+register 'service.job.init' => { name => 'Job Runner Initializer',
+    config => 'config.job.runner', handler => \&job_init, };
 
 our %next_step = ( PRE => 'RUN',   RUN => 'POST',  POST => 'END' );
 our %next_state  = ( PRE => 'READY', RUN => 'READY', POST => 'FINISHED' );

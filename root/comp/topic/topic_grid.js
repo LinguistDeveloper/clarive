@@ -320,12 +320,11 @@
         handler: function() {
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
-                    var r = sm.getSelected();
-                    var topic_mid = r.get('topic_mid');
-                    var title = _(r.get( 'category_name' )) + ' #' + topic_mid;
-                    
-                    Baseliner.add_tabcomp('/topic/view?topic_mid=' + topic_mid + '&swEdit=1', title , { topic_mid: topic_mid, title: title } );
-                    
+                    Ext.each( sm.getSelections(), function(r) {
+                        var topic_mid = r.get('topic_mid');
+                        var title = _(r.get( 'category_name' )) + ' #' + topic_mid;
+                        Baseliner.add_tabcomp('/topic/view?topic_mid=' + topic_mid + '&swEdit=1', title , { topic_mid: topic_mid, title: title } );
+                    });
                 } else {
                     Baseliner.message( _('ERROR'), _('Select at least one row'));    
                 };
@@ -336,25 +335,36 @@
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
-            var topico = sel.data.category_name + ' ' + sel.data.topic_mid;
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic') + ' <b>' + topico + '</b>?', 
-                function(btn){ 
-                    if(btn=='yes') {
-                        Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: sel.data.topic_mid },
-                            function(response) {
-                                if ( response.success ) {
-                                    grid_topics.getStore().remove(sel);
-                                    Baseliner.message( _('Success'), response.msg );
-                                    init_buttons('disable');
-                                } else {
-                                    Baseliner.message( _('ERROR'), response.msg );
-                                }
-                            }
-                        
-                        );
-                    }
+            var topic_names=[];
+            var topic_mids=[];
+            Ext.each( sm.getSelections(), function(sel){
+                topic_names.push( sel.data.category_name + ' #' + sel.data.topic_mid );
+                topic_mids.push( sel.data.topic_mid );
+            });
+            if( topic_names.length > 0 ) {
+                var names = topic_names.slice(0,10).join(',');
+                if( topic_names.length > 10 ) {
+                    names += _(' (and %1 more)', topic_names.length-10 );
                 }
-            );
+                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic(s)') + ': <br /><b>' + names + '</b>?', 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: topic_mids },
+                                function(response) {
+                                    if ( response.success ) {
+                                        grid_topics.getStore().remove(sm.getSelections());
+                                        Baseliner.message( _('Success'), response.msg );
+                                        init_buttons('disable');
+                                    } else {
+                                        Baseliner.message( _('ERROR'), response.msg );
+                                    }
+                                }
+                            
+                            );
+                        }
+                    }
+                );
+            }
         }
     });
     
@@ -383,9 +393,9 @@
     };
 
     function returnOpposite(hexcolor) {
-        var r = parseInt(hexcolor.substring(0,2),16);
-        var g = parseInt(hexcolor.substring(2,2),16);
-        var b = parseInt(hexcolor.substring(4,2),16);
+        var r = parseInt(hexcolor.substr(0,2),16);
+        var g = parseInt(hexcolor.substr(2,2),16);
+        var b = parseInt(hexcolor.substr(4,2),16);
         var yiq = ((r*299)+(g*587)+(b*114))/1000;
         return (yiq >= 128) ? '#000000' : '#FFFFFF';
     }
@@ -404,7 +414,7 @@
                 var label_color = label[2];
                 tag_color_html = tag_color_html
                     + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" 
-                    + returnOpposite(label_color.substring(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
+                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
             }
         }
         if(btn_mini.pressed){
@@ -437,13 +447,13 @@
         if(rec.data.numcomment){
             swGo = true;
             tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
-            tag_comment_html.push(rec.data.numcomment);
+            tag_comment_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>');
             tag_comment_html.push("</span>");
         }
         if(rec.data.num_file){
             swGo = true;
             tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
-            tag_comment_html.push(rec.data.num_file);
+            tag_comment_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>');
             tag_comment_html.push("</span>");           
         }
         var str = swGo ? tag_comment_html.join(""):'';
@@ -506,6 +516,7 @@
         var d = rec.data;
         return Baseliner.topic_name({
             mid: d.topic_mid, 
+            mini: btn_mini.pressed,
             size: btn_mini.pressed ? '9' : '11',
             category_name: d.category_name,
             category_color:  d.category_color,
@@ -583,6 +594,7 @@
             { header: '', report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_comment },         
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
+            { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
             { header: _('Created On'), hidden: true, sortable: true, dataIndex: 'created_on'},
             { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
         ],
@@ -891,7 +903,7 @@
                 var head = document.getElementsByTagName('head')[0];
                 var rules = document.createTextNode(
                     '.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:' +
-                    returnOpposite( color.substring(1) ) + ';background: ' + color +
+                    returnOpposite( color.substr(1) ) + ';background: ' + color +
                     ';font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
                 );
                 style.type = 'text/css';

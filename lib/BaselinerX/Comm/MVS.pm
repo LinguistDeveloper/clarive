@@ -3,13 +3,25 @@ use strict;
 use Baseliner::Utils;
 use File::Path;
 use Try::Tiny;
-
 use MVS::JESFTP;
 use Carp;
 #use Error qw(:try);
 
 ## inheritance
 use vars qw($VERSION);
+
+{
+    package BaselinerX::Comm::MVS::Config;
+    use Baseliner::Plug;
+    register 'config.JES' => {
+        metadata => [
+           { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
+           { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'},
+           { id=>'nopurge', label=>'0->purge jobs when retrieved, 1->do not purge', default => '0'},
+        ]
+    };
+}
+
 $VERSION = '1.0';
 
 sub opt { $_[0]->{opts}->{$_[1]} }
@@ -22,7 +34,7 @@ sub new {
     
     $opts{timeout} ||= 20;
     my $temp = $ENV{BASELINER_TEMP} || $ENV{TEMP};
-    $opts{tempdir} ||=  $temp ? "$temp/mvsjobs" : "./mvsjobs"  ;
+    $opts{tempdir} ||=  $temp ? "$temp/mvsjobs" : "./mvsjobs";
     
     my $self = {
         opts=> \%opts,
@@ -31,6 +43,7 @@ sub new {
         jobs => \%jobs,
         %opts,
     };
+
     bless( $self, $class);
 }
 
@@ -41,6 +54,9 @@ sub open {
     }
     $self->{jes} = MVS::JESFTP->open($self->opts->{'host'}, $self->opts->{'user'}, $self->opts->{'pw'}) 
         or confess _loc("Could not logon to host %1, user: %2: %3", $self->opts->{'host'}, $self->opts->{'user'}, $! );
+    $self->{jes}->quot('SITE', 'FILETYPE=JES');
+    $self->{jes}->quot('SITE', 'SBD=(IBM-1145,IBM-1252)');
+    $self->{jes}->quot('SITE', 'JESOWNER='.$self->opts->{'owner'}) if $self->opts->{'owner'};
 
     mkpath $self->opt('tempdir')
         if( ! -d $self->opt('tempdir') );
@@ -59,29 +75,25 @@ sub reopen {
     };
 
     # open
-    $self->{jes} = MVS::JESFTP->open($self->opts->{'host'}, $self->opts->{'user'}, $self->opts->{'pw'}) 
+    $self->{jes} = MVS::JESFTP->open($self->opts->{'host'}, $self->opts->{'user'}, $self->opts->{'pw'}, Timeout => 5000) 
         or confess _loc("Reopen: Could not logon to host %1, user: %2: %3", $self->opts->{'host'}, $self->opts->{'user'}, $! );
-}
-
-sub loginfo {
-    my $self=shift;
-    my $logger = $self->{opts}->{logger} || $self->{logger};
-    if( defined $logger ) {
-        $logger->info( @_ );
-    } else {
-        warn @_;
-    }
+    $self->{jes}->quot('SITE', 'FILETYPE=JES');
+    $self->{jes}->quot('SITE', 'SBD=(IBM-1145,IBM-1252)');
+    $self->{jes}->quot('SITE', 'JESOWNER='.$self->opts->{'owner'}) if $self->opts->{'owner'};
+    return $self->{jes};
 }
 
 sub submit {
     my $self=shift;
+    my $log = shift;
     my @jobs;
     while ( my $jobtxt = shift @_ ) {
         my $tempdir = $self->opt('tempdir');
         # my $jobfile = $tempdir."/pkg".sprintf('%05d',$self->{jobcount}++).".$$.jcl";
         my $jobfile = $tempdir."/pk".sprintf('%06d',$$).".jcl";
         my ($jobname, $letter, $letter_next) = $self->_gen_jobname_global(); 
-        warn "MVS Submitted JOBNAME=$jobname";
+        $log->debug( "MVS Submitting JOBNAME=$jobname");
+        _log  "MVS Submitting JOBNAME=$jobname";
         if( ! $self->opt('keep_name') ) {
             $jobtxt =~ s{^//[A-Z]*}{//$jobname}s;  ## replace job code with generated job code
             $jobtxt =~ s{\$\{LETTER\}}{$letter}s;
@@ -96,17 +108,18 @@ sub submit {
         CORE::open JF, ">$jobfile";
         print JF $jobtxt;
         close JF;
+        $self->reopen;
         $self->{jes}->submit($jobfile) || confess _loc("Could not submit job '%1': %2", $jobname, $!);
         unlink $jobfile;
             
         my $msg = $self->{jes}->message;
         my $JobNumber = $self->_jobnumber($msg);
-        $self->{jobs}{$JobNumber}{status} = 'Submitted';
-        $self->{jobs}{$JobNumber}{name} = $jobname;
-        $self->{jobs}{$JobNumber}{job} = $jobtxt;
-        push @jobs, $JobNumber;
-        warn "MVS Submitted $JobNumber";
-        $self->loginfo( "MVS Submitted $jobname $JobNumber" );
+        $self->{jobs}{$JobNumber}{status} = 'Submitted'; 
+        $self->{jobs}{$JobNumber}{name} = $jobname; 
+        $self->{jobs}{$JobNumber}{job} = $jobtxt; 
+        push @jobs, $JobNumber; 
+        _log "MVS Submitted $jobname/$JobNumber"; 
+        $log->info( "MVS Submitted $jobname $JobNumber" );
     }
     
     return wantarray ? @jobs : shift @jobs;
@@ -184,21 +197,26 @@ sub do_recurse {
 
 sub wait {
     my $self=shift;
+    my $log=shift;
 
-WW:	while( $self->pending ) {
-        for ( $self->finished_jobs ) {
+WW:	while( $self->pending( $log ) ) {
+        for ( $self->finished_jobs($log) ) {
             my $num = $self->_jobnumber( $_ );
             $self->{jobs}{$num}{status}='Finished';			
         }
+        # $log->debug("Jobs contents", data => _dump $self->{jobs});
     }
 }
 
 sub pending {
     my $self=shift;
+    my $log = shift;
+
     my @ret;
     for( $self->jobs ){
         push @ret, $_ if $self->{jobs}{$_}{status} eq 'Submitted';
     } 
+    # $log->debug("Jobs pending ....", data => _dump @ret) if ref $log;
     return @ret; 
 }
 
@@ -215,7 +233,7 @@ sub wait_for_dir {
     my $JobNumber = shift;
 
 WW:	while( 1 ) {
-        for ( $self->finished_jobs ) {
+        for ( $self->finished_jobs->{dir} ) {
             my $num = $self->_jobnumber( $_ );
             $self->{jobs}{$num}{status}='Finished';
             last WW if $num eq $JobNumber;   			
@@ -299,6 +317,15 @@ sub wait_for_get {
     return $output;
 }
 
+sub _slurp {
+    my ( $self, $file ) = @_;
+    CORE::open my $fin, '<', $file
+        or die "Could not open file '$file': $!";
+    my $output = join'',<$fin>;
+    close $fin;
+    return $output;
+}
+
 sub more_jobs {
     my ( $self, %p ) = @_;
 
@@ -331,12 +358,16 @@ sub output {
     my $JobNumber = shift;
     my $tmpdir = $self->opt('tempdir');
     my $output;
+    my $summary;
+
     try { File::Path::mkpath( $tmpdir ) }
         catch { _throw _loc("Could not create path '%1': %2", $tmpdir, shift ) };
     my $jobout = $self->opt('tempdir')."/$JobNumber.out";
-    my $JESConfig = Baseliner->model('ConfigStore')->get( 'config.endevor.JES', ns=>'/', bl=>'*' );
+    my $JESConfig = Baseliner->model('ConfigStore')->get( 'config.JES', ns=>'/', bl=>'*' );
     use Data::Dumper; 
-    
+
+    $self->reopen;
+    my @summary = grep /^\s+(\d{3})\s(\S*)\s+\S\s(.*)\s+(\d+).*$/, $self->{jes}->dir($JobNumber) ;
     for( 1..$JESConfig->{attempts} ) {  # 3 attempts to get it
         _log _loc "Attempt %1 to get job %2 output", $_, $JobNumber;
         my $JESOUT=$self->{jes}->get($JobNumber,$jobout);
@@ -358,8 +389,9 @@ sub output {
     # unlink $jobout;
     
     _log _loc("Unable to retrieve the output for Job %1. Check QE>Q>1>H (Display Promotion History) to see the result", $JobNumber ) unless $output;
-    $self->{jes}->delete($JobNumber) unless( $ENV{MVS_NOPURGE} );;
-    return $output;	
+    #sleep(20);
+    $self->{jes}->delete($JobNumber) unless( $JESConfig->{nopurge} );;
+    return $output, @summary;	
 }
 
 =head2 codepage( from_codepage, to_codepage )
@@ -379,9 +411,10 @@ sub codepage {
 sub close {
     my $self=shift;
     rmdir $self->opt('tempdir');
-    return unless ref $self->{jes};				
+    return unless ref $self->{jes};	
+    my $JESConfig = Baseliner->model('ConfigStore')->get( 'config.JES', ns=>'/', bl=>'*' );			
     for( $self->jobs ) {
-        $self->{jes}->delete( $_ ) unless( $ENV{MVS_NOPURGE} );
+        $self->{jes}->delete( $_ ) unless( $JESConfig->{nopurge} );
     }
     $self->{jes}->quit();
 }
@@ -405,13 +438,24 @@ sub finished_jobs
 {
     my $self=shift;
     my $JES = $self->{jes};
+    my $log = shift;
     my $i = 0;
     my @Dir = "";
 
     while (++$i <= $self->opt('timeout') )			# Espera el tiempo especificado en TIMEOUT
     {
-        last if (@Dir = grep /OUTPUT/,$JES->dir); # Solo los JOBS en OUTPUT
-        sleep(1);
+        $JES = $self->reopen();
+        for ( $self->pending( $log ) ) {
+            my @tempdir = $JES->dir( $self->_jobnumber( $_ ));
+            # $log->debug("Jobs output", data => _dump @tempdir );
+            push @Dir, grep /OUTPUT/, @tempdir ;
+        }
+
+        # if (ref $log) {
+        # 	$log->debug("Jobs returned", data => join "\n", @Dir);
+        # }
+        last if (@Dir); # Solo los JOBS en OUTPUT
+        sleep(15);
     }
     return @Dir;					# Devuelve lista de JOBs en OUTPUT
 }
@@ -430,12 +474,7 @@ sub _queuesize {
         $k++ if $self->{jobs}{$_}{status} eq 'Submitted';
     }
     return $k;
-}
-
-use Data::Random qw(rand_chars);
-sub _genjobname_random {
-    my $self=shift;
-    my $user = substr( $self->opt('user') , 0, 3 );
+} use Data::Random qw(rand_chars); sub _genjobname_random {my $self=shift; my $user = substr( $self->opt('user') , 0, 3 );
     my $id = join '', rand_chars( set => 'alphanumeric', min => 5, max => 5 );
     return uc( $user . $id );
 }

@@ -1,9 +1,9 @@
 (function(){
-	var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
-	var text_style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", "Courier"; border-color:black black green black; border-style:none none solid none;';
+    var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
+    var text_style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", "Courier"; border-color:black black green black; border-style:none none solid none;';
     var code = new Ext.form.TextArea({
         name: 'code',
-		style: style_cons,
+        style: style_cons,
         width: 700,
         height: 700
         });
@@ -12,7 +12,7 @@
         name: 'find',
         width: 600, 
         labelStyle: style_cons,
-		style: text_style_cons, 
+        style: text_style_cons, 
         enableKeyEvents: true,
         listeners: {
             'keyup': function(a,b) {
@@ -46,7 +46,7 @@
             }
         });
 
-	var tbarTree = [
+    var tbarTree = [
         '->',
         {   xtype: 'button',
             text: _('Reload'),
@@ -55,7 +55,7 @@
             handler: function(){ treeLoader.load(root); }
         }];
 
-	var tbar = [
+    var tbar = [
         _('Search'),
         find, 
         '->',
@@ -75,9 +75,9 @@
         }];
 
         
-	var command = new Ext.form.FormPanel({
-		items: [ find ],
-		region: 'north',
+    var command = new Ext.form.FormPanel({
+        items: [ find ],
+        region: 'north',
         bodyStyle: style_cons,
         height: 30,
         labelWidth: 60
@@ -106,10 +106,10 @@
         split: true,
         autoScroll : true,          
         containerScroll : true,     
-	lines: true,
-	rootVisible : false,
+    lines: true,
+    rootVisible : false,
         root : root,
-	loader: treeLoader
+    loader: treeLoader
         });
 
     new Ext.tree.TreeSorter(tree, {property: 'id'});
@@ -117,25 +117,25 @@
     tree.on('click', function(n,e) {
        if( n.attributes.needLoad ) {
           var id = n.attributes.id;
-	  Ext.Ajax.request({
+      Ext.Ajax.request({
                 url: '/job/log/jesFile?id=' + n.attributes.id,
-		params: { id: id }, 
-		success: function(xhr) {
-		var json = Ext.util.JSON.decode( xhr.responseText );
+        params: { id: id }, 
+        success: function(xhr) {
+        var json = Ext.util.JSON.decode( xhr.responseText );
                 n.attributes.code=json.data;
                 n.attributes.needLoad=false;
-		code.setValue( json.data );
+        code.setValue( json.data );
                 }
           });
-	} else {
-	   code.setValue(n.attributes.code);
+    } else {
+       code.setValue(n.attributes.code);
         }
     });
 
     var formTree = new Ext.FormPanel({
-	layout   : 'fit',
-	region   : 'west',
-	split    : true,
+    layout   : 'fit',
+    region   : 'west',
+    split    : true,
         frame    : false,
         hideLabel: false,
         tbar:tbarTree,
@@ -147,9 +147,9 @@
     );
 
     var form = new Ext.FormPanel({
-	layout   : 'fit',
-	region   : 'center',
-	split    : true,
+    layout   : 'fit',
+    region   : 'center',
+    split    : true,
         frame    : false,
         hideLabel: false,
         // tbar:tbar,

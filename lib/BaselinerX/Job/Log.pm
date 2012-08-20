@@ -7,14 +7,14 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Logger';
 
-register 'menu.job.logs' => { label => _loc('Job Logs'), url_comp => '/job/log/list', title=>_loc('Job Logs') };
+# register 'menu.job.logs' => { label => _loc('Job Logs'), url_comp => '/job/log/list', title=>_loc('Job Logs') };
 register 'config.job.log' => {
-	metadata => [
-		{ id=>'job_id', label=>'Job', width=>200 },
-		{ id=>'log_id', label=>'Id', width=>80 },
-		{ id=>'lev', label=>_loc('Level'), width=>80 },
-		{ id=>'text', label=>_loc('Message'), width=>200 },
-	]
+    metadata => [
+        { id=>'job_id', label=>'Job', width=>200 },
+        { id=>'log_id', label=>'Id', width=>80 },
+        { id=>'lev', label=>_loc('Level'), width=>80 },
+        { id=>'text', label=>_loc('Message'), width=>200 },
+    ]
 
 };
 
@@ -24,9 +24,9 @@ Handles all job logging.
 
 The basics:
 
-	my $job = $c->stash->{job};
-	my $log = $job->logger;
-	$log->error( "An error" );
+    my $job = $c->stash->{job};
+    my $log = $job->logger;
+    $log->error( "An error" );
 
 With data:
 
@@ -54,11 +54,11 @@ has 'last_log' => ( is=>'rw', isa=>'Any', default=>sub {{}} );
 
 # set the execution number for this log roll
 sub BUILD {
-	my ($self,$params) = @_;
-	my $job = Baseliner->model('Baseliner::BaliJob')->find( $self->jobid );
-	if( ref $job ) {
+    my ($self,$params) = @_;
+    my $job = Baseliner->model('Baseliner::BaliJob')->find( $self->jobid );
+    if( ref $job ) {
         $self->exec( $job->exec ) if defined $self->exec;
-	}
+    }
 }
 
 =head2 common_log
@@ -69,53 +69,53 @@ All data is compressed.
 
 =cut
 sub common_log {
-	my ( $lev, $self, $text )=( shift, shift, shift);
+    my ( $lev, $self, $text )=( shift, shift, shift);
     my ($package, $filename, $line) = caller 1;
     my $module = "$package - $filename ($line)";
     my %p = ( 1 == scalar @_ ) ? ( data=>shift ) : @_; # if it's only a single param, its a data, otherwise expect param=>value,...  
-	$p{data}||='';
-	my $job_exec = $self->exec;
-	my $jobid = $self->jobid;
-	my $row;
-	if( length($text) > 2000 ) {
-		# publish exceeding log to data
-		$p{data}.= '=' x 50;
-		$p{data}.= "\n$text";
-		# rewrite text message
-		$text = substr( $text, 0, 2000 );
-		$text .= '=' x 20;
-		$text .= "\n(continue...)";
-	}
-	try {
-		$row = Baseliner->model('Baseliner::BaliLog')->create({ id_job =>$jobid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec }); 
+    $p{data}||='';
+    my $job_exec = $self->exec;
+    my $jobid = $self->jobid;
+    my $row;
+    if( length($text) > 2000 ) {
+        # publish exceeding log to data
+        $p{data}.= '=' x 50;
+        $p{data}.= "\n$text";
+        # rewrite text message
+        $text = substr( $text, 0, 2000 );
+        $text .= '=' x 20;
+        $text .= "\n(continue...)";
+    }
+    try {
+        $row = Baseliner->model('Baseliner::BaliLog')->create({ id_job =>$jobid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec }); 
 
-		$p{data} && $row->data( compress $p{data} );  ##TODO even with compression, too much data breaks around here - use dbh directly?
-		defined $p{more} && $row->more( $p{more} );
-		$p{data_name} && $row->data_name( $p{data_name} );
-		$p{data} && $row->data_length( length( $p{data} ) );
-		$p{prefix} and $row->prefix( $p{prefix} );
-		$p{milestone} and $row->milestone( $p{milestone} );
+        $p{data} && $row->data( compress $p{data} );  ##TODO even with compression, too much data breaks around here - use dbh directly?
+        defined $p{more} && $row->more( $p{more} );
+        $p{data_name} && $row->data_name( $p{data_name} );
+        $p{data} && $row->data_length( length( $p{data} ) );
+        $p{prefix} and $row->prefix( $p{prefix} );
+        $p{milestone} and $row->milestone( $p{milestone} );
 
-		# print out too
-		Baseliner::Utils::_log_lev( 3, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );
+        # print out too
+        Baseliner::Utils::_log_lev( 3, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );
 
-		# store the current section
+        # store the current section
         ;
         $p{username} && $lev eq 'comment'
             ? $row->section( $p{username} )
             : $row->section( $self->current_section );
 
-		# store the current step
-		my $step = $row->job->step;
-		$row->step( $step ) if $step;
+        # store the current step
+        my $step = $row->job->step;
+        $row->step( $step ) if $step;
 
-		$row->update;
-		$self->last_log( $row->get_columns ) if $lev ne 'debug';
-	} catch {
-		my $err = shift;
-		_log "*** Error writing log entry: $err";
-		_log "*** Log text: $text (lev=$lev, jobid=$jobid)";
-	};
+        $row->update;
+        $self->last_log( $row->get_columns ) if $lev ne 'debug';
+    } catch {
+        my $err = shift;
+        _log "*** Error writing log entry: $err";
+        _log "*** Log text: $text (lev=$lev, jobid=$jobid)";
+    };
     return $row;
 }
 

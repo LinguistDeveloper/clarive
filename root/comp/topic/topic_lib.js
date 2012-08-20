@@ -58,7 +58,8 @@ Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'forms' },
                 {  name: 'is_release' },
                 {  name: 'is_changeset' },
-                {  name: 'fields' }
+                {  name: 'fields' },
+                {  name: 'priorities' }
             ]
         },config);
         Baseliner.Topic.StoreCategory.superclass.constructor.call(this, config);
@@ -120,8 +121,8 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'expr_response_time' },
                 {  name: 'deadline_min' },
                 {  name: 'expr_deadline' },
-                {  name: 'num_file' }                
-                
+                {  name: 'num_file' },
+                {  name: 'assignee' }
             ]
         },config);
         Baseliner.Topic.StoreList.superclass.constructor.call(this, config);

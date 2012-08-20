@@ -88,6 +88,10 @@ sub row {
 
 Allows services to execute independently afterwards
 
+    bali service.xxxx --job-continue 999 --job-exec [same|next]
+
+This special constructor is called from the Services Model.
+
 =cut
 #   TODO move this to the Jobs model?
 sub new_from_id {
@@ -481,7 +485,41 @@ sub stash {  # not just an alias
 
 sub root {
     my ($self)=@_;
-    return $self->job_stash->{root} || $self->job_stash->{path};
+    return $self->job_stash->{root} || $self->job_stash->{path} || do { 
+        require BaselinerX::Job::Service::Init;
+        BaselinerX::Job::Service::Init->new->root_path( job=>$self );
+    };
 }
+
+=head2 parse_job_vars ( $str, \%user_data )
+
+Parse a string for variables C<${variable}>, replacing it with:
+
+    1) job info 
+    2) stash data
+    3) user supplied data
+
+=cut
+sub parse_job_vars {
+    my ($self, $data, $user_vars ) = @_;
+    $user_vars ||= {};
+    my $stash = $self->job_stash->{vars} || {};
+    my $vars = {
+        job      => $self->name,
+        job_root => $self->root,
+        job_id   => $self->jobid,
+        jobid    => $self->jobid,
+        job_exec => $self->exec,
+        job_step => $self->step,
+        bl       => $self->bl,
+        # merging:
+        %$stash,
+        %$user_vars,
+    };
+
+    # substitute vars
+    Baseliner::Utils::parse_vars( $data, $vars, throw=>0 );
+}
+
 
 1;

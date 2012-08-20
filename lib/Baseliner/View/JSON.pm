@@ -8,10 +8,12 @@ sub process {
     my $self = shift;
     my ($c) = @_;
     $self->next::method(@_);
+    my $output = $c->res->output;
     if( $c->config->{'Baseliner::View::JSON'}->{decode_utf8} ) {
-        $c->res->output( Encode::decode_utf8($c->res->output) )
+        $output = Encode::decode_utf8($output)
             unless $c->stash->{no_json_decode};
     }
+    $c->res->output( $output );
 }
 
 

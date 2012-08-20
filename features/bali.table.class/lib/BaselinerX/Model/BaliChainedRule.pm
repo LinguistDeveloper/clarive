@@ -52,7 +52,7 @@ sub _build_id {
   my $model = $self->model;
   my $rs    = $model->search(undef, {select => 'id'});
   rs_hashref($rs);
-  inc reduce { $a > $b ? $a : $b } map { $_->{id} } $rs->all;
+  1 + reduce { $a > $b ? $a : $b } map { $_->{id} } $rs->all;
 }
 
 sub table { 'Baseliner::BaliChainedRule' }

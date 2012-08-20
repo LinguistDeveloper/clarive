@@ -1,0 +1,655 @@
+#project h1, h2, h3, h4, h5, h6 {font-weight:normal;color:#111;}
+#project h1 {font-size:3em;line-height:1;margin-bottom:0.5em;}
+#project h2 {font-size:2em;margin-bottom:0.75em;}
+#project h3 {font-size:1.5em;line-height:1;margin-bottom:1em;}
+#project h4 {font-size:1.2em;line-height:1.25;margin-bottom:1.25em;}
+#project h5 {font-size:1em;font-weight:bold;margin-bottom:1.5em;}
+#project h6 {font-size:1em;font-weight:bold;}
+#project h1 img, h2 img, h3 img, h4 img, h5 img, h6 img {margin:0;}
+
+#project .span-18 {width:710px;}
+#project .border {padding-right:4px;margin-right:5px;border-right:1px solid #eee;}
+#project .colborder {padding-right:24px;margin-right:25px;border-right:1px solid #eee;}
+#project .prepend-top {margin-top:1.5em;}
+#project .append-bottom {margin-bottom:1.5em;}
+#project .box {padding:1.5em;margin-bottom:1.5em;background:#E5ECF9;}
+
+#project .container {width:100%; margin:0 auto;}   /* bali full width to the right */
+#project .showgrid {background:url(src/grid.png);}
+#project .column, .span-1, .span-2, .span-3, .span-4, .span-5, .span-6, .span-7, .span-8, .span-9, .span-10, .span-11, .span-12, .span-13, .span-14, .span-15, .span-16, .span-17, .span-18, .span-19, .span-20, .span-21, .span-22, .span-23, .span-24 {float:left;margin-right:10px;}
+#project .last {margin-right:0;}
+
+
+/* A font by Jos Buivenga (exljbris) -> http://www.exljbris.nl */
+@font-face {
+  font-family: "museo sans 500";
+  src: url("/static/fonts/museo_sans_500.otf");
+}
+
+#project html {
+  height: 100%;
+  margin-bottom: 1px;
+}
+
+#project tr, td, body {
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Geneva, sans-serif;
+  font-size: 11px;
+}
+
+#project h1, h2 {
+  font-family: "museo sans 500", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+#bodyjob span {
+  font-family: "museo sans 500", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  font-size: 24px;
+}
+
+
+#project h3, h4, h5, h6 {
+  font-family: "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+#project tfoot {
+  font-style: normal;
+}
+
+#project .data-bar {
+    background-color: #33cc00;
+    height: 20px;
+}
+
+#project .data-bar-error {
+    background-color: #ff0000;
+    height: 20px;
+}
+
+#project .summary-table * {
+  height:20px;
+}
+
+/*#Estilos tabla de entornos###################################################################*/
+.summary-table-entornos {
+  /*width: 480px;*/
+}
+
+.summary-table-entornos * {
+  height: 16px;
+}
+
+.summary-table-entornos * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-entornos * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-entornos * .section-name {
+    width: 15%;
+}
+
+.summary-table-entornos * .section-description {
+    width: 70%;
+}
+
+.summary-table-entornos * .section-score {
+  width: 7%;
+}
+
+.summary-table-entornos * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-entornos * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-entornos * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-entornos * tr.last-child td {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-entornos * tr.first-child td {
+    border-top: #ccc 1px solid;
+}
+
+.summary-table-entornos * td.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-entornos * td.section-name {
+  width: 15%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.summary-table-entornos * td.section-graph {
+    width: 70%;
+}
+
+.summary-table-entornos * td.section-score {
+  width: 7%;
+  text-align: center;
+  font-size: 12px;
+}
+
+.summary-table-entornos * td.overall-score {
+  width: 15%;
+  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  text-align: center;
+  vertical-align: middle;
+  border-right: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+/*##########################################################################################*/
+
+
+/*#Estilos tabla de pases###################################################################*/
+.summary-table-pases {
+  /*width: 480px;*/
+}
+
+.summary-table-pases * {
+  height: 16px;
+}
+
+.summary-table-pases * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-pases * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-pases * .section-name {
+    width: 45%;
+}
+
+.summary-table-pases * .section-description {
+    width: 40%;
+}
+
+.summary-table-pases * .section-score {
+  width: 7%;
+}
+
+.summary-table-pases * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-pases * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-pases * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-pases * tr.last-child td {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-pases * tr.first-child td {
+    border-top: #ccc 1px solid;
+}
+
+.summary-table-pases * td.section-name {
+  width: 15%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.summary-table-pases * td.section-score {
+  width: 7%;
+  text-align: center;
+  font-size: 12px;
+}
+
+.summary-table-pases * td.overall-score {
+  width: 15%;
+  font-family: "museo sans 500", Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  text-align: center;
+  vertical-align: middle;
+  border-right: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+/*##########################################################################################*/
+
+/*#Estilos tabla de mensajes################################################################*/
+.summary-table-mensajes {
+  /*width: 500px;*/
+  margin-bottom: 9px;
+}
+
+.summary-table-mensajes * {
+  height: 16px;
+}
+
+.summary-table-mensajes * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-mensajes * .section-titulo {
+    width: 55%;
+}
+
+.summary-table-mensajes * .section-emisor {
+    width: 20%;
+}
+
+.summary-table-mensajes * .section-comentario {
+    width: 20%;
+}
+
+.summary-table-mensajes * .section-fecha {
+  width: 25%;
+}
+
+.summary-table-mensajes * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-mensajes * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-mensajes * th.last-child {
+    border-right: #ccc 1px solid;
+}
+/*##########################################################################################*/
+
+
+/*#Estilos tabla de sqa###################################################################*/
+.summary-table-sqa {
+  /*width: 500px;*/
+}
+
+.summary-table-sqa * a, .summary-table-mensajes * a {
+    color: #1E4176;
+    font-family: Tahoma;
+    text-decoration: none;
+}
+
+.summary-table-sqa * a:hover, .summary-table-mensajes * a:hover {
+    text-decoration: underline;
+}
+
+.summary-table-sqa * {
+  height: 16px;
+}
+
+.summary-table-sqa * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-sqa * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-sqa * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-sqa * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-sqa * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-sqa * tr.last-child td {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-sqa * td.section-calificacion {
+  width: 7%;
+  text-align: right;
+  font-size: 12px;
+}
+/*##########################################################################################*/
+
+
+
+/*#Dashboard_job##############################################################################*/
+/*#Estilos tabla de resumen###################################################################*/
+
+.summary-table-resumen {
+  width: 480px;
+}
+
+.summary-table-resumen * {
+  height: 16px;
+}
+
+.summary-table-resumen * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-resumen * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-resumen * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-resumen * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-resumen * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-resumen * td.encabezado {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    border-left: #ccc 1px solid;
+    border-right: #ccc 1px solid;
+    border-top: #ccc 1px solid;
+    width: 40%;
+}
+
+.summary-table-resumen * td.datos {
+    border-top: #ccc 1px solid;
+    width: 60%;
+}
+
+.summary-table-resumen * td.last-child {
+    border-bottom: #ccc 1px solid;
+}
+/*##########################################################################################*/
+
+/*#Estilos tabla de ejecución###################################################################*/
+
+.summary-table-ejecucion {
+  width: 480px;
+}
+
+.summary-table-ejecucion * {
+  height: 16px;
+}
+
+.summary-table-ejecucion * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-ejecucion * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-ejecucion * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-ejecucion * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-ejecucion * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-ejecucion * td.datos {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-ejecucion * td.last-child {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-ejecucion * td.section-paso {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    border-left: #ccc 1px solid;
+    border-right: #ccc 1px solid;
+    border-bottom: #ccc 1px solid;    
+    text-align: center;
+}
+
+/*##########################################################################################*/
+
+/*#Estilos tabla de salida###################################################################*/
+
+.summary-table-salida {
+  width: 480px;
+}
+
+.summary-table-salida * {
+  height: 16px;
+}
+
+.summary-table-salida * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-salida * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-salida * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-salida * th.first-child {
+    border-left: #ccc 1px solid;
+}
+
+.summary-table-salida * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-salida * td.datos {
+    border-bottom: #ccc 1px solid;
+    width: 85%
+}
+
+.summary-table-salida * td.link {
+    border-bottom: #ccc 1px solid;
+    width: 15%
+}
+.summary-table-salida * td.last-child {
+    border-bottom: #ccc 1px solid;
+}
+
+.summary-table-salida * td.section-paso {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    border-left: #ccc 1px solid;
+    border-right: #ccc 1px solid;
+    border-bottom: #ccc 1px solid;    
+    text-align: center;
+}
+
+/*#Estilos tabla de contenido###################################################################*/
+
+.summary-table-contenido {
+  width: 480px;
+}
+
+.summary-table-contenido * {
+  height: 16px;
+}
+
+.summary-table-contenido * th {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.summary-table-contenido * td {
+    padding: 6px;
+    line-height: 1.2em;
+}
+
+.summary-table-contenido * th {
+  border-top: #ccc 1px solid;
+  border-bottom: #ccc 1px solid;
+}
+
+.summary-table-contenido * td.first-child {
+    border-top: #ccc 1px solid;
+}
+
+.summary-table-contenido * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-contenido * th.last-child {
+    border-right: #ccc 1px solid;
+}
+
+.summary-table-contenido * td.encabezado {
+    padding: 8px;
+    line-height: 1.5em;
+    text-align: left;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    border-left: #ccc 1px solid;
+    border-right: #ccc 1px solid;
+    border-top: #ccc 1px solid;
+    width: 40%;
+}
+
+.summary-table-contenido * td.datos {
+    border-bottom: #ccc 1px solid;
+    width: 60%;
+}
+
+.summary-table-contenido * td.last-child {
+    border-bottom: #ccc 1px solid;
+}
+/*##########################################################################################*/
+
+
+/*#Estilos comentarios de las issues#########################################################*/
+
+        .comment{
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+  
+        .separacion-comment{
+            margin-top: 15px;
+            padding: 15px;
+        }        
+  
+        .rectangle-border {
+            position:relative;
+            padding:15px;
+            margin:1em 0 3em;
+            border:5px solid #ccc;
+            color:#333;
+            background:#fff;
+            /* css3 */
+            -webkit-border-radius:10px;
+            -moz-border-radius:10px;
+            border-radius:10px;
+        }
+    
+        .triangle-border {
+            position:relative;
+            padding:15px;
+            margin:1em 0 3em;
+            border:2px solid #ccc;
+            color:#333;
+            background:#fff;
+            /* css3 */
+            -webkit-border-radius:10px;
+            -moz-border-radius:10px;
+            border-radius:10px;
+        }
+        
+        .triangle-border:before {
+            content:"";
+            position:absolute;
+            bottom:-16px; /* value = - border-top-width - border-bottom-width */
+            left:45px; /* controls horizontal position */
+            border-width:15px 15px 0;
+            border-style:solid;
+            border-color:#ccc transparent;
+            /* reduce the damage in FF3.0 */
+            display:block;
+            width:0;
+        }
+    
+    
+        /* creates the smaller  triangle */
+        .triangle-border:after {
+            content:"";
+            position:absolute;
+            bottom:-13px; /* value = - border-top-width - border-bottom-width */
+            left:47px; /* value = (:before left) + (:before border-left) - (:after border-left) */
+            border-width:13px 13px 0;
+            border-style:solid;
+            border-color:#fff transparent;
+            /* reduce the damage in FF3.0 */
+            display:block; 
+            width:0;
+        }    
+
+/*##########################################################################################*/

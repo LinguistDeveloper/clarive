@@ -1,4 +1,4 @@
-package BaselinerX::Job::Service::Purge;
+﻿package BaselinerX::Job::Service::Purge;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Path::Class;

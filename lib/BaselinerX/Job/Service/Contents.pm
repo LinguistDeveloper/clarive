@@ -1,4 +1,4 @@
-package BaselinerX::Job::Service::Contents;
+﻿package BaselinerX::Job::Service::Contents;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Carp;

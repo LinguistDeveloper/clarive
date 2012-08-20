@@ -92,7 +92,7 @@ __PACKAGE__->table("bali_sqa");
 
 __PACKAGE__->add_columns(
   "id",
-  { is_auto_increment => 1, is_nullable => 0, sequence => "bali_sqa_seq" },
+  { data_type => 'number', is_auto_increment => 1, is_nullable => 0, sequence => "bali_sqa_seq" },
   "ns",
   { data_type => "varchar2", is_nullable => 1, size => 1024 },
   "bl",
@@ -151,6 +151,6 @@ __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to(
   "project",
   "Baseliner::Schema::Baseliner::Result::BaliProject",
-  { id => "id_prj" },
+  { mid => "id_prj" },
 );
 1;

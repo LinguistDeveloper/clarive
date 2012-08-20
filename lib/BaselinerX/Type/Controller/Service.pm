@@ -2,13 +2,19 @@ package BaselinerX::Type::Controller::Service;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
-use Capture::Tiny qw/capture capture_merged/;
 BEGIN { extends 'Catalyst::Controller' };
 use utf8;
 
 sub begin : Private {
     my ($self,$c)=@_;
-    $c->stash->{auth_skip} = 1;
+    my $api_key = $ENV{BASELINER_API_KEY};
+    if( defined $api_key ) {
+        if( $c->req->params->{api_key} eq $api_key ) {
+            $c->stash->{auth_skip} = 1;
+        }
+    } else {
+        $c->stash->{auth_skip} = 1;
+    }
 }
 
 sub list_services : Path('/admin/type/service/list_services') {
@@ -19,40 +25,53 @@ sub list_services : Path('/admin/type/service/list_services') {
 sub rest : Local {
     my ($self,$c)=@_;
     my $p = $c->req->parameters;
-    _debug "=== Iniciando Servicio $p->{service}";
-    _debug _dump $p;
+    _log "=== Starting Service $p->{service}";
+    _log _dump $p;
 
     my $quiet_mode = exists $p->{quiet_mode};
 
     # create a temporary logger
-    local Baseliner->app->{_thrower} = sub { 
+    local $Baseliner::_thrower = sub { 
         die @_,"\n";
     } if $quiet_mode;
-    local Baseliner->app->{_logger} = sub { 
+    local $Baseliner::_logger = sub { 
         my ($cl,$li,$fi,@msg) = @_;
         print STDERR @msg, "\n";
     } if $quiet_mode;
 
 
     # run the service, capturing output
-    my ($output,$stderr);
-    $output= capture_merged {
+    my ($output ,$stderr, $stdout);
+    #open(my $olderr, ">&STDERR") ;
+    #open(my $oldout, ">&STDOUT") ;
+    #close STDOUT;
+    #close STDERR;
+    #open(STDOUT, ">>", $tf) or die "Can't open STDOUT: $!";
+    #open(STDERR, ">>", $tf) or die "Can't open STDERR: $!";
+    
+    #$output= capture_merged {
+    use IO::CaptureOutput;
+    IO::CaptureOutput::capture( sub {
+    require Baseliner::Core::Logger::Quiet;
+    my $logger = Baseliner::Core::Logger::Quiet->new;
         try {
-            my $logger;
-                $logger = Baseliner->model('Services')->launch(
+        Baseliner->model('Services')->launch(
                     $p->{service},
-                    logger_class => 'Baseliner::Core::Logger::Quiet',
+                    logger       => $logger,
                     quiet        => 1,
                     data         => $p
                 );
             $c->stash->{json} = { msg=>$logger->msg, rc=>$logger->rc };
         } catch {
             my $err = shift;
-            my $str = "$err";
-            $c->stash->{json} = { msg=>$str, rc=>255 };
+        $c->stash->{json} = { msg=>$logger->msg . "\n$err", rc=>255 };
         };
-    };
-    print STDERR $output;
+    }, \$output, \$output );
+    #};
+    #$output = $stdout . $stderr;
+    #open(STDOUT, ">&", $oldout);
+    #open(STDERR, ">&", $olderr);
+
     utf8::downgrade( $output );
     $c->stash->{json}->{output} = $output;
     $c->forward('View::JSON');

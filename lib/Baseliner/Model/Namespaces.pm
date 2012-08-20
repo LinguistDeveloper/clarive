@@ -2,6 +2,7 @@ package Baseliner::Model::Namespaces;
 use Moose;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Baseliner::Core::Registry;
 use Baseliner::Core::NamespaceCollection;
 use Try::Tiny;
@@ -82,9 +83,12 @@ sub providers {
     my $isa_type = $p->{isa_type} || defined $p->{isa_all} ? 'all' : 'any';
     my $isa_check = scalar @isa_list;
 
+    # exclusion list
+    my $disabled_providers = +{ map { $_ => 1 } _array config_value('provider.disabled_class') };
+
     # list all providers
     my @providers = packages_that_do( 'Baseliner::Role::Provider' );
-    foreach my $provider ( @providers ) {
+    foreach my $provider ( grep { ! exists $disabled_providers->{$_} } @providers ) {
         my ($found_does, $found_does_not, $found_isa);
 
         # isa
@@ -153,7 +157,9 @@ sub list {
     foreach my $provider ( @providers ) {
         $self->{provider_factory}->{$provider} ||= $provider->new;
         my $instance = $self->{provider_factory}->{$provider};
+        _debug "START LIST for $provider";
         my $ns_list = $instance->list( Baseliner->app, $p );
+        _debug "END LIST for $provider";
         if( ref $ns_list eq 'HASH' ) {
             push @ns, _array $ns_list->{data};
             $total += $ns_list->{total} || $ns_list->{count};
@@ -164,7 +170,7 @@ sub list {
             $count += scalar @ns;
         }
     }
-    _log "----------------TOTAL: $total\n";
+    _debug "----------------TOTAL: $total\n";
     return wantarray
         ? @ns
          : Baseliner::Core::NamespaceCollection->new({ data=>\@ns, total=>$total, count=>scalar(@ns) });

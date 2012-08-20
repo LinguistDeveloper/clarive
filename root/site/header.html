@@ -1,7 +1,12 @@
 <%args>
-    $show_main => 0
-    $show_portal => 1
-    $show_menu => 1
+    $show_main => $c->config->{site}{show_main} // 0
+    $show_search => $c->config->{site}{show_search} // 1
+    $show_calendar => $c->config->{site}{show_calendar} // 1
+    $show_portal => $c->config->{site}{show_portal} // 0
+    $show_dashboard => $c->config->{site}{show_dashboard} // 1
+    $show_menu => $c->config->{site}{show_menu} // 1
+    $show_lifecycle => $c->config->{site}{show_lifecycle} // 1
+    $show_js_reload => 0
 </%args>
 
 <%perl>
@@ -18,10 +23,50 @@
     <& '/site/top.html' &>
     <script type="text/javascript" src="/site/tablegrid.js"></script>
     <script type="text/javascript" src="/site/tabfu.js"></script>
+    <script type="text/javascript" src="/site/help.js"></script>
     <script type="text/javascript" src="/site/runner.js"></script>
+    <script type="text/javascript" src="/comp/topic/topic_lib.js"></script>
+    <script type="text/javascript" src="/comp/lib/main.js"></script>
     <script type="text/javascript" src="/site/panelresizer.js"></script>
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
-    <script type="text/javascript" src="/i18n/js"></script>
+
+    <!-- Flot -->
+    <script src="/static/flot/excanvas.min.js"></script>
+    <script src="/static/flot/jquery.flot.js"></script>
+    <script src="/static/flot/jquery.flot.pie.js"></script>
+    <script src="/static/flot/jquery.flot.orderBars.js"></script>
+    <script src="/static/flot/jquery.flot.resize.js"></script>
+    <script src="/static/flot/flot.js"></script>
+
+
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
+    <link rel="stylesheet" href="/static/codemirror/theme/elegant.css">
+    <link rel="stylesheet" href="/static/codemirror/theme/night.css">
+    <link rel="stylesheet" href="/static/codemirror/theme/eclipse.css">
+    <link rel="stylesheet" href="/static/codemirror/theme/lesser-dark.css">
+    <link rel="stylesheet" href="/static/codemirror/lib/util/simple-hint.css">
+    <script type="text/javascript" src="/static/codemirror/lib/codemirror.js"></script>
+    <script type="text/javascript" src="/static/codemirror/lib/util/simple-hint.js"></script>
+    <script type="text/javascript" src="/static/codemirror/mode/perl/perl.js"></script>
+    <script type="text/javascript" src="/static/codemirror/mode/javascript/javascript.js"></script>
+    <style type="text/css">.CodeMirror {border: 1px solid #eee;} .CodeMirror-scroll { height: 100% }
+        .CodeMirror-fullscreen {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            margin: 0;
+            padding: 0;
+            border: 0px solid #BBBBBB;
+            opacity: 1;
+        }
+    </style>
+
+    <script type="text/javascript" src="/site/lifecycle.js"></script>
 
     <!-- Portal Stuff -->
     <script type="text/javascript" src="/site/portal/Portal.js"></script>
@@ -30,15 +75,40 @@
     <script type="text/javascript" src="/site/portal/PortalUtil.js"></script>
     <link rel="stylesheet" type="text/css" href="/site/portal/portal.css" />
     <link rel="stylesheet" type="text/css" href="/site/portal/sample.css" />
-
+    
     <link rel="stylesheet" type="text/css" href="/static/livegrid/resources/css/ext-ux-livegrid.css" /> 
 
+    <!-- uploader drag-drop -->
+    <script type="text/javascript" src="/static/valums/fileuploader.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/valums/fileuploader.css" />
     <!-- superbox -->
     <script type="text/javascript" src="/static/superbox/superbox.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/superbox/superbox.css" /> 
 
     <!-- model depends on superbox -->
     <script type="text/javascript" src="/site/model.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/site/960-Grid-System/code/css/960_24_col.css" />
+    <!-- Twitter Bootstrap
+    <link rel="stylesheet/less" type="text/css" href="/site/bootstrap.less" />
+    <script type="text/javascript" src="/site/less.js"></script>
+    -->
+    <!--<link rel="stylesheet/less" type="text/css" href="/site/960-Grid-System/code/css/reset.css" />-->
+    <!--<link rel="stylesheet/less" type="text/css" href="/site/960-Grid-System/code/css/text.css" />-->
+    <!-- link rel="stylesheet" type="text/css" href="/site/960-Grid-System/code/css/demo.css" / -->
+    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="/site/boot.css" /> 
+    <!-- #reset namespace
+    <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
+    -->
+    
+    <!-- Cal -->
+    <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.css' />
+    <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.print.css' media='print' />
+    <script type='text/javascript' src='/static/fullcalendar/fullcalendar.min.js'></script>
+    
+    <!-- final css override -->
+    <link rel="stylesheet" type="text/css" href="/static/final.css" />
 
     <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
@@ -55,25 +125,65 @@ Ext.onReady(function(){
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
     Baseliner.help_menu = new Ext.menu.Menu({});
     Baseliner.help_button = new Ext.Button({
-       icon: '/static/images/icons/lightbulb_off.png',
-       cls: 'x-btn-text-icon',
+       icon: '/static/images/icons/lightbulb_off.gif',
+       cls: 'x-btn-icon',
+       hidden: true,
        menu: Baseliner.help_menu
     });
+    var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
+    search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
+    search_box.on('keydown', function(f, e){ search_box.setSize( 300 ); });
+    search_box.on('specialkey', function(f, e){
+        if(e.getKey() == e.ENTER){
+            Baseliner.add_tabcomp('/comp/search_results.js', undefined,
+                { query: search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+            search_box.setSize( 120 );
+        }
+    });
+    Baseliner.toggleCalendar = function(){
+        var bc = Baseliner.calpanel;
+        //if( bc.collapsed ) bc.toggleCollapse()
+        if( bc.isVisible() ) {
+            bc.hide();
+        } else {
+            bc.show();
+            //bc.expand();
+        }
+        Baseliner.viewport.doLayout();
+    };
+    Baseliner.tabCalendar = function(){
+        var tabpanel = Baseliner.tabpanel();
+        var cal = new Baseliner.Calendar({
+            fullCalendarConfig: { timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' } }
+        });
+        var tab = tabpanel.add( cal );
+        tabpanel.setActiveTab( tab );
+        tabpanel.changeTabIcon( tab, '/static/images/icons/calendar.png' );
+        tab.setTitle( '&nbsp;' );
+    };
     Baseliner.help_button.on('click', Baseliner.help_off );
     var tb = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
-        height: 45,
-        //height: 34,
+        //height: 26,
+        height: <% $c->config->{toolbar_height} // 26 %>,
         items: [
             '<img src="/static<% $c->stash->{theme_dir} %>/images/<% $c->config->{logo_filename} || 'logo.jpg' %>" style="border:0px;"/>',
             '-',
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
             ,
             '->',
+% if( $show_search ) {
+            search_box,
+% }
             Baseliner.help_button,
-//          '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
-//          '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'hand\'" />',
+% if( $show_js_reload ) {
+            '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload()" onmouseover="this.style.cursor=\'pointer\'" />',
+% }
+% if( $show_calendar ) {
+            '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />',
+% }
+            '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '-', 
             <%perl>
@@ -88,7 +198,10 @@ Ext.onReady(function(){
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
                          { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
                     ];
-                    $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/users.gif' } );
+                    if($user ne 'root'){
+                     $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
+                    }
+                    $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/icons/users.gif' } );
                     print js_dumper { text=>$c->username , menu=> [
             sort {
                 $a->{index}||=0;
@@ -101,10 +214,30 @@ Ext.onReady(function(){
             </%perl>
         ]
     });
-    var viewport = new Ext.Viewport({
+
+    var icon_home = '/static/images/icons/home.gif';
+
+    Baseliner.calpanel = new Baseliner.Calendar({
+        region: 'south',
+        split: true,
+        //collapsible: true,
+        //collapsed: true,
+        hidden: true,
+        height: 300,
+        tbar_end: [ '->', { xtype:'button', text:'#', handler:function(){ Baseliner.tabCalendar() } } ],
+        fullCalendarConfig: {
+            events: Baseliner.calendar_events,
+            timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
+        }
+    });
+
+    var lifecycle = Baseliner.lifecycle;
+% unless( $show_lifecycle ) {
+
+    lifecycle.hide();
+% }
+    Baseliner.main = new Ext.Panel({
         layout: 'border',
-        id: 'main-view',
-        renderTo: Ext.getBody(),
         items: [
 % if( $c->stash->{site_raw} ) {
             new Ext.TabPanel({ 
@@ -119,21 +252,49 @@ Ext.onReady(function(){
             })
 % } else {
             tb,
+            lifecycle,
+%   if( $show_calendar ) {
+            Baseliner.calpanel,
+%   }
             new Ext.TabPanel({  region: 'center', id:'main-panel',
                 defaults: { closable: true, autoScroll: true }, 
                 enableTabScroll: true,
                 layoutOnTabChange: true,
                 activeTab: 0, 
-                items: 
+                items: [
 % if( $show_main eq '1' ) {
-                [ {title:_loc('Main'), closable: false, autoLoad: '/site/main.html', scripts: true, cls: 'tab-style' } ]
+                {title:_loc('Main'), closable: false, autoLoad: '/site/main.html', scripts: true, cls: 'tab-style' }
 % } elsif( $show_portal ) {
-                [ { xtype: 'panel', title:_loc('Portal'), layout: 'border', closable: false, items: Baseliner.portal } ]
-% } else { print 'null' } 
+                { xtype: 'panel', title:_loc('Portal'), layout: 'border', closable: false, items: Baseliner.portal }
+% } else { print '' } 
+
+% if( $show_dashboard ) {
+%    $show_portal and print ',';
+                //{title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style', tab_icon: icon_home }
+                {title:_loc('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' }
+% }
+            ]
             })
 % } # site_raw
         ]
     });
+    Baseliner.viewport = new Ext.Viewport({
+        layout: 'card',
+        activeItem: 0,
+        id: 'main-view',
+        //renderTo: Ext.getBody(),
+        renderTo: 'main-div',
+        items: [ Baseliner.main ]
+    });
+
+    var tabpanel = Ext.getCmp('main-panel');
+    var first_comp = tabpanel.getComponent( 0 );
+    if( first_comp != undefined ) {
+        if( first_comp.tab_icon ) 
+            tabpanel.changeTabIcon( first_comp, first_comp.tab_icon );
+        else
+            tabpanel.changeTabIcon( first_comp, icon_home );
+    }
 
 % if( $show_portal eq '1' ) {
     //viewport.on('show', function(){
@@ -179,6 +340,20 @@ Ext.onReady(function(){
     tabpanel.header.hide();
 % }
        
+    // global key captures
+    /* 
+    window.history.forward(1);
+    document.onkeydown = function disableKeys(evt) {
+        evt = (evt) ? evt : ((event) ? event : null);
+        if( evt ) {
+            try {
+                var k = evt.keyCode;
+                return Baseliner.eventKey( k );
+            } catch(e){}
+        }
+    };  
+    */
+       
 });
         
  setTimeout(function(){
@@ -189,7 +364,7 @@ Ext.onReady(function(){
  }, 2050);
 
     if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
-        window.onbeforeunload=  function(){ return '' };
+        window.onbeforeunload=  function(){ if( Baseliner.is_in_edit() ) return '' };
     }
 </script>
 

@@ -67,18 +67,13 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
     size => 100,
   },
+  "id_project",
+  {
+    data_type => "number",
+    is_nullable => 1,
+  },
 );
 __PACKAGE__->set_primary_key("ns", "id_role", "username");
-
-=head1 RELATIONS
-
-=head2 id_role
-
-Type: belongs_to
-
-Related object: L<Baseliner::Schema::Baseliner::Result::BaliRole>
-
-=cut
 
 __PACKAGE__->belongs_to(
   "id_role",
@@ -87,11 +82,6 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-10-29 18:11:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:R2y7zHGrCVJHb04vDS2CHA
-
-
-# You can replace this text with custom content, and it will be preserved on regeneration
 __PACKAGE__->belongs_to(
   "role",
   "Baseliner::Schema::Baseliner::Result::BaliRole",
@@ -112,6 +102,12 @@ __PACKAGE__->has_many(
       { 'foreign.bl' => "actions.bl" },
       { 'foreign.action' => "actions.action" },
   ]
+);
+
+__PACKAGE__->belongs_to(
+  "projects",
+  "Baseliner::Schema::Baseliner::Result::BaliProject",
+  { mid => 'id_project' },
 );
 
 __PACKAGE__->has_one(

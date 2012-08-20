@@ -5,7 +5,6 @@ use MooseX::ClassAttribute;
 use Moose::Exporter;
 use Try::Tiny;
 use Carp;
-use YAML;
 use Baseliner::Utils;
 
 Moose::Exporter->setup_import_methods();
@@ -59,6 +58,7 @@ sub _registrar {
 sub add {
     my ($self, $pkg, $key, $param)=@_;
     my $reg = $self->registrar;
+    $param //= {};
     if( ref $param eq 'HASH' ) {
         $param->{key}=$key unless($param->{key});
         $param->{short_name} = $key; 
@@ -173,8 +173,7 @@ sub dir {
 }
 
 sub dump_yaml {
-    use YAML;
-    Dump( shift->registrar );
+    _dump( shift->registrar );
 }
 
 sub load_enabled_list {
@@ -209,10 +208,8 @@ Search for registered objs with matching attributes
 Configuration:
 
     <registry>
-        <disabled_keys>
-              menu.admin.users
-              menu.admin.files
-        </disabled_keys>
+        disabled_key menu.admin.users
+        disabled_key menu.admin.files
     </registry>
 
 =cut
@@ -226,7 +223,8 @@ sub search_for_node {
     my $key_prefix = delete $query{key} || '';
     my $q_depth = delete $query{depth};
     my $allowed_actions = delete $query{allowed_actions};
-    my $disabled_keys = Baseliner->config->{registry}->{disabled_keys} if $check_enabled; 
+    my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
+    $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
     my @allowed;
     foreach my $action ( _array $allowed_actions ) {

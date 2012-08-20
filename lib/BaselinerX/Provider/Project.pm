@@ -55,10 +55,10 @@ sub list {
     my @ns;
     while( my $r = $rs->next ) {
             push @ns, BaselinerX::Namespace::Project->new({
-                ns      => 'project/' . $r->id,
+                ns      => 'project/' . $r->mid,
                 ns_name => $r->name,
                 ns_type => _loc('Project'),
-                ns_id   => $r->id,
+                ns_id   => $r->mid,
                 ns_data => { $r->get_columns },
                 provider=> 'namespace.project',
                 related => [  ],

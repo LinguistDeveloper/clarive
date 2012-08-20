@@ -99,14 +99,14 @@ sub run_once {
 			    	my $row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->search( { name => uc($project), nature => $nature }	)->first;
 	        		
 	        		if ( !$row_subprojectnature ) {
-	        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($project), nature => { '=' => undef }, id_parent => $row_project->id }	)->first;
+	        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($project), nature => { '=' => undef }, id_parent => $row_project->mid }	)->first;
 	        			
 	        			if ( !$row_subproject ) {
-	        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($project), id_parent => $row_project->id } );
+	        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($project), id_parent => $row_project->mid } );
 	        				_log "Created Subproject ".lc($project);
 	        			}
 	        			
-	        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => uc($project), id_parent => $row_subproject->id, nature => $nature } );
+	        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => uc($project), id_parent => $row_subproject->mid, nature => $nature } );
 	        			_log "Created Subproject ".$nature."/".uc($project);
 	        		}
 			    }
@@ -152,20 +152,20 @@ sub run_once {
 			        		my $already_exists = 0;
 			        		my $row_subprojectnature;
 			        		while ( $row_subprojectnature = $rs_subnat->next ) {
-			        			if ( $row_subprojectnature->parent && $row_subprojectnature->parent->parent && $row_subprojectnature->parent->parent->id eq $row_project->id ) {
+			        			if ( $row_subprojectnature->parent && $row_subprojectnature->parent->parent && $row_subprojectnature->parent->parent->mid eq $row_project->mid ) {
 			        				$already_exists = 1;
 			        			}
 			        		}
 			        		if ( !$already_exists ) {
 
-			        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($subproject), nature => { '=' => undef }, id_parent => $row_project->id }	)->first;
+			        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($subproject), nature => { '=' => undef }, id_parent => $row_project->mid }	)->first;
 			        			
 			        			if ( !$row_subproject ) {
-			        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($subproject), id_parent => $row_project->id } );
+			        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($subproject), id_parent => $row_project->mid } );
 			        				_log "Created Subproject ".lc($subproject);
 			        			}
 			        			
-			        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => $subproject, id_parent => $row_subproject->id, nature => $nature } );
+			        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => $subproject, id_parent => $row_subproject->mid, nature => $nature } );
 			        			_log "Created Subproject ".$nature."/".$subproject;
 			        		}
 						}			    		
@@ -181,14 +181,14 @@ sub run_once {
 #	        		my $row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->search( { name => $subproject, nature => '.NET' }	)->first;
 #	        		
 #	        		if ( !$row_subprojectnature ) {
-#	        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($subproject), nature => { '=' => undef }, id_parent => $row_project->id }	)->first;
+#	        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($subproject), nature => { '=' => undef }, id_parent => $row_project->mid }	)->first;
 #	        			
 #	        			if ( !$row_subproject ) {
-#	        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($subproject), id_parent => $row_project->id } );
+#	        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($subproject), id_parent => $row_project->mid } );
 #	        				_log "Created Subproject ".lc($subproject);
 #	        			}
 #	        			
-#	        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => $subproject, id_parent => $row_subproject->id, nature => '.NET' } );
+#	        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => $subproject, id_parent => $row_subproject->mid, nature => '.NET' } );
 #	        			_log "Created Subproject ".lc($subproject). " with nature .NET";
 #	        		}
 #	            }
@@ -201,7 +201,7 @@ sub run_once {
 	        		my $already_exists = 0;
 	        		my $row_subprojectnature;
 	        		while ( $row_subprojectnature = $rs_subnat->next ) {
-	        			if ( $row_subprojectnature->parent && $row_subprojectnature->parent->parent && $row_subprojectnature->parent->parent->id eq $row_project->id ) {
+	        			if ( $row_subprojectnature->parent && $row_subprojectnature->parent->parent && $row_subprojectnature->parent->parent->mid eq $row_project->mid ) {
 	        				$already_exists = 1;
 	        			}
 	        		}
@@ -217,14 +217,14 @@ sub run_once {
 					    my @datos = $db->array_hash("$SQL");
 	
 						if ( @datos ) {	
-		        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($subproject), nature => { '=' => undef }, id_parent => $row_project->id }	)->first;
+		        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($subproject), nature => { '=' => undef }, id_parent => $row_project->mid }	)->first;
 		        			
 		        			if ( !$row_subproject ) {
-		        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($subproject), id_parent => $row_project->id } );
+		        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($subproject), id_parent => $row_project->mid } );
 		        				_log "Created Subproject ".lc($subproject);
 		        			}
 		        			
-		        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => $subproject, id_parent => $row_subproject->id, nature => 'J2EE' } );
+		        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => $subproject, id_parent => $row_subproject->mid, nature => 'J2EE' } );
 		        			_log "Created Subproject J2EE/".lc($subproject);
 		        		
 						} else {

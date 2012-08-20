@@ -18,6 +18,7 @@
     $release => ''
     $release_row => {}
     $topics
+    $parents_topics
     $projects
     $revisions
     $labels
@@ -196,7 +197,7 @@ padding: 2px 4px 2px 7px;
 %}              
 
 %if( _array($dates) || ( ($show_projects || $show_assign_to || $show_topics || $show_files)
-%       && ( _array($projects) || _array( $users ) || _array( $files ) || _array( $topics ) ) ) ) {                    
+%       && ( _array($projects) || _array( $users ) || _array( $files ) || _array( $topics ) || _array( $parents_topics ) ) ) ) {                    
               <tr>
                 <td colspan="2">
 %if( $show_projects ){                    
@@ -266,8 +267,10 @@ padding: 2px 4px 2px 7px;
 % foreach my $date ( _array( $dates ) ) {
 %  my $s = $date->{start_date};
 %  $s =~ s{00:00:00}{}g;
+%  my $e = $date->{end_date};
+%  $e =~ s{00:00:00}{}g;
                       <li style="margin: 6px 0px 6px 0px">
-                          <% $s %>
+                          <% $s."-".$e %>
                       </li>
 % }
                     </ul>
@@ -281,16 +284,47 @@ padding: 2px 4px 2px 7px;
                       </li>
                     </ul>
                     <ul class="" style="margin-left: 20px">
-                      <li class="">
 % foreach my $topic ( _array( $topics ) ) {
-                      <li style="margin: 6px 0px 6px 0px">
+        
+                      <li style="margin: 6px 0px 6px 0px;">
                           <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
                             style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
-                            &nbsp;&nbsp;<b><% $topic->{title} %></b>
+% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
+                            &nbsp;&nbsp;<b><% $topic->{title} %></b>&nbsp;&nbsp;
+% if($topic->{progress}){                            
+                            <span class="badge badge-<%$cls%>"><%$topic->{progress}%>%</span>
+%}
                       </li>
 % }
                     </ul>
 % }
+
+% if( _array( $parents_topics ) ) {
+                    <ul class="nav nav-list">
+                      <li class="nav-header">
+                        <% _loc("Include into") %>
+                      </li>
+                    </ul>
+                    <ul class="" style="margin-left: 20px">
+                      <li class="">
+% foreach my $topic ( _array( $parents_topics ) ) {
+                      <li style="margin: 6px 0px 6px 0px">
+                          <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
+                            style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
+% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
+                            &nbsp;&nbsp;<b><% $topic->{title} %></b>&nbsp;&nbsp;
+% if($topic->{progress}){
+                            <span class="badge badge-<%$cls%>"><%$topic->{progress}%>%</span>
+%}
+                      </li>
+% }
+                    </ul>
+% }
+
+
+
+
+
 % }
 
 

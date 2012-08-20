@@ -45,7 +45,7 @@ sub init {
 
   _log "Inserting new projects...";
   my @added_projects;
-  for my $cam (sort @{unique map { substr($_, 0, 3) } keys %{$config->{groups}}}) {
+  for my $cam (sort @{_unique map { substr($_, 0, 3) } keys %{$config->{groups}}}) {
     unless ($self->exists_project($cam)) {
       $self->insert_project($cam) unless $self->exists_project($cam);
       push @added_projects, $cam;

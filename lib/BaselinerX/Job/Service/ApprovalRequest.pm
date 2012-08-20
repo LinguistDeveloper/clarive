@@ -1,4 +1,4 @@
-package BaselinerX::Job::Service::ApprovalRequest;
+﻿package BaselinerX::Job::Service::ApprovalRequest;
 =head1 DESCRIPTION
 
 This is a service designed to be chained in PRE, that checks if a job needs approval before running in RUN.

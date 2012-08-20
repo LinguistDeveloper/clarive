@@ -33,7 +33,7 @@ register 'service.job.footprint' => {
 
 
            my %MODIFICADOS;
-        my @FOUND = `find '$path' -name "*" -type f -exec grep -l '\' {} \\;`;
+        my @FOUND = `find '$path' -name "*" -type f -exec grep -l '\@(#)' {} \\;`;
         if( $? ne 0 ) {
             $log->warn("Footprinting ha fallado. Compruebe el log del Dispatcher para ver los errores.");
             return;
@@ -85,21 +85,21 @@ register 'service.job.footprint' => {
                     open FP,"<$filename";
                     while(<FP>) {
                         if( /\@\(\#\)/ ) {
-	                        if( !$MODIFICADOS{ $filename} ) {
-		                        $MODIFICADOS{ $filename } = "1";
-	                        }
+                            if( !$MODIFICADOS{ $filename} ) {
+                                $MODIFICADOS{ $filename } = "1";
+                            }
 
-	                        s/\@\(\#\)//g;
-	                        s/\[state\s*\]/$elto_state/gi;
-	                        s/\[project\s*\]/$EnvironmentName/gi if($EnvironmentName);
-	                        s/\[item\s*\]/$elto_name/gi;
-	                        s/\[version\s*\]/$elto_version/gi;
-	                        s/\[viewpath\s*\]/$elto_path/gi;
-	                        s/\[package\s*\]/$elto_package/gi;
-	                        s/\[user\s*\]/$elto_user/gi;
-	                        s/\[date\s*\]/$elto_date/gi;
-	                        s/\[pase\s*\]/$elto_pase/gi;
-	                        s/\[pasefechahora\s*\]/$pase_date/gi;
+                            s/\@\(\#\)//g;
+                            s/\[state\s*\]/$elto_state/gi;
+                            s/\[project\s*\]/$EnvironmentName/gi if($EnvironmentName);
+                            s/\[item\s*\]/$elto_name/gi;
+                            s/\[version\s*\]/$elto_version/gi;
+                            s/\[viewpath\s*\]/$elto_path/gi;
+                            s/\[package\s*\]/$elto_package/gi;
+                            s/\[user\s*\]/$elto_user/gi;
+                            s/\[date\s*\]/$elto_date/gi;
+                            s/\[pase\s*\]/$elto_pase/gi;
+                            s/\[pasefechahora\s*\]/$pase_date/gi;
                         }
                         $newdata .= $_;
                     }

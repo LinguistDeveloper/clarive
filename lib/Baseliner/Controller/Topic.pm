@@ -227,7 +227,7 @@ sub list : Local {
     }
     rs_hashref( $rs );
     my @mids = map { $_->{topic_mid} } $rs->all;
-    my $rs_sub = $rs->search(undef, { select=>'topic_mid'});
+    my $rs_sub = $rs->search(undef, { select=>'topic_mid', distinct=>1});
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
@@ -236,20 +236,23 @@ sub list : Local {
     my %id_label;
     my %projects;
     my %projects_report;
+    my %assignee;
     my %mid_data;
     for (@mid_data) {
-        $mid_data{ $_->{topic_mid} } = $_ unless exists $mid_data{ $_->{topic_mid} };
-        $mid_data{ $_->{topic_mid} }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
+        my $mid = $_->{topic_mid};
+        $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
+        $mid_data{ $mid }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
         $_->{label_id}
-            ? $id_label{ $_->{topic_mid} }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
-            : $id_label{ $_->{topic_mid} } = {};
+            ? $id_label{ $mid }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
+            : $id_label{ $mid } = {};
         if( $_->{project_id} ) {
-            $projects{ $_->{topic_mid} }{ $_->{project_id} . ";" . $_->{project_name} } = ();
-            $projects_report{ $_->{topic_mid} }{ $_->{project_name} } = ();
+            $projects{ $mid }{ $_->{project_id} . ";" . $_->{project_name} } = ();
+            $projects_report{ $mid }{ $_->{project_name} } = ();
         } else {
-            $projects{ $_->{topic_mid} } = {};
-            $projects_report{ $_->{topic_mid} } = {};
+            $projects{ $mid } = {};
+            $projects_report{ $mid } = {};
         }
+        $assignee{ $mid }{ $_->{assignee} } = () if defined $_->{assignee};
     }
     for my $mid (@mids) {
         my $data = $mid_data{$mid};
@@ -264,6 +267,7 @@ sub list : Local {
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
             labels   => [ keys %{ $id_label{$mid} || {} } ],
             projects => [ keys %{ $projects{$mid} || {} } ],
+            assignee => [ keys %{ $assignee{$mid} || {} } ],
             report_data => {
                 projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
             },
@@ -283,7 +287,12 @@ sub update : Local {
     
     try  {    
         my ($msg, $topic_mid, $status) = Baseliner::Model::Topic->update( $p );
-        $c->stash->{json} = { success => \1, msg=>_loc($msg), topic_mid => $topic_mid, topic_status => $status };
+        $c->stash->{json} = {
+            success      => \1,
+            msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
+            topic_mid    => $topic_mid,
+            topic_status => $status
+        };
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
@@ -454,6 +463,14 @@ sub view : Local {
         my @topics = $rs_rel_topic->all;
         @topics = $c->model('Topic')->append_category( @topics );
         $c->stash->{topics} = @topics ? \@topics : []; 
+
+        #topics_parents
+        my @parents_topics = $c->model('Baseliner::BaliTopic')->search(
+                                { rel_type=>'topic_topic', to_mid=>$topic_mid },
+                                { join=>['categories','children','master'], select=>['mid','title', 'progress', 'categories.name', 'categories.color'], as=>['mid','title','progress','name','color'] }
+                                )->hashref->all;
+        @parents_topics = $c->model('Topic')->append_category( @parents_topics );
+        $c->stash->{parents_topics} = @parents_topics ? \@parents_topics : []; 
 
         # dates
         my @dates = $c->model('Baseliner::BaliMasterCal')->search({ mid=> $topic_mid })->hashref->all;
@@ -652,7 +669,10 @@ sub list_category : Local {
                 my $type = $r->is_changeset ? 'C' : $r->is_release ? 'R' : 'N';
                 
                 my @fields = map { $_->id_field } 
-                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $r->id}, {order_by=> {'-asc'=> 'id_field'}} )->all;        
+                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $r->id}, {order_by=> {'-asc'=> 'id_field'}} )->all;
+                    
+                my @priorities = map { $_->id_priority } 
+                    $c->model('Baseliner::BaliTopicCategoriesPriority')->search( {id_category => $r->id, is_active=>1}, {order_by=> {'-asc'=> 'id_priority'}} )->all;
 
                 my $forms = $self->form_build( $r->forms );
                 
@@ -668,7 +688,8 @@ sub list_category : Local {
                     is_changeset  => $r->is_changeset,
                     description   => $r->description,
                     statuses      => \@statuses,
-                    fields        => \@fields
+                    fields        => \@fields,
+                    priorities    => \@priorities
                 };
             }  
         }

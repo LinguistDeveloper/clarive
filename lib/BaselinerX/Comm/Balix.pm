@@ -206,7 +206,7 @@ sub create {
 }
 
 sub key {
-    my ($self,$key) = @_;	
+    my ($self,$key) = @_;   
     $self->{key} = $key;
 }
 
@@ -232,7 +232,7 @@ sub checkRC {
         $rc = $1;
         $ret =~ s/[\n]*HARAXE=([0-9]*)//g;
     }
-    my $ret_parsed = parseReturn($ret) ;
+    my $ret_parsed = parseReturn($ret);
     return wantarray
         ? ( $rc, $ret_parsed )
         : { rc=>$rc, ret=>$ret_parsed };
@@ -617,3 +617,4 @@ SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGES.
 
 =cut
+

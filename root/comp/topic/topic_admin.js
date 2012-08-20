@@ -24,12 +24,44 @@
     
     var store_label = new Baseliner.Topic.StoreLabel();
     var store_priority = new Baseliner.Topic.StorePriority();
+	
+	var store_config_priority = new Baseliner.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/topicadmin/get_config_priority',
+		fields: [
+			{  name: 'id' },
+			{  name: 'id_category' },
+			{  name: 'name' },
+			{  name: 'response_time_min' },
+			{  name: 'expr_response_time' },
+			{  name: 'deadline_min' },
+			{  name: 'expr_deadline' },
+			{  name: 'is_active' }  
+		]
+	});
+	
+	var store_config_field = new Baseliner.JsonStore({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id', 
+		url: '/topicadmin/get_config_field',
+		fields: [
+			{  name: 'id' },
+			{  name: 'description' },
+			{  name: 'value' }
+		]
+	});		
     
     var init_buttons_category = function(action) {
         eval('btn_edit_category.' + action + '()');
         eval('btn_delete_category.' + action + '()');
         eval('btn_form_category.' + action + '()');
         eval('btn_admin_category.' + action + '()');
+        eval('btn_admin_priority.' + action + '()');
     }   
     
     var init_buttons_label = function(action) {
@@ -1001,63 +1033,71 @@
     };
     
     
-        Baseliner.store.Fields = function(c) {
-             Baseliner.store.Fields.superclass.constructor.call(this, Ext.apply({
-                root: 'data' , 
-                remoteSort: true,
-                autoLoad: true,
-                totalProperty:"totalCount", 
-                baseParams: {},
-                id: 'id', 
-                url: '/topicadmin/list_fields',
-                fields: ['id','name'] 
-             }, c));
-        };
-        Ext.extend( Baseliner.store.Fields, Baseliner.JsonStore );
+	Baseliner.store.Fields = function(c) {
+		 Baseliner.store.Fields.superclass.constructor.call(this, Ext.apply({
+			root: 'data' , 
+			remoteSort: true,
+			autoLoad: true,
+			totalProperty:"totalCount", 
+			baseParams: {},
+			id: 'id', 
+			url: '/topicadmin/list_fields',
+			fields: ['id','name'] 
+		 }, c));
+	};
+	Ext.extend( Baseliner.store.Fields, Baseliner.JsonStore );
     
-        Baseliner.model.Fields = function(c) {
-            //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
-            var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-                '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.name)]}</span></span>',
-                '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
-            var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-                '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.name)]}</span></span>',
-                '</tpl>' );
-            Baseliner.model.Fields.superclass.constructor.call(this, Ext.apply({
-                allowBlank: true,
-                msgTarget: 'under',
-                allowAddNewData: true,
-                addNewDataOnBlur: true, 
-                //emptyText: _('Enter or select topics'),
-                triggerAction: 'all',
-                resizable: true,
-                mode: 'local',
-                fieldLabel: _('Fields'),
-                typeAhead: true,
-                name: 'fields',
-                displayField: 'name',
-                hiddenName: 'fields',
-                valueField: 'id',
-                tpl: tpl_list,
-                displayFieldTpl: tpl_field,
-                value: '/',
-                extraItemCls: 'x-tag'
-            }, c));
-        };
-        Ext.extend( Baseliner.model.Fields, Ext.ux.form.SuperBoxSelect );
-    
-        var field_box_store = new Baseliner.store.Fields();
+	Baseliner.model.Fields = function(c) {
+		//var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
+		var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+			'<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.name)]}</span></span>',
+			'&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+		var tpl_field = new Ext.XTemplate( '<tpl for=".">',
+			'<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.name)]}</span></span>',
+			'</tpl>' );
+		Baseliner.model.Fields.superclass.constructor.call(this, Ext.apply({
+			allowBlank: true,
+			msgTarget: 'under',
+			allowAddNewData: true,
+			addNewDataOnBlur: true, 
+			//emptyText: _('Enter or select topics'),
+			triggerAction: 'all',
+			resizable: true,
+			mode: 'local',
+			fieldLabel: _('Fields'),
+			typeAhead: true,
+			name: 'fields',
+			displayField: 'name',
+			hiddenName: 'fields',
+			valueField: 'id',
+			tpl: tpl_list,
+			displayFieldTpl: tpl_field,
+			value: '/',
+			extraItemCls: 'x-tag'
+		}, c));
+	};
+	Ext.extend( Baseliner.model.Fields, Ext.ux.form.SuperBoxSelect );
+
+	var field_box_store = new Baseliner.store.Fields();
     
     var edit_form_category = function(rec) {
         var win;
         var title = _('Create fields');
+		var config = new Array();
         
         var field_box = new Baseliner.model.Fields({
             store: field_box_store
         });
+		
         field_box_store.on('load',function(){
-            field_box.setValue( rec.fields ) ;            
-        });     
+            field_box.setValue( rec.data.fields ) ;            
+        });
+		
+		field_box.on('additem',function( obj, value, row){
+			//if(row.data.config){
+				config.push({"text": _(row.data.name) , "leaf": true,  "id": row.data.id, "config": row.data.name });	
+			//}
+		});			
 
         // --------------- Forms 
         var form_category_store = new Baseliner.JsonStore({
@@ -1093,6 +1133,186 @@
             displayFieldTpl: fc_tpl_field,
             extraItemCls: 'x-tag'
         });
+		
+		
+		    var btn_config_fields = new Ext.Toolbar.Button({
+			    text: _('Parameters'),
+			    icon:'/static/images/icons/cog_edit.png',
+			    cls: 'x-btn-text-icon',
+			    handler: function() {
+					
+				    store_config_field.removeAll();
+				    
+				    var treeRoot = new Ext.tree.AsyncTreeNode({
+					    text: _('Configuration'),
+					    expanded: true,
+					    draggable: false,
+					    children: config
+				    });
+				    
+		    
+				    var tree_fields = new Ext.tree.TreePanel({
+					    title: _('Configuration Fields'),
+					    split: true,
+					    colapsible: true,
+					    useArrows: true,
+					    animate: true,
+					    containerScroll: true,
+					    autoScroll: true,
+					    height:300,		    
+					    rootVisible: true,
+					    root: treeRoot
+				    });
+				    
+				    tree_fields.on('click', function(node, checked) {
+					    store_config_field.load({params: {config: node.attributes.config, id: node.attributes.id }});
+				    });				
+			    
+				    var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+				    
+				    var edit_config = function(rec) {
+					    var win_config;
+    
+					    var btn_cerrar_config = new Ext.Toolbar.Button({
+						    text: _('Close'),
+						    width: 50,
+						    handler: function() {
+							    win_config.close();
+						    }
+					    })
+					    
+					    var btn_grabar_config = new Ext.Toolbar.Button({
+						    text: _('Save'),
+						    width: 50,
+						    handler: function(){
+							//    var form = form_config.getForm();
+							//    
+							//    var ff_dashboard = form_dashboard.getForm();
+							//    var dashboard_id = ff_dashboard.findField("id").getValue();
+							//    
+							//    if (form.isValid()) {
+							//	    form.submit({
+							//		    params: { id_dashboard: dashboard_id, id: rec.data.id, dashlet: rec.data.dashlet },
+							//		    success: function(f,a){
+							//			    Baseliner.message(_('Success'), a.result.msg );
+							//			    store_config.reload();
+							//		    },
+							//		    failure: function(f,a){
+							//		    Ext.Msg.show({  
+							//			    title: _('Information'), 
+							//			    msg: a.result.msg , 
+							//			    buttons: Ext.Msg.OK, 
+							//			    icon: Ext.Msg.INFO
+							//		    }); 						
+							//		    }
+							//	    });
+							//    }
+						    }
+					    })					
+					    
+					    var form_config = new Ext.FormPanel({
+						    name: form_dashlets,
+						    url: '/dashboard/set_config',
+						    frame: true,
+						    buttons: [btn_grabar_config, btn_cerrar_config],
+						    defaults:{anchor:'100%'},
+						    items   : [
+									    { fieldLabel: _(rec.data.id), name: 'value', xtype: 'textfield', allowBlank:false}
+								    ]
+					    });
+    
+					    if(rec){
+						    var ff = form_config.getForm();
+						    ff.loadRecord( rec );
+						    title = 'Edit configuration';
+					    }
+    
+					    win_config = new Ext.Window({
+						    title: _(title),
+						    autoHeight: true,
+						    width: 400,
+						    closeAction: 'close',
+						    modal: true,
+						    items: [
+							    form_config
+						    ]
+					    });
+					    win_config.show();
+					    
+				    }
+				    
+				    var grid_config = new Ext.grid.GridPanel({
+					    title: _('Configuration'),
+					    store: store_config_field,
+					    stripeRows: true,
+					    autoScroll: true,
+					    autoWidth: true,
+					    viewConfig: {
+						    forceFit: true
+					    },		    
+					    height:300,
+					    columns: [
+						    { header: _('Property'), dataIndex: 'id', width: 100},
+						    { header: _('Value'), dataIndex: 'value', width: 80}
+					    ],
+					    autoSizeColumns: true
+				    });
+				    
+				    grid_config.on("rowdblclick", function(grid, rowIndex, e ) {
+					    var sel = grid.getStore().getAt(rowIndex);
+					    edit_config(sel);
+				    });				
+		    
+				    var form_dashlets = new Ext.FormPanel({
+					    name: form_dashlets,
+					    url: '/user/update',
+					    frame: true,
+					    items   : [
+							       {
+								    xtype: 'panel',
+								    layout: 'column',
+								    items:  [
+									    {  
+									    columnWidth: .49,
+									    items:  tree_fields
+									    },
+									    {
+									    columnWidth: .02,
+									    items: blank_image
+									    },
+									    {  
+									    columnWidth: .49,
+									    items: grid_config
+								    }]  
+								    }
+							    ]
+				    });
+				    
+				    var winYaml = new Ext.Window({
+					    modal: true,
+					    width: 800,
+					    title: _('Parameters'),
+					    tbar: [
+							    {   xtype:'button',
+								    text: _('Close'),
+								    iconCls:'x-btn-text-icon',
+								    icon:'/static/images/icons/door_out.png',
+								    handler: function(){
+									    winYaml.close();
+								    }
+							    }           
+					    ],
+					    items: form_dashlets
+				    });
+				    winYaml.show();
+			    }
+		    });
+		
+		
+		
+		
+		
+		
         var form_category = new Ext.FormPanel({
             frame: false,
             border: false,
@@ -1100,6 +1320,7 @@
             //itemCls: 'boot',
             bodyStyle:'padding: 10px 0px 0px 10px',
             buttons: [
+					btn_config_fields,
                     {
                         text: _('Accept'),
                         type: 'submit',
@@ -1161,9 +1382,6 @@
         win.show();     
     };
 
-
-
-
     var btn_form_category = new Ext.Toolbar.Button({
         text: _('Fields'),
         icon:'/static/images/icons/detail.png',
@@ -1194,7 +1412,207 @@
                 Baseliner.message( _('ERROR'), _('Select at least one row'));    
             };          
         }
-    }); 
+    });
+	
+    var add_edit_admin_priority = function(rec) {
+        var win;
+        var title = _('Priorities' );
+		var config = new Array();
+		store_config_priority.removeAll();
+		
+		store_priority.each(function(row, index){
+			var ok = rec.data.priorities.indexOf(row.data.id);
+			config.push({"text": _(row.data.name), "leaf": true, "id": row.data.id, "category_id": rec.data.id, "cls": ok != -1 ?'priority':'' });	
+		});
+		
+		var treeRoot = new Ext.tree.AsyncTreeNode({
+			text: _('Configuration'),
+			expanded: true,
+			draggable: false,
+			children: config
+		});
+		
+		var tree_priorities = new Ext.tree.TreePanel({
+			title: _('Configuration Priorities'),
+			split: true,
+			colapsible: true,
+			useArrows: true,
+			animate: true,
+			containerScroll: true,
+			autoScroll: true,
+			height:300,		    
+			rootVisible: true,
+			root: treeRoot
+		});
+		
+		tree_priorities.on('click', function(node, checked) {
+			store_config_priority.load({params: {id: node.attributes.id, category_id: node.attributes.category_id}});
+		});				
+							
+		var grid_config_priorities = new Ext.grid.GridPanel({
+			title: _('Configuration'),
+			store: store_config_priority,
+			stripeRows: true,
+			autoScroll: true,
+			autoWidth: true,
+			viewConfig: {
+				forceFit: true
+			},		    
+			height:300,
+			columns: [
+				
+				{ header: _('Response time'), dataIndex: 'expr_response_time', sortable: false, renderer: show_expr },
+				{ header: _('Deadline'), dataIndex: 'expr_deadline', sortable: false, renderer: show_expr } 
+			],
+			autoSizeColumns: true
+		});
+		
+		var edit_config_priority = function(rec) {
+			var win_config;
+			
+			var form_config_priority = new Baseliner.form.Priority({
+				url:'/topicadmin/update_category_priority'}
+			);
+			var form = form_config_priority.getForm();
+			form.findField("name").readOnly = true;			
+		
+			if(rec){
+				var ff = form_config_priority.getForm();
+				ff.loadRecord( rec );
+				load_cbx(ff, rec);
+				ff.findField("name").readOnly = true;
+				ff.findField("priority_active_check").setValue( rec.data.is_active );
+				title = 'Edit configuration';
+			}
+		
+			win_config = new Ext.Window({
+				title: _(title),
+				autoHeight: true,
+				width: 400,
+				closeAction: 'close',
+				modal: true,
+				items: [
+					form_config_priority
+				],
+				buttons: [
+						{
+							text: _('Accept'),
+							type: 'submit',
+							handler: function() {
+								var form = form_config_priority.getForm();
+								var action = form.getValues()['id'] >= 0 ? 'update' : 'add';								
+								
+								var rsptime = new Array();
+								var deadline = new Array();
+							
+								getvalues_priority(form,rsptime,deadline);
+								
+								if (form.isValid()) {
+									form.submit({
+										params: {action: action, rsptime: rsptime, deadline: deadline},
+										success: function(f,a){
+											Baseliner.message(_('Success'), a.result.msg );
+											form.findField("id").setValue(a.result.priority_id);
+											store_config_priority.reload();
+											var node = tree_priorities.getSelectionModel().getSelectedNode();
+											if(form.findField("priority_active_check").getValue()){
+												node.setCls('priority');
+											}else{
+												node.setCls('');
+											}
+
+											
+											win.setTitle(_('Edit priority'));
+										},
+										failure: function(f,a){
+											Ext.Msg.show({  
+												title: _('Information'), 
+												msg: a.result.msg , 
+												buttons: Ext.Msg.OK, 
+												icon: Ext.Msg.INFO
+											});                         
+										}
+									});
+								}
+							}
+						},
+						{
+						text: _('Close'),
+						handler: function() {win_config.close();}
+						}
+				]
+			});
+			win_config.show();
+		}
+		
+					
+		grid_config_priorities.on("rowdblclick", function(grid, rowIndex, e ) {
+			var sel = grid.getStore().getAt(rowIndex);
+			edit_config_priority(sel);
+		});				
+
+		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+		
+		var pnl_priorities = new Ext.FormPanel({
+			frame: true,
+			items   : [
+					   {
+						xtype: 'panel',
+						layout: 'column',
+						items:  [
+							{  
+							columnWidth: .49,
+							items:  tree_priorities
+							},
+							{
+							columnWidth: .02,
+							items: blank_image
+							},
+							{  
+							columnWidth: .49,
+							items: grid_config_priorities
+						}]  
+						}
+					]
+		});
+					
+       
+        win = new Ext.Window({
+            title: _(title),
+            width: 800,
+            autoHeight: true,
+			modal: true,
+			tbar: [
+					{   xtype:'button',
+						text: _('Close'),
+						iconCls:'x-btn-text-icon',
+						icon:'/static/images/icons/door_out.png',
+						handler: function(){
+							win.close();
+						}
+					}           
+			],
+            items: pnl_priorities
+        });
+		
+        win.show();     
+    };	
+	
+    var btn_admin_priority = new Ext.Toolbar.Button({
+        text: _('Priorities'),
+        icon:'/static/images/icons/hourglass.png',
+        cls: 'x-btn-text-icon',
+        disabled: true,
+        handler: function() {
+            var sm = grid_categories.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                add_edit_admin_priority(sel);
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));    
+            };          
+		}
+    }); 	
     
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
@@ -1218,7 +1636,6 @@
         enableHdMenu: false,
         store: store_category,
         viewConfig: {forceFit: true, scrollOffset: 2},
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
             { hidden: true, dataIndex:'id' },
@@ -1235,7 +1652,8 @@
                 btn_delete_category,
                 '->',
                 btn_form_category,
-                btn_admin_category
+                btn_admin_category,
+				btn_admin_priority
         ]       
     }); 
     /* grid_categories.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
@@ -1257,6 +1675,7 @@
                     btn_edit_category.disable();
                     btn_form_category.disable();
                     btn_admin_category.disable();
+					btn_admin_priority.disable();
                 }
             }
         }
@@ -1470,12 +1889,6 @@
         return priorities_checked
     }       
     
-    //function filtrar_topics(labels_checked, categories_checked){
-    //    var query_id = '<% $c->stash->{query_id} %>';
-    //    store_opened.load({params:{start:0 , limit: ps, filter:'O', query_id: '<% $c->stash->{query_id} %>', labels: labels_checked, categories: categories_checked}});
-    //    store_closed.load({params:{start:0 , limit: ps, filter:'C', labels: labels_checked, categories: categories_checked}});      
-    //};
-
     grid_labels.on('cellclick', function(grid, rowIndex, columnIndex, e) {
         if(columnIndex == 1){
             var labels_checked = getLabels();
@@ -1494,259 +1907,281 @@
         }
     });
     
+	
+	Baseliner.form.Priority = function(c) {
+		var txt_rsptime_months = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_months',
+			fieldLabel: _('Months'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
+		});
+		
+		var txt_rsptime_weeks = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_weeks',
+			fieldLabel: _('Weeks'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
+		});
+		
+		var txt_rsptime_days = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_days',
+			fieldLabel: _('Days'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
+		});
+		
+		var txt_rsptime_hours = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_hours',
+			fieldLabel: _('Hours'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
+		});
+		
+		var txt_rsptime_minutes = new Ext.ux.form.Spinner({
+			name: 'txt_rsptime_minutes',
+			fieldLabel: _('Minutes'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
+		});
+		
+		var txt_deadline_months = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_months',
+			fieldLabel: _('Months'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
+		});
+		
+		var txt_deadline_weeks = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_weeks',
+			fieldLabel: _('Weeks'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
+		});
+		
+		var txt_deadline_days = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_days',
+			fieldLabel: _('Days'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
+		});     
+		
+		var txt_deadline_hours = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_hours',
+			fieldLabel: _('Hours'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
+		});
+		
+		var txt_deadline_minutes = new Ext.ux.form.Spinner({
+			name: 'txt_deadline_minutes',
+			fieldLabel: _('Minutes'),
+			strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
+		});
+
+		var priority_active_check = new Ext.form.Checkbox({
+			name: 'priority_active_check',
+			boxLabel: _('Active')
+		});
+		
+		Baseliner.form.Priority.superclass.constructor.call(this, Ext.apply({
+					frame: true,
+					bodyStyle:'padding:10px 10px 0',
+					defaults: { anchor:'100%'},
+					items: [
+						{ xtype: 'hidden', name: 'id', value: -1 },
+						{ xtype: 'hidden', name: 'id_category', value: -1 },
+						{ xtype:'textfield', name:'name', fieldLabel:_('Priority'), allowBlank:false, emptyText:_('Name of priority') },
+						{
+							// column layout with 2 columns
+							layout:'column'
+							,defaults:{
+								columnWidth:0.5
+								,layout:'form'
+								,border:false
+								,xtype:'panel'
+								,bodyStyle:'padding:0 10px 0 0'
+							}
+							,items:[
+									{
+										// left column
+										defaults:{anchor:'100%'}
+										,items:[
+												{
+													xtype:'fieldset',
+													title: _('Response time'),
+													autoHeight:true,
+													defaults: {width: 40},
+													defaultType: 'textfield',
+													items :[
+														txt_rsptime_months,
+														txt_rsptime_weeks,
+														txt_rsptime_days,
+														txt_rsptime_hours,
+														txt_rsptime_minutes
+													]
+												}
+										]
+									},
+									{
+										// right column
+										defaults:{anchor:'100%'}
+										,items:[
+												{
+													xtype:'fieldset',
+													title: _('Deadline'),
+													autoHeight:true,
+													defaults: {width: 40},
+													defaultType: 'textfield',
+													items :[
+														txt_deadline_months,
+														txt_deadline_weeks,
+														txt_deadline_days,
+														txt_deadline_hours,
+														txt_deadline_minutes
+													]
+												}
+										]
+									},
+									priority_active_check
+							]
+						}
+					]
+		}, c));
+	};
+	Ext.extend( Baseliner.form.Priority, Ext.FormPanel );	
+	
+	function load_cbx(form, rec){
+		var expr = rec.data.expr_response_time.split(':');
+		for (i=0; i < expr.length; i++){
+			var value = expr[i].substr(0, expr[i].length - 1);
+			if(value != 0){
+				var type =  expr[i].substr(expr[i].length - 1, 1);
+				switch (type){
+					case 'M':   form.findField("txt_rsptime_months").setValue(value);
+								break;
+					case 'W':   form.findField("txt_rsptime_weeks").setValue(value);
+								break;
+					case 'D':   form.findField("txt_rsptime_days").setValue(value);
+								break;
+					case 'h':   form.findField("txt_rsptime_hours").setValue(value);
+								break;
+					case 'm':   form.findField("txt_rsptime_minutes").setValue(value);
+								break;
+				}
+			}
+			
+		}
+		expr = rec.data.expr_deadline.split(':');
+		for (i=0; i < expr.length; i++){
+			var value = expr[i].substr(0, expr[i].length - 1);
+			if(value != 0){
+				var type =  expr[i].substr(expr[i].length - 1, 1);
+				switch (type){
+					case 'M':   form.findField("txt_deadline_months").setValue(value);
+								break;
+					case 'W':   form.findField("txt_deadline_weeks").setValue(value);
+								break;
+					case 'D':   form.findField("txt_deadline_days").setValue(value);
+								break;
+					case 'h':   form.findField("txt_deadline_hours").setValue(value);
+								break;
+					case 'm':   form.findField("txt_deadline_minutes").setValue(value);
+								break;
+				}
+			}
+			
+		}
+		
+	}
+				
+	function getvalues_priority(form,rsptime,deadline){
+		//var rsptime = new Array();
+		//var deadline = new Array();
+		
+		var txt_rsptime_months =  form.findField("txt_rsptime_months").getValue();
+		var txt_rsptime_weeks =  form.findField("txt_rsptime_weeks").getValue();
+		var txt_rsptime_days =  form.findField("txt_rsptime_days").getValue();
+		var txt_rsptime_hours =  form.findField("txt_rsptime_hours").getValue();
+		var txt_rsptime_minutes =  form.findField("txt_rsptime_minutes").getValue();
+
+		var txt_deadline_months =  form.findField("txt_deadline_months").getValue();
+		var txt_deadline_weeks =  form.findField("txt_deadline_weeks").getValue();
+		var txt_deadline_days =  form.findField("txt_deadline_days").getValue();
+		var txt_deadline_hours =  form.findField("txt_deadline_hours").getValue();
+		var txt_deadline_minutes =  form.findField("txt_deadline_minutes").getValue();
+		
+		txt_rsptime_months =  txt_rsptime_months ? txt_rsptime_months : 0;
+		txt_rsptime_weeks =  txt_rsptime_weeks ? txt_rsptime_weeks : 0;
+		txt_rsptime_days =  txt_rsptime_days ? txt_rsptime_days : 0;
+		txt_rsptime_hours =  txt_rsptime_hours ? txt_rsptime_hours : 0;
+		txt_rsptime_minutes =  txt_rsptime_minutes ? txt_rsptime_minutes : 0;
+
+		txt_deadline_months =  txt_deadline_months ? txt_deadline_months : 0;
+		txt_deadline_weeks =  txt_deadline_weeks ? txt_deadline_weeks : 0;
+		txt_deadline_days =  txt_deadline_days ? txt_deadline_days : 0;
+		txt_deadline_hours =  txt_deadline_hours ? txt_deadline_hours : 0;
+		txt_deadline_minutes =  txt_deadline_minutes ? txt_deadline_minutes : 0;
+		
+		rsptime[0] = txt_rsptime_months + 'M:' + txt_rsptime_weeks + 'W:' + txt_rsptime_days + 'D:' + txt_rsptime_hours + 'h:' + txt_rsptime_minutes + 'm';
+		rsptime[1] = (txt_rsptime_months * 31 * 24 * 60 ) + (txt_rsptime_weeks * 7 * 24 * 60 ) + (txt_rsptime_days * 24 * 60 ) + (txt_rsptime_hours * 60) + txt_rsptime_minutes;
+		
+		deadline[0] = txt_deadline_months + 'M:' + txt_deadline_weeks + 'W:' + txt_deadline_days + 'D:' + txt_deadline_hours + 'h:' + txt_deadline_minutes + 'm';
+		deadline[1] = (txt_deadline_months * 31 * 24 * 60 ) + (txt_deadline_weeks * 7 * 24 * 60 ) + (txt_deadline_days * 24 * 60 ) + (txt_deadline_hours * 60) + txt_deadline_minutes;
+	}
+	
     var add_edit_priority = function(rec) {
         var win;
         var title = 'Create priority';
-        
-        function load_cbx(form, rec){
-            var expr = rec.data.expr_response_time.split(':');
-            for (i=0; i < expr.length; i++){
-                var value = expr[i].substr(0, expr[i].length - 1);
-                if(value != 0){
-                    var type =  expr[i].substr(expr[i].length - 1, 1);
-                    switch (type){
-                        case 'M':   form.findField("txt_rsptime_months").setValue(value);
-                                    break;
-                        case 'W':   form.findField("txt_rsptime_weeks").setValue(value);
-                                    break;
-                        case 'D':   form.findField("txt_rsptime_days").setValue(value);
-                                    break;
-                        case 'h':   form.findField("txt_rsptime_hours").setValue(value);
-                                    break;
-                        case 'm':   form.findField("txt_rsptime_minutes").setValue(value);
-                                    break;
-                    }
-                }
-                
-            }
-            expr = rec.data.expr_deadline.split(':');
-            for (i=0; i < expr.length; i++){
-                var value = expr[i].substr(0, expr[i].length - 1);
-                if(value != 0){
-                    var type =  expr[i].substr(expr[i].length - 1, 1);
-                    switch (type){
-                        case 'M':   form.findField("txt_deadline_months").setValue(value);
-                                    break;
-                        case 'W':   form.findField("txt_deadline_weeks").setValue(value);
-                                    break;
-                        case 'D':   form.findField("txt_deadline_days").setValue(value);
-                                    break;
-                        case 'h':   form.findField("txt_deadline_hours").setValue(value);
-                                    break;
-                        case 'm':   form.findField("txt_deadline_minutes").setValue(value);
-                                    break;
-                    }
-                }
-                
-            }
-            
-        }
 
-        var txt_rsptime_months = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_months',
-            fieldLabel: _('Months'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
-        });
-        
-        var txt_rsptime_weeks = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_weeks',
-            fieldLabel: _('Weeks'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
-        });
-        
-        var txt_rsptime_days = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_days',
-            fieldLabel: _('Days'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
-        });
-        
-        var txt_rsptime_hours = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_hours',
-            fieldLabel: _('Hours'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
-        });
-        
-        var txt_rsptime_minutes = new Ext.ux.form.Spinner({
-            name: 'txt_rsptime_minutes',
-            fieldLabel: _('Minutes'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
-        });
-        
-        var txt_deadline_months = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_months',
-            fieldLabel: _('Months'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'12'})
-        });
-        
-        var txt_deadline_weeks = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_weeks',
-            fieldLabel: _('Weeks'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'4'})
-        });
-        
-        var txt_deadline_days = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_days',
-            fieldLabel: _('Days'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'31'})
-        });     
-        
-        var txt_deadline_hours = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_hours',
-            fieldLabel: _('Hours'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'24'})
-        });
-        
-        var txt_deadline_minutes = new Ext.ux.form.Spinner({
-            name: 'txt_deadline_minutes',
-            fieldLabel: _('Minutes'),
-            strategy: new Ext.ux.form.Spinner.NumberStrategy({minValue:'1', maxValue:'60'})
-        });     
-        
-        var form_priority = new Ext.FormPanel({
-            frame: true,
-            url:'/topicadmin/update_priority',
-            bodyStyle:'padding:10px 10px 0',
-            buttons: [
-                    {
-                        text: _('Accept'),
-                        type: 'submit',
-                        handler: function() {
-                            var form = form_priority.getForm();
-                            var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-                            var rsptime = new Array();
-                            var deadline = new Array();
-                            
-                            var txt_rsptime_months =  form.findField("txt_rsptime_months").getValue();
-                            var txt_rsptime_weeks =  form.findField("txt_rsptime_weeks").getValue();
-                            var txt_rsptime_days =  form.findField("txt_rsptime_days").getValue();
-                            var txt_rsptime_hours =  form.findField("txt_rsptime_hours").getValue();
-                            var txt_rsptime_minutes =  form.findField("txt_rsptime_minutes").getValue();
-
-                            var txt_deadline_months =  form.findField("txt_deadline_months").getValue();
-                            var txt_deadline_weeks =  form.findField("txt_deadline_weeks").getValue();
-                            var txt_deadline_days =  form.findField("txt_deadline_days").getValue();
-                            var txt_deadline_hours =  form.findField("txt_deadline_hours").getValue();
-                            var txt_deadline_minutes =  form.findField("txt_deadline_minutes").getValue();
-                            
-                            txt_rsptime_months =  txt_rsptime_months ? txt_rsptime_months : 0;
-                            txt_rsptime_weeks =  txt_rsptime_weeks ? txt_rsptime_weeks : 0;
-                            txt_rsptime_days =  txt_rsptime_days ? txt_rsptime_days : 0;
-                            txt_rsptime_hours =  txt_rsptime_hours ? txt_rsptime_hours : 0;
-                            txt_rsptime_minutes =  txt_rsptime_minutes ? txt_rsptime_minutes : 0;
-
-                            txt_deadline_months =  txt_deadline_months ? txt_deadline_months : 0;
-                            txt_deadline_weeks =  txt_deadline_weeks ? txt_deadline_weeks : 0;
-                            txt_deadline_days =  txt_deadline_days ? txt_deadline_days : 0;
-                            txt_deadline_hours =  txt_deadline_hours ? txt_deadline_hours : 0;
-                            txt_deadline_minutes =  txt_deadline_minutes ? txt_deadline_minutes : 0;
-                            
-                            rsptime[0] = txt_rsptime_months + 'M:' + txt_rsptime_weeks + 'W:' + txt_rsptime_days + 'D:' + txt_rsptime_hours + 'h:' + txt_rsptime_minutes + 'm';
-                            rsptime[1] = (txt_rsptime_months * 31 * 24 * 60 ) + (txt_rsptime_weeks * 7 * 24 * 60 ) + (txt_rsptime_days * 24 * 60 ) + (txt_rsptime_hours * 60) + txt_rsptime_minutes;
-                            
-                            deadline[0] = txt_deadline_months + 'M:' + txt_deadline_weeks + 'W:' + txt_deadline_days + 'D:' + txt_deadline_hours + 'h:' + txt_deadline_minutes + 'm';
-                            deadline[1] = (txt_deadline_months * 31 * 24 * 60 ) + (txt_deadline_weeks * 7 * 24 * 60 ) + (txt_deadline_days * 24 * 60 ) + (txt_deadline_hours * 60) + txt_deadline_minutes;
-                            
-                            
-                            if (form.isValid()) {
-                                form.submit({
-                                    params: {action: action, rsptime: rsptime, deadline: deadline},
-                                    success: function(f,a){
-                                        Baseliner.message(_('Success'), a.result.msg );
-                                        form.findField("id").setValue(a.result.priority_id);
-                                        store_priority.load();
-                                        win.setTitle(_('Edit priority'));
-                                    },
-                                    failure: function(f,a){
-                                        Ext.Msg.show({  
-                                            title: _('Information'), 
-                                            msg: a.result.msg , 
-                                            buttons: Ext.Msg.OK, 
-                                            icon: Ext.Msg.INFO
-                                        });                         
-                                    }
-                                });
-                            }
-                        }
-                    },
-                    {
-                    text: _('Close'),
-                    handler: function(){ 
-                            win.close();
-                        }
-                    }
-            ],
-            defaults: { anchor:'100%'},
-            items: [
-                { xtype: 'hidden', name: 'id', value: -1 },
-                { xtype:'textfield', name:'name', fieldLabel:_('Priority'), allowBlank:false, emptyText:_('Name of priority') },
-                {
-                    // column layout with 2 columns
-                    layout:'column'
-                    ,defaults:{
-                        columnWidth:0.5
-                        ,layout:'form'
-                        ,border:false
-                        ,xtype:'panel'
-                        ,bodyStyle:'padding:0 10px 0 0'
-                    }
-                    ,items:[
-                            {
-                                // left column
-                                defaults:{anchor:'100%'}
-                                ,items:[
-                                        {
-                                            xtype:'fieldset',
-                                            title: _('Response time'),
-                                            autoHeight:true,
-                                            defaults: {width: 40},
-                                            defaultType: 'textfield',
-                                            items :[
-                                                txt_rsptime_months,
-                                                txt_rsptime_weeks,
-                                                txt_rsptime_days,
-                                                txt_rsptime_hours,
-                                                txt_rsptime_minutes
-                                            ]
-                                        }
-                                ]
-                            },
-                            {
-                                // right column
-                                defaults:{anchor:'100%'}
-                                ,items:[
-                                        {
-                                            xtype:'fieldset',
-                                            title: _('Deadline'),
-                                            autoHeight:true,
-                                            defaults: {width: 40},
-                                            defaultType: 'textfield',
-                                            items :[
-                                                txt_deadline_months,
-                                                txt_deadline_weeks,
-                                                txt_deadline_days,
-                                                txt_deadline_hours,
-                                                txt_deadline_minutes
-                                            ]
-                                        }
-                                ]
-                            }
-                    ]
-                }
-            ]
-        });
-
+		var form_priority = new Baseliner.form.Priority({
+			url:'/topicadmin/update_priority'}
+		);
+		
+		var form = form_priority.getForm();
+		form.findField("priority_active_check").hidden = true;
+		
         if(rec){
             var ff = form_priority.getForm();
             ff.loadRecord( rec );
             load_cbx(ff, rec);
             title = 'Edit priority';
         }
-        
+ 	
         win = new Ext.Window({
             title: _(title),
             width: 450,
             autoHeight: true,
-            items: form_priority
+            items: form_priority,
+		    buttons: [
+					{
+						text: _('Accept'),
+						type: 'submit',
+						handler: function() {
+							var form = form_priority.getForm();
+							var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+							
+							var rsptime = new Array();
+							var deadline = new Array();
+							
+							getvalues_priority(form,rsptime,deadline);
+							
+							if (form.isValid()) {
+								form.submit({
+									params: {action: action, rsptime: rsptime, deadline: deadline},
+									success: function(f,a){
+										Baseliner.message(_('Success'), a.result.msg );
+										form.findField("id").setValue(a.result.priority_id);
+										store_priority.load();
+										win.setTitle(_('Edit priority'));
+									},
+									failure: function(f,a){
+										Ext.Msg.show({  
+											title: _('Information'), 
+											msg: a.result.msg , 
+											buttons: Ext.Msg.OK, 
+											icon: Ext.Msg.INFO
+										});                         
+									}
+								});
+							}
+						}
+					},
+					{
+					text: _('Close'),
+					handler: function() {win.close();}
+					}
+			]
         });
         win.show();     
     };

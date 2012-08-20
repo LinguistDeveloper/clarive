@@ -196,7 +196,10 @@ sub inbox {
     my @messages;
 
     my $search = {};
-    my $opts = $p{sort} ? { order_by => "$p{sort} $p{dir}" } : { order_by => 'id desc' };
+    $p{dir} ||= 'asc';
+    my $opts = $p{sort}
+        ? { order_by => { "-$p{dir}" => $p{sort} } }
+        : { order_by => { -desc=>'id' } };
     if( defined $p{start} && defined $p{limit} ) {
         $opts->{page} = to_pages( start=>$p{start}, limit=>$p{limit} );
         $opts->{rows} = $p{limit} || 30;
@@ -206,8 +209,13 @@ sub inbox {
 
     exists $p{username} and $search->{username} = delete $p{username} if $p{username};
     exists $p{carrier} and $search->{carrier} = delete $p{carrier};
-
-    $p{query} and $search->{"lower(sender||body||subject)"} = { -like => '%'.lc($p{query}).'%' };
+    
+    if($p{query_id}){
+        $p{query_id} and $search->{"(id_message)"} = $p{query_id};	
+    }else{
+        $p{query} and $search->{"lower(sender||body||subject)"} = { -like => '%'.lc($p{query}).'%' };	
+    }
+    
     $opts->{prefetch} = ['id_message']; 
     my $rs = Baseliner->model('Baseliner::BaliMessageQueue')->search($search, $opts );
 
@@ -215,7 +223,8 @@ sub inbox {
         my $message = new Baseliner::Core::Message(
             {
                 $r->id_message->get_columns, $r->get_columns,
-                id_message => $r->id_message->id
+                id_message => $r->id_message->id,
+                swreaded => $r->swreaded,
             }
         );
         push @messages, $message;

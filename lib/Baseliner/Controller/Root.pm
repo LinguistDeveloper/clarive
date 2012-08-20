@@ -58,7 +58,7 @@ sub auto : Private {
     my ( $self, $c ) = @_;
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     return 1 if $c->stash->{auth_skip};
-    return 1 if $c->user_exists;
+    return 1 if try { $c->user_exists } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
     # saml?

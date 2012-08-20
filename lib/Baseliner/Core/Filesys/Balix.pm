@@ -31,7 +31,7 @@ sub BUILD {
     my $home = $self->home;
     my $os = $self->os;
     my ( $user, $host, $port, $home_real ) =
-      ($1,$2,$3,$4) if( $home =~ m/^(\w+)\@(\w+)\:(\d+)\=(\w+)/ );
+      ($1,$2,$3,$4) if( $home =~ m/^(\w+)\@(\S+)\:(\d+)\=(\w+)/ );
 
     $self->user($user);
     $self->host($host);
@@ -67,15 +67,17 @@ sub put {
     return $self->balix->sendFile( $localFile, $remoteFile, $os );
 }
 
-
 sub copy {
-
     #TODO kizas no sea necesario
 }
-
 
 sub end {
     my ($self)=@_;
     $self->balix->end();
+}
+
+sub mkpath {
+    my ($self, $path)=@_;
+    $self->execute( qq{mkdir -p "$path"} );
 }
 1;

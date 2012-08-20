@@ -16,6 +16,7 @@ use Baseliner::Utils;
 use Exporter::Tidy default => [qw/
     config_store
     config_get
+    config_value
     bali_rs
     repo
     kv
@@ -41,6 +42,7 @@ sub mdl {  }
 
 sub config_store { Baseliner->model('ConfigStore') }
 sub config_get { Baseliner->model('ConfigStore')->get(@_) }
+sub config_value { Baseliner->model('ConfigStore')->get($_[0], value=>1) }
 
 sub repo { Baseliner->model('Repository') }
 sub kv { Baseliner->model('KV') }
@@ -138,13 +140,13 @@ sub event_new {
     try {
         if( ref $code eq 'CODE' ) {
             # PRE
-            $ev->pre->( $data ) if defined $ev->pre;
+            $_->( $data ) for $ev->before_hooks;
             # RUN
             my $rundata = $code->( $data );
             ref $rundata eq 'HASH' and $data = { %$data, %$rundata };
             _throw 'event_new is missing mid parameter' unless length $data->{mid};
             # POST
-            $ev->post->( $data ) if defined $ev->pre;
+            $_->( $data ) for $ev->after_hooks;
         }
         # create the event on table
         $event_create->( $data );
@@ -154,6 +156,7 @@ sub event_new {
             $catch->( $err ) ;
             _log "*** event_new: caught $key: $err";
         } else {
+            _throw $err;
             _log "*** event_new: untrapped $key: $err";
         }
     };
@@ -185,6 +188,35 @@ sub events_by_mid {
         };  
         $d; 
     } @evs ];
+}
+
+=head2 event_hook
+
+Adds hooks to events. 
+
+    event_hook 'event.topic.create' => 'before' => sub {
+         ...
+    };
+
+=cut
+sub event_hook {
+    my ( $keys, $when, $code ) = @_;
+    my $pkg = caller();
+    my @keys = ref $keys eq 'ARRAY' ? @$keys : ($keys);
+    my $regs = 'Baseliner::Core::Registry';  # Baseliner->model('Registry') not available on startup
+    for my $key ( @keys ) {
+        my $regkey = "$key._hooks";
+        if( my $hooks = $regs->get_node( $regkey ) ) {
+            push @{ $hooks->param->{$when} }, $code;
+        } else {
+            my $param = { 
+                before => [], 
+                after  => [],
+            };
+            push @{ $param->{ $when } }, $code; 
+            Baseliner::Core::Registry->add( $pkg || __PACKAGE__, $regkey, $param );
+        }
+    }
 }
 
 1;

@@ -21,6 +21,13 @@ register 'menu.admin.topic' => {
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };
 
+register 'config.field.title' => {
+    metadata => [
+           { id=>'visibility', label=>'', default => 'ALL' },
+           { id=>'readonly', label=>'', default => 'NONE' },
+        ]
+};
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -564,6 +571,123 @@ sub workflow : Local {
         };
     }
     $c->stash->{json} = { success => \1, msg=>_loc('Relationship deleted: %1', $cnt) };
+    $c->forward('View::JSON');    
+}
+
+sub get_config_priority : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $priority_id = $p->{id};
+    my $category_id = $p->{category_id};
+    
+    my @category_priority;
+    
+    if($p->{active}){
+        @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search(
+                                    {id_category=> $category_id, is_active=>1},
+                                    {join=>['priority'], 
+                                    select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
+                                    as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
+    }else{
+        if($category_id){
+            @category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search(
+                                        {id_category=> $category_id, id_priority=> $priority_id},
+                                        {join=>['priority'], 
+                                        select=>[qw/id_category id_priority priority.name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/], 
+                                        as=>[qw/id_category id name response_time_min expr_response_time deadline_min deadline_min expr_deadline is_active/]})->hashref->all;
+            if(!@category_priority){
+                my @priority_default = $c->model('Baseliner::BaliTopicPriority')->search({id=> $priority_id})->hashref->all;
+                foreach my $field (@priority_default){
+                    push @category_priority, { name => $field->{name},
+                                      id_category => $category_id,
+                                      id => $field->{id},
+                                      response_time_min => $field->{response_time_min},
+                                      expr_response_time => $field->{expr_response_time},
+                                      deadline_min => $field->{deadline_min},
+                                      expr_deadline => $field->{expr_deadline},
+                                      is_active => 0,
+                                      }
+                }
+            }
+        }
+    }
+    $c->stash->{json} = { data=>\@category_priority};
+    $c->forward('View::JSON');    
+}
+
+sub update_category_priority : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $action = $p->{action};
+    my @rsptime = _array $p->{rsptime};
+    my @deadline = _array $p->{deadline};
+    my $priority_id = $p->{id};
+    my $category_id = $p->{id_category};    
+    
+    given ($action) {
+        when ('add') {
+
+        }
+        when ('update') {
+            try{
+                my $category_priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->search({id_category=> $category_id, id_priority=> $priority_id})->first;
+                if($category_priority){
+                    $category_priority->delete();
+                }
+                my $priority = $c->model('Baseliner::BaliTopicCategoriesPriority')->create({
+                                                                                id_category => $category_id,
+                                                                                id_priority => $priority_id,
+                                                                                response_time_min => $rsptime[1],
+                                                                                expr_response_time => $rsptime[0],
+                                                                                deadline_min => $deadline[1],
+                                                                                expr_deadline => $deadline[0],
+                                                                                is_active => $p->{priority_active_check} ? 1:0,
+                                                                                });
+                    
+                $c->stash->{json} = { msg=>_loc('Priority added'), success=>\1 };
+
+            }
+            catch{
+                $c->stash->{json} = { msg=>_loc('Error adding Priority: %1', shift()), failure=>\1 }
+            }            
+        }
+        when ('delete') {
+        }
+    }
+    
+    $c->forward('View::JSON');    
+}
+
+sub get_config_field : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my @rows;
+    
+    if($p->{config}){
+        try{
+            my $default_config = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
+            my %dashlet_config;
+            my %key_description;
+            foreach my $field (_array $default_config){
+                $dashlet_config{$field->{id}} = $field->{default};
+                $key_description{$field->{id}} = $field->{label};
+            }		
+            
+            foreach my $key (keys %dashlet_config){
+                push @rows,
+                    {
+                        id 			=> $key,
+                        description	=> $key_description{$key},
+                        value 		=> $dashlet_config{$key}
+                    };		
+            }
+        }
+        catch{
+            $c->stash->{json} = { data => undef};  
+        };
+    }    
+    
+    $c->stash->{json} = { data => \@rows};
     $c->forward('View::JSON');    
 }
 

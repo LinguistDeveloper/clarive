@@ -1,135 +1,135 @@
 (function(){
-	var store=new Ext.data.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'rownum', 
-		url: '/feature/list',
-		fields: [ 
-			{  name: 'id' },
-			{  name: 'name' },
-			{  name: 'description' },
-			{  name: 'provider' },
-			{  name: 'path' },
-			{  name: 'version' }
-		]
-	});
+    var store=new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'rownum', 
+        url: '/feature/list',
+        fields: [ 
+            {  name: 'id' },
+            {  name: 'name' },
+            {  name: 'description' },
+            {  name: 'provider' },
+            {  name: 'path' },
+            {  name: 'version' }
+        ]
+    });
 
     <& /comp/search_field.mas &>
     var render_name = function(value,metadata,rec,rowIndex,colIndex,store) {
-		return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
+        return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
     };
 
     var render_plugin = function(value,metadata,rec,rowIndex,colIndex,store) {
-		return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/chromium/plugin.png' />" ;
+        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/chromium/plugin.png' />" ;
     };
 
-	var ps = 15; //page_size
-	store.load({params:{start:0 , limit: ps}}); 
+    var ps = 15; //page_size
+    store.load({params:{start:0 , limit: ps}}); 
 
-		// create the grid
-		var grid = new Ext.grid.GridPanel({
-			title: '<% _loc('Features') %>',
-			header: false,
+        // create the grid
+        var grid = new Ext.grid.GridPanel({
+            title: '<% _loc('Features') %>',
+            header: false,
             stripeRows: true,
-			autoScroll: true,
-			autoWidth: true,
-			store: store,
-			viewConfig: [{
-					forceFit: true
-			}],
-			selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-			loadMask:'true',
-			columns: [
-				{ width: 40, sortable: false, renderer: render_plugin },	
-				{ header: '<% _loc('Feature') %>', width: 200, dataIndex: 'name', sortable: true, renderer: render_name },	
-				{ header: '<% _loc('Description') %>', width: 200, dataIndex: 'description', sortable: true },	
-				{ header: '<% _loc('Version') %>', width: 100, dataIndex: 'version', sortable: true },	
-				{ header: '<% _loc('Path') %>', width: 350, dataIndex: 'path', sortable: true }	
-			],
-			autoSizeColumns: true,
-			deferredRender:true,
-			bbar: new Ext.PagingToolbar({
-								store: store,
-								pageSize: ps,
-								displayInfo: true,
-								displayMsg: 'Rows {0} - {1} de {2}',
-								emptyMsg: "No hay registros disponibles"
-						}),        
-			tbar: [ '<% _loc('Search') %>: ', ' ',
-				new Ext.app.SearchField({
-					store: store,
-					params: {start: 0, limit: ps},
-					emptyText: '<% _loc('<Enter your search string>') %>'
-				}),
-				{
-					text: '<% _loc('Install') %>', 
-					icon:'/static/images/icons/downloads_favicon.png',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection())
-						{
-							var sel = sm.getSelected();
-							Baseliner.addNewTab('/feature/new?id_rel=' + sel.data.id , '<% _loc('New Feature') %>' );
-						} else {
-							Baseliner.addNewTab('/feature/new' , '<% _loc('New Feature') %>' );
-						};
-						
-					}
-				},
-				new Ext.Toolbar.Button({
-					text: '<% _loc('Details') %>',
-					icon:'/static/images/chromium/databaseTable.png',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						if (sm.hasSelection())
-						{
-							var sel = sm.getSelected();
-							Baseliner.addNewTab('/feature/details?id=' + sel.data.id , sel.data.name);
-						} else {
-							Ext.Msg.alert('Error', 'Falta seleccionar una fila');	
-						};
-						
-					}
-				}),
-				{
-					text: '<% _loc('Search for updates') %>', 
-					icon:'/static/images/icons/update.png',
-					cls: 'x-btn-text-icon'
-				},
-				new Ext.Toolbar.Button({
-					text: '<% _loc('Turn Off') %>',
-					icon:'/static/images/del.gif',
-					cls: 'x-btn-text-icon',
-					handler: function() {
-						var sm = grid.getSelectionModel();
-						var sel = sm.getSelected();
-						Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to turn off the feature') %> ' + sel.data.name + '?', 
-							function(btn){ 
-								if(btn=='yes') {
-									var conn = new Ext.data.Connection();
-									conn.request({
-										url: '/feature/update',
-										params: { action: 'delete', id_rel: sel.data.id },
-										success: function(resp,opt) { grid.getStore().remove(sel); },
-										failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the feature.') %>'); }
-									});	
-								}
-							} );
-					}
-				}),
-				'->'
-				]
-		});
+            autoScroll: true,
+            autoWidth: true,
+            store: store,
+            viewConfig: [{
+                    forceFit: true
+            }],
+            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+            loadMask:'true',
+            columns: [
+                { width: 40, sortable: false, renderer: render_plugin },	
+                { header: '<% _loc('Feature') %>', width: 200, dataIndex: 'name', sortable: true, renderer: render_name },	
+                { header: '<% _loc('Description') %>', width: 200, dataIndex: 'description', sortable: true },	
+                { header: '<% _loc('Version') %>', width: 100, dataIndex: 'version', sortable: true },	
+                { header: '<% _loc('Path') %>', width: 350, dataIndex: 'path', sortable: true }	
+            ],
+            autoSizeColumns: true,
+            deferredRender:true,
+            bbar: new Ext.PagingToolbar({
+                                store: store,
+                                pageSize: ps,
+                                displayInfo: true,
+                                displayMsg: 'Rows {0} - {1} de {2}',
+                                emptyMsg: "No hay registros disponibles"
+                        }),        
+            tbar: [ '<% _loc('Search') %>: ', ' ',
+                new Ext.app.SearchField({
+                    store: store,
+                    params: {start: 0, limit: ps},
+                    emptyText: '<% _loc('<Enter your search string>') %>'
+                }),
+                {
+                    text: '<% _loc('Install') %>', 
+                    icon:'/static/images/icons/downloads_favicon.png',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        if (sm.hasSelection())
+                        {
+                            var sel = sm.getSelected();
+                            Baseliner.addNewTab('/feature/new?id_rel=' + sel.data.id , '<% _loc('New Feature') %>' );
+                        } else {
+                            Baseliner.addNewTab('/feature/new' , '<% _loc('New Feature') %>' );
+                        };
+                        
+                    }
+                },
+                new Ext.Toolbar.Button({
+                    text: '<% _loc('Details') %>',
+                    icon:'/static/images/chromium/databaseTable.png',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        if (sm.hasSelection())
+                        {
+                            var sel = sm.getSelected();
+                            Baseliner.addNewTab('/feature/details?id=' + sel.data.id , sel.data.name);
+                        } else {
+                            Ext.Msg.alert('Error', 'Falta seleccionar una fila');	
+                        };
+                        
+                    }
+                }),
+                {
+                    text: '<% _loc('Search for updates') %>', 
+                    icon:'/static/images/icons/update.png',
+                    cls: 'x-btn-text-icon'
+                },
+                new Ext.Toolbar.Button({
+                    text: '<% _loc('Turn Off') %>',
+                    icon:'/static/images/del.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        var sm = grid.getSelectionModel();
+                        var sel = sm.getSelected();
+                        Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to turn off the feature') %> ' + sel.data.name + '?', 
+                            function(btn){ 
+                                if(btn=='yes') {
+                                    var conn = new Ext.data.Connection();
+                                    conn.request({
+                                        url: '/feature/update',
+                                        params: { action: 'delete', id_rel: sel.data.id },
+                                        success: function(resp,opt) { grid.getStore().remove(sel); },
+                                        failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the feature.') %>'); }
+                                    });	
+                                }
+                            } );
+                    }
+                }),
+                '->'
+                ]
+        });
 
-		grid.on("rowdblclick", function(grid, rowIndex, e ) {
-			var r = grid.getStore().getAt(rowIndex);
-			Baseliner.addNewTab('/feature/edit?id_rel=' + r.get('id') , r.get('name') );
-		});		
+        grid.on("rowdblclick", function(grid, rowIndex, e ) {
+            var r = grid.getStore().getAt(rowIndex);
+            Baseliner.addNewTab('/feature/edit?id_rel=' + r.get('id') , r.get('name') );
+        });		
 
-	return grid;
+    return grid;
 })();
 
 

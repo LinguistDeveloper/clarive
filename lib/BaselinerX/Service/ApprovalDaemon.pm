@@ -100,7 +100,7 @@ sub check_approvals {
                 status => { '<>'  => 'cancelled' },
                 ns     => $ns->ns,
             },
-            { order_by => 'id desc' }
+            { order_by => { '-desc' => 'id' } }
         );
         $reqs->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
@@ -198,7 +198,7 @@ sub check_approvals {
     #my $reqs = Baseliner->model('Baseliner::BaliRequest')
     #	->search(
     #		{ action=>'action.harvest.approve', status=>{ '<>' => 'cancelled' } },
-    #		{ order_by=>'id desc' }
+    #		{ order_by=> { -desc =>'id' } }
     #	);
     #while( my $req = $reqs->next ) {
     #}

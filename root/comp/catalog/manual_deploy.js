@@ -63,8 +63,6 @@
     
     var form = new Ext.FormPanel({
         frame: true,
-        width: 600,
-        height: 600,
         //style: 'margin: 20px 200px 200px 20px',
         //style: 'padding: 20px 20px 20px 20px',
         defaults: {
@@ -90,8 +88,9 @@
         ]
     });
     var panel = new Ext.Panel({
+        height: '100%',
         width: 600,
-        height: 600,
+        autoScroll:true,
         tbar: [ Baseliner.button(_('Save'), '/static/images/icons/keyboard_add.png', function(){
             form.getForm().submit({
                 url: '/manualdeploy/save',

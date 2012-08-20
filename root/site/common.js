@@ -3,6 +3,25 @@ Baseliner.cookie = new Ext.state.CookieProvider({
         expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
 });
 
+// In-edit counter - keep the window for closing if it's more than > 0
+Baseliner.is_in_edit = function(){
+    var flag = false;
+    if( console ) console.log( Baseliner.in_edit );
+    for( var k in Baseliner.in_edit ) {
+        if( Baseliner.in_edit[k] ) flag=true;
+    }
+    return flag;
+}
+// Watch when something blocks the window from closing
+Baseliner.edit_check = function( comp, auto_start ){
+    var id = comp.id;
+    if( auto_start == undefined ) auto_start = true;
+    comp.edit_start = function(){ Baseliner.in_edit[ id ] = true }
+    comp.edit_end = function(){ Baseliner.in_edit[ id ] = false }
+    comp.on('afterrender', function(){ comp.edit_start() });
+    comp.on('destroy', function() { delete Baseliner.in_edit[ id ]  } );
+}
+
 //Ext.state.Manager.setProvider(Baseliner.cookie);
 //Baseliner.cook= Ext.state.Manager.getProvider();
 Baseliner.unload_warning = function() {
@@ -31,6 +50,8 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
     Baseliner.loadFile( '/comp/topic/topic_lib.js', 'js' );
+
+    Baseliner.loadFile( '/static/site.css', 'css' );
 
     Baseliner.message(_('JS'), _('Reloaded successfully') );  
 };
@@ -444,6 +465,114 @@ Baseliner.combo_project = function(params) {
     return combo;
 };
 
+Baseliner.array_field = function( args ) {
+    var field_name = args.name;
+    var title = args.title;
+    var label = args.label;
+    var value = args.value;
+    var description = args.description || '';
+    var default_value = args.default_value;
+
+    var fstore = new Ext.data.SimpleStore({ fields:[ field_name ] });
+    if( value != undefined ) {
+        var push_item = function(f, v ) {
+            var rr = new Ext.data.Record.create([{
+                name: f,
+                type: 'string'
+            }]);
+            var h = {}; h[ field_name ] = v;
+            // put it in the grid store
+            fstore.insert( x, new rr( h ) );
+        };
+        try {
+            // if it's an Array or Hash
+            if( typeof( value ) == 'object' ) {
+                for( var x=0; x < value.length ; x++ ) {
+                    push_item( field_name, value[ x ] ); 
+                }
+                // save 
+                try { value =Ext.util.JSON.encode( value ); } catch(f) {} 
+            } else if( value.length > 0 ) {  // just one element
+                push_item( field_name, value ); 
+            }
+        } catch(e) {}
+    }
+
+    var fdata = new Ext.form.Hidden({ name: field_name, value: value, allowBlank: 1 });
+    var fgrid = new Ext.grid.EditorGridPanel({
+            name: field_name + '_grid',
+            fieldLabel: label,
+            width: 410,
+            height: 200,
+            title: title,
+            frame: true,
+            clicksToEdit: 1,
+            viewConfig: {
+                scrollOffset: 2,
+                forceFit: true
+            },
+            store: fstore,
+            cm: new Ext.grid.ColumnModel([{
+                dataIndex: field_name,
+                width: 390,
+                editor: new Ext.form.TextField({
+                    allowBlank: false, 
+                    renderer: function(v) {  return "a" }
+                })
+            }]),
+            sm: (function () {
+                var rsm = new Ext.grid.RowSelectionModel({
+                    singleSelect: true
+                });
+                rsm.addListener('rowselect', function () {
+                    var __record = rsm.getSelected();
+                    return __record;
+                });
+                return rsm;
+            })(),
+            tbar: [{
+                text: _('Add'),
+                icon: '/static/images/drop-add.gif',
+                cls: 'x-btn-text-icon',
+                handler: function () {
+                    var ___record = Ext.data.Record.create([{
+                        name: field_name,
+                        type: 'string'
+                    }]);
+                    var h = {};
+                    h[ field_name ] = _( default_value );
+                    var p = new ___record( h );
+                    //fgrid.stopEditing();
+                    fstore.add(p);
+                    //fgrid.startEditing(0, 0);
+                }
+            }, {
+                text: _('Delete'),
+                icon: '/static/images/del.gif',
+                cls: 'x-btn-text-icon',
+                handler: function (e) {
+                    var __selectedRecord = fgrid.getSelectionModel().getSelected();
+                    if (__selectedRecord != null) {
+                        fstore.remove(__selectedRecord);
+                    }
+                }
+            }, '->', description ]
+    });
+
+    var write_to_field = function () {
+        var arr = new Array();
+        fstore.each( function(r) {
+            arr.push( r.data[ field_name ] );
+        });
+        fdata.setValue( Ext.util.JSON.encode( arr ) );
+    };
+    fstore.on('beforeaction', write_to_field );
+    fstore.on('create', write_to_field );
+    fstore.on('remove', write_to_field );
+    fstore.on('update', write_to_field );
+    return { data: fdata, grid: fgrid };
+};
+
 Baseliner.combo_baseline = function(params) {
     if( params==undefined) params={};
     var store = new Baseliner.JsonStore({
@@ -510,6 +639,7 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     hideTrigger1:true,
     width:280,
     hasSearch : false,
+    emptyText: _('<Enter your search string>'),
     paramName : 'query',
 
     onTrigger1Click : function(){

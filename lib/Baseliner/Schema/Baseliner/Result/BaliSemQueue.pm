@@ -34,7 +34,7 @@ __PACKAGE__->add_columns(
     data_type => "VARCHAR2",
     default_value => undef,
     is_nullable => 1,
-    size => 255,
+    size => 1024,
   },
   "host",
   {
@@ -196,6 +196,7 @@ Release semaphore.
 sub release {
     my $self = shift;
     $self->status('done');
+    $self->update;
     $self->busy_secs( time + $self->busy_secs );
     $self->ts_release( _now() );
     $self->update;
@@ -233,8 +234,8 @@ C<wait_for> will trigger a C<DESTROY> everytime.
 =cut
 sub DESTROY {
     my $self = shift;
-    if( $self->status =~ /busy|waiting|idle/ ) {
-        #$self->release;
+    if( $self->status && $self->status =~ /busy|waiting|idle/ ) {
+        $self->release;
         #$self->ts_release( \'sysdate' );
     }
 }

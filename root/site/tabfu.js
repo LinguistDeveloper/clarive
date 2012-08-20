@@ -1,6 +1,39 @@
-    Baseliner.tabInfo = {};
+/*
 
-    Ext.Ajax.timeout = 60000;
+ tabfu.js - window, tab and component management
+
+*/
+
+    Baseliner.tabpanel = function() { return Ext.getCmp('main-panel') };
+
+    Baseliner.eventKey = function(key) {
+        var f = Baseliner.keyMap[ key ];
+        if( f!=undefined ) {
+            return f();
+        } else {
+            //alert( key );
+        }
+    };
+
+    Baseliner.tab_switch = function(step) {
+        var tabpanel = Baseliner.tabpanel();
+        var tab = tabpanel.getActiveTab();
+        var tab_index = tabpanel.items.findIndex('id', tab.id );
+        if( step < 0 && tab_index > 0 ) {
+            var next = tabpanel.items.get( tab_index + step );
+            tabpanel.setActiveTab( next );
+        } else if( step > 0 && tab_index < tabpanel.items.getCount()-1 ) {
+            var next = tabpanel.items.get( tab_index + step );
+            tabpanel.setActiveTab( next );
+        }
+    };
+
+    // F5
+    Baseliner.keyMap[ 116 ] = function() { Baseliner.refreshCurrentTab(); return false };
+    // left arrow = 37 , F9 = 120
+    Baseliner.keyMap[ 120 ] = function() { Baseliner.tab_switch(-1); return true };
+    // right arrow = 39, F10 = 121
+    Baseliner.keyMap[ 121 ] = function() { Baseliner.tab_switch(1); return true };
 
     // Generates a pop-in message
     // User stuff
@@ -203,6 +236,88 @@
         });
    };
 
+
+    Baseliner.change_password = function() {
+       var change_pass_form = new Ext.FormPanel({
+            url: '/user/change_pass',
+            frame: true,
+            labelWidth: 100, 
+            timeout: 120,
+            defaults: { width: 175,
+            inputType:'password'
+        },
+        defaultType: 'textfield',	    
+        items: [
+        {
+          fieldLabel: _('Old Password'),
+          name: 'oldpass'
+        },		
+        {
+          fieldLabel: _('New Password'),
+          name: 'newpass',
+          id: 'newpass'
+        },{
+          fieldLabel: _('Confirm Password'),
+          name: 'pass-cfrm',
+          vtype: 'password',
+          initialPassField: 'newpass'
+        }],
+            buttons: [
+                { text: _('Aceptar'),
+                  handler: function() {
+            var form = change_pass_form.getForm();
+            
+            if (form.isValid()) {
+                   form.submit({
+                   success: function(f,a){
+                    Baseliner.message(_('Success'), a.result.msg );
+                    win_change.close(); 
+                   },
+                   failure: function(f,a){
+                       Ext.Msg.show({  
+                       title: _('Information'), 
+                       msg: a.result.msg , 
+                       buttons: Ext.Msg.OK, 
+                       icon: Ext.Msg.INFO
+                       }); 						
+                   }
+                   });
+            }
+          }
+                },
+                { text: _('Cancelar'),
+                  handler: function() {
+                win_change.close();  
+                           }
+                }
+            ]	    
+        });
+       
+        var win_change = new Ext.Window({
+        id: 'win_change',
+            title: _('Change password'),
+            width: 350,
+        modal: true,
+        autoHeight: true,
+            items: [ change_pass_form ]
+         });
+    
+        win_change.show();       
+    }
+    
+    Ext.apply(Ext.form.VTypes, {
+    password : function(val, field) {
+        if (field.initialPassField) {
+        var pwd = Ext.getCmp(field.initialPassField);
+        return (val == pwd.getValue());
+        }
+        return true;
+    },
+    
+    passwordText : 'Passwords do not match'
+    });    
+
+
     Baseliner.surrogate = function() {
        var login_form = new Ext.FormPanel({
             url: '/auth/surrogate',
@@ -334,7 +449,7 @@
     };
 
     //adds a new fragment component with html or <script>...</script>
-    Baseliner.addNewTab = function(purl, ptitle, params ){
+    Baseliner.addNewTab = function(purl, ptitle, params, obj_tab ){
         //Baseliner.
             var newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
             var tabpanel = Ext.getCmp('main-panel');
@@ -360,7 +475,6 @@
                             Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
                         }
                     }
-
                 }
             }); 
     };
@@ -481,7 +595,14 @@
             var tabpanel = new Ext.Panel({
                     layout: 'fit', 
                     autoLoad: {url: purl, scripts:true }, 
-                    tbar: [ search ],
+                    tbar: [
+                        search, 
+                        { icon: '/static/images/icons/html.gif', style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
+                            handler: function(){
+                                var win = window.open( purl );
+                            } 
+                        }
+                    ],
                     title: ptitle
             });
             search.pcom = tabpanel;
@@ -529,23 +650,63 @@
         window.open(url,'_blank');
     };
 
-    Baseliner.addNewIframe = function(url,title) {
-        var tab = Ext.getCmp('main-panel').add({ 
+    Baseliner.addNewIframe = function(url,title,params) {
+        var tabpanel = Baseliner.tabpanel();
+        var tab = tabpanel.add({ 
                     xtype: 'panel', 
                     layout: 'fit', 
-                    html: '<iframe border=0 width="100%" height="100%" src="' + url + '"></iframe>',
+                    autoScroll: false,
+                    style: { overflow: 'hidden' },
+                    html: '<iframe style="margin: -2px" border=0 width="100%" height="100%" src="' + url + '"></iframe>',
                     title: title
         }); 
         Ext.getCmp('main-panel').setActiveTab(tab); 
+        if( params == undefined ) params={};
+        if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
+        var id = tab.getId();
+        Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe' };
+    };
+
+    Baseliner.add_iframe = function(url,title,params) {
+        var tabpanel = Baseliner.tabpanel();
+        var panel = new Ext.Panel({
+            layout: 'fit', 
+            autoScroll: false,
+            tbar: [
+                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow_left_black.png', handler:function(){ 
+                      var dom = panel.body.dom;
+                      var iframe = dom.childNodes[0];
+                      iframe.contentWindow.history.back();
+                  }
+                },
+                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow_right_black.png', handler:function(){ 
+                      var dom = panel.body.dom;
+                      var iframe = dom.childNodes[0];
+                      iframe.contentWindow.history.forward();
+                  }
+                }
+            ],
+            style: { overflow: 'hidden' },
+            html: '<iframe style="margin: -2px" border=0 width="100%" height="100%" src="' + url + '"></iframe>',
+            title: title
+        });
+        var tab = tabpanel.add(panel); 
+        Ext.getCmp('main-panel').setActiveTab(tab); 
+        if( params == undefined ) params={};
+        if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
         var id = tab.getId();
         Baseliner.tabInfo[id] = { url: url, title: title, type: 'iframe' };
     };
 
     Baseliner.error_parse = function( err, xhr ) {
-        var str=""; 
+        var arr=[]; 
         for(var i in err) {
-            str+="<li>" + i + "=" + err[i]; 
+            arr.push(  i + "=" + err[i] );
         }
+        if( err.message ) arr.push(  "Message =" + err['message'] );
+        if( err.line ) arr.push(  "Line Num =" + err['line'] );
+
+        str = "<li>" + arr.join('</li><li>') + '</li>';
         var res = xhr.responseText;
         res.replace(/\</,'&lt;');
         res.replace(/\>/,'&gt;');
@@ -660,18 +821,25 @@
                             if( comp.logged_out ) {
                                 Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo)} });
                             } else {
-                                    try { foo(comp); } catch(ef1) { err_foo = ef1 }
+                                try { foo(comp); } catch(ef1) { err_foo = ef1 }
                             }
                         } catch(e2) { throw e1; }
                     }
                 } catch(err) {
                     if( xhr.responseText.indexOf('dhandler') > -1 ) {
-                        Ext.Msg.alert("Page not found: ", url + '<br>' + xhr.responseText );
+                        Ext.Msg.alert( _("Page not found: %1", url ) + '<br>' + xhr.responseText );
                     } else {
-                        Baseliner.error_parse( err, xhr );
+                       Baseliner.error_parse( err, xhr );
+                       if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) {
+                            console.log( err );
+                            console.log( xhr );
+                       }
+                       if( Baseliner.DEBUG ) {
+                            Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging
+                       }
                     }
                 }
-                    if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
+                if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
             },
             failure: function(xhr) {
                 Baseliner.server_failure( xhr.responseText );

@@ -42,5 +42,29 @@ sub each {
     }
 }
 
+=head2 hash_on column_name
+
+Creates a hash keyed on a column_name, such as:
+
+    key1:
+       - 
+        col1: val1
+        col2: val2
+       - 
+        col1: val3
+        col2: val4
+
+Returns a HASHREF (scalar) or HASH (list) depending on context.
+
+=cut
+sub hash_on {
+    my ($self, $col ) = @_;
+    my %ret;
+    for my $row ( $self->hashref->all ) {
+        my $k = $row->{ $col };
+        push @{ $ret{ $k } }, $row;
+    }
+    return wantarray ? %ret : \%ret;
+}
 1;
 

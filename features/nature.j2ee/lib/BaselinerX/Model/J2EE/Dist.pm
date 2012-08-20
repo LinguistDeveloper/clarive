@@ -135,7 +135,7 @@ sub webBuild
     my $cmd              = qq| find "$PaseDir/$CAM/$Sufijo" -name "build.xml |;
     _log "\nInvestigando si hay build.xml ...\ncmd: $cmd\n";
     my @buildfound = `$cmd`;
-    @buildfound = unique @buildfound;
+    @buildfound = _unique @buildfound;
 
     _log "\n\nbuilfound:" . Data::Dumper::Dumper \@buildfound;
 
@@ -516,7 +516,7 @@ sub webBuild
             _throw "Error durante la construcción de la aplicación";
         }
         &$_ foreach @ANT;                                     # Ejecuta todos los ants
-        $Dist{genfiles} = [unique @{$Dist{genfiles} || []}];
+        $Dist{genfiles} = [_unique @{$Dist{genfiles} || []}];
     }    # fin build.xml generado por webDist
     $balix_pool->purge;
     return 1;

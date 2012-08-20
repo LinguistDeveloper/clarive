@@ -144,51 +144,6 @@ sub process_queue {
     }
 }
 
-#    my ($self, %args ) = @_;
-#    my $semaphores = Baseliner->model('Baseliner::BaliSem')->search({ 'me.active'=>1, slots=>{ '>' => 0 }  });
-#    my $data={};
-#    while( my $sem = $semaphores->next ) {
-#        # check slot availability
-#        my $slots = $sem->slots;
-#        my $occupied = $sem->occupied;
-#        my $free_slots = $slots - $occupied;
-#        $ENV{BASELINER_DEBUG} and _log sprintf "SEM=%s, slots=%s, occ=%s" , $sem->sem, $sem->slots, $sem->occupied;
-#        next if $occupied >= $slots && $sem->queue_mode ne 'free';
-#
-#        # grant to queue
-#        $data->{$sem->sem} = $self->grant_slots( sem=>$sem, free_slots=>$free_slots, host=>$args{host}, show_only=>$args{show_only} );
-#    }
-#    return $data;
-#}
-
-#sub grant_slots {
-#    my ($self, %p ) = @_;
-#    my @queue_data;
-#    my $sem = $p{sem} or _throw "Missing parameter 'sem'";
-#    my $free_slots = defined $p{free_slots}
-#        ? $p{free_slots} : $sem->slots - $sem->occupied;
-#    # get the queue for this semaphore
-#    my $queue = $sem->bl_queue->search(
-#        { 'active'=>1, 'status'=>'waiting' },
-#        {
-#            order_by=>'seq DESC, id ASC',
-#        }
-#    );
-#    # process queue one by one
-#    while( my $q = $queue->next  ) {
-#        last unless $free_slots > 0;
-#        #_log $q->id, " => ", $q->sem;
-#        unless( $p{show_only} ) {
-#            $q->status( 'granted' );
-#            $q->update;
-#        } 
-#        push @queue_data, { $q->get_columns };
-#        -- $free_slots;
-#        _log _loc("Granted slot to %1-%2 (pid=%3)", $q->sem, $q->bl, $q->pid );
-#    }
-#    return \@queue_data;
-#}
-
 sub list_queue {
     my ($self, %p ) = @_;
     my $data = $self->process_queue( show_only=>1 );
@@ -249,9 +204,9 @@ sub check_for_roadkill {
     while( my $r = $rs->next ) {
         my $pid = $r->pid;
         #next unless $pid > 0;
-        $ENV{ BASELINER_DEBUG } && _log _loc("Checking if process $pid exists");
+        _debug _loc("Checking if process $pid exists");
         next if pexists( $pid );
-        $ENV{ BASELINER_DEBUG } && _log _loc("Process $pid does not exist");
+        _debug _loc("Process $pid does not exist");
         _log _loc("Detected killed semaphore %1-%2", $r->sem, $r->bl);
         $r->status('killed');
         $r->update;

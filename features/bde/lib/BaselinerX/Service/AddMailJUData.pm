@@ -30,9 +30,9 @@ sub main {
     username     => $job->job_data->{username},
     start_time   => $job->job_data->{startime},
     end_time     => $job->job_data->{endtime},
-    cam_list     => [unique map { _pathxs $_->{fullpath}, 1 } @elements],
+    cam_list     => [_unique map { _pathxs $_->{fullpath}, 1 } @elements],
     nature_list  => [get_job_natures $job->{jobid}],
-    package_list => [unique map { $_->{package} } @elements],
+    package_list => [_unique map { $_->{package} } @elements],
     subapps_list => [get_job_subapps $job->{jobid}]
   };
   # Turn it to utf8.

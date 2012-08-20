@@ -1,3 +1,6 @@
+<%args>
+    $baselines
+</%args>
 <%doc>
     job_new.mas - new job creation screen
 </%doc>
@@ -13,6 +16,12 @@
     $now->set_time_zone(_tz);
     my $today =  $now->strftime('%d/%m/%Y');
     my $hm =  $now->strftime('%H:%M');
+
+    $baselines = [
+        map {
+            [ $_->[0], "$_->[0] - $_->[1]" ]
+        } _array( $baselines )
+    ];
 </%perl>
 <script type='text/javascript'>
 
@@ -65,22 +74,29 @@ Ext.onReady(function(){
     var baselines = new Ext.data.SimpleStore({
         fields: ['bl', 'name'],
         id: 0,
-        data : <% js_dumper( $c->stash->{baselines} ) %>
+        data : <% js_dumper( $baselines ) %>
         });
 
+    var tpl_baseline = new Ext.XTemplate(
+        '<tpl for=".">',
+            '<div class="search-item">{name}</div>',
+        '</tpl>'
+        );
     var combo_baseline = new Ext.form.ComboBox({
         name: 'bl',
         hiddenName: 'bl',
+        displayField:'name',
+        valueField: 'bl',
         fieldLabel: label_dest,
         labelStyle: 'margin-left: 7px',
         mode: 'local',
         store: baselines,
-        valueField: 'bl',
-        value: '<% $c->stash->{baselines}->[0]->[0] %>',
-        displayField:'name',
+        value: '<% $baselines->[1]->[0] %>',
         editable: false,
         forceSelection: true,
         triggerAction: 'all',
+        itemSelector: 'div.search-item',
+        tpl: tpl_baseline,
         allowBlank: false,
         listeners: {
             select: { fn: function(){
@@ -93,8 +109,10 @@ Ext.onReady(function(){
                     }
                 }
             },
-        width: 120
-        });
+        width: 200
+    });
+    combo_baseline.on( 'afterrender', function(){
+    });
 
     var window_check = new Ext.form.Checkbox({
         labelStyle: 'margin-left: 7px',
@@ -103,14 +121,14 @@ Ext.onReady(function(){
         boxLabel: 'Chequee si quiere crear un pase fuera de ventana.',
         disabled: true,
         handler: _setOutWindow
-        });
+    });
 
     var field_calendar = new Ext.ux.form.DateFieldPlus({
         id: 'job_date<% $iid %>',
         labelStyle: 'margin-left: 7px',
         name: 'job_date',
         disabled: true,
-        // readOnly: true,  ## No muestra el botón del calendario
+        // readOnly: true,  ## No muestra el botÃ³n del calendario
         fieldLabel: '<% _loc('Date') %>',
         allowBlank: false,
         usePickerPlus: true,
@@ -218,7 +236,7 @@ Ext.onReady(function(){
 
     function _setDatePicker(picker){_datePicker = picker;}
 
-    var time_store = new Ext.data.JsonStore({
+    var time_store = new Baseliner.JsonStore({
         root: 'data',
         url: '/job/check_time',
         fields: [
@@ -429,8 +447,8 @@ Ext.onReady(function(){
     // hour validator
     Ext.form.VTypes['hourVal']  = /^[0-2][0-9]:[0-5][0-9]$/;
     Ext.form.VTypes['hourMask'] = /[0-9:]/;
-    Ext.form.VTypes['hourText'] = _('Formato de Hora inválido (00:00-23:59)');
-    // Ext.form.VTypes['hourText'] = _('Formato de Hora invÃ¡lido (00:00-23:59)');
+    Ext.form.VTypes['hourText'] = _('Formato de Hora invÃ¡lido (00:00-23:59)');
+    // Ext.form.VTypes['hourText'] = _('Formato de Hora invÃÂ¡lido (00:00-23:59)');
     Ext.form.VTypes['hour']     = function(v){
         var t = Ext.form.VTypes['hourVal'].test(v);
         if( ! t ) return false;
@@ -438,8 +456,8 @@ Ext.onReady(function(){
         if( checkExpired(v) ) return false;
         var arr = v.split(":");
         if( arr[0] > 23 || arr[1] > 59 ) {
-            field_spinner.markInvalid( _('Formato de Hora inválido (00:00-23:59)') );
-            // field_spinner.markInvalid( _('Formato de Hora invÃ¡lido (00:00-23:59)') );
+            field_spinner.markInvalid( _('Formato de Hora invÃ¡lido (00:00-23:59)') );
+            // field_spinner.markInvalid( _('Formato de Hora invÃÂ¡lido (00:00-23:59)') );
             return false;
             }
         return true;
@@ -943,16 +961,16 @@ Ext.onReady(function(){
         '<tpl for="."><div ext:qtip="{moreInfo}" qtitle="<% _loc('More Info...') %><hr>" class="search-item {recordCls}">',
         '<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{item}</h3>',
         '<tpl if="packages">',
-        '<br />{packages}',
+            '<br />{packages}',
         '</tpl>',
         '<tpl if="text">',
-        '<br />{text}',
+            '<br />{text}',
         '</tpl>',
         '<tpl if="subapps">',
-        '<br />{subapps}',
+            '<br />{subapps}',
         '</tpl>',
         '<tpl if="why_not">',
-        '<br />{why_not}',
+            '<br />{why_not}',
         '</tpl>',
         '</div></tpl>'
         );
@@ -1092,8 +1110,8 @@ Ext.onReady(function(){
 % unless( scalar _array _array( $c->stash->{baselines} ) ) {
     Ext.MessageBox.show({
         title: 'Error',
-        msg: 'Su usuario no tiene permisos de creación de pases en ningún entorno',
-        // msg: 'Su usuario no tiene permisos de creaciÃ³n de pases en ningÃºn entorno',
+        msg: 'Su usuario no tiene permisos de creaciÃ³n de pases en ningÃºn entorno',
+        // msg: 'Su usuario no tiene permisos de creaciÃÂ³n de pases en ningÃÂºn entorno',
         buttons: Ext.MessageBox.OK,
         icon: Ext.MessageBox.ERROR
         });

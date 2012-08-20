@@ -7,6 +7,11 @@ sub detail : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my $message = $c->model('Messaging')->get( id=>$p->{id} );
+            
+    my $r = $c->model('Baseliner::BaliMessageQueue')->find({ id=>$p->{id}, username=> $c->username });
+    $r->swreaded( '1' );
+    $r->update();		
+    
     $c->stash->{json} = { data => [ $message ] };		
     $c->forward('View::JSON');
 }
@@ -35,7 +40,8 @@ sub im_json : Local {
 sub inbox_json : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
+    
     $sort ||= 'sent';
     $dir ||='desc';
     return unless $c->user;
@@ -46,7 +52,8 @@ sub inbox_json : Local {
             sort     => $sort,
             dir      => $dir,
             start    => $start,
-            limit    => $limit
+            limit    => $limit,
+            query_id => $query_id || undef
     );
     $c->forward('/message/json');
 }
@@ -67,9 +74,10 @@ sub json : Local {
                  received    => $message->received,
                  body    => substr( $message->body, 0, 100 ),
                  sent       => $message->sent,
+                 swreaded	=> $message->swreaded
              }
     }
-    $c->stash->{json} = { totalCount=>$c->stash->{messages}->{total}, data => \@rows };		
+    $c->stash->{json} = { totalCount=>$c->stash->{messages}->{total}, data => \@rows };
     $c->forward('View::JSON');
 }
 
@@ -90,8 +98,11 @@ sub delete : Local {
 
 sub inbox : Local {
     my ( $self, $c ) = @_;
+    my $p = $c->req->params;
     $c->stash->{username} = $c->username;
-    $c->stash->{template} = '/comp/message_grid.mas';
+    $c->stash->{query_id} = $p->{query};	
+     $c->stash->{template} = '/comp/message_grid.mas';
+    
 }
 
 

@@ -175,17 +175,9 @@ sub _create {
 
     ## Para permitir crear pases a fecha pasada - Refleja actividad pasada en Changeman.
     my ($starttime, $maxstarttime ) = ( $p{starttime}, $p{maxstarttime} );
+    $starttime =  $starttime->strftime('%Y-%m-%d %T');
+    $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
 
-    # my ($starttime, $maxstarttime ) = ( $now, $end );
-    # ($starttime, $maxstarttime ) = $p{starttime} < $now
-        # ? ( $now , $end )
-        # : ($p{starttime} , $p{maxstarttime} );
-    # $maxstarttime = $starttime->clone->add( hours => $config->{expiry_time}->{$jobType} || 24 );
-
-    #if( is_oracle ) {
-        $starttime =  $starttime->strftime('%Y-%m-%d %T');
-        $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
-    #}
     my $type = $p{type} || $p{job_type} || $config->{type};
 
     my $job = Baseliner->model('Baseliner::BaliJob')->create({

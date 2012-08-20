@@ -1,8 +1,4 @@
 package Baseliner::Schema::Baseliner::Result::BaliRole;
-
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
-
 use strict;
 use warnings;
 
@@ -54,11 +50,9 @@ __PACKAGE__->table("bali_role");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "NUMBER",
-    default_value => undef,
+    data_type => "integer",
     is_auto_increment => 1,
     is_nullable => 0,
-    size => 38,
   },
   "role",
   {
@@ -115,9 +109,11 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-10-29 18:11:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SZePRrn3q3DyUUF50Lfv4w
-
+__PACKAGE__->has_many(
+  "roles",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesAdmin",
+  { id => "id_role" },
+);
 
 sub name {
     my $self = shift;
