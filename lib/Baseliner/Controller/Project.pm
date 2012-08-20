@@ -9,13 +9,13 @@ use JSON::XS;
 use namespace::clean;
 
 register 'menu.admin.project' => {
-	label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.role'],
-	title=>'Projects', index=>80,
-	icon=>'/static/images/icons/project.gif' };
+    label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.role'],
+    title=>'Projects', index=>80,
+    icon=>'/static/images/icons/project.gif' };
 
 sub list : Local {
     my ($self,$c) = @_;
-	my $p = $c->request->parameters;
+    my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $sort ||= 'name';
     $dir ||= 'asc';
@@ -25,24 +25,24 @@ sub list : Local {
     my $where = $query
         ? { 'lower(name||ns||description)' => { -like => "%".lc($query)."%" } } 
         : undef;
-	my $rs = $c->model('Baseliner::BaliProject')->search(
+    my $rs = $c->model('Baseliner::BaliProject')->search(
        $where,
     {
         page => $page,
         rows => $limit,
         order_by => $sort ? "$sort $dir" : undef
     });
-	rs_hashref( $rs );
-	sub dump_join {
-		join ', ', map { sprintf "%s: %s", $_, ( $_[0]->{$_} || "''" ) } sort keys %{ $_[0] };
-	};
-	my @rows = map { 
-		$_->{ns} = 'project/' . $_->{id};
-		$_->{data} = dump_join( $_ ); 
-		$_ }
-		 $rs->all;
-	$c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
-	$c->forward('View::JSON');
+    rs_hashref( $rs );
+    sub dump_join {
+        join ', ', map { sprintf "%s: %s", $_, ( $_[0]->{$_} || "''" ) } sort keys %{ $_[0] };
+    };
+    my @rows = map { 
+        $_->{ns} = 'project/' . $_->{id};
+        $_->{data} = dump_join( $_ ); 
+        $_ }
+         $rs->all;
+    $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
+    $c->forward('View::JSON');
 }
 
 sub grid : Local {
@@ -52,9 +52,9 @@ sub grid : Local {
 
 sub show : Local {
     my ( $self, $c, $id ) = @_;
-	my $p = $c->request->parameters;
-	$id ||= $p->{id};
-	my $prj = Baseliner->model('Baseliner::BaliProject')->search({ id=>$id })->first;
+    my $p = $c->request->parameters;
+    $id ||= $p->{id};
+    my $prj = Baseliner->model('Baseliner::BaliProject')->search({ id=>$id })->first;
 
     $c->stash->{id} = $id;
     $c->stash->{prj} = $prj;
@@ -70,7 +70,7 @@ returns the user project json
 =cut
 sub user_projects : Local {
     my ($self,$c) = @_;
-	my $p = $c->request->parameters;
+    my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $sort ||= 'name';
     $dir ||= 'asc';
@@ -96,8 +96,8 @@ sub user_projects : Local {
         $_->{description} ||= $_->{name};
         $_ } $rs->all;
   @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
-	$c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
-	$c->forward('View::JSON');
+    $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
+    $c->forward('View::JSON');
 }
 
 1;

@@ -1,0 +1,948 @@
+package BaselinerX::Job::Service::LoadApplication;
+use strict;
+use warnings;
+use 5.010;
+use Baseliner::Plug;
+use Baseliner::Utils;
+use BaselinerX::BdeUtils;
+use Try::Tiny;
+use utf8;
+
+register 'service.load.application' => {
+  name    => 'Loads application',
+  handler => \&aplMain
+};
+
+sub aplMain
+{
+    my ($self, $c, $config) = @_;
+    _log "Starting service 'service.load.apps'";
+
+    my $config_harvest = Baseliner->model('ConfigStore')->get('config.harvest');
+    my $haruser    = $config_harvest->{user};
+    my $broker     = $config_harvest->{broker};
+    my $freq       = _bde_conf('alta_frecuencia');
+    my $harpwd     = _bde_conf('harpwd');
+    my $inf_data   = _bde_conf('inf_data');
+    my $loghome    = _bde_conf('loghome');
+    my $templates  = _bde_conf('templates');
+    my $udpverbose = _bde_conf('udpverbose');
+
+    _log qq{
+      -----------------------------------
+       broker: $broker
+       freq: $freq
+       harpwd: $harpwd
+       haruser: $haruser
+       inf_data: $inf_data
+       loghome: $loghome
+       templates: $templates
+       udpverbose: $udpverbose
+      -----------------------------------
+    };
+
+    for (1 .. 1000)
+    {
+        _log "AltaAplicación: Comprobación de Aplicaciones a crear... ";
+
+        my $har_db = BaselinerX::CA::Harvest::DB->new();
+        my %ENVS = $har_db->db->hash(qq{
+          SELECT DISTINCT UPPER (cam), NVL (d.scm_apl_publica, 'No'), d.scm_apl_crear,
+                          NVL (d.scm_apl_sistemas, 'No')
+                     FROM $inf_data d
+                    WHERE d.ID = (SELECT MAX (d2.ID)
+                                    FROM $inf_data d2
+                                   WHERE d2.cam = d.cam)
+        });
+
+        foreach my $CAM (keys %ENVS)
+        {
+            my ($esPublicaStr, $crear, $sistemas) = @{$ENVS{$CAM}};
+            my $esPublica  = ($esPublicaStr =~ /^S/ ? 1 : 0);
+            my $esSistemas = ($sistemas     =~ /^S/ ? 1 : 0);
+
+            if ($crear eq "Si")
+            {
+                my $SQL = qq{
+                  SELECT environmentname
+                    FROM harenvironment e
+                   WHERE e.envobjid > 0 AND e.envisactive <> 'T'
+                };
+                $SQL .= (
+                         $esPublica
+                         ? " AND UPPER (SUBSTR (environmentname, 0, 3)) = UPPER ('$CAM') "
+                         : " AND UPPER (environmentname) LIKE UPPER ('$CAM (%)') "
+                        );
+                my @yaExiste = $har_db->db->array($SQL);
+                if (($esPublica && @yaExiste > 0) or (!$esPublica && @yaExiste > 1))
+                {
+                    _log "AltaAplicación: Aplicación ya existe en Harvest: $CAM (Pública=$esPublicaStr):\n-->" . join("\n-->", @yaExiste) . "\n";
+                    $self->setInfSCMStatus($CAM, "Creado");
+                }
+                else
+                {
+                    try
+                    {
+                        _log "AltaAplicación: Inicio: $CAM (Pública=$esPublicaStr)";
+                        if ($esPublica)
+                        {
+                            $self->CreaRepositorio($CAM, "", "publica");
+                            if ($self->CreaAplicacion($CAM, "", "_PUBLICO") eq 0)
+                            {
+                                $self->AsociaAplRepositorio($CAM, $CAM);
+                            }
+                        }
+                        elsif ($esSistemas)
+                        {
+                            $self->CreaRepositorio($CAM, "", "sistemas");
+                            if ($self->CreaAplicacion($CAM, "", "_BDE_SIS") eq 0)
+                            {
+                                $self->AsociaAplRepositorio($CAM, $CAM);
+                            }
+                        }
+                        else
+                        {
+                            $self->CreaRepositorio($CAM, "", "normal");
+                            try
+                            {
+                                if ($self->CreaAplicacion($CAM, "", "_BDE") eq 0)
+                                {
+                                    $self->AsociaAplRepositorio("$CAM", $CAM);
+                                }
+                            }
+                            catch
+                            {
+                                _log "AltaAplicación $CAM: error: " . shift();
+                            }
+                        }
+                        _log "AltaAplicación: Fin OK: $CAM (Pública=$esPublicaStr)";
+                        $self->setInfSCMStatus($CAM, "Creado");
+                    }
+                    catch
+                    {
+                        my $ex = shift();
+                        _log "AltaAplicación $CAM: Fin con Error: $ex";
+                    };
+                }
+            }
+        }
+        ## cambios de [project] a CAM
+        $self->chgPermisosAplicaciones();
+        $self->chgPermisosEstados();
+        $self->chgPermisosProcesos();
+        $self->chgDefaultPackage();
+        ## cambios de CAM a [project]
+        $self->chgPermisosAplicacionesTemplates();
+        $self->chgPermisosEstadosTemplates();
+        $self->chgPermisosProcesosTemplates();
+        _log "AltaAplicación: proceso concluído. Nuevo intento en $freq segundos.";
+        sleep $freq;
+    }
+}
+
+sub CreaAplicacion
+{
+    ##   (el SufijoEnv puede ser "(Red Interna)" o "(Internet)" o "" )
+    my ($self, $CAM, $SufijoEnv, $envTemplate) = @_;
+    my $freq       = _bde_conf('alta_frecuencia');
+    my $harpwd     = _bde_conf('harpwd');
+    my $config_harvest = Baseliner->model('ConfigStore')->get('config.harvest');
+    my $haruser    = $config_harvest->{user};
+    my $broker     = $config_harvest->{broker};
+    my $inf_data   = _bde_conf('inf_data');
+    my $loghome    = _bde_conf('loghome');
+    my $templates  = _bde_conf('templates');
+    my $udpverbose = _bde_conf('udpverbose');
+    my $SufijoRepo = "";    ## en BDE, el repositorio siempre es $CAM
+    _log "AltaAplicación $CAM: Creando aplicación $CAM$SufijoEnv...\n";
+    my ($logfile, $cRet, @RET);
+    try
+    {
+        if ($self->existeEnv("$CAM$SufijoEnv"))
+        {
+            _log "AltaAplicación $CAM: ya existe la aplicación '$CAM$SufijoEnv'. Creación ignorada. No se ha cambiado la asociación de la aplicación al repositorio.";
+            return 1;
+        }
+
+        # SCM_APL_SISTEMAS
+
+        # Copia un nuevo projecto desde la plantilla Ciclo de Vida _BDE.
+        $logfile = "$loghome/hcpj$$.log";
+        _log "AltaAplicación $CAM: Copiando plantilla $envTemplate a '$CAM$SufijoEnv'...";
+        @RET = `hcpj -b $broker $haruser $harpwd -cpj "$envTemplate" -npj "$CAM$SufijoEnv" -act -o '$logfile'`;
+        if ($? ne "0")
+        {
+            die "$CAM: ERROR copiando aplicación $CAM$SufijoEnv desde la plantilla: "; # . $self->capturaLog($logfile, @RET) . "\n";
+        }
+
+        ## Activamos la protección sobre los nombres de paquete.
+        my $har_db = BaselinerX::CA::Harvest::DB->new();
+        $cRet = $har_db->db->do(qq{
+          UPDATE harcrpkgproc
+             SET disablenamechange = 'Y'
+           WHERE processname LIKE '%PAQUETE:%Crear%'
+        });
+        _log "AltaAplicación $CAM: Aplicación '$CAM$SufijoEnv' (repositorio=$CAM$SufijoRepo) creada con éxito.";
+    }
+    catch
+    {
+        die "Error durante la creación de la aplicación $CAM:" . shift() . "\n";
+    };
+    return 0;
+}
+
+sub AsociaAplRepositorio
+{
+    my ($self, $Env, $Repo) = @_;
+    my $freq       = _bde_conf('alta_frecuencia');
+    my $harpwd     = _bde_conf('harpwd');
+    my $config_harvest = Baseliner->model('ConfigStore')->get('config.harvest');
+    my $haruser    = $config_harvest->{user};
+    my $broker     = $config_harvest->{broker};
+    my $inf_data   = _bde_conf('inf_data');
+    my $loghome    = _bde_conf('loghome');
+    my $templates  = _bde_conf('templates');
+    my $udpverbose = _bde_conf('udpverbose');
+    
+    my ($logfile, @RET);
+    try
+    {
+
+        # Configuramos la BaseLine del proyecto.
+        $logfile = "$loghome/hcbl$$.log";
+        @RET     = `hcbl -b $broker $haruser $harpwd -en "$Env" -rp "$Repo" -add -rw -o '$logfile'`;
+        if ($? ne "0")
+        {
+            die "$Env: ERROR copiando baseline para $Env desde la plantilla:"; # . $self->capturaLog($logfile, @RET) . "\n";
+        }
+        else
+        {
+            _log "AltaAplicación $Env asociado a $Repo con éxito.";
+        }
+    }
+    catch
+    {
+        die "Error durante la asociación del repositorio $Env a $Repo:" . shift() . "\n";
+    };
+    return 0;
+}
+
+sub CreaRepositorio
+{
+    my ($self, $CAM, $SufijoRepo, $repoDir) = @_;
+    my $freq       = _bde_conf('alta_frecuencia');
+    my $harpwd     = _bde_conf('harpwd');
+    my $config_harvest = Baseliner->model('ConfigStore')->get('config.harvest');
+    my $haruser    = $config_harvest->{user};
+    my $broker     = $config_harvest->{broker};
+    my $inf_data   = _bde_conf('inf_data');
+    my $loghome    = _bde_conf('loghome');
+    my $templates  = _bde_conf('templates');
+    my $udpverbose = _bde_conf('udpverbose');
+
+    my ($logfile, $cRet, @RET);
+    try
+    {
+        if ($self->existeRepo("$CAM$SufijoRepo"))
+        {
+            _log "AltaAplicación $CAM: repositorio '$CAM$SufijoRepo' ya existe.";
+            return 1;
+        }
+        _log "AltaAplicación $CAM: Creando el repositorio '$CAM$SufijoRepo'...\n";
+
+        ## Recuperamos ID del repositorio _BDE para las copias.
+        my $har_db = BaselinerX::CA::Harvest::DB->new();
+        my $templateID = $har_db->db->value(qq{
+          SELECT repositobjid
+            FROM harrepository
+           WHERE repositname = '_BDE'
+        });
+        _log "AltaAplicación $CAM: Creando la vista para el repositorio\n";
+
+        ## Creamos la vista asociada al Repositorio.
+        my $viewID = $har_db->db->value(qq{
+          SELECT harviewseq.NEXTVAL
+            FROM DUAL
+        });
+
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO harview
+                      (viewobjid, viewname, viewtype, envobjid, canviewexternally,
+                       baselineviewid, creationtime, creatorid, modifiedtime,
+                       modifierid, snapshottime, note)
+             SELECT $viewID, '$CAM$SufijoRepo', viewtype, envobjid, canviewexternally,
+                    baselineviewid, SYSDATE, creatorid, SYSDATE, modifierid,
+                    snapshottime, note
+               FROM harview
+              WHERE viewname = '_BDE'
+        });
+
+        die "\n\t La vista $CAM$SufijoRepo ya existe. Borrela o utilice otro nombre para la aplicación"
+          if $DBI::err;
+
+        ## Creamos el repositorio.
+        my $repID = $har_db->db->value(qq{
+          SELECT harrepositoryseq.NEXTVAL
+            FROM DUAL
+        });
+
+        my $repID = $har_db->db->value(qq{
+          SELECT harrepositoryseq.NEXTVAL
+            FROM DUAL
+        });
+
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO harrepository
+                      (repositobjid, repositname, rootpathid, reponline, creationtime,
+                       creatorid, modifiedtime, modifierid, initialviewid, hostnode,
+                       hostinstance, note, extensionoption, compfile, notcompext,
+                       mvsmapping)
+             SELECT $repID, '$CAM$SufijoRepo', 0, reponline, SYSDATE, creatorid,
+                    SYSDATE, modifierid, $viewID, hostnode, hostinstance, note,
+                    extensionoption, compfile, notcompext, mvsmapping
+               FROM harrepository
+              WHERE repositobjid = $templateID
+        });
+
+        die "\n\t El Repositorio $CAM$SufijoRepo ya existe. Borrelo o utilice otro nombre para la aplicación"
+          if $DBI::err;
+
+        _log "AltaAplicación $CAM: Asociando la vista al repositorio\n";
+
+        ## Asociamos la vista al repositorio.
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO harrepinview
+                      (viewobjid, repositobjid, readonly, repfromviewid
+                      )
+               VALUES ($viewID, $repID, 0, $repID
+                      )
+        });
+
+        _log "AltaAplicación $CAM: Creando accesos para el repositorio\n";
+
+        ## Creamos los accesos para el repositorio.
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO harrepositoryaccess
+                      (repositobjid, usrgrpobjid, secureaccess, updateaccess,
+                       viewaccess)
+             SELECT $repID, usrgrpobjid, secureaccess, updateaccess, viewaccess
+               FROM harrepositoryaccess
+              WHERE repositobjid = $templateID
+        });
+
+        _log "AltaAplicación $CAM: Asociando tipos de ficheros\n";
+
+        ## Asociamos los tipos de fichero desde la plantilla.
+        my $sRet = $har_db->db->do(qq{
+          INSERT INTO harfileextension
+                      (repositobjid, fileextension)
+             SELECT $repID, fileextension
+               FROM harfileextension
+              WHERE repositobjid = $templateID
+        });
+
+        _log "AltaAplicación $CAM: Creando item para el directorio raiz del repositorio\n";
+
+        ## Creamos item para root del repositorio.
+        my $itemID = $har_db->db->value(qq{
+          SELECT haritemsseq.NEXTVAL
+            FROM DUAL
+        });
+
+        #$itemID = oval "SELECT ITEMOBJID FROM HARITEMS WHERE REPOSITOBJID = $repID";
+
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO haritems
+                      (itemobjid, itemname, itemnameupper, itemtype, parentobjid,
+                       repositobjid, creationtime, creatorid, modifiedtime, modifierid)
+             SELECT $itemID, '$CAM$SufijoRepo', UPPER ('$CAM$SufijoRepo'), itemtype,
+                    parentobjid, $repID, SYSDATE, creatorid, SYSDATE, modifierid
+               FROM haritems
+              WHERE repositobjid = $templateID
+        });
+
+        die "\n\t La raíz $CAM$SufijoRepo ya existe. Borrela o utilice otro nombre para la aplicación"
+          if $DBI::err;
+
+        _log "AltaAplicación $CAM: Actualizando ROOTPATHID del repositorio\n";
+
+        ## Actualizamos el campo ROOTPATHID del repositorio.
+        $cRet = $har_db->db->do(qq{
+          UPDATE harrepository
+             SET rootpathid = $itemID
+           WHERE repositobjid = $repID
+        });
+        die "\n\t No he podido actualizar el ROOTPATHID" if $DBI::err;
+
+        _log "AltaAplicación $CAM: Creando accesos para el item root\n";
+
+        ## Creamos los accesos para el Item.
+        my $templateItemID = $har_db->db->value(qq{
+          SELECT itemobjid
+            FROM haritems
+           WHERE repositobjid = $templateID
+        });
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO haritemaccess
+             SELECT $itemID, usrgrpobjid, viewaccess
+               FROM haritemaccess
+              WHERE itemobjid = $templateItemID
+        });
+        die "\n\t No he podido crear los accesos para el Item" if $DBI::err;
+
+        _log "AltaAplicación $CAM: Creando el directorio raiz para el repositorio\n";
+
+        ## Creamos el directorio raiz para el repositorio.
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO harpathfullname
+                      (itemobjid, pathfullname, pathfullnameupper
+                      )
+               VALUES ($itemID, '\\$CAM$SufijoRepo', UPPER ('\\$CAM$SufijoRepo')
+                      )
+        });
+        die "\n\t No he podido crear el directorio raiz" if $DBI::err;
+
+        _log "AltaAplicación $CAM: Creando la versión del item\n";
+
+        ## Creamos la Version.
+        my $verID = $har_db->db->value(qq{
+          SELECT harversionsseq.NEXTVAL
+            FROM DUAL
+        });
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO harversions
+                      (versionobjid, itemobjid, packageobjid, parentversionid,
+                       mergedversionid, inbranch, mappedversion, versionstatus,
+                       creationtime, creatorid, modifiedtime, modifierid, description,
+                       versiondataobjid, clientmachine, clientpath, ancestorversionid)
+             SELECT $verID, $itemID, packageobjid, parentversionid, mergedversionid,
+                    inbranch, mappedversion, versionstatus, SYSDATE, creatorid, SYSDATE,
+                    modifierid, description, versiondataobjid, clientmachine,
+                    clientpath, ancestorversionid
+               FROM harversions
+              WHERE itemobjid = $templateItemID
+        });
+        die "\n\t No he podido crear la versión del Item" if $DBI::err;
+
+        _log "AltaAplicación $CAM: Asociando la versión a la vista\n";
+
+        ## Asociamos la versión a la vista.
+        $cRet = $har_db->db->do(qq{
+          INSERT INTO harversioninview
+                      (viewobjid, versionobjid
+                      )
+               VALUES ($viewID, $verID
+                      )
+        });
+        die "\n\t No he podido asociar la versión a la vista" if $DBI::err;
+
+        _log "AltaAplicación $CAM: Cargando la estructura inicial del repositorio: $templates/repositorios/$repoDir\n";
+
+        ## Cargamos la estructura inicial del repositorio
+        $logfile = "$loghome/hlr$$.log";
+        my @RET = `hlr -b $broker $haruser $harpwd -cp "$templates/repositorios/$repoDir" -rp "/$CAM$SufijoRepo/" -r -cep -f "*" -o '$logfile'`;
+        if ($? ne "0")
+        {
+            die "$CAM: ERROR cargando la estructura inicial del repositorio: "; # . $self->capturaLog($logfile, @RET) . "\n";
+        }
+        _log "AltaAplicación $CAM: Repositorio '$CAM$SufijoRepo' creado.\n";
+    }
+    catch
+    {
+        die "Error durante la creación del repositorio $CAM$SufijoRepo:" . shift() . "\n";
+    };
+    return 0;
+}
+
+## cambia los permisos de acceso a aplicaciones de [project][-XX] a CAM[-XX]
+sub chgPermisosAplicaciones
+{
+    my $self = shift;
+    my $udpverbose = _bde_conf('udpverbose');
+    
+    my $logtxt = ();
+    my %GRPID;
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    try
+    {
+        my %ENVS = $har_db->db->hash(qq{
+          SELECT   e.envobjid || '-' || ug.usrgrpobjid, e.envobjid,
+                   TRIM (environmentname), ug.usrgrpobjid, TRIM (ug.usergroupname),
+                   TRIM (ug.usergroupname)
+              FROM harenvironment e, harenvironmentaccess ea, harusergroup ug
+             WHERE e.envobjid = ea.envobjid
+               AND ug.usrgrpobjid = ea.usrgrpobjid
+               AND TRIM (envisactive) <> 'T'
+               AND ug.usergroupname LIKE '%[project]%'
+          ORDER BY 2
+        });
+        foreach my $key (keys %ENVS)
+        {
+            my ($eid, $envname, $grpidOld, $grpname, $grpnameOld) = @{$ENVS{$key}};
+            my ($cam, $CAM) = get_cam_uc($envname);
+            $grpname =~ s/\[project\]/$CAM/g;
+            $logtxt .= "Actualizando grupo '$grpnameOld' a '$grpname' en '$envname'\n";
+            $GRPID{$grpname} = $self->getUserGroupId($grpname) unless $GRPID{$grpname};
+            my $grpidNew = $GRPID{$grpname};
+            if ($grpidNew)
+            {
+                $har_db->db->do(qq{
+                  DELETE FROM harenvironmentaccess
+                        WHERE envobjid = $eid AND usrgrpobjid = $grpidNew
+                });
+                $har_db->db->do(qq{
+                  UPDATE harenvironmentaccess
+                     SET usrgrpobjid = $grpidNew,
+                         secureaccess = 'N',
+                         updateaccess = 'N',
+                         viewaccess = 'Y',
+                         executeaccess = 'Y'
+                   WHERE envobjid = $eid AND usrgrpobjid = $grpidOld
+                }) or die "ERROR SQL($DBI::err): $DBI::errstr";
+            }
+        }
+        _log("Cambio de permisos en aplicaciones terminado OK.", $logtxt) if ($logtxt && $udpverbose);
+    }
+    catch
+    {
+        _log("ERROR en cambio de permisos en aplicaciones.", $logtxt . "\n" . shift());
+    };
+}
+
+## cambia los permisos de acceso a estados de [project][-XX] a CAM[-XX]
+sub chgPermisosEstados
+{
+    my $self = shift;
+    my $udpverbose = _bde_conf('udpverbose');
+    
+    my %GRPID;
+    my $logtxt = ();
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    try
+    {
+        my %STAS = $har_db->db->hash(qq{
+          SELECT   s.stateobjid || '-' || ug.usrgrpobjid, e.envobjid, s.stateobjid,
+                   TRIM (environmentname), TRIM (statename), ug.usrgrpobjid,
+                   TRIM (ug.usergroupname), TRIM (ug.usergroupname)
+              FROM harenvironment e, harstateaccess sa, harstate s, harusergroup ug
+             WHERE e.envobjid = s.envobjid
+               AND s.stateobjid = sa.stateobjid
+               AND ug.usrgrpobjid = sa.usrgrpobjid
+               AND TRIM (envisactive) <> 'T'
+               AND ug.usergroupname LIKE '%[project]%'
+          ORDER BY 2
+        });
+        foreach my $key (keys %STAS)
+        {
+            my ($eid, $sid, $envname, $staname, $grpidOld, $grpname, $grpnameOld) = @{$STAS{$key}};
+            my ($cam, $CAM) = get_cam_uc($envname);
+            $grpname =~ s/\[project\]/$CAM/g;
+            $logtxt .= "Actualizando grupo '$grpnameOld' a '$grpname' en '$envname:$staname'\n";
+            $GRPID{$grpname} = $self->getUserGroupId($grpname) unless $GRPID{$grpname};
+            my $grpidNew = $GRPID{$grpname};
+            if ($grpidNew)
+            {
+                $har_db->db->do(qq{
+                  DELETE FROM harstateaccess
+                        WHERE stateobjid = $sid AND usrgrpobjid = $grpidNew
+                });
+                $har_db->db->do(qq{
+                  UPDATE harstateaccess
+                     SET usrgrpobjid = $grpidNew,
+                         updateaccess = 'N',
+                         updatepkgaccess = 'Y'
+                   WHERE stateobjid = $sid AND usrgrpobjid = $grpidOld
+                }) or die "ERROR SQL($DBI::err): $DBI::errstr";
+            }
+        }
+        _log("aplicaciones - Cambio de permisos en estados terminado OK.", $logtxt)
+          if ($logtxt && $udpverbose);
+    }
+    catch
+    {
+        _log("ERROR en cambio de permisos en estados.", $logtxt . "\n" . shift());
+    };
+}
+
+## cambia los permisos de acceso a procesos de estado de [project][-XX] a CAM[-XX]
+sub chgPermisosProcesos
+{
+    my $self = shift;
+    my $udpverbose = _bde_conf('udpverbose');
+    my $logtxt = ();
+    my %GRPID;
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    try
+    {
+        my %PROCS = $har_db->db->hash(qq{
+          SELECT   p.processobjid || '-' || ug.usrgrpobjid, e.envobjid, s.stateobjid,
+                   p.processobjid, TRIM (environmentname), TRIM (statename),
+                   TRIM (processname), ug.usrgrpobjid, TRIM (ug.usergroupname),
+                   TRIM (ug.usergroupname), sp.executeaccess
+              FROM harenvironment e,
+                   harstateprocessaccess sp,
+                   harstate s,
+                   harstateprocess p,
+                   harusergroup ug
+             WHERE e.envobjid = s.envobjid
+               AND s.stateobjid = sp.stateobjid
+               AND s.envobjid = e.envobjid
+               AND ug.usrgrpobjid = sp.usrgrpobjid
+               AND sp.processobjid = p.processobjid
+               AND TRIM (envisactive) <> 'T'
+               AND ug.usergroupname LIKE '%[project]%'
+          ORDER BY 2
+        });
+        foreach my $key (keys %PROCS)
+        {
+            my ($eid, $sid, $pid, $envname, $staname, $procname, $grpidOld, $grpname, $grpnameOld, $exec) = @{$PROCS{$key}};
+            my ($cam, $CAM) = get_cam_uc($envname);
+            $grpname =~ s/\[project\]/$CAM/g;
+            if ($exec eq "N")
+            {
+                $logtxt .= "Borrando grupo '$grpnameOld' en '$envname:$staname:$procname'\n";
+                $har_db->db->do(qq{
+                  DELETE FROM harstateprocessaccess
+                        WHERE processobjid = $pid
+                          AND usrgrpobjid = $grpidOld
+                          AND executeaccess = 'N'
+                });
+            }
+            else
+            {
+                $logtxt .= "Actualizando grupo '$grpnameOld' a '$grpname' en '$envname:$staname:$procname'\n";
+                $GRPID{$grpname} = $self->getUserGroupId($grpname) unless $GRPID{$grpname};
+                my $grpidNew = $GRPID{$grpname};
+                if ($grpidNew)
+                {
+                    $har_db->db->do(qq{
+                      DELETE FROM harstateprocessaccess
+                            WHERE processobjid = $pid AND usrgrpobjid = $grpidNew
+                    });
+                    $har_db->db->do(qq{
+                      UPDATE harstateprocessaccess
+                         SET usrgrpobjid = $grpidNew,
+                             executeaccess = 'Y'
+                       WHERE processobjid = $pid AND usrgrpobjid = $grpidOld
+                    }) or die "ERROR SQL($DBI::err): $DBI::errstr";
+                }
+                else
+                {
+                    $logtxt .= "ERROR: Grupo '$grpname' no encontrado. ¿Se ha cargado el CAM '$CAM' desde LDAP/LDIF?\n";
+                }
+            }
+        }
+        _log("Cambio de permisos en procesos terminado OK.", $logtxt) if ($logtxt && $udpverbose);
+    }
+    catch
+    {
+        _log("ERROR en cambio de permisos en procesos.", $logtxt . "\n" . shift());
+    };
+}
+
+## cambia el nombre por defecto de los paquetes con [project] a CAM
+sub chgDefaultPackage
+{
+    my $self = shift;
+    my $udpverbose = _bde_conf('udpverbose');
+    my $logtxt = ();
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    try
+    {
+        ## ahora cambio los nombres de paquete
+        my %PAQS = $har_db->db->hash(qq{
+          SELECT   p.processobjid, e.envobjid, s.stateobjid, TRIM (environmentname),
+                   TRIM (statename), TRIM (p.processname), TRIM (cp.defaultpkgformname),
+                   TRIM (cp.defaultpkgformname)
+              FROM harenvironment e, harstate s, harstateprocess p, harcrpkgproc cp
+             WHERE e.envobjid = s.envobjid
+               AND s.stateobjid = p.stateobjid
+               AND cp.processobjid = p.processobjid
+               AND TRIM (envisactive) <> 'T'
+               AND cp.defaultpkgformname LIKE '%[project]%'
+          ORDER BY 2
+        });
+        foreach my $pid (keys %PAQS)
+        {
+            my ($eid, $sid, $envname, $staname, $procname, $defpkgNew, $defpkgOld) = @{$PAQS{$pid}};
+            my ($cam, $CAM) = get_cam_uc($envname);
+            $defpkgNew =~ s/\[project\]/$CAM/g;
+            $logtxt .= "Actualizando nombre de paquete por defecto '$defpkgOld' a '$defpkgNew' en '$envname:$staname:$procname'\n";
+            $defpkgNew =~ s/\'/\'\'/g;
+            $har_db->db->do(qq{
+              UPDATE harcrpkgproc
+                 SET defaultpkgformname = '$defpkgNew'
+               WHERE processobjid = $pid
+            }) or die "ERROR SQL($DBI::err): $DBI::errstr";
+        }
+        _log("Cambio de nombres de paquetes por defecto terminado OK.", $logtxt)
+          if ($logtxt && $udpverbose);
+    }
+    catch
+    {
+        _log("ERROR en cambio nombres de paquetes por defecto .", $logtxt . "\n" . shift());
+    };
+}
+
+##########################################################################################
+## Funciones de cambio de plantillas.
+##   Se intentará renombrar los grupos actuales a [project][-XX]
+##    si el nuevo nombre de grupo no existe
+##   (pe. de 'Desarrollo' a '[project]ollo') se borrará el grupo del permiso.
+##
+sub chgPermisosAplicacionesTemplates
+{
+    my $self = shift;
+    my $udpverbose = _bde_conf('udpverbose');
+    my $logtxt = ();
+    my %GRPID;
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    try
+    {
+        my %ENVS = $har_db->db->hash(qq{
+          SELECT   e.envobjid || '-' || ug.usrgrpobjid, e.envobjid,
+                   TRIM (environmentname), ug.usrgrpobjid, TRIM (ug.usergroupname),
+                   TRIM (ug.usergroupname)
+              FROM harenvironment e, harenvironmentaccess ea, harusergroup ug
+             WHERE e.envobjid = ea.envobjid
+               AND ug.usrgrpobjid = ea.usrgrpobjid
+               AND TRIM (environmentname) LIKE '\\_%' ESCAPE '\\'
+               AND TRIM (envisactive) = 'T'
+               AND NOT UPPER (TRIM (ug.usergroupname)) LIKE 'PUBLIC%'
+               AND NOT UPPER (TRIM (ug.usergroupname)) LIKE 'ADMINIST%'
+               AND NOT UPPER (TRIM (ug.usergroupname)) LIKE 'RPT-%'
+               AND NOT UPPER (TRIM (ug.usergroupname)) LIKE 'SCM%'
+               AND NOT TRIM (ug.usergroupname) LIKE '%[project]%'
+          ORDER BY 2
+        });
+        foreach my $key (keys %ENVS)
+        {
+            my ($eid, $envname, $grpidOld, $grpname, $grpnameOld) = @{$ENVS{$key}};
+            my ($cam, $CAM) = get_cam_uc($envname);
+            $grpname = "[project]" . substr($grpname, 3);
+            $logtxt .= "Actualizando grupo '$grpnameOld' a '$grpname' en '$envname'\n";
+            $GRPID{$grpname} = $self->getUserGroupId($grpname) unless $GRPID{$grpname};
+            my $grpidNew = $GRPID{$grpname};
+            if ($grpidNew)
+            {
+                $har_db->db->do(qq{
+                  DELETE FROM harenvironmentaccess
+                        WHERE envobjid = $eid AND usrgrpobjid = $grpidNew
+                });
+                $har_db->db->do(qq{
+                  UPDATE harenvironmentaccess
+                     SET usrgrpobjid = $grpidNew,
+                         secureaccess = 'N',
+                         updateaccess = 'N',
+                         viewaccess = 'Y',
+                         executeaccess = 'Y'
+                   WHERE envobjid = $eid AND usrgrpobjid = $grpidOld
+                }) or die "ERROR SQL($DBI::err): $DBI::errstr";
+            }
+            else
+            {
+                $logtxt .= "Grupo '$grpname' inexistente. Borrado.\n";
+                $har_db->db->do(qq{
+                  DELETE FROM harenvironmentaccess
+                        WHERE envobjid = $eid AND usrgrpobjid = $grpidOld
+                });
+            }
+        }
+        _log("Cambio de permisos en aplicaciones de plantillas terminado OK.", $logtxt)
+          if ($logtxt && $udpverbose);
+    }
+    catch
+    {
+        _log("ERROR en cambio de permisos en plantillas.", $logtxt . "\n" . shift());
+    };
+}
+
+sub chgPermisosEstadosTemplates
+{
+    my $self = shift;
+    my $udpverbose = _bde_conf('udpverbose');
+    my %GRPID;
+    my $logtxt = ();
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    try
+    {
+        my %STAS = $har_db->db->hash(qq{
+          SELECT   s.stateobjid || '-' || ug.usrgrpobjid, e.envobjid, s.stateobjid,
+                   TRIM (environmentname), TRIM (statename), ug.usrgrpobjid,
+                   TRIM (ug.usergroupname), TRIM (ug.usergroupname)
+              FROM harenvironment e, harstateaccess sa, harstate s, harusergroup ug
+             WHERE e.envobjid = s.envobjid
+               AND s.stateobjid = sa.stateobjid
+               AND ug.usrgrpobjid = sa.usrgrpobjid
+               AND TRIM (environmentname) LIKE '\\_%' ESCAPE '\\'
+               AND TRIM (envisactive) = 'T'
+               AND NOT UPPER (TRIM (ug.usergroupname)) LIKE 'PUBLIC%'
+               AND NOT UPPER (TRIM (ug.usergroupname)) LIKE 'ADMINIST%'
+               AND NOT UPPER (TRIM (ug.usergroupname)) LIKE 'RPT-%'
+               AND NOT UPPER (TRIM (ug.usergroupname)) LIKE 'SCM%'
+               AND NOT TRIM (ug.usergroupname) LIKE '%[project]%'
+          ORDER BY 2
+        });
+        foreach my $key (keys %STAS)
+        {
+            my ($eid, $sid, $envname, $staname, $grpidOld, $grpname, $grpnameOld) = @{$STAS{$key}};
+            my ($cam, $CAM) = get_cam_uc($envname);
+            $grpname = "[project]" . substr($grpname, 3);
+            $logtxt .= "Actualizando grupo '$grpnameOld' a '$grpname' en '$envname:$staname'\n";
+            $GRPID{$grpname} = $self->getUserGroupId($grpname) unless $GRPID{$grpname};
+            my $grpidNew = $GRPID{$grpname};
+            if ($grpidNew)
+            {
+                $har_db->db->do(qq{
+                  DELETE FROM harstateaccess
+                        WHERE stateobjid = $sid AND usrgrpobjid = $grpidNew
+                });
+                $har_db->db->do(qq{
+                  UPDATE harstateaccess
+                     SET usrgrpobjid = $grpidNew,
+                         updateaccess = 'N',
+                         updatepkgaccess = 'Y'
+                   WHERE stateobjid = $sid AND usrgrpobjid = $grpidOld
+                }) or die "ERROR SQL($DBI::err): $DBI::errstr";
+            }
+            else
+            {
+                $logtxt .= "Grupo '$grpname' inexistente. Borrado.\n";
+                $har_db->db->do(qq{
+                  DELETE FROM harstateaccess
+                        WHERE stateobjid = $sid AND usrgrpobjid = $grpidOld
+                });
+            }
+        }
+        _log("Cambio de permisos en estados de plantillas terminado OK.", $logtxt)
+          if ($logtxt && $udpverbose);
+    }
+    catch
+    {
+        _log("ERROR en cambio de permisos en estados de plantillas.", $logtxt . "\n" . shift());
+    };
+}
+
+sub chgPermisosProcesosTemplates
+{
+    my $self = shift;
+    my $udpverbose = _bde_conf('udpverbose');
+    my $logtxt = ();
+    my %GRPID;
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    try
+    {
+        ##antes de empezar, borro los permisos de procesos que estén a executeaccess='N' en plantillas y projects
+        $har_db->db->do(qq{
+          DELETE FROM harstateprocessaccess sp
+                WHERE TRIM (sp.executeaccess) = 'N'
+                  AND EXISTS (
+                          SELECT *
+                            FROM harenvironment e, harstate s
+                           WHERE e.envobjid = s.envobjid
+                                 AND sp.stateobjid = s.stateobjid)
+        });
+
+        ##proceso los permisos que no son [project]...
+        my %PROCS = $har_db->db->hash(qq{
+          SELECT   p.processobjid || '-' || ug.usrgrpobjid, e.envobjid, s.stateobjid,
+                   p.processobjid, TRIM (environmentname), TRIM (statename),
+                   TRIM (processname), ug.usrgrpobjid, TRIM (ug.usergroupname),
+                   TRIM (ug.usergroupname)
+              FROM harenvironment e,
+                   harstate s,
+                   harstateprocessaccess sp,
+                   harstateprocess p,
+                   harusergroup ug
+             WHERE e.envobjid = s.envobjid
+               AND s.stateobjid = sp.stateobjid
+               AND sp.processobjid = p.processobjid
+               AND ug.usrgrpobjid = sp.usrgrpobjid
+               AND TRIM (environmentname) LIKE '\\_%' ESCAPE '\\'
+               AND NOT EXISTS (
+                      SELECT 1
+                        FROM harusergroup ug2
+                       WHERE ug2.usrgrpobjid = ug.usrgrpobjid
+                         AND (   UPPER (TRIM (ug2.usergroupname)) LIKE 'RPT-%'
+                              OR UPPER (TRIM (ug2.usergroupname)) LIKE 'PUBLIC%'
+                              OR UPPER (TRIM (ug2.usergroupname)) LIKE 'ADMINIST%'
+                              OR UPPER (TRIM (ug2.usergroupname)) LIKE 'SCM%'
+                              OR TRIM (ug2.usergroupname) LIKE '%[project]%'
+                             ))
+               AND TRIM (envisactive) = 'T'
+          ORDER BY 2
+        });
+        foreach my $key (keys %PROCS)
+        {
+            my ($eid, $sid, $pid, $envname, $staname, $procname, $grpidOld, $grpname, $grpnameOld) = @{$PROCS{$key}};
+            my ($cam, $CAM) = get_cam_uc($envname);
+            $grpname = "[project]" . substr($grpname, 3);
+            $logtxt .= "Actualizando grupo '$grpnameOld' a '$grpname' en '$envname:$staname:$procname'\n";
+            $GRPID{$grpname} = $self->getUserGroupId($grpname) unless $GRPID{$grpname};
+            my $grpidNew = $GRPID{$grpname};
+            if ($grpidNew)
+            {
+                $har_db->db->do(qq{
+                  DELETE FROM harstateprocessaccess
+                        WHERE processobjid = $pid AND usrgrpobjid = $grpidNew
+                });
+                $har_db->db->do(qq{
+                  UPDATE harstateprocessaccess
+                     SET usrgrpobjid = $grpidNew,
+                         executeaccess = 'Y'
+                   WHERE processobjid = $pid AND usrgrpobjid = $grpidOld
+                }) or die "ERROR SQL($DBI::err): $DBI::errstr";
+            }
+            else
+            {
+                $logtxt .= "Grupo '$grpname' inexistente. Borrado.\n";
+                $har_db->db->do(qq{
+                  DELETE FROM harstateprocessaccess
+                        WHERE processobjid = $pid AND usrgrpobjid = $grpidOld
+                });
+            }
+        }
+        _log("Cambio de permisos en procesos de plantillas terminado OK.", $logtxt)
+          if ($logtxt && $udpverbose);
+    }
+    catch
+    {
+        _log("ERROR en cambio de permisos en procesos de plantillas.", $logtxt . "\n" . shift());
+    };
+}
+
+sub existeEnv
+{
+    my ($self, $env) = @_;
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    $har_db->db->value(qq{
+      SELECT COUNT (*)
+        FROM harenvironment
+       WHERE TRIM (environmentname) = '$env'
+    });
+}
+
+sub existeRepo
+{
+    my ($self, $repo) = @_;
+    my $har_db = BaselinerX::CA::Harvest::DB->new();
+    $har_db->db->value(qq{
+      SELECT COUNT (*)
+        FROM harrepository
+       WHERE TRIM (repositname) = '$repo'
+    });
+}
+
+sub getUserGroupId {
+  my ($self, $grpname) = @_;
+  my $har_db = BaselinerX::CA::Harvest::DB->new();
+  my $query  = qq{
+    SELECT MAX (g.usrgrpobjid)
+      FROM harusergroup g
+     WHERE TRIM (g.usergroupname) = TRIM ('$grpname')
+  };
+  $har_db->db->value($query);
+}
+
+1;
+

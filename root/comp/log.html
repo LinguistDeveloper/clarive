@@ -1,0 +1,141 @@
+<%args>
+    $rows
+    $title => 'Log'
+    $job_name
+    $job_exec
+    $job_exec_total
+    $job_key
+    $debug => 0
+    $with_data => 0
+    $sort => 0
+</%args>
+<%perl>
+    my $url_build = sub {
+        my %p = @_;
+        $p{debug} ||= 0;
+        $p{with_data} ||= 0;
+        $p{sort} ||= 'id asc';
+        $p{job_exec} ||= $job_exec;
+        delete $p{job_exec} if $p{job_exec} < 0 ;  
+        return "/job/log/html/${job_key}?" . join '&', 
+            map { $_ . '=' . $p{$_} } 
+            keys %p 
+    };
+</%perl>
+
+<head>
+    <& '/site/nocache.html' &>
+   <title><% $title %></title> 
+   <style>
+       <& /static/geek.css &>
+   </style>
+   <style>
+        #log-html h1 { font-size: 16px; }
+        #top { position: relative; float: right }
+        .summary-table { width: 100% }
+        body { font-family: 'Tahoma'; font-size: '10px'; }
+        hr { height: 1px; color: #eee; background-color: #ccc; border:0; border-style: solid; }
+        img { border:0 }
+        td { font-size: '8pt' }
+        pre {
+            font-family: Consolas, Monaco, "Courier New", Courier, monospace;
+            margin-left: 10px;
+            font-size: "11px";
+        }
+        .data {
+            background-color: #fafafa;
+            font-family: Consolas, Monaco, "Courier New", Courier, monospace;
+            font-size: "11px";
+        }
+        .info-odd { background-color: #BFCDD5;}
+        .info-even { background-color: #CED6DC; }
+
+        .warn-odd { background-color: #F5E8AE; }
+        .warn-even { background-color: #F0EBD1; }
+
+        .error-odd { background-color: #EDA69E; }
+        .error-even { background-color: #EDB8B2; }
+
+        .debug-odd { background-color: #D7E1DB; }
+        .debug-even { background-color: #CADBD0; }
+        
+        
+   </style>
+</head>
+<body>
+<center>
+<div id="top">
+% if( $debug ) {
+    <a href="<% $url_build->() %>">No Debug</a>
+% } else {
+    <a href="<% $url_build->( debug=>1 ) %>">Debug</a>
+% }
+|
+<% _loc("Sort") %>:
+% if( $sort ) {
+    <a href="<% $url_build->() %>"><% _loc("Chronological") %></a>
+% } else {
+    <a href="<% $url_build->( sort=>'id desc' ) %>"><% _loc("Reverse") %></a>
+% }
+|
+% if( $with_data ) {
+    <a href="<% $url_build->() %>"><% _loc("No Data") %></a>
+% } else {
+    <a href="<% $url_build->( with_data=>1 ) %>"><% _loc("View Data") %></a>
+% }
+% if( $job_exec_total > 1 ) {
+|
+Exec: 
+<select id="exec" onchange='window.location = "<% $url_build->( job_exec=>-1 ) %>&job_exec=" + this.value '>
+%    for my $ex ( 1..$job_exec_total ) {
+        <option value="<% $ex %>" <% $ex eq $job_exec ? 'selected' : '' %>><% $ex %></option>
+%    }
+</select>
+% } 
+</div>
+
+<div id="log-html">
+    <h1>Log <% $job_name %> (<% $job_exec %>)</h1>
+
+<table class="summary-table">
+  <tbody>
+    <tr>
+        <th class="summary-name"><% _loc( 'Step' ) %></th>
+        <th class="summary-name"><% _loc( 'Timestamp' ) %></th>
+        <th class="summary-name"><% _loc( 'Message' ) %></th>
+        <th class="summary-name"><% _loc( 'Actions' ) %></th>
+    </tr>
+
+% my $k = 0;
+% my $eo = sub { [ '-even', '-odd' ]->[ $k % 2 ] };
+
+% for my $row ( @$rows ) {
+    <tr class="<% $row->{lev} . $eo->()  %>">
+        <td class="<% $row->{lev} . $eo->() %>"><% $row->{step} %></td>
+        <td class="<% $row->{lev} . $eo->()  %>"><% $row->{ts} %></td>
+        <td class="<% $row->{lev} . $eo->()  %>"><% $row->{text} %></td>
+        <td class="<% $row->{lev} . $eo->()  %>">
+% if( $row->{datalen} ) {
+%     if( $row->{more}->{more} ) {
+            <a href="/job/log/download_data?id=<% $row->{id} %>"><% $row->{more}->{file} %></a>
+%     } else {
+            <a target="_blank" href="/job/log/data/<% $row->{id} %>"><img src="/static/images/moredata.gif" alt="<% _loc("view") %>" /></a>
+%     }
+% }
+        </td>
+    </tr>
+
+%   if( $with_data && $row->{datalen} && !$row->{more}->{more} ) {
+        <tr><td class="data" colspan=4><pre><% $row->{data} %></pre></td></tr>
+%   }
+
+%   if( $row->{milestone} ) {
+        <tr><td colspan=4> <hr /></td></tr>
+%   }
+
+%   $k++;
+% } # rows
+   </tbody>
+</table>
+</div>
+</body>

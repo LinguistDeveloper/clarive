@@ -7,7 +7,7 @@
         xtype:"<% (!$row->{readOnly}==1) ? 'editorgrid' : 'grid'%>",
         id: '<% $uid %>',
         name: '<% $uid %>',
-        store: new Ext.data.JsonStore({
+        store: new Baseliner.JsonStore({
             url: '<% $row->{json_url} %>',
             root:'data',
             fields: [ 
@@ -53,18 +53,18 @@
                 var __grid = Ext.getCmp('<% $uid %>');
                 //__grid.stopEditing();
                 if(__grid.getStore() == null){
-					__grid.setStore(new Ext.data.JsonStore({
-						url: '<% $row->{json_url} %>',
-						root:'data',
-						fields: [ 
-							{  name: '<% $uid %>' }
-						]
-					}));
-				}
-				__grid.getStore().add(p);
+                    __grid.setStore(new Baseliner.JsonStore({
+                        url: '<% $row->{json_url} %>',
+                        root:'data',
+                        fields: [ 
+                            {  name: '<% $uid %>' }
+                        ]
+                    }));
+                }
+                __grid.getStore().add(p);
                 //__grid.startEditing(0, 0);
                 
-				var _parseValues = function(__frm) {
+                var _parseValues = function(__frm) {
                                     var __myStore = __grid.getStore();
                                     var __vals = "";
                                     for(var i=0;i< __myStore.getCount();i++){
@@ -75,9 +75,9 @@
                                 };
                 var __parentForm = __grid.findParentByType('form');                
                 __parentForm.addListener('beforeaction',  function(){_parseValues(__parentForm);});
-				__grid.getStore().addListener('create', function(){_parseValues(__parentForm);});
-				__grid.getStore().addListener('remove', function(){_parseValues(__parentForm);});
-				__grid.getStore().addListener('update', function(){_parseValues(__parentForm);});
+                __grid.getStore().addListener('create', function(){_parseValues(__parentForm);});
+                __grid.getStore().addListener('remove', function(){_parseValues(__parentForm);});
+                __grid.getStore().addListener('update', function(){_parseValues(__parentForm);});
             }},
             {
             text: '<% $row->{delLabel} %>',
@@ -90,7 +90,7 @@
                     __grid.getStore().remove(__selectedRecord);
                 }          
 
-				var _parseValues = function(__frm) {
+                var _parseValues = function(__frm) {
                                     var __myStore = __grid.getStore();
                                     var __vals = "";
                                     for(var i=0;i< __myStore.getCount();i++){
@@ -101,9 +101,9 @@
                                 };
                 var __parentForm = __grid.findParentByType('form');                
                 __parentForm.addListener('beforeaction',  function(){_parseValues(__parentForm);});
-				__grid.getStore().addListener('create', function(){_parseValues(__parentForm);});
-				__grid.getStore().addListener('remove', function(){_parseValues(__parentForm);});
-				__grid.getStore().addListener('update', function(){_parseValues(__parentForm);});						 
+                __grid.getStore().addListener('create', function(){_parseValues(__parentForm);});
+                __grid.getStore().addListener('remove', function(){_parseValues(__parentForm);});
+                __grid.getStore().addListener('update', function(){_parseValues(__parentForm);});						 
                 
             }
         }]

@@ -39,7 +39,7 @@ Ext.onReady(function(){
     }); 
 
     //***** Applications
-    var ns_store = new Ext.data.JsonStore({
+    var ns_store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
@@ -87,17 +87,17 @@ Ext.onReady(function(){
         {header: _('Description'), width: 350, sortable: true, dataIndex: 'text'}
     ]);
 % unless( $c->stash->{id} ) {
-	// it's a new form
+    // it's a new form
     var ds_grid = new Ext.data.Store({});
 % } else {
-	// get form contents
-	var ds_grid = new Ext.data.JsonStore({
+    // get form contents
+    var ds_grid = new Baseliner.JsonStore({
             root: 'data' , 
             remoteSort: false,
             baseParams: { id: id_release },
             url: '/release/contents/json',
             fields: [ 'item', 'provider', 'ns', 'ns_name', 'ns_type', 'provider', 'date', 'user' ]
-	});
+    });
     ds_grid.load();
 % }
     var jc_grid = new Ext.grid.GridPanel({
@@ -426,7 +426,7 @@ Ext.onReady(function(){
                     buttons: { cancel: true },
                     title: _('Blocked'),
                     msg: _('Item cannot be added to release') + ":<br>" + record.get('why_not')
-				});
+                });
                 return false;
             }
             var rfc = record.get('rfc');
@@ -472,7 +472,7 @@ Ext.onReady(function(){
 
     //----------| Load form data
     if( updating ) {
-        var form_store = new Ext.data.JsonStore({
+        var form_store = new Baseliner.JsonStore({
             root: 'data' , 
             remoteSort: false,
             baseParams: { id: id_release },

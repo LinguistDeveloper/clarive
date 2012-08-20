@@ -32,18 +32,18 @@ sub list : Local {
     $limit ||= 50;
     $query and $where = { 'lower(name||job_type||description)' => { -like => "%$query%" } };
     my $page = to_pages( start => $start, limit => $limit );
-	my $rs = $c->model('Baseliner::BaliChain')->search( $where, { order_by=>"$sort $dir", page=>$page, rows=>$limit });
+    my $rs = $c->model('Baseliner::BaliChain')->search( $where, { order_by=>"$sort $dir", page=>$page, rows=>$limit });
     rs_hashref($rs);
     my @rows = $rs->all;
-	$c->stash->{json} = { totalCount=>scalar @rows, data=>\@rows };
-	$c->forward('View::JSON');
+    $c->stash->{json} = { totalCount=>scalar @rows, data=>\@rows };
+    $c->forward('View::JSON');
 }
 
 sub edit : Local {
     my ( $self, $c ) = @_;
-	my $p = $c->request->parameters;
-	$c->stash->{id_chain} = $p->{id};
-	$c->stash->{template} = '/comp/chain_edit.mas';
+    my $p = $c->request->parameters;
+    $c->stash->{id_chain} = $p->{id};
+    $c->stash->{template} = '/comp/chain_edit.mas';
 }
 
 # Added by Eric (q74613x) @ [may 24, 2011 12:53]
@@ -172,32 +172,32 @@ sub modify_active : Local {
 
 sub grid : Local {
     my ( $self, $c ) = @_;
-	$c->stash->{template} = '/comp/chain_grid.mas';
+    $c->stash->{template} = '/comp/chain_grid.mas';
 }
 
 sub detail : Local {
     my ( $self, $c ) = @_;
-	my $p = $c->request->parameters;
+    my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
-	my @order_by;
-	if( $sort ) {
- 		@order_by = ("$sort $dir");
-		$sort ne 'seq' && push( @order_by, 'seq');
-	} else {
- 		@order_by = qw/step seq /;
-	}
-	my @rows;
-	my $rs = $c->model('Baseliner::BaliChainedService')->search({},{ order_by=>\@order_by }) ;
-	$rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
-	while( my $r = $rs->next ) {
-		warn _dump $r;
-		push @rows, $r;
-	}
-	$c->stash->{json} = {
-		totalCount=>scalar @rows,
-		data=>\@rows
-	};
-	$c->forward('View::JSON');
+    my @order_by;
+    if( $sort ) {
+         @order_by = ("$sort $dir");
+        $sort ne 'seq' && push( @order_by, 'seq');
+    } else {
+         @order_by = qw/step seq /;
+    }
+    my @rows;
+    my $rs = $c->model('Baseliner::BaliChainedService')->search({},{ order_by=>\@order_by }) ;
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    while( my $r = $rs->next ) {
+        warn _dump $r;
+        push @rows, $r;
+    }
+    $c->stash->{json} = {
+        totalCount=>scalar @rows,
+        data=>\@rows
+    };
+    $c->forward('View::JSON');
 }
 
 sub delete : Local {
@@ -207,11 +207,11 @@ sub delete : Local {
         my $chain = Baseliner->model('Baseliner::BaliChain')->find( $p->{id} );
         $chain->delete;
         $chain->update;
-		$c->stash->{json} = { success => \1, msg => _loc("Chain '%1' deleted", $p->{name} ) };
+        $c->stash->{json} = { success => \1, msg => _loc("Chain '%1' deleted", $p->{name} ) };
     } catch {
-		$c->stash->{json} = { success => \0, msg => _loc("Error deleting the chain '%1': %2", $p->{name}, shift) };
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting the chain '%1': %2", $p->{name}, shift) };
     };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 sub create : Local {
@@ -223,11 +223,11 @@ sub create : Local {
 
         $p->{active} = $p->{active} eq 'true' ? 1 : 0;
         my $chain = Baseliner->model('Baseliner::BaliChain')->create( $p );
-		$c->stash->{json} = { success => \1, msg => _loc("Chain '%1' created", $p->{name} ) };
+        $c->stash->{json} = { success => \1, msg => _loc("Chain '%1' created", $p->{name} ) };
     } catch {
-		$c->stash->{json} = { success => \0, msg => _loc("Error creating the chain '%1': %2", $p->{name}, shift) };
+        $c->stash->{json} = { success => \0, msg => _loc("Error creating the chain '%1': %2", $p->{name}, shift) };
     };
-	$c->forward('View::JSON');
+    $c->forward('View::JSON');
 }
 
 sub add : Local {

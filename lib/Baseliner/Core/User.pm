@@ -6,10 +6,8 @@ use Try::Tiny;
 #has 'actions' => ( is=>'rw', isa=>'HashRef', default=>sub{{}} );
 has 'username' => ( is=>'rw', isa=>'Str',  );
 has 'languages' => ( is=>'rw', isa=>'ArrayRef',  );
-has 'root_user' => ( is=>'rw', isa=>'Bool' );
 
-around BUILDARGS => sub {
-    my $orig = shift;
+sub BUILDARGS {
     my $class = shift;
     my %args = @_;
     my $out = {};
@@ -19,8 +17,8 @@ around BUILDARGS => sub {
         try { $out->{username} = $user->username };
         try { $out->{username} = $user->id };
     }
-    return $class->$orig($out);
-};
+    return $class->SUPER::BUILDARGS($out);
+}
 
 sub email {
 #TODO find the best way to return an email address
@@ -49,6 +47,8 @@ sub has_action {
     } else {
         return $actions->{$p{action}};
     }
+
+    my $has_it;
 }
 
 sub add_action {
@@ -81,12 +81,6 @@ sub authorize {
         }
     }
     #$c->session->{actions} = [ _unique @actions ];
-}
-
-sub is_root {
-    my $self = shift;
-    my $root = Baseliner->model('Permissions')->is_root( $self->username );
-    $self->root_user( $root );
 }
 
 1;

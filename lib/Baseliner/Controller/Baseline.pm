@@ -9,77 +9,77 @@ register 'menu.admin.core.bl' => { label => _loc('List all Baselines'), url=>'/c
 register 'menu.admin.baseline' => { label => _loc('Baselines'), url_comp=>'/baseline/grid', title=>_loc('Baselines')  };
 
 sub load_baselines : Private {
-	my ($self,$c)=@_;
-	my @bl_arr = ();
-	my @bl_list = Baseliner::Core::Baseline->baselines();
-	return $c->stash->{baselines} = [ [ '*', 'Global' ] ] unless @bl_list > 0;
-	foreach my $n ( @bl_list ) {
-		my $arr = [ $n->{bl}, $n->{name} ];
-		push @bl_arr, $arr;
-	}
-	$c->stash->{baselines} = \@bl_arr;
+    my ($self,$c)=@_;
+    my @bl_arr = ();
+    my @bl_list = Baseliner::Core::Baseline->baselines();
+    return $c->stash->{baselines} = [ [ '*', 'Global' ] ] unless @bl_list > 0;
+    foreach my $n ( @bl_list ) {
+        my $arr = [ $n->{bl}, $n->{name} ];
+        push @bl_arr, $arr;
+    }
+    $c->stash->{baselines} = \@bl_arr;
 }
 
 sub load_baselines_no_root : Private {
-	my ($self,$c)=@_;
-	my @bl_arr = ();
-	my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
-	return $c->stash->{baselines} = [ [ '*', 'Global' ] ] unless @bl_list > 0;
-	foreach my $n ( @bl_list ) {
-		my $arr = [ $n->{bl}, $n->{name} ];
-		push @bl_arr, $arr;
-	}
-	$c->stash->{baselines} = \@bl_arr;
+    my ($self,$c)=@_;
+    my @bl_arr = ();
+    my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
+    return $c->stash->{baselines} = [ [ '*', 'Global' ] ] unless @bl_list > 0;
+    foreach my $n ( @bl_list ) {
+        my $arr = [ $n->{bl}, $n->{name} ];
+        push @bl_arr, $arr;
+    }
+    $c->stash->{baselines} = \@bl_arr;
 }
 
 sub load_baselines_for_action : Private {
-	my ($self,$c)=@_;
-	my $action = $c->stash->{action} or _throw "Missing stash parameter 'action'";
-	my @bl_arr = ();
-	my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
-	return $c->stash->{baselines} = [ [ '*', 'Global' ] ] unless @bl_list > 0;
-	my $is_root = $c->model('Permissions')->is_root( $c->username );
-	foreach my $n ( @bl_list ) {
-		next unless $is_root or $c->model('Permissions')->user_has_action( username=>$c->username, action=>$action, bl=>$n->{bl} );
-		my $arr = [ $n->{bl}, $n->{name} ];
-		push @bl_arr, $arr;
-	}
-	$c->stash->{baselines} = \@bl_arr;
+    my ($self,$c)=@_;
+    my $action = $c->stash->{action} or _throw "Missing stash parameter 'action'";
+    my @bl_arr = ();
+    my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
+    return $c->stash->{baselines} = [ [ '*', 'Global' ] ] unless @bl_list > 0;
+    my $is_root = $c->model('Permissions')->is_root( $c->username );
+    foreach my $n ( @bl_list ) {
+        next unless $is_root or $c->model('Permissions')->user_has_action( username=>$c->username, action=>$action, bl=>$n->{bl} );
+        my $arr = [ $n->{bl}, $n->{name} ];
+        push @bl_arr, $arr;
+    }
+    $c->stash->{baselines} = \@bl_arr;
 }
 
 sub bl_list : Path('/core/baselines') {
-	my ($self,$c)=@_;
-	my @bl_list = Baseliner::Core::Baseline->baselines();
-	my $res='<pre>';
-	for my $n ( @bl_list ) {
-		$res.= Dump $n
-	}
-	$c->res->body($res);
+    my ($self,$c)=@_;
+    my @bl_list = Baseliner::Core::Baseline->baselines();
+    my $res='<pre>';
+    for my $n ( @bl_list ) {
+        $res.= Dump $n
+    }
+    $c->res->body($res);
 }
 
 sub grid : Local {
-	my ($self,$c)=@_;
-	$c->stash->{template} = '/comp/baseline_grid.mas';
+    my ($self,$c)=@_;
+    $c->stash->{template} = '/comp/baseline_grid.mas';
 }
 
 sub list : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my @bl_list =
       map { { name => $_, description => $_, id => $_, active => 1 } }
       Baseliner::Core::Baseline->baselines();
-	$c->stash->{json} = \@bl_list;
-	$c->forward('View::JSON');
+    $c->stash->{json} = \@bl_list;
+    $c->forward('View::JSON');
 }
 
 sub json : Local {
-	my ($self,$c)=@_;
+    my ($self,$c)=@_;
     my @bl_list =
       map { { name => $_->{name}, description => $_->{description} || $_->{name},
           id => $_->{bl}, bl=>$_->{bl}, active => 1 }
       }
       Baseliner::Core::Baseline->baselines();
-	$c->stash->{json} = { totalCount=>scalar(@bl_list), data=> \@bl_list };
-	$c->forward('View::JSON');
+    $c->stash->{json} = { totalCount=>scalar(@bl_list), data=> \@bl_list };
+    $c->forward('View::JSON');
 }
 1;
 

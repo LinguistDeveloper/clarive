@@ -13,10 +13,10 @@ has 'job_log' => is=>'rw', isa=>'Any';
 
 # process the chained services 
 sub job_simple_chain {
-	my ($self,$c, $config)=@_;
+    my ($self,$c, $config)=@_;
 
-	my $job = $c->stash->{job};
-	my $log = $job->logger;
+    my $job = $c->stash->{job};
+    my $log = $job->logger;
     $self->job_log( $log );
 
     my $step = $job->step;
@@ -28,20 +28,20 @@ sub job_simple_chain {
     if( !ref($chain) || $chain->step ne $step ) {
         # reload chain 1) first time 2) job changed steps
         $chain = $self->init_chain( chain_id=>1, step=>$step, job=>$job ); #FIXME needs to get the current job chain, not 1
-	}
+    }
     $log->debug( _loc('Current execution chain'), data=>_dump($chain->services) ) if defined $chain;
 
-	while(1) {
-		my $service_desc;
+    while(1) {
+        my $service_desc;
         #eval {
 
-		# always get the latest from the stash, in case it has changed
-		my $chain = $job->job_stash->{chain};
+        # always get the latest from the stash, in case it has changed
+        my $chain = $job->job_stash->{chain};
 
         my $continue = try {
-			# get the next service in the chain
-			my $service = $chain->next_service or last;
-			$service_desc = $service->{name} || $service->{key};
+            # get the next service in the chain
+            my $service = $chain->next_service or last;
+            $service_desc = $service->{name} || $service->{key};
 
             $log->debug( _loc("Starting chained service '%1' for step %2" , $service_desc, $step ) );
             $c->launch( $service->{key} );
@@ -50,22 +50,22 @@ sub job_simple_chain {
             }
             $log->debug( _loc("Finished chained service '%1' for step %2" , $service_desc, $step ) );
             return 1;
-		} catch {
-			my $error = shift;
-			if( $error =~ m/^Could not find key/ ) {  #TODO should throw-catch an exception class type
-				$log->warn( _loc("Warning while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ) ); 
-			} else {
+        } catch {
+            my $error = shift;
+            if( $error =~ m/^Could not find key/ ) {  #TODO should throw-catch an exception class type
+                $log->warn( _loc("Warning while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ) ); 
+            } else {
             $log->error( _loc("Error while running chained service '%1' for step %2: %3" , $service_desc, $step, $error ) ); 
-			_throw $error;
-			}
+            _throw $error;
+            }
             return 1;
-		};
+        };
 
         # suspended? 
         last unless $continue;
 
-		# are there more services to run?
-		last if $chain->done;
+        # are there more services to run?
+        last if $chain->done;
     }
 }
 
@@ -85,7 +85,7 @@ sub init_chain {
 
     while( my $service = $rs_chain->next ) {
         push @chained_services, { $service->get_columns } ;
-	}
+    }
 
     my $chain_obj = new BaselinerX::Job::Chain( 
         services => [ @chained_services ],

@@ -17,7 +17,7 @@ sub main {
   my $job      = $c->stash->{job};
   my $log      = $job->logger;
   my $elements = $job->job_stash->{elements}->{elements};
-  my @cams     = _unique map { _pathxs $_->{fullpath}, 1 } @{$elements};
+  my @cams     = unique map { _pathxs $_->{fullpath}, 1 } @{$elements};
   for my $cam (@cams) {
     my $url = do {
       my $env    = (substr $job->job_data->{bl}, 0, 1);

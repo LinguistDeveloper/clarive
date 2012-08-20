@@ -9,7 +9,7 @@
     my $hm =  $now->strftime('%H:%M');
 </%perl>
 (function(){
-    var store=new Ext.data.JsonStore({
+    var store=new Baseliner.JsonStore({
         root: 'data', 
         remoteSort: true,
         totalProperty:"totalCount", 

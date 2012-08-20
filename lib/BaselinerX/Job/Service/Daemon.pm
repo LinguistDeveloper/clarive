@@ -23,16 +23,17 @@ register 'service.job.dummy' => {
     handler => sub {
         my ($self,$c)=@_;
         _log "DUMMY";
-        $c->log->info("A dummy job is running");
+        my $job = $c->stash->{job};
+        $job->logger->info("A dummy job is running");
     }
 };
 
 register 'config.job.daemon' => {
-	metadata=> [
-		{  id=>'frequency', label=>'Job Server Frequency', type=>'int', default=>10 },
-		{  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'fork' },
-		{  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
-	]
+    metadata=> [
+        {  id=>'frequency', label=>'Job Server Frequency', type=>'int', default=>10 },
+        {  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'spawn' },
+        {  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
+    ]
 };
 
 
@@ -115,7 +116,8 @@ sub job_daemon {
                 } else {
                     _throw _loc("Unrecognized mode '%1'", $mode );
                 }
-                $self->reap_children if $mode =~ /fork|detach/;
+                ;
+                _log("Reaping children..."), $self->reap_children if $mode =~ /fork|detach/;
             }
         }
         $self->check_job_expired($c);
@@ -128,7 +130,7 @@ sub job_daemon {
 
 sub runner_spawn {
     my ($self, %p ) =@_;
-    my $cmd = "perl script/bali.pl job.run --runner \"". $p{runner} ."\" --step $p{step} --jobid ". $p{jobid} . " >>'$p{logfile}' 2>&1";
+    my $cmd = "bin/bali job.run --runner \"". $p{runner} ."\" --step $p{step} --jobid ". $p{jobid} . " --logfile '$p{logfile}' >>'$p{logfile}' 2>&1";
     my $proc = Proc::Background->new( $cmd );
     push @{ $self->{proc_list} }, $proc;
     return $proc->pid;
@@ -169,12 +171,13 @@ sub runner_fork {
             $sid > 0 or _throw "Could not detach job $p{jobid}: $!";
             _log "Detached with session id $sid";
         }
-        $0 = "perl script/bali.pl job.run --runner $p{runner} --step $p{step} --jobid $p{jobid}";
+        # change child process name for the ps command
+        $0 = "perl script/bali.pl job.run --runner $p{runner} --step $p{step} --jobid $p{jobid} --logfile '$p{logfile}'";
         unless( $p{unified_log} ) {
             open (STDOUT, ">>", $p{logfile} ) or die "Can't open STDOUT: $!";
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";
         }
-        Baseliner->model('Services')->launch( 'job.run', data=>{ runner=>$p{runner}, step=>$p{step}, jobid=>$p{jobid} } );
+        Baseliner->model('Services')->launch( 'job.run', data=>{ runner=>$p{runner}, step=>$p{step}, jobid=>$p{jobid}, logfile=>$p{logfile} } );
         exit 0;
     } else {
         _log _loc("***** ERROR: Could not fork job '%1'", $p{jobid} );
@@ -191,6 +194,7 @@ sub check_job_expired {
     while( my $row = $rs->next ) {
         _log( _loc("Job %1 expired (maxstartime=%2)" , $row->name, $row->maxstarttime ) );
         $row->status('EXPIRED');
+        $row->endtime( _now );
         $row->update;
     }
     $rs = $c->model('Baseliner::BaliJob')->search({ status => 'RUNNING', pid=>{'>', 0} });
@@ -205,6 +209,7 @@ sub check_job_expired {
                 next unless $job->status eq 'RUNNING';
                 _log _loc("Detected killed job %1 (status %2, pid %3)", $row->name, $row->status, $row->pid ); 
                 $row->status('KILLED');
+                $row->endtime( _now );
                 $row->update;
             } else {
                 #if( $^O eq 'MSWin32' ) {

@@ -5,6 +5,9 @@ use warnings;
 our $VERSION = 3;
 
 use base 'DBIx::Class::Schema';
+use Baseliner::Schema::Baseliner::Result::BaliMasterRel;
+use Baseliner::Schema::Baseliner::Result::BaliMaster;
+
 
 __PACKAGE__->load_namespaces( default_resultset_class => '+Baseliner::Schema::Baseliner::Base::ResultSet' );
 #__PACKAGE__->load_components(qw/Schema::Versioned/);
@@ -15,8 +18,8 @@ use Baseliner::Utils;
 sub connection {
      my $self = shift;
      my $rv = $self->next::method( @_ );
-     #my $dbd = $self->db_driver;
-     my $dbd = "Oracle";
+     my $dbd = $self->db_driver;
+     #my $dbd = "Oracle";
      # MSSQL quote chars
      if( $dbd eq 'ODBC' ) {
          $rv->storage->sql_maker->quote_char([ qw/[ ]/ ]);
@@ -25,26 +28,78 @@ sub connection {
      return $rv;
 }
 
-my $filter =  sub {
+sub _stop {
+    die "\n*********** ERROR: " . (_loc @_ ) . "\n\n";
+}
+
+sub _warn { print STDERR "*********** WARN: " . (_loc @_ ) . "\n"; }
+
+my $filter_to_generic =  sub {
     my $s = shift;
-    #my $dbd = $s->db_driver;
-    my $dbd = "Oracle";
+    print STDERR "\n";
+    # replace default (Oracle) for generic internal representation
+    #  -- this is not deployable yet
+    #  -- also checks for invalid/problematic schema column names
+    for my $table_name ( $s->get_tables ) { 
+        my $table = $s->get_table( $table_name );
+        for my $col_name ( $table->get_fields ) {
+            my $col = $table->get_field($col_name);  # perldoc SQL::Translator::Schema::Field
+            my $type = $col->data_type;
+            my $def = $col->default_value;
+            # fix types
+            if( $type =~ /numeric/i ) {
+                $col->data_type( 'number' );
+                $type = 'number';
+            }
+            if( ref($def) eq 'SCALAR' && $$def =~ m/SYSDATE|datetime/i ) {
+                $col->default_value( \"current_timestamp" );
+            }
+            # quote - unquote
+            if( $type =~ /^(num|int)/i && ! ref $def && length $def ) {
+                # unquotify numbers
+                $def =~ s{^['"]}{};
+                $def =~ s{['"]$}{};
+                $def =~ s{ }{}g;
+                $col->default_value( \"$def" );
+            }
+
+            if( $col_name =~ /^(desc)$/ ) {
+                _stop "Invalid column name [%1] in table [%2]", $col_name, $table_name;
+            }
+            if( $col_name =~ /^(key)$/ ) {
+                _warn "Potential keyword as column name: column [%1] in table [%2]", $col_name, $table_name;
+            }
+        }
+    }
+};
+
+my $filter_to_driver =  sub {
+    my $s = shift;
+    my $driver = __PACKAGE__->db_driver;
     # replace default (Oracle) for equivalents
     for my $table_name ( $s->get_tables ) { 
         my $table = $s->get_table( $table_name );
         for my $col_name ( $table->get_fields ) {
-            my $col = $table->get_field($col_name); 
+            my $col = $table->get_field($col_name);  # perldoc SQL::Translator::Schema::Field
+            my $type = $col->data_type;
             my $def = $col->default_value;
-            if( ref($def) eq 'SCALAR' && $$def eq 'SYSDATE' ) {
-                $col->default_value( \"(datetime('now'))" ) if $dbd eq 'SQLite';
+            if( $driver eq 'Oracle' ) {
+                $col->default_value( \"SYSDATE" )
+                    if ref($def) eq 'SCALAR' && $$def eq 'current_timestamp'; 
+                $col->size( 0 ) if $type =~ /.LOB/i;
+                if( $type =~ /number/i && $col->size > 0 ) { # get rid of NUMBER(38)
+                    $col->size( 0 );
+                }
             }
-            if( $col_name eq 'id' && $col->data_type =~ m/^num/i && $dbd eq 'SQLite' ) {
-                $col->data_type( 'integer' );
+            elsif( $driver eq 'SQLite' ) {
+                $col->default_value( \"(datetime('now'))" )
+                    if ref($def) eq 'SCALAR' && $$def eq 'current_timestamp'; 
+                $col->data_type( 'integer' )
+                    if $col_name =~ m/.id/i && $type =~ m/^num/i;
             }
-            if( $col_name eq 'desc' ) {
-                $col->name( 'description' );
+            elsif( $driver eq 'mysql' ) {
             }
-            if( $dbd eq 'ODBC' ) {
+            elsif( $driver eq 'ODBC' ) {
                 $col->data_type('VARCHAR') if $col->data_type =~ /VARCHAR2/i;
                 $col->size(8000) if $col->data_type =~ /VARCHAR/i && $col->size > 8000;
                 $col->data_type('INTEGER') if $col->data_type =~ /NUMBER|NUMERIC/i;
@@ -52,9 +107,6 @@ my $filter =  sub {
                 $col->data_type( 'VARCHAR(max)' ) if $col->data_type =~ /.LOB/i;
                 $col->default_value( \'GETDATE()') if ref($def) eq 'SCALAR' && $$def =~ /SYSDATE/i;
             }
-        if( $dbd eq 'Oracle') {
-                $col->size( 0 ) if $col->data_type =~ /.LOB/i;
-        }
         }
     }
 };
@@ -98,7 +150,7 @@ sub deploy_schema {
             #quote_table_names => 0,
             #quote_field_names => 0,
             trace             => 1,
-            filters           => [ \&_filter, \&_filter_diff ],
+            filters           => [ $filter_to_generic, \&_filter_diff ],
             format_table_name   => sub {my $t= shift; return lc($t)},
             %p
         };
@@ -178,7 +230,7 @@ sub deploy_schema {
             quote_table_names => 0,
             quote_field_names => 0,
             trace             => 1,
-            filters           => [ \&_filter ],
+            filters           => [ $filter_to_generic ],
             %p
         };
         require SQL::Translator;
@@ -283,7 +335,7 @@ sub deploy_schema {
             add_drop_table    => $p{drop},
             quote_table_names => exists $p{quote},
             sources           => $p{schema},
-            filters           => [ $filter ],
+            filters           => [ $filter_to_generic, $filter_to_driver ],
         };
         print join ";\n\n",$schema->deployment_statements(undef, undef, undef, $sqlt_opts );
         print ";\n";
@@ -295,7 +347,7 @@ sub deploy_schema {
             quote_table_names => 0,
             quote_field_names => 0,
             trace             => 1,
-            filters           => [ $filter ],
+            filters           => [ $filter_to_generic , $filter_to_driver],
             %p   # additional parameters
         });
         #$schema->storage->debug(1);
@@ -346,7 +398,7 @@ sub dump_file {
                 quote_field_names => 0,
             },
             trace             => 1,
-            filters           => [ \&_filter ],
+            filters           => [ $filter_to_generic, $filter_to_driver ],
             #parser => 'Baseliner::Schema::Parser::Oracle',  NOT WORKING, probably ddl_dir is not calling parser directly
         }
     );
@@ -411,45 +463,6 @@ sub _filter_diff {
             }
             elsif( $def =~ /^([0-9]+)\s+$/ ) {
                 $col->default_value( $1 );
-            }
-            #if( $col->default_value =~ /^'(.*)'$/ ) {
-            #    $col->default_value( "'$1'" );
-            #}
-            #delete $col->{default_value};
-            #if( $table_name eq 'bali_sem' && $col_name eq 'description' ) {
-            #    use v5.10;
-            #    say "SIZ=" . $col->data_type;
-            #    say "SIZ=" . $col->size;
-            #    say "DEF=" . $col->default_value;
-            #    say "PRI=" . $col->is_primary_key;
-            #    say "AUT=" . $col->is_auto_increment;
-            #}
-        }
-    }
-}
-
-sub _filter {
-    my $s = shift;
-    my $dbd = $__PACKAGE__::DB_DRIVER;
-    for my $table_name ( $s->get_tables ) { 
-        my $table = $s->get_table( $table_name );
-        for my $col_name ( $table->get_fields ) {
-            my $col = $table->get_field($col_name); 
-            # replace default values (Oracle) for equivalents
-            if( $dbd eq 'SQLite' ) {
-                my $def = $col->default_value;
-                if( ref($def) eq 'SCALAR' && $$def =~ /^SYSDATE/i ) {
-                    $col->default_value( \"current_timestamp" )
-                }
-                if( $col_name eq 'id' && $col->data_type =~ m/^num/i ) {
-                    $col->data_type( 'integer' );
-                }
-            }
-            elsif( $dbd eq 'Oracle' ) {
-                my $def = $col->default_value;
-                if( ref($def) eq 'SCALAR' && $$def =~ /^current_timestamp/i ) {
-                    $col->default_value( \"sysdate" )
-                }
             }
             #if( $col->default_value =~ /^'(.*)'$/ ) {
             #    $col->default_value( "'$1'" );

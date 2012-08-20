@@ -10,7 +10,7 @@ use Catalyst::Runtime 5.80;
 #         -Debug: activates the debug mode for very useful log messages
 #   ConfigLoader: will load the configuration from a Config::General file in the
 #                 application's home directory
-# Static::Simple: will serve static files from the application's root 
+# Static::Simple: will serve static files from the application's root
 #                 directory
 
 our @modules;
@@ -33,46 +33,36 @@ BEGIN {
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
-            Unicode::Encoding
-            Session     Session::Store::DBIC    Session::State::Cookie
-            Singleton           
+                        Unicode
+            Session             Session::Store::DBIC    Session::State::Cookie
+            Singleton
             +CatalystX::Features::Plugin::I18N
             +CatalystX::Features::Plugin::Static::Simple/;
-        push @modules, 'Log::Colorful' if eval "require Catalyst::Plugin::Log::Colorful";
+                push @modules, 'Log::Colorful' if eval "require Catalyst::Plugin::Log::Colorful";
     }
-    #unshift @modules, '-Debug' if $ENV{BASELINER_DEBUG};
 }
 
 use Catalyst @modules;
-use Time::HiRes qw(gettimeofday tv_interval);
-use Baseliner::CI;
-my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 our $VERSION = '5.1.1';
-our $LICENSE = 'GPLv3';
 
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
 
 __PACKAGE__->config(
-    'Plugin::Session' => {
-        dbic_class => 'Baseliner::BaliSession', 
-        expires    => 3600000,
-    },
+        'Plugin::Session' => {
+                dbic_class => 'Baseliner::BaliSession',
+                expires    => 3600000,
+        },
 );
 
 __PACKAGE__->config->{static}->{dirs} = [
         'static',
         qr/images/,
     ];
-# __PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = __PACKAGE__->config->{static}->{dirs};
-
-__PACKAGE__->config->{static}->{ignore_extensions} 
-        = [ qw/mas html js json css less/ ];    
-# __PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = __PACKAGE__->config->{static}->{ignore_extensions};
-
-__PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
+__PACKAGE__->config->{static}->{ignore_extensions}
+        = [ qw/mas html js json css/ ];
 
 __PACKAGE__->config( {
         'View::JSON' => {
@@ -81,37 +71,35 @@ __PACKAGE__->config( {
         },
     });
 
-# __decrypt( ... )__  conf definition
-__PACKAGE__->config->{ 'Plugin::ConfigLoader' }->{ substitutions } = {
-    decrypt => sub {
-        my $c = shift;
-        $c->decrypt( @_ );
-    }
+# __decrypt( ... )__ conf definition
+__PACKAGE__->config->{'Plugin::ConfigLoader'}->{ substitutions } = {
+        decrypt => sub {
+                my $c = shift;
+                require Crypt::Blowfish::Mod;
+                my $key = $c->config->{dec_key};
+                die "Error: missing 'dec_key' config parameter" unless length $key;
+                my $b = Crypt::Blowfish::Mod->new( $key );
+                $b->decrypt( @_ );
+        }
 };
 
+
 if( $ENV{BALI_CMD} ) {
-    # only load the root controller, for capturing $c
-    __PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
-    require Baseliner::Cmd;
+        # only load the root controller, for capturing $c
+        __PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
 }
 
-
-#__PACKAGE__->config->{authentication}{dbic} = {
-#    user_class     => 'Bali::BaliUser',
-#    user_field     => 'username',
-#    password_field => 'password'
-#};
 
 use FindBin '$Bin';
 #$c->languages( ['es'] );
 __PACKAGE__->config(
-    'Plugin::I18N' => {
-        maketext_options => {
-            Style => 'gettext',
-            Path => $Bin.'/../lib/Baseliner/I18N',
-            Decode => 0,
+        'Plugin::I18N' => {
+                maketext_options => {
+                        Style => 'gettext',
+                        Path => $Bin.'/../lib/Baseliner/I18N',
+                        Decode => 0,
+                }
         }
-    }
 );
 
 ## Authentication
@@ -139,32 +127,21 @@ __PACKAGE__->config(
     );
 
 # Start the application
-if( $ENV{BALI_CMD} ) {
-    # no controllers on command line mode
-    around 'locate_components' => sub {
-        my $orig = shift;
-        my @comps = $orig->( @_ );
-        # save original
-        Baseliner->config->{ all_components } = [ @comps ];
-        @comps = grep !/Controller/, @comps;
-        return @comps;
-    };
-}
 if( $ENV{BALI_FAST} ) {
-    around 'locate_components' => sub {
-        my $orig = shift;
-        my @comps = $orig->( @_ );
-        # save original
-        Baseliner->config->{ all_components } = [ @comps ];
-        # filter
-        if( $ENV{BALI_FAST} ) {
-            @comps = grep /Model/, @comps;
-        } else {
-            @comps = grep /(Controller|View|Model)/, @comps;
-        }
+        around 'locate_components' => sub {
+                my $orig = shift;
+                my @comps = $orig->( @_ );
+                # save original
+                Baseliner->config->{ all_components } = [ @comps ];
+                # filter
+                if( $ENV{BALI_FAST} ) {
+                        @comps = grep /Model/, @comps;
+                } else {
+                        @comps = grep /(Controller|View|Model)/, @comps;
+                }
 
-        return @comps;
-    };
+                return @comps;
+        };
 }
 
 __PACKAGE__->setup();
@@ -177,190 +154,200 @@ $SIG{KILL} = \&signal_interrupt;
 if( my $retry = Baseliner->config->{db_retry} ) {
     use Try::Tiny;
     my $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
-    if( ! $connected ) {
-        my $freq = Baseliner->config->{db_retry_frequency} // 30;
-        my $i = 0;
-        while( !$connected && ( $retry < 0 || $i++ <  $retry ) ) {
-            sleep $freq;
-            warn "Retrying Database Connection ($i for $retry retries)...\n";
-            $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
-        }
-        warn "DB Reconected ok.\n";
+    my $freq = Baseliner->config->{db_retry_frequency} // 30;
+    my $i = 0;
+    while( !$connected && ( $retry < 0 || $i++ <  $retry ) ) {
+        sleep $freq;
+        warn "Retrying Database Connection ($i for $retry retries)...\n";
+        $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
     }
+    warn "DB Connected ok.\n";
 }
 
-# setup the DB package
-
-{
-    no strict;
-    *DB::schema = sub { Baseliner->model('Baseliner')->schema; };
-    for my $n (  DB->schema->sources ) {
-        my $package = "DB::$n";
-        *{$package} = sub { Baseliner->model("Baseliner::$n") }
-    }
-}
+#Class::C3::initialize();
 
 # Setup date formating for Oracle
 my $dbh = __PACKAGE__->model('Baseliner')->storage->dbh;
 if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-    $dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
+        $dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
     #$dbh->{LongReadLen} = __PACKAGE__->config->{LongReadLen} || 100000000; #64 * 1024;
-    #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs   
+    #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs
+        #TODO probably not necessary anymore...
+    # set sequences for oracle tables - avoid checking triggers for content
+    Baseliner::Schema::Baseliner::Result::BaliBaseline->sequence('bali_baseline_seq');
+    Baseliner::Schema::Baseliner::Result::BaliCalendar->sequence('bali_calendar_seq');
+    Baseliner::Schema::Baseliner::Result::BaliCalendarWindow->sequence('bali_calendar_window_seq');
+    Baseliner::Schema::Baseliner::Result::BaliChainedService->sequence('bali_chained_service_seq');
+    Baseliner::Schema::Baseliner::Result::BaliChain->sequence('bali_chain_seq');
+    Baseliner::Schema::Baseliner::Result::BaliConfig->sequence('bali_config_seq');
+    Baseliner::Schema::Baseliner::Result::BaliJobItems->sequence('bali_job_items_seq');
+    Baseliner::Schema::Baseliner::Result::BaliJob->sequence('bali_job_seq');
+    Baseliner::Schema::Baseliner::Result::BaliJobStash->sequence('bali_job_stash_seq');
+    Baseliner::Schema::Baseliner::Result::BaliLog->sequence('bali_log_seq');
+    Baseliner::Schema::Baseliner::Result::BaliLogData->sequence('bali_log_data_seq');
+    Baseliner::Schema::Baseliner::Result::BaliMessage->sequence('bali_message_seq');
+    Baseliner::Schema::Baseliner::Result::BaliMessageQueue->sequence('bali_message_queue_seq');
+    Baseliner::Schema::Baseliner::Result::BaliNamespace->sequence('bali_namespace_seq');
+    Baseliner::Schema::Baseliner::Result::BaliProject->sequence('bali_project_seq');
+    Baseliner::Schema::Baseliner::Result::BaliProjectItems->sequence('bali_project_items_seq');
+    Baseliner::Schema::Baseliner::Result::BaliReleaseItems->sequence('bali_release_items_seq');
+    Baseliner::Schema::Baseliner::Result::BaliRelease->sequence('bali_release_seq');
+    Baseliner::Schema::Baseliner::Result::BaliRequest->sequence('bali_request_seq');
+    Baseliner::Schema::Baseliner::Result::BaliRole->sequence('bali_role_seq');
+    Baseliner::Schema::Baseliner::Result::BaliRepo->sequence('bali_dummy_seq');
+    Baseliner::Schema::Baseliner::Result::BaliRepoKeys->sequence('bali_dummy_seq');
+    Baseliner::Schema::Baseliner::Result::BaliSemQueue->sequence('bali_sem_queue_seq');
+    Baseliner::Schema::Baseliner::Result::BaliWiki->sequence('bali_wiki_seq');
+    Baseliner::Schema::Baseliner::Result::BaliUser->sequence('bali_user_seq');
 }
 
-    
-    # Inversion of Control
-    if( $ENV{BALI_FAST} ) {
-        for my $component ( grep !/(Controller|Model|View)/, @{ Baseliner->config->{ all_components } } ) {
-            print "all: $component\n";
-            Catalyst::Utils::ensure_class_loaded( $component, { ignore_loaded => 1 } );
+
+        # Inversion of Control
+        if( $ENV{BALI_FAST} ) {
+                for my $component ( grep !/(Controller|Model|View)/, @{ Baseliner->config->{ all_components } } ) {
+                        print "all: $component\n";
+                        Catalyst::Utils::ensure_class_loaded( $component, { ignore_loaded => 1 } );
+                }
         }
-    }
-    require Baseliner::Core::Registry;
-    $ENV{BALI_FAST} or Baseliner::Core::Registry->setup;
-    $ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
-    $ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
+        require Baseliner::Core::Registry;
+        $ENV{BALI_FAST} or Baseliner::Core::Registry->setup;
+        $ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
+        $ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
 
-    if( ! Baseliner->debug ) {
-        # make immutable for speed
-        my %cl=Class::MOP::get_all_metaclasses;
-
-        for my $package (
-            grep !/Baseliner$/, grep !/Baseliner::View/, grep /^Baseliner/,
-            keys %cl )
         {
-            next if $package =~ /Baseliner$/;
-            my $meta = $cl{ $package };
-            next if ref $meta eq 'Moose::Meta::Role';
-            #eval { $package->meta->make_immutable; };
-            $meta->make_immutable unless $meta->is_immutable;   # slow loadup... ~1s
-        }
+                # make immutable for speed
+                my %cl=Class::MOP::get_all_metaclasses;
 
-        #my %pkgs;
-        #for( keys %{ Baseliner::Core::Registry->registrar } ) {
-        #   my $node = Baseliner::Core::Registry->registrar->{$_};
-        #   $pkgs{ $node->instance->module } =undef;
-        #   #  say _dump $node;
-        #}
-        #$_->meta->make_immutable for keys %pkgs;
-    }
+                for my $package ( grep /^Baseliner/, keys %cl ) {
+                    next if $package =~ /Baseliner$/;
+                    next if $package =~ /Baseliner::View/;
+                        next unless $package->can('meta');
+                        eval { $package->meta->make_immutable; };
+                }
+
+                #my %pkgs;
+                #for( keys %{ Baseliner::Core::Registry->registrar } ) {
+                #       my $node = Baseliner::Core::Registry->registrar->{$_};
+                #       $pkgs{ $node->instance->module } =undef;
+                #       #  say _dump $node;
+                #}
+                #$_->meta->make_immutable for keys %pkgs;
+        }
 
     # Beep
-    my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR "Baseliner Server v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . ". Startup time: " . tv_interval($t0) . "s.\n";
-    $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
-        print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
-        print STDERR "\7";
-    };
-    # Make registry easily available to contexts
-    sub registry {
+    $ENV{CATALYST_DEBUG} && print "\7";
+
+        # Make registry easily available to contexts
+        sub registry {
+                my $c = shift;
+                return 'Baseliner::Core::Registry';
+        }
+
+        # this is deprecated
+        sub c {
+                use Carp;
+                Catalyst->log->warn( Carp::longmess 'Use of Baseliner->c() is deprecated' );
+                __PACKAGE__->commandline;
+        }
+
+        # elegant shutdown
+        sub signal_interrupt {
+                print STDERR "Baseliner server interrupt requested.\n";
+                eval {
+                        local $SIG{ALRM} = sub { die "alarm\n" };
+                        alarm 3;
+                        exit 0;
+                };
+                kill 9,$$;
+                #exit 0;
+        }
+
+        sub launch {
         my $c = shift;
-        return 'Baseliner::Core::Registry';
-    }
+                # Baseliner->app($c);
+        $c->model('Services')->launch(@_, c=>$c);
+        }
 
-    # this is deprecated
-    sub c {
-        use Carp;
-        Catalyst->log->warn( Carp::longmess 'Use of Baseliner->c() is deprecated' );
-        __PACKAGE__->commandline;
-    }
+        our $global_app;
+        sub app {
+                __PACKAGE__->instance and return __PACKAGE__->instance;
+                my $class = shift;
+                my $c = shift;
+                return $global_app = $c if ref $c;
+                return $global_app if ref $global_app;
 
-    # elegant shutdown
-    sub signal_interrupt {
-        print STDERR "Baseliner server interrupt requested.\n";
-        eval {
-            local $SIG{ALRM} = sub { die "alarm\n" };
-            alarm 3;
-            exit 0;
-        };
-        kill 9,$$;
-        #exit 0;
-    }
-    
-    our $_logger;
-    our $_thrower;
-    
-    sub launch {
-        my $c = shift;
-        ref $c or $c = Baseliner->app($c);
-        # Baseliner->app($c);
-        return $c->model('Services')->launch(@_, c=>$c);
-    }
-
-    our $global_app;
-    sub app {
-        Baseliner->instance and return __PACKAGE__->instance;
-        my $class = shift;
-        my $c = shift;
-        return $global_app = $c if ref $c;
-        return $global_app if ref $global_app;
-
-        #my $c;
-        #my $meta = Class::MOP::get_metaclass_by_name('Baseliner');
-        #$meta->make_mutable;
+                #my $c;
+                #my $meta = Class::MOP::get_metaclass_by_name('Baseliner');
+                #$meta->make_mutable;
         #$meta->add_after_method_modifier( "dispatch", sub {
             #$c = shift;
         #});
-        #$meta->make_immutable( replace_constructor => 1 );
-        #Class::C3::reinitialize();
-        #return $c; 
-        #return Baseliner::Cmd->new;
-        return $c;
-        #bless {}, 'Baseliner';
+                #$meta->make_immutable( replace_constructor => 1 );
+                #Class::C3::reinitialize();
+                #return $c;
+                return __PACKAGE__->commandline;
+                #bless {}, 'Baseliner';
 
-    }
+        }
 
     #TODO move this to a model
-    sub inf {
-        my $c = shift;
-        my %p = @_;
-        $p{ns} ||= '/';
-        $p{bl} ||= '*';
-        if( $p{domain} ) {
-            $p{domain} =~ s{\.$}{}g;
-            $p{key}={ -like => "$p{domain}.%" };
+        sub inf {
+                my $c = shift;
+                my %p = @_;
+                $p{ns} ||= '/';
+                $p{bl} ||= '*';
+                if( $p{domain} ) {
+                        $p{domain} =~ s{\.$}{}g;
+                        $p{key}={ -like => "$p{domain}.%" };
+                }
+                print "KEY==$p{domain}\n";
+                my %data;
+                my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
+                while( my $r = $rs->next  ) {
+                        (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
+                        $c->stash->{$var} = $r->value;
+                        $data{$var} = $r->value;
+                }
+                return \%data;
         }
-        print "KEY==$p{domain}\n";
-        my %data;
-        my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
-        while( my $r = $rs->next  ) {
-            (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
-            $c->stash->{$var} = $r->value;
-            $data{$var} = $r->value;
-        }
-        return \%data;
-    }
 
-use Try::Tiny;
-sub decrypt {
-    my $c = shift;
-    require Crypt::Blowfish::Mod;
-    my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
-    die "Error: missing 'decrypt_key' config parameter" unless length $key;
-
-    my $b = Crypt::Blowfish::Mod->new( $key );
-    $b->decrypt( @_ );
-}
+    #TODO deprecated:
+                sub inf_bl {
+                    my $c=shift;
+                    $c->stash->{bl};
+                }
+                sub inf_search {
+                    my ($c, %p ) = @_;
+                    $p{ns} ||= '%';
+                    $p{bl} ||= '%';
+                    $p{key} ||= '%';
+                    my $bl = $p{bl} eq '*' ? '%' : $p{bl};
+                    my $ns = $p{ns} ? $p{ns}.'/%' : '%';
+                    $ns =~ s{//}{/}g;
+                    warn "------------SEARCH: $ns,$bl,$p{key}";
+                    return $c->model('Baseliner::Bigtable')->search({ ns=>{ -like => $ns },bl=>{ -like =>$bl },key=>{ -like =>$p{key} }});
+                }
+                sub inf_write {
+                    my ($c,%p) = @_;
+                    $p{ns} ||= '/';
+                    $p{bl} ||= '*';
+                    $c->model('Baseliner::Bigtable')->create({ ns=>$p{ns},bl=>$p{bl}, key=>$p{key}, value=>$p{value} });
+                }
 
 # user shortcut
+use Try::Tiny;
 sub username {
-    require Baseliner::Utils;
-    my $c = shift;
-    my $user;
-    $user = try { return $c->session->{username} } and return $user;
-    Baseliner::Utils::_debug "No session user";
-    $user = try { return $c->user->username } and return $c->session->{username} = $user;
-    Baseliner::Utils::_debug "No user user";
-    $user = try { return $c->user->id
-    } catch {
-        Baseliner::Utils::_error "No user id.";
-        return undef;   
-    } and return $user;
-}
-
-sub has_action {
-    my ($c,$action) = @_;
-    $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
+        my $c = shift;
+        my $user;
+        $user = try { return $c->session->{username} } and return $user;
+        $ENV{ BASELINER_DEBUG } && warn "No session user";
+        $user = try { return $c->user->username } and return $c->session->{username} = $user;
+        $ENV{ BASELINER_DEBUG } && warn "No user user";
+        $user = try { return $c->user->id
+        } catch {
+                $ENV{ BASELINER_DEBUG } && warn "No user id.";
+                return undef;
+        } and return $user;
 }
 
 sub is_root {
@@ -432,34 +419,6 @@ sub _comp_names_search_prefixes {
     return @result;
 }
 
-=head2 dump_these
-
-Replace the C<password> field in the debug log with asterisks.
-
-=cut
-if( Baseliner->debug ) {
-    around dump_these => sub {
-        my $orig = shift;
-        my $c = shift;
-
-        my @vars = $c->$orig( @_ );
-        my @ret;
-        for my $d ( @vars ) {
-            my ($type,$obj)=@$d;
-            if( $type eq 'Request' ){
-                if( $obj->{_log}{_body} =~ m{(password\s+\|\s+)(.+?)(\s+)}s ) {
-                   my $p = $2;
-                   my $np = '*' x length($p) ;
-                   $obj->{_log}{_body} =~ s{$p}{$np}gsm;
-                }
-                push @ret, $d;
-            } else {
-                push @ret, $d;
-            }
-        }
-        return @ret;
-    };
-}
 
 =head1 NAME
 

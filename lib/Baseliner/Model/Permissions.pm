@@ -216,7 +216,7 @@ sub user_baselines_for_action  {
         push @bl_arr, $arr;
     }
     return @bl_arr;
-}
+    }
 
 =head2 user_has_action username=>Str, action=>Str
 

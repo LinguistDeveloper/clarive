@@ -15,6 +15,7 @@ use utf8;
 BEGIN { extends 'Catalyst::Controller' }
 
 sub index : Local {
+  # DFEATURE my $f_;
   my ($self, $c) = @_;
   my $env_name         = $c->request->parameters->{env_name};
   my $env              = $c->request->parameters->{env};
@@ -73,6 +74,8 @@ sub index : Local {
       ;
     my %destino = $inf_db->get_inf_destinos($new_env, $sub_apl);
 
+    # DASSERT $destino{maq},    "host is empty";
+    # DASSERT $destino{puerto}, "port is empty";
     my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
     my $path_waslogdir = q{};
@@ -87,11 +90,13 @@ sub index : Local {
                                        [{column_name => 'WAS_LOG_PATH',
                                          idred       => $destino{red},
                                          ident       => $new_env}]);
+    # DASSERT $path_waslogdir, '$path_waslogdir is null';
 
     $dir_waslogdir = $inf_db->get_inf({sub_apl => $sub_apl},
                                       [{column_name => 'WAS_DIR_LOG_APPSERVER',
                                         idred       => $destino{red},
                                         ident       => $new_env}]);
+    # DASSERT $dir_waslogdir, '$dir_waslogdir is null';
 
     $dest_waslogdir = "$path_waslogdir/$dir_waslogdir";
 
@@ -153,6 +158,8 @@ sub index : Local {
     if ($tiene_cluster) {
       my ($maquina, $puerto) = ($tiene_cluster->{maq}, $tiene_cluster->{puerto});
 
+      # DASSERT $maquina, "host is empty";
+      # DASSERT $puerto,  "port is empty";
       my $balix2 = _balix(host => $maquina, port => $puerto);
 
       alarm 0;    ## reseteamos el timeout
@@ -492,6 +499,8 @@ sub index : Local {
   elsif ($op eq "START") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
+    # DASSERT $destino{maq},    'host is undef';
+    # DASSERT $destino{puerto}, 'port is undef';
     my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
     _log "Ejecutando $was_script $destino{was_context_root} startApplication $destino{was_ver} en la maquina $destino{maq}";
@@ -523,6 +532,8 @@ sub index : Local {
   elsif ($op eq "STOP") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
+    # DASSERT $destino{maq},    'host is undef';
+    # DASSERT $destino{puerto}, 'port is undef';
     my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
     my ($rc, $ret) = $balix->executeas($destino{was_user}, "$was_script $destino{was_context_root} stopApplication $destino{was_ver}");
@@ -550,6 +561,8 @@ sub index : Local {
   elsif ($op eq "RESTART") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
+    # DASSERT $destino{maq},    'host is undef';
+    # DASSERT $destino{puerto}, 'port is undef';
     my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
     my ($rc, $ret) = $balix->executeas($destino{was_user}, "$was_script $destino{was_context_root} stopApplication $destino{was_ver}");
@@ -597,6 +610,8 @@ sub index : Local {
   elsif ($op eq "INFOWAS") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
+    # DASSERT $destino{maq},    'host is undef';
+    # DASSERT $destino{puerto}, 'port is undef';
     my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
     my ($rc, $ret) = $balix->executeas($destino{was_user}, "$was_script $destino{was_context_root} infoWAS");

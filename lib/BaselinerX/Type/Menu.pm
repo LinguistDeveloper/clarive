@@ -14,14 +14,13 @@ has 'index' => ( is=> 'rw', isa=> 'Int', default=>100 );  ## menu ordering
 has 'url' => ( is=> 'rw', isa=> 'Str' );
 has 'url_comp' => ( is=> 'rw', isa=> 'Str' );
 has 'url_run' => ( is=> 'rw', isa=> 'Str' );
-has 'url_eval' => ( is=> 'rw', isa=> 'Str' );
 has 'url_js' => ( is=> 'rw', isa=> 'Str' );
 has 'url_browser_window' => ( is=> 'rw', isa=> 'Str' );
 has 'url_iframe' => ( is=> 'rw', isa=> 'Str' );
 has 'title' => ( is=> 'rw', isa=> 'Str' );
 has 'level' => ( is=> 'rw', isa=> 'Int' );
 has 'handler' => ( is=> 'rw', isa=> 'Str' );
-has 'icon' => ( is=> 'rw', isa=> 'Str', default=>'' );
+has 'icon' => ( is=> 'rw', isa=> 'Str' );
 has 'cls' => ( is=> 'rw', isa=> 'Str' );
 has 'actions' => ( is=> 'rw', isa=> 'ArrayRef' );
 
@@ -60,9 +59,6 @@ sub ext_menu {
     }
     elsif( defined $self->{url_run} ) {
         $ret->{handler}=\"function(){ Baseliner.runUrl('$self->{url_run}'); }";
-    }
-    elsif( defined $self->{url_eval} ) {
-        $ret->{handler}=\"function(){ Baseliner.evalUrl('$self->{url_eval}'); }";
     }
     elsif( defined $self->{url_browser_window} ) {
         $ret->{handler}=\"function(){ Baseliner.addNewBrowserWindow('$self->{url_browser_window}', _('$title') ); }";

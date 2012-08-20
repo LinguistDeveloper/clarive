@@ -35,70 +35,70 @@ sub run {
 
     #TODO if 'start' fork and go nohup .. or proc::background my self in windows
     #TODO if 'stop' go die
-	if( exists $config->{list} ) {
-		$self->list
-	} else {
-		_log "Starting daemons...";
-		sleep 3;
-		$self->dispatcher( $c, $config );
-	}
+    if( exists $config->{list} ) {
+        $self->list
+    } else {
+        _log "Starting daemons...";
+        sleep 3;
+        $self->dispatcher( $c, $config );
+    }
 }
 
 sub list {
     my ( $self, $c, $config ) = @_;
 
-	_log "Listing active daemons...";
-	for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
-		my $pid = $daemon->pid;
-		if( $pid ) {
-			my $exists = pexists( $daemon->pid );
-			my $e_text = $exists ? 'running' : 'missing';
-			my $host = $daemon->hostname;
-			print $daemon->service . " ($host:$pid): $e_text",  "\n";
-		} else {
-			print $daemon->service . ": inactive", "\n";
-		}
-	}
+    _log "Listing active daemons...";
+    for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
+        my $pid = $daemon->pid;
+        if( $pid ) {
+            my $exists = pexists( $daemon->pid );
+            my $e_text = $exists ? 'running' : 'missing';
+            my $host = $daemon->hostname;
+            print $daemon->service . " ($host:$pid): $e_text",  "\n";
+        } else {
+            print $daemon->service . ": inactive", "\n";
+        }
+    }
 }
 
 sub stop_all {
     my ( $self, $c, $config ) = @_;
 
-	_log "Stopping all daemons...";
+    _log "Stopping all daemons...";
 
-	# kill everybody
-	for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
-		if ( $daemon->active ) {
-			next unless $daemon->pid;
-			next unless pexists( $daemon->pid );
-			_log "Stopping daemon " . $daemon->service;
-			Baseliner->model('Daemons')->kill_daemon( $daemon );
-		}
-	}
+    # kill everybody
+    for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
+        if ( $daemon->active ) {
+            next unless $daemon->pid;
+            next unless pexists( $daemon->pid );
+            _log "Stopping daemon " . $daemon->service;
+            Baseliner->model('Daemons')->kill_daemon( $daemon );
+        }
+    }
 
-	# bye!
-	_log "Goodbye!";
-	exit 0; 
+    # bye!
+    _log "Goodbye!";
+    exit 0; 
 }
 
 sub restart_all {
     my ( $self, $c, $config ) = @_;
 
-	_log "Restarting all daemons nicely (via signal USR1)...";
+    _log "Restarting all daemons nicely (via signal USR1)...";
 
-	# kill everybody
-	for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
-		if ( $daemon->active ) {
-			next unless $daemon->pid;
-			next unless pexists( $daemon->pid );
-			_log "Stopping daemon " . $daemon->service;
-			Baseliner->model('Daemons')->kill_daemon( $daemon, RESTART_SIGNAL );
-		}
-	}
+    # kill everybody
+    for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
+        if ( $daemon->active ) {
+            next unless $daemon->pid;
+            next unless pexists( $daemon->pid );
+            _log "Stopping daemon " . $daemon->service;
+            Baseliner->model('Daemons')->kill_daemon( $daemon, RESTART_SIGNAL );
+        }
+    }
 
-	# bye!
-	_log "Goodbye!";
-	exit 0; 
+    # bye!
+    _log "Goodbye!";
+    exit 0; 
 }
 
 sub dispatcher {
@@ -123,9 +123,9 @@ sub dispatcher {
         _log _loc('Checking for daemons started/stopped');
         my @daemons = ();
         try {
-        	@daemons = Baseliner->model('Daemons')->list( all => 1 );
+            @daemons = Baseliner->model('Daemons')->list( all => 1 );
         } catch {
-        	my $err = shift;
+            my $err = shift;
             _log "Error executing main Dispatcher loop. $err";
             _log "Try again in $frequency seconds";
         };	

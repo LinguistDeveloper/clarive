@@ -5,14 +5,13 @@ use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::Comm::Balix;
-use Carp::Datum;
 use Try::Tiny;
 use YAML;
 use utf8;
 BEGIN { extends 'Catalyst::Model' }
 
 sub get_tar_dir {
-  DFEATURE my $f_;
+  # DFEATURE my $f_;
   my ($self, $args_ref) = @_;
   my $log = Catalyst::Log->new('info', 'debug', 'warn', 'error');
 
@@ -26,8 +25,8 @@ sub get_tar_dir {
   my $config_bde   = Baseliner->model('ConfigStore')->get('config.bde');
   my $consola_tail = $config_bde->{consola_tail};
   my $consola_dias = $config_bde->{consola_dias};
-  DASSERT $consola_tail, '$consola_tail is undef';
-  DASSERT $consola_dias, '$consola_dias is undef';
+  # DASSERT $consola_tail, '$consola_tail is undef';
+  # DASSERT $consola_dias, '$consola_dias is undef';
 
   my ($dir, $dirlocal, $filename) = ($dir_remoto, $dir_local, $fichero);
 
@@ -188,7 +187,7 @@ sub get_tar_dir {
 }
 
 sub write_bin_log {
-  DFEATURE my $f_;
+  # DFEATURE my $f_;
   my ($self, $args_ref) = @_;
 
   my $dbh      = $args_ref->{dbh} || BaselinerX::CA::Harvest::DB->new;
@@ -197,11 +196,11 @@ sub write_bin_log {
   my $filename = $args_ref->{filename};
   my $cam      = $args_ref->{cam};
 
-  DREQUIRE $dbh,      '$dbh is undef';
-  DREQUIRE $pase,     '$pase is undef';
-  DREQUIRE $filedir,  '$filedir is undef';
-  DREQUIRE $filename, '$filename is undef';
-  DREQUIRE length($cam) == 3, '$cam does not have proper length';
+  # DREQUIRE $dbh,      '$dbh is undef';
+  # DREQUIRE $pase,     '$pase is undef';
+  # DREQUIRE $filedir,  '$filedir is undef';
+  # DREQUIRE $filename, '$filename is undef';
+  # DREQUIRE length($cam) == 3, '$cam does not have proper length';
 
   my $har_db = BaselinerX::Ktecho::Harvest::DB->new;
 
@@ -219,12 +218,12 @@ sub write_bin_log {
   my $iddat = $har_db->db->value("
                     SELECT distlogdataseq.nextval 
                     FROM   dual ");
-  DASSERT $iddat, '$iddat is empty';
+  # DASSERT $iddat, '$iddat is empty';
 
   my $idlog = $har_db->db->value("
                     SELECT distlogseq.nextval 
                     FROM   dual  ");
-  DASSERT $idlog, '$idlog is empty';
+  # DASSERT $idlog, '$idlog is empty';
 
   Baseliner->model('Harvest::Distlogdata')->create({dat_id               => $iddat,
                                                  dat_logid  => $idlog,

@@ -10,7 +10,47 @@ use Exporter::Tidy default => [ qw{ _biztalk_type
                                     to_html
                                     date
                                     fix_year
-                                    is_in } ];
+                                    is_in
+                                    grant_role } ];
+
+
+sub get_role {
+  my $role  = shift;
+  my $where = {role => uc($role)};
+  my $args  = {select => 'id'};
+  my $rs    = Baseliner->model('Baseliner::BaliRole')->search($where, $args);
+  rs_hashref($rs);
+  $rs->first->{id};
+}
+
+sub get_cam {
+  my $cam   = shift;
+  my $where = {name => $cam, id_parent => undef};
+  my $args  = {select => 'id'};
+  my $rs = Baseliner->model('Baseliner::BaliProject')->search($where, $args);
+  rs_hashref($rs);
+  $rs->first->{id};
+}
+
+sub grant_role {
+  my %p = @_;
+  my $args = {
+    username => $p->{user},
+    id_role  => get_role($p->{role}),
+    ns       => get_cam($p->{project})
+  };
+  Baseliner->model('Baseliner::BaliRoleuser')->create($args);
+}
+
+=head1 grant_role
+
+Grants permissions to an user.
+
+=head2 Usage
+
+  grant_role(user => 'q74613x', role => 'PR', project => 'SCT')
+
+=cut                                    
 
 
 # Gets the value of a biztalk type and returns its real value to be used on

@@ -31,20 +31,20 @@ Ext.ux.PanelResizer = Ext.extend(Ext.util.Observable, {
         p.on('beforedestroy', this.tracker.destroy, this.tracker);
     },
 
-	// private
+    // private
     onDragStart: function(e){
         this.dragging = true;
         this.startHeight = this.panel.el.getHeight();
         this.fireEvent('dragstart', this, e);
     },
 
-	// private
+    // private
     onDrag: function(e){
         this.panel.setHeight((this.startHeight-this.tracker.getOffset()[1]).constrain(this.minHeight, this.maxHeight));
         this.fireEvent('drag', this, e);
     },
 
-	// private
+    // private
     onDragEnd: function(e){
         this.dragging = false;
         this.fireEvent('dragend', this, e);

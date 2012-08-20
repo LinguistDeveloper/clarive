@@ -2,7 +2,7 @@
     $config => ''
 </%args>
 <%perl>
-	use Switch 'Perl6';
+    use Switch 'Perl6';
     my $row = $c->stash->{metadata_row};
     my $key = $c->stash->{config_key};
 </%perl>
@@ -20,24 +20,24 @@
 % }
 
 % if( ref $config ) {
-		name: "<% $config->key .'.'. $row->{id} %>",
+        name: "<% $config->key .'.'. $row->{id} %>",
 % } elsif( $c->stash->{config_key} ) {
-		name: "<% $c->stash->{config_key} %>",
+        name: "<% $c->stash->{config_key} %>",
 % } else {
-		name: "<% $row->{name} || $row->{id} %>",
+        name: "<% $row->{name} || $row->{id} %>",
 % }
-		fieldLabel: "<% _loc($row->{label}) || $row->{name} || $row->{id} %>",
+        fieldLabel: "<% _loc($row->{label}) || $row->{name} || $row->{id} %>",
 
 %# incluimos validacion, posibles valores de vtype: 'alpha', 'alphanum' y todos los Vtypes.js de EXT
 %# cuando la propiedad nullable sea igual a 0 el campo será obligario, por defecto no lo es
 % if($row->{vtype}) {
-		vtype: "<% $row->{vtype} %>",
+        vtype: "<% $row->{vtype} %>",
 % }			
 % for my $e_name ( keys %{ $row->{extjs} || {} } ) {  			
-		<% $e_name %>:  "<% $row->{extjs}->{$e_name} %>",
+        <% $e_name %>:  "<% $row->{extjs}->{$e_name} %>",
 % }
 
-		allowBlank: <% ($row->{nullable} eq "")? 1 : $row->{nullable} %>
+        allowBlank: <% ($row->{nullable} eq "")? 1 : $row->{nullable} %>
 }
 % if( ! $c->stash->{single_comp} ) {
 , 		

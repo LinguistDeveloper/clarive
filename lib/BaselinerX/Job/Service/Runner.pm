@@ -98,7 +98,7 @@ sub new_from_id {
     my $msg=$p{message} || "Job revived";
     
     my $job = $class->new( %p );
-    _log "Created job object for jobid=$p{jobid}";
+    _debug "Created job object for jobid=$p{jobid}";
     # increment the execution
     my $row = $job->row ;
     if( $p{'exec'} != 0 ) {
@@ -127,7 +127,7 @@ sub clone_from_id {
     $p{jobid} or _throw 'Missing jobid parameter';
     $p{step} ||= $p{same_exec} ? 'POST' : 'RUN';
     my $job = $class->new( %p );
-    _log "Created job object for jobid=$p{jobid}";
+    _debug "Created job object for jobid=$p{jobid}";
     # increment the execution
     my $row = $job->row;
     #Baseliner->model('Baseliner::BaliJob')->create(
@@ -255,7 +255,7 @@ sub job_run {
         # log the error
         _log "*** Error running Job $jobid ****";
         _log $error;
-        $self->logger->error( $error || _loc('Internal Error') );
+        $self->logger->error( $error // _loc('Internal Error') );
 
         # now, rollback if needed
         unless( $self->rollback ) { # if we are already rolling back, skip

@@ -18,7 +18,6 @@ use Exporter::Tidy default => [
     _loc_raw
     _cut
     _log
-    _error
     _debug
     _utf8
     _tz
@@ -276,8 +275,6 @@ sub _log {
     my ($cl,$fi,$li) = caller(0);
     _log_me( $cl, $fi, $li, @_ );
 }
-
-*_error = \&_log;
 
 #TODO check that global DEBUG flag is active
 sub _debug {

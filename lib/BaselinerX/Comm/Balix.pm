@@ -206,8 +206,8 @@ sub create {
 }
 
 sub key {
-	my ($self,$key) = @_;	
-	$self->{key} = $key;
+    my ($self,$key) = @_;	
+    $self->{key} = $key;
 }
 
 sub checkRC {
@@ -278,12 +278,12 @@ sub sendFile {
 *send_file_check = \&sendFileCheck;
 sub sendFileCheck {
     my ( $self, $localfile, $rfile ) = @_;
-	my ($rc,$ret) = $self->sendFile( $localfile, $rfile );
-	unless( $rc ) {
-		my $comp = $self->crc_match( $localfile, $rfile );
-		$rc = 229 if !$comp;
-	}
-	return ($rc,$ret);
+    my ($rc,$ret) = $self->sendFile( $localfile, $rfile );
+    unless( $rc ) {
+        my $comp = $self->crc_match( $localfile, $rfile );
+        $rc = 229 if !$comp;
+    }
+    return ($rc,$ret);
 }
 
 sub sendData {
@@ -305,7 +305,7 @@ sub sendData {
 sub getFile {
     my ( $self, $rfile, $localfile, $os ) = @_;
     my $socket = $self->{socket};
-	$os ||= $self->{os};
+    $os ||= $self->{os};
 
     if ( $os eq "win" ) {
         $rfile =~ s{\/}{\\}g;      ## subs de las barras palante
@@ -469,27 +469,27 @@ sub parseReturn {
 
 # returns the crc, or 0 if failed
 sub crc {
-	my ($self, $file ) = @_;
+    my ($self, $file ) = @_;
     my $socket = $self->{socket};
     print $socket $self->encodeCMD("Y $file") . $self->EOL;
-	my ($crc, $ret ) = $self->checkRC();
-	return $crc;
+    my ($crc, $ret ) = $self->checkRC();
+    return $crc;
 }
 
 sub crc_local {
-	my ($self, $file ) = @_;
-	CORE::open( my $F,'<', $file ) or die $!;
-	my $crc = String::CRC32::crc32( $F ) or die $!;
-	close $F;
-	return $crc;
+    my ($self, $file ) = @_;
+    CORE::open( my $F,'<', $file ) or die $!;
+    my $crc = String::CRC32::crc32( $F ) or die $!;
+    close $F;
+    return $crc;
 }
 
 # returns 1 if equal, 0 if different
 sub crc_match {
-	my ($self, $local, $remote ) = @_;
-	my $crc_local = $self->crc_local( $local );
-	my $crc_remote = $self->crc( $remote );
-	return $crc_local eq $crc_remote;
+    my ($self, $local, $remote ) = @_;
+    my $crc_local = $self->crc_local( $local );
+    my $crc_remote = $self->crc( $remote );
+    return $crc_local eq $crc_remote;
 }
 
 sub EOL {

@@ -1,46 +1,46 @@
 (function(){
-	var ps = 50;
+    var ps = 50;
 
- 	var reader = new Ext.data.JsonReader({
+     var reader = new Ext.data.JsonReader({
             root: 'data',
-			remoteSort: true,
+            remoteSort: true,
             totalProperty: 'totalCount',
             id: 'id'
         },
-		[
-			{name: 'provider' },
-			{name: 'related' },
-			{name: 'ns_type' },
-			{name: 'recordCls' },
-			{name: 'why_not' },
-			{name: 'can_job' },
-			{name: 'item' },
-			{name: 'user' },
-			{name: 'service' },
-			{name: 'ns' },
-			{name: 'date' },
-			{name: 'icon' },
-			{name: 'data' },
-			{name: 'text' }
-		]
-	);
+        [
+            {name: 'provider' },
+            {name: 'related' },
+            {name: 'ns_type' },
+            {name: 'recordCls' },
+            {name: 'why_not' },
+            {name: 'can_job' },
+            {name: 'item' },
+            {name: 'user' },
+            {name: 'service' },
+            {name: 'ns' },
+            {name: 'date' },
+            {name: 'icon' },
+            {name: 'data' },
+            {name: 'text' }
+        ]
+    );
 
-	var group_field = 'related';
+    var group_field = 'related';
 
-	var store = new Ext.data.GroupingStore({
+    var store = new Baseliner.GroupingStore({
             reader: reader,
-			url: '/package/list',
-			baseParams: { limit: ps },
+            url: '/package/list',
+            baseParams: { limit: ps },
             sortInfo: {field: 'item', direction: "ASC"},
             groupField: group_field
-	});
-	
-	store.load({params:{start: 0, limit: ps }});
+    });
+    
+    store.load({params:{start: 0, limit: ps }});
 
     <& /comp/search_field.mas &>
 
     //********** Filtering
-	var filter_cookie;
+    var filter_cookie;
     var filter_obj = filter_cookie || {
         info : true,
         warn : true,
@@ -49,7 +49,7 @@
     };
     var filter_me = function( item, checked ) {
         filter_obj[ item.id ] = checked;
-		//grid.getColumnModel().setHidden( 7, !filter_obj['debug'] );
+        //grid.getColumnModel().setHidden( 7, !filter_obj['debug'] );
         store.load();
     };
 
@@ -64,191 +64,191 @@
         '<tpl for="."><div class="search-item {recordCls}">',
             '<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{item}</h3>',
             '{text}',
-			'<tpl if="why_not">',
-				'<br />{why_not}',
-			'</tpl>',
+            '<tpl if="why_not">',
+                '<br />{why_not}',
+            '</tpl>',
         '</div></tpl>'
     );
 
-	var grid = new Ext.grid.GridPanel({
-		renderTo: 'main-panel',
-		title: _("Packages"),
-		header: false,
-		stripeRows: true,
-		autoScroll: true,
+    var grid = new Ext.grid.GridPanel({
+        renderTo: 'main-panel',
+        title: _("Packages"),
+        header: false,
+        stripeRows: true,
+        autoScroll: true,
         tpl: resultTpl,
-		autoWidth: true,
-		autoSizeColumns: true,
-		deferredRender:true,
-		clicksToEdit: 'auto',
-		store: store,
-		viewConfig: [{
-				forceFit: true
-		}],
+        autoWidth: true,
+        autoSizeColumns: true,
+        deferredRender:true,
+        clicksToEdit: 'auto',
+        store: store,
+        viewConfig: [{
+                forceFit: true
+        }],
         view: new Ext.grid.GroupingView({
             forceFit:true,
             groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "Items" : "Item"]})'
         }),
 
-		selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-		loadMask:'true',
-		columns: [
-			{ header: _("Namespace"), width: 120, dataIndex: 'ns', sortable: true },	
-			{ header: _("Item"), width: 120, dataIndex: 'item', sortable: true },	
-			{ header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },	
-			{ header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
-			{ header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
-		],
-		bbar: new Ext.PagingToolbar({
-							store: store,
-							pageSize: ps,
-							displayInfo: true,
-							displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
-							emptyMsg: "No hay registros disponibles"
-					}),        
-		tbar: [ 'Buscar: ', ' ',
-			new Ext.app.SearchField({
-				store: store,
-				params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
-				emptyText: '<% _loc('<Enter your search string>') %>'
-			}),
-			{ text: _("Views"), menu: filter_menu },
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        loadMask:'true',
+        columns: [
+            { header: _("Namespace"), width: 120, dataIndex: 'ns', sortable: true },	
+            { header: _("Item"), width: 120, dataIndex: 'item', sortable: true },	
+            { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },	
+            { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
+            { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
+        ],
+        bbar: new Ext.PagingToolbar({
+                            store: store,
+                            pageSize: ps,
+                            displayInfo: true,
+                            displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
+                            emptyMsg: "No hay registros disponibles"
+                    }),        
+        tbar: [ 'Buscar: ', ' ',
+            new Ext.app.SearchField({
+                store: store,
+                params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
+                emptyText: '<% _loc('<Enter your search string>') %>'
+            }),
+            { text: _("Views"), menu: filter_menu },
 <%doc>
-			{ text: '<% _loc('Auto Refresh') %>',
-				icon: '/static/images/icons/time.gif', 
-				enableToggle: true,
-				pressed: false,
-				cls: 'x-btn-text-icon',
-				handler: function(t) {
-					if( t.pressed ) {
-						if( id_job == "" ) {
-							t.toggle();
-						} else {
-							autorefresh.start(task);
-						}
-					} else {
-						autorefresh.stop(task);
-					}
-				}
-			},
-			{
-				text: '<% _loc('Annotations') %>',
-				icon: '/static/images/icons/post.gif', 
-				cls: 'x-btn-text-icon',
-				handler: annotation
-			},
+            { text: '<% _loc('Auto Refresh') %>',
+                icon: '/static/images/icons/time.gif', 
+                enableToggle: true,
+                pressed: false,
+                cls: 'x-btn-text-icon',
+                handler: function(t) {
+                    if( t.pressed ) {
+                        if( id_job == "" ) {
+                            t.toggle();
+                        } else {
+                            autorefresh.start(task);
+                        }
+                    } else {
+                        autorefresh.stop(task);
+                    }
+                }
+            },
+            {
+                text: '<% _loc('Annotations') %>',
+                icon: '/static/images/icons/post.gif', 
+                cls: 'x-btn-text-icon',
+                handler: annotation
+            },
 </%doc>
-			'->'
-			]
-	});
+            '->'
+            ]
+    });
 
 
-	//return grid;
+    //return grid;
 
-	var myView = new Ext.ux.grid.livegrid.GridView({
-	        nearLimit : 80,
-	        loadMask  : {
-	            msg :  'Buffering. Please wait...'
-	        }
-	    });
-		
-	var store_live = new Ext.ux.grid.livegrid.Store({
-	            autoLoad : true,
-				url: '/package/list',
-	            bufferSize : 200,
-	            reader     : new Ext.ux.grid.livegrid.JsonReader({
-	                root            : 'data',
-	                versionProperty : 'version',
-	                totalProperty   : 'totalCount',
-	                id              : 'id'
-	              },
-				  [
-					{name: 'provider' },
-					{name: 'related' },
-					{name: 'ns_type' },
-					{name: 'recordCls' },
-					{name: 'why_not' },
-					{name: 'can_job' },
-					{name: 'item' },
-					{name: 'user' },
-					{name: 'service' },
-					{name: 'ns' },
-					{name: 'date' },
-					{name: 'icon' },
-					{name: 'data' },
-					{name: 'text' }
-				]),
-	            sortInfo   : {field: 'item', direction: 'ASC'}
-	        })
-	
+    var myView = new Ext.ux.grid.livegrid.GridView({
+            nearLimit : 80,
+            loadMask  : {
+                msg :  'Buffering. Please wait...'
+            }
+        });
+        
+    var store_live = new Ext.ux.grid.livegrid.Store({
+                autoLoad : true,
+                url: '/package/list',
+                bufferSize : 200,
+                reader     : new Ext.ux.grid.livegrid.JsonReader({
+                    root            : 'data',
+                    versionProperty : 'version',
+                    totalProperty   : 'totalCount',
+                    id              : 'id'
+                  },
+                  [
+                    {name: 'provider' },
+                    {name: 'related' },
+                    {name: 'ns_type' },
+                    {name: 'recordCls' },
+                    {name: 'why_not' },
+                    {name: 'can_job' },
+                    {name: 'item' },
+                    {name: 'user' },
+                    {name: 'service' },
+                    {name: 'ns' },
+                    {name: 'date' },
+                    {name: 'icon' },
+                    {name: 'data' },
+                    {name: 'text' }
+                ]),
+                sortInfo   : {field: 'item', direction: 'ASC'}
+            })
+    
     var itemTpl = function(value,metadata,rec,rowIndex,colIndex,store) {
-		var icon = rec.icon || 'package.gif';
-		return "<img alt='"+ rec.id +"' border=0 src='/static/images/"+icon+"' /><b>" + value + "</b>" ;
+        var icon = rec.icon || 'package.gif';
+        return "<img alt='"+ rec.id +"' border=0 src='/static/images/"+icon+"' /><b>" + value + "</b>" ;
     };
-	
-	var livegrid = new Ext.ux.grid.livegrid.GridPanel({
-	        enableDragDrop : false,
-	        cm             : new Ext.grid.ColumnModel([
-	            new Ext.grid.RowNumberer({header : '#', width: 60 }),
-				{ header: _("Item"), width: 180, dataIndex: 'item', sortable: true, renderer: itemTpl  },	
-				{ header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },	
-				{ header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
-				{ header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
-	        ]),
-	        loadMask       : {
-	            msg : _('Loading...')
-	        },
-	        title      : _("Packages"),
-	        height     : 400,
-	        stripeRows : true,
-			autoWidth: true,
-			autoSizeColumns: true,
-	        width      : 600,
-	        store      : store_live,
-	        selModel : new Ext.ux.grid.livegrid.RowSelectionModel(),
-	        //sm : new Ext.grid.CheckboxSelectionModel(),
-	        view     : myView,
-	        bbar     : new Ext.ux.grid.livegrid.Toolbar({
-	            view        : myView,
-	            displayInfo : true
-	        }),
-		tbar: [ 'Buscar: ', ' ',
-			new Ext.app.SearchField({
-				store: store_live,
-				params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
-				emptyText: '<% _loc('<Enter your search string>') %>'
-			}),
-			{ text: _("Views"), menu: filter_menu },
+    
+    var livegrid = new Ext.ux.grid.livegrid.GridPanel({
+            enableDragDrop : false,
+            cm             : new Ext.grid.ColumnModel([
+                new Ext.grid.RowNumberer({header : '#', width: 60 }),
+                { header: _("Item"), width: 180, dataIndex: 'item', sortable: true, renderer: itemTpl  },	
+                { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },	
+                { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
+                { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
+            ]),
+            loadMask       : {
+                msg : _('Loading...')
+            },
+            title      : _("Packages"),
+            height     : 400,
+            stripeRows : true,
+            autoWidth: true,
+            autoSizeColumns: true,
+            width      : 600,
+            store      : store_live,
+            selModel : new Ext.ux.grid.livegrid.RowSelectionModel(),
+            //sm : new Ext.grid.CheckboxSelectionModel(),
+            view     : myView,
+            bbar     : new Ext.ux.grid.livegrid.Toolbar({
+                view        : myView,
+                displayInfo : true
+            }),
+        tbar: [ 'Buscar: ', ' ',
+            new Ext.app.SearchField({
+                store: store_live,
+                params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
+                emptyText: '<% _loc('<Enter your search string>') %>'
+            }),
+            { text: _("Views"), menu: filter_menu },
 <%doc>
-			{ text: '<% _loc('Auto Refresh') %>',
-				icon: '/static/images/icons/time.gif', 
-				enableToggle: true,
-				pressed: false,
-				cls: 'x-btn-text-icon',
-				handler: function(t) {
-					if( t.pressed ) {
-						if( id_job == "" ) {
-							t.toggle();
-						} else {
-							autorefresh.start(task);
-						}
-					} else {
-						autorefresh.stop(task);
-					}
-				}
-			},
-			{
-				text: '<% _loc('Annotations') %>',
-				icon: '/static/images/icons/post.gif', 
-				cls: 'x-btn-text-icon',
-				handler: annotation
-			},
+            { text: '<% _loc('Auto Refresh') %>',
+                icon: '/static/images/icons/time.gif', 
+                enableToggle: true,
+                pressed: false,
+                cls: 'x-btn-text-icon',
+                handler: function(t) {
+                    if( t.pressed ) {
+                        if( id_job == "" ) {
+                            t.toggle();
+                        } else {
+                            autorefresh.start(task);
+                        }
+                    } else {
+                        autorefresh.stop(task);
+                    }
+                }
+            },
+            {
+                text: '<% _loc('Annotations') %>',
+                icon: '/static/images/icons/post.gif', 
+                cls: 'x-btn-text-icon',
+                handler: annotation
+            },
 </%doc>
-			'->'
-			]
-	    }); 
-	return livegrid;
-	
+            '->'
+            ]
+        }); 
+    return livegrid;
+    
 })();
 
 

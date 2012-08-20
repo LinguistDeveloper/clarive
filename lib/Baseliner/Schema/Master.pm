@@ -1,6 +1,5 @@
 package Baseliner::Schema::Master;
 use strict;
-require Baseliner::Schema::Baseliner::Result::BaliMasterRel;
 
 =head2 master_setup
 

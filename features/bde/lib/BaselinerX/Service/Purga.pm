@@ -553,7 +553,7 @@ sub purge_closed_packages {
     my $broker  = _har_conf 'broker';
     my $loghome = _bde_conf 'loghome';
     for my $env (keys %apls) {
-      my @packages     = _unique @{$apls{$env}};
+      my @packages     = unique @{$apls{$env}};
       my $package_list = join ' ', @packages;
       my $logfile      = "$loghome/hppcerrado$$-" . ahora() . ".log";
       my $farg         = write_arg_file qq{-b $broker $haruser $harpass -en $env -st "Producción" -o "$logfile" $package_list};   

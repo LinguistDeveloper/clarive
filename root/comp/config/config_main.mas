@@ -1,5 +1,5 @@
 <%perl>
-	use Baseliner::Utils;
+    use Baseliner::Utils;
     use JavaScript::Dumper;
 </%perl>
 <%doc>
@@ -122,13 +122,13 @@
         if( ! node.isLeaf() && node.text!='/' ) return;
         var ns = node.text=='/' ? '/' : node.parentNode.text + '/' + node.text;
         var bl = bl_combo.getValue();
-		Ext.Ajax.request({
-			url: '/config/ns_panel',
+        Ext.Ajax.request({
+            url: '/config/ns_panel',
             params: { ns: ns },
-			success: function(xhr) {
+            success: function(xhr) {
 
- 				try {
-					var items = eval(xhr.responseText);
+                 try {
+                    var items = eval(xhr.responseText);
 
                     var ns_form = new Ext.FormPanel({
                         title: node.text,
@@ -223,10 +223,10 @@
                                     return true;
                             }
                     });
-				} catch(err) {
-					if( xhr.responseText.indexOf('dhandler') > -1 ) {
-						Ext.Msg.alert("Error: ", xhr.responseText );
-					} else {
+                } catch(err) {
+                    if( xhr.responseText.indexOf('dhandler') > -1 ) {
+                        Ext.Msg.alert("Error: ", xhr.responseText );
+                    } else {
                         var str=""; 
                         for(var i in err) {
                             str+="<li>" + i + "=" + err[i]; 
@@ -235,18 +235,18 @@
                         res.replace(/\</,'&lt;');
                         res.replace(/\>/,'&gt;');
                         str += "<hr><pre>" + res;
-						Baseliner.errorWin("<% _loc('Error Rendering Tab Component') %>", str);
-					}
-				}
-			},
-			failure: function(xhr) {
-				var win = new Ext.Window({ layout: 'fit', 
-					autoScroll: true, title: "<% _loc('Form creation failed') %>", 
-					height: 600, width: 600, 
-					html: 'Server communication failure:' + xhr.responseText });
-				win.show();
-			}
-		});
+                        Baseliner.errorWin("<% _loc('Error Rendering Tab Component') %>", str);
+                    }
+                }
+            },
+            failure: function(xhr) {
+                var win = new Ext.Window({ layout: 'fit', 
+                    autoScroll: true, title: "<% _loc('Form creation failed') %>", 
+                    height: 600, width: 600, 
+                    html: 'Server communication failure:' + xhr.responseText });
+                win.show();
+            }
+        });
 
     });
 

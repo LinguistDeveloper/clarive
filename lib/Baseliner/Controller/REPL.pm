@@ -51,7 +51,7 @@ sub eval : Local {
     my $sql = $p->{sql};
 
     my ($res,$err);
-	my $t0 = [gettimeofday];
+    my $t0 = [gettimeofday];
     my ($stdout, $stderr) = capture {
         if( $sql ) {
             eval {
@@ -62,16 +62,16 @@ sub eval : Local {
             $res = $res->[0] if @$res <= 1;
         }
         #my @arr  = eval $code;
-		#$res = @arr > 1 ? \@arr : $arr[0];
+        #$res = @arr > 1 ? \@arr : $arr[0];
         $err  = $@;
     };
-	my $elapsed = tv_interval( $t0 );
+    my $elapsed = tv_interval( $t0 );
     $res = _dump( $res ) if $dump eq 'yaml';
     $res = JSON::XS::encode_json( $res ) if $dump eq 'json' && ref $res && !blessed $res;
     $c->stash->{json} = {
         stdout => $stdout,
         stderr => $stderr,
-		elapsed => "$elapsed",
+        elapsed => "$elapsed",
         result => "$res",
         error  => "$err",
         success => \( $err ? 0 : 1 ) ,
@@ -83,108 +83,108 @@ sub sql {
     my ($self, $sql_out, $code ) = @_;
     my $model = 'Baseliner';
 
-	my @sts = $self->sql_normalize( $code );
+    my @sts = $self->sql_normalize( $code );
 
     my $db = new Baseliner::Core::DBI({ model=>$model });
     if( $sql_out eq 'hash' ) {
-		my %results;
-		for my $st ( @sts ) {
-			%results = $db->hash( $st );
-		}
+        my %results;
+        for my $st ( @sts ) {
+            %results = $db->hash( $st );
+        }
         return \%results;
     } else {
-		my @results;
-		for my $st ( @sts ) {
-			next unless $st;
-			push @results, $db->array_hash( $st );
-		}
+        my @results;
+        for my $st ( @sts ) {
+            next unless $st;
+            push @results, $db->array_hash( $st );
+        }
         return \@results;
     }
 }
 
 sub sql_normalize {
-	my ($self, $sql) = @_;
-	my @sts;
-	my $st;
-	for( split /\n|\r/, $sql ) {
-		next if /^\s*--/;  # comments
-		if( /^(.+);\s*$/ ) {
-			$st .= $1;
-			push @sts, $st;
-			$st = '';
-		} else {
-			$st .= $_;	
-		}
-	}
-	push @sts, $st if $st;
-	return @sts;
+    my ($self, $sql) = @_;
+    my @sts;
+    my $st;
+    for( split /\n|\r/, $sql ) {
+        next if /^\s*--/;  # comments
+        if( /^(.+);\s*$/ ) {
+            $st .= $1;
+            push @sts, $st;
+            $st = '';
+        } else {
+            $st .= $_;	
+        }
+    }
+    push @sts, $st if $st;
+    return @sts;
 }
 
 sub save : Local {
     my ($self, $c ) = @_;
     my $p    = $c->req->parameters;
-	if( $p->{id} ) {
-		_log "Saving REPL: " . $p->{id};
-		my $key = join'/','saved.repl',$p->{id};
-		$c->model('Repository')->set( ns=>$key, data=>{ code=> $p->{code}, output=>$p->{output}, username=>$c->username });
-	}
+    if( $p->{id} ) {
+        _log "Saving REPL: " . $p->{id};
+        my $key = join'/','saved.repl',$p->{id};
+        $c->model('Repository')->set( ns=>$key, data=>{ code=> $p->{code}, output=>$p->{output}, username=>$c->username });
+    }
 }
 
 sub delete : Local {
     my ($self, $c ) = @_;
     my $p    = $c->req->parameters;
-	if( $p->{ns} ) {
-		$c->model('Repository')->delete( ns=>'saved.repl/' . $p->{ns} );
-	}
+    if( $p->{ns} ) {
+        $c->model('Repository')->delete( ns=>'saved.repl/' . $p->{ns} );
+    }
 }
 
 sub load : Local {
     my ($self, $c ) = @_;
     my $p    = $c->req->parameters;
-	my $item = $c->model('Repository')->get( ns=>'saved.repl/' . $p->{ns} );
-	$c->stash->{json} = $item;
-	$c->forward('View::JSON');
+    my $item = $c->model('Repository')->get( ns=>'saved.repl/' . $p->{ns} );
+    $c->stash->{json} = $item;
+    $c->forward('View::JSON');
 }
 
 sub list_saved : Local {
     my ($self, $c ) = @_;
     my $p    = $c->req->parameters;
-	my @ns = $c->model('Repository')->list( provider=>'saved.repl' );
-	my $k = 0;
-	$c->stash->{json} = {
-		data=> [ sort { lc $a->{ns} cmp lc $b->{ns} }map {
-			my $ns= (ns_split($_))[1];
-			{ id=>$k++, ns=>$ns, leaf=>\0 } 
-		} @ns ]
-	};
-	$c->forward('View::JSON');
+    my @ns = $c->model('Repository')->list( provider=>'saved.repl' );
+    my $k = 0;
+    $c->stash->{json} = {
+        data=> [ sort { lc $a->{ns} cmp lc $b->{ns} }map {
+            my $ns= (ns_split($_))[1];
+            { id=>$k++, ns=>$ns, leaf=>\0 } 
+        } @ns ]
+    };
+    $c->forward('View::JSON');
 }
 
 sub save_to_file : Local {
     my ($self, $c ) = @_;
     my $p    = $c->req->parameters;
-	my @ns = $c->model('Repository')->list( provider=>'saved.repl' );
-	try {
-		for ( @ns ) {
-			my $name = (ns_split($_))[1];
-			$name =~ s{\s}{_}g;
-			my $item = $c->model('Repository')->get( ns=>$_ );
-			my $file = Baseliner->path_to('etc', 'repl', "$name.t" );
-			my $code = $item->{code};
-			my $output = $item->{output};
-			$code =~ s{\r}{}g;
-			$output =~ s{\r}{}g;
-			open my $out,'>',$file;
-			print $out $code;
-			print $out "\n__END__\n";
-			print $out $output; 
-			print $out "\n";
-			close $out;
-		}
-		$c->stash->{json} = { success=>\1 };
-	} catch {
-		$c->stash->{json} = { success=>\0, msg=>shift };
-	};
-	$c->forward('View::JSON');
+    my @ns = $c->model('Repository')->list( provider=>'saved.repl' );
+    try {
+        for ( @ns ) {
+            my $name = (ns_split($_))[1];
+            $name =~ s{\s}{_}g;
+            my $item = $c->model('Repository')->get( ns=>$_ );
+            my $file = Baseliner->path_to('etc', 'repl', "$name.t" );
+            my $code = $item->{code};
+            my $output = $item->{output};
+            $code =~ s{\r}{}g;
+            $output =~ s{\r}{}g;
+            open my $out,'>',$file;
+            print $out $code;
+            print $out "\n__END__\n";
+            print $out $output; 
+            print $out "\n";
+            close $out;
+        }
+        $c->stash->{json} = { success=>\1 };
+    } catch {
+        $c->stash->{json} = { success=>\0, msg=>shift };
+    };
+    $c->forward('View::JSON');
 }
 1;

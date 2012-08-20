@@ -1,0 +1,39 @@
+<!--
+name: Graphic2_js
+description: Graphic2 js
+html: /dashlets/graphic2_js.html
+---
+-->
+<%perl>
+    use Baseliner::Utils;
+    my $graph_id = "graph2". _nowstamp;
+</%perl>
+    <script>
+        Ext.onReady(function(){
+            var d1 = [];
+            for (var i = 0; i < 14; i += 0.5){
+                d1.push([i, Math.sin(i)]);
+            }
+            
+            var d2 = [[0, 3], [4, 8], [8, 5], [9, 13]];
+            
+            // a null signifies separate line segments
+            var d3 = [[0, 12], [7, 12], null, [7, 2.5], [12, 2.5]];
+            
+            var panel = new Ext.FlotPanel({
+
+                width:650,
+                height:400,
+                data:[ d1, d2, d3 ],
+                renderTo: '<%$graph_id%>'
+            });	
+        });
+    </script>
+
+
+    <div>
+        <h2>Gráfico 2</h2>
+        <div id="<%$graph_id%>"></div>
+    </div>
+
+
