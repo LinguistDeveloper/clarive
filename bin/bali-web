@@ -102,7 +102,7 @@ elif [ "$1" = "kill" ]; then
 elif [ "$1" = "restart" ]; then
     bali_web stop
     bali_web kill
-    bali_web start $*
+    bali_web start
 elif [ "$1" = "tail" ]; then
     tail -10000f $LOGFILE
 else

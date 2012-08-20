@@ -157,7 +157,7 @@ sub _build_sub_apps_net {
   my $ref = $self->get_inf(undef, [{column_name => 'WIN_APPL'}]);
 
   if (ref($ref) ne 'ARRAY') {
-    return 0 if ref($ref) == 0;
+    return [] if ref($ref) == 0;
     return ["$ref"];
   }
   my @data = @{$ref};

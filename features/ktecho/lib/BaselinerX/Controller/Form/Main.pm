@@ -37,8 +37,8 @@ sub load_hsp : Local {
 sub get_main_data : Local {
   my ($self, $c) = @_;
   my $p         = $c->request->parameters;
-  my $cam       = $p->{cam};
-  my $formobjid = $p->{fid};
+  my $cam       = $p->{cam} || _throw "No CAM at Controller::get_main_data";
+  my $formobjid = $p->{fid} || _throw "No Fid at Controller::get_main_data";
   my $username  = $c->username;
   my $where     = {'trim(username)' => $username};
   my $args      = {select => 'usrobjid'};

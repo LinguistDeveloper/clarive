@@ -1,11 +1,11 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000052812
-#	Fecha de pase .................... 2011/10/27 07:01:46
+#	Pase ............................. N.PROD0000061805
+#	Fecha de pase .................... 2012/04/02 16:01:51
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Service/SQAFeed.pm
-#	Versión del elemento ............. 21
-#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
+#	Versión del elemento ............. 2
+#	Propietario de la version ........ q74613x (Q74613X - ERIC LORENZANA CANALES)
 
 package BaselinerX::Service::SQAFeed;
 use Baseliner::Plug;

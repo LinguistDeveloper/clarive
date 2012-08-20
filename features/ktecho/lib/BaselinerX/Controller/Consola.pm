@@ -6,6 +6,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use BaselinerX::Comm::Balix;
+use BaselinerX::Dist::Utils;
 use BaselinerX::Ktecho::Utils;
 use Switch;
 use Try::Tiny;
@@ -49,8 +50,7 @@ sub index : Local {
       my ($cam2, $env2, $sa2, $user2, $op2) = ($1, $2, $3, $4, $5);
       if (($env_name eq $cam2) && ($env eq $env2) && ($op eq $op2)) {
         _log "Ya se esta ejecutando una operacion $op en $env_name->$env";
-        _log
-          "** Lanzada por el usuario '$user2' para la subaplicacion '$sa2'";
+        _log "** Lanzada por el usuario '$user2' para la subaplicacion '$sa2'";
         _log "** Espere algunos instantes y vuelva a intentarlo";
         exit 1;
       }
@@ -73,55 +73,47 @@ sub index : Local {
       ;
     my %destino = $inf_db->get_inf_destinos($new_env, $sub_apl);
 
-    my $balix =
-      BaselinerX::Comm::Balix->new(
-                   host => $destino{maq},
-                   port => $destino{puerto},
-                   key => Baseliner->model('ConfigStore')->get('config.harax')
-                     ->{$destino{puerto}})
-      or _log
-      "Error al abrir la conexion con agente en $destino{maq}:$destino{puerto}";
+    my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
     my $path_waslogdir = q{};
     my $dir_waslogdir  = q{};
     my $dest_waslogdir = q{};
 
-    my %path = $inf_db->get_inf({sub_apl => $sub_apl},
-                                [{column_name => 'WAS_LOG_PATH',
-                                  idred       => $destino{red},
-                                  ident       => $new_env},
-                                 {column_name => 'WAS_DIR_LOG_APPSERVER',
-                                  idred       => $destino{red},
-                                  ident       => $new_env}]);
+    _log "destino:red => $destino{red}";
+    _log "new_env     => $new_env";
+    _log "sub_apl     => $sub_apl";
 
-    $path_waslogdir = $path{WAS_LOG_PATH};
-    $dir_waslogdir  = $path{WAS_DIR_LOG_APPSERVER};
+    $path_waslogdir = $inf_db->get_inf({sub_apl => $sub_apl},
+                                       [{column_name => 'WAS_LOG_PATH',
+                                         idred       => $destino{red},
+                                         ident       => $new_env}]);
+
+    $dir_waslogdir = $inf_db->get_inf({sub_apl => $sub_apl},
+                                      [{column_name => 'WAS_DIR_LOG_APPSERVER',
+                                        idred       => $destino{red},
+                                        ident       => $new_env}]);
+
     $dest_waslogdir = "$path_waslogdir/$dir_waslogdir";
 
-    _log "*** E R R O R ***\n"
-      . "El campo Directorio de Log del AppServer del formulario esta vacio\n"
-      . "No se puede traer log de WAS, rellene la ruta en el campo del formulario\n"
-      . "*** E R R O R ***"
+    _log "dest_waslogdir: $dest_waslogdir";
+
+    _log "*** E R R O R ***\n" . "El campo Directorio de Log del AppServer del formulario esta vacio\n" . "No se puede traer log de WAS, rellene la ruta en el campo del formulario\n" . "*** E R R O R ***"
       if $dir_waslogdir eq q{};
 
     _log "Accediendo a $destino{maq} : $dest_waslogdir para recoger los LOGS";
     _log "Ubicacion de ficheros de log de WAS: $dest_waslogdir";
 
-    my $filename_pr =
-        "$op-$sub_apl-$destino{maq}-PR-"
-      . BaselinerX::Comm::Balix->ahora_log() . "-"
-      . $$ . ".tar";
+    my $filename_pr = "$op-$sub_apl-$destino{maq}-PR-" . _now() . "-" . $$ . ".tar";
 
     $ficheros_creados{$filename_pr}{fichero} = $filename_pr;
     $ficheros_creados{$filename_pr}{maquina} = $destino{maq};
     $ficheros_creados{$filename_pr}{port}    = $destino{puerto};
 
-    my $ret = $c->model('Consola')->get_tar_dir(
-                                               {balix      => $balix,
-                                                dir_remoto => $dest_waslogdir,
-                                                dir_local  => $dirlocal,
-                                                fichero    => $filename_pr,
-                                                rem_tmp    => $rem_tmp});
+    my $ret = $c->model('Consola')->get_tar_dir({balix      => $balix,
+                                                 dir_remoto => $dest_waslogdir,
+                                                 dir_local  => $dirlocal,
+                                                 fichero    => $filename_pr,
+                                                 rem_tmp    => $rem_tmp});
 
     if ($ret) {
       _log "$dirlocal/$filename_pr transferido con exito";
@@ -142,6 +134,7 @@ sub index : Local {
                                        sub_apl => $sub_apl,
                                        env     => substr($env, 0, 1)},
                                       qw{ HARAX_PORT });
+      _log "puerto: $puerto";
 
       $tiene_cluster = {maq    => $destino{server_cluster},
                         puerto => $puerto,};
@@ -158,16 +151,9 @@ sub index : Local {
       _log "No tengo cluster";
     }
     if ($tiene_cluster) {
-      my ($maquina, $puerto) =
-        ($tiene_cluster->{maq}, $tiene_cluster->{puerto},);
+      my ($maquina, $puerto) = ($tiene_cluster->{maq}, $tiene_cluster->{puerto});
 
-      my $balix2 =
-        BaselinerX::Comm::Balix->new(
-        host => $maquina,
-        port => $puerto,
-        test => 'hello world',
-        key => Baseliner->model('ConfigStore')->get('config.harax')->{$puerto}
-        ) or _log "Error al abrir la conexion con agente en $maquina:$puerto";
+      my $balix2 = _balix(host => $maquina, port => $puerto);
 
       alarm 0;    ## reseteamos el timeout
       alarm $consola_timeout;
@@ -175,39 +161,30 @@ sub index : Local {
       my $dest_waslogdir_cluster = q{};
       my $dir_waslogdir_cluster  = q{};
 
-      $dir_waslogdir_cluster =
-        $inf_db->get_inf(undef,
-                         [{column_name => 'WAS_DIR_LOG_APPSER_CLUST',
-                           ident       => $env,
-                           idred       => $destino{red}}]);
+      $dir_waslogdir_cluster = $inf_db->get_inf(undef,
+                                                [{column_name => 'WAS_DIR_LOG_APPSER_CLUST',
+                                                  ident       => $env,
+                                                  idred       => $destino{red}}]);
 
       $dest_waslogdir_cluster = "$path_waslogdir$dir_waslogdir_cluster";
 
       if ($dir_waslogdir_cluster eq q{}) {
-        _log "\n*** E R R O R ***\n"
-          . "El campo Directorio de Log del AppServer del cluster del formulario esta vacio\n"
-          . "No se puede traer log del cluster de WAS, rellene la ruta en el campo del formulario\n"
-          . "*** E R R O R ***";
+        _throw "\n*** E R R O R ***\n" . "El campo Directorio de Log del AppServer del cluster del formulario esta vacio\n" . "No se puede traer log del cluster de WAS, rellene la ruta en el campo del formulario\n" . "*** E R R O R ***";
       }
       else {
-        _log
-          "Accediendo a $maquina : $dest_waslogdir_cluster para recoger los LOGS";
+        _log "Accediendo a $maquina : $dest_waslogdir_cluster para recoger los LOGS";
         _log "Ubicacion de ficheros de log de WAS: $dest_waslogdir_cluster";
 
-        $filename_sc =
-            "$op-$sub_apl-$maquina-SC-"
-          . BaselinerX::Comm::Balix->ahora_log() . "-"
-          . $$ . ".tar";
+        $filename_sc                             = "$op-$sub_apl-$maquina-SC-" . _now() . "-" . $$ . ".tar";
         $ficheros_creados{$filename_sc}{fichero} = $filename_sc;
         $ficheros_creados{$filename_sc}{maquina} = $maquina;
         $ficheros_creados{$filename_sc}{port}    = $puerto;
 
-        my $ret = $c->model('Consola')->get_tar_dir(
-                                       {dir_remoto => $dest_waslogdir_cluster,
-                                        balix      => $balix2,
-                                        dir_local  => $dirlocal,
-                                        fichero    => $filename_sc,
-                                        rem_tmp    => $rem_tmp});
+        my $ret = $c->model('Consola')->get_tar_dir({dir_remoto => $dest_waslogdir_cluster,
+                                                     balix      => $balix2,
+                                                     dir_local  => $dirlocal,
+                                                     fichero    => $filename_sc,
+                                                     rem_tmp    => $rem_tmp});
 
         if ($ret) {
           _log "$dirlocal/$filename_sc transferido con exito";
@@ -221,11 +198,9 @@ sub index : Local {
     }
 
     # finalizamos la entrega de logs
-    my $tarfile =
-        "$op-$sub_apl-"
-      . BaselinerX::Comm::Balix->ahora_log() . "-"
-      . $$ . ".tar";
+    my $tarfile = "$op-$sub_apl-" . _now() . "-" . $$ . ".tar";
 
+    _log "cmd : cd $dirlocal ; $gnutar cvf $tarfile $op-$sub_apl*";
     $ret = `cd $dirlocal ; $gnutar cvf $tarfile $op-$sub_apl*`;
 
     if ($ret) {
@@ -248,14 +223,9 @@ sub index : Local {
   elsif ($op eq "LOGAPL") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
-    my $balix =
-      BaselinerX::Comm::Balix->new(
-                   host => $destino{maq},
-                   port => $destino{puerto},
-                   key => Baseliner->model('ConfigStore')->get('config.harax')
-                     ->{$destino{puerto}})
-      or _log
-      "Error al abrir la conexion con agente en $destino{maq}:$destino{puerto}";
+    my $balix = BaselinerX::Comm::Balix->new(host => $destino{maq},
+                                             port => $destino{puerto},
+                                             key  => Baseliner->model('ConfigStore')->get('config.harax')->{$destino{puerto}}) or _log "Error al abrir la conexion con agente en $destino{maq}:$destino{puerto}";
 
     my $dest_waslogdir = $destino{was_log_dir};
 
@@ -266,10 +236,7 @@ sub index : Local {
     _log "Accediendo a $destino{maq} : $dest_waslogdir para recoger los LOGS";
     _log "Ubicacion de ficheros de log de aplicacion: $dest_waslogdir";
 
-    my $filename_pr =
-        "$op-$sub_apl-$destino{maq}-PR-"
-      . BaselinerX::Comm::Balix->ahora_log() . "-"
-      . $$ . ".tar";
+    my $filename_pr = "$op-$sub_apl-$destino{maq}-PR-" . _now() . "-" . $$ . ".tar";
     $ficheros_creados{$filename_pr}{fichero} = $filename_pr;
     $ficheros_creados{$filename_pr}{maquina} = $destino{maq};
     $ficheros_creados{$filename_pr}{port}    = $destino{puerto};
@@ -277,13 +244,12 @@ sub index : Local {
     # Nota:  directo a 0 por que algunos generan tar gigante --- > los
     # LOGAPL  hay que traerlos  siempre se pone  a 1  , algunos  no se
     # encuentran
-    my $ret = $c->model('Consola')->get_tar_dir(
-                                               {balix      => $balix,
-                                                directo    => 0,
-                                                dir_remoto => $dest_waslogdir,
-                                                dir_local  => $dirlocal,
-                                                fichero    => $filename_pr,
-                                                rem_tmp    => $rem_tmp});
+    my $ret = $c->model('Consola')->get_tar_dir({balix      => $balix,
+                                                 directo    => 0,
+                                                 dir_remoto => $dest_waslogdir,
+                                                 dir_local  => $dirlocal,
+                                                 fichero    => $filename_pr,
+                                                 rem_tmp    => $rem_tmp});
 
     if ($ret) {
       _log "$dirlocal/$filename_pr transferido con exito";
@@ -296,18 +262,15 @@ sub index : Local {
     ## JRL Logs de Cluster
     my $filename_sc;
     if (length($destino{server_cluster}) > 0) {    ## Tiene cluster asociado
+      _log "tiene cluster asociado...";
       my ($puerto) =
         $inf_db->get_unix_server_info({server  => $destino{server_cluster},
                                        sub_apl => $sub_apl,
                                        env     => substr($env, 0, 1)},
                                       qw{ HARAX_PORT });
 
-      my $balix2 =
-        BaselinerX::Comm::Balix->new(
-        host => $destino{server_cluster},
-        port => $puerto,
-        key => Baseliner->model('ConfigStore')->get('config.harax')->{$puerto}
-        );
+      _log "puerto: $puerto";
+      my $balix2 = _balix(host => $destino{server_cluster}, port => $puerto);
 
       $dest_waslogdir = $destino{was_log_dir};
 
@@ -315,14 +278,10 @@ sub index : Local {
       ($dest_waslogdir && length($dest_waslogdir) > 5)
         or die "Directorio de log de aplicacion invalido $dest_waslogdir";
 
-      _log
-        "Accediendo a $destino{server_cluster} : $dest_waslogdir para recoger los LOGS";
+      _log "Accediendo a $destino{server_cluster} : $dest_waslogdir para recoger los LOGS";
       _log "Ubicacion de ficheros de log de aplicacion: $dest_waslogdir";
 
-      $filename_sc =
-          "$op-$sub_apl-$destino{server_cluster}-SC-"
-        . BaselinerX::Comm::Balix->ahora_log() . "-"
-        . $$ . ".tar";
+      $filename_sc                             = "$op-$sub_apl-$destino{server_cluster}-SC-" . _now() . "-" . $$ . ".tar";
       $ficheros_creados{$filename_sc}{fichero} = $filename_sc;
       $ficheros_creados{$filename_sc}{maquina} = $destino{server_cluster};
       $ficheros_creados{$filename_sc}{port}    = $puerto;
@@ -330,12 +289,11 @@ sub index : Local {
       # Nota:  Directo a 0 por que algunos generan tar gigante --- >
       # los LOGAPL hay que traerlos siempre se pone a 1 , algunos no
       # se encuentran
-      my $ret = $c->model('Consola')->get_tar_dir(
-                                               {balix      => $balix2,
-                                                directo    => 0,
-                                                dir_remoto => $dest_waslogdir,
-                                                dir_local  => $dirlocal,
-                                                fichero    => $filename_sc});
+      my $ret = $c->model('Consola')->get_tar_dir({balix      => $balix2,
+                                                   directo    => 0,
+                                                   dir_remoto => $dest_waslogdir,
+                                                   dir_local  => $dirlocal,
+                                                   fichero    => $filename_sc});
 
       if ($ret) {
         _log "$dirlocal/$filename_sc transferido con exito";
@@ -346,10 +304,7 @@ sub index : Local {
       $balix2->end();
     }
 
-    my $tarfile =
-        "$op-$sub_apl-"
-      . BaselinerX::Comm::Balix->ahora_log() . "-"
-      . $$ . ".tar";
+    my $tarfile = "$op-$sub_apl-" . _now() . "-" . $$ . ".tar";
     $ret = `cd $dirlocal ; $gnutar cvf $tarfile $op-$sub_apl*`;
     if ($ret) {
       no strict;
@@ -370,22 +325,13 @@ sub index : Local {
   elsif ($op eq "CONFIG") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
-    my $balix =
-      BaselinerX::Comm::Balix->new(
-                   host => $destino{maq},
-                   port => $destino{puerto},
-                   key => Baseliner->model('ConfigStore')->get('config.harax')
-                     ->{$destino{puerto}});
+    my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
     my $dirrem = $destino{config_dir};
 
-    _log
-      "Accediendo a $destino{maq} : $dirrem para recoger los fichero de configuracion";
+    _log "Accediendo a $destino{maq} : $dirrem para recoger los fichero de configuracion";
     _log "Ubicacion de ficheros de config de la aplicacion: $dirrem";
 
-    my $filename_pr =
-        "$op-$sub_apl-$destino{maq}-PR-"
-      . BaselinerX::Comm::Balix->ahora_log() . "-"
-      . $$ . ".tar";
+    my $filename_pr = "$op-$sub_apl-$destino{maq}-PR-" . _now() . "-" . $$ . ".tar";
 
     $ficheros_creados{$filename_pr}{fichero} = $filename_pr;
     $ficheros_creados{$filename_pr}{maquina} = $destino{maq};
@@ -413,29 +359,19 @@ sub index : Local {
 
     # Tiene cluster asociado
     if (length($destino{server_cluster}) > 0) {
-      my $puerto =
-        $inf_db->get_unix_server_info({server  => $destino{server_cluster},
-                                       sub_apl => $sub_apl,
-                                       env     => substr($env, 0, 1)},
-                                      qw{ HARAX_PORT });
+      my $puerto = $inf_db->get_unix_server_info({server  => $destino{server_cluster},
+                                                  sub_apl => $sub_apl,
+                                                  env     => substr($env, 0, 1)},
+                                                 qw{ HARAX_PORT });
 
-      my $balix2 =
-        BaselinerX::Comm::Balix->new(
-        host => $destino{server_cluster},
-        port => $puerto,
-        key => Baseliner->model('ConfigStore')->get('config.harax')->{$puerto}
-        );
+      my $balix2 = _balix(host => $destino{server_cluster}, port => $puerto);
 
       my $dirrem = $destino{config_dir};
 
-      _log
-        "Accediendo a $destino{server_cluster} : $dirrem para recoger los fichero de configuracion";
+      _log "Accediendo a $destino{server_cluster} : $dirrem para recoger los fichero de configuracion";
       _log "Ubicacion de ficheros de config de la aplicacion: $dirrem";
 
-      $filename_sc =
-          "$op-$sub_apl-$destino{server_cluster}-SC-"
-        . BaselinerX::Comm::Balix->ahora_log() . "-"
-        . $$ . ".tar";
+      $filename_sc                             = "$op-$sub_apl-$destino{server_cluster}-SC-" . _now() . "-" . $$ . ".tar";
       $ficheros_creados{$filename_sc}{fichero} = $filename_sc;
       $ficheros_creados{$filename_sc}{maquina} = $destino{server_cluster};
       $ficheros_creados{$filename_sc}{port}    = $puerto;
@@ -447,6 +383,7 @@ sub index : Local {
                                                    dir_local  => $dirlocal,
                                                    fichero    => $filename_sc,
                                                    rem_tmp    => $rem_tmp});
+
       if ($ret) {
         _log "$dirlocal/$filename_sc transferido con exito";
       }
@@ -456,11 +393,9 @@ sub index : Local {
       $balix2->end();
     }
 
-    my $tarfile =
-        "$op-$sub_apl-"
-      . BaselinerX::Comm::Balix->ahora_log() . "-"
-      . $$ . ".tar";
+    my $tarfile = "$op-$sub_apl-" . _now() . "-" . $$ . ".tar";
 
+    _log "cmd: cd $dirlocal ; $gnutar cvf $tarfile $op-$sub_apl*";
     $ret = `cd $dirlocal ; $gnutar cvf $tarfile $op-$sub_apl*`;
 
     if ($ret) {
@@ -483,28 +418,19 @@ sub index : Local {
   elsif ($op eq "CONFIGLS") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
-    my $balix =
-      BaselinerX::Comm::Balix->new(
-                   host => $destino{maq},
-                   port => $destino{puerto},
-                   key => Baseliner->model('ConfigStore')->get('config.harax')
-                     ->{$destino{puerto}});
+    my $balix = BaselinerX::Comm::Balix->new(host => $destino{maq},
+                                             port => $destino{puerto},
+                                             key  => Baseliner->model('ConfigStore')->get('config.harax')->{$destino{puerto}});
     my $dirrem = $destino{config_dir};
     my $filename_pr;
-    _log
-      "Accediendo a $destino{maq} : $dirrem para sacar listado de los ficheros de configuracion";
+    _log "Accediendo a $destino{maq} : $dirrem para sacar listado de los ficheros de configuracion";
     _log "Ubicacion de ficheros de config de la aplicacion: $dirrem";
-    my ($rc, $ret) =
-      $balix->executeas($destino{was_user}, "find -H '$dirrem' -ls ");
+    my ($rc, $ret) = $balix->executeas($destino{was_user}, "find -H '$dirrem' -ls ");
     if ($rc ne 0) {
-      _log
-        "Error: no se ha podido realizar el 'ls' del directorio $destino{maq}:$dirrem : $ret ";
+      _log "Error: no se ha podido realizar el 'ls' del directorio $destino{maq}:$dirrem : $ret ";
     }
     else {
-      $filename_pr =
-          "$op-$sub_apl-$destino{maq}-PR-"
-        . BaselinerX::Comm::Balix->ahora_log() . "-"
-        . $$ . ".html";
+      $filename_pr = "$op-$sub_apl-$destino{maq}-PR-" . _now() . "-" . $$ . ".html";
       open FF, ">$dirlocal/$filename_pr";
       _log "$ret";
       print FF "<PRE>$ret";
@@ -521,28 +447,19 @@ sub index : Local {
                                        sub_apl => $sub_apl,
                                        env     => substr($env, 0, 1)},
                                       qw{ HARAX_PORT });
-      my $balix2 =
-        BaselinerX::Comm::Balix->new(
-        host => $destino{server_cluster},
-        port => $puerto,
-        key => Baseliner->model('ConfigStore')->get('config.harax')->{$puerto}
-        );
+      my $balix2 = BaselinerX::Comm::Balix->new(host => $destino{server_cluster},
+                                                port => $puerto,
+                                                key  => Baseliner->model('ConfigStore')->get('config.harax')->{$puerto});
       my $dirrem = $destino{config_dir};
 
-      _log
-        "Accediendo a $destino{server_cluster} : $dirrem para sacar listado de los ficheros de configuracion";
+      _log "Accediendo a $destino{server_cluster} : $dirrem para sacar listado de los ficheros de configuracion";
       _log "Ubicacion de ficheros de config de la aplicacion: $dirrem";
-      my ($rc, $ret) =
-        $balix2->executeas($destino{was_user}, "find -H '$dirrem' -ls ");
+      my ($rc, $ret) = $balix2->executeas($destino{was_user}, "find -H '$dirrem' -ls ");
       if ($rc ne 0) {
-        _log
-          "Error: no se ha podido realizar el 'ls' del directorio $destino{server_cluster}:$dirrem: $ret";
+        _log "Error: no se ha podido realizar el 'ls' del directorio $destino{server_cluster}:$dirrem: $ret";
       }
       else {
-        $filename_sc =
-            "$op-$sub_apl-$destino{server_cluster}-SC-"
-          . BaselinerX::Comm::Balix->ahora_log() . "-"
-          . $$ . ".html";
+        $filename_sc = "$op-$sub_apl-$destino{server_cluster}-SC-" . _now() . "-" . $$ . ".html";
         open FF, ">$dirlocal/$filename_sc";
         _log "$ret";
         print FF "<PRE>$ret";
@@ -551,10 +468,7 @@ sub index : Local {
       $balix2->end();
     }
 
-    my $tarfile =
-        "$op-$sub_apl-"
-      . BaselinerX::Comm::Balix->ahora_log() . "-"
-      . $$ . ".tar";
+    my $tarfile = "$op-$sub_apl-" . _now() . "-" . $$ . ".tar";
     $ret = `cd $dirlocal ; $gnutar cvf $tarfile $op-$sub_apl*`;
     if ($ret) {
       no strict;
@@ -573,45 +487,32 @@ sub index : Local {
     unlink "$dirlocal/$tarfile";
   }
   elsif (($op =~ /START|STOP|RESTART/) && ($env eq "PROD")) {
-    _log
-      "CONSOLA: Error: La Operacion $op no esta permitida en entornos de Produccion";
+    _log "CONSOLA: Error: La Operacion $op no esta permitida en entornos de Produccion";
   }
   elsif ($op eq "START") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
-    my $balix =
-      BaselinerX::Comm::Balix->new(
-                   host => $destino{maq},
-                   port => $destino{puerto},
-                   key => Baseliner->model('ConfigStore')->get('config.harax')
-                     ->{$destino{puerto}});
+    my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
-    _log
-      "Ejecutando $was_script $destino{was_context_root} startApplication $destino{was_ver} en la maquina $destino{maq}";
+    _log "Ejecutando $was_script $destino{was_context_root} startApplication $destino{was_ver} en la maquina $destino{maq}";
 
-    my ($rc, $ret) =
-      $balix->executeas($destino{was_user},
-                        "$was_script $destino{was_context_root} startApplication $destino{was_ver}"
-                       );
+    my ($rc, $ret) = $balix->executeas($destino{was_user}, "$was_script $destino{was_context_root} startApplication $destino{was_ver}");
 
     if ($rc ne 0) {
+
       # es que estaba caido, no problem
       if ($rc eq 512) {
         _log "La aplicacion ya estaba arrancada.: $ret";
       }
       else {
-        _log
-          "No se ha podido arrancar la aplicacion con $destino{was_user}:'$was_script $destino{was_context_root} startApplication $destino{was_ver}' (rc=$rc): $ret";
+        _log "No se ha podido arrancar la aplicacion con $destino{was_user}:'$was_script $destino{was_context_root} startApplication $destino{was_ver}' (rc=$rc): $ret";
       }
     }
     else {
       my $dest_clone = $ret;
       $dest_clone =~ s/.*Server(.*?) *de *(.*?) *en.*/$1-$2/s;    ##););
 
-      my $msg =
-          "Ok. WAS <b>$dest_clone</b> iniciado "
-        . ($rc eq 2 ? "<b>con warnings</b> " : "")
-        . " con usuario '$destino{was_user}' (rc=$rc).";
+      my $msg = "Ok. WAS <b>$dest_clone</b> iniciado " . ($rc eq 2 ? "<b>con warnings</b> " : "") . " con usuario '$destino{was_user}' (rc=$rc).";
 
       if   ($rc eq 2) { _log "$msg: $ret" }
       else            { _log "$msg: $ret" }
@@ -622,17 +523,9 @@ sub index : Local {
   elsif ($op eq "STOP") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
-    my $balix =
-      BaselinerX::Comm::Balix->new(
-                   host => $destino{maq},
-                   port => $destino{puerto},
-                   key => Baseliner->model('ConfigStore')->get('config.harax')
-                     ->{$destino{puerto}});
+    my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
-    my ($rc, $ret) =
-      $balix->executeas($destino{was_user},
-                        "$was_script $destino{was_context_root} stopApplication $destino{was_ver}"
-                       );
+    my ($rc, $ret) = $balix->executeas($destino{was_user}, "$was_script $destino{was_context_root} stopApplication $destino{was_ver}");
 
     if ($rc ne 0) {
 
@@ -641,17 +534,13 @@ sub index : Local {
         _log "La aplicacion ya estaba parada.: $ret";
       }
       else {
-        _log
-          "No se ha podido parar la aplicacion con $destino{was_user}:'$was_script $destino{was_context_root} stopApplication $destino{was_ver}' (rc=$rc): $ret";
+        _log "No se ha podido parar la aplicacion con $destino{was_user}:'$was_script $destino{was_context_root} stopApplication $destino{was_ver}' (rc=$rc): $ret";
       }
     }
     else {
       my $dest_clone = $ret;
       $dest_clone =~ s/.*Server(.*?) *de *(.*?) *en.*/$1-$2/s;    ##););
-      my $msg =
-          "Ok. WAS <b>$dest_clone</b> parado "
-        . ($rc eq 2 ? "<b>con warnings</b> " : "")
-        . " con usuario '$destino{was_user}' (rc=$rc).";
+      my $msg = "Ok. WAS <b>$dest_clone</b> parado " . ($rc eq 2 ? "<b>con warnings</b> " : "") . " con usuario '$destino{was_user}' (rc=$rc).";
       if   ($rc eq 2) { _log "$msg: $ret" }
       else            { _log "$msg: $ret" }
     }
@@ -661,32 +550,21 @@ sub index : Local {
   elsif ($op eq "RESTART") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
-    my $balix =
-      BaselinerX::Comm::Balix->new(
-                   host => $destino{maq},
-                   port => $destino{puerto},
-                   key => Baseliner->model('ConfigStore')->get('config.harax')
-                     ->{$destino{puerto}});
-    my ($rc, $ret) =
-      $balix->executeas($destino{was_user},
-                        "$was_script $destino{was_context_root} stopApplication $destino{was_ver}"
-                       );
+    my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
+
+    my ($rc, $ret) = $balix->executeas($destino{was_user}, "$was_script $destino{was_context_root} stopApplication $destino{was_ver}");
     if ($rc ne 0) {
       if ($rc eq 512) {    # Ta muehto...
         _log "La aplicacion ya estaba parada : $ret";
       }
       else {
-        _log
-          "No se ha podido parar la aplicacion con $destino{was_user}:'$was_script $destino{was_context_root} stopApplication $destino{was_ver}' (rc=$rc): $ret";
+        _log "No se ha podido parar la aplicacion con $destino{was_user}:'$was_script $destino{was_context_root} stopApplication $destino{was_ver}' (rc=$rc): $ret";
       }
     }
     else {
       my $dest_clone = $ret;
       $dest_clone =~ s/.*Server(.*?) *de *(.*?) *en.*/$1-$2/s;
-      my $msg =
-          "Ok. WAS <b>$dest_clone</b> parado "
-        . ($rc eq 2 ? "<b>con warnings</b> " : "")
-        . " con usuario '$destino{was_user}' (rc=$rc).";
+      my $msg = "Ok. WAS <b>$dest_clone</b> parado " . ($rc eq 2 ? "<b>con warnings</b> " : "") . " con usuario '$destino{was_user}' (rc=$rc).";
       if   ($rc eq 2) { _log "$msg: $ret" }
       else            { _log "$msg: $ret" }
     }
@@ -695,10 +573,7 @@ sub index : Local {
     alarm 0;
     alarm $consola_timeout;
 
-    ($rc, $ret) =
-      $balix->executeas($destino{was_user},
-                        "$was_script $destino{was_context_root} startApplication $destino{was_ver}"
-                       );
+    ($rc, $ret) = $balix->executeas($destino{was_user}, "$was_script $destino{was_context_root} startApplication $destino{was_ver}");
     if ($rc ne 0) {
 
       # es que estaba levantado... no problem !!
@@ -706,17 +581,13 @@ sub index : Local {
         _log "La aplicacion ya estaba arrancada.: $ret";
       }
       else {
-        _log
-          "No se ha podido arrancar la aplicacion con $destino{was_user}:'$was_script $destino{was_context_root} startApplication $destino{was_ver}' (rc=$rc): $ret";
+        _log "No se ha podido arrancar la aplicacion con $destino{was_user}:'$was_script $destino{was_context_root} startApplication $destino{was_ver}' (rc=$rc): $ret";
       }
     }
     else {
       my $dest_clone = $ret;
       $dest_clone =~ s/.*Server(.*?) *de *(.*?) *en.*/$1-$2/s;
-      my $msg =
-          "Ok. WAS <b>$dest_clone</b> iniciado "
-        . ($rc eq 2 ? "<b>con warnings</b> " : "")
-        . " con usuario '$destino{was_user}' (rc=$rc).";
+      my $msg = "Ok. WAS <b>$dest_clone</b> iniciado " . ($rc eq 2 ? "<b>con warnings</b> " : "") . " con usuario '$destino{was_user}' (rc=$rc).";
       if   ($rc eq 2) { _log "$msg: $ret" }
       else            { _log "$msg: $ret" }
     }
@@ -726,15 +597,9 @@ sub index : Local {
   elsif ($op eq "INFOWAS") {
     my %destino = $inf_db->get_inf_destinos($env, $sub_apl);
 
-    my $balix =
-      BaselinerX::Comm::Balix->new(
-                   host => $destino{maq},
-                   port => $destino{puerto},
-                   key => Baseliner->model('ConfigStore')->get('config.harax')
-                     ->{$destino{puerto}});
+    my $balix = _balix(host => $destino{maq}, port => $destino{puerto});
 
-    my ($rc, $ret) = $balix->executeas($destino{was_user},
-                            "$was_script $destino{was_context_root} infoWAS");
+    my ($rc, $ret) = $balix->executeas($destino{was_user}, "$was_script $destino{was_context_root} infoWAS");
 
     if ($rc ne 0) {
 
@@ -743,15 +608,11 @@ sub index : Local {
         _log "Avisos durante la ejecucion de infoWAS: $ret";
       }
       else {
-        _log
-          "No se ha podido ejecutar infoWAS para la aplicacion $destino{was_user}:'$was_script $destino{was_context_root} infoWAS $destino{was_ver}' (rc=$rc): $ret";
+        _log "No se ha podido ejecutar infoWAS para la aplicacion $destino{was_user}:'$was_script $destino{was_context_root} infoWAS $destino{was_ver}' (rc=$rc): $ret";
       }
     }
     else {
-      my $filename =
-          "$op-$sub_apl"
-        . BaselinerX::Comm::Balix->ahora_log() . "-"
-        . $$ . ".html";
+      my $filename = "$op-$sub_apl" . _now() . "-" . $$ . ".html";
       open FF, ">$dirlocal/$filename";
       _log "$ret";
       print FF "<PRE>$ret";
@@ -779,4 +640,3 @@ sub index : Local {
 }
 
 1;
-

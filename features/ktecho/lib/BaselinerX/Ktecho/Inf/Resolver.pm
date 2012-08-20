@@ -11,7 +11,7 @@ has 'infvar'        => (is => 'rw', isa => 'ArrayRef', lazy_build => 1);
 has 'infvar_solved' => (is => 'rw', isa => 'ArrayRef', lazy_build => 1);
 has 'entorno'       => (is => 'rw', isa => 'Str');
 has 'cam'           => (is => 'rw', isa => 'Str');
-has 'sub_apl'       => (is => 'rw', isa => 'Str', default => 'smoople');
+has 'sub_apl'       => (is => 'rw', isa => 'Str', required => 1);
 
 sub _build_infvar {
   my $self  = shift;
@@ -23,10 +23,10 @@ sub _build_infvar_solved {
   my $self = shift;
   my $entorno = $self->entorno;
   my $cam     = $self->cam;
-  my $sub_apl = $self->sub_apl;
+  my $sub_apl = $self->sub_apl || 'somevalue';
   my @array   = @{ $self->infvar };
 
-  # Inicializo la variable que substituirá al valor inicial
+  # Inicializo la variable que substituirÃ¡ al valor inicial
   my $resultado;
 
   # Recorro la tabla a modificar
@@ -71,7 +71,7 @@ sub _build_infvar_solved {
         $resultado = 'e' if $value eq '${emq}';
         $resultado = 'E' if $value eq '${EMQ}';
       }
-      if ( !$resultado ) {                        # Si no tengo ninguna excepción...
+      if ( !$resultado ) {                        # Si no tengo ninguna excepciÃ³n...
         while ( !$resultado ) {                   # Mientras no tenga resultado...
           for my $ref2 (@array) {                 # Recorro de nuevo la tabla para buscar el valor
             if ( $ref2->{variable} eq $value ) {  # En cuanto encuentre una fila cuyo valor coincida con el que estoy buscando...
@@ -91,6 +91,7 @@ sub get_solved_value {
   my ($self, $value) = @_;
   my @ls = map { $_->{variable} } @{$self->infvar_solved};
   while ($value =~ m/([\$\[|\$\{].*?[\]|\}])/x) {
+  	my $new_value = $value;
     my $valor = $1;
     return q{} unless $valor ~~ @ls;
     for my $ref (@{$self->infvar_solved}) {
@@ -98,8 +99,17 @@ sub get_solved_value {
         $value =~ s/([\$\[|\$\{].*?[\]|\}])/$ref->{valor}/;
       }
     }
+    # Devuelve el valor tal cual empezando con '#' (para avisar)
+    # en caso de que no se hayan cometido cambios. Para evitar
+    # bucles infinitos.
+    if ($value eq $new_value) {
+      $value = "#$value";
+      last;
+    }
   }
   $value;
 }
+
+*solve = \&get_solved_value;
 
 1

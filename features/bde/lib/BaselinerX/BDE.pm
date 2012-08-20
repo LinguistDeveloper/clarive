@@ -175,14 +175,8 @@ register 'config.harvest' => {
             description => 'Usuario TAM para la ejecución de UDP (Si -eh ......dfo se utilizará'
                 . ' el fichero dfo)'
         },
-        {   id          => 'password',
-            default     => '0211rucu',
-            label       => 'Password TAM',
-            description => 'Password TAM del usuario vpscm (en blanco utilizará el fichero dfo). '
-                . 'Valido para la ejecución de UDPS'
-        },
         {   id          => 'broker',
-            default     => 'alfsv053',
+            default     => 'alfsv061',
             label       => 'Servidor Harvest',
             description => 'Nombre del servidor Harvest'
         },
@@ -190,17 +184,16 @@ register 'config.harvest' => {
             default     => 30,
             label       => 'Frecuencia alta Harvest',
             description => 'Frecuencia de revisión de alta de aplicaciones Harvest.'
+        },
+        {
+        	id          => 'hardist',
+        	default     => 'http://wbetest.bde.es/scmdist'
         }
     ] 
 };
 
 register 'config.bde' => {
     metadata => [
-        {   id          => 'whoami',
-            default     => 'q73898x',
-            label       => 'Usuario UNIX',
-            description => 'User'
-        },
         {   id          => 'ldifmaq',
             default     => 'prue',
             label       => 'Maquina FTP',
@@ -221,12 +214,6 @@ register 'config.bde' => {
         {   id          => 'ldif_updates_harvest',
             default     => 0,
             label       => 'Actualizar Harvest ademas de Baseliner?',
-        },
-        {   id          => 'harpwd',
-            default     => '0211rucu',
-            label       => 'Password TAM',
-            description => 'Password TAM del usuario vpscm (en blanco utilizará el fichero dfo). '
-                . 'Valido para la ejecución de UDPS'
         },
         {   id          => 'perltemp',
             default     => '/home/aps/scm/servidor/tmp',
@@ -268,7 +255,19 @@ register 'config.bde' => {
             label       => 'URL Hardist',
             description => 'URL de hardist via webseal'
         },
-        {id => 'kill_chain', default => 1}
+        {id => 'kill_chain', default => 1},
+        {
+        	id          => 'root_username',
+        	default     => 'admin',
+        	label       => 'Usuario con permisos de root',
+        	description => 'Usuario con permisos de root'
+        },
+        {
+            id          => 'dailyqainterval',
+            default     => 600,
+            label       => 'Tiempo de espera en cada iteración del demonio lanzamiento análisis SQA',
+            description => 'Tiempo de espera en cada iteración del demonio lanzamiento análisis SQA'
+        }
     ]
 };
 

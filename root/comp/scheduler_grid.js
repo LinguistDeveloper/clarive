@@ -459,24 +459,26 @@
 
     var kill_schedule = function () {
         var sm = grid.getSelectionModel();
-        if ( sm.hasSelection() ){
-            Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function(btn, text){
-              if (btn == 'Yes'){
-                alert('go ahead');
-                } else {
+        if (sm.hasSelection()) {
+            Ext.Msg.confirm(_('Confirm'), _('Are you sure you want to kill the task?'), function (btn, text) {
+                if (btn == 'yes') {
+                    alert('go ahead');
                     var r = sm.getSelected();
-                    Baseliner.ajaxEval( '/scheduler/kill_schedule', 
-                            { id: r.data.id }, 
-                            function(response) {
-                                if ( response.success ) {
-                                    Baseliner.message( _('SUCCESS'), _('Task killed') );
-                                    store.load({params:{ limit: ps }});
-                                } else {
-                                    Baseliner.message( _('ERROR'), _('Could not kill task') );
+                    Baseliner.ajaxEval('/scheduler/kill_schedule', {
+                        id: r.data.id
+                    }, function (response) {
+                        if (response.success) {
+                            Baseliner.message(_('SUCCESS'), _('Task killed'));
+                            store.load({
+                                params: {
+                                    limit: ps
                                 }
-                                myMask.hide();
-                            }
-                    );
+                            });
+                        } else {
+                            Baseliner.message(_('ERROR'), _('Could not kill task'));
+                        }
+                        myMask.hide();
+                    });
                 }
             });
         }

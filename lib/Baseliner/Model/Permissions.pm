@@ -3,6 +3,7 @@ use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 use Data::Dumper;
+use Baseliner::Sugar;
 
 =head1 NAME
 
@@ -613,7 +614,7 @@ Or if its username is 'root'
 sub is_root {
     my ( $self, $username ) = @_;
     $username or die _loc('Missing username');
-    return 1 if $username eq 'root';
+    return 1 if $username eq 'root' || $username eq config_get('config.bde')->{root_username}; # Eric @ 02 FEB 2012
 
 	return Baseliner->model('Baseliner')->dbi->value(qq{
 		select count(*) 

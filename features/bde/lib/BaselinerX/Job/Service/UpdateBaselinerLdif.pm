@@ -53,10 +53,10 @@ sub init {
     _log "Projects updated: " . join ', ', @added_projects;
   }
   
-#  # It's not a bad idea to update the projects now.
-#  _log "Applying changes...";
-#  $c->launch('service.load.bali.project_once');
-#  _log "Baseliner Projects fully updated";
+   # It's not a bad idea to update the projects now.
+   _log "Applying changes...";
+   $c->launch('service.load.bali.project_once');
+   _log "Baseliner Projects fully updated";
 
   # We have to delete all users and their roles as they can be deleted from the
   # ldif files. Meaning that they shouldn't exist in the database.

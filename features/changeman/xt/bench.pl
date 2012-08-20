@@ -21,7 +21,7 @@ sub run {
     #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
         my $bx = new BaselinerX::Comm::Balix(
            key=>config_get( 'config.harax' )->{$agent_port},
-           host => 'expsv011',
+           host => 'expsv066',
            port => $agent_port,
         );
 

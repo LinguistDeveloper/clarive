@@ -1,0 +1,52 @@
+<%args>
+    $os 
+</%args>
+h1. File Deployment
+Unix Form Help (<% $os %>)
+
+This form allows the user to configure new catalog entries to deploy files to servers.
+
+h4. Objectives
+
+Basically, you need to map origin folders to destination folders on servers.
+
+h2. Project 
+
+The origin project.
+
+h2. Environment
+
+The environment to which this mapping applies.
+
+h2. From path
+
+The repository path to map.
+
+h2. To path
+
+The destination directory corresponding to the repository path mapped.
+
+* use forward slashes
+* /tmp/path/path
+
+h3. Example
+
+If the origin path is @/Repository/Project/Files/@ and the destination path is @/tmp/abc@, the following files will be mapped accordingly:
+
+|_. From Repository File |_. To File |
+| /Repository/Project/Files/file.txt | /tmp/abc/file.txt |
+| /Repository/Project/Files/Directory/file.txt | /tmp/abc/Directory/file.txt |
+
+% if( $os ne 'win' ) {
+h2. Host 
+
+The destination server name.
+
+h2. User
+
+The destination user name.
+
+h2. Group
+
+The destination group name.
+% }

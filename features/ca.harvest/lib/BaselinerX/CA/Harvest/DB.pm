@@ -616,4 +616,27 @@ sub set_nature {
     return;
 }
 
+sub n_files_inside_subapl {
+  my ($self, $project, $subapl) = @_;
+  $project = uc $project;
+  $subapl  = uc $subapl;
+  my $query = qq{
+    SELECT COUNT (versionobjid)
+      FROM harversions
+     WHERE versionstatus = 'N'
+       AND itemobjid IN (
+              SELECT DISTINCT itemobjid
+                         FROM haritems
+                        WHERE itemtype = 1
+                          AND parentobjid IN (
+                                 SELECT DISTINCT itemobjid
+                                            FROM harpathfullname
+                                           WHERE pathfullnameupper LIKE
+                                                           '\\$project\\%\\$subapl%\\%'))
+  };
+  $self->db->value($query);
+}
+
+*subapl_in_harvest_p = \&n_files_inside_subapl;
+
 1;

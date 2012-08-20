@@ -489,7 +489,11 @@ sub get_tabla_config_despliegue {
   wantarray ? @array_of_hashes : \@array_of_hashes;
 }
 
-sub get_entorno { [{entorno => 'TEST'}, {entorno => 'ANTE'}, {entorno => 'PROD'}] }
+sub get_entorno { 
+  [{entorno => 'TEST'}, 
+   {entorno => 'ANTE'},
+   {entorno => 'PROD'}];
+}
 
 sub add_despliegue {
   my ($self, $cam, $p) = @_;

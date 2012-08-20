@@ -1,11 +1,11 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054289
-#	Fecha de pase .................... 2011/11/21 20:21:22
+#	Pase ............................. N.PROD0000067210
+#	Fecha de pase .................... 2012/07/05 16:03:12
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
 #	Versión del elemento ............. 2
-#	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)
+#	Propietario de la version ........ qbborro (QBBORRO - BLANCA BEATRIZ BORRO ESCRIBANO)
 
 package BaselinerX::Controller::SQA;
 use Baseliner::Plug;
@@ -623,7 +623,6 @@ sub harvest_projects : Local {
     	$blcond = " AND ( trim(v.VIEWNAME) = 'PROD')"
     }
 
-#my $db = new Baseliner::Core::DBI( { connection => ['dbi:Oracle:host=prusv059;sid=TISO;port=1521','wtscm1','wtscm1'] } );
     my $db = Baseliner::Core::DBI->new( {model => 'Harvest'} );
     my $checkSubapp = "";
 
@@ -714,14 +713,42 @@ sub harvest_subprojects : Local {
 
         my $har_items = Baseliner->model('Harvest::Haritems');  # avoid repeating his call
 
+        my $har_db = BaselinerX::CA::Harvest::DB->new;
+
+SUBAPL:
         while ( my $row = $rs->next ) {
-            # check if it still exists GDF #71547
-            next unless $har_items->search({ itemnameupper => uc( $row->name ), itemtype=>0 })->count;
-            push @data,
-                {
+        	
+### El fix que solucionaba la incidencia GDF necesita de una jerarquía
+### Aplicación / Tecnología / Sub-aplicación que no es estándar, por lo
+### que genera falsos positivos.
+###
+###            ## check if it still exists GDF #71547
+###            next unless $har_items->search({ itemnameupper => uc( $row->name ), itemtype=>0 })->count;
+
+            ## Hay que filtrar aquellas subaplicaciones que no estén 
+            ## contenidas en Harvest.
+            ## Capturamos el nombre de la aplicación.
+            my $project_name;
+            try {
+              my $rs = Baseliner->model('Baseliner::BaliProject')->search({id => $row->id}, {select => 'id_parent'});
+              rs_hashref($rs);
+              my $proyect_id = $rs->next->{id_parent};
+              
+              $rs = Baseliner->model('Baseliner::BaliProject')->search({id => $proyect_id}, {select => 'name'});
+              rs_hashref($rs);
+              $project_name = $rs->next->{name};
+            }
+            catch {
+              _log "Error al capturar el nombre del proyecto con id " . $row->id . ".";
+              next SUBAPL;
+            };
+
+            next unless $har_db->subapl_in_harvest_p($project_name, $row->name);
+
+            push @data, {
                 id      => $row->id,
                 project => $row->name,
-                };
+            };
         }
     }
     $c->stash->{json} = {

@@ -6,22 +6,20 @@ use Baseliner::Plug;
 use 5.010;
 BEGIN { extends 'Catalyst::Controller' }
 
-### combo_recursos_data : Str -> ArrayRef[HashRef]
-sub combo_recursos_data {
+sub combo_recursos_data { # Str -> ArrayRef[HashRef]
   # Pilla los datos para rellenar el store del combobox recursos
   my ($self, $cam) = @_;
   my $ver = Baseliner->config->{'Model::Harvest'}->{db_version} || 7;
   my $sql = $ver == 12 ? $self->combo_recursos_data_r12($cam)
                        : $self->combo_recursos_data_r7($cam);
-  # _log "Esto es lo que vale el SQL de marras\n $sql";
   my $har_db = BaselinerX::Ktecho::Harvest::DB->new;
   my @data   = $har_db->db->array_hash($sql);
   return \@data;
 }
 
-### combo_recursos_data_r12 : Str -> Str
-sub combo_recursos_data_r12 {
+sub combo_recursos_data_r12 { # Str -> Str
   my ($self, $cam) = @_;
+  _log "Ejecutando query R12...";
   qq{
     SELECT DISTINCT '$cam' cam, pathfullname || '\\' || itemname item
                FROM harversions v,
@@ -38,9 +36,9 @@ sub combo_recursos_data_r12 {
   };
 }
 
-### combo_recursos_data_r7 : Str -> Str
-sub combo_recursos_data_r7 {
+sub combo_recursos_data_r7 { # Str -> Str
   my ($self, $cam) = @_;
+  _log "Ejecutando query R7...";
   qq{
     SELECT DISTINCT '$cam' cam, pathfullname || '\\' || itemname item
                FROM haritems i, harpathfullname pf
@@ -52,8 +50,7 @@ sub combo_recursos_data_r7 {
   };
 }
 
-### _data_grid : Str -> ArrayRef[HashRef]
-sub _data_grid {
+sub _data_grid { # Str -> ArrayRef[HashRef]
   my ($self, $cam) = @_;
   my $sql = qq{
     -- Note: This query should work in both Harvest versions.
@@ -74,16 +71,14 @@ sub _data_grid {
   return \@data;
 }
 
-### delete_bde_paquete_rs : HashRef -> Undef
-sub delete_bde_paquete_rs {
+sub delete_bde_paquete_rs { # HashRef -> Undef
   my ($self, $where) = @_;
   my $rs = Baseliner->model('Harvest::BdePaqueteRs')->search($where);
   $rs->delete;
   return;
 }
 
-### insert_bde_paquete_rs : HashRef -> Undef
-sub insert_bde_paquete_rs {
+sub insert_bde_paquete_rs { # HashRef -> Undef
   my ($self, $args) = @_;
   my $rs = Baseliner->model('Harvest::BdePaqueteRs')->create($args);
   return;

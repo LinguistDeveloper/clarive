@@ -1,11 +1,11 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054289
-#	Fecha de pase .................... 2011/11/21 20:21:22
+#	Pase ............................. N.PROD0000068135
+#	Fecha de pase .................... 2012/07/23 16:07:36
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
-#	Versión del elemento ............. 4
-#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
+#	Versión del elemento ............. 1
+#	Propietario de la version ........ q74613x (Q74613X - ERIC LORENZANA CANALES)
 
 package BaselinerX::Model::SQA;
 use Moose;
@@ -251,13 +251,18 @@ sub update_status {    # actualiza el status de una fila en el portal
 		if ( $packages ) {
 			$hash_data->{PACKAGES} = [ _array $packages ];
 		}
-				
+		
+		if ( $status eq "STARTING" && $job_row->status eq "ANALYSIS REQUESTED" ) {
+			$hash_data->{from_sqa} = 1;
+		}
+		
 		$job_row->data( _dump $hash_data ) if $hash_data;
 		$job_row->job($job_name)	  if $job_name;
 		$job_row->job($pass)          if $pass;
 		$job_row->username($username) if $username;
 		$job_row->pid($pid)           if $pid;
 		$job_row->path($path)           if $path;
+				
 		$job_row->status($status);
 		$job_row->update;
 
@@ -557,15 +562,6 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $recalc -Dte
 			bx         => $bx,
 			dir_pase   => $dir_pase
 		);
-		if ( $config->{remove_dir} ) {
-			_log "Removing $dir_pase";
-
-			my $out;
-			( $rc, $out ) = $bx->execute(qq{rmdir /S /Q "$dir_pase"});
-			if ( $rc ne 0 ) {
-				_log "Could not remove $dir_pase.  Remove manually";
-			}
-		}
 	}
 	else {
 		$self->update_status(
@@ -574,6 +570,18 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $recalc -Dte
 			tsend  => 1
 		);
 		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error en la ejecuci&oacute;n del análisis en el servidor de SQA.  Consulte con el administrador de SQA' );
+	}
+	## Eric @ 20 MAR 2012
+	## Borramos el directorio del pase independientemente del resultado
+	## del RC.
+    if ( $config->{remove_dir} ) {
+		_log "Removing $dir_pase";
+
+		my $out;
+		( $rc, $out ) = $bx->execute(qq{rmdir /S /Q "$dir_pase"});
+		if ( $rc ne 0 ) {
+			_log "Could not remove $dir_pase.  Remove manually";
+		}
 	}
 	$bx->close();
 	$sem->release;
@@ -721,15 +729,6 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $recalc -Din
 			bl       => $bl,
 			packages => $packages
 		);
-		if ( $config->{remove_dir} ) {
-			_log "Removing $dir_pase";
-
-			my $out;
-			( $rc, $out ) = $bx->execute(qq{rmdir /S /Q "$dir_pase"});
-			if ( $rc ne 0 ) {
-				_log "Could not remove $dir_pase.  Remove manually";
-			}
-		}
 		$self->write_sqa_error( job_id => $job_id, html => $ret );
 	}
 	else {
@@ -740,6 +739,18 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $recalc -Din
 		);
 		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de análisis de la subaplicación/naturaleza.  Consulte con el administrador de SQA' );
 		
+	}
+	## Eric @ 20 MAR 2012
+	## Borramos el directorio del pase independientemente del resultado
+	## del RC.
+	if ( $config->{remove_dir} ) {
+		_log "Removing $dir_pase";
+
+		my $out;
+		( $rc, $out ) = $bx->execute(qq{rmdir /S /Q "$dir_pase"});
+		if ( $rc ne 0 ) {
+			_log "Could not remove $dir_pase.  Remove manually";
+		}
 	}
 	$bx->close();
 	$sem->release;
@@ -954,6 +965,18 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $level $subn
 	else {
 		$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
 		$self->write_sqa_error( job_id => $job_id, html => $ret, type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de an&aacute;lisis de agregado.  Consulte con el administrador de SQA' );
+		## Eric @ 20 MAR 2012
+		## Borramos el directorio del pase independientemente del resultado
+		## del RC.
+		if ( $config->{remove_dir} ) {
+			_log "Removing $dir_pase";
+
+			my $out;
+			( $rc, $out ) = $bx->execute(qq{rmdir /S /Q "$dir_pase"});
+			if ( $rc ne 0 ) {
+				_log "Could not remove $dir_pase.  Remove manually";
+			}
+		}
 		$return = 0;
 	}
 
@@ -1034,13 +1057,12 @@ sub grab_results {    # recupera resultados
 	my $junit      = $p{junit};
 	my $level      = $p{level};
 
-	my $hash_data = {};
-
 	$self->update_status( job_id => $job_id, status => 'ANALYZING RESULTS' );
 
 	my $x = XML::Simple->new;
 	my $data;
 	my $row = Baseliner->model('Baseliner::BaliSqa')->find($job_id);
+	my $hash_data = _load ( $row->data );
 	my $result;
 
 	try {
@@ -1244,7 +1266,7 @@ sub grab_package_results {    # recupera resultados
 
 sub request_analysis {
 	my ( $self, %p ) = @_;
-
+    ## _log 'params => ' . Data::Dumper::Dumper \%p;
 	my $config     = Baseliner->model('ConfigStore')->get('config.sqa');
 	my $project    = $p{project};
 	my $subproject = $p{subproject};
@@ -1775,6 +1797,7 @@ sub end_pkg_analysis_mail {
 	my $row        = Baseliner->model('Baseliner::BaliSqa')->find($job_id);
 	my $project_id = $row->id_prj;
 	my $username   = $row->username;
+	my $row_data = _load( $row->data );
 
 	my $config =
 	  Baseliner->model('ConfigStore')
@@ -1792,9 +1815,19 @@ sub end_pkg_analysis_mail {
 	);
 
 	my  @users = grep { !($_ ~~ @ju) } @regulars;
-	 
-	push @users, $username;
 
+	my $config_sqa = Baseliner->model('ConfigStore')->get( 'config.sqa' );
+	
+	if ( $row_data->{from_sqa} ) {
+		if ( $config_sqa->{ send_mail_sqa_owner } ) {
+			push @users, $username;
+		}
+	} else {
+		if ( $config_sqa->{ send_mail_scm_owner } ) {
+			push @users, $username;
+		}		
+	}
+	
 	_log "Usuarios: " . join ",", @users;
 	_log "Paquetes: " . join ",", _array $packages;
 
@@ -1831,6 +1864,7 @@ sub start_pkg_analysis_mail {
 	my $row        = Baseliner->model('Baseliner::BaliSqa')->find($job_id);
 	my $project_id = $row->id_prj;
 	my $username   = $row->username;
+	my $row_data = _load( $row->data );
 
 	my $config =
 	  Baseliner->model('ConfigStore')
@@ -1849,7 +1883,17 @@ sub start_pkg_analysis_mail {
 
 	my  @users = grep { !($_ ~~ @ju) } @regulars;
 
-	push @users, $username;
+		my $config_sqa = Baseliner->model('ConfigStore')->get( 'config.sqa' );
+	
+	if ( $row_data->{from_sqa} ) {
+		if ( $config_sqa->{ send_mail_sqa_owner } ) {
+			push @users, $username;
+		}
+	} else {
+		if ( $config_sqa->{ send_mail_scm_owner } ) {
+			push @users, $username;
+		}		
+	}
 
 	_log "Usuarios: " . join ",", @users;
 	_log "Paquetes: " . join ",", _array $packages;
@@ -1888,6 +1932,8 @@ sub start_analysis_mail {
 	my $row        = Baseliner->model('Baseliner::BaliSqa')->find($job_id);
 	my $project_id = $row->id_prj;
 	my $username   = $row->username;
+	my $row_data = _load( $row->data );
+	
 
 	my $config =
 	  Baseliner->model('ConfigStore')
@@ -1911,7 +1957,17 @@ sub start_analysis_mail {
 	my $project_row =
 	  Baseliner->model('Baseliner::BaliProject')->find($project_id);
 
-	push @users, $username;
+		my $config_sqa = Baseliner->model('ConfigStore')->get( 'config.sqa' );
+	
+	if ( $row_data->{from_sqa} ) {
+		if ( $config_sqa->{ send_mail_sqa_owner } ) {
+			push @users, $username;
+		}
+	} else {
+		if ( $config_sqa->{ send_mail_scm_owner } ) {
+			push @users, $username;
+		}		
+	}
 
 	_log "Usuarios" . \@users;
 
@@ -1947,6 +2003,8 @@ sub error_analysis_mail {
 	my $row        = Baseliner->model('Baseliner::BaliSqa')->find($job_id);
 	my $project_id = $row->id_prj;
 	my $username   = $row->username;
+	my $row_data = _load( $row->data );
+	
 	my $project    = $row->ns;
 	my $bl         = $row->bl;
 	my $nature     = $row->nature;
@@ -1975,7 +2033,23 @@ sub error_analysis_mail {
 
 	my $subproject = $project_row->name;
 
-	push @users, $username;
+		my $config_sqa = Baseliner->model('ConfigStore')->get( 'config.sqa' );
+	
+	if ( $row_data->{from_sqa} ) {
+		if ( $config_sqa->{ send_mail_sqa_owner } ) {
+			push @users, $username;
+			_log "ENVIANDO CORREO AL PROPIETARIO DEL ANALISIS";
+		} else {
+			_log "NO ENVÍO CORREO AL PROPIETARIO DEL ANALISIS";
+		}
+	} else {
+		if ( $config_sqa->{ send_mail_scm_owner } ) {
+			push @users, $username;
+			_log "ENVIANDO CORREO AL PROPIETARIO DEL PASE";
+		} else {
+			_log "NO ENVÍO CORREO AL PROPIETARIO DEL PASE"
+		}
+	}
 
 	_log "Usuarios" . \@users;
 
@@ -2014,6 +2088,8 @@ sub end_analysis_mail {
 	my $row        = Baseliner->model('Baseliner::BaliSqa')->find($job_id);
 	my $project_id = $row->id_prj;
 	my $username   = $row->username;
+	my $row_data = _load( $row->data );
+	
 
 	my $config =
 	  Baseliner->model('ConfigStore')
@@ -2037,7 +2113,23 @@ sub end_analysis_mail {
 	my $project_row =
 	  Baseliner->model('Baseliner::BaliProject')->find($project_id);
 
-	push @users, $username;
+		my $config_sqa = Baseliner->model('ConfigStore')->get( 'config.sqa' );
+	
+	if ( $row_data->{from_sqa} ) {
+		if ( $config_sqa->{ send_mail_sqa_owner } ) {
+			push @users, $username;
+			_log "ENVIANDO CORREO AL PROPIETARIO DEL ANALISIS";
+		} else {
+			_log "NO ENVÍO CORREO AL PROPIETARIO DEL ANALISIS";
+		}
+	} else {
+		if ( $config_sqa->{ send_mail_scm_owner } ) {
+			push @users, $username;
+			_log "ENVIANDO CORREO AL PROPIETARIO DEL PASE";
+		} else {
+			_log "NO ENVÍO CORREO AL PROPIETARIO DEL PASE"
+		}
+	}
 
 	_log "Usuarios" . \@users;
 
@@ -2220,7 +2312,7 @@ sub recover_project {    # recupera un proyecto si se detecta que el proceso ha 
 sub road_kill {
 
 	my ( $self ) = @_;
-	my $config     = Baseliner->model('ConfigStore')->get('config.sqa');
+	my $config     = Baseliner->model('ConfigStore')->get('service.sqa.feed');
 	  
     $ENV{ BASELINER_DEBUG } && _log _loc("RUNNING analysis_check_for_roadkill");
     my @states = split ",", $config->{running_states};

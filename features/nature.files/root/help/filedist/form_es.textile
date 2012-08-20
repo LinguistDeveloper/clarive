@@ -1,0 +1,53 @@
+<%args>
+    $os 
+</%args>
+h1. <img src="/static/images/icons/help.png" />Depliegue de Ficheros (<% $os %>)
+
+Este formulario permite al usuario configurar el despliegue de ficheros a servidores.
+
+h2. Proyecto
+
+El proyecto origen.
+
+h2. Entorno
+
+El entorno destino.
+
+h2. Ruta origen
+
+La ruta del repositorio de origen.
+
+h2. Ruta destino
+
+La ruta en el servidor destino donde empezará el mapeo.
+
+% if( $os ne 'win' ) {
+* utilice la barra hacía adelante @/@
+* Ejemplo: @/tmp/path/path@
+% } else {
+* utilice la barra hacía atrás @\@
+* Ejemplo: @E:\ruta\destino@
+% }
+
+h3. Ejemplo
+
+Si la ruta origen es @/Repository/Project/Files/@ y la ruta destino es @/tmp/abc@, el mapeo de los ficheros ocurrirá de la siguiente forma:
+
+|_. Fichero en el Repositorio |_. Fichero en destino |
+| /Repository/Project/Files/file.txt | /tmp/abc/file.txt |
+| /Repository/Project/Files/Directory/file.txt | /tmp/abc/Directory/file.txt |
+
+% if( $os ne 'win' ) {
+h2. Servidor
+
+El nombre del servidor de destino del mapeo.
+
+h2. User
+
+El usuario unix en el destino.
+
+h2. Group
+
+El grupo unix en el destino.
+
+% }

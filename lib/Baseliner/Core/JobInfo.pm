@@ -1,8 +1,8 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000051660
-#	Fecha de pase .................... 2011/10/07 17:21:17
+#	Pase ............................. N.PROD0000055425
+#	Fecha de pase .................... 2011/12/14 17:20:09
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/lib/Baseliner/Core/JobInfo.pm
 #	Versión del elemento ............. 3
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)

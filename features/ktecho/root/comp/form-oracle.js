@@ -18,29 +18,32 @@
   ins_red = '';
   ajax_oracle = new Ext.data.Connection();
   load_owners = function() {
-    return store_combo_ins_owner.load({
+    store_combo_ins_owner.load({
       params: {
         i_red: c_ins_red,
         i_entorno: c_ins_entorno,
         cam: "<% $cam %>"
       }
     });
+    return;
   };
   load_ins_instancia = function() {
-    return store_combo_ins_instancia.load({
+    store_combo_ins_instancia.load({
       params: {
         env: c_ins_entorno,
         cam: "<% $cam %>"
       }
     });
+    return;
   };
   load_des_instancia = function() {
-    return store_combo_des_instancia.load({
+    store_combo_des_instancia.load({
       params: {
         env: c_des_entorno,
         cam: "<% $cam %>"
       }
     });
+    return;
   };
   store_combo_des_entorno = new Ext.data.JsonStore({
     root: 'data',
@@ -56,7 +59,8 @@
   store_combo_des_entorno.on('load', function() {
     combo_des_entorno.setValue(this.getAt(0).get('entorno'));
     c_des_entorno = this.getAt(0).get('entorno');
-    return load_des_instancia();
+    load_des_instancia();
+    return;
   });
   store_combo_des_red = new Ext.data.JsonStore({
     root: 'data',
@@ -73,7 +77,8 @@
   });
   store_combo_des_red.on('load', function() {
     combo_des_red.setValue(this.getAt(0).get('show'));
-    return c_des_red = this.getAt(0).get('value');
+    c_des_red = this.getAt(0).get('value');
+    return;
   });
   store_combo_des_folder = new Ext.data.JsonStore({
     root: 'data',
@@ -88,7 +93,8 @@
   });
   store_combo_des_folder.on('load', function() {
     combo_des_folder.setValue(this.getAt(0).get('folder'));
-    return c_des_folder = this.getAt(0).get('folder');
+    c_des_folder = this.getAt(0).get('folder');
+    return;
   });
   store_combo_des_instancia = new Ext.data.JsonStore({
     root: 'data',
@@ -105,7 +111,8 @@
   });
   store_combo_des_instancia.on('load', function() {
     combo_des_instancia.setValue(this.getAt(0).get('instancia_real'));
-    return c_des_instancia = this.getAt(0).get('instancia_real');
+    c_des_instancia = this.getAt(0).get('instancia_real');
+    return;
   });
   store_grid_des = new Ext.data.JsonStore({
     root: 'data',
@@ -139,7 +146,8 @@
     combo_ins_entorno.setValue(this.getAt(0).get('entorno'));
     c_ins_entorno = this.getAt(0).get('entorno');
     load_owners();
-    return load_ins_instancia();
+    load_ins_instancia();
+    return;
   });
   store_combo_ins_red = new Ext.data.JsonStore({
     root: 'data',
@@ -157,7 +165,8 @@
   store_combo_ins_red.on('load', function() {
     combo_ins_red.setValue(this.getAt(0).get('show'));
     c_ins_red = this.getAt(0).get('value');
-    return load_owners();
+    load_owners();
+    return;
   });
   store_combo_ins_owner = new Ext.data.JsonStore({
     root: 'data',
@@ -172,7 +181,8 @@
   });
   store_combo_ins_owner.on('load', function() {
     combo_ins_owner.setValue(this.getAt(0).get('owner'));
-    return c_ins_owner = this.getAt(0).get('owner');
+    c_ins_owner = this.getAt(0).get('owner');
+    return;
   });
   store_combo_ins_instancia = new Ext.data.JsonStore({
     root: 'data',
@@ -187,7 +197,8 @@
   });
   store_combo_ins_instancia.on('load', function() {
     combo_ins_instancia.setValue(this.getAt(0).get('instancia'));
-    return c_ins_instancia = this.getAt(0).get('instancia');
+    c_ins_instancia = this.getAt(0).get('instancia');
+    return;
   });
   store_grid_ins = new Ext.data.JsonStore({
     root: 'data',
@@ -220,7 +231,8 @@
     listeners: {
       select: function() {
         c_des_entorno = this.getValue();
-        return load_des_instancia();
+        load_des_instancia();
+        return;
       }
     }
   });
@@ -237,7 +249,8 @@
     editable: false,
     listeners: {
       select: function() {
-        return c_des_red = this.getValue();
+        c_des_red = this.getValue();
+        return;
       }
     }
   });
@@ -254,7 +267,8 @@
     editable: false,
     listeners: {
       select: function() {
-        return c_des_folder = this.getValue();
+        c_des_folder = this.getValue();
+        return;
       }
     }
   });
@@ -271,7 +285,8 @@
     editable: false,
     listeners: {
       select: function() {
-        return c_des_instancia = this.getValue();
+        c_des_instancia = this.getValue();
+        return;
       }
     }
   });
@@ -290,7 +305,8 @@
       select: function() {
         c_ins_entorno = this.getValue();
         load_owners();
-        return load_ins_instancia();
+        load_ins_instancia();
+        return;
       }
     }
   });
@@ -308,7 +324,8 @@
     listeners: {
       select: function() {
         c_ins_red = this.getValue();
-        return load_owners;
+        load_owners;
+        return;
       }
     }
   });
@@ -325,7 +342,8 @@
     editable: false,
     listeners: {
       select: function() {
-        return c_ins_owner = this.getValue();
+        c_ins_owner = this.getValue();
+        return;
       }
     }
   });
@@ -342,7 +360,8 @@
     editable: false,
     listeners: {
       select: function() {
-        return c_ins_instancia = this.getValue();
+        c_ins_instancia = this.getValue();
+        return;
       }
     }
   });
@@ -358,11 +377,12 @@
         cam: "<% $cam %>"
       }
     });
-    return store_grid_des.load({
+    store_grid_des.load({
       params: {
         cam: "<% $cam %>"
       }
     });
+    return;
   };
   handler_agregar_ins = function() {
     ajax_oracle.request({
@@ -376,11 +396,12 @@
         cam: "<% $cam %>"
       }
     });
-    return store_grid_ins.load({
+    store_grid_ins.load({
       params: {
         cam: "<% $cam %>"
       }
     });
+    return;
   };
   handler_delete_ins = function() {
     ajax_oracle.request({
@@ -394,11 +415,12 @@
         cam: "<% $cam %>"
       }
     });
-    return store_grid_ins.load({
+    store_grid_ins.load({
       params: {
         cam: "<% $cam %>"
       }
     });
+    return;
   };
   handler_delete_des = function() {
     ajax_oracle.request({
@@ -412,14 +434,16 @@
         cam: "<% $cam %>"
       }
     });
-    return store_grid_des.load({
+    store_grid_des.load({
       params: {
         cam: "<% $cam %>"
       }
-    });
+    }); 
+    return;
   };
   handler_button_desplegar = function() {
-    return alert('ClickClick!');
+    alert('ClickClick!');
+    return;
   };
   button_agregar_des = new Ext.Button({
     text: 'Agregar',
@@ -520,7 +544,8 @@
     ora_entorno = row.get('entorno');
     ora_redes = row.get('red');
     ora_fullname = row.get('carpeta');
-    return ora_instancia = row.get('instancia');
+    ora_instancia = row.get('instancia');
+    return;
   });
   grid_ins = new Ext.grid.GridPanel({
     autoWidth: true,
@@ -538,7 +563,8 @@
     ins_entorno = row.get('entorno');
     ins_instancia = row.get('oracle');
     ins_propietario = row.get('owner');
-    return ins_red = row.get('red');
+    ins_red = row.get('red');
+    return;
   });
   fieldset_des_configurar = new Ext.form.FieldSet({
     title: 'Configuracion del Despliegue de Elementos ORACLE',

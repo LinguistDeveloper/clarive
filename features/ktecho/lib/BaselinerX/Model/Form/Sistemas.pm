@@ -14,7 +14,7 @@ sub get_main_data {
   my $sql;
 
   if ($ver == 12) {
-    qq{
+    $sql = qq{
         SELECT  pathfullname, itemname, v.itemobjid, v.versionobjid, v.mappedversion,
                 s.versionobjid vid_sis, sis_owner, sis_permisos, sis_path,
                 UPPER (v.versionstatus) estado
@@ -41,7 +41,7 @@ sub get_main_data {
       };
   }
   elsif ($ver == 7) {
-    qq{
+    $sql = qq{
       SELECT pathfullname, itemname, i.itemobjid, v.versionobjid, v.mappedversion,
              p.packagename, versionstatus, sis_path, sis_owner, sis_permisos,
              sis_status, TO_CHAR (s.ts, 'YYYY-MM-DD HH24:MI') modificado

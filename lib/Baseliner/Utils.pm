@@ -21,7 +21,7 @@ use Exporter::Tidy default => [
     _notify_address _replace_tags is_oracle is_number _dump _load _trim _array
     ns_match ns_split domain_match to_pages to_base64 rs_hashref
     packages_that_do query_array _db_setup query_sql_build _file _dir _slurp
-    _fail _mason _textile _pathxs _uacc unique inc bool
+    _fail _mason _textile _pathxs _uacc unique inc bool dir_existsp
     /
 ];
 
@@ -652,6 +652,20 @@ sub unique {
 sub inc { $_[0] + 1 }
 
 sub bool { !!$_[0] } # Any -> Bool
+
+sub dir_existsp { # Object Str -> Bool
+  my ($balix, $dir) = @_;
+  # Return 1 if found, 0 if not found.
+  my ($rc, $ret) = $balix->execute("[ -d $dir ] && echo 1 || echo 0");
+  return $ret ? 1 : 0;
+}
+
+sub file_existsp {
+  my ($balix, $file_path) = @_;
+  # Return 1 if found, 0 if not found.
+  my ($rc, $ret) = $balix->execute("[ -f $file_path ] && echo 1 || echo 0");
+  return $ret ? 1 : 0;
+}
 
 1;
 

@@ -1,8 +1,8 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054132
-#	Fecha de pase .................... 2011/11/18 07:01:32
+#	Pase ............................. N.PROD0000055425
+#	Fecha de pase .................... 2011/12/14 17:20:12
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/lib/BaselinerX/Service/SchedulerService.pm
 #	Versión del elemento ............. 1
 #	Propietario de la version ........ infroox (INFROOX - RODRIGO DE OLIVEIRA GONZALEZ)

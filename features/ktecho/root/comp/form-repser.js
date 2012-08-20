@@ -49,7 +49,8 @@
     editable: false,
     listeners: {
       select: function() {
-        return insert_item = this.getValue();
+        insert_item = this.getValue();
+        return;
       }
     }
   });
@@ -91,11 +92,12 @@
         fullname: delete_fullname
       }
     });
-    return grid_store.load({
+    grid_store.load({
       params: {
         cam: "<% $cam %>"
       }
     });
+    return;
   };
   boton_delete = new Ext.Button({
     text: 'Borrar',
@@ -141,11 +143,12 @@
     cm: new Ext.grid.ColumnModel([new Ext.grid.RowNumberer, column_aplicacion, column_elementos, column_carpeta])
   });
   grid.on('rowclick', function(grid, rowIndex, e) {
-    var row;
-    row = grid.getStore().getAt(rowIndex);
+    var row = grid.getStore().getAt(rowIndex);
+    // Modifico las variables para controlar el borrado.
     delete_env = row.get('env');
     delete_item = row.get('item');
-    return delete_fullname = row.get('fullname');
+    delete_fullname = row.get('fullname');
+    return;
   });
   fieldset_agregar = new Ext.form.FieldSet({
     title: 'Agregar nuevo elemento',
@@ -159,6 +162,11 @@
   form = new Ext.form.FormPanel({
     title: 'Reporting Services',
     items: [fieldset_agregar, fieldset_grid]
+  });
+  combo_recursos_store.on('load', function () {
+	var val = this.getAt(0).get('item');
+	combo_recursos.setValue(val);
+	return;
   });
   combo_recursos_store.load({
     params: {

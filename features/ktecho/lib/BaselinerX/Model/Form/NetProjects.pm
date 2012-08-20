@@ -41,6 +41,7 @@ sub net_insert_bde_paquete {
 sub net_get_cams {
   my ($self, $fid) = @_;
   my $har_db = BaselinerX::Ktecho::Harvest::DB->new;
+  _throw "No tengo id de formulario!" unless $fid;
   my $sql = qq{
     SELECT DISTINCT e.environmentname AS env,
                     pa.pathfullname || '\\' || i.itemname AS fullname,
@@ -117,9 +118,28 @@ sub get_tipos_distribucion {
 
 sub delete_bde_paquete_proyectos_net {
   my ($self, $args) = @_;
-  my $rs = Baseliner->model('Form::NetProjects')->search($args);
-  rs_hashref($rs);
-  my @data = $rs->all;
+  my $rs = Baseliner->model('Harvest::BdePaqueteProyectosNet')->search($args);
+  $rs->delete;
+  return;
+}
+
+sub _model { Baseliner->model('Harvest::BdePaqueteProyectosNet') }
+
+sub existsp {
+  my ($self, $args) = @_;
+  my @data = do {
+  	my $m  = $self->_model;
+  	my $rs = $m->search($args);
+  	rs_hashref($rs);
+  	$rs->all;
+  };
+  scalar @data > 0;
+}
+
+sub add_row {
+  my ($self, $args) = @_;
+  my $m = $self->_model;
+  $m->create($args);
   return;
 }
 

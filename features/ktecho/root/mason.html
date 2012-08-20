@@ -7,14 +7,14 @@
             closeAction: "close",
             resizable: true,
             layout: "fit",
-            autoLoad: "http://prusv053:3000/consola/index?env_name=SCT&env=TEST&sub_apl=sct_edw&operator=START"
+            autoLoad: "http://prusv063:42998/consola/index?env_name=SCT&env=TEST&sub_apl=sct_edw&operator=START"
         });
         win.show();
 	}
 </script>
 
-<!--  autoLoad: "http://prusv053:3000/consola/test" -->
-<!--  autoLoad: "http://prusv053:3000/consola/index?env_name=SCT&env=TEST&sub_apl=sct_edw&operator=START" -->
+<!--  autoLoad: "http://prusv063:42998/consola/test" -->
+<!--  autoLoad: "http://prusv063:42998/consola/index?env_name=SCT&env=TEST&sub_apl=sct_edw&operator=START" -->
 
 <HTML>
   <HEAD></HEAD>
@@ -36,15 +36,15 @@
       <td id="valor"> <% $value %> </td>
 % foreach my $entorno (@entornos) {
       <td width= <% $width_table %> id="valor">
-           <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=START">   Iniciar   </a> |
-           <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=STOP">    Parar     </a> | 
-           <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=RESTART"> Reiniciar </a>  
+           <a href="http://prusv063:42998/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=START">   Iniciar   </a> |
+           <a href="http://prusv063:42998/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=STOP">    Parar     </a> | 
+           <a href="http://prusv063:42998/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=RESTART"> Reiniciar </a>  
       </td>
-      <td id="valor"> <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=LOGWAS">   Logs de WAS        </a>   </td>
-      <td id="valor"> <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=LOGAPL">   Logs de Aplicacion </a>   </td>
-      <td id="valor"> <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=CONFIG">   Config             </a> 
-                    ( <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=CONFIGLS"> ls                 </a> ) </td>
-      <td id="valor"> <a href="http://prusv053:3000/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=INFOWAS">  InfoWAS            </a>   </td>
+      <td id="valor"> <a href="http://prusv063:42998/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=LOGWAS">   Logs de WAS        </a>   </td>
+      <td id="valor"> <a href="http://prusv063:42998/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=LOGAPL">   Logs de Aplicacion </a>   </td>
+      <td id="valor"> <a href="http://prusv063:42998/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=CONFIG">   Config             </a> 
+                    ( <a href="http://prusv063:42998/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=CONFIGLS"> ls                 </a> ) </td>
+      <td id="valor"> <a href="http://prusv063:42998/consola/index?env_name=<%$key%>&env=<%$entorno%>&sub_apl=<%$value%>&operator=INFOWAS">  InfoWAS            </a>   </td>
 % }
 %if ( $value ne $cam{$key}[0] ) {
       </tr>

@@ -81,7 +81,7 @@ register 'action.sqa.delete_analysis' => {
 };
 
 
-##Configuraci髇 del daemon
+##Configuraci贸n del daemon
 register 'config.sqa.feed' => {
 	metadata => [
        { id=>'frequency', label=>'SQA Feed Daemon Frequency', default => 60 },
@@ -93,7 +93,7 @@ register 'config.sqa.feed' => {
     ]
 };
 
-##Configuraci髇 del daemon
+##Configuraci贸n del daemon
 register 'config.sqa.send_ju' => {
 	metadata => [
        { id=>'frequency', label=>'SQA send_ju Daemon Frequency', default => 600 },
@@ -104,21 +104,21 @@ register 'config.sqa.send_ju' => {
     ]
 };
 
-##Configuraci髇 del daemon
+##Configuraci贸n del daemon
 register 'config.sqa.purge' => {
 	metadata => [
        { id=>'days_to_keep', label=>'Days to keep a package analysis', default => 7 }
     ]
 };
 
-#Configuraci髇 del servicio
+#Configuraci贸n del servicio
 register 'config.sqa' => {
     metadata => [
         { id => 'server', label => 'SQA Server', default => 'svm0759', },
-        { id => 'port', label => 'SQA Server Port', default => '58765', },
+        { id => 'port', label => 'SQA Server Port', default => '48999', },
         { id => 'key', label => 'SQA Server Key', default =>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE='  },
-        { id => 'dist_server', label => 'Dist Server', default => 'prusv053', },
-        { id => 'dist_port', label => 'Dist Server Port', default => '58765', },        
+        { id => 'dist_server', label => 'Dist Server', default => 'expsv066', },
+        { id => 'dist_port', label => 'Dist Server Port', default => '48999', },        
         { id => 'dist_key', label => 'Dist Server Key', default =>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE='  },
         { id => 'dist_udp_dir', label => 'Directorio de scripts', default => '/home/apst/scm/servidor/udp', },
         { id => 'dist_user', label => 'Dist Server', default => 'vtscm', },
@@ -156,6 +156,10 @@ register 'config.sqa' => {
         { id => 'run_sqa', label=>'Ejecutar analisis de SQA despues del pase', default=>'N'},
         { id => 'block_deployment', label=>'Bloquar pase si la ultima auditoria de SQA no esta aprobada (estado:OK)', default=>'N'},
         { id => 'url_scm', label=>'URL del servidor de scm', default=>'http://wbetest.bde.es/scm_inf'},
+        { id => 'send_mail_sqa_owner', label=>'Se enviar谩 correo al solicitante del an谩lisis desde SQA', default=>'1'},
+        { id => 'send_mail_scm_owner', label=>'Se enviar谩 correo al solicitante del pase desde SCM', default=>'0'},
+        { id => 'job.host', label => 'Host donde mirara si existen los jobs.', default => 'expsv066' },
+        { id => 'job.port', label => 'El puerto del host <config.sqa.job.host>.', default => '48999' },
    ]
 };
 

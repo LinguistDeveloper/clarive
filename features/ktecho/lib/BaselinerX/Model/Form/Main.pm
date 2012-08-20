@@ -159,7 +159,10 @@ sub get_combo_ciclo_vida_data {
   my $es_publica = $params->{es_publica};
   my $cam        = $params->{cam};
   my $paq_ciclo  = $params->{paq_ciclo};
-  my $tiene_ante = inf($cam)->tiene_ante;
+  my $tiene_ante = do {
+  	my $inf = BaselinerX::Model::InfUtil->new(cam => $cam);
+  	$inf->tiene_ante;
+  };
 
   my $config;
   if ($estado eq 'Análisis y Diseño' || ($sistemas == 1 && $estado eq 'Desarrollo')) {

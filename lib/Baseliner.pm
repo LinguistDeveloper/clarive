@@ -10,7 +10,7 @@ use Catalyst::Runtime 5.80;
 #         -Debug: activates the debug mode for very useful log messages
 #   ConfigLoader: will load the configuration from a Config::General file in the
 #                 application's home directory
-# Static::Simple: will serve static files from the application's root 
+# Static::Simple: will serve static files from the application's root
 #                 directory
 
 our @modules;
@@ -36,13 +36,13 @@ BEGIN {
             +CatalystX::Features::Plugin::ConfigLoader
             +Baseliner::Plugin::CommandLine
             Authentication
-			Unicode 
+                        Unicode
             Cache
-            Session		Session::Store::DBIC	Session::State::Cookie
-            Singleton           
+            Session             Session::Store::DBIC    Session::State::Cookie
+            Singleton
             +CatalystX::Features::Plugin::I18N
             +CatalystX::Features::Plugin::Static::Simple/;
-		push @modules, 'Log::Colorful' if eval "require Catalyst::Plugin::Log::Colorful";
+                push @modules, 'Log::Colorful' if eval "require Catalyst::Plugin::Log::Colorful";
     }
 }
 
@@ -55,18 +55,18 @@ __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
 
 __PACKAGE__->config(
-	'Plugin::Session' => {
-		dbic_class => 'Baseliner::BaliSession', 
-		expires    => 3600000,
-	},
+        'Plugin::Session' => {
+                dbic_class => 'Baseliner::BaliSession',
+                expires    => 3600000,
+        },
 );
 
 __PACKAGE__->config->{static}->{dirs} = [
         'static',
         qr/images/,
     ];
-__PACKAGE__->config->{static}->{ignore_extensions} 
-        = [ qw/mas html js json css/ ];    
+__PACKAGE__->config->{static}->{ignore_extensions}
+        = [ qw/mas html js json css/ ];
 
 __PACKAGE__->config( {
         'View::JSON' => {
@@ -77,28 +77,28 @@ __PACKAGE__->config( {
 
 # __decrypt( ... )__ conf definition
 __PACKAGE__->config->{'Plugin::ConfigLoader'}->{ substitutions } = {
-	decrypt => sub {
-		my $c = shift;
-		require Crypt::Blowfish::Mod;
-		my $key = $c->config->{dec_key};
-		die "Error: missing 'dec_key' config parameter" unless length $key;
-		my $b = Crypt::Blowfish::Mod->new( $key );
-		$b->decrypt( @_ );
-	}
+        decrypt => sub {
+                my $c = shift;
+                require Crypt::Blowfish::Mod;
+                my $key = $c->config->{dec_key};
+                die "Error: missing 'dec_key' config parameter" unless length $key;
+                my $b = Crypt::Blowfish::Mod->new( $key );
+                $b->decrypt( @_ );
+        }
 };
 
 
 if( $ENV{BALI_CMD} ) {
-	# only load the root controller, for capturing $c
-	__PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
+        # only load the root controller, for capturing $c
+        __PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
 }
 
 
 use Cache::FastMmap;
 {
-	no warnings;
-	no strict;
-	sub Cache::FastMmap::CLONE {} ## to avoid the no threads die 
+        no warnings;
+        no strict;
+        sub Cache::FastMmap::CLONE {} ## to avoid the no threads die
 }
 #__PACKAGE__->config->{cache}->{storage} = 'bali_cache';
 #__PACKAGE__->config->{cache}->{expires} = 60;  ## 60 seconds
@@ -111,13 +111,13 @@ use Cache::FastMmap;
 use FindBin '$Bin';
 #$c->languages( ['es'] );
 __PACKAGE__->config(
-	'Plugin::I18N' => {
-		maketext_options => {
-			Style => 'gettext',
-			Path => $Bin.'/../lib/Baseliner/I18N',
-			Decode => 0,
-		}
-	}
+        'Plugin::I18N' => {
+                maketext_options => {
+                        Style => 'gettext',
+                        Path => $Bin.'/../lib/Baseliner/I18N',
+                        Decode => 0,
+                }
+        }
 );
 
 ## Authentication
@@ -146,36 +146,51 @@ __PACKAGE__->config(
 
 # Start the application
 if( $ENV{BALI_FAST} ) {
-	around 'locate_components' => sub {
-		my $orig = shift;
-		my @comps = $orig->( @_ );
-		# save original
-		Baseliner->config->{ all_components } = [ @comps ];
-		# filter
-		if( $ENV{BALI_FAST} ) {
-			@comps = grep /Model/, @comps;
-		} else {
-			@comps = grep /(Controller|View|Model)/, @comps;
-		}
+        around 'locate_components' => sub {
+                my $orig = shift;
+                my @comps = $orig->( @_ );
+                # save original
+                Baseliner->config->{ all_components } = [ @comps ];
+                # filter
+                if( $ENV{BALI_FAST} ) {
+                        @comps = grep /Model/, @comps;
+                } else {
+                        @comps = grep /(Controller|View|Model)/, @comps;
+                }
 
-		return @comps;
-	};
+                return @comps;
+        };
 }
 
 __PACKAGE__->setup();
+
 # Capture Signals
 $SIG{INT} = \&signal_interrupt;
 $SIG{KILL} = \&signal_interrupt;
+
+# check if DB connected, retry
+if( my $retry = Baseliner->config->{db_retry} ) {
+    use Try::Tiny;
+    my $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
+    my $freq = Baseliner->config->{db_retry_frequency} // 30;
+    my $i = 0;
+    while( !$connected && ( $retry < 0 || $i++ <  $retry ) ) {
+        sleep $freq;
+        warn "Retrying Database Connection ($i for $retry retries)...\n";
+        $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
+    }
+    warn "DB Connected ok.\n";
+}
 
 #Class::C3::initialize();
 
 # Setup date formating for Oracle
 my $dbh = __PACKAGE__->model('Baseliner')->storage->dbh;
 if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-	$dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
+        $dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
     #$dbh->{LongReadLen} = __PACKAGE__->config->{LongReadLen} || 100000000; #64 * 1024;
-    #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs	
-	#TODO probably not necessary anymore...
+    #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs
+        #TODO probably not necessary anymore...
     # set sequences for oracle tables - avoid checking triggers for content
     Baseliner::Schema::Baseliner::Result::BaliBaseline->sequence('bali_baseline_seq');
     Baseliner::Schema::Baseliner::Result::BaliCalendar->sequence('bali_calendar_seq');
@@ -204,115 +219,115 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     Baseliner::Schema::Baseliner::Result::BaliUser->sequence('bali_user_seq');
 }
 
-	
-	# Inversion of Control
-	if( $ENV{BALI_FAST} ) {
-		for my $component ( grep !/(Controller|Model|View)/, @{ Baseliner->config->{ all_components } } ) {
-			print "all: $component\n";
-			Catalyst::Utils::ensure_class_loaded( $component, { ignore_loaded => 1 } );
-		}
-	}
-	require Baseliner::Core::Registry;
-	$ENV{BALI_FAST} or Baseliner::Core::Registry->setup;
-	$ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
-	$ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
 
-	{
-		# make immutable for speed
-		my %cl=Class::MOP::get_all_metaclasses;
+        # Inversion of Control
+        if( $ENV{BALI_FAST} ) {
+                for my $component ( grep !/(Controller|Model|View)/, @{ Baseliner->config->{ all_components } } ) {
+                        print "all: $component\n";
+                        Catalyst::Utils::ensure_class_loaded( $component, { ignore_loaded => 1 } );
+                }
+        }
+        require Baseliner::Core::Registry;
+        $ENV{BALI_FAST} or Baseliner::Core::Registry->setup;
+        $ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
+        $ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
 
-		for my $package ( grep /^Baseliner/, keys %cl ) {
-		    next if $package =~ /Baseliner$/;
-		    next if $package =~ /Baseliner::View/;
-			next unless $package->can('meta');
-			eval { $package->meta->make_immutable; };
-		}
+        {
+                # make immutable for speed
+                my %cl=Class::MOP::get_all_metaclasses;
 
-		#my %pkgs;
-		#for( keys %{ Baseliner::Core::Registry->registrar } ) {
-		#	my $node = Baseliner::Core::Registry->registrar->{$_};
-		#	$pkgs{ $node->instance->module } =undef;
-		#	#  say _dump $node;
-		#}
-		#$_->meta->make_immutable for keys %pkgs;
-	}
-    
+                for my $package ( grep /^Baseliner/, keys %cl ) {
+                    next if $package =~ /Baseliner$/;
+                    next if $package =~ /Baseliner::View/;
+                        next unless $package->can('meta');
+                        eval { $package->meta->make_immutable; };
+                }
+
+                #my %pkgs;
+                #for( keys %{ Baseliner::Core::Registry->registrar } ) {
+                #       my $node = Baseliner::Core::Registry->registrar->{$_};
+                #       $pkgs{ $node->instance->module } =undef;
+                #       #  say _dump $node;
+                #}
+                #$_->meta->make_immutable for keys %pkgs;
+        }
+
     # Beep
     $ENV{CATALYST_DEBUG} && print "\7";
 
-	# Make registry easily available to contexts
-	sub registry {
-		my $c = shift;
-		return 'Baseliner::Core::Registry';
-	}
+        # Make registry easily available to contexts
+        sub registry {
+                my $c = shift;
+                return 'Baseliner::Core::Registry';
+        }
 
-	# this is deprecated
-	sub c {
-		use Carp;
-		Catalyst->log->warn( Carp::longmess 'Use of Baseliner->c() is deprecated' );
-		__PACKAGE__->commandline;
-	}
+        # this is deprecated
+        sub c {
+                use Carp;
+                Catalyst->log->warn( Carp::longmess 'Use of Baseliner->c() is deprecated' );
+                __PACKAGE__->commandline;
+        }
 
-	# elegant shutdown
-	sub signal_interrupt {
-		print STDERR "Baseliner server interrupt requested.\n";
-		eval {
-			local $SIG{ALRM} = sub { die "alarm\n" };
-			alarm 3;
-			exit 0;
-		};
-		kill 9,$$;
-		#exit 0;
-	}
-	
-	sub launch {
+        # elegant shutdown
+        sub signal_interrupt {
+                print STDERR "Baseliner server interrupt requested.\n";
+                eval {
+                        local $SIG{ALRM} = sub { die "alarm\n" };
+                        alarm 3;
+                        exit 0;
+                };
+                kill 9,$$;
+                #exit 0;
+        }
+
+        sub launch {
         my $c = shift;
-		# Baseliner->app($c);
+                # Baseliner->app($c);
         $c->model('Services')->launch(@_, c=>$c);
-	}
+        }
 
-	our $global_app;
-	sub app {
-		__PACKAGE__->instance and return __PACKAGE__->instance;
-		my $class = shift;
-		my $c = shift;
-		return $global_app = $c if ref $c;
-		return $global_app if ref $global_app;
+        our $global_app;
+        sub app {
+                __PACKAGE__->instance and return __PACKAGE__->instance;
+                my $class = shift;
+                my $c = shift;
+                return $global_app = $c if ref $c;
+                return $global_app if ref $global_app;
 
-		#my $c;
-		#my $meta = Class::MOP::get_metaclass_by_name('Baseliner');
-		#$meta->make_mutable;
+                #my $c;
+                #my $meta = Class::MOP::get_metaclass_by_name('Baseliner');
+                #$meta->make_mutable;
         #$meta->add_after_method_modifier( "dispatch", sub {
             #$c = shift;
         #});
-		#$meta->make_immutable( replace_constructor => 1 );
-		#Class::C3::reinitialize();
-		#return $c;	
-		return __PACKAGE__->commandline;
-		#bless {}, 'Baseliner';
+                #$meta->make_immutable( replace_constructor => 1 );
+                #Class::C3::reinitialize();
+                #return $c;
+                return __PACKAGE__->commandline;
+                #bless {}, 'Baseliner';
 
-	}
+        }
 
     #TODO move this to a model
-	sub inf {
-		my $c = shift;
-		my %p = @_;
-		$p{ns} ||= '/';
-		$p{bl} ||= '*';
-		if( $p{domain} ) {
-			$p{domain} =~ s{\.$}{}g;
-			$p{key}={ -like => "$p{domain}.%" };
-		}
-		print "KEY==$p{domain}\n";
-		my %data;
-		my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
-		while( my $r = $rs->next  ) {
-			(my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
-			$c->stash->{$var} = $r->value;
-			$data{$var} = $r->value;
-		}
-		return \%data;
-	}
+        sub inf {
+                my $c = shift;
+                my %p = @_;
+                $p{ns} ||= '/';
+                $p{bl} ||= '*';
+                if( $p{domain} ) {
+                        $p{domain} =~ s{\.$}{}g;
+                        $p{key}={ -like => "$p{domain}.%" };
+                }
+                print "KEY==$p{domain}\n";
+                my %data;
+                my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
+                while( my $r = $rs->next  ) {
+                        (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
+                        $c->stash->{$var} = $r->value;
+                        $data{$var} = $r->value;
+                }
+                return \%data;
+        }
 
     #TODO deprecated:
                 sub inf_bl {
@@ -327,30 +342,30 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
                     my $bl = $p{bl} eq '*' ? '%' : $p{bl};
                     my $ns = $p{ns} ? $p{ns}.'/%' : '%';
                     $ns =~ s{//}{/}g;
-                    warn "------------SEARCH: $ns,$bl,$p{key}"; 
-                    return $c->model('Baseliner::Bigtable')->search({ ns=>{ -like => $ns },bl=>{ -like =>$bl },key=>{ -like =>$p{key} }}); 
+                    warn "------------SEARCH: $ns,$bl,$p{key}";
+                    return $c->model('Baseliner::Bigtable')->search({ ns=>{ -like => $ns },bl=>{ -like =>$bl },key=>{ -like =>$p{key} }});
                 }
                 sub inf_write {
                     my ($c,%p) = @_;
                     $p{ns} ||= '/';
                     $p{bl} ||= '*';
-                    $c->model('Baseliner::Bigtable')->create({ ns=>$p{ns},bl=>$p{bl}, key=>$p{key}, value=>$p{value} }); 
+                    $c->model('Baseliner::Bigtable')->create({ ns=>$p{ns},bl=>$p{bl}, key=>$p{key}, value=>$p{value} });
                 }
 
 # user shortcut
 use Try::Tiny;
 sub username {
-	my $c = shift;
-	my $user;
-	$user = try { return $c->session->{username} } and return $user;
-	$ENV{ BASELINER_DEBUG } && warn "No session user";
-	$user = try { return $c->user->username } and return $c->session->{username} = $user;
-	$ENV{ BASELINER_DEBUG } && warn "No user user";
-	$user = try { return $c->user->id
-	} catch {
-		$ENV{ BASELINER_DEBUG } && warn "No user id.";
-		return undef;	
-	} and return $user;
+        my $c = shift;
+        my $user;
+        $user = try { return $c->session->{username} } and return $user;
+        $ENV{ BASELINER_DEBUG } && warn "No session user";
+        $user = try { return $c->user->username } and return $c->session->{username} = $user;
+        $ENV{ BASELINER_DEBUG } && warn "No user user";
+        $user = try { return $c->user->id
+        } catch {
+                $ENV{ BASELINER_DEBUG } && warn "No user id.";
+                return undef;
+        } and return $user;
 }
 
 sub is_root {

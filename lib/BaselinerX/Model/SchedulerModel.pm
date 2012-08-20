@@ -1,8 +1,8 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.PROD0000054289
-#	Fecha de pase .................... 2011/11/21 20:21:23
+#	Pase ............................. N.PROD0000055425
+#	Fecha de pase .................... 2011/12/14 17:20:10
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/lib/BaselinerX/Model/SchedulerModel.pm
 #	Versión del elemento ............. 2
 #	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
