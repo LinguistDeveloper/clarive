@@ -1,5 +1,7 @@
 <%args>
     $show_main => $c->config->{site}{show_main} // 0
+    $show_search => $c->config->{site}{show_search} // 1
+    $show_calendar => $c->config->{site}{show_calendar} // 1
     $show_portal => $c->config->{site}{show_portal} // 0
     $show_dashboard => $c->config->{site}{show_dashboard} // 1
     $show_menu => $c->config->{site}{show_menu} // 1
@@ -68,12 +70,16 @@ Ext.onReady(function(){
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
             ,
             '->',
+% if( $show_search ) {
             search_box,
+% }
             Baseliner.help_button,
 % if( $show_js_reload ) {
             '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload()" onmouseover="this.style.cursor=\'pointer\'" />',
 % }
+% if( $show_calendar ) {
             '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />',
+% }
             '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '-', 
@@ -108,19 +114,22 @@ Ext.onReady(function(){
 
     var icon_home = '/static/images/icons/home.gif';
 
-    Baseliner.calpanel = new Baseliner.Calendar({
-        region: 'south',
-        split: true,
-        //collapsible: true,
-        //collapsed: true,
-        hidden: true,
-        height: 300,
-        tbar_end: [ '->', { xtype:'button', text:'#', handler:function(){ Baseliner.tabCalendar() } } ],
-        fullCalendarConfig: {
-            events: Baseliner.calendar_events,
-            timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
-        }
-    });
+%   if( $show_calendar ) {
+        Baseliner.calpanel = new Baseliner.Calendar({
+            region: 'south',
+            split: true,
+            //collapsible: true,
+            //collapsed: true,
+            hidden: true,
+            height: 300,
+            tbar_end: [ '->', { xtype:'button', text:'#', handler:function(){ Baseliner.tabCalendar() } } ],
+            fullCalendarConfig: {
+                events: Baseliner.calendar_events,
+                timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
+            }
+        });
+    }
+% }
 
     var lifecycle = Baseliner.lifecycle;
 % unless( $show_lifecycle ) {
@@ -143,7 +152,9 @@ Ext.onReady(function(){
 % } else {
             tb,
             lifecycle,
+%   if( $show_calendar ) {
             Baseliner.calpanel,
+%   }
             new Ext.TabPanel({  region: 'center', id:'main-panel',
                 defaults: { closable: true, autoScroll: true }, 
                 enableTabScroll: true,
@@ -229,6 +240,7 @@ Ext.onReady(function(){
 % }
        
     // global key captures
+    /* 
     window.history.forward(1);
     document.onkeydown = function disableKeys(evt) {
         evt = (evt) ? evt : ((event) ? event : null);
@@ -239,6 +251,7 @@ Ext.onReady(function(){
             } catch(e){}
         }
     };  
+    */
        
 });
         

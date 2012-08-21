@@ -6,7 +6,6 @@ Baseliner.cookie = new Ext.state.CookieProvider({
 // In-edit counter - keep the window for closing if it's more than > 0
 Baseliner.is_in_edit = function(){
     var flag = false;
-    if( console ) console.log( Baseliner.in_edit );
     for( var k in Baseliner.in_edit ) {
         if( Baseliner.in_edit[k] ) flag=true;
     }
