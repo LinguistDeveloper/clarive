@@ -6,7 +6,6 @@ Baseliner.cookie = new Ext.state.CookieProvider({
 // In-edit counter - keep the window for closing if it's more than > 0
 Baseliner.is_in_edit = function(){
     var flag = false;
-    if( console ) console.log( Baseliner.in_edit );
     for( var k in Baseliner.in_edit ) {
         if( Baseliner.in_edit[k] ) flag=true;
     }
@@ -639,7 +638,7 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     hideTrigger1:true,
     width:280,
     hasSearch : false,
-    emptyText: _('<Enter your search string>'),
+    emptyText: '<% _loc("<Enter your search string>") %>',
     paramName : 'query',
 
     onTrigger1Click : function(){
@@ -795,3 +794,9 @@ Ext.extend(Ext.ux.PageSizePlugin, Ext.form.ComboBox, {
     }
 });
 
+Baseliner.open_topic = function(mid,opts) {
+    if( ! opts ) opts = {};
+    var title = opts.title || opts.topic_name || String.format('#{0}', mid );
+    Baseliner.add_tabcomp( '/comp/topic/topic_main.js', title, { topic_mid:mid, _parent_grid: opts.grid });
+    return false;
+};

@@ -37,7 +37,7 @@ sub job_create : Path('/job/create')  {
     # @baselines=_unique @baselines;
     _debug _dump @baselines;
     $c->stash->{baselines} =  \@baselines;
-    $c->stash->{template} = '/comp/job_new.mas';
+    $c->stash->{template} = '/comp/job_new.js';
 }
 
 # list objects ready for a job
@@ -527,6 +527,123 @@ sub get_namespaces_calendar{
     return \@ns;
 }
 
+
+sub merge_calendars : Private {
+    my ($self,%p) = @_;
+
+    my $bl = $p{bl};
+    my $where = {
+        'me.active'=>'1',
+        'windows.active'=>1,
+    };
+
+    $where->{bl} = $p{bl} if $p{bl};
+    $where->{ns} = $p{ns} if $p{ns}; # [ 'changeman.nature/changeman_batch', '/'  ]
+    
+    my @cals = DB->BaliCalendar->search(
+        $where,
+        {
+          prefetch=>'windows',
+          order_by=>[
+              { -asc=>'seq' },
+              { -asc=>'windows.day' },
+              { -asc=>'windows.start_time' }
+          ]
+        }
+    )->hashref->all;
+    #return \@cals;
+    my $slots = Calendar::Slots->new();
+    for my $cal ( @cals ) {
+       _log "__________# " . $cal->{ns};
+       for my $win ( _array $cal->{windows} ) {
+          my $name = "$cal->{name} ($win->{type})==>" .( $win->{day}+1 );
+          _log "WIN ==> $name";
+          if( $win->{start_date} ) {
+             my $d = Class::Date->new( $win->{start_date} );
+             $slots->slot( date=>substr($d->string,0,10), start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>{ type=>$win->{type} } );
+          } else {
+             $slots->slot( weekday=>$win->{day}+1, start =>$win->{start_time}, end =>$win->{end_time}, name =>$name );
+          }
+       }
+    }
+    #_log _dump $slots->sorted;
+    my $today = Class::Date->now + '5D';
+    my $today_w = $today->wday -1;
+    $today_w < 0  and $today_w += 7;
+    my $today_s = $today->strftime('%Y%m%d');
+    my %list;
+    _log "TOD=$today, W=$today_w, S=$today_s";
+    for my $s ( $slots->sorted ) {
+       next if $s->type eq 'date' && $s->when ne $today_s;
+       next if $s->type eq 'weekday' && $s->when ne $today_w;
+       _log "NAME=" . $s->name;
+       _log "FROM=" . $s->start;
+       _log "TO  =" . $s->end;   
+       for( $s->start .. $s->end ) {
+         my $time = sprintf('%04d',$_);
+         next if substr( $time, 2,2) > 59 ;
+         $list{ $time } = $s->data ; #unless exists $list{ $time };
+       }
+    }
+    #$slot->find( date=>'2012-08-20', time=>'18:00' )
+    \%list;
+}
+
+sub build_job_window : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $date = $p->{job_date};
+    my $contents = _decode_json $p->{job_contents};
+    $contents = $c->model('Jobs')->container_expand( $contents );
+    my $month_days = 31;	
+    _debug $contents;
+ 
+    try {
+        # get calendar range list
+        $c->stash->{start_date} =  $date
+            ? BaselinerX::Job::Controller::Calendar->parseDateTime($date)
+            : DateTime->now;
+
+        # Se calculan los dias visibles en el calendario dando una semana de gracia para visualizar la primera semana del siguiente mes
+        my $add_days = ($month_days - $c->stash->{start_date}->day() ) + $month_days + 7;
+        
+        $add_days = $month_days * 3;
+        $c->stash->{end_date} = BaselinerX::Job::Controller::Calendar->addDaysToDateTime($c->stash->{start_date},$add_days);
+        $c->stash->{bl} = $p->{bl};
+
+        my @ns;
+        # $contents = $c->model('Jobs')->container_expand( $contents );
+        for my $item ( @{ $contents || [] } ) {
+            my $namespace = $c->model('Namespaces')->get($item->{ns});
+            my @ns_list = _array $item->{ns}, _array $namespace->nature, $namespace->application, '/';
+            foreach my $curr_ns (@ns_list){
+                _debug "NS=$curr_ns";
+                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $curr_ns } });
+                push @ns, $curr_ns if $r->count;
+            }
+        }
+        _debug "NS with Calendar: " . join ',',@ns;
+        my %tmp_hash   = map { $_ => 1 } @ns;
+        
+        @ns = keys %tmp_hash;    
+        $c->stash->{ns} = \@ns;
+
+
+        _debug "------Checking dates for namespaces: " . _dump($c->stash->{ns});
+
+        $c->forward('/calendar/date_intersec_range');
+
+
+
+        _debug _dump( $c->stash->{calendar_range_expand} ); 
+        $c->stash->{json} = {success=>\1, data => $c->stash->{range_enabled} };	
+    } catch {
+        my $error = shift;
+        $c->stash->{json} = {success=>\0, data => $error };
+    };
+    $c->forward('View::JSON');
+}
+
 sub job_check_date : Path('/job/check_date') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
@@ -749,7 +866,7 @@ sub monitor : Path('/job/monitor') {
     $c->stash->{envs_json}       = envs_json;
     $c->stash->{types_json}      = types_json; # Tipo de elementos en Monitor. SCM|SQA.
 
-    $c->stash->{template} = '/comp/monitor_grid.mas';
+    $c->stash->{template} = '/comp/monitor_grid.js';
 }
 
 sub monitor_portlet : Local {

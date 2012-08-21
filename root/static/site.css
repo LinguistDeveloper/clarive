@@ -98,6 +98,10 @@
 }
 
 /*  Job Items Search */
+.tab-style {
+        padding: 10px;
+}
+
 .ext-ie6 .tab-style, .ext-ie7 .tab-style, .ext-ie8 .tab-style {
         padding: 10px;
         width: 820px;
@@ -106,6 +110,7 @@
         padding: 10px;
         width: 800px;
 }
+
 .search-item {
     font:normal 11px tahoma, arial, helvetica, sans-serif;
     padding:3px 10px 3px 10px;
@@ -215,8 +220,8 @@ Help File Styles
 
 *************************************************/
 
-.help-off { background-image: '/static/images/icons/lightbulb_off.png' }
-.help-on { background-image: '/static/images/icons/lightbulb.png' }
+.help-off { background-image: '/static/images/icons/lightbulb_off.gif' }
+.help-on { background-image: '/static/images/icons/lightbulb.gif' }
 
 pre { font-family: Consolas, Courier New, mono; }
 

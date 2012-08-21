@@ -84,7 +84,7 @@ sub calendar_list : Path('/job/calendar_list') {
     $c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
     $c->forward( '/calendar/load_calendar_types' );
-    $c->stash->{ template } = '/comp/job_calendar_grid.mas';
+    $c->stash->{ template } = '/comp/job_calendar_grid.js';
 }
 
 #sub calendar_add : Path( '/job/calendar_add' ) {
@@ -165,7 +165,7 @@ sub calendar : Path( '/job/calendar' ) {
     # load the calendar row data
     $self->init_date( $c );
     $c->stash->{ calendar } = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first;
-    $c->stash->{ template } = '/comp/job_calendar_comp.mas';
+    $c->stash->{ template } = '/comp/job_calendar_comp.js';
 }
 
 sub calendar_show : Path( '/job/calendar_show' ) {
@@ -182,7 +182,7 @@ sub calendar_show : Path( '/job/calendar_show' ) {
 
     # prepare the html grid data
     $c->stash->{ grid }     = $c->forward( '/calendar/grid' );
-    $c->stash->{ template } = '/comp/job_calendar.mas';
+    $c->stash->{ template } = '/comp/job_calendar.js';
 }
 
 sub preview_calendario : Path( '/job/preview_calendar' ) {
@@ -328,7 +328,7 @@ sub calendar_edit : Path( '/job/calendar_edit' ) {
 
         $c->stash->{ date } = $p->{ date } || $self->parseDateTimeToForm( $date );
     }
-    $c->stash->{ template } = '/comp/job_calendar_edit.mas';
+    $c->stash->{ template } = '/comp/job_calendar_edit.js';
 }
 
 sub calendar_submit : Path('/job/calendar_submit') {

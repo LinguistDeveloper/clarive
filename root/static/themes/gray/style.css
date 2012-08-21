@@ -1,7 +1,6 @@
 @import "../../ext/resources/css/xtheme-gray.css";
 /*  Job Log Grid Rows */
 
-
 .icon-inbox {
     background-image: url(/static/images/icons/envelope.gif) !important;
 }

@@ -48,7 +48,7 @@ register 'menu.job' => { label => 'Jobs' };
 register 'action.job.create' => {name => 'Create New Jobs'};
 
 register 'menu.job.create' => {label   => 'Create a new Job',
-                               url     => '/job/create',
+                               url_comp=> '/job/create',
                                title   => 'New Job',
                                icon    => '/static/images/star_on.gif',
                              # actions => ['action.job.create'],
