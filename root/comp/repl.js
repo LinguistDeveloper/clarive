@@ -305,7 +305,7 @@ To do:
                 status.setValue( "OK" );
                 document.getElementById( output.getId() ).style.color = "#10c000"; // green
                 elapsed.setValue( action.result.elapsed );
-                save({ t: thist, c: code.getValue(), o: output.getValue() });
+                save({ c: code.getValue(), o: output.getValue() });
                 editor.focus();
             },
             failure: function(f,action){
