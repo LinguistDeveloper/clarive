@@ -128,7 +128,6 @@ Ext.onReady(function(){
                 timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
             }
         });
-    }
 % }
 
     var lifecycle = Baseliner.lifecycle;
