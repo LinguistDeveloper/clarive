@@ -124,10 +124,10 @@ msgid "Login"
 msgstr "Login"
 
 msgid "Revision"
-msgstr "Elemento"
+msgstr "Revisión"
 
 msgid "Revisions"
-msgstr "Mis Elementos"
+msgstr "Revisiones"
 
 msgid "Login Failed"
 msgstr "Login Inválido"
