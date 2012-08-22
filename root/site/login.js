@@ -56,7 +56,7 @@ Ext.onReady(function(){
 
      setTimeout(function(){
         Ext.get('bali-loading').remove();
-        login_form.render('form');
+        login_form.render( document.body );
          if( last_login!=undefined && last_login.length > 0 )  {
                 login_form.getForm().findField('login').setValue( last_login );
                 login_form.getForm().findField('password').focus('',100);
