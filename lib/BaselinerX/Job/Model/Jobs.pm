@@ -224,7 +224,7 @@ sub _create {
             runner       => $p{runner} || $config->{runner},
             username     => $p{username} || $config->{username} || 'internal',
             comments     => $p{comments},
-            key          => _md5(),
+            job_key      => _md5(),
             ns           => $ns,
             bl           => $bl,
     });
