@@ -6,16 +6,17 @@
 </%doc>
 <%perl>
     use Baseliner::Utils;
+    use Baseliner::Sugar;
     use utf8;
     my $iid = "div-" . _nowstamp;
     $c->stash->{job_types} = [
         { name=>'job_type', inputValue=> 'promote', boxLabel => _loc('Promote'), checked=>\1 },
         { name=>'job_type', inputValue=> 'demote', boxLabel => _loc('Demote') },
         ];
-    my $now = DateTime->now;
-    $now->set_time_zone(_tz);
-    my $today =  $now->strftime('%d/%m/%Y');
-    my $hm =  $now->strftime('%H:%M');
+    my $now = _dt();
+    my $date_format = config_value('calendar_date_format') || '%Y-%m-%d';
+    my $today =  $now->strftime( $date_format ); # '%d/%m/%Y'
+    ( my $picker_format = $date_format || 'd/m/Y' ) =~ s{%}{}g;
 
     $baselines = [
         map {
@@ -24,6 +25,24 @@
     ];
 </%perl>
 (function(){
+    var date_format = '<% $date_format %>';
+    var picker_format = '<% $picker_format %>';
+    var today = '<% $today %>';
+    var min_chars = 3; 
+
+    var data_any_time = function() {
+        var arr = [];
+        var name = _('no calendar window');
+        for( var h=0; h<24; h++ ) {
+           for( var m=0; m<60; m++ ) {
+               arr.push(
+                  [ String.leftPad( h,2,'0') + ':' + String.leftPad( m,2,'0'), name, 'F' ] 
+               );
+           }
+        }
+        return arr;
+    };
+
     function parseToDate(strDate){
         var dia = parseInt(strDate.substr(0,2),"10");
         var mes = parseInt(strDate.substr(3,2),"10");
@@ -66,30 +85,34 @@
     var __now=new Date();
     __now.setSeconds(00);
 
+    //*************************************************
+    //
     // Baseline Combo
+    //
     var label_dest = _('Destination Baseline');
     var label_orig = _('Origin Baseline');
-    var baselines = new Ext.data.SimpleStore({
+    var store_baselines = new Ext.data.SimpleStore({
         fields: ['bl', 'name'],
         id: 0,
         data : <% js_dumper( $baselines ) %>
-        });
+    });
 
     var tpl_baseline = new Ext.XTemplate(
         '<tpl for=".">',
             '<div class="search-item">{name}</div>',
         '</tpl>'
-        );
+    );
+    var bl_initial = '<% $baselines->[1]->[0] %>';
+
     var combo_baseline = new Ext.form.ComboBox({
         name: 'bl',
         hiddenName: 'bl',
         displayField:'name',
         valueField: 'bl',
         fieldLabel: label_dest,
-        labelStyle: 'margin-left: 7px',
         mode: 'local',
-        store: baselines,
-        value: '<% $baselines->[1]->[0] %>',
+        store: store_baselines,
+        value: bl_initial,
         editable: false,
         forceSelection: true,
         triggerAction: 'all',
@@ -97,814 +120,328 @@
         tpl: tpl_baseline,
         allowBlank: false,
         listeners: {
-            select: { fn: function(){
-                    Baseliner.jobResetAll();
-                    ds_combo.removeAll();
-                    jc_grid.getStore().removeAll();
-                    combo_joboptionsglobal.getStore().removeAll();
-                    Ext.getCmp('joboptionsglobal<% $iid %>').killItems();
-                    Ext.getCmp('joboptionsglobal<% $iid %>').hide();
-                    }
-                }
-            },
+            select: function() {
+                var bl = combo_baseline.getRawValue();
+                form_reset_all();
+                store_search.removeAll();
+                jc_grid.getStore().removeAll();
+                combo_baseline.setRawValue( bl );
+            }
+        },
         width: 200
     });
     combo_baseline.on( 'afterrender', function(){
     });
 
-    var window_check = new Ext.form.Checkbox({
-        labelStyle: 'margin-left: 7px',
-        name: 'window_check',
-        fieldLabel: 'Ventana Personalizada' ,
-        boxLabel: 'Chequee si quiere crear un pase fuera de ventana.',
-        disabled: true,
-        handler: _setOutWindow
+    var check_no_cal = new Ext.form.Checkbox({
+        name: 'check_no_cal',
+        fieldLabel: '',
+        boxLabel: _("Create a job outside of the available time slots."),
+        disabled: false,
+        handler: function (chk,val){
+            if(val){
+                store_time.removeAll();
+                store_time.loadData( data_any_time() );
+                combo_time.enable();
+                combo_time.show();
+                comments.validate();
+                button_submit.enable();
+            } else {
+                button_submit.disable();
+                calendar_reload();
+            }
+        }
+
     });
 
-    var field_calendar = new Ext.ux.form.DateFieldPlus({
-        id: 'job_date<% $iid %>',
-        labelStyle: 'margin-left: 7px',
+    var job_date = new Ext.ux.form.DateFieldPlus({
         name: 'job_date',
-        disabled: true,
-        // readOnly: true,  ## No muestra el boton del calendario
+        disabled: false,
         fieldLabel: _('Date'),
         allowBlank: false,
         usePickerPlus: true,
-        format: 'd/m/Y',
-        value: '<% $today %>',
-        minValue: '<% $today %>',
+        format: picker_format,
+        value: today,
+        minValue: today,
         noOfMonth : 2,
         noOfMonthPerRow : 2,
-        renderTodayButton: false,
+        renderTodayButton: true,
         showToday: false,
         multiSelection: false,
-        allowMouseWheel:true,
+        allowMouseWheel: true,
         showWeekNumber: false,
         selectedDates: [],
-        showActiveDate:true,
-        summarizeHeader:true,
+        showActiveDate: true,
+        summarizeHeader: true,
+        submitFormat: 'Y-m-d',
+        submitFormatAddon: '-format',
         width: 140,
-        labelWidth: 145,
         listeners:{
-            'change':function(p,t){ }, //after the users changes it by hand
-            'beforedateclick':function(picker,t){ },
-            'beforerender':function(picker){
-                _setDatePicker(this);
-                },
-            'afterdateclick':function(picker,t){
+            'select':function(picker,t){
+                calendar_reload();
                 //Baseliner.calendar_reload();
-                Baseliner.time_reload(t);
-                var time_spinner = main_form.getForm().findField('time_spinner<% $iid %>');
-                time_spinner.validate();
-                time_spinner.focus();
+                // time_spinner.validate();
+                // time_spinner.focus();
                 // alert(time_spinner.getValue());
                 //picker.el.dom.setAttribute('readOnly',true);
-                },
-            'aftermonthchange':function(picker,oldStartMonth, newStartMonth){
-                //_setDatePicker(this);
-                //Baseliner.calendar_reload(newStartMonth);
-                }
             }
-        });
+        }
+    });
 
-    var field_spinner = new Ext.ux.form.Spinner({
-        id:   'time_spinner<% $iid %>',
-        labelStyle: 'margin-left: 7px',
-        name: 'job_time',
-        format : "H:i",
-        fieldLabel: _('Time'),
-        allowBlank: false,
-        disabled:true,
-        value: '<% $hm %>',
-        // editable: false,  ## Tiene que ser editable para poder cambiar la hora
-        vtype: 'hour',
-        width: 140,
-        labelWidth: 145,
-        strategy: new Ext.ux.form.Spinner.TimeStrategy(),
-        listeners:{
-            'spin':function(p,t){
-                this.validate();
-                }
-            }
-        });
-
-    var txtComment = new Ext.form.TextArea({
-        labelStyle: 'margin-left: 7px',
-        id:   'comments<% $iid %>',
+    var comments = new Ext.form.TextArea({
+        width: 750,
+        height: 120,
         fieldLabel: _('Comments'),
-        width: 808,
         name: 'comments'
-        });
+    });
 
     // Enable all calendar selection fields
     var enableAll = function() {
-        //main_form.getForm().reset();
-        window_check.setDisabled(false);
-        job_time.setDisabled(false);
-        field_calendar.setDisabled(false);
-        field_spinner.setDisabled(false);
-        combo_incidencias.setDisabled(false);
-        };
+        check_no_cal.setDisabled(false);
+        job_date.setDisabled(false);
+    };
 
-        // Clean up the whole form
-    Baseliner.jobResetAll = function() {
+    // Clean up the whole form
+    var form_reset_all = function() {
         //main_form.getForm().reset();
-        window_check.setDisabled(true);
-        job_time.setRawValue('');
-        job_time.setDisabled(true);
-        field_calendar.setRawValue('');
-        field_calendar.setDisabled(true);
-        field_spinner.setRawValue('');
-        field_spinner.setDisabled(true);
-        combo_incidencias.setDisabled(true);
-        combo_incidencias.getStore().removeAll();
-        Ext.getCmp('jobincidencias<% $iid %>').killItems();
+        check_no_cal.setDisabled(true);
+
+        job_date.setRawValue('');
+        job_date.setDisabled(true);
+        combo_time.setRawValue('');
+
         jc_grid.getStore().removeAll();
-        ds_combo.removeAll();
-        combo_joboptionsglobal.getStore().removeAll();
-        combo_incidencias.getStore().removeAll();
-        Ext.getCmp('joboptionsglobal<% $iid %>').killItems();
-        Ext.getCmp('joboptionsglobal<% $iid %>').hide();
-        Ext.getCmp('jobincidencias<% $iid %>').killItems();
-        Ext.getCmp('jobincidencias<% $iid %>').hide();
+        store_search.removeAll();
         button_submit.disable();
-        };
+    };
 
-    var _datePicker = null;
-
-    function _setDatePicker(picker){_datePicker = picker;}
-
-    var time_store = new Baseliner.JsonStore({
-        root: 'data',
-        url: '/job/check_time',
-        fields: [
-                {  name: 'displayText' },
-                {  name: 'valueJson' },
-                {  name: 'start_time' },
-                {  name: 'end_time' },
-                {  name: 'type' }
-                ]
-        });
-
-// '<div class="search-item"><img src="/static/images/icons/time.gif"/>\t{displayText}</b></div>',
-    var time_tpl = new Ext.XTemplate(
+    var store_time = new Ext.data.SimpleStore({
+        fields: ['time','name', 'type']
+    });
+    var tpl_time = new Ext.XTemplate(
         '<tpl for=".">',
-        '<div class="search-item"><img src="/static/images/chromium/history_favicon.png"/><span><b>{displayText}</span></b></div>',
+        '<div class="search-item"><span style="color:{[ values.type=="N"?"green":(values.type=="U"?"red":"#444") ]}"><b>{time}</b> - {name}</span></div>',
         '</tpl>'
-        );
-
-// var resultRange = new Ext.XTemplate(
-    // '<tpl for="."><div class="search-item {type}">{displayText}</div></tpl>'
-    // );
-
-    var job_time  = new Ext.form.ComboBox({
-        labelStyle: 'margin-left: 7px',
-        name: 'job_combo',
-        hiddenName: 'job_combo',
-        fieldLabel: _('Franja horaria'),
-        valueField: 'valueJson',
-        displayField:'displayText',
-        itemSelector: 'div.search-item',
-        store: time_store,
-        allowBlank: false,
-        width: 140,
-        labelWidth: 145,
-        typeAhead: true,
+    );
+    var combo_time  = new Ext.form.ComboBox({
+        name: 'job_time',
+        anchor: '100%',
+        hiddenName: 'job_time',
+        fieldLabel: _('Time'),
+        valueField: 'time',
+        displayField:'time',
         mode: 'local',
+        store: store_time,
+        allowBlank: false,
+        typeAhead: true,
         forceSelection: true,
         triggerAction: 'all',
-        tpl: time_tpl,
+        tpl: tpl_time,
+        itemSelector: 'div.search-item',
         disabled: true,
-        selectOnFocus:true
-        });
+        selectOnFocus: false
+    });
+    combo_time.color_me = function( type ) { 
+        switch( type ) {
+            case 'N': combo_time.el.setStyle({ color: 'green' }); break;
+            case 'U': combo_time.el.setStyle({ color: 'red' }); break;
+            case 'F': combo_time.el.setStyle({ color: 'black' }); break;
+        }
+    };
+    combo_time.on('select', function(combo,rec,ix){
+        var type = rec.data.type;
+        combo_time.color_me( type );
+    });
+    store_time.on('load', function(){
+        var first = store_time.getAt(0);
+        if( first ) {
+            combo_time.enable();
+            time_not_available.hide();
+            combo_time.show();
+            combo_time.setRawValue( first.data.time );
+            combo_time.color_me( first.data.type );
+            button_submit.enable();
+        } else {
+            time_not_available.show();
+            combo_time.hide();
+            button_submit.disable();
+        }
+        Baseliner.hideLoadingMask();
+    });
 
-    Baseliner.calendar_reload = function(newMonth, newDate) {
+    var calendar_reload = function() {
+        if( check_no_cal.checked ) return;
         try {
-            if(newDate != undefined) main_form.getForm().findField('job_date').setRawValue(parseFromDate(newDate));
             var cnt = jc_grid.getStore().getCount();
-            var _now = new Date();
-            var job_date = (newMonth==undefined)?main_form.getForm().findField('job_date').getRawValue(): "01/" + (newMonth + 1) + "/" + _now.getFullYear();
-            var time_spinner = main_form.getForm().findField('time_spinner<% $iid %>');
-            var bl = combo_baseline.getValue();
-            var json_res = job_grid_data({ warn: false });
+
+            store_time.removeAll();
+            combo_time.setRawValue('');
 
             if( cnt > 0 ) {
-                Baseliner.ajaxEval( '/job/build_job_window', { bl: bl, job_date: job_date, job_contents: json_res }, function(res){
-                    Baseliner.hideLoadingMask();
-                    console.log( res ); 
-                });
-            }
+                Baseliner.showLoadingMask(main_form.getEl(), _("Loading available time...") );
+                var bl  = combo_baseline.getValue();
+                var job_date_v = job_date.getRawValue()
+                var json_res = job_grid_data({ warn: false });
 
-            return;
-            
-            // Eric -- Ojo, la condici?e este if puede ser la culpable de que a veces no haga nada cuando haces click en alg?n paquete.
-            if( cnt > 0 ) {
-                if(!window_check.checked){
-                    //time_store.load({ params: { bl: bl, job_date: job_date, job_contents: json_res } });
-                    Baseliner.showLoadingMask(main_form.getEl(), "Cargando fechas...");
-                    Ext.Ajax.request({
-                        url: '/job/check_date',
-                        params: { bl: bl, job_date: job_date, job_contents: json_res },
-                        success: function(xhr) {
+                Baseliner.ajaxEval( '/job/build_job_window',
+                    { bl: bl, job_date: job_date_v, job_contents: json_res, date_format: date_format  },
+                    function(res){
+                        if( res.success ) {
+                            store_time.loadData( res.data ); // async
+                        } else {
                             Baseliner.hideLoadingMask();
-                            var expr = xhr.responseText.replace(/\"/g, "");
-                            var _raw = eval( "("+xhr.responseText+")" );
-                            var error = (!_raw.success);
-                            if(!error){
-                                var dates = eval("[" + _raw.data + "]");
-                                if(dates.length>0 ){
-                                    window_check.setDisabled(false);
-                                    _datePicker.setDisabled(false);
-                                    _datePicker.setAllowedDates(dates, true);
-                                    _datePicker.update(_datePicker.activeDate, true, true);
-                                    if(CheckValidDate(_datePicker,job_time,time_spinner,dates,job_date)){
-                                        Baseliner.time_reload();
-                                        }
-                                } else {
-                                    Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Sin Fechas", msg: "No hay fechas disponibles para el pase. Seleccione una ventana personalizada."});
-                                    window_check.setValue( true );
-                                }
-                            }else{
-                                Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Error Calendarios", msg: "No hay calendarios disponibles para el pase. La busqueda ha devuelto una excepcion:<b>"+_raw.data+"</b>."});
-                                }
-                            },
-                        failure: function(xhr) {
-                            Baseliner.hideLoadingMask();
-                            Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Form Error", msg: "Se ha producido un error de timeout."});
-                            //Baseliner.errorWin( 'Logout Error', xhr.responseText );
-                            }
-                        });
-                    //TODO main_form.getForm().findField('job_date').setValue( time_store.getRowAt(0) );
-                    <%doc>
-                    Ext.Ajax.request({
-                        url: '/job/check_time',
-                        params: { bl: bl, job_date: job_date, job_contents: json_res },
-                        success: function(xhr) {
-                            var times = eval( "("+xhr.responseText+")" );
-                            for( var i in times.data ) {
-                                var e = times.data[i];
-                                }
-                            },
-                        failure: function(xhr) {
-                            Baseliner.hideLoadingMask();
-                            Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Form Error", msg: "Se ha producido un error de timeout."});
-                            //Baseliner.errorWin( 'Logout Error', xhr.responseText );
-                            }
-                        });
-                    </%doc>
+                            combo_time.disable();
+                            Ext.Msg.alert( _('Error'), _('Error generating calendar windows: %1', res.msg ) );
+                        }
                     }
+                );
             } else {
-                // no job contents loaded, keep it disabled
-                window_check.setDisabled(true);
-                _datePicker.setDisabled(true);
-                job_time.setDisabled(true);
-                time_spinner.setDisabled(true);
-                }
+                button_submit.disable();
+                combo_time.disable();
+            }
         } catch(e) {
             Baseliner.message(_('Error'), _('Could not reload calendar') );
-            }
-        };
-
-    Baseliner.time_reload = function(t) {
-        if(!window_check.checked){
-            var job_date = ( t != undefined) ? t.getDate() + "/" + (t.getMonth()+1) + "/" + t.getFullYear() : main_form.getForm().findField('job_date').getRawValue();
-            var bl = combo_baseline.getValue();
-            var json_res = job_grid_data({ warn: false });
-            Baseliner.showLoadingMask(main_form.getEl(), "Actualizando horas...");
-            time_store.load({
-                params: { bl: bl, job_date: job_date, job_contents: json_res }
-                });
-            }
         }
+    };
 
-    function CheckValidDate(picker,job_time,time_spinner,dates,job_date){ //called by calendar reload
-        var currentDate = parseToDate(job_date);
-        if(dates!=null && dates.length >0){
-            for(var i=0;i<dates.length; i++){
-                if(currentDate.getDate() == dates[i].getDate() && currentDate.getMonth() == dates[i].getMonth() && currentDate.getFullYear() == dates[i].getFullYear()){
-                    return true;
-                    }
-                }
-            if(!window_check.checked){
-                //picker.setDisabled(true);
-                //job_time.setDisabled(true);
-                //time_spinner.setDisabled(true);
-                main_form.getForm().findField('job_date').setRawValue('');
-                main_form.getForm().findField('time_spinner<% $iid %>').setRawValue('');
-                job_time.setRawValue('');
-                //Baseliner.calendar_reload(undefined,dates[0]);
-                }
-        } else {
-            if(!window_check.checked){
-                picker.setDisabled(true);
-                job_time.setDisabled(true);
-                time_spinner.setDisabled(true);
-                }
-            }
-        return false;
+    var time_not_available = new Ext.form.Label({
+        hidden: true,
+        fieldLabel: _('Time'), style: 'color: red; font-weight: bold; font-family: Calibri, Helvetica Neue, Arial, sans-serif;',
+        text: _('no calendar windows available for selected date')
+    });
+
+    var render_icon = function( v ) {
+        return String.format('<img style="float:left;vertical-align:top;" src="{0}" />', v );
+    };
+
+    var button_remove_item = new Ext.Button({
+        text: _('Remove Job Item'),
+        disabled: true,
+        icon:'/static/images/del.gif',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = jc_grid.getSelectionModel();
+            var sel = sm.getSelected();
+            jc_grid.getStore().remove(sel);
+            if (jc_grid.getStore().data.length == 0) { button_submit.disable(); }
+            calendar_reload();
         }
-
-    //------ Tabbed Job Item list
-    var tabpanel = new Ext.TabPanel({
-        region: 'center',
-        defaults: { closable: true, autoScroll: true },
-        autoScroll: true,
-        activeTab: 0
-        });
-
-    var pp = new Ext.Panel({
-        layout: 'fit',
-        items: [ tabpanel ]
-        });
-
-    var to_hour = function( val ) {
-        var _ts = new Date();
-        var hh_mm = val.split(":");
-        _ts.setHours(parseInt(hh_mm[0],"10"));
-        _ts.setMinutes(parseInt(hh_mm[1],"10"));
-        _ts.setSeconds(00);
-        return _ts;
-        };
-
-    var checkExpired = function( val ) {
-        var myHora = parseTime(val, main_form.getForm().findField('job_date').value);
-        myHora.setSeconds(59);
-        if ( myHora < __now ) {
-            field_spinner.markInvalid( _('Hora de pase Caducada') );
-            Ext.form.VTypes['hourText'] = _('Hora de pase Caducada');
-            return true;
-            }
-        return false;
-        };
-
-    var checkInRange = function(val, range) {
-        eval("_range = " + range + ";");
-        var range_str = _range.start_time + " - " + _range.end_time;
-        // alert( ">" + _range.start_time + "<" );
-        var a = to_hour( _range.start_time );
-        var b = to_hour( val );
-        var c = to_hour( _range.end_time );
-        if( a <= b && b <= c ) return true;
-        field_spinner.markInvalid( _('Time off range %1', range_str ) );
-        Ext.form.VTypes['hourText'] = _('Pase fuera de ventana. Seleccione "Ventana personalizada" si quiere un pase fuera de las ventanas permitidas');
-        return false;
-        };
-
-    // hour validator
-    Ext.form.VTypes['hourVal']  = /^[0-2][0-9]:[0-5][0-9]$/;
-    Ext.form.VTypes['hourMask'] = /[0-9:]/;
-    Ext.form.VTypes['hourText'] = _('Formato de Hora invalido (00:00-23:59)');
-    // Ext.form.VTypes['hourText'] = _('Formato de Hora invalido (00:00-23:59)');
-    Ext.form.VTypes['hour']     = function(v){
-        var t = Ext.form.VTypes['hourVal'].test(v);
-        if( ! t ) return false;
-        if( !window_check.checked && !checkInRange(v,job_time.getValue() ) ) return false;
-        if( checkExpired(v) ) return false;
-        var arr = v.split(":");
-        if( arr[0] > 23 || arr[1] > 59 ) {
-            field_spinner.markInvalid( _('Formato de Hora invalido (00:00-23:59)') );
-            // field_spinner.markInvalid( _('Formato de Hora invalido (00:00-23:59)') );
-            return false;
-            }
-        return true;
-        };
-
-    function parseTime (time, date){
-        // date=main_form.getForm().findField('job_date').value;
-        var _now;
-        if ( date==undefined ) {
-             _now = new Date();
-        } else {
-             _now = parseToDate(date);
-            }
-        // var _now = new Date(date);
-        if(time.indexOf(":")>-1){
-            var hh_mm = time.split(":");
-            _now.setHours(parseInt(hh_mm[0],"10"));
-            _now.setMinutes(parseInt(hh_mm[1],"10"));
-            }
-        return _now;
-        }
-
-    function getTimeString (date){
-        return date.getHours() + ":" + date.getMinutes();
-        }
-
-    function selectNearestTimeRange(data){
-        var time_spinner = main_form.getForm().findField('time_spinner<% $iid %>');
-        var _currentTime = parseTime(time_spinner.getRawValue());
-
-        for(var i=0;i<data.length;i++){
-            var _datos = data[i].data;
-            var _startTime = parseTime(_datos.start_time, main_form.getForm().findField('job_date').value);
-            var _endTime = parseTime(_datos.end_time, main_form.getForm().findField('job_date').value);
-            if( _currentTime <= _endTime ){
-                job_time.setValue(_datos.valueJson);
-                if(_currentTime >= _startTime ) {
-                    var _minValue=time_spinner.getRawValue();
-                    var _maxValue=_datos.end_time;
-                    _maxValue = _maxValue.replace(/24:00/g, "23:59");
-                    time_spinner.strategy = new Ext.ux.form.Spinner.TimeStrategy({minValue:_minValue, maxValue:_maxValue});
-                    time_spinner.setRawValue(time_spinner.getRawValue());
-                } else {
-                    var _minValue=_datos.start_time;
-                    var _maxValue=_datos.end_time;
-                    _maxValue = _maxValue.replace(/24:00/g, "23:59");
-                    time_spinner.strategy = new Ext.ux.form.Spinner.TimeStrategy({minValue:_minValue, maxValue:_maxValue});
-                    time_spinner.setRawValue(_datos.start_time);
-                    }
-                job_time.on("select", function(combo, record, index) {
-                    changeTime();
-                    });
-                changeTime();
-                return;
-                }
-            }
-
-        if(data.length >0){
-            job_time.setValue(data[0].data.valueJson);
-            changeTime();
-            }
-        }
-
-    function changeTime(val){
-        var time_spinner = main_form.getForm().findField('time_spinner<% $iid %>');
-        var _jsonData = null;
-        eval("_jsonData = " + job_time.getValue() + ";");
-        var m_currentTime = parseTime(time_spinner.getRawValue());
-        var m_startTime = parseTime(_jsonData.start_time, main_form.getForm().findField('job_date').value);
-        var m_endTime = parseTime(_jsonData.end_time, main_form.getForm().findField('job_date').value);
-        time_spinner.reset();
-        var _minValue=_jsonData.start_time;
-        var _maxValue=_jsonData.end_time;
-        _maxValue = _maxValue.replace(/24:00/g, "23:59");
-        time_spinner.strategy = new Ext.ux.form.Spinner.TimeStrategy({minValue:_minValue, maxValue:_maxValue});
-        if (!(m_currentTime >= m_startTime && m_currentTime <= m_endTime)){
-            time_spinner.setRawValue(_jsonData.start_time);
-            }
-        time_spinner.validate();
-        time_spinner.focus();
-        }
-
-    time_store.on('load', function(xhr){
-        var time_spinner = main_form.getForm().findField('time_spinner<% $iid %>');
-        job_time.setDisabled(false);
-        time_spinner.setDisabled(false);
-        selectNearestTimeRange(xhr.data.items);
-        Baseliner.hideLoadingMask();
-        // Eric -- 27/01/2012
-        // Una vez cargado el store tenemos que mirar el n?mero de elementos. Si no
-        // tenemos franjas horarias no podemos habilitar la opci?e crear pase.
-        if (time_store.data.items.length > 0) {
-          job_time.enable();
-          button_submit.enable();
-        }
-        else {
-          // alert("No hay franjas horarias disponibles para los paquetes seleccionados.\n\nCompruebe los calendarios de pase y sus interacciones.");
-          button_submit.disable();
-          job_time.clearValue();  // Quitamos el texto del ComboBox para evitar confusiones. No hay datos en el store.
-          job_time.disable();
-        }
-        // End Eric -- 27/01/2012
-        });
-
-    function _setOutWindow(chk,val){
-        var time_spinner = main_form.getForm().findField('time_spinner<% $iid %>');
-        if(val){
-            time_spinner.setDisabled(false);
-            _datePicker.setDisabled(false);
-            field_calendar.el.dom.setAttribute('readOnly',false);
-            time_spinner.reset();
-            time_spinner.strategy = new Ext.ux.form.Spinner.TimeStrategy();
-            _datePicker.allowedDates = false;
-            _datePicker.update(_datePicker.activeDate, true, false);
-            job_time.setDisabled(true);
-            combo_joboptionsglobal.clearValue(true);
-            if (combo_joboptionsglobal.store.data.length > 0) {
-                text=combo_joboptionsglobal.store.data.items[0].data.id;
-                for (var i=1;i<combo_joboptionsglobal.store.data.length;i++) {
-                    if (text.indexOf(combo_joboptionsglobal.store.data.items[i].data.id) < 0 ) {
-                        text=text + "," + combo_joboptionsglobal.store.data.items[i].data.id;
-                        }
-                    }
-                combo_joboptionsglobal.setValue(text);
-                }
-            combo_joboptionsglobal.show();
-            // combo_incidencias.clearValue(combo_incidencias.getValue());
-            combo_incidencias.clearValue(true);
-            if (combo_incidencias.store.data.length > 0) {
-                text=combo_incidencias.store.data.items[0].data.codigo;
-                for (var i=1;i<combo_incidencias.store.data.length;i++) {
-                    if (text.indexOf(combo_incidencias.store.data.items[i].data.id) < 0 ) {
-                        text=text + "," + combo_incidencias.store.data.items[i].data.codigo;
-                        }
-                    }
-                combo_incidencias.setValue(text);
-                }
-            combo_incidencias.show();
-            txtComment.validate();
-        } else {
-            field_calendar.el.dom.setAttribute('readOnly',true);
-            main_form.getForm().findField('job_date').setRawValue('<% $today %>');
-            combo_joboptionsglobal.hide();
-            combo_incidencias.hide();
-            Baseliner.calendar_reload();
-            }
-        }
-
-    //    bd.createChild({tag: 'h2', html: 'Select the job contents'});
-    //------- Search Combo
-
+    });
     var adder = 80;
 
     var colModel = new Ext.grid.ColumnModel([
-        {id:'item',
-         header: _('Job Item'),
-         width: 160 + adder,
-         sortable: true,
-         locked:false,
-         dataIndex: 'item'},
-        {header: _('Item Type'),
-         width: 120 + adder,
-         sortable: true,
-         dataIndex: 'ns_type'},
-        {header: _('User'),
-         width: 60 + adder,
-         sortable: true,
-         dataIndex: 'user',
-         renderer: Baseliner.render_user_field },
-        {header: _('Location'),
-         width: 98 + adder,
-         sortable: true,
-         dataIndex: 'ns' },
-        {header: _('Last Updated'),
-         width: 110 + adder,
-         sortable: true,
-         dataIndex: 'date' },
-        {header: _('Description'),
-         width: 240 + adder,
-         sortable: true,
-         dataIndex: 'text'}
-        ]);
+        { 
+            dataIndex: 'icon', 
+            renderer: render_icon,
+            width: 20
+        },
+        { header: _('Job Item'),
+             id:'item',
+             width: 160 + adder,
+             sortable: true,
+             locked: false,
+             renderer: function(v){ return String.format("<b>{0}</b>", v) },
+             dataIndex: 'item'},
+        { header: _('Item Type'),
+             width: 120 + adder,
+             sortable: true,
+             dataIndex: 'ns_type'},
+        { header: _('User'),
+             width: 60 + adder,
+             sortable: true,
+             dataIndex: 'user',
+             renderer: Baseliner.render_user_field },
+        { header: _('Location'),
+             width: 98 + adder,
+             sortable: true,
+             dataIndex: 'ns' },
+        { header: _('Last Updated'),
+             width: 110 + adder,
+             sortable: true,
+             dataIndex: 'date' },
+        { header: _('Description'),
+             width: 240 + adder,
+             sortable: true,
+             dataIndex: 'text'}
+    ]);
 
     var ds_grid = new Ext.data.Store({});
 
     var jc_grid = new Ext.grid.GridPanel({
-        // width: 956,
-        autoDestroy: 1,
-        height: 180 + 120,
-        style: 'margin-left: 7px; margin-top: 10px; margin-bottom: 10px',
+        //fieldLabel:  _('Job Contents'),
+        height: 300,
+        anchor: '100%',
         name: 'jc',
-        title: _('Job Contents'),
+        style: 'border:1px solid #bbb; margin-top: 10px',
         border: false,
         ds: ds_grid,
         cm: colModel,
-        tbar: {
-            items: [{
-                xtype: 'button',
-                text: _('Remove Job Item'),
-                icon:'/static/images/del.gif',
-                cls: 'x-btn-text-icon',
-                handler: function() {
-                    var sm = jc_grid.getSelectionModel();
-                    var sel = sm.getSelected();
-                    jc_grid.getStore().remove(sel);
-                    if (jc_grid.getStore().data.length == 0) { button_submit.disable(); }
-                    Baseliner.calendar_reload();
-                    }
-                }]
+        viewConfig: {
+            enableRowBody: true,
+            forceFit: true,
+            getRowClass : function(rec, index, p, store){
+                // slot squares
+                var s = rec.data.moreInfo;
+                if( ! s ) return;
+                s = s.replace( /\<br\>/g , ', ');
+                p.body = String.format(
+                    '<div style="margin: 0 0 0 32;">{0}</div>'
+                    , s );
+                return ' x-grid3-row-expanded';
             }
-        });
+        },
+        tbar: [ button_remove_item ]
+    });
+
+    jc_grid.on('rowclick', function(){ button_remove_item.enable() } );
+    jc_grid.on('rowdeselect', function(){ button_remove_item.disable() });
 
     var button_submit = new Ext.Button({
-            xtype:'button', text: _('Create'),
-            icon:'/static/images/icons/write.gif',
-            cls: 'x-btn-text-icon',
-            handler: function(){
-                if( window_check.checked && txtComment.getValue().length == 0 ) {
-                    Ext.Msg.show({ title: _('Failure'), msg: _('En pases fuera de ventana, es obligatorio informar el motivo del pase en el campo observaciones'), width: 500, buttons: { ok: true } });
-                } else if ( window_check.checked && combo_incidencias.getValue().length == 0 ){
-                        Ext.Msg.show({ title: _('Failure'), msg: _('En pases fuera de ventana, es obligatorio informar al menos una incidencia asociada'), width: 500, buttons: { ok: true } });
-                } else {
-                    var json_res = job_grid_data();
-                    button_submit.disable();
-                    main_form.getForm().submit({
-                        params: { job_contents: json_res },
-                        success: function(form,action){
-                            //form submit ok
-                            //alert( 'ok' + action );
-                            Baseliner.message(_('New Job'), action.result.msg);
-                            // reset everything
-                            Baseliner.jobResetAll();
-                            Baseliner.closeCurrentTab();
-                            },
-                        failure: function(form,action){
-                            //alert( 'ko' + action );
-                            //   not necessary, handled by standard failure?
-                            button_submit.enable();
-                            Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
-                            }
-                        });
-                    }
+        xtype:'button', text: _('Create'),
+        icon:'/static/images/icons/write.gif',
+        cls: 'x-btn-text-icon',
+        handler: function(){
+            if( check_no_cal.checked && comments.getValue().length == 0 ) {
+                Ext.Msg.show({ title: _('Failure'), msg: _('En pases fuera de ventana, es obligatorio informar el motivo del pase en el campo observaciones'), width: 500, buttons: { ok: true } });
+            } else {
+                var json_res = job_grid_data();
+                button_submit.disable();
+                main_form.getForm().submit({
+                    params: { job_contents: json_res },
+                    success: function(form,action){
+                        //form submit ok
+                        //alert( 'ok' + action );
+                        Baseliner.message(_('New Job'), action.result.msg);
+                        // reset everything
+                        form_reset_all();
+                        Baseliner.closeCurrentTab();
+                        },
+                    failure: function(form,action){
+                        //alert( 'ko' + action );
+                        //   not necessary, handled by standard failure?
+                        button_submit.enable();
+                        Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
+                        }
+                    });
                 }
+            }
     });
     button_submit.disable();
 
-    var tbJob = new Ext.Toolbar({
-        style: 'margin: 7px',
-        items: [
-            {
-            xtype: 'button',
-            text: _('Remove Job Item'),
-            icon:'/static/images/del.gif',
-            cls: 'x-btn-text-icon',
-            handler: function() {
-                var sm = jc_grid.getSelectionModel();
-                var sel = sm.getSelected();
-                jc_grid.getStore().remove(sel);
-                Baseliner.calendar_reload();
-                }
-            }
-            ]
-        });
-
     var tb = new Ext.Toolbar({
-        style: 'margin: 7px',
         items: [
-            <%doc>
-            {
-            text: 'List Job Items',
-            icon:'/static/images/drop-add.gif',
-            cls: 'x-btn-text-icon',
-            handler: function() {
-                var w = new Ext.Window({
-                    layout: 'fit',
-                    height: 600, width: 886,
-                    closeAction: 'hide',
-                    autoDestroy: false,
-                    title: 'Choose Job Items',
-                    items: pp
-                    });
-                w.show();
-                }
-            },
-            {
-            xtype: 'button',
-            text: _('Remove Job Item'),
-            icon:'/static/images/del.gif',
-            cls: 'x-btn-text-icon',
-            handler: function() {
-                var sm = jc_grid.getSelectionModel();
-                var sel = sm.getSelected();
-                jc_grid.getStore().remove(sel);
-                Baseliner.calendar_reload();
-                }
-            },
-            </%doc>
             '->',
             {
-            xtype:'button', text: _('Reset'),
-            icon:'/static/images/asterisk.gif',
-            cls: 'x-btn-text-icon',
-            handler: Baseliner.jobResetAll
-            }, button_submit
-            ]
-        });
+                xtype:'button', text: _('Reset'),
+                icon:'/static/images/asterisk.gif',
+                cls: 'x-btn-text-icon',
+                handler: form_reset_all
+            },
+            button_submit
+        ]
+    });
 
-    var store_joboptionsglobal = new Ext.data.ArrayStore({
-        fields: ['id', 'name'],
-        data: [],
-        sortInfo: {field: 'name', direction: 'ASC'}
-        });
-
-    var combo_joboptionsglobal = new Ext.ux.form.SuperBoxSelect({
-        id: 'joboptionsglobal<% $iid %>',
-        allowBlank: true,
-        msgTarget: 'under',
-        style: 'margin-top: 5px',
-        labelStyle: 'margin-left: 7px;margin-bottom: 10px',
-        allowAddNewData: true,
-        width: 808,
-        addNewDataOnBlur: true,
-        hidden: true,
-        //emptyText: _('Enter or select the category tags'),
-        triggerAction: 'all',
-        resizable: true,
-        store: store_joboptionsglobal ,
-        mode: 'local',
-        fieldLabel: _('Job Options'),
-        typeAhead: true,
-        name: 'combo_joboptionsglobal',
-        displayField: 'name',
-        hiddenName: 'combo_joboptionsglobal',
-        valueField: 'id',
-        // displayFieldTpl: tpl2,
-        // value: params.role_hash,
-        extraItemCls: 'x-tag',
-        listeners: {
-            newitem: function(bs,v, f){
-                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
-                var newObj = {
-                    id: v,
-                    name: v
-                };
-                bs.addItem(newObj);
-                },
-            beforeremoveitem: function(bs,v, f){
-                // if (window_check.checked && ( v == 'chm_rf_ll' || v== 'chm_rf_db2')) return false;
-                }
-            }
-        });
-        
-    var add_joboptionsglobal = function (rec) {
-        if (rec.data.job_options_global == undefined) return;
-        var arr=rec.data.job_options_global;
-        if (arr.length==0) return;
-        if (arr == undefined) return;
-
-        for (var i=0;i<arr.length;i++) {
-            var ix=store_joboptionsglobal.find('id',arr[i].id, 0, true, false);
-            if (ix == -1) {
-                arr[i].name=_(arr[i].name);
-                store_joboptionsglobal.add(new Ext.data.Record(arr[i]));
-                }
-            }
-        combo_joboptionsglobal.clearValue(true);
-        if (combo_joboptionsglobal.store.data.length > 0) {
-            text=combo_joboptionsglobal.store.data.items[0].data.id;
-            for (var i=1;i<combo_joboptionsglobal.store.data.length;i++) {
-                if (text.indexOf(combo_joboptionsglobal.store.data.items[i].data.id) < 0 ) {
-                    text=text + "," + combo_joboptionsglobal.store.data.items[i].data.id;
-                    }
-                }
-            combo_joboptionsglobal.setValue(text);
-            }
-        };
-
-    var store_incidencias = new Ext.data.SimpleStore({
-        fields: ['codigo'],
-        data: [],
-        sortInfo: {field: 'codigo', direction: 'ASC'}
-        });
-
-    var combo_incidencias = new Ext.ux.form.SuperBoxSelect({
-        id: 'jobincidencias<% $iid %>',
-        allowBlank: true,
-        msgTarget: 'under',
-        style: 'margin-top: 5px',
-        labelStyle: 'margin-left: 7px;margin-bottom: 10px',
-        allowAddNewData: true,
-        width: 808,
-        addNewDataOnBlur: true,
-        triggerAction: 'all',
-        resizable: true,
-        store: store_incidencias ,
-        mode: 'local',
-        fieldLabel: _('Incidencias'),
-        typeAhead: true,
-        hidden: true,
-        name: 'combo_incidencias',
-        displayField: 'codigo',
-        hiddenName: 'combo_incidencias',
-        valueField: 'codigo',
-        extraItemCls: 'x-tag',
-        listeners: {
-            newitem: function(bs,v, f){
-                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
-                var newObj = {
-                    codigo: v
-                    };
-                bs.addItem(newObj);
-                }
-            }
-        });
-        
-    var add_incidencia = function (rec) {
-        var arr=rec.data.inc_id;
-        if (rec.data.inc_id == undefined) return;
-        if (arr.length == 0) return;
-        if (arr == undefined) return;
-        if (arr[0].codigo == null) return;
-
-        for (var i=0;i<arr.length;i++) {
-            var ix=store_incidencias.find('codigo',arr[i].codigo);
-            if (ix == -1) {
-                store_incidencias.add(new Ext.data.Record(arr[i]));
-                }
-            }
-        combo_incidencias.clearValue(true);
-        if (combo_incidencias.store.data.length > 0) {
-            text=combo_incidencias.store.data.items[0].data.codigo;
-            for (var i=1;i<combo_incidencias.store.data.length;i++) {
-                if (text.indexOf(combo_incidencias.store.data.items[i].data.codigo) < 0 ) {
-                    text=text + "," + combo_incidencias.store.data.items[i].data.codigo;
-                    }
-                }
-            combo_incidencias.setValue(text);
-            }
-        };
-
-    var ds_combo = new Ext.data.Store({
+    var store_search = new Ext.data.Store({
         proxy: new Ext.data.HttpProxy({
             url: '/job/items/json',
             param: { bl: combo_baseline.getValue() }
@@ -927,33 +464,33 @@
                 }
             },
         reader: new Ext.data.JsonReader({
-            root: 'data',
-            totalProperty: 'totalCount',
-            id: 'id'
+                root: 'data',
+                totalProperty: 'totalCount',
+                id: 'id'
             },
-        [
-            {name: 'provider',           mapping: 'provider'},
-            {name: 'related',            mapping: 'related'},
-            {name: 'ns_type',            mapping: 'ns_type'},
-            {name: 'recordCls',          mapping: 'recordCls'},
-            {name: 'why_not',            mapping: 'why_not'},
-            {name: 'can_job',            mapping: 'can_job'},
-            {name: 'item',               mapping: 'item'},
-            {name: 'user',               mapping: 'user'},
-            {name: 'service',            mapping: 'service'},
-            {name: 'ns',                 mapping: 'ns'},
-            {name: 'date',               mapping: 'date'},
-            {name: 'icon',               mapping: 'icon'},
-            {name: 'data',               mapping: 'data'},
-            {name: 'text',               mapping: 'text'},
-            {name: 'packages',           mapping: 'packages'},
-            {name: 'subapps',            mapping: 'subapps'},
-            {name: 'job_options',        mapping: 'job_options'},
-            {name: 'job_options_global', mapping: 'job_options_global'},
-            {name: 'inc_id',             mapping: 'inc_id'},
-            {name: 'moreInfo',           mapping: 'moreInfo'}
-            ])
-        });
+            [
+                {name: 'provider',           mapping: 'provider'},
+                {name: 'related',            mapping: 'related'},
+                {name: 'ns_type',            mapping: 'ns_type'},
+                {name: 'recordCls',          mapping: 'recordCls'},
+                {name: 'why_not',            mapping: 'why_not'},
+                {name: 'can_job',            mapping: 'can_job'},
+                {name: 'item',               mapping: 'item'},
+                {name: 'user',               mapping: 'user'},
+                {name: 'service',            mapping: 'service'},
+                {name: 'ns',                 mapping: 'ns'},
+                {name: 'date',               mapping: 'date'},
+                {name: 'icon',               mapping: 'icon'},
+                {name: 'data',               mapping: 'data'},
+                {name: 'text',               mapping: 'text'},
+                {name: 'packages',           mapping: 'packages'},
+                {name: 'subapps',            mapping: 'subapps'},
+                {name: 'job_options',        mapping: 'job_options'},
+                {name: 'job_options_global', mapping: 'job_options_global'},
+                {name: 'inc_id',             mapping: 'inc_id'},
+                {name: 'moreInfo',           mapping: 'moreInfo'}
+        ])
+    });
 
     // Search Combo: Custom rendering Template
     // '<tpl if="moreInfo">',
@@ -981,22 +518,19 @@
         '</div></tpl>'
         );
 
-    var search = new Ext.form.ComboBox({
+    var combo_search = new Ext.form.ComboBox({
         fieldLabel: _('Add Job Items'),
-        store: ds_combo,
-        minChars :3,
-        style: 'margin-left: 7px',
+        store: store_search,
+        anchor: '50%',
+        minChars: min_chars ,
         displayField:'item',
         typeAhead: false,
         loadingText: _('Searching...'),
-        width: 640,
-        resizable: true,
         lazyRender: true,
-        queryDelay: 1500,
-        pageSize:20,
-        // hideTrigger:true,
+        queryDelay: 1000,
+        pageSize: 20,
         tpl: resultTpl,
-        // applyTo: 'search<% $iid %>',
+        // hideTrigger:true,
         itemSelector: 'div.search-item',
         listeners: {
             // delete the previous query in the beforequery event or set
@@ -1005,118 +539,118 @@
                 delete qe.combo.lastQuery;
                 }
             },
-        onSelect: function(record){
-            if( record.get('can_job') != 1 ) {
-                Ext.Msg.show({icon: 'ext-mb-error',
-                buttons: { cancel: true },
-                title: _('Blocked'),
-                width: 500,
-                    msg: _('Package cannot be added to job')+":<br>" + record.get('why_not')
-                    });
-                return false;
+            onSelect: function(record){
+                if( record.get('can_job') != 1 ) {
+                    Ext.Msg.show({icon: 'ext-mb-error',
+                    buttons: { cancel: true },
+                    title: _('Blocked'),
+                    width: 500,
+                        msg: _('Package cannot be added to job')+":<br>" + record.get('why_not')
+                        });
+                    return false;
                 }
-            try {
-                //debugging: console.log( record );
-                // add from combo to grid
-                ds_grid.add(record);
-                // take if off from the list
-                ds_combo.remove(record);
-                // add job optons global
-                add_joboptionsglobal(record);
-                // add USD ticket
-                add_incidencia(record);
-                // enable all fields
-                enableAll();
-                // recalculate calendar
-                main_form.getForm().findField('job_date').setRawValue('<% $today %>');
-                Baseliner.calendar_reload();
-                // button_submit.enable(); // Eric -- Mejor esto lo hacemos en otro sitio.
-            } catch(e) {
+                try {
+                    //debugging: console.log( record );
+                    // add from combo to grid
+                    ds_grid.add(record);
+                    // take if off from the list
+                    store_search.remove(record);
+                    // enable all fields
+                    enableAll();
+                    // recalculate calendar
+                    // job_date.setRawValue( today );
+                    calendar_reload();
+                    // button_submit.enable(); // Eric -- Mejor esto lo hacemos en otro sitio.
+                } catch(e) {
                     //alert( e );
                 }
             }
         });
 
-    search.on('beforeselect', function(combo, record, index) {
+    combo_search.on('beforeselect', function(combo, record, index) {
         if( true || record.get('recordCls') == 'category-header' ) {
             return false;
-            }
-        });     
+        }
+    });     
      
+  
     var search_form = new Ext.Panel({
-        frame: true,
-        title: _('Add Job Items'),
-        style: 'margin-left: 7px; margin-top: 10px; margin-bottom: 10px',
-        width: 700,
-        labelWidth: 145,
+        layout: 'anchor',
+        anchor: '100%',
+        fieldLabel:  _('Add Job Items'),
         items: [
-            search, 
-            {
-            xtype: 'label',
-            text: _('Live search requires a minimum of %1 characters.', 3),
-            style: 'margin-left: 7px; margin-top: 10px'
-            }
-            ]
-        });
+            { xtype:'combo', width: '50%' },
+            { xtype: 'container', style: 'height: 20px', html:  _('Live search requires a minimum of %1 characters.', min_chars ) }
+            //jc_grid
+        ]
+    });
         
-    // Eric -- A? una funci?ara saber la anchura del explorador, pues no funciona el autoWidth
-    function pageWidth() {
-      return window.innerWidth != null ? window.innerWidth : document.documentElement && document.documentElement.clientWidth ? document.documentElement.clientWidth : document.body != null ? document.body.clientWidth : null;
-    }  // by Stephen Chapman, 3rd Jan 2005, 8th Dec 2005
-
-
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
         frame: true,
         title: _loc('Job Options'),
-        width: pageWidth() - 30,
-        // width: 986,
-        //autoWidth: 1,
         forceFit: true,
-        labelWidth: 145,
+        labelWidth: 150,
         tbar: tb,
+        defaults: {
+            msgTarget: 'under'
+        },
         items: [
             {
                 xtype: 'radiogroup',
                 name: 'job_type',
-                columns: 3,
-                width: 300,
+                columns: 1,
                 fieldLabel: _('Job Type'),
-                labelStyle: 'margin-left: 7px',
                 listeners: {
                     change: { fn: function(t,checked) {
-                        ds_combo.removeAll();
+                        store_search.removeAll();
                         jc_grid.getStore().removeAll();
                         combo_baseline.setFieldLabel( checked.inputValue =='demote' ? label_orig : label_dest );
-                        combo_joboptionsglobal.getStore().removeAll();
-                        Ext.getCmp('joboptionsglobal<% $iid %>').killItems();
-                        Ext.getCmp('joboptionsglobal<% $iid %>').hide();
                         } }
                     },
                 items: <% js_dumper(  $c->stash->{job_types} ) %>
             },
             combo_baseline,
-            search_form,
-            combo_joboptionsglobal,
-            jc_grid,
-            window_check,
-            field_calendar,
-            job_time,
-            field_spinner,
-            combo_incidencias,
-            txtComment
-            ]
-        });
+            //search_form,
+            { xtype:'fieldset', 
+                style: { 'margin': '20 0 20 0' , 'padding': '15 15 15 15' },
+                labelWidth: 135,
+              items: [
+                combo_search,
+                { xtype: 'label', style:'margin-left: 165px', text:  _('Live search requires a minimum of %1 characters.', min_chars ) },
+                jc_grid
+              ]
+            },
+            //combo_search,
+            //{ xtype: 'container', style: 'height: 20px', fieldLabel:'x', html:  _('Live search requires a minimum of %1 characters.', min_chars ) },
+            { 
+                layout: 'column',
+                fieldLabel: _('When'),
+                columns: 2,
+                defaults: { bodyStyle: 'padding: 0 25px 0 0' },
+                items: [
+                    { width: 250, layout:'form', items: job_date, labelWidth: 40 },
+                    { width: 500, layout:'form', items: combo_time , labelWidth: 40},
+                    time_not_available
+                ]
+            },
+            check_no_cal,
+            comments
+        ]
+    });
+
+    comments.on('afterrender', function(){
+        if( Ext.isIE ) {
+            //comments.el.setStyle({ 'margin-left':'200px' });
+        }
+    });
 
     Ext.form.Field.prototype.msgTarget = 'side';
-        
-    // if( Ext.isIE ) document.getElementById('search<% $iid %>').style.top = 0; // hack fix
     
 % unless( scalar _array _array( $c->stash->{baselines} ) ) {
     Ext.MessageBox.show({
-        title: 'Error',
-        msg: 'Su usuario no tiene permisos de creacion de pases en ningun entorno',
-        // msg: 'Su usuario no tiene permisos de creacion de pases en ningun entorno',
+        title: _('Error'),
+        msg: _( "User doesn't have permissions to create a job in any environment" ),
         buttons: Ext.MessageBox.OK,
         icon: Ext.MessageBox.ERROR
         });

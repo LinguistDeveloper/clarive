@@ -178,7 +178,7 @@ sub get {
     
     if( $p{value} ) {
         my ( $first_key ) = keys %{ $data || {} };
-        return defined $first_key ? $data->{ $first_key } : $data;
+        return defined $first_key ? $data->{ $first_key } : undef;
     } else {
         return $data;
     }
