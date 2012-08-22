@@ -22,7 +22,7 @@ has 'title' => ( is=> 'rw', isa=> 'Str' );
 has 'level' => ( is=> 'rw', isa=> 'Int' );
 has 'handler' => ( is=> 'rw', isa=> 'Str' );
 has 'icon' => ( is=> 'rw', isa=> 'Str', default=>'' );
-has 'cls' => ( is=> 'rw', isa=> 'Str' );
+has 'cls' => ( is=> 'rw', isa=> 'Str', default=>'bali-main-menu' );
 has 'actions' => ( is=> 'rw', isa=> 'ArrayRef' );
 
 sub BUILDARGS {
@@ -81,10 +81,11 @@ sub ext_menu {
     }
     $ret->{menu} = { ignoreParentClicks=>\'1', items=>\@children } if(@children);
     $ret->{menu_count} = scalar(@children);
+    $ret->{cls} ||= $self->{cls};
     if( $icon ) {
         $ret->{icon} = $icon;
-        $ret->{cls} = $self->{cls} || 'x-btn-text-icon';
-    }
+        $ret->{cls} = 'x-btn-text-icon';
+    } 
     return $ret;
 }
 1;
