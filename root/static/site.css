@@ -1,5 +1,6 @@
 @font-face {
-  font-family: "museo sans 500";
+  font-family: "OpenSans",
+  font-weight: bold,
   src: url("/static/fonts/open-sans/OpenSans-Regular.ttf");
 }
 
