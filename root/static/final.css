@@ -7,7 +7,9 @@
 }
 
 .bali-main-menu button {
-    font-family: Calibri;
+    font-family: Calibri, OpenSans, Arial;
+    font-size: 11px;
+    margin: 0 0 0 4px;
     text-transform: uppercase;
 }
 
