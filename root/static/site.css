@@ -1,3 +1,9 @@
+@font-face {
+  font-family: "OpenSans",
+  font-weight: bold,
+  src: url("/static/fonts/open-sans/OpenSans-Regular.ttf");
+}
+
 /* Used to hide TreePanel icons - node.setIconCls('no-icon') */
 .bali-icon-active {
     background: transparent url(/static/images/icons/active.gif) no-repeat center;

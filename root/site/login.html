@@ -1,7 +1,10 @@
+<!-- DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" -->
+<html>
 <head>
     <& '/site/nocache.html' &>
     <& '/site/top.html' &>
-</head>
+    <!-- final css override -->
+    <link rel="stylesheet" type="text/css" href="/static/final.css" />
 <style type="text/css" media="screen">
     body {
      height: 100%;
@@ -42,8 +45,11 @@
 <script type="text/javascript">
 <& /site/login.js &>
 </script>
+</head>
 <body>
 <div class="band-gray"></div>
 <div class="band-white"></div>
 <img class="logo" src="<% $c->config->{login_logo} || '/static/images/logo_big.jpg' %>"></img>
+<div id="form"></div>
 </body>
+</html>

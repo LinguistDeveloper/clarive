@@ -638,7 +638,7 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     hideTrigger1:true,
     width:280,
     hasSearch : false,
-    emptyText: _('<Enter your search string>'),
+    emptyText: '<% _loc("<Enter your search string>") %>',
     paramName : 'query',
 
     onTrigger1Click : function(){
@@ -800,3 +800,44 @@ Baseliner.open_topic = function(mid,opts) {
     Baseliner.add_tabcomp( '/comp/topic/topic_main.js', title, { topic_mid:mid, _parent_grid: opts.grid });
     return false;
 };
+
+Baseliner.Grid = {};
+
+
+Baseliner.Grid.Buttons = {};
+
+Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+		    text: _('New'),
+		    icon:'/static/images/icons/add.gif',
+		    cls: 'x-btn-text-icon'
+	    }, config);
+	    Baseliner.Grid.Buttons.Add.superclass.constructor.call(this, config);
+    }
+});
+
+Baseliner.Grid.Buttons.Edit = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+		    text: _('Edit'),
+		    icon: '/static/images/icons/edit.gif',
+		    cls: 'x-btn-text-icon',
+		    disabled: true
+	    }, config);
+	    Baseliner.Grid.Buttons.Edit.superclass.constructor.call(this, config);
+    }
+});
+
+Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+		    text: _('Delete'),
+		    icon:'/static/images/icons/delete.gif',
+		    cls: 'x-btn-text-icon',
+		    disabled: true
+	    }, config);
+	    Baseliner.Grid.Buttons.Delete.superclass.constructor.call(this, config);
+    }
+});
+

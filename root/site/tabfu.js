@@ -730,7 +730,7 @@
         res.replace(/\</,'&lt;');
         res.replace(/\>/,'&gt;');
         str += "<hr><pre>" + res;
-        Baseliner.errorWin("<% _loc('Error Rendering Tab Component') %>", str);
+        Baseliner.errorWin(_('Error Rendering Tab Component'), str);
     };
 
     //adds a new tab from a function() type component
@@ -886,7 +886,7 @@
             var sel = sm.getSelected();                         
             return sel;
         } else {
-            Ext.Msg.alert('Error', _('Select at least one row') );  
+            Ext.Msg.alert( _('Error') , _('Select at least one row') );  
             return undefined;
         };
     };
@@ -962,12 +962,12 @@
                                 win.document.write(  xhr.responseText );
                             },
                             failure: function(xhr) {
-                               Baseliner.errorWin( 'Logout Error', xhr.responseText );
+                               Baseliner.errorWin( _('Logout Error') , xhr.responseText );
                             }
                         });
                     },
                     failure: function(xhr) {
-                       Baseliner.errorWin( 'Logout Error', xhr.responseText );
+                       Baseliner.errorWin( _('Logout Error'), xhr.responseText );
                     }
                 });
             }
@@ -1090,7 +1090,7 @@
                     comp = eval(xhr.responseText);
                     comp.show();
                 } catch(err) {
-                    Baseliner.errorWin("<% _loc('Error Rendering Component') %>", err);
+                    Baseliner.errorWin(_('Error Rendering Component'), err);
                 }
             },
             failure: function(xhr) {

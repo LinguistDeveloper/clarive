@@ -128,12 +128,29 @@ Ext.onReady(function(){
                 timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
             }
         });
+    }
 % }
 
-    var lifecycle = Baseliner.lifecycle;
-% unless( $show_lifecycle ) {
-    lifecycle.hide();
+    var tab_panel = new Ext.TabPanel({  region: 'center', id:'main-panel',
+            defaults: { closable: true, autoScroll: true }, 
+            enableTabScroll: true,
+            layoutOnTabChange: true,
+            activeTab: 0, 
+            items: [
+% if( $show_main eq '1' ) {
+                {title:_loc('Main'), closable: false, autoLoad: '/site/main.html', scripts: true, cls: 'tab-style' }
+% } elsif( $show_portal ) {
+                { xtype: 'panel', title:_loc('Portal'), layout: 'border', closable: false, items: Baseliner.portal }
+% } else { print '' } 
+
+% if( $show_dashboard ) {
+%    $show_portal and print ',';
+                //{title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style', tab_icon: icon_home }
+                {title:_loc('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' }
 % }
+            ]
+    });
+
     Baseliner.main = new Ext.Panel({
         layout: 'border',
         items: [
@@ -150,29 +167,13 @@ Ext.onReady(function(){
             })
 % } else {
             tb,
-            lifecycle,
+%   if( $show_lifecycle ) {
+            Baseliner.lifecycle,
+%   }
 %   if( $show_calendar ) {
             Baseliner.calpanel,
 %   }
-            new Ext.TabPanel({  region: 'center', id:'main-panel',
-                defaults: { closable: true, autoScroll: true }, 
-                enableTabScroll: true,
-                layoutOnTabChange: true,
-                activeTab: 0, 
-                items: [
-% if( $show_main eq '1' ) {
-                {title:_loc('Main'), closable: false, autoLoad: '/site/main.html', scripts: true, cls: 'tab-style' }
-% } elsif( $show_portal ) {
-                { xtype: 'panel', title:_loc('Portal'), layout: 'border', closable: false, items: Baseliner.portal }
-% } else { print '' } 
-
-% if( $show_dashboard ) {
-%    $show_portal and print ',';
-                //{title:_loc('Dashboard'), closable: false, autoLoad: '/dashboard/list', scripts: true, cls: 'tab-style', tab_icon: icon_home }
-                {title:_loc('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' }
-% }
-            ]
-            })
+            tab_panel
 % } # site_raw
         ]
     });
@@ -255,8 +256,8 @@ Ext.onReady(function(){
 });
         
 setTimeout(function(){
-    Ext.get('loading').remove();
-    Ext.get('loading-mask').fadeOut({
+    Ext.get('bali-loading').remove();
+    Ext.get('bali-loading-mask').fadeOut({
 	    remove:true
     });
 }, 2050);
