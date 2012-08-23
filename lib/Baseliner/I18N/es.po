@@ -165,8 +165,8 @@ msgstr "Despliegue de Ficheros"
 msgid "no calendar window"
 msgstr "fuera de ventana"
 
-msgid "Loading available time..."
-msgstr "Actualizando horario..."
+msgid "Loading available time for %1..."
+msgstr "Actualizando horario para el %1..."
 
 msgid "no calendar windows available for selected date"
 msgstr "no hay ventana de pase disponible para la fecha seleccionada"

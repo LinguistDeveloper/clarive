@@ -1,4 +1,7 @@
 <!-- DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" -->
+<%perl>
+    my $lang = $c->language;
+</%perl>
 <html>
  <head>
     <& '/site/nocache.html' &>
@@ -10,6 +13,13 @@
     <script type="text/javascript" src="/comp/topic/topic_lib.js"></script>
     <script type="text/javascript" src="/site/panelresizer.js"></script>
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
+
+    <!-- DatePickerPlus - Ext -->
+    <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus.js"></script> 
+% if( length $lang && $lang ne 'en' ) {
+    <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus-lang-<% $lang %>.js"></script> 
+% }
+    <link rel="stylesheet" href="/static/datepickerplus/datepickerplus.css" type="text/css" />
 
     <!-- Flot -->
     <script src="/static/flot/excanvas.min.js"></script>
@@ -108,11 +118,6 @@
 <& /site/main.js &>
 </script>
 
-<!-- TODO: No sería mala idea poder meter esto en las features -->
-<!-- Para poder incluir el Widget DatePickerPlus de Ext -->
-    <script type="text/javascript" src="/static/ext.ux.datepickerplus/ext.ux.datepickerplus.js"></script> 
-    <script type="text/javascript" src="/static/ext.ux.datepickerplus/locales/ext.ux.datepickerplus-lang-es.js"></script> 
-    <link rel="stylesheet" href="/static/ext.ux.datepickerplus/datepickerplus.css" type="text/css" />
 <!-- Para poder incluir el Widget Spinner de Ext -->
     <script type="text/javascript" src="/static/ex.ux.form.spinner/Spinner.js"></script> 
     <script type="text/javascript" src="/static/ex.ux.form.spinner/SpinnerStrategy.js"></script> 

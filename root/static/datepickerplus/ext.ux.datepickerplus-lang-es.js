@@ -5,8 +5,8 @@
   * @author    Marco Wienkoop (wm003/lubber)
   * @copyright (c) 2008, Marco Wienkoop (marco.wienkoop@lubber.de) http://www.lubber.de
   *
-  * translation by Andrea Batazzi (andreabat)
-  * @copyright (c) 2008, Andrea Batazzi (andrea.batazzi@gmail.com) 
+  * translation by Ruth González (erzsebet)
+  * @copyright (c) 2009, Ruth González (erzsebet@gmail.com) 
   *
 */
 // Be sure to include this AFTER the datepickerwidget in your html-files
@@ -15,15 +15,16 @@
 //Post it to the ext-forum, if you are done! :)
 if(Ext.ux.DatePickerPlus){
 	Ext.apply(Ext.ux.DatePickerPlus.prototype, {
-		weekName : "Set.",
-		selectWeekText : "Clicca per selezionare tutti i giorni di questa settimana",
-		selectMonthText : "Clicca per selezionare tutte le settimane per questo mese",
-		maxSelectionDaysTitle: 'Seleziona Data',
-		maxSelectionDaysText: 'Puoi selezionare al massimo %0 giorni',
-		undoText: "Annulla",
-		displayMaskText: 'Attendere...',
-		nextYearText: "Anno Prossimo (Control+Su)",
-		prevYearText: "Anno Precedente (Control+Giu)",
+		startDay:1,
+		weekName : "Sem.",
+		selectWeekText : "Click para seleccionar todos los dias de la semana",
+		selectMonthText : "Click para seleccionar todas las semanas de este mes",
+		maxSelectionDaysTitle: 'Seleccione fecha',
+		maxSelectionDaysText: 'Solo puede seleccionar un maximo de %0 dias',
+		undoText: "Cancelar",
+		displayMaskText: 'Espere...',
+		nextYearText: "Año Proximo (Control+Cursor Arriba)",
+		prevYearText: "Año Anterior (Control+Cursor Abajo)",
 		nationalHolidays: function(year) {
 			year = (typeof year === "undefined" ? (this.lastRenderedYear ? this.lastRenderedYear : new Date().getFullYear()) : parseInt(year,10));
 	//per default the US national holidays are calculated (according to http://en.wikipedia.org/wiki/Public_holidays_of_the_United_States) 
@@ -33,53 +34,41 @@ if(Ext.ux.DatePickerPlus){
 	
 			var holidays = 
 			[{
-				text: "Capodanno",
+				text: "Año nuevo",
 				date: new Date(year,0,1)
 			},
 			{
-				text: "Epifania",
-				date: new Date(year,0,6)
+				text: "Viernes Santo",
+				date: Ext.util.EasterDate(year,-2)
 			},
 			{
-				text: "Pasqua",
-				date: Ext.util.EasterDate(year)
-			},
-			{
-				text: "Lunedì dell'Angelo",
-				date: Ext.util.EasterDate(year,1)
-			},
-			{
-				text: "Festa della Liberazione",
-				date: new Date(year,3,25)
-			},
-			{
-				text: "Festa dei Lavoratori",
+				text: "Fiesta del Trabajo",
 				date: new Date(year,4,1)
 			},
 			{
-				text: "Festa della Repubblica",
-				date: new Date(year,5,2)
-			},
-			{
-				text: "Ferragosto",
+				text: "Asunción de la Virgen",
 				date: new Date(year,7,15)
 			},
 			{
-				text: "Ognissanti",
+				text: "Fiesta Nacional de España",
+				date: new Date(year,9,12)
+			},
+			{
+				text: "Todos los Santos",
 				date: new Date(year,10,1)
 			},
 			{
-				text: "Immacolata Concezione",
+				text: "Constitución Española",
+				date: new Date(year,11,6)
+			},
+			{
+				text: "Inmaculada Concepción",
 				date: new Date(year,11,8)
 			},
 			 
 			{
-				text: "Natale",
+				text: "Navidad",
 				date: new Date(year,11,25)
-			},
-			{
-				text: "Santo Stefano",
-				date: new Date(year,11,26)
 			}
 			
 			];
