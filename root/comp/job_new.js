@@ -23,10 +23,16 @@
             [ $_->[0], "$_->[0] - $_->[1]" ]
         } _array( $baselines )
     ];
+    my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
+    my $show_no_cal = config_value( 'site.show_no_cal' );
+    my $has_no_cal = $c->has_action( 'action.job.no_cal' );
 </%perl>
 (function(){
-    var date_format = '<% $date_format %>';
-    var picker_format = '<% $picker_format %>';
+    var has_no_cal = <% $has_no_cal ? 'true' : 'false'  %>;
+    var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
+    var show_job_search_combo = <% $show_job_search_combo ? 'true' : 'false'  %>;
+    var date_format = '<% $date_format %>';  // %Y-%m-%d 
+    var picker_format = '<% $picker_format %>'; // Y-m-d
     var today = '<% $today %>';
     var min_chars = 3; 
 
@@ -137,7 +143,8 @@
         name: 'check_no_cal',
         fieldLabel: '',
         boxLabel: _("Create a job outside of the available time slots."),
-        disabled: false,
+        hidden: !show_no_cal,
+        disabled: has_no_cal,
         handler: function (chk,val){
             if(val){
                 store_time.removeAll();
@@ -178,7 +185,7 @@
         width: 140,
         listeners:{
             'select':function(picker,t){
-                calendar_reload();
+                calendar_reload( t.format( picker_format ) );
                 //Baseliner.calendar_reload();
                 // time_spinner.validate();
                 // time_spinner.focus();
@@ -195,21 +202,13 @@
         name: 'comments'
     });
 
-    // Enable all calendar selection fields
-    var enableAll = function() {
-        check_no_cal.setDisabled(false);
-        job_date.setDisabled(false);
-    };
-
     // Clean up the whole form
     var form_reset_all = function() {
         //main_form.getForm().reset();
-        check_no_cal.setDisabled(true);
-
-        job_date.setRawValue('');
-        job_date.setDisabled(true);
-        combo_time.setRawValue('');
-
+        if( ! check_no_cal.checked ) {
+            store_time.removeAll();
+            combo_time.setRawValue('');
+        }
         jc_grid.getStore().removeAll();
         store_search.removeAll();
         button_submit.disable();
@@ -269,7 +268,7 @@
         Baseliner.hideLoadingMask();
     });
 
-    var calendar_reload = function() {
+    var calendar_reload = function( str_date ) {
         if( check_no_cal.checked ) return;
         try {
             var cnt = jc_grid.getStore().getCount();
@@ -278,9 +277,9 @@
             combo_time.setRawValue('');
 
             if( cnt > 0 ) {
-                Baseliner.showLoadingMask(main_form.getEl(), _("Loading available time...") );
+                var job_date_v = str_date ? str_date : job_date.getRawValue()
+                Baseliner.showLoadingMask(main_form.getEl(), _("Loading available time for %1...", job_date_v ) );
                 var bl  = combo_baseline.getValue();
-                var job_date_v = job_date.getRawValue()
                 var json_res = job_grid_data({ warn: false });
 
                 Baseliner.ajaxEval( '/job/build_job_window',
@@ -322,9 +321,11 @@
         handler: function() {
             var sm = jc_grid.getSelectionModel();
             var sel = sm.getSelected();
-            jc_grid.getStore().remove(sel);
-            if (jc_grid.getStore().data.length == 0) { button_submit.disable(); }
-            calendar_reload();
+            if( sel ) {
+                jc_grid.getStore().remove(sel);
+                if (jc_grid.getStore().data.length == 0) { button_submit.disable(); }
+                calendar_reload();
+            }
         }
     });
     var adder = 80;
@@ -365,7 +366,7 @@
              dataIndex: 'text'}
     ]);
 
-    var ds_grid = new Ext.data.Store({});
+    var jc_store = new Ext.data.Store({});
 
     var jc_grid = new Ext.grid.GridPanel({
         //fieldLabel:  _('Job Contents'),
@@ -374,8 +375,10 @@
         name: 'jc',
         style: 'border:1px solid #bbb; margin-top: 10px',
         border: false,
-        ds: ds_grid,
+        ds: jc_store,
         cm: colModel,
+        enableDragDrop: true,
+        ddGroup: 'lifecycle_dd',
         viewConfig: {
             enableRowBody: true,
             forceFit: true,
@@ -395,6 +398,52 @@
 
     jc_grid.on('rowclick', function(){ button_remove_item.enable() } );
     jc_grid.on('rowdeselect', function(){ button_remove_item.disable() });
+    
+    // Drag and drop support
+    jc_grid.on( 'render', function(){
+        var el = jc_grid.getView().el.dom.childNodes[0].childNodes[1];
+        var jc_grid_dt = new Ext.dd.DropTarget(el, {
+            ddGroup: 'lifecycle_dd',
+            copy: true,
+            notifyDrop: function(dd, e, data) {
+                var n = dd.dragData.node;
+                var s = jc_grid.store;
+                var add_node = function(node) {
+                    var data = node.attributes.data;
+                    // console.log( node );
+                    var rec = new Ext.data.Record({
+                        ns: data.ns,
+                        icon: node.attributes.icon,
+                        //item: data.name,
+                        item: node.text,
+                        text: node.text 
+                    });
+                    s.add(rec);
+                    //s.sort('action', 'ASC');
+                    var parent_node = node.parentNode;
+                    // node.disable();
+                    calendar_reload();
+                    button_submit.enable();
+                    //tree_check_folder_enabled(parent_node);
+                }
+                var attr = n.attributes;
+                var data = n.attributes.data;
+                var job_type = main_form.getForm().getValues()['job_type'];
+                var bl = combo_baseline.getValue();
+                var cnt = jc_grid.getStore().getCount();  // auto set ?
+
+                //if( data.promotable[ bl ] == 1  || data.demot) {
+                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
+                if ( bl_item == undefined ) {  
+                    Ext.Msg.alert( _('Error'),
+                        _("Cannot promote/demote changeset %1 to baseline %2 (job type %3)", '<b>' + n.text + '</b>', bl, job_type ) );
+                } else {
+                    add_node(n);
+                }
+                return (true); 
+             }
+        });
+    });
 
     var button_submit = new Ext.Button({
         xtype:'button', text: _('Create'),
@@ -428,24 +477,8 @@
     });
     button_submit.disable();
 
-    var tb = new Ext.Toolbar({
-        items: [
-            '->',
-            {
-                xtype:'button', text: _('Reset'),
-                icon:'/static/images/asterisk.gif',
-                cls: 'x-btn-text-icon',
-                handler: form_reset_all
-            },
-            button_submit
-        ]
-    });
-
-    var store_search = new Ext.data.Store({
-        proxy: new Ext.data.HttpProxy({
-            url: '/job/items/json',
-            param: { bl: combo_baseline.getValue() }
-            }),
+    var store_search = new Baseliner.JsonStore({
+        url: '/job/items/json',
         listeners: {
             beforeload: {
                 fn: function(store,opt) {
@@ -453,22 +486,13 @@
                     var job_type = main_form.getForm().getValues()['job_type'];
                     store.baseParams.bl = bl;
                     store.baseParams.job_type = job_type;
-                    }
-                },
-            load: {
-                fn: function(store,opt) {
-                        if( store.getTotalCount() == 0 ) {
-                            Baseliner.message(_('Warning'), _('No records found') );
-                        }
-                    }
                 }
-            },
-        reader: new Ext.data.JsonReader({
-                root: 'data',
-                totalProperty: 'totalCount',
-                id: 'id'
-            },
-            [
+            }
+        },
+        root: 'data',
+        totalProperty: 'totalCount',
+        id: 'id',
+        fields: [
                 {name: 'provider',           mapping: 'provider'},
                 {name: 'related',            mapping: 'related'},
                 {name: 'ns_type',            mapping: 'ns_type'},
@@ -489,7 +513,7 @@
                 {name: 'job_options_global', mapping: 'job_options_global'},
                 {name: 'inc_id',             mapping: 'inc_id'},
                 {name: 'moreInfo',           mapping: 'moreInfo'}
-        ])
+        ]
     });
 
     // Search Combo: Custom rendering Template
@@ -501,7 +525,7 @@
     // '</tpl>',
 
     var resultTpl = new Ext.XTemplate(
-        '<tpl for="."><div ext:qtip="{moreInfo}" qtitle="' + _loc('More Info...') + '<hr>" class="search-item {recordCls}">',
+        '<tpl for="."><div ext:qtip="{moreInfo}" qtitle="' + _loc('More Info...') + '<hr>" class="search-item x-combo-list-item-unselectable {recordCls}">',
         '<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{item}</h3>',
         '<tpl if="packages">',
             '<br />{packages}',
@@ -522,7 +546,8 @@
         fieldLabel: _('Add Job Items'),
         store: store_search,
         anchor: '50%',
-        minChars: min_chars ,
+        minChars: 0, //min_chars ,
+        hidden: !show_job_search_combo,
         displayField:'item',
         typeAhead: false,
         loadingText: _('Searching...'),
@@ -535,59 +560,87 @@
         listeners: {
             // delete the previous query in the beforequery event or set
             // combo.lastQuery = null (this will reload the store the next time it expands)
-            beforequery: function(qe){
-                delete qe.combo.lastQuery;
-                }
-            },
-            onSelect: function(record){
-                if( record.get('can_job') != 1 ) {
-                    Ext.Msg.show({icon: 'ext-mb-error',
-                    buttons: { cancel: true },
-                    title: _('Blocked'),
-                    width: 500,
-                        msg: _('Package cannot be added to job')+":<br>" + record.get('why_not')
-                        });
-                    return false;
-                }
-                try {
-                    //debugging: console.log( record );
-                    // add from combo to grid
-                    ds_grid.add(record);
-                    // take if off from the list
-                    store_search.remove(record);
-                    // enable all fields
-                    enableAll();
-                    // recalculate calendar
-                    // job_date.setRawValue( today );
-                    calendar_reload();
-                    // button_submit.enable(); // Eric -- Mejor esto lo hacemos en otro sitio.
-                } catch(e) {
-                    //alert( e );
-                }
-            }
-        });
+            beforequery: function(qe){ delete qe.combo.lastQuery; }
+        }
+    });
 
     combo_search.on('beforeselect', function(combo, record, index) {
-        if( true || record.get('recordCls') == 'category-header' ) {
+        if( record.get('can_job') != 1 ) {
+            Ext.Msg.show({icon: 'ext-mb-error',
+            buttons: { cancel: true },
+            title: _('Blocked'),
+            width: 500,
+                msg: _('Package cannot be added to job')+":<br>" + record.get('why_not')
+                });
             return false;
         }
+        jc_store.add(record);
+        store_search.remove(record);
+        return false; // stops the combo from collapsing
     });     
+
+    combo_search.on('collapse', function(){
+        calendar_reload();
+        //return true;
+    });
+
+    store_search.on('load', function(s,recs){
+        if( recs.length == 0 ) {
+            Baseliner.message(_('Warning'), _('No records found') );
+            return;
+        }
+        if( jc_store.getCount() == 0 ) return;
+        store_search.each( function(rec){
+            var ix = jc_store.findExact('ns', rec.data.ns );
+            if( ix > -1 ) {
+                rec.set('recordCls', 'cannot-job' );
+                rec.set('can_job', 0 );
+            }
+        });
+        store_search.commitChanges();
+    });
+
+    var button_list = new Ext.Button({
+        text: _('List'),
+        handler: function(){
+            var grid_rev = new Ext.grid.GridPanel({
+                store: store_search,
+                columns: [
+                    { dataIndex:'item', header:_('Item'), width: 300 }
+                ]
+            });
+            var win = new Ext.Window({
+                layout: 'fit',
+                title: _('Revisions'),
+                height: 500, width: 300,
+                items: [ grid_rev ]
+            });
+            store_search.reload();
+            win.show();
+        }
+    });
      
-  
-    var search_form = new Ext.Panel({
-        layout: 'anchor',
-        anchor: '100%',
-        fieldLabel:  _('Add Job Items'),
+    var tb = new Ext.Toolbar({
         items: [
-            { xtype:'combo', width: '50%' },
-            { xtype: 'container', style: 'height: 20px', html:  _('Live search requires a minimum of %1 characters.', min_chars ) }
-            //jc_grid
+            button_list,
+            '->',
+            {
+                xtype:'button', text: _('Reset'),
+                icon:'/static/images/asterisk.gif',
+                cls: 'x-btn-text-icon',
+                handler: form_reset_all
+            },
+            button_submit
         ]
     });
-        
+    tb.on( 'afterrender', function(){
+        //tb.el.parent().setStyle({ 'padding':'-10px' });
+    });
+
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
-        frame: true,
+        //frame: true,
+        bodyStyle: { 'background-color': '#eee', padding: 10 },
         title: _loc('Job Options'),
         forceFit: true,
         labelWidth: 150,
@@ -611,26 +664,29 @@
                 items: <% js_dumper(  $c->stash->{job_types} ) %>
             },
             combo_baseline,
-            //search_form,
-            { xtype:'fieldset', 
+            { 
+                xtype:'fieldset', 
                 style: { 'margin': '20 0 20 0' , 'padding': '15 15 15 15' },
                 labelWidth: 135,
-              items: [
-                combo_search,
-                { xtype: 'label', style:'margin-left: 165px', text:  _('Live search requires a minimum of %1 characters.', min_chars ) },
-                jc_grid
-              ]
+                items: [
+                    combo_search,
+                    { xtype: 'label', 
+                        hidden: !show_job_search_combo,
+                        style:'margin-left: 165px; font-size: 11px; font-family: Tahoma, Arial;', text:  _('Live search requires a minimum of %1 characters.', min_chars ) },
+                    jc_grid
+                ]
             },
             //combo_search,
             //{ xtype: 'container', style: 'height: 20px', fieldLabel:'x', html:  _('Live search requires a minimum of %1 characters.', min_chars ) },
             { 
                 layout: 'column',
                 fieldLabel: _('When'),
-                columns: 2,
-                defaults: { bodyStyle: 'padding: 0 25px 0 0' },
+                columns: 2, bodyStyle: { 'background-color': '#eee'},
+                bodyBorder: false,
+                defaults: { bodyBorder: false, bodyStyle: { 'background-color': '#eee', 'padding': '0 25px 0 0'} },
                 items: [
-                    { width: 250, layout:'form', items: job_date, labelWidth: 40 },
-                    { width: 500, layout:'form', items: combo_time , labelWidth: 40},
+                    { width: 250, layout:'form', items: job_date, labelWidth: 40, bodyStyle: { 'background-color': '#eee'} },
+                    { width: 500, layout:'form', items: combo_time , labelWidth: 40, bodyStyle: { 'background-color': '#eee'}},
                     time_not_available
                 ]
             },
