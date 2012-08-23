@@ -25,7 +25,7 @@
     ];
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
     my $show_no_cal = config_value( 'site.show_no_cal' );
-    my $has_no_cal = $c->has_action( 'action.job.no_cal' );
+    my $has_no_cal = $c->is_root || $c->has_action( 'action.job.no_cal' );
 </%perl>
 (function(){
     var has_no_cal = <% $has_no_cal ? 'true' : 'false'  %>;
