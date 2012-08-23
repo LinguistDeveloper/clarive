@@ -25,7 +25,7 @@ sub job_create : Path('/job/create')  {
     $c->stash->{action} = 'action.job.create';
     $c->forward('/baseline/load_baselines_for_action');
 
-    $c->stash->{template} = '/comp/job_new_comp.js';
+    $c->stash->{template} = '/comp/job_new.js';
 }
 
 # list objects ready for a job
