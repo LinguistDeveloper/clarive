@@ -23,11 +23,16 @@
             [ $_->[0], "$_->[0] - $_->[1]" ]
         } _array( $baselines )
     ];
+
+    my $default_baseline = config_value( 'job_new.default_baseline' );
+    my $forms = config_value( 'job_new.form' );
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
     my $show_no_cal = config_value( 'site.show_no_cal' );
     my $has_no_cal = $c->is_root || $c->has_action( 'action.job.no_cal' );
 </%perl>
 (function(){
+    var forms = <% js_dumper( [ _array $forms ] ) %>;
+    var default_baseline = '<% $default_baseline %>';
     var has_no_cal = <% $has_no_cal ? 'true' : 'false'  %>;
     var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
     var show_job_search_combo = <% $show_job_search_combo ? 'true' : 'false'  %>;
@@ -108,8 +113,6 @@
             '<div class="search-item">{name}</div>',
         '</tpl>'
     );
-    var bl_initial = '<% $baselines->[1]->[0] %>';
-
     var combo_baseline = new Ext.form.ComboBox({
         name: 'bl',
         hiddenName: 'bl',
@@ -118,7 +121,7 @@
         fieldLabel: label_dest,
         mode: 'local',
         store: store_baselines,
-        value: bl_initial,
+        value: default_baseline,
         editable: false,
         forceSelection: true,
         triggerAction: 'all',
@@ -136,6 +139,7 @@
         },
         width: 200
     });
+
     combo_baseline.on( 'afterrender', function(){
     });
 
@@ -600,29 +604,8 @@
         store_search.commitChanges();
     });
 
-    var button_list = new Ext.Button({
-        text: _('List'),
-        handler: function(){
-            var grid_rev = new Ext.grid.GridPanel({
-                store: store_search,
-                columns: [
-                    { dataIndex:'item', header:_('Item'), width: 300 }
-                ]
-            });
-            var win = new Ext.Window({
-                layout: 'fit',
-                title: _('Revisions'),
-                height: 500, width: 300,
-                items: [ grid_rev ]
-            });
-            store_search.reload();
-            win.show();
-        }
-    });
-     
     var tb = new Ext.Toolbar({
         items: [
-            button_list,
             '->',
             {
                 xtype:'button', text: _('Reset'),
