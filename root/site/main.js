@@ -128,7 +128,6 @@ Ext.onReady(function(){
                 timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
             }
         });
-    }
 % }
 
     var tab_panel = new Ext.TabPanel({  region: 'center', id:'main-panel',
