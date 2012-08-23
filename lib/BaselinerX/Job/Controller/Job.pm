@@ -437,83 +437,17 @@ sub refresh_now : Local {
     $c->forward('View::JSON');
 }
 
-# sub job_check_time : Path('/job/check_time') {
-    # my ( $self, $c ) = @_;
-    # my $p = $c->request->parameters;
-    # my $day = $p->{job_date};
-    # my $contents = _decode_json $p->{job_contents};
-    # my @ns;
-    # for my $item ( @{ $contents || [] } ) {
-        # my $provider = $item->{provider};
-        # push @ns, @{ $item->{related} || [] };
-        # push @ns, $item->{ns};
-        
-    # }
-    # warn "....................NS: " . join ',', @ns;
-#	get calendar range list
-    # $c->stash->{day} = $day;
-    # $c->stash->{bl} = $p->{bl};
-    # $c->stash->{ns} = \@ns;
-    # $c->forward('/calendar/calendar_range');
-#    warn Dump $c->stash->{calendar_range_expand} ; 
-    # $c->stash->{json} = { data => $c->stash->{calendar_range_expand} };	
-    # $c->forward('View::JSON');
-# }
-
-sub get_namespaces{
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    my $contents = _decode_json $p->{job_contents};
-
-    my @ns;
-    for my $item ( @{ $contents || [] } ) {
-        my $namespace = $c->model('Namespaces')->get($item->{ns});
-        push @ns, "/";
-        push @ns, $item->{ns};
-        push @ns, $namespace->application;
-        push @ns, _array $namespace->nature;
-    }
-    my %tmp_hash   = map { $_ => 1 } @ns;
-    
-    @ns = keys %tmp_hash;    
-    return \@ns;
-}
-
-
-sub get_namespaces_calendar{
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    my $contents = _decode_json $p->{job_contents};
-    my @ns;
-    my @ns_list;
-    $contents = $c->model('Jobs')->container_expand( $contents );
-    for my $item ( @{ $contents || [] } ) {
-        _debug "Check NS=" . $item->{ns};
-         my $namespace = $c->model('Namespaces')->get($item->{ns});
-        push @ns_list, $item->{ns};
-        @ns_list = ( @ns_list , _array $namespace->nature );
-        push @ns_list, $namespace->application;
-        push @ns_list, "/";
-        foreach my $curr_ns (@ns_list){
-            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $curr_ns } });
-            if($r->next){
-                push @ns, $curr_ns;
-                next;
-            }
-        }
-    }
-    _debug "Selected NS=" . join ',',@ns;
-    my %tmp_hash   = map { $_ => 1 } @ns;
-    
-    @ns = keys %tmp_hash;    
-    return \@ns;
-}
-
-
 sub merge_calendars : Private {
     my ($self,%p) = @_;
 
     my $bl = $p{bl};
+    my $now = Class::Date->new( _dt() );
+    my $date = $p{date} || $now; 
+    $date = Class::Date->new( $date ) if ref $date ne 'Class::Date' ;
+
+    # if today, start hours at now
+    my $start_hour = $now->ymd eq $date->ymd ? sprintf("%02d%02d", $now->hour , $now->minute) : '';
+
     my $where = {
         'me.active'=>'1',
         'windows.active'=>1,
@@ -534,64 +468,66 @@ sub merge_calendars : Private {
         }
     )->hashref->all;
     #return \@cals;
-    my $slots = Calendar::Slots->new();
+    my @slots_cal;
     for my $cal ( @cals ) {
-       _log "__________# " . $cal->{ns};
+       my $slots = Calendar::Slots->new();
        for my $win ( _array $cal->{windows} ) {
-          my $name = "$cal->{name} ($win->{type})==>" .( $win->{day}+1 );
-          _log "WIN ==> $name";
-          if( $win->{start_date} ) {
-             my $d = Class::Date->new( $win->{start_date} );
-             $slots->slot( date=>substr($d->string,0,10), start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>{ type=>$win->{type} } );
-          } else {
-             $slots->slot( weekday=>$win->{day}+1, start =>$win->{start_time}, end =>$win->{end_time}, name =>$name );
-          }
+           my $name = "$cal->{name} ($win->{type})==>" .( $win->{day}+1 );
+           if( $win->{start_date} ) {
+               my $d = Class::Date->new( $win->{start_date} );
+               $slots->slot( date=>substr($d->string,0,10), start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>{ cal=>$cal->{name}, type=>$win->{type} } );
+           } else {
+               $slots->slot( weekday=>$win->{day}+1, start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>{ cal=>$cal->{name}, type=>$win->{type} } );
+           }
        }
+       push @slots_cal, $slots;
     }
     #_log _dump $slots->sorted;
-    my $today = Class::Date->now + '5D';
-    my $today_w = $today->wday -1;
-    $today_w < 0  and $today_w += 7;
-    my $today_s = $today->strftime('%Y%m%d');
+    my $date_w = $date->wday -1;
+    $date_w < 0  and $date_w += 7;
+    my $date_s = $date->strftime('%Y%m%d');
     my %list;
-    _log "TOD=$today, W=$today_w, S=$today_s";
-    for my $s ( $slots->sorted ) {
-       next if $s->type eq 'date' && $s->when ne $today_s;
-       next if $s->type eq 'weekday' && $s->when ne $today_w;
-       _log "NAME=" . $s->name;
-       _log "FROM=" . $s->start;
-       _log "TO  =" . $s->end;   
-       for( $s->start .. $s->end ) {
+    _debug "TOD=$date, W=$date_w, S=$date_s, START=$start_hour";
+
+    for my $s ( map { $_->sorted } @slots_cal ) {
+       next if $s->type eq 'date' && $s->when ne $date_s;
+       next if $s->type eq 'weekday' && $s->when ne $date_w;
+
+       for( $s->start .. $s->end-1 ) {
          my $time = sprintf('%04d',$_);
+         next if $start_hour && $time < $start_hour;
          next if substr( $time, 2,2) > 59 ;
-         $list{ $time } = $s->data ; #unless exists $list{ $time };
+         next if $time == 2400;
+         # X > U > N - using ord for ascii values
+         if( ! exists $list{$time} || ord $s->data->{type} > ord $list{ $time }->{type} ) {
+            $list{ $time } = {
+                type=>$s->data->{type}, cal=>$s->data->{cal}, 
+                hour => sprintf( '%s:%s', substr($time,0,2), substr($time,2,2) ),
+                name=>sprintf "%s (%s)", $s->data->{cal}, $s->data->{type} 
+            }; 
+         }
        }
     }
-    #$slot->find( date=>'2012-08-20', time=>'18:00' )
     \%list;
 }
 
 sub build_job_window : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $date = $p->{job_date};
-    my $contents = _decode_json $p->{job_contents};
-    $contents = $c->model('Jobs')->container_expand( $contents );
-    my $month_days = 31;	
-    _debug $contents;
- 
-    try {
-        # get calendar range list
-        $c->stash->{start_date} =  $date
-            ? BaselinerX::Job::Controller::Calendar->parseDateTime($date)
-            : DateTime->now;
 
-        # Se calculan los dias visibles en el calendario dando una semana de gracia para visualizar la primera semana del siguiente mes
-        my $add_days = ($month_days - $c->stash->{start_date}->day() ) + $month_days + 7;
+    try {
+        my $date = $p->{job_date};
+        my $date_format = $p->{date_format} or _fail "Missing date format";
         
-        $add_days = $month_days * 3;
-        $c->stash->{end_date} = BaselinerX::Job::Controller::Calendar->addDaysToDateTime($c->stash->{start_date},$add_days);
-        $c->stash->{bl} = $p->{bl};
+        my $bl = $p->{bl};
+        my $contents = _decode_json $p->{job_contents};
+        $contents = $c->model('Jobs')->container_expand( $contents );
+        my $month_days = 31;	
+
+        # get calendar range list
+        $date =  $date
+            ? parse_dt( $date_format, $date )
+            : _dt();  # _dt = now with timezone
 
         my @ns;
         # $contents = $c->model('Jobs')->container_expand( $contents );
@@ -606,77 +542,20 @@ sub build_job_window : Local {
         }
         _debug "NS with Calendar: " . join ',',@ns;
         my %tmp_hash   = map { $_ => 1 } @ns;
-        
         @ns = keys %tmp_hash;    
-        $c->stash->{ns} = \@ns;
+        _debug "------Checking dates for namespaces: " . _dump \@ns;
 
+        my $hours = $self->merge_calendars( ns=>\@ns, bl=>$bl, date=>$date );
+        # get it ready for a combo simplestore
+        my $hour_store = [ map {
+           [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
+        } sort keys %$hours ];
 
-        _debug "------Checking dates for namespaces: " . _dump($c->stash->{ns});
-
-        $c->forward('/calendar/date_intersec_range');
-
-
-
-        _debug _dump( $c->stash->{calendar_range_expand} ); 
-        $c->stash->{json} = {success=>\1, data => $c->stash->{range_enabled} };	
+        $c->stash->{json} = {success=>\1, data => $hour_store };
     } catch {
         my $error = shift;
-        $c->stash->{json} = {success=>\0, data => $error };
-    };
-    $c->forward('View::JSON');
-}
-
-sub job_check_date : Path('/job/check_date') {
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    my $date = $p->{job_date};
-    my $contents = _decode_json $p->{job_contents};
-    $contents = $c->model('Jobs')->container_expand( $contents );
-    my $month_days = 31;	
- 
-    try {
-        #warn "....................NS: " . join ',', @ns;
-        # get calendar range list
-        $c->stash->{start_date} = ($date)?BaselinerX::Job::Controller::Calendar->parseDateTime($date):DateTime->now;
-        # Se calculan los dias visibles en el calendario dando una semana de gracia para visualizar la primera semana del siguiente mes
-        my $add_days = ($month_days - $c->stash->{start_date}->day() ) + $month_days + 7;
-        
-        $add_days = $month_days * 3;
-        $c->stash->{end_date} = BaselinerX::Job::Controller::Calendar->addDaysToDateTime($c->stash->{start_date},$add_days);
-        $c->stash->{bl} = $p->{bl};
-        $c->stash->{ns} = $self->get_namespaces_calendar($c);
-        _debug "------Checking dates for namespaces: " . _dump($c->stash->{ns});
-        $c->forward('/calendar/date_intersec_range');
-        _debug _dump( $c->stash->{calendar_range_expand} ); 
-        $c->stash->{json} = {success=>\1, data => $c->stash->{range_enabled} };	
-    } catch {
-        my $error = shift;
-        $c->stash->{json} = {success=>\0, data => $error };
-    };
-    $c->forward('View::JSON');
-}
-
-sub job_check_time : Path('/job/check_time') {
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    my $date = $p->{job_date};
-
-    try {
-        my $contents = _decode_json $p->{job_contents};
-        $contents = $c->model('Jobs')->container_expand( $contents );
-        #warn "....................NS: " . join ',', @ns;
-        # get calendar range list
-        $c->stash->{date_selected} = BaselinerX::Job::Controller::Calendar->parseDateTime($date);
-        # Se calculan los dias visibles en el calendario dando una semana de gracia para visualizar la primera semana del siguiente mes
-
-        $c->stash->{bl} = $p->{bl};
-        $c->stash->{ns} = $self->get_namespaces_calendar($c);
-        $c->forward('/calendar/time_range_intersec');
-        #warn Dump $c->stash->{calendar_range_expand} ; 
-        $c->stash->{json} = {success=>\1, data => $c->stash->{time_range} };
-    } catch {
-        my $error = shift;
-        $c->stash->{json} = {success=>\0, data => $error };
+        _error $error;
+        $c->stash->{json} = {success=>\0, msg=>$error, data => $error };
     };
     $c->forward('View::JSON');
 }
