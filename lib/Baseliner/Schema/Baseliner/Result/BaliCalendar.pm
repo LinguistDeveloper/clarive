@@ -10,7 +10,7 @@ __PACKAGE__->table("bali_calendar");
 __PACKAGE__->add_columns(
   "id",
   {
-    data_type => "NUMBER",
+    data_type => "number",
     default_value => undef,
     is_nullable => 0,
     is_auto_increment => 1, 
@@ -18,43 +18,56 @@ __PACKAGE__->add_columns(
   },
   "name",
   {
-    data_type => "VARCHAR2",
+    data_type => "varchar2",
     default_value => undef,
     is_nullable => 0,
     size => 100,
   },
   "ns",
   {
-    data_type => "VARCHAR2",
+    data_type => "varchar2",
     default_value => "/",
     is_nullable => 0,
     size => 100,
   },
   "bl",
   {
-    data_type => "VARCHAR2",
+    data_type => "varchar2",
     default_value => "*",
     is_nullable => 0,
     size => 100,
   },
   "description",
   {
-    data_type => "VARCHAR2",
+    data_type => "varchar2",
     default_value => undef,
     is_nullable => 1,
     size => 1024,
   },
   "type",
   {
-    data_type => "VARCHAR2",
+    data_type => "varchar2",
     default_value => 'HI',
     is_nullable => 1,
     size => 2,
   },  
+  "active",
+  {
+    data_type => "varchar2",
+    default_value => '1',
+    is_nullable => 1,
+    size => 1,
+  },  
+  "seq",
+  {
+    data_type => "number",
+    default_value => 100,
+  },
 );
 __PACKAGE__->set_primary_key("id");
+
 __PACKAGE__->has_many(
-  "bali_calendar_windows",
+  "windows",
   "Baseliner::Schema::Baseliner::Result::BaliCalendarWindow",
   { "foreign.id_cal" => "self.id" },
 );
