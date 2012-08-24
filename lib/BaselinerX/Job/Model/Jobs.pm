@@ -278,9 +278,11 @@ sub _create {
         # approval request executed by runner service
         $job->stash_key( approval_needed => $p{approval} );
     }
-    if ( exists $p{options} ) {
-        $job->stash_key( job_options => _array $p{options} );
+    if ( ref $p{job_stash} eq 'HASH' ) {
+        while( my ($k,$v) = each %{ $p{job_stash} } ) {
+            $job->stash_key( $k => $v );
         }
+    }
     $job->status( 'READY' );
     $job->update;
     return $job;

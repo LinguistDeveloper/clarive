@@ -106,7 +106,8 @@ sub load_grid_inc : Local {
   my $username = $c->username;
   my $data = $c->model('Form::Main')->load_grid_inc($cam,
                                                     $username,
-                                                    $link_USD);
+                                                    $link_USD,
+                                                    $params->{query});
   $c->stash->{json} = {data => $data};
   $c->forward('View::JSON');
   return;

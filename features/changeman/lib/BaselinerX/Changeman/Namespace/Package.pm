@@ -23,7 +23,6 @@ use Try::Tiny;
 use Data::Dumper;
 
 with 'Baseliner::Role::Namespace::Package';
-with 'Baseliner::Role::Namespace::JobOptions';
 with 'Baseliner::Role::JobItem';
 # with 'Baseliner::Role::Transition';
 # with 'Baseliner::Role::Approvable';
@@ -217,10 +216,6 @@ sub job_options_global {
     push @ret, {id=>'chm_rf_ll', name=>_loc('Changeman Force LinkList Refresh')} if $self->{ns_data}->{linklist} eq 'SI';
     push @ret, {id=>'chm_rf_db2', name=>_loc('Changeman Force DB2 Refresh')} if $self->{ns_data}->{db2} eq 'SI';
     return \@ret;
-}
-
-sub job_options {
-
 }
 
 1;

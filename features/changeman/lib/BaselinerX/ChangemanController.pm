@@ -210,9 +210,42 @@ sub packages : Local {
     $c->forward( 'View::JSON' );
 }
 
+
+Baseliner::Sugar::event_hook 'event.job.new' => 'after' => sub {
+    my $ev = shift;
+    my ($self,$c, $job, $job_data ) = @{ $ev->data }{qw/self c job job_data/};
+    my $p = $c->req->params;
+
+    my $items = $job_data->{items};
+    my $job_name = $job->name;
+
+    # Linked list to job-options in the stash
+    my $ll = $p->{check_linked_list} eq 'on' ? 1 : 0;
+    $job->stash_key( chm_linked_list => $ll );
+
+    #Procesamos items de Changeman
+    if ($p->{job_contents} =~ m{namespace.changeman.package}g) {
+        my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
+        my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port} );
+        my $ret= $chm->xml_addToJob(job=>$job_name, items=>$items ) ;
+        if ($ret->{ReturnCode} ne '00') {
+            $job->delete;
+            _fail( _loc( "Error creating Changeman Job:<br>%1",$ret->{Message}) );
+        } else {
+            ##TODO: Si requiere aprobacion de host por refresco de linklist crear la aprobacion
+            # $job->bali_job_items->create({item => 'nature/zos'}); 
+            my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
+            $log->debug(_loc("Changeman package(s) has been associated to SCM job %1", $job_name ));
+        }
+    }
+};
+
 Baseliner::Sugar::event_hook [qw/event.job.cancel event.job.cancel_running/] => sub {
-    my $orig = shift;
-    my ($self,$c, $job, $job_name, $username ) = @_;
+    my $ev = shift;
+    my ($self,$c, $job ) = @{ $ev->data }{qw/self c job /};
+
+    my $username = $c->username;
+    my $job_name = $job->name;
 
     # CANCELAR JOB EN CHANGEMAN SI PROCEDE
     my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
@@ -242,13 +275,10 @@ Baseliner::Sugar::event_hook [qw/event.job.cancel event.job.cancel_running/] => 
         my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
         $log->error(_loc("Job cancelled by user %1", $username));
     } else {
-        $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
         $job->update;
         my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
         $log->error(_loc("Job cancelled by user %1", $username));
-        }
-
-    $orig->( @_ );
+    }
 };
 
 1;

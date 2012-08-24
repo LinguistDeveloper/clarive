@@ -718,6 +718,8 @@ Die without line number info.
 
 =cut
 sub _fail {
+    my ($cl,$fi,$li) = caller();
+    _error( "_fail($cl;$li): @_" );
     die join(' ',@_) . "\n";
 }
 

@@ -396,13 +396,14 @@
             Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
                 function(btn){ 
                     if(btn=='yes') {
-                        var conn = new Ext.data.Connection();
-                        conn.request({
-                            url: '/job/submit',
-                            params: { action: 'delete', mode: mode, id_job: sel.data.id },
-                            success: function(resp,opt) { grid.getStore().reload(); },
-                            failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the job.') ); }
-                        }); 
+                        Baseliner.ajaxEval( '/job/submit',  { action: 'delete', mode: mode, id_job: sel.data.id }, function(res){
+                            //console.log( res );
+                            if( res.success ) {
+                                grid.getStore().reload();
+                            } else {
+                                Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
+                            }
+                        });
                     }
                 } );
         }

@@ -105,7 +105,7 @@ sub execute {
    }
 
    ## En PROD si el pase tiene activo el refresco de Linklist realizar la llamada al rexx de refresco.
-   if ($job->{job_data}->{bl} && (join",", _array $job_stash->{job_options}) =~ m{chm_rf_ll}) {
+   if ($job->{job_data}->{bl} eq 'PROD' && $job_stash->{chm_linked_list} ) {
       #_debug "JOB STASH CONTENTS=" . _dump $job_stash->{contents};
       my @sites=map{ $_->{data}->{site}=~s{ }{}; split /,/,$_->{data}->{site} } _array $job_stash->{contents};
       if( !@sites ) {  # job stash lost? Go for the ns

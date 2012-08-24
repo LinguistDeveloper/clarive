@@ -417,4 +417,22 @@ register 'config.bde' => {
     ]
 };
 
+use Baseliner::Sugar;
+
+event_hook 'event.job.new' => 'before'=> sub {
+    my $ev = shift;
+    my ($self,$c, $job, $job_data ) = @{ $ev->data }{qw/self c job job_data/};
+    my $p = $c->req->params;
+
+    if( length $p->{inc_codigo} ) {
+        $job_data->{comments} = $job_data->{comments} 
+            . sprintf("<p>%s</p>", join ', ', grep { length } _array $p->{inc_codigo} );
+    }
+
+    my $ll = $p->{check_linked_list} eq 'on' ? 1 : 0;
+    if ( $ll ) {
+        $job_data->{approval}->{reason}.= '<br><b>Changeman: el pase va a refrescar la linked-list</b>';
+    }
+};
+
 1;

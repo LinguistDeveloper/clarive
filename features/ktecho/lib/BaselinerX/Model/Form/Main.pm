@@ -244,7 +244,7 @@ sub update_textareas {
 }
 
 sub load_grid_inc {
-  my ($self, $cam, $username, $link_USD) = @_;
+  my ($self, $cam, $username, $link_USD, $query ) = @_;
 #  my $query = qq{      
 #      SELECT "Id Incidencia" AS inc_codigo, "CAM" AS inc_cam,
 #             "Descripción" AS inc_descripcion, "Tipo incidencia" AS inc_tipo,
@@ -258,7 +258,11 @@ sub load_grid_inc {
 #       WHERE "Activa?" = 'SI' AND "Analista Asignado" = '$username'
 #             AND "CAM" = '$cam'
 #  };
-  my $query = qq{
+
+  $query = "%$query%";
+  my @cam_in = map { uc } _array $cam;
+  my $ins = join ',', map { '?' } @cam_in;
+  my $sql = qq{
       SELECT "Id Incidencia" AS inc_codigo, "CAM" AS inc_cam,
              "Descripción" AS inc_descripcion, "Tipo incidencia" AS inc_tipo,
              "Activa?" AS inc_activa, "Estado" AS inc_estado, "Clase" AS inc_clase,
@@ -268,14 +272,14 @@ sub load_grid_inc {
              "Usr afectado nombre" AS inc_nombre_afe, "Prioridad" AS inc_prioridad,
              "Impacto" AS inc_impacto, "Analista Asignado" AS inc_analista
      FROM bde_scm_usd\@usd usd
-    WHERE (   UPPER (TRIM (cam)) LIKE UPPER (TRIM ('$cam'))
-           OR UPPER (TRIM (usd."Analista Asignado")) = UPPER ('$username')
-          )
+    WHERE (   UPPER (TRIM (cam)) IN ( $ins ) 
+           OR UPPER (TRIM (usd."Analista Asignado")) = UPPER ( ? )
+          ) AND TRIM( "Id Incidencia" || "Descripción" ) LIKE ?
     AND TRIM (usd."Tipo incidencia") = 'APP'
     ORDER BY TO_NUMBER (usd."Id Incidencia") DESC, 2
   };
   my $har_db = BaselinerX::Ktecho::Harvest::DB->new;
-  my @data   = $har_db->db->array_hash($query);
+  my @data   = $har_db->db->array_hash($sql, @cam_in, $username, $query );
 
   \@data;
 }
