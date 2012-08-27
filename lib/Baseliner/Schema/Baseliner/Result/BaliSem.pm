@@ -50,10 +50,12 @@ __PACKAGE__->has_many(
 
 sub bl_queue {
     my ($self) = @_;
-    if( $self->bl eq '*' ) {
+    my $bl = $self->bl; 
+    
+    if( $bl eq '*' ) {
         return $self->queue->search({ sem => $self->sem, bl=>'*' });
     } else {
-        return $self->queue->search({ sem => $self->sem, bl => $self->bl });
+        return $self->queue->search({ sem => $self->sem, bl => $bl });
     }
 }
 

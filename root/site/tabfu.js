@@ -154,6 +154,67 @@
         });
     };
 
+    /****** Baseliner Help context methods *******/
+    Baseliner.help_show = function(params) {
+        if( Baseliner.help_win != undefined ) Baseliner.help_win.close();
+        Baseliner.help_win = new Ext.Window({
+            id: 'baseliner-help-win',
+            layout: 'fit',
+            top: 20, left: 3,
+            width: (params.width!=undefined?params.width: 350),
+            width: (params.height!=undefined?params.height: 500),
+            maximizable: true,
+            title: _('Help') + ': ' + params.title,
+            titleCollapse: true,
+            closeAction: 'hide',
+            html: params.html?params.html:params.text
+        });
+            //Baseliner.help_win.getEl().fadeOut('l', { duration: .5 });
+            //Baseliner.help_win.hide();
+        Baseliner.help_win.show();
+    };
+    Baseliner.help_on = function() {
+        //Baseliner.help_button.setIcon('/static/images/icons/lightbulb.png');
+        Baseliner.help_button.setIconClass('help-on');
+    };
+    Baseliner.help_off = function() {
+        //Baseliner.help_button.setIcon('/static/images/icons/lightbulb_off.png');
+        Baseliner.help_button.setIconClass('help-off');
+    };
+    Baseliner.help_handler = function(params) {
+        if( params.key != undefined ) {  // load by help key
+            Baseliner.ajaxEval( '/help/load', params, function(res) {
+                Baseliner.help_show(res);
+            });
+        } else if( params.path != undefined ) {
+            var req = Ext.Ajax.request({
+                url: '/help/load',
+                params: params,
+                success: function(res) {
+                    var body = res.responseText;
+                    Baseliner.help_show({ title: params.title, html: body });
+                }
+            });
+        } else if( params.text != undefined ) {
+            Baseliner.help_show( params );
+        } else {
+            Ext.Msg.alert( _('Help'), _('Help not available for this item.') );
+        }
+    };
+    Baseliner.help_push = function(params) {
+        try {  // Ext 2.x does not have a find
+        var items = Baseliner.help_menu.find( 'text', params.title );
+        //alert( JSON.stringify( items ));
+        if( items!=undefined && items.length > 0 ) return;
+        } catch(e) { }
+        Baseliner.help_menu.addMenuItem({
+            text: params.title,
+            handler: function() { Baseliner.help_handler(params) },
+            icon: (params.icon!=undefined ? params.icon : '/static/images/icons/help.png')
+        });
+        Baseliner.help_on();
+    };
+
     Baseliner.doLoginForm = function(lf, params, cb ){
         var ff = lf.getForm();
         params = params==undefined ? {} : params;
@@ -657,19 +718,19 @@
     };
 
     Baseliner.error_parse = function( err, xhr ) {
-        var str=""; 
-        var trace ="";
-        //**from stacktrace.js :
-        //trace = printStackTrace({ e: err });
-        //trace = '<li>' + trace.join('<li>');
+        var arr=[]; 
         for(var i in err) {
-            str+="<li>" + i + "=" + err[i]; 
+            arr.push(  i + "=" + err[i] );
         }
+        if( err.message ) arr.push(  "Message =" + err['message'] );
+        if( err.line ) arr.push(  "Line Num =" + err['line'] );
+
+        str = "<li>" + arr.join('</li><li>') + '</li>';
         var res = xhr.responseText;
         res.replace(/\</,'&lt;');
         res.replace(/\>/,'&gt;');
-        str += "<hr><pre>" + trace + "\n\n" + res;
-        Baseliner.errorWin("<% _loc('Error Rendering Tab Component') %>", str);
+        str += "<hr><pre>" + res;
+        Baseliner.errorWin(_('Error Rendering Tab Component'), str);
     };
 
     //adds a new tab from a function() type component
@@ -797,7 +858,7 @@
                        }
                     }
                 }
-                    if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
+                if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
             },
             failure: function(xhr) {
                 Baseliner.server_failure( xhr.responseText );
@@ -825,7 +886,7 @@
             var sel = sm.getSelected();                         
             return sel;
         } else {
-            Ext.Msg.alert('Error', _('Select at least one row') );  
+            Ext.Msg.alert( _('Error') , _('Select at least one row') );  
             return undefined;
         };
     };
@@ -901,12 +962,12 @@
                                 win.document.write(  xhr.responseText );
                             },
                             failure: function(xhr) {
-                               Baseliner.errorWin( 'Logout Error', xhr.responseText );
+                               Baseliner.errorWin( _('Logout Error') , xhr.responseText );
                             }
                         });
                     },
                     failure: function(xhr) {
-                       Baseliner.errorWin( 'Logout Error', xhr.responseText );
+                       Baseliner.errorWin( _('Logout Error'), xhr.responseText );
                     }
                 });
             }
@@ -1029,7 +1090,7 @@
                     comp = eval(xhr.responseText);
                     comp.show();
                 } catch(err) {
-                    Baseliner.errorWin("<% _loc('Error Rendering Component') %>", err);
+                    Baseliner.errorWin(_('Error Rendering Component'), err);
                 }
             },
             failure: function(xhr) {

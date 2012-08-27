@@ -152,7 +152,7 @@ sub list_dashlets : Local {
         }
        @ret;
     } @dash_dirs;
-    @dashlets;
+    #@dashlets;
     
     my @rows;
     for my $dash ( @dashlets ) {
@@ -245,7 +245,7 @@ sub update : Local {
                 $dashboard ->dashlets( _dump \@dashlets );
                 $dashboard ->update();
 
-                my $dashboard = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
+                $dashboard = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
                 $dashboard->delete();
                 
                 foreach my $role (_array $p->{roles}){

@@ -58,7 +58,8 @@ sub auto : Private {
     my ( $self, $c ) = @_;
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     return 1 if $c->stash->{auth_skip};
-    return 1 if $c->user_exists;
+    return 1 if $c->req->path eq 'i18n/js';
+    return 1 if try { $c->user_exists } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
     # saml?
@@ -316,6 +317,10 @@ sub end : ActionClass('RenderView') {
             $c->forward( 'View::JSON');
         }
     }
+    #if( $c->res->content_type eq 'text/html' ) {
+    #    _debug _dump $c->req;
+    #    $c->res->content_type( 'text/css' );
+    #}
     $c->stash->{$_}=$c->request->parameters->{$_} 
         foreach( keys %{ $c->req->parameters || {} });
 }

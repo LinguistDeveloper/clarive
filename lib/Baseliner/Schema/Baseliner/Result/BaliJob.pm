@@ -7,180 +7,7 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 NAME
-
-Baseliner::Schema::Baseliner::Result::BaliJob
-
-=cut
-
 __PACKAGE__->table("bali_job");
-
-=head1 ACCESSORS
-
-=head2 id
-
-  data_type: NUMBER
-  default_value: undef
-  is_auto_increment: 1
-  is_nullable: 0
-  size: 38
-
-=head2 name
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 45
-
-=head2 starttime
-
-  data_type: DATE
-  default_value: SYSDATE
-  is_nullable: 0
-  size: 19
-
-=head2 maxstarttime
-
-  data_type: DATE
-  default_value: SYSDATE+1
-  is_nullable: 0
-  size: 19
-
-=head2 endtime
-
-  data_type: DATE
-  default_value: undef
-  is_nullable: 1
-  size: 19
-
-=head2 status
-
-  data_type: VARCHAR2
-  default_value: READY
-  is_nullable: 0
-  size: 45
-
-=head2 ns
-
-  data_type: VARCHAR2
-  default_value: /
-  is_nullable: 0
-  size: 45
-
-=head2 bl
-
-  data_type: VARCHAR2
-  default_value: *
-  is_nullable: 0
-  size: 45
-
-=head2 runner
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 pid
-
-  data_type: NUMBER
-  default_value: undef
-  is_nullable: 1
-  size: 38
-
-=head2 comments
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 1024
-
-=head2 type
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 100
-
-=head2 username
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 ts
-
-  data_type: DATE
-  default_value: SYSDATE
-  is_nullable: 1
-  size: 19
-
-=head2 host
-
-  data_type: VARCHAR2
-  default_value: localhost
-  is_nullable: 1
-  size: 255
-
-=head2 owner
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 step
-
-  data_type: VARCHAR2
-  default_value: PRE
-  is_nullable: 1
-  size: 50
-
-=head2 id_stash
-
-  data_type: NUMBER
-  default_value: undef
-  is_foreign_key: 1
-  is_nullable: 1
-  size: 38
-
-=head2 rollback
-
-  data_type: NUMBER
-  default_value: 0
-  is_nullable: 1
-  size: 126
-
-=head2 now
-
-  data_type: NUMBER
-  default_value: 0
-  is_nullable: 1
-  size: 126
-
-=head2 schedtime
-
-  data_type: DATE
-  default_value: sysdate
-  is_nullable: 1
-  size: 19
-
-=head2 exec
-
-  data_type: NUMBER
-  default_value: 1
-  is_nullable: 1
-  size: 126
-
-=head2 request_status
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 50
-
-=cut
 
 __PACKAGE__->add_columns(
   "id",
@@ -189,7 +16,13 @@ __PACKAGE__->add_columns(
     default_value => undef,
     is_auto_increment => 1,
     is_nullable => 0,
-    size => 38,
+  },
+  "mid",
+  {
+    data_type => "NUMBER",
+    default_value => undef,
+    is_auto_increment => 1,
+    is_nullable => 1,
   },
   "name",
   {
@@ -311,7 +144,7 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => 50,
   },
-  "key",
+  "job_key",
   {
     data_type => "VARCHAR2",
     default_value => undef,
@@ -389,6 +222,12 @@ __PACKAGE__->belongs_to(
   "job_stash",
   "Baseliner::Schema::Baseliner::Result::BaliJobStash",
   { "foreign.id" => "self.id_stash" },
+);
+
+__PACKAGE__->belongs_to(
+  "master",
+  "Baseliner::Schema::Baseliner::Result::BaliMaster",
+  { "foreign.mid" => "self.mid" },
 );
 
 __PACKAGE__->has_many(
@@ -475,8 +314,8 @@ sub is_active {
 # returns the key column, if not exists then create it, commit and return
 sub hash_key {
     my $self = shift;
-    $self->key and return $self->key;
-    $self->key( Baseliner::Utils::_md5 );
+    $self->job_key and return $self->job_key;
+    $self->job_key( Baseliner::Utils::_md5 );
     $self->update;
 }
 

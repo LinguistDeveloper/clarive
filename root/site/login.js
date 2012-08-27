@@ -24,11 +24,9 @@ Ext.onReady(function(){
                            };
 
     var login_form = new Ext.FormPanel({
-            url: '/login',
             id: 'lf',
+            url: '/login',
             frame: true,
-            labelWidth: 60, 
-            renderTo: document.body,
             bodyStyle:'padding:5px 5px 0',
             cls: 'centered',
             defaults: { width: 150 },
@@ -56,18 +54,17 @@ Ext.onReady(function(){
 
      var last_login = Baseliner.cookie.get( 'last_login'); 
 
-     if( last_login!=undefined && last_login.length > 0 )  {
-            login_form.getForm().findField('login').setValue( last_login );
-            login_form.getForm().findField('password').focus('',100);
-     } else {
-            login_form.getForm().findField('login').focus('',100);
-     }
-
      setTimeout(function(){
-        Ext.get('loading').remove();
-        Ext.get('loading-mask').fadeOut({
-            remove:true
-        });
+        Ext.get('bali-loading').remove();
+        login_form.render( document.body );
+         if( last_login!=undefined && last_login.length > 0 )  {
+                login_form.getForm().findField('login').setValue( last_login );
+                login_form.getForm().findField('password').focus('',100);
+         } else {
+                login_form.getForm().findField('login').focus('',100);
+         }
+
+        Ext.get('bali-loading-mask').fadeOut({ remove: true });
      }, 400);
      
 });

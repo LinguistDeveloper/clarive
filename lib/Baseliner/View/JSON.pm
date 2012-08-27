@@ -7,34 +7,12 @@ use Encode;
 sub process {
     my $self = shift;
     my ($c) = @_;
-
-    #return unless exists $c->stash->{json};
-    #my $output = _to_json $c->stash->{json};
-    #$output = Encode::decode_utf8( $output ) if Encode::is_utf8( $output );
-    #Encode::_utf8_off( $output );
-    #$c->res->output( $output );
-    #return;
-
     $self->next::method(@_);
     my $output = $c->res->output;
-    #warn "====== IS1=" . Encode::is_utf8( $output );
-    #warn "====== ON =" . Encode::_utf8_on( $output );
-    #warn "ON=" . Encode::_utf8_off( $output );
-    #warn "====== IS =" . Encode::is_utf8( $output );
     if( $c->config->{'Baseliner::View::JSON'}->{decode_utf8} ) {
         $output = Encode::decode_utf8($output)
             unless $c->stash->{no_json_decode};
     }
-    #Encode::from_to( $output, 'utf-8', 'iso-8859-1' );
-    #Encode::from_to( $output, 'utf-8', 'iso-8859-1' );
-
-    #my @aa=split//, $output;
-    #my @bb=unpack 'W*', $output;
-    #warn "BB=" . scalar @bb;
-    #use List::MoreUtils qw/zip/;
-    #warn join ', ', zip @aa, @bb;
-    #$c->res->content_type("application/json");
-
     $c->res->output( $output );
 }
 

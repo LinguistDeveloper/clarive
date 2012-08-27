@@ -19,6 +19,7 @@ use Exporter::Tidy default => [
     _cut
     _log
     _debug
+    _error
     _utf8
     _tz
     slashFwd
@@ -78,6 +79,8 @@ use Exporter::Tidy default => [
     _fail
     _mason
     _textile
+    _pathxs
+    _uacc
     _markup
     _markdown
     zip_files
@@ -94,8 +97,10 @@ use Exporter::Tidy default => [
     _to_utf8
     _size_unit
     _dbis
-    /
-];
+    _hook
+    _read_password
+    _load_features_lib
+/];
 
 # setup I18n
 our $i18n_path;
@@ -127,9 +132,12 @@ use Locale::Maketext::Simple (
         );
 
 #use Carp::Clan qw(^Baseliner:: ^BaselinerX::);
+use utf8;
+use v5.10;
 use Carp::Tidy -clan=>['Baseliner']; #,'Catalyst'];
 use DateTime;
-use YAML::Syck;
+use Class::Date;
+use YAML::XS;
 use List::MoreUtils qw(:all);
 use Try::Tiny;
 use MIME::Lite;
@@ -200,7 +208,7 @@ sub slashBack {
 sub slashSingle {
     (my $path = $_[0]) =~ s{//}{/}g ;
     $path =~ s{\\\\}{\\}g ;
-    return $path;   
+    return $path;
 }
 
 sub _unique {
@@ -209,11 +217,24 @@ sub _unique {
 }
 
 sub _load {
-    return YAML::Syck::Load( @_ );
+    my @args = @_;
+    return try {
+        utf8::encode( @_ ) if utf8::valid( @_ );
+        YAML::XS::Load( @args )
+    } catch { 
+        require YAML::Syck;
+        YAML::Syck::Load( @args );
+    };
 }
 
 sub _dump {
-    return YAML::Syck::Dump( @_ );
+    my @args = @_;
+    return try { 
+        YAML::XS::Dump( @args )
+    } catch { 
+        require YAML::Syck;
+        YAML::Syck::Dump( @args );
+    };
 }
 
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
@@ -261,12 +282,13 @@ sub _guess_utf8 { ref guess_encoding( $_[0] ) }
 sub _utf8_to_ansi {
     return $_[0] unless _guess_utf8( $_[0] );
     my $ret = "$_[0]";
-    Encode::from_to( $ret, 'utf8', 'iso8859-1' );   
+    Encode::from_to( $ret, 'utf8', 'iso8859-1' );	
     return $ret;
 }
 
 # Logging
 
+# used by Job::Log.pm (why?)
 sub _log_lev {
     my $lev = shift;
     return unless any { $_ } @_;
@@ -276,30 +298,45 @@ sub _log_lev {
     print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
 }
 
+# internal log engine used by _log and _debug
+sub _log_me {
+    my ($lev, $cl,$fi,$li, @msgs ) = @_;
+    my $logger = Baseliner->app ? Baseliner->app->{_logger} : '';
+    if( ref $logger eq 'CODE' ) { # logger override
+        $logger->($cl,$fi,$li, @msgs );
+    } else {
+        my $first = shift @msgs;
+        if( my $rf = ref $first ) {
+            $first = sprintf '[DUMP ref=%s]%s', $rf , "\n" . _dump( $first );
+        }
+        $cl =~ s{^Baseliner}{B};
+        my $pid = sprintf('%s', $$);
+        my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
+        if( my $cat_log = Baseliner->log ) {
+            $cat_log->$lev( $msg );
+        } else {
+            print STDERR $msg , "\n"; 
+        }
+    }
+}
+
 sub _log {
     return unless any { $_ } @_;
     my ($cl,$fi,$li) = caller(0);
-    _log_me( $cl, $fi, $li, @_ );
+    _log_me( 'info', $cl, $fi, $li, @_ );
+}
+
+sub _error {
+    return unless any { $_ } @_;
+    my ($cl,$fi,$li) = caller(0);
+    _log_me( 'error', $cl, $fi, $li, @_ );
 }
 
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
-    return unless  $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ;
-    _log_me($cl,$fi,$li,@_);
-}
-
-# internal log engine used by _log and _debug
-sub _log_me {
-    my ($cl,$fi,$li) = (shift,shift,shift);
-    my $logger = try { $Baseliner::_logger } catch { '' };
-    if( ref $logger eq 'CODE' ) { # logger override
-        $logger->($cl,$fi,$li, @_);
-    } else {
-        $cl =~ s{^Baseliner}{B};
-        my $pid = sprintf('%s', $$);
-        print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
-    }
+    return unless $ENV{BASELINER_DEBUG} || $ENV{BALI_DEBUG} || $ENV{CATALYST_DEBUG};
+    _log_me( 'debug', $cl,$fi,$li,@_);
 }
 
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
@@ -368,6 +405,16 @@ sub _tz {
 
 sub _dt { DateTime->now(time_zone=>_tz);  }
 
+# same as _now, but with hi res in debug mode
+sub _now_log {
+    if( Baseliner->debug ) {
+        my @t=split /\./, Time::HiRes::time(); 
+        return sprintf "%s.%03d", Class::Date::date( $t[0]), substr $t[1], 0, 3;
+    } else {
+        return _now();
+    }
+}
+
 sub _now {
     my $now = DateTime->now(time_zone=>_tz);
     $now=~s{T}{ }g;
@@ -403,7 +450,7 @@ sub parse_date {
 sub parse_dt {
     my ( $format, $date ) = @_;
     use DateTime::Format::Strptime;
-    my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak' );
+    my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak', time_zone=>_tz() );
     return $parser->parse_datetime( $date );
 }
 
@@ -433,7 +480,7 @@ sub _db_setup {
     if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         $dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
         $dbh->{LongReadLen} =  Baseliner->config->{LongReadLen} || 100000000; #64 * 1024;
-        $dbh->{LongTruncOk} = Baseliner->config->{LongTruncOk}; # do not accept truncated LOBs  
+        $dbh->{LongTruncOk} = Baseliner->config->{LongTruncOk}; # do not accept truncated LOBs
     }
 }
 
@@ -544,14 +591,14 @@ sub _get_options {
             $hash{$last_opt} = [] unless ref $hash{$last_opt};
         }
         else {
-            $opt =  Encode::encode_utf8($opt) if Encode::is_utf8($opt);
+            $opt = Encode::encode_utf8($opt) if Encode::is_utf8($opt);
             push @{ $hash{$last_opt} }, $opt; 
         }
     }
     # convert single option => scalar
     for( keys %hash ) {
         if( @{ $hash{$_} } == 1 ) {
-            $hash{$_} = $hash{$_}->[0]; 
+            $hash{$_} = $hash{$_}->[0];
         }
     }
     return %hash;
@@ -773,12 +820,32 @@ sub _textile {
     Text::Textile::textile( shift );
 }
 
+sub _pathxs {
+    my ($dir, $i) = @_;
+    $dir =~ s/\\/\//g;         # Make this work in Win.
+    my @lat = split('/', $dir);
+    return $lat[$i] if $i;     # Return n position.
+    return @lat if wantarray;  # Return a list.
+    sub { shift @lat || q{} }  # Build up an iterator.
+}
+
 sub _markdown {
     require Text::Markdown;
     my $txt = Text::Markdown::markdown( shift );
     $txt =~ s{^\<p\>}{};
     $txt =~ s{\</p\>\n?$}{};
     $txt ;
+}
+
+sub _uacc {
+    my @l = @_;
+    sub { 
+        my $a = shift;
+        if ($a) {
+            return push @l, $a unless $a ~~ @l;
+        }
+        return @l;
+    }
 }
 
 =head2 _markup
@@ -1005,6 +1072,51 @@ sub _dbis {
     return DBIx::Simple->connect( Baseliner->model('Baseliner')->storage->dbh );
 }
 
+=head2 _hook
+
+Hook around Moose methods. Supports around, before and after.
+
+    _hook around => 'BaselinerX::Job::Controller::Job' => job_submit_cancel => sub {
+        ...
+    };
+
+=cut
+sub _hook {
+    my $type = shift;
+    my $class_name = shift;
+    my $code = pop @_;
+    my $meth = "add_${type}_method_modifier";
+    eval qq{require $class_name};
+    if( $@ ) {
+        _throw $@;
+    } else {
+        $class_name->meta->$meth( $_, $code ) for @_;
+    }
+}
+
+sub _read_password {
+    my $prompt = shift || 'PASSWORD: ';
+    require Term::ReadKey;
+    print $prompt;
+    Term::ReadKey::ReadMode('noecho');
+    my $pass = Term::ReadKey::ReadLine(0);
+    Term::ReadKey::ReadMode(0); # reset
+    chomp $pass;
+    say '';
+    $pass;
+}
+
+sub _load_features_lib {
+    my $features = Path::Class::dir('./features');
+    if( -d $features ) {
+        for my $dir ( map { Path::Class::dir( $_, 'lib' ) } $features->children ) {
+            next unless -d $dir;
+            eval "use lib '$dir'";
+            die $@ if $@;
+        }
+    }
+}
+
 1;
 
 __END__
@@ -1026,3 +1138,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 =cut
+

@@ -401,7 +401,7 @@ sub list_services : Local {
     $sort ||= 'id';
     $limit ||= 50;
     
-    my $where = $query
+    $where = $query
         ? { 'lower(key||step||description)' => { -like => "%".lc($query)."%" }, chain_id => $id_chain }
         : $step ? { chain_id => $id_chain, step => $step }: { chain_id => $id_chain } ;       
     my $page = to_pages( start => $start, limit => $limit );

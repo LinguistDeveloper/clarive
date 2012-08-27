@@ -36,7 +36,7 @@ sub name {
 
 sub baselines {
     my $self = shift; 
-    my $rs = Baseliner->model('Baseliner::BaliBaseline')->search({}, { order_by => 'seq asc' });
+    my $rs = Baseliner->model('Baseliner::BaliBaseline')->search({}, { order_by => { -asc =>'seq'  } });
     rs_hashref $rs;
     return $rs->all;
 }

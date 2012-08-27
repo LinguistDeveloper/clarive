@@ -152,7 +152,7 @@ sub list {
     $p{action} and $where->{action} = $p{action};
     my $from = {};
     $p{dir} ||= 'asc';
-    $from->{order_by} = { "-$p{dir}" => "me.$p{sort}" } || { -desc => "me.id" };
+    $from->{order_by} = $p{sort} ? { "-$p{dir}" => "me.$p{sort}" } : { -desc => "me.id" };
     #$from->{order_by} = 'me.' . $from->{order_by} unless $from->{order_by} =~ /^me/;
     if( exists($p{start}) && exists($p{limit}) ) {
         my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
@@ -485,8 +485,17 @@ Returns augmented request row.
 sub append_data {
     my ($self, $request, %p ) = @_;
     my $req = $request;
-    #$req->{type} =  _loc($request->{type} );
-    # get fields from data
+    my $namespaces = $p{model_namespaces} || Baseliner->model('Namespaces'); # for perf
+    my $ns = try { $namespaces->get( $request->{ns} ) } catch { };
+    unless( ref $ns ) {
+        _log _loc "Error: request %1 has an invalid namespace %2", $request->{id}, $request->{ns};
+        return;
+    }
+    my $ns_icon = try { $ns->icon } catch { '' };
+    $req->{ns_name} =  $ns->ns_name . " (" . $ns->ns_type . ")";
+    $req->{ns_icon} =  try { $ns->icon } catch { '' };
+    $req->{type} =  _loc($request->{type} );
+    #my $row = Baseliner->model('Baseliner::BaliRequest')->search({ id=> $request->{id} })->first;
     if( $request->{data} ) {
         my $data = _load( $request->{data} );
         if( ref $data eq 'HASH' ) {

@@ -96,12 +96,26 @@ sub get {
     my $data = $p{data} || {};
     my $enforce_metadata = delete $p{enforce_metadata};
     my $long_key = $p{long_key};
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search( { -or => [ key=>{-like=>"$key.%" },  key=>{-like=>"$key" } ] });
     my %values;
 
+    # 1) try catalyst config - first look for ->{xxx.yyy}, otherwise ->{xxx}->{yyy}
+    # accepts 2 formats:
+    #    config_get('mykey')->{xxx}
+    #    config_get('mykey.xxx')
+    #
+    my $v = Baseliner->config->{ $key };
+    if( ! defined $v ) {
+        my $config_eval = sprintf 'Baseliner->config->{%s}', join('}{', split /\./, $key );
+        $v =  eval $config_eval; 
+    }
+    $values{ $key } = [ { key=>$key, ns=>'/', bl=>'*', value=>$v } ] if defined $v ;
+
     # load all values for the keyinto a temp hash
-    while( my $r = $rs->next  ) {
-        push @{ $values{$r->key} }, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
+    my @rs = Baseliner->model('Baseliner::BaliConfig')->search(
+        { -or => [ key=>{-like=>"$key.%" },  key=>{-like=>"$key" } ] },
+        { select=>[qw/ns key bl value/] })->hashref->all;
+    for my $r ( @rs ) {
+        push @{ $values{ $r->{key} } }, { ns=>$r->{ns}, bl=>$r->{bl}, value=>$r->{value} };
     }	
 
     # now find the best_match
@@ -111,6 +125,8 @@ sub get {
             my $k2 = $2;
             my $value = BaselinerX::Type::Config::best_match_on_viagra( $p{ns}, $p{bl}, @{ $values{$k} || [] } );
             $data->{ $long_key ? $k : $k2} = $value;
+        } else {
+            $data->{ $k } = BaselinerX::Type::Config::best_match_on_viagra( $p{ns}, $p{bl}, @{ $values{$k} || [] } );
         }
     }
 
@@ -157,12 +173,12 @@ sub get {
     } else {
         my $msg = _loc( "Could not find metadata for the key '%1' in the registry.", $key );
         _throw $msg if($enforce_metadata);
-        _log $msg;
+        _debug $msg;
     }
     
     if( $p{value} ) {
         my ( $first_key ) = keys %{ $data || {} };
-        return $data->{ $first_key };
+        return defined $first_key ? $data->{ $first_key } : undef;
     } else {
         return $data;
     }
@@ -245,7 +261,7 @@ sub filter_ns {
     $ns ||= '/';
     my $search = { ns=>$ns };
     $search->{bl} = $bl if( $bl );
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search($search);
+    my $rs = Baseliner->model('Baseliner::BaliConfig')->search($search, { select=>[qw/key bl ns/] });
     my %keys;
     while( my $r = $rs->next ) {
         $keys{ $r->key } = ();

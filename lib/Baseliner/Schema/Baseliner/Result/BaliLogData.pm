@@ -18,68 +18,6 @@ Baseliner::Schema::Baseliner::Result::BaliLogData
 
 __PACKAGE__->table("bali_log_data");
 
-=head1 ACCESSORS
-
-=head2 id
-
-  data_type: NUMBER
-  default_value: undef
-  is_auto_increment: 1
-  is_nullable: 0
-  size: 38
-
-=head2 id_log
-
-  data_type: NUMBER
-  default_value: undef
-  is_foreign_key: 1
-  is_nullable: 0
-  size: 38
-
-=head2 data
-
-  data_type: BLOB
-  default_value: undef
-  is_nullable: 1
-
-=head2 timestamp
-
-  data_type: DATE
-  default_value: SYSDATE
-  is_nullable: 1
-  size: 19
-
-=head2 name
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 2048
-
-=head2 type
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 len
-
-  data_type: NUMBER
-  default_value: undef
-  is_nullable: 1
-  size: 38
-
-=head2 id_log
-
-  data_type: NUMBER
-  default_value: undef
-  is_foreign_key: 1
-  is_nullable: 0
-  size: 38
-
-=cut
-
 __PACKAGE__->add_columns(
   "id",
   {
@@ -138,6 +76,13 @@ __PACKAGE__->add_columns(
     is_foreign_key => 1,
     is_nullable => 1,
     size => 38,
+  },
+  "path",
+  {
+    data_type => "VARCHAR2",
+    default_value => undef,
+    is_nullable => 1,
+    size => 2048,
   },
   
 );

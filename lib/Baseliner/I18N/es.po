@@ -162,6 +162,18 @@ msgstr "s.o."
 msgid "File Deploy"
 msgstr "Despliegue de Ficheros"
 
+msgid "no calendar window"
+msgstr "fuera de ventana"
+
+msgid "Loading available time for %1..."
+msgstr "Actualizando horario para el %1..."
+
+msgid "no calendar windows available for selected date"
+msgstr "no hay ventana de pase disponible para la fecha seleccionada"
+
+msgid "Create a job outside of the available time slots."
+msgstr "Chequee si quiere crear un pase fuera de ventana."
+
 msgid "Mapping Description"
 msgstr "Descripción del Mapeo"
 
@@ -174,8 +186,20 @@ msgstr "Usuario o Contraseña inválidas"
 msgid "Missing User or Password"
 msgstr "Falta el usuario y/o contraseña"
 
+msgid "User doesn't have permissions to create a job in any environment"
+msgstr "Su usuario no tiene permisos de creacion de pases en ningun entorno"
+
+msgid "What"
+msgstr "Qué"
+
+msgid "When"
+msgstr "Cuándo"
+
 msgid "Logout"
 msgstr "Desconectar"
+
+msgid "Loading"
+msgstr "Cargando"
 
 msgid "Loading..."
 msgstr "Cargando..."
@@ -476,6 +500,15 @@ msgstr "Hora Fin"
 
 msgid "Max Start Date"
 msgstr "Fecha Máxima de Inicio"
+
+msgid "Hour"
+msgstr "Hora"
+
+msgid "Minute"
+msgstr "Minuto"
+
+msgid "Second"
+msgstr "Segundo"
 
 msgid "User"
 msgstr "Usuario"
@@ -930,6 +963,15 @@ msgstr "Descripción"
 
 msgid "Calendar Name"
 msgstr "Nombre del Calendario"
+
+msgid "Manage"
+msgstr "Gestionar"
+
+msgid "Flat View"
+msgstr "Vista Plana"
+
+msgid "(all projects)"
+msgstr "(todas)"
 
 msgid "All"
 msgstr "Todos"

@@ -1,4 +1,18 @@
+@font-face {
+  font-family: "OpenSans",
+  font-weight: bold,
+  src: url("/static/fonts/open-sans/OpenSans-Regular.ttf");
+}
+
 /* Used to hide TreePanel icons - node.setIconCls('no-icon') */
+.bali-icon-active {
+    background: transparent url(/static/images/icons/active.gif) no-repeat center;
+}
+
+.bali-icon-inactive {
+    background: transparent url(/static/images/icons/inactive.gif) no-repeat center;
+}
+
 .no-icon {
 	display : none;
 	background-image:url('ext/resources/images/default/s.gif') !important;
@@ -93,6 +107,16 @@
 .tab-style {
         padding: 10px;
 }
+
+.ext-ie6 .tab-style, .ext-ie7 .tab-style, .ext-ie8 .tab-style {
+        padding: 10px;
+        width: 820px;
+}
+.ext-gecko .tab-style {
+        padding: 10px;
+        width: 800px;
+}
+
 .search-item {
     font:normal 11px tahoma, arial, helvetica, sans-serif;
     padding:3px 10px 3px 10px;
@@ -112,7 +136,7 @@
     float: right;
     font-weight:normal;
     margin:0 0 5px 5px;
-    width:100px;
+    width:115px;
     display:block;
     clear:none;
 }

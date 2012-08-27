@@ -19,7 +19,6 @@ __PACKAGE__->add_columns(
     data_type => "NUMBER",
     is_nullable => 0,
     is_auto_increment => 1,
-    original => { data_type => "number" },
   },     
   "name",
   { data_type => "varchar2", is_nullable => 0, size => 1024 },
@@ -74,5 +73,7 @@ __PACKAGE__->belongs_to(
 );
 
 __PACKAGE__->master_setup( 'files', ['project','mid'] => ['file_version', 'BaliFileVersion','mid'] );
+
+sub id { $_[0]->mid; }   # for backwards compatibility
 
 1;

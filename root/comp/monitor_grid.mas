@@ -13,6 +13,7 @@
         }, 
         [ 
             {  name: 'id' },
+            {  name: 'mid' },
             {  name: 'name' },
             {  name: 'type_raw' },
             {  name: 'type' },
@@ -39,7 +40,9 @@
             {  name: 'grouping' },
             {  name: 'day' },
             {  name: 'status_code' },
-            {  name: 'status' }
+            {  name: 'status' },
+            {  name: 'natures' }, // Eric
+            {  name: 'subapps' }  // Eric
         ]
     );
 
@@ -49,7 +52,8 @@
             reader: reader,
             url: '/job/monitor_json',
             baseParams: { limit: ps },
-            sortInfo: {field: 'starttime', direction: "DESC"},
+            remoteSort: true,
+            sortInfo: { field: 'starttime', direction: "DESC" },
             groupField: group_field
     });
     
@@ -204,6 +208,24 @@
         return value.join('<br />');
     };
 
+    var render_nature = function(v,meta,rec,rowIndex,colIndex,store) {
+        if( ! v ) return '' ;
+        var ret = new Array();
+        Ext.each( v, function( r ) {
+            if( ! r ) return;
+            ret.push( 
+                String.format('<div style="height:20px;"><img style="float:left" src="/static/images/icons/nature/{0}.png" />&nbsp;{1}</div>', r, r.toUpperCase() )
+            );
+        });
+        return ret.join('');
+    };
+
+    var render_subapp = function(v,meta,rec,rowIndex,colIndex,store) {
+        if( ! v ) return '';
+        if( typeof v != 'object' ) return v;
+        return Baseliner.render_wrap( v.join(', ') );
+    };
+
     var render_job = function(value,metadata,rec,rowIndex,colIndex,store) {
         return '<b><span style=\'font-family: "Verdana"; font-size: "7pt" \'>' + value + '</span></b>';
     };
@@ -352,10 +374,14 @@
         view: gview,
         selModel: row_sel, 
         columns: [
+                { header: _('ID'), width: 30, dataIndex: 'id', sortable: true, hidden: true },
+                { header: _('MID'), width: 30, dataIndex: 'mid', sortable: true, hidden: true },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
-                { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },	
+                { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
+                { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: true, renderer: render_nature }, // Eric
+                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: true, renderer: render_subapp }, // Eric
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
                 { header: _('Step'), width: 80, dataIndex: 'step', sortable: true , hidden: true },	

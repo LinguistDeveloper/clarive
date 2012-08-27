@@ -63,12 +63,13 @@ sub eval : Local {
     if( @hist = @{ $c->session->{repl_hist} || [] } > 20 ) {
         @hist = shift @hist; 
     }
-    push @hist, { text=>_now(), code=>$eval };
+    push @hist, { text=>_now(), code=>$code };
     $c->session->{repl_hist} = \@hist;
 
     my ($res,$err);
     my $t0 = [gettimeofday];
     my ($stdout, $stderr);
+
     IO::CaptureOutput::capture( sub {
         if( $sql ) {
             eval {

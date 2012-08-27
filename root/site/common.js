@@ -6,7 +6,6 @@ Baseliner.cookie = new Ext.state.CookieProvider({
 // In-edit counter - keep the window for closing if it's more than > 0
 Baseliner.is_in_edit = function(){
     var flag = false;
-    if( console ) console.log( Baseliner.in_edit );
     for( var k in Baseliner.in_edit ) {
         if( Baseliner.in_edit[k] ) flag=true;
     }
@@ -50,6 +49,8 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
     Baseliner.loadFile( '/comp/topic/topic_lib.js', 'js' );
+
+    Baseliner.loadFile( '/static/site.css', 'css' );
 
     Baseliner.message(_('JS'), _('Reloaded successfully') );  
 };
@@ -414,6 +415,54 @@ Baseliner.close_parent = function(comp) {
     }
 };
 
+/*
+
+    Baseliner.combo_project({ value:'project/11221' });
+
+*/
+Baseliner.combo_project = function(params) {
+    if( params==undefined) params={};
+    var store = new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty:"totalCount", 
+        baseParams: params.request || {},
+        id: 'ns', 
+        url: '/project/user_projects',
+        fields: ['ns','name','description'] 
+    });
+    var valueField = params.valueField || 'ns';
+    var combo = new Ext.form.ComboBox({
+           fieldLabel: _("Project"),
+           name: params.name || 'ns',
+           hiddenName: params.hiddenName || 'ns',
+           valueField: valueField, 
+           displayField: params.displayField || 'name',
+           typeAhead: false,
+           minChars: 1,
+           mode: 'remote', 
+           store: store,
+           editable: true,
+           forceSelection: true,
+           triggerAction: 'all',
+           allowBlank: false
+    });
+    if( params.select_first ) {
+        combo.store.on('load',function(store) {
+            combo.setValue(store.getAt(0).get( valueField ));
+        });
+    } else if( params.value ) {
+        combo.store.on('load',function(store) {
+            var ix = store.find( valueField, params.value ); 
+            if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
+        });
+    }
+    if( params.on_select ) {
+        combo.on( 'select', params.on_select );
+    }
+    return combo;
+};
 
 Baseliner.array_field = function( args ) {
     var field_name = args.name;
@@ -523,6 +572,50 @@ Baseliner.array_field = function( args ) {
     return { data: fdata, grid: fgrid };
 };
 
+Baseliner.combo_baseline = function(params) {
+    if( params==undefined) params={};
+    var store = new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty:"totalCount", 
+        baseParams: params.request || {},
+        id: 'id', 
+        url: '/baseline/json',
+        fields: ['id','name','description', 'active'] 
+    });
+    var valueField = params.valueField || 'id';
+    var combo = new Ext.form.ComboBox({
+           fieldLabel: _("Baseline"),
+           name: params.name || 'bl',
+           hiddenName: params.hiddenName || 'bl',
+           valueField: valueField, 
+           displayField: params.displayField || 'name',
+           typeAhead: false,
+           minChars: 1,
+           mode: 'remote', 
+           store: store,
+           editable: true,
+           forceSelection: true,
+           triggerAction: 'all',
+           allowBlank: false
+    });
+    if( params.select_first ) {
+        combo.store.on('load',function(store) {
+            combo.setValue(store.getAt(0).get( valueField ));
+        });
+    } else if( params.value ) {
+        combo.store.on('load',function(store) {
+            var ix = store.find( valueField, params.value ); 
+            if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
+        });
+    }
+    if( params.on_select ) {
+        combo.on( 'select', params.on_select );
+    }
+    return combo;
+};
+
 Baseliner.isArray = function(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
 };
@@ -545,6 +638,7 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     hideTrigger1:true,
     width:280,
     hasSearch : false,
+    emptyText: '<% _loc("<Enter your search string>") %>',
     paramName : 'query',
 
     onTrigger1Click : function(){
@@ -697,6 +791,53 @@ Ext.extend(Ext.ux.PageSizePlugin, Ext.form.ComboBox, {
     onPageSizeChanged: function (combo) {
         this.pageSize = parseInt(combo.getValue(), 10);
         this.doLoad(0);
+    }
+});
+
+Baseliner.open_topic = function(mid,opts) {
+    if( ! opts ) opts = {};
+    var title = opts.title || opts.topic_name || String.format('#{0}', mid );
+    Baseliner.add_tabcomp( '/comp/topic/topic_main.js', title, { topic_mid:mid, _parent_grid: opts.grid });
+    return false;
+};
+
+Baseliner.Grid = {};
+
+
+Baseliner.Grid.Buttons = {};
+
+Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+		    text: _('New'),
+		    icon:'/static/images/icons/add.gif',
+		    cls: 'x-btn-text-icon'
+	    }, config);
+	    Baseliner.Grid.Buttons.Add.superclass.constructor.call(this, config);
+    }
+});
+
+Baseliner.Grid.Buttons.Edit = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+		    text: _('Edit'),
+		    icon: '/static/images/icons/edit.gif',
+		    cls: 'x-btn-text-icon',
+		    disabled: true
+	    }, config);
+	    Baseliner.Grid.Buttons.Edit.superclass.constructor.call(this, config);
+    }
+});
+
+Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+		    text: _('Delete'),
+		    icon:'/static/images/icons/delete.gif',
+		    cls: 'x-btn-text-icon',
+		    disabled: true
+	    }, config);
+	    Baseliner.Grid.Buttons.Delete.superclass.constructor.call(this, config);
     }
 });
 

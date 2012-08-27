@@ -20,7 +20,13 @@ To do:
         if( args!=undefined ) {
             Baseliner.editor_defaults = Ext.apply( Baseliner.editor_defaults, args );
         }
-        var ret = CodeMirror.fromTextArea( document.getElementById( code.getId() ), Ext.apply({
+        /*
+        var ret = CodeMirror( function(elt) { 
+            // document.getElementById( code.getId() );
+            code.getEl().dom.parentNode.replaceChild( elt, code.getEl().dom );
+        }, Ext.apply({
+        */
+        var ret = CodeMirror.fromTextArea( code.getEl().dom , Ext.apply({
                lineNumbers: true,
                tabMode: "indent",
                smartIndent: true,
@@ -59,6 +65,7 @@ To do:
             }, Baseliner.editor_defaults )
         );
         var hlLine = ret.setLineClass(0, "activeline");
+        // ret.setSize( '100%', code.getEl().getHeight() );
         return ret;
     };
     var code = new Ext.form.TextArea({
@@ -305,7 +312,7 @@ To do:
                 status.setValue( "OK" );
                 document.getElementById( output.getId() ).style.color = "#10c000"; // green
                 elapsed.setValue( action.result.elapsed );
-                save({ t: thist, c: code.getValue(), o: output.getValue() });
+                save({ c: code.getValue(), o: output.getValue() });
                 editor.focus();
             },
             failure: function(f,action){

@@ -415,10 +415,7 @@ sub update : Local {
 }
 
 
-
-######################################################################################################################
-##INICIO MÉTODOS ANTERIORES A LA MODIFICACION NUEVA DE PROYECTO, EN PROYECTOS NO SE UTILIZAN NO SÉ SI EN OTRO LADO. ##
-######################################################################################################################
+# old methods:
 
 sub add : Local {
     my ($self,$c) = @_;
@@ -489,7 +486,7 @@ sub show : Local {
     my ( $self, $c, $id ) = @_;
     my $p = $c->request->parameters;
     $id ||= $p->{id};
-    my $prj = Baseliner->model('Baseliner::BaliProject')->search({ id=>$id })->first;
+    my $prj = Baseliner->model('Baseliner::BaliProject')->search({ mid=>$id })->first;
 
     $c->stash->{id} = $id;
     $c->stash->{prj} = $prj;
@@ -524,14 +521,14 @@ sub user_projects : Local {
     @rows = grep { $_ =~ $query } @rows if $query;
     my $rs = $c->model('Baseliner::BaliProject')->search({ ns=>\@rows });
     rs_hashref($rs);
-    @rows = map { $_->{data}=_load($_->{data}); $_->{description} //=''; $_ } $rs->all;
+    @rows = map { 
+        $_->{data}=_load($_->{data});
+        $_->{ns} = 'project/' . $_->{mid};
+        $_->{description} //= $_->{name} // '';
+        $_ } $rs->all;
+    # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
     $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
     $c->forward('View::JSON');
 }
-
-######################################################################################################################
-##FIN MÉTODOS ANTERIORES A LA MODIFICACION NUEVA DE PROYECTO, EN PROYECTOS NO SE UTILIZAN NO SÉ SI EN OTRO LADO.    ##
-######################################################################################################################
-
 
 1;

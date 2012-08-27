@@ -1,12 +1,3 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
-#
-#	CAM .............................. @(#)[project]
-#	Pase ............................. @(#)[pase]
-#	Fecha de pase .................... @(#)[pasefechahora]
-#	Ubicación del elemento ........... @(#)[item]
-#	Versión del elemento ............. @(#)[version]
-#	Propietario de la version ........ @(#)[user]
-
 package Baseliner::Core::JobInfo;
 use Moose;
 use YAML;
@@ -17,6 +8,8 @@ has 'bl' => (is=>'rw', isa=>'Str');
 has 'path' => (is=>'rw', isa=>'Str');
 has 'projects' => (is=>'rw', isa=>'ArrayRef');
 has 'user' => (is=>'rw', isa=>'Str');
+has 'has_subprojects' => (is=>'rw', isa=>'Bool', default=>0);
+has 'status' => (is=>'rw', isa=>'Str');
 
 sub add_subproject {
     my ($self, %p) = @_;
@@ -25,6 +18,17 @@ sub add_subproject {
     my $data = $p{data};
 
     push @{$self->{projects}->{$project}}, $data;
+    $self->has_subprojects(1);
+}
+
+
+sub add_package {
+    my ($self, %p) = @_;
+    
+    my $project = $p{project};
+    my $package = $p{package};
+
+    push @{$self->{projects}->{$project}},$package;	
 }
 
 sub write_yaml {

@@ -38,9 +38,11 @@ sub login_from_url : Local {
 sub login_local : Local {
     my ( $self, $c, $login, $password ) = @_;
     my $p = $c->req->params;
-
-    my $auth = $c->authenticate({ id=>$c->stash->{login}, password=> Digest::MD5::md5_hex( $c->stash->{password} ) }, 'local');
-    
+    my $auth = try { 
+        $c->authenticate({ id=>$c->stash->{login}, password=> Digest::MD5::md5_hex( $c->stash->{password} ) }, 'local');
+    } catch {
+        $c->log->error( "**** LOGIN ERROR: " . shift() );
+    }; # realm may not exist
     if( ref $auth ) {
         $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
         $c->session->{username} = $c->stash->{login};
@@ -77,7 +79,7 @@ sub login : Global {
     $login= $case eq 'uc' ? uc($login)
      : ( $case eq 'lc' ) ? lc($login) : $login;
      
-    _log "LOGIN: " . $p->{login};
+    $c->log->info( "LOGIN: " . $p->{login} );
     #_log "PW   : " . $p->{password}; #TODO only for testing!
 
     if( $login ) {
@@ -105,7 +107,7 @@ sub login : Global {
             
             if( ref $auth ) {
                 $c->stash->{json} = { success => \1, msg => _loc("OK") };
-                $c->session->{username} = uc $login;
+                $c->session->{username} = $login;
                 $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
             } else {
                 $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
@@ -113,8 +115,8 @@ sub login : Global {
         }
     } else {
         # invalid form input
-    # $c->stash->{json} = { success => \0, msg => _loc("Missing User or Password") };
-    $c->stash->{json} = { success => \0, msg => _loc("Missing User") };
+        # $c->stash->{json} = { success => \0, msg => _loc("Missing User or Password") };
+        $c->stash->{json} = { success => \0, msg => _loc("Missing User") };
     }
     _log '------Login in: '  . $c->username ;
     $c->forward('View::JSON');	
@@ -148,20 +150,23 @@ sub logon : Global {
 sub saml_check : Private {
     my ( $self, $c ) = @_;
     my $header = $c->config->{saml_header} || 'samlv20';
-    _log _loc('SAML header: %1', $header );
+    _debug _loc('SAML header: %1', $header );
+    _log _loc('Current user: %1', $c->username );
     use XML::Simple;
     return try {
         my $saml = $c->req->headers->{$header};
+        _debug "H=$saml";
         defined $saml or _fail "SAML: no header '$header' found in request. Rejected.";
         my $xml = XMLin( $saml );
         my $username = $xml->{'saml:Subject'}->{'saml:NameID'};
         $username or die 'SAML username not found';
+        $username = $username->{content} if ref $username eq 'HASH';
         _log _loc('SAML starting session for username: %1', $username);
         $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
         $c->session->{username} = $username;
         return $username;
     } catch {
-        _log _loc('SAML Failed auth: %1', shift);
+        _error _loc('SAML Failed auth: %1', shift);
         return 0;
     };
 }

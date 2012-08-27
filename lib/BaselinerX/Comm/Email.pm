@@ -15,9 +15,10 @@ register 'config.comm.email' => {
     metadata => [
         { id=>'frequency', name=>'Email daemon frequency', default=>10 },
         { id=>'server', name=>'Email server', default=>'smtp.example.com' },
-        { id=>'from', name=>'Email default sender', default=>'SCM' },
+        { id=>'from', name=>'Email default sender', default=>'user <user@mailserver>' },
         { id=>'domain', name=>'Email domain', default=>'exchange.local' },
         { id=>'max_attempts', name=>'Max attempts', default=>10 },
+        { id=>'baseliner_url', name=>'Base URL to access baseliner', default=>'http://localhost:3000' },
     ]
 };
 
@@ -52,6 +53,8 @@ sub group_queue {
     while( my $queue_item = $rs_queue->next ) {
         my $message = $queue_item->id_message;
         my $id = $message->id ;
+        my $from = $message->sender;
+        $from = $config->{from} if $from eq 'internal';
         $email{ $id } ||= {};
 
         my $address = $queue_item->destination
@@ -61,7 +64,7 @@ sub group_queue {
         push @{ $email{ $id }{ $tocc } }, $address; 
         push @{ $email{ $id }{ id_list } }, $queue_item->id;
 
-        $email{ $id }->{from} ||= $config->{from}; # from should be always from the same address
+        $email{ $id }->{from} ||= $from; # from should be always from the same address
         $email{ $id }->{subject} ||= $message->subject;
         $email{ $id }->{body} ||= $message->body;
         $email{ $id }->{attach} ||= {

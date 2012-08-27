@@ -412,8 +412,8 @@ sub metadata_for_key {
     my $key = shift;
     my $metadata;
     for ( _array $self->metadata ) {
-        my $key = $self->key . '.' . $_->{id};
-        if( $key eq $key ) {
+        my $config_key = $self->key . '.' . $_->{id};
+        if( $config_key eq $key ) {
             return $_;
         }
     }

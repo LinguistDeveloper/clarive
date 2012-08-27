@@ -564,7 +564,7 @@ Baseliner.Calendar =  function(c) {
                 //$( el.dom ).css( 'background-color', 'green' );
                 $( el.dom ).draggable({
                     addClasses: true,
-                    zIndex: 999,
+                    zIndex: 999
                     //revert: true,      // will cause the event to go back to its
                     //revertDuration: 0  //  original position after the drag
                 });
@@ -601,7 +601,7 @@ Baseliner.Calendar =  function(c) {
                     // create the event
                     cal.fullCalendar('renderEvent',
                         Ext.apply({
-                            title: _('[untitled]'),
+                            title: _('[untitled]')
                             //start: date,
                             //end: date,
                             //allDay: allday
@@ -783,9 +783,9 @@ Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 Baseliner.ci_box = function(c) {
     var value = c.value; delete c.value;
     var role = c.role; delete c.role;
-    var cl = c.class; delete c.class;
+    var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
-    if( cl !=undefined ) bp.class = cl;
+    if( cl !=undefined ) bp['class'] = cl;
     else bp.role = role;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
     var store = new Baseliner.store.CI({ baseParams: bp });
@@ -963,7 +963,7 @@ Baseliner.model.RevisionsBoxDD = function(c) {
                 }
                 else if ( ci !=undefined ) {
                     Baseliner.ajaxEval('/ci/sync',
-                        { name: ci.name, class: ci.class, ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
+                        { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
                         function(res) {
                             if( res.success ) {
                                 var mid = res.mid ;
@@ -1096,7 +1096,7 @@ Baseliner.model.RevisionsGridDD = function(c) {
                 }
                 else if ( ci !=undefined ) {
                     Baseliner.ajaxEval('/ci/sync',
-                        { name: ci.name, class: ci.class, ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
+                        { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
                         function(res) {
                             if( res.success ) {
                                 var mid = res.mid ;

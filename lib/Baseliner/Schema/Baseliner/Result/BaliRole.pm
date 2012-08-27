@@ -1,8 +1,4 @@
 package Baseliner::Schema::Baseliner::Result::BaliRole;
-
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
-
 use strict;
 use warnings;
 
@@ -112,9 +108,6 @@ __PACKAGE__->has_many(
   { "foreign.id_role" => "self.id" },
 );
 
-
-# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-10-29 18:11:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SZePRrn3q3DyUUF50Lfv4w
 
 __PACKAGE__->has_many(
   "roles",
