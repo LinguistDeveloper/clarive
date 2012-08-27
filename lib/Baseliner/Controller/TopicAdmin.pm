@@ -28,6 +28,7 @@ register 'config.field.title' => {
         ]
 };
 
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
