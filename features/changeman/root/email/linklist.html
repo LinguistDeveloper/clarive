@@ -1,43 +1,75 @@
 <%args>
-	$subject 
-	$requested_by
-	$realname => ''
-	$requested_to => []
-	$reason => '(vacio)'
-	$jobname 
-	$items => [] 
+    $subject
+    $requested_by
+    $realname => ''
+    $requested_to => []
+    $reason => '(vacio)'
+    $jobname
+    $jobid
+    $items => []
+    $url
+    $to
 </%args>
-<%init>
-    use Baseliner::Utils;
-</%init>
 <head>
     <meta http-equiv="Content-Language" content="en" />
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
     <title>Accion</title>
 	<& /email/style.css &>
 </head>
+<style>
+body {
+    font-family: arial;
+    font-size: 10pt;
+    }
+.backGroundPrimeraFila {
+    font-family: Verdana;
+    font-size: 8pt;
+    font-weight: bold;
+    color: #CCCCCC;
+    background-color: #666666;
+    vertical-align: middle;
+    }
+.backGroundFilaDatos {
+    font-family: Verdana;
+    font-size: 8pt;
+    color: #111111;
+    background-color: #ffffff;
+    vertical-align: top;
+    }
+</style>
 
 <body>
-    <div class='box'>
-        <div class="error">
-            <h2>SCM: <% $subject %></h2>
-        </div>
+    <div id="tablaContenedor_div">
+        <TABLE cellpadding="0" cellspacing="0" width="100%">
+            <TR height="20">
+                <TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">&nbsp;SCM/CHANGEMAN</TD>
+            </TR>
+        </TABLE>
     </div>
-    <div class='box'>
-        <div class="trace error">
-            <li><b><% _loc("Requested by") %>: </b> <% $requested_by %> (<% $realname %>)
-            <li><b><% _loc("Requested to") %>: </b>
-				<ul>
-					<li><% join '<li>', @{ $requested_to } %>
-				</ul>
-        </div>
-        <div class="trace error">
-            <% _loc("Jobname %1 with the package(s):", $jobname) %>
-            <ul>
-                <li><% join '<li>', @{ $items } %>
-            </ul>
+
+    <table border=0 cellspacing=2>
+        <tr>
+            <td> <h3><% $subject %></h3> </td>
+        </tr>
+    </table>
+
+    <table border=1 cellspacing=1 cellpadding="2">
+        <tr class="backGroundFilaDatos">
+            <td class="backGroundFilaDatos">El job <% $jobname %> solicitado por el usuario <% $requested_by %> (<% $realname %>) formado por los paquetes Changeman:<br>
+            <ul> <li><% join '<li>', @{ $items } %> </ul>
             <% $reason %>
-        </div>
-    </div>
+            </td>
+        </tr>
+    </table>
+
+    <p>
+    <a href="<% $url %>">Consulte el log de pase aqu&iacute;.</a>
+    </p>
+
+    <p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+Enviado a: <% join ",",@$to %>
+%}
+    </p>
 </body>
 

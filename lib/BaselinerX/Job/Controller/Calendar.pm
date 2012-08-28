@@ -503,450 +503,10 @@ sub calendar_delete : Path('/job/calendar_delete') {
     $c->forward( 'View::JSON' );
 }
 
-=head2 calendar_range
-
-From a list of ns, finds all applicable ranges. 
-
-If bl is supplied, the bl calendar has preference over all other calendars. For example:
-
-    - /, *                      <== least precedence
-    - /, DES
-    - /apl/APL_ABC, *
-    - /apl/APL_ABC, DES
-    - /package/P1102121, *
-    - /package/P1102121, DES    <== most precendence
-
-=cut
-
-
-#TODO needs to include specific date ranges as priority
-use Baseliner::Core::Namespace;
-
-sub calendar_range : Private {
-    my ( $self, $c ) = @_;
-    my $day = $c->stash->{ day };
-    my @ns = @{ $c->stash->{ ns } || [] };
-    my @range;
-    #_log "CAL----VOY: " . _dump( \@ns );
-    my $date = parse_date( 'dd/mm/Y', $day );
-    my $week_day = $date->day_of_week() - 1;
-
-    for my $ns ( $c->model( 'Namespaces' )->sort_ns( { asc => 1 }, @ns ) ) {
-        my $ns_desc = $c->model( 'Namespaces' )->find_text( $ns );
-        for my $bl ( $c->stash->{ bl } ? ( '*', $c->stash->{ bl } ) : '*' ) {
-            my $bl_desc = Baseliner::Core::Baseline->name( $bl );
-
-            #_log "CAL===>BL=$bl, NS=$ns ";
-            my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $bl } );
-            while ( my $r = $rs->next ) {
-
-                #_log "CALENDAR===========>" . $r->name . " day=$day, $date=$date, week_day=$week_day";
-                my $rs2 = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $r->id, day => $week_day } );
-                while ( my $r2 = $rs2->next ) {
-
-                    #_log "====> NS=" . $r->ns ;
-                    #_log "NS=" . $r->ns . ", DATA=" . _dump $r2->get_columns;
-                    if ( $r2->active ) {
-                        # last range has the most precedence
-                        @range = range_add( \@range, "$ns_desc ($bl_desc)", $r2->start_time, $r2->end_time, $r2->type );
-                        #push @range, { start=>$r2->start_time, end=>$r2->end_time, };
-                    }
-                }
-            }
-        }
-    }
-    $c->stash->{ calendar_range } = \@range;
-    $c->stash->{ calendar_range_expand } = [ range_expand( $date, @range ) ];
-}
-
-sub date_range : Private {
-    my ( $self, $c ) = @_;
-    my $start_date = $c->stash->{ start_date };
-    my $end_date   = $c->stash->{ end_date };
-    my @ns         = @{ $c->stash->{ ns } || [] };
-    my @range_enabled;
-    my @range_disabled;
-    my @include;
-    my %exclude;
-    my @only;
-    my %fechas;
-    my $lastType = CALENDAR_UNION;
-    use Switch;
-
-    for my $ns ( $c->model( 'Namespaces' )->sort_ns( { asc => 1 }, @ns ) ) {
-        my $ns_desc = $c->model( 'Namespaces' )->find_text( $ns );
-
-        #Parche temporal BORRAME CUANDO SE ARREGLEN LOS NS
-        $ns =~ s/_DESA|_CORR//g if ( $ns =~ /_DESA|_CORR/ );
-        for my $bl ( $c->stash->{ bl } ? ( '*', $c->stash->{ bl } ) : '*' ) {
-            my $bl_desc = Baseliner::Core::Baseline->name( $bl );
-            _log "CAL===>BL=$bl, NS=$ns ";
-            my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $bl } );
-            while ( my $r = $rs->next ) {
-                my $currentDate   = $start_date;
-                my $calendar_type = $r->type;
-                $lastType = $calendar_type;
-                while ( DateTime->compare( $currentDate, $end_date ) == -1 ) {
-                    my $date_str     = $self->parseDateTimeToForm( $currentDate );
-                    my $week_day     = $currentDate->day_of_week() - 1;
-                    my $jsDateObject = $self->parseJSON( $currentDate );
-                    my $rs2;
-                    $rs2 =
-                        $c->model( 'Baseliner::BaliCalendarWindow' )
-                        ->search( { id_cal => $r->id, start_date => $self->parseDateTimeToDbix( $currentDate ) } );
-                    $rs2 =
-                        $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $r->id, day => $week_day, start_date => undef } )
-                        if ( not ref $rs2 or not $rs2->next );
-                    $rs2->reset();
-
-                    while ( my $r2 = $rs2->next ) {
-                        if ( $r2->active == 1 ) {
-
-                    #_log "------CREADO-----FECHA : " . $self->parseJSON($currentDate) . " DIA_SEMANA: $week_day ID_ENCONTRADO: " . $r2->id;
-                            switch ( $calendar_type ) {
-                                case ( CALENDAR_UNION ) { push @include, $jsDateObject; }
-                                case ( CALENDAR_INTERSEC ) { $exclude{ $jsDateObject } = $ns; }
-                                case ( CALENDAR_UNIQUE ) { push @only,    $jsDateObject; }
-                                else                     { push @include, $jsDateObject; }
-                            }
-
-                            #push @range_enabled,$jsDateObject;
-                        }
-                        else {
-                            push @range_disabled, $jsDateObject;
-                        }
-                    }
-                    $currentDate = $self->addDaysToDateTime( $currentDate, 1 );
-                }
-            }
-        }
-    }
-
-    $lastType = CALENDAR_INTERSEC if ( keys %exclude );
-    $lastType = CALENDAR_UNIQUE   if ( scalar( @only ) > 0 );
-
-    switch ( $lastType ) {
-        case ( CALENDAR_UNIQUE ) {
-            push @range_enabled, @only;
-        }
-        case ( CALENDAR_UNIQUE ) {
-            for my $val ( @include ) {
-                if ( $exclude{ $val } ne '' ) {
-                    my $idx = -1;
-                    foreach my $i ( 0 .. scalar( @range_disabled ) - 1 ) {
-                        if ( $range_disabled[ $i ] eq $val ) {
-                            $idx = $i;
-                            last;
-                        }
-                    }
-                    push @range_enabled, $val if ( $idx eq -1 );
-
-                    #push @range_enabled, $val if(!map($val,@range_disabled));
-                }
-            }
-        }
-        else {
-            push @range_enabled, keys %exclude;
-            push @range_enabled, @only;
-            push @range_enabled, @include;
-        }
-    }
-
-    _log "----FECHAS ANTES DE PURGA ($lastType): " . join( " , ", @range_enabled );
-    @range_enabled = purgeDateArray( @range_enabled, @range_disabled );
-    _log "----FECHAS ANTES DE PURGA ($lastType): " . join( " , ", @range_enabled );
-
-    $c->stash->{ range_enabled } = \@range_enabled;
-}
-
-sub date_intersec_range : Private {
-    my ( $self, $c ) = @_;
-    my $start_date = $c->stash->{ start_date };
-    my $end_date   = $c->stash->{ end_date };
-    my @ns         = @{ $c->stash->{ ns } || [] };
-    my $count      = scalar @ns;
-    my @range_enabled;
-    my @range_disabled;
-    my %valid_dates = ();
-
-    for my $ns ( $c->model( 'Namespaces' )->sort_ns( { asc => 1 }, @ns ) ) {
-        my $ns_desc = $c->model( 'Namespaces' )->find_text( $ns );
-        $ns =~ s/_DESA|_CORR//g if ( $ns =~ /_DESA|_CORR/ );
-        $valid_dates{ $ns } = ();
-        for my $bl ( $c->stash->{ bl } ? ( '*', $c->stash->{ bl } ) : '*' ) {
-            my $bl_desc = Baseliner::Core::Baseline->name( $bl );
-
-            my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $bl } );
-            $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => "*" } ) if ( not ref $rs or not $rs->next );
-            $rs->reset();
-
-            while ( my $r = $rs->next ) {
-                my $currentDate = $start_date;
-                while ( DateTime->compare( $currentDate, $end_date ) == -1 ) {
-                    my $week_day     = $currentDate->day_of_week() - 1;
-                    my $jsDateObject = $self->parseJSON( $currentDate );
-                    my $rs2;
-                    $rs2 =
-                        $c->model( 'Baseliner::BaliCalendarWindow' )
-                        ->search( { id_cal => $r->id, start_date => $self->parseDateTimeToDbix( $currentDate ) } );
-                    $rs2 =
-                        $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $r->id, day => $week_day, start_date => undef } )
-                        if ( not ref $rs2 or not $rs2->next );
-                    $rs2->reset();
-                    my $found = 0;
-
-                    while ( my $r2 = $rs2->next ) {
-                        $found = 1;
-                        if ( defined( $r2->active ) && $r2->active == 1 ) {
-                            push @{ $valid_dates{ $ns } }, $jsDateObject;
-                            push @range_enabled, $jsDateObject;
-                        }
-                        else {
-                            push @range_disabled, $jsDateObject;
-                        }
-                    }
-                    push @range_disabled, $jsDateObject if ( $found eq 0 );
-                    $currentDate = $self->addDaysToDateTime( $currentDate, 1 );
-                }
-            }
-        }
-    }
-
-    # delete duplicates
-    $c->stash->{ range_enabled }  = [ _unique @range_enabled ];
-    $c->stash->{ range_disabled } = [ _unique @range_disabled ];
-}
-
-sub time_range_intersec : Private {
-    my ( $self, $c ) = @_;
-#    my $date  = $c->stash->{ date_selected };
-#    my @ns    = @{ $c->stash->{ ns } || [] };
-#    my $count = scalar @ns;
-#    use Calendar::Slots;
-#    my @range_enabled;
-#    my @range_disabled;
-#    my @slots_validos;
-#    my %valid_slots = ();
-#    my $cal         = Calendar::Slots->new;
-#
-#    for my $ns ( $c->model( 'Namespaces' )->sort_ns( { asc => 1 }, @ns ) ) {
-#        my $ns_desc = $c->model( 'Namespaces' )->find_text( $ns );
-#
-#        #Parche temporal BORRAME CUANDO SE ARREGLEN LOS NS
-#        $ns =~ s/_DESA|_CORR//g if ( $ns =~ /_DESA|_CORR/ );
-#        for my $bl ( $c->stash->{ bl } ? ( '*', $c->stash->{ bl } ) : '*' ) {
-#            my $bl_desc = Baseliner::Core::Baseline->name( $bl );
-#            my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $bl } );
-#            $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => "*" } ) if ( not ref $rs or not $rs->next );
-#            $rs->reset();
-#
-#            while ( my $r = $rs->next ) {
-#                my $week_day = $date->day_of_week() - 1;
-#                my $rs2;
-#                $rs2 =
-#                    $c->model( 'Baseliner::BaliCalendarWindow' )
-#                    ->search( { id_cal => $r->id, start_date => $self->parseDateTimeToDbix( $date ) } );
-#                $rs2 = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $r->id, day => $week_day, start_date => undef } )
-#                    if ( not ref $rs2 or not $rs2->next );
-#                $rs2->reset();
-#                my $found = 0;
-#
-#                while ( my $r2 = $rs2->next ) {
-#						my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
-#                    if ( $r2->active == 1 ) {
-#                        push @slots_validos, $slot;
-#						  }else{
-#                        push @range_disabled, $slot;
-#                    }
-#                    push @range_disabled, $slot if ( $found eq 0 );
-#
-#                }
-#            }
-#        }
-#    }
-#
-#    addSlots( $cal, @slots_validos );
-#
-#    for my $time_range ( $cal->sorted() ) {
-#        my $start_time = $self->parse_time( $time_range->start );
-#        my $end_time   = $self->parse_time( $time_range->end );
-#        my $type       = $time_range->name;
-#
-#        my $displayText = $start_time . ' - ' . $end_time;    # . ' - ' . (($type eq 'N')? _loc 'Normal Window' : _loc 'Urgent Window');
-#        my $valueJson = '{ start_time: "' . $start_time . '", end_time: "' . $end_time . '", type: "' . $type . '"}';
-#		push @range_enabled,{start_time=>$start_time, end_time=>$end_time, type=>$type, displayText => $displayText, valueJson=>$valueJson};
-#    }
-
-    # Eric -- No me entero de nada de lo de arriba, lo hago desde cero...
-    my @just_another_range_enabled = do {
-      use BaselinerX::Job::CalendarUtils;
-      my $day_of_week  = $c->stash->{date_selected}->{local_c}->{day_of_week} - 1;
-      my @ns           = @{$c->stash->{ns} || []};
-      my $bl           = $c->stash->{bl} || '*';
-      # my $packagename  = $c->stash->{packagename};
-      my @packagename  = @{$c->stash->{packagename}}; # Eric 27/01/2012
-      # _log 'packagenames -> ' . join ', ', @packagename;
-      # _log "day_of_week -> $day_of_week";
-      # _log 'ns -> ' . join ', ', @ns;
-      # _log "bl -> $bl";
-      # my @calendar_ids = calendar_ids $packagename, $bl, @ns;
-      my @calendar_ids = _unique map { calendar_ids $_, $bl, @ns } @packagename; # Eric 27/01/2012
-      # _log 'calendar_ids -> [' . (join ', ', @calendar_ids) . ']';
-      calendar_json merge_calendars $day_of_week, @calendar_ids;
-    };
-
-    # $c->stash->{ time_range } = \@range_enabled;
-    $c->stash->{time_range} = \@just_another_range_enabled;
-    #_log 'time range -> ' . Data::Dumper::Dumper \@just_another_range_enabled;
-}
-
-
-# sub time_range : Private {
-# my ($self,$c )=@_;
-# my $date = $c->stash->{date_selected};
-# my @ns = @{ $c->stash->{ns} || [] };
-# my @range_enabled;
-# my %fechas;
-
-# for my $ns ( $c->model('Namespaces')->sort_ns({ asc=>1 }, @ns ) ) {
-# my $ns_desc = $c->model('Namespaces')->find_text( $ns );
-# for my $bl (  $c->stash->{bl}? ( '*', $c->stash->{bl} ) : '*' ) {
-# my $bl_desc = Baseliner::Core::Baseline->name( $bl );
-#_log "CAL===>BL=$bl, NS=$ns ";
-# my $rs = $c->model('Baseliner::BaliCalendar')->search({ ns=>$ns, bl=>$bl });
-# while( my $r = $rs->next ) {
-# my $week_day = $date ->day_of_week() - 1;
-# my $rs2;
-# $rs2 = $c->model('Baseliner::BaliCalendarWindow')->search({ id_cal=>$r->id, start_date=>$self->parseDateTimeToDbix($date)});
-# $rs2 = $c->model('Baseliner::BaliCalendarWindow')->search({ id_cal=>$r->id, day=>$week_day , start_date=>undef}) if(!$rs2 || !$rs2->next);
-# $rs2->reset();
-# while( my $r2 = $rs2->next ) {
-# if( $r2->active == 1 ) {
-# _log "------CREADO NS: $ns --FECHA : " . $self->parseDateTimeToDbix($date) . " DIA_SEMANA: $week_day ID_ENCONTRADO: " . $r2->id_cal;
-# my $displayText = $r2->start_time . ' - ' . $r2->end_time . ' - ' . (($r2->type eq 'N')? _loc 'Normal Window' : _loc 'Urgent Window');
-# my $valueJson = '{ start_time: "' . $r2->start_time . '", end_time: "' . $r2->end_time . '", type: "' . $r2->type . '"}';
-# push @range_enabled,{start_time=>$r2->start_time, end_time=>$r2->end_time, type=>$r2->type, displayText => $displayText, valueJson=>$valueJson};
-# }
-# }
-# }
-# }
-# }
-# $c->stash->{time_range} = \@range_enabled;
-# }
-
 sub parse_time : Private {
     my ( $self, $t ) = @_;
     my $time = sprintf( "%02d", substr( $t, 0, 2 ) ) . ":" . sprintf( "%02d", substr( $t, 2, 3 ) );
     return $time;
-}
-
-sub time_range : Private {
-    my ( $self, $c ) = @_;
-    my $date = $c->stash->{ date_selected };
-    my @ns = @{ $c->stash->{ ns } || [] };
-    use Calendar::Slots;
-    use Switch;
-    my @range_enabled;
-    my @range_disabled;
-    my @include;
-    my @excludes;
-    my %exclude;
-    my @only;
-    my $lastType = CALENDAR_UNION;
-    my %fechas;
-    my $cal = Calendar::Slots->new;
-    _log ">>>>>> time_range - sort_ns...";
-    for my $ns ( $c->model( 'Namespaces' )->sort_ns( { asc => 1 }, @ns ) ) {
-        my $ns_desc = $c->model( 'Namespaces' )->find_text( $ns );
-        #Parche temporal BORRAME CUANDO SE ARREGLEN LOS NS
-        $ns =~ s/_DESA|_CORR//g if ( $ns =~ /_DESA|_CORR/ );
-        for my $bl ( $c->stash->{ bl } ? ( '*', $c->stash->{ bl } ) : '*' ) {
-            my $bl_desc = Baseliner::Core::Baseline->name( $bl );
-            _log "CAL===>BL=$bl, NS=$ns ";
-            my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $bl } );
-            while ( my $r = $rs->next ) {
-                my $week_day = $date->day_of_week() - 1;
-                my $rs2;
-                $rs2 =
-                    $c->model( 'Baseliner::BaliCalendarWindow' )
-                    ->search( { id_cal => $r->id, start_date => $self->parseDateTimeToDbix( $date ) } );
-                $rs2 = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $r->id, day => $week_day, start_date => undef } )
-                    if ( not ref $rs2 or not $rs2->next );
-                $rs2->reset();
-                while ( my $r2 = $rs2->next ) {
-                        my $slot = {date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type};
-                    my $calendar_type = $r->type;
-                    $lastType = $calendar_type;
-                    if ( $r2->active == 1 ) {
-                        _log "------CREADO-----FECHA : "
-                            . $self->parseDateTimeToSlot( $date )
-                            . " DIA_SEMANA: $week_day ID_ENCONTRADO: "
-                            . $r2->id;
-
-                       #$cal->slot( date=>$self->parseDateTimeToSlot($date), start=>$r2->start_time , end=>$r2->end_time, name=>$r2->type );
-                        switch ( $calendar_type ) {
-                            case ( CALENDAR_UNION ) { push @include, $slot; }
-                            case ( CALENDAR_INTERSEC ) { $exclude{ $slot->{ date } } = $ns; push @excludes, $slot; }
-                            case ( CALENDAR_UNIQUE ) { push @only,    $slot; }
-                            else                     { push @include, $slot; }
-                        }
-                    }
-                    else {
-                        push @range_disabled, $slot;
-                    }
-                }
-            }
-        }
-    }
-
-    $lastType = CALENDAR_INTERSEC if ( keys %exclude );
-    $lastType = CALENDAR_UNIQUE   if ( scalar( @only ) > 0 );
-    my @finalDates = ();
-
-    switch ( $lastType ) {
-        case ( CALENDAR_UNIQUE ) {
-            #addSlots($cal, @only);
-            @finalDates = @only;
-        }
-        case ( CALENDAR_INTERSEC ) {
-            for my $val ( @include ) {
-                if ( $exclude{ $val->{ date } } ne '' ) {
-                    my $idx = -1;
-                    foreach my $i ( 0 .. scalar( @range_disabled ) - 1 ) {
-                        if ( $range_disabled[ $i ] eq $val ) {
-                            $idx = $i;
-                            last;
-                        }
-                    }
-                    push @finalDates, $val;
-                    #addSlots($cal, ($val)) if($idx eq -1);
-                }
-            }
-        }
-        else {
-            @finalDates = ( @excludes, @only, @include );
-            #addSlots($cal, @excludes);
-            #addSlots($cal, @only);
-            #addSlots($cal, @include);
-        }
-    }
-
-    @finalDates = purgeSlotArray( @finalDates, @range_disabled );
-
-    addSlots( $cal, @finalDates );
-
-    for my $time_range ( $cal->sorted() ) {
-        my $start_time = $self->parse_time( $time_range->start );
-        my $end_time   = $self->parse_time( $time_range->end );
-        my $type       = $time_range->name;
-
-        my $displayText = $start_time . ' - ' . $end_time . ' - ' . ( ( $type eq 'N' ) ? _loc 'Normal Window' : _loc 'Urgent Window' );
-        my $valueJson = '{ start_time: "' . $start_time . '", end_time: "' . $end_time . '", type: "' . $type . '"}';
-        push @range_enabled,
-            { start_time => $start_time, end_time => $end_time, type => $type, displayText => $displayText, valueJson => $valueJson };
-    }
-
-    $c->stash->{ time_range } = \@range_enabled;
 }
 
 sub purgeDateArray {
@@ -1163,7 +723,10 @@ sub grid : Private {
           }
         }
         # Get rid of empty hashrefs.
-        $grid->{$dd} = [grep {scalar keys %{$_}} @ll];
+        #$grid->{$dd} = [grep {scalar keys %{$_}} @ll];
+        for my $win ( _array $aref ) {
+            push @{ $grid->{$dd}{ $win->{start_time } } }, $win;
+        }
         # End
         $currentDate = $self->addDaysToDateTime( $currentDate, 1 );
     }
@@ -1226,37 +789,6 @@ sub event_dates : Path('/calendar/event_dates') {
 
     $c->stash->{ json } = { success => \1, data => join( ',', @events ) };
 
-    $c->forward( 'View::JSON' );
-}
-
-sub event_nopase_dates : Path('/calendar/event_nopase_dates') {
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    my @ns = split( ",", $p->{ ns } );
-
-    my $month_days = 31;
-    my $week_days  = 7;
-    my $date       = $p->{ date };
-    try {
-        my $start_date = BaselinerX::Job::Controller::Calendar->parseDateTime( $date );
-        $start_date = BaselinerX::Job::Controller::Calendar->addDaysToDateTime( $start_date, -$month_days );
-
-        #$c->stash->{start_date} = BaselinerX::Job::Controller::Calendar->parseDateTime($date);
-        $c->stash->{ start_date } = $start_date;
-        #my $add_days = ($month_days - $c->stash->{start_date}->day() ) + $month_days + 7;
-        my $add_days = ( $month_days * 5 ) + ( $week_days * 2 );
-        $c->stash->{ end_date } = BaselinerX::Job::Controller::Calendar->addDaysToDateTime( $c->stash->{ start_date }, $add_days );
-        $c->stash->{ bl }       = $p->{ bl };
-        $c->stash->{ ns }       = \@ns;
-        $c->forward( '/calendar/date_intersec_range' );
-        # _log _dump $c->stash->{calendar_range_expand} ;
-        $c->stash->{ json } = { success => \1, data => join( ",", @{ $c->stash->{ range_disabled } } ) };
-    }
-    catch {
-        my $error = shift;
-        $c->stash->{ json } = { success => \0, data => $error };
-    };
-    _log _dump $c->stash->{ json };
     $c->forward( 'View::JSON' );
 }
 
@@ -1529,6 +1061,129 @@ sub inside_window {
     } else {
         return 0;
     }
+}
+
+sub merge_calendars : Private {
+    my ($self,%p) = @_;
+
+    my $bl = $p{bl};
+    my $now = Class::Date->new( _dt() );
+    my $date = $p{date} || $now; 
+    $date = Class::Date->new( $date ) if ref $date ne 'Class::Date' ;
+
+    # if today, start hours at now
+    my $start_hour = $now->ymd eq $date->ymd ? sprintf("%02d%02d", $now->hour , $now->minute) : '';
+
+    my $where = {
+        'me.active'=>'1',
+        'windows.active'=>1,
+    };
+
+    $where->{bl} = $p{bl} if $p{bl};
+    $where->{ns} = $p{ns} if $p{ns}; # [ 'changeman.nature/changeman_batch', '/'  ]
+    
+    my @cals = DB->BaliCalendar->search(
+        $where,
+        {
+          prefetch=>'windows',
+          order_by=>[
+              { -asc=>'seq' },
+              { -asc=>'windows.day' },
+              { -asc=>'windows.start_time' }
+          ]
+        }
+    )->hashref->all;
+    #return \@cals;
+    my @slots_cal;
+    for my $cal ( @cals ) {
+       my $slots = Calendar::Slots->new();
+       for my $win ( _array $cal->{windows} ) {
+           my $name = "$cal->{name} ($win->{type})==>" .( $win->{day}+1 );
+           if( $win->{start_date} ) {
+               my $d = Class::Date->new( $win->{start_date} );
+               $slots->slot( date=>substr($d->string,0,10), start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>{ cal=>$cal->{name}, type=>$win->{type} } );
+           } else {
+               $slots->slot( weekday=>$win->{day}+1, start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>{ cal=>$cal->{name}, type=>$win->{type} } );
+           }
+       }
+       push @slots_cal, $slots;
+    }
+    #_log _dump $slots->sorted;
+    my $date_w = $date->wday -1;
+    $date_w < 0  and $date_w += 7;
+    my $date_s = $date->strftime('%Y%m%d');
+    my %list;
+    _debug "TOD=$date, W=$date_w, S=$date_s, START=$start_hour";
+
+    for my $s ( map { $_->sorted } @slots_cal ) {
+       next if $s->type eq 'date' && $s->when ne $date_s;
+       next if $s->type eq 'weekday' && $s->when ne $date_w;
+
+       for( $s->start .. $s->end-1 ) {
+         my $time = sprintf('%04d',$_);
+         next if $start_hour && $time < $start_hour;
+         next if substr( $time, 2,2) > 59 ;
+         next if $time == 2400;
+         # X > U > N - using ord for ascii values
+         if( ! exists $list{$time} || ord $s->data->{type} > ord $list{ $time }->{type} ) {
+            $list{ $time } = {
+                type=>$s->data->{type}, cal=>$s->data->{cal}, 
+                hour => sprintf( '%s:%s', substr($time,0,2), substr($time,2,2) ),
+                name=>sprintf "%s (%s)", $s->data->{cal}, $s->data->{type} 
+            }; 
+         }
+       }
+    }
+    \%list;
+}
+
+sub build_job_window : Path('/job/build_job_window') {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    try {
+        my $date = $p->{job_date};
+        my $date_format = $p->{date_format} or _fail "Missing date format";
+        
+        my $bl = $p->{bl};
+        my $contents = _decode_json $p->{job_contents};
+        $contents = $c->model('Jobs')->container_expand( $contents );
+        my $month_days = 31;	
+
+        # get calendar range list
+        $date =  $date
+            ? parse_dt( $date_format, $date )
+            : _dt();  # _dt = now with timezone
+
+        my @ns;
+        # $contents = $c->model('Jobs')->container_expand( $contents );
+        for my $item ( @{ $contents || [] } ) {
+            my $namespace = $c->model('Namespaces')->get($item->{ns});
+            my @ns_list = _array $item->{ns}, _array $namespace->nature, $namespace->application, '/';
+            foreach my $curr_ns (@ns_list){
+                _debug "NS=$curr_ns";
+                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $curr_ns } });
+                push @ns, $curr_ns if $r->count;
+            }
+        }
+        _debug "NS with Calendar: " . join ',',@ns;
+        my %tmp_hash   = map { $_ => 1 } @ns;
+        @ns = keys %tmp_hash;    
+        _debug "------Checking dates for namespaces: " . _dump \@ns;
+
+        my $hours = $self->merge_calendars( ns=>\@ns, bl=>$bl, date=>$date );
+        # get it ready for a combo simplestore
+        my $hour_store = [ map {
+           [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
+        } sort keys %$hours ];
+
+        $c->stash->{json} = {success=>\1, data => $hour_store };
+    } catch {
+        my $error = shift;
+        _error $error;
+        $c->stash->{json} = {success=>\0, msg=>$error, data => $error };
+    };
+    $c->forward('View::JSON');
 }
 
 1;

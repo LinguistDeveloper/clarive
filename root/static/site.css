@@ -191,18 +191,21 @@
 .job-calendar h1 { font-size: 12pt; font-weight: bold; text-transform: capitalize }
 .job-calendar th { font-size: 12pt; font-weight: bold; text-transform: capitalize }
 .job-calendar td { font-size: 9pt; }
-td.normal { background-color: #70E080; }
-td.urgente { background-color: #F08080; }
-td.nopase { background-color: #D0D0D0; }
-td.normalHover { background-color: #80C080; }
-td.urgenteHover { background-color: #C08080; }
-td.nopaseHover { background-color: #B0B0B0; }
-td.normalDes { background-color: #A0B0A0; }
-td.urgenteDes { background-color: #B0A0A0; }
+
+td.slot_N { background-color: #77da50; }
+td.slot_U { background-color: #f07444; }
+td.slot_X { background-color: #555; }
+td.slot_B { background-color: #D0D0D0; }
+
+td.slot_N_off { background-color: #b9daad; }
+td.slot_U_off { background-color: #f0c5b4; }
+td.slot_X_off { background-color: #bbb; }
+td.slot_B_off { background-color: #e0e0e0; }
+
 td.nopaseDes { background-color: #E0E0E0; }
-td.normalDesHover { background-color: #80C080; }
-td.urgenteDesHover { background-color: #C08080; }
-td.nopaseDesHover { background-color: #B0B0B0; }
+
+td.slot_hover { border: #000 1px dashed }
+
 .job-calendar .boton {  }
 .job-calendar select { width: 160px; }
 

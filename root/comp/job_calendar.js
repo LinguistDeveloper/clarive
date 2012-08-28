@@ -3,8 +3,10 @@
 my $grid = $c->stash->{grid};
 my $panel = $c->stash->{panel};
 my $id_cal = $c->stash->{id_cal};
-my $loc = DateTime::Locale->load("es_ES"); 
+my $loc = DateTime::Locale->load( $c->language );
 my $day_wide = $loc->day_format_wide;
+my $currentDate = $c->stash->{fecha_primer_dia_semana};
+my $firstday = Class::Date->new( $c->stash->{fecha_primer_dia_semana} );
 
 </%init>
 <script language="text/javascript">
@@ -69,7 +71,7 @@ Ext.onReady(function(){
 </TR>
 </TABLE>
 <FORM name="infForm" action="" method="GET">
-    <TABLE>
+    <TABLE border=0 style="height: 300px">
         <TR>
 % foreach my $dd ( @{ $day_wide || [] } ) {
             <TH width='100' align=center><% $dd %></TH>
@@ -77,76 +79,101 @@ Ext.onReady(function(){
         </TR>
         <TR>
 <%perl>
-        my $width = 98;
-        my $height = 240;
-        my %has_date;
-        my %clase = ( 'U' => 'urgente', 'N' => 'normal', 'X' => 'nopase' );
+    my %has_date;
 
-        foreach my $dd ( 0..6 ) {
-            my $tipo = 'X';
-            print qq{<TD width="$width" align=center>
-                        <TABLE width="$width" celspacing="0" celpadding="0">
-                            };
-            my @ventanas = @{$grid->{$dd}};	
-            if(@ventanas>0){
-                my $lastTime = '';
-                foreach my $ventana(@ventanas){
-                    my $fecha = $ventana->{start_date}->day() . "/" . $ventana->{start_date}->month() . "/" . $ventana->{start_date}->year() if($ventana->{start_date});
-                    my $start_time = $ventana->{start_time};
-                    my $end_time   = $ventana->{end_time};
-                    my $currentTime = $start_time . " - " . $end_time;					
-                    if($lastTime ne $currentTime){
-                        $start_time =~ s/://g;
-                        $end_time =~ s/://g;
-                        my $diff = ($end_time - $start_time)/10;
-                        my $porcentualHeight = ($diff);
-                        $tipo = $ventana->{type};
-                        $has_date{$ventana->{day}} = $ventana->{start_date} if ($ventana->{start_date});
-                        
-                        #my $clase_final = ($ventana->{active} ) ? $clase{$tipo} : $clase{$tipo} .'Des';
-                        #my $clase_final = ($tipo eq 'X' ) ? 'nopase' : ( $ventana->{active} ? 'normal' : 'urgente');
-                        # Eric -- Cambio la lógica un poco... Si no es activo o es X, no se pasa nada. Lo ponemos a gris.
-                        #         Si es N, pues nada, go for it. A verde.
-                        #         Si es U, urgente, you shall not pass!!!!11. A rojo.
-                        #         Todo lo demás, por si llegan cosas raras, lo ponemos a gris y aquí no ha pasado nada.
-                        my $clase_final = $tipo eq 'X' || !$ventana->{active} ? 'nopase' : $tipo eq 'N' ? 'normal' : $tipo eq 'U' ? 'urgente' : 'nopase';
-                        print qq{<TR><TD style='cursor:hand' height='$porcentualHeight'};
-                        print " onmouseover='javascript:this.className=\"" . $clase_final . "Hover\";'";
-                        print " onmouseout='javascript:this.className=\"$clase_final\";'"; 
-                        print "	align=center CLASS='$clase_final'";
-                        $fecha ||= '';
-                        if( $tipo eq 'X' ) {
-                            print qq{ onclick='javascript: Baseliner.editSlot("$ventana->{day}","$ventana->{start_time}","$ventana->{end_time}","$fecha")'>};
-                        } else {							
-                            print qq{ onclick='javascript: Baseliner.editId("$ventana->{id}")'>};
-                        }	
-                        print qq{ $ventana->{start_time} - $ventana->{end_time}</TD></TR>}	
-                    }
-                    $lastTime = $currentTime;				
-                }
-            }else{
-                print qq{<TR><TD style='cursor:hand' height='$height'};
-                print qq{   onmouseover='javascript:this.className="$clase{$tipo}Hover";' 
-                            onmouseout='javascript:this.className="$clase{$tipo}";' 
-                            align=center CLASS='$clase{$tipo}' };
-                print qq{ onclick='javascript: Baseliner.editSlot("$dd","00:00","24:00","")'>};
-                print qq{ 00:00 - 24:00 </TD></TR>}
-            }
-            print qq{		</TR>
-                        </TABLE>
-                    </TD>};
-
+    my @cals = DB->BaliCalendar->search(
+        { 'me.id' => $id_cal },
+        {
+          prefetch=>'windows',
+          order_by=>[
+              { -asc=>'seq' },
+              { -asc=>'windows.day' },
+              { -asc=>'windows.start_time' }
+          ]
         }
-        
-        
+    )->hashref->all;
+    my $slots = Calendar::Slots->new();
+    # create base (undefined) calendar
+    $slots->slot( weekday=>$_, start=>'00:00', end=>'24:00', name=>'B', data=>{ type=>'B' } )
+        for 1 .. 7;
+    if( my $cal = shift @cals ) {
+       for my $win ( _array $cal->{windows} ) {
+           #my $name = "$cal->{name} ($win->{type})==>" .( $win->{day}+1 );
+           my $name = $win->{type};
+           my $when;
+           if( $win->{start_date} ) {
+               my $d = Class::Date->new( $win->{start_date} );
+               $when = substr($d->string,0,10);
+               $slots->slot( date=>$when, start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>$win );
+           } else {
+               $when = $win->{day}+1;
+               $slots->slot( weekday=>$when, start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>$win );
+           }
+           $win->{aaa} = $when . ' => ' . $win->{start_time} . ' - ' . $win->{end_time} ;
+       }
+    }
+#die substr( "$firstday", 0, 10 );
+    $slots = $slots->week_of( substr( "$firstday", 0, 10 ) );
+     #_debug _dump $slots;
+     _debug _dump [ $slots->sorted ];
+
+    my $to_minute = sub { 
+        my $t = shift;
+        $t=~s/://g;
+        ( substr( $t, 0, 2) * 60 ) + substr($t,2,2);
+    };
+    my $tab_hour = 0;
+    my $tab_min = 0;
+    foreach my $row ( 1 .. 48 ) {
+        my $tab_now = sprintf('%02d%02d', $tab_hour, $tab_min );
+        print qq{<TR time="$tab_now">};
+        foreach my $day ( 1 .. 7 ) {
+            my $date = substr( $firstday + (( $day - 1).'D'), 0, 10);
+            my $slot = $slots->find( date=>$date, time=>$tab_now );
+            # _error $slot;
+            #_debug " $day - $tab_now " . _dump $slot;
+            if( $slot && $slot->start eq $tab_now ) {
+                my $start = $slot->start;
+                my $end   = $slot->end;
+                my $type   = $slot->name;
+                my $id = $slot->data->{id};
+                #  my $fecha = '01/01/2012'; 
+
+                my $span = ( $to_minute->($slot->end) - $to_minute->($slot->start) ) / 30;
+                my $class = "slot_$type";
+                $class = $class . '_off' unless $slot->data->{active};
+                print qq[<TD style='cursor:hand' rowspan=$span
+                    onmouseover='javascript:this.className="$class slot_hover";'
+                    onmouseout='javascript:this.className="$class";'
+                    align="center" class="$class" ];
+                if( $type eq 'B' ) {
+                    print qq[ onclick='javascript: Baseliner.editSlot("$day","$start","$end","$date")'>];
+                } else {							
+                    print qq[ onclick='javascript: Baseliner.editId("$id")'>];
+                }	
+                print qq[ $start - $end ($span)</TD>];	
+                #print sprintf q{<td style="font-size:8px" rowspan=%s>%s - %s (%s)</td>}, $span, $slot->start, $slot->end, $span;
+            } else  {
+                #print qq{ <td></td> };
+                #die "Nooo" unless $slot;
+            }
+        }
+        print qq{</TR>};
+        $tab_min+=30;
+        if( $tab_min > 59 ) {
+            $tab_min=0; 
+            $tab_hour++;
+        }
+    }
+
 </%perl>
         </TR>
         <TR>
 <%perl>	
-    my $currentDate = $c->stash->{fecha_primer_dia_semana};
     foreach my $dd ( 0..6 ) {
-        use Date::Calc qw(Add_Delta_Days);
-        my ($year, $month, $day) = Add_Delta_Days($currentDate->year(),$currentDate->month(),$currentDate->day(),$dd);
+        my $date = $firstday + ($dd.'D');
+        my ($year, $month, $day) = ($date->year,$date->month,$date->day);
+
         print qq{ <TD width='100'> };
         if($has_date{$dd}){
             print qq{	<a href="#" class="x-link-button-remove" onclick="javascript: Baseliner.deleteRange('0','$dd','$day/$month/$year')">borrar ventana<br>para el $day/$month/$year</a>};
@@ -164,17 +191,19 @@ Ext.onReady(function(){
 <TR>
         <TD><B>Leyenda Ventanas de pase: </B></TD>
         <TD width=1>&nbsp;</TD>
-        <TD class="normal" width=20 height=20>&nbsp;</TD>
+        <TD class="slot_N" width=20 height=20>&nbsp;</TD>
         <TD>Pase</TD>
         <TD width=10>&nbsp;</TD>
-        <TD class="urgente" width=20>&nbsp;</TD>
+        <TD class="slot_U" width=20>&nbsp;</TD>
+
         <!-- Eric :: Ahora mismo está un poco raro... Se intuye que no pase significa que no se -->
         <!--         puede distribuir, por lo que rompe totalmente con la idea de un pase       -->
         <!--         urgente. Lo mejor sería dejar no pase como vacío y urgente en color rojo.  -->
         <!-- <TD>No pase/Urgente</TD> -->
+
         <TD>Urgente</TD>
         <TD width=10>&nbsp;</TD>
-        <TD class="nopase" width=20>&nbsp;</TD>
+        <TD class="slot_B" width=20>&nbsp;</TD>
         <!-- <TD>Vacio/Urgente</TD> -->
         <TD>Vacío</TD>
         <TD>&nbsp;</TD>

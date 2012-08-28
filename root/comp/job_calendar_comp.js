@@ -177,7 +177,7 @@
                 layout: 'border',
                 title: '<% _loc('Calendar Windows') %>',
                 style: 'margin-top: 20px',
-                height: 450,
+                height: 750,
                 frame: true,
 /*				items: [{  xtype: 'panel', id: '<% $id %>', layout: 'fit',
                     autoLoad: { url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  }

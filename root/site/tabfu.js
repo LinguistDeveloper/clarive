@@ -451,21 +451,35 @@
     //adds a new fragment component with html or <script>...</script>
     Baseliner.addNewTab = function(purl, ptitle, params, obj_tab ){
         //Baseliner.
-            var newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
-            var tabpanel = Ext.getCmp('main-panel');
-            var tab = tabpanel.add( newpanel );
-            tabpanel.setActiveTab(tab); 
-            if( params == undefined ) params={};
-            if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
-            newpanel.load({
-                url: purl,
-                scripts:true,
-                params: { fail_on_auth: true },
-                callback: function(el,success,res,opts){
-                    if( success ) {
-                        var id = tab.getId();
-                        Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script' };
-                        if( params.callback != undefined ) params.callback();
+        var tabpanel;
+            var newpanel; 
+        if(obj_tab) {
+        newpanel = new Ext.Panel({ layout: 'fit', title: ptitle, closable:true });
+        tabpanel = obj_tab;
+        }
+        else{
+        newpanel = new Ext.Panel({ layout: 'fit', title: ptitle });
+        tabpanel = Ext.getCmp('main-panel');
+        }
+        //var tabpanel = Ext.getCmp('main-panel');
+        var tab = tabpanel.add( newpanel );
+        tabpanel.setActiveTab(tab); 
+        if( params == undefined ) params={};
+        if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
+        params.fail_on_auth = true;
+        newpanel.load({
+            url: purl,
+            scripts:true,
+            params: params,
+            callback: function(el,success,res,opts){
+                if( success ) {
+                    var id = tab.getId();
+                    Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params };
+                    if( params.callback != undefined ) params.callback();
+                } else {
+                    Ext.getCmp('main-panel').remove( newpanel );
+                    if( res.status == 401 ) {
+                        Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewTab(purl,ptitle,params)} });
                     } else {
                         Ext.getCmp('main-panel').remove( newpanel );
                         if( res.status == 401 ) {
@@ -476,8 +490,10 @@
                         }
                     }
                 }
-            }); 
-    };
+
+            }
+        });
+    };   
 
     Baseliner.addNewWindow = function(purl, ptitle, params ){
         var newpanel = new Ext.Panel({ layout: 'fit' });
@@ -716,7 +732,7 @@
 
     //adds a new tab from a function() type component
     Baseliner.addNewTabComp = function( comp_url, ptitle, params ){
-        var req_params = params != undefined ? params.params : {};
+        var req_params = params != undefined ? params : {};
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
             var id = Baseliner.addNewTabItem( comp, ptitle, params );
             Baseliner.tabInfo[id] = { url: comp_url, title: ptitle, params: params, type: 'comp' };

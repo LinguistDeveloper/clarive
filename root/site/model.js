@@ -536,8 +536,7 @@ Baseliner.Calendar =  function(c) {
           '-',
           { xtype:'button', text:_('Month'), handler:function(){ cal.fullCalendar("changeView", "month") } } ,
           '-',
-          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.gif', handler:function(){ cal.fullCalendar("refetchEvents") } } ,
-
+          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.gif', handler:function(){ cal.fullCalendar("refetchEvents") } }
         ];
     if( c.tbar_end ) tbarr.push( c.tbar_end );
     var panel = new Ext.Panel( Ext.apply({
