@@ -76,10 +76,6 @@
                            fields: ['value', 'name'], 
                            data : <% js_dumper( $c->stash->{baselines} ) %>
                         }); 						
-                        var type_store = new Ext.data.SimpleStore({ 
-                           fields: ['value', 'name'], 
-                           data : <% js_dumper( $c->stash->{calendar_types} ) %>
-                        }); 
                         
                         var new_cal = new Ext.FormPanel({
                             url: '/job/calendar_update',

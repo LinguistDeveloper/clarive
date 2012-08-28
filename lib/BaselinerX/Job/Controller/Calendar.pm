@@ -1,39 +1,93 @@
 package BaselinerX::Job::Controller::Calendar;
-use strict;
-use base 'Catalyst::Controller';
+use Baseliner::Plug;
+BEGIN { extends 'Catalyst::Controller' };
 use JavaScript::Dumper;
 use Baseliner::Utils;
 use DateTime;
 use Try::Tiny;
 
-{
-    package BaselinerX::Calendar::Window;
-    use Moose;
-    has 'day'        => ( is => 'rw', isa => 'Str' );
-    has 'id'         => ( is => 'rw', isa => 'Str' );
-    has 'ns'         => ( is => 'rw', isa => 'Str' );
-    has 'bl'         => ( is => 'rw', isa => 'Str' );
-    has 'type'       => ( is => 'rw', isa => 'Str' );
-    has 'start_time' => ( is => 'rw', isa => 'Str' );
-    has 'end_time'   => ( is => 'rw', isa => 'Str' );
-    has 'active'     => ( is => 'rw', isa => 'Str' );
-    no Moose;
+register 'menu.job.calendar' => {
+    label    => _loc('Job Calendars'),
+    url_comp => '/job/calendar_list',
+    title    => _loc('Job Calendars'),
+    actions  => ['action.job.calendar.view'],
+    icon     => '/static/images/chromium/history_favicon.png'
+};
+register 'action.job.calendar.view' => { name => 'View Job Calendar' };
+register 'action.job.calendar.edit' => { name => 'Edit Job Calendar' };
+
+register 'config.job.calendar' => {
+    metadata=> [
+        { id=>'name', label => 'Calendar', type=>'text', width=>200 },
+        { id=>'ns', label => 'Namespace', type=>'text', width=>300 },
+        { id=>'ns_desc', label => 'Namespace Description', type=>'text', width=>300 },
+    ],
+};
+
+sub calendar : Path( '/job/calendar' ) {
+    my ( $self, $c ) = @_;
+    my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
+    $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
+    $c->forward( '/namespace/load_namespaces' );
+    $c->forward( '/baseline/load_baselines' );
+
+    # load the calendar row data
+    $self->init_date( $c );
+    $c->stash->{ calendar } = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first;
+    $c->stash->{ template } = '/comp/job_calendar_comp.js';
 }
 
-# Esta constante define los tipos de herencia:
-#use constant CALENDAR_UNION => 'U';
-#use constant CALENDAR_INTERSEC => 'I';
-#use constant CALENDAR_UNIQUE => 'E';
+sub calendar_show : Path( '/job/calendar_show' ) {
+    my ( $self, $c ) = @_;
+    my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
 
-use constant CALENDAR_UNION    => 'HI';
-use constant CALENDAR_INTERSEC => 'HE';
-use constant CALENDAR_UNIQUE   => 'NO';
-my %CALENDAR_TYPES = (
-    CALENDAR_UNION    => 'Union',
-    CALENDAR_INTERSEC => 'Interseccion',
-    CALENDAR_UNIQUE   => 'Exclusion'
-);
+    # get the panel id to be able to refresh it
+    $c->stash->{ panel } = $c->req->params->{ panel };
 
+    # load the calendar row data
+    $self->init_date( $c );
+
+    $c->stash->{ calendar } = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first;
+
+    # prepare the html grid data
+    $c->stash->{ grid }     = $c->forward( '/calendar/grid' );
+    $c->stash->{ template } = '/comp/job_calendar.js';
+}
+
+sub preview_calendario : Path( '/job/preview_calendar' ) {
+    my ( $self, $c ) = @_;
+    my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
+
+    $c->session->{ preview_ns } = $c->req->params->{ ns };
+    $c->session->{ preview_bl } = $c->req->params->{ bl };
+    $c->stash->{ preview_date } = $c->req->params->{ date };
+
+    $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
+
+    # load the calendar row data
+    $self->init_date( $c );
+    $c->stash->{ calendar } = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first;
+    $c->stash->{ template } = '/comp/preview_calendar_comp.mas';
+}
+
+sub preview_calendar_show : Path( '/job/preview_calendar_show' ) {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->params;
+    $c->session->{ preview_ns } = $c->session->{ preview_ns } || $p->{ ns };
+    $c->session->{ preview_bl } = $c->session->{ preview_bl } || $p->{ bl };
+    $c->stash->{ preview_date } = $c->stash->{ preview_date } || $p->{ date };
+
+    # get the panel id to be able to refresh it
+    $c->stash->{ panel } = $p->{ panel };
+
+    # load the calendar row data
+    $self->init_date( $c );
+
+    #$c->stash->{calendar} = $c->model('Baseliner::BaliCalendar')->search({ id => $id_cal })->first;
+    # prepare the html grid data
+    $c->stash->{ grid }     = $c->forward( '/calendar/grid_preview' );
+    $c->stash->{ template } = '/comp/preview_calendar.mas';
+}
 
 use Baseliner::Core::Baseline;
 sub calendar_list_json : Path('/job/calendar_list_json') {
@@ -61,16 +115,6 @@ sub calendar_list_json : Path('/job/calendar_list_json') {
     $c->forward( 'View::JSON' );
 }
 
-sub load_calendar_types : Private {
-    my ( $self, $c ) = @_;
-    my @cal_types = ();
-    foreach my $k ( keys %CALENDAR_TYPES ) {
-        my $type = [ $k, $CALENDAR_TYPES{ $k } ];
-        push @cal_types, $type;
-    }
-    $c->stash->{ calendar_types } = \@cal_types;
-}
-
 sub calendar_list : Path('/job/calendar_list') {
     my ( $self, $c ) = @_;
 
@@ -83,7 +127,6 @@ sub calendar_list : Path('/job/calendar_list') {
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
     $c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
-    $c->forward( '/calendar/load_calendar_types' );
     $c->stash->{ template } = '/comp/job_calendar_grid.js';
 }
 
@@ -154,72 +197,6 @@ sub calendar_update : Path( '/job/calendar_update' ) {
     $c->forward( 'View::JSON' );
 }
 
-sub calendar : Path( '/job/calendar' ) {
-    my ( $self, $c ) = @_;
-    my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
-    $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
-    $c->forward( '/namespace/load_namespaces' );
-    $c->forward( '/baseline/load_baselines' );
-    $c->forward( '/calendar/load_calendar_types' );
-
-    # load the calendar row data
-    $self->init_date( $c );
-    $c->stash->{ calendar } = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first;
-    $c->stash->{ template } = '/comp/job_calendar_comp.js';
-}
-
-sub calendar_show : Path( '/job/calendar_show' ) {
-    my ( $self, $c ) = @_;
-    my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
-
-    # get the panel id to be able to refresh it
-    $c->stash->{ panel } = $c->req->params->{ panel };
-
-    # load the calendar row data
-    $self->init_date( $c );
-
-    $c->stash->{ calendar } = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first;
-
-    # prepare the html grid data
-    $c->stash->{ grid }     = $c->forward( '/calendar/grid' );
-    $c->stash->{ template } = '/comp/job_calendar.js';
-}
-
-sub preview_calendario : Path( '/job/preview_calendar' ) {
-    my ( $self, $c ) = @_;
-    my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
-
-    $c->session->{ preview_ns } = $c->req->params->{ ns };
-    $c->session->{ preview_bl } = $c->req->params->{ bl };
-    $c->stash->{ preview_date } = $c->req->params->{ date };
-
-    $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
-
-    # load the calendar row data
-    $self->init_date( $c );
-    $c->stash->{ calendar } = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first;
-    $c->stash->{ template } = '/comp/preview_calendar_comp.mas';
-}
-
-sub preview_calendar_show : Path( '/job/preview_calendar_show' ) {
-    my ( $self, $c ) = @_;
-    my $p = $c->request->params;
-    $c->session->{ preview_ns } = $c->session->{ preview_ns } || $p->{ ns };
-    $c->session->{ preview_bl } = $c->session->{ preview_bl } || $p->{ bl };
-    $c->stash->{ preview_date } = $c->stash->{ preview_date } || $p->{ date };
-
-    # get the panel id to be able to refresh it
-    $c->stash->{ panel } = $p->{ panel };
-
-    # load the calendar row data
-    $self->init_date( $c );
-
-    #$c->stash->{calendar} = $c->model('Baseliner::BaliCalendar')->search({ id => $id_cal })->first;
-    # prepare the html grid data
-    $c->stash->{ grid }     = $c->forward( '/calendar/grid_preview' );
-    $c->stash->{ template } = '/comp/preview_calendar.mas';
-}
-
 sub init_date {
     my ( $self, $c ) = @_;
     my $date_str = $c->req->params->{ date } || $c->stash->{ preview_date };
@@ -257,7 +234,6 @@ sub parseDateTimeToDbix {
         : undef;
 }
 
-
 sub parseJSON {
     my ( $self, $date ) = @_;
     return ( $date )
@@ -281,7 +257,6 @@ sub getFirstDateTimeOfWeek {
     my $dt = $self->addDaysToDateTime( $date, $dweek );
     return $dt;
 }
-
 
 sub calendar_edit : Path( '/job/calendar_edit' ) {
     my ( $self, $c ) = @_;

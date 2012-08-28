@@ -12,11 +12,6 @@
        data : <% js_dumper( $c->stash->{baselines} ) %>
     }); 
 
-    var type_store = new Ext.data.SimpleStore({ 
-       fields: ['value', 'name'], 
-       data : <% js_dumper( $c->stash->{calendar_types} ) %>
-    }); 
-
     var calendar_type_help = '<b>Ventanas de pase:</b><br>';	
     calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
     calendar_type_help += '<TR><TD class="normal" width=20 height=20>&nbsp;</TD><TD>Pase: Son ventanas en las que se pueden realizar pases.</TD></TR>';
@@ -26,12 +21,12 @@
     var cal_form = new Ext.FormPanel({
                 url: '/job/calendar_update',
                 frame: true,
-                title: '<% _loc('Calendar Info') %>',
+                title: _('Calendar Info'),
                 autoHeight: true,
                 autoWidth: true,
                 defaults: { width: 300 },
                 buttons: [					
-                    /*{  text: '<% _loc('Ayuda') %>',
+                    /*{  text: _('Ayuda'),
                         handler: function(){ 
                             Ext.Msg.show({
                                title:'Ayuda sobre la herencia',
@@ -41,7 +36,7 @@
                             });
                         } 
                     },*/
-                    {  text: '<% _loc('Update') %>',
+                    {  text: _loc('Update'),
                         handler: function(){ 
                             var ff = cal_form.getForm();
                             ff.submit({
@@ -54,19 +49,19 @@
                 items: [
                     {  xtype: 'hidden', name: 'id_cal', value: '<% $cal->id %>' },
                     {  xtype: 'textfield',
-                        fieldLabel: '<% _loc('Name') %>',
+                        fieldLabel: _loc('Name'),
                         name: 'name',
                         value: '<% $cal->name %>'
                     },
                     {  xtype: 'textarea',
-                        fieldLabel: '<% _loc('Description') %>',
+                        fieldLabel: _('Description'),
                         name: 'description',
                         value: '<% $cal->description %>'
                     },
                     {  xtype: 'combo', 
                                name: 'ns', 
                                hiddenName: 'ns',
-                               fieldLabel: '<% _loc('Namespace') %>', 
+                               fieldLabel: _loc('Namespace'),
                                mode: 'local', 
                                editable: false,
                                forceSelection: true,
@@ -80,7 +75,7 @@
                     {  xtype: 'combo', 
                                name: 'bl', 
                                hiddenName: 'bl',
-                               fieldLabel: '<% _loc('Baseline') %>',
+                               fieldLabel: _('Baseline'),
                                mode: 'local', 
                                editable: false,
                                forceSelection: true,
@@ -170,14 +165,14 @@
         layout: 'fit',
         id: 'container-<% $id %>',
         style: 'padding: 5px',
-        autoScroll:true,
+        autoScroll: true,
         items: [
             cal_form,
             {  
                 layout: 'border',
-                title: '<% _loc('Calendar Windows') %>',
+                title: _('Calendar Windows'),
                 style: 'margin-top: 20px',
-                height: 750,
+                height: 450,
                 frame: true,
 /*				items: [{  xtype: 'panel', id: '<% $id %>', layout: 'fit',
                     autoLoad: { url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  }
@@ -188,7 +183,7 @@
                 xtype: 'panel',
                 id: '<% $id %>',				
                 region:'west',
-                width:720,				
+                width: 720,				
                 autoLoad: { url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  },
                 split: true,
                 frame: true
@@ -270,5 +265,5 @@
         } 		
     });
     return panel;
-})();
+})
 

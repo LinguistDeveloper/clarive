@@ -192,6 +192,12 @@
 .job-calendar th { font-size: 12pt; font-weight: bold; text-transform: capitalize }
 .job-calendar td { font-size: 9pt; }
 
+td.cal_slot { 
+    padding: 0;
+    font-family: Calibri, OpenSans, Arial, sans-serif;
+    font-size: 13px;
+}
+
 td.slot_N { background-color: #77da50; }
 td.slot_U { background-color: #f07444; }
 td.slot_X { background-color: #555; }

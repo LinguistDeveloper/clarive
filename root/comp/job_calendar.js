@@ -3,9 +3,10 @@
 my $grid = $c->stash->{grid};
 my $panel = $c->stash->{panel};
 my $id_cal = $c->stash->{id_cal};
+my $currentDate = $c->stash->{fecha_primer_dia_semana};
+
 my $loc = DateTime::Locale->load( $c->language );
 my $day_wide = $loc->day_format_wide;
-my $currentDate = $c->stash->{fecha_primer_dia_semana};
 my $firstday = Class::Date->new( $c->stash->{fecha_primer_dia_semana} );
 
 </%init>
@@ -63,13 +64,7 @@ Ext.onReady(function(){
 });
 </script>
 <DIV class='job-calendar' ID="calendarDiv">
-<TABLE cellpadding=0 cellspacing=0 border=0 width="100%">
-<TR><TD>&nbsp;</TD><TD></TD></TR>
-<TR>
-<TD>
-</TD>
-</TR>
-</TABLE>
+
 <FORM name="infForm" action="" method="GET">
     <TABLE border=0 style="height: 300px">
         <TR>
@@ -97,7 +92,7 @@ Ext.onReady(function(){
     $slots->slot( weekday=>$_, start=>'00:00', end=>'24:00', name=>'B', data=>{ type=>'B' } )
         for 1 .. 7;
     if( my $cal = shift @cals ) {
-       for my $win ( _array $cal->{windows} ) {
+       for my $win ( _array( $cal->{windows} ) ) {
            #my $name = "$cal->{name} ($win->{type})==>" .( $win->{day}+1 );
            my $name = $win->{type};
            my $when;
@@ -128,7 +123,8 @@ Ext.onReady(function(){
         my $tab_now = sprintf('%02d%02d', $tab_hour, $tab_min );
         print qq{<TR time="$tab_now">};
         foreach my $day ( 1 .. 7 ) {
-            my $date = substr( $firstday + (( $day - 1).'D'), 0, 10);
+            my $day0 = $day - 1 ;
+            my $date = substr( $firstday + (( $day0 ).'D'), 0, 10);
             my $slot = $slots->find( date=>$date, time=>$tab_now );
             # _error $slot;
             #_debug " $day - $tab_now " . _dump $slot;
@@ -143,15 +139,15 @@ Ext.onReady(function(){
                 my $class = "slot_$type";
                 $class = $class . '_off' unless $slot->data->{active};
                 print qq[<TD style='cursor:hand' rowspan=$span
-                    onmouseover='javascript:this.className="$class slot_hover";'
-                    onmouseout='javascript:this.className="$class";'
-                    align="center" class="$class" ];
+                    onmouseover='javascript:this.className="cal_slot $class slot_hover";'
+                    onmouseout='javascript:this.className="cal_slot $class";'
+                    align="center" class="cal_slot $class" ];
                 if( $type eq 'B' ) {
-                    print qq[ onclick='javascript: Baseliner.editSlot("$day","$start","$end","$date")'>];
+                    print qq[ onclick='javascript: Baseliner.editSlot("$day0","$start","$end","")'>];
                 } else {							
                     print qq[ onclick='javascript: Baseliner.editId("$id")'>];
                 }	
-                print qq[ $start - $end ($span)</TD>];	
+                print qq[ $start - $end</TD>];	
                 #print sprintf q{<td style="font-size:8px" rowspan=%s>%s - %s (%s)</td>}, $span, $slot->start, $slot->end, $span;
             } else  {
                 #print qq{ <td></td> };
@@ -178,7 +174,7 @@ Ext.onReady(function(){
         if($has_date{$dd}){
             print qq{	<a href="#" class="x-link-button-remove" onclick="javascript: Baseliner.deleteRange('0','$dd','$day/$month/$year')">borrar ventana<br>para el $day/$month/$year</a>};
         }else{
-            print qq{	<a href="#" class="x-link-button" onclick="javascript: Baseliner.createRange('0','$dd','$day/$month/$year')">crear ventana<br>para el $day/$month/$year</a>};		
+            print qq{	<a href="#" class="x-link-button" style="font-size: 10px;" onclick="javascript: Baseliner.createRange('0','$dd','$day/$month/$year')">crear ventana<br>$day/$month/$year</a>};		
         }
         print qq{ </TD>};
     }

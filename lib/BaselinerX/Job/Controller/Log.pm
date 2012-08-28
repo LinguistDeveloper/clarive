@@ -9,9 +9,9 @@ use JSON::XS;
 BEGIN { extends 'Catalyst::Controller' }
 
 sub logs_list : Path('/job/log/list') {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $id_job ) = @_;
     my $p = $c->req->params;
-    $c->stash->{id_job} = $p->{id_job};
+    $c->stash->{id_job} = $id_job // $p->{id_job};
     $c->stash->{service_name} = $p->{service_name};
     $c->stash->{annotate_now} = $p->{annotate_now};
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
@@ -90,7 +90,7 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
 }
 
 sub log_rows : Private {
-    my ( $self,$c )=@_;
+    my ( $self,$c, $id_job )=@_;
     _db_setup;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $service_name, $filter, $cnt ) = @{$p}{qw/start limit query dir sort service_name filter/};
@@ -100,8 +100,10 @@ sub log_rows : Private {
     $filter = decode_json( $filter ) if $filter;
     my $config = $c->registry->get( 'config.job.log' );
     my @rows = ();
-    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
-    my $where = $p->{id_job} ? { id_job=>$p->{id_job} } : {};
+    $id_job //= $p->{id_job};
+    _fail 'Missing id_job' unless length $id_job;
+    my $job = $c->model('Baseliner::BaliJob')->find( $id_job );
+    my $where = $id_job ? { id_job=>$id_job } : {};
     my $from = {   order_by=> ( $sort ? { "-$dir" => $sort } : { -asc => 'me.id' } ),
                     #page => to_pages( start=>$start, limit=>$limit ),  
                     #rows => $limit,
@@ -132,8 +134,8 @@ sub log_rows : Private {
         # faster: $from->{join} = [ 'jobexec' ];
     }
     
-    if($p->{id_job}){
-        $where->{id_job} = $p->{id_job};
+    if($id_job){
+        $where->{id_job} = $id_job;
     }
     $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
         if ref($filter) eq 'HASH';
@@ -144,7 +146,7 @@ sub log_rows : Private {
         $where->{service_key} = $service_name;
     }
     #TODO    store filter preferences in a session instead of a cookie, on a by id_job basis
-    #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$p->{id_job} })->first;
+    #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$id_job })->first;
     my $rs = $c->model( 'Baseliner::BaliLog')->search( $where , $from );
     #my $pager = $rs->pager;
     #$cnt = $pager->total_entries;
