@@ -217,12 +217,13 @@ Ext.onReady(function(){
     if( getParams!=undefined && getParams[1] !=undefined ) {
         tab_params = Ext.urlDecode(getParams[1]);
     }
-    
+
 % foreach my $tab ( @{ $c->stash->{tab_list} || [] } ) {
+    // This is used by /tab and /raw in raw_mode
 %    if( $tab->{type} eq 'page' ) {
-        Baseliner.addNewTab('<% $tab->{url} %>', undefined, { params: tab_params });
+        Baseliner.addNewTab('<% $tab->{url} %>', undefined, tab_params );
 %    } else {
-        Baseliner.addNewTabComp('<% $tab->{url} %>', undefined,  { params: tab_params });
+        Baseliner.addNewTabComp('<% $tab->{url} %>', undefined,  tab_params );
 %    }
 % }
 

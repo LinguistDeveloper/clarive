@@ -167,10 +167,10 @@ sub index:Private {
     my $p = $c->request->parameters;
 
     if( $p->{tab}  ) {
-        push @{ $c->stash->{tab_list} }, { url=>$p->{tab}, title=>$p->{tab}, type=>'comp' };
+        push @{ $c->stash->{tab_list} }, { url=>$p->{tab}, title=>$p->{tab}, type=>'comp', params=>$p };
     }
     if( $p->{tab_page}  ) {
-        push @{ $c->stash->{tab_list} }, { url=>$p->{tab_page}, title=>$p->{tab_page}, type=>'page' };
+        push @{ $c->stash->{tab_list} }, { url=>$p->{tab_page}, title=>$p->{tab_page}, type=>'page', params=>$p };
     }
 
     # set language 

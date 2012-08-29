@@ -24,6 +24,15 @@ msgstr "Ver Stash"
 msgid "Inbox"
 msgstr "Buzón"
 
+msgid "Empty"
+msgstr "Vacío"
+
+msgid "No Job"
+msgstr "No Pase"
+
+msgid "new window"
+msgstr "crear ventana"
+
 msgid "Inbox for %1"
 msgstr "Buzón %1"
 
@@ -188,6 +197,24 @@ msgstr "Falta el usuario y/o contraseña"
 
 msgid "User doesn't have permissions to create a job in any environment"
 msgstr "Su usuario no tiene permisos de creacion de pases en ningun entorno"
+
+msgid "Cannot submit. The form has errors."
+msgstr "No se puede dar de alta el pase: el formulario contiene errores."
+
+msgid "Job not in a window"
+msgstr "Pase fuera de ventana"
+
+msgid "Urgent Job"
+msgstr "Pase Urgente"
+
+msgid "Form Error"
+msgstr "Error en el Formulario"
+
+msgid "Unknown Error"
+msgstr "Error Desconocido"
+
+msgid "Connection Error"
+msgstr "Error de Conexión"
 
 msgid "What"
 msgstr "Qué"

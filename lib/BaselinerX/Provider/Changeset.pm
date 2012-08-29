@@ -81,6 +81,10 @@ sub list {
         lifecycle->state_names_for_bl( $p->{job_type} eq 'promote' ? 'bl_to' : 'bl_from',
         $bl_next );
 
+    # TODO git here?
+    if( ! $c->model('Git') ) {
+        return {data => [], total => 0, count => 0};
+    }
     #get all repositories
     for my $project ( $c->model( 'Git' )->repositories ) {
 
@@ -137,8 +141,8 @@ sub list {
         } ## end for my $repo ( @all )
     } ## end for my $project ( $c->model...)
 
-    _log "****** Devolución *******\n" . _dump {data => \@ns, total => $total, count => $cnt};
-    return                                      {data => \@ns, total => $total, count => $cnt};
+    _log "****** Dev *******\n" . _dump {data => \@ns, total => $total, count => $cnt};
+    return {data => \@ns, total => $total, count => $cnt};
 } ## end sub list
 
 

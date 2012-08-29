@@ -25,13 +25,13 @@
     ];
 
     my $default_baseline = config_value( 'job_new.default_baseline' );
-    my $forms = config_value( 'job_new.form' );
+    my $custom_forms = $c->stash->{custom_forms}; # config_value( 'job_new.custom_form' );
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
-    my $show_no_cal = config_value( 'site.show_no_cal' );
-    my $has_no_cal = $c->is_root || $c->has_action( 'action.job.no_cal' );
+    my $show_no_cal = config_value( 'site.show_no_cal' ) // 1;
+    my $has_no_cal = $c->is_root || $c->has_action( 'action.job.no_cal' ) // 1;
 </%perl>
 (function(){
-    var forms = <% js_dumper( [ _array $forms ] ) %>;
+    // var custom_forms = <% js_dumper( [ _array $custom_forms ] ) %>;
     var default_baseline = '<% $default_baseline %>';
     var has_no_cal = <% $has_no_cal ? 'true' : 'false'  %>;
     var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
@@ -212,6 +212,7 @@
         if( ! check_no_cal.checked ) {
             store_time.removeAll();
             combo_time.setRawValue('');
+            combo_time.fireEvent('change');
         }
         jc_grid.getStore().removeAll();
         store_search.removeAll();
@@ -219,6 +220,7 @@
     };
 
     var store_time = new Ext.data.SimpleStore({
+        id: 'time',
         fields: ['time','name', 'type']
     });
     var tpl_time = new Ext.XTemplate(
@@ -230,9 +232,9 @@
         name: 'job_time',
         anchor: '100%',
         hiddenName: 'job_time',
-        fieldLabel: _('Time'),
         valueField: 'time',
         displayField:'time',
+        fieldLabel: _('Time'),
         mode: 'local',
         store: store_time,
         allowBlank: false,
@@ -261,7 +263,8 @@
             combo_time.enable();
             time_not_available.hide();
             combo_time.show();
-            combo_time.setRawValue( first.data.time );
+            combo_time.setValue( first.data.time );
+            combo_time.fireEvent('change');
             combo_time.color_me( first.data.type );
             button_submit.enable();
         } else {
@@ -279,6 +282,7 @@
 
             store_time.removeAll();
             combo_time.setRawValue('');
+            combo_time.fireEvent('change');
 
             if( cnt > 0 ) {
                 var job_date_v = str_date ? str_date : job_date.getRawValue()
@@ -309,7 +313,7 @@
 
     var time_not_available = new Ext.form.Label({
         hidden: true,
-        fieldLabel: _('Time'), style: 'color: red; font-weight: bold; font-family: Calibri, Helvetica Neue, Arial, sans-serif;',
+        fieldLabel: _('Time'), style: 'color: red; font-weight: bold; font-family: Calibri, OpenSans, Helvetica Neue, Arial, sans-serif;',
         text: _('no calendar windows available for selected date')
     });
 
@@ -457,10 +461,21 @@
             if( check_no_cal.checked && comments.getValue().length == 0 ) {
                 Ext.Msg.show({ title: _('Failure'), msg: _('En pases fuera de ventana, es obligatorio informar el motivo del pase en el campo observaciones'), width: 500, buttons: { ok: true } });
             } else {
+                var form = main_form.getForm();
+                if( ! form.isValid() ) {
+                    Baseliner.error( _('Invalid'), _('Cannot submit. The form has errors.') );
+                    return;
+                }
                 var json_res = job_grid_data();
+                var wt;
+                var wt_v = combo_time.getRawValue();
+                if( wt_v ) {
+                    var ix = store_time.find( 'time', wt_v );
+                    if( ix > -1 ) wt = store_time.getAt( ix ).get('type');
+                }
                 button_submit.disable();
-                main_form.getForm().submit({
-                    params: { job_contents: json_res },
+                form.submit({
+                    params: { job_contents: json_res, window_type: wt  },
                     success: function(form,action){
                         //form submit ok
                         //alert( 'ok' + action );
@@ -468,16 +483,23 @@
                         // reset everything
                         form_reset_all();
                         Baseliner.closeCurrentTab();
-                        },
+                    },
                     failure: function(form,action){
                         //alert( 'ko' + action );
                         //   not necessary, handled by standard failure?
                         button_submit.enable();
-                        Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
+                        if( action && action.result ) {
+                            Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
+                        } else {
+                            var msg = _('Unknown Error');
+                            if( action.failureType == 'connect' ) msg = _('Connection Error');
+                            if( action.failureType == 'client' ) msg = _('Form Error');
+                            Baseliner.error( _('Error'), msg );
                         }
-                    });
-                }
+                    }
+                });
             }
+        }
     });
     button_submit.disable();
 
@@ -570,12 +592,14 @@
 
     combo_search.on('beforeselect', function(combo, record, index) {
         if( record.get('can_job') != 1 ) {
+            /* 
             Ext.Msg.show({icon: 'ext-mb-error',
             buttons: { cancel: true },
             title: _('Blocked'),
             width: 500,
                 msg: _('Package cannot be added to job')+":<br>" + record.get('why_not')
                 });
+            */
             return false;
         }
         jc_store.add(record);
@@ -693,6 +717,11 @@
         buttons: Ext.MessageBox.OK,
         icon: Ext.MessageBox.ERROR
         });
+% }
+
+    //Ext.each( custom_forms, function(custom_form){ });
+% for my $custom_form ( _array $custom_forms ) {
+    <& $custom_form &>
 % }
     return main_form;
 })

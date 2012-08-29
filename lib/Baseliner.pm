@@ -16,6 +16,8 @@ use Catalyst::Runtime 5.80;
 our @modules;
 BEGIN {
 
+    use CatalystX::Features 0.23;
+
     if( $ENV{BALI_PLUGINS} ) {
         @modules = split /,/, $ENV{BALI_PLUGINS};
     }
@@ -343,6 +345,7 @@ sub decrypt {
 
 # user shortcut
 sub username {
+    require Baseliner::Utils;
     my $c = shift;
     my $user;
     $user = try { return $c->session->{username} } and return $user;
