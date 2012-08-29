@@ -24,6 +24,15 @@ msgstr "Ver Stash"
 msgid "Inbox"
 msgstr "Buzón"
 
+msgid "Empty"
+msgstr "Vacío"
+
+msgid "No Job"
+msgstr "No Pase"
+
+msgid "new window"
+msgstr "crear ventana"
+
 msgid "Inbox for %1"
 msgstr "Buzón %1"
 

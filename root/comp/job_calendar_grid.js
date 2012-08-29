@@ -5,13 +5,14 @@
     var store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'rownum', 
+        totalProperty: "totalCount", 
+        id: 'id', 
         url: '/job/calendar_list_json',
         fields: [ 
             {  name: 'id' },
             {  name: 'name' },
             {  name: 'description' },
+            {  name: 'seq' },
             {  name: 'bl' },
             {  name: 'bl_desc' },
             {  name: 'ns' },
@@ -24,11 +25,20 @@
 
         //Seleccion multiple con checkboxes		
         var checkSelectionModel = new Ext.grid.CheckboxSelectionModel();
+
+        var render_cal = function(v,metadata,rec,rowIndex,colIndex,store) {
+            return String.format('<a href="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\')" style="font-size: 13px;">{0}</a>',
+                v, grid.id, rowIndex );
+        };
+
+        Baseliner.edit_calendar = function( id_or_rec, ix ) {
+            var r = ( typeof id_or_rec == 'object' ) ? id_or_rec : Ext.getCmp( id_or_rec ).getStore().getAt( ix );
+            Baseliner.addNewTabComp('/job/calendar?id_cal=' + r.get('id') , r.get('name'), { tab_icon:'/static/images/icons/calendar_view_month.png' } );
+        };
         
         // create the grid
         var grid = new Ext.grid.GridPanel({
-            renderTo: 'main-panel',
-            title: '<% _loc('Job Calendars') %>',
+            title: _('Job Calendars'),
             header: false,
             stripeRows: true,
             autoScroll: true,
@@ -41,11 +51,12 @@
             loadMask:'true',
             columns: [
                 checkSelectionModel,
-                { header: '<% _loc('Calendar') %>', width: 200, dataIndex: 'name', sortable: true },	
-                { header: '<% _loc('Description') %>', width: 200, dataIndex: 'description', sortable: true },	
-                { header: '<% _loc('Baseline') %>', width: 100, dataIndex: 'bl_desc', sortable: true },	
-                { header: '<% _loc('Namespace') %>', width: 150, dataIndex: 'ns', sortable: true },	
-                { header: '<% _loc('Namespace Description') %>', width: 200, dataIndex: 'ns_desc', sortable: true }	
+                { header: _('Calendar'), width: 200, dataIndex: 'name', sortable: true, renderer: render_cal },	
+                { header: _('Priority'), width: 40, dataIndex: 'seq', sortable: true },	
+                { header: _('Baseline'), width: 100, dataIndex: 'bl_desc', sortable: true },	
+                { header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true },	
+                { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_wrap },	
+                { header: _('Namespace Description'), width: 200, dataIndex: 'ns_desc', sortable: true }	
             ],
             autoSizeColumns: true,
             deferredRender:true,
@@ -64,7 +75,7 @@
 % if( $can_edit ) {
                 new Ext.Toolbar.Button({
                     text: _('Add'),
-                    icon:'/static/images/drop-add.gif',
+                    icon:'/static/images/icons/add.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         //Window
@@ -76,14 +87,15 @@
                            fields: ['value', 'name'], 
                            data : <% js_dumper( $c->stash->{baselines} ) %>
                         }); 						
-                        
+                        var sm = grid.getSelectionModel();
+                        var copyof = sm.hasSelection() ? sm.getSelected().get('id') : _('[Select a calendar]');
                         var new_cal = new Ext.FormPanel({
                             url: '/job/calendar_update',
                             frame: true,
                             labelWidth: 150, 
                             defaults: { width: 350 },
                             buttons: [
-                                {  text: '<% _loc('OK') %>',
+                                {  text: _('OK'),
                                     handler: function(){ 
                                         var ff = new_cal.getForm();
                                         var comboCopy = ff.findField('copyof');
@@ -94,10 +106,10 @@
                                                         grid.getStore().load();
                                                         win.close(); 
                                                     },
-                                                    failure: function(form, action) { Ext.Msg.alert("<% _loc('Failure') %>", action.result.msg); }
+                                                    failure: function(form, action) { Ext.Msg.alert(_('Failure'), action.result.msg); }
                                                 });
                                             }else{
-                                                Ext.Msg.alert("<% _loc('Failure') %>", "Si quiere realizar una copia de un calendario, debe seleccionar al menos uno de la lista.");
+                                                Ext.Msg.alert(_('Failure'), "Si quiere realizar una copia de un calendario, debe seleccionar al menos uno de la lista.");
                                             }
                                         }else{
                                             ff.submit({
@@ -105,17 +117,17 @@
                                                     grid.getStore().load();
                                                     win.close(); 
                                                 },
-                                                failure: function(form, action) { Ext.Msg.alert("<% _loc('Failure') %>", action.result.msg); }
+                                                failure: function(form, action) { Ext.Msg.alert(_('Failure'), action.result.msg); }
                                             });										
                                         }
                                     }
                                 },
-                                {  text: '<% _loc('Cancel') %>' , handler: function(){  win.close() } }
+                                {  text: _('Cancel') , handler: function(){  win.close() } }
                             ],
                             items: [
                                 {  xtype: 'hidden', name: 'action', value: 'create' },
-                                {  xtype: 'textfield', name: 'name', fieldLabel: '<% _loc('Calendar Name') %>' }, 
-                                {  xtype: 'textarea', name: 'description', fieldLabel: '<% _loc('Description') %>' }, 
+                                {  xtype: 'textfield', name: 'name', fieldLabel: _('Calendar Name'), allowBlank: false }, 
+                                {  xtype: 'textarea', name: 'description', fieldLabel: _('Description') }, 
                                 {
                                     xtype: 'radiogroup',
                                     fieldLabel: 'Modo de creacion',
@@ -142,7 +154,7 @@
                                            forceSelection: true,
                                            triggerAction: 'all',
                                            store: store,
-                                           value: '[Seleccione calendario]',
+                                           value: copyof,
                                            valueField: 'id',
                                            displayField:'name', 
                                            allowBlank: false
@@ -150,7 +162,7 @@
                                 {  xtype: 'combo', 
                                            name: 'ns', 
                                            hiddenName: 'ns',
-                                           fieldLabel: '<% _loc('Namespace') %>', 
+                                           fieldLabel: _('Namespace'), 
                                            resizable: true,
                                            mode: 'local', 
                                            editable: false,
@@ -165,7 +177,7 @@
                                 {  xtype: 'combo', 
                                            name: 'bl', 
                                            hiddenName: 'bl',
-                                           fieldLabel: '<% _loc('Baseline') %>',
+                                           fieldLabel: _('Baseline'),
                                            mode: 'local', 
                                            editable: false,
                                            forceSelection: true,
@@ -182,36 +194,35 @@
                         var win = new Ext.Window({
                             layout: 'fit',
                             height: 300, width: 550,
-                            title: '<% _loc('Create Calendar') %>',
+                            title: _('Create Calendar'),
                             items: new_cal
                         });
                         win.show();
                     }
                 }),
                 new Ext.Toolbar.Button({
-                    text: '<% _loc('Edit') %>',
-                    icon:'/static/images/drop-yes.gif',
+                    text: _('Edit'),
+                    icon:'/static/images/icons/edit.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
-                        if (sm.hasSelection())
-                        {
+                        if (sm.hasSelection()) {
                             var sel = sm.getSelected();
-                            Baseliner.addNewTabComp('/job/calendar?id_cal=' + sel.data.id , '<% _loc('Calendar') %>');
+                            Baseliner.edit_calendar( sel );
                         } else {
-                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+                            Ext.Msg.alert('Error', _('Select at least one row'));	
                         };
                         
                     }
                 }),
                 new Ext.Toolbar.Button({
-                    text: '<% _loc('Delete') %>',
-                    icon:'/static/images/del.gif',
+                    text: _('Delete'),
+                    icon:'/static/images/icons/delete.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         var sel = sm.getSelected();
-                        Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the calendar') %>' + ' ' + sel.data.name + '?', 
+                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the calendar') + ' ' + sel.data.name + '?', 
                             function(btn){ 
                                 if(btn=='yes') {
                                     var conn = new Ext.data.Connection();
@@ -219,7 +230,7 @@
                                         url: '/job/calendar_update',
                                         params: { action: 'delete', id_cal: sel.data.id },
                                         success: function(resp,opt) { grid.getStore().remove(sel); },
-                                        failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the calendar.') %>'); }
+                                        failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the calendar.')); }
                                     });	
                                 }
                             } );
@@ -227,7 +238,7 @@
                 }),
 % }
                 new Ext.Toolbar.Button({
-                    text: '<% _loc('Previsualizar') %>',
+                    text: _('Previsualizar'),
                     icon:'/static/gui/extjs/resources/images/default/shared/calendar.gif',
                     hidden: true,  // Eric -- We won't need this once the project namespace is disabled from calendar creation.
                     cls: 'x-btn-text-icon',
@@ -256,9 +267,9 @@
                             }
                             var _d = new Date();
                             var fechaTexto = _d.getDate() + "/" + (_d.getMonth()+1) + "/" + _d.getFullYear();
-                            Baseliner.addNewTabComp('/job/preview_calendar?ns=' + nsSelected + '&bl=' + commonBL + '&date=' + fechaTexto, '<% _loc('Previsualizar Calendario') %> ['+_namespaces+']');
+                            Baseliner.addNewTabComp('/job/preview_calendar?ns=' + nsSelected + '&bl=' + commonBL + '&date=' + fechaTexto, _('Previsualizar Calendario') + ' ['+_namespaces+']');
                         } else {
-                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+                            Ext.Msg.alert('Error', _('Select at least one row'));	
                         };
                     }
                 }),				
@@ -270,9 +281,8 @@
 
 % if( $can_edit ) {
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
-            var r = grid.getStore().getAt(rowIndex);
-            Baseliner.addNewTabComp('/job/calendar?id_cal=' + r.get('id') , '<% _loc('Calendar') %>');
-        });		
+        Baseliner.edit_calendar( grid.id, rowIndex );
+    });		
 % }
         
     return grid;

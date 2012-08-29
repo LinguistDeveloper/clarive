@@ -39,9 +39,8 @@ __PACKAGE__->add_columns(
   },
   "seq",
   { 
-    data_type     => "INTEGER",
-    is_nullable   => 0,
-    original      => { data_type => "number", size => [38, 0] },  
+    data_type     => "number",
+    is_nullable   => 1,
   },  
 );
 __PACKAGE__->set_primary_key("id");

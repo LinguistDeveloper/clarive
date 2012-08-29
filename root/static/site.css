@@ -194,18 +194,19 @@
 
 td.cal_slot { 
     padding: 0;
+    border: transparent 1px dashed;
     font-family: Calibri, OpenSans, Arial, sans-serif;
     font-size: 13px;
 }
 
 td.slot_N { background-color: #77da50; }
 td.slot_U { background-color: #f07444; }
-td.slot_X { background-color: #555; }
+td.slot_X { background-color: #777; }
 td.slot_B { background-color: #D0D0D0; }
 
 td.slot_N_off { background-color: #b9daad; }
 td.slot_U_off { background-color: #f0c5b4; }
-td.slot_X_off { background-color: #bbb; }
+td.slot_X_off { background-color: #f3f3f3; }
 td.slot_B_off { background-color: #e0e0e0; }
 
 td.nopaseDes { background-color: #E0E0E0; }

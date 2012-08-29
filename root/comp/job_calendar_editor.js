@@ -1,8 +1,9 @@
 <%init>
-    my $id = 'jj-calendar-' . rand;  ## makes a random id that we can refresh later
     my $cal = $c->stash->{calendar};
 </%init>
 (function(){
+    var id = Ext.id();
+    var id2 = 'container-' + id;
     var ns_store = new Ext.data.SimpleStore({ 
        fields: ['value', 'name'], 
        data : <% js_dumper( $c->stash->{namespaces} ) %>
@@ -12,7 +13,7 @@
        data : <% js_dumper( $c->stash->{baselines} ) %>
     }); 
 
-    var calendar_type_help = '<b>Ventanas de pase:</b><br>';	
+    var calendar_type_help = '<b>Ventanas de pase:</b><br>';    
     calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
     calendar_type_help += '<TR><TD class="normal" width=20 height=20>&nbsp;</TD><TD>Pase: Son ventanas en las que se pueden realizar pases.</TD></TR>';
     calendar_type_help += '<TR><TD class="urgente" width=20 height=20>&nbsp;</TD><TD>Urgente/No pase: Son ventanas urgentes, fuera de lo habitual. Este estado sirve para sobreescribir un pase nornmal.</TD></TR>';
@@ -25,7 +26,7 @@
                 autoHeight: true,
                 autoWidth: true,
                 defaults: { width: 300 },
-                buttons: [					
+                buttons: [                  
                     /*{  text: _('Ayuda'),
                         handler: function(){ 
                             Ext.Msg.show({
@@ -44,7 +45,7 @@
                                 failure: function(form, action) { Baseliner.message("<% _loc('Failure') %>", action.result.msg); }
                             });
                         } 
-                    }					
+                    }                   
                 ],
                 items: [
                     {  xtype: 'hidden', name: 'id_cal', value: '<% $cal->id %>' },
@@ -52,6 +53,11 @@
                         fieldLabel: _loc('Name'),
                         name: 'name',
                         value: '<% $cal->name %>'
+                    },
+                    {  xtype: 'textfield',
+                        fieldLabel: _loc('Priority'),
+                        name: 'seq',
+                        value: '<% $cal->seq %>'
                     },
                     {  xtype: 'textarea',
                         fieldLabel: _('Description'),
@@ -85,56 +91,16 @@
                                value: '<% $cal->bl  %>',
                                displayField:'name', 
                                allowBlank: false
-                    }/*,
-                    {  xtype: 'combo', 
-                               name: 'type', 
-                               hiddenName: 'type',
-                               fieldLabel: 'Tipo de herencia',
-                               mode: 'local', 
-                               editable: false,
-                               forceSelection: true,
-                               triggerAction: 'all',
-                               store: type_store, 
-                               valueField: 'value',
-                               value: '<% $cal->type  %>',
-                               displayField:'name', 
-                               allowBlank: false
-                    }*/
+                    }
                 ]
     });
 
     var _CurrentDate = new Date(<% $c->stash->{fecha_anyo} %>,<% $c->stash->{fecha_mes} - 1 %>, <% $c->stash->{fecha_dia} %>);
     
-    function _updateEvents(picker){
-         Ext.Ajax.request({
-                        url: '/calendar/event_dates',
-                        params: { id_cal:'<% $cal->id %>' },
-                        success: function(xhr) {
-                            var _raw = eval( "("+xhr.responseText+")" );
-                            var dates = eval("[" + _raw.data + "]");	
-                            var dateEvents = new Array(dates.length);
-                            //Este codigo se puede obviar, simplemente se usa para cambiar el tooltip del evento o poner otro estilo
-                            for(var i=0;i<dates.length; i++){
-                                dateEvents[i] = {
-                                    date:dates[i],
-                                    text: "ventana por fecha de pase",
-                                    cls: "x-datepickerplus-eventdates"						
-                                };
-                            }						
-                            picker.setEventDates (dateEvents,true);
-                            picker.update(picker.activeDate, true, true);
-                        },
-                        failure: function(xhr) {
-                            alert('ko');
-                           //Baseliner.errorWin( 'Logout Error', xhr.responseText );
-                        }
-                    });		
-    }
-    
     function _selectWeek(picker,t){
         var dd = new Date(t.dateValue);
         var startweekdate = new Date( t.dateValue).getFirstDateOfWeek();
-        var daycell = t.dayCell - dd.getDay() + 1;							
+        var daycell = t.dayCell - dd.getDay() + 1;                          
         var amount = 7;
         var reverseAdd = false;
         var monthcell = t.monthCell;
@@ -146,24 +112,24 @@
                 picker.markDateAsSelected(startweekdate.clearTime().getTime(),true,monthcell,daycell+ni,false);
             }
             startweekdate = startweekdate.add(Date.DAY,1);
-        }	
+        }   
     }
     
     function _setSelectedWeek(picker, date){
         var _dates = [];
         var startweekdate = date.getFirstDateOfWeek();
-        var amount = 7;		
+        var amount = 7;     
         for (var i=0,ni;i<amount;++i) {
             _dates.push(startweekdate);
             startweekdate = startweekdate.add(Date.DAY,1);
-        }	
+        }   
         picker.clearSelectedDates();
-        picker.setSelectedDates(_dates);		
+        picker.setSelectedDates(_dates);        
     }
     
     var panel = new Ext.Panel({
         layout: 'fit',
-        id: 'container-<% $id %>',
+        id: id2,
         style: 'padding: 5px',
         autoScroll: true,
         items: [
@@ -174,81 +140,60 @@
                 style: 'margin-top: 20px',
                 height: 450,
                 frame: true,
-/*				items: [{  xtype: 'panel', id: '<% $id %>', layout: 'fit',
-                    autoLoad: { url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  }
+/*              items: [{  xtype: 'panel', id: id, layout: 'fit',
+                    autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  }
                 }]
-*/				
-        items: [	
-            {		
+*/              
+        items: [    
+            {       
                 xtype: 'panel',
-                id: '<% $id %>',				
+                id: id,
                 region:'west',
-                width: 720,				
-                autoLoad: { url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  },
+                width: 720,             
+                autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  },
                 split: true,
                 frame: true
             },
-            {			
+            {           
                 region:'center',
                 frame: true,
                 items: [
                 {
                     xtype: 'datepickerplus',
-                    id:'_mCalendar<% $id %>',
-//					disabled:true,
-                    value: _CurrentDate,	
+                    value: _CurrentDate,    
                     noOfMonth : 4, //(Ext.lib.Dom.getViewHeight()>600?9:4), //9 ,
                     noOfMonthPerRow : 2, //(Ext.lib.Dom.getViewWidth()>1024?3:2), //4,
                     multiSelection: true,
-                    allowMouseWheel:false,
+                    allowMouseWheel: false,
                     showWeekNumber: true,
                     weekendText: '',
-//					disabledDates: [new Date(2008,4,5).format(dform).replace(/\./g,"\\."),new Date(2008,4,6).format(dform).replace(/\./g,"\\."),new Date(2008,4,7).format(dform).replace(/\./g,"\\.")],
-                    showActiveDate:false,
-                    summarizeHeader:true,
-//					prevNextDaysView:"nomark",
-//					prevNextDaysView:false,
-//					listeners:{'beforeweekclick':function(){ return false; }} ,
-//					listeners:{'beforemousewheel':function(){ return false; }} ,
+                    // disabledDates: [new Date(2008,4,5).format(dform).replace(/\./g,"\\."),new Date(2008,4,6).format(dform).replace(/\./g,"\\."),new Date(2008,4,7).format(dform).replace(/\./g,"\\.")],
+                    showActiveDate: false,
+                    summarizeHeader: true,
+                    // prevNextDaysView:"nomark",
+                    // prevNextDaysView:false,
+                    // listeners:{'beforeweekclick':function(){ return false; }} ,
+                    // listeners:{'beforemousewheel':function(){ return false; }} ,
                     listeners:{
-                        'beforedateclick':function(picker,t){	
-                            this.currentDateRef = t;							
-                            _updateEvents(picker);							
-                        },						
+                        'beforedateclick':function(picker,t){   
+                            this.currentDateRef = t;                            
+                        },                      
                         'beforerender':function(picker){
-                            _setSelectedWeek(picker, _CurrentDate);		
-                            _updateEvents(picker);							
+                            _setSelectedWeek(picker, _CurrentDate);     
                         },
                         'afterdateclick':function(picker,t){
                             //_selectWeek(this, this.currentDateRef);
                             _setSelectedWeek(picker, t);
                             var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
-                            Ext.get('<% $id %>').load({url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>', date: fecha}});
+                            Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>', date: fecha}});
                         },
                         'afterweekclick':function(picker,t){
-                            _setSelectedWeek(picker, t);	
+                            _setSelectedWeek(picker, t);    
                             var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
-                            Ext.get('<% $id %>').load({url: '/job/calendar_show', params: { panel: '<% $id %>', id_cal: '<% $c->stash->{id_cal} %>', date: fecha}});
-                        }						
+                            Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>', date: fecha}});
+                        }                       
                         
                     } 
-/*					eventDates : function(year) {
-                        var dates = [
-                        {
-                            date: new Date(2008,4,14), //fixed date marked only on 2008/01/02
-                            text: "My cat died 7 years ago",
-                            cls: "x-datepickerplus-eventdates"
-                        },
-                        {
-                            date: new Date(year,4,11), //will be marked every year on 05/11
-                            text: "May 11th, Author's Birthday (Age:"+(year-1973)+")",
-                            cls: "x-datepickerplus-eventdates"									
-                        }
-                                
-                        ];
-                        return dates;
-                    }
-*/					
                 }
                 ]
             }
@@ -261,8 +206,8 @@
             //Esta linea es muy importante, debido a un bug en Ext el autoDestroy no funciona correctamente en el TabPanel
             //La manera de solventar esto es asignar id al panel y obtener la coleccion completa con Ext.get
             //Sobrescribimos la funcion destroy para gestionar la eliminacion correcta del panel y todos sus items
-            Ext.get('container-<% $id %>').remove();
-        } 		
+            Ext.get( id2 ).remove();
+        }       
     });
     return panel;
 })
