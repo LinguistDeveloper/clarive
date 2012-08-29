@@ -394,7 +394,7 @@ sub build_job_window : Path('/job/build_job_window') {
         _debug "NS with Calendar: " . join ',',@ns;
         my %tmp_hash   = map { $_ => 1 } @ns;
         @ns = keys %tmp_hash;    
-        #_debug "------Checking dates for namespaces: " . _dump \@ns;
+        _debug "------Checking dates for namespaces: " . _dump \@ns;
 
         my $hours = $self->merge_calendars( ns=>\@ns, bl=>$bl, date=>$date );
 
@@ -518,8 +518,10 @@ sub merge_calendars {
         'windows.active'=>1,
     };
 
-    $where->{bl} = $p{bl} if $p{bl};
+    $where->{bl} = ['*'];
+    push @{ $where->{bl} }, $p{bl} if $p{bl};
     $where->{ns} = $p{ns} if $p{ns}; # [ 'changeman.nature/changeman_batch', '/'  ]
+    _debug "Calendar search: " . _dump $where;
     
     my @cals = DB->BaliCalendar->search(
         $where,
