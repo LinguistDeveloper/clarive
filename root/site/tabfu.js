@@ -225,8 +225,8 @@
                                 Baseliner.cookie.set( 'last_login', last_login ); 
                             }
                             if( params.no_reload ) {
-                                cb();   
-                                params.on_login();
+                                cb();	
+                                params.on_login( params.scope );
                             } else {
                                 document.location.href = document.location.href;
                                 //window.location.reload();

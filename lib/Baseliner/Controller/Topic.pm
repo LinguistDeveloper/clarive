@@ -335,7 +335,7 @@ sub json : Local {
     }
     
     my @users = map { $_->id } 
-        $topic->users->search( undef, { select=>[qw(id)],
+        $topic->users->search( undef, { select=>[qw(mid)],
         order_by => { '-asc' => 'username' } } )->all;
         
     my @labels = map { $_->id_label } 
