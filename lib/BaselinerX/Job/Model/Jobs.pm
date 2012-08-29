@@ -267,7 +267,7 @@ sub _create {
             my $ns = Baseliner->model('Namespaces')->get( $item->{ns} );
             my $app = try { $ns->application } catch { '' };
             # check rfc
-            Baseliner->model('RFC')->check_rfc( $app, $ns->rfc ) 
+            Baseliner->model('RFC')->check_rfc( $app, $ns->rfc )
                 if $config->{check_rfc};
             # check contents job status
             _log "Checking if in active job: " . $item->{ns};
@@ -311,6 +311,11 @@ sub _create {
     if ( exists $p{approval}{reason} ) {
         # approval request executed by runner service
         $job->stash_key( approval_needed => $p{approval} );
+    }
+    if ( ref $p{job_stash} eq 'HASH' ) {
+        while( my ($k,$v) = each %{ $p{job_stash} } ) {
+            $job->stash_key( $k => $v );
+        }
     }
     $job->status( 'READY' );
     $job->update;
@@ -358,6 +363,8 @@ sub notify { #TODO : send to all action+ns users, send to project-team
         or _throw "Job id $jobid not found";
     my $log = new BaselinerX::Job::Log({ jobid=>$jobid });
     my $status = $p{status} || $job->status || $type;
+    my $mailcfg   = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
+
     if( $job->step ne 'RUN' && $job->status !~ /ERROR|KILLED/ ) {
         $log->debug(_loc( "Notification skipped for job %1 step %2 status %3",
             $job->name,
@@ -375,19 +382,19 @@ sub notify { #TODO : send to all action+ns users, send to project-team
         Baseliner->model('Messaging')->notify(
             subject => $subject,
             message => $message,
-            sender => _loc('Job Manager'),
+            sender  => $mailcfg->{from},
             to => { users => [ $username ] },
             carrier =>'email',
             template => 'email/job.html',
             template_engine => 'mason',
             vars   => {
                 subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
-                message   => $message,  # last log msg 
+                message   => $message,  # last log msg
                 action    => _loc($type), #started or finished
                 username  => $username,
-                realname  => $realname, 
+                realname  => $realname,
                 job       => $job->name,
-                status    => _loc($status), 
+                status    => _loc($status),
             }
             #cc => { actions=> ['action.notify.job.end'] },
         );
@@ -433,7 +440,7 @@ sub export {
             Path::Class::dir( $job_dir )->recurse(callback=>sub{
                 my $f = shift;
                 return if $f->is_dir;
-                push @files, "" . $f->relative($inf->{root}); 
+                push @files, "" . $f->relative($inf->{root});
             });
             chdir $inf->{root};
             $tar->add_files( @files );
@@ -466,7 +473,7 @@ sub user_has_access {
 
 sub log {
     my ($self,%p) = @_;
-    $p{jobid} or _throw 'Missing jobid'; 
+    $p{jobid} or _throw 'Missing jobid';
     my $args = { jobid=>$p{jobid} };
     $args->{exec} = $p{job_exec} if $p{job_exec} > 0;
     return new BaselinerX::Job::Log( $args );

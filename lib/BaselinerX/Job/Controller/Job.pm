@@ -1,4 +1,6 @@
 package BaselinerX::Job::Controller::Job;
+use v5.10;
+use Baseliner::Core::Namespace;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use DateTime;
@@ -20,8 +22,16 @@ register 'action.job.restart' => { name=>'Restart Jobs' };
 
 sub job_create : Path('/job/create')  {
     my ( $self, $c ) = @_;
-    #$c->stash->{ns_query} = { does=> 'Baseliner::Role::JobItem' };
-    #$c->forward('/namespace/load_namespaces'); # all namespaces
+
+    my @features_list = Baseliner->features->list;
+    $c->stash->{custom_forms} = [
+         map { "/include/job_new/" . $_->basename }
+         map {
+            $_->children
+         }
+         grep { -e $_ } map { Path::Class::dir( $_->path, 'root', 'include', 'job_new') }
+                @features_list 
+    ];
     $c->stash->{action} = 'action.job.create';
     $c->forward('/baseline/load_baselines_for_action');
 
@@ -32,7 +42,6 @@ sub job_create : Path('/job/create')  {
 sub job_items_json : Path('/job/items/json') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-
     my $ns_list = $c->model('Namespaces')->list(
         can_job  => 1,
         does     => 'Baseliner::Role::JobItem',
@@ -81,6 +90,7 @@ sub job_items_json : Path('/job/items/json') {
           };
     }
     # _log "-----------Job total item: " . $ns_list->{total};
+    #_log Data::Dumper::Dumper \@job_items;
     $c->stash->{json} = {
         totalCount => $ns_list->{total},
         data => [ @job_items ]
@@ -300,13 +310,13 @@ sub monitor_json : Path('/job/monitor_json') {
         my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
         my $last_log_message = $r->{last_log_message};
 
-        my @subapps = map {
+        my @subapps = _unique map {
             (ns_split( $_->{item} ))[1];
         } grep {
             $_->{item} =~ /^subap/
         } _array $job_items{ $r->{id} };
 
-        my @natures = map {
+        my @natures = _unique map {
             (ns_split( $_->{item} ))[1];
         } grep {
             $_->{item} =~ /^nature/
@@ -388,7 +398,7 @@ sub monitor_json_from_config : Path('/job/monitor_json_from_config') {
     my @rows = $config->rows( query=> $p->{query}, sort_field=> $p->{'sort'}, dir=>$p->{dir}  );
     #my @jobs = qw/N0001 N0002 N0003/;
     #push @rows, { job=>$_, start_date=>'22/10/1974', status=>'Running' } for( $p->{dir} eq 'ASC' ? reverse @jobs : @jobs );
-    $c->stash->{json} = { cat => \@rows };	
+    $c->stash->{json} = { cat => \@rows };
     $c->forward('View::JSON');
 }
 
@@ -437,129 +447,7 @@ sub refresh_now : Local {
     $c->forward('View::JSON');
 }
 
-sub merge_calendars : Private {
-    my ($self,%p) = @_;
-
-    my $bl = $p{bl};
-    my $now = Class::Date->new( _dt() );
-    my $date = $p{date} || $now; 
-    $date = Class::Date->new( $date ) if ref $date ne 'Class::Date' ;
-
-    # if today, start hours at now
-    my $start_hour = $now->ymd eq $date->ymd ? sprintf("%02d%02d", $now->hour , $now->minute) : '';
-
-    my $where = {
-        'me.active'=>'1',
-        'windows.active'=>1,
-    };
-
-    $where->{bl} = $p{bl} if $p{bl};
-    $where->{ns} = $p{ns} if $p{ns}; # [ 'changeman.nature/changeman_batch', '/'  ]
-    
-    my @cals = DB->BaliCalendar->search(
-        $where,
-        {
-          prefetch=>'windows',
-          order_by=>[
-              { -asc=>'seq' },
-              { -asc=>'windows.day' },
-              { -asc=>'windows.start_time' }
-          ]
-        }
-    )->hashref->all;
-    #return \@cals;
-    my @slots_cal;
-    for my $cal ( @cals ) {
-       my $slots = Calendar::Slots->new();
-       for my $win ( _array $cal->{windows} ) {
-           my $name = "$cal->{name} ($win->{type})==>" .( $win->{day}+1 );
-           if( $win->{start_date} ) {
-               my $d = Class::Date->new( $win->{start_date} );
-               $slots->slot( date=>substr($d->string,0,10), start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>{ cal=>$cal->{name}, type=>$win->{type} } );
-           } else {
-               $slots->slot( weekday=>$win->{day}+1, start =>$win->{start_time}, end =>$win->{end_time}, name =>$name, data=>{ cal=>$cal->{name}, type=>$win->{type} } );
-           }
-       }
-       push @slots_cal, $slots;
-    }
-    #_log _dump $slots->sorted;
-    my $date_w = $date->wday -1;
-    $date_w < 0  and $date_w += 7;
-    my $date_s = $date->strftime('%Y%m%d');
-    my %list;
-    _debug "TOD=$date, W=$date_w, S=$date_s, START=$start_hour";
-
-    for my $s ( map { $_->sorted } @slots_cal ) {
-       next if $s->type eq 'date' && $s->when ne $date_s;
-       next if $s->type eq 'weekday' && $s->when ne $date_w;
-
-       for( $s->start .. $s->end-1 ) {
-         my $time = sprintf('%04d',$_);
-         next if $start_hour && $time < $start_hour;
-         next if substr( $time, 2,2) > 59 ;
-         next if $time == 2400;
-         # X > U > N - using ord for ascii values
-         if( ! exists $list{$time} || ord $s->data->{type} > ord $list{ $time }->{type} ) {
-            $list{ $time } = {
-                type=>$s->data->{type}, cal=>$s->data->{cal}, 
-                hour => sprintf( '%s:%s', substr($time,0,2), substr($time,2,2) ),
-                name=>sprintf "%s (%s)", $s->data->{cal}, $s->data->{type} 
-            }; 
-         }
-       }
-    }
-    \%list;
-}
-
-sub build_job_window : Local {
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-
-    try {
-        my $date = $p->{job_date};
-        my $date_format = $p->{date_format} or _fail "Missing date format";
-        
-        my $bl = $p->{bl};
-        my $contents = _decode_json $p->{job_contents};
-        $contents = $c->model('Jobs')->container_expand( $contents );
-        my $month_days = 31;	
-
-        # get calendar range list
-        $date =  $date
-            ? parse_dt( $date_format, $date )
-            : _dt();  # _dt = now with timezone
-
-        my @ns;
-        # $contents = $c->model('Jobs')->container_expand( $contents );
-        for my $item ( @{ $contents || [] } ) {
-            my $namespace = $c->model('Namespaces')->get($item->{ns});
-            my @ns_list = _array $item->{ns}, _array $namespace->nature, $namespace->application, '/';
-            foreach my $curr_ns (@ns_list){
-                _debug "NS=$curr_ns";
-                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $curr_ns } });
-                push @ns, $curr_ns if $r->count;
-            }
-        }
-        _debug "NS with Calendar: " . join ',',@ns;
-        my %tmp_hash   = map { $_ => 1 } @ns;
-        @ns = keys %tmp_hash;    
-        _debug "------Checking dates for namespaces: " . _dump \@ns;
-
-        my $hours = $self->merge_calendars( ns=>\@ns, bl=>$bl, date=>$date );
-        # get it ready for a combo simplestore
-        my $hour_store = [ map {
-           [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
-        } sort keys %$hours ];
-
-        $c->stash->{json} = {success=>\1, data => $hour_store };
-    } catch {
-        my $error = shift;
-        _error $error;
-        $c->stash->{json} = {success=>\0, msg=>$error, data => $error };
-    };
-    $c->forward('View::JSON');
-}
-
+register 'event.job.new';
 register 'event.job.delete';
 register 'event.job.cancel';
 register 'event.job.cancel_running';
@@ -571,33 +459,45 @@ sub job_submit : Path('/job/submit') {
     my $runner = $config->{runner};
     my $job_name;
     my $username = $c->user ? $c->user->username || $c->user->id : '';
-
+    
     #TODO move this whole thing to the Model Jobs
     try {
+        use Baseliner::Sugar;
         if( $p->{action} eq 'delete' ) {
             my $job = $c->model('Baseliner::BaliJob')->search({ id=> $p->{id_job} })->first;
+            my $msg = '';
             if( $job->status =~ /CANCELLED|KILLED/ ) {
-                # be careful: may be cancelled already
-                $p->{mode} ne 'delete' and die _loc('Job already cancelled'); 
-                # cancel pending requests
-                $c->model('Request')->cancel_for_job( id_job=>$job->id );
-                $job->delete;
-                $job->update;
+
+                event_new 'event.job.delete' => { c=>$c, self=>$self, job=>$job }  => sub {
+                    # be careful: may be cancelled already
+                    $p->{mode} ne 'delete' and die _loc('Job already cancelled'); 
+                    # cancel pending requests
+                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
+                    $job->delete;
+                    $job->update;
+                };
+                $msg = "Job %1 deleted";
             }
             elsif( $job->status =~ /RUNNING/ ) {
-                $job->status( 'CANCELLED' );
-                $c->model('Request')->cancel_for_job( id_job=>$job->id );
-                $job->update;
+                event_new 'event.job.cancel_running' => { c=>$c, self=>$self, job=>$job } => sub {
+                    $job->status( 'CANCELLED' );
+                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
+
+                    sub job_submit_cancel_running : Private {};
+                    $c->forward( 'job_submit_cancel_running', $job, $job_name, $username );
+                };
+                $msg = "Job %1 cancelled";
             } else {
-                $job->status( 'CANCELLED' );
-                # cancel pending requests
-                $c->model('Request')->cancel_for_job( id_job=>$job->id );
-                $job->update;
-                my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-                $log->error(_loc("Job cancelled by user %1", $username));
+                event_new 'event.job.cancel'  => { c=>$c, self=>$self, job=>$job } => sub {
+                    $job->status( 'CANCELLED' );
+                    # cancel pending requests
+                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
+
+                };
+                $msg = "Job %1 cancelled";
             }
-        }
-        elsif( $p->{action} eq 'rerun' ) {
+            $c->stash->{json} = { success => \1, msg => _loc( $msg, $job_name) };
+        } elsif( $p->{action} eq 'rerun' ) {
             my $job = $c->model('Jobs')->rerun( jobid=>$p->{id_job}, username=>$username ); 
         }
         else { # new job
@@ -606,8 +506,12 @@ sub job_submit : Path('/job/submit') {
             my $job_date = $p->{job_date};
             my $job_time = $p->{job_time};
             my $job_type = $p->{job_type};
+            my $job_stash = try { _decode_json( $p->{job_stash} ) } catch { +{} };
+            
             my $contents = _decode_json $p->{job_contents};
             die _loc('No job contents') if( !$contents );
+
+            _debug "*** Job Stash: " . _dump $job_stash;
             # create job
             #my $start = parse_date('Y-mm-dd hh:mi', "$job_date $job_time");
             my $start = parse_dt( '%Y-%m-%d %H:%M', "$job_date $job_time");
@@ -615,11 +519,19 @@ sub job_submit : Path('/job/submit') {
             my $end = $start->clone->add( hours => 1 );
             my $ora_start =  $start->strftime('%Y-%m-%d %T');
             my $ora_end =  $end->strftime('%Y-%m-%d %T');
-
+            my $approval = undef;
+            
+            # U -- urgent calendar
+            if ( config_value('job_new.approve_urgent') && $p->{window_type} eq 'U') {
+                $approval = { reason=>_loc('Urgent Job') };
+            }
+                
             # not in an authorized calendar
-            my $approval = { reason=>_loc('Pase fuera de ventana') }
-                if $p->{window_check} eq 'on';
-            my $job = $c->model('Jobs')->create( 
+            if ( config_value('job_new.approve_no_cal') && $p->{check_no_cal} eq 'on') {
+                $approval = { reason=>_loc('Job not in a window') };
+            }
+                
+            my $job_data = {
                     starttime    => $start,
                     maxstarttime => $end,
                     status       => 'IN-EDIT',
@@ -631,17 +543,20 @@ sub job_submit : Path('/job/submit') {
                     username     => $username,
                     runner       => $runner,
                     comments     => $comments,
-                    items => $contents
-            );
-            $job_name = $job->name;
-            #$job_name = $c->model('Jobs')->job_name({ mask=>'%s.%s%08d', type=>$job_type, bl=>$bl, id=>$job->id });
-            #$job->name( $job_name );
-            #$job->update;
+                    items        => $contents, 
+                    job_stash    => $job_stash
+            };
+            event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
+                my $job = $c->model('Jobs')->create( %$job_data );
+                $job_name = $job->name;
+                { job=>$job }; 
+            };
+            
+            $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
         }
-        $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
     } catch {
         my $err = shift;
-        _log "Error during job creation: $err";
+        _error "Error during job creation: $err";
         $err =~ s{DBIx.*\(\):}{}g;
         $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
     };
@@ -695,9 +610,11 @@ sub export : Local {
 
     my $filename = $p->{filename} || "job-$p->{id_job}.tar.gz";
 
-    $c->stash->{serve_filename} = $filename;
-    $c->stash->{serve_file} = $file;
-    $c->forward('/serve_file');
+    $c->res->headers->remove_header('Cache-Control');
+    $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
+    $c->res->content_type('application-download;charset=utf-8');
+    $c->serve_static_file( $file );
+    #$c->res->body( $data );
 }
 
 sub resume : Local {
