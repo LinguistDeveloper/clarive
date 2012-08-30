@@ -449,7 +449,7 @@ if( Baseliner->debug ) {
         for my $d ( @vars ) {
             my ($type,$obj)=@$d;
             if( $type eq 'Request' ){
-                if( $obj->{_log}{_body} =~ m{(password\s+\|\s+)(.+?)(\s+)}s ) {
+                if( defined $obj->{_log}{_body} && $obj->{_log}{_body} =~ m{(password\s+\|\s+)(.+?)(\s+)}s ) {
                    my $p = $2;
                    my $np = '*' x length($p) ;
                    $obj->{_log}{_body} =~ s{$p}{$np}gsm;

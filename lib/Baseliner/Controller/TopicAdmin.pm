@@ -342,7 +342,7 @@ sub update_label : Local {
                 my $rs = Baseliner->model('Baseliner::BaliLabel')->search({ id => \@ids_label });
                 $rs->delete;
                 
-                my $rs = Baseliner->model('Baseliner::BaliTopicLabel')->search({ id_label => \@ids_label });
+                $rs = Baseliner->model('Baseliner::BaliTopicLabel')->search({ id_label => \@ids_label });
                 $rs->delete;                
                 
                 $c->stash->{json} = { success => \1, msg=>_loc('Labels deleted') };

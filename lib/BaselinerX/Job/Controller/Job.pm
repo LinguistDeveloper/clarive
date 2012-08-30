@@ -8,7 +8,6 @@ use DateTime;
 use JSON::XS;
 use JavaScript::Dumper;
 use Try::Tiny;
-use Calendar::Slots 0.11;
 use utf8;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -30,9 +29,7 @@ register 'config.job.states' => {
 
 sub job_create : Path('/job/create')  {
     my ( $self, $c ) = @_;
-    #$c->stash->{ns_query} = { does=> 'Baseliner::Role::JobItem' };
-    #$c->forward('/namespace/load_namespaces'); # all namespaces
-    
+
     my @features_list = Baseliner->features->list;
     $c->stash->{custom_forms} = [
          map { "/include/job_new/" . $_->basename }

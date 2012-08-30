@@ -10,6 +10,55 @@ use Path::Class;
 use Try::Tiny;
 use Data::Dumper;
 use utf8;
+use Class::Date;
+
+with 'Baseliner::Role::Search';
+
+sub search_provider_name { 'Jobs' };
+sub search_provider_type { 'Job' };
+sub search_query {
+    my ($self, %p ) = @_;
+    my $where = query_sql_build( query=>$p{query}, fields=>{
+        name     =>'me.name',
+        id       =>'to_char(me.id)',
+        user     =>'me.username',
+        comments =>'me.comments',
+        status   =>'me.status',
+        start    =>"me.starttime",
+        sched    =>"me.schedtime",
+        end      =>"me.endtime",
+        items    =>"bali_job_items.item",
+    });
+    my $rs_search = Baseliner->model('Baseliner::BaliJob')->search(
+        $where,
+        {
+            select => [ { distinct=>'me.id'}, 'starttime' ],
+            as => [ 'id', 'starttime' ],
+            join => [ 'bali_job_items' ],	
+            page=>0, rows=>$p{query_limit} || 20,
+            order_by => { -desc => 'me.starttime' },
+        }
+    );
+    rs_hashref( $rs_search );
+    my @ids = map { $_->{id} } $rs_search->all; 
+    my $rs = Baseliner->model('Baseliner::BaliJob')->search(
+        { 'me.id'=>{ -in =>\@ids } },
+        {
+            page=>$p{page} // 1, rows=>$p{limit} // 20,
+            order_by => { -desc => 'me.starttime' },
+        }
+    );
+    my $pager = $rs->pager;
+    my $cnt = $pager->total_entries;
+    return map { 
+        my %res = $_->get_columns;
+        my $text = join ', ', 
+        map {
+            "$_: $res{$_}" 
+        } keys %res;
+        +{ title=>$_->name, text=>$text, url=>[ $_->id, $_->name ], type=>'log' }
+    } $rs->all;
+}
 
 sub get {
     my ($self, $id ) = @_;
@@ -32,7 +81,7 @@ sub check_scheduled {
             $frequency = Baseliner->model('Config')->get( $service->frequency_key );
         }
         if( $frequency ) {
-            my $last_run = Baseliner->model('Baseliner::BaliJob')->search({ runner=> $service->key }, { order_by=>'starttime desc' })->first;
+            my $last_run = Baseliner->model('Baseliner::BaliJob')->search({ runner=> $service->key }, { order_by=>{ '-desc' => 'starttime' } })->first;
         }
     }
 }
@@ -46,7 +95,7 @@ sub job_name {
 
 sub top_job {
     my ($self, %p )=@_;
-    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ %p }, { order_by => "id_job.id desc", prefetch=>['id_job'] });
+    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ %p }, { order_by => { '-desc' => 'id_job.id' }, prefetch=>['id_job'] });
     return undef unless ref $rs;
     my $row = $rs->next;
     return undef unless ref $row;
@@ -55,8 +104,8 @@ sub top_job {
 
 sub is_in_active_job {
     my ($self, $ns )=@_;
-
-    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ item=> $ns }, { order_by => "id_job.id desc", prefetch=>['id_job'] });
+    
+    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ item=> $ns }, { order_by => { '-desc' => 'id_job.id' }, prefetch=>['id_job'] });
     while( my $r = $rs->next ) {
         if(  $r->id_job->is_active ) {
             return $r->id_job;
@@ -238,7 +287,7 @@ sub _create {
             # check contents job status
             _log "Checking if in active job: " . $item->{ns};
             my $active_job = $self->is_in_active_job( $item->{ns} );
-            _throw _loc("Job element '%1' is in an active job: %2", $item->{ns}, $active_job->name)
+            _fail _loc("Job element '%1' is in an active job: %2", $item->{ns}, $active_job->name)
                 if ref $active_job;
                     # item => $item->{ns},
             my $provider=$1 if $item->{provider} =~ m/^namespace\.(.*)$/g;
@@ -444,4 +493,193 @@ sub log {
     $args->{exec} = $p{job_exec} if $p{job_exec} > 0;
     return new BaselinerX::Job::Log( $args );
 }
+
+sub get_summary {
+    my ($self, %p) = @_;
+    my $row = Baseliner->model( 'Baseliner::BaliJob' )->search( {id => $p{jobid}, exec => $p{job_exec}} )->first;
+    my $result = {};
+
+    if ( $row ) {
+        my $execution_time;
+        my $endtime;
+        my $starttime;
+        $starttime = Class::Date->new( $row->starttime);
+        if ($row->endtime){
+            $endtime = Class::Date->new( $row->endtime);
+            $execution_time = $endtime - $starttime;
+        } else {
+            my $now = Class::Date->new( _now);
+            $execution_time = $now - $row->starttime;
+        }
+        $result = {
+            bl => $row->bl,
+            status => $row->status,
+            starttime => $starttime,
+            execution_time => $execution_time,
+            endtime => $endtime,
+            type => $row->type,
+            owner => $row->owner,
+            last_step => $row->step,
+            rollback => $row->rollback
+        }
+    }
+    return $result;
+}
+
+sub get_services_status {
+    my ( $self, %p ) = @_;
+    defined $p{jobid} or _throw "Missing jobid";
+    my $rs = 
+        Baseliner->model( 'Baseliner::BaliLog' )
+        ->search( {id_job => $p{jobid}, exec => $p{job_exec}, milestone => {'>', 1}}, {order_by => 'id'} );
+
+    my $row_stash = Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
+
+    my $job_stash     = $row_stash? _load $row_stash->stash : {};
+
+    my $chain_id = 1;
+    if ( $job_stash->{runner_data}->{chain_id} ) {
+        $chain_id = $job_stash->{runner_data}->{chain_id};
+    }
+    my $chain_rs =
+        Baseliner->model( 'Baseliner::BaliChainedService' )
+        ->search( { chain_id => $chain_id } );
+
+    my $services = {};
+
+    while ( my $chained_service = $chain_rs->next() ) {
+        $services->{$chained_service->step.'-'.$chained_service->key } = $chained_service->description;
+    }
+
+    my $service_statuses = {2 => 'Success', 3 => 'Warning', 4 => 'Error'};
+    my $result;
+    my %added_services;
+    while ( my $row = $rs->next ) {
+        my $info = Baseliner->model( 'Baseliner::BaliLog' )->search( {id_job => $p{jobid}, exec => $p{job_exec}, lev => {'<>','debug'}, service_key => $row->service_key, step => $row->step}, {order_by => 'id'} )->first;
+        if ( $info ) {
+            if ( !$added_services{$row->step.$row->service_key} ) {
+                push @{$result->{$row->step}}, 
+                    { description => $services->{$row->step.'-'.$row->service_key}, service=>$row->service_key, status => $service_statuses->{$row->milestone}, id => $row->id};
+                $added_services{$row->step.$row->service_key} = 1;
+            }
+        }
+    } ## end while ( my $row = $rs->next)
+
+    return $result;
+} ## end sub get_services_status
+
+sub get_contents {
+    my ( $self, %p ) = @_;
+    defined $p{jobid} or _throw "Missing jobid"; 
+    my $result;
+
+    my $rs = Baseliner->model( 'Baseliner::BaliJobItems' )->search( {id_job => $p{jobid}} );
+    my $row_stash =
+        Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
+
+    my $job_stash     = $row_stash? _load $row_stash->stash : {};
+    my $elements      = $job_stash->{elements};
+    my @elements_list;
+    $result = {};
+    if($elements){
+        @elements_list = $elements->list( '' );
+        my %topics;
+        my %technologies;
+    
+        while ( my $row = $rs->next ) {
+            my $ns = ns_get( $row->item );
+            push @{$result->{packages}->{$ns->{ns_data}->{project}}}, { name => $ns->{ns_name}, type => $ns->{ns_type} };
+            push @{$result->{elements}},
+                map { 
+                    try {
+                        $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
+                        #_log $_->path;
+                        my $tech = $1;
+                        $technologies{$tech} = '';
+                        {name => $_->name, status => $_->status, path => $_->path} 
+                    } catch {
+                        +{}
+                    };
+                } @elements_list;
+    
+            my $rs_topics =
+                Baseliner->model( 'Baseliner::BaliRelationship' )->search( {from_ns => $ns->{ns_type}.'/'.$ns->{ns_name}} );
+    
+            while ( my $topic = $rs_topics->next ) {
+                my $row_topics =
+                    Baseliner->model( 'Baseliner::BaliTopic' )->search( {mid => $topic->to_id} )->first;
+                ##$topics{$topic->to_id} = $row_topics->title;
+                $topics{$topic->to_id} = $row_topics->title if $row_topics && $row_topics->title;
+            }
+        } ## end while ( my $row = $rs->next)
+    
+        push @{$result->{topics}}, map { {id => $_, title => $topics{$_}} } keys %topics;
+        push @{$result->{technologies}}, keys %technologies;        
+    }
+    return $result;
+
+} ## end sub get_contents
+
+sub get_outputs {
+    my ( $self, %p ) = @_;
+    my $rs =
+        Baseliner->model( 'Baseliner::BaliLog' )->search(
+        {
+            -and => [
+                id_job => $p{jobid},
+                exec => $p{job_exec},
+                lev    => {'<>', 'debug'},
+                -or    => [
+                    more      => {'<>', undef},
+                    milestone => 1
+                ]
+            ]
+        },
+        {order_by => 'id'}
+        );
+    my $result;
+    my $qre = qr/\.\w+$/;
+
+    while ( my $r = $rs->next ) {
+        my $more = $r->more;
+        my $data = _html_escape( uncompress( $r->data ) || $r->data );
+
+        my $data_len  = $r->data_length || 0;
+        my $data_name = $r->data_name   || '';
+        my $file =
+            $data_name =~ $qre ? $data_name
+            : ( $data_len > ( 4 * 1024 ) )
+            ? ( $data_name || $self->_select_words( $r->text, 2 ) ) . ".txt"
+            : '';
+        my $link;
+        if ( $more eq 'link') {
+            $link = $data;
+        }
+        push @{$result->{outputs}}, {
+            id      => $r->id,
+            datalen => $data_len,
+            more => {
+                more      => $more,
+                data_name => $r->data_name,
+                data      => $data_len ? 1 : 0,
+                file      => $file,
+                link      => $link
+            },
+            }
+
+    } ## end while ( my $r = $rs->next)
+    return $result;
+} ## end sub get_outputs
+
+sub _select_words {
+    my ( $self, $text, $cnt ) = @_;
+    my @ret = ();
+    for ( $text =~ /(\w+)/g ) {
+        next if length( $_ ) <= 3;
+        push @ret, $_;
+        last if @ret >= $cnt;
+    }
+    return join '_', @ret;
+} ## end sub _select_words
+
 1;
