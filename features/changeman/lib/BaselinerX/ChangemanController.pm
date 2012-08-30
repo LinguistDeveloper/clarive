@@ -243,14 +243,15 @@ Baseliner::Sugar::event_hook 'event.job.new' => 'after' => sub {
 Baseliner::Sugar::event_hook [qw/event.job.cancel event.job.cancel_running/] => sub {
     my $ev = shift;
     my ($self,$c, $job ) = @{ $ev->data }{qw/self c job /};
+    # $c is not available if it comes from Model::Jobs
 
-    my $username = $c->username;
+    my $username = try { $c->username } catch { 'internal' };
     my $job_name = $job->name;
 
     # CANCELAR JOB EN CHANGEMAN SI PROCEDE
     my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
     my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
-    my $rs_items = $c->model('Baseliner::BaliJobItems')->search({ id_job=>$job->id, provider =>'namespace.changeman.package' } );
+    my $rs_items = Baseliner->model('Baseliner::BaliJobItems')->search({ id_job=>$job->id, provider =>'namespace.changeman.package' } );
     rs_hashref($rs_items);
     my @pkgs;
     while (my $row=$rs_items->next) {
@@ -261,11 +262,19 @@ Baseliner::Sugar::event_hook [qw/event.job.cancel event.job.cancel_running/] => 
     if (scalar @pkgs) { 
         my $ret= $chm->xml_cancelJob(job=>$job->name, items=>@pkgs) ;
         if ($ret->{ReturnCode} ne '00') {
-            $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
-            # $c->stash->{json} = { success => \0, msg => _loc("Error canceling Changeman Job:<br>%1",$ret->{Message}) };
+            my $msg = _loc("Job %1 cancelled", $job_name);
+            if( $c ) {
+                $c->stash->{json} = { success => \1, msg =>$msg  };
+            } else {
+                _log $msg;
+            }
         } else {
-            # $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled", $job_name) };
-            $c->stash->{json} = { success => \1, msg => _loc("Job %1 cancelled<br>Changeman package(s) desassociated)", $job_name) };
+            my $msg = _loc("Job %1 cancelled<br>Changeman package(s) desassociated)", $job_name);
+            if( $c ) {
+                $c->stash->{json} = { success => \1, msg => $msg  };
+            } else {
+                _throw $msg; 
+            }
         }
         $job->update;
         ## Al cancelar el job, quitamos las relaciones de BaliRelationship

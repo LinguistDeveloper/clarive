@@ -293,3 +293,5 @@ msgstr "FIN from Daemon. Job: %1. Return Code: %2. Action: %3"
 msgid "No users found for action %1"
 msgstr "Usuarios no encontrados para la acción %1"
 
+msgid "Error creating Changeman Job:<br>%1"
+msgstr "Error creando pase Changeman<br>%1"

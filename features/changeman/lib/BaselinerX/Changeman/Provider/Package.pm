@@ -58,7 +58,7 @@ register 'namespace.changeman.package' => {
 
 sub namespace { 'BaselinerX::Changeman::Namespace::Package' }
 sub domain    { 'changeman.package' }
-sub icon      { '/static/images/package.png' }
+sub icon      { '/changeman/package.gif' }
 sub name      { 'ChangemanPackages' }
 
 # returns the first rows it finds for a given name
@@ -109,8 +109,8 @@ sub getPkg {
             $tipoPkg.='/linkList' if $linklist eq 'SI';
             my $label=$motivo eq 'PRO'?'Proyecto: ':$motivo eq 'PET'?'Peticin: ':$motivo eq 'MTO'?'Mantenimiento: ':'Incidencia: ';
             
-            my $data={  icon_on  => '/static/images/changeman/package.gif',
-                        icon_off => '/static/images/changeman/package_off.gif',
+            my $data={  icon_on  => '/changeman/package.gif',
+                        icon_off => '/changeman/package_off.gif',
                         provider => 'namespace.changeman.package',
                         ns_type  => _loc('Changeman package'),
                         ns_name  => $_,
@@ -228,8 +228,8 @@ sub list {
                     }
                 }
 
-            my $data={  icon_on  => '/static/images/changeman/package.gif',
-                        icon_off => '/static/images/changeman/package_off.gif',
+            my $data={  icon_on  => '/changeman/package.gif',
+                        icon_off => '/changeman/package_off.gif',
                         provider => 'namespace.changeman.package',
                         ns_type  => _loc('Changeman package'),
                         ns_name  => $_,
