@@ -1,7 +1,6 @@
 package BaselinerX::Job::Service::ChainedRule;
 use Baseliner::Plug;
 use Baseliner::Utils;
-use BaselinerX::BdeUtils;
 use Baseliner::Sugar;
 use Carp;
 use Data::Dumper;
@@ -50,6 +49,7 @@ sub exists_chain {
 }
 
 sub proper_ns { # Str -> Maybe[Str]
+    sub cdr { shift; @_ };
   join '', cdr split '', $_[0];
 }
 
@@ -62,7 +62,7 @@ sub launch {
 
   # This identifies whether every step in the chain will generate a semaphore
   # request.
-  my $sem_chain = _bde_conf 'chain.sem';
+  my $sem_chain = $self->_conf( 'chain.sem' );
 
   my $chain_id = 3;  # FIXME
 
@@ -101,7 +101,7 @@ sub launch {
 
     eval qq| sub service { \$row->{service} } $row->{dsl_code}; |;
     $sem->release if $sem;
-    _throw $@ if $@ && _bde_conf('kill_chain');
+    _throw $@ if $@ && $self->_conf('kill_chain');
   }
 
   # Iterate every element in the chain until it runs out, if the DSL happens
@@ -119,6 +119,10 @@ sub launch {
     } 
   }
   return; 
+}
+
+sub _conf {
+  config_get( 'config.bde' )->{ shift() };
 }
 
 1;
