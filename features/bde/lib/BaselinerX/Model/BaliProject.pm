@@ -10,9 +10,9 @@ use utf8;
 has 'mid',             is => 'ro', isa => 'Int',      lazy_build => 1;
 has 'name',            is => 'ro', isa => 'Str',      lazy_build => 1;
 has 'table',           is => 'ro', isa => 'Str',      lazy_build => 1;
-has 'first_level',     is => 'ro', isa => 'ArrayRef', lazy_build => 1;
-has 'second_level',    is => 'ro', isa => 'ArrayRef', lazy_build => 1;
-has 'third_level',     is => 'ro', isa => 'ArrayRef', lazy_build => 1;
+has 'first_level',     is => 'ro', isa => 'Any',      lazy_build => 1;
+has 'second_level',    is => 'ro', isa => 'Any',      lazy_build => 1;
+has 'third_level',     is => 'ro', isa => 'Any',      lazy_build => 1;
 has 'first_to_second', is => 'ro', isa => 'HashRef',  lazy_build => 1;
 has 'second_to_third', is => 'ro', isa => 'HashRef',  lazy_build => 1;
 
@@ -65,12 +65,20 @@ sub _build_third_level {
                              nature    => {not => undef}})
 }
 
+sub search_in_projects_arr {
+  my ($self, $where) = @_;
+  my $rs = Baseliner->model('Baseliner::BaliProject')->search($where,
+                                                              $self->args);
+  rs_hashref($rs);
+  [ $rs->all ]
+}
+
 sub search_in_projects {
   my ($self, $where) = @_;
   my $rs = Baseliner->model('Baseliner::BaliProject')->search($where,
                                                               $self->args);
   rs_hashref($rs);
-  [$rs->all];
+  $rs
 }
 
 sub args { {select => [qw/mid id_parent/], order_by => 'id_parent'} }
@@ -89,21 +97,21 @@ sub level_to_level {
 
 sub _build_second_to_third {
   my $self = shift;
-  $self->level_to_level($self->third_level, $self->second_level);
+  $self->level_to_level( [$self->third_level->all], [$self->second_level->all]);
 }
 
 sub _build_first_to_second {
   my $self = shift;
-  $self->level_to_level($self->second_level, $self->first_level);
+  $self->level_to_level([$self->second_level->all], [$self->first_level->all]);
 }
 
 sub lvl_ids {
   my ($self, $level) = @_;
-  my $fn = sub { sort {$a > $b} map $_->{mid}, @_ };
+  my $fn = sub { $_[0]->search( undef, { order_by=>{} }) };
   given ($level) {
-    when (1) { return $fn->(@{$self->first_level})  }
-    when (2) { return $fn->(@{$self->second_level}) }
-    when (3) { return $fn->(@{$self->third_level})  }
+    when (1) { return $fn->(  $self->first_level )  }
+    when (2) { return $fn->(  $self->second_level ) }
+    when (3) { return $fn->(  $self->third_level )  }
     default  { return ()                            }
   }
 }

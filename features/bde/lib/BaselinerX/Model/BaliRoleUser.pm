@@ -27,8 +27,9 @@ sub update {
 
 sub roles_for_lvl {
   my ($self, $lvl) = @_;
-  my $projects = [map { $_ = "project/$_" } $self->bali_project->lvl_ids($lvl)];
-  $self->search({ns => {in => $projects}});
+  my $rs_prj = $self->bali_project->lvl_ids( $lvl )->search( undef, 
+     { select=>\"'project/'||mid" }  );
+  $self->search({ns => {in => $rs_prj->as_query }});
 }
 
 sub search {
