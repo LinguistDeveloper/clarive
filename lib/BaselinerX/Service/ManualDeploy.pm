@@ -167,7 +167,8 @@ sub send_requests {
         my $desc = $action->{data}{description};
         my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid ); 
         my $reason = _loc('Manual deploy action: %1', $name);
-        $log->info( _loc('Requesting manual deploy for job %1, baseline %2: %3', $job->name , $bl, '<b>' . $reason . '</b>') );
+        my $subject = _loc('Requesting manual deploy for job %1, baseline %2: %3', $job->name , $bl, '<b>' . $reason . '</b>');
+        $log->info( $subject );
         try {
             Baseliner->model('Request')->request(
                 name            => _loc( "Manual Deploy for %1", $job->name ),
@@ -185,6 +186,7 @@ sub send_requests {
                     url_log  => $url_log,
                     reason   => $reason,
                     comments => _textile( $desc ),
+                    subject  => $subject,
                 },
             );
             my $job_row = $c->model('Baseliner::BaliJob')->find({ id=>$job->jobid });
