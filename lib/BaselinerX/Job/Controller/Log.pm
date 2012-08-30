@@ -154,7 +154,8 @@ sub log_rows : Private {
     my $qre = qr/\.\w+$/;
     while( my $r = $rs->next ) {
         my $more = $r->more;
-        my $data = $p->{with_data} || $more eq 'link'
+        my $data = $p->{with_data}
+            || ( defined $more && $more eq 'link' )
             ? _html_escape( uncompress( $r->data ) || $r->data ) : '';
         #next if( $query && !query_array($query, $r->job->name, $r->get_column('timestamp'), $r->text, $r->provider, $r->lev, $r->data_name, $data, $r->ns ));
         #if( $filter ) { next if defined($filter->{$r->lev}) && !$filter->{$r->lev}; }
@@ -252,7 +253,7 @@ sub jobList : Path('/job/log/jobList') {
     my $p = $c->req->params;
     my $log;
     # _log _dump $p;
-    my $pkgIcon='/static/images/changeman/package.gif';
+    my $pkgIcon='/static/images/icons/package_green.gif';
     my $siteIcon='/static/images/site.gif';
     my $jobIcon='/static/images/book.gif';
     my $spoolIcon='/static/images/page.gif';

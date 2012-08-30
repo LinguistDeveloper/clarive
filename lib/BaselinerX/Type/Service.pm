@@ -113,6 +113,8 @@ sub run {
         }
     } catch {};
 
+    # logfile
+    $c->stash->{job}->job_stash->{logfile} = $c->stash->{logfile};
 
     $logger->verbose( exists($args->{v}) || exists($args->{debug}) );
     delete $args->{v};  # assume I'm the only one using this
@@ -123,23 +125,29 @@ sub run {
     # instanciate the service
     my $instance = $module->new( log=>$logger );
 
-    if( ref($handler) eq 'CODE' ) {
-        my $rc = $handler->( $instance, $c, @_ );
-        $rc = 0 unless is_number $rc; # the service may return anything...
-        $instance->log->rc( $rc );
-        #_log $instance->log->msg;
-        return $instance->log;
-    } 
-    elsif( $handler && $module ) {
-        my $rc = $module->$handler( $instance, $c, @_);  
-        $rc = 0 unless is_number $rc; # the service may return anything...
-        $instance->log->rc( $rc );
-        #_log $instance->log->msg;
-        return $instance->log;
-    }
-    else {
-        die "Can't find sub $service {...} nor a handler directive for the $service_noun '$service'";
-    }
+    # check the service implements role
+    _throw qq{Service '$key' doesn't implement Baseliner::Role::Service. Please, put:
+
+        with 'Baseliner::Role::Service'; 
+        
+    within your class.} unless $instance->does('Baseliner::Role::Service');
+
+    # try to set the job for the service (a Baseliner::Role::Service attribute)
+    try { $c->stash->{job} and $instance->job( $c->stash->{job} ); } catch {};
+
+    my @args = @_;
+    my $rc = try {
+        ref $handler eq 'CODE' and return $handler->( $instance, $c, @args );
+        $handler && $module and return $module->$handler( $instance, $c, @args );
+        die "Can't find sub $service {...} nor a handler directive for the service '$service'";
+    } catch {
+        _fail shift();
+    };
+    _debug "RC1=$rc";
+    $rc = 0 unless is_number $rc; # the service may return anything...
+    _debug "RC2=$rc";
+    $instance->log->rc( $rc );
+    return $instance->log;
 }
 
 

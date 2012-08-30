@@ -242,7 +242,7 @@
         text: x.text,
         icon: '/static/images/icons/type.' + x.name + '.png',
         handler: function () {
-          alert('Filtrando por tipo ' + x.text);
+          // alert('Filtrando por tipo ' + x.text);
           store.load({
             params: {
               type_filter: x.name

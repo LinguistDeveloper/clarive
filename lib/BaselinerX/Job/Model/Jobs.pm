@@ -1,5 +1,5 @@
 package BaselinerX::Job::Model::Jobs;
-use Moose;
+use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use namespace::clean;
 use Baseliner::Utils;
@@ -13,6 +13,14 @@ use utf8;
 use Class::Date;
 
 with 'Baseliner::Role::Search';
+with 'Baseliner::Role::Service';
+
+register 'service.doo' => {
+    handler=>sub{
+        _debug( "NONONO" );
+        #_log "888888888888";
+    }
+};
 
 sub search_provider_name { 'Jobs' };
 sub search_provider_type { 'Job' };
@@ -124,25 +132,10 @@ sub cancel {
         if ( $job->status =~ /^CANCELLED/ ) {
            $job->delete;
         } else {
-           $job->status( 'CANCELLED' );
-           $job->update;
-
-           # CANCELAR JOB EN CHANGEMAN SI PROCEDE
-           my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
-           my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
-           my $rs_items = Baseliner->model('Baseliner::BaliJobItems')->search({ id_job=>$job->id, provider =>'namespace.changeman.package' } );
-           rs_hashref($rs_items);
-           my @pkgs;
-           while (my $row=$rs_items->next) {
-              my $name=$1 if $row->{item} =~ m{changeman.package/(.*)};
-              push @pkgs, $name if $name;
-           }
-           if (scalar @pkgs) {
-              my $ret= $chm->xml_cancelJob(job=>$job->name, items=>@pkgs) ;
-              if ($ret->{ReturnCode} ne '00') {
-                 _log "Error cancelando pase en CHM";
-              }
-           }
+           event_new 'event.job.cancel' => { job=>$job, self=>$self } => sub {
+               $job->status( 'CANCELLED' );
+               $job->update;
+           };
         }
     } else {
         _throw _loc('Could not find job id %1', $p{id} );
@@ -160,6 +153,8 @@ sub resume {
     $job->update;
 }
 
+register 'event.job.rerun';
+
 sub rerun {
     my ($self, %p )=@_;
     my $jobid = $p{jobid} or _throw 'Missing job id';
@@ -171,34 +166,38 @@ sub rerun {
     _throw _loc('Job %1 is currently running (%2) and cannot be rerun', $job->name, $job->status)
         unless( $job->is_not_running );
 
-    if( $p{run_now} ) {
-    my $now = DateTime->now;
-    $now->set_time_zone(_tz);
-    my $end = $now->clone->add( hours => 1 );
-    my $ora_now =  $now->strftime('%Y-%m-%d %T');
-    my $ora_end =  $end->strftime('%Y-%m-%d %T');
-    $job->schedtime( $ora_now );
-    $job->starttime( $ora_now );
-    $job->maxstarttime( $ora_end );
-    }
-    $job->rollback( 0 );
-    $job->status( 'READY' );
-    $job->step( $p{step} || 'PRE' );
-    $job->username( $username );
-    my $exec = $job->exec + 1;
-    $job->exec( $exec );
-    $job->update;
-    my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-    $log->info(_loc("Job restarted by user %1, execution %2", $realuser, $exec));
+    event_new 'event.job.rerun' => { job=>$job } => sub {
+        if( $p{run_now} ) {
+            my $now = DateTime->now;
+            $now->set_time_zone(_tz);
+            my $end = $now->clone->add( hours => 1 );
+            my $ora_now =  $now->strftime('%Y-%m-%d %T');
+            my $ora_end =  $end->strftime('%Y-%m-%d %T');
+            $job->schedtime( $ora_now );
+            $job->starttime( $ora_now );
+            $job->maxstarttime( $ora_end );
+        }
+        $job->rollback( 0 );
+        $job->status( 'READY' );
+        $job->step( $p{step} || 'PRE' );
+        $job->username( $username );
+        my $exec = $job->exec + 1;
+        $job->exec( $exec );
+        $job->update;
+        my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
+        $log->info(_loc("Job restarted by user %1, execution %2", $realuser, $exec));
+    };
 }
 
 sub create {
     my ($self, %p )=@_;
 
     my $job;
-    Baseliner->model('Baseliner')->txn_do( sub {
+    master_new 'job' => $p{name} => sub { # this is transaction "aware"
+        my $mid = shift;
+        $p{mid} = $mid;
         $job = $self->_create( %p );
-    });
+    };
     return $job;
 }
 
@@ -222,7 +221,7 @@ sub _create {
     $p{starttime}||=$now;
     $p{maxstarttime}||=$end;
 
-    ## Para permitir crear pases a fecha pasada - Refleja actividad pasada en Changeman.
+    ## allow the creation of jobs executed outside Baseliner, with older dates
     my ($starttime, $maxstarttime ) = ( $p{starttime}, $p{maxstarttime} );
     $starttime =  $starttime->strftime('%Y-%m-%d %T');
     $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
@@ -231,6 +230,7 @@ sub _create {
 
     my $job = Baseliner->model('Baseliner::BaliJob')->create({
             name         => 'temp' . $$,
+            mid          => $p{mid},
             starttime    => $starttime,
             schedtime    => $starttime,
             maxstarttime => $maxstarttime,

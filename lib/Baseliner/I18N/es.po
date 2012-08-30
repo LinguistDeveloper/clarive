@@ -2123,10 +2123,6 @@ msgstr "Error guardando datos de configuración"
 msgid "Config data exported"
 msgstr "Datos de configuración exportados"
 
-# lib/BaselinerX/Job/Controller/Job.pm (578)
-msgid "Error creating Changeman Job:<br>%1"
-msgstr "Error creando pase Changeman<br>%1"
-
 # root/comp/scheduler_grid.js (57)
 msgid "New task"
 msgstr "Nueva"

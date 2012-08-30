@@ -323,7 +323,9 @@ sub monitor_json : Path('/job/monitor_json') {
               map {
                   $app{ $_->{application} }=() if defined $_->{application};
                   my ($type,$name) = ns_split( $_->{item} );
-                  $type eq 'harvest.package'? '<img src="/static/images/package.gif">&nbsp;' . $name : '<img src="/static/images/changeman/package.gif">&nbsp;' . $name if $type =~ m{.*\.package$} 
+                  $type eq 'harvest.package'
+                    ? '<img src="/static/images/package.gif">&nbsp;' . $name 
+                    : '<img src="/static/images/icons/package_green.gif">&nbsp;' . $name if $type =~ m{.*\.package$} 
               } @items
           ] : [];
         my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];

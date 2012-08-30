@@ -312,7 +312,7 @@ sub _log_me {
         $cl =~ s{^Baseliner}{B};
         my $pid = sprintf('%s', $$);
         my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
-        if( my $cat_log = Baseliner->log ) {
+        if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
             $cat_log->$lev( $msg );
         } else {
             print STDERR $msg , "\n"; 
@@ -335,7 +335,8 @@ sub _error {
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
-    return unless $ENV{BASELINER_DEBUG} || $ENV{BALI_DEBUG} || $ENV{CATALYST_DEBUG};
+    # return unless $ENV{BASELINER_DEBUG} || $ENV{BALI_DEBUG} || $ENV{CATALYST_DEBUG};
+    return unless Baseliner->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
 
