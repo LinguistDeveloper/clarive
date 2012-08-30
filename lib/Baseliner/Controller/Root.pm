@@ -78,6 +78,8 @@ sub auto : Private {
     } else {
         $c->forward('/auth/logoff');
         $c->stash->{after_login} = '/' . $path;
+        my $qp = $c->req->query_parameters // {};
+        $c->stash->{after_login_query} = join '&', map { "$_=$qp->{$_}" } keys %$qp;
         $c->response->status( 401 );
         $c->forward('/auth/logon');
         #$c->detach('/end');
