@@ -2,7 +2,7 @@
     $baselines
 </%args>
 <%doc>
-    job_new.mas - new job creation screen
+    job_new.js - new job creation screen
 </%doc>
 <%perl>
     use Baseliner::Utils;
@@ -54,17 +54,6 @@
         return arr;
     };
 
-    function parseToDate(strDate){
-        var dia = parseInt(strDate.substr(0,2),"10");
-        var mes = parseInt(strDate.substr(3,2),"10");
-        var anyo = parseInt(strDate.substr(6,4),"10");
-        return new Date(anyo,mes-1,dia);
-        }
-
-    function parseFromDate(date){
-        return date.getDate() + '/' + (date.getMonth()+1) + '/' + date.getFullYear();
-        }
-
     Ext.QuickTips.init();
     Ext.apply(Ext.QuickTips.getQuickTip(), {
         maxWidth: 600,
@@ -72,7 +61,6 @@
         showDelay: 400,      // Show 50ms after entering target
         trackMouse: true
     });
-
 
     var job_grid_data = function(params) {
         // turn grid into JSON to post data
@@ -140,8 +128,12 @@
         width: 200
     });
 
-    combo_baseline.on( 'afterrender', function(){
-    });
+    if( default_baseline.length == 0 ) {
+        combo_baseline.on( 'afterrender', function(){
+            var rec = store_baselines.getAt(0);
+            combo_baseline.setValue( rec.get('bl') );
+        });
+    }
 
     var check_no_cal = new Ext.form.Checkbox({
         name: 'check_no_cal',
