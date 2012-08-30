@@ -73,7 +73,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 					  Baseliner->model('Baseliner::BaliProject')->create(
 						{
 							name      => lc($subproject),
-							id_parent => $project_row->id,
+							id_parent => $project_row->mid,
 							ns        => '/',
 							bl        => '*'
 						}
@@ -83,7 +83,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 					  Baseliner->model('Baseliner::BaliProject')->create(
 						{
 							name      => $subproject,
-							id_parent => $project_row->id,
+							id_parent => $project_row->mid,
 							nature    => $nature,
 							ns        => '/',
 							bl        => '*'
@@ -99,7 +99,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 					  Baseliner->model('Baseliner::BaliProject')->search(
 						{
 							name      => lc($subproject),
-							id_parent => $project_row->id
+							id_parent => $project_row->mid
 						}
 					  )->first;
 
@@ -108,12 +108,12 @@ sub update_status {    # actualiza el status de una fila en el portal
 						  "No he encontrado ninguna fila para el subproyecto "
 						  . lc($subproject)
 						  . " hijo de "
-						  . $project_row->id;
+						  . $project_row->mid;
 						$subproject_row =
 						  Baseliner->model('Baseliner::BaliProject')->create(
 							{
 								name      => lc($subproject),
-								id_parent => $project_row->id,
+								id_parent => $project_row->mid,
 								ns        => '/',
 								bl        => '*'
 							}
@@ -125,7 +125,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 							{
 								name      => $subproject,
 								nature    => $nature,
-								id_parent => $subproject_row->id
+								id_parent => $subproject_row->mid
 							}
 						  )->first;
 
@@ -136,7 +136,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 								{
 									name      => $subproject,
 									nature    => $nature,
-									id_parent => $subproject_row->id,
+									id_parent => $subproject_row->mid,
 									ns        => '/',
 									bl        => '*'
 								}
@@ -151,7 +151,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 						{
 							ns     => $project,
 							bl     => $job_bl,
-							id_prj => $project_row->id
+							id_prj => $project_row->mid
 						}
 					)->first;
 					if ( !$job_row ) {
@@ -160,7 +160,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 							{
 								ns     => $project,
 								bl     => $job_bl,
-								id_prj => $project_row->id,
+								id_prj => $project_row->mid,
 								type   => 'CAM'
 							}
 						  );
@@ -171,7 +171,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 						{
 							ns     => $project,
 							bl     => $job_bl,
-							id_prj => $project_row->id,
+							id_prj => $project_row->mid,
 							type   => 'PKG'
 						}
 					);
@@ -184,7 +184,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 					{
 						ns     => $project,
 						bl     => $job_bl,
-						id_prj => $subproject_row->id
+						id_prj => $subproject_row->mid
 					}
 				)->first;
 				if ( !$job_row ) {
@@ -192,7 +192,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 						{
 							ns     => $project,
 							bl     => $job_bl,
-							id_prj => $subproject_row->id,
+							id_prj => $subproject_row->mid,
 							type   => 'SUB'
 						}
 					);
@@ -204,7 +204,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 						ns     => $project,
 						bl     => $job_bl,
 						nature => $nature,
-						id_prj => $subprojectnature_row->id
+						id_prj => $subprojectnature_row->mid
 					}
 				)->first;
 				if ( !$job_row ) {
@@ -213,7 +213,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 							ns     => $project,
 							bl     => $job_bl,
 							nature => $nature,
-							id_prj => $subprojectnature_row->id,
+							id_prj => $subprojectnature_row->mid,
 							type   => 'NAT'
 						}
 					);
@@ -1357,7 +1357,7 @@ sub getProjectConfigAll {
 		my @rows = Baseliner->model('Baseliner::BaliProject')
 		->search( { name => $subproject, nature => $nature,  } )->all;
 		for( @rows ) {
-			return $_ if $_->parent->parent->id == $row_project->id;
+			return $_ if $_->parent->parent->mid == $row_project->mid;
 		}
 	};
 	
@@ -1372,7 +1372,7 @@ sub getProjectConfigAll {
 		$row_subnat_config =
 		  Baseliner->model('Baseliner::BaliConfig')
 		  ->search(
-			{ bl => $bl, ns => 'project/' . $row_subnat->id, key => $value } )
+			{ bl => $bl, ns => 'project/' . $row_subnat->mid, key => $value } )
 		  ->first;
 		if ($row_subnat_config) {    # Si hay configuraci—n, la uso
 			$return = $row_subnat_config->value;
@@ -1385,7 +1385,7 @@ sub getProjectConfigAll {
 			  Baseliner->model('Baseliner::BaliConfig')->search(
 				{
 					bl  => $bl,
-					ns  => 'nature/' . $nature . '/' . $row_project->id,
+					ns  => 'nature/' . $nature . '/' . $row_project->mid,
 					key => $value
 				}
 			  )->first;
@@ -1403,7 +1403,7 @@ sub getProjectConfigAll {
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
 							bl  => $bl,
-							ns  => 'project/' . $row_subproject->id,
+							ns  => 'project/' . $row_subproject->mid,
 							key => $value
 						}
 					  )->first;
@@ -1419,7 +1419,7 @@ sub getProjectConfigAll {
 						  Baseliner->model('Baseliner::BaliConfig')->search(
 							{
 								bl  => $bl,
-								ns  => 'project/' . $row_project->id,
+								ns  => 'project/' . $row_project->mid,
 								key => $value
 							}
 						  )->first;
@@ -1471,7 +1471,7 @@ sub getProjectConfigAll {
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
 							bl  => $bl,
-							ns  => 'project/' . $row_project->id,
+							ns  => 'project/' . $row_project->mid,
 							key => $value
 						}
 					  )->first;
@@ -1519,7 +1519,7 @@ sub getProjectConfigAll {
 		$row_camnat_config = Baseliner->model('Baseliner::BaliConfig')->search(
 			{
 				bl  => $bl,
-				ns  => 'nature/' . $nature . '/' . $row_project->id,
+				ns  => 'nature/' . $nature . '/' . $row_project->mid,
 				key => $value
 			}
 		)->first;
@@ -1535,7 +1535,7 @@ sub getProjectConfigAll {
 				  Baseliner->model('Baseliner::BaliConfig')->search(
 					{
 						bl  => $bl,
-						ns  => 'project/' . $row_subproject->id,
+						ns  => 'project/' . $row_subproject->mid,
 						key => $value
 					}
 				  )->first;
@@ -1549,7 +1549,7 @@ sub getProjectConfigAll {
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
 							bl  => $bl,
-							ns  => 'project/' . $row_project->id,
+							ns  => 'project/' . $row_project->mid,
 							key => $value
 						}
 					  )->first;
@@ -1595,7 +1595,7 @@ sub getProjectConfigAll {
 				  Baseliner->model('Baseliner::BaliConfig')->search(
 					{
 						bl  => $bl,
-						ns  => 'project/' . $row_project->id,
+						ns  => 'project/' . $row_project->mid,
 						key => $value
 					}
 				  )->first;
@@ -1655,10 +1655,10 @@ sub getProjectConfigAll_old {
 	my $config;
 
 	if ($row) {
-		_log "***** Project id: " . $row->id;
+		_log "***** Project id: " . $row->mid;
 		$config =
 		  Baseliner->model('ConfigStore')
-		  ->get( 'config.sqa', ns => 'project/' . $row->id, bl => $bl );
+		  ->get( 'config.sqa', ns => 'project/' . $row->mid, bl => $bl );
 		if ( $config->{$value} ) {
 			$return = $config->{$value};
 			_log "****** Nivel: subaplicaci—n/naturaleza";
@@ -1667,7 +1667,7 @@ sub getProjectConfigAll_old {
 		elsif ( $row->parent && $row->parent->parent ) {
 			$config = Baseliner->model('ConfigStore')->get(
 				'config.sqa',
-				ns => 'nature/' . $nature . '/' . $row->parent->parent->id,
+				ns => 'nature/' . $nature . '/' . $row->parent->parent->mid,
 				bl => $bl
 			);
 			if ( $config->{$value} ) {
@@ -1676,7 +1676,7 @@ sub getProjectConfigAll_old {
 			elsif ( $row->parent ) {
 				$config = Baseliner->model('ConfigStore')->get(
 					'config.sqa',
-					ns => 'project/' . $row->parent->id,
+					ns => 'project/' . $row->parent->mid,
 					bl => $bl
 				);
 				if ( $config->{$value} ) {
@@ -1685,7 +1685,7 @@ sub getProjectConfigAll_old {
 				elsif ( $row->parent->parent ) {
 					$config = Baseliner->model('ConfigStore')->get(
 						'config.sqa',
-						ns => 'project/' . $row->parent->parent->id,
+						ns => 'project/' . $row->parent->parent->mid,
 						bl => $bl
 					);
 					if ( $config->{$value} ) {
@@ -1746,7 +1746,7 @@ sub getProjectLastStatus {
 		{
 			my $row_sqa =
 			  Baseliner->model('Baseliner::BaliSqa')
-			  ->search( { id_prj => $row->id, bl => $bl->{$bl_dest} } )->first;
+			  ->search( { id_prj => $row->mid, bl => $bl->{$bl_dest} } )->first;
 			if ($row_sqa) {
 				_log "Último status en "
 				  . $bl->{$bl_dest} . ": "
@@ -1757,7 +1757,7 @@ sub getProjectLastStatus {
 				my $config =
 				  Baseliner->model('ConfigStore')->get('config.comm.email');
 				my $url = $config->{baseliner_url};
-				$return->{link} = $url . "/sqa/view_html/" . $row_sqa->id;
+				$return->{link} = $url . "/sqa/view_html/" . $row_sqa->mid;
 			}
 			if ( $row_sqa && $row_sqa->status eq 'OK' ) {
 				$return->{value} = 'Y';
@@ -1778,7 +1778,7 @@ sub getProjectConfig {
 
 	my $config =
 	  Baseliner->model('ConfigStore')
-	  ->get( 'config.sqa', ns => 'project/' . $row->id, bl => $bl );
+	  ->get( 'config.sqa', ns => 'project/' . $row->mid, bl => $bl );
 	if ( $config->{$value} ) {
 		$return = $config->{$value};
 	}

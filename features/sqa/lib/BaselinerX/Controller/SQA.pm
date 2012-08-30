@@ -672,7 +672,7 @@ sub harvest_all_projects : Local {
 
     my $rs =
         Baseliner->model( 'Baseliner::BaliProject' )
-        ->search( {id_parent => {'=', undef}, name => {'like', uc( "$query%" )}, id => \@projects},
+        ->search( {id_parent => {'=', undef}, name => {'like', uc( "$query%" )}, mid => \@projects},
         {order_by => 'name asc'} );
 
     #rs_hashref( $rs );
@@ -730,11 +730,11 @@ SUBAPL:
             ## Capturamos el nombre de la aplicación.
             my $project_name;
             try {
-              my $rs = Baseliner->model('Baseliner::BaliProject')->search({id => $row->id}, {select => 'id_parent'});
+              my $rs = Baseliner->model('Baseliner::BaliProject')->search({mid => $row->id}, {select => 'id_parent'});
               rs_hashref($rs);
               my $proyect_id = $rs->next->{id_parent};
               
-              $rs = Baseliner->model('Baseliner::BaliProject')->search({id => $proyect_id}, {select => 'name'});
+              $rs = Baseliner->model('Baseliner::BaliProject')->search({mid => $proyect_id}, {select => 'name'});
               rs_hashref($rs);
               $project_name = $rs->next->{name};
             }
