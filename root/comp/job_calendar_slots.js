@@ -24,45 +24,10 @@ Ext.onReady(function(){
             { id: id, id_cal: id_cal, panel: panel, date: date} );
     }
     
-    Baseliner.createRange = function(id, pdia, date) {
+    Baseliner.createRange = function(panel, id_cal, id, pdia, date) {
         var comp = Baseliner.showAjaxComp( '/job/calendar_slot_edit',
             { id: id,  pdia: 'day-'+pdia, id_cal: id_cal, panel: panel, date: date, pini: "00:00", pfin: "24:00"} );
     }	
-    
-    Baseliner.deleteRange = function(id, pdia, date) {				
-        Ext.Msg.show({
-           title:'¿Eliminar ventana de pase para '+date+'?',
-           msg: 'Pulse Sí para eliminar la ventana de pase seleccionada.<br>Recuerde que solo se eliminaran las franjas horarias para el día ' + date + '.',
-           buttons: Ext.Msg.YESNO,
-           fn: function(res){
-               if(res == 'yes'){
-                   Ext.Ajax.request({
-                        url: '/job/calendar_delete',
-                        params:{id: id, id_cal:'<% $id_cal %>',  panel: '<% $panel %>', pdia: pdia, date: date},
-                        success : function(conn, response, options) {
-                             Ext.get('<% $panel %>').load({url:'/job/calendar_slots', params:{panel:'<% $panel %>', id_cal: '<% $id_cal %>', date: date}});
-                             Ext.MessageBox.show({  
-                                 title: 'Ventana eliminada',  
-                                 msg: 'La ventana para el ' + date + ', ha sido eliminada.',  
-                                 buttons: Ext.MessageBox.OK,  
-                                 icon: Ext.MessageBox.INFO  
-                             });  
-                        },
-                        failure: function (conn, response, options) {  
-                             Ext.MessageBox.show({  
-                                 title: 'Error al eliminar ventana',  
-                                 msg: 'No se ha podido eliminar la ventana de pase para el ' + date + '.',  
-                                 buttons: Ext.MessageBox.OK,  
-                                 icon: Ext.MessageBox.ERROR  
-                             });  
-                         }						
-                    });
-                }
-           },
-           animEl: 'elId'
-        });
-    }
-
 });
 </script>
 <DIV class='job-calendar' ID="calendarDiv">
@@ -155,7 +120,7 @@ Ext.onReady(function(){
         my ($year, $month, $day) = ($date->year,$date->month,$date->day);
         my $msg = _loc( 'new window') . "<br>$day/$month/$year";
         print qq{ <TD width='100'> };
-        print qq{	<a href="javascript: Baseliner.createRange('0','$dd','$day/$month/$year')" class="x-link-button" style="font-size: 10px;">$msg</a>};		
+        print qq{	<a href="javascript: Baseliner.createRange('<% $panel %>','<% $id_cal %>','0','$dd','$day/$month/$year')" class="x-link-button" style="font-size: 10px;">$msg</a>};		
         print qq{ </TD>};
     }
 </%perl>
