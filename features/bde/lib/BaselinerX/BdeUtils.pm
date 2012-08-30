@@ -231,7 +231,7 @@ sub paquetes_html {
 sub chm_token {
   my $agent_port = 58765;    # TODO
   my $bx = new BaselinerX::Comm::Balix(key  => config_get('config.harax')->{$agent_port},
-                                       host => 'expsv011',
+                                       host => 'expsv066',
                                        port => $agent_port,);
   my $ret = $bx->executeas('vpchm', 'racxtk 01 vpchm batchp prue');
   my $pw = [split(/\n/, $ret->{ret})]->[1];
@@ -253,7 +253,7 @@ sub get_token {
 
   my $agent_port = 58765;                                       # TODO
   my $key        = config_get('config.harax')->{$agent_port};
-  my $host       = 'expsv011';
+  my $host       = 'expsv066';
 
   my $bx = BaselinerX::Comm::Balix->new(key  => $key,
                                         host => $host,

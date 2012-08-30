@@ -2,10 +2,13 @@ package BaselinerX::Job::Service::CargaLdif;
 use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use BaselinerX::BdeUtils;
+use BaselinerX::Model::CargaFTP;
 use Data::Dumper;
 use Net::FTP;
 use Try::Tiny;
+
 use utf8;
 
 with 'Baseliner::Role::Service';
@@ -18,34 +21,30 @@ register 'service.update.users' => {
 sub run  {
   my ($self) = @_;
   my $config_bde = Baseliner->model('ConfigStore')->get('config.bde');
-  my $ftp_server = $config_bde->{ftp_server} || 'prue';
+  my $ftp_user = $config_bde->{ldifuser} || 'vpscm';
+  my $ftp_server = $config_bde->{ldifmaq} || 'prue';
   my $perl_temp  = $config_bde->{perltemp} || '/home/apst/scm/servidor/tmp';
   my $udp_home   = $config_bde->{udp_home};
   my $ldif_home_directory   = $config_bde->{ldif_home_directory};
   my $ldif_remote_directory = $config_bde->{ldif_remote_directory};
 
-  _log "Getting whoami...";
-  my $whoami = `whoami`;
-  chomp($whoami);
-  $whoami =~ s/\s*(.+)\s*/$1/x;
-  _log "whoami: $whoami";
-
   my $config_harvest = Baseliner->model('ConfigStore')->get('config.harvest');
 
   my $broker = $config_harvest->{broker};
-  _log "broker: $broker";
+  _debug "broker: $broker";
   my $harvest_user = $config_harvest->{user};
-  _log "harvest_user: $harvest_user";
+  _debug "harvest_user: $harvest_user";
 
   my $harvest_password = q{};
 
   my %initial_users = Baseliner->model('CargaLdif')->all_users();
 
-  my $secret = `racxtk 01 $whoami ftp $ftp_server`;
+#  my $secret = `racxtk 01 $whoami ftp $ftp_server`;
+  my $secret = BaselinerX::Model::CargaFTP->set_ticket($ftp_server,$ftp_user);
 
   _throw "Could not retrieve ticket from racxtk" if substr($secret, 0, 5) eq "Error";
 
-  _log "Got ticket: $secret";
+  _debug "Got ticket: $secret";
 
   # my @files = (qw/grp_adminis.ldif  grp_analist.ldif grp_progrm.ldif
   #                 grp_cfuentes.ldif infra_plat.txt   grp_soporte.ldif/);
@@ -57,17 +56,17 @@ sub run  {
                   /);
 
 
-  _log(BaselinerX::Comm::Balix->ahora() . " Downloading FTP files...");
+  _debug(BaselinerX::Comm::Balix->ahora() . " Downloading FTP files...");
   my $ftp = Net::FTP->new($ftp_server, Debug => 0);
 
-  $ftp->login($whoami, $secret)     or die "Cannot connect to $ftp_server";
+  $ftp->login($ftp_user, $secret)   or die "Cannot connect to $ftp_server";
   $ftp->cwd($ldif_remote_directory) or die "Directory $ldif_remote_directory not valid";
 
   for my $file (@files) {
-    _log(BaselinerX::Comm::Balix->ahora() . " Downloading $file ...");
+    _debug(BaselinerX::Comm::Balix->ahora() . " Downloading $file ...");
     $ftp->get($file, "${ldif_home_directory}/${file}") or die "Could not retrieve $file";
   }
-  _log(BaselinerX::Comm::Balix->ahora() . " Downloaded FTP files.");
+  _debug(BaselinerX::Comm::Balix->ahora() . " Downloaded FTP files.");
   $ftp->quit;
 
   my %grp_inf_rpt = Baseliner->model('CargaLdif')->groups_inf_rpt();
@@ -78,7 +77,7 @@ sub run  {
   my %user_group;
   my %user_group2;
   my $grpname;
-
+  
   foreach (@data) {
     if ($_ =~ m/racfid=GP(...),profiletype=GROUP/i) {
       my $apl = uc $1;
@@ -129,7 +128,14 @@ sub run  {
       }
     }
   }
+
+  #warn "user_group\n"._dump \%user_group;
+  #warn "user_group2\n"._dump %user_group2;
+  #warn "grpname\n"._dump $grpname;
+  #warn "group\n"._dump \%group;
+
   _log(BaselinerX::Comm::Balix->ahora() . " Finished file parsing.");
+  _debug(BaselinerX::Comm::Balix->ahora() . " Finished file parsing.");
 
   # Update Baseliner.
   Baseliner->launch('service.baseliner.update.ldif',
@@ -139,12 +145,12 @@ sub run  {
   # want to update harvest when loading ldif files.
   return unless _bde_conf 'ldif_updates_harvest';
 
-  _log(BaselinerX::Comm::Balix->ahora() . " Creating groups...");
+  _debug(BaselinerX::Comm::Balix->ahora() . " Creating groups...");
 
   for my $grp (keys %group) {
     my $cnt = Baseliner->model('CargaLdif')->group_count($grp);
     if ($cnt == 0) {
-      _log(BaselinerX::Comm::Balix->ahora() . " New group: $grp");
+      _debug(BaselinerX::Comm::Balix->ahora() . " New group: $grp");
       my $group_id = Baseliner->model('CargaLdif')->group_id();
       Baseliner->model('CargaLdif')->new_group( group_id     => $group_id
                                        , group_name   => $grp
@@ -152,7 +158,7 @@ sub run  {
                                        );
     }
   }
-  _log(BaselinerX::Comm::Balix->ahora() . " Updating users...");
+  _debug(BaselinerX::Comm::Balix->ahora() . " Updating users...");
   #open my $fusr, '>', "${perl_temp}/karga$$";
   my $fusr = "${perl_temp}/carga$$";
   open FUSR, ">$fusr";
@@ -160,12 +166,12 @@ sub run  {
   for my $user (keys %user_group) {
     my $user_count = Baseliner->model('CargaLdif')->user_count($user);
     if ($user_count == 0) {
-      _log(BaselinerX::Comm::Balix->ahora() . " New user: $user");
+      _debug(BaselinerX::Comm::Balix->ahora() . " New user: $user");
       my $usrgrp = join('|', @{$user_group{$user}});
       print FUSR "$user||$user|0000|999|000|$user\@correo.interno|$user|$usrgrp\n";
     }
     else {
-      _log(BaselinerX::Comm::Balix->ahora() . " Updating user: $user");
+      _debug(BaselinerX::Comm::Balix->ahora() . " Updating user: $user");
       my $user_id = Baseliner->model('CargaLdif')->user_id($user);
       my $usrgrp = join(',', @{$user_group2{$user}});
       my $admin_count = Baseliner->model('CargaLdif')->count_admins($user_id);
@@ -182,47 +188,47 @@ sub run  {
   for my $har_id (keys %harusers) {
     my ($harvest_user, $real_name) = @{$harusers{$har_id}};
     if (!($user_group{lc($harvest_user)} || $user_group{uc($harvest_user)})) {
-      _log(BaselinerX::Comm::Balix->ahora() . " Deleting user $harvest_user (${real_name}) in Harvest");
+      _debug(BaselinerX::Comm::Balix->ahora() . " Deleting user $harvest_user (${real_name}) in Harvest");
       Baseliner->model('CargaLdif')->delete_haruser(uc($harvest_user));
       $del_count++;
     }
   }
-  _log(BaselinerX::Comm::Balix->ahora() . " $del_count users deleted from Harvest") if $del_count > 0;
+  _debug(BaselinerX::Comm::Balix->ahora() . " $del_count users deleted from Harvest") if $del_count > 0;
 
   close FUSR;
 
   Baseliner->model('CargaLdif')->add_users_to_group2();
 
   if (-s $fusr) {
-    _log( BaselinerX::Comm::Balix->ahora() . " husrmgr of users for file: $fusr" );
+    _debug( BaselinerX::Comm::Balix->ahora() . " husrmgr of users for file: $fusr" );
     my $cmd = "husrmgr -b $broker $harvest_user $harvest_password -dlm '\|' -o ${udp_home}/husrmgr.log $fusr";
-    _log "cmd: $cmd";
+    _debug "cmd: $cmd";
     my @RET = `$cmd`;
     if ($? ne 0) {
       # TODO
-      # my $ret = Baseliner->model('CargaLdif')->capture_log("${udp_home}/husrmgr.log");
-      # _log(BaselinerX::Comm::Balix->ahora() . " New user load: $ret");
+      # my $ret = Baseliner->model('CargaLdif')->capture_debug("${udp_home}/husrmgr.log");
+      # _debug(BaselinerX::Comm::Balix->ahora() . " New user load: $ret");
     }
     else {
-      _log(BaselinerX::Comm::Balix->ahora() . " New users:");
+      _debug(BaselinerX::Comm::Balix->ahora() . " New users:");
       my @RET2 = `grep 'User Name:' ${udp_home}/husrmgr.log`;
-      _log(BaselinerX::Comm::Balix->ahora() . @RET2);
+      _debug(BaselinerX::Comm::Balix->ahora() . @RET2);
     }
   }
 
-  _log(BaselinerX::Comm::Balix->ahora() . " Sync form data...");
+  _debug(BaselinerX::Comm::Balix->ahora() . " Sync form data...");
   try {
     Baseliner->model('CargaLdif')->sync_inf_data();
   }
   catch {
-    _log(BaselinerX::Comm::Balix->ahora() . " Error while syncing form data:\n" . shift()  . "\n\n");
+    _debug(BaselinerX::Comm::Balix->ahora() . " Error while syncing form data:\n" . shift()  . "\n\n");
   };
 
   my %end_users = Baseliner->model('CargaLdif')->all_users();
 
-  _log(BaselinerX::Comm::Balix->ahora() . " End of cargaLdif");
-  _log(BaselinerX::Comm::Balix->ahora() . " Users before load: " . keys %initial_users);
-  _log(BaselinerX::Comm::Balix->ahora() . " Users after load: "  . keys %end_users);
+  _debug(BaselinerX::Comm::Balix->ahora() . " End of cargaLdif");
+  _debug(BaselinerX::Comm::Balix->ahora() . " Users before load: " . keys %initial_users);
+  _debug(BaselinerX::Comm::Balix->ahora() . " Users after load: "  . keys %end_users);
 
   # Baseliner->launch('service.load.user.roles');  # Start bali update.
 

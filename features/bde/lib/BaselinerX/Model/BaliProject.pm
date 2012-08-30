@@ -7,7 +7,7 @@ use Moose;
 use Try::Tiny;
 use utf8;
 
-has 'id',              is => 'ro', isa => 'Int',      lazy_build => 1;
+has 'mid',             is => 'ro', isa => 'Int',      lazy_build => 1;
 has 'name',            is => 'ro', isa => 'Str',      lazy_build => 1;
 has 'table',           is => 'ro', isa => 'Str',      lazy_build => 1;
 has 'first_level',     is => 'ro', isa => 'ArrayRef', lazy_build => 1;
@@ -18,28 +18,28 @@ has 'second_to_third', is => 'ro', isa => 'HashRef',  lazy_build => 1;
 
 sub _build_table { 'Baseliner::BaliProject' }
 
-sub _build_id {
+sub _build_mid {
   my $self  = shift;
   my $model = Baseliner->model($self->table);
   my $rs = $model->search({name      => $self->name,
                            id_parent => {is => undef},
                            nature    => {is => undef}},
-                          {select => 'id'});
+                          {select => 'mid'});
   rs_hashref($rs);
   try {
-    my $id = $rs->next->{id};
-    return $id;
+    my $mid = $rs->next->{mid};
+    return $mid;
   }
   catch {
     $self->insert;
-    $self->id;
+    $self->mid;
   };
 }
 
 sub _build_name {
   my $self  = shift;
   my $model = Baseliner->model($self->table);
-  my $rs = $model->search({id        => $self->id,
+  my $rs = $model->search({mid        => $self->mid,
                            id_parent => {is => undef},
                            nature    => {is => undef}});
   rs_hashref($rs);
@@ -73,16 +73,16 @@ sub search_in_projects {
   [$rs->all];
 }
 
-sub args { {select => [qw/id id_parent/], order_by => 'id_parent'} }
+sub args { {select => [qw/mid id_parent/], order_by => 'id_parent'} }
 
 sub give_relatives {
-  my ($self, $id, @ls) = @_;
-  [map $_->{id}, grep $_->{id_parent} eq $id, @ls];
+  my ($self, $mid, @ls) = @_;
+  [map $_->{mid}, grep $_->{id_parent} eq $mid, @ls];
 }
 
 sub level_to_level {
   my ($self, $upper_list, $bottom_list) = @_;
-  my %h = map { $_->{id} => $self->give_relatives($_->{id}, @{$upper_list}) }
+  my %h = map { $_->{mid} => $self->give_relatives($_->{mid}, @{$upper_list}) }
               @{$bottom_list};
   \%h;
 }
@@ -99,7 +99,7 @@ sub _build_first_to_second {
 
 sub lvl_ids {
   my ($self, $level) = @_;
-  my $fn = sub { sort {$a > $b} map $_->{id}, @_ };
+  my $fn = sub { sort {$a > $b} map $_->{mid}, @_ };
   given ($level) {
     when (1) { return $fn->(@{$self->first_level})  }
     when (2) { return $fn->(@{$self->second_level}) }
@@ -116,9 +116,9 @@ sub filter_relationship {
 
 sub is_first_level {
   my $self  = shift;
-  my $id    = $self->id;
+  my $mid    = $self->mid;
   my $model = Baseliner->model($self->table);
-  my $rs = $model->search({id        => $self->id,
+  my $rs = $model->search({mid        => $self->mid,
                            id_parent => {is => undef},
                            nature    => {is => undef}});
   rs_hashref($rs);

@@ -5,6 +5,8 @@ use Net::FTP;
 use Baseliner::Core::DBI;
 use DBIx::Class::ResultSetColumn;
 use Try::Tiny;
+use Baseliner::Sugar;
+
 use 5.010;
 BEGIN { extends 'Catalyst::Model' }
 
@@ -16,10 +18,35 @@ sub set_fusr {
     return "$perl_temp/carga$$";
 }
 
+#sub set_ticket {
+#    my ( $self, $ftp_server, $whoami ) = @_;
+#    my $ret = `racxtk 01 $whoami ftp $ftp_server`;
+#    $ret
+#}
+
+=head2 set_ticket ( user=>Str, service=>Str (ftp|batchp|...), server=>Str )
+
+Get token connection.
+
+=cut
+
 sub set_ticket {
-    my ( $self, $ftp_server, $whoami ) = @_;
-    my $ret = `racxtk 01 $whoami ftp $ftp_server`;
-    $ret
+  my ( $self, $server, $user) = @_;
+  my $service = 'ftp';
+
+  _log "server: ". $server . "\nUser: ". $user;
+  _debug "server: ". $server . "\nUser: ". $user;
+  _log "getting token for user $user to do $service to $server";
+
+  my $agent_port = 58765;                                       # TODO
+  my $key        = config_get('config.harax')->{$agent_port};
+  my $host       = 'expsv066';
+
+  my $bx = BaselinerX::Comm::Balix->new(key  => $key, host => $host, port => $agent_port);
+
+  my $ret = $bx->executeas(qq{$user}, qq{racxtk 01 $user $service $server});
+  my $pw = $1 if $ret->{ret} =~ m{.*\n(.*?)\n$}s;
+  $pw;
 }
 
 sub all_users {

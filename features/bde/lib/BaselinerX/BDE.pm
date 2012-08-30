@@ -200,6 +200,11 @@ register 'config.harvest' => {
 
 register 'config.bde' => {
     metadata => [
+        {   id          => 'ldifuser',
+            default     => 'vpscm',
+            label       => 'User FTP',
+            description => 'Nombre de usuario icon el que la carga de usuarios se conectará por FTP para descargar el fichero de usuarios (por defecto: vpscm)'
+        },
         {   id          => 'ldifmaq',
             default     => 'prue',
             label       => 'Maquina FTP',

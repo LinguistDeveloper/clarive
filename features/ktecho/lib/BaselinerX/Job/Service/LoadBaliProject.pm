@@ -4,6 +4,7 @@ use warnings;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
+use Baseliner::Sugar;
 use BaselinerX::Comm::Balix;
 use BaselinerX::Ktecho::CamUtils;
 use Try::Tiny;
@@ -102,11 +103,20 @@ sub run_once {
 	        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($project), nature => { '=' => undef }, id_parent => $row_project->mid }	)->first;
 	        			
 	        			if ( !$row_subproject ) {
-	        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($project), id_parent => $row_project->mid } );
+                            my $prjname=lc($project);
+                            master_new "project"=>$prjname=>sub{
+                                my $mid=shift;
+                                $row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { mid=>$mid, name => $prjname, id_parent => $row_project->mid } );
+                            };
+
 	        				_log "Created Subproject ".lc($project);
 	        			}
 	        			
-	        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => uc($project), id_parent => $row_subproject->mid, nature => $nature } );
+                        my $sprjname=uc($project);
+                        master_new "project"=>$sprjname=>sub{
+                            my $mid=shift;
+	        			    $row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { mid=>$mid, name => $sprjname, id_parent => $row_subproject->mid, nature => $nature } );
+                        };
 	        			_log "Created Subproject ".$nature."/".uc($project);
 	        		}
 			    }
@@ -161,11 +171,17 @@ sub run_once {
 			        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($subproject), nature => { '=' => undef }, id_parent => $row_project->mid }	)->first;
 			        			
 			        			if ( !$row_subproject ) {
-			        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($subproject), id_parent => $row_project->mid } );
+                                    master_new "project"=>lc($subproject)=>sub{
+                                        my $mid=shift;
+                                        $row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { mid=>$mid, name => lc($subproject), id_parent => $row_project->mid } );
+                                    };
 			        				_log "Created Subproject ".lc($subproject);
 			        			}
 			        			
-			        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => $subproject, id_parent => $row_subproject->mid, nature => $nature } );
+                                master_new "project"=>$subproject=>sub{
+                                    my $mid=shift;
+                                    $row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { mid=>$mid, name => $subproject, id_parent => $row_subproject->mid, nature => $nature } );
+                                };
 			        			_log "Created Subproject ".$nature."/".$subproject;
 			        		}
 						}			    		
@@ -220,11 +236,17 @@ sub run_once {
 		        			my $row_subproject = Baseliner->model('Baseliner::BaliProject')->search( { name => lc($subproject), nature => { '=' => undef }, id_parent => $row_project->mid }	)->first;
 		        			
 		        			if ( !$row_subproject ) {
-		        				$row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { name => lc($subproject), id_parent => $row_project->mid } );
+                                master_new "project"=>lc($subproject)=>sub{
+                                    my $mid=shift;
+		        				    $row_subproject = Baseliner->model('Baseliner::BaliProject')->create( { mid=>$mid, name => lc($subproject), id_parent => $row_project->mid } );
+                                };
 		        				_log "Created Subproject ".lc($subproject);
 		        			}
 		        			
-		        			$row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { name => $subproject, id_parent => $row_subproject->mid, nature => 'J2EE' } );
+                            master_new "project"=>$subproject=>sub{
+                                my $mid=shift;
+		        			    $row_subprojectnature = Baseliner->model('Baseliner::BaliProject')->create( { mid=>$mid, name => $subproject, id_parent => $row_subproject->mid, nature => 'J2EE' } );
+                            };
 		        			_log "Created Subproject J2EE/".lc($subproject);
 		        		
 						} else {

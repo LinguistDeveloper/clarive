@@ -3,12 +3,13 @@ use strict;
 use warnings;
 use 5.010;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Moose;
 use Try::Tiny;
 use utf8;
 
 # Either ID or USERNAME must be provided.
-has 'id',           is => 'ro', isa => 'Int', lazy_build => 1;
+has 'mid',           is => 'ro', isa => 'Int', lazy_build => 1;
 has 'harid',        is => 'ro', isa => 'Str', lazy_build => 1;
 has 'username',     is => 'ro', isa => 'Str', lazy_build => 1;
 has 'realname',     is => 'ro', isa => 'Str', lazy_build => 1;
@@ -23,34 +24,34 @@ sub _get {
   $rs;
 }
 
-sub _build_id {
+sub _build_mid {
   my $self = shift;
-  my $rs = $self->_get({username => $self->username}, {select => 'id'});
+  my $rs = $self->_get({username => $self->username}, {select => 'mid'});
   try {
-    my $id = $rs->next->{id};
-    return $id;
+    my $mid = $rs->next->{mid};
+    return $mid;
   }
   catch {
     $self->insert;
-    $self->id;  # Call the builder again.
+    $self->mid;  # Call the builder again.
   };
 }
 
 sub _build_realname {
   my $self = shift;
-  my $rs = $self->_get({id => $self->id}, {select => 'realname'});
+  my $rs = $self->_get({mid => $self->mid}, {select => 'realname'});
   $rs->next->{realname};
 }
 
 sub _build_username {
   my $self = shift;
-  my $rs = $self->_get({id => $self->id}, {select => 'username'});
+  my $rs = $self->_get({mid => $self->mid}, {select => 'username'});
   $rs->next->{username};
 }
 
 sub delme {
   my $self = shift;
-  my $rs = $self->_get({id => $self->id});
+  my $rs = $self->_get({mid => $self->mid});
   $rs->delete;
 }
 
@@ -102,9 +103,13 @@ sub _build_har_realname {
 sub insert {
   my $self  = shift;
   my $model = Baseliner->model('Baseliner::BaliUser');
-  $model->create({username => $self->username,
-                  password => '~',
-                  realname => $self->har_realname});
+  master_new "user"=>$self->username=>sub{
+      my $mid=shift;
+      $model->create({mid      => $mid,
+                      username => $self->username,
+                      password => '~',
+                      realname => $self->har_realname});
+  };
 }
 
 sub desc_roles {
@@ -117,7 +122,7 @@ sub desc_roles {
 
   for my $href (@data) {
     my $project_id = $1 if $href->{ns} =~ /\/(.+)/;
-    my $project = BaselinerX::Model::BaliProject->new(id => $project_id);
+    my $project = BaselinerX::Model::BaliProject->new(mid => $project_id);
 
     next unless $project->is_first_level();
 
