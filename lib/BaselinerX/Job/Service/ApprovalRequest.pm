@@ -59,7 +59,8 @@ sub run {
     $approval_items ||= $job->job_stash->{contents}; 
     $reason ||= "Promoción a $bl";
     
-    my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid );
+    #my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid );
+    my $url_log = sprintf( "%s/tab/job/log/list/%d", _notify_address(), $job->jobid );
 
     #my $item_ns = 'endevor.package/' . $item->{item};   #TODO get real ns names
     $log->info( _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ) );
@@ -79,6 +80,7 @@ sub run {
                 reason   => $reason,
                 comments => $job->job_data->{comments},
                 url_log  => $url_log,
+                subject  => _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ),
             },
         );
         my $job_row = $c->model('Baseliner::BaliJob')->find({ id=>$job->jobid });

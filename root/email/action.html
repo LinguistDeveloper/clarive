@@ -1,102 +1,136 @@
+<%args>
+    $observaciones
+    $realname
+    $status
+    $subject
+    $username
+    $to
+</%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-    <title>Accion</title>
-    <style type="text/css">
-        body {
-            font-family: "Bitstream Vera Sans", "Trebuchet MS", Verdana,
-                         Tahoma, Arial, helvetica, sans-serif;
-            color: #333;
-            background-color: #eee;
-            margin: 0px;
-            padding: 0px;
-        }
-        :link, :link:hover, :visited, :visited:hover {
-            color: #000;
-        }
-        div.box {
-            position: relative;
-            background-color: #ccc;
-            border: 1px solid #aaa;
-            padding: 4px;
-            margin: 10px;
-        }
-        div.error {
-            background-color: #cce;
-            border: 1px solid #755;
-            padding: 8px;
-            margin: 4px;
-            margin-bottom: 10px;
-        }
-        div.infos {
-            background-color: #eee;
-            border: 1px solid #575;
-            padding: 8px;
-            margin: 4px;
-            margin-bottom: 10px;
-        }
-        div.name {
-            background-color: #cce;
-            border: 1px solid #557;
-            padding: 8px;
-            margin: 4px;
-        }
-        code.error {
-            display: block;
-            margin: 1em 0;
-            overflow: auto;
-        }
-        div.name h1, div.error p {
-            margin: 0;
-        }
-        h2 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: medium;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-        h1 {
-            font-size: medium;
-            font-weight: normal;
-        }
-        pre {
-            white-space: pre-wrap;       /* css-3 */
-            white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-            white-space: -pre-wrap;      /* Opera 4-6 */
-            white-space: -o-pre-wrap;    /* Opera 7 */
-            word-wrap: break-word;       /* Internet Explorer 5.5+ */
-        }
-
-        div.trace {
-            background-color: #eee;
-            border: 1px solid #575;
-        }
-        div#stacktrace table {
-            width: 100%;
-        }
-        div#stacktrace th, td {
-            padding-right: 1.5em;
-            text-align: left;
-        }
-        div#stacktrace .line {
-            color: #000;
-            font-weight: strong;
-        }
-    </style>
+    <title>Acci&oacute;n</title>
+	<& /email/style.css &>
 </head>
+<style type="text/css">
+    .backGroundPrimeraFila {
+        font-family: Verdana;
+        font-size: 8pt;
+        font-weight: bold;
+        color: #CCCCCC;
+        background-color: #666666;
+        vertical-align: middle;
+    }
+    .backGroundFilaDatos {
+        font-family: Verdana;
+        font-size: 8pt;
+        color: #111111;
+        background-color: #ffffff;
+        vertical-align: top;
+    }
+    body {
+        font-family: arial;
+        font-size: 10pt;
+    }
+    :link, :link:hover, :visited, :visited:hover {
+        color: #000;
+    }
+    div.box {
+        position: relative;
+        background-color: #ccc;
+        border: 1px solid #aaa;
+        padding: 4px;
+        margin: 10px;
+    }
+    div.error {
+        background-color: #cce;
+        border: 1px solid #755;
+        padding: 8px;
+        margin: 4px;
+        margin-bottom: 10px;
+    }
+    div.infos {
+        background-color: #eee;
+        border: 1px solid #575;
+        padding: 8px;
+        margin: 4px;
+        margin-bottom: 10px;
+    }
+    div.name {
+        background-color: #cce;
+        border: 1px solid #557;
+        padding: 8px;
+        margin: 4px;
+    }
+    code.error {
+        display: block;
+        margin: 1em 0;
+        overflow: auto;
+    }
+    div.name h1, div.error p {
+        margin: 0;
+    }
+    h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: medium;
+        font-weight: bold;
+        text-decoration: underline;
+    }
+    h1 {
+        font-size: medium;
+        font-weight: normal;
+    }
+    pre {
+        white-space: pre-wrap;       /* css-3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    }
 
+    div.trace {
+        background-color: #eee;
+        border: 1px solid #575;
+    }
+    div#stacktrace table {
+        width: 100%;
+    }
+    div#stacktrace th, td {
+        padding-right: 1.5em;
+        text-align: left;
+    }
+    div#stacktrace .line {
+        color: #000;
+        font-weight: strong;
+    }
+</style>
 <body>
-    <div class='box'>
-        <div class="error">
-            <h2>SCM: <% $status %></h2>
-        </div>
+    <div id="tablaContenedor_div">
+        <TABLE cellpadding="0" cellspacing="0" width="100%">
+            <TR height="20">
+                <TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">&nbsp;SCM</TD>
+            </TR>
+        </TABLE>
     </div>
-    <div class='box'>
-        <div class="trace error">
-            <p>Estado de aprobacion: <b><% $status %></b></p>
-            <p>Aprobado por: <b><% $username %> (<% $realname %>)</b></p>
-			<p>Observaciones: <b><% $observaciones %></b></p>
-        </div>
-    </div>
+    <table border=0 cellspacing=2>
+        <tr>
+            <td> <h3><% $subject %></h3> </td>
+        </tr>
+    </table>
+    <table border=1 cellspacing=1 cellpadding="2">
+        <tr class="backGroundFilaDatos">
+            <td class="backGroundFilaDatos">
+            <p><ul>
+            <li>Estado de aprobacion: <b><% $status %></b></li>
+            <li>Aprobado por: <b><% $username %> (<% $realname %>)</b></li>
+            <li>Observaciones: <b><% $observaciones %></b></li>
+            </p></ul>
+        </tr>
+    </table>
+    <p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+Enviado a: <% join ",",@$to %>
+%}
+    </p>
 </body>

@@ -386,13 +386,14 @@ sub status_by_key {
         template => 'email/action.html',
         vars     => {
             items         => $itemname,
+            observaciones => $p{wiki_text},
             reason        => $request->data_hash->{reason},
             requested_by  => $request->requested_by,
             realname      => $realname,
             status        => $status,
-            username      => $p{username},
-            observaciones => $p{wiki_text},
+            subject       => "$status $itemname",
             template      => "/email/action.html",
+            username      => $p{username},
         }
     );
 
