@@ -106,19 +106,19 @@ sub job_elements {
     } else {
 
         #Topic Files
-        @versions = $c->model( 'Baseliner::BaliMasterRel' )->search(
+        my $versions_ref = $c->model( 'Baseliner::BaliMasterRel' )->search(
             {from_mid => \@changesets, rel_type => 'topic_file_version'},
             {
-                join    => [ 'topic_file_version_to' ],
+                join    => { 'topic_file_version_to' => { 'file_projects' => { 'directory' } } },
                 +select => [
                     'topic_file_version_to.filename', 'max(topic_file_version_to.versionid)',
-                    'max(topic_file_version_to.mid)'
+                    'max(topic_file_version_to.mid)', 'max(directory.name)'
                 ],
-                +as      => [ 'filename', 'version', 'mid' ],
+                +as      => [ 'filename', 'version', 'mid', 'path' ],
                 group_by => 'topic_file_version_to.filename',
             }
         )->hashref->all;
-
+        
         @elems = map {
             BaselinerX::ChangesetElement->new(
                 mid      => $_->{mid},
@@ -218,6 +218,47 @@ sub job_elements {
     } ## end if ( @revisions )
 
     #SVN revisions fin
+
+    #CVS revisions
+
+    if ( @revisions ) {
+
+        my $revisions_shas;
+        my $cvs_checkouts;
+        my $branch;
+
+        for ( @revisions ) {
+            $log->debug(_loc("<b>CVS Revisions:</B> Treating revision"), data => _dump $_);
+            my $rev  = Baseliner::CI->new( $_->{to_mid} );
+            next if ref $rev ne 'BaselinerX::CI::CvsRevision';
+            $branch = $rev->{branch};
+            $log->debug(_loc("<b>CVS Revisions:</B> Branch of revision $rev->{sha} ... $branch"), data => _dump $rev);
+            my $repo = $rev->{repo};
+            push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev->{sha};
+            my $topic     = Baseliner->model( 'Baseliner::BaliTopic' )->find( $_->{from_mid} );
+            my $projectid = $topic->projects->search()->first->id;
+            my $prj       = Baseliner::Model::Projects->get_project_name( id => $projectid );
+            $revisions_shas->{$repo->{mid}}->{prj} = $prj;
+            $cvs_checkouts->{$repo->{mid}}->{prj}  = $prj;
+            $cvs_checkouts->{$repo->{mid}}->{branch}  = $branch;
+        } ## end for ( @revisions )
+
+        for ( keys %{$revisions_shas} ) {
+            $log->debug(_loc("<b>CVS Revisions:</B> Processing revision $_"));
+            my $repo = Baseliner::CI->new( $_ );
+            $repo->job( $job );
+
+            $log->debug(_loc("<b>CVS Revisions:</B> Calling revision $_ list_elements"));
+            my @cvs_elements =
+                $repo->list_elements( repo => $repo,  prj => $revisions_shas->{$_}->{prj}, commits => $revisions_shas->{$_}->{shas}, branch => $branch );
+            $log->debug( "<b>CVS Revisions:</B> Generated git list of elements", data => _dump @cvs_elements );
+            push @elems, @cvs_elements;
+            $cvs_checkouts->{$_}->{rev} = $repo->last_commit( commits => $revisions_shas->{$_}->{shas} );
+        } ## end for ( keys %{$revisions_shas...})
+        $job->job_stash->{cvs_checkouts} = $cvs_checkouts;
+    } ## end if ( @revisions )
+
+    #CVS revisions fin
 
     my $e = $job->job_stash->{elements} || BaselinerX::Job::Elements->new;
     $e->push_elements( @elems );
