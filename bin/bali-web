@@ -24,7 +24,7 @@ else
 fi
 
 if [ "$BASELINER_PORT" = "" ]; then
-    BASELINER_PORT=3000
+    export BASELINER_PORT=3000
 fi
 
 if [ "$BASELINER_TRACE" != "" ]; then
@@ -79,7 +79,7 @@ if [ "$1" = "start" ]; then
     # nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl -f $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     # BASELINER_SERVER=prefork nohup perl $BASELINER_TRACE_MODULE $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     export PARENTPID=$$
-    perl -e 'local$|=1;print "Waiting for server to start"; $x=15; while( $x-- && ! -e "$ENV{PIDFILE}" && kill 0, $ENV{PARENTPID}){ print "."; sleep 1 }' 2>/dev/null &
+    perl -e 'local$|=1;print "Waiting for server to start on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && ! -e "$ENV{PIDFILE}" && kill 0, $ENV{PARENTPID}){ print "."; sleep 1 }' 2>/dev/null &
     #WAITING_PID=$!
     starman --preload-app -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1
     echo "done"
