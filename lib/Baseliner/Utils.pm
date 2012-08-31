@@ -219,7 +219,7 @@ sub _unique {
 sub _load {
     my @args = @_;
     return try {
-        utf8::encode( @_ ) if utf8::valid( @_ );
+        utf8::encode( $_[0] ) if utf8::valid( $_[0] );
         YAML::XS::Load( @args )
     } catch { 
         require YAML::Syck;
