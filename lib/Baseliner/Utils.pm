@@ -99,7 +99,7 @@ use Exporter::Tidy default => [
     _dbis
     _hook
     _read_password
-    _load_features_lib
+    _load_features
 /];
 
 # setup I18n
@@ -1109,15 +1109,23 @@ sub _read_password {
     $pass;
 }
 
-sub _load_features_lib {
+sub _load_features {
+    my $dir = shift;
+    my %p = @_;
     my $features = Path::Class::dir('./features');
+    my @dirs;
     if( -d $features ) {
-        for my $dir ( map { Path::Class::dir( $_, 'lib' ) } $features->children ) {
+        for my $dir ( map { Path::Class::dir( $_, $dir ) } $features->children ) {
             next unless -d $dir;
-            eval "use lib '$dir'";
-            die $@ if $@;
+            push @dirs, $dir;
+            # if its lib, we load it
+            if( $p{use_lib} ) {
+                eval "use lib '$dir'";
+                die $@ if $@;
+            }
         }
     }
+    return @dirs;
 }
 
 1;

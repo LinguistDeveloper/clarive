@@ -7,14 +7,28 @@ use v5.10;
 use FindBin;
 use lib "$FindBin::Bin/../lib"; 
 BEGIN {
+    # $BASELINER_HOME/local-lib setup, in case it exists
     my $locallibdir="$FindBin::Bin/../local-lib";
     if( -d $locallibdir ) {
         eval qq{use local::lib '$locallibdir'};
     }
+    # last search for porcelain
+    sub _load_features_light {   # this is lighter than loading Baseliner::Utils
+        glob "features/*/" . $_[0];
+    }
+    if( my $action = $ARGV[0] ) {
+        for my $script_dir ( _load_features_light('script') ) {
+            my @scripts = ( "$script_dir/$action","$script_dir/$action.pl",
+                "$script_dir/bali_$action.pl",   "$script_dir/baseliner_$action.pl" );
+            for my $script ( @scripts ) {
+                next unless -e $script;
+                exec "$ENV{BASELINER_HOME}/bin/bali $script";
+            }
+        }
+    }
 }
 use Baseliner::Trace;
 use Pod::Usage;
-use Hash::Merge::Simple qw/merge/;
 
 chdir "$FindBin::Bin/..";
 
@@ -168,3 +182,4 @@ sub shut {
         print "No Baseliner processes found.\n";
     }
 }
+
