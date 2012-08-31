@@ -97,12 +97,18 @@ sub level_to_level {
 
 sub _build_second_to_third {
   my $self = shift;
-  $self->level_to_level( [$self->third_level->all], [$self->second_level->all]);
+  $self->level_to_level(
+      [$self->third_level->search(undef,{ order_by=>{ -asc=>'mid' } })->all],
+      [$self->second_level->search(undef,{ order_by=>{ -asc=>'mid' } })->all]
+  );
 }
 
 sub _build_first_to_second {
   my $self = shift;
-  $self->level_to_level([$self->second_level->all], [$self->first_level->all]);
+  $self->level_to_level(
+      [$self->second_level->search(undef,{ order_by=>{ -asc=>'mid' } })->all],
+      [$self->first_level->search(undef,{ order_by=>{ -asc=>'mid' } })->all]
+  );
 }
 
 sub lvl_ids {
