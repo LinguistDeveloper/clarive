@@ -23,7 +23,7 @@ else
     mkdir -p $LOGDIR
 fi
 
-if [ "$BASELINER_PORT" != "" ]; then
+if [ "$BASELINER_PORT" = "" ]; then
     BASELINER_PORT=3000
 fi
 
