@@ -1367,8 +1367,7 @@ Baseliner.kanban = function( args ){
                 var portlet = e.panel;
                 var previous_id_status = portlet.initialConfig.id_status;
                 portlet.initialConfig.id_status = e.column.initialConfig.id_status;
-                /* setTimeout( function(){
-                    console.log( previous_id_status ); 
+                /* setTimeout( function(){ console.log( previous_id_status ); 
                 }, 2000); */
             }
         }

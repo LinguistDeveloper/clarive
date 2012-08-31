@@ -18,27 +18,27 @@
             'keyup': function(a,b) {
                 if (b.getKey()==b.ENTER) {
                     var domElement = code.getEl().dom; 
-                    console.log("DOM SELSTART",domElement.selectionStart);
+                    // console.log("DOM SELSTART",domElement.selectionStart);
                     var findValue=find.getValue();
                     var start = code.selectionStart?code.selectionStart+1 : 0;
-                    console.log("START",start);
+                    // console.log("START",start);
                     var re = new RegExp ('<br>', 'gi') ;
                     var txt = code.value.replace(re,"").substring(start);
                     
                     var regexp = new RegExp(findValue);
                     var indexOf = txt.search(regexp);
-                    console.log("INDEX",indexOf);
+                    // console.log("INDEX",indexOf);
                     if(indexOf==-1) {
                         return;                                    
                         }
                     if(Ext.isGecko) {
                         code.selectText(indexOf , indexOf + findValue.length);
-                        console.log("FROM",domElement.selectionStart, "TO",domElement.selectionEnd);
+                        // console.log("FROM",domElement.selectionStart, "TO",domElement.selectionEnd);
                         
                         // code.scrollIntoView(start);
                         // code.focus(false, true);
                     } else {
-                    console.log ("NO ES GECKO");
+                       // console.log ("NO ES GECKO");
                     }
                     return;
                     }

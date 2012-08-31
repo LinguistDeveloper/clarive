@@ -322,7 +322,7 @@ Baseliner.store_exception_handler = function( proxy, type, action, opts, res, ar
         }
     } catch(e) {
         Ext.Msg.alert( _('Server Error'), _('Error getting response from server. Code: %1. Status: %2', res.status, res.statusText ) );
-        if( console != undefined ) console.log( res );
+        //if( console != undefined ) console.log( res );
         //Ext.Msg.alert( _('Server Error'), _('Error getting response from server: %1', res.responseText ) );
     }
     //alert( String.format('TYPE={0}, ACTION={1}, {2}' , type, action, Ext.util.JSON.encode( res )  ) );
