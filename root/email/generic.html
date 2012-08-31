@@ -1,7 +1,9 @@
 <%args>
-	$subject 
 	$message
+	$subject 
+	$to
 </%args>
+
 <head>
     <meta http-equiv="Content-Language" content="en" />
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
@@ -9,16 +11,65 @@
 	<& /email/style.css &>
 </head>
 
+<style>
+body {
+    font-family: arial;
+    font-size: 10pt;
+}
+.backGroundPrimeraFila {
+    font-family: Verdana;
+    font-size: 8pt;
+    font-weight: bold;
+    color: #CCCCCC;
+    background-color: #666666;
+    vertical-align: middle;
+}
+.backGroundFilaLinks {
+    font-family: Verdana;
+    font-size: 8pt;
+    color: #111111;
+    vertical-align: top;
+}
+.backGroundFilaDatos {
+    font-family: Verdana;
+    font-size: 8pt;
+    color: #111111;
+    vertical-align: top;
+}
+:link, :link:hover, :visited, :visited:hover {
+    color: #000;
+}
+</style>
+
 <body>
-    <div class='box'>
-        <div class="error">
-            <h2>SCM: <% $subject %></h2>
-        </div>
-    </div>
-    <div class='box'>
-        <div class="trace error">
-            <p><% $message %></p>
-        </div>
-    </div>
+<div id="tablaContenedor_div">
+    <TABLE cellpadding="0" cellspacing="0" width="100%">
+        <TR height="20">
+            <TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">&nbsp;SCM/Baseliner</TD>
+        </TR>
+    </TABLE>
+</div>
+
+<table border=0 cellspacing=2>
+    <tr>
+        <td><br><h3><% $subject %></h3><br></td>
+    </tr>
+</table>
+
+<table border=0 cellspacing=4 cellpadding=2 width=80%>
+    <tr><td><hr></td></tr>
+    <tr>
+        <td colspan=2><% $message %></td>
+    </tr>
+</table>
+    
+<p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+Enviado a: <% join ",",@$to %>
+%}
+</p>    
+
 </body>
+
+
 

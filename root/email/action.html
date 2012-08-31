@@ -1,10 +1,11 @@
 <%args>
     $observaciones
     $realname
+    $reason
     $status
     $subject
-    $username
     $to
+    $username
 </%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
@@ -128,6 +129,18 @@
             </p></ul>
         </tr>
     </table>
+
+<table border=0 cellspacing=4 cellpadding=2 width=80%>
+    <td colspan=2><hr></td>
+    <tr>
+        <td class="backGroundFilaDatos" style="width: 16%;"><b>Estado de aprobacion</b></td><td style='width: 64%;'><% $status %></td>
+    </tr><tr>
+        <td class="backGroundFilaDatos" style="width: 16%;"><b>Aprobado por</b></td><td style='width: 64%;'><% $username %> (<% $realname %>)</td>
+    </tr><tr>
+        <td class="backGroundFilaDatos" style="width: 16%;"><b>Observaciones</b></td><td style='width: 64%;'><% $observaciones %></td>
+    </tr>
+    <% $reason ? '<tr><td class="backGroundFilaDatos" style="width: 16%;"><b>Motivos</b></td><td style="width: 64%;">'.$reason.'</td></tr>' : '' %>
+</table>
     <p>
 % if ( $ENV{BASELINER_DEBUG} ) {
 Enviado a: <% join ",",@$to %>

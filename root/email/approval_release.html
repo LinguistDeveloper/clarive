@@ -1,117 +1,130 @@
+<%args>
+	$comments => '(vacio)'
+	$jobname 
+	$realname => ''
+	$reason => '(vacio)'
+	$requested_by
+	$requested_to => []
+	$subject 
+	$to 
+	$url_approve
+	$url_reject
+</%args>
+
 <head>
     <meta http-equiv="Content-Language" content="en" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Approval</title>
-    <style type="text/css">
-        body {
-            font-family: "Bitstream Vera Sans", "Trebuchet MS", Verdana,
-                         Tahoma, Arial, helvetica, sans-serif;
-            color: #333;
-            background-color: #eee;
-            margin: 0px;
-            padding: 0px;
-        }
-        :link, :link:hover, :visited, :visited:hover {
-            color: #000;
-        }
-        div.box {
-            position: relative;
-            background-color: #ccc;
-            border: 1px solid #aaa;
-            padding: 4px;
-            margin: 10px;
-        }
-        div.error {
-            background-color: #cce;
-            border: 1px solid #755;
-            padding: 8px;
-            margin: 4px;
-            margin-bottom: 10px;
-        }
-        div.infos {
-            background-color: #eee;
-            border: 1px solid #575;
-            padding: 8px;
-            margin: 4px;
-            margin-bottom: 10px;
-        }
-        div.name {
-            background-color: #cce;
-            border: 1px solid #557;
-            padding: 8px;
-            margin: 4px;
-        }
-        code.error {
-            display: block;
-            margin: 1em 0;
-            overflow: auto;
-        }
-        div.name h1, div.error p {
-            margin: 0;
-        }
-        h2 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: medium;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-        h1 {
-            font-size: medium;
-            font-weight: normal;
-        }
-        pre {
-            white-space: pre-wrap;       /* css-3 */
-            white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-            white-space: -pre-wrap;      /* Opera 4-6 */
-            white-space: -o-pre-wrap;    /* Opera 7 */
-            word-wrap: break-word;       /* Internet Explorer 5.5+ */
-        }
-
-        div.trace {
-            background-color: #eee;
-            border: 1px solid #575;
-        }
-        div#stacktrace table {
-            width: 100%;
-        }
-        div#stacktrace th, td {
-            padding-right: 1.5em;
-            text-align: left;
-        }
-        div#stacktrace .line {
-            color: #000;
-            font-weight: strong;
-        }
-    </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+	<& /email/style.css &>
 </head>
 
+<style>
+body {
+    font-family: arial;
+    font-size: 10pt;
+}
+.backGroundPrimeraFila {
+    font-family: Verdana;
+    font-size: 8pt;
+    font-weight: bold;
+    color: #CCCCCC;
+    background-color: #666666;
+    vertical-align: middle;
+}
+.backGroundFilaLinks {
+    font-family: Verdana;
+    font-size: 8pt;
+    color: #111111;
+    vertical-align: top;
+}
+.backGroundFilaDatos {
+    font-family: Verdana;
+    font-size: 8pt;
+    color: #111111;
+    vertical-align: top;
+}
+:link, :link:hover, :visited, :visited:hover {
+    color: #000;
+}
+</style>
+
 <body>
-    <div class='box'>
-        <div class="error">
-            <h2>SCM: Aprobacion de Release</h2>
-        </div>
+<div id="tablaContenedor_div">
+    <TABLE cellpadding="0" cellspacing="0" width="100%">
+        <TR height="20">
+            <TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">&nbsp;SCM/Baseliner</TD>
+        </TR>
+    </TABLE>
+</div>
+
+<table border=0 cellspacing=2>
+    <tr>
+        <td><br><h3><% $subject %></h3><br></td>
+    </tr>
+</table>
+
+<table border=0 cellspacing=4 cellpadding=2 width=80%>
+    <tr><td colspan=2><hr></td></tr>
+    <tr>
+        <td class="backGroundFilaDatos" style="width: 16%;"><b>Release</b></td><td style='width: 64%;'><% $release %></td>
+    </tr>
+    <% $rfc ? '<tr><td class="backGroundFilaDatos" style="width: 16%;"><b>RFC</b></td><td style="width: 64%;">'.$rfc.'</td></tr>' : '' %>
+    <tr>
+        <td class="backGroundFilaDatos" style="width: 16%;"><b><% _loc("Requested by") %></b></td><td style='width: 64%;'><% $requested_by %> (<% $realname %>)</td>
+    </tr><tr>
+        <td class="backGroundFilaDatos" style="width: 16%;"><b><% _loc("Requested to") %></b></td><td style='width: 64%;'><li><% join '<li>', @{ $requested_to } %></td>
+    </tr><tr>
+        <td class="backGroundFilaDatos" style="width: 16%;"><b>Elementos de la Release</b></td><td style='width: 64%;'><li><% join '<li>', split(/,/, $items) %></td>
+    </tr>
+    <% $reason ? '<tr><td class="backGroundFilaDatos" style="width: 16%;"><b>Motivos</b></td><td style="width: 64%;">'.$reason.'</td></tr>' : '' %>
+    <% $comments ? '<tr><td class="backGroundFilaDatos" style="width: 16%;"><b>Comentarios</b></td><td style="width: 64%;">'.$comments.'</td></tr>' : '' %>
+</table>
+
+<body>
+
+<div class='box'>
+    <div class="error">
+        <h2>SCM: Aprobacion de Release</h2>
     </div>
-    <div class='box'>
-        <div class="trace error">
-            <li>Release: <% $release %>
-            <li>RFC: <% $rfc %>
-        </div>
-        <div class="trace error">
-            <p>Por favor, apruebe la release <b><% $release %></b> compuesta de los siguientes elementos:
-            <p><li><% join '<li>', split(/,/, $items) %>
-            <% $reason ? '<p><li>Motivo: ' . $reason : '' %>
-            <% $comments ? '<p><li>Comentarios: ' . $comments : '' %>
-        </div>
+</div>
+
+<div class='box'>
+    <div class="trace error">
+        <li>Release: <% $release %>
+        <li>RFC: <% $rfc %>
     </div>
 
-    <div class='box'>
-        <div class="name">
-            <p>Haciendo clic en la siguiente url:
-            <p><a href="<% $url_approve %>"><% $url_approve %></a>
+</div>
 
-            <p>O rechacelo:
-            <p><a href="<% $url_reject %>"><% $url_reject %></a>
-        </div>
-    </div>
+<table border=0 cellspacing=6 width=80%>
+    <tr class="backGroundFilaLinks">
+        <td colspan=2 class="backGroundFilaLinks">
+            <br>
+            <hr>
+            <p>Puede aprobar o rechazar la solicitud haciendo clic en uno de los siguientes enlaces:
+            <br>
+        </td>
+    </tr> <tr>
+        <td style="white-space: nowrap; text-align:left; width:17%; background-color:#ccffcc"><a style="text-align:left;" href="<% $url_approve %>"><b>Aprobar solicitud</b></a></td>
+        <td style="white-space: nowrap; text-align:left; width:63%;" >
+% if ($ENV{BASELINER_DEBUG} ) {
+<% $url_approve %>
+%}
+        </td>
+    </tr> <tr>
+        <td style="white-space: nowrap; text-align:left; width:17%; background-color:#ffcccc"><a style="text-align:left;" href="<% $url_reject %>"><b>Rechazar solicitud</b></a></td>
+        <td style="white-space: nowrap; text-align: left; width:63%;" >
+% if ($ENV{BASELINER_DEBUG} ) {
+<% $url_reject %>
+%}
+        </td>
+    </tr>
+</table>
+    
+<p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+Enviado a: <% join ",",@$to %>
+%}
+</p>    
+
 </body>

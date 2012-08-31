@@ -403,13 +403,14 @@ sub notify { #TODO : send to all action+ns users, send to project-team
             template => 'email/job.html',
             template_engine => 'mason',
             vars   => {
-                subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
-                message   => $message,  # last log msg
                 action    => _loc($type), #started or finished
-                username  => $username,
-                realname  => $realname,
                 job       => $job->name,
+                message   => $message,  # last log msg
+                realname  => $realname,
                 status    => _loc($status),
+                subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
+                to        => $username,
+                username  => $username,
             }
             #cc => { actions=> ['action.notify.job.end'] },
         );
