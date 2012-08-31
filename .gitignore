@@ -21,6 +21,7 @@ tmp
 features/nature.tp
 features/nature.ssrs
 features/gbp
+features/#
 inc
 t/balitest.db
 t/old
