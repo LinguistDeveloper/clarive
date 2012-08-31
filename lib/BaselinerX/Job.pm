@@ -2,7 +2,6 @@ package BaselinerX::Job;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use DateTime;
-use YAML;
 
 with 'Baseliner::Role::Service';
 
@@ -29,6 +28,7 @@ register 'config.job' => {
         { id=>'mask', label => 'Job Naming Mask', type=>'text', default=>'%s.%s-%08d' },
         # { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.simple.chain' } },
         { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.chained.rule' } }, # Eric
+        { id=>'default_chain_id', label => 'Default Chain ID', type=>'text', default=>1 }, 
         { id=>'comment', label => 'Comment', type=>'text' },
         { id=>'check_rfc', label => 'Check RFC on creation', type=>'text', default=>0 },
         { id=>'step', label => 'Which phase of the job, pre, post or run', default => 'RUN' },

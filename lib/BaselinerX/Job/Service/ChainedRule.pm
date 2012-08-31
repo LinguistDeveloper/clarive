@@ -64,7 +64,11 @@ sub launch {
   # request.
   my $sem_chain = $self->_conf( 'chain.sem' );
 
-  my $chain_id = 3;  # FIXME
+  my $chain_id = config_value('config.job.default_chain_id');
+
+  $log->debug( _loc("Chain id: %1", $chain_id ) );
+
+  _throw 'Invalid or missing value for config.job.default_chain_id' unless defined $chain_id;
 
   my $step = exists $job->job_stash->{step} 
                ? $job->job_stash->{step} 
