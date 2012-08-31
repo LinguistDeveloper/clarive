@@ -53,7 +53,7 @@ sub _get_args {
 }
 
 # turns option=>[]  into option=>''
-#  necessary for sending emptyness over an http request
+#    required for sending emptyness over an http request
 sub clean_empty_arrays {
     my %opts = @_;
     for( %opts ) {
@@ -72,20 +72,27 @@ my $port   = $ENV{BASELINER_PORT}   || $ENV{CATALYST_PORT}   || 3000;
 my $service = shift @ARGV;
 my %opts    = _get_options(@ARGV);
 %opts = clean_empty_arrays( %opts );
+# check if there's any STDIN
+use IO::Select;
+my $s = IO::Select->new();
+$s->add(\*STDIN);
+if( $s->can_read(.1) ) {
+    $opts{STDIN} = join '',<STDIN>;
+}
 my $res     = request(
     "http://$server:$port/service/rest",
-    service => $service || 'service.dummy',
+    api_key => $ENV{BASELINER_API_KEY},
+    service => $service || 'service.job.dummy',
     %opts
 );
 
 #print _dump( $res );
 #print _dump( \%opts );
 
-unless ( defined $res ) {
+if ( ! defined $res ) {
     print STDERR "***REST Error: " . $!;
-    exit 1;
-}
-else {
+    exit 99;
+} else {
     print $res->{output};
     if ( $res->{rc} > 0 ) {
         print STDERR $res->{msg};

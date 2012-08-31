@@ -1,14 +1,18 @@
-#!/bin/sh 
+#!/usr/bin/env sh 
 
 if [ "$BASELINER_LOGHOME" != "" ]; then
-	LOGDIR=$BASELINER_LOGHOME
+    LOGDIR=$BASELINER_LOGHOME
 else
-	LOGDIR=$BASELINER_HOME/tmp/log
-	mkdir -p $LOGDIR
+    LOGDIR=$BASELINER_HOME/tmp/log
+    mkdir -p $LOGDIR
+    echo "log dir: $LOGDIR"
+    export BASELINER_LOGHOME=$LOGDIR
 fi
 
-if [ "$BALI_ENV" != "" ]; then
-	export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+if [ "$BASELINER_ENV" != "" ]; then
+        export CATALYST_CONFIG_LOCAL_SUFFIX=$BASELINER_ENV
+elif [ "$BALI_ENV" != "" ]; then
+        export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
 fi
 
 LOGFILENAME=balid
@@ -17,32 +21,35 @@ LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
 LOGFILE=$LOGDIR/$LOGFILENAME.log
 
 ren_log() {
-	mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
-	gzip $LOGFILEOLD 2>/dev/null
-	echo "Log file: $LOGFILE"
+    mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
+    gzip $LOGFILEOLD 2>/dev/null
+    echo "Log file: $LOGFILE"
 }
 
 message="Baseliner Dispatcher starting in background..."
 if [ "$1" == "restart" ];
 then
-		bali stop service.dispatcher 
+        bali stop service.dispatcher 
         echo $message
-		ren_log
-		exec bali start service.dispatcher 
+	    ren_log
+        shift
+        exec balid service.dispatcher $*
         exit 0
 fi
 
 if [ "$1" == "stop" ];
 then
-		exec bali stop service.dispatcher 
+        shift
+        exec bali stop service.dispatcher $*
         exit 0
 fi
 
 if [ "$1" == "start" ];
 then
-		ren_log
+	    ren_log
         echo $message
-		exec balid service.dispatcher --fork
+        shift
+        exec balid service.dispatcher $*
         exit 0
 fi
 
@@ -58,5 +65,6 @@ then
         exit 0
 fi
 
+export BASELINER_PERL_OPTS=-X
 exec bali service.dispatcher $*
 

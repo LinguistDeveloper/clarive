@@ -10,8 +10,10 @@ if [ "$BASELINER_LANG" != "" ]; then
     export LANG=$BASELINER_LANG
 fi
 
-if [ "$BALI_ENV" != "" ]; then
-    export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+if [ "$BASELINER_ENV" != "" ]; then
+        export CATALYST_CONFIG_LOCAL_SUFFIX=$BASELINER_ENV
+elif [ "$BALI_ENV" != "" ]; then
+        export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
 fi
 
 if [ "$BASELINER_LOGHOME" != "" ]; then
@@ -21,11 +23,21 @@ else
     mkdir -p $LOGDIR
 fi
 
+if [ "$BASELINER_TRACE" != "" ]; then
+    BASELINER_TRACE_MODULE="-d:Trace::More" 
+fi
+
+if [ ! -e "$LOGDIR" ]; then
+    echo "Log directory does not exist or not accesible: $LOGDIR"
+    exit 12
+fi
+
 LOGFILENAME=bali_web
 NOW=`perl -MDateTime -le 'print DateTime->now()'`
 LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
 LOGFILE=$LOGDIR/$LOGFILENAME.log
 PIDFILE=$LOGDIR/bali_web.pid
+
 test_char=`echo "\c"`
 nonl='\c'
 echop=''
@@ -49,25 +61,22 @@ if [ "$1" = "start" ]; then
         fi
     fi
 
-    # Eric -- rotando algunos logs...
-    POLL_DIR=/home/apst/scm/servidor/vass/logs/
-    mv ${POLL_DIR}poll.log ${POLL_DIR}poll_${NOW}.log
-    gzip ${POLL_DIR}poll_${NOW}.log
-    touch ${POLL_DIR}poll.log
-    # end Eric
-
     mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
     gzip $LOGFILEOLD 2>/dev/null
-    echo "Log file: $LOGFILE"
+    echo "log file: $LOGFILE"
+    echo "pid file: $PIDFILE"
+
     cd $BASELINER_HOME
     #nohup perl script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
-    CATALYST_ENGINE=HTTP::Prefork nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
-    SERVER_PID=$!
-    echo $SERVER_PID > $PIDFILE
-    echo "Server started with pid: $SERVER_PID"
+    # CATALYST_ENGINE=HTTP::Prefork nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    # CATALYST_ENGINE=HTTP::Prefork perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    # nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl -f $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    # BASELINER_SERVER=prefork nohup perl $BASELINER_TRACE_MODULE $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
+    starman --preload-app -D --pid "$PIDFILE" $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1
+    echo "Server started with pid: " `cat "$PIDFILE"`
     echo $echop "Waiting for children to start...$nonl"
     k=0
-    while [ $k -lt 10 ]
+    while [ $k -lt 3 ]
     do
         sleep 1
         echo $echop ".$nonl"
@@ -86,7 +95,7 @@ elif [ "$1" = "stop" ]; then
         else
                 echo "Server is not running."
         fi
-        rm "$PIDFILE"
+        # rm "$PIDFILE" # starman cleans it up
     else
         echo "Server was not running or no pid file. No action taken."
     fi
@@ -96,24 +105,37 @@ elif [ "$1" = "kill" ]; then
         echo "Killing Baseliner Server with pid: $SERVER_PID"
         kill -9 $SERVER_PID 2>/dev/null
     fi
-    COUNT1=`ps uwwx | grep perl | grep "baseliner_server.pl" | grep -v grep | wc -l`
+    COUNT1=`ps uwwx | grep perl | grep "bali_web.pid" | grep -v grep | wc -l`
     COUNT2=`ps uwwx | grep perl | grep "bali server" | grep -v grep | wc -l`
-    COUNT=`perl -e '$x+=$_ for @ARGV; print $x' $COUNT1 $COUNT2`
-    if [ "$COUNT" > 0 ]; then
+    COUNT3=`ps uwwx | grep "starman" | grep -v grep | wc -l`
+    COUNT=`perl -e '$x+=$_ for @ARGV; print $x' $COUNT1 $COUNT2 $COUNT3`
+    if [ "$COUNT" -gt 0 ]; then
         echo "Killing all Baseliner Web server processes..."
         ps uwwx | grep perl | grep "baseliner_server.pl" | perl -a -n -l -e 'print join" ",">> ",$F[1]," => ",@F[10..$#F]'
         ps uwwx | grep perl | grep "baseliner_server.pl" | perl -a -n -l -e 'kill 9,$F[1]'
         ps uwwx | grep perl | grep "bali.server" | perl -a -n -l -e 'print join" ",">> ",$F[1]," => ",@F[10..$#F]'
         ps uwwx | grep perl | grep "bali.server" | perl -a -n -l -e 'kill 9,$F[1]'
+        ps uwwx | grep starman | grep -v grep | perl -a -n -l -e 'print join" ",">> ",$F[1]," => ",@F[10..$#F]'
+        ps uwwx | grep starman | grep -v grep | perl -a -n -l -e 'kill 9,$F[1]'
         echo "Done."
+    else
+        echo "No serviceable Baseliner processes found."
+        exit 1
     fi
 elif [ "$1" = "restart" ]; then
+    shift
     bali_web stop
     bali_web kill
-    bali_web start
+    bali_web start $*
+elif [ "$1" = "more" ]; then
+    more $LOGFILE
+elif [ "$1" = "log" ]; then
+    cat $LOGFILE
 elif [ "$1" = "tail" ]; then
     tail -10000f $LOGFILE
+elif [ "$1" = "" ]; then
+    echo "Missing action. Available: start stop kill restart tail log more"
 else
-    echo "Unkown operation $1"
+    echo "Unknown action $1"
 fi
 

@@ -21,10 +21,10 @@ export NLS_LANG=SPANISH_SPAIN.UTF8
 service=$2
 if [ "$1" == "stop" ];
 then
-	    echo "balid: stopping service $service..."
+        echo "balid: stopping service $service..."
         ps uwwx|grep perl|grep "bali.pl"|grep "$service"|grep -v grep|awk '{ print $2 }'|xargs kill
         echo "balid: killed ok."
         exit 0
 fi
-exec nohup perl -X script/bali.pl $* >$BASELINER_LOGHOME/balid.log 2>&1 &
+exec nohup bin/bali $* >$BASELINER_LOGHOME/balid.log 2>&1 &
 

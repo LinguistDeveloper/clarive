@@ -52,7 +52,7 @@ sub service_start {
     my @started;
     for my $service_name ( @services ) {
         my $params = join ' ', map { "$_=$params{$_}" } keys %params;
-        my $cmd = "perl $0 $service_name $params";
+        my $cmd = "perl $ENV{BASELINER_PERL_OPTS} $0 $service_name $params";
         _debug "Starting service background command '$cmd'";
         my $proc = Proc::Background->new($cmd)
           or _throw "Could not start service $service_name: $!";
@@ -90,7 +90,7 @@ sub service_start_forked {
             $SIG{HUP} = 'DEFAULT';
             $SIG{TERM} = 'DEFAULT';
             $SIG{STOP} = 'DEFAULT';
-            $0 = "perl $0 $service_name $params";
+            $0 = "perl $ENV{BASELINER_PERL_OPTS} $0 $service_name $params";
             _debug "Model/Daemons.pm: --- Starting service forked command '$0'";
             if( exists $p{frequency} ) { 
                 while(1) {
