@@ -111,7 +111,7 @@ sub log_rows : Private {
                 };
     #TODO use the blob 'data' somehow .. change to clob?
 
-    my $where = {};	
+    $where = {};	
     if( $query ) {
         #$where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
         $where = query_sql_build( query=>$query, fields=>{
