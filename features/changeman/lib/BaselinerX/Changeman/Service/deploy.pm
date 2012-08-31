@@ -54,6 +54,14 @@ sub execute {
    my $log        = $job->logger;
    my $job_stash  = _load bali_rs('Job')->find( $job->jobid )->stash;
    my $isCHM=undef;
+   my @pkgs;      ## Changeman Packages in Job
+
+   if ($job->{origin} ne 'changeman') {
+      foreach my $package (_array $job_stash->{contents}) {  ## Desasociamos los paquetes del pase.
+         my $ns = ns_get( $package->{item} );
+         push @pkgs, $package->{item} if $ns->{provider} ne "namespace.changeman.package";
+      }
+   }
 
    if ( $job_stash->{origin} eq 'changeman' && ! $p->{finalize} ) {
       $job->suspend (status=>'WAITING', message=>_loc("Waiting for JES spool outputs"), level=>'info');
@@ -67,7 +75,11 @@ sub execute {
       next if $ns->{provider} ne "namespace.changeman.package";
 
       if ($package->{returncode}) {
-         _throw ('Error during changeman execution') if $package->{returncode} !~ m{ok}i;
+         unless ( $package->{returncode} =~ m{ok}i ) {
+            $job->job_fail(_loc('Error during changeman execution'));
+            $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+            return 1;
+         }
       } elsif ( $job->{origin} ne 'changeman' ) {
          my $ret=undef;
          my $sitename = $config->{siteMap}->{$job->bl}->{PromotionSite};
@@ -84,7 +96,9 @@ sub execute {
          } elsif ( $job->bl ne 'PROD' && $job->{job_data}->{type} eq 'demote') {
             $log->debug( _loc( qq{Execute package <b>%1</b> type <b>%2</b> to site <b>%3</b>},$ns->{ns_name}, 'demote', $ns->{ns_data}->{site} ));
          } else {
-            _throw _loc( "Invalid job for Changeman");
+            $job->job_fail(_loc('Invalid job for Changeman'));
+            $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+            return 1;
          }
 
          $ret = $chm->xml_runPackageInJob(
@@ -95,7 +109,9 @@ sub execute {
          );
          if ( $ret->{ReturnCode} !~ m{^00$|^0$} ) {
              $log->error (_loc("Can't execute changeman package %1", $ns->{ns_name}), _dump $ret);
-             _throw _loc('Error during changeman execution');
+            $job->job_fail(_loc('Error during changeman execution'));
+            $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+            return 1;
          } else {
             $log->info(_loc("Execution for changeman package %1 correctly submitted", $ns->{ns_name}), _dump $ret);
             $job->suspend (status=>'WAITING', message=>_loc("Waiting for JES spool outputs"), level=>'info');
@@ -126,21 +142,16 @@ sub execute {
 
       if ($ret->{ReturnCode} ne '00') {
          $log->error (_loc("Can't execute Linklist refresh"), $ret->{Message});
-         _throw ( _loc('Error during changeman execution') );
+         $job->job_fail(_loc('Error during changeman execution'));
+         $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+         return 1;
       } else {
          $log->info(_loc("Linklist refresh correctly submitted"));
       }
    }
-
    if ($job->{origin} ne 'changeman') {
-      my @pkgs;
-      foreach my $package (_array $job_stash->{contents}) {  ## Desasociamos los paquetes del pase.
-         my $ns = ns_get( $package->{item} );
-         push @pkgs, $package->{item} if $ns->{provider} ne "namespace.changeman.package";
+   		$chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) 
       }
-      my $ret= $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) ;
-   }
-
         Baseliner->model('Jobs')->resume(id=>$job->jobid, silent=>1) if $p->{finalize};
 }
 
@@ -177,6 +188,11 @@ sub job_elements {
 
    for my $item ( _array $stash->{contents} ) {
       next if $item->{item} =~ 'nature/.*';
+      
+      my $nature = 'ZOS';
+      $nature.=$item->{data}->{linklist} eq 'SI'?'-Linklist':'';
+      $nature.=$item->{data}->{db2} eq 'SI'?'-DB2':'';
+
       my $ns = ns_get $item->{item};
       my $application = $1 if $ns->{ns_name}=~m{^(....).*};
       next unless $ns->provider eq 'namespace.changeman.package';
@@ -198,10 +214,12 @@ sub job_elements {
       if ( scalar _array $xml->{result} ) {
          push @list, sprintf("%-10s%-42s","ELEMENTO","TIPO");
          push @list, sprintf("%-10s%-42s","=========","==========================================");
+      } else {
+         push @elems,{ name=>'---', type=>'---', path=>qq{/$application/ZOS} };
       }
 
       foreach ( _array $xml->{result} ) {
-         push @elems,{ name=>$_->{component}, type=>$cfgChangeman->{typedef}->{$_->{componentType}}, path=>qq{/$application/ZOS/}.$_->{component} };
+         push @elems,{ name=>$_->{component}, type=>$cfgChangeman->{typedef}->{$_->{componentType}}, path=>qq{/$application/$nature/}.$_->{component} };
          push @list,sprintf("%-10s%-42s",$_->{component},$cfgChangeman->{typedef}->{$_->{componentType}});
       }
 

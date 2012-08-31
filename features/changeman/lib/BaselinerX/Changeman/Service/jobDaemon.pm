@@ -78,6 +78,15 @@ sub creaPase {  ## $self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, 
    my $chmConfig = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' );
 
    try {
+       if( defined ( my $activeJob = Baseliner->model('Jobs')->is_in_active_job( "changeman.package/$package" ) ) ) {
+           _debug _loc("Package <b>%1</b> is in active job <b>%2</b>", $package,$activeJob->id) if $activeJob;
+           return $runner;
+           # rgo: not sure if this is needed
+           #my $oldjob = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$activeJob->id, same_exec=>0, exec=>'last', silent=>1 );
+           #$oldjob->logger->warn( _loc( "Job cancelled. There's more recent activity with Changeman package %1", $package ) );
+           #Baseliner->model('Jobs')->cancel( id=>$activeJob->id );
+       }
+
        $user||=$chmConfig->{user};
        BaselinerX::Changeman::Provider::Package->getPkg($c,{ query=>$package });
        my $nsid = "changeman.package/$package";
@@ -86,15 +95,6 @@ sub creaPase {  ## $self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, 
            my $log_msg = _loc("Package <b>%1</b> does not exist in Changeman", $package);
            BaselinerX::ChangemanUtils->log( $log_msg );
            _throw $log_msg;
-       }
-
-       if( defined ( my $activeJob = Baseliner->model('Jobs')->is_in_active_job( "changeman.package/$package" ) ) ) {
-           _debug _loc("Package <b>%1</b> is in active job <b>%2</b>", $package,$activeJob->id) if $activeJob;
-           return $runner;
-           # rgo: not sure if this is needed
-           #my $oldjob = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$activeJob->id, same_exec=>0, exec=>'last', silent=>1 );
-           #$oldjob->logger->warn( _loc( "Job cancelled. There's more recent activity with Changeman package %1", $package ) );
-           #Baseliner->model('Jobs')->cancel( id=>$activeJob->id );
        }
 
        my $status = 'IN-EDIT';
@@ -184,18 +184,24 @@ sub run_once {
             ($RC, $RET) = $bx->execute("cat ".$file->{filename}->stringify);
             $user = $1 if $RET =~ m{^(\w+).*};
             $user= $case eq 'uc' ? uc($user) : ( $case eq 'lc' ) ? lc($user) : $user;
+
+            _debug $fprefix ."[USER] ". $user;
             #Baseliner->model('Baseliner::BaliRelationship')->update_or_create({type=>'changeman.id.to.job', from_ns=>$key, to_ns=>qq{user/$user}});
             $self->updateRelationship ( $key, qq{user/$user});
          }
-         push @filestoclean, $file->{filename}->stringify;
+         #push @filestoclean, $file->{filename}->stringify;
+         $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+         _debug $fprefix . "CLEANED";
          next; ## Es el fichero con el usuario que submite el job en CHM. No tiene mas proceso.
       }
 
+      $type=undef;
       if ($file->{jobname}=~m{^....(1|2|3|8)...$} ) {
          $type=$type||='promote';
       } elsif ($file->{jobname}=~m{^....(4|5|6|7|9)...$} ) {
          $type=$type||='demote';
       }
+      _debug $fprefix . "SOLVE TYPE: ".$file->{jobname}." ==> ". $type;
 
       $date = parse_date('yy-mm-dd',$scm ne 'A'?$date:_now);
 
@@ -235,6 +241,8 @@ sub run_once {
             }
          }
       }
+
+      _debug $fprefix . "TYPE: ".$file->{jobname} ." ==> ". $type;
 
       my $package = BaselinerX::Changeman::Provider::Package->get("changeman.package/$pkg"); ## Cargamos los datos del paquete CHM
       if ( $type eq 'promote' and $bl ne 'PROD' ) {
@@ -341,6 +349,9 @@ sub run_once {
               }
           }
       }
+
+      next unless ref $runner;
+
       $job=bali_rs('Job')->find( $runner->{job_data}->{id});
       unless( $job->step =~ m{RUN|POST|END} && $logrow ) {
           _debug $fprefix . "step not in RUN,POST,END and logrow - skipped logging phase";
@@ -351,7 +362,7 @@ sub run_once {
       if (( $file->{jobname} =~ m{FIN(..)|SITE(..)}i ) && $job->step !~ m{POST|END} ) {
           $log_action = "FIN-SITE - new dd for POST/END";
           _debug $fprefix . $log_action;
-          push @filestoclean, $file->{filename}->stringify;
+          #push @filestoclean, $file->{filename}->stringify;
           my $ddname="/$pkg/$site/$file->{jobname}";
           my $path="/$pkg/$site/ZZZ";
           my $logdata=$logrow->bali_log_datas->create({
@@ -363,11 +374,15 @@ sub run_once {
                   len=>2,
                   id_job=>$jobID
                   });
+          BaselinerX::ChangemanUtils->log( _loc('Daemon Processed. Action: %1',  $log_action ), filename=>$file->{filename}, job=>$file->{jobname}, scm=>$scm );
+          $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+          _debug $fprefix . "CLEANED";
       } else {
           $log_action =  "cat file output - jes split to log";
           _debug $fprefix . $log_action;
-          push @filestoclean, $file->{filename}->stringify;
+          #push @filestoclean, $file->{filename}->stringify;
           ($RC, my $text)=$bx->execute("cat ".$file->{filename}->stringify);
+          ($RC, $text)=$bx->executeas('vpchm01',"cat ".$file->{filename}->stringify) if $RC;
           my @RET=split / @==================== /, $text;
           foreach ( @RET ) {
               next if ! $_;
@@ -386,13 +401,15 @@ sub run_once {
                       id_job=>$jobID
                       });
           }
+          BaselinerX::ChangemanUtils->log( _loc('Daemon Processed. Action: %1',  $log_action ), filename=>$file->{filename}, job=>$file->{jobname}, scm=>$scm );
+          $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+          _debug $fprefix . "CLEANED";
       }
-      BaselinerX::ChangemanUtils->log( _loc('Daemon Processed. Action: %1',  $log_action ), filename=>$file->{filename}, job=>$file->{jobname}, scm=>$scm );
 
       if ( $file->{jobname} =~ m{FIN..}i ) {
           my $chm = BaselinerX::Changeman->new( host=>$chmConfig->{host}, port=>$chmConfig->{port}, key=>$chmConfig->{key} );
           my $ret;
-          if ($scm eq 'A') {
+          if ($scm eq 'A') { # Comes from Baseliner
               $ret= $chm->xml_cancelJob(job=>$runner->name, items=>[$pkg] ) ;
               if ($ret->{ReturnCode} ne '00') {
                   $log_action = _loc( "Package %1 can not be dessassociatted from job %2", $pkg, $runner->name );
@@ -401,7 +418,7 @@ sub run_once {
                   $log_action = _loc( "Package %1 dessassociatted from job %2", $pkg, $runner->name );
                   $row=$runner->logger->debug( $log_action, _dump $ret );
               }
-          } else {
+          } else { # Comes from Changeman. CHM Package is not associated to a SCM job
               $log_action = "FIN but not A - ignored";
               _debug $fprefix . $log_action; 
           }
@@ -412,20 +429,26 @@ sub run_once {
           _debug $fprefix . $log_action; 
       }
    }
-   $self->clean ($c, $bx, $config->{clean}, @filestoclean);
+   #$self->clean ($c, $bx, $config->{clean}, @filestoclean);
    return 1;
 }
 
 sub clean {
     my ($self, $c, $bx, $clean, @filenames) = @_;
     foreach my $file (@filenames) {
+        $file=_loc_ansi($file);            
+        my ($RC, $RET);
         if ($clean eq 'RENAME') {
             my $newfile = $file;
             $newfile =~ s{\.P\.}{\.T\.};
-            my ($RC, $RET)=$bx->execute(qq{mv $file $newfile"});
+            _debug $file . "CLEAN " . qq{mv $file $newfile};
+            ($RC, $RET)=$bx->execute (qq{mv "$file" "$newfile"});
+            ($RC, $RET)=$bx->executeas('vpchm01',qq{mv "$file" "$newfile"}) if $RC;
         } elsif ($clean eq 'DELETE') {
-            my ($RC, $RET)=$bx->execute(qq{rm $file});
+            ($RC, $RET)=$bx->execute(qq{rm "$file"});
+            ($RC, $RET)=$bx->executeas('vpchm01',qq{rm "$file"}) if $RC;
         }
+        _debug $file . "CLEAN" . $RET; 
     }
     return;
 }
@@ -435,10 +458,12 @@ my ($self, $from_ns, $to_ns) = @_;
 
 my $ds=Baseliner->model('Baseliner::BaliRelationship')->search({type=>'changeman.id.to.job', from_ns=>$from_ns})->first;
 if (ref $ds) {
-   $ds->to_ns($to_ns);
+   $ds->to_ns($to_ns) unless $ds->to_ns =~ m{job/\d+};
    $ds->update();
+   _debug "RELATIONSHIP FROM ". $from_ns . " TO ". $ds->to_ns;
 } else {
    Baseliner->model('Baseliner::BaliRelationship')->update_or_create({type=>'changeman.id.to.job', from_ns=>$from_ns, to_ns=>$to_ns});
+   _debug "RELATIONSHIP FROM ". $from_ns . " TO ". $to_ns;
 }
 }
 

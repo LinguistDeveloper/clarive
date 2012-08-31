@@ -260,7 +260,7 @@ Baseliner::Sugar::event_hook [qw/event.job.cancel event.job.cancel_running/] => 
     }
 
     if (scalar @pkgs) { 
-        my $ret= $chm->xml_cancelJob(job=>$job->name, items=>@pkgs) ;
+        my $ret= $chm->xml_cancelJob(job=>$job->name, items=>\@pkgs) ;
         if ($ret->{ReturnCode} ne '00') {
             my $msg = _loc("Job %1 cancelled", $job_name);
             if( $c ) {
