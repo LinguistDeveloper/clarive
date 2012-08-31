@@ -81,7 +81,7 @@ if [ "$1" = "start" ]; then
     echo "done"
     SERVER_PID=`cat "$PIDFILE"`
     echo "Server started with pid $SERVER_PID"
-    PROCS_NUM=`ps -ef|grep $SERVER_PID|wc -l`
+    PROCS_NUM=`ps -ef|grep $SERVER_PID|grep -v grep|wc -l`
     echo "$PROCS_NUM proceses started."
     echo ""
 elif [ "$1" = "stop" ]; then
