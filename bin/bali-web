@@ -62,7 +62,7 @@ if [ "$1" = "start" ]; then
     fi
 
     # purge old logs
-    rm `find $LOGDIR/bali_web_* -mtime +30`
+    rm `find $LOGDIR/bali_web_* -mtime +30` >/dev/null 2>&1
     mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
     gzip $LOGFILEOLD 2>/dev/null
     echo "log file: $LOGFILE"
@@ -74,15 +74,15 @@ if [ "$1" = "start" ]; then
     # CATALYST_ENGINE=HTTP::Prefork perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     # nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl -f $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     # BASELINER_SERVER=prefork nohup perl $BASELINER_TRACE_MODULE $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
-    perl -e 'local$|=1;print "Waiting for server to start"; while( ! -e "$ENV{PIDFILE}"){ print "."; sleep 1 }' 2>/dev/null &
+    export PARENTPID=$$
+    perl -e 'local$|=1;print "Waiting for server to start"; $x=15; while( $x-- && ! -e "$ENV{PIDFILE}" && kill 0, $ENV{PARENTPID}){ print "."; sleep 1 }' 2>/dev/null &
     #WAITING_PID=$!
     starman --preload-app -D --pid "$PIDFILE" $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1
-    #kill $WAITING_PID >/dev/null 2>&1
-    echo "Done"
+    echo "done"
     SERVER_PID=`cat "$PIDFILE"`
     echo "Server started with pid $SERVER_PID"
-    # echo "Children started: " . $CHILDREN;
-    #ps -ef|grep $SERVER_PID
+    PROCS_NUM=`ps -ef|grep $SERVER_PID|wc -l`
+    echo "$PROCS_NUM proceses started."
     echo ""
 elif [ "$1" = "stop" ]; then
     if [ -e $PIDFILE ]; then
