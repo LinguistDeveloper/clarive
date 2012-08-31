@@ -81,7 +81,7 @@ if [ "$1" = "start" ]; then
     export PARENTPID=$$
     perl -e 'local$|=1;print "Waiting for server to start"; $x=15; while( $x-- && ! -e "$ENV{PIDFILE}" && kill 0, $ENV{PARENTPID}){ print "."; sleep 1 }' 2>/dev/null &
     #WAITING_PID=$!
-    starman --preload-app -D --pid "$PIDFILE" $BASELINER_SERVER_ARGS > "$LOGFILE" -p $BASELINER_PORT 2>&1
+    starman --preload-app -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1
     echo "done"
     SERVER_PID=`cat "$PIDFILE"`
     echo "Server started with pid $SERVER_PID"
