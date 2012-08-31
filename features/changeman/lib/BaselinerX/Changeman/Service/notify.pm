@@ -70,8 +70,7 @@ sub main {
     my $reason = _loc('Needs to restart the LinkList');
     # Queue email
     my $items = join ' ', @items;
-    my $url      = "http://p4426:3000";
-    my $logpase  = "/raw/job/log/list/".$job->id;
+    my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $job->jobid ); 
 
     my $msg = Baseliner->model('Messaging')->notify(
         to              => { users => [ _unique(@users) ] },
@@ -89,8 +88,7 @@ sub main {
             requested_by => $u->{username},
             requested_to => [ _unique(@users_with_realname) ] ,
             subject      => $subject,
-            url          => $url,
-            logpase      => $logpase,
+            url_log      => $url_log,
             to           => [ _unique(@users) ],
             subject      => $subject,
             }

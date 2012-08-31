@@ -1,4 +1,4 @@
-﻿package BaselinerX::Job::Service::ApprovalRequest;
+package BaselinerX::Job::Service::ApprovalRequest;
 =head1 DESCRIPTION
 
 This is a service designed to be chained in PRE, that checks if a job needs approval before running in RUN.
@@ -59,8 +59,7 @@ sub run {
     $approval_items ||= $job->job_stash->{contents}; 
     $reason ||= "Promoción a $bl";
     
-    #my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid );
-    my $url_log = sprintf( "%s/tab/job/log/list/%d", _notify_address(), $job->jobid );
+    my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid );
 
     #my $item_ns = 'endevor.package/' . $item->{item};   #TODO get real ns names
     $log->info( _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ) );

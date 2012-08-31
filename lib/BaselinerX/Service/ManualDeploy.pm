@@ -165,7 +165,7 @@ sub send_requests {
         my $action = $actions{ $key };
         my $name = $action->{data}{name} || $key;
         my $desc = $action->{data}{description};
-        my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid ); 
+        my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $job->jobid ); 
         my $reason = _loc('Manual deploy action: %1', $name);
         my $subject = _loc('Requesting manual deploy for job %1, baseline %2: %3', $job->name , $bl, '<b>' . $reason . '</b>');
         $log->info( $subject );

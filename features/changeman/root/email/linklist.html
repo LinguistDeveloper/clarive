@@ -62,9 +62,23 @@ body {
         </tr>
     </table>
 
-    <p>
-    <a href="<% $url %><% $logpase %>">Consulte el log de pase aqu&iacute;.</a>
-    </p>
+    <table border=0 cellspacing=6 width=80%>
+    <tr class="backGroundFilaLinks">
+        <td colspan=2 class="backGroundFilaLinks">
+            <br>
+            <hr>
+            <p>Puede consultar el log haciendo clic en el siguiente enlace:
+            <br>
+        </td>
+    </tr> <tr>
+        <td style="text-align:left; width:17%; background-color:#81bef7"><a style="text-align:left;" href="<% $url_log %>"><b>Consultar Log</b></a></td>
+        <td style='text-align:left; width:60%;' >
+% if ($ENV{BASELINER_DEBUG} ) {
+<% $url_log %>
+%}
+        </td>
+    </tr>
+    </table>
 
     <p>
 % if ( $ENV{BASELINER_DEBUG} ) {
