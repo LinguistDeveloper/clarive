@@ -49,6 +49,7 @@ has 'job_row' => ( is=>'rw', isa=>'Any' );
 has 'exec' => ( is => 'rw', isa => 'Maybe[Int]', default => 1 );
 
 with 'Baseliner::Role::Service';
+with 'Baseliner::Role::JobRunner';
 
 register 'config.job.runner' => {
     metadata => [
