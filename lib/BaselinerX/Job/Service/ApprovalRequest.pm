@@ -41,10 +41,13 @@ sub run {
     # check the job stash
     my $job_approve = $job->job_stash->{approval_needed};
     
-    unless( ref $job_approve ) {
+    #unless( ref $job_approve ) {
+    unless( ref $job_approve and ref $job_approve->{reason} ) {  ## evitamos que salte la aprobacion si no estÃ¡ informado reason, se estÃ¡ creando la clave vacia.
         $log->info( _loc("No hay aprobaciones programadas para este pase.") );
         return;
     }
+
+
 
     $reason = $job_approve->{reason};
     $log->debug( 'Aprobación requerida en stash de pase', data=>_dump( $job_approve ) );
