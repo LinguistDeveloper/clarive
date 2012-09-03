@@ -112,7 +112,7 @@ sub launch {
   # Iterate every element in the chain until it runs out, if the DSL happens
   # to be Perl eval its code (if active).
   _log "Runner...";
-  $log->debug( _loc("Loaded chain"), data=>\@chain );
+  $log->debug( _loc("Loaded chain"), data=>_dump \@chain );
   RUNNER:
   while ( @chain ) { 
     $job->stash->{chain}=\@chain;
