@@ -168,11 +168,11 @@ sub list {
         my $user_prj = $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create', bl=>$bl);
         my $user_prj_z = $c->model('Permissions')->user_projects_with_action(username=>$p->{username}, action=>'action.job.create.Z', bl=>$bl);
         if( _array $user_prj ) {
-            my @prjs = $c->model('Baseliner::BaliProject')->search({id=>$user_prj, id_parent=>undef, nature=>undef}, { select=>['name'] })->hashref->all;
+            my @prjs = $c->model('Baseliner::BaliProject')->search({mid=>$user_prj, id_parent=>undef, nature=>undef}, { select=>['name'] })->hashref->all;
             push @projects, map { $_->{name} . 'T' } @prjs;
         }
         if( _array $user_prj_z ) {
-            my @prjs = $c->model('Baseliner::BaliProject')->search({id=>$user_prj_z, id_parent=>undef, nature=>undef}, { select=>['name'] })->hashref->all;
+            my @prjs = $c->model('Baseliner::BaliProject')->search({mid=>$user_prj_z, id_parent=>undef, nature=>undef}, { select=>['name'] })->hashref->all;
             push @projects, map { $_->{name} . 'Z' } @prjs;
         }
     }
