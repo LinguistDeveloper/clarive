@@ -589,7 +589,7 @@
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: true, renderer: render_nature }, // Eric
-                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: true, renderer: render_subapp }, // Eric
+                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, renderer: render_subapp }, // Eric
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
                 { header: _('Step'), width: 80, dataIndex: 'step', sortable: true , hidden: true },	
