@@ -207,11 +207,13 @@ sub deploy_schema {
         # execute ALL?
         print "\n\n$diff", "\n";
         if( _ask_me("Execute ALL diff?") ) {
-            $dbh->do( $diff );
+            for( map { s/\;(\s*)?\n?$//; $_ } split /\n/, $diff ) {
+                $dbh->do( $_ );
+            }
         }
 
         # execute ADDS?
-        my @adds = grep / ADD \(/, split /\n/, $diff;
+        my @adds = grep { length } grep / ADD \(/, split /\n/, $diff;
         if( @adds > 0 ) {
             print '=' x 100 , " ADD: \n";
             print join "\n", '', @adds, '';
@@ -221,7 +223,7 @@ sub deploy_schema {
         }
 
         # execute MODIFYs?
-        my @modifies = join "\n", grep / MODIFY/, split /\n/, $diff;
+        my @modifies = grep { length } grep / MODIFY/, split /\n/, $diff;
         if( @modifies > 0 ) {
             print '=' x 100 , " MODIFY: \n";
             print join "\n", '', @modifies, '';
@@ -491,6 +493,11 @@ sub _filter_diff {
 
 sub _ask_me {
     my $self = shift if ref $_[0];
+
+    require Term::ReadKey;
+    # flush keystrokes
+    while( defined( my $key = Term::ReadKey::ReadKey(-1) ) ) {}
+        
     print shift() . "\n";
     print "*** Are you sure [y/N/q]: ";
     unless( (my $yn = <STDIN>) =~ /^y/i ) {

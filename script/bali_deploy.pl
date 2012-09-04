@@ -73,6 +73,7 @@ Options:
   -run                    : Run DB statements interactively or from STDIN
   -quote                  : quote table names
   -drop                   : add drop statements
+  -grep                   : grep a string or re in the generated sql
   -env                    : sets BALI_ENV (local, test, prod, t, etc...)
   -schema                 : schemas to deploy (does not work for migrations)
                                 bali deploy --schema BaliRepo --schema BaliRepoKeys 
@@ -146,6 +147,7 @@ Baseliner::Schema::Baseliner->deploy_schema(
     from            => $args{from}, # from version num
     to              => $args{to},  # to version num
     drop            => exists $args{drop},
+    grep            => $args{grep},
     schema          => $args{schema}
 ) and die pre . "Errors while deploying DB. Aborted\n";
 
