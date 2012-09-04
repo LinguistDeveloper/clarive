@@ -846,7 +846,7 @@
                     }
                 } catch(err) {
                     if( xhr.responseText.indexOf('dhandler') > -1 ) {
-                        Ext.Msg.alert( _("Page not found: %1", url ) + '<br>' + xhr.responseText );
+                        Baseliner.error( _('Error'), _("Page not found: %1", url ) + '<br>' + xhr.responseText );
                     } else {
                        Baseliner.error_parse( err, xhr );
                        if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) {
