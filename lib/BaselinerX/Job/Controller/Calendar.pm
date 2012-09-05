@@ -520,7 +520,7 @@ sub merge_calendars {
 
     $where->{bl} = ['*'];
     push @{ $where->{bl} }, $p{bl} if $p{bl};
-    $where->{ns} = $p{ns} if $p{ns}; # [ 'changeman.nature/changeman_batch', '/'  ]
+    $where->{ns} = $p{ns} if $p{ns}; # [ 'xxxx.nature/yyyy', '/'  ]
     _debug "Calendar search: " . _dump $where;
     
     my @cals = DB->BaliCalendar->search(
