@@ -54,14 +54,17 @@ for(my $hh=0; $hh<=24; $hh++) {
 
 </%init>
 (function(){
+    var id_cal = "<% $id_cal %>";
 
     var modify_window = function(cmd) {
         var form = fpanel.getForm();
         //alert( cmd + "=" + form.findField('ven_ini').getValue() );
-        var ini = form.findField('ven_ini').getValue().substring(0,2) + form.findField('ven_ini').getValue().substring(3,5);
-        var fin = form.findField('ven_fin').getValue().substring(0,2) + form.findField('ven_fin').getValue().substring(3,5);
+        var fstart = form.findField('ven_ini').getValue();
+        var fend = form.findField('ven_fin').getValue();
+        var ini = fstart.substring(0,2) + fstart.substring(3,5);
+        var fin = fend.substring(0,2) + fend.substring(3,5);
         if( ini >= fin ) {
-            Ext.Msg.alert("Error", "La hora fin es igual o superior a la hora de inicio (" +ini+ " < " +fin+ ")" ); // ">
+            Baseliner.error(_("Error"), _('End time is equal or earlier than the start time ( %1 <= %2 )', fend, fstart) ); 
             return false;
         }
         /* if( cmd=="B" && form.findField('ven_tipo').getValue()=="X" ) {
@@ -76,7 +79,7 @@ for(my $hh=0; $hh<=24; $hh++) {
                 var pan = Ext.get('<% $panel %>');
                 var upd = pan.getUpdater();
                 upd.update( { 
-                    url: '/job/calendar_slots', params: { id_cal: '<% $id_cal %>', panel: '<% $panel %>'  }, scripts: true ,
+                    url: '/job/calendar_slots', params: { id_cal: id_cal, panel: '<% $panel %>'  }, scripts: true ,
                     callback: function(el,success,res,opt){
                         // Eric -- Esto peta y no parece muy importante. No encuentra el método .setTitle
                         // pan.setTitle(_loc('Calendar Windows'));
@@ -88,7 +91,7 @@ for(my $hh=0; $hh<=24; $hh++) {
                 //var upd = Ext.get('<% $panel %>').getUpdater() ;
                 //upd.update( { url: '/job/calendar_slots',  params: { id_cal: '<% $id_cal %>', panel: '<% $panel %>' }, scripts: true });
                 //Ext.get('<% $panel %>').doLayout();
-                Ext.Msg.show({ title: "<% _loc('Failure') %>", msg: action.result.msg, width: 500, buttons: { ok: true } });
+                Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
             }
         });
     }
@@ -140,7 +143,7 @@ for(my $hh=0; $hh<=24; $hh++) {
         ],
         items: [
             {  xtype: 'hidden', name: 'id', value: '<% $id %>' },
-            {  xtype: 'hidden', name: 'id_cal', value: '<% $id_cal %>' },
+            {  xtype: 'hidden', name: 'id_cal', value: id_cal },
             {  xtype: 'hidden', name: 'cmd' },
             {  xtype: 'combo', 
                        name: 'ven_dia', 

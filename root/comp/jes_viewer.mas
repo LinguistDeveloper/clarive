@@ -61,14 +61,14 @@
         '->',
         {   xtype: 'button',
             text: _('Previous'),
-            icon:'static/images/inf/left.gif',
+            icon:'static/images/icons/arrow_left.gif',
             cls: 'x-btn-text-icon',
             handler: function(){
             }
         },
         {   xtype: 'button',
             text: _('Next'),
-            icon:'static/images/inf/right.gif',
+            icon:'static/images/icons/arrow_right.gif',
             cls: 'x-btn-text-icon',
             handler: function(){
             }

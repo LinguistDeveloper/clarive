@@ -143,11 +143,11 @@ sub run {
     } catch {
         _fail shift();
     };
-    _log "RC1=$rc";
-        $rc = 0 unless is_number $rc; # the service may return anything...
-    _log "RC2=$rc";
-        $instance->log->rc( $rc );
-        return $instance->log;
+    _debug "RC1=$rc";
+    $rc = 0 unless is_number $rc; # the service may return anything...
+    _debug "RC2=$rc";
+    $instance->log->rc( $rc );
+    return $instance->log;
 }
 
 

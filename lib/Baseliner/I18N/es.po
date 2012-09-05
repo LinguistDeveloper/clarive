@@ -6,8 +6,23 @@ msgstr ""
 msgid "Progress"
 msgstr "Avance"
 
+msgid "All-f"
+msgstr "Todas"
+
 msgid "progress"
 msgstr "Avance"
+
+msgid "Type: %1"
+msgstr "Tipo: %1"
+
+msgid "End time is equal or earlier than the start time ( %1 <= %2 )"
+msgstr "La hora fin es igual o anterior a la hora inicio ( %1 <= %2 )"
+
+msgid "Baseline: %1"
+msgstr "Entorno: %1"
+
+msgid "Natures: %1"
+msgstr "Naturalezas: %1"
 
 msgid "Advanced"
 msgstr "Avanzado"
