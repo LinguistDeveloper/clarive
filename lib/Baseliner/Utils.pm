@@ -115,14 +115,14 @@ BEGIN {
     #$pattern = File::Spec->catfile($path, '*.[pm]o');
     eval {
         my @patterns;
-        for( map { $_->lib } Baseliner->features->list ) {
-            my $dir = File::Spec->catfile($_, 'Baseliner', 'I18N');
+        for my $dir ( glob "./features/*/lib/Baseliner/I18N" ) {
             next unless -d "$dir";
             $pattern = File::Spec->catfile($dir, '*.[pm]o');
             push @patterns, "Gettext => '$pattern'";
         } 
         $patterns = join',', @patterns;
     };  # may fail when Baseliner is not "use" - ignore then
+    warn $@ if $@;
 }
 
 use Locale::Maketext::Simple (
@@ -244,14 +244,15 @@ sub _loc {
     #return loc( @_ );
     my @args = @_;
     my $context={};
-    for my $level (1..2) {## try to get $c with PadWalker
+    for my $level (2..3) {## try to get $c with PadWalker
         $context = try { peek_my($level); } catch { last }; 
-        last if( $context->{'$c'} && ref ${ $context->{'$c'} } );
+        last if ref $context->{'$c'};
+        #last if( $context->{'$c'} && ref ${ $context->{'$c'} } );
     }
-    if( $context->{'$c'} && ref ${ $context->{'$c'} } ) {
+    if( ref $context->{'$c'} ) {
+        my $c = ${ $context->{'$c'} };
         return try {
-            my $c = ${ $context->{'$c'} };
-            return _loc_decoded(@args) if $c->commandline_mode;
+            return _loc_decoded(@args) if $ENV{BALI_CMD};
             return _loc_decoded(@args) unless defined $c->request;
             if( ref $c->session->{user} ) {
                 $c->languages( $c->session->{user}->languages );
