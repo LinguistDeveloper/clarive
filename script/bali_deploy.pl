@@ -39,7 +39,7 @@ BEGIN {
     $ENV{ DBIC_TRACE }                   = 0;
     $ENV{ CATALYST_CONFIG_LOCAL_SUFFIX } = 't';
     chdir $ENV{BASELINER_HOME} if $ENV{BASELINER_HOME};
-    _load_features_lib();
+    _load_features('lib', use_lib=>1 );
 }
 
 my $t0 = [gettimeofday];
