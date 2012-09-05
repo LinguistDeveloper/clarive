@@ -329,13 +329,9 @@ sub monitor_json : Path('/job/monitor_json') {
                   my $ret;
                   if( $dom eq 'changeset' ) {
                     $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name } catch { $nsid };
-                  } elsif( $dom =~ /changeman/ ) {
-                    $ret = '<img src="/static/images/icons/package_green.gif">&nbsp;' . $nsid;
-                  } elsif( $dom =~ /package/ ) {
-                    $ret = '<img src="/static/images/package.gif">&nbsp;' . $nsid; 
                   } elsif( $dom !~ /nature/ ) {
                     my $icon = $cache_icon{ $dom } // do {
-                        my $m = $c->registry->get('changeman.package')->module;
+                        my $m = $c->registry->get( $dom )->module;
                         $cache_icon{ $dom } = $m->icon;
                     };
                     $ret = $icon 
