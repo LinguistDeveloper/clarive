@@ -24,6 +24,15 @@ msgstr "Ver Stash"
 msgid "Inbox"
 msgstr "Buzón"
 
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Cut"
+msgstr "Cortar"
+
+msgid "Paste"
+msgstr "Pegar"
+
 msgid "Empty"
 msgstr "Vacío"
 
