@@ -277,7 +277,7 @@
                }
            }
            if( value.more=='jes' ) {
-                          ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&jobId=" + rec.data.id_job + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/host.gif'/></a> " ;
+             ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&jobId=" + rec.data.id_job + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/host.gif'/></a> " ;
 //           if( value.more=='jes' ) {
 //               ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
            } else if( value.more=='link'  ) {

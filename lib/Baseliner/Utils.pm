@@ -335,7 +335,6 @@ sub _error {
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
-    # return unless $ENV{BASELINER_DEBUG} || $ENV{BALI_DEBUG} || $ENV{CATALYST_DEBUG};
     return unless Baseliner->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }

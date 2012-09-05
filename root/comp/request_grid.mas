@@ -42,6 +42,7 @@
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
+        baseParams: { limit: 30 },
         id: 'id', 
         url: '/request/list_json',
         fields: fields
@@ -163,7 +164,7 @@
 
     var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( rec.data.item != undefined && rec.data.item != '' ) value = rec.data.item;
-        return "<b>" + value + "</b>";
+        return Baseliner.columnWrap("<b>" + value + "</b>");
         //return String.format( '<div style="margin-top: 5px"><b>{0}</b></div>',value );
     };
 
@@ -198,7 +199,7 @@
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
-                { header: _('Id'), width: 50, dataIndex: 'id', sortable: true },	
+                { header: _('Id'), width: 60, dataIndex: 'id', sortable: true },	
                 { header: _('Request'), width: 300, dataIndex: 'name', sortable: true, renderer: render_type },	
                 { header: '', width: 25, dataIndex: 'status', sortable: true, renderer: render_status_icon },	
                 { header: _('Estado'), width: 100, dataIndex: 'status', sortable: true, renderer: render_status },	
@@ -208,9 +209,9 @@
                 { header: _('Application'), width: 80, dataIndex: 'app', sortable: true },	
                 { header: _('RFC'), width: 80, dataIndex: 'rfc', sortable: true },	
                 { header: _('Requested By'), width: 80, dataIndex: 'requested_by', sortable: true, renderer: Baseliner.render_user_field },
-                { header: _('Requested On'), width: 130, dataIndex: 'requested_on', sortable: true },
+                { header: _('Requested On'), width: 130, dataIndex: 'requested_on', sortable: true, renderer: Baseliner.columnWrap },
                 { header: _('Finished By'), width: 80, dataIndex: 'finished_by', sortable: true, renderer: Baseliner.render_user_field },
-                { header: _('Finished On'), width: 130, dataIndex: 'finished_on', sortable: true }	
+                { header: _('Finished On'), width: 130, dataIndex: 'finished_on', sortable: true, renderer: Baseliner.columnWrap }	
             ],
             autoSizeColumns: true,
             deferredRender:true,

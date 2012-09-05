@@ -2,7 +2,7 @@
     $baselines
 </%args>
 <%doc>
-    job_new.mas - new job creation screen
+    job_new.js - new job creation screen
 </%doc>
 <%perl>
     use Baseliner::Utils;
@@ -73,7 +73,6 @@
         trackMouse: true
     });
 
-
     var job_grid_data = function(params) {
         // turn grid into JSON to post data
         var warn_missing = params!=undefined ? params.warn : false;
@@ -140,8 +139,12 @@
         width: 200
     });
 
-    combo_baseline.on( 'afterrender', function(){
-    });
+    if( default_baseline.length == 0 ) {
+        combo_baseline.on( 'afterrender', function(){
+            var rec = store_baselines.getAt(0);
+            combo_baseline.setValue( rec.get('bl') );
+        });
+    }
 
     var check_no_cal = new Ext.form.Checkbox({
         name: 'check_no_cal',

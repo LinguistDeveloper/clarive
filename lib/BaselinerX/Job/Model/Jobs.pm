@@ -15,13 +15,6 @@ use Class::Date;
 with 'Baseliner::Role::Search';
 with 'Baseliner::Role::Service';
 
-register 'service.doo' => {
-    handler=>sub{
-        _debug( "NONONO" );
-        #_log "888888888888";
-    }
-};
-
 sub search_provider_name { 'Jobs' };
 sub search_provider_type { 'Job' };
 sub search_query {
@@ -222,7 +215,11 @@ sub _create {
     $p{maxstarttime}||=$end;
 
     ## allow the creation of jobs executed outside Baseliner, with older dates
-    my ($starttime, $maxstarttime ) = ( $p{starttime}, $p{maxstarttime} );
+    my ($starttime, $maxstarttime ) = ( $now, $end );
+    ($starttime, $maxstarttime ) = $p{starttime} < $now
+        ? ( $now , $end )
+        : ($p{starttime} , $p{maxstarttime} );
+
     $starttime =  $starttime->strftime('%Y-%m-%d %T');
     $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
 
@@ -240,6 +237,7 @@ sub _create {
             runner       => $p{runner} || $config->{runner},
             username     => $p{username} || $config->{username} || 'internal',
             comments     => $p{comments},
+            job_key      => _md5(),
             ns           => $ns,
             bl           => $bl,
     });
@@ -323,7 +321,7 @@ sub _create {
 
     # now let it run
     # if(  $p{approval}  ) {
-        $log->debug(_loc( 'Exists approval? ' ),data=>_dump  $p{approval});
+    $log->debug(_loc( 'Approval exists? ' ),data=>_dump  $p{approval});
     if ( exists $p{approval}{reason} ) {
         # approval request executed by runner service
         $job->stash_key( approval_needed => $p{approval} );
