@@ -466,6 +466,7 @@
             if( ! ns ) return;
             var nat = nature_hash[ ns ];
             if( !nat ) {
+                nat = {};
                 nat.name = ns;
                 nat.icon = 'nature';
             }
