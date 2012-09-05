@@ -337,6 +337,7 @@ use Try::Tiny;
 sub decrypt {
     my $c = shift;
     require Crypt::Blowfish::Mod;
+
     my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
     die "Error: missing 'decrypt_key' config parameter" unless length $key;
 
