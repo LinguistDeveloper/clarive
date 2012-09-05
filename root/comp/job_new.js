@@ -538,8 +538,6 @@
                 {name: 'text',               mapping: 'text'},
                 {name: 'packages',           mapping: 'packages'},
                 {name: 'subapps',            mapping: 'subapps'},
-                {name: 'job_options',        mapping: 'job_options'},
-                {name: 'job_options_global', mapping: 'job_options_global'},
                 {name: 'inc_id',             mapping: 'inc_id'},
                 {name: 'moreInfo',           mapping: 'moreInfo'}
         ]
