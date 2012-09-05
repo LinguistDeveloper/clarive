@@ -15,6 +15,19 @@
         emptyText: _('<search>')
     });
 
+    var rule_del = function(){
+        var sm = rules_grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            Baseliner.ajaxEval( '/rule/delete', { id_rule: sm.getSelected().data.id }, function(res){
+                if( res.success ) {
+                    rules_store.reload();
+                    Baseliner.message( _('Rule'), res.msg );
+                } else {
+                    Baseliner.error( _('Error'), res.msg );
+                }
+            });
+        }
+    };
     var rule_edit = function(){
         var sm = rules_grid.getSelectionModel();
         if( sm.hasSelection() ) {
@@ -90,7 +103,7 @@
             { xtype: 'button', handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.gif', cls:'x-btn-icon' },
             { xtype:'button', icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
-            { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon' },
+            { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
             { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon' }
         ]
     });
@@ -139,12 +152,34 @@
         //clipboard = 
     };
     var edit_node = function( node ) {
-        var win = new Ext.Window({
-            title: _('Edit'),
-            width: 500,
-            height: 400
+        var key = node.attributes.key;
+        if( ! key ) {
+            Baseliner.error( _('Missing key'), 
+                _("Service '%1' does not contain edit information", node.text) );
+            return;
+        }
+        Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
+            if( res.success ) {
+                var show_win = function(items) {
+                    var win = new Ext.Window({
+                        title: _('Edit'),
+                        items: items,
+                        width: 500,
+                        height: 400
+                    });
+                    win.show();
+                };
+                if( res.form ) {
+                    Baseliner.ajaxEval( res.form, {}, function(comp){
+                        show_win( comp );
+                    });
+                } else {
+                    var comp = new Baseliner.DataViewer({ data: res.config });
+                }
+            } else {
+                Baseliner.error( _('Error'), res.msg );
+            }
         });
-        win.show();
     };
     var rule_flow_show = function( id_rule, name ) {
         var drop_handler = function(e) {

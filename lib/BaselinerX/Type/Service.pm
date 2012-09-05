@@ -13,6 +13,7 @@ has 'name' => ( is=> 'rw', isa=> 'Str' );
 has 'desc' => ( is=> 'rw', isa=> 'Str' );
 has 'handler' => ( is=> 'rw', isa=> 'CodeRef' );
 has 'config' => ( is=> 'rw', isa=> 'Str' );
+has 'form' => ( is=> 'rw', isa=> 'Str', default=>'' );
 has 'logger_class' => ( is=> 'rw', isa=> 'Str', default=>'Baseliner::Core::Logger::Base' );  # class
 has 'logger' => ( is=> 'rw', isa=> 'Any' );
 

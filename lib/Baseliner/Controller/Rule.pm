@@ -53,6 +53,22 @@ sub actions : Local {
     $c->forward("View::JSON");
 }
 
+sub delete : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    try {
+        my $row = DB->BaliRule->find( $p->{id_rule} );
+        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
+        my $name = $row->rule_name;
+        $row->delete;
+        $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 deleted', $name) };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg => $err };
+    };
+    $c->forward("View::JSON");
+}
+
 sub get : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
@@ -114,7 +130,7 @@ sub tree : Local {
 sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my @rules = DB->BaliRule->search->hashref->all;
+    my @rules = DB->BaliRule->search(undef,{ order_by=>{ -asc=>'rule_seq' } })->hashref->all;
     $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
 }
@@ -162,28 +178,17 @@ sub palette : Local {
         children=> [ 
           sort { uc $a->{text} cmp uc $b->{text} }
           map {
-            my $service_name = $_;
-            my $n = $c->registry->get( $service_name );
+            my $service_key = $_;
+            my $n = $c->registry->get( $service_key );
             +{
                 isTarget => \0,
                 leaf=>\1,
+                key => $service_key,
                 palette => \1,
-                text=>$n->{name} // $service_name,
+                text=>$n->{name} // $service_key,
             }
         } @services ]
     };
-    $c->stash->{json} = \@tree;
-    $c->forward("View::JSON");
-}
-
-sub stms_tree : Local {
-    my ($self,$c)=@_;
-    my $p = $c->req->params;
-    my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
-    my @tree = (
-        {  text=>'for x in y', leaf=>\1 }
-    );
-    #my @rules = DB->BaliRule->search->hashref->all;
     $c->stash->{json} = \@tree;
     $c->forward("View::JSON");
 }
@@ -199,8 +204,9 @@ sub stmts_save : Local {
             my ($parent, $stmts) = @_;
             for my $stmt ( _array $stmts ) {
                 my $r = {
-                   id_rule => $id_rule, 
+                   id_rule   => $id_rule, 
                    stmt_text => $stmt->{attributes}{text},
+                   stmt_attr => _dump( $stmt->{attributes} ),
                 };
                 $r->{id_parent} = $parent if defined $parent;
                 my $row = DB->BaliRuleStatement->create( $r );
@@ -229,9 +235,11 @@ sub stmts_load : Local {
         $build_tree = sub {
             my ($parent) = @_;
             my @tree;
-            my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent } )->hashref->all;
+            my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent },
+                { order_by=>{ -asc=>'id' } } )->hashref->all;
             for my $row ( @rows ) {
                 my $n = { text=>$row->{stmt_text} };
+                $n = { %$n, %{ _load( $row->{stmt_attr} ) } } if length $row->{stmt_attr};
                 my @chi = $build_tree->( $row->{id} );
                 if(  @chi ) {
                     $n->{children} = \@chi;
@@ -254,5 +262,34 @@ sub stmts_load : Local {
     $c->forward("View::JSON");
 }
 
+sub config_to_data {
+    my ($self, $config_keys ) = @_;
+
+    my $data = {};
+    for my $config_key ( _array( $config_keys ) ) {
+        $data = { %$data, %{ config_get( $config_key ) || {} } };
+    }
+    return $data;
+}
+
+sub edit_key : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    try {
+        my $key = $p->{key} or _fail 'Missing key parameter';
+        my $r = $c->registry->get( $key ); 
+        _fail _loc "Key %1 not found in registry", $key unless $r;
+        my $form = $r->form;
+        my $config = $r->config;
+        _fail _loc "Service '%1' does not have either a form or a config", $key unless $form || $config;
+        my $config_data = $self->config_to_data( $config );
+        $c->stash->{json} = { success=>\1, msg => 'ok', form=>$form, config=>$config_data };
+    } catch {
+        my $err = shift;
+        _error $err;
+        $c->stash->{json} = { success=>\0, msg => $err };
+    };
+    $c->forward("View::JSON");
+}
 
 1;

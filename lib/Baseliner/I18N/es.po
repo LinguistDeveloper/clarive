@@ -24,6 +24,9 @@ msgstr "Ver Stash"
 msgid "Inbox"
 msgstr "Buzón"
 
+msgid "Filters"
+msgstr "Filtros"
+
 msgid "Copy"
 msgstr "Copiar"
 
