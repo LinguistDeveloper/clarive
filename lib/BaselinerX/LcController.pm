@@ -69,6 +69,13 @@ sub tree_topics_project : Local {
         push @tree,
             {
             text       =>  $_->{topic_project}{title},
+                 calevent => {
+                        mid    => $_->{from_mid},
+                        color => $_->{topic_project}{categories}{color},
+                        title =>  $_->{topic_project}{title},
+                        allDay => \1
+                    },
+                    url  => '/lifecycle/tree_topic_get_files',
             topic_name => {
                 mid             => $_->{from_mid},
                 category_color => $_->{topic_project}{categories}{color},
@@ -80,7 +87,6 @@ sub tree_topics_project : Local {
                 {   text => _loc('Files'),
                     icon => '/static/images/icons/files.gif',
                     leaf => \0,
-                    url  => '/lifecycle/tree_topic_get_files',
                     data => {
                         id_topic     => $_->{from_mid},
                         sw_get_files => \1
