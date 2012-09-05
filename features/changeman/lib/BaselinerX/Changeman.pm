@@ -568,7 +568,6 @@ sub _loc_xml_chm {
 sub execute_cmd {
     my ($self, $bx, $cmd ) = @_;
     my ($RC,$RET)=$bx->execute( $cmd );
-    my $top; 
     my @cal = caller(1);
     my $oper = $cal[3];  # calling sub name 
     if( ref $oper ) {

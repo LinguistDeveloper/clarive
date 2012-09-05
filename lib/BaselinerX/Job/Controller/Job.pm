@@ -6,6 +6,7 @@ use Baseliner::Utils;
 use DateTime;
 use JSON::XS;
 use JavaScript::Dumper;
+use Baseliner::Core::Namespace;
 use Try::Tiny;
 use utf8;
 
@@ -38,6 +39,9 @@ sub job_create : Path('/job/create')  {
          grep { -e $_ } map { Path::Class::dir( $_->path, 'root', 'include', 'job_new') }
                 @features_list 
     ];
+    # rgo: new stuff, untested in bde:
+    # $c->stash->{action} = 'action.job.create';
+    # $c->forward('/baseline/load_baselines_for_action');
 
     $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
     push my @baselines, $c->model('Permissions')->user_baselines_for_action(username=>$c->username, action=>'action.job.create');
@@ -77,11 +81,6 @@ sub job_items_json : Path('/job/items/json') {
                 $n->{why_not} = _loc('Unverified');
             }
         }
-        my ($job_options, $job_options_global);
-        if($n->does('Baseliner::Role::Namespace::JobOptions')) {
-            $job_options=$n->job_options( job_type=>$p->{job_type}, bl=>$p->{bl} );
-            $job_options_global=$n->job_options_global( job_type=>$p->{job_type}, bl=>$p->{bl} );
-            }
 
         my $packages_text;
         my $package_join = "<img src=\"static/images/package.gif\"/>";
@@ -104,16 +103,15 @@ sub job_items_json : Path('/job/items/json') {
             subapps            => $n->{subapps},
             inc_id             => exists $n->{inc_id} ? $n->{inc_id} : q{},
             ns                 => $n->ns, 
-            job_options        => $job_options,
-            job_options_global => $job_options_global,
-            moreInfo           => exists $n->{moreInfo} ? $n->{moreInfo} : q{},
             user               => $n->user,
             service            => $n->service,
             text               => do { my $a = $n->ns_info; Encode::from_to($a, 'utf8', 'iso-8859-1'); $a },
+            more_info          => $n->more_info,  # TODO which one?
+            moreInfo           => exists $n->{moreInfo} ? $n->{moreInfo} : q{},
             date               => $n->date,
             can_job            => $can_job,
-            recordCls          => $can_job ? q{} : 'cannot-job',
-            why_not            => $can_job ? q{} : _loc($n->why_not),
+            recordCls          => $can_job ? '' : 'cannot-job',
+            why_not            => $can_job ? '' : _loc($n->why_not),
             data               => $n->ns_data
           };
     }
@@ -317,6 +315,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     #foreach my $r ( _array $results->{data} ) {
     _debug "Looping start...";
+    my %cache_icon;
     for my $r ( $rs_paged->hashref->all ) {
         my $step = _loc( $r->{step} );
         my $status = _loc( $r->{status} );
@@ -324,12 +323,26 @@ sub monitor_json : Path('/job/monitor_json') {
         my %app;
         my @items = _array $job_items{ $r->{id} };
         my $contents = @items ? [
-              map {
+              grep { defined } map {
                   $app{ $_->{application} }=() if defined $_->{application};
-                  my ($type,$name) = ns_split( $_->{item} );
-                  $type eq 'harvest.package'
-                    ? '<img src="/static/images/package.gif">&nbsp;' . $name 
-                    : '<img src="/static/images/icons/package_green.gif">&nbsp;' . $name if $type =~ m{.*\.package$} 
+                  my ( $dom,$nsid) = ns_split( $_->{item} );
+                  my $ret;
+                  if( $dom eq 'changeset' ) {
+                    $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name } catch { $nsid };
+                  } elsif( $dom =~ /changeman/ ) {
+                    $ret = '<img src="/static/images/icons/package_green.gif">&nbsp;' . $nsid;
+                  } elsif( $dom =~ /package/ ) {
+                    $ret = '<img src="/static/images/package.gif">&nbsp;' . $nsid; 
+                  } elsif( $dom !~ /nature/ ) {
+                    my $icon = $cache_icon{ $dom } // do {
+                        my $m = $c->registry->get('changeman.package')->module;
+                        $cache_icon{ $dom } = $m->icon;
+                    };
+                    $ret = $icon 
+                          ? qq{<img src="$icon">&nbsp;$nsid}
+                          : $nsid;
+                  }
+                  $ret;
               } @items
           ] : [];
         my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
@@ -639,8 +652,10 @@ sub monitor : Path('/job/monitor') {
     $c->languages( ['es'] );
     my $config = $c->registry->get( 'config.job' );
     $c->forward('/permissions/load_user_actions');
+    if($dashboard){
+        $c->stash->{query_id} = $c->stash->{jobs};
+    }
 
-    # Filtros de job BdE
     $c->stash->{natures_json}    = $self->natures_json;
     $c->stash->{job_states_json} = $self->job_states_json;
     $c->stash->{envs_json}       = $self->envs_json;

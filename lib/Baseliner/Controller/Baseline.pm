@@ -1,9 +1,12 @@
 package Baseliner::Controller::Baseline;
 use Baseliner::Plug;
+use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
 
 use Baseliner::Utils;
 use Baseliner::Core::Baseline;
+use utf8;
+use v5.10;
 
 register 'menu.admin.core.bl' => { label => _loc('List all Baselines'), url=>'/core/baselines', title=>_loc('Baselines')  };
 register 'menu.admin.baseline' => { label => _loc('Baselines'), url_comp=>'/baseline/grid', title=>_loc('Baselines')  };

@@ -386,6 +386,7 @@ sub status_by_key {
         template => 'email/action.html',
         vars     => {
             observaciones => $p{wiki_text},
+            items         => $itemname,
             reason        => $request->data_hash->{reason},
             requested_by  => $request->requested_by,
             realname      => $realname,
