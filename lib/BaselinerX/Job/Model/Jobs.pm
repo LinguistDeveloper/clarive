@@ -323,6 +323,7 @@ sub _create {
 
     # now let it run
     # if(  $p{approval}  ) {
+        $log->debug(_loc( 'Exists approval? ' ),data=>_dump  $p{approval});
     if ( exists $p{approval}{reason} ) {
         # approval request executed by runner service
         $job->stash_key( approval_needed => $p{approval} );

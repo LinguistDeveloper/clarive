@@ -55,7 +55,7 @@ if [ "$1" = "start" ]; then
         shift
     fi
     if [ -e $PIDFILE ]; then
-        FILE_PID=`cat $PIDFILE`
+        FILE_PID=`cat $PIDFILE 2>/dev/null`
         kill -0 $FILE_PID 2>/dev/null
         if [ $? = 0 ]; then
                 echo "Server is already running."
@@ -66,7 +66,7 @@ if [ "$1" = "start" ]; then
     fi
 
     # purge old logs
-    rm `find $LOGDIR/bali_web_* -mtime +30` >/dev/null 2>&1
+    rm `find $LOGDIR/bali_web_* -mtime +30 2>/dev/null` >/dev/null 2>&1
     mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
     gzip $LOGFILEOLD 2>/dev/null
     echo "log file: $LOGFILE"
@@ -79,9 +79,12 @@ if [ "$1" = "start" ]; then
     # nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl -f $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     # BASELINER_SERVER=prefork nohup perl $BASELINER_TRACE_MODULE $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     export PARENTPID=$$
-    perl -e 'local$|=1;print "Waiting for server to start on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && ! -e "$ENV{PIDFILE}" && kill 0, $ENV{PARENTPID}){ print "."; sleep 1 }' 2>/dev/null &
-    #WAITING_PID=$!
-    starman --preload-app -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1
+    # perl -e 'local$|=1;print "Waiting for server to start on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && ! -e "$ENV{PIDFILE}" && kill 0, $ENV{PARENTPID}){ print "."; sleep 1 }' 2>/dev/null &
+    nohup starman --preload-app --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 &
+    #  starman --preload-app -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 
+    # plackup -s Starman -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 
+    #  nohup BASELINER_SERVER=prefork bali server --pidfile "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 &
+    perl -e 'local$|=1;print "Waiting for server to start on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && ! -e "$ENV{PIDFILE}" ){ print "."; sleep 1 }' 2>/dev/null 
     echo "done"
     SERVER_PID=`cat "$PIDFILE"`
     echo "Server started with pid $SERVER_PID"
@@ -90,11 +93,12 @@ if [ "$1" = "start" ]; then
     echo ""
 elif [ "$1" = "stop" ]; then
     if [ -e $PIDFILE ]; then
-        SERVER_PID=`cat $PIDFILE`
+        export SERVER_PID=`cat $PIDFILE`
         echo "Server pid: $SERVER_PID"
         kill -s INT $SERVER_PID 2>/dev/null
         if [ $? = 0 ]; then
-                echo "Server stopped."
+                perl -MProc::Exists=pexists -e 'local$|=1;print "Waiting for server to stop on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && pexists( "$ENV{SERVER_PID}") ){ print "."; sleep 1 }' 2>/dev/null 
+                echo "stopped."
         else
                 echo "Server is not running."
         fi

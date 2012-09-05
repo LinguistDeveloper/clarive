@@ -58,7 +58,7 @@ sub execute {
 
    if ($job->{origin} ne 'changeman') {
       foreach my $package (_array $job_stash->{contents}) {  ## Desasociamos los paquetes del pase.
-         my $ns = ns_get( $package->{item} );
+         my $ns = ns_get( $package->{item} ) if defined $package->{provider} ;
          push @pkgs, $package->{item} if $ns->{provider} ne "namespace.changeman.package";
       }
    }
