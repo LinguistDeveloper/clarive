@@ -103,7 +103,7 @@
             {  name: 'type' },
             {  name: 'bl' },
             {  name: 'bl_text' },
-            {  name: 'key' },
+            {  name: 'job_key' },
             {  name: 'starttime' },
             {  name: 'schedtime' },
             {  name: 'last_log' },
@@ -393,8 +393,21 @@
         handler: function(){
             var sm = grid.getSelectionModel();
             var sel = sm.getSelected();
-            if( sel != undefined && sel.data.key != undefined ) {
-                var win = window.open( '/job/log/html/' + sel.data.key  );
+            var win_opener = function( key ) {
+                    var win = window.open( '/job/log/html/' + key );
+                    if( win == null || typeof(win)=='undefined' ) {
+                        Baseliner.error( _('Warning'), _('Your browser is blocking pop-up windows. Turn if off to see the log.') );
+                    }
+            };
+            if( sel != undefined ) {
+                if( sel.data.job_key ) {
+                    win_opener( sel.data.job_key );
+                } else {
+                    Baseliner.ajaxEval('/job/log/gen_job_key', { id_job : sel.data.id }, function( res ) {
+                        if( ! res.success ) { Baseliner.error( _('Error'), res.msg ); return; }
+                        win_opener( res.job_key );
+                    });
+                }
             }
         } 
     });
@@ -640,6 +653,7 @@
         bbar: paging,        
         tbar: is_portlet ? [] : [ 
                 search_field,
+                button_html,
                 // Eric
                 menu_bl, nature_menu_btn, { text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
                 // end

@@ -18,6 +18,9 @@ msgstr "Tipo: %1"
 msgid "End time is equal or earlier than the start time ( %1 <= %2 )"
 msgstr "La hora fin es igual o anterior a la hora inicio ( %1 <= %2 )"
 
+msgid "No HTML page has been generated for this log"
+msgstr "La versión HTML del log no está disponible"
+
 msgid "Baseline: %1"
 msgstr "Entorno: %1"
 
@@ -3662,6 +3665,9 @@ msgstr "No hay datos"
 # root/comp/log.html (84)
 msgid "View Data"
 msgstr "Ver datos"
+
+msgid "Hide Data"
+msgstr "Ocultar datos"
 
 # root/comp/log.html (122)
 msgid "view"

@@ -192,6 +192,22 @@ sub log_rows : Private {
     return ( $job, @rows );
 }
 
+sub gen_job_key : Path('/job/log/gen_job_key') {
+    my ($self,$c ) = @_;
+    my $id_job = $c->req->params->{id_job};
+    my $job = DB->BaliJob->find( $id_job );
+    if( $job ) {
+        if( ! $job->job_key ) {
+            $job->job_key( _md5() );
+            $job->update;
+        }
+        $c->stash->{json} = {  success=>\1, job_key => $job->job_key };
+    } else {
+        $c->stash->{json} = { success=>\0, msg=>_loc('Could not find job id %1', $id_job ) };
+    }
+    $c->forward('View::JSON');
+}
+
 sub log_html : Path('/job/log/html') {
     my ($self,$c, $job_key ) = @_;
     my $p = $c->request->parameters;
