@@ -54,6 +54,17 @@
         return arr;
     };
 
+    function parseToDate(strDate){
+        var dia = parseInt(strDate.substr(0,2),"10");
+        var mes = parseInt(strDate.substr(3,2),"10");
+        var anyo = parseInt(strDate.substr(6,4),"10");
+        return new Date(anyo,mes-1,dia);
+        }
+
+    function parseFromDate(date){
+        return date.getDate() + '/' + (date.getMonth()+1) + '/' + date.getFullYear();
+        }
+
     Ext.QuickTips.init();
     Ext.apply(Ext.QuickTips.getQuickTip(), {
         maxWidth: 600,

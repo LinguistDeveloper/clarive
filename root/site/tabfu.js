@@ -850,8 +850,8 @@
                     } else {
                        Baseliner.error_parse( err, xhr );
                        if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) {
-                            console.log( err );
-                            console.log( xhr );
+                            // console.log( err );
+                            // console.log( xhr );
                        }
                        if( Baseliner.DEBUG ) {
                             Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging
@@ -1301,8 +1301,6 @@ Ext.ux.form.FileUploadField = Ext.extend(Ext.form.TextField,  {
         }
 
         this.fileInput.on('change', function(){
-                                        console.log(v);
-                                        console.log(this.fileInput);
             var v = this.fileInput.dom.value;
             this.setValue(v);
             this.fireEvent('fileselected', this, v);

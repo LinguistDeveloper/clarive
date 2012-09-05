@@ -364,7 +364,7 @@
                                 store.load();
                             },
                             failure: function(fp, o){
-                                console.log(o);
+                                // console.log(o);
                                 Baseliner.error( _('Error in Rename'), o.msg );
                                 win.close();
                                 store.load();

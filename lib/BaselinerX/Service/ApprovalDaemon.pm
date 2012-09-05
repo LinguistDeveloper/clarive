@@ -172,21 +172,25 @@ sub check_approvals {
             } catch {
                 #TODO try-catch, if cannot request, inform the package owner - group of error
                 my $err = shift;
+                #my @users    = users_with_permission 'action.notify.error';
+                my @users = Baseliner->model('Permissions')->list(action => $action, ns => '/', bl => '*');
+
+                my $to = [ _unique(@users) ];
+                
                 _log _loc("Error creating request: %1", $err );
                 _log "Notifying admins that this is not working";	
                 my $subject =_loc("Error creating a request for %1", $name );
                 my $msg = Baseliner->model('Messaging')->notify(
                     subject  => $subject,
                     sender   => 'internal',
-                    to       => { action=>'action.notify.error' },
+                    to       => { users => $to },
                     carrier  => 'email',
                     template => 'email/error.html',
                     vars     => {
-                        status        => _loc('Request Error'),
-                        username      => $username,
-                        subject       => $subject,
                         description   => $err,
-                        template      => "/email/error.html",
+                        status        => _loc('Request Error'),
+                        subject       => $subject,
+                        to            => $to,
                     }
                 );
                 #_throw 'Interrupted but shoudnt';

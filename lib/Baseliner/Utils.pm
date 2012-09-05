@@ -99,7 +99,7 @@ use Exporter::Tidy default => [
     _dbis
     _hook
     _read_password
-    _load_features_lib
+    _load_features
 /];
 
 # setup I18n
@@ -219,7 +219,7 @@ sub _unique {
 sub _load {
     my @args = @_;
     return try {
-        utf8::encode( @_ ) if utf8::valid( @_ );
+        utf8::encode( $_[0] ) if utf8::valid( $_[0] );
         YAML::XS::Load( @args )
     } catch { 
         require YAML::Syck;
@@ -312,7 +312,7 @@ sub _log_me {
         $cl =~ s{^Baseliner}{B};
         my $pid = sprintf('%s', $$);
         my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
-        if( my $cat_log = Baseliner->log ) {
+        if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
             $cat_log->$lev( $msg );
         } else {
             print STDERR $msg , "\n"; 
@@ -335,7 +335,7 @@ sub _error {
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
-    return unless $ENV{BASELINER_DEBUG} || $ENV{BALI_DEBUG} || $ENV{CATALYST_DEBUG};
+    return unless Baseliner->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
 
@@ -1108,15 +1108,23 @@ sub _read_password {
     $pass;
 }
 
-sub _load_features_lib {
+sub _load_features {
+    my $dir = shift;
+    my %p = @_;
     my $features = Path::Class::dir('./features');
+    my @dirs;
     if( -d $features ) {
-        for my $dir ( map { Path::Class::dir( $_, 'lib' ) } $features->children ) {
+        for my $dir ( map { Path::Class::dir( $_, $dir ) } $features->children ) {
             next unless -d $dir;
-            eval "use lib '$dir'";
-            die $@ if $@;
+            push @dirs, $dir;
+            # if its lib, we load it
+            if( $p{use_lib} ) {
+                eval "use lib '$dir'";
+                die $@ if $@;
+            }
         }
     }
+    return @dirs;
 }
 
 1;

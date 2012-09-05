@@ -218,7 +218,7 @@
             button_toggle_activation.setIcon( '/static/images/silk/clock_go.png');
             button_toggle_activation.show();
             button_delete_schedule.show();
-            button_run_schedule.hide();
+            button_run_schedule.show();
             button_kill_schedule.hide();
         } else if ( r.data.status == 'RUNNING' ) {
             button_toggle_activation.hide();

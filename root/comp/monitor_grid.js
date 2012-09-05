@@ -242,7 +242,7 @@
         text: x.text,
         icon: '/static/images/icons/type.' + x.name + '.png',
         handler: function () {
-          alert('Filtrando por tipo ' + x.text);
+          // alert('Filtrando por tipo ' + x.text);
           store.load({
             params: {
               type_filter: x.name
@@ -396,13 +396,14 @@
             Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
                 function(btn){ 
                     if(btn=='yes') {
-                        var conn = new Ext.data.Connection();
-                        conn.request({
-                            url: '/job/submit',
-                            params: { action: 'delete', mode: mode, id_job: sel.data.id },
-                            success: function(resp,opt) { grid.getStore().reload(); },
-                            failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the job.') ); }
-                        }); 
+                        Baseliner.ajaxEval( '/job/submit',  { action: 'delete', mode: mode, id_job: sel.data.id }, function(res){
+                            //console.log( res );
+                            if( res.success ) {
+                                grid.getStore().reload();
+                            } else {
+                                Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
+                            }
+                        });
                     }
                 } );
         }
@@ -587,8 +588,8 @@
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
-                { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: true, renderer: render_nature }, // Eric
-                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: true, renderer: render_subapp }, // Eric
+                { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
+                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, renderer: render_subapp }, // not in DB
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
                 { header: _('Step'), width: 80, dataIndex: 'step', sortable: true , hidden: true },	
