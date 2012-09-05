@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use utf8;
 
 register 'nature.sql' => {name => 'ORACLE',
+                            icon => 'oracle',
                           ns   => 'nature/oracle'};
 
 1;

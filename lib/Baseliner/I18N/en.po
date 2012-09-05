@@ -40,3 +40,6 @@ msgstr "Cancelled"
 
 msgid "DONE"
 msgstr "Finished"
+
+msgid "All-f"
+msgstr "All"

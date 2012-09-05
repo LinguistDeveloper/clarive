@@ -50,6 +50,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
 my $t0 = [ gettimeofday ];
 extends 'Catalyst';
+$DB::deep = 500; # makes the Perl Debugger Happier
 our $VERSION = '5.1.5';
 our $LICENSE = 'GPLv3';
 

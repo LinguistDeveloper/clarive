@@ -3,7 +3,6 @@ use v5.10;
 use Baseliner::Core::Namespace;
 use Baseliner::Plug;
 use Baseliner::Utils;
-use BaselinerX::BdeUtils;    # natures_json...
 use DateTime;
 use JSON::XS;
 use JavaScript::Dumper;
@@ -247,13 +246,18 @@ sub monitor_json : Path('/job/monitor_json') {
     }
 
     # Filter by nature
-    if (exists $p->{current_nature}) {      
-      $where->{'bali_job_items.item'} = $p->{current_nature};
+    if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {      
+      $where->{'bali_job_items.item'} = $p->{filter_nature};
     }
 
     # Filter by environment name:
-    if (exists $p->{env_filter}) {      
-      $where->{bl} = $p->{env_filter};
+    if (exists $p->{filter_bl}) {      
+      $where->{bl} = $p->{filter_bl};
+    }
+
+    # Filter by job_type
+    if (exists $p->{filter_type}) {      
+      $where->{type} = $p->{filter_type};
     }
 
     #dashboard
@@ -338,7 +342,7 @@ sub monitor_json : Path('/job/monitor_json') {
         } _array $job_items{ $r->{id} };
 
         my @natures = _unique map {
-            (ns_split( $_->{item} ))[1];
+            $_->{item}   # the ns name of the nature
         } grep {
             $_->{item} =~ /^nature/
         } _array $job_items{ $r->{id} };
@@ -604,6 +608,32 @@ sub restart : Local {
     $c->forward('View::JSON');
 }
 
+sub natures_json {
+  my @data = sort { uc $a->{name} cmp uc $b->{name} } 
+             map { { key=>$_->{key}, id=>$_->{id}, name => $_->{name}, ns => $_->{ns}, icon => $_->{icon}} }
+             map { Baseliner::Core::Registry->get($_) }
+             Baseliner->registry->starts_with('nature');
+  _encode_json \@data;
+}
+
+sub job_states_json {
+  my @data = map { {name => $_} }
+             sort @{config_get('config.job.states')->{states}};
+  _encode_json \@data;
+}
+
+sub envs_json {
+  my @data =  Baseliner::Core::Baseline->baselines;
+  _encode_json \@data;
+}
+
+sub types_json {
+  my $data = [{name => 'SCM', text => 'Distribuidor'},
+              {name => 'SQA', text => 'SQA'         },
+              {name => 'ALL', text => 'Todos'       }];
+  _encode_json $data;
+}
+
 sub monitor : Path('/job/monitor') {
     my ( $self, $c, $dashboard ) = @_;
     $c->languages( ['es'] );
@@ -611,10 +641,10 @@ sub monitor : Path('/job/monitor') {
     $c->forward('/permissions/load_user_actions');
 
     # Filtros de job BdE
-    $c->stash->{natures_json}    = natures_json;
-    $c->stash->{job_states_json} = job_states_json;
-    $c->stash->{envs_json}       = envs_json;
-    $c->stash->{types_json}      = types_json; # Tipo de elementos en Monitor. SCM|SQA.
+    $c->stash->{natures_json}    = $self->natures_json;
+    $c->stash->{job_states_json} = $self->job_states_json;
+    $c->stash->{envs_json}       = $self->envs_json;
+    $c->stash->{types_json}      = $self->types_json; # Tipo de elementos en Monitor. SCM|SQA.
 
     $c->stash->{template} = '/comp/monitor_grid.js';
 }

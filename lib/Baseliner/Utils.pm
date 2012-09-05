@@ -47,6 +47,7 @@ use Exporter::Tidy default => [
     _parse_template
     _get_options
     _decode_json
+    _encode_json
     _check_parameters
     _mkpath
     _rmpath
@@ -368,6 +369,12 @@ sub _decode_json {
     my $data = shift;
     $data = encode_utf8($data) if is_utf8($data);
     return decode_json($data); 
+}
+
+sub _encode_json {
+    my $data = shift;
+    #$data = encode_utf8($data) if is_utf8($data);
+    return decode_utf8( encode_json($data) ); 
 }
 
 sub _throw {

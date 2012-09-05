@@ -469,7 +469,7 @@ sub user_grants {
     }
     if( $root_user ) {  # no duplicates
         my %grant;
-        $grant{ join(',', values %$_ ) } = $_ for @ret;
+        $grant{ join(',', grep { defined } values %$_ ) } = $_ for @ret;
         @ret = values %grant;
     }
 
