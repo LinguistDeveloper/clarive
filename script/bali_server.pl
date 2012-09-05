@@ -4,13 +4,25 @@
 use FindBin;
 use lib "$FindBin::Bin/../lib"; 
 use Baseliner::Trace;
+use v5.10;
 
-BEGIN {
-    $ENV{CATALYST_SCRIPT_GEN} = 99;
+use strict;
+
+BEGIN { $ENV{CATALYST_SCRIPT_GEN} = 99; }
+
+if( $ENV{BASELINER_PLACK_SERVER} ) {
+    require Plack::Runner;
+
+    say "Plackup start...";
+
+    my $runner = Plack::Runner->new;
+    $runner->{server} = 'Starman';
+    $runner->parse_options(@ARGV);
+    $runner->run;
+} else {
+    require Catalyst::ScriptRunner;
+    Catalyst::ScriptRunner->run('Baseliner', 'Server');
 }
-
-use Catalyst::ScriptRunner;
-Catalyst::ScriptRunner->run('Baseliner', 'Server');
 
 1;
 

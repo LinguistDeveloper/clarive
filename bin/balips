@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 echo "--------------| Dispatcher |-----------"
 ps uwwx | grep perl | grep "ba.*pl" | grep -v bali_server
