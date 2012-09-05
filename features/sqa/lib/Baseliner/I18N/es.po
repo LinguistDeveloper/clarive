@@ -28,7 +28,7 @@ msgid "Qualification"
 msgstr "Indicador Global"
 
 msgid "Violation"
-msgstr "Violación"
+msgstr "Incumplimiento"
 
 msgid "Project"
 msgstr "Aplicación"
@@ -63,6 +63,9 @@ msgstr "Recalcular análisis"
 
 msgid "New analysis"
 msgstr "Nuevo análisis"
+
+msgid "New scheduled analysis"
+msgstr "Nuevo análisis planificado"
 
 msgid "Send Source code"
 msgstr "Enviar código fuente"

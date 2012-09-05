@@ -1,18 +1,10 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
-#
-#	CAM .............................. SCM
-#	Pase ............................. N.TEST0000055933
-#	Fecha de pase .................... 2011/12/22 18:53:14
-#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
-#	Versión del elemento ............. 1
-#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
-
 package BaselinerX::Model::SQA;
 use Moose;
 use Baseliner::Utils;
 use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
+use Class::Date;
 
 BEGIN { extends 'Catalyst::Model' }
 
@@ -951,36 +943,29 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $level $subn
 			mstest     => $mstestResults,
 			junit      => $junitResults
 		);
-		if ( $config->{remove_dir} ) {
-			_log "Removing $dir_pase";
-
-			my $out;
-			( $rc, $out ) = $bx->execute(qq{rmdir /S /Q "$dir_pase"});
-			if ( $rc ne 0 ) {
-				_log "Could not remove $dir_pase.  Remove manually";
-			}
-		}
+		
 		$return = 1;
 	}
 	else {
 		$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
 		$self->write_sqa_error( job_id => $job_id, html => $ret, type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de an&aacute;lisis de agregado.  Consulte con el administrador de SQA' );
-		## Eric @ 20 MAR 2012
-		## Borramos el directorio del pase independientemente del resultado
-		## del RC.
-		if ( $config->{remove_dir} ) {
-			_log "Removing $dir_pase";
 
-			my $out;
-			( $rc, $out ) = $bx->execute(qq{rmdir /S /Q "$dir_pase"});
-			if ( $rc ne 0 ) {
-				_log "Could not remove $dir_pase.  Remove manually";
-			}
-		}
 		$return = 0;
 	}
+    ## Eric @ 20 MAR 2012
+    ## Borramos el directorio del pase independientemente del resultado
+    ## del RC.
+    if ( $config->{remove_dir} ) {
+        _log "Removing $dir_pase";
 
-	$bx->end if ref $bx;
+        my $out;
+        ( $rc, $out ) = $bx->execute(qq{rmdir /S /Q "$dir_pase"});
+        if ( $rc ne 0 ) {
+            _log "Could not remove $dir_pase.  Remove manually";
+        }
+    }
+	
+    $bx->end if ref $bx;
 
 	# Calculamos los agregados
 
@@ -1017,7 +1002,7 @@ sub write_sqa_error {
 	$html =~ s/\n/<br>/g;
 
 	my $row       = Baseliner->model('Baseliner::BaliSqa')->find($job_id);
-	my $hash_data = $row->data;
+	my $hash_data = _load $row->data;
 	my $html_final = "";
 	
 	if ( $type eq 'pre' ) {
@@ -1262,6 +1247,50 @@ sub grab_package_results {    # recupera resultados
 		packages => $packages,
 		links    => $links
 	);
+}
+
+sub request_schedule {
+	my ( $self, %p ) = @_;
+
+	my $config     = Baseliner->model('ConfigStore')->get('config.sqa');
+	my $project    = $p{project};
+	my $subproject = $p{subproject};
+	my $nature     = $p{nature};
+	my $user       = $p{user};
+	my $bl         = $p{bl};
+	my $job_id     = $p{job_id};
+	my $id_prj     = $p{id_prj};
+	my $return     = 1;
+    my $time       = $p{time};
+    
+       my ($Second, $Minute, $Hour, $Day, $Month, $Year, $WeekDay, $DayOfYear, $IsDST) = localtime(time);
+		$Year += 1900;
+		$Month +=1;
+        my ($hora, $minutos) = split ":", $time;
+		
+		my $now= Class::Date->new([$Year,$Month,$Day,$Hour,$Minute]);
+		my $nextDate = Class::Date->new( [$Year,$Month,$Day,$hora, $minutos] );
+        
+        if ( $nextDate < $now ) {
+           $nextDate = $nextDate + "1D";
+        };
+		
+        my $schedule_row = Baseliner->model('Baseliner::BaliSqaPlannedTest')->create(
+            {
+                project     => $project,
+                subapl     => $subproject,
+                nature => $nature,
+                username   => $user,
+                active => '1',
+                comments => 'Planificado desde el portal de SQA',
+                bl => $bl,
+                next_exec => $nextDate,
+                scheduled => $time,
+                id_prj => $id_prj
+            }
+        );
+   
+    return $return;
 }
 
 sub request_analysis {

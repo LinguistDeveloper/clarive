@@ -1,12 +1,3 @@
-#INFORMACIÓN DEL CONTROL DE VERSIONES
-#
-#	CAM .............................. SCM
-#	Pase ............................. N.TEST0000059155
-#	Fecha de pase .................... 2012/02/17 15:48:01
-#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
-#	Versión del elemento ............. 2
-#	Propietario de la version ........ q74613x (Q74613X - ERIC LORENZANA CANALES)
-
 package BaselinerX::Controller::SQA;
 use Baseliner::Plug;
 BEGIN { extends 'Catalyst::Controller' }
@@ -47,6 +38,7 @@ sub grid : Local {
         $c->stash->{action_sqa_subprojectnature} = exists $user_actions{ 'action.sqa.subprojectnature' } ;
         $c->stash->{action_sqa_packages} = exists $user_actions{ 'action.sqa.packages' } ;
         $c->stash->{action_delete_analysis} = exists $user_actions{ 'action.sqa.delete_analysis' } ;
+        $c->stash->{action_schedule_analysis} = exists $user_actions{ 'action.sqa.schedule_analysis' } ;
 
         $config = $c->model( 'ConfigStore' )->get( 'config.sqa', bl => 'TEST', ns => '/' );
         $c->stash->{global_run_sqa_test}          = $config->{run_sqa};
@@ -564,7 +556,10 @@ sub request_analysis : Local {
     my $nature       = $p->{nature};
     my $bl           = $p->{bl};
     my $project_name = $p->{project_name};
+    my $project_id   = $p->{project_id};
     my $job_id       = $p->{project_id};
+    my $schedule     = $p->{schedule};
+    my $time         = $p->{time};
     my $err          = '';
     my $return       = '';
     my $out          = '';
@@ -577,16 +572,30 @@ sub request_analysis : Local {
             if ( $project_name ) {
                 $project = $project_name;
             }
-            ( $return, $out ) = BaselinerX::Model::SQA->request_analysis(
-                job_id     => $job_id,
-                bl         => $bl,
-                project    => $project,
-                subproject => $subproject,
-                nature     => $nature,
-                user       => $user
-            );
-        } else {
-            $err = "The user doesn't have permission to request an analysis";
+            if ( $schedule ) {
+                ( $return, $out ) = BaselinerX::Model::SQA->request_schedule(
+                    job_id     => $job_id,
+                    
+                    bl         => $bl,
+                    project    => $project,
+                    subproject => $subproject,
+                    nature     => $nature,
+                    user       => $user,
+                    time       => $time,
+                    id_prj     => $project_id
+                );
+              } else {
+                 ( $return, $out ) = BaselinerX::Model::SQA->request_analysis(
+                    job_id     => $job_id,
+                    bl         => $bl,
+                    project    => $project,
+                    subproject => $subproject,
+                    nature     => $nature,
+                    user       => $user
+                );       
+              }
+            } else {
+                $err = "The user doesn't have permission to request an analysis";
         }
 
         if ( $return ) {
@@ -1141,6 +1150,43 @@ sub delete_analysis : Local {
     } catch {
         $err = shift;
         $c->stash->{json} = {msg => _loc( "Error running sqa commands: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub subproject_natures : Local {
+    my ( $self, $c ) = @_;
+
+    my @data;
+    my $where = {};
+    
+	$where->{'me.id'} = $c->model( 'Permissions' )->user_projects_with_action(
+	            username => $c->username,
+	            action   => 'action.sqa.view_project'
+	        );
+        my $rs =
+            Baseliner->model( 'Baseliner::BaliSqaPlannedTest' )
+            ->search( $where, {order_by => { -asc => 'project'}} );
+        while ( my $row = $rs->next ) {
+            push @data,
+                {
+	                id     => $row->id,
+	                project     => $row->project,
+	                subapl     => $row->subapl,
+	                nature     => $row->nature,
+	                username     => $row->username,
+	                active     => $row->active,
+	                last_exec     => $row->last_exec,
+	                comments     => $row->comments,
+	                schedule     => $row->schedule,
+	                bl     => $row->bl,
+	                next_exec     => $row->next_exec
+                };
+        }
+    
+    $c->stash->{json} = {
+        totalCount => scalar( @data ),
+        data       => \@data
     };
     $c->forward( 'View::JSON' );
 }

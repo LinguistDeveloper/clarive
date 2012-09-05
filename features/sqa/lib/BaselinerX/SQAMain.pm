@@ -80,6 +80,10 @@ register 'action.sqa.delete_analysis' => {
 	name => "Can delete an analysis row from SQA grid"
 };
 
+register 'action.sqa.schedule_analysis' => {
+	name => "Can create a scheduled analysis"
+};
+
 
 ##Configuración del daemon
 register 'config.sqa.feed' => {
@@ -108,6 +112,14 @@ register 'config.sqa.send_ju' => {
 register 'config.sqa.purge' => {
 	metadata => [
        { id=>'days_to_keep', label=>'Days to keep a package analysis', default => 7 }
+    ]
+};
+
+##Configuración del daemon
+register 'config.sqa.scheduler' => {
+	metadata => [
+       { id=>'frequency', label=>'Frecuencia de revisiones de analisis', default => 600 },
+       { id=>'iterations', label=>'Iteraciones del servicio', default => 100 },
     ]
 };
 

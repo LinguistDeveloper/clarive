@@ -1,11 +1,3 @@
-//INFORMACIÓN DEL CONTROL DE VERSIONES
-//
-//	CAM .............................. SCM
-//	Pase ............................. N.TEST0000054318
-//	Fecha de pase .................... 2011/11/22 13:08:29
-//	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/root/comp/sqa/grid.js
-//	Versión del elemento ............. 2
-//	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 <%args>
 	$action_view_general
 	$action_new_analysis
@@ -19,6 +11,7 @@
 	$action_sqa_subprojectnature
 	$action_sqa_packages
 	$action_delete_analysis
+	$action_schedule_analysis
 	$global_run_sqa_test
 	$global_run_sqa_ante
 	$global_run_sqa_prod
@@ -28,6 +21,14 @@
 	$sqa_url
 	$scm_url
 </%args>
+
+<%perl>
+    use Baseliner::Utils;
+    my $now = DateTime->now;
+    $now->set_time_zone(_tz);
+    my $hm =  $now->strftime('%H:%M');
+</%perl>
+
 (function(){
 	//Cargamos la página de checking para crear la cookie de acceso a la interfaz de producto y no pida login al acceder a los informes
 	//document.all.FrameDownload.src = 'http://wbetest.bde.es/sqamain';
@@ -317,12 +318,12 @@
 		}
     });
     
-	var request_analysis = function(project_name) {
+	var request_analysis = function(project_name, schedule ) {
 		
 		//alert("Estoy en request_analysis");
 
 		Baseliner.ajaxEval( '/sqa/request_analysis', 
-			{ project_id: gId, project_name: project_name, bl: gBl, nature: gNature, project: gProject, subapp: gSubapp }, 
+			{ project_id: gId, project_name: project_name, bl: gBl, nature: gNature, project: gProject, subapp: gSubapp, schedule: schedule, time: gTime }, 
 			function(response) {
 				Baseliner.message( _('SUCCESS'), _('analysis requested') );
 				store.load({params:{type: gridType, limit: ps }});
@@ -368,8 +369,20 @@
 		cls: 'x-btn-text-icon',
 		hidden: true,
 		handler: function () {
-    		new_analysis()
+    		new_analysis( '0' )
     	}
+    });
+% }
+
+% if ( $action_schedule_analysis ) {	
+    var button_new_schedule = new Ext.Toolbar.Button({
+		text: _('New scheduled analysis'),
+		icon:'/static/images/silk/clock.png',
+		cls: 'x-btn-text-icon',
+		hidden: true,
+		handler: function () {
+    		new_analysis( '1' )
+    	} 
     });
 % }
 
@@ -590,11 +603,16 @@
 					button_request_recalc, 
 %}
 % if ( $action_delete_analysis ) {
-	button_delete_analysis,
+					button_delete_analysis,
 %}
 % if ( $action_new_analysis ) {	
 					button_new_analysis,
 %}
+
+% if ( $action_schedule_analysis ) {	
+					button_new_schedule,
+%}
+
 % if ( $action_project_config ) {
 					button_remove_config,
 					button_edit_config,
@@ -716,6 +734,13 @@
 							button_new_analysis.show() ;
 						}
 %}
+% if ( $action_schedule_analysis ) {
+	
+						if ( gridType == 'NAT' ) {
+							button_new_schedule.show() ;
+						}
+%}
+
 % if ( $action_delete_analysis) {
 						if ( response.permissions.delete_analysis == 0 ) {
 							button_delete_analysis.hide();
@@ -924,10 +949,11 @@
 
 	var cnt;
 	var project_id;
-	
-	var new_analysis = function() {
+    var gTime;
+    	
+	var new_analysis = function( schedule ) {
 
-		var bl_store = new Ext.data.SimpleStore({
+        var bl_store = new Ext.data.SimpleStore({
 			fields: ['bl_text'],
 			data: [ ['DESA'],['TEST'], ['ANTE'], ['PROD'] ]
 		});
@@ -1051,6 +1077,24 @@
 			minChars: 1,
 			typeAhead: false
 		});
+		
+        var time_text = new Ext.ux.form.Spinner({
+            name: 'time',
+            format : "H:i",
+            fieldLabel: _('Time'),
+            allowBlank: false,
+            hidden: true,
+            disabled: false,
+            value: '<% $hm %>',
+            editable: true,
+            width: 160,
+            labelWidth: 250,
+            strategy: new Ext.ux.form.Spinner.TimeStrategy()
+        });
+
+        if ( schedule == '1' ) { 
+            time_text.show();
+        };
 
 		var new_analysis_form = new Ext.FormPanel({
 			frame: true,
@@ -1064,6 +1108,7 @@
                         var subapp = nature_combo.getValue();
                         var nature = nature_combo.getRawValue();
                         subapp = subapp.replace('(' + nature + ')','');
+                        var time = time_text.getValue();
 
 						if( bl == undefined || bl == '' ) {
 							alert (_("Select a baseline"));
@@ -1085,7 +1130,10 @@
 								gSubapp = project;
 							}
 							gBl = bl;
-							projects_check();
+                            if ( schedule == '1' ) {
+                                gTime = time;
+                            };
+							projects_check( schedule );
 						}
                     }
                 },
@@ -1094,7 +1142,12 @@
                     handler: function(){ win.close(); }
                 }
             ],
-			items: [ bl_combo, project_combo, subproject_combo, nature_combo ]
+			items: [ bl_combo, 
+                     project_combo, 
+                     subproject_combo, 
+                     nature_combo,
+                     time_text
+                   ]
 		});
 		var win = new Ext.Window({
 			layout: 'fit', 
@@ -1108,8 +1161,8 @@
 	
 	
 	
-	var projects_check = function() {
-			
+	var projects_check = function( schedule ) {
+
 			var store_projects = new Ext.data.JsonStore({ 
 				root: 'data' ,
 				remoteSort: true,
@@ -1143,7 +1196,7 @@
 					var miProject;
 					store_projects.each( function(record) { miProject=record.data.project; });
 					//alert(miProject);
-					request_analysis( miProject );
+					request_analysis( miProject, schedule );
 				}
 				else {
 					var rel_combo = new Ext.form.ComboBox({
@@ -1174,7 +1227,7 @@
 									}
 									//alert( project_name );
 									win.close();
-									request_analysis( project_name );
+									request_analysis( project_name, schedule );
 			                    }
 			                },
 			                {
@@ -1289,6 +1342,9 @@
 % if ( $action_new_analysis ) {
 			button_new_analysis.show();
 %}
+% if ( $action_schedule_analysis ) {
+			button_new_schedule.show();
+%}
 
 			gridType = 'NAT';
 			 
@@ -1386,6 +1442,9 @@
 %}
 % if ( $action_new_analysis ) {
 			button_new_analysis.hide();
+%}
+% if ( $action_schedule_analysis ) {
+	button_new_schedule.hide();
 %}
 % if ( $action_request_analysis ) {
 			button_request_analysis.hide();

@@ -104,6 +104,19 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 5 },
   "bl",
   { data_type => "varchar2", is_nullable => 1, size => 4 },
+  "next_exec",
+  {
+    data_type   => "datetime",
+    is_nullable => 1,
+    original    => { data_type => "date" },
+  },
+  "id_prj",
+  {
+    data_type => "numeric",
+    is_nullable => 1,
+    original => { data_type => "number" },
+    size => 126,
+  },
 );
 __PACKAGE__->set_primary_key("id");
 
