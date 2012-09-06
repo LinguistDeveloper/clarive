@@ -189,10 +189,10 @@
             var attr1 = n1.attributes;
             var attr2 = n2.attributes;
             if( attr1.palette ) {
-                var copy = new Ext.tree.TreeNode( Ext.apply({}, attr1) );
                 if( attr1.holds_children ) {
-                    copy.leaf = false;
+                    attr1.leaf = false;
                 } 
+                var copy = new Ext.tree.TreeNode( Ext.apply({}, attr1) );
                 copy.attributes.palette = false;
                 e.dropNode = copy;
             }
@@ -242,6 +242,7 @@
             //stripeRows: true,
             enableSort: true,
             enableDD: true,
+            ddScroll: true,
             loader: rule_tree_loader,
             listeners: {
                 beforenodedrop: { fn: drop_handler },
@@ -251,7 +252,7 @@
             tbar: [ 
                 { xtype:'button', text: _('Save'), handler: rule_save }
             ],
-            root: { nodeType: 'async', text: _('Start'), draggable: false, id: 'root', expanded: true },
+            root: { text: _('Start'), draggable: false, id: 'root', expanded: true },
         });
         var tab = tabpanel.add( rule_tree ); 
         tabpanel.setActiveTab( tab );

@@ -153,10 +153,10 @@ sub palette : Local {
     
     my $if_icon = '/static/images/icons/if.gif';
     my @ifs = (
-        { text => _loc('if var'),  leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1,  },
-        { text => _loc('if user'), leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
-        { text => _loc('if role'), leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
-        { text => _loc('if project'), leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
+        { text => _loc('if var'),  statement=>'if_var', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1,  },
+        { text => _loc('if user'), statement=>'if_user', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
+        { text => _loc('if role'), statement=>'if_role', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
+        { text => _loc('if project'), statement=>'if_project', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     );
     push @tree, {
         icon     => '/static/images/icons/if.gif',
@@ -203,6 +203,7 @@ sub stmts_save : Local {
         $flatten_tree = sub {
             my ($parent, $stmts) = @_;
             for my $stmt ( _array $stmts ) {
+                delete $stmt->{attributes}{loader};
                 my $r = {
                    id_rule   => $id_rule, 
                    stmt_text => $stmt->{attributes}{text},
@@ -235,24 +236,31 @@ sub stmts_load : Local {
         $build_tree = sub {
             my ($parent) = @_;
             my @tree;
+            # TODO run query just one and work with a hash ->hash_for( id_parent )
             my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent },
                 { order_by=>{ -asc=>'id' } } )->hashref->all;
             for my $row ( @rows ) {
                 my $n = { text=>$row->{stmt_text} };
-                $n = { %$n, %{ _load( $row->{stmt_attr} ) } } if length $row->{stmt_attr};
+                $row->{stmt_attr} = _load( $row->{stmt_attr} );
+                $n = { %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
                 my @chi = $build_tree->( $row->{id} );
                 if(  @chi ) {
                     $n->{children} = \@chi;
                     $n->{leaf} = \0;
                     $n->{expanded} = \1;
-                } else {
-                    $n->{leaf} = \1;
+                } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
+                    $n->{children} = []; 
+                    $n->{expanded} = \1;
                 }
+                delete $n->{loader};  
+                delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
+                _log $n;
                 push @tree, $n;
             }
             return @tree;
         };
         my @tree = $build_tree->( undef );
+        # $c->stash->{json} = [{ text=>_loc('Start'), leaf=>\0, children=>\@tree }];
         $c->stash->{json} = \@tree;
     } catch {
         my $err = shift;
