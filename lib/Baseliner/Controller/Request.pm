@@ -8,7 +8,15 @@ use JSON::XS;
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.request.manage' => { name => 'Manage Requests' };
-register 'menu.job.request' => { label => 'Approvals', url_comp => '/request/main', title=>'Approvals', icon=>'/static/images/drop-yes.gif' }; #actions=>['action.approve.item','action.approve.job','action.approve.package'] };
+
+register 'action.job.view_job_approvals' => {name => 'Can view job approvals'};
+
+register 'menu.job.request' => {label    => 'Approvals',
+                                url_comp => '/request/main',
+                                title    => 'Approvals',
+                                icon     => '/static/images/drop-yes.gif',
+                              # actions  => ['action.approve.item', 'action.approve.job', 'action.approve.package'],
+                                action   => 'action.job.view_job_approvals'};
 
 sub reject : Local : Args(1) {
     my ( $self, $c, $key ) = @_;
@@ -140,10 +148,11 @@ sub list_json : Path('/request/list_json') {
         my $list = $c->model('Request')->list(
                 pending =>$p->{all} ? 0 : 1,
                 action  =>$p->{manage} ? '' : [ $c->model('Permissions')->list( username=>$username, ns=>"any" ) ],
-                project =>$p->{manage} ? '' : [ $c->model('Permissions')->user_namespaces( $username ) ],
+                project =>$p->{manage} ? '' : [ $c->model('Permissions')->user_projects( username=>$username ) ],
                 start   =>$start, limit=>999999,
                 query   =>'',
-                sort    =>"$sort $dir",
+                sort    =>$sort,
+                dir     => $dir,
                 filter  =>$filter,
         );
         my $namespaces = $c->model('Namespaces');

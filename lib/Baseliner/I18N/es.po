@@ -6,8 +6,26 @@ msgstr ""
 msgid "Progress"
 msgstr "Avance"
 
+msgid "All-f"
+msgstr "Todas"
+
 msgid "progress"
 msgstr "Avance"
+
+msgid "Type: %1"
+msgstr "Tipo: %1"
+
+msgid "End time is equal or earlier than the start time ( %1 <= %2 )"
+msgstr "La hora fin es igual o anterior a la hora inicio ( %1 <= %2 )"
+
+msgid "No HTML page has been generated for this log"
+msgstr "La versión HTML del log no está disponible"
+
+msgid "Baseline: %1"
+msgstr "Entorno: %1"
+
+msgid "Natures: %1"
+msgstr "Naturalezas: %1"
 
 msgid "Advanced"
 msgstr "Avanzado"
@@ -2135,10 +2153,6 @@ msgstr "Error guardando datos de configuración"
 msgid "Config data exported"
 msgstr "Datos de configuración exportados"
 
-# lib/BaselinerX/Job/Controller/Job.pm (578)
-msgid "Error creating Changeman Job:<br>%1"
-msgstr "Error creando pase Changeman<br>%1"
-
 # root/comp/scheduler_grid.js (57)
 msgid "New task"
 msgstr "Nueva"
@@ -3654,6 +3668,9 @@ msgstr "No hay datos"
 # root/comp/log.html (84)
 msgid "View Data"
 msgstr "Ver datos"
+
+msgid "Hide Data"
+msgstr "Ocultar datos"
 
 # root/comp/log.html (122)
 msgid "view"

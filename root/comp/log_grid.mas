@@ -18,7 +18,7 @@
         if( params == undefined ) params={};
         if( params.anim == undefined ) params.anim='f';
         params.callback = function(){
-            //Baseliner.hideLoadingMaskFade(grid.getEl());
+            Baseliner.hideLoadingMaskFade(grid.getEl());
             if( params.anim == 'f' ) 
                 grid.getGridEl().fadeIn({ duration: .1 });
             if( params.anim == 'r' ) 
@@ -277,7 +277,9 @@
                }
            }
            if( value.more=='jes' ) {
-               ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+             ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&jobId=" + rec.data.id_job + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/host.gif'/></a> " ;
+//           if( value.more=='jes' ) {
+//               ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
            } else if( value.more=='link'  ) {
                ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", rec.data.data );
            } else if( value.more!='' && value.more!=undefined && value.data ) {
@@ -358,10 +360,19 @@
             var par = '';
             par += '&job_exec=' + job_exec;
             var hash = current_hash();
+            var win_opener = function( key ) {
+                    var win = window.open( '/job/log/html/' + key );
+                    if( win == null || typeof(win)=='undefined' ) {
+                        Baseliner.error( _('Warning'), _('Your browser is blocking pop-up windows. Turn if off to see the log.') );
+                    }
+            };
             if( hash != undefined ) {
-                var win = window.open( '/job/log/html/' + hash + '?' + par  );
+                win_opener( hash + '?' + par  );
             } else {
-                Baseliner.message( _('Error'), _('Html page has not been generated for this log') );
+                Baseliner.ajaxEval('/job/log/gen_job_key', { id_job : id_job }, function( res ) {
+                    if( ! res.success ) { Baseliner.error( _('Error'), res.msg ); return; }
+                    win_opener( res.job_key + '?' + par);
+                });
             }
         } 
     });
@@ -414,7 +425,8 @@
                     forceFit: true
             },
             selModel: row_sel, 
-            loadMask:'true',
+            loadMask: true,
+            wait: _('Loading...'),
             columns: [
                 { header: _('Job'), width: 120, dataIndex: 'job', sortable: true, renderer: render_job_exec },   
                 { header: _('Step'), width: 60, dataIndex: 'step', sortable: true },
@@ -526,8 +538,7 @@
             job_exec = store.baseParams.job_exec || job_exec;
             menu_exec_review();
         }
-    }); 
-    
+    });   
     
     // Yellow row selection
     row_sel.on('rowselect', function(row, index, rec) {
@@ -539,8 +550,9 @@
 
 
     var first_time = true;
-    grid.on('show', function(){
+    grid.on('activate', function(){
         if( first_time ) {
+            Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
             first_time = false;
             if( annotate_now ) {
                 annotation();

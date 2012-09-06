@@ -103,7 +103,7 @@
             {  name: 'type' },
             {  name: 'bl' },
             {  name: 'bl_text' },
-            {  name: 'key' },
+            {  name: 'job_key' },
             {  name: 'starttime' },
             {  name: 'schedtime' },
             {  name: 'last_log' },
@@ -131,8 +131,14 @@
     );
 
     // Eric
-    // Filtro por naturaleza
+
+    // Nature Filters
+
     var natures = <% $natures_json %>;
+    var nature_hash = {}; // this is used by the render_nature
+    Ext.each( natures, function(nat) {
+        nature_hash[ nat.ns ] = nat; 
+    });
     var nature_menu = natures.map(function (x) {
       // Por defecto siempre se van a mostrar en uppercase, pero tampoco está de más filtrar un poco esto.
       var nature_name = x.name == 'ZOS'      ? 'z/OS' 
@@ -142,37 +148,33 @@
                       ;
       return {
         text: nature_name,
-        icon: '/static/images/' + x.icon + '.png',
+        icon: '/static/images/nature/' + x.icon + '.png',
         handler: function (item) { 
-            item.parentMenu.setText( '>> ' + nature_name );
-          // alert("Filtrando por naturaleza " + nature_name);
-          store.load({
-            params: {
-              current_nature: x.key
-            }
-          });
+          item.parentMenu.ownerCt.setText( '<b>' + _('Natures: %1',  nature_name) + '</b>' );
+          store.baseParams.filter_nature = x.ns ;
+          store.reload();
           return;
         }
       }
     });
     nature_menu.push({
-      icon: '/static/images/nature.all.png',
-      text: 'TODAS',
-      handler: function () {
-        // alert("Mostrando todas las naturalezas.");
-        store.load({
-          params: {
-            current_nature: 'ALL'
-          }
-        });
+      icon: '/static/images/icons/all.png',
+      text: _('All-f'),
+      handler: function (item) {
+        item.parentMenu.ownerCt.setText( _('Nature') );
+        delete store.baseParams.filter_nature;
+        store.reload();
       }
     });
-    var naturalezas = new Ext.Button({
-      text: 'Naturalezas',
-      icon: '/static/images/reload.gif',
+   
+    var nature_menu_btn = new Ext.Button({
+      text: _('Natures'),
+      icon: '/static/images/icons/nature.gif',
       menu: nature_menu
     });
-    // Filtro por estado del job
+
+    // Job Status Filter
+
     var job_states_json = <% $job_states_json %>;
     var job_states_check_state = {
       CANCELLED: true,
@@ -218,42 +220,66 @@
     var menu_job_states = new Ext.menu.Menu({
       items: item_job_states
     });
-    // Filtro por entorno...
+
+    // Baseline Filter
+
     var menu_list = <%$envs_json%>.map(function (x) {
       return {
-        text: x.name,
-        icon: '/static/images/icons/' + x.name + '.png',
-        handler: function () {
-          store.load({
-            params: {
-              env_filter: x.name
-            }
-          });
+        text: String.format('{0}: {1}', x.bl, x.name ),
+        icon: '/static/images/icons/baseline.gif',
+        handler: function (item) {
+          item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
+          store.baseParams.filter_bl = x.bl;
+          store.reload();
         }
       };
     });
-    var menu_env = new Ext.Button({
-      text: "Entorno",
-      menu: menu_list
-    });
-    // Ahora ponemos un filtro por tipo... de momento chapu y hard-coded.
-    var menu_filter_type_list = <%$types_json%>.map(function (x) {
-      return {
-        text: x.text,
-        icon: '/static/images/icons/type.' + x.name + '.png',
-        handler: function () {
-          alert('Filtrando por tipo ' + x.text);
-          store.load({
-            params: {
-              type_filter: x.name
-            }
-          });
-        }
+    menu_list.push({
+      icon: '/static/images/icons/all.png',
+      text: _('All'),
+      handler: function (item) {
+        item.parentMenu.ownerCt.setText( _('Baseline') );
+        delete store.baseParams.filter_bl;
+        store.reload();
       }
     });
+    var menu_bl = new Ext.Button({
+      text: _("Baseline"),
+      icon: '/static/images/icons/baseline.gif',
+      menu: menu_list
+    });
+
+    // Job Type filter
+
     var menu_type_filter = new Ext.Button({
-      text: 'Tipo',
-      menu: menu_filter_type_list
+      text: _('Type'),
+      menu: [
+          {
+            text: _('promote'),
+            icon: '/static/images/icons/arrow_right.gif',
+            handler: function (item) {
+               item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('promote')) + '</b>' );
+               store.baseParams.filter_type = 'promote';
+               store.reload();
+            }
+          },{
+            text: _('demote'),
+            icon: '/static/images/icons/arrow_left.gif',
+            handler: function (item) {
+               item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('demote')) + '</b>' );
+               store.baseParams.filter_type = 'demote';
+               store.reload();
+            }
+          },{
+            text: _('All'),
+            icon: '/static/images/icons/all.png',
+            handler: function (item) {
+               item.parentMenu.ownerCt.setText( _('Type') );
+               delete store.baseParams.filter_type;
+               store.reload();
+            }
+          }
+      ]
     });
     // end
 
@@ -367,8 +393,21 @@
         handler: function(){
             var sm = grid.getSelectionModel();
             var sel = sm.getSelected();
-            if( sel != undefined && sel.data.key != undefined ) {
-                var win = window.open( '/job/log/html/' + sel.data.key  );
+            var win_opener = function( key ) {
+                    var win = window.open( '/job/log/html/' + key );
+                    if( win == null || typeof(win)=='undefined' ) {
+                        Baseliner.error( _('Warning'), _('Your browser is blocking pop-up windows. Turn if off to see the log.') );
+                    }
+            };
+            if( sel != undefined ) {
+                if( sel.data.job_key ) {
+                    win_opener( sel.data.job_key );
+                } else {
+                    Baseliner.ajaxEval('/job/log/gen_job_key', { id_job : sel.data.id }, function( res ) {
+                        if( ! res.success ) { Baseliner.error( _('Error'), res.msg ); return; }
+                        win_opener( res.job_key );
+                    });
+                }
             }
         } 
     });
@@ -396,13 +435,14 @@
             Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
                 function(btn){ 
                     if(btn=='yes') {
-                        var conn = new Ext.data.Connection();
-                        conn.request({
-                            url: '/job/submit',
-                            params: { action: 'delete', mode: mode, id_job: sel.data.id },
-                            success: function(resp,opt) { grid.getStore().reload(); },
-                            failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the job.') ); }
-                        }); 
+                        Baseliner.ajaxEval( '/job/submit',  { action: 'delete', mode: mode, id_job: sel.data.id }, function(res){
+                            //console.log( res );
+                            if( res.success ) {
+                                grid.getStore().reload();
+                            } else {
+                                Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
+                            }
+                        });
                     }
                 } );
         }
@@ -422,10 +462,15 @@
     var render_nature = function(v,meta,rec,rowIndex,colIndex,store) {
         if( ! v ) return '' ;
         var ret = new Array();
-        Ext.each( v, function( r ) {
-            if( ! r ) return;
+        Ext.each( v, function( ns ) {
+            if( ! ns ) return;
+            var nat = nature_hash[ ns ];
+            if( !nat ) {
+                nat.name = ns;
+                nat.icon = 'nature';
+            }
             ret.push( 
-                String.format('<div style="height:20px;"><img style="float:left" src="/static/images/icons/nature/{0}.png" />&nbsp;{1}</div>', r, r.toUpperCase() )
+                String.format('<div style="height:20px;"><img style="float:left" src="/static/images/nature/{0}.png" />&nbsp;{1}</div>', nat.icon, nat.name )
             );
         });
         return ret.join('');
@@ -587,8 +632,8 @@
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
-                { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: true, renderer: render_nature }, // Eric
-                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: true, renderer: render_subapp }, // Eric
+                { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
+                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, renderer: render_subapp }, // not in DB
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
                 { header: _('Step'), width: 80, dataIndex: 'step', sortable: true , hidden: true },	
@@ -606,10 +651,11 @@
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }
             ],
         bbar: paging,        
-        tbar: is_portlet ? [] : [ _('Search') + ': ', ' ',
+        tbar: is_portlet ? [] : [ 
                 search_field,
+                button_html,
                 // Eric
-                naturalezas, { text: 'Estado', menu: menu_job_states }, menu_env, menu_type_filter, '-',
+                menu_bl, nature_menu_btn, { text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({

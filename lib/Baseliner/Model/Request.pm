@@ -385,14 +385,15 @@ sub status_by_key {
         carrier  => 'email',
         template => 'email/action.html',
         vars     => {
+            observaciones => $p{wiki_text},
             items         => $itemname,
             reason        => $request->data_hash->{reason},
             requested_by  => $request->requested_by,
             realname      => $realname,
             status        => $status,
-            username      => $p{username},
-            observaciones => $p{wiki_text},
+            subject       => "Estado de la aprobación del item $itemname: <b>$status</b>",
             template      => "/email/action.html",
+            username      => $p{username},
         }
     );
 

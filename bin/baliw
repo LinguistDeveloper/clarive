@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 if [ "$BASELINER_HOME" != "" ]; then
     cd $BASELINER_HOME

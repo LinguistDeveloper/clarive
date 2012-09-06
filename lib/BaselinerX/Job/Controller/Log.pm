@@ -111,7 +111,7 @@ sub log_rows : Private {
                 };
     #TODO use the blob 'data' somehow .. change to clob?
 
-    my $where = {};	
+    $where = {};	
     if( $query ) {
         #$where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
         $where = query_sql_build( query=>$query, fields=>{
@@ -154,7 +154,8 @@ sub log_rows : Private {
     my $qre = qr/\.\w+$/;
     while( my $r = $rs->next ) {
         my $more = $r->more;
-        my $data = $p->{with_data} || $more eq 'link'
+        my $data = $p->{with_data}
+            || ( defined $more && $more eq 'link' )
             ? _html_escape( uncompress( $r->data ) || $r->data ) : '';
         #next if( $query && !query_array($query, $r->job->name, $r->get_column('timestamp'), $r->text, $r->provider, $r->lev, $r->data_name, $data, $r->ns ));
         #if( $filter ) { next if defined($filter->{$r->lev}) && !$filter->{$r->lev}; }
@@ -189,6 +190,22 @@ sub log_rows : Private {
           } #if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     return ( $job, @rows );
+}
+
+sub gen_job_key : Path('/job/log/gen_job_key') {
+    my ($self,$c ) = @_;
+    my $id_job = $c->req->params->{id_job};
+    my $job = DB->BaliJob->find( $id_job );
+    if( $job ) {
+        if( ! $job->job_key ) {
+            $job->job_key( _md5() );
+            $job->update;
+        }
+        $c->stash->{json} = {  success=>\1, job_key => $job->job_key };
+    } else {
+        $c->stash->{json} = { success=>\0, msg=>_loc('Could not find job id %1', $id_job ) };
+    }
+    $c->forward('View::JSON');
 }
 
 sub log_html : Path('/job/log/html') {
@@ -252,7 +269,7 @@ sub jobList : Path('/job/log/jobList') {
     my $p = $c->req->params;
     my $log;
     # _log _dump $p;
-    my $pkgIcon='/static/images/changeman/package.gif';
+    my $pkgIcon='/static/images/icons/package_green.gif';
     my $siteIcon='/static/images/site.gif';
     my $jobIcon='/static/images/book.gif';
     my $spoolIcon='/static/images/page.gif';

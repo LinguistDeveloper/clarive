@@ -200,8 +200,8 @@ var resultTpl = new Ext.XTemplate(
 
 
 var Memoria = {};
-emoria.Search = {};
-emoria.Search.InstantAdd = new (function(){
+Memoria.Search = {};
+Memoria.Search.InstantAdd = new (function(){
 this.init = function(combo) {
     this.combo = combo;
     var add = new Ext.Layer({cls: "x-combo-list", html: "test1234", zindex: "100"});	

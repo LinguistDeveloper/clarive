@@ -4,17 +4,9 @@
     var code = new Ext.form.TextArea({
         name: 'code',
         style: style_cons,
-        enableKeyEvents: true,
         width: 700,
         height: 700
         });
-
-    code.on('keydown', function(ta, ev) {
-        var k = ev.keyCode;
-        if( k == 117 ) { // F7
-        } else if( k == 118 ) { // F8
-        }
-    });
 
     var find = new Ext.form.TextField({
         name: 'find',
@@ -26,27 +18,27 @@
             'keyup': function(a,b) {
                 if (b.getKey()==b.ENTER) {
                     var domElement = code.getEl().dom; 
-                    console.log("DOM SELSTART",domElement.selectionStart);
+                    // console.log("DOM SELSTART",domElement.selectionStart);
                     var findValue=find.getValue();
                     var start = code.selectionStart?code.selectionStart+1 : 0;
-                    console.log("START",start);
+                    // console.log("START",start);
                     var re = new RegExp ('<br>', 'gi') ;
                     var txt = code.value.replace(re,"").substring(start);
                     
                     var regexp = new RegExp(findValue);
                     var indexOf = txt.search(regexp);
-                    console.log("INDEX",indexOf);
+                    // console.log("INDEX",indexOf);
                     if(indexOf==-1) {
                         return;                                    
                         }
                     if(Ext.isGecko) {
                         code.selectText(indexOf , indexOf + findValue.length);
-                        console.log("FROM",domElement.selectionStart, "TO",domElement.selectionEnd);
+                        // console.log("FROM",domElement.selectionStart, "TO",domElement.selectionEnd);
                         
                         // code.scrollIntoView(start);
                         // code.focus(false, true);
                     } else {
-                    console.log ("NO ES GECKO");
+                       // console.log ("NO ES GECKO");
                     }
                     return;
                     }
@@ -54,20 +46,29 @@
             }
         });
 
+    var tbarTree = [
+        '->',
+        {   xtype: 'button',
+            text: _('Reload'),
+            icon:'static/images/reload.gif',
+            cls: 'x-btn-text-icon',
+            handler: function(){ treeLoader.load(root); }
+        }];
+
     var tbar = [
         _('Search'),
         find, 
         '->',
         {   xtype: 'button',
             text: _('Previous'),
-            icon:'static/images/inf/left.gif',
+            icon:'static/images/icons/arrow_left.gif',
             cls: 'x-btn-text-icon',
             handler: function(){
             }
         },
         {   xtype: 'button',
             text: _('Next'),
-            icon:'static/images/inf/right.gif',
+            icon:'static/images/icons/arrow_right.gif',
             cls: 'x-btn-text-icon',
             handler: function(){
             }
@@ -95,72 +96,77 @@
         
     treeLoader.on('load', function(n,e) {
         tree.getRootNode().firstChild.expand();
-        tree.getRootNode().firstChild.firstChild.expand();
         });
 
     var tree = new Ext.tree.TreePanel({
-        region: 'west',
-        title: _("JES Files"),
-        width: 280,
         expanded: true,
         animate : true,          
-        collapsible: true,
         nodeType: 'async',
+        useArrows: true,
         split: true,
         autoScroll : true,          
         containerScroll : true,     
-        lines: true,
-        rootVisible : false,
+    lines: true,
+    rootVisible : false,
         root : root,
-        loader: treeLoader
+    loader: treeLoader
         });
 
+    new Ext.tree.TreeSorter(tree, {property: 'id'});
+    
     tree.on('click', function(n,e) {
-        if( n.attributes.needLoad ) {
-            var id = n.attributes.id;
-            Ext.Ajax.request({
+       if( n.attributes.needLoad ) {
+          var id = n.attributes.id;
+      Ext.Ajax.request({
                 url: '/job/log/jesFile?id=' + n.attributes.id,
-                params: { id: id }, 
-                success: function(xhr) {
-                    var json = Ext.util.JSON.decode( xhr.responseText );
-                    n.attributes.code=json.data;
-                    n.attributes.needLoad=false;
-                    code.setValue( json.data );
-                    }
-                });
-        } else {
-            code.setValue(n.attributes.code);
-            }
-        });
+        params: { id: id }, 
+        success: function(xhr) {
+        var json = Ext.util.JSON.decode( xhr.responseText );
+                n.attributes.code=json.data;
+                n.attributes.needLoad=false;
+        code.setValue( json.data );
+                }
+          });
+    } else {
+       code.setValue(n.attributes.code);
+        }
+    });
 
-    // var formCode = new Ext.FormPanel({
-            // layout   : 'border',
-            // region   : 'center',
-            // frame    : false,
-            // hideLabel: false,
-            // items 	 : [ findPanel, form ]
-            // }
-        // );
+    var formTree = new Ext.FormPanel({
+    layout   : 'fit',
+    region   : 'west',
+    split    : true,
+        frame    : false,
+        hideLabel: false,
+        tbar:tbarTree,
+        title: _("JES Files"),
+        width: 280,
+        collapsible: true,
+        items 	 : [ tree ]
+        }
+    );
 
     var form = new Ext.FormPanel({
-            layout   : 'fit',
-            region   : 'center',
-            split    : true,
-            frame    : false,
-            hideLabel: false,
-            // tbar:tbar,
-            items 	 : [ code ]
-            }
-        );
+    layout   : 'fit',
+    region   : 'center',
+    split    : true,
+        frame    : false,
+        hideLabel: false,
+        // tbar:tbar,
+        items 	 : [ code ]
+        }
+    );
 
     form.setTitle("JES Spool");
+    tree.getRootNode().expand();
 
     var panel = new Ext.Panel({
         title: _('JES Spool'),
         layout: 'border',
-        items: [ tree, form ]
+        items: [ formTree, form ]
         });
     
     return panel;
 })();
+
 

@@ -3,6 +3,7 @@ use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 no Moose;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Baseliner::Core::Message;
 use Try::Tiny;
 
@@ -129,6 +130,7 @@ sub notify {
     my ($self,%p)=@_;
 
     my @carriers = _array( $p{carriers} , $p{carrier} );
+    $p{sender}.='@'.config_get('config.comm.email')->{domain} unless $p{sender} =~ m{@};
     _throw 'Missing carrier' unless @carriers;
 
     my %users;
@@ -156,7 +158,7 @@ sub notify {
     }
 
     # create the message
-    my $msg = $self->create(%p);
+    my $msg = $self->create(%p); 
 
     # create the queue entries
     for my $carrier ( @carriers ) {

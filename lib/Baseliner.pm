@@ -249,7 +249,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR "Baseliner Server v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . ". Startup time: " . tv_interval($t0) . "s.\n";
+    print STDERR "Baseliner v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . ". Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
         print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";

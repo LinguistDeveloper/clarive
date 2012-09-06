@@ -75,12 +75,12 @@ for my $dir (  @dirs ) {
         }
 
         say $f if exists $args{vv};
-        for my $mod ( $d =~ m/^\s*use ([\w:]+)\s*(?:.*?);/gsm ) {
+        for my $mod ( $d =~ m/^\s*use\s+([\w:]+)\s*(?:.*?);/gsm ) {
             say $mod if exists $args{vv};
             $mods{ $mod }{ $f->relative( $home ) } = ();
         }
 
-        for my $mod ( $d =~ m/^\s*require ([\w:]+)[\S\s]*;/gsm ) {
+        for my $mod ( $d =~ m/^\s*require\s+([\w:]+)\s*(?:.*?);/gsm ) {
             say $mod if exists $args{vv};
             $mods{ $mod }{ $f->relative( $home ) } = ();
         }

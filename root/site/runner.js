@@ -42,7 +42,7 @@ Baseliner.getMessages = function() {
                 Baseliner.message( title, msg );
             });
         } catch(e) {
-            console.log(e);
+            // console.log(e);
         }
     });
     store.load();

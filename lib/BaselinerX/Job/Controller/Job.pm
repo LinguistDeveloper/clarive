@@ -4,10 +4,9 @@ use Baseliner::Core::Namespace;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use DateTime;
-use YAML;
+use JSON::XS;
 use JavaScript::Dumper;
 use Baseliner::Core::Namespace;
-use JSON::XS;
 use Try::Tiny;
 use utf8;
 
@@ -19,6 +18,14 @@ BEGIN {
 
 register 'action.job.viewall' => { name=>'View All Jobs' };
 register 'action.job.restart' => { name=>'Restart Jobs' };
+
+register 'config.job.states' => {
+  metadata => [
+    { id      => "states",
+      default => [qw/EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED WAITING/]
+    }
+  ]
+};
 
 sub job_create : Path('/job/create')  {
     my ( $self, $c ) = @_;
@@ -61,32 +68,43 @@ sub job_items_json : Path('/job/items/json') {
 
         # check if it's been processed by approval daemon
         if( $n->bl eq 'PREP' && $p->{job_type} eq 'promote' && ! $n->is_contained ) {
-            unless( $n->is_verified ) {	
+            unless( $n->is_verified ) { 
                 $can_job = 0; 
                 $n->{why_not} = _loc('Unverified');
             }
         }
+
+        my $packages_text;
+        my $package_join = "<img src=\"static/images/package.gif\"/>";
+        $packages_text = $package_join
+                       . join("<br>${package_join}", @{$n->{packages}})
+                       . '<br>' if exists $n->{packages};
+
         # id MUST be unique for the ns, otherwise Ext will allow duplicates, etc.
         my $id = $n->ns;
         $id =~ s{\W}{}g;  # clean up id, as this floats around the browser
         push @job_items,
           {
-            id => $id,
-            provider  => $n->provider,
-            related   => $n->related,
-            ns_type   => $n->ns_type,
-            icon      => $n->icon_job,
-            item      => $n->ns_name,
-            ns        => $n->ns,
-            user      => $n->user,
-            service   => $n->service,
-            text      => $n->ns_info,
-            more_info => $n->more_info,
-            date      => $n->date,
-            can_job   => $can_job,
-            recordCls => $can_job ? '' : 'cannot-job',
-            why_not   => $can_job ? '' : _loc($n->why_not),
-            data      => $n->ns_data
+            id                 => $id,
+            provider           => $n->provider,
+            related            => $n->related,
+            ns_type            => $n->ns_type,
+            icon               => $n->icon_job,
+            item               => $n->ns_name,
+            packages           => $packages_text ? $packages_text : q{},
+            subapps            => $n->{subapps},
+            inc_id             => exists $n->{inc_id} ? $n->{inc_id} : q{},
+            ns                 => $n->ns, 
+            user               => $n->user,
+            service            => $n->service,
+            text               => do { my $a = $n->ns_info; Encode::from_to($a, 'utf8', 'iso-8859-1'); $a },
+            more_info          => $n->more_info,  # TODO which one?
+            moreInfo           => exists $n->{moreInfo} ? $n->{moreInfo} : q{},
+            date               => $n->date,
+            can_job            => $can_job,
+            recordCls          => $can_job ? '' : 'cannot-job',
+            why_not            => $can_job ? '' : _loc($n->why_not),
+            data               => $n->ns_data
           };
     }
     # _log "-----------Job total item: " . $ns_list->{total};
@@ -218,13 +236,18 @@ sub monitor_json : Path('/job/monitor_json') {
     }
 
     # Filter by nature
-    if (exists $p->{current_nature}) {      
-      $where->{'bali_job_items.item'} = $p->{current_nature};
+    if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {      
+      $where->{'bali_job_items.item'} = $p->{filter_nature};
     }
 
     # Filter by environment name:
-    if (exists $p->{env_filter}) {      
-      $where->{bl} = $p->{env_filter};
+    if (exists $p->{filter_bl}) {      
+      $where->{bl} = $p->{filter_bl};
+    }
+
+    # Filter by job_type
+    if (exists $p->{filter_type}) {      
+      $where->{type} = $p->{filter_type};
     }
 
     #dashboard
@@ -284,6 +307,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     #foreach my $r ( _array $results->{data} ) {
     _debug "Looping start...";
+    my %cache_icon;
     for my $r ( $rs_paged->hashref->all ) {
         my $step = _loc( $r->{step} );
         my $status = _loc( $r->{status} );
@@ -291,18 +315,24 @@ sub monitor_json : Path('/job/monitor_json') {
         my %app;
         my @items = _array $job_items{ $r->{id} };
         my $contents = @items ? [
-              map {
+              grep { defined } map {
                   $app{ $_->{application} }=() if defined $_->{application};
-                  #bde: 
-                  #my ($type,$name) = ns_split( $_->{item} );
-                  #$type eq 'harvest.package'? '<img src="/static/images/package.gif">&nbsp;' . $name : '<img src="/static/images/changeman/package.gif">&nbsp;' . $name if $type =~ m{.*\.package$} 
-
                   my ( $dom,$nsid) = ns_split( $_->{item} );
                   my $ret;
                   if( $dom eq 'changeset' ) {
                     $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name } catch { $nsid };
-                  } else {
-                    $ret = $nsid;
+                  } elsif( $dom =~ /changeman/ ) {
+                    $ret = '<img src="/static/images/icons/package_green.gif">&nbsp;' . $nsid;
+                  } elsif( $dom =~ /package/ ) {
+                    $ret = '<img src="/static/images/package.gif">&nbsp;' . $nsid; 
+                  } elsif( $dom !~ /nature/ ) {
+                    my $icon = $cache_icon{ $dom } // do {
+                        my $m = $c->registry->get('changeman.package')->module;
+                        $cache_icon{ $dom } = $m->icon;
+                    };
+                    $ret = $icon 
+                          ? qq{<img src="$icon">&nbsp;$nsid}
+                          : $nsid;
                   }
                   $ret;
               } @items
@@ -317,7 +347,7 @@ sub monitor_json : Path('/job/monitor_json') {
         } _array $job_items{ $r->{id} };
 
         my @natures = _unique map {
-            (ns_split( $_->{item} ))[1];
+            $_->{item}   # the ns name of the nature
         } grep {
             $_->{item} =~ /^nature/
         } _array $job_items{ $r->{id} };
@@ -583,6 +613,32 @@ sub restart : Local {
     $c->forward('View::JSON');
 }
 
+sub natures_json {
+  my @data = sort { uc $a->{name} cmp uc $b->{name} } 
+             map { { key=>$_->{key}, id=>$_->{id}, name => $_->{name}, ns => $_->{ns}, icon => $_->{icon}} }
+             map { Baseliner::Core::Registry->get($_) }
+             Baseliner->registry->starts_with('nature');
+  _encode_json \@data;
+}
+
+sub job_states_json {
+  my @data = map { {name => $_} }
+             sort @{config_get('config.job.states')->{states}};
+  _encode_json \@data;
+}
+
+sub envs_json {
+  my @data =  Baseliner::Core::Baseline->baselines;
+  _encode_json \@data;
+}
+
+sub types_json {
+  my $data = [{name => 'SCM', text => 'Distribuidor'},
+              {name => 'SQA', text => 'SQA'         },
+              {name => 'ALL', text => 'Todos'       }];
+  _encode_json $data;
+}
+
 sub monitor : Path('/job/monitor') {
     my ( $self, $c, $dashboard ) = @_;
     $c->languages( ['es'] );
@@ -591,7 +647,13 @@ sub monitor : Path('/job/monitor') {
     if($dashboard){
         $c->stash->{query_id} = $c->stash->{jobs};
     }
-    $c->stash->{template} = '/comp/monitor_grid.mas';
+
+    $c->stash->{natures_json}    = $self->natures_json;
+    $c->stash->{job_states_json} = $self->job_states_json;
+    $c->stash->{envs_json}       = $self->envs_json;
+    $c->stash->{types_json}      = $self->types_json; # Tipo de elementos en Monitor. SCM|SQA.
+
+    $c->stash->{template} = '/comp/monitor_grid.js';
 }
 
 sub monitor_portlet : Local {
