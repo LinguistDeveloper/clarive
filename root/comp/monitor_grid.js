@@ -140,7 +140,7 @@
         nature_hash[ nat.ns ] = nat; 
     });
     var nature_menu = natures.map(function (x) {
-      // Por defecto siempre se van a mostrar en uppercase, pero tampoco está de más filtrar un poco esto.
+      // Por defecto siempre se van a mostrar en uppercase, pero tampoco estï¿¡ de mï¿¡s filtrar un poco esto.
       var nature_name = x.name == 'ZOS'      ? 'z/OS' 
                       : x.name == 'FICHEROS' ? 'Ficheros'
                       : x.name == 'TODAS'    ? 'Todas'
@@ -466,6 +466,7 @@
             if( ! ns ) return;
             var nat = nature_hash[ ns ];
             if( !nat ) {
+                nat = {};
                 nat.name = ns;
                 nat.icon = 'nature';
             }
@@ -633,7 +634,7 @@
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
-                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, renderer: render_subapp }, // not in DB
+                { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
                 { header: _('Step'), width: 80, dataIndex: 'step', sortable: true , hidden: true },	

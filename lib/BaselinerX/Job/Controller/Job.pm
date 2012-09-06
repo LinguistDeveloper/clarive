@@ -194,6 +194,8 @@ sub job_stash_save : Local {
     $c->forward( 'View::JSON' );
 }
 
+our %CACHE_ICON;
+
 sub monitor_json : Path('/job/monitor_json') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
@@ -307,7 +309,6 @@ sub monitor_json : Path('/job/monitor_json') {
 
     #foreach my $r ( _array $results->{data} ) {
     _debug "Looping start...";
-    my %cache_icon;
     for my $r ( $rs_paged->hashref->all ) {
         my $step = _loc( $r->{step} );
         my $status = _loc( $r->{status} );
@@ -321,14 +322,11 @@ sub monitor_json : Path('/job/monitor_json') {
                   my $ret;
                   if( $dom eq 'changeset' ) {
                     $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name } catch { $nsid };
-                  } elsif( $dom =~ /changeman/ ) {
-                    $ret = '<img src="/static/images/icons/package_green.gif">&nbsp;' . $nsid;
-                  } elsif( $dom =~ /package/ ) {
-                    $ret = '<img src="/static/images/package.gif">&nbsp;' . $nsid; 
                   } elsif( $dom !~ /nature/ ) {
-                    my $icon = $cache_icon{ $dom } // do {
-                        my $m = $c->registry->get('changeman.package')->module;
-                        $cache_icon{ $dom } = $m->icon;
+                    my $icon = $CACHE_ICON{ $dom } // do {
+                        my $m = try { $c->registry->get( $dom )->module }
+                            catch { _error(shift()); { icon=>'/static/images/unknown.gif' } };
+                        $CACHE_ICON{ $dom } = ref $m ? $m->{icon} : '/static/images/unknown.gif';
                     };
                     $ret = $icon 
                           ? qq{<img src="$icon">&nbsp;$nsid}
@@ -628,7 +626,7 @@ sub job_states_json {
 }
 
 sub envs_json {
-  my @data =  Baseliner::Core::Baseline->baselines;
+  my @data =  grep { ! $_->{bl} eq '*' } Baseliner::Core::Baseline->baselines;
   _encode_json \@data;
 }
 
