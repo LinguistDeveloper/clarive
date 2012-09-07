@@ -1,11 +1,11 @@
 #INFORMACIÓN DEL CONTROL DE VERSIONES
 #
 #	CAM .............................. SCM
-#	Pase ............................. N.TEST0000059155
-#	Fecha de pase .................... 2012/02/17 15:48:01
+#	Pase ............................. N.TEST0000070154
+#	Fecha de pase .................... 2012/09/06 17:56:13
 #	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
-#	Versión del elemento ............. 2
-#	Propietario de la version ........ q74613x (Q74613X - ERIC LORENZANA CANALES)
+#	Versión del elemento ............. 17
+#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 
 package BaselinerX::Controller::SQA;
 use Baseliner::Plug;
@@ -47,6 +47,7 @@ sub grid : Local {
         $c->stash->{action_sqa_subprojectnature} = exists $user_actions{ 'action.sqa.subprojectnature' } ;
         $c->stash->{action_sqa_packages} = exists $user_actions{ 'action.sqa.packages' } ;
         $c->stash->{action_delete_analysis} = exists $user_actions{ 'action.sqa.delete_analysis' } ;
+        $c->stash->{action_schedule_analysis} = exists $user_actions{ 'action.sqa.schedule_analysis' } ;
 
         $config = $c->model( 'ConfigStore' )->get( 'config.sqa', bl => 'TEST', ns => '/' );
         $c->stash->{global_run_sqa_test}          = $config->{run_sqa};
@@ -137,30 +138,49 @@ sub grid_json : Local {
     }
 
     my $table = 'Baseliner::BaliSqa';
-
+    my $order_by;
+    
 	if ( $type && $type =~ /CFGNAT/ ) {
         $table = 'Baseliner::BaliProjectNatureConfig';
         $args = {page => $page, rows => $limit};
-        $args->{order_by} = $sort ? "$sort $dir" : 'project_name asc';
+        if ( $sort ) {
+        	push @$order_by, { "-$dir" => $sort };
+        } else {
+        	push @$order_by, { "-asc" => 'project_name' };
+        }
         $groupBy eq 'project' and $groupBy = '';
     } elsif ( $type && $type =~ /^CFG/ ) {
         $table = 'Baseliner::BaliProjectTree';
         $args = {page => $page, rows => $limit};
-        $args->{order_by} = $sort ? "$sort $dir" : 'project_name asc';
+        if ( $sort ) {
+        	push @$order_by, { "-$dir" => $sort };
+        } else {
+        	push @$order_by, { "-asc" => 'project_name' };
+        }
         $groupBy eq 'project' and $groupBy = 'project_name';
     } elsif ( $type ) {
         $where->{'me.type'} = {'=' => $type};
         $args = {join => [ 'project' ], page => $page, rows => $limit};
-        $args->{order_by} = $sort ? "$sort $dir" : 'me.ns asc';
+        if ( $sort ) {
+        	push @$order_by, { "-$dir" => $sort };
+        } else {
+        	push @$order_by, { "-asc" => 'me.ns' };
+        }
         $groupBy eq 'project' and $groupBy = 'me.ns';
     } else {
         $where->{'me.type'} = {'<>' => 'PKG'};
         $args = {join => [ 'project' ], page => $page, rows => $limit};
-        $args->{order_by} = $sort ? "$sort $dir" : 'me.ns asc';
+        if ( $sort ) {
+        	push @$order_by, { "-$dir" => $sort };
+        } else {
+        	push @$order_by, { "-asc" => 'me.ns' };
+        }
         $groupBy eq 'project' and $groupBy = 'me.ns';
     }
-    $groupBy and $args->{order_by} = "$groupBy $groupDir, " . $args->{order_by};
-
+    $groupBy and unshift @$order_by, { "-$groupDir" => $groupBy };
+    
+	$args->{order_by} = $order_by;
+    
     my $projects;
 
     if ( $type && $type =~ /^CFG/ ) {
@@ -564,7 +584,10 @@ sub request_analysis : Local {
     my $nature       = $p->{nature};
     my $bl           = $p->{bl};
     my $project_name = $p->{project_name};
+    my $project_id   = $p->{project_id};
     my $job_id       = $p->{project_id};
+    my $schedule     = $p->{schedule};
+    my $time         = $p->{time};
     my $err          = '';
     my $return       = '';
     my $out          = '';
@@ -577,16 +600,30 @@ sub request_analysis : Local {
             if ( $project_name ) {
                 $project = $project_name;
             }
-            ( $return, $out ) = BaselinerX::Model::SQA->request_analysis(
-                job_id     => $job_id,
-                bl         => $bl,
-                project    => $project,
-                subproject => $subproject,
-                nature     => $nature,
-                user       => $user
-            );
-        } else {
-            $err = "The user doesn't have permission to request an analysis";
+            if ( $schedule ) {
+                ( $return, $out ) = BaselinerX::Model::SQA->request_schedule(
+                    job_id     => $job_id,
+                    
+                    bl         => $bl,
+                    project    => $project,
+                    subproject => $subproject,
+                    nature     => $nature,
+                    user       => $user,
+                    time       => $time,
+                    id_prj     => $project_id
+                );
+              } else {
+                 ( $return, $out ) = BaselinerX::Model::SQA->request_analysis(
+                    job_id     => $job_id,
+                    bl         => $bl,
+                    project    => $project,
+                    subproject => $subproject,
+                    nature     => $nature,
+                    user       => $user
+                );       
+              }
+            } else {
+                $err = "The user doesn't have permission to request an analysis";
         }
 
         if ( $return ) {
@@ -1141,6 +1178,87 @@ sub delete_analysis : Local {
     } catch {
         $err = shift;
         $c->stash->{json} = {msg => _loc( "Error running sqa commands: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub delete_schedule : Local {
+    my ( $self, $c ) = @_;
+    my $user       = $c->username;
+    my $p          = $c->request->params;
+    my $id = $p->{id};
+    my $err;
+
+    try {
+		my $row = Baseliner->model('Baseliner::BaliSqaPlannedTest')->find( $id );
+		$row->delete;		
+        $c->stash->{json} = {msg => 'ok', success => \1};
+    } catch {
+        $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error running sqa commands: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub save_schedule : Local {
+    my ( $self, $c ) = @_;
+    my $user       = $c->username;
+    my $p          = $c->request->params;
+    my $id = $p->{id};
+    my $time = $p->{time};
+    my $date = $p->{next_exec};
+    my $active = $p->{active};
+    my $err;
+
+    try {
+		my $row = Baseliner->model('Baseliner::BaliSqaPlannedTest')->find( $id );
+		$row->scheduled($time);
+		$row->next_exec( $date." ".$time.":00" );
+		$row->active( $active && $active eq 'on'?"1":"0" );
+		
+		$row->update;
+				
+        $c->stash->{json} = {msg => 'ok', success => \1};
+    } catch {
+        $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error running sqa commands: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub scheduled_tests : Local {
+    my ( $self, $c ) = @_;
+
+    my @data;
+    my $where = {};
+    
+	$where->{'me.id_prj'} = $c->model( 'Permissions' )->user_projects_with_action(
+	            username => $c->username,
+	            action   => 'action.sqa.view_project'
+	        );
+        my $rs =
+            Baseliner->model( 'Baseliner::BaliSqaPlannedTest' )
+            ->search( $where, {order_by => { -asc => 'project'}} );
+        while ( my $row = $rs->next ) {
+            push @data,
+                {
+	                id     => $row->id,
+	                project     => $row->project,
+	                subapl     => $row->subapl,
+	                nature     => $row->nature,
+	                username     => $row->username,
+	                active     => $row->active,
+	                last_exec     => $row->last_exec,
+	                comments     => $row->comments,
+	                scheduled     => $row->scheduled,
+	                bl     => $row->bl,
+	                next_exec     => $row->next_exec
+                };
+        }
+    
+    $c->stash->{json} = {
+        totalCount => scalar( @data ),
+        data       => \@data
     };
     $c->forward( 'View::JSON' );
 }

@@ -9,7 +9,7 @@ use Baseliner::Schema::Baseliner::Base::ResultSet;
 use Baseliner::Model::Users;
 BEGIN { extends 'Catalyst::Controller' }
 
-# creo el "botón" dentro de la pestaña de administrador
+# creo el "botn" dentro de la pestaa de administrador
 register 'menu.admin.mostrar_usuarios' => {
     label    => 'Mostrar usuarios',
     url_comp => '/usuarios/mostrar_hash',
@@ -35,8 +35,8 @@ sub cargar_usuarios_grid : Local {
     return;
 }
 
-# fix:  ¿por lo visto no se puede ordenar haciendo click en los encabezados de
-# las columnas?  faltan el  resto de botones para añadir,  modificar,  borrar,
-# etc.  así como la barra de búsqueda
+# fix:  por lo visto no se puede ordenar haciendo click en los encabezados de
+# las columnas?  faltan el  resto de botones para aadir,  modificar,  borrar,
+# etc.  as como la barra de bsqueda
 
 1;
