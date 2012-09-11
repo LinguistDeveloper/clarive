@@ -481,11 +481,6 @@ sub refresh_now : Local {
     $c->forward('View::JSON');
 }
 
-register 'event.job.new';
-register 'event.job.delete';
-register 'event.job.cancel';
-register 'event.job.cancel_running';
-
 sub job_submit : Path('/job/submit') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
