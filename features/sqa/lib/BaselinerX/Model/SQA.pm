@@ -1,3 +1,12 @@
+#INFORMACIÓN DEL CONTROL DE VERSIONES
+#
+#	CAM .............................. SCM
+#	Pase ............................. N.ANTE0000070155
+#	Fecha de pase .................... 2012/09/06 17:56:59
+#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
+#	Versión del elemento ............. 8
+#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
+
 package BaselinerX::Model::SQA;
 use Moose;
 use Baseliner::Utils;
@@ -1259,7 +1268,6 @@ sub request_schedule {
 	my $user       = $p{user};
 	my $bl         = $p{bl};
 	my $job_id     = $p{job_id};
-	my $id_prj     = $p{id_prj};
 	my $return     = 1;
     my $time       = $p{time};
     
@@ -1274,6 +1282,8 @@ sub request_schedule {
         if ( $nextDate < $now ) {
            $nextDate = $nextDate + "1D";
         };
+		
+		my $id_prj = Baseliner->model('Baseliner::BaliProject')->search( { name => $project, id_parent => { "=", undef } } )->first->mid;
 		
         my $schedule_row = Baseliner->model('Baseliner::BaliSqaPlannedTest')->create(
             {

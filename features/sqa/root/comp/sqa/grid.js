@@ -1,3 +1,11 @@
+//INFORMACIÓN DEL CONTROL DE VERSIONES
+//
+//	CAM .............................. SCM
+//	Pase ............................. N.ANTE0000070155
+//	Fecha de pase .................... 2012/09/06 17:56:59
+//	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/root/comp/sqa/grid.js
+//	Versión del elemento ............. 45
+//	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
 <%args>
 	$action_view_general
 	$action_new_analysis
@@ -27,6 +35,7 @@
     my $now = DateTime->now;
     $now->set_time_zone(_tz);
     my $hm =  $now->strftime('%H:%M');
+    my $today =  $now->strftime('%Y-%m-%d');
 </%perl>
 
 (function(){
@@ -139,8 +148,6 @@
 		s.baseParams.type = gridType;
 	});
 	
-	
-	
     <& /comp/search_field.mas &>
 
     var search_field = new Ext.app.SearchField({
@@ -148,6 +155,7 @@
 		params: {start: 0, limit: ps, type: gridType },
 		emptyText: '<% _loc('<Enter your search string>') %>'
 	});
+    
     var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
 		var icon = '/static/images/scm/release.gif';
 		
@@ -170,6 +178,18 @@
 		return "<b>" + value + "</b>" ;
     };
 
+    var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
+    	var fecha;
+    	var ret;
+    	
+    	if ( value ) {
+    		fecha = new Date( value.replace(/-/g, '/') );
+    		ret = fecha.format("d/m/Y H:i:s");
+    	}
+    	
+		return ret ;
+    };
+    
     var render_html_link = function(value,metadata,rec,rowIndex,colIndex,store) {
     	var id = rec.data.id;
     	if(value !=1) return "";
@@ -216,6 +236,17 @@
 		}	
 		if ( img != '') return "<img src='"+img+"' border=0 />" ;
 		else return "";
+    };
+    
+    var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
+		var img;
+		
+		if( value == '1' ) {
+			img = '/static/images/drop-yes.gif';
+		} else {
+			img = '/static/images/close-small.gif';
+		}	
+		return "<img src='"+img+"' border=0 />" ;
     };
     
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -327,6 +358,7 @@
 			function(response) {
 				Baseliner.message( _('SUCCESS'), _('analysis requested') );
 				store.load({params:{type: gridType, limit: ps }});
+				scheduler_store.load({params:{type: gridType, limit: ps }});
 				myMask.hide();
 			}
 		);
@@ -376,12 +408,13 @@
 
 % if ( $action_schedule_analysis ) {	
     var button_new_schedule = new Ext.Toolbar.Button({
-		text: _('New scheduled analysis'),
+		text: _('Scheduled analysis'),
 		icon:'/static/images/silk/clock.png',
 		cls: 'x-btn-text-icon',
-		hidden: true,
+		hidden: false,
 		handler: function () {
-    		new_analysis( '1' )
+    		edit_schedules()
+    		//new_analysis( '1' )
     	} 
     });
 % }
@@ -1248,7 +1281,7 @@
 				}
 				myMask.hide();
 			});
-	};	
+	};
 	//return grid;
 	var root = new Ext.tree.TreeNode();
     var tSQA = new Ext.tree.TreeNode({text:_('SCM-SQA'), draggable : false, expanded:true, expandable:true, leaf:false, icon: '/static/images/silk/rosette.png' });
@@ -1443,9 +1476,6 @@
 % if ( $action_new_analysis ) {
 			button_new_analysis.hide();
 %}
-% if ( $action_schedule_analysis ) {
-	button_new_schedule.hide();
-%}
 % if ( $action_request_analysis ) {
 			button_request_analysis.hide();
 %}
@@ -1460,5 +1490,293 @@
 			button_request_recalc.hide();
 %}    
     };
+    
+// Grid de mantenimiento de análisis planificados
+
+	var scheduler_reader=new Ext.data.JsonReader({
+		root: 'data' , 
+		remoteSort: true,
+		totalProperty:"totalCount", 
+		id: 'id' 
+		},
+		[ 
+			{  name: 'id' },
+			{  name: 'subapl' },
+			{  name: 'nature' },
+			{  name: 'username' },
+			{  name: 'active' },
+			{  name: 'project' },
+			{  name: 'last_exec' },
+			{  name: 'next_exec' },
+			{  name: 'scheduled' },
+			{  name: 'bl' },
+			{  name: 'comments' }
+		]
+	);
+
+	var scheduler_store = new Ext.data.GroupingStore({
+		id: 'id',
+		autoload: false,
+        reader: scheduler_reader,
+        remoteGroup: true,
+        baseParams: { limit: ps },
+        remoteSort: true,
+        url: '/sqa/scheduled_tests',
+        groupField: 'project'
+    });
+	
+	var edit_schedules = function(){	
+	    var scheduler_paging = new Ext.PagingToolbar({
+	        store: scheduler_store,
+	        pageSize: ps,
+	        displayInfo: true,
+	        displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
+	        emptyMsg: "No hay registros disponibles"
+	    });
+	    
+	    scheduler_store.load();
+	    
+	    var btn_add_schedule = new Ext.Toolbar.Button({
+	        text: _('New'),
+	        icon:'/static/images/icons/add.gif',
+	        cls: 'x-btn-text-icon',
+	        handler: function() {
+	    		new_analysis( '1' )
+	        }
+	    });
+	    
+	    var btn_edit_schedule = new Ext.Toolbar.Button({
+	        text: _('Edit'),
+	        icon:'/static/images/icons/edit.gif',
+	        cls: 'x-btn-text-icon',
+	        disabled: true,
+	        handler: function() {
+	            var sm = grid_scheduler.getSelectionModel();
+	            if (sm.hasSelection()) {
+	                var sel = sm.getSelected();
+	                edit_schedule();
+	            } else {
+	                alert ( _('Select at least one row') );    
+	            };
+	        }
+	    });
+	    
+	    var edit_schedule = function () {
+            var sm = grid_scheduler.getSelectionModel();
+            var sel = sm.getSelected();
+            var id = new Ext.form.Hidden({
+    			name: 'id',
+    			value: sel.data.id
+    		});
+            
+            var bl = new Ext.form.TextField({
+    			name: 'bl',
+    			readOnly: true,
+    			value: sel.data.bl,
+    			fieldLabel: _('Baseline'),
+    			style:'background:#dddddd'
+    		});
+
+            var project = new Ext.form.TextField({
+    			name: 'project',
+    			readOnly: true,
+    			value: sel.data.project,
+    			fieldLabel: _('CAM'),
+    			style:'background:#dddddd'
+    		});
+            
+            var subapl = new Ext.form.TextField({
+    			name: 'subapl',
+    			readOnly: true,
+    			value: sel.data.subapl,
+    			fieldLabel: _('Subproject'),
+    			style:'background:#dddddd'
+    		});        		
+    		
+            var nature = new Ext.form.TextField({
+    			name: 'nature',
+    			readOnly: true,
+    			value: sel.data.subapl,
+    			fieldLabel: _('Nature'),
+    			style:'background:#dddddd'
+    		}); 
+
+            
+            var time = new Ext.ux.form.Spinner({
+                name: 'time',
+                format : "H:i",
+                fieldLabel: _('Time'),
+                allowBlank: false,
+                hidden: false,
+                disabled: false,
+                value: sel.data.scheduled,
+                editable: true,
+                width: 160,
+                labelWidth: 250,
+                strategy: new Ext.ux.form.Spinner.TimeStrategy()
+            });
+            
+            var next_exec = new Ext.ux.form.DateFieldPlus({
+                name: 'next_exec',
+                disabled: false,
+                readOnly: false,
+                fieldLabel: _('Next'),
+                allowBlank: false,
+                format: 'Y-m-d',
+                noOfMonth : 2,
+                noOfMonthPerRow : 2,
+                renderTodayButton: false,
+                showToday: true,
+                multiSelection: false,
+                allowMouseWheel:false,
+                showWeekNumber: false,
+                selectedDates: [],
+                showActiveDate:true,
+                summarizeHeader:true,
+                width: 150,
+                labelWidth: 250
+            });
+            
+            var active = new Ext.form.Checkbox({
+                name: 'active',
+                fieldLabel: _('Active')
+            });
+            
+            active.checked = sel.data.active ==1?true:false;
+            
+            if ( sel.data.next_exec ) {
+                next_exec.setValue(sel.data.next_exec.substring(0,10));
+            } else {
+            	next_exec.setValue(undefined);                
+            }
+            
+    		var schedule_form = new Ext.FormPanel({
+    			frame: true,
+    	        url:'/sqa/save_schedule',
+                buttons: [
+                    {
+                        text: _('Accept'),
+                        type: 'submit',
+                        handler: function(){
+                            var ff = schedule_form.getForm();
+                            ff.submit({
+                                    success: function(form, action) { 
+                                        scheduler_store.load({params:{ limit: ps }});
+                                    },
+                                    failure: function(form, action) { 
+                                        Ext.Msg.alert(_('Failure'), action.result.msg);
+                                    }
+                            }); 
+                            win.hide();                             
+                        }
+                    },
+                    {
+                        text: _('Cancel'),
+                        handler: function(){ win.close(); }
+                    }
+                ],
+    			items: [ id, 
+    			         bl,
+                         project, 
+                         subapl, 
+                         nature,
+                         time,
+                         next_exec,
+                         active
+                       ]
+    		});
+    		
+    		var win = new Ext.Window({
+    			layout: 'fit', 
+    			autoScroll: true,
+    			title: _("Select a project"),
+    			height: 250, width: 300, 
+    			items: [ schedule_form ]
+    		});
+    		win.show();
+	    };
+	    
+	    var btn_delete_schedule = new Ext.Toolbar.Button({
+	        text: _('Delete'),
+	        icon:'/static/images/icons/delete.gif',
+	        cls: 'x-btn-text-icon',
+	        disabled: true,
+	        handler: function() {
+	            var sm = grid_scheduler.getSelectionModel();
+	            if (sm.hasSelection()) {
+	            	var sel = sm.getSelected();
+	            	if (confirm(_("Plase, confirm that you want to delete the analysis of ") + sel.data.project )) {
+		                
+	                    Baseliner.ajaxEval( '/sqa/delete_schedule',{ id: sel.data.id },
+                            function(response) {
+                                if ( response.success ) {
+                                    Baseliner.message( _('Success'), response.msg );
+                                    scheduler_store.load();
+                                } else {
+                                    Baseliner.message( _('ERROR'), response.msg );
+                                }
+                            }
+                        
+                        );
+	            	};
+	            } else {
+	            	alert ( _('Select at least one row') );    
+	            };
+	        }
+	    }); 
+	    
+	    var grid_scheduler = new Ext.grid.GridPanel({
+	        height: 700,
+	        border: true,
+	        stripeRows: true,
+	        autoScroll: true,
+	        enableHdMenu: false,
+	        store: scheduler_store,
+	        viewConfig: {forceFit: true, scrollOffset: 2},
+	        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+	        loadMask:'true',
+	        columns: [
+	            { hidden: true, dataIndex:'id' },
+	            { header: _('Active'), id: 'active', width: 30, dataIndex: 'active', renderer: render_active, sortable: false, tooltip: _("Schedule active or not") },
+				{ header: _('Project'), id: 'project', width: 40, dataIndex: 'project', sortable: false, renderer: render_item, tooltip: _("Name of the project") },
+				{ header: _('ID Project'), id: 'id_prj', width: 40, dataIndex: 'id_prj', sortable: false, renderer: render_item, tooltip: _("ID of the project"), hidden: true },
+				{ header: _('Subapplication'), id: 'subapl', width: 70, dataIndex: 'subapl', sortable: false, tooltip: _("Name of the subproject") },
+				{ header: _('Nature'), id: 'nature', width: 70, dataIndex: 'nature', sortable: false, tooltip: _("Nature of the subproject") },
+				{ header: _('Baseline'), id: 'bl', width: 80, dataIndex: 'bl', sortable: false, tooltip: _("State in the life cycle of the source code for this analysis") },
+				{ header: _('Time'), id: 'scheduled', width: 50, dataIndex: 'scheduled', sortable: false, tooltip: _("Time of the day to execute the analysis") },
+				{ header: _('Last'), id:'last_exec', width: 80, dataIndex: 'last_exec', renderer: render_date, tooltip: _("Last date and time when the analysis ran") },
+				{ header: _('Next'), id:'next_exec', width: 80, dataIndex: 'next_exec', renderer: render_date, tooltip: _("Next date and time when the analysis will run") }
+	        ],
+	        autoSizeColumns: true,
+	        deferredRender:true,    
+	        tbar: [ 
+	                btn_add_schedule,
+	                btn_edit_schedule,
+	                btn_delete_schedule,
+	                '->'
+	        ],
+	        bbar: scheduler_paging
+	    });
+	    
+	    grid_scheduler.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+	    	var sm = grid_scheduler.getSelectionModel();
+            if (sm.hasSelection()) {
+                btn_delete_schedule.enable();
+                btn_edit_schedule.enable();
+            }else{
+                btn_delete_schedule.disable();
+                btn_edit_schedule.disable();
+            }           
+	    });
+	    
+		var win = new Ext.Window({
+			layout: 'fit', 
+			autoScroll: true,
+			title: _("SQA: Scheduled analysis"),
+			height: 500, width: 750, 
+			items: [ grid_scheduler ]
+		});
+		win.show();	
+    }
     return panel;
 })();
