@@ -58,8 +58,10 @@ sub execute {
 
    if ($job->{origin} ne 'changeman') {
       foreach my $package (_array $job_stash->{contents}) {  ## Desasociamos los paquetes del pase.
-         my $ns = ns_get( $package->{item} ) if defined $package->{provider} ;
-         push @pkgs, $package->{item} if $ns->{provider} ne "namespace.changeman.package";
+         next if ! defined $package->{provider} || ( defined $package->{provider} && $package->{provider} ne "namespace.changeman.package" );
+      _debug 1;
+         push @pkgs, $package->{item} if defined $package->{provider} && $package->{provider} eq "namespace.changeman.package";
+      _debug 1;
       }
    }
 
@@ -71,13 +73,15 @@ sub execute {
    my $chm = BaselinerX::Changeman->new( host=>$config->{host}, port=>$config->{port}, key=>$config->{key} );
 
    foreach my $package (_array $job_stash->{contents}) {
+      next if ! defined $package->{provider} || ( defined $package->{provider} && $package->{provider} ne "namespace.changeman.package" );
+      _debug '2' . $package->{item};
       my $ns = ns_get( $package->{item} );
-      next if $ns->{provider} ne "namespace.changeman.package";
+      _debug '2' . $package->{item};
 
       if ($package->{returncode}) {
          unless ( $package->{returncode} =~ m{ok}i ) {
             $job->job_fail(_loc('Error during changeman execution'));
-            $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+            $chm->xml_cancelJob(job=>$job->{name}, items=>$package->{item}) if ($job->{origin} ne 'changeman');
             return 1;
          }
       } elsif ( $job->{origin} ne 'changeman' ) {
@@ -108,7 +112,7 @@ sub execute {
              bl        =>$job->{job_data}->{bl},
          );
          if ( $ret->{ReturnCode} !~ m{^00$|^0$} ) {
-             $log->error (_loc("Can't execute changeman package %1", $ns->{ns_name}), _dump $ret);
+            $log->error (_loc("Can't execute changeman package %1", $ns->{ns_name}), _dump $ret);
             $job->job_fail(_loc('Error during changeman execution'));
             $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
             return 1;
