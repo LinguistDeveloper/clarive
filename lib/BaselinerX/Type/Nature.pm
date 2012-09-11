@@ -14,7 +14,7 @@ has 'icon',   is => 'rw', isa => 'Str', default => sub { shift->key };
 sub can_i_haz_nature { # ArrayRef -> Bool
   my ($self, $elements) = @_;
   my @all_natures =
-    keys %{{map { $_->{path} =~ /\/\w+\/(.\w+)/ => 1 } @{$elements}}};
+    keys %{{map { $_->{path} =~ /\/\w+\/(.+?)\// => 1 } @{$elements}}};
   $self->name ~~ @all_natures ? 1 : 0;
 }
 
