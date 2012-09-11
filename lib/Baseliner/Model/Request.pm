@@ -384,6 +384,7 @@ sub status_by_key {
         sender   => $p{username},
         carrier  => 'email',
         template => 'email/action.html',
+        template_engine => $p{template_engine} || 'mason',
         vars     => {
             observaciones => $p{wiki_text},
             items         => $itemname,
@@ -394,6 +395,7 @@ sub status_by_key {
             subject       => "Estado de la aprobación del item $itemname: <b>$status</b>",
             template      => "/email/action.html",
             username      => $p{username},
+            to            => [ $request->requested_by ],
         }
     );
 

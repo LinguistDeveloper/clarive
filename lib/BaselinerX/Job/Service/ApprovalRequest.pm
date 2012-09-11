@@ -42,7 +42,7 @@ sub run {
     my $job_approve = $job->job_stash->{approval_needed};
     
     #unless( ref $job_approve ) {
-    unless( ref $job_approve and ref $job_approve->{reason} ) {  ## evitamos que salte la aprobacion si no estÃ¡ informado reason, se estÃ¡ creando la clave vacia.
+    unless( defined $job_approve and defined $job_approve->{reason} ) {  ## evitamos que salte la aprobacion si no estÃ¡ informado reason, se estÃ¡ creando la clave vacia.
         $log->info( _loc("No hay aprobaciones programadas para este pase.") );
         return;
     }
