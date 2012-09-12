@@ -13,6 +13,15 @@
         baseParams: Ext.apply({}, params),
         fields: [ 'type', 'name', 'description', 'key' ],
     });
+    store_events.on('load',function(){
+        var row = 0;
+        store_events.each( function(r){
+            if( r.data.key == params.rec.rule_event ) {
+                check_sm_events.selectRow( row );
+            }
+            row++;
+        });
+    });
     var grid_events = new Ext.grid.GridPanel({
         sm: check_sm_events,
         store: store_events,
@@ -28,9 +37,7 @@
         ]
     });
     var form_events = new Ext.FormPanel({
-        defaults: {
-            anchor: '90%'
-        },
+        defaults: { anchor: '90%' },
         border: false,
         items: [
             { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', value: params.rec.rule_name },
@@ -41,6 +48,7 @@
     var form_when = new Ext.FormPanel({
         border: false,
         items: [
+            { xtype:'hidden', name:'id', value: params.rec.id }, 
             {
                 xtype: 'radiogroup',
                 id: 'eventtypegroup',
@@ -63,10 +71,19 @@
         done_handler: function(){
             var d = form_events.getForm().getValues();
             d = Ext.apply( d, form_when.getForm().getValues() );
+            if( check_sm_events.hasSelection() ) {
+                var rec = check_sm_events.getSelected();
+                d.rule_event = rec.data.key;
+            }
             Baseliner.ajaxEval('/rule/save', d, function(res){
-                Baseliner.message(_('Rule'), _('Regla guardada con éxito') );
+                if( res.success ) {
+                    Baseliner.message(_('Rule'), _('Regla guardada con éxito') );
+                    card.destroy();
+                } else {
+                    Baseliner.error(_('Rule'), res.msg );
+                }
             });
-            card.ownerCt.close();
+            //card.ownerCt.close();
         },
         items: [
             form_events, form_when
