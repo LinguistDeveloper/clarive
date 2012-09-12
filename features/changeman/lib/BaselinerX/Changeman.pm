@@ -567,23 +567,32 @@ sub _loc_xml_chm {
 
 sub execute_cmd {
     my ($self, $bx, $cmd ) = @_;
-    my ($RC,$RET)=$bx->execute( $cmd );
-    my $top; 
-    my @cal = caller(1);
-    my $oper = $cal[3];  # calling sub name 
-    if( ref $oper ) {
-        $oper='__ANON__';
-    } else {
-        $oper=~s{^.*::(.*?)$}{$1}g;
+    my ($oper,$top,$xml,$basecmd);
+
+    CMD: {
+        my ($RC,$RET)=$bx->execute( $cmd );
+        my @cal = caller(1);
+        $oper = $cal[3];  # calling sub name 
+        if( ref $oper ) {
+            $oper='__ANON__';
+        } else {
+            $oper=~s{^.*::(.*?)$}{$1}g;
+        }
+        $RET =~ s/IKJ566(.*?)\n//s;
+        Encode::from_to($RET,"iso-8859-1", "utf8");
+        ($top,$xml) = $RET =~ m{^(.*)(\<\?xml.*)$}gs;
+        # log this to the repository
+        $basecmd = $cmd =~ m{^.*/(\w+) .*$};
+        $basecmd ||= $cmd;
+
+        redo CMD if $top=~m{IKJ56225I};
     }
-    $RET =~ s/IKJ566(.*?)\n//s;
-    Encode::from_to($RET,"iso-8859-1", "utf8");
-    my ($top,$xml) = $RET =~ m{^(.*)(\<\?xml.*)$}gs;
-    # log this to the repository
-    my ($basecmd) = $cmd =~ m{^.*/(\w+) .*$};
-    $basecmd ||= $cmd;
     if( $oper ne 'get_pkg' || length $top ) {
-        BaselinerX::ChangemanUtils->log( _loc('%2: USS command "%1"', $basecmd, $oper), cmd=>$cmd, top=>$top, xml=>$xml);
+        try {
+            BaselinerX::ChangemanUtils->log( _loc('%2: USS command "%1"', $basecmd, $oper), cmd=>$cmd, top=>$top, xml=>$xml);
+        } catch {
+            _debug "Can't store command " . _loc('%2: USS command "%1"', $basecmd, $oper) . "\ncmd: $cmd\n$top: $top\nxml: $xml";
+        };
     }
     return $xml;
 }

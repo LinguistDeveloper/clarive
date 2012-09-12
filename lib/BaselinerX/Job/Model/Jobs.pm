@@ -15,13 +15,6 @@ use Class::Date;
 with 'Baseliner::Role::Search';
 with 'Baseliner::Role::Service';
 
-register 'service.doo' => {
-    handler=>sub{
-        _debug( "NONONO" );
-        #_log "888888888888";
-    }
-};
-
 sub search_provider_name { 'Jobs' };
 sub search_provider_type { 'Job' };
 sub search_query {
@@ -122,6 +115,12 @@ sub is_in_active_job {
     return undef;
 }
 
+register 'event.job.new';
+register 'event.job.rerun';
+register 'event.job.delete';
+register 'event.job.cancel';
+register 'event.job.cancel_running';
+
 sub cancel {
     my ($self, %p )=@_;
     my $job = Baseliner->model('Baseliner::BaliJob')->search({ id=> $p{id} })->first;
@@ -132,7 +131,8 @@ sub cancel {
         if ( $job->status =~ /^CANCELLED/ ) {
            $job->delete;
         } else {
-           event_new 'event.job.cancel' => { job=>$job, self=>$self } => sub {
+           #event_new 'event.job.cancel' => { job=>$job, self=>$self } => sub {
+           event_new 'event.job.cancel' => { job=>$job } => sub {
                $job->status( 'CANCELLED' );
                $job->update;
            };
@@ -152,8 +152,6 @@ sub resume {
     $job->status('READY');
     $job->update;
 }
-
-register 'event.job.rerun';
 
 sub rerun {
     my ($self, %p )=@_;
@@ -222,7 +220,11 @@ sub _create {
     $p{maxstarttime}||=$end;
 
     ## allow the creation of jobs executed outside Baseliner, with older dates
-    my ($starttime, $maxstarttime ) = ( $p{starttime}, $p{maxstarttime} );
+    my ($starttime, $maxstarttime ) = ( $now, $end );
+    ($starttime, $maxstarttime ) = $p{starttime} < $now
+        ? ( $now , $end )
+        : ($p{starttime} , $p{maxstarttime} );
+
     $starttime =  $starttime->strftime('%Y-%m-%d %T');
     $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
 
@@ -240,6 +242,7 @@ sub _create {
             runner       => $p{runner} || $config->{runner},
             username     => $p{username} || $config->{username} || 'internal',
             comments     => $p{comments},
+            job_key      => _md5(),
             ns           => $ns,
             bl           => $bl,
     });
@@ -323,7 +326,7 @@ sub _create {
 
     # now let it run
     # if(  $p{approval}  ) {
-        $log->debug(_loc( 'Exists approval? ' ),data=>_dump  $p{approval});
+    $log->debug(_loc( 'Approval exists? ' ),data=>_dump  $p{approval});
     if ( exists $p{approval}{reason} ) {
         # approval request executed by runner service
         $job->stash_key( approval_needed => $p{approval} );
@@ -411,7 +414,7 @@ sub notify { #TODO : send to all action+ns users, send to project-team
                 realname  => $realname,
                 status    => _loc($status),
                 subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
-                to        => $username,
+                to        => [$username],
                 username  => $username,
                 url_log   => $url_log,
             }

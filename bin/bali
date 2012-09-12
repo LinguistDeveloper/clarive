@@ -14,6 +14,8 @@ if [ "$BASELINER_ENV" != "" ]; then
     export CATALYST_CONFIG_LOCAL_SUFFIX=$BASELINER_ENV
 elif [ "$BALI_ENV" != "" ]; then
     export CATALYST_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+    export BASELINER_CONFIG_LOCAL_SUFFIX=$BALI_ENV
+    export BASELINER_ENV=$BALI_ENV
 fi
 
 if [ "$BASELINER_NLS_LANG" != "" ]; then

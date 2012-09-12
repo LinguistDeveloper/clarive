@@ -429,4 +429,8 @@ sub rename {
     $self->ns( 'harvest.package/' . $name );
 }
 
+sub more_info {
+    my $self = shift;
+    return '';
+}
 1;

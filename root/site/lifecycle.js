@@ -312,27 +312,26 @@ Baseliner.lc_menu = new Ext.menu.Menu({
     }
 });
 
+var click_handler = function(item){
+    var n = item.node;
+    var c = n.attributes.data.click;
+    var params = n.attributes.data;
+    
+    if(n.attributes.text == _('Topics')){
+        params.id_project = n.parentNode.attributes.data.id_project;
+    }
+    if( params.tab_icon == undefined ) params.tab_icon = c.icon;
 
-                var click_handler = function(item){
-                    var n = item.node;
-                    var c = n.attributes.data.click;
-                    var params = n.attributes.data;
-                    
-                    if(n.attributes.text == _('Topics')){
-                        params.id_project = n.parentNode.attributes.data.id_project;
-                    }
-                    if( params.tab_icon == undefined ) params.tab_icon = c.icon;
-
-                    if( c.type == 'comp' ) {
-                        Baseliner.add_tabcomp( c.url, _(c.title), params );
-                    } else if( c.type == 'html' ) {
-                        Baseliner.add_tab( c.url, _(c.title), params );
-                    } else if( c.type == 'iframe' ) {
-                        Baseliner.add_iframe( c.url, _(c.title), params );
-                    } else {
-                        Baseliner.message( 'Invalid or missing click.type', '' );
-                    }
-                };
+    if( c.type == 'comp' ) {
+        Baseliner.add_tabcomp( c.url, _(c.title), params );
+    } else if( c.type == 'html' ) {
+        Baseliner.add_tab( c.url, _(c.title), params );
+    } else if( c.type == 'iframe' ) {
+        Baseliner.add_iframe( c.url, _(c.title), params );
+    } else {
+        Baseliner.message( 'Invalid or missing click.type', '' );
+    }
+};
 // Main event that gets fired everytime a node is right-clicked
 //    builds the menu from node attributes and base menu
 var menu_click = function(node,event){

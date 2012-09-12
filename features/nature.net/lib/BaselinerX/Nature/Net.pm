@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use utf8;
 
 register 'nature.net' => {name => '.NET',
+                          icon => 'net',
                           ns   => 'nature/.net'};
 
 1;

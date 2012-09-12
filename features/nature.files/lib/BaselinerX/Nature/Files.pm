@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use utf8;
 
 register 'nature.files' => {name => 'FICHEROS',
+                            icon => 'files',
                             ns   => 'nature/files'};
 
 1;

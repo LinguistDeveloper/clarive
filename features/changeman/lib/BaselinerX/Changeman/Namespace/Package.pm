@@ -218,5 +218,10 @@ sub job_options_global {
     return \@ret;
 }
 
+sub more_info {
+    my $self = shift;
+    return '';
+}
+
 1;
 

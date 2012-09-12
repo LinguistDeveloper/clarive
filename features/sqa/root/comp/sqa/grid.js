@@ -1,8 +1,8 @@
 //INFORMACIÓN DEL CONTROL DE VERSIONES
 //
 //	CAM .............................. SCM
-//	Pase ............................. N.TEST0000070154
-//	Fecha de pase .................... 2012/09/06 17:56:13
+//	Pase ............................. N.ANTE0000070155
+//	Fecha de pase .................... 2012/09/06 17:56:59
 //	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/root/comp/sqa/grid.js
 //	Versión del elemento ............. 45
 //	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)

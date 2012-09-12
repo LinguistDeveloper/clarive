@@ -1367,7 +1367,8 @@ Baseliner.kanban = function( args ){
                 var portlet = e.panel;
                 var previous_id_status = portlet.initialConfig.id_status;
                 portlet.initialConfig.id_status = e.column.initialConfig.id_status;
-                /* setTimeout( function(){ console.log( previous_id_status ); 
+                /* setTimeout( function(){
+                    console.log( previous_id_status ); 
                 }, 2000); */
             }
         }
@@ -1560,3 +1561,66 @@ Baseliner.kanban = function( args ){
 };
 Ext.extend( Baseliner.Kanban, Baseliner.Portal ); 
 */
+
+
+/*
+
+    Generates a Wizard-like CardLayout Panel.
+
+    var panel = new Baseliner.Wizard({
+        done_handler: function(panel) {
+        },
+        items: [ form1, form2 ]
+    });
+
+
+*/
+Baseliner.Wizard = function(config) {
+    var current = config.current==undefined ? 0 : config.current;
+    var first = config.first==undefined ? 0 : config.first;
+    var last = config.last==undefined ? config.items.length-1 : config.last;
+    var button_setup = function(){
+        if( current == first ) bback.disable();
+        if( current > first ) bback.enable();
+        if( current == last ) {
+            bdone.show();
+            bnext.hide();
+        }
+    };
+    var navHandler = function(direction){
+        current += direction;
+        if( direction < 0 ) {
+            bdone.hide();
+            bnext.show();
+        }
+        button_setup();
+        this.getLayout().setActiveItem( current ); 
+    };
+    var bback = new Ext.Button({
+                text: _('Back'),
+                handler: navHandler.createDelegate(this, [-1]),
+                disabled: true
+            });
+    var bnext = new Ext.Button({
+                text: _('Next'),
+                handler: navHandler.createDelegate(this, [1])
+            });
+    var bdone = new Ext.Button({
+                text: _('Done'),
+                hidden: true,
+                handler: function(){
+                    config.done_handler(this);
+                }
+            });
+    Baseliner.Wizard.superclass.constructor.call(this, Ext.apply({
+        layout:'card',
+        activeItem: 0, // make sure the active item is set on the container config!
+        bodyStyle: 'padding:15px',
+        defaults: { border: false },
+        bbar: [
+            '->', bback, bnext,bdone
+        ]
+    }, config ));
+    this.on( 'afterrender', function(){ button_setup() });
+};
+Ext.extend( Baseliner.Wizard, Ext.Panel ); 

@@ -47,6 +47,7 @@ use Exporter::Tidy default => [
     _parse_template
     _get_options
     _decode_json
+    _encode_json
     _check_parameters
     _mkpath
     _rmpath
@@ -336,7 +337,6 @@ sub _error {
 #TODO check that global DEBUG flag is active
 sub _debug {
     my ($cl,$fi,$li) = caller(0);
-    # return unless $ENV{BASELINER_DEBUG} || $ENV{BALI_DEBUG} || $ENV{CATALYST_DEBUG};
     return unless Baseliner->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
@@ -369,6 +369,12 @@ sub _decode_json {
     my $data = shift;
     $data = encode_utf8($data) if is_utf8($data);
     return decode_json($data); 
+}
+
+sub _encode_json {
+    my $data = shift;
+    #$data = encode_utf8($data) if is_utf8($data);
+    return decode_utf8( encode_json($data) ); 
 }
 
 sub _throw {
