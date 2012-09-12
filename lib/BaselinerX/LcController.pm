@@ -69,13 +69,13 @@ sub tree_topics_project : Local {
         push @tree,
             {
             text       =>  $_->{topic_project}{title},
-                 calevent => {
-                        mid    => $_->{from_mid},
-                        color => $_->{topic_project}{categories}{color},
-                        title =>  $_->{topic_project}{title},
-                        allDay => \1
-                    },
-                    url  => '/lifecycle/tree_topic_get_files',
+            calevent => {
+                mid    => $_->{from_mid},
+                color => $_->{topic_project}{categories}{color},
+                title =>  $_->{topic_project}{title},
+                allDay => \1
+            },
+            url  => '/lifecycle/tree_topic_get_files',
             topic_name => {
                 mid             => $_->{from_mid},
                 category_color => $_->{topic_project}{categories}{color},
