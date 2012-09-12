@@ -44,8 +44,8 @@ BALI_ENV=mine bin/bali db load --dir db/sample/es
 
 To run the server in debug mode, execute the following command: 
 
-BASELINER_DEBUG=1 BALI_ENV=t plackup -S twiggy -R lib,etc,features/gitscm/lib --port 3000
+BASELINER_DEBUG=1 BALI_ENV=t plackup -R lib,etc,features/gitscm/lib --port 3000
 
 Production server:
 
-BALI_ENV=t plackup -S Starman --port 3000
+BALI_ENV=t plackup -s Starman --port 3000
