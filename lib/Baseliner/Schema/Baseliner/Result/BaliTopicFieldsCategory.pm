@@ -22,15 +22,19 @@ __PACKAGE__->add_columns(
   },
   "id_field",
   {
-    data_type => "numeric",
+    data_type => "varchar2",
+    size => 1024,
     is_nullable => 0,
   },
+  "params_field",
+  {
+    data_type => "CLOB",
+    default_value => undef,
+    is_nullable => 1,
+  },  
 );
 
-__PACKAGE__->belongs_to(
-  "fields",
-  "Baseliner::Schema::Baseliner::Result::BaliFieldsCategory",
-  { id => "id_field" },
-);
+__PACKAGE__->set_primary_key("id_category", "id_field");
+
 
 1;

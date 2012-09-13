@@ -21,11 +21,16 @@ register 'menu.admin.topic' => {
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };
 
+register 'config.field.general' => {
+    metadata => [
+        { id => 'status', label => '', default => 'visible', values => ['visible','hidden','readonly'] },
+    ]
+};
+
 register 'config.field.title' => {
     metadata => [
-           { id=>'visibility', label=>'', default => 'ALL' },
-           { id=>'readonly', label=>'', default => 'NONE' },
-        ]
+        { id => 'status', label => '', default => 'visible', values => ['visible','hidden','readonly'] },
+    ]
 };
 
 
@@ -462,44 +467,101 @@ sub list_categories_admin : Local {
     $c->forward('View::JSON');
 }
 
+#sub list_fields : Local {
+#    my ($self,$c) = @_;
+#    my $p = $c->request->parameters;
+#    my $cnt;
+#    my @rows;
+#
+#    my $rows = $c->model('Baseliner::BaliFieldsCategory')->search(undef, {orderby => ['id ASC']});
+#
+#    while( my $rec = $rows->next ) {
+#        push @rows, {
+#                     id      => $rec->id,
+#                     name    => $rec->name
+#                 };             
+#
+#    }
+#    
+#    unless( @rows ) {
+#        _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>PASASASASASASASASASASASSA";
+#        my $i = 0;
+#        @rows  = map { +{ id=>$i++, name=>$_ } } qw/
+#            assign_to
+#            category
+#            description
+#            files
+#            labels
+#            priority
+#            progress
+#            projects
+#            properties
+#            release
+#            revisions
+#            status
+#            title
+#            topics
+#        /;
+#    }
+#    
+#    $cnt = $#rows + 1 ;
+#    
+#    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+#    $c->forward('View::JSON');
+#}
+
 sub list_fields : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $cnt;
+
+    my @field_dirs;
+    push @field_dirs, $c->path_to( 'root/fields' ) . "";
+    @field_dirs = grep { -d } @field_dirs;
+    
+    my @fieldlets = map {
+        my @ret;
+        #for my $f ( grep { -f } _dir( $_ . '/*.html')->children ) {
+        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
+            my $d = $f->slurp;
+            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
+           
+            my $metadata;
+            if(length $yaml ) {
+                $metadata =  _load( $yaml );    
+            } else {
+                $metadata = {};
+            }
+            my @rows = map {
+                +{  field=>$_, value => $metadata->{$_} } 
+            } keys %{ $metadata || {} };
+            
+            push @ret, {
+                file => "$f",
+                yaml => $yaml,
+                metadata => $metadata,
+                rows => \@rows,
+            };
+        }
+       @ret;
+    } @field_dirs;
+    
     my @rows;
-
-    my $rows = $c->model('Baseliner::BaliFieldsCategory')->search(undef, {orderby => ['id ASC']});
-
-    while( my $rec = $rows->next ) {
-        push @rows, {
-                     id      => $rec->id,
-                     name    => $rec->name
-                 };             
-
-    }
+    my $i = 1;
+    for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } @fieldlets ) {
+        if( $field->{metadata}->{name} ){
+            $field->{metadata}->{params}->{name_field} = $field->{metadata}->{name};
+            push @rows,
+                {
+                  #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
+                  id        => $field->{metadata}->{name},
+                  params	=> $field->{metadata}->{params},
+                  #order     => $field->{metadata}->{order},
+                  #value     => $field->{metadata}->{value},
+                };		
+        }
+    }	    
     
-    unless( @rows ) {
-        my $i = 0;
-        @rows  = map { +{ id=>$i++, name=>$_ } } qw/
-            assign_to
-            category
-            description
-            files
-            labels
-            priority
-            progress
-            projects
-            properties
-            release
-            revisions
-            status
-            title
-            topics
-        /;
-    }
-    $cnt = $#rows + 1 ;
-    
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->stash->{json} = {data=>\@rows};
     $c->forward('View::JSON');
 }
 
@@ -529,24 +591,43 @@ sub update_fields : Local {
     my $p = $c->req->params;
     my $id_category = $p->{id};
     my @ids_field = _array $p->{fields};
+    my @values_field = _array $p->{values};
 
     my $category = $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $id_category} );
     if($category->count > 0){
         $category->delete;
     }
     
-    foreach my $id_field (@ids_field){
-        my $fields_category = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
-                                                                                id_category => $id_category,
-                                                                                id_field    => $id_field
-        });
-    }    
+    my $param_field;
+    foreach my $field (@ids_field){
+        my $params = _decode_json(shift(@values_field));
 
-    if( $p->{forms} ) {
-        my $forms = join ',', _array $p->{forms};
-        my $row = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
-        $row->update({ forms=>$forms }) if ref $row;
+        my $fields_category = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
+                                                                                id_category         => $id_category,
+                                                                                id_field            => $field,
+                                                                                params_field          => _dump $params,
+        });                                                                                
     }
+    
+    #my $i = 1;
+    #foreach my $id_field (@ids_field){
+    #    
+    #    my @id_path = split /#/, $id_field;
+    #    my $fields_category = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
+    #                                                                            id_category         => $id_category,
+    #                                                                            id_field            => $id_path[0],
+    #                                                                            path_field          => $id_path[1],
+    #                                                                            column_json_field   => shift(@values_field),
+    #                                                                            #params_field => shift(@params_field),
+    #                                                                            order_field => $i++,
+    #    });
+    #}    
+    #
+    #if( $p->{forms} ) {
+    #    my $forms = join ',', _array $p->{forms};
+    #    my $row = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
+    #    $row->update({ forms=>$forms }) if ref $row;
+    #}
 
     $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
     $c->forward('View::JSON');    
@@ -664,31 +745,40 @@ sub get_config_field : Local {
     my $p = $c->request->parameters;
     my @rows;
     
+    #if($p->{config}){
+    #    try{
+    #        my $default_config = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
+    #        my %dashlet_config;
+    #        my %key_description;
+    #        foreach my $field (_array $default_config){
+    #            $dashlet_config{$field->{id}} = $field->{default};
+    #            $key_description{$field->{id}} = $field->{label};
+    #        }		
+    #        
+    #        foreach my $key (keys %dashlet_config){
+    #            push @rows,
+    #                {
+    #                    id 			=> $key,
+    #                    description	=> $key_description{$key},
+    #                    value 		=> $dashlet_config{$key}
+    #                };		
+    #        }
+    #    }
+    #    catch{
+    #        $c->stash->{json} = { data => undef};  
+    #    };
+    #}
+    
     if($p->{config}){
         try{
-            my $default_config = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
-            my %dashlet_config;
-            my %key_description;
-            foreach my $field (_array $default_config){
-                $dashlet_config{$field->{id}} = $field->{default};
-                $key_description{$field->{id}} = $field->{label};
-            }		
-            
-            foreach my $key (keys %dashlet_config){
-                push @rows,
-                    {
-                        id 			=> $key,
-                        description	=> $key_description{$key},
-                        value 		=> $dashlet_config{$key}
-                    };		
-            }
+            my @settings = $c->model('Registry')->get('config.field.general')->metadata;
+            #my @settings = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
+            $c->stash-> {json} = {data => @settings};
         }
         catch{
-            $c->stash->{json} = { data => undef};  
+            $c->stash-> {json} = {data => undef};  
         };
     }    
-    
-    $c->stash->{json} = { data => \@rows};
     $c->forward('View::JSON');    
 }
 

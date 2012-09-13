@@ -1,0 +1,10 @@
+<%args>
+    $data
+</%args>
+
+    <tr>
+        <th colspan="2"><% _loc('Description') %>:</th>
+    </tr>
+    <tr>
+        <td colspan="2"><% $data->{description} || '&nbsp;' %></td>
+    </tr>

@@ -1,0 +1,22 @@
+<%args>
+    $data
+</%args>
+
+% if( _array( $data->{dates} ) ) {
+    <ul class="nav nav-list">
+        <li class="nav-header">
+            <% _loc("Scheduling") %>
+        </li>
+    </ul>
+    <ul class="" style="margin-left: 20px">
+% foreach my $date ( _array( $data->{dates} ) ) {
+%  my $s = $date->{start_date};
+%  $s =~ s{00:00:00}{}g;
+%  my $e = $date->{end_date};
+%  $e =~ s{00:00:00}{}g;
+        <li style="margin: 6px 0px 6px 0px">
+            <% $s."-".$e %>
+        </li>
+% }
+    </ul>
+% }

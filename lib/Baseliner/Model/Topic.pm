@@ -12,139 +12,114 @@ BEGIN { extends 'Catalyst::Model' }
 sub update {
     my ( $self, $p ) = @_;
     my $action = $p->{action};
-
-    #_log "====================== \n" . _dump $p;
-
     my $return;
     my $topic_mid;
     my $status;
-    my @rsptime = ();
-    my @deadline = ();
-    
-    if( length $p->{priority} ) {
-        @rsptime = split('#', $p->{txt_rsptime_expr_min});
-        @deadline = split('#', $p->{txt_deadline_expr_min});
-    }
+
     given ( $action ) {
         when ( 'add' ) {
             event_new 'event.topic.create' => { username=>$p->{username} } => sub {
-                my $topic = master_new 'topic' => $p->{title} => sub {
-                    $topic_mid = shift;    
-                    Baseliner->model('Baseliner::BaliTopic')->create(
-                        {   title              => $p->{title},
-                            description        => $p->{description},
-                            progress           => $p->{progress},
-                            created_by         => $p->{username},
-                            mid                => $topic_mid,
-                            id_category        => $p->{category},
-                            id_category_status => $p->{status_new},
-                            id_priority        => $p->{priority},
-                            response_time_min  => $rsptime[1],
-                            expr_response_time => $rsptime[0],
-                            deadline_min       => $deadline[1],
-                            expr_deadline      => $deadline[0]
+                my $meta = $self->get_meta ($topic_mid , $p->{category});
+                my $topic = $self->save_data ($meta, undef, $p);
 
-                        }
-                    );
-                };
 
                 # files topics
 
                 #if( my @files_uploaded_mid = split(",", $p->{files_upload_mid}) ) 
-                if( my @files_uploaded_mid = split(",", $p->{files_uploaded_mid}) ) {
-                    my $rs_files = Baseliner->model('Baseliner::BaliFileVersion')->search({mid =>\@files_uploaded_mid});
-                    while(my $rel_file = $rs_files->next){
-                        # tie file to topic
-                        event_new 'event.file.create' => {
-                            username => $p->{username},
-                            mid      => $topic_mid,
-                            id_file  => $rel_file->mid,
-                            filename     => $rel_file->filename,
-                        };                        
-                        $topic->add_to_files( $rel_file, { rel_type=>'topic_file_version' });
-                    }
-                }
+                #if( my @files_uploaded_mid = split(",", $p->{files_uploaded_mid}) ) {
+                #    my $rs_files = Baseliner->model('Baseliner::BaliFileVersion')->search({mid =>\@files_uploaded_mid});
+                #    while(my $rel_file = $rs_files->next){
+                #        # tie file to topic
+                #        event_new 'event.file.create' => {
+                #            username => $p->{username},
+                #            mid      => $topic_mid,
+                #            id_file  => $rel_file->mid,
+                #            filename     => $rel_file->filename,
+                #        };                        
+                #        $topic->add_to_files( $rel_file, { rel_type=>'topic_file_version' });
+                #    }
+                #}
                 
                 
-                # related topics
-                if( my @topics = _array( $p->{topics} ) ) {
-                    my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
-                    while(my $rel_topic = $rs_topics->next){
-                        $topic->add_to_topics($rel_topic, { rel_type=>'topic_topic'});
-                    }
-                }
+                ## related topics
+                #if( my @topics = _array( $p->{topics} ) ) {
+                #    my $rs_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+                #    while(my $rel_topic = $rs_topics->next){
+                #        $topic->add_to_topics($rel_topic, { rel_type=>'topic_topic'});
+                #    }
+                #}
                 
-                # revisions
-                if( my @revs = _array( $p->{revisions} ) ) {
-                    @revs = split /,/, $revs[0] if $revs[0] =~ /,/ ;
-                    my $rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@revs});
-                    while(my $rev = $rs_revs->next){
-                        $topic->add_to_revisions($rev, { rel_type=>'topic_revision'});
-                    }
-                }
+                ## revisions
+                #if( my @revs = _array( $p->{revisions} ) ) {
+                #    @revs = split /,/, $revs[0] if $revs[0] =~ /,/ ;
+                #    my $rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@revs});
+                #    while(my $rev = $rs_revs->next){
+                #        $topic->add_to_revisions($rev, { rel_type=>'topic_revision'});
+                #    }
+                #}
                 
-                # release
-                if( my @releases = _array( $p->{release} ) ) {
-                    my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
-                    $row_release->add_to_topics($topic, { rel_type=>'topic_topic'});
-                }
+                ## release
+                #if( my @releases = _array( $p->{release} ) ) {
+                #    my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
+                #    $row_release->add_to_topics($topic, { rel_type=>'topic_topic'});
+                #}
                 
-                # projects assigned to 
-                my @projects = _array( $p->{projects} );
-                
-                if (@projects) {
-                    my $project;
-                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@projects});
-                    while($project = $rs_projects->next){
-                        my $mid;
-                        if($project->mid){
-                            $mid = $project->mid
-                        }
-                        else{
-                            my $project_mid = master_new 'project' => $project->name => sub {
-                                my $mid = shift;
-                                $project->mid($mid);
-                                $project->update();
-                            };
-                        }
-                        $topic->add_to_projects($project, { rel_type=>'topic_project'});
-                    }
-
-                }
+                ## projects assigned to 
+                #my @projects = _array( $p->{projects} );
+                #
+                #if (@projects) {
+                #    my $project;
+                #    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@projects});
+                #    while($project = $rs_projects->next){
+                #        my $mid;
+                #        if($project->mid){
+                #            $mid = $project->mid
+                #        }
+                #        else{
+                #            my $project_mid = master_new 'project' => $project->name => sub {
+                #                my $mid = shift;
+                #                $project->mid($mid);
+                #                $project->update();
+                #            };
+                #        }
+                #        $topic->add_to_projects($project, { rel_type=>'topic_project'});
+                #    }
+                #
+                #}
                 
                 # users assigned to
-                my @users = _array( $p->{users});
-                
-                if (@users){
-                    my $user;
-                    my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({id =>\@users});
-                    while($user = $rs_users->next){
-                        my $mid;
-                        if($user->mid){
-                            $mid = $user->mid
-                        }
-                        else{
-                            my $user_mid = master_new 'user' => $user->username => sub {
-                                my $mid = shift;
-                                $user->mid($mid);
-                                $user->update();
-                            };
-                        }
-                        $topic->add_to_users( $user, { rel_type=>'topic_users' });
-                    }
-                }
+                #my @users = _array( $p->{users});
+                #
+                #if (@users){
+                #    my $user;
+                #    my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({id =>\@users});
+                #    while($user = $rs_users->next){
+                #        my $mid;
+                #        if($user->mid){
+                #            $mid = $user->mid
+                #        }
+                #        else{
+                #            my $user_mid = master_new 'user' => $user->username => sub {
+                #                my $mid = shift;
+                #                $user->mid($mid);
+                #                $user->update();
+                #            };
+                #        }
+                #        $topic->add_to_users( $user, { rel_type=>'topic_users' });
+                #    }
+                #}
                 
                 # labels
-                foreach my $label_id (_array $p->{labels}){
-                    Baseliner->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
-                                                                                id_label    => $label_id,
-                                                                    });     
-                }
+                #foreach my $label_id (_array $p->{labels}){
+                #    Baseliner->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
+                #                                                                id_label    => $label_id,
+                #                                                    });     
+                #}
                 
-                #$topic_mid    = $topic->mid;
+                $topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;
                 $return = 'Topic added';
-               { mid=>$topic->mid, topic=>$topic->title }   # to the event
+               { mid => $topic->mid, topic => $topic->title }   # to the event
             } 
             => sub { # catch
                 _throw _loc( 'Error adding Topic: %1', shift() );
@@ -154,107 +129,16 @@ sub update {
             event_new 'event.topic.modify' => { username=>$p->{username} } => sub {
                 my @field;
                 $topic_mid = $p->{topic_mid};
-                my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
-                if ($topic->title ne $p->{title}){ push @field, _loc('title');}
-                $topic->title( $p->{title} );
-                if ($topic->description ne $p->{description}){ push @field, _loc('description');}
-                $topic->description( $p->{description} );
-                if ($topic->id_category ne $p->{category}){ push @field, _loc('category');}
-                $topic->id_category( $p->{category} ) if is_number( $p->{category} ) ;
-                if ($topic->id_category_status ne $p->{status_new}){ push @field, _loc('status');}
-                $topic->id_category_status( $p->{status_new} ) if is_number( $p->{status_new} );
-                if ($topic->id_priority ne $p->{priority}){ push @field, _loc('priority');}
-                $topic->id_priority( $p->{priority} )          if is_number( $p->{priority} );
-                $topic->response_time_min( $rsptime[1] );
-                $topic->expr_response_time( $rsptime[0] );
-                $topic->deadline_min( $deadline[1] );
-                $topic->expr_deadline( $deadline[0] );
-                $topic->progress( $p->{progress} ) if $p->{progress};
-
-                # TODO create event data for all the fields changed
-
-                # related topics
-                if( my @topics = _array( $p->{topics} ) ) {
-                    #my @curr_topics = $topic->topics;
-                    my @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
-                    #$topic->remove_from_topics( $_ ) for @curr_topics;
-                    $topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
-                }
-
-                # revisions
-                if( my @revs = _array( $p->{revisions} ) ) {
-                    @revs = split /,/, $revs[0] if $revs[0] =~ /,/ ;
-                    my @rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@revs});
-                    $topic->set_revisions( \@rs_revs, { rel_type=>'topic_revision'});
-                } else {
-                    $topic->revisions->delete;
-                }
                 
-                # release
-                if( my @releases = _array( $p->{release} ) ) {
-                    my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
-                    my @topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>$topic->mid });
-                    $row_release->set_topics( \@topics, { rel_type=>'topic_topic'});
-                }
+                my $meta = $self->get_meta ($topic_mid, $p->{category});
+                my $topic = $self->save_data ($meta, $topic_mid, $p);
                 
-                # projects
-                my $projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $p->{topic_mid}, rel_type => 'topic_project'})->delete;
-                my @projects = _array( $p->{projects} );
-                if (@projects){
-                    my $project;
-                    my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@projects});
-                    while($project = $rs_projects->next){
-                        my $mid;
-                        if($project->mid){
-                            $mid = $project->mid
-                        }
-                        else{
-                            my $project_mid = master_new 'project' => $project->name => sub {
-                                my $mid = shift;
-                                $project->mid($mid);
-                                $project->update();
-                            }
-                        }
-                        $topic->add_to_projects( $project, { rel_type=>'topic_project' } );
-                    }
-                }
-                
-                # users
-                my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{topic_mid}, rel_type => 'topic_users'})->delete;
-                my @users = _array( $p->{users} );
-                if (@users){
-                    #my $users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{mid}, rel_type => 'topic_users'})->delete;
-                    my $user;
-                    my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({id =>\@users});
-                    while($user = $rs_users->next){
-                        my $mid;
-                        if($user->mid){
-                            $mid = $user->mid
-                        }
-                        else{
-                            my $user_mid = master_new 'user' => $user->username => sub {
-                                my $mid = shift;
-                                $user->mid($mid);
-                                $user->update();
-                            };
-                        }
-                        $topic->add_to_users( $user, { rel_type=>'topic_users' });
-                    }                    
-                }
-                
-                # labels
-                Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
-                
-                foreach my $label_id (_array $p->{labels}){
-                    Baseliner->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
-                                                                                id_label    => $label_id,
-                                                                    });     
-                }                
-
-                $topic->update();
                 $topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;
-                
+
+                #_log ">>>>>>>>>>>>>>Datos modificados con dirty en el topico: " . _dump $topic->get_dirty_columns;                
+                #_log ">>>>>>>>>>>>>>Datos modificados en el topico: " . _dump @field;
+
               
                 event_new 'event.topic.modify' => {
                     username => $p->{username},
@@ -264,7 +148,7 @@ sub update {
                 };                   
                 
                 $return = 'Topic modified';
-               { mid=>$topic->mid, topic=>$topic->title }   # to the event
+               { mid => $topic->mid, topic => $topic->title }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -334,5 +218,234 @@ sub next_status_for_user {
 
     return @to_status;
 }
+
+sub get_meta {
+    my ($self, $topic_mid, $id_category) = @_;
+
+    #my @fields = Baseliner->model('Baseliner::BaliTopicFieldsCategory')
+    #   ->search({id_category => $json->{category}}, {order_by => 'order_field'})->hashref->all;
+    #return  [   map {
+    #                    my $value = eval('$json->{' . $_->{column_json_field} . '}');
+    #                    +{  field_name  => $_->{id_field},
+    #                        field_path  => $_->{path_field},
+            #                field_value => $value ? $value : undef,
+            #             }
+            #        } @fields
+            #];
+    #my @meta = DB->BaliTopicFieldsCategory->search({ 'topic.mid'=>$topic_mid }, { join=>'topic' })->hashref->all;
+    my $id_cat =  $id_category
+        // DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query;
+        
+    #my @meta = DB->BaliTopicFieldsCategory->search({ id_category=>$id_cat })->hashref->all;
+    my @meta = sort { $a->{field_order} <=> $b->{field_order} } map {  _load $_->{params_field} } DB->BaliTopicFieldsCategory->search({ id_category => { -in => $id_cat }  })->hashref->all;
+    
+    #my @meta = (
+    #     { name_field => 'title', id_field => 'title', origin => 'system', html => '/fields/field_title.html', js => '/fields/field_title.js', field_order => 2, section => 'body' },
+    #     { name_field => 'category', id_field => 'id_category', origin => 'system', html => '/fields/field_category.html', js => '/fields/field_category.js', field_order => 1, section => 'body' },
+    #     { name_field => 'status_new', id_field => 'id_category_status', origin => 'system', html => '/fields/field_status.html', js => '/fields/field_status.js', field_order => 3, section => 'body' },
+    #     { name_field => 'created_by', id_field => 'created_by', origin => 'default', html => '/fields/field_created_by.html', field_order => 4, section => 'body' },
+    #     { name_field => 'created_on', id_field => 'created_on', origin => 'default', html => '/fields/field_created_on.html', field_order => 5, section => 'body' },
+    #     { name_field => 'priority', id_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => '/fields/field_priority.html', js => '/fields/field_priority.js', field_order => 6, section => 'body' },
+    #     { name_field => 'description', id_field => 'description', origin => 'system', html => '/fields/field_description.html', js => '/fields/field_description.js', field_order => 15, section => 'body' },
+    #     { name_field => 'release', id_field => 'release', origin => 'rel', set_method => 'set_release', rel_field => 'release', method => 'get_release', html => '/fields/field_release.html', js => '/fields/field_release.js', field_order => 7, section => 'body' },
+    #     { name_field => 'progress', id_field => 'progress', origin => 'system', html => '/fields/field_progress.html', js => '/fields/field_progress.js', field_order => 8, section => 'body' },
+    #     { name_field => 'projects', id_field => 'projects', origin => 'rel', set_method => 'set_projects', rel_field => 'projects', method => 'get_projects', html => '/fields/field_projects.html', js => '/fields/field_projects.js', field_order => 9, section => 'details' },
+    #     { name_field => 'users', id_field => 'users', origin => 'rel', set_method => 'set_users', rel_field => 'users', method => 'get_users', html => '/fields/field_assign_to.html', js => '/fields/field_assign_to.js', field_order => 10, section => 'details' },
+    #     { name_field => 'labels', id_field => 'labels', origin => 'rel', set_method => 'set_labels', method => 'get_labels', html => '/fields/field_labels.html', js => '/fields/field_labels.js', field_order => 11, section => 'head' },
+    #     { name_field => 'revisions', id_field => 'revisions', origin => 'rel', set_method => 'set_revisions', rel_field => 'revisions', method => 'get_revisions', html => '/fields/field_revisions.html', js => '/fields/field_revisions.js', field_order => 12, section => 'details' },
+    #     { name_field => 'dates', id_field => 'dates', origin => 'rel', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 13, section => 'details' },
+    #     { name_field => 'topics', id_field => 'topics', origin => 'rel', set_method => 'set_topics', method => 'get_topics', html => '/fields/field_topics.html', js => '/fields/field_topics.js', field_order => 14, section => 'details' },
+    #     { name_field => 'files', id_field => 'files', origin => 'rel', method => 'get_files', html => '/fields/field_files.html', js => '/fields/field_files.js', field_order => 15, section => 'details' },
+    #     #{ id_field =>'comentario', origin =>'custom' },
+    #     #{ id_field =>'docs', origin =>'rel', rel_type =>'topic_file' },
+    #);
+    return \@meta;
+}
+
+sub save_data {
+    my ($self, $meta, $topic_mid, $data ) = @_;
+   
+    # $data = { title=>'xxx' , id_category=>66, docs=>"1,2,3" }
+    my @std_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, method => $_->{set_method}} } grep { $_->{origin} eq 'system' } _array( $meta  );
+    
+    my %row;
+    for( @std_fields ) {
+        if  (exists $data->{ $_ -> {name}}){
+            $row{ $_->{column} } = $data->{ $_ -> {name}};
+            if ($_->{method}){
+                my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data )' );
+                foreach my $column (keys $extra_fields ){
+                     $row{ $column } = $extra_fields->{$column};
+                }
+            }
+            
+        }
+    }
+    
+    my $topic;
+    
+    if (!$topic_mid){
+        $topic = master_new 'topic' => $data->{title} => sub {
+            $topic_mid = shift;
+            #Defaults
+            $row{ mid } = $topic_mid;
+            $row{ created_by } = $data->{username};
+            DB->BaliTopic->create( \%row );
+        }        
+        
+    }else{
+        $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
+        $topic->update( \%row );
+    }
+
+    
+    
+    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{origin} eq 'rel' } _array( $meta  );
+    
+    foreach my $key  (keys %rel_fields){
+        if($rel_fields{$key}){
+            eval( '$self->' . $rel_fields{$key} . '( $topic, $data->{$key} )' );    
+        }
+    } 
+    
+    $topic->update( \%row );
+    return $topic;
+    
+    #DB->BaliTopic->find( $topic_mid )->update( \%row );
+    # DB->BaliTopic->create( %row );
+    
+    #for my $field ( grep { $_->{origin} eq 'rel' }_array( $meta ) ) {
+    #    my $field_id = $field->{id_field};
+    #    my $rel_type = $field->{rel_type};
+    #    my $v = $data->{ $field_id };
+    #    my @to_mid = split /,/, $v;
+    #    # TODO borrar filas de la relacion
+    #    for my $rel ( @to_mid ) {
+    #        DB->BaliMasterRel->create({
+    #              from_mid=>$topic_mid,
+    #              to_mid=>$_,
+    #              rel_type=>$rel_type,
+    #              rel_field=>$field_id });
+    #    }
+    #}
+    #my @rels = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$topic_mid })->hashref->all;
+    #for my $rel ( @rels ) {
+    #    next unless $rel->{rel_field};
+    #    #next unless exists $rel_fields{ $rel->{rel_field} };
+    #    push @{ $data->{ $rel->{rel_field} } },  $rel->{to_mid};
+    #}
+}
+
+sub set_priority {
+    my ($self, $value, $data ) = @_;
+    my @rsptime = ();
+    my @deadline = ();
+    
+    if( length $value ) {
+        @rsptime = split('#', $data->{txt_rsptime_expr_min});
+        @deadline = split('#', $data->{txt_deadline_expr_min});
+    }
+ 
+    return {
+            response_time_min  => $rsptime[1],
+            expr_response_time => $rsptime[0],
+            deadline_min       => $deadline[1],
+            expr_deadline      => $deadline[0]         
+           } 
+}
+
+sub set_topics {
+    my ($self, $rs_topic, $topics ) = @_;
+    my @all_topics = ();
+                
+    # related topics
+    if( my @topics = _array( $topics ) ) {
+        @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
+        $rs_topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+    }else{
+        $rs_topic->set_topics( undef, { rel_type=>'topic_topic'});
+    }
+}
+
+sub set_revisions {
+    my ($self, $rs_topic, $revisions ) = @_;
+    
+    if( my @revs = _array( $revisions ) ) {
+        @revs = split /,/, $revs[0] if $revs[0] =~ /,/ ;
+        my @rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@revs});
+        $rs_topic->set_revisions( \@rs_revs, { rel_type=>'topic_revision'});
+    } else {
+        $rs_topic->set_revisions( undef, { rel_type=>'topic_revision'});
+        #$rs_topic->revisions->delete;
+    }    
+}
+
+sub set_release {
+    my ($self, $rs_topic, $release ) = @_;
+    my $topic_mid = $rs_topic->mid;
+    
+    my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
+                            { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
+                            { join=>['categories','children','master'], select=>'mid' }
+                            )->as_query;
+                            
+    my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row}})->delete;
+        
+    # release
+    if( my @releases = _array( $release ) ) {
+        my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
+        my @topics = Baseliner->model('Baseliner::BaliTopic')->search( {mid => $topic_mid} );
+        $row_release->set_topics( \@topics, { rel_type=>'topic_topic'});
+    }
+}
+
+sub set_projects {
+    my ($self, $rs_topic, $projects ) = @_;
+    my $topic_mid = $rs_topic->mid;
+    
+    my $del_projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
+    
+    # projects
+    my @projects = _array( $projects );
+    if (@projects){
+        my $project;
+        my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@projects});
+        while($project = $rs_projects->next){
+            $rs_topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+        }
+    }    
+}
+
+sub set_users{
+    my ($self, $rs_topic, $users ) = @_;
+    my $topic_mid = $rs_topic->mid;
+    
+    my $del_users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
+    
+    # users
+    my @users = _array( $users );
+    if (@users){
+        my $user;
+        my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({mid =>\@users});
+        while($user = $rs_users->next){
+            $rs_topic->add_to_users( $user, { rel_type=>'topic_users' });
+        }                    
+    }
+}
+
+sub set_labels{
+    my ($self, $rs_topic, $labels ) = @_;
+    my $topic_mid = $rs_topic->mid;
+    
+    # labels
+    Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
+    
+    foreach my $label_id (_array  $labels){
+        Baseliner->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
+                                                                    id_label    => $label_id,
+                                                        });     
+    }     
+}
+
 
 1;

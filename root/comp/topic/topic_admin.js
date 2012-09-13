@@ -50,9 +50,10 @@
 		id: 'id', 
 		url: '/topicadmin/get_config_field',
 		fields: [
-			{  name: 'id' },
-			{  name: 'description' },
-			{  name: 'value' }
+			{ name: 'id' },
+			{ name: 'label' },
+			{ name: 'default' },
+			{ name: 'values' }
 		]
 	});		
     
@@ -1042,7 +1043,7 @@
 			baseParams: {},
 			id: 'id', 
 			url: '/topicadmin/list_fields',
-			fields: ['id','name'] 
+			fields: ['id','params'] 
 		 }, c));
 	};
 	Ext.extend( Baseliner.store.Fields, Baseliner.JsonStore );
@@ -1050,10 +1051,10 @@
 	Baseliner.model.Fields = function(c) {
 		//var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
 		var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-			'<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.name)]}</span></span>',
+			'<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.id)]}</span></span>',
 			'&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
 		var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-			'<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.name)]}</span></span>',
+			'<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{[_(values.id)]}</span></span>',
 			'</tpl>' );
 		Baseliner.model.Fields.superclass.constructor.call(this, Ext.apply({
 			allowBlank: true,
@@ -1067,7 +1068,7 @@
 			fieldLabel: _('Fields'),
 			typeAhead: true,
 			name: 'fields',
-			displayField: 'name',
+			displayField: 'id',
 			hiddenName: 'fields',
 			valueField: 'id',
 			tpl: tpl_list,
@@ -1084,7 +1085,8 @@
         var win;
         var title = _('Create fields');
 		var config = new Array();
-        
+		var fields = new Array();
+		
         var field_box = new Baseliner.model.Fields({
             store: field_box_store
         });
@@ -1095,7 +1097,8 @@
 		
 		field_box.on('additem',function( obj, value, row){
 			//if(row.data.config){
-				config.push({"text": _(row.data.name) , "leaf": true,  "id": row.data.id, "config": row.data.name });	
+				fields.push(Ext.util.JSON.encode(row.data.params));
+				//config.push({"text": _(row.data.name) , "leaf": true,  "id": row.data.id, "config": row.data.name });	
 			//}
 		});			
 
@@ -1165,6 +1168,7 @@
 				    });
 				    
 				    tree_fields.on('click', function(node, checked) {
+						store_config_field.removeAll();
 					    store_config_field.load({params: {config: node.attributes.config, id: node.attributes.id }});
 				    });				
 			    
@@ -1208,8 +1212,26 @@
 							//	    });
 							//    }
 						    }
-					    })					
-					    
+					    })
+    
+
+
+						var combo_field = new Ext.form.ComboBox({
+							mode: 'local',
+							value: rec.data.default,
+							triggerAction: 'all',
+							forceSelection: true,
+							editable: false,
+							fieldLabel: _(rec.data.id),
+							//name: 'cmb_field',
+							//hiddenName: 'field',
+							//displayField: 'name',
+							//valueField: 'name',
+							//En un futuro se cargaran los distintos Host
+							store: rec.data.values
+						}); 						
+						
+						
 					    var form_config = new Ext.FormPanel({
 						    name: form_dashlets,
 						    url: '/dashboard/set_config',
@@ -1217,7 +1239,8 @@
 						    buttons: [btn_grabar_config, btn_cerrar_config],
 						    defaults:{anchor:'100%'},
 						    items   : [
-									    { fieldLabel: _(rec.data.id), name: 'value', xtype: 'textfield', allowBlank:false}
+									    //{ fieldLabel: _(rec.data.id), name: 'value', xtype: 'textfield', allowBlank:false}
+										combo_field
 								    ]
 					    });
     
@@ -1253,7 +1276,7 @@
 					    height:300,
 					    columns: [
 						    { header: _('Property'), dataIndex: 'id', width: 100},
-						    { header: _('Value'), dataIndex: 'value', width: 80}
+						    { header: _('Value'), dataIndex: 'default', width: 80}
 					    ],
 					    autoSizeColumns: true
 				    });
@@ -1310,9 +1333,6 @@
 		
 		
 		
-		
-		
-		
         var form_category = new Ext.FormPanel({
             frame: false,
             border: false,
@@ -1326,9 +1346,9 @@
                         type: 'submit',
                         handler: function() {
                             var form = form_category.getForm();
-                            
                             if (form.isValid()) {
                                 form.submit({
+									params: {values: fields},
                                     success: function(f,a){
                                         Baseliner.message(_('Success'), a.result.msg );
                                     },
