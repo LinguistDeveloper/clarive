@@ -1672,10 +1672,11 @@ Ext.extend( Baseliner.Kanban, Baseliner.Portal );
 
 */
 Baseliner.Wizard = function(config) {
+    var self = this;
     var current = config.current==undefined ? 0 : config.current;
     var first = config.first==undefined ? 0 : config.first;
     var last = config.last==undefined ? config.items.length-1 : config.last;
-    var button_setup = function(){
+    self.button_setup = function(){
         if( current == first ) bback.disable();
         if( current > first ) bback.enable();
         if( current == last ) {
@@ -1689,7 +1690,7 @@ Baseliner.Wizard = function(config) {
             bdone.hide();
             bnext.show();
         }
-        button_setup();
+        self.button_setup();
         this.getLayout().setActiveItem( current ); 
     };
     var bback = new Ext.Button({
@@ -1717,7 +1718,7 @@ Baseliner.Wizard = function(config) {
             '->', bback, bnext,bdone
         ]
     }, config ));
-    this.on( 'afterrender', function(){ button_setup() });
+    this.on( 'afterrender', function(){ self.button_setup() });
 };
 Ext.extend( Baseliner.Wizard, Ext.Panel ); 
 
