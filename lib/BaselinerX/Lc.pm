@@ -54,7 +54,26 @@ sub lc_for_project {
     my $lc = $self->lc;
     _log "LC==========> $lc , " . ref $lc;
     my $nodes = $lc->{nodes};
-    #my $states = $lc->{lifecycle}->{default}->{states};
+
+    my @repos =
+        map { values %$_ }
+        DB->BaliMasterRel->search( {from_mid => $id_prj, rel_type => 'project_repository'},
+        {select => 'to_mid'} )->hashref->all;
+
+    for my $id_repo ( @repos ) {
+        my $repo = Baseliner::CI->new( $id_repo );
+        push @$nodes, {
+          node => _loc("Branches").": ".$repo->name,
+          type => 'changeset',
+          url => '/lifecycle/branches',
+          active => 1,
+          icon => '/static/images/icons/lc/branches_obj.gif',
+          data => {
+            id_repo => $id_repo  
+          }
+          
+        }
+    }
 
     # General bag for starting the deployment workflow
     my @states = (

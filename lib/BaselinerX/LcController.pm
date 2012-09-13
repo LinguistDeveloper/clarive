@@ -230,6 +230,72 @@ sub tree_project : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub branches : Local {
+    my ($self,$c) = @_;
+    my @tree;
+
+    my $p = $c->req->params;
+    my $project = $p->{project} or _throw 'missing project';
+    my $id_project = $p->{id_project} or _throw 'missing project id';
+    my $id_repo = $p->{id_repo} or _throw 'missing repo id';
+
+    my $config = config_get 'config.lc';
+    # provider-by-provider:
+    # get all the changes for this project + baseline
+    my @cs;
+
+    if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
+
+        my $repo = Baseliner::CI->new( $id_repo );
+
+        my @changes = $repo->list_branches( project=>$project );
+        _log _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
+        push @cs, @changes;
+
+        # loop through the changeset objects (such as BaselinerX::GitChangeset)
+        for my $cs ( @cs ) {
+            my $menu = [];
+            # get menu extensions (find packages that do)
+            # get node menu
+            ref $cs->node_menu and push @$menu, _array $cs->node_menu;
+            push @tree, {
+                url        => $cs->node_url,
+                data       => $cs->node_data,
+                parent_data => { id_project=>$id_project, project=>$project }, 
+                menu       => $menu,
+                icon       => $cs->icon,
+                text       => $cs->text || $cs->name,
+                leaf       => \0,
+                expandable => \0
+            };
+        }
+    }
+
+    # ## add what's in this baseline 
+    # my @repos = BaselinerX::Lc->new->project_repos( project=>$project );
+    # # ( Girl::Repo->new( path=>"$path" ), $rev, $project );
+
+    # push @tree, {
+    #     url  => '/lifecycle/repo',
+    #     icon => '/static/images/icons/repo.gif',
+    #     text => $_->{name},
+    #     leaf => \1,
+    #     data => {
+    #         bl    => $bl,
+    #         name  => $_->{name},
+    #         repo_path  => $_->{path},
+    #         click => {
+    #             url   => '/lifecycle/repo',
+    #             type  => 'comp',
+    #             icon  => '/static/images/icons/repo.gif',
+    #             title => "$_->{name} - $bl",
+    #         }
+    #       },
+    # } for @repos;
+
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
 sub changeset : Local {
     my ($self,$c) = @_;
     my @tree;
