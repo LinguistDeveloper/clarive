@@ -1,3 +1,14 @@
+/*
+name: progress
+params:
+    id_field: 'progress'
+    origin: 'system'
+    html: '/fields/field_progress.html'
+    js: '/fields/field_progress.js'
+    field_order: 8
+    section: 'body'
+---
+*/
 (function(params){
 	var data = params.topic_data;
 	

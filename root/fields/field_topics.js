@@ -1,3 +1,17 @@
+/*
+name: topics
+params:
+    id_field: 'topics'
+    origin: 'rel'
+    html: '/fields/field_topics.html'
+    js: '/fields/field_topics.js'
+    field_order: 14
+    section: 'details'
+    set_method: 'set_topics'
+    rel_field: 'topics'
+    method: 'get_topics'
+---
+*/
 (function(params){
 	var data = params.topic_data;
 	

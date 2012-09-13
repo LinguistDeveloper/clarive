@@ -1,3 +1,14 @@
+/*
+name: description
+params:
+    id_field: 'description'
+    origin: 'system'
+    html: '/fields/field_description.html'
+    js: '/fields/field_description.js'
+    field_order: 16
+    section: 'body'    
+---
+*/
 (function(params){
 	var data = params.topic_data;
 	

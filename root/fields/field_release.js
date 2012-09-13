@@ -1,3 +1,17 @@
+/*
+name: release
+params:
+    id_field: 'release'
+    origin: 'rel'
+    html: '/fields/field_release.html'
+    js: '/fields/field_release.js'
+    field_order: 7
+    section: 'body'
+    set_method: 'set_release'
+    rel_field: 'release'
+    method: 'get_release'
+---
+*/
 (function(params){
 	var data = params.topic_data;
 	

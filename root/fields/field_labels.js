@@ -1,3 +1,16 @@
+/*
+name: labels
+params:
+    id_field: 'labels'
+    origin: 'rel'
+    html: '/fields/field_labels.html'
+    js: '/fields/field_labels.js'
+    field_order: 11
+    section: 'head'
+    set_method: 'set_labels'
+    method: 'get_labels'
+---
+*/
 (function(params){
 	var data = params.topic_data;
 	var labels = new Array();

@@ -1,3 +1,17 @@
+/*
+name: users
+params:
+    id_field: 'users'
+    origin: 'rel'
+    html: '/fields/field_assign_to.html'
+    js: '/fields/field_assign_to.js'
+    field_order: 10
+    section: 'details'
+    set_method: 'set_users'
+    rel_field: 'users'
+    method: 'get_users'
+---
+*/
 (function(params){
 	var data = params.topic_data;
 	var users = new Array();

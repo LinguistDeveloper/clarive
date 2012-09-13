@@ -1,3 +1,17 @@
+/*
+name: projects
+params:
+    id_field: 'projects'
+    origin: 'rel'
+    html: '/fields/field_projects.html'
+    js: '/fields/field_projects.js'
+    field_order: 9
+    section: 'details'
+    set_method: 'set_projects'
+    rel_field: 'projects'
+    method: 'get_projects'
+---
+*/
 (function(params){
 	var data = params.topic_data;
 	var projects = new Array();

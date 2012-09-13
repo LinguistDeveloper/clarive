@@ -1,13 +1,22 @@
+/*
+name: files
+params:
+    id_field: 'files'
+    origin: 'rel'
+    html: '/fields/field_files.html'
+    js: '/fields/field_files.js'
+    field_order: 15
+    section: 'details'
+    rel_field: 'topics'
+    method: 'get_files'
+---
+*/
 (function(params){
 	var data = params.topic_data;
 	
 	var ff;
     ff = params.form.getForm();
 	var obj_topic_mid = ff .findField("topic_mid");
-	
-	//alert(obj_topic_mid.getValue());
-	
-	
 	
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
