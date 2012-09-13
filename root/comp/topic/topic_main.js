@@ -32,12 +32,16 @@
                             }
                             
                             var store = form2.findField("status_new").getStore();
+                            store.on("load", function() {
+                                form2.findField("status_new").setValue( a.result.topic_status );
+                            });
                             store.load({
                                 params:{    'categoryId': form2.findField("category").getValue(),
                                             'statusId': form2.findField("status").getValue(),
                                             'statusName': form2.findField("status_new").getRawValue()
                                         }
                             });
+                            
                             params.topic_mid = a.result.topic_mid;
                             btn_comment.show();
                             btn_detail.show();
@@ -64,13 +68,7 @@
                 }
             }
     });
-    //var btn_form_reset = ({
-    //    text: _('Reset'),
-    //    hidden: true,
-    //    handler: function(){ 
-    //            //win.close();
-    //        }
-    //});
+
     // Detail Panel
     var detail = new Ext.Panel({ });
     var show_detail = function(){
@@ -80,7 +78,6 @@
             view_is_dirty = false;
             detail_reload();
         }
-        //btn_form_reset.hide();
     };
 
     Baseliner.Topic.file_del = function( topic_mid, md5, id_row ) {
@@ -106,8 +103,6 @@
                 form.add( comp );
                 form.doLayout();
                 form_is_loaded = true;
-                //var form2 = form_topic.getForm();
-                //form2.findField("status").setValue(rec.status);                 
             }
             btn_form_ok.show();
             if(params.topic_mid){
@@ -117,19 +112,29 @@
                 btn_comment.hide();
                 btn_detail.hide();
             }
-            //btn_form_reset.show();
-        });
+        });            
     };
     var show_form = function(){
         if( params!==undefined && params.topic_mid !== undefined ) {
-            Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
-                load_form( rec );
-            });
+            if (!form_is_loaded){
+                Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
+                    load_form( rec );
+                });
+            }else{
+                btn_form_ok.show();
+                if(params.topic_mid){
+                    btn_comment.show();
+                    btn_detail.show();
+                }else{
+                    btn_comment.hide();
+                    btn_detail.hide();
+                }                
+            }
         } else {
+            
             Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name }, function(rec) {
                 load_form( rec );
             });
-            //load_form({ new_category_id: params.new_category_id, new_category_name: params.new_category_name });
         }
           
         cardpanel.getLayout().setActiveItem( 1 );
@@ -240,7 +245,6 @@
         text: _('Add Comment'),
         icon:'/static/images/icons/comment_new.gif',
         cls: 'x-btn-icon-text',
-        //disabled: true,
         handler: function() {
             Baseliner.Topic.comment_edit( params.topic_mid );
         }
@@ -262,26 +266,11 @@
     var tb = new Ext.Toolbar({
         isFormField: true,
         items: [
-            //{ 
-            //    icon:'/static/images/icons/detail.png',
-            //    cls: 'x-btn-icon',
-            //    enableToggle: true, pressed: true, handler: show_detail, toggleGroup: 'form'
-            //},
-            //{ text:_('Edit'),
-            //    icon:'/static/images/icons/edit.png',
-            //    cls: 'x-btn-text-icon',
-            //    enableToggle: true, handler: show_form, toggleGroup: 'form'
-            //},
             btn_detail,
             btn_edit,
             '-',
             btn_comment,
             btn_form_ok
-            //'-',
-            //_('Estado') + ': ',
-            //{ xtype: 'combo', value: 'New' },
-            //'->'
-            //btn_form_reset
         ]
     });
     var cardpanel = new Ext.Panel({

@@ -7,8 +7,26 @@ use Baseliner::Sugar;
 use Baseliner::Core::Message;
 use Try::Tiny;
 
+with 'Baseliner::Role::Service';
+
 register 'action.notify.admin' =>  { name=>'Receive General Admin Messages' };
 register 'action.notify.error' =>  { name=>'Receive Error Notifications' };
+
+register 'service.notify.create' => {
+    name => 'Send a Notification',
+    form => '/forms/notify_create.js',
+    handler=>sub{
+        my ($self, $c, $config) = @_;
+        my $to = $config->{to};
+        my $cc = $config->{cc};
+        $self->notify( 
+            body => $config->{body},
+            subject => $config->{subject},
+            carrier => 'email',
+        );
+        return { msg_id => 999, config=>$config }; 
+    }
+};
 
 =head1 DESCRIPTION
 

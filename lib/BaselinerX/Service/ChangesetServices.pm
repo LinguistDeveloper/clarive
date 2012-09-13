@@ -8,17 +8,17 @@ use Try::Tiny;
 with 'Baseliner::Role::Service';
 
 register 'service.changeset.checkout' => {
-    name    => _loc( 'Checkout files of a changeset' ),
+    name    => 'Checkout files of a changeset',
     handler => \&checkout,
 };
 
 register 'service.changeset.job_elements' => {
-    name    => _loc( 'Fill job_elements' ),
+    name    => 'Fill job_elements',
     handler => \&job_elements,
 };
 
 register 'service.changeset.update' => {
-    name    => _loc( 'Update Baselines' ),
+    name    => 'Update Baselines',
     handler => \&update_baselines,
 };
 

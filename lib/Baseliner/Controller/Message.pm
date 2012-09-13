@@ -1,6 +1,7 @@
 package Baseliner::Controller::Message;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
 
 sub detail : Local {
@@ -105,6 +106,33 @@ sub inbox : Local {
     
 }
 
+sub to_and_cc : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my @data;
+        my $id = 1;
+        @data = map {
+            my $ns = $_->{username} ? "user/$id" : "role/$id";
+            +{
+                type => $_->{username} ? 'User' : 'Role',
+                name => $_->{username} || $_->{role},
+                long => $_->{description} || $_->{realname} || '',
+                id => $id++,
+                ns => $ns,
+            }
+        } DB->BaliUser->search()->hashref->all, DB->BaliRole->search()->hashref->all;
+        if( $p->{query} ) {
+            my $re = qr/$p->{query}/i;
+            @data = grep { join( ',',values(%$_) ) =~ $re } @data ;
+        }
+        $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar(@data) };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+    $c->forward('View::JSON');	
+}
 
 1;
 

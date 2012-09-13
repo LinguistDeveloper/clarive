@@ -22,6 +22,8 @@ __PACKAGE__->add_columns(
   },
   "name",
   { data_type => "varchar2", is_nullable => 0, size => 256 },
+  "column_name",
+  { data_type => "varchar2", is_nullable => 0, size => 256 },  
 );
 
 

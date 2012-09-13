@@ -1,49 +1,14 @@
 <%args>
     $ii
     $topic_mid
-    $title
-    $description
     $comments
-    $category
-    $category_color
-    $created_by
-    $created_on
-    $priority
-    $progress
-    $deadline
-    $status
     $events
-    $files
-    $dates
-    $release => ''
-    $release_row => {}
-    $topics
-    $parents_topics
-    $projects
-    $revisions
-    $labels
-    $users
-    $show_priority => 0
-    $show_progress => 0
-    $show_description => 0
-    $show_revisions => 0
-    $show_topics => 0
-    $show_projects => 0
-    $show_assign_to => 0
-    $show_files => 0
+    $topic_meta
+    $topic_data
 </%args>
 <%perl>
     my @tabactive = _array( $comments ) ? ( 1,0 ) : ( 0,1);
 </%perl>
-<script language="JavaScript">
-    function returnOpposite(hexcolor) {
-        var r = parseInt(hexcolor.substr(0,2),16);
-        var g = parseInt(hexcolor.substr(2,2),16);
-        var b = parseInt(hexcolor.substr(4,2),16);
-        var yiq = ((r*299)+(g*587)+(b*114))/1000;
-        return (yiq >= 128) ? '000000' : 'FFFFFF';
-    }    
-</script>
 <style>
 .badge-rel {
     padding: 15px;    
@@ -112,314 +77,85 @@ padding: 2px 4px 2px 7px;
 </style>
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
     <div class="grid_24">
-
-% my $id = Baseliner::Utils::_nowstamp();
-
-%if($c->stash->{show_labels}){
-% if( _array( $labels ) ) {        
-        <div style="margin-bottom:25px;">
-% foreach my $label ( _array( $labels ) ) {
-            <div id='<%$id . '_' . $label->{name} %>'></div>
-            <script language="javascript">
-                var label_color = '<% $label->{color} %>';
-                var label_name = '<% $label->{name} %>'
-                var div_name = '<%$id . '_' . $label->{name} %>'
-                var div_label = document.getElementById(div_name);
-                div_label.innerHTML = "<span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:#" + returnOpposite(label_color) + ";background-color:#" + label_color + "'>" + label_name + "</span>";
-            </script>
-        
+% foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'head' } _array( $topic_meta ) ) {
+    <& $field->{html}, data=>$topic_data &>
 % }
-        </div>
-% }
-% }
-          <table class="table table-bordered table-condensed">
+        <table class="table table-bordered table-condensed">
             <tbody>
-              <tr>
-%#if($c->stash->{show_category}){                
-                <th width="1" style="vertical-align: middle">
-                    <span class="label" style="background: <% $category_color %>"><% $category %> #<% $topic_mid %></span>
-                </th>
-%#}                
-%if($c->stash->{show_title}){
-                <th>
-                    <h3><% $title %></h3>
-                </th>
-%}
-              </tr>
-%if($c->stash->{show_status}){
-              <tr>
-                <th><% _loc('Status') %>:</th>
-                <td><% $status || '&nbsp;' %></td>
-              </tr>
-%}
-%if( $c->stash->{show_release} && $release ){
-              <tr>
-                <th><% _loc('Release') %>:</th>
-                <td><span class="arrow_box" style="padding: 3px; background-color:<% $release_row->{categories}{color} %>"><% $release || '&nbsp;' %></span></td>
-              </tr>
-%}
-              <tr>
-                <th><% _loc('Created By') %>:</th>
-                <td><% $created_by || '&nbsp;' %></td>
-              </tr>
-              <tr>
-                <th><% _loc('Created On') %>:</th>
-                <td><% $created_on ? $created_on->dmy . ' ' . $created_on->hms : '&nbsp;' %></td>
-              </tr>
-%if($show_priority ){
-              <tr>
-                <th><% _loc('Priority') %>:</th>
-                <td><% $priority || '&nbsp;' %></td>
-              </tr>
-              <tr>
-                <th><% _loc('Deadline') %>:</th>
-                <td><% $deadline ? $deadline->dmy . ' ' . $deadline->hms : '&nbsp;' %></td>
-              </tr>
-%}
-%if($show_progress && length $progress ){
-              <tr>
-                <th><% _loc('Progress') %>:</th>
-                <td>
-%  my $cls = ( $progress < 20 ? 'danger' : ( $progress < 40 ? 'warning' : ( $progress < 80 ? 'info' : 'success' ) ) );
-                    <div class="progress progress-<% $cls %>" style="width: 120px; height: 8px">
-                        <div class="bar" style="width: <% $progress %>%"></div>
-                    </div>
-                </td>
-              </tr>
-%}              
-%if($show_description && length $description ){
-              <tr>
-                <th colspan="2"><% _loc('Description') %>:</th>
-              </tr>
-              <tr>
-                <td colspan="2"><% $description || '&nbsp;' %></td>
-              </tr>
-%}              
-
-%if( _array($dates) || ( ($show_projects || $show_assign_to || $show_topics || $show_files)
-%       && ( _array($projects) || _array( $users ) || _array( $files ) || _array( $topics ) || _array( $parents_topics ) ) ) ) {                    
-              <tr>
-                <td colspan="2">
-%if( $show_projects ){                    
-% if( _array( $projects ) ) {
-                    <ul class="nav nav-list">
-                      <li class="nav-header">
-                        <% _loc("Projects") %>
-                      </li>
-                    </ul>
-                    <ul class="" style="margin-left: 20px">
-                      <li class="">
-% foreach my $project ( _array( $projects ) ) {
-                      <li style="margin: 6px 0px 6px 0px">
-                          <% $project->{name} %>
-                      </li>
+% foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'body' } _array( $topic_meta ) ) {
+    <& $field->{html}, data=>$topic_data &>
 % }
-                    </ul>
+                <tr>
+                    <td colspan="2">
+% foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'details' } _array( $topic_meta ) ) {
+    <& $field->{html}, data=>$topic_data &>
 % }
-% }
-
-%if( $show_assign_to ) {                    
-% if( _array( $users ) ) {
-                    <ul class="nav nav-list">
-                      <li class="nav-header">
-                        <% _loc("Assign to") %>
-                      </li>
-                    </ul>
-                    <ul class="" style="margin-left: 20px">
-                      <li class="">
-% foreach my $user ( _array( $users ) ) {
-                      <li style="margin: 6px 0px 6px 0px">
-                          <img style="margin: 5px" width=16 src="/user/avatar/<% $user->{username} %>/image.png" />
-                          <% $user->{username} %> - <% $user->{realname} %>
-                      </li>
-% }
-                    </ul>
-% }
-% }
-
-%if( 1 || $show_revisions ) {                    
-% if( _array( $revisions ) ) {
-                    <ul class="nav nav-list">
-                      <li class="nav-header">
-                        <% _loc("Revisions") %>
-                      </li>
-                    </ul>
-                    <ul class="" style="margin-left: 20px">
-                      <li class="">
-% foreach my $revision ( _array( $revisions ) ) {
-                      <li style="margin: 6px 0px 6px 0px">
-                          <img style="margin: 5px" width=16 src="/static/images/icons/tag.gif" />
-                          <% $revision->{name} %>
-                      </li>
-% }
-                    </ul>
-% }
-% }
-
-% if( _array( $dates ) ) {
-                    <ul class="nav nav-list">
-                      <li class="nav-header">
-                        <% _loc("Scheduling") %>
-                      </li>
-                    </ul>
-                    <ul class="" style="margin-left: 20px">
-                      <li class="">
-% foreach my $date ( _array( $dates ) ) {
-%  my $s = $date->{start_date};
-%  $s =~ s{00:00:00}{}g;
-%  my $e = $date->{end_date};
-%  $e =~ s{00:00:00}{}g;
-                      <li style="margin: 6px 0px 6px 0px">
-                          <% $s."-".$e %>
-                      </li>
-% }
-                    </ul>
-% }
-
-%if( $show_topics ){                    
-% if( _array( $topics ) ) {
-                    <ul class="nav nav-list">
-                      <li class="nav-header">
-                        <% _loc("Topics") %>
-                      </li>
-                    </ul>
-                    <ul class="" style="margin-left: 20px">
-% foreach my $topic ( _array( $topics ) ) {
-        
-                      <li style="margin: 6px 0px 6px 0px;">
-                          <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
-                            style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
-% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
-                            &nbsp;&nbsp;<b><% $topic->{title} %></b>&nbsp;&nbsp;
-% if($topic->{progress}){                            
-                            <span class="badge badge-<%$cls%>"><%$topic->{progress}%>%</span>
-%}
-                      </li>
-% }
-                    </ul>
-% }
-
-% if( _array( $parents_topics ) ) {
-                    <ul class="nav nav-list">
-                      <li class="nav-header">
-                        <% _loc("Include into") %>
-                      </li>
-                    </ul>
-                    <ul class="" style="margin-left: 20px">
-                      <li class="">
-% foreach my $topic ( _array( $parents_topics ) ) {
-                      <li style="margin: 6px 0px 6px 0px">
-                          <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
-                            style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
-% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
-                            &nbsp;&nbsp;<b><% $topic->{title} %></b>&nbsp;&nbsp;
-% if($topic->{progress}){
-                            <span class="badge badge-<%$cls%>"><%$topic->{progress}%>%</span>
-%}
-                      </li>
-% }
-                    </ul>
-% }
-
-
-
-
-
-% }
-
-
-%if($show_files){                    
-% if( _array( $files ) ) {
-                    <ul class="nav nav-list">
-                      <li class="nav-header">
-                        <% _loc("Files") %>
-                      </li>
-                    </ul>
-                    <ul class="" style="margin-left: 20px">
-                      <li class="">
-% foreach my $file ( _array( $files ) ) {
-%   my $fii = $ii . '_' . $file->{md5};
-%   my $target = $file->{extension} =~ /pdf|htm|html|txt|properties/i ? '_blank' : 'FrameDownload';  # download or try to show on next tab?
-%   my ($size,$units) = Baseliner::Utils::_size_unit( $file->{filesize} );
-                      <li id="<% $fii %>">
-                        <i class="icon-file"></i> 
-                        <a href="/topic/download_file/<% $file->{md5} %>/<% $file->{filename} %>" target="<% $target %>">
-                          <% Baseliner::Utils::_html_escape( $file->{filename} ) %>
-                        </a> (<% $size %> <% $units %>) version <% $file->{versionid} %>
-                      </li>
-% }
-                    </ul>
-% }
-                    <p>
-%#                    <div id="uploader_<% $ii %>"></div>
-                    </p>
-
-%}                
-                </td>
-              </tr>
-%} # end mix block
+                    </td>
+                </tr>
             </tbody>
-          </table>
+        </table>
     </div>
+            
 
     <div class="clear"></div>
 
     <ul class="nav nav-tabs">
-      <li <% $tabactive[0] and 'class="active"' %>>
-        <a href="#comments<% $ii %>" data-toggle="tab"><% _loc('Comments') %></a>
-      </li>
-      <li <% $tabactive[1] and 'class="active"' %>>
-        <a href="#activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a></li>
+        <li <% $tabactive[0] and 'class="active"' %>>
+            <a href="#comments<% $ii %>" data-toggle="tab"><% _loc('Comments') %></a>
+        </li>
+        <li <% $tabactive[1] and 'class="active"' %>>
+            <a href="#activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a>
+        </li>
     </ul>
 
     <div class="grid_24">
         <div class="tab-content">
-          <div class="tab-pane <% $tabactive[0] and 'active' %>" id="comments<% $ii %>">
+            <div class="tab-pane <% $tabactive[0] and 'active' %>" id="comments<% $ii %>">
 
 % foreach my $com ( _array( $comments) ){
-%      my $id_div_com =  "comment_$com->{id}_$ii";
+%   my $id_div_com =  "comment_$com->{id}_$ii";
 
-            <div style="margin-left: 20px" id="<% $id_div_com %>">  <!-- class 'well' -->
+                <div style="margin-left: 20px" id="<% $id_div_com %>">  <!-- class 'well' -->
 
-%      if( $com->{content_type} eq 'code' )  {
+%   if( $com->{content_type} eq 'code' )  {
 
-                <p><pre id="<% $id_div_com . '_ta' %>"><% $com->{text} %></pre></p>
+                    <p><pre id="<% $id_div_com . '_ta' %>"><% $com->{text} %></pre></p>
 
 %#   codemirror does not work well under boot, needs a css reset before
-%#                <script>setTimeout( function(){CodeMirror.fromTextArea( document.getElementById("<% $id_div_com . '_ta' %>",
+%#                  <script>setTimeout( function(){CodeMirror.fromTextArea( document.getElementById("<% $id_div_com . '_ta' %>",
 %#                    {lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true}) );}, 2000)</script>
 
-%      } else {
+%   } else {
 
-                <p><% $com->{text} %></p>
+                    <p><% $com->{text} %></p>
 
-%      } 
+%   } 
 
-                <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $com->{created_by} %>/image.png" />
+                    <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $com->{created_by} %>/image.png" />
                     <b><%$com->{created_by}%></b>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
 
-%    if( $c->username eq $com->{created_by} ) {
+%   if( $c->username eq $com->{created_by} ) {
 
                     | <a href="javascript:Baseliner.Topic.comment_edit( undefined, <% $com->{id} %>)"><% _loc("edit") %></a>
                     | <a href="javascript:Baseliner.Topic.comment_delete(<% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
 
-%    }
+%   }
 
-                </small></p>
-                <hr />
-            </div>
+                    </small></p>
+                    <hr />
+                </div>
 %}
-          </div>  <!-- comment tab -->
+            </div>  <!-- comment tab -->
 
-          <div class="tab-pane <% $tabactive[1] and 'active' %>" id="activity<% $ii %>">
+            <div class="tab-pane <% $tabactive[1] and 'active' %>" id="activity<% $ii %>">
 %  foreach ( _array( $events ) ) {
-            <div style="margin-left: 20px">
-             <p><img style="margin: 5px" width=16 src="/user/avatar/<% $_->{username} %>/image.png" /><% $_->{text} %> <small><% $_->{ts} %></small></p>
-             <hr />
-            </div> 
+                <div style="margin-left: 20px">
+                    <p><img style="margin: 5px" width=16 src="/user/avatar/<% $_->{username} %>/image.png" /><% $_->{text} %> <small><% $_->{ts} %></small></p>
+                    <hr />
+                </div> 
 %}
-          </div> <!-- activity tab -->
+            </div> <!-- activity tab -->
 
-      </div> <!-- tab content -->
-  </div> <!-- lower grid -->
+        </div> <!-- tab content -->
+    </div> <!-- lower grid -->
 </div> <!-- boot container -->

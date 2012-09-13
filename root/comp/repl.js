@@ -9,12 +9,16 @@ To do:
 
 */
 (function(){
+    var last_mode = { eval: true };
     var last_name = "";
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
 
     // setup defaults
     if( Baseliner.editor_defaults == undefined ) Baseliner.editor_defaults = { theme: 'lesser-dark', mode: { name:'perl' } };
 
+    var run_now = function(cm) {  // fires with Ctrl-E , Cmd-E
+        submit({ last: true });
+    };
     // editor generator function
     var editor_gen = function(args) {
         if( args!=undefined ) {
@@ -56,8 +60,8 @@ To do:
                       }
                     },
                
-                   "Cmd-E": function(cm) { submit({ eval: true }); },
-                   "Ctrl-E": function(cm) { submit({ eval: true }); },
+                   "Cmd-E": run_now, 
+                   "Ctrl-E": run_now, 
                    "Ctrl-Space": function(cm) {
                          CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
                     }
@@ -297,6 +301,10 @@ To do:
 
     var submit = function(parms) {
         //Baseliner.showLoadingMask(form.getEl(), _("Loading") );
+        if( parms.last ) {
+            parms = last_mode;
+        }
+        last_mode = parms;
         var f = form.getForm();
         set_output( "" );
         code.setValue( editor.getValue() );  // copy from codemirror to textarea

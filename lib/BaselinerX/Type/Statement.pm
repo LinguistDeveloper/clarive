@@ -1,0 +1,20 @@
+package BaselinerX::Type::Statement;
+use Baseliner::Plug;
+use Baseliner::Utils;
+use Try::Tiny;
+
+with 'Baseliner::Core::Registrable';
+
+register_class 'statement' => __PACKAGE__;
+sub service_noun { 'statement' }
+
+has id             => ( is => 'rw', isa => 'Str', default => '' );
+has text           => ( is => 'rw', isa => 'Str' );
+has type           => ( is => 'rw', isa => 'Str' );
+has holds_children => ( is => 'rw', isa => 'Bool', default => 1 );
+has dsl            => ( is => 'rw', isa => 'CodeRef' );
+has form           => ( is => 'rw', isa => 'Str', default => '' );
+has data           => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
+has config         => ( is => 'rw', isa => 'Str' );
+
+1;
