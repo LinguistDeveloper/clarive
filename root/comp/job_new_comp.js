@@ -547,7 +547,7 @@
                 var s = jc_grid.store;
                 var add_node = function(node) {
                     var data = node.attributes.data;
-                    console.log( node );
+                    //console.log( node );
                     var rec = new Ext.data.Record({
                         ns: data.ns,
                         icon: node.attributes.icon,

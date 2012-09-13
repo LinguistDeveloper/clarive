@@ -225,8 +225,8 @@
                                 Baseliner.cookie.set( 'last_login', last_login ); 
                             }
                             if( params.no_reload ) {
-                                cb();   
-                                params.on_login();
+                                cb();	
+                                params.on_login( params.scope );
                             } else {
                                 document.location.href = document.location.href;
                                 //window.location.reload();
@@ -846,12 +846,12 @@
                     }
                 } catch(err) {
                     if( xhr.responseText.indexOf('dhandler') > -1 ) {
-                        Ext.Msg.alert( _("Page not found: %1", url ) + '<br>' + xhr.responseText );
+                        Baseliner.error( _('Error'), _("Page not found: %1", url ) + '<br>' + xhr.responseText );
                     } else {
                        Baseliner.error_parse( err, xhr );
                        if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) {
-                            console.log( err );
-                            console.log( xhr );
+                            // console.log( err );
+                            // console.log( xhr );
                        }
                        if( Baseliner.DEBUG ) {
                             Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging
@@ -1301,8 +1301,6 @@ Ext.ux.form.FileUploadField = Ext.extend(Ext.form.TextField,  {
         }
 
         this.fileInput.on('change', function(){
-                                        console.log(v);
-                                        console.log(this.fileInput);
             var v = this.fileInput.dom.value;
             this.setValue(v);
             this.fireEvent('fileselected', this, v);

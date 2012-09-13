@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 if [ "$BASELINER_HOME" != "" ]; then
     cd $BASELINER_HOME
@@ -52,5 +52,4 @@ if [ -f "script/$1.pl" ]; then
 fi
 
 # -X : no warnings for production environments
-exec perl $BASELINER_TRACE_MODULE -I$BASELINER_HOME/lib -X $BASELINER_SCRIPT "$@"
-
+exec perl $BASELINER_PERL_OPTS $BASELINER_TRACE_MODULE -I$BASELINER_HOME/lib -X $BASELINER_SCRIPT "$@"

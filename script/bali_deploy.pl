@@ -29,6 +29,7 @@ use FindBin '$Bin';
 use lib "$FindBin::Bin/../lib";
 use File::Basename;
 use Baseliner::Utils;
+use Path::Class;
 
 our $VERSION = '1.0';
 
@@ -37,9 +38,9 @@ use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
 BEGIN {
     $ENV{ DBIC_TRACE }                   = 0;
     $ENV{ CATALYST_CONFIG_LOCAL_SUFFIX } = 't';
+    chdir $ENV{BASELINER_HOME} if $ENV{BASELINER_HOME};
+    _load_features('lib', use_lib=>1 );
 }
-
-chdir $ENV{BASELINER_HOME} if $ENV{BASELINER_HOME};
 
 my $t0 = [gettimeofday];
 
@@ -73,6 +74,7 @@ Options:
   -run                    : Run DB statements interactively or from STDIN
   -quote                  : quote table names
   -drop                   : add drop statements
+  -grep                   : grep a string or re in the generated sql
   -env                    : sets BALI_ENV (local, test, prod, t, etc...)
   -schema                 : schemas to deploy (does not work for migrations)
                                 bali deploy --schema BaliRepo --schema BaliRepoKeys 
@@ -83,6 +85,7 @@ Versioning Options:
   --upgrade               : upgrades database version
   --from <version>        : from version (replaces current db version)
   --to <version>          : to version (replaces current schema version)
+  --grep <re>             : filter diff statements with a reg. expression
 
 Examples:
     bin/bali deploy --env t   
@@ -111,13 +114,20 @@ my $cfg_file = "$Bin/../baseliner_$env.conf";
 say pre . "Config file: $cfg_file";
 
 require Baseliner::Schema::Baseliner;
+
+# load config 
 require Config::General;
 my $cfg      = Config::General->new( $cfg_file );
+my $config = { $cfg->getall };
+my $db_config = $config->{ 'Model::Baseliner' }{ 'connect_info' };
+if( $db_config->[2] =~ /^__.*\(.*\)__$/ ) {
+    say sprintf "Invalid password [%s] - function detected.\n", $db_config->[2];
+    $config->{ 'Model::Baseliner' }{ 'connect_info' }->[2] = _read_password( sprintf "PASSWORD for %s: ", $db_config->[1] );
+}
 
 if( $args{schema} ) {
     $args{schema} = [ _array $args{schema} ];
 }
-
 my $dropping= exists $args{drop} ? ' (with DROP)' : '';
 if( exists $args{drop} && ! @{ $args{schema} || [] } && ! exists $args{installversion} ) {
     say "\n*** Warning: Drop specified and no --schema parameter found.";
@@ -134,7 +144,7 @@ my $deploy_now = exists $args{deploy};
 say pre . "No deployments will run. Only printing information." unless $deploy_now;
 
 Baseliner::Schema::Baseliner->deploy_schema(
-    config          => { $cfg->getall },
+    config          => $config,
     run             => exists $args{run},
     version         => exists $args{'version'},
     install_version => exists $args{'installversion'},
@@ -146,6 +156,7 @@ Baseliner::Schema::Baseliner->deploy_schema(
     from            => $args{from}, # from version num
     to              => $args{to},  # to version num
     drop            => exists $args{drop},
+    'grep'          => $args{grep},
     schema          => $args{schema}
 ) and die pre . "Errors while deploying DB. Aborted\n";
 

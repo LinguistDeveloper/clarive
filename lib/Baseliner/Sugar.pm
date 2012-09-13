@@ -33,6 +33,7 @@ use Exporter::Tidy default => [qw/
     master_new
     master_rel
     event_new
+    event_hook
     events_by_key
     events_by_mid
     /
@@ -130,6 +131,10 @@ sub master_rel {
 
 sub event_new {
     my ($key, $data, $code, $catch ) =@_;
+    if( ref $data eq 'CODE' ) {
+        $code = $data;
+        $data = {};
+    }
     $data ||= {};
     my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
     my $event_create = sub {
@@ -137,27 +142,42 @@ sub event_new {
         Baseliner->model('Baseliner::BaliEvent')
             ->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
     };
-    try {
+    return try {
         if( ref $code eq 'CODE' ) {
+            require Baseliner::Core::Event;
+            my $obj = Baseliner::Core::Event->new( data => $data );
             # PRE
-            $_->( $data ) for $ev->before_hooks;
+            for my $hk ( $ev->before_hooks ) {
+                my $hk_data = $hk->( $obj );
+                $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+                $obj->data( $data );
+            }
             # RUN
             my $rundata = $code->( $data );
             ref $rundata eq 'HASH' and $data = { %$data, %$rundata };
-            _throw 'event_new is missing mid parameter' unless length $data->{mid};
+            if( !length $data->{mid} ) {
+                _debug 'event_new is missing mid parameter' ;
+                #_throw 'event_new is missing mid parameter' ;
+            }
             # POST
-            $_->( $data ) for $ev->after_hooks;
+            $obj->data( $data );
+            for my $hk ( $ev->after_hooks ) {
+                my $hk_data = $hk->( $obj );
+                $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+                $obj->data( $data );
+            }
         }
         # create the event on table
-        $event_create->( $data );
+        $event_create->( $data ) if defined $data->{mid};
+        return $data; 
     } catch {  # no event if fails
         my $err = shift;
         if( ref $catch eq 'CODE' ) {
             $catch->( $err ) ;
-            _log "*** event_new: caught $key: $err";
+            _error "*** event_new: caught $key: $err";
         } else {
+            _error "*** event_new: untrapped $key: $err";
             _throw $err;
-            _log "*** event_new: untrapped $key: $err";
         }
     };
 }
@@ -201,6 +221,10 @@ Adds hooks to events.
 =cut
 sub event_hook {
     my ( $keys, $when, $code ) = @_;
+    if( ref $when eq 'CODE' ) {
+        $code = $when;
+        $when = 'after';
+    }
     my $pkg = caller();
     my @keys = ref $keys eq 'ARRAY' ? @$keys : ($keys);
     my $regs = 'Baseliner::Core::Registry';  # Baseliner->model('Registry') not available on startup

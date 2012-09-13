@@ -51,13 +51,21 @@ with 'Baseliner::Core::Registrable';
 
 register_class 'event' => __PACKAGE__;
 
-has 'id'=> (is=>'rw', isa=>'Str', default=>'');
-has 'text' => ( is=> 'rw', isa=> 'Str', lazy=>1, default=>sub { 
-    my $self = shift;
-    sprintf "Event %s occurred", $self->key;
-} );
-has 'vars' => ( is=> 'rw', isa=> 'ArrayRef', default=>sub{[]}, lazy=>1 );
-has 'filter' => ( is=> 'rw', isa=> 'CodeRef' );
+has 'id' => ( is => 'rw', isa => 'Str', default => '' );
+has 'name' => ( is => 'rw', isa => 'Str', default => sub { shift->key } );
+has 'type' => ( is => 'rw', isa => 'Str', default => 'trigger' );
+has 'description' => ( is => 'rw', isa => 'Str', default => 'An Event' );
+has 'text' => (
+    is      => 'rw',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        sprintf "Event %s occurred", $self->key;
+    }
+);
+has 'vars' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] }, lazy => 1 );
+has 'filter' => ( is => 'rw', isa => 'CodeRef' );
 
 sub event_text {
     my ($self, $data ) = @_;
@@ -75,7 +83,7 @@ sub _hooks {
     my $type = shift or _throw 'Missing hook type';
     my $key = sprintf '%s._hooks', $self->key;
     if( my $hooks = Baseliner->model('Registry')->get_node( $key ) ) {
-        return _array $hooks->{ $type };
+        return _array $hooks->param->{ $type };
     }
     return ();
 }

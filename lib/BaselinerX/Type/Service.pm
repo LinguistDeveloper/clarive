@@ -13,6 +13,7 @@ has 'name' => ( is=> 'rw', isa=> 'Str' );
 has 'desc' => ( is=> 'rw', isa=> 'Str' );
 has 'handler' => ( is=> 'rw', isa=> 'CodeRef' );
 has 'config' => ( is=> 'rw', isa=> 'Str' );
+has 'form' => ( is=> 'rw', isa=> 'Str', default=>'' );
 has 'logger_class' => ( is=> 'rw', isa=> 'Str', default=>'Baseliner::Core::Logger::Base' );  # class
 has 'logger' => ( is=> 'rw', isa=> 'Any' );
 
@@ -86,6 +87,8 @@ Run module services subs ( service->code or sub module::service ). $self is an i
 sub run {
     my $self= shift;  # 
     my $c = shift;
+    my @args = @_;
+
     my $service = $self->id;
     my $key = $self->key;
     my $version = $self->registry_node->version;
@@ -135,7 +138,6 @@ sub run {
     # try to set the job for the service (a Baseliner::Role::Service attribute)
     try { $c->stash->{job} and $instance->job( $c->stash->{job} ); } catch {};
 
-    my @args = @_;
     my $rc = try {
         ref $handler eq 'CODE' and return $handler->( $instance, $c, @args );
         $handler && $module and return $module->$handler( $instance, $c, @args );
@@ -143,11 +145,14 @@ sub run {
     } catch {
         _fail shift();
     };
-    _log "RC1=$rc";
-        $rc = 0 unless is_number $rc; # the service may return anything...
-    _log "RC2=$rc";
-        $instance->log->rc( $rc );
-        return $instance->log;
+    _debug "RC1=$rc";
+    if( ! is_number( $rc ) ) { # the service may return anything...
+        $instance->log->data( $rc );
+        $rc = 0;
+    }
+    _debug "RC2=$rc";
+    $instance->log->rc( $rc );
+    return $instance->log;
 }
 
 

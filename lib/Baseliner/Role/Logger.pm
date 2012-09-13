@@ -17,6 +17,9 @@ has 'id' => ( is=>'rw', isa=>'Int', default=>0 );
 has 'rc' => ( is=>'rw', isa=>'Int' );
 
 # concatenated messages
+has 'data' => ( is=>'rw', isa=>'Any', default=>sub{{}} );
+
+# concatenated messages
 has 'msg' => ( is=>'rw', isa=>'Any', default=>'' );
 
 # debug mode

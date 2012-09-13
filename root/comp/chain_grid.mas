@@ -265,19 +265,16 @@
                         } );
   grid = new Ext.grid.GridPanel({
     header: false,
-    //id:'mygrid-dd',
     stripeRows: true,
     autoScroll: true,
     autoWidth: true,
     store: store,
-        enableDragDrop : true,
-        ddGroup : 'mygrid-dd',  
-        ddText : 'Place this row.',	    
-    viewConfig: [
-      {
+    enableDragDrop : true,
+    ddGroup : 'mygrid-dd',  
+    ddText : 'Place this row.',	    
+    viewConfig: {
         forceFit: 'true'
-                }
-    ],
+    },
     //selModel: new Ext.grid.RowSelectionModel({
     //  singleSelect: true
     //        }),

@@ -1,384 +1,368 @@
 (function(params){
     var ps = 30;
-    var rule_store = new Baseliner.JsonStore({
-        root: 'data' , 
-        remoteSort: true,
-        totalProperty:"totalCount", 
-        url: '/rule/list',
-        baseParams: Ext.apply({ start:0, limit: ps}, params),
-        fields: [ 'mid','_id','_parent','_is_leaf','type', 'item','class','versionid','ts','tags','data','properties','icon','collection']
+    var rules_store = new Baseliner.JsonStore({
+        url: '/rule/grid', root: 'data',
+        id: 'id', totalProperty: 'totalCount', 
+        fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'event_name', 'id' ]
     });
     var search_field = new Baseliner.SearchField({
-        store: rule_store,
+        store: rules_store,
+        width: 140,
         params: {start: 0, limit: ps },
-        emptyText: _('<Enter your search string>')
+        emptyText: _('<search>')
     });
 
-    var rule_add = function(){
-        var ac = 0;
-        var check_sm_events = new Ext.grid.CheckboxSelectionModel({
-            singleSelect: true,
-            sortable: false,
-            checkOnly: true
-        });
-
-        var store_events =new Ext.data.SimpleStore({
-            fields: [ 'ev_type', 'ev_id', 'ev_desc'],
-            data:[ 
-                [ 'trigger', 'event.topic.new', 'Nuevo Tópico' ],
-                [ 'trigger', 'event.topic.edit_field', 'Campo de Tópico Modificado' ],
-                [ 'trigger', 'event.topic.change', 'Estado de Tópico Modificado' ],
-                [ 'trigger', 'event.topic.file.add', 'Fichero Adjuntado a Tópico' ],
-                [ 'trigger', 'event.topic.file.del', 'Fichero Quitado del Tópico' ],
-                [ 'trigger', 'event.topic.topic.add', 'Tópico Añadido a Tópico' ],
-                [ 'trigger', 'event.topic.topic.del', 'Tópico Quitado del Tópico' ],
-                [ 'continuous', 'event.topic.date', 'Fecha Planificada Superada' ],
-                [ 'continuous', 'event.topic.hours', 'Horas Estimadas Superadas' ],
-                [ 'continuous', 'event.topic.low', 'Tópico Sin Actividad Prolongada' ],
-                [ 'trigger', 'event.project.new', 'Proyecto Creado' ],
-                [ 'trigger', 'event.project.deleted', 'Proyecto Borrado' ],
-                [ 'trigger', 'event.user.new', 'Usuario Creado' ],
-                [ 'trigger', 'event.user.deleted', 'Usuario Borrado' ],
-                [ 'trigger', 'event.user.login', 'Login de Usuario' ],
-                [ 'trigger', 'event.user.logout', 'Logout de Usuario' ],
-                [ 'trigger', 'event.job.new', 'Pase Creado' ],
-                [ 'trigger', 'event.job.done', 'Pase Finalizado' ],
-                [ 'trigger', 'event.job.topic.demote', 'Marcha Atrás de Cambio Completada' ],
-                [ 'trigger', 'event.job.topic.promote', 'Despliegue de Cambio Completada' ],
-                [ 'trigger', 'event.sem.up', 'Semáforo Levantado' ],
-                [ 'trigger', 'event.sem.down', 'Semáforo Bajado' ],
-                [ 'trigger', 'event.ci.new', 'Nuevo CI' ],
-                [ 'trigger', 'event.ci.edit', 'CI Modificado' ],
-                [ 'trigger', 'event.ci.deleted', 'CI Borrado' ],
-            ]
-        });
-        var grid_events = new Ext.grid.GridPanel({
-            sm: check_sm_events,
-            store: store_events,
-            border: false,
-            height: 280,
-            viewConfig: { forceFit: true },
-            columns:[
-                check_sm_events,
-                { header: _('Description'), width: 100, dataIndex: 'ev_desc', renderer:function(v){ return '<b>'+v+'</b>'} },
-                { header: _('Event Type'), width: 60, dataIndex: 'ev_type' },
-                { header: _('Event'), width: 100, dataIndex: 'ev_id' }
-            ]
-        });
-        var form_events = new Ext.FormPanel({
-            defaults: {
-                anchor: '90%'
-            },
-            border: false,
-            items: [
-                { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name' },
-                { border:false, html:'<span id="boot"><p><h4>'+_('Select the Event') + ':</h4></p>' },
-                grid_events
-            ]
-        });
-        var store_status =new Ext.data.SimpleStore({
-            fields: ['status'],
-            data:[ 
-                [ 'Cerrado' ],
-                [ 'Integración' ],
-                [ 'Preproducción' ],
-                [ 'Producción' ],
-                [ 'Desarrollo' ],
-                [ 'Nuevo' ],
-                [ 'Desestimado' ],
-                [ 'Elaboración de requerimientos' ],
-                [ 'Recepción de requerimientos' ],
-                [ 'Validación' ],
-                [ 'Parametrización' ],
-                [ 'Validar parche de datos' ],
-                [ 'UAT Parche de datos' ],
-                [ 'Chequeo parche de datos' ],
-                [ 'Aceptado' ]
-            ]
-        });
-        var combo_status = new Ext.form.ComboBox({
-            store: store_status,
-                displayField: 'status',
-                valueField: 'status',
-                hiddenName: 'status',
-                name: 'status',
-            editable: false,
-            mode: 'local',
-            forceSelection: true,
-            triggerAction: 'all', 
-            fieldLabel: _('Estado del Tópico'),
-            emptyText: _('seleccione estados...'),
-            autoLoad: true
-        });
-        var store_cat =new Ext.data.SimpleStore({
-            fields: ['cat'],
-            data:[ 
-                [ 'Nueva codificación' ],
-                [ 'Parametrización no estándar' ],
-                [ 'Desarrollo' ],
-                [ 'Nuevo colectivo' ],
-                [ 'Apertura/Restricción C4T' ],
-                [ 'Versión base' ],
-                [ 'Versión de datos' ],
-                [ 'Nuevo código cuenta canal' ],
-                [ 'Nuevo código canal' ],
-                [ 'Activación/Desactivación básica' ],
-                [ 'Conjunto completo de promociones' ],
-                [ 'Comunicaciones en factura' ],
-                [ 'Actualizaciones country codes/tarifas' ],
-                [ 'Pequeños cambios en portal web' ],
-                [ 'Parche de datos' ],
-                [ 'Entrega independiente' ],
-                [ 'Bug' ]
-            ]
-        });
-        var combo_cat = new Ext.form.ComboBox({
-            store: store_cat,
-                displayField: 'cat',
-                valueField: 'cat',
-                hiddenName: 'cat',
-                name: 'cat',
-            editable: false,
-            mode: 'local',
-            forceSelection: true,
-            triggerAction: 'all', 
-            fieldLabel: _('Categoría'),
-            emptyText: _('seleccione categoría...'),
-            autoLoad: true
-        });
-
-        var form1 = new Ext.FormPanel({
-            border: false,
-            defaults: { anchor:'80%' },
-            items: [
-                { border:false, html:'<span id="boot"><p><h4>'+_('Configuración') + ':</h4></p>' },
-//                { xtype: 'textfield', name:'tt', fieldLabel:_('Tiempo de inactividad (D)'), anchor:'50%' },
-                combo_cat,
-                combo_status
-            ]
-        });
-        var form_when = new Ext.FormPanel({
-            border: false,
-            items: [
-                {
-                    xtype: 'radiogroup',
-                    id: 'eventtypegroup',
-                    anchor: '50%',
-                    fieldLabel: _('Event Type'),
-                    defaults: {xtype: "radio",name: "rule_when"},
-                    items: [
-                        {boxLabel: _('Pre'), inputValue: 'pre', checked: true},
-                        {boxLabel: _('Continuous'), inputValue: 'pre', checked: true},
-                        {boxLabel: _('Post'), inputValue: 'post'}
-                    ]
+    var rule_del = function(){
+        var sm = rules_grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            Baseliner.ajaxEval( '/rule/delete', { id_rule: sm.getSelected().data.id }, function(res){
+                if( res.success ) {
+                    rules_store.reload();
+                    Baseliner.message( _('Rule'), res.msg );
+                } else {
+                    Baseliner.error( _('Error'), res.msg );
                 }
-            ]
-        });
-        var check_sm_actions = new Ext.grid.CheckboxSelectionModel({
-            singleSelect: false,
-            sortable: false,
-            checkOnly: true
-        });
-        var store_actions = new Baseliner.JsonStore({
-            root: 'data' , 
-            remoteSort: true,
-            autoLoad: true,
-            totalProperty:"totalCount", 
-            url: '/rule/actions',
-            fields: [ 'text','attributes' ]
-        });
-
-       var render_desc = function(v) {
-          return v.name;
-       }
-       var render_key = function(v) {
-          return v.key;
-       }
-        var grid_actions = new Ext.grid.GridPanel({
-            sm: check_sm_actions,
-            store: store_actions,
-            border: false,
-            height: 280,
-            viewConfig: { forceFit: true },
-            columns:[
-                check_sm_actions,
-                { header: _('Name'), width: 100, dataIndex: 'text', renderer:function(v){ return '<b>'+v+'</b>'} },
-                { header: _('Description'), width: 60, dataIndex: 'attributes', renderer: render_desc },
-                { header: _('Key'), width: 100, dataIndex: 'attributes', renderer: render_key }
-            ]
-        })
-        
-        var form_actions = new Ext.FormPanel({
-            border: false,
-            items: [
-                { border:false, html:'<span id="boot"><p><h4>'+_('Select the Action') + ':</h4></p>' },
-                grid_actions
-            ]
-        });
-        var first = 0;
-        var last = 4;
-        var navHandler = function(direction){
-            ac += direction;
-            if( direction < 0 ) {
-                bdone.hide();
-                bnext.show();
-            }
-            if( ac == first ) {
-                bback.disable();
-            }
-            if( ac > first ) bback.enable();
-            if( ac == last ) {
-                bdone.show();
-                bnext.hide();
-            }
-            card.getLayout().setActiveItem( ac ); 
-        };
-        var bback = new Ext.Button({
-                    text: _('Back'),
-                    handler: navHandler.createDelegate(this, [-1]),
-                    disabled: true
-                });
-        var bnext = new Ext.Button({
-                    text: _('Next'),
-                    handler: navHandler.createDelegate(this, [1])
-                });
-        var bdone = new Ext.Button({
-                    text: _('Done'),
-                    hidden: true,
-                    handler: function(){
-                        var f = form_events.getForm();
-                        var d = f.getValues();
-                        Baseliner.ajaxEval('/rule/save', d, function(res){
-                            Baseliner.message(_('Rule'), _('Regla guardada con éxito') );
-                        });
-                        win.close();
-                    }
-                });
-
-        // Custom form
-        var user_store_to = new Baseliner.Topic.StoreUsers({
-            autoLoad: true,
-            baseParams: {}
-        });
-        var user_to = new Baseliner.model.Users({ 
-            store: user_store_to,
-            name: 'to',
-            fieldLabel:_('To')
-        });
-        var user_cc = new Baseliner.model.Users({ 
-            store: user_store_to,
-            name: 'to',
-            fieldLabel:_('CC')
-        });
-        var user_bcc = new Baseliner.model.Users({ 
-            store: user_store_to,
-            name: 'to',
-            fieldLabel:_('BCC')
-        });
-        //user_box_store.on('load',function(){ user_box.setValue( rec.users) ;            });
-
-        var form2 = new Ext.FormPanel({
-            autoScroll: true,
-            defaults: {
-                anchor: '80%'
-            },
-            items: [
-                { xtype:'textfield', name:'subject', fieldLabel:_('Subject') },
-                { xtype:'checkbox', name:'na', boxLabel:_('Notificar al Asignado') },
-                { xtype:'checkbox', name:'na', boxLabel:_('Notificar al que la ha creado') },
-                { xtype:'textfield', name:'nr', fieldLabel:_('Notificar a Roles)'), anchor:'80%' },
-                user_to,
-                user_cc,
-                user_bcc,
-                {
-                        xtype:'htmleditor',
-                        name:'body',
-                        fieldLabel: _('Body'),
-                        width: '100%',
-                        height: 200
+            });
+        }
+    };
+    var rule_edit = function(){
+        var sm = rules_grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            Baseliner.ajaxEval( '/rule/get', { id_rule: sm.getSelected().data.id }, function(res){
+                if( res.success ) {
+                    rule_add( res.rec );
+                } else {
+                    Baseliner.error( _('Error'), res.msg );
                 }
-        ]
+            });
+        }
+    };
+    var rule_add = function(rec){
+        Baseliner.ajaxEval( '/comp/rule_new.js', { rec: rec }, function(comp){
+            if( comp ) {
+                var win = new Ext.Window({
+                    title: _('Edit Rule'),
+                    width: 900,
+                    items: [ comp ]
+                });
+                comp.on('destroy', function(){
+                    win.close()
+                    rules_store.reload();
+                });
+                win.show();
+            }
         });
-        var card = new Ext.Panel({
-            //title: 'Example Wizard',
-            layout:'card',
-            height: 450,
-            activeItem: 0, // make sure the active item is set on the container config!
-            bodyStyle: 'padding:15px',
-            defaults: {
-                border: false
-            },
-            // just an example of one possible navigation scheme, using buttons
-            bbar: [
-                '->', 
-                bback, bnext,bdone
-            ],
-            items: [
-                form_events, form_when, form_actions, form1, form2
-            ]
-        });
-        
-        var win = new Ext.Window({
-            title: _('Edit Rule'),
-            width: 900,
-            items: [
-                card
-            ]
-        });
-        win.show();
     };
 
     var render_actions = function(value,row){
         return '';
     };
-    var grid = new Ext.grid.GridPanel({
-        title: _('Rules'),
-        store: rule_store,
-        //sm: check_sm,
-        tbar: [ search_field,
-            { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon', handler: rule_add },
-            { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: 'Etiquetar', icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: 'Exportar', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
-        ],
-        bbar: new Ext.PagingToolbar({
-            store: rule_store,
-            pageSize: ps,
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
-        }),        
-        columns:[
-            //check_sm,
-            //{ width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
-            { header: _('Rule'), width: 160, dataIndex: 'rule_name' },
-            { header: _('Type'), width: 80, dataIndex: 'rule_type' },
-            { header: _('Actions'), hidden: true, width: 160, dataIndex: 'rule_name', renderer: render_actions },
-            //{ header: _('Data'), hidden: false, width: 250, dataIndex: 'data', renderer: render_mapping_long }
-        ]
-    });
     var tree_load = function(){
         var loader = tree.getLoader();
         loader.load(tree.root);
         tree.root.expand();
     };
+
+    var render_rule = function( v,metadata,rec ) {
+        return String.format(
+            '<div style="float:left"><img src="{0}" /></div>&nbsp;'
+            + '<b>{2}: {1}</b>',
+            '/static/images/icons/rule.png',
+            v, rec.data.id
+        );
+    };
+    var rules_grid = new Ext.grid.GridPanel({
+        region: 'west',
+        width: 300,
+        split: true,
+        collapsible: true,
+        viewConfig: {
+            enableRowBody: true,
+            forceFit: true,
+            getRowClass : function(rec, index, p, store){
+                //p.body = String.format( '<div style="margin: 0 0 0 32;"><table><tr>'
+                p.body = String.format( '<div style="margin: 0 0 0 32;">{0}</div>', _('when an event of type "%1" fires', rec.data.rule_event ) );
+                return ' x-grid3-row-expanded';
+            }
+        },
+        header: false,
+        store: rules_store,
+        columns:[
+            { header: _('Rule'), width: 160, dataIndex: 'rule_name', renderer: render_rule },
+            { header: _('Type'), width: 40, dataIndex: 'rule_type' }
+        ],
+        tbar: [ 
+            search_field,
+            { xtype: 'button', handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.gif', cls:'x-btn-icon' },
+            { xtype:'button', icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
+            { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
+            { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
+            { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon' }
+        ]
+    });
+    rules_store.load();
+    rules_grid.on('rowclick', function(grid, ix){
+        var rec = rules_store.getAt( ix );
+        if( rec ) {
+            var tab_arr = tabpanel.find( 'id_rule', rec.data.id );
+            if( tab_arr.length > 0 ) {
+                tabpanel.setActiveTab( tab_arr[0] );
+            } else {
+                rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name );
+            }
+        }
+    });
+   
+    var encode_tree = function( root ){
+        var stmts = [];
+        root.eachChild( function(n){
+            stmts.push({ attributes: n.attributes, children: encode_tree( n ) });
+        });
+        return stmts;
+    };
+
+    var clipboard;
+    var cut_node = function( node ) {
+        clipboard = { node: node };
+    };
+    var clone_node = function(node){    
+        var copy = new Ext.tree.TreeNode( Ext.apply({}, node.attributes) ) 
+        node.eachChild( function( chi ){
+            copy.appendChild( clone_node( chi ) );
+        });
+        return copy;
+    };
+    var copy_node = function( node ) {
+        var copy = clone_node( node ); 
+        clipboard = { node: copy };
+    };
+    var paste_node = function( node ) {
+        if( clipboard ) {
+            var p = clipboard.node;
+            p.id = Ext.id();
+            node.appendChild( p );
+        }
+        //clipboard = 
+    };
+    var edit_node = function( node ) {
+        var key = node.attributes.key;
+        if( ! key ) {
+            Baseliner.error( _('Missing key'), 
+                _("Service '%1' does not contain edit information", node.text) );
+            return;
+        }
+        Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
+            if( res.success ) {
+                var show_win = function(item, opts) {
+                    var win = new Ext.Window(Ext.apply({
+                        layout: 'fit',
+                        title: _('Edit'),
+                        items: item
+                    }, opts));
+                    item.on('destroy', function(){
+                        //console.log( item.data );
+                        if( item.data ) node.attributes.data = item.data; 
+                        win.close();
+                    });
+                    win.show();
+                };
+                if( res.form ) {
+                    Baseliner.ajaxEval( res.form, { data: node.attributes.data }, function(comp){
+                        var params = {};
+                        var save_form = function(){
+                            form.data = form.getForm().getValues();
+                            form.destroy();
+                        };
+                        var form = new Ext.FormPanel({ 
+                            frame: false, forceFit: true, defaults: { msgTarget: 'under' },
+                            width: 800,
+                            height: 500,
+                            bodyStyle: { padding: '4px', "background-color": '#eee' },
+                            tbar: [
+                                { xtype:'button', text:_('Save'), handler: save_form },
+                                { xtype:'button', text:_('Cancel'), handler: function(){ form.destroy() } }
+                            ],
+                            items: comp
+                        });
+                        show_win( form );
+                    });
+                } else {
+                    var node_data = Ext.apply( res.config, node.attributes.data );
+                    var comp = new Baseliner.DataEditor({ data: node_data });
+                    show_win( comp, { width: 800, height: 400 } );
+                }
+            } else {
+                Baseliner.error( _('Error'), res.msg );
+            }
+        });
+    };
+    var rule_flow_show = function( id_rule, name, event_name ) {
+        var drop_handler = function(e) {
+            var n1 = e.source.dragData.node;
+            var n2 = e.target;
+            if( n1 == undefined || n2 == undefined ) return false;
+            var attr1 = n1.attributes;
+            var attr2 = n2.attributes;
+            if( attr1.palette ) {
+                if( attr1.holds_children ) {
+                    attr1.leaf = false;
+                } 
+                var copy = new Ext.tree.TreeNode( Ext.apply({}, attr1) );
+                copy.attributes.palette = false;
+                e.dropNode = copy;
+            }
+            return true;
+        };
+        var rule_tree_loader = new Ext.tree.TreeLoader({
+            dataUrl: '/rule/stmts_load',
+            baseParams: { id_rule: id_rule },
+            //requestMethod:'GET',
+            //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
+        });
+        var rule_save = function(opt){
+            var root = rule_tree.root;
+            var stmts = encode_tree( root );
+            var json = Ext.util.JSON.encode( stmts );
+            Baseliner.ajaxEval( '/rule/stmts_save', { id_rule: id_rule, stmts: json }, function(res) {
+                if( res.success ) {
+                    Baseliner.message( _('Rule'), res.msg );
+                    if( opt.callback ) {
+                        opt.callback( res );
+                    }
+                } else {
+                    Baseliner.error( _('Error saving rule'), res.msg );
+                }
+            });
+        };
+        var rule_load = function(){
+            rule_tree_loader.load( rule_tree.root );
+            rule_tree.root.expand();
+        };
+        var rule_dsl = function(){
+            var root = rule_tree.root;
+            //rule_save({ callback: function(res) { } });
+            var stmts = encode_tree( root );
+            var json = Ext.util.JSON.encode( stmts );
+            Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, stmts: json }, function(res) {
+                if( res.success ) {
+                    var editor;
+                    var idtxt = Ext.id();
+                    var data_txt = new Ext.form.TextArea({ region:'west', width: 140, value: res.event_data_yaml });
+                    var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
+                    var dsl_cons = new Ext.form.TextArea({ style:'color: #191; background-color:#000;' });
+                    var dsl_run = function(){
+                        Baseliner.ajaxEval( '/rule/dsl_try', { data: data_txt.getValue(), dsl: editor.getValue() }, function(res) {
+                            dsl_cons.setValue( res.msg ); 
+                        });
+                    };
+                    var win = new Ext.Window({
+                       layout: 'border', width: 800, height: 600, maximizable: true,
+                       tbar: [ { text:_('Run'), icon:'/static/images/icons/run.png', handler: dsl_run } ],
+                       items: [
+                           data_txt,
+                           { region:'center', xtype:'panel', height: 400, items:dsl_txt  },
+                           { xtype:'panel', items:dsl_cons, region:'south', split: true, height:200, layout:'fit' }
+                       ]
+                    });
+                    dsl_txt.on('afterrender', function(){
+                        editor = CodeMirror.fromTextArea( dsl_txt.getEl().dom , Ext.apply({
+                               lineNumbers: true,
+                               tabMode: "indent", smartIndent: true,
+                               matchBrackets: true
+                            }, Baseliner.editor_defaults )
+                        );
+                    });
+                    win.show();
+                } else {
+                    Baseliner.error( _('Error saving rule'), res.msg );
+                }
+            });
+        };
+        var short_name = name.length > 10 ? name.substring(0,20) : name;
+        var menu_click = function(node,event){
+            node.select();
+            var stmts_menu = new Ext.menu.Menu({
+                items: [
+                    { text: _('Edit'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
+                    { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
+                    { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
+                    { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
+                    { text: _('Delete'), handler: function(item){ node.remove() }, icon:'/static/images/icons/delete.gif' } 
+                ]
+            });
+            stmts_menu.showAt(event.xy);
+        };
+        var rule_tree = new Ext.tree.TreePanel({
+            region: 'center',
+            id_rule: id_rule,
+            closable: true,
+            title: String.format('{0}: {1}', id_rule, short_name), 
+            autoScroll: true,
+            useArrows: true,
+            animate: true,
+            lines: true,
+            //stripeRows: true,
+            enableSort: true,
+            enableDD: true,
+            ddScroll: true,
+            loader: rule_tree_loader,
+            listeners: {
+                beforenodedrop: { fn: drop_handler },
+                contextmenu: menu_click
+            },
+            rootVisible: true,
+            tbar: [ 
+                { xtype:'button', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save },
+                { xtype:'button', text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load },
+                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: rule_dsl }
+            ],
+            root: { text: _('Start: %1', event_name), draggable: false, id: 'root', expanded: true },
+        });
+        var tab = tabpanel.add( rule_tree ); 
+        tabpanel.setActiveTab( tab );
+        tabpanel.changeTabIcon( tab, '/static/images/icons/rule.png' );
+    };
+    /* 
     var tree = new Ext.tree.TreePanel({
+        region: 'center',
         autoScroll: true,
         animate: true,
         lines: true,
-	    stripeRows: true,
+        stripeRows: true,
         enableSort: false,
         enableDD: true,
         dataUrl: '/rule/tree',
+        listeners: {
+            beforenodedrop: { fn: drop_handler },
+        },
         rootVisible: true,
         useArrows: true,
         root: { nodeType: 'async', text: 'Reglas', draggable: false, id: 'root', expanded: true },
-        tbar: [ search_field,
-            { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon', handler: rule_add },
-            { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon' },
-            { xtype: 'button', text: _('Reload'), handler: tree_load, icon:'/static/images/icons/refresh.gif', cls:'x-btn-text-icon' },
-            { xtype:'button', text: 'Exportar', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
-        ]
     });
-    return tree;
+    */
+    var tabpanel = new Ext.TabPanel({
+        region: 'center',
+        items: []
+    });
+    var palette = new Ext.tree.TreePanel({
+        region: 'east',
+        width: 250,
+        autoScroll: true,
+        split: true,
+        animate: true,
+        lines: true,
+        enableDrag: true,
+        collapsible: true,
+        resizable: true,
+        dataUrl: '/rule/palette',
+        rootVisible: false,
+        useArrows: true,
+        root: { nodeType: 'async', text: 'Palette', draggable: false, id: 'root', expanded: true }
+    });
+    var panel = new Ext.Panel({
+        layout: 'border',
+        items: [ rules_grid, tabpanel, palette ]
+    });
+
+    return panel;
 })

@@ -1,5 +1,5 @@
 package BaselinerX::Job::Model::Jobs;
-use Moose;
+use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use namespace::clean;
 use Baseliner::Utils;
@@ -13,6 +13,7 @@ use utf8;
 use Class::Date;
 
 with 'Baseliner::Role::Search';
+with 'Baseliner::Role::Service';
 
 sub search_provider_name { 'Jobs' };
 sub search_provider_type { 'Job' };
@@ -120,10 +121,15 @@ sub cancel {
     if( ref $job ) {
         #TODO allow cancel on run, and let the daemon kill the job,
         #    or let the chained runner or simplechain to decide how to cancel the job nicely
-        _throw _loc('Job %1 is currently running and cannot be deleted')
-            unless( $job->is_not_running );
-        $job->delete if $job->status =~ /^CANCELLED/; $job->status( 'CANCELLED' );
-        $job->update;
+        _throw _loc('Job %1 is currently running and cannot be deleted') unless( $job->is_not_running );
+        if ( $job->status =~ /^CANCELLED/ ) {
+           $job->delete;
+        } else {
+           event_new 'event.job.cancel' => { job=>$job, self=>$self } => sub {
+               $job->status( 'CANCELLED' );
+               $job->update;
+           };
+        }
     } else {
         _throw _loc('Could not find job id %1', $p{id} );
     }
@@ -133,11 +139,14 @@ sub resume {
     my ($self, %p )=@_;
     my $id = $p{id} or _throw 'Missing job id';
     my $job = bali_rs('Job')->find( $id );
-    my $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$id, same_exec=>1, exec=>'last' );
-    $runner->logger->warn( _loc('Job resumed by user %1', $p{username} ) );
+    my $silent = $p{silent}||0;
+    my $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$id, same_exec=>1, exec=>'last', silent=>$silent );
+    $runner->logger->warn( _loc('Job resumed by user %1', $p{username} ) ) if ! $silent;
     $job->status('READY');
     $job->update;
 }
+
+register 'event.job.rerun';
 
 sub rerun {
     my ($self, %p )=@_;
@@ -150,36 +159,38 @@ sub rerun {
     _throw _loc('Job %1 is currently running (%2) and cannot be rerun', $job->name, $job->status)
         unless( $job->is_not_running );
 
-    my $now = DateTime->now;
-    $now->set_time_zone(_tz);
-    my $ora_now =  $now->strftime('%Y-%m-%d %T');
-
-    if( $p{run_now} ) {
-            my $end = $now->clone->add( hours => 5 );
-        my $ora_end =  $end->strftime('%Y-%m-%d %T');
-        $job->schedtime( $ora_now );
-        $job->maxstarttime( $ora_end );
-    }
-    $job->starttime( $ora_now );
-    $job->endtime( undef );
-    $job->rollback( 0 );
-    $job->status( 'READY' );
-    $job->step( $p{step} || 'PRE' );
-    $job->username( $username );
-    my $exec = $job->exec + 1;
-    $job->exec( $exec );
-    $job->update;
-    my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-    $log->info(_loc("Job restarted by user %1, execution %2", $realuser, $exec));
+    event_new 'event.job.rerun' => { job=>$job } => sub {
+        if( $p{run_now} ) {
+            my $now = DateTime->now;
+            $now->set_time_zone(_tz);
+            my $end = $now->clone->add( hours => 1 );
+            my $ora_now =  $now->strftime('%Y-%m-%d %T');
+            my $ora_end =  $end->strftime('%Y-%m-%d %T');
+            $job->schedtime( $ora_now );
+            $job->starttime( $ora_now );
+            $job->maxstarttime( $ora_end );
+        }
+        $job->rollback( 0 );
+        $job->status( 'READY' );
+        $job->step( $p{step} || 'PRE' );
+        $job->username( $username );
+        my $exec = $job->exec + 1;
+        $job->exec( $exec );
+        $job->update;
+        my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
+        $log->info(_loc("Job restarted by user %1, execution %2", $realuser, $exec));
+    };
 }
 
 sub create {
     my ($self, %p )=@_;
 
     my $job;
-    Baseliner->model('Baseliner')->txn_do( sub {
+    master_new 'job' => $p{name} => sub { # this is transaction "aware"
+        my $mid = shift;
+        $p{mid} = $mid;
         $job = $self->_create( %p );
-    });
+    };
     return $job;
 }
 
@@ -194,7 +205,7 @@ sub _create {
     my $jobType = (defined $p{approval}->{reason} && $p{approval}->{reason}=~ m/fuera de ventana/i)
         ? $config->{emer_window}
         : $config->{normal_window};
-    
+
     my $status = $p{status} || 'IN-EDIT';
     #$now->set_time_zone('CET');
     my $now = DateTime->now(time_zone=>_tz);
@@ -203,24 +214,26 @@ sub _create {
     $p{starttime}||=$now;
     $p{maxstarttime}||=$end;
 
+    ## allow the creation of jobs executed outside Baseliner, with older dates
     my ($starttime, $maxstarttime ) = ( $now, $end );
     ($starttime, $maxstarttime ) = $p{starttime} < $now
         ? ( $now , $end )
         : ($p{starttime} , $p{maxstarttime} );
-    $maxstarttime = $starttime->clone->add( hours => $config->{expiry_time}->{$jobType} || 24 );
 
-    #if( is_oracle ) {
-        $starttime =  $starttime->strftime('%Y-%m-%d %T');
-        $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
-    #}
+    $starttime =  $starttime->strftime('%Y-%m-%d %T');
+    $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
+
+    my $type = $p{type} || $p{job_type} || $config->{type};
+
     my $job = Baseliner->model('Baseliner::BaliJob')->create({
             name         => 'temp' . $$,
+            mid          => $p{mid},
             starttime    => $starttime,
             schedtime    => $starttime,
             maxstarttime => $maxstarttime,
             status       => $status,
             step         => $p{step} || 'PRE',
-            type         => $p{type} || $p{job_type} || $config->{type},
+            type         => $type,
             runner       => $p{runner} || $config->{runner},
             username     => $p{username} || $config->{username} || 'internal',
             comments     => $p{comments},
@@ -230,8 +243,8 @@ sub _create {
     });
 
     # setup name
-    my $name = $config->{name} 
-        || $self->job_name({ mask=>$config->{mask}, type=>'promote', bl=>$bl, id=>$job->id });
+    my $name = $config->{name}
+        || $self->job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job->id });
 
     _log "****** Creating JOB id=" . $job->id . ", name=$name, mask=" . $config->{mask};
     $config->{runner} && $job->runner( $config->{runner} );
@@ -267,7 +280,7 @@ sub _create {
             my $ns = Baseliner->model('Namespaces')->get( $item->{ns} );
             my $app = try { $ns->application } catch { '' };
             # check rfc
-            Baseliner->model('RFC')->check_rfc( $app, $ns->rfc ) 
+            Baseliner->model('RFC')->check_rfc( $app, $ns->rfc )
                 if $config->{check_rfc};
             # check contents job status
             _log "Checking if in active job: " . $item->{ns};
@@ -308,9 +321,15 @@ sub _create {
 
     # now let it run
     # if(  $p{approval}  ) {
+    $log->debug(_loc( 'Approval exists? ' ),data=>_dump  $p{approval});
     if ( exists $p{approval}{reason} ) {
         # approval request executed by runner service
         $job->stash_key( approval_needed => $p{approval} );
+    }
+    if ( ref $p{job_stash} eq 'HASH' ) {
+        while( my ($k,$v) = each %{ $p{job_stash} } ) {
+            $job->stash_key( $k => $v );
+        }
     }
     $job->status( 'READY' );
     $job->update;
@@ -358,6 +377,8 @@ sub notify { #TODO : send to all action+ns users, send to project-team
         or _throw "Job id $jobid not found";
     my $log = new BaselinerX::Job::Log({ jobid=>$jobid });
     my $status = $p{status} || $job->status || $type;
+    my $mailcfg   = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
+
     if( $job->step ne 'RUN' && $job->status !~ /ERROR|KILLED/ ) {
         $log->debug(_loc( "Notification skipped for job %1 step %2 status %3",
             $job->name,
@@ -372,22 +393,25 @@ sub notify { #TODO : send to all action+ns users, send to project-team
         my $u = Baseliner->model('Users')->get( $username );
         my $realname = $u->{realname};
         $log->debug( _loc("Notifying user %1: %2", $username, $subject) );
+        my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $jobid );
         Baseliner->model('Messaging')->notify(
             subject => $subject,
             message => $message,
-            sender => _loc('Job Manager'),
+            sender  => $mailcfg->{from},
             to => { users => [ $username ] },
             carrier =>'email',
             template => 'email/job.html',
             template_engine => 'mason',
             vars   => {
-                subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
-                message   => $message,  # last log msg 
                 action    => _loc($type), #started or finished
-                username  => $username,
-                realname  => $realname, 
                 job       => $job->name,
-                status    => _loc($status), 
+                message   => $message,  # last log msg
+                realname  => $realname,
+                status    => _loc($status),
+                subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
+                to        => $username,
+                username  => $username,
+                url_log   => $url_log,
             }
             #cc => { actions=> ['action.notify.job.end'] },
         );
@@ -433,7 +457,7 @@ sub export {
             Path::Class::dir( $job_dir )->recurse(callback=>sub{
                 my $f = shift;
                 return if $f->is_dir;
-                push @files, "" . $f->relative($inf->{root}); 
+                push @files, "" . $f->relative($inf->{root});
             });
             chdir $inf->{root};
             $tar->add_files( @files );
@@ -466,7 +490,7 @@ sub user_has_access {
 
 sub log {
     my ($self,%p) = @_;
-    $p{jobid} or _throw 'Missing jobid'; 
+    $p{jobid} or _throw 'Missing jobid';
     my $args = { jobid=>$p{jobid} };
     $args->{exec} = $p{job_exec} if $p{job_exec} > 0;
     return new BaselinerX::Job::Log( $args );

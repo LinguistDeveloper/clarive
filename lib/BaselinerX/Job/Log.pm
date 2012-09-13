@@ -7,7 +7,7 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Logger';
 
-register 'menu.job.logs' => { label => _loc('Job Logs'), url_comp => '/job/log/list', title=>_loc('Job Logs') };
+# register 'menu.job.logs' => { label => _loc('Job Logs'), url_comp => '/job/log/list', title=>_loc('Job Logs') };
 register 'config.job.log' => {
     metadata => [
         { id=>'job_id', label=>'Job', width=>200 },
@@ -117,7 +117,7 @@ sub common_log {
         # print out too
         Baseliner::Utils::_log_lev( 5, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );
         Baseliner::Utils::_log_lev( 5, substr($p{data},0,1024*10) )
-            if $ENV{BASELINER_DEBUG} && defined $p{data} && !$p{data_name} # no files wanted!;
+            if Baseliner->debug && defined $p{data} && !$p{data_name} # no files wanted!;
 
         # store the current section
         ;

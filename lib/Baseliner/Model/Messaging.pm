@@ -3,11 +3,30 @@ use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 no Moose;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Baseliner::Core::Message;
 use Try::Tiny;
 
+with 'Baseliner::Role::Service';
+
 register 'action.notify.admin' =>  { name=>'Receive General Admin Messages' };
 register 'action.notify.error' =>  { name=>'Receive Error Notifications' };
+
+register 'service.notify.create' => {
+    name => 'Send a Notification',
+    form => '/forms/notify_create.js',
+    handler=>sub{
+        my ($self, $c, $config) = @_;
+        my $to = $config->{to};
+        my $cc = $config->{cc};
+        $self->notify( 
+            body => $config->{body},
+            subject => $config->{subject},
+            carrier => 'email',
+        );
+        return { msg_id => 999, config=>$config }; 
+    }
+};
 
 =head1 DESCRIPTION
 
@@ -129,6 +148,7 @@ sub notify {
     my ($self,%p)=@_;
 
     my @carriers = _array( $p{carriers} , $p{carrier} );
+    $p{sender}.='@'.config_get('config.comm.email')->{domain} unless $p{sender} =~ m{@};
     _throw 'Missing carrier' unless @carriers;
 
     my %users;
@@ -156,7 +176,7 @@ sub notify {
     }
 
     # create the message
-    my $msg = $self->create(%p);
+    my $msg = $self->create(%p); 
 
     # create the queue entries
     for my $carrier ( @carriers ) {

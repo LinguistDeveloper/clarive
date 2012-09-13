@@ -376,7 +376,7 @@ sub user_projects_with_action {
     my $bl        = $p{bl} || '*';
     my $level     = $p{level} || 'all';
     my $bl_filter = '';
-    $bl_filter = qq{ AND bl in ('$bl','*') } if $bl ne '*';
+    $bl_filter = qq{ AND ra.bl in ('$bl','*') } if $bl ne '*';
     my @granted_projects = [];
 
     if ( $self->is_root($username) ) {
@@ -469,7 +469,7 @@ sub user_grants {
     }
     if( $root_user ) {  # no duplicates
         my %grant;
-        $grant{ join(',', values %$_ ) } = $_ for @ret;
+        $grant{ join(',', grep { defined } values %$_ ) } = $_ for @ret;
         @ret = values %grant;
     }
 

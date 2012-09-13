@@ -78,6 +78,8 @@ sub auto : Private {
     } else {
         $c->forward('/auth/logoff');
         $c->stash->{after_login} = '/' . $path;
+        my $qp = $c->req->query_parameters // {};
+        $c->stash->{after_login_query} = join '&', map { "$_=$qp->{$_}" } keys %$qp;
         $c->response->status( 401 );
         $c->forward('/auth/logon');
         #$c->detach('/end');
@@ -167,10 +169,10 @@ sub index:Private {
     my $p = $c->request->parameters;
 
     if( $p->{tab}  ) {
-        push @{ $c->stash->{tab_list} }, { url=>$p->{tab}, title=>$p->{tab}, type=>'comp' };
+        push @{ $c->stash->{tab_list} }, { url=>$p->{tab}, title=>$p->{tab}, type=>'comp', params=>$p };
     }
     if( $p->{tab_page}  ) {
-        push @{ $c->stash->{tab_list} }, { url=>$p->{tab_page}, title=>$p->{tab_page}, type=>'page' };
+        push @{ $c->stash->{tab_list} }, { url=>$p->{tab_page}, title=>$p->{tab_page}, type=>'page', params=>$p };
     }
 
     # set language 

@@ -114,20 +114,20 @@ Ext.onReady(function(){
 
     var icon_home = '/static/images/icons/home.gif';
 
-%   if( $show_calendar ) {
-        Baseliner.calpanel = new Baseliner.Calendar({
-            region: 'south',
-            split: true,
-            //collapsible: true,
-            //collapsed: true,
-            hidden: true,
-            height: 300,
-            tbar_end: [ '->', { xtype:'button', text:'#', handler:function(){ Baseliner.tabCalendar() } } ],
-            fullCalendarConfig: {
-                events: Baseliner.calendar_events,
-                timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
-            }
-        });
+% if( $show_calendar ) {
+    Baseliner.calpanel = new Baseliner.Calendar({
+        region: 'south',
+        split: true,
+        //collapsible: true,
+        //collapsed: true,
+        hidden: true,
+        height: 300,
+        tbar_end: [ '->', { xtype:'button', text:'#', handler:function(){ Baseliner.tabCalendar() } } ],
+        fullCalendarConfig: {
+            events: Baseliner.calendar_events,
+            timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
+        }
+    });
 % }
 
     var tab_panel = new Ext.TabPanel({  region: 'center', id:'main-panel',
@@ -217,12 +217,13 @@ Ext.onReady(function(){
     if( getParams!=undefined && getParams[1] !=undefined ) {
         tab_params = Ext.urlDecode(getParams[1]);
     }
-    
+
 % foreach my $tab ( @{ $c->stash->{tab_list} || [] } ) {
+    // This is used by /tab and /raw in raw_mode
 %    if( $tab->{type} eq 'page' ) {
-        Baseliner.addNewTab('<% $tab->{url} %>', undefined, { params: tab_params });
+        Baseliner.addNewTab('<% $tab->{url} %>', undefined, tab_params );
 %    } else {
-        Baseliner.addNewTabComp('<% $tab->{url} %>', undefined,  { params: tab_params });
+        Baseliner.addNewTabComp('<% $tab->{url} %>', undefined,  tab_params );
 %    }
 % }
 

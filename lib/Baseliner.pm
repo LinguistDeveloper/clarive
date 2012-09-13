@@ -16,6 +16,8 @@ use Catalyst::Runtime 5.80;
 our @modules;
 BEGIN {
 
+    use CatalystX::Features 0.23;
+
     if( $ENV{BALI_PLUGINS} ) {
         @modules = split /,/, $ENV{BALI_PLUGINS};
     }
@@ -48,6 +50,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
 my $t0 = [ gettimeofday ];
 extends 'Catalyst';
+$DB::deep = 500; # makes the Perl Debugger Happier
 our $VERSION = '5.2.0';
 
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
@@ -246,7 +249,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR "Baseliner Server v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . ". Startup time: " . tv_interval($t0) . "s.\n";
+    print STDERR "Baseliner v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . ". Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
         print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
@@ -343,6 +346,7 @@ sub decrypt {
 
 # user shortcut
 sub username {
+    require Baseliner::Utils;
     my $c = shift;
     my $user;
     $user = try { return $c->session->{username} } and return $user;

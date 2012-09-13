@@ -64,7 +64,11 @@ sub launch {
   # request.
   my $sem_chain = $self->_conf( 'chain.sem' );
 
-  my $chain_id = 3;  # FIXME
+  my $chain_id = config_value('config.job.default_chain_id');
+
+  $log->debug( _loc("Chain id: %1", $chain_id ) );
+
+  _throw 'Invalid or missing value for config.job.default_chain_id' unless defined $chain_id;
 
   my $step = exists $job->job_stash->{step} 
                ? $job->job_stash->{step} 
@@ -100,35 +104,35 @@ sub launch {
       : q{};
 
     eval qq| sub service { \$row->{service} } $row->{dsl_code}; |;
+    my $ret = $@;
     $sem->release if $sem;
-    _throw $@ if $@ && $self->_conf('kill_chain');
+    _throw $ret if $ret && $self->_conf('kill_chain');
   }
 
   # Iterate every element in the chain until it runs out, if the DSL happens
   # to be Perl eval its code (if active).
+  _log "Runner...";
+  $log->debug( _loc("Loaded chain"), data=>_dump \@chain );
   RUNNER:
   while ( @chain ) { 
     $job->stash->{chain}=\@chain;
-    bali_rs('Job')->find( $job->jobid )->stash( _dump $job->stash ); ## Realmente hace falta guardarlo en BBDD?
+    DB->BaliJob->find( $job->jobid )->stash( _dump $job->stash ); ## Realmente hace falta guardarlo en BBDD?
     my $rule = shift @chain;
     if ($rule->{active} == 1 && $rule->{dsl} =~ m/perl/i) {
+      _log _loc "Current chain rule: %1", $rule->{name};
       my @job_nature_ns = _job_nature_ns $job->{job_data}->{id};
       eval_row($rule)
         if    ($rule->{ns} eq '/' || ($rule->{ns} ~~ @job_nature_ns))          # Filter by namespace
            && ($rule->{bl} eq '*' || ($rule->{bl} eq $job->{job_data}->{bl})); # Filter by baseline
-    } 
+    } else { 
+      _log _loc "Ignored chain rule: %1", $rule->{name};
+    }
   }
   return; 
 }
 
 sub _conf {
-    my ($self, $id ) = @_;
-    return try {
-        require BaselinerX::BdeUtils;  # XXX this must go away
-        _bde_conf( $id );
-    } catch {
-        config_value( $id );
-    };
+  config_get( 'config.bde' )->{ shift() };
 }
 
 1;
