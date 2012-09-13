@@ -91,7 +91,8 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->belongs_to(
   "priorities",
   "Baseliner::Schema::Baseliner::Result::BaliTopicPriority",
-  { id => "id_priority" },
+  { "foreign.id" => "self.id_priority" },
+  { join_type => 'left' },
 );
 
 __PACKAGE__->has_many(

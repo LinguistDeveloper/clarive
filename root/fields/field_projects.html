@@ -1,0 +1,18 @@
+<%args>
+    $data
+</%args>
+
+% if( _array( $data->{projects} ) ) {
+    <ul class="nav nav-list">
+        <li class="nav-header">
+            <% _loc("Projects") %>
+        </li>
+    </ul>
+    <ul class="" style="margin-left: 20px">
+% foreach my $project ( _array( $data->{projects} ) ) {
+        <li style="margin: 6px 0px 6px 0px">
+            <% $project->{name} %>
+        </li>
+% }
+    </ul>
+% }
