@@ -55,7 +55,11 @@ __PACKAGE__->add_columns(
     size => 126,
   },
   "nature", { data_type => "varchar2", is_nullable => 1, size => 1024 },
-  "active", { data_type => "char", is_nullable => 1, size => 1, default => '1' },  
+  "active", { data_type => "char", is_nullable => 1, size => 1, default => '1' },
+  "repository", {
+    data_type => "NUMBER",
+    is_nullable => 1
+  },   
 );
 __PACKAGE__->set_primary_key("mid");
 
@@ -73,6 +77,7 @@ __PACKAGE__->belongs_to(
 );
 
 __PACKAGE__->master_setup( 'files', ['project','mid'] => ['file_version', 'BaliFileVersion','mid'] );
+__PACKAGE__->master_setup( 'repositories', ['project','mid'] => ['repository','BaliMaster', 'mid'] => );
 
 sub id { $_[0]->mid; }   # for backwards compatibility
 
