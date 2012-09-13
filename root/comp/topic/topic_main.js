@@ -297,6 +297,9 @@
     });
     
 
+    Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
+        load_form( rec );
+    });
     
     cardpanel.tab_icon = '/static/images/icons/topic_one.png';
     return cardpanel;
