@@ -841,13 +841,13 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     }
 });
 
-Baseliner.gantt = function( format ) {
-    var divTag = document.createElement("div");  
-    divTag.setAttribute("align", "center");           
-    var g = new JSGantt.GanttChart( 'g', divTag, format );
+// Baseliner.gantt = function( format ) {
+//     var divTag = document.createElement("div");  
+//     divTag.setAttribute("align", "center");           
+//     var g = new JSGantt.GanttChart( 'g', divTag, format );
 
-    g.Draw();
+//     g.Draw();
     
-    return g;
-};
+//     return g;
+// };
 
