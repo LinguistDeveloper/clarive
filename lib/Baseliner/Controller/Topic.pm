@@ -332,35 +332,10 @@ sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
-    #my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
-
-    #my @projects;
-    #my $topicprojects = $topic->projects->search();
-    #while( my $topicproject = $topicprojects->next ) {
-    #    my $str = $topicproject->id;
-    #    push @projects, $str
-    #}
-    
-    #my @users = map { $_->id } 
-    #    $topic->users->search( undef, { select=>[qw(mid)],
-    #    order_by => { '-asc' => 'username' } } )->all;
-        
-    #my @labels = map { $_->id_label } 
-    #    $c->model('Baseliner::BaliTopicLabel')->search( id_topic => $topic_mid , { select=>[qw(id_label)] } )->all;        
-        
-    #my @topics = map { $_->mid } 
-    #    $topic->topics->search( undef, { select=>[qw(mid)],
-    #    order_by => { '-asc' => 'mid' } } )->all;
-    
-    #my @revisions = map { $_->{id} = $_->{mid}; $_ } 
-    #    $topic->revisions->search( undef, { select=>[qw(name mid)],
-    #    order_by => { '-asc' => 'mid' } } )->hashref->all;
     
     ######################################################################################### 
-    #Preguntar por el formulario de configuracion;
     #my $id_category = $topic->id_category;    
-    ##my $field_hash = $self->field_configuration( $id_category );
-    #
+
     #my $row_category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
     #my $forms;
     #if( ref $row_category ) {
@@ -369,39 +344,9 @@ sub json : Local {
 
     ##########################################################################################
         
-    my $ret = {
-        #title              => $topic->title,
-        #description        => $topic->description,
-        #progress           => $topic->progress,
-        #category           => $topic->id_category,
-        #topic_mid          => $topic_mid,
-        #status             => $topic->id_category_status,
-        #labels             => \@labels,
-        #projects           => \@projects,
-        #users              => \@users,
-        #topics             => \@topics,
-        #revisions          => \@revisions,
-        #priority           => $topic->id_priority,
-        #response_time_min  => $topic->response_time_min,
-        #expr_response_time => $topic->expr_response_time,
-        #deadline_min       => $topic->deadline_min,
-        #expr_deadline      => $topic->expr_deadline,
-        ##fields_form        => $field_hash,
-        ##fields              => $fields_form,
-        #forms              => $forms,
-    };
-    #$ret->{category_name} = try { $topic->categories->name } catch {''};
-    #$ret->{status_name} = try { $topic->status->name } catch {''};
-    #$ret->{priority_name} = try { $topic->priorities->name } catch { ''};
+    my $ret = {};
     
-    #Cargamos los parametros de los campos
-    #$ret->{fields} = $self->field1_configuration( $ret );    
-    # TODO
-
-    #my $meta = $self->get_meta( $topic_mid );
     my $meta = Baseliner::Model::Topic->get_meta( $topic_mid );
-    
-    
     $ret->{topic_meta} = $meta;
     $ret->{topic_data} = $self->get_data( $meta, $topic_mid );
     $c->stash->{json} = $ret;
@@ -415,7 +360,6 @@ sub new_topic : Local {
     
     my $id_category = $p->{new_category_id};
     my $name_category = $p->{new_category_name};
-    #my $meta = $self->get_meta( undef, $id_category );
     my $meta = Baseliner::Model::Topic->get_meta( undef, $id_category );
     my $data = $self->get_data( $meta, undef );
     
@@ -440,13 +384,7 @@ sub view : Local {
     $c->stash->{swEdit} = $p->{swEdit};
     
     if($topic_mid || $c->stash->{topic_mid} ){
-        #my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
-        #$id_category = $topic->id_category;
-        
-        
-        #$c->stash->{topic_mid} = $topic->mid;
-        
-
+ 
         # comments
         $self->list_posts( $c );  # get comments into stash        
         $c->stash->{events} = events_by_mid( $topic_mid );
@@ -454,10 +392,7 @@ sub view : Local {
         #$c->stash->{forms} = [
         #    map { "/forms/$_" } split /,/,$topic->categories->forms
         #];
-        
-        
-
-
+ 
     }else{
         $id_category = $p->{categoryId};
 
@@ -467,10 +402,6 @@ sub view : Local {
     }
     
     if( $p->{html} ) {
-        #my $field_hash = $self->field_configuration( $id_category );
-        #map { $c->stash->{ $_ } = \1 } keys %$field_hash;
-        #my $meta = $self->get_meta( $topic_mid, $id_category );
-        
         my $meta = Baseliner::Model::Topic->get_meta( $topic_mid, $id_category );
 
         $c->stash->{topic_meta} = $meta;
@@ -732,9 +663,9 @@ sub list_category : Local {
 
                 my $type = $r->is_changeset ? 'C' : $r->is_release ? 'R' : 'N';
                 
-                my @fields = map { $_->id_field } 
-                    #$c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $r->id}, {order_by=> {'-asc'=> 'order_field'}} )->all;
-                    $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $r->id} )->all;
+                my @fields = map { $_->{name_field} } sort { $a->{field_order} <=> $b->{field_order} } 
+                             map {  _load $_->{params_field} } DB->BaliTopicFieldsCategory->search({id_category => $r->id})->hashref->all;
+    
                     
                 my @priorities = map { $_->id_priority } 
                     $c->model('Baseliner::BaliTopicCategoriesPriority')->search( {id_category => $r->id, is_active=>1}, {order_by=> {'-asc'=> 'id_priority'}} )->all;
@@ -754,7 +685,6 @@ sub list_category : Local {
                     description   => $r->description,
                     statuses      => \@statuses,
                     fields        => \@fields,
-                    #fields_form        => $fields_form,
                     priorities    => \@priorities
                 };
             }  
@@ -1549,54 +1479,5 @@ sub report_csv : Local {
     $c->stash->{serve_filename} = 'topics.csv';
     $c->forward('/serve_file');
 }
-
-sub field_configuration {
-    my ($self, $id_category ) = @_;
-    defined $id_category or _throw _loc 'Missing parameter';
-    my $field_hash = {};
-    #my @fields = Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category}, {prefetch => ['fields']})->hashref->all;
-    #if( @fields > 0 ) {
-    #    map { $field_hash->{'show_' . $_->{fields}->{name}} = \1 } @fields;
-    #} else {
-    #    map { $field_hash->{"show_$_"} = \1 } qw/
-    #        assign_to
-    #        category
-    #        description
-    #        files
-    #        labels
-    #        priority
-    #        progress
-    #        projects
-    #        properties
-    #        release
-    #        revisions
-    #        status
-    #        title
-    #        topics
-    #    /;
-    #}
-
-    my @fields = Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category}, {order_by => 'order_field'})->hashref->all;
-    if( @fields > 0 ) {
-        map { $field_hash->{'show_' . $_->{id_field}} = \1 } @fields;
-    }    
-    return $field_hash;
-}
-
-#sub field1_configuration {
-#    my ($self, $json ) = @_;
-#    defined $json or _throw _loc 'Missing parameter';
-#
-#    my @fields = Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $json->{category}}, {order_by => 'order_field'})->hashref->all;
-#    return  [   map {
-#                        my $value = eval('$json->{' . $_->{column_json_field} . '}');
-#                        +{  field_name  => $_->{id_field},
-#                            field_path  => $_->{path_field},
-#                            field_value => $value ? $value : undef,
-#                         }
-#                    } @fields
-#            ];
-#
-#}
 
 1;

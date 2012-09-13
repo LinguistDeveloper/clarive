@@ -194,7 +194,6 @@ sub save_data {
         
     }else{
         $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
-        _log ">>>>>>>>>>>>>>>>VALORES: " . $data->{category};
         $topic->update( \%row );
     }
 
