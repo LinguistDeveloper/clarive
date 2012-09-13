@@ -23,11 +23,11 @@
     Baseliner.ci_edit = function( gridid, ix ){
         var g = Ext.getCmp( gridid );
         if( g!= undefined ) 
-            ci_edit( g.getStore().getAt(ix).data );
+            ci_edit( g.getStore(), g.getStore().getAt(ix).data );
     };
 
-    var ci_edit = function(rec){
-        var data = store_ci.baseParams;
+    var ci_edit = function(store, rec){
+        var data = store.baseParams;
         var classname = data.class ;
         Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
             if( res.success ) {
@@ -234,7 +234,7 @@
     });
 
     ci_grid.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
-        ci_edit( grid.getStore().getAt(rowIndex).data );
+        ci_edit( grid.getStore(), grid.getStore().getAt(rowIndex).data );
     });
 
     // Lifecycle tree node listener on click
