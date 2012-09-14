@@ -108,7 +108,7 @@
             if( tab_arr.length > 0 ) {
                 tabpanel.setActiveTab( tab_arr[0] );
             } else {
-                rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name );
+                rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event );
             }
         }
     });
@@ -196,7 +196,7 @@
             }
         });
     };
-    var rule_flow_show = function( id_rule, name, event_name ) {
+    var rule_flow_show = function( id_rule, name, event_name, rule_event ) {
         var drop_handler = function(e) {
             var n1 = e.source.dragData.node;
             var n2 = e.target;
@@ -243,7 +243,7 @@
             //rule_save({ callback: function(res) { } });
             var stmts = encode_tree( root );
             var json = Ext.util.JSON.encode( stmts );
-            Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, stmts: json }, function(res) {
+            Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, stmts: json, event_key: rule_event }, function(res) {
                 if( res.success ) {
                     var editor;
                     var idtxt = Ext.id();
@@ -251,7 +251,7 @@
                     var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
                     var dsl_cons = new Ext.form.TextArea({ style:'color: #191; background-color:#000;' });
                     var dsl_run = function(){
-                        Baseliner.ajaxEval( '/rule/dsl_try', { data: data_txt.getValue(), dsl: editor.getValue() }, function(res) {
+                        Baseliner.ajaxEval( '/rule/dsl_try', { data: data_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
                             dsl_cons.setValue( res.msg ); 
                         });
                     };

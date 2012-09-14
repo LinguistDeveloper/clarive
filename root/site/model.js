@@ -223,7 +223,7 @@ Baseliner.UserAndRoleBox = function(c) {
         name: 'to_and_cc',
         hiddenName: 'to_and_cc',
         displayField: 'name',
-        valueField: 'id',
+        valueField: 'ns',
         store: store,
         allowBlank: true,
         msgTarget: 'under',

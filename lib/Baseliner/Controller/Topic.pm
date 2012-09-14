@@ -9,55 +9,6 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
-my $post_filter = sub {
-        my ($text, @vars ) = @_;
-        $vars[2] =~ s{\n|\r|<(.+?)>}{ }gs;
-        $vars[0] = "<b>$vars[0]</b>";  # bold username
-        $vars[2] = "<quote>$vars[2]</quote>";  # quote post
-        ($text,@vars);
-    };
-register 'event.post.create' => {
-    text => '%1 posted a comment on %2: %3',
-    vars => ['username', 'ts', 'post'],
-    filter => $post_filter,
-};
-
-register 'event.post.delete' => {
-    text => '%1 deleted a comment on %2: %3',
-    vars => ['username', 'ts', 'post'],
-    filter => $post_filter,
-};
-
-register 'event.file.create' => {
-    text => '%1 posted a file on %2: %3',
-    vars => ['username', 'ts', 'filename'],
-};
-
-register 'event.file.attach' => {
-    text => '%1 attached %2 on %3',
-    vars => ['username', 'filename', 'ts'],
-};
-
-register 'event.file.remove' => {
-    text => '%1 removed %2 on %3',
-    vars => ['username', 'filename', 'ts'],
-};
-
-register 'event.topic.file_remove' => {
-    text => '%1 removed %2 on %3',
-    vars => ['username', 'filename', 'ts'],
-};
-
-register 'event.topic.create' => {
-    text => '%1 created topic on %2',
-    vars => ['username', 'ts'],
-};
-
-register 'event.topic.modify' => {
-    text => '%1 modified topic on %3',
-    vars => ['username', 'field', 'ts'],
-};
-
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'menu.tools.topic' => {

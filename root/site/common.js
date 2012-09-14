@@ -851,3 +851,110 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
 //     return g;
 // };
 
+
+//Baseliner.loadFile('/static/pdfjs/build/pdf.js', 'js' );
+Baseliner.PDFJS = function(config){
+    var self = this;
+    var prev = new Ext.Button({ icon: '/static/images/icons/arrow_left_black.png' });
+    var next = new Ext.Button({ icon: '/static/images/icons/arrow_right_black.png' });
+  var page_num = new Ext.form.TextField({ width:'30', readOnly:true  });
+  var page_count = new Ext.form.TextField({ width:'30', readOnly:true });
+
+    Baseliner.PDFJS.superclass.constructor.call( this, Ext.apply( {
+        tbar: [
+           prev, next,
+           _('Page:'), page_num, _('Total:'), page_count
+        ], 
+        bodyCfg: { tag:'canvas', style:{ 'background-color':'#fff' } }
+    }, config ) );
+
+    self.on( 'afterrender', function(){
+        var id = this.body.id;
+
+        //
+        // NOTE: 
+        // Modifying the URL below to another server will likely *NOT* work. Because of browser
+        // security restrictions, we have to use a file server with special headers
+        // (CORS) - most servers don't support cross-origin browser requests.
+        //
+        var url = self.url;
+      
+         // var url = 'http://cdn.mozilla.net/pdfjs/tracemonkey.pdf';
+        // url = '/static/pdfjs/build/tracemonkey.pdf';
+        //
+        // Disable workers to avoid yet another cross-origin issue (workers need the URL of
+        // the script to be loaded, and currently do not allow cross-origin scripts)
+        //
+        PDFJS.disableWorker = true;
+
+        var pdfDoc = null,
+            pageNum = 1,
+            scale = 0.8,
+            canvas = document.getElementById( id ),
+            ctx = canvas.getContext('2d');
+
+        //
+        // Get page info from document, resize canvas accordingly, and render page
+        //
+        function renderPage(num) {
+          // Using promise to fetch the page
+          pdfDoc.getPage(num).then(function(page) {
+            var viewport = page.getViewport(scale);
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            // Render PDF page into canvas context
+            var renderContext = {
+              canvasContext: ctx,
+              viewport: viewport
+            };
+            page.render(renderContext);
+          });
+
+          // Update page counters
+          page_num.setValue( pageNum );
+          page_count.setValue( pdfDoc.numPages );
+        }
+
+        //
+        // Go to previous page
+        //
+        function goPrevious() {
+          if (pageNum <= 1)
+            return;
+          pageNum--;
+          renderPage(pageNum);
+        }
+
+        //
+        // Go to next page
+        //
+        function goNext() {
+          if (pageNum >= pdfDoc.numPages)
+            return;
+          pageNum++;
+          renderPage(pageNum);
+        }
+        prev.handler = goPrevious;
+        next.handler = goNext;
+        //
+        // Asynchronously download PDF as an ArrayBuffer
+        //
+        PDFJS.getDocument(url).then(function getPdfHelloWorld(_pdfDoc) {
+          pdfDoc = _pdfDoc;
+          renderPage(pageNum);
+        });
+    });
+};
+Ext.extend( Baseliner.PDFJS, Ext.Panel ); 
+
+// Usage: Baseliner.read_pdf( '/static/pdfjs/build/tracemonkey.pdf' );
+Baseliner.read_pdf = function( url ) {
+  var win = new Ext.Window({
+      layout:'fit', width:650, height: 760,
+      maximizable: true,
+      items: new Baseliner.PDFJS({ url: url })
+  });
+  win.show();
+};
+

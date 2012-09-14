@@ -135,18 +135,32 @@ sub event_new {
         $code = $data;
         $data = {};
     }
+    my @rule_log;
     $data ||= {};
     my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
     my $event_create = sub {
-        my $ed = shift;
-        Baseliner->model('Baseliner::BaliEvent')
-            ->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
+        my ($ed,@rules) = @_;
+        my $ev_row = DB->BaliEvent->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
+        for my $rule (@rules) {
+            _error $rule;
+            my $rrow = DB->BaliEventRules->create(
+                {
+                    id_event   => $ev_row->id,
+                    id_rule    => $rule->{id},
+                    stash_data => _dump( $rule->{stash} ),
+                    #dsl        => "DSL: $rule->{dsl}",
+                }
+            );
+        }
     };
     return try {
         if( ref $code eq 'CODE' ) {
             require Baseliner::Core::Event;
             my $obj = Baseliner::Core::Event->new( data => $data );
-            # PRE
+            # PRE rules
+            my $rules_pre = $ev->rules_pre_online;
+            push @rule_log, _array( $rules_pre->{rule_log} );
+            # PRE hooks
             for my $hk ( $ev->before_hooks ) {
                 my $hk_data = $hk->( $obj );
                 $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
@@ -159,16 +173,19 @@ sub event_new {
                 _debug 'event_new is missing mid parameter' ;
                 #_throw 'event_new is missing mid parameter' ;
             }
-            # POST
+            # POST hooks
             $obj->data( $data );
             for my $hk ( $ev->after_hooks ) {
                 my $hk_data = $hk->( $obj );
                 $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
                 $obj->data( $data );
             }
+            # POST rules
+            my $rules_post = $ev->rules_post_online;
+            push @rule_log, _array( $rules_post->{rule_log} );
         }
         # create the event on table
-        $event_create->( $data ) if defined $data->{mid};
+        $event_create->( $data, @rule_log ) if defined $data->{mid};
         return $data; 
     } catch {  # no event if fails
         my $err = shift;
