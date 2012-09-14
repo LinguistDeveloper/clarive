@@ -26,4 +26,10 @@ __PACKAGE__->add_columns(
 
 );
 __PACKAGE__->set_primary_key("id");
+
+__PACKAGE__->has_many(
+  "topics",
+  "Baseliner::Schema::Baseliner::Result::BaliTopic",
+  { 'foreign.id_category' => 'self.id' },
+);
 1;
