@@ -12,6 +12,7 @@ params:
 ---
 */
 (function(params){
+	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
 	var ff;
@@ -39,7 +40,7 @@ params:
     var store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/topic/file_tree',
-	   baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue() },
+	   baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue(), filter: meta.rel_field },
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
     });
 	
@@ -154,12 +155,12 @@ params:
                     
                 }
                 else{
-					store_file.baseParams = {topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue()};
+					store_file.baseParams = {topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue(), filter: meta.rel_field };
                     store_file.load();                    
                 }
             },
             onSubmit: function(id, filename){
-				uploader.setParams({topic_mid: data ? data.topic_mid : obj_topic_mid.getValue()});
+				uploader.setParams({topic_mid: data ? data.topic_mid : obj_topic_mid.getValue(), filter: meta.rel_field });
             },
             onProgress: function(id, filename, loaded, total){},
             onCancel: function(id, filename){ },
@@ -194,7 +195,7 @@ params:
 				filelist,
 				filedrop
 			],
-			fieldLabel: _('Files')
+			fieldLabel: _(meta.name_field)
 		}
     ]
 })

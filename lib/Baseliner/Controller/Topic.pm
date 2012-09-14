@@ -1104,7 +1104,7 @@ sub upload : Local {
                         id_file  => $existing->mid,
                         filename     => $filename,
                     };                
-                    $topic->add_to_files( $existing, { rel_type=>'topic_file_version' });
+                    $topic->add_to_files( $existing, { rel_type=>'topic_file_version', rel_field=> $p->{filter} });
                 }
             } else {
                 # create file version master and bali_file_version rows
@@ -1139,7 +1139,7 @@ sub upload : Local {
                                 filename     => $filename,
                             };
                             # tie file to topic
-                            $topic->add_to_files( $file, { rel_type=>'topic_file_version' });
+                            $topic->add_to_files( $file, { rel_type=>'topic_file_version', rel_field=> $p->{filter} });
                         }
                     };                        
                 }
@@ -1233,7 +1233,7 @@ sub file_tree : Local {
            +{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
            } 
            $c->model('Baseliner::BaliTopic')->search( { mid => $topic_mid } )->first->files->search(
-           undef,
+           {'rel_field'=> $p->{filter}},
            {   select   => [qw(mid filename filesize md5 versionid extension created_on created_by)],
                order_by => { '-asc' => 'created_on' }
            }
