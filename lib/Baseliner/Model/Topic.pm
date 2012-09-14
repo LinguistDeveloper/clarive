@@ -167,7 +167,7 @@ sub next_status_for_user {
     my $where = { id_category => $p{id_category} };
     $where->{id_status_from} = $p{id_status_from} if defined $p{id_status_from};
     if( $p{username} ) {
-        $user_roles = Baseliner->model('Baseliner::BaliRoleUser')->search({ username => $p{username} },{ select=>'role' } )->as_query;
+        $user_roles = Baseliner->model('Baseliner::BaliRoleUser')->search({ username => $p{username} },{ select=>'id_role' } )->as_query;
         $where->{role} = { -in => $user_roles };
     }
     my @to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
