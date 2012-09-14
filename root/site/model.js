@@ -1770,8 +1770,6 @@ Baseliner.DataEditor = function(c) {
          for( var k in d ){
            var myid = id++;
            var v = flatten(d[k], myid, k);
-           console.log( k );
-           console.log( v );
            var key_long = parent_key ? parent_key + '.' + k : k;
            var row = { key: k, key_long: key_long, type: v[2], value: v[0], _is_leaf: v[1], _id: myid, _parent: parent }; 
            data.push(row);
@@ -1819,7 +1817,7 @@ Baseliner.DataEditor = function(c) {
       return '<b>' + v + '</b>'
     };
     var render_value = function(v){
-      return '<span class="ux-maximgb-tg-mastercol-editorplace">' + v + '</span>'
+      return Baseliner.render_wrap( '<pre>'+v+'</pre>' ); //'<span class="ux-maximgb-tg-mastercol-editorplace">' + v + '</span>'
     };
 
     var collapse_data = function( rows, id_parent ){
@@ -1883,11 +1881,19 @@ Baseliner.DataEditor = function(c) {
 
     var add_row = function(){
         var sel = tree.getSelectionModel().getSelected(); 
-        if( sel && sel.data.type == 'Hash' ) {
-            var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: sel.data._id });
-            sel.data._is_leaf = false;
-            store.add( rec );
-            store.expandNode( sel );
+        if( sel ) {
+            if( sel.data.type == 'Hash' ) {
+                var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: sel.data._id });
+                sel.data._is_leaf = false;
+                store.add( rec );
+                store.expandNode( sel );
+            } 
+            else if( sel.data.type == 'Array' ) {
+                var rec = new Record({ key: '[...]', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: sel.data._id });
+                sel.data._is_leaf = false;
+                store.add( rec );
+                store.expandNode( sel );
+            }
         } else {
             var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: 0 });
             store.add( rec );
@@ -1912,11 +1918,11 @@ Baseliner.DataEditor = function(c) {
 
     var cm = new Ext.grid.ColumnModel({
       columns: [
-        { id:'key', header: _("Key"), width: 100, sortable: false, dataIndex: 'key', editor: textedit, renderer: render_key },
-        {header: _("_id"), width: 75, sortable: false, dataIndex: '_id' },
-        {header: _("_parent"), width: 75, sortable: false, dataIndex: '_parent' },
+        { id:'key', header: _("Key"), width: 50, sortable: false, dataIndex: 'key', editor: textedit, renderer: render_key },
         {header: _("Type"), width: 75, sortable: false, dataIndex: 'type', renderer: function(v){ return _(v) }},
-        {header: _("Value"), width: 150, sortable: true, dataIndex: 'value', editor: textedit }
+        {header: _("Value"), width: 150, sortable: true, dataIndex: 'value', editor: textedit, renderer: render_value }
+        //{header: _("_id"), width: 75, sortable: false, dataIndex: '_id' },
+        //{header: _("_parent"), width: 75, sortable: false, dataIndex: '_parent' }
       ],      
       getCellEditor: function( col, row) {
         //config[col].setCellEditor( textedit );
@@ -1947,14 +1953,21 @@ Baseliner.DataEditor = function(c) {
            }
         } 
         if( ! editor ) {
-            editor = new Ext.form.TextField();
+            if( col == 2 ) {
+                var rec = store.getAt(row);
+                var ta = new Ext.form.TextArea({ value: rec.get('value'), style:{ 'font-family':'Consolas, Courier New' } });
+                var win = new Ext.Window({ modal:true, width: 500, height: 250,
+                    layout:'fit',
+                    items:[ ta ]
+                });
+                //win.on('afterrender', function(){ ta.focus() });
+                win.on('close', function(){ rec.set('value', ta.getValue() ); });
+                win.show();
+            } else {
+                editor = new Ext.form.TextField();
+            }
         }
         this.setEditor( col, editor );
-        /* return textedit;
-        Baseliner.xxx = this.config[col];
-        this.config[col].setEditor( textedit );
-        console.log( this.config[col] );
-        */
         return Ext.grid.ColumnModel.prototype.getCellEditor.call(this, col, row);
       },
       isCellEditable: function(col, row) {
@@ -1973,7 +1986,7 @@ Baseliner.DataEditor = function(c) {
       autoExpandColumn: 'key',
       //plugins: expander,
       viewConfig : {
-        //forceFit: true,
+        forceFit: true,
         enableRowBody : true
       }
     }, c.editorConfig ));
