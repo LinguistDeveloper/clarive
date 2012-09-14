@@ -11,13 +11,14 @@ params:
 */
 
 (function(params){
+	var meta = params.topic_meta;
 	var data = params.topic_data;
     return [
 		{
 			xtype:'textfield',
-			fieldLabel: _('Title'),
-			name: 'title',
-			value: data ? data.title : '',
+			fieldLabel: _(meta.name_field),
+			name: meta.name_field,
+			value: data ? eval('data.' + meta.name_field): '',
 			style: { 'font-size': '16px' },
 			width: '100%',
 			height: 30,

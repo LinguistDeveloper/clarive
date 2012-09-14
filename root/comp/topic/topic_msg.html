@@ -83,7 +83,7 @@ padding: 2px 4px 2px 7px;
         <table class="table table-bordered table-condensed">
             <tbody>
 % foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'body' } _array( $topic_meta ) ) {
-    <& $field->{html}, data=>$topic_data &>
+    <& $field->{html}, data=>$topic_data, meta=>$field &>
 % }
                 <tr>
                     <td colspan="2">

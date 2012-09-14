@@ -1073,8 +1073,9 @@
 			valueField: 'id',
 			tpl: tpl_list,
 			displayFieldTpl: tpl_field,
-			value: '/',
-			extraItemCls: 'x-tag'
+			extraItemCls: 'x-tag',
+			//preventDuplicates: false,
+			removeValuesFromStore: false
 		}, c));
 	};
 	Ext.extend( Baseliner.model.Fields, Ext.ux.form.SuperBoxSelect );
@@ -1100,42 +1101,135 @@
 				fields.push(Ext.util.JSON.encode(row.data.params));
 				//config.push({"text": _(row.data.name) , "leaf": true,  "id": row.data.id, "config": row.data.name });	
 			//}
-		});			
+		});
 
-        // --------------- Forms 
-        var form_category_store = new Baseliner.JsonStore({
-            root: 'data' , 
-            remoteSort: true,
-            autoLoad: true,
-            totalProperty:"totalCount", 
-            baseParams: {},
-            id: 'form_path', 
-            url: '/topicadmin/list_forms',
-            fields: ['form_name','form_path'] 
-        });
-        var fc_tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">{form_name}</div></tpl>');
-        var fc_tpl_field = new Ext.XTemplate( '<tpl for=".">{form_name}</tpl>' );
+        //////// --------------- Forms 
+        //////var form_category_store = new Baseliner.JsonStore({
+        //////    root: 'data' , 
+        //////    remoteSort: true,
+        //////    autoLoad: true,
+        //////    totalProperty:"totalCount", 
+        //////    baseParams: {},
+        //////    id: 'form_path', 
+        //////    url: '/topicadmin/list_forms',
+        //////    fields: ['form_name','form_path'] 
+        //////});
+        //////var fc_tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">{form_name}</div></tpl>');
+        //////var fc_tpl_field = new Ext.XTemplate( '<tpl for=".">{form_name}</tpl>' );
+        //////
+        //////var form_category_select = new Ext.ux.form.SuperBoxSelect({
+        //////    store: form_category_store,
+        //////    allowBlank: true,
+        //////    msgTarget: 'under',
+        //////    //allowAddNewData: true,
+        //////    //addNewDataOnBlur: true, 
+        //////    emptyText: _('Select forms to add to the category'),
+        //////    triggerAction: 'all',
+        //////    resizable: true,
+        //////    mode: 'remote',
+        //////    fieldLabel: _('Forms'),
+        //////    typeAhead: true,
+        //////        name: 'forms',
+        //////        hiddenName: 'forms',
+        //////        displayField: 'form_name',
+        //////        valueField: 'form_name',
+        //////    tpl: fc_tpl_list,
+        //////    displayFieldTpl: fc_tpl_field,
+        //////    extraItemCls: 'x-tag'
+        //////});
+		
+		
+		    var btn_clone_field = new Ext.Toolbar.Button({
+			    text: _('Clone field'),
+			    icon:'/static/images/icons/wrench.png',
+			    cls: 'x-btn-text-icon',
+			    handler: function() {
+					var btn_cerrar_clone_field = new Ext.Toolbar.Button({
+						text: _('Close'),
+						width: 50,
+						handler: function() {
+							winCloneField.close();
+						}
+					})
+					
+					var btn_grabar_clone_field = new Ext.Toolbar.Button({
+						text: _('Save'),
+						width: 50,
+						handler: function(){
+							var v = combo_type_clone_field.getValue();
+							var row = combo_type_clone_field.findRecord(combo_type_clone_field.valueField || combo_type_clone_field.displayField, v);
+							
+							var form = form_clone_field.getForm();
+							
+							if (form.isValid()) {
+								form.submit({
+									params: { id_category: rec.id, params: Ext.util.JSON.encode(row.data.params) },
+									success: function(f,a){
+										Baseliner.message(_('Success'), a.result.msg );
+										//store_config.reload();
+									},
+									failure: function(f,a){
+									Ext.Msg.show({  
+										title: _('Information'), 
+										msg: a.result.msg , 
+										buttons: Ext.Msg.OK, 
+										icon: Ext.Msg.INFO
+									}); 						
+									}
+								});
+							}							
+						}
+					})
 
-        var form_category_select = new Ext.ux.form.SuperBoxSelect({
-            store: form_category_store,
-            allowBlank: true,
-            msgTarget: 'under',
-            //allowAddNewData: true,
-            //addNewDataOnBlur: true, 
-            emptyText: _('Select forms to add to the category'),
-            triggerAction: 'all',
-            resizable: true,
-            mode: 'remote',
-            fieldLabel: _('Forms'),
-            typeAhead: true,
-                name: 'forms',
-                hiddenName: 'forms',
-                displayField: 'form_name',
-                valueField: 'form_name',
-            tpl: fc_tpl_list,
-            displayFieldTpl: fc_tpl_field,
-            extraItemCls: 'x-tag'
-        });
+					var combo_type_clone_field = new Ext.form.ComboBox({
+						mode: 'local',
+						triggerAction: 'all',
+						forceSelection: true,
+						editable: false,
+						fieldLabel: _('Type'),
+						name: 'cmb_clone_field',
+						hiddenName: 'field',
+						displayField: 'id',
+						valueField: 'id',
+						//En un futuro se cargaran los distintos Host
+						store: field_box_store
+					});
+					
+					
+					var form_clone_field = new Ext.FormPanel({
+						name: 'form_clone_field',
+						url: '/topicadmin/create_clone',
+						frame: true,
+						buttons: [btn_grabar_clone_field, btn_cerrar_clone_field],
+						defaults:{anchor:'100%'},
+						items   : [
+									{ fieldLabel: _('Field'), name: 'name_field', xtype: 'textfield', allowBlank:false},
+									combo_type_clone_field
+								]
+					});
+
+					//if(rec){
+					//	var ff = form_config.getForm();
+					//	ff.loadRecord( rec );
+					//	title = 'Edit configuration';
+					//}
+						
+				    var winCloneField = new Ext.Window({
+					    modal: true,
+					    width: 500,
+					    title: _('Clone field'),
+					    items: [form_clone_field]
+				    });
+				    winCloneField.show();
+			    }
+		    });
+		
+		
+		
+		
+		
+		
+		
 		
 		
 		    var btn_config_fields = new Ext.Toolbar.Button({
@@ -1337,9 +1431,9 @@
             frame: false,
             border: false,
             url:'/topicadmin/update_fields',
-            //itemCls: 'boot',
             bodyStyle:'padding: 10px 0px 0px 10px',
             buttons: [
+					btn_clone_field,
 					btn_config_fields,
                     {
                         text: _('Accept'),
@@ -1376,7 +1470,7 @@
             items: [
                 { xtype: 'hidden', name: 'id'},
                 field_box,
-                form_category_select,
+                ////////form_category_select,
                 { xtype : "fieldset", title : _("Main"), collapsible: true, autoHeight : true, hidden: true, items: [ ] }
             ]
         });
@@ -1387,11 +1481,11 @@
             title = _('Edit fields');
         }
 
-        form_category_store.on('load', function(){
-            if( rec && rec.data.forms != undefined ) {
-                form_category_select.setValue( rec.data.forms[0] );    
-            }
-        });
+        ////////form_category_store.on('load', function(){
+        ////////    if( rec && rec.data.forms != undefined ) {
+        ////////        form_category_select.setValue( rec.data.forms[0] );    
+        ////////    }
+        ////////});
         
         win = new Ext.Window({
             title: _(title),

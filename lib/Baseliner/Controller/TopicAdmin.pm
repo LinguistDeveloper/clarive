@@ -467,49 +467,6 @@ sub list_categories_admin : Local {
     $c->forward('View::JSON');
 }
 
-#sub list_fields : Local {
-#    my ($self,$c) = @_;
-#    my $p = $c->request->parameters;
-#    my $cnt;
-#    my @rows;
-#
-#    my $rows = $c->model('Baseliner::BaliFieldsCategory')->search(undef, {orderby => ['id ASC']});
-#
-#    while( my $rec = $rows->next ) {
-#        push @rows, {
-#                     id      => $rec->id,
-#                     name    => $rec->name
-#                 };             
-#
-#    }
-#    
-#    unless( @rows ) {
-#        _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>PASASASASASASASASASASASSA";
-#        my $i = 0;
-#        @rows  = map { +{ id=>$i++, name=>$_ } } qw/
-#            assign_to
-#            category
-#            description
-#            files
-#            labels
-#            priority
-#            progress
-#            projects
-#            properties
-#            release
-#            revisions
-#            status
-#            title
-#            topics
-#        /;
-#    }
-#    
-#    $cnt = $#rows + 1 ;
-#    
-#    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
-#    $c->forward('View::JSON');
-#}
-
 sub list_fields : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
@@ -781,5 +738,40 @@ sub get_config_field : Local {
     }    
     $c->forward('View::JSON');    
 }
+
+sub create_clone : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    
+    try{
+        #my $row = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $p->{id_category}})->first;
+        my $row = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => $p->{name_field}})->first;
+        if(!$row){
+            my $params = _decode_json($p->{params});
+            
+            $params->{origin} = 'custom';
+            $params->{id_field} = $p->{name_field};
+            $params->{name_field} = $p->{name_field};
+            $params->{html} = '/fields/field_generic.html';
+    
+            my $clone_field = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
+                                                                                    id_category    => $p->{id_category},
+                                                                                    id_field       => $p->{name_field},
+                                                                                    params_field   => _dump $params,
+            });            
+    
+            $c->stash->{json} = { msg=>_loc('Field cloned'), success=>\1 };
+        }
+        else{
+            $c->stash->{json} = { msg=>_loc('Field name already exists, introduce another name'), failure=>\1 };
+        }
+    }
+    catch{
+        $c->stash->{json} = { msg=>_loc('Error cloning field: %1', shift()), failure=>\1 };
+    };
+
+    $c->forward('View::JSON');    
+}
+
 
 1;

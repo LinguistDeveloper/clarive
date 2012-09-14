@@ -86,7 +86,7 @@
             }
             
             if(fields[i].js){
-                Baseliner.ajaxEval (fields[i].js, {form: form_topic, topic_data: rec.topic_data, topic_meta: rec.topic_meta, value: ''}, function(res){
+                Baseliner.ajaxEval (fields[i].js, {form: form_topic, topic_data: rec.topic_data, topic_meta: fields[i], value: ''}, function(res){
                     main_fieldset.add (res);
                     form_topic.doLayout();
                     load_all( i + 1 );

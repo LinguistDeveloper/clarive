@@ -31,7 +31,7 @@ __PACKAGE__->add_columns(
     data_type => "CLOB",
     default_value => undef,
     is_nullable => 1,
-  },  
+  },
 );
 
 __PACKAGE__->set_primary_key("id_category", "id_field");
