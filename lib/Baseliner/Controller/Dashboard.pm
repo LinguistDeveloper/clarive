@@ -534,91 +534,96 @@ sub get_config_dashlet{
     return $default_config;
 }
 
-sub list_baseline: Private{
+sub list_baseline : Private {
     my ( $self, $c, $dashboard_id, $params ) = @_;
     my $username = $c->username;
-    my (@jobs, $job, @datas, @temps, $SQL);
-    
+    my ( @jobs, $job, @datas, @temps, $SQL );
+
     #######################################################################################################
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $config = get_config_dashlet('list_baseline', $dashboard_id, $params);	
-    ##########################################################################################################	
-    $c->stash->{dashboard_id}=$config->{dashboard_id};
-    
+    my $config = get_config_dashlet( 'list_baseline', $dashboard_id, $params );
+    ##########################################################################################################
+    $c->stash->{dashboard_id} = $config->{dashboard_id};
+
     my $bl_days = $config->{bl_days};
-    
+
     #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-                                                                            action => 'action.job.viewall',
-                                                                            level => 1);
+    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(
+        username => $c->username,
+        action   => 'action.job.viewall',
+        level    => 1
+    );
     my $ids_project;
     $c->stash->{projects} = $config->{projects};
-    
-    if($config->{projects} ne 'ALL'){
-        $ids_project = 'MID=' . join ('', grep {$_ =~ $config->{projects}} @ids_project);
-    }
-    else{
-        $ids_project =  'MID=' . join (' OR MID=', @ids_project);	
-    }
-    
-    
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
 
-    $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-                WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
+    if ( $config->{projects} ne 'ALL' ) {
+        $ids_project = 'MID=' . join( '', grep { $_ =~ $config->{projects} } @ids_project );
+    } else {
+        $ids_project = 'MID=' . join( ' OR MID=', @ids_project );
+    }
+
+    if ( @ids_project ) {
+
+        my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
+
+        $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+                WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
                         AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
                                                         (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
                         WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
                 GROUP BY BL
-            UNION				
+            UNION               
             SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-            WHERE 	TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
+            WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
                     AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
                                                     (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
                     WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
-            GROUP BY BL";				
-    
-    @jobs = $db->array_hash( $SQL, $bl_days, $bl_days);
+            GROUP BY BL";
 
-    #my @entornos = ('TEST', 'PREP', 'PROD');
-    my $states     = $config->{states};
-    my @entornos = split ",", $states;
-    
-    foreach my $entorno (@entornos){
-        my ($totError, $totOk, $total, $porcentError, $porcentOk, $bl);
-        @temps = grep { ($_->{bl}) =~ $entorno } @jobs;
-        foreach my $temp (@temps){
-            $bl = $temp->{bl};
-            if($temp->{result} eq 'OK'){
-                $totOk = $temp->{tot};
-            }else{
-                $totError = $temp->{tot};
-            }
-        }
-        $total = $totOk + $totError;
-        if($total){
-            $porcentOk = $totOk * 100/$total;
-            $porcentError = $totError * 100/$total;
-        }else{
-            $bl = $entorno;
-            $totOk = '';
-            $totError = '';
-            $porcentOk = 0;
-            $porcentError = 0;			
-        }
-        push @datas, {
-                        bl 				=> $bl,
-                        porcentOk		=> $porcentOk,
-                        totOk			=> $totOk,
-                        total			=> $total,
-                        totError		=> $totError,
-                        porcentError	=> $porcentError
-                    };			
-    }
-    $c->stash->{entornos} =\@datas;
-}
+        @jobs = $db->array_hash( $SQL, $bl_days, $bl_days );
+
+        #my @entornos = ('TEST', 'PREP', 'PROD');
+        my $states = $config->{states};
+        my @entornos = split ",", $states;
+
+        foreach my $entorno ( @entornos ) {
+            my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl );
+            @temps = grep { ( $_->{bl} ) =~ $entorno } @jobs;
+            foreach my $temp ( @temps ) {
+                $bl = $temp->{bl};
+                if ( $temp->{result} eq 'OK' ) {
+                    $totOk = $temp->{tot};
+                } else {
+                    $totError = $temp->{tot};
+                }
+            } ## end foreach my $temp ( @temps )
+            $total = $totOk + $totError;
+            if ( $total ) {
+                $porcentOk    = $totOk * 100 / $total;
+                $porcentError = $totError * 100 / $total;
+            } else {
+                $bl           = $entorno;
+                $totOk        = '';
+                $totError     = '';
+                $porcentOk    = 0;
+                $porcentError = 0;
+            } ## end else [ if ( $total ) ]
+            push @datas,
+                {
+                bl           => $bl,
+                porcentOk    => $porcentOk,
+                totOk        => $totOk,
+                total        => $total,
+                totError     => $totError,
+                porcentError => $porcentError
+                };
+        } ## end foreach my $entorno ( @entornos)
+    } ## end if ( $ids_project )
+    $c->stash->{entornos} = \@datas;
+} ## end sub list_baseline:
+
 
 sub list_lastjobs: Private{
     my ( $self, $c, $dashboard_id ) = @_;
@@ -744,38 +749,46 @@ sub list_topics: Private{
     $c->stash->{topics} =\@datas;
 }
 
-sub list_jobs: Private {
+sub list_jobs : Private {
     my ( $self, $c, $dashboard_id ) = @_;
     my $username = $c->username;
-    my @datas;	
+    my @datas;
     my $SQL;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
     #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-                                                                            action => 'action.job.viewall',
-                                                                            level => 1);
-    my $ids_project =  'MID=' . join (' OR MID=', @ids_project);
-    
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.jobs');	
-    
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_jobs'} _array _load($dashboard_rs->dashlets);
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }		
-    }	
-    ##########################################################################################################
-    
-    my $rows = $default_config->{rows};
-    
-    $SQL = "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION
+    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(
+        username => $c->username,
+        action   => 'action.job.viewall',
+        level    => 1
+    );
+
+    if ( @ids_project ) {
+
+        _error "ESTO ES UN PUTADA";
+        my $ids_project = 'MID=' . join( ' OR MID=', @ids_project );
+
+        #CONFIGURATION DASHLET
+        ##########################################################################################################
+        my $default_config = Baseliner->model( 'ConfigStore' )->get( 'config.dashlet.jobs' );
+
+        if ( $dashboard_id && looks_like_number( $dashboard_id ) ) {
+            my $dashboard_rs = $c->model( 'Baseliner::BaliDashboard' )->find( $dashboard_id );
+            my @config_dashlet =
+                grep { $_->{url} =~ 'list_jobs' } _array _load( $dashboard_rs->dashlets );
+
+            if ( $config_dashlet[ 0 ]->{params} ) {
+                foreach my $key ( keys %{$config_dashlet[ 0 ]->{params} || {}} ) {
+                    $default_config->{$key} = $config_dashlet[ 0 ]->{params}->{$key};
+                }
+            }
+        } ## end if ( $dashboard_id && ...)
+        ##########################################################################################################
+
+        my $rows = $default_config->{rows};
+
+        $SQL =
+            "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION
                         FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
                             FROM BALI_JOB_ITEMS A, BALI_JOB B
                             WHERE A.ID_JOB = B.ID
@@ -787,8 +800,8 @@ sub list_jobs: Private {
                                                             FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
                                                                         FROM BALI_JOB
                                                                         WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-									                                                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
-							                                                                                        WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
+                                                                                                                            (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+                                                                                                                    WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
                                                                         
                                                                         
                                                                         
@@ -796,96 +809,98 @@ sub list_jobs: Private {
                                                           UNION
                                                           SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
                                                                                     WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-												                                                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
-										                                                                                        WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
+                                                                                                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+                                                                                                                                WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
                                                          
                                                          
                                                          )
                                                )
                                 ) B
                             WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
-                WHERE MY_ROW_NUM <= ?";				
-    my @jobs = $db->array_hash( $SQL, $rows)
-        if @ids_project;
-    
-    foreach my $job (@jobs){
-        my ($lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration);
-        given ($job->{status}) {
-            when ('RUNNING') {
-                my @jobError = get_last_jobError($job->{project1},$job->{bl},$username);
+                WHERE MY_ROW_NUM <= ?";
+        my @jobs = $db->array_hash( $SQL, $rows )
+            if @ids_project;
 
-                if(@jobError){
-                    foreach my $jobError (@jobError){
-                        $idError = $jobError->{id};
-                        $lastError = $jobError->{dias};
-                        $nameError = $jobError->{name};
-                        $lastDuration = $jobError->{duration};
-                    }
-                }
-                my @jobOk = get_last_jobOk($job->{project1},$job->{bl},$username);
-                
-                if(@jobOk){
-                    foreach my $jobOk (@jobOk){
-                        $idOk = $jobOk->{id};
-                        $lastOk = $jobOk->{dias};
-                        $nameOk = $jobOk->{name};
-                        if($lastOk < $lastError){
-                            $lastDuration = $jobOk->{duration};	
+        foreach my $job ( @jobs ) {
+            my ( $lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration );
+            given ( $job->{status} ) {
+                when ( 'RUNNING' ) {
+                    my @jobError = get_last_jobError( $job->{project1}, $job->{bl}, $username );
+
+                    if ( @jobError ) {
+                        foreach my $jobError ( @jobError ) {
+                            $idError      = $jobError->{id};
+                            $lastError    = $jobError->{dias};
+                            $nameError    = $jobError->{name};
+                            $lastDuration = $jobError->{duration};
+                        } ## end foreach my $jobError ( @jobError)
+                    } ## end if ( @jobError )
+                    my @jobOk = get_last_jobOk( $job->{project1}, $job->{bl}, $username );
+
+                    if ( @jobOk ) {
+                        foreach my $jobOk ( @jobOk ) {
+                            $idOk   = $jobOk->{id};
+                            $lastOk = $jobOk->{dias};
+                            $nameOk = $jobOk->{name};
+                            if ( $lastOk < $lastError ) {
+                                $lastDuration = $jobOk->{duration};
+                            }
+                        } ## end foreach my $jobOk ( @jobOk )
+                    } ## end if ( @jobOk )
+
+                } ## end when ( 'RUNNING' )
+                when ( 'FINISHED' ) {
+                    $idOk         = $job->{id};
+                    $lastOk       = $job->{dias};
+                    $nameOk       = $job->{name};
+                    $lastDuration = $job->{duration};
+
+                    my @jobError = get_last_jobError( $job->{project1}, $job->{bl} );
+
+                    if ( @jobError ) {
+                        foreach my $jobError ( @jobError ) {
+                            $idError   = $jobError->{id};
+                            $lastError = $jobError->{dias};
+                            $nameError = $jobError->{name};
                         }
-                    }
-                }				
-                
-            }
-            when ('FINISHED') {
-                $idOk = $job->{id};
-                $lastOk = $job->{dias};
-                $nameOk = $job->{name};
-                $lastDuration = $job->{duration};
-                
-                my @jobError = get_last_jobError($job->{project1},$job->{bl});
+                    } ## end if ( @jobError )
 
-                if(@jobError){
-                    foreach my $jobError (@jobError){
-                        $idError = $jobError->{id};
-                        $lastError = $jobError->{dias};
-                        $nameError = $jobError->{name};
-                    }
-                }
-                
-            }
-            when ('ERROR' || 'CANCELLED' || 'KILLED') {
-                $idError = $job->{id};
-                $lastError = $job->{dias};
-                $nameError = $job->{name};
-                $lastDuration = $job->{duration};
+                } ## end when ( 'FINISHED' )
+                when ( 'ERROR' || 'CANCELLED' || 'KILLED' ) {
+                    $idError      = $job->{id};
+                    $lastError    = $job->{dias};
+                    $nameError    = $job->{name};
+                    $lastDuration = $job->{duration};
 
-                my @jobOk = get_last_jobOk($job->{project1},$job->{bl});
-                
-                if(@jobOk){
-                    foreach my $jobOk (@jobOk){
-                        $idOk = $jobOk->{id};
-                        $lastOk = $jobOk->{dias};
-                        $nameOk = $jobOk->{name};
-                    }
-                }
-            }
-        }
-            
-        push @datas, {
-                    project 		=> $job->{project1},
-                    bl				=> $job->{bl},
-                    lastOk			=> $lastOk,
-                    idOk			=> $idOk,
-                    nameOk			=> $nameOk,
-                    idError			=> $idError,
-                    lastError		=> $lastError,
-                    nameError		=> $nameError,
-                    lastDuration 	=> $lastDuration
-                };	
-    }	
-    
-    $c->stash->{jobs} =\@datas;
-}
+                    my @jobOk = get_last_jobOk( $job->{project1}, $job->{bl} );
+
+                    if ( @jobOk ) {
+                        foreach my $jobOk ( @jobOk ) {
+                            $idOk   = $jobOk->{id};
+                            $lastOk = $jobOk->{dias};
+                            $nameOk = $jobOk->{name};
+                        }
+                    } ## end if ( @jobOk )
+                } ## end when ( 'ERROR' || 'CANCELLED'...)
+            } ## end given
+
+            push @datas,
+                {
+                project      => $job->{project1},
+                bl           => $job->{bl},
+                lastOk       => $lastOk,
+                idOk         => $idOk,
+                nameOk       => $nameOk,
+                idError      => $idError,
+                lastError    => $lastError,
+                nameError    => $nameError,
+                lastDuration => $lastDuration
+                };
+        } ## end foreach my $job ( @jobs )
+    } ## end if ( @ids_project )
+    $c->stash->{jobs} = \@datas;
+} ## end sub list_jobs:
+
 
 sub get_last_jobOk: Private{
     my $project = shift;
