@@ -78,7 +78,7 @@ padding: 2px 4px 2px 7px;
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
     <div class="grid_24">
 % foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'head' } _array( $topic_meta ) ) {
-    <& $field->{html}, data=>$topic_data &>
+    <& $field->{html}, data=>$topic_data, meta=>$field &>
 % }
         <table class="table table-bordered table-condensed">
             <tbody>
@@ -88,7 +88,7 @@ padding: 2px 4px 2px 7px;
                 <tr>
                     <td colspan="2">
 % foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'details' } _array( $topic_meta ) ) {
-    <& $field->{html}, data=>$topic_data &>
+    <& $field->{html}, data=>$topic_data, meta=>$field &>
 % }
                     </td>
                 </tr>

@@ -753,6 +753,7 @@ sub create_clone : Local {
             $params->{id_field} = $p->{name_field};
             $params->{name_field} = $p->{name_field};
             $params->{html} = '/fields/field_generic.html';
+            $params->{rel_field} = $p->{name_field} if exists $params->{rel_field};
     
             my $clone_field = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
                                                                                     id_category    => $p->{id_category},
