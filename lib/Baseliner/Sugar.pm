@@ -147,10 +147,12 @@ sub event_new {
                 {
                     id_event   => $ev_row->id,
                     id_rule    => $rule->{id},
-                    stash_data => _dump( $rule->{stash} ),
+                    stash_data => _dump( $rule->{ret} ),
                     #dsl        => "DSL: $rule->{dsl}",
                 }
             );
+            $rrow->dsl( $rule->{dsl} );
+            $rrow->update;
         }
     };
     return try {
@@ -158,8 +160,8 @@ sub event_new {
             require Baseliner::Core::Event;
             my $obj = Baseliner::Core::Event->new( data => $data );
             # PRE rules
-            my $rules_pre = $ev->rules_pre_online;
-            push @rule_log, _array( $rules_pre->{rule_log} );
+            my $rules_pre = $ev->rules_pre_online( $data );
+            push @rule_log, map { $_->{when} => 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
             # PRE hooks
             for my $hk ( $ev->before_hooks ) {
                 my $hk_data = $hk->( $obj );
@@ -181,8 +183,8 @@ sub event_new {
                 $obj->data( $data );
             }
             # POST rules
-            my $rules_post = $ev->rules_post_online;
-            push @rule_log, _array( $rules_post->{rule_log} );
+            my $rules_post = $ev->rules_post_online( $data );
+            push @rule_log, map { $_->{when} => 'post-online'; $_ } _array( $rules_post->{rule_log} );
         }
         # create the event on table
         $event_create->( $data, @rule_log ) if defined $data->{mid};

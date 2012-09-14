@@ -1756,23 +1756,31 @@ Baseliner.DataEditor = function(c) {
     var data;
     var flatten = function( d, parent, parent_key ) {
        if( Ext.isArray( d ) ) {
+         var cnt=0;
          for( var i=0; i<d.length; i++) {
            var myid = id++;
            var v = flatten( d[i], myid, parent_key );
            data.push({ key: '['+i+']', key_long: parent_key, type:v[2], value:v[0], _is_leaf:v[1], _id: myid,_parent:parent });
+           cnt++;
          }
-         return ['',false,'Array'];
+         var _is_leaf = cnt > 0 ? false : true;
+         return ['',_is_leaf,'Array', cnt];
        } else if( Ext.isObject(d) ) {
+         var cnt=0;
          for( var k in d ){
            var myid = id++;
            var v = flatten(d[k], myid, k);
+           console.log( k );
+           console.log( v );
            var key_long = parent_key ? parent_key + '.' + k : k;
            var row = { key: k, key_long: key_long, type: v[2], value: v[0], _is_leaf: v[1], _id: myid, _parent: parent }; 
            data.push(row);
+           cnt++;
          }
-         return ['',false,'Hash'];
+         var _is_leaf = cnt > 0 ? false : true;
+         return ['',_is_leaf,'Hash',cnt];
        } else {
-         return [d,true,'Value'];
+         return [d,true,'Value',1];
        }
     };
     //console.log( c.data );
@@ -1874,8 +1882,16 @@ Baseliner.DataEditor = function(c) {
     };
 
     var add_row = function(){
-        var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _parent: 0 });
-        store.add( rec );
+        var sel = tree.getSelectionModel().getSelected(); 
+        if( sel && sel.data.type == 'Hash' ) {
+            var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: sel.data._id });
+            sel.data._is_leaf = false;
+            store.add( rec );
+            store.expandNode( sel );
+        } else {
+            var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: 0 });
+            store.add( rec );
+        }
     };
     var del_row = function(){
        var rec = tree.getSelectionModel().getSelected(); 
@@ -1897,6 +1913,8 @@ Baseliner.DataEditor = function(c) {
     var cm = new Ext.grid.ColumnModel({
       columns: [
         { id:'key', header: _("Key"), width: 100, sortable: false, dataIndex: 'key', editor: textedit, renderer: render_key },
+        {header: _("_id"), width: 75, sortable: false, dataIndex: '_id' },
+        {header: _("_parent"), width: 75, sortable: false, dataIndex: '_parent' },
         {header: _("Type"), width: 75, sortable: false, dataIndex: 'type', renderer: function(v){ return _(v) }},
         {header: _("Value"), width: 150, sortable: true, dataIndex: 'value', editor: textedit }
       ],      
