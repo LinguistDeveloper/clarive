@@ -25,6 +25,7 @@ __PACKAGE__->add_columns(
   "id_rule", { data_type => "number", is_nullable => 0, },
   "stash_data", { data_type => "clob", is_nullable => 1 },
   "ts", { data_type     => "datetime", default_value => \"SYSDATE", is_nullable   => 0, },
+  "dsl", { data_type => "clob", is_nullable => 1 },
 );
 
 __PACKAGE__->set_primary_key('id');

@@ -42,7 +42,7 @@ sub log : Local {
     $sort ||= 'me.id';
     $dir ||= 'desc';
     $start||= 0;
-    $limit ||= 100;
+    $limit ||= 30;
 
     my $page = to_pages( start=>$start, limit=>$limit );
     
@@ -62,19 +62,23 @@ sub log : Local {
         my $e  = $_;
         my $ev = $c->registry->get( $_->{event_key} );
         $e->{description} = $ev->description;
-        $e->{_is_leaf} = \0;
         $e->{_id} = $e->{id};
         $e->{_parent} = undef;
+        #_error "EV=$e->{event_data}";
+        $e->{data} = _load( $e->{event_data} ) if length $e->{event_data};
         my $rules = delete $e->{rules};
         my @rules = map {
+            _error $_->{stash_data};
             +{
                 %$_, 
-                _parent  => $e->{_id},
-                _id      => $_->{id},
+                _parent   => $e->{_id},
+                _id       => $_->{id},
                 event_key => $_->{rule_name},
-                _is_leaf => \1,
+                data      => ( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
+                _is_leaf  => \1,
             }
         } @$rules;
+        $e->{_is_leaf} = @rules ? \0 : \1;
         ($e, @rules );
     } @rows;
     _error \@rows;

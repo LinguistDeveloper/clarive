@@ -87,9 +87,15 @@ sub _hooks {
     }
     return ();
 }
-
 sub before_hooks { $_[0]->_hooks( 'before' ) }
 sub after_hooks { $_[0]->_hooks( 'after' ) }
+
+sub run_rules {
+    my ($self, $when, $stash) = @_;
+    return Baseliner->model('Rules')->run_rules( event=>$self->key, when=>$when, stash=>$stash );
+}
+sub rules_pre_online { $_[0]->run_rules( 'pre-online', $_[1] ) }
+sub rules_post_online { $_[0]->run_rules( 'post-online', $_[1] ) }
 
 1;
 

@@ -5,6 +5,8 @@ use Baseliner::Sugar;
 use Try::Tiny;
 use v5.10;
 
+with 'Baseliner::Role::Service';
+
 register 'statement.if.var' => {
     text => 'IF var THEN',
     type => 'if',
@@ -31,6 +33,21 @@ register 'statement.foreach' => {
             
         }, $n->{variable}, $self->dsl_build( $n->{children} ) );
     },
+};
+
+register 'service.echo' => {
+    handler=>sub{
+        my ($self, $c, $data ) = @_;
+        Baseliner::Utils::_error( $data );
+        $data->{hello} = 'world';
+        $data;
+    }
+};
+
+register 'event.rule.tester' => {
+    text => '%1 posted a comment on %2: %3',
+    description => 'Dummy Event to Test a Rule',
+    vars => ['hello'],
 };
 
 sub build_tree {
@@ -75,7 +92,7 @@ sub dsl_build {
     for my $s ( _array $stmts ) {
         #_debug( $s );
         my $children = $s->{children} || {};
-        my $attr = $s->{attributes} || {};
+        my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
         delete $attr->{loader} ; # node cruft
         delete $attr->{events} ; # node cruft
         _debug $attr;
@@ -125,4 +142,17 @@ sub dsl_run {
     return $stash;
 }
 
+sub run_rules {
+    my ($self, %p) = @_;
+    my @rules = DB->BaliRule->search({ rule_event=> $p{event}, rule_type=>'event', rule_when=>$p{when} })->hashref->all;
+    my $stash = $p{stash};
+    my @rule_log;
+    for my $rule ( @rules ) {
+        my @tree = $self->build_tree( $rule->{id}, undef );
+        my $dsl = $self->dsl_build( \@tree ); 
+        my $ret = $self->dsl_run( dsl=>$dsl, stash=>$stash );
+        push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash };
+    }
+    return { stash=>$stash, rule_log=>\@rule_log }; 
+}
 1;

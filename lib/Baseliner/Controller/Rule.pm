@@ -135,17 +135,22 @@ sub grid : Local {
 }
 
 sub save : Local {
-    my ($self,$c)=@_;
-    my $p = $c->req->params;
-    if( length $p->{id} ) {
+    my ( $self, $c ) = @_;
+    my $p    = $c->req->params;
+    my $data = {
+        rule_name  => $p->{rule_name},
+        rule_when  => $p->{rule_when},
+        rule_event => $p->{rule_event},
+        rule_type  => $p->{rule_type}
+    };
+    if ( length $p->{id} ) {
         my $row = $c->model('Baseliner::BaliRule')->find( $p->{id} );
         _fail _loc 'Rule %1 not found', $p->{id} unless $row;
-        $row->update({ rule_name=>$p->{rule_name}, rule_when=>$p->{rule_when}, rule_event=>$p->{rule_event} });
+        $row->update($data);
     } else {
-        $c->model('Baseliner::BaliRule')->create({ rule_name=>$p->{rule_name}, rule_when=>$p->{rule_when}, rule_event=>$p->{rule_event} })
-            if $p->{rule_name};
+        $c->model('Baseliner::BaliRule')->create($data);
     }
-    $c->stash->{json} = { success=>\1, msg=>'Creado' } ;
+    $c->stash->{json} = { success => \1, msg => 'Creado' };
     $c->forward("View::JSON");
 }
 
@@ -309,9 +314,11 @@ sub dsl : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $stmts = _decode_json( $p->{stmts} ) if $p->{stmts};
+    my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     try {
         #my @rows = DB->BaliRuleS
-        my $event_data = { bar => 'foo' };  # TODO
+        my $event = $c->registry->get( $event_key );
+        my $event_data = { map { $_ => '' } _array( $event->vars ) };
         my $dsl = $c->model('Rules')->dsl_build( $stmts ); 
         $c->stash->{json} = { success=>\1, dsl=>$dsl, event_data_yaml => _dump( $event_data ) };
     } catch {
@@ -325,6 +332,7 @@ sub dsl_try : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $dsl = $p->{dsl} or _throw 'Missing parameter dsl';
+    my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $data = _load( $p->{data} ) if $p->{data};
     try {
         my $ret = $c->model('Rules')->dsl_run( dsl=>$dsl, stash=>$data );
