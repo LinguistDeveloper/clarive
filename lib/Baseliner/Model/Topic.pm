@@ -162,6 +162,129 @@ sub get_meta {
     return \@meta;
 }
 
+sub get_data {
+    my ($self, $meta, $topic_mid) = @_;
+    
+    my $data;
+    if ($topic_mid){
+        my @std_fields = map { $_->{id_field} } grep { $_->{origin} eq 'standard' } _array( $meta  );
+        my %rel_fields = map { $_->{id_field} => 1  } grep { $_->{origin} eq 'rel' } _array( $meta );
+        my %method_fields = map { $_->{id_field} => $_->{method}  } grep { $_->{method} } _array( $meta );
+        
+        #my $rs = Baseliner->model('Baseliner::BaliTopic')->search({ mid => $topic_mid },{ select=>\@std_fields });
+        my @select_fields = ('title', 'id_category', 'categories.name', 'categories.color',
+                             'id_category_status', 'status.name', 'created_by', 'created_on',
+                             'id_priority','priorities.name', 'deadline_min', 'description','progress');
+        my @as_fields = ('title', 'id_category', 'name_category', 'color_category', 'id_category_status', 'name_status',
+                         'created_by', 'created_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress');
+        
+        my $rs = Baseliner->model('Baseliner::BaliTopic')
+                ->search({ mid => $topic_mid },{ join => ['categories','status','priorities'], select => \@select_fields, as => \@as_fields});
+       
+        
+        my $row = $rs->first;
+        
+        
+        $data = { topic_mid => $topic_mid, $row->get_columns };
+        
+        $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
+        #$data->{deadline} = $row->deadline_min ? $row->created_on->clone->add( minutes => $row->deadline_min ):_loc('unassigned');
+        $data->{deadline} = _loc('unassigned');
+        
+        
+        my @rels = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$topic_mid })->hashref->all;
+        for my $rel ( @rels ) {
+            next unless $rel->{rel_field};
+            next unless exists $rel_fields{ $rel->{rel_field} };
+            push @{ $data->{ $rel->{rel_field} } },  $rel->{to_mid};
+        }
+        
+        foreach my $key  (keys %method_fields){
+            $data->{ $key } =  eval( '$self->' . $method_fields{$key} . '( $topic_mid )' );
+        }
+        
+        my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' } _array( $meta  );
+        my %custom_data = {};
+        map { $custom_data{$_->{name}} = $_->{value} }  Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search({topic_mid => $topic_mid})->hashref->all;
+        
+        for (@custom_fields){
+            $data->{ $_ } = $custom_data{$_};
+        }
+        
+    }else{
+        _log ">>>>>>>>>>>>>>>topic_mid: " . $topic_mid;
+    }
+    return $data;
+}
+
+sub get_release {
+    my ($self, $topic_mid ) = @_;
+    my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
+                            { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid },
+                            { prefetch=>['categories','children','master'] }
+                            )->hashref->first; 
+    return  {
+                color => $release_row->{categories}{color},
+                title => $release_row->{title},
+                mid => $release_row->{mid},
+            }
+}
+
+sub get_projects {
+    my ($self, $topic_mid ) = @_;
+    my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
+    my @projects = $topic->projects->search(undef,{select=>['mid','name']})->hashref->all;
+
+    return @projects ? \@projects : [];
+}
+
+sub get_users {
+    my ($self, $topic_mid ) = @_;
+    my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
+    my @users = $topic->users->search(undef,{select=>['mid','username','realname']})->hashref->all;
+
+    return @users ? \@users : [];
+}
+
+sub get_labels {
+    my ($self, $topic_mid ) = @_;
+    my @labels = Baseliner->model('Baseliner::BaliTopicLabel')->search( { id_topic => $topic_mid },
+                                                                        {prefetch =>['label']})->hashref->all;
+    @labels = map {$_->{label}} @labels;
+    return @labels ? \@labels : [];
+}
+
+sub get_revisions {
+    my ($self, $topic_mid ) = @_;
+    my @revisions = Baseliner->model('Baseliner::BaliMasterRel')->search( { rel_type => 'topic_revision', from_mid => $topic_mid },
+        { prefetch => ['master_to'], +select => [ 'master_to.name', 'master_to.mid' ], +as => [qw/name mid/] } )
+        ->hashref->all;
+    return @revisions ? \@revisions : [];    
+}
+
+sub get_dates {
+    my ($self, $topic_mid ) = @_;
+    my @dates = Baseliner->model('Baseliner::BaliMasterCal')->search({ mid=> $topic_mid })->hashref->all;
+    return @dates ?  \@dates : [];
+}
+
+sub get_topics{
+    my ($self, $topic_mid) = @_;
+    my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->topics->search( undef, { order_by => { '-asc' => ['categories.name', 'mid'] }, prefetch=>['categories'] } );
+    rs_hashref ( $rs_rel_topic );
+    my @topics = $rs_rel_topic->all;
+    @topics = Baseliner->model('Topic')->append_category( @topics );
+    return @topics ? \@topics : [];    
+}
+
+sub get_files{
+    my ($self, $topic_mid) = @_;
+    my @files = map { +{ $_->get_columns } } 
+        Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->files->search( undef, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
+        order_by => { '-asc' => 'created_on' } } )->all;
+    return @files ? \@files : []; 
+}
+
 sub save_data {
     my ($self, $meta, $topic_mid, $data ) = @_;
    
@@ -207,6 +330,27 @@ sub save_data {
     } 
     
     $topic->update( \%row );
+    
+    my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}} } grep { $_->{origin} eq 'custom' } _array( $meta  );
+    
+    for( @custom_fields ) {
+        if  (exists $data->{ $_ -> {name}}){
+
+            my $row = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( {topic_mid=> $topic->mid, name => $_->{column}} )->first;
+            if(!$row){
+                my $field_custom = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->create({
+                                                                                            topic_mid  => $topic->mid,
+                                                                                            name       => $_->{column},
+                                                                                            value   => $data->{ $_ -> {name}},
+                });            
+            }
+            else{
+                $row->value ( $data->{ $_ -> {name}} );
+                $row->update;
+            }            
+        }
+    }    
+    
     return $topic;
 }
 
