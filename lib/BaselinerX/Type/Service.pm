@@ -68,7 +68,7 @@ sub dispatch {
         ## the command line is an overwrite of the usual stash system
         $config_data = $config->getopt;
         #$config_data->{argv} = \@argv_noservice;
-        print "===Config $self->{config}===\n",_dump($config_data),"\n";
+        _log "===Config $self->{config}===\n",_dump($config_data),"\n";
     } 
     elsif( $p{'-ns'} ) {
         $config_data = $config->load_from_ns($p{'-ns'} );
@@ -123,7 +123,7 @@ sub run {
     $logger->verbose( exists($args->{v}) || exists($args->{debug}) );
     delete $args->{v};  # assume I'm the only one using this
 
-    print "\n=== running $service_noun: $key | $version | $service | $module ===\n" 
+    _log "\n=== running $service_noun: $key | $version | $service | $module ===\n" 
         unless $self->quiet;
 
     # instanciate the service
