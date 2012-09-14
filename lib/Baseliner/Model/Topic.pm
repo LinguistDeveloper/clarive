@@ -1,5 +1,5 @@
 package Baseliner::Model::Topic;
-use Moose;
+use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Path::Class;
@@ -8,6 +8,63 @@ use Proc::Exists qw(pexists);
 use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
+
+my $post_filter = sub {
+        my ($text, @vars ) = @_;
+        $vars[2] =~ s{\n|\r|<(.+?)>}{ }gs;
+        $vars[0] = "<b>$vars[0]</b>";  # bold username
+        $vars[2] = "<quote>$vars[2]</quote>";  # quote post
+        ($text,@vars);
+    };
+register 'event.post.create' => {
+    text => '%1 posted a comment on %2: %3',
+    description => 'User posted a comment',
+    vars => ['username', 'ts', 'post'],
+    filter => $post_filter,
+};
+
+register 'event.post.delete' => {
+    text => '%1 deleted a comment on %2: %3',
+    description => 'User deleted a comment',
+    vars => ['username', 'ts', 'post'],
+    filter => $post_filter,
+};
+
+register 'event.file.create' => {
+    text => '%1 posted a file on %2: %3',
+    description => 'User uploaded a file',
+    vars => ['username', 'ts', 'filename'],
+};
+
+register 'event.file.attach' => {
+    text => '%1 attached %2 on %3',
+    description => 'User attached a file',
+    vars => ['username', 'filename', 'ts'],
+};
+
+register 'event.file.remove' => {
+    text => '%1 removed %2 on %3',
+    description => 'User removed a file',
+    vars => ['username', 'filename', 'ts'],
+};
+
+register 'event.topic.file_remove' => {
+    text => '%1 removed %2 on %3',
+    description => 'User removed a file',
+    vars => ['username', 'filename', 'ts'],
+};
+
+register 'event.topic.create' => {
+    text => '%1 created topic on %2',
+    description => 'User created a topic',
+    vars => ['username', 'ts'],
+};
+
+register 'event.topic.modify' => {
+    text => '%1 modified topic on %3',
+    description => 'User modified a topic',
+    vars => ['username', 'field', 'ts'],
+};
 
 sub update {
     my ( $self, $p ) = @_;
