@@ -108,7 +108,7 @@ sub action_tree : Local {
     foreach my $a ( @actions ) {
         my $key = $a->{key};
         ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>_loc_decoded($a->name), leaf=>\1 }; 
+        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>_loc_decoded( $a->{name} ), leaf=>\1 }; 
     }
     $c->stash->{json} = [ map { { id=>$_, text=>$_, leaf=>\0, children=>$tree{$_} } } sort keys %tree ];
     $c->forward("View::JSON");
