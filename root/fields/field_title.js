@@ -7,6 +7,7 @@ params:
     js: '/fields/field_title.js'
     field_order: 2
     section: 'body'
+    is_clone: 1
 ---
 */
 

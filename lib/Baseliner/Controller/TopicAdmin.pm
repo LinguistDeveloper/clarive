@@ -774,5 +774,59 @@ sub create_clone : Local {
     $c->forward('View::JSON');    
 }
 
+sub list_clone_fields : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+
+    my @field_dirs;
+    push @field_dirs, $c->path_to( 'root/fields' ) . "";
+    @field_dirs = grep { -d } @field_dirs;
+    
+    my @fieldlets = map {
+        my @ret;
+        #for my $f ( grep { -f } _dir( $_ . '/*.html')->children ) {
+        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
+            my $d = $f->slurp;
+            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
+           
+            my $metadata;
+            if(length $yaml ) {
+                $metadata =  _load( $yaml );    
+            } else {
+                $metadata = {};
+            }
+            my @rows = map {
+                +{  field=>$_, value => $metadata->{$_} } 
+            } keys %{ $metadata || {} };
+            
+            push @ret, {
+                file => "$f",
+                yaml => $yaml,
+                metadata => $metadata,
+                rows => \@rows,
+            };
+        }
+       @ret;
+    } @field_dirs;
+    
+    my @rows;
+    my $i = 1;
+    for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } grep { $_->{metadata}->{params}->{is_clone} eq 1} @fieldlets ) {
+        if( $field->{metadata}->{name} ){
+            $field->{metadata}->{params}->{name_field} = $field->{metadata}->{name};
+            push @rows,
+                {
+                  #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
+                  id        => $field->{metadata}->{name},
+                  params	=> $field->{metadata}->{params},
+                  #order     => $field->{metadata}->{order},
+                  #value     => $field->{metadata}->{value},
+                };		
+        }
+    }	    
+    
+    $c->stash->{json} = {data=>\@rows};
+    $c->forward('View::JSON');
+}
 
 1;

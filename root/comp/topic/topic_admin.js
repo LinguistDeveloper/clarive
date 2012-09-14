@@ -1144,6 +1144,11 @@
 			    icon:'/static/images/icons/wrench.png',
 			    cls: 'x-btn-text-icon',
 			    handler: function() {
+				
+					var clone_field_store = new Baseliner.store.Fields({
+						url: '/topicadmin/list_clone_fields'
+					});
+					
 					var btn_cerrar_clone_field = new Ext.Toolbar.Button({
 						text: _('Close'),
 						width: 50,
@@ -1192,7 +1197,7 @@
 						displayField: 'id',
 						valueField: 'id',
 						//En un futuro se cargaran los distintos Host
-						store: field_box_store
+						store: clone_field_store
 					});
 					
 					

@@ -7,8 +7,9 @@ params:
     js: '/fields/field_files.js'
     field_order: 15
     section: 'details'
-    rel_field: 'topics'
+    rel_field: 'files'
     method: 'get_files'
+    is_clone: 1
 ---
 */
 (function(params){

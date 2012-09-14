@@ -10,9 +10,11 @@ params:
     set_method: 'set_topics'
     rel_field: 'topics'
     method: 'get_topics'
+    is_clone: 1
 ---
 */
 (function(params){
+	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
 	var topics = new Array();
@@ -24,10 +26,12 @@ params:
 		topics = [];
 	}
 	
-    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0} });
+    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0, filter: meta.rel_field} });
 	
     var topic_box = new Baseliner.model.Topics({
         //hidden: rec.fields_form.show_topics ? false : true,
+		fieldLabel: _(meta.name_field),
+		name: meta.name_field,
         store: topic_box_store
     });
 	
