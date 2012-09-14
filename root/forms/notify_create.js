@@ -7,5 +7,3 @@
         { xtype: 'htmleditor', fieldLabel: _('Body'), name:'body', anchor:'100%', allowBlank: false, value: data.body }
     ]
 })
-
-

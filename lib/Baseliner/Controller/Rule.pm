@@ -294,8 +294,14 @@ sub edit_key : Local {
         my $config_data;
         if( $r->isa( 'BaselinerX::Type::Service' ) ) {
             # service
-            _fail _loc "Service '%1' does not have either a form or a config", $key unless $form || $config;
-            $config_data = $self->config_to_data( $config );
+            #_fail _loc "Service '%1' does not have either a form or a config", $key unless $form || $config;
+            if( $form || $config ) {
+                $config_data = $self->config_to_data( $config );
+            } elsif( $r->data ) {
+                $config_data = $r->data;
+            } else {
+                $config_data = {};
+            }
         } else {
             # statement
             $config_data = $config ? $self->config_to_data( $config ) : {};

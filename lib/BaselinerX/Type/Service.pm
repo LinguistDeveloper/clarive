@@ -16,6 +16,7 @@ has 'config' => ( is=> 'rw', isa=> 'Str' );
 has 'form' => ( is=> 'rw', isa=> 'Str', default=>'' );
 has 'logger_class' => ( is=> 'rw', isa=> 'Str', default=>'Baseliner::Core::Logger::Base' );  # class
 has 'logger' => ( is=> 'rw', isa=> 'Any' );
+has 'data' => ( is=> 'rw', isa=> 'HashRef' );
 
 has 'frequency' => ( is=> 'rw', isa=> 'Int' );  # frequency value in seconds
 has 'frequency_key' => ( is=> 'rw', isa=> 'Str' );  # frequency config key

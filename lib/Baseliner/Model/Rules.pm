@@ -36,10 +36,11 @@ register 'statement.foreach' => {
 };
 
 register 'service.echo' => {
+    data => { msg => '' },
     handler=>sub{
         my ($self, $c, $data ) = @_;
         Baseliner::Utils::_error( $data );
-        $data->{hello} = 'world';
+        $data->{hello} = $data->{msg} || 'world';
         $data;
     }
 };
