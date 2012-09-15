@@ -81,7 +81,7 @@
             forceFit: true,
             getRowClass : function(rec, index, p, store){
                 //p.body = String.format( '<div style="margin: 0 0 0 32;"><table><tr>'
-                p.body = String.format( '<div style="margin: 0 0 0 32;">{0}</div>', _('when an event of type "%1" fires', rec.data.rule_event ) );
+                p.body = String.format( '<div style="margin: 0 0 0 32;">{0}</div>', _('%1 for event "%2"', _(rec.data.rule_when), rec.data.rule_event ) );
                 return ' x-grid3-row-expanded';
             }
         },
@@ -344,8 +344,23 @@
         region: 'center',
         items: []
     });
+    var palette_fake_store = {  // the SearchField needs a store, but the tree doesnt have one
+        baseParams: {},
+        reload: function(config){
+            var lo = palette.getLoader();
+            lo.baseParams = palette_fake_store.baseParams;
+            lo.load( palette.root );
+        }
+    };
+    var search_palette = new Baseliner.SearchField({
+        store: palette_fake_store,
+        width: 220,
+        params: {start: 0, limit: ps },
+        emptyText: _('<search>')
+    });
     var palette = new Ext.tree.TreePanel({
         region: 'east',
+        title: _('Palette'),
         width: 250,
         autoScroll: true,
         split: true,
@@ -354,6 +369,7 @@
         enableDrag: true,
         collapsible: true,
         resizable: true,
+        tbar: [search_palette],
         dataUrl: '/rule/palette',
         rootVisible: false,
         useArrows: true,

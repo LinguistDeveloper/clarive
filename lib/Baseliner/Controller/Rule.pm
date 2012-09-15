@@ -143,9 +143,9 @@ sub save : Local {
         rule_event => $p->{rule_event},
         rule_type  => $p->{rule_type}
     };
-    if ( length $p->{id} ) {
-        my $row = $c->model('Baseliner::BaliRule')->find( $p->{id} );
-        _fail _loc 'Rule %1 not found', $p->{id} unless $row;
+    if ( length $p->{rule_id} ) {
+        my $row = $c->model('Baseliner::BaliRule')->find( $p->{rule_id} );
+        _fail _loc 'Rule %1 not found', $p->{rule_id} unless $row;
         $row->update($data);
     } else {
         $c->model('Baseliner::BaliRule')->create($data);
@@ -158,6 +158,9 @@ sub palette : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
 
+    my $query = $p->{query};
+    $query and $query = qr/$query/i;
+
     my @tree;
     my $cnt = 1;
     
@@ -167,28 +170,28 @@ sub palette : Local {
         let    => { icon=>'/static/images/icons/if.gif' },
         for    => { icon=>'/static/images/icons/if.gif' },
     );
-    my @ifs = (
-        { text => _loc('if var'),  statement=>'if_var', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1,  },
-        { text => _loc('if user'), statement=>'if_user', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
-        { text => _loc('if role'), statement=>'if_role', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
-        { text => _loc('if project'), statement=>'if_project', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
-    );
-    my @control = map {
+    #my @ifs = (
+    #    { text => _loc('if var'),  statement=>'if_var', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1,  },
+    #    { text => _loc('if user'), statement=>'if_user', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
+    #    { text => _loc('if role'), statement=>'if_role', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
+    #    { text => _loc('if project'), statement=>'if_project', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
+    #);
+    my @control = grep { !$query || join(',',%$_) =~ $query } map {
         my $key = $_;
         my $s = $c->registry->get( $key );
         my $n= { palette => 1 };
         my $type = $types{ $s->{type} };
-        $n->{holds_children} = defined $s->{holds_children} ? $s->{holds_children} : \1;
+        $n->{holds_children} = defined $s->{holds_children} ? \($s->{holds_children}) : \1;
         $n->{leaf} = \1;
         $n->{key} = $key;
         $n->{text} = $s->{text} // $key;
-        $n->{icon} = $type->{icon};
+        $n->{icon} = "/static/images/icons/$s->{type}.gif";
         $n;
     } 
     Baseliner->registry->starts_with( 'statement.' );
     push @tree, {
-        icon     => '/static/images/icons/if.gif',
-        text     => _loc('Filters'),
+        icon     => '/static/images/icons/control.gif',
+        text     => _loc('Control'),
         draggable => \0,
         expanded => \1,
         isTarget => \0,
@@ -205,6 +208,7 @@ sub palette : Local {
         expanded => \1,
         children=> [ 
           sort { uc $a->{text} cmp uc $b->{text} }
+          grep { !$query || join(',', values %$_) =~ $query }
           map {
             my $service_key = $_;
             my $n = $c->registry->get( $service_key );

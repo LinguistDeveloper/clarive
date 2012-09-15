@@ -9,6 +9,7 @@ use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
 
+
 my $post_filter = sub {
         my ($text, @vars ) = @_;
         $vars[2] =~ s{\n|\r|<(.+?)>}{ }gs;
@@ -66,6 +67,11 @@ register 'event.topic.modify' => {
     vars => ['username', 'field', 'ts'],
 };
 
+register 'event.topic.change_status' => {
+    text => '%1 changed topic status to %2 on %3',
+    vars => ['username', 'status', 'ts'],
+};
+
 sub update {
     my ( $self, $p ) = @_;
     my $action = $p->{action};
@@ -103,12 +109,12 @@ sub update {
                 #_log ">>>>>>>>>>>>>>Datos modificados en el topico: " . _dump @field;
 
               
-                event_new 'event.topic.modify' => {
-                    username => $p->{username},
-                    mid      => $topic_mid,
-                    field  => @field ? 'topic' : '',
+                # event_new 'event.topic.modify' => {
+                #     username => $p->{username},
+                #     mid      => $topic_mid,
+                #     field  => @field ? 'topic' : '',
                     
-                };                   
+                # };                   
                 
                 $return = 'Topic modified';
                { mid => $topic->mid, topic => $topic->title }   # to the event

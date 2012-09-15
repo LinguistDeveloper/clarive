@@ -22,8 +22,63 @@ register 'statement.if.var' => {
     },
 };
 
+register 'statement.try' => {
+    text => 'TRY statement', 
+    type => 'if',
+    data => { },
+    dsl => sub { 
+        my ($self, $n ) = @_;
+        sprintf(q{
+            try {
+                %s
+            };
+            
+        }, $self->dsl_build( $n->{children} ) );
+    },
+};
+
+register 'statement.let.key_value' => {
+    text => 'LET key => value', 
+    type => 'let',
+    holds_children => 0, 
+    data => { key=>'', value=>'' },
+    dsl => sub { 
+        my ($self, $n ) = @_;
+        sprintf(q{
+           $stash->{ '%s' } = '%s';
+        }, $n->{key}, $n->{value}, $self->dsl_build( $n->{children} ) );
+    },
+};
+
+register 'statement.let.merge' => {
+    text => 'MERGE value INTO stash', 
+    type => 'let',
+    holds_children => 0, 
+    data => { value=>{} },
+    dsl => sub { 
+        my ($self, $n ) = @_;
+        sprintf(q{
+           $stash = merge_data( $stash, %s );
+        }, Data::Dumper::Dumper($n->{value}), $self->dsl_build( $n->{children} ) );
+    },
+};
+
+register 'statement.delete.key' => {
+    text => 'DELETE hashkey', 
+    type => 'if',
+    holds_children => 0, 
+    data => { key=>'' },
+    dsl => sub { 
+        my ($self, $n ) = @_;
+        sprintf(q{
+           delete $stash->{ '%s' } ;
+        }, $n->{key}, $self->dsl_build( $n->{children} ) );
+    },
+};
+
 register 'statement.foreach' => {
     text => 'FOREACH stash[ variable ]', type => 'for', data => { variable=>'' },
+    type => 'loop',
     dsl => sub { 
         my ($self, $n ) = @_;
         sprintf(q{
@@ -36,7 +91,7 @@ register 'statement.foreach' => {
 };
 
 register 'service.echo' => {
-    data => { msg => '', args=>{} },
+    data => { msg => '', args=>{}, arr=>[] },
     handler=>sub{
         my ($self, $c, $data ) = @_;
         Baseliner::Utils::_error( $data );
@@ -145,7 +200,10 @@ sub dsl_run {
 
 sub run_rules {
     my ($self, %p) = @_;
-    my @rules = DB->BaliRule->search({ rule_event=> $p{event}, rule_type=>'event', rule_when=>$p{when} })->hashref->all;
+    my @rules = DB->BaliRule->search(
+        { rule_event => $p{event}, rule_type => 'event',      rule_when => $p{when} },
+        { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
+    )->hashref->all;
     my $stash = $p{stash};
     my @rule_log;
     for my $rule ( @rules ) {
