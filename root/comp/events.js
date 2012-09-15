@@ -1,16 +1,8 @@
 (function(params){
     var ps = 30;
-    /*
-    var store_events = new Baseliner.JsonStore({
-        url: '/event/log', root: 'data',
-        id: '_id', totalProperty: 'totalCount', 
-        autoLoad: true,
-        fields: [ 'event_key', 'event_status', 'event_data', 'description', 'ts', 'mid', 'id', '_id', '_is_leaf', '_parent' ]
-    });
-    */
     var Record = Ext.data.Record.create(
         [ 'event_key', 'event_status', 'event_data', 'description', 'ts',
-            'data',
+            'data', 'type', 'dsl',
             'mid', 'id', '_id', '_is_leaf', '_parent' ]
     );
      var store_events = new Ext.ux.maximgb.tg.AdjacencyListStore({  
@@ -27,9 +19,20 @@
         var win = new Ext.Window({ layout:'fit', width:800, height: 400, items:dataedit });
         win.show();
     };
+    Baseliner.event_dsl = function( id_grid, rownum ) {
+        var g = Ext.getCmp( id_grid );
+        var rec = g.getStore().getAt( rownum );
+        var dataedit = new Ext.form.TextArea({ value: rec.data.dsl });
+        var win = new Ext.Window({ layout:'fit', width:800, height: 400, items:dataedit });
+        win.show();
+    };
 
     var render_data = function(value,metadata,rec,rowIndex,colIndex,store) {
-        return String.format('<a href="javascript:Baseliner.event_data(\'{0}\', {1})"><img src="/static/images/icons/application.png" /></a>', grid.id, rowIndex );
+        var arr = [];
+        arr.push( String.format('<a href="javascript:Baseliner.event_data(\'{0}\', {1})"><img src="/static/images/icons/application.png" /></a>', grid.id, rowIndex ) );
+        if( rec.data.type == 'rule' ) 
+            arr.push( String.format('<a href="javascript:Baseliner.event_dsl(\'{0}\', {1})"><img src="/static/images/icons/application.png" /></a>', grid.id, rowIndex ) );
+        return arr.join(' ');
     };
     
     var search_field = new Baseliner.SearchField({
@@ -37,6 +40,17 @@
         width: 280,
         params: {start: 0, limit: ps }
     });
+
+    var del_event = function(){
+        var sm = grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            var sel = sm.getSelected();
+            Baseliner.ajaxEval('/event/del', { id: sel.data.id }, function( res ){
+                Baseliner.message( _('Event Delete'), res.msg );
+                store_events.reload();
+            });
+        }
+    };
     var grid = new Ext.ux.maximgb.tg.GridPanel({ 
         store: store_events,
         master_column_id : '_id',
@@ -56,7 +70,8 @@
         ],
         tbar: [ 
             search_field,
-            { icon:'/static/images/icons/refresh.gif', handler: function(){ store_events.reload(); } }
+            { icon:'/static/images/icons/refresh.gif', handler: function(){ store_events.reload(); } },
+            { icon:'/static/images/icons/delete.gif', handler: del_event }
         ]
     });
     return grid;

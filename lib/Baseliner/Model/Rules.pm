@@ -36,7 +36,7 @@ register 'statement.foreach' => {
 };
 
 register 'service.echo' => {
-    data => { msg => '', args=>{} },
+    data => { msg => '', args=>{}, arr=>[] },
     handler=>sub{
         my ($self, $c, $data ) = @_;
         Baseliner::Utils::_error( $data );
@@ -145,7 +145,10 @@ sub dsl_run {
 
 sub run_rules {
     my ($self, %p) = @_;
-    my @rules = DB->BaliRule->search({ rule_event=> $p{event}, rule_type=>'event', rule_when=>$p{when} })->hashref->all;
+    my @rules = DB->BaliRule->search(
+        { rule_event => $p{event}, rule_type => 'event',      rule_when => $p{when} },
+        { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
+    )->hashref->all;
     my $stash = $p{stash};
     my @rule_log;
     for my $rule ( @rules ) {

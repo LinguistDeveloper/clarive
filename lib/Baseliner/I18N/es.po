@@ -33,6 +33,12 @@ msgstr "Naturalezas: %1"
 msgid "Advanced"
 msgstr "Avanzado"
 
+msgid "Event"
+msgstr "Evento"
+
+msgid "Events"
+msgstr "Eventos"
+
 msgid "View Stash"
 msgstr "Ver Stash"
 
