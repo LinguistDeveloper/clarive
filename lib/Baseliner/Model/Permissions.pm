@@ -1,4 +1,4 @@
-package Baseliner::Model::Permissions;
+    package Baseliner::Model::Permissions;
 use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
@@ -305,7 +305,7 @@ sub user_projects_query {
     _throw 'Missing username' unless exists $p{ username };
     Baseliner->model( 'Baseliner::BaliRoleuser' )
         ->search( { username => $p{username} },
-        { distinct=>1, select => [ 'id' ] } )->as_query ;
+        { distinct=>1, select => [ 'id_project' ], as => [ 'id' ] } )->as_query ;
 }
 
 =head2 user_projects_ids( username=>Str )
@@ -640,7 +640,7 @@ Or if its username is 'root'
 sub is_root {
     my ( $self, $username ) = @_;
     $username or die _loc('Missing username');
-    return 1 if $username eq 'root' || $username eq config_value('root_username'); 
+    return 1 if $username eq 'root' || config_value('root_username') && $username eq config_value('root_username'); 
 
     return Baseliner->model('Baseliner')->dbi->value(qq{
         select count(*) 

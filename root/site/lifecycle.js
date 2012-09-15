@@ -89,6 +89,9 @@ var button_ci = new Ext.Button({
     toggleGroup: 'lc',
     pressed: false,
     allowDepress: false,
+% if ( !$c->model('Permissions')->user_has_action( action=>'action.lc.ic_editor', username=>$c->username ) ) {
+    hidden: true,    
+% }
     enableToggle: true
 });
 

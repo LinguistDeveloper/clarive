@@ -12,17 +12,71 @@ with 'Baseliner::Role::Service';
 register 'action.notify.admin' =>  { name=>'Receive General Admin Messages' };
 register 'action.notify.error' =>  { name=>'Receive Error Notifications' };
 
+#     my $to = [ _unique(@users) ];
+
+#     Baseliner->model('Messaging')->notify(
+#         to              => { users => $to },
+#         subject         => _("SQA Package analysis finished"),
+#         sender            => $config->{from},
+#         carrier         => 'email',
+#         template        => 'email/pkg_analysis_finished.html',
+#         template_engine => 'mason',
+#         vars            => {
+#             subject => "An&aacute;lisis de calidad de paquetes finalizado",
+#             message =>
+# "Finalizado An&aacute;lisis de calidad de $project solicitado por el usuario $username",
+#             project  => $project,
+#             username => $username,
+#             packages => $packages,
+#             links    => $links,
+#             url      => $url,
+#             to       => $to
+#         }
+#     );
+
 register 'service.notify.create' => {
     name => 'Send a Notification',
     form => '/forms/notify_create.js',
     handler=>sub{
         my ($self, $c, $config) = @_;
+
         my $to = $config->{to};
         my $cc = $config->{cc};
-        $self->notify( 
+
+        my @users;
+
+        for ( _array $to ) {
+            if ( $_ =~ /role\/(.*)/ ) {
+                push @users, map { $_->{username} } DB->BaliRole->find( $1 )->bali_roleusers->hashref->all;
+            } elsif ( $_ =~ /user\/(.*)/ ) {
+                push @users, DB->BaliUser->find( $1 )->username;
+            } else {
+                push @users, $_;
+            }
+        }
+
+        my $final_to = [ _unique(@users) ];
+
+        @users = ();
+        for ( _array $cc ) {
+            if ( $_ =~ /role\/(.*)/ ) {
+                push @users, map { $_->{username} } DB->BaliRole->find( $1 )->bali_roleusers->hashref->all;
+            } elsif ( $_ =~ /user\/(.*)/ ) {
+                push @users, DB->BaliUser->find( $1 )->username;
+            } else {
+                push @users, $_;
+            }
+        }
+
+        my $final_cc = [ _unique(@users) ];
+
+        Baseliner->model('Messaging')->notify( 
+            to => { users => $final_to },
+            cc => { users => $final_cc },
             body => $config->{body},
             subject => $config->{subject},
             carrier => 'email',
+            sender => 'Clarive@jazztel',
         );
         return { msg_id => 999, config=>$config }; 
     }

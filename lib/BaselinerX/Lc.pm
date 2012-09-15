@@ -9,6 +9,10 @@ register 'config.lc' => {
     ]
 };
 
+register 'action.lc.ic_editor' => {
+    name => "Can open the IC editor"
+};
+
 has 'lc' => (
     is      => 'rw',
     isa     => 'Any',
