@@ -752,8 +752,17 @@ sub create_clone : Local {
             $params->{origin} = 'custom';
             $params->{id_field} = $p->{name_field};
             $params->{name_field} = $p->{name_field};
-            $params->{html} = '/fields/field_generic.html';
+            $params->{field_order} += 20;
+
             $params->{rel_field} = $p->{name_field} if exists $params->{rel_field};
+            if (exists $params->{filter}) {
+                $params->{filter} = $p->{filter};
+                $params->{html} = '';  
+            }else{
+                $params->{html} = '/fields/field_generic.html';                
+            }
+            
+            
     
             my $clone_field = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
                                                                                     id_category    => $p->{id_category},
@@ -824,6 +833,24 @@ sub list_clone_fields : Local {
                 };		
         }
     }	    
+    
+    $c->stash->{json} = {data=>\@rows};
+    $c->forward('View::JSON');
+}
+
+sub list_filters : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    
+    my @rows;
+    my @filters = $c->model('Baseliner::BaliTopicView')->search(undef, {order_by => 'name'})->hashref->all;
+    for(@filters){
+        push @rows,
+                {
+                  name        => $_->{name},
+                  filter_json	=> $_->{filter_json}
+                };	
+    }
     
     $c->stash->{json} = {data=>\@rows};
     $c->forward('View::JSON');

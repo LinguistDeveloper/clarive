@@ -1149,6 +1149,20 @@
 						url: '/topicadmin/list_clone_fields'
 					});
 					
+					var filter_store = new Baseliner.JsonStore({
+						root: 'data' , 
+						remoteSort: true,
+						totalProperty:"totalCount", 
+						id: 'id', 
+						url: '/topicadmin/list_filters',
+						fields: [
+							{  name: 'name' },
+							{  name: 'filter_json' }
+						]
+					});
+					
+					filter_store.load();
+					
 					var btn_cerrar_clone_field = new Ext.Toolbar.Button({
 						text: _('Close'),
 						width: 50,
@@ -1200,6 +1214,28 @@
 						store: clone_field_store
 					});
 					
+					combo_type_clone_field.on('select', function(cmb,row,index){
+						if (row.data.params.filter){
+							combo_filters.show();
+						}else{
+							combo_filters.hide();
+						};
+					});
+					
+					var combo_filters = new Ext.form.ComboBox({
+						mode: 'local',
+						triggerAction: 'all',
+						forceSelection: true,
+						editable: false,
+						fieldLabel: _('Filter'),
+						name: 'cmb_filter',
+						hiddenName: 'filter',
+						displayField: 'name',
+						valueField: 'filter_json',
+						hidden: true,						
+						store: filter_store
+					});					
+					
 					
 					var form_clone_field = new Ext.FormPanel({
 						name: 'form_clone_field',
@@ -1209,7 +1245,8 @@
 						defaults:{anchor:'100%'},
 						items   : [
 									{ fieldLabel: _('Field'), name: 'name_field', xtype: 'textfield', allowBlank:false},
-									combo_type_clone_field
+									combo_type_clone_field,
+									combo_filters
 								]
 					});
 
@@ -1234,13 +1271,11 @@
 		
 		
 		
-		
-		
-		
 		    var btn_config_fields = new Ext.Toolbar.Button({
 			    text: _('Parameters'),
 			    icon:'/static/images/icons/cog_edit.png',
 			    cls: 'x-btn-text-icon',
+				hidden: true,
 			    handler: function() {
 					
 				    store_config_field.removeAll();
