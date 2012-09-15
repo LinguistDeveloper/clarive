@@ -142,7 +142,7 @@ sub event_new {
         my ($ed,@rules) = @_;
         my $ev_row = DB->BaliEvent->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
         for my $rule (@rules) {
-            _error $rule;
+            _debug $rule;
             my $rrow = DB->BaliEventRules->create(
                 {
                     id_event   => $ev_row->id,

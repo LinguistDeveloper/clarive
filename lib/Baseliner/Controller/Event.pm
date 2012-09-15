@@ -64,6 +64,7 @@ sub log : Local {
         $e->{description} = $ev->description;
         $e->{_id} = $e->{id};
         $e->{_parent} = undef;
+        $e->{type} = 'event';
         #_error "EV=$e->{event_data}";
         $e->{data} = _load( $e->{event_data} ) if length $e->{event_data};
         my $rules = delete $e->{rules};
@@ -73,8 +74,10 @@ sub log : Local {
                 %$_, 
                 _parent   => $e->{_id},
                 _id       => $_->{id},
+                type      => 'rule',
                 event_key => $_->{rule_name},
                 data      => ( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
+                dsl       => $_->{dsl},
                 _is_leaf  => \1,
             }
         } @$rules;
@@ -86,5 +89,19 @@ sub log : Local {
     $c->forward("View::JSON");
 }
 
+sub del : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $rs = defined $p->{id}
+        ? DB->BaliEvent->find( $p->{id} )
+        : DB->BaliEvent->search({ id=>$p->{ids} });
+    if( $rs ) {
+        $rs->delete;
+        $c->stash->{json} = { success=>\1, msg => _loc('Event deleted ok') };
+    } else {
+        $c->stash->{json} = { success=>\1, msg => _loc('Event not found') };
+    }
+    $c->forward("View::JSON");
+}
 
 1;

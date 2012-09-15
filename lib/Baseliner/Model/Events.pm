@@ -11,10 +11,15 @@ register 'service.event.daemon' => {
     daemon => 1,
     handler => sub {
         my ($self, $c, $config ) = @_;
+        if( 0 ) {
         for( 1..1000 ) {
             $self->run_once;
             sleep( $config->{frequency} // 15 );
-        }
+        } }
+        # purge old events
+        my $dt = DateTime->now->subtract( days => ( $config->{purge_days} || 1 ) );
+        my $rs = DB->BaliEvent->search({ ts => { '<' => $dt }});
+        say $_->{id} for $rs->hashref->all;
     }
 };
 

@@ -22,8 +22,63 @@ register 'statement.if.var' => {
     },
 };
 
+register 'statement.try' => {
+    text => 'TRY statement', 
+    type => 'if',
+    data => { },
+    dsl => sub { 
+        my ($self, $n ) = @_;
+        sprintf(q{
+            try {
+                %s
+            };
+            
+        }, $self->dsl_build( $n->{children} ) );
+    },
+};
+
+register 'statement.let.key_value' => {
+    text => 'LET key => value', 
+    type => 'let',
+    holds_children => 0, 
+    data => { key=>'', value=>'' },
+    dsl => sub { 
+        my ($self, $n ) = @_;
+        sprintf(q{
+           $stash->{ '%s' } = '%s';
+        }, $n->{key}, $n->{value}, $self->dsl_build( $n->{children} ) );
+    },
+};
+
+register 'statement.let.merge' => {
+    text => 'MERGE value INTO stash', 
+    type => 'let',
+    holds_children => 0, 
+    data => { value=>{} },
+    dsl => sub { 
+        my ($self, $n ) = @_;
+        sprintf(q{
+           $stash = merge_data( $stash, %s );
+        }, Data::Dumper::Dumper($n->{value}), $self->dsl_build( $n->{children} ) );
+    },
+};
+
+register 'statement.delete.key' => {
+    text => 'DELETE hashkey', 
+    type => 'if',
+    holds_children => 0, 
+    data => { key=>'' },
+    dsl => sub { 
+        my ($self, $n ) = @_;
+        sprintf(q{
+           delete $stash->{ '%s' } ;
+        }, $n->{key}, $self->dsl_build( $n->{children} ) );
+    },
+};
+
 register 'statement.foreach' => {
     text => 'FOREACH stash[ variable ]', type => 'for', data => { variable=>'' },
+    type => 'loop',
     dsl => sub { 
         my ($self, $n ) = @_;
         sprintf(q{

@@ -31,7 +31,7 @@
         var arr = [];
         arr.push( String.format('<a href="javascript:Baseliner.event_data(\'{0}\', {1})"><img src="/static/images/icons/application.png" /></a>', grid.id, rowIndex ) );
         if( rec.data.type == 'rule' ) 
-            arr.push( String.format('<a href="javascript:Baseliner.event_dsl(\'{0}\', {1})"><img src="/static/images/icons/application.png" /></a>', grid.id, rowIndex ) );
+            arr.push( String.format('<a href="javascript:Baseliner.event_dsl(\'{0}\', {1})"><img src="/static/images/icons/application_go.png" /></a>', grid.id, rowIndex ) );
         return arr.join(' ');
     };
     
@@ -44,8 +44,12 @@
     var del_event = function(){
         var sm = grid.getSelectionModel();
         if( sm.hasSelection() ) {
-            var sel = sm.getSelected();
-            Baseliner.ajaxEval('/event/del', { id: sel.data.id }, function( res ){
+            var sels = sm.getSelections();
+            var ids = [];
+            Ext.each( sels, function(sel) {
+                ids.push( sel.data.id ); 
+            });
+            Baseliner.ajaxEval('/event/del', { ids: ids }, function( res ){
                 Baseliner.message( _('Event Delete'), res.msg );
                 store_events.reload();
             });
@@ -72,7 +76,14 @@
             search_field,
             { icon:'/static/images/icons/refresh.gif', handler: function(){ store_events.reload(); } },
             { icon:'/static/images/icons/delete.gif', handler: del_event }
-        ]
+        ],
+        bbar: new Ext.ux.maximgb.tg.PagingToolbar({
+            store: store_events,
+            pageSize: ps,
+            displayInfo: true,
+            displayMsg: _('Rows {0} - {1} of {2}'),
+            emptyMsg: _('There are no rows available')
+        })
     });
     return grid;
 })
