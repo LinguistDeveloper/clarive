@@ -1043,7 +1043,7 @@
 			baseParams: {},
 			id: 'id', 
 			url: '/topicadmin/list_fields',
-			fields: ['id','params'] 
+			fields: ['id','params','name'] 
 		 }, c));
 	};
 	Ext.extend( Baseliner.store.Fields, Baseliner.JsonStore );
@@ -1140,7 +1140,7 @@
 		
 		
 		    var btn_clone_field = new Ext.Toolbar.Button({
-			    text: _('Clone field'),
+			    text: _('Custom field'),
 			    icon:'/static/images/icons/wrench.png',
 			    cls: 'x-btn-text-icon',
 			    handler: function() {
@@ -1208,7 +1208,7 @@
 						fieldLabel: _('Type'),
 						name: 'cmb_clone_field',
 						hiddenName: 'field',
-						displayField: 'id',
+						displayField: 'name',
 						valueField: 'id',
 						//En un futuro se cargaran los distintos Host
 						store: clone_field_store
@@ -1259,7 +1259,7 @@
 				    var winCloneField = new Ext.Window({
 					    modal: true,
 					    width: 500,
-					    title: _('Clone field'),
+					    title: _('Custom field'),
 					    items: [form_clone_field]
 				    });
 				    winCloneField.show();

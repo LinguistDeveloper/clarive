@@ -267,7 +267,7 @@ sub related : Local {
     $where->{mid} = { '<>' => $mid } if length $mid;
     $where->{'categories.is_release'} = $show_release;
     
-    if($p->{filter}){
+    if($p->{filter} && $p->{filter} ne 'none'){
         my $p = _decode_json($p->{filter});
         
         #if($p->{labels}){

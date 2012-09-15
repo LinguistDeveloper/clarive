@@ -3983,6 +3983,16 @@ msgstr "Error creando carpeta: %1"
 msgid "You must save the topic before add new files"
 msgstr "Debes guardar el tópico antes de añadir nuevos ficheros"
 
+msgid "status_new"
+msgstr "Estados"
 
+msgid "users"
+msgstr "Usuarios"
+
+msgid "Custom field"
+msgstr "Personalizar campo"
+
+msgid "Field"
+msgstr "Campo"
 
 

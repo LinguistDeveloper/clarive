@@ -828,7 +828,7 @@ sub list_clone_fields : Local {
                   #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
                   id        => $field->{metadata}->{name},
                   params	=> $field->{metadata}->{params},
-                  #order     => $field->{metadata}->{order},
+                  name      => _loc $field->{metadata}->{name},
                   #value     => $field->{metadata}->{value},
                 };		
         }
