@@ -17,9 +17,10 @@ register 'service.event.daemon' => {
             sleep( $config->{frequency} // 15 );
         } }
         # purge old events
-        my $dt = DateTime->now->subtract( days => ( $config->{purge_days} || 1 ) );
-        my $rs = DB->BaliEvent->search({ ts => { '<' => $dt }});
-        say $_->{id} for $rs->hashref->all;
+        my $dt = _dt->subtract( days => ( $config->{purge_days} || 30 ) );
+        $dt =  $dt->strftime('%Y-%m-%d %T');
+        DB->BaliEvent->search({ ts => { '<' => $dt }})->delete;
+        return 0;
     }
 };
 
