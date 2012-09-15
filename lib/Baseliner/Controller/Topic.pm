@@ -277,12 +277,16 @@ sub related : Local {
     
         if($p->{categories}){
             my @categories = _array $p->{categories};
-            $where->{'id_category'} = \@categories;
+            if(@categories){
+                $where->{'id_category'} = \@categories;
+            }
         }
         
         if($p->{statuses}){
             my @statuses = _array $p->{statuses};
-            $where->{'id_category_status'} = \@statuses;
+            if(@statuses){
+                $where->{'id_category_status'} = \@statuses;
+            }
         }
           
         if($p->{priorities}){
