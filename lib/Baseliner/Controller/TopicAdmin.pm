@@ -502,6 +502,7 @@ sub list_fields : Local {
        @ret;
     } @field_dirs;
     
+    
     my @rows;
     my $i = 1;
     for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } @fieldlets ) {
@@ -516,7 +517,20 @@ sub list_fields : Local {
                   #value     => $field->{metadata}->{value},
                 };		
         }
-    }	    
+    }
+    my @id_fields = map { $_->{metadata}->{name} } @fieldlets;
+    my @custom_fields = $c->model('BaliTopicFieldsCategory')->search({id_field => { 'not in' => \@id_fields}})->hashref->all;
+    for(@custom_fields){
+    	my $params = _load  $_->{params_field};
+        $params->{name_field} = $_->{id_field};
+        push @rows,
+            {
+              id        => $_->{id_field},
+              params	=> $params,
+            };        
+    }
+    
+    
     
     $c->stash->{json} = {data=>\@rows};
     $c->forward('View::JSON');
