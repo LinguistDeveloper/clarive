@@ -34,10 +34,11 @@
                 var rec = res.rec;
                 Baseliner.add_tabcomp( '/comp/ci-editor.js', _('CI %1' , rec.name ), 
                     {
-                        _parent_grid: ci_grid,
+                        _parent_grid: ci_grid.id,
                         collection: data.collection,
                         data: data,
                         has_bl: data.has_bl,
+                        bl: data.bl,
                         class: data.class,
                         ci_form: rec.ci_form,
                         mid: rec.mid,
@@ -69,7 +70,7 @@
            rec.name = _('Copy of %1', rec.name );
         } 
         Baseliner.add_tabcomp( '/comp/ci-editor.js', _('New: %1' , params.item ), {
-                _parent_grid: ci_grid,
+                _parent_grid: ci_grid.id,
                 ci_form: data.ci_form,
                 collection: data.collection,
                 has_bl: data.has_bl,
@@ -128,7 +129,7 @@
         var ret = '<table><tr><td width="1">';
         ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
         //ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'text-decoration: line-through;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
-        ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'color: red;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'color: #444;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -197,7 +198,7 @@
         tbar: [ 
             //{ xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
             search_field,
-            { xtype:'button', text: _('Create'), icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon', handler: ci_add },
+            { xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },

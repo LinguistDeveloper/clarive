@@ -2,39 +2,48 @@
     if( params.rec == undefined ) params.rec = {};            // master row record
     if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
     var mid = params.mid;
-    var btn_form_ok = new Ext.Button({
-        text: _('Accept'),
-        icon:'/static/images/icons/save.png',
-        cls: 'x-btn-icon-text',
-        type: 'submit',
-        handler: function() {
+
+    var submit_form = function( close_form ){
             var form2 = form.getForm();
             if ( form2.isValid() ) {
                form2.submit({
                    params: {action: params.action, mid: params.mid, collection:params.collection },
                    success: function(f,a){
                         Baseliner.message(_('Success'), a.result.msg );
-                        form.destroy();
+                        if( close_form ) form.destroy();
                    },
                    failure: function(f,a){
                        Ext.Msg.alert( _('Error'), a.result.msg );
                    }
                });
             }
-        }
+    };
+    var btn_form_ok = new Ext.Button({
+        text: _('Close'),
+        icon:'/static/images/icons/save.png',
+        cls: 'x-btn-icon-text',
+        type: 'submit',
+        handler: function() { submit_form( true ) }
+    });
+
+    var btn_form_save = new Ext.Button({
+        text: _('Save'),
+        icon:'/static/images/icons/save.png',
+        cls: 'x-btn-icon-text',
+        type: 'submit',
+        handler: function() { submit_form( false ) }
     });
 
     var tb = new Ext.Toolbar({
         items: [
-            btn_form_ok
+            btn_form_ok, btn_form_save
             //btn_form_reset
         ]
     });
     var fieldset = new Ext.form.FieldSet({
         defaults: { 
            anchor: '70%',
-           msgTarget: 'under',
-           allowBlank: false
+           msgTarget: 'under'
         },
         hidden: true,
         style: { 'margin-top':'30px' },
@@ -84,12 +93,14 @@
     });
     form.on('destroy', function(){
         // reload parent grid
-        var g = params._parent_grid;
-        if( g != undefined ) {
-            var sm = g.getSelectionModel();
-            if( sm != undefined ) sm.clearSelections();
-            var s = g.getStore();
-            if( s!=undefined ) s.reload();
+        var grid_id = params._parent_grid;
+        if( ! grid_id ) return;
+        var grid = Ext.getCmp( grid_id );
+        if( grid ) {
+            var sm = grid.getSelectionModel();
+            if( sm ) sm.clearSelections();
+            var s = grid.getStore();
+            if( s ) s.reload();
         }
     });
     return form;
