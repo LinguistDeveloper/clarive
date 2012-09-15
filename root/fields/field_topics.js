@@ -11,6 +11,7 @@ params:
     rel_field: 'topics'
     method: 'get_topics'
     is_clone: 1
+    filter: none
 ---
 */
 (function(params){
@@ -26,7 +27,7 @@ params:
 		topics = [];
 	}
 	
-    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0, filter: meta.rel_field} });
+    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0, filter: meta.filter ? meta.filter : ''} });
 	
     var topic_box = new Baseliner.model.Topics({
         //hidden: rec.fields_form.show_topics ? false : true,

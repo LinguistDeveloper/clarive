@@ -266,6 +266,38 @@ sub related : Local {
     my $where = {};
     $where->{mid} = { '<>' => $mid } if length $mid;
     $where->{'categories.is_release'} = $show_release;
+    
+    if($p->{filter} && $p->{filter} ne 'none'){
+        my $p = _decode_json($p->{filter});
+        
+        #if($p->{labels}){
+        #    my @labels = _array $p->{labels};
+        #    $where->{'label_id'} = \@labels;
+        #}
+    
+        if($p->{categories}){
+            my @categories = _array $p->{categories};
+            if(@categories){
+                $where->{'id_category'} = \@categories;
+            }
+        }
+        
+        if($p->{statuses}){
+            my @statuses = _array $p->{statuses};
+            if(@statuses){
+                $where->{'id_category_status'} = \@statuses;
+            }
+        }
+          
+        if($p->{priorities}){
+            my @priorities = _array $p->{priorities};
+            if(@priorities){
+                $where->{'id_priority'} = \@priorities;            
+            }
+        
+        }        
+    }
+    
     my $rs_topic = $c->model('Baseliner::BaliTopic')->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
     rs_hashref( $rs_topic );
     my @topics = map {

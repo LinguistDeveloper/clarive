@@ -1043,7 +1043,7 @@
 			baseParams: {},
 			id: 'id', 
 			url: '/topicadmin/list_fields',
-			fields: ['id','params'] 
+			fields: ['id','params','name'] 
 		 }, c));
 	};
 	Ext.extend( Baseliner.store.Fields, Baseliner.JsonStore );
@@ -1140,7 +1140,7 @@
 		
 		
 		    var btn_clone_field = new Ext.Toolbar.Button({
-			    text: _('Clone field'),
+			    text: _('Custom field'),
 			    icon:'/static/images/icons/wrench.png',
 			    cls: 'x-btn-text-icon',
 			    handler: function() {
@@ -1148,6 +1148,20 @@
 					var clone_field_store = new Baseliner.store.Fields({
 						url: '/topicadmin/list_clone_fields'
 					});
+					
+					var filter_store = new Baseliner.JsonStore({
+						root: 'data' , 
+						remoteSort: true,
+						totalProperty:"totalCount", 
+						id: 'id', 
+						url: '/topicadmin/list_filters',
+						fields: [
+							{  name: 'name' },
+							{  name: 'filter_json' }
+						]
+					});
+					
+					filter_store.load();
 					
 					var btn_cerrar_clone_field = new Ext.Toolbar.Button({
 						text: _('Close'),
@@ -1194,11 +1208,33 @@
 						fieldLabel: _('Type'),
 						name: 'cmb_clone_field',
 						hiddenName: 'field',
-						displayField: 'id',
+						displayField: 'name',
 						valueField: 'id',
 						//En un futuro se cargaran los distintos Host
 						store: clone_field_store
 					});
+					
+					combo_type_clone_field.on('select', function(cmb,row,index){
+						if (row.data.params.filter){
+							combo_filters.show();
+						}else{
+							combo_filters.hide();
+						};
+					});
+					
+					var combo_filters = new Ext.form.ComboBox({
+						mode: 'local',
+						triggerAction: 'all',
+						forceSelection: true,
+						editable: false,
+						fieldLabel: _('Filter'),
+						name: 'cmb_filter',
+						hiddenName: 'filter',
+						displayField: 'name',
+						valueField: 'filter_json',
+						hidden: true,						
+						store: filter_store
+					});					
 					
 					
 					var form_clone_field = new Ext.FormPanel({
@@ -1209,7 +1245,8 @@
 						defaults:{anchor:'100%'},
 						items   : [
 									{ fieldLabel: _('Field'), name: 'name_field', xtype: 'textfield', allowBlank:false},
-									combo_type_clone_field
+									combo_type_clone_field,
+									combo_filters
 								]
 					});
 
@@ -1222,7 +1259,7 @@
 				    var winCloneField = new Ext.Window({
 					    modal: true,
 					    width: 500,
-					    title: _('Clone field'),
+					    title: _('Custom field'),
 					    items: [form_clone_field]
 				    });
 				    winCloneField.show();
@@ -1234,13 +1271,11 @@
 		
 		
 		
-		
-		
-		
 		    var btn_config_fields = new Ext.Toolbar.Button({
 			    text: _('Parameters'),
 			    icon:'/static/images/icons/cog_edit.png',
 			    cls: 'x-btn-text-icon',
+				hidden: true,
 			    handler: function() {
 					
 				    store_config_field.removeAll();
