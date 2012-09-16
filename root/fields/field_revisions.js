@@ -34,7 +34,7 @@ params:
           { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.gif" />'} },
           { header: _('Name'), width: 240, dataIndex: 'name',
               renderer: function(v,metadata,rec){
-                  return Baseliner.render_wrap( String.format('<span id="boot"><h5>{0}</h5></span>', v ) );
+                  return Baseliner.render_wrap( String.format('<a href="javascript:Baseliner.show_revision({1})"><span id="boot"><h5>{0}</h5></span></a>', v, rec.data.mid ) );
               }
           },
           { width: 20, dataIndex: 'mid',
@@ -57,7 +57,7 @@ params:
     };
 
     // Load data
-	var data = params.topic_data.revisions;
+	var data = params.topic_data.revisions || [];
     Ext.each( data, function(row){
         var r = new revision_store.recordType( row, row.mid );
         console.log( r );
@@ -66,6 +66,14 @@ params:
         refresh_field();
     });
     
+    Baseliner.show_revision = function( mid ) {
+        Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
+            if( res.url ) {
+                alert( res.url );
+                Baseliner.add_tab( res.url, _(res.title), {} );
+            }
+        });
+    };
     Baseliner.delete_revision_row = function( id_grid, mid ) {
         var g = Ext.getCmp( id_grid );
         var s = revision_grid.getStore();
