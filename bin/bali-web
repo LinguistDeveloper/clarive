@@ -80,7 +80,7 @@ if [ "$1" = "start" ]; then
     # BASELINER_SERVER=prefork nohup perl $BASELINER_TRACE_MODULE $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     export PARENTPID=$$
     # perl -e 'local$|=1;print "Waiting for server to start on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && ! -e "$ENV{PIDFILE}" && kill 0, $ENV{PARENTPID}){ print "."; sleep 1 }' 2>/dev/null &
-    nohup starman --preload-app --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 &
+    nohup starman $@ --preload-app --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 &
     #  starman --preload-app -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 
     # plackup -s Starman -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 
     #  nohup BASELINER_SERVER=prefork bali server --pidfile "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 &
