@@ -4010,6 +4010,15 @@ msgstr "%1 modificó el tópico: %2 ( %4 ) el %6"
 msgid "attached topics"
 msgstr "tópicos adjuntos"
 
+msgid "%1 deleted release %3"
+msgstr "%1 borró release %3"
+
+msgid "%1 modified topic: changed release to %4"
+msgstr "%1 modificó tópico: release cambió a %4"
+
+
+
+
 
 
 
