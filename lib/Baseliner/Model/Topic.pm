@@ -98,8 +98,8 @@ register 'event.topic.modify_field' => {
 #};
 
 register 'event.topic.change_status' => {
-    text => '%1 changed topic status to %2 on %3',
-    vars => ['username', 'status', 'ts'],
+    text => '%1 changed topic status from %2 to %3 on %4',
+    vars => ['username', 'old_status', 'status', 'ts'],
 };
 
 sub update {

@@ -70,7 +70,7 @@ sub topic_change_status : Path('/api/topic_change_status') {
 
     my $ret = {};
 
-    my $topic = DB->BaliTopic->find( $topic_mid );
+    my $topic = DB->BaliTopic->find( $topic_mid, { prefetch => 'status'} );
 
     if ( !$topic ) {
         $ret->{status} = 'ERROR';
@@ -94,8 +94,7 @@ sub topic_change_status : Path('/api/topic_change_status') {
         } ## end if ( !$force || $force...)
         my $new_status = DB->BaliTopicCategoriesStatus->search( { "status.name" => $status }, { prefetch => ['status'] } )->hashref->first;
         if ( $new_status ) {
-            event_new 'event.topic.change_status' => { username => 'root', status => $status } => sub {
-                _error "ESTOY EJECUTANDO EL CHANGE";
+            event_new 'event.topic.change_status' => { username => 'root', status => $status, old_status => $topic->status->name } => sub {
                 $topic->id_category_status($new_status->{"id_status"});
                 $topic->update;
                 $ret->{status} = 'SUCCESS';
