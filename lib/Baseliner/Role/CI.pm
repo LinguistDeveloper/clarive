@@ -97,10 +97,12 @@ sub save_data {
         my $type = $attr->type_constraint->name;
         if( $type eq 'CI' || $type eq 'CIs') {
             my $rel_type = $self->rel_type->{ $field };
+            next unless $rel_type;
             push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>delete($data->{$field}) };
             #_fail( "$field is $type - $rel_type" );
         }
     }
+    _error \@master_rel;
     # now store the data
     if( $storage eq 'yaml' ) {
         _debug "------------>" . _dump( $data );
