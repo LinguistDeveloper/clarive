@@ -43,6 +43,9 @@ register 'service.notify.create' => {
         my $to = $config->{to};
         my $cc = $config->{cc};
 
+        my $template = config_get('config.comm.email')->{default_template};
+#        $config->{url} = config_get('config.comm.email')->{baseliner_url};
+
         my @users;
 
         for ( _array $to ) {
@@ -73,10 +76,16 @@ register 'service.notify.create' => {
         Baseliner->model('Messaging')->notify( 
             to => { users => $final_to },
             cc => { users => $final_cc },
-            body => $config->{body},
+            template        => $template,
+            template_engine => 'mason',            
             subject => $config->{subject},
             carrier => 'email',
             sender => 'Clarive@jazztel',
+            vars => {
+                msg => $config->{body},
+                to => $final_to,
+                cc => $final_cc
+            }
         );
         return { msg_id => 999, config=>$config }; 
     }

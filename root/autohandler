@@ -1,16 +1,18 @@
 % $m->call_next;
 <%once>
-	use Encode qw( encode_utf8 decode_utf8 is_utf8 decode );
-	use Baseliner::Utils;
-	use JavaScript::Dumper;
+    use Encode qw( encode_utf8 decode_utf8 is_utf8 decode );
+    use Baseliner::Utils;
+    use JavaScript::Dumper;
 </%once>
 <%filter>
-	# Convert from characters to bytes if necessary.
-	# Original method:
+    # Convert from characters to bytes if necessary.
+    # Original method:
     # $_ = encode_utf8( $_ ) if is_utf8( $_ );
-	# $_ = is_utf8($_) ? encode_utf8( $_ ) : encode_utf8(decode('iso-8859-1', $_));
+    # $_ = is_utf8($_) ? encode_utf8( $_ ) : encode_utf8(decode('iso-8859-1', $_));
+
+    # debugging purposes: $_ = join( ',', map { sprintf( '%02x', ord( $_ ) ) } split //, $_ )
 
     # this allows mason files to be in UTF-8 format
     #    if taken out, everything is assumed to be ANSI/ISO-8859-1
-	$_ = Encode::decode_utf8( $_ )
+    $_ = Encode::decode_utf8( $_ )
 </%filter>
