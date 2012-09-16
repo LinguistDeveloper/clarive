@@ -1,6 +1,6 @@
 package Baseliner::Role::CI::Project;
 use Moose::Role;
-with 'Baseliner::Role::CI';
+with 'Baseliner::Role::CI::Internal';
 
 sub icon { '/static/images/ci/project.png' }
 

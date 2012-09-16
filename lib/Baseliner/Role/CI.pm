@@ -2,11 +2,16 @@ package Baseliner::Role::CI;
 use Moose::Role;
 
 use Moose::Util::TypeConstraints;
+require Baseliner::CI;
+
+# Empty CI to represent missing relationships
+{ package BaselinerX::CI::Empty; use Moose; with 'Baseliner::Role::CI' }
 
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
 
 coerce 'CI' =>
+  from 'Str' => via { length $_ ? Baseliner::CI->new( $_ ) : BaselinerX::CI::Empty->new()  }, 
   from 'Num' => via { Baseliner::CI->new( $_ ) }, 
   from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; Baseliner::CI->new( $first ) }; 
 
@@ -14,6 +19,7 @@ coerce 'CIs' =>
   from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] }; 
 
 has mid => qw(is rw isa Num);
+#has rec => qw(is rw isa Any);  # the original DB record returned by load()
 
 requires 'icon';
 #requires 'collection';
@@ -102,10 +108,8 @@ sub save_data {
             #_fail( "$field is $type - $rel_type" );
         }
     }
-    _error \@master_rel;
     # now store the data
     if( $storage eq 'yaml' ) {
-        _debug "------------>" . _dump( $data );
         $master_row->yaml( _dump( $data ) );
         $master_row->update;
     }
@@ -122,10 +126,14 @@ sub save_data {
     # master_rel relationships, if any
     for my $rel ( @master_rel ) {
         # delete previous relationships
-        my $rs_rel = DB->BaliMasterRel->search({ from_mid=>$master_row->mid, rel_type=>$rel->{rel_type} });
-        $rs_rel->delete if $rs_rel;
-        for my $to_mid ( _array $rel->{value} ) {
-            DB->BaliMasterRel->create({ from_mid=>$master_row->mid, to_mid=>$to_mid, rel_type=>$rel->{rel_type} })
+        my $my_rel = $rel->{rel_type}->[0];
+        my $other_rel = $my_rel eq 'from_mid' ? 'to_mid' : 'from_mid';
+        my $rel_type_name = $rel->{rel_type}->[1];
+        DB->BaliMasterRel->search({ $my_rel, $master_row->mid, rel_type=>$rel_type_name })->delete;
+        for my $other_mid ( _array $rel->{value} ) {
+            _debug ">>>>>>>> SAVING REL $rel_type_name - FROM $my_rel => $other_rel ( $other_mid )";
+            _debug { $my_rel, $master_row->mid, $other_rel, $other_mid, rel_type=>$rel_type_name };
+            DB->BaliMasterRel->create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name })
         }
     }
     return $master_row->mid;
@@ -133,7 +141,7 @@ sub save_data {
 
 sub table_update_or_create {
     my ($self, $rs, $mid, $data ) = @_;
-    _error( $data );
+    #_error( $data );
     # find or create
     if( my $row = $rs->find( $mid ) ) {
         return $self->table_update( $row, $data );
@@ -174,14 +182,28 @@ sub load {
     # look for relationships
     my $rel_types = $self->rel_type;
     for my $field ( keys %$rel_types ) {
+        my $prev_value = $data->{$field};  # save in case there is no relationship, useful for changed cis
         my $rel_type = $rel_types->{ $field };
+        my $my_mid = $rel_type->[0];
+        my $other_mid = $my_mid eq 'to_mid' ? 'from_mid' : 'to_mid';
+        next unless defined $rel_type;
         $data->{ $field } = [
+            map {
+                # check for recursive CIs
+                _fail( _loc('Recursive CI. Attribute %1 has same mid as parent %2', $field, $mid) )
+                    if $mid == $_;
+                $_;
+            }
             map { values %$_ }
-            DB->BaliMasterRel->search( { from_mid => $mid,
-                rel_type => $rel_type },
-                { select=>'to_mid'} )->hashref->all
+            DB->BaliMasterRel->search( {
+                "$my_mid" => $mid,
+                rel_type       => "$rel_type->[1]" },
+                { select=> $other_mid } )->hashref->all
         ];
+        # use old value unless there's a master_rel object 
+        $data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
     }
+    _log $data;
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form;
     $data->{ci_class} //= $class;

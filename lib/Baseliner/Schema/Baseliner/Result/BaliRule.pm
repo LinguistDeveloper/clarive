@@ -27,6 +27,7 @@ __PACKAGE__->add_columns(
   "rule_seq", { data_type => "number", is_nullable => 0, default_value=>1 },
   "rule_when", { data_type => "varchar2", size=>1024, is_nullable => 1 },
   "rule_event", { data_type => "varchar2", size=>1024, is_nullable => 1 },
+  "rule_active", { data_type => "varchar2", size=>1, is_nullable => 1, default_value=>'1' },
 );
 
 __PACKAGE__->set_primary_key("id");

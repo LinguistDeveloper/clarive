@@ -1,6 +1,6 @@
 (function(params){
     if( params.rec == undefined ) params.rec = {};            // master row record
-    if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
+    //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
     var mid = params.mid;
 
     var submit_form = function( close_form ){
@@ -9,6 +9,7 @@
                form2.submit({
                    params: {action: params.action, mid: params.mid, collection:params.collection },
                    success: function(f,a){
+                        params.mid = a.result.mid;
                         Baseliner.message(_('Success'), a.result.msg );
                         if( close_form ) form.destroy();
                    },
@@ -62,8 +63,8 @@
         },
         bodyStyle:'padding: 10px 0px 0px 15px',
         items: [
-            { xtype: 'container', html:_( txt, params.data.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
-            { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name },
+            { xtype: 'container', html:_( txt, params.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
+            { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, style:'font-weight:bold' },
             { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: params.rec.active, allowBlank: true },
             ( params.has_bl > 0 ? bl_combo : [] ),
             //Baseliner.combo_baseline({ value: params.bl || '*' }),

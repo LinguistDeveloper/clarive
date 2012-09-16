@@ -13,6 +13,8 @@ sub new {
     } elsif( @_ == 1 && is_number( $_[0] ) ) {   # mid! a CI!
         my $rec = Baseliner::Role::CI->load( $_[0] );
         my $ci_class = $rec->{ci_class}; 
+        #$rec->{rec} = $rec;
+        #_debug "CI NEW: " . _dump $rec;
         my $obj = $ci_class->new( $rec );
         return $obj;
     } elsif( @_ == 1 && ! ref $_[0] ) {

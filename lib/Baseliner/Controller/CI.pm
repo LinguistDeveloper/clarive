@@ -246,7 +246,7 @@ sub tree_object_depend {
             _parent    => $p{parent} || undef,
             _is_leaf   => \0,
             mid        => $_->{$rel_type}{mid},
-            item       => ( $_->{$rel_type}{name} // $data->{name} // $_->{$rel_type}{collection}  ).':'.$_->{$rel_type}{mid}, # // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
+            item       => ( $_->{$rel_type}{name} // $data->{name} // $_->{$rel_type}{collection} ).':'.$_->{$rel_type}{mid}, # // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
             type       => 'object',
             class      => $class,
             bl         => $bl,
@@ -276,7 +276,7 @@ sub tree_object_info {
             item     => _loc('Depends On'), 
             type     => 'depend_from',
             class    => '-',
-            icon     => '/static/images/ci/in.png',
+            icon     => '/static/images/ci/out.png',
             ts       => '-',
             versionid  => '',
         },
@@ -288,7 +288,7 @@ sub tree_object_info {
             item     => _loc('Depend On Me'), 
             type     => 'depend_to',
             class    => '-',
-            icon     => '/static/images/ci/out.png',
+            icon     => '/static/images/ci/in.png',
             ts       => '-',
             versionid  => '',
         },
@@ -507,6 +507,18 @@ sub delete : Local {
     } catch {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg=>_loc('Error deleting CIs: %1', $err) };
+    };
+    $c->forward('View::JSON');
+}
+
+sub url : Local {
+    my ($self, $c) = @_;
+    my $mid = $c->req->params->{mid};
+    $c->stash->{json} = try {
+        my $ci = Baseliner::CI->new( $mid );
+        { success=>\1, url=>$ci->url, title=>$ci->load->{name} };
+    } catch {
+        { success=>\0, msg=>shift() };
     };
     $c->forward('View::JSON');
 }

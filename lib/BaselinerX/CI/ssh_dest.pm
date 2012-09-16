@@ -6,6 +6,10 @@ has path => qw(is rw isa Any);
 extends 'BaselinerX::CI::ssh_agent';   # XXX not sure, use delegation instead
 with 'Baseliner::Role::CI::Destination';
 
+# inherited from ssh_agent: has server => qw(is rw isa CI coerce 1);
+has server => qw(is rw isa CI coerce 1);  # not inherited or not visible as meta->get_attribute
+sub rel_type { { server=>[ from_mid => 'ssh_dest_ssh_server'] } }
+
 sub error {  }
 sub rc {
     my $self = shift;

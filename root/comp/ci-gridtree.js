@@ -35,11 +35,11 @@
                 Baseliner.add_tabcomp( '/comp/ci-editor.js', _('CI %1' , rec.name ), 
                     {
                         _parent_grid: ci_grid.id,
-                        collection: data.collection,
-                        data: data,
+                        collection: rec.collection,
+                        item: rec.collection,
                         has_bl: data.has_bl,
                         bl: data.bl,
-                        class: data.class,
+                        class: rec.class,
                         ci_form: rec.ci_form,
                         mid: rec.mid,
                         rec: rec,
@@ -182,7 +182,7 @@
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
-        stripeRows: false,
+        stripeRows: true,
         autoScroll: true,
         autoWidth: true,
         sortable: false,
@@ -214,14 +214,14 @@
         columns:[
             check_sm,
             { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
-            { id: id_auto, header: _('Item'), dataIndex: 'item', width: 230, renderer: render_item },
+            { id: id_auto, header: _('Item'), dataIndex: 'item', width: 300, renderer: render_item },
             { id:'mid', header: _('ID'), width: 65, dataIndex: 'mid' },
             { header: _('Collection'), width: 160, dataIndex: 'collection' },
             { header: _('Class'), hidden: true, width: 160, dataIndex: 'class' },
             { header: _('Baseline'), width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl },
             { header: _('Version'), width: 50, dataIndex: 'versionid' },
-            { header: _('Timestamp'), width: 80, dataIndex: 'ts' },
-            { header: _('Tags'), width: 140, dataIndex: 'tags', renderer: render_tags },
+            { header: _('Timestamp'), width: 100, dataIndex: 'ts' },
+            { header: _('Tags'), width: 140, hidden: true, dataIndex: 'tags', renderer: render_tags },
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties },
             { header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv }
         ],

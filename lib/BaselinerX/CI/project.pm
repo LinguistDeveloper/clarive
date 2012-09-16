@@ -2,14 +2,14 @@ package BaselinerX::CI::project;
 use Moose;
 use Baseliner::Utils;
 
-with 'Baseliner::Role::CI::Internal';
+with 'Baseliner::Role::CI::Project';
 
 sub icon { '/static/images/icons/project.png' }
 sub storage { 'BaliProject' }
 
 has repositories => qw(is rw isa CIs coerce 1);
 
-sub rel_type { { repositories=>'project_repository' } }
+sub rel_type { { repositories=>[ to_mid => 'project_repository'] } }
 
 #around table_update_or_create => sub {
 #    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;

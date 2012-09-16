@@ -34,6 +34,9 @@
         title:_('Exclude'), label:_('Exclude'), description: _('Element pattern regex to exclude'),
             value: params.exclude, default_value: '\\.ext$'});
 
+    var projects = Baseliner.cis({ name:'projects', hiddenName:'projects', role: 'Internal', allowBlank:true,
+        fieldLabel:_('Projects'), value: params.projects });
+
     var scripts_multi = Baseliner.cis({ name:'scripts_multi', hiddenName:'scripts_multi', role: 'Script', allowBlank:true,
         fieldLabel:_('Scripts Multi'), value: params.scripts_multi });
 
@@ -54,7 +57,7 @@
     var form = new Ext.FormPanel( {
          border : false,
          frame  : true,
-         url    : '/ejava/submit?type=' + params.type,
+         // url - is set by the submit button later on
          defaults: {
             width: 600
          },
@@ -69,7 +72,7 @@
                 allowBlank: 1
             },
             { xtype: 'textfield', name: "name", fieldLabel: _("Name"), allowBlank: 1, value: params.name, style:'font-weight:bold' },
-            { xtype: 'textfield', name: "project", fieldLabel: _("Project"), allowBlank: 1, value: params.project },
+            projects,
             Baseliner.combo_baseline({ value: params.bl || '*' }) ,
             {
                 xtype: 'textfield',
