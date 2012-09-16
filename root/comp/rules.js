@@ -30,14 +30,17 @@
         if( sm.hasSelection() ) {
             Baseliner.ajaxEval( '/rule/get', { id_rule: sm.getSelected().data.id }, function(res){
                 if( res.success ) {
-                    rule_add( res.rec );
+                    rule_editor( res.rec );
                 } else {
                     Baseliner.error( _('Error'), res.msg );
                 }
             });
         }
     };
-    var rule_add = function(rec){
+    var rule_add = function(){
+        rule_editor({});
+    };
+    var rule_editor = function(rec){
         Baseliner.ajaxEval( '/comp/rule_new.js', { rec: rec }, function(comp){
             if( comp ) {
                 var win = new Ext.Window({
