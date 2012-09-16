@@ -639,7 +639,7 @@ sub set_release {
     my @old_release =();
     if($release_row){
         @old_release = $release_row->mid;
-        my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}})->delete;
+        my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
     }
         
     my @new_release = _array( $release ) ;
@@ -649,8 +649,8 @@ sub set_release {
         # release
         if( @new_release ) {
             my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release[0] );
-            my @topics = Baseliner->model('Baseliner::BaliTopic')->search( {mid => $topic_mid} );
-            $row_release->set_topics( \@topics, { rel_type=>'topic_topic'});
+            my $topic_row = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
+            $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic'} );
             
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => '',
