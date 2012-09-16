@@ -35,10 +35,10 @@
             value: params.exclude, default_value: '\\.ext$'});
 
     var scripts_multi = Baseliner.cis({ name:'scripts_multi', hiddenName:'scripts_multi', role: 'Script', allowBlank:true,
-        fieldLabel:_('Scripts Multi'), value: params.deployments });
+        fieldLabel:_('Scripts Multi'), value: params.scripts_multi });
 
     var scripts_single = Baseliner.cis({ name:'scripts_single', hiddenName:'scripts_single', role: 'Script', allowBlank:true,
-        fieldLabel:_('Scripts Single'), value: params.deployments });
+        fieldLabel:_('Scripts Single'), value: params.scripts_single });
 
     var deployments = Baseliner.cis({ name:'deployments', hiddenName:'deployments', role: 'Destination', description: _('List of nodes to deploy to'),
         fieldLabel:_('Deployments'), value: params.deployments });

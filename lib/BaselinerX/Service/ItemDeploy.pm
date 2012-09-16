@@ -175,14 +175,19 @@ sub select_mappings {
         my @deploy = map {
             my @deployments;
             my $destination_node = $_;
+            my $ci_destination = Baseliner::CI->new( $destination_node );
             for my $origin ( @origins ) {
                 my $re_wks = qr/$m->{workspace}/;
                 # parse vars again for single scripts
                 my @scripts_single_parsed = map {
-                    my $script = $_;
+                    my $ci = Baseliner::CI->new( $_ );
+                    my $script = $ci;
                     my $ret;
                     if( "$origin" =~ $re_wks ) {  # if there's matching
                         my $vars_origin = { %+ };
+                        $vars_origin->{origin} = "$origin";
+                        $vars_origin->{basename} = $origin->basename;
+                        $vars_origin->{home} = $ci_destination->{home};
                         $ret = parse_vars( $script, $vars_origin );
                     } else {
                         $ret = $script;

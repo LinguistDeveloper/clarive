@@ -133,7 +133,7 @@ sub put_dir {
         if $local !~ /\*/ && ! -e $local;  # don't check if contains asterisks
 
     # run 
-    _log "URI=" . $self->uri . ", L=$local, R=$remote";
+    _log "URI=" . $self->_build_uri . ", L=$local, R=$remote";
     my $ret = $self->ssh->$method( \%p, $local, $remote ); 
 
     my $out = _slurp $p{stdout_file};

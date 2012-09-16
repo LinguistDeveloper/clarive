@@ -973,6 +973,14 @@ sub parse_vars_raw {
             $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
         }
         return \%ret;
+    } elsif( ref( $data ) =~ /Baseliner/ ) {
+        my $class = ref($data);
+        my %ret;
+        for my $k ( keys %$data ) {
+            my $v = $data->{$k};
+            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
+        }
+        return bless \%ret => $class;
     } elsif( ref $data eq 'ARRAY' ) {
         my @tmp;
         for my $i ( @$data ) {

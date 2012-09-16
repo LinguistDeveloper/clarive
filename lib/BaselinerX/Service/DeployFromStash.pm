@@ -69,7 +69,7 @@ sub deployments {
                 $log->debug( _loc( "*resetting* deployment scripts - they were unset" ) );
             };
             ref $deployment eq 'HASH' and $deployment = Baseliner::Core::Deployment->new( $deployment );
-            my $name = $deployment->destination->uri;
+            my $name = $deployment->destination->load->{name};
             $log->info( _loc( "Running deployment: %1", $name ), dump=>$deployment );
             $deployment->destination->throw_errors( 0 );  # I'll catch them myself
             my %vars;
@@ -78,13 +78,16 @@ sub deployments {
 
             # now deploy and run scripts
             $deployment->deploy_and_run( callback=>sub {
-                my ($ret, $f) = @_;
+                my ($type, $ret, $f) = @_;
                 if( $ret->rc ) {
                     $log->error( _loc("Deployment error for %1", $name ), data=>$ret->output, milestone => 1, data_name => 'Deployment_error_'.$name.'.txt' );
                     _throw _loc( "Error during deployment %1", $name );
-                } else {
+                } elsif( $type eq 'deploy') {
                     my $file_or_script = ref $f =~ /Path::Class/ ? $f->basename : "$f";
-                    $log->info( _loc("Deployment ok for *%1* - %2", $name, $file_or_script ), data=>$ret->output );
+                    $log->info( _loc("Deployment ok to *%1* of %2", $name, $file_or_script ), data=>$ret->output );
+                } elsif( $type eq 'run') {
+                    my $ci_name = $ret->load->{name};
+                    $log->info( _loc("Deployment script ok for *%1*", $ci_name, $f ), data=>$ret->output );
                 }
             });
 

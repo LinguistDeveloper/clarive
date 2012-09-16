@@ -34,7 +34,7 @@ has base => qw/is ro isa Str default/ => '';
 
 has vars => qw/is rw isa HashRef/, default=>sub{{}};
 
-has scripts     => qw/is ro isa ArrayRef[Str] required 0/, default=>sub { [] },
+has scripts     => qw/is ro isa CIs required 0/, default=>sub { [] },
     traits=>['Array'], handles=>{ each_script => 'map', has_scripts=>'count' };
 
 around BUILDARGS => sub {
@@ -82,10 +82,10 @@ sub deploy {
         $node->home( $remote );
         if( $f->is_dir ) {
             $node->put_dir( local=>$f, add_path=>$base_path );
-            ref $cb and $cb->( $node, $f );
+            ref $cb and $cb->( 'deploy', $node, $f );
         } else {
             $node->put_file( local=>$f, add_path=>$base_path );
-            ref $cb and $cb->( $node, $f );
+            ref $cb and $cb->( 'deploy', $node, $f );
         }
     });
 }
@@ -100,12 +100,10 @@ sub run {
     my $cb = $args{callback};
     my $node = $self->destination;
     $self->each_script( sub {
-       my $uri = $_;
-       # instanciate just in case
-       my $s = ref $uri ? $uri : Baseliner::CI->new( $uri );
+       my $ci = $_;
        # now run it
-       my $ret = $s->run;
-       ref $cb and $cb->( $s, $uri );
+       my $ret = $ci->run;
+       ref $cb and $cb->( 'run',$ci, $ci->{script} );
     });
 }
 
