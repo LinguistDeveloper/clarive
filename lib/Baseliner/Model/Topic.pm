@@ -69,10 +69,32 @@ register 'event.topic.modify' => {
 
 
 register 'event.topic.modify_field' => {
-    text => '%1 modified topic %2 from %3 to %4 on %5',
+    text => '%1 modified topic %2 from %3 to %4 on %6',
     description => 'User modified a topic',
-    vars => ['username', 'field', 'old_value', 'new_value', 'ts'],
+    vars => ['username', 'field', 'old_value', 'new_value', 'text_new', 'ts',],
+    filter=>sub{
+        my ($txt, @vars)=@_;
+        my $text_new = $vars[4];
+        if( $text_new ) {
+            $txt = $text_new;
+        }
+        return ($txt, @vars);
+    }      
 };
+
+#register 'event.topic.modify_field' => {
+#    text => '%1 modified topic %2 to %3 on %4',
+#    description => 'User modified a topic',
+#    vars => ['username', 'field', 'text_new', 'ts'],
+#    filter=>sub{
+#        my ($txt, @vars)=@_;
+#        my $text_new = $vars[2];
+#        if( $text_new ) {
+#            $txt = $text_new;
+#        }
+#        return ($txt, @vars);
+#    }    
+#};
 
 register 'event.topic.change_status' => {
     text => '%1 changed topic status to %2 on %3',
@@ -457,9 +479,26 @@ sub save_data {
                 });            
             }
             else{
+                if ($row->value != $data->{ $_ -> {name}}){
+                    
+                    event_new 'event.topic.modify_field' => { username   => $data->{username},
+                                                        field      => _loc ($_->{column}),
+                                                        old_value  => $row->value,
+                                                        new_value  => $data->{ $_ -> {name}},
+                                                       } => sub {
+                        { mid => $topic->mid, topic => $topic->title }   # to the event
+                    } ## end try
+                    => sub {
+                        _throw _loc( 'Error modifying Topic: %1', shift() );
+                    };
+                }                
                 $row->value ( $data->{ $_ -> {name}} );
                 $row->update;
-            }            
+            }
+            
+            
+            
+            
         }
     }    
     
@@ -487,13 +526,28 @@ sub set_priority {
 sub set_topics {
     my ($self, $rs_topic, $topics ) = @_;
     my @all_topics = ();
-                
+    
     # related topics
     if( my @topics = _array( $topics ) ) {
         @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
         $rs_topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+        
+        event_new 'event.topic.modify_field' => { username   => 'root',
+                                            field      => _loc('attached topics'),
+                                            old_value      => '',
+                                            new_value  => 'new',
+                                            text_new      => '%1 modified topic: %2 to %4 on %6',
+                                           } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+        } ## end try
+        => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };        
+        
     }else{
         $rs_topic->set_topics( undef, { rel_type=>'topic_topic'});
+
+
     }
 }
 
