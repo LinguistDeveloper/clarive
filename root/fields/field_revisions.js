@@ -57,6 +57,8 @@ params:
     };
 
     // Load data
+    if( ! params ) params = {};
+    if( ! params.topic_data ) params.topic_data = {};
 	var data = params.topic_data.revisions || [];
     Ext.each( data, function(row){
         var r = new revision_store.recordType( row, row.mid );
