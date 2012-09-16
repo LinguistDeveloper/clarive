@@ -958,3 +958,13 @@ Baseliner.read_pdf = function( url ) {
   win.show();
 };
 
+Baseliner.show_revision = function( mid ) {
+    Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
+        if( res.url ) {
+            if( res.url.type == 'iframe' ) {
+                Baseliner.add_iframe( res.url.url, _( res.title ), {} );
+            }
+        }
+    });
+};
+

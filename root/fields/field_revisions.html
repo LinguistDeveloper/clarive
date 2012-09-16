@@ -13,7 +13,7 @@
 % foreach my $revision ( _array( $data->{revisions} ) ) {
         <li style="margin: 6px 0px 6px 0px">
             <img style="margin: 5px" width=16 src="/static/images/icons/tag.gif" />
-            <% $revision->{name} %>
+            <a href="javascript:Baseliner.show_revision(<% $revision->{mid} %>)"><% $revision->{name} %></a>
         </li>
 % }
     </ul>

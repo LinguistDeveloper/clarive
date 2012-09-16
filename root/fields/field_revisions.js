@@ -67,15 +67,6 @@ params:
         refresh_field();
     });
     
-    Baseliner.show_revision = function( mid ) {
-        Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
-            if( res.url ) {
-                if( res.url.type == 'iframe' ) {
-                    Baseliner.add_iframe( res.url.url, _( res.title ), {} );
-                }
-            }
-        });
-    };
     Baseliner.delete_revision_row = function( id_grid, mid ) {
         var g = Ext.getCmp( id_grid );
         var s = revision_grid.getStore();
