@@ -801,7 +801,7 @@ Baseliner.model.CISelect = function(c) {
     );
     var tpl_field = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     Baseliner.model.CISelect.superclass.constructor.call(this, Ext.apply({
-        allowBlank: false,
+        allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
         addNewDataOnBlur: true, 
@@ -890,7 +890,7 @@ Baseliner.ci_box = function(c) {
         fieldLabel: _('CI'),
         name: 'ci',
         hiddenName: 'ci', 
-        allowBlank: false
+        allowBlank: true
     }, c )); 
     ci_box._setValue = ci_box.setValue; // save original
     ci_box.setValue = function(value) {

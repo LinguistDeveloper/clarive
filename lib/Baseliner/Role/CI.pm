@@ -3,9 +3,15 @@ use Moose::Role;
 
 use Moose::Util::TypeConstraints;
 
-subtype CI => as 'Baseliner::Role::CI';
+subtype CI    => as 'Baseliner::Role::CI';
+subtype CIs   => as 'ArrayRef[CI]';
+
 coerce 'CI' =>
-  from 'Num' => via { Baseliner::CI->new( $_ ) }; 
+  from 'Num' => via { Baseliner::CI->new( $_ ) }, 
+  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; Baseliner::CI->new( $first ) }; 
+
+coerce 'CIs' => 
+  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] }; 
 
 has mid => qw(is rw isa Num);
 
@@ -22,6 +28,7 @@ has job     => qw(is rw isa Baseliner::Role::JobRunner),
 # methods 
 sub has_bl { 1 } 
 sub icon_class { '/static/images/ci/class.gif' }
+sub rel_type { +{} }   # { field => rel_type, ... }
 
 sub collection {
     my $self = shift;
@@ -81,6 +88,20 @@ sub save_data {
     my ( $self, $master_row, $data ) = @_;
     return unless ref $data;
     my $storage = $self->storage;
+    # peek into if we need to store the relationship
+    my @master_rel;
+    my $meta = $self->meta;
+    for my $field ( keys %$data ) {
+        my $attr = $meta->get_attribute( $field );
+        next unless $attr;
+        my $type = $attr->type_constraint->name;
+        if( $type eq 'CI' || $type eq 'CIs') {
+            my $rel_type = $self->rel_type->{ $field };
+            push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>delete($data->{$field}) };
+            #_fail( "$field is $type - $rel_type" );
+        }
+    }
+    # now store the data
     if( $storage eq 'yaml' ) {
         _debug "------------>" . _dump( $data );
         $master_row->yaml( _dump( $data ) );
@@ -96,11 +117,21 @@ sub save_data {
         $data->{ $pk } //= $master_row->mid;
         $self->table_update_or_create( $rs, $master_row->mid, $data );
     }
+    # master_rel relationships, if any
+    for my $rel ( @master_rel ) {
+        # delete previous relationships
+        my $rs_rel = DB->BaliMasterRel->search({ from_mid=>$master_row->mid, rel_type=>$rel->{rel_type} });
+        $rs_rel->delete if $rs_rel;
+        for my $to_mid ( _array $rel->{value} ) {
+            DB->BaliMasterRel->create({ from_mid=>$master_row->mid, to_mid=>$to_mid, rel_type=>$rel->{rel_type} })
+        }
+    }
     return $master_row->mid;
 }
 
 sub table_update_or_create {
     my ($self, $rs, $mid, $data ) = @_;
+    _error( $data );
     # find or create
     if( my $row = $rs->find( $mid ) ) {
         return $self->table_update( $row, $data );
@@ -137,6 +168,17 @@ sub load {
         my $storage_row = $rs->find( $mid );
         my %tab_data = ref $storage_row ? $storage_row->get_columns : ();
         $data = { %$data, %tab_data };
+    }
+    # look for relationships
+    my $rel_types = $self->rel_type;
+    for my $field ( keys %$rel_types ) {
+        my $rel_type = $rel_types->{ $field };
+        $data->{ $field } = [
+            map { values %$_ }
+            DB->BaliMasterRel->search( { from_mid => $mid,
+                rel_type => $rel_type },
+                { select=>'to_mid'} )->hashref->all
+        ];
     }
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form;

@@ -238,7 +238,7 @@ sub tree_object_depend {
     #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my $cnt = $p{parent} * 10;
     my @tree = map {
-        my $class = "BaselinerX::CI::$p{collection}";
+        my $class = 'BaselinerX::CI::' . $_->{$rel_type}{collection};
         my $data = _load( $_->{yaml} );
         my $bl = [ split /,/, $_->{bl} ];
         +{
@@ -246,7 +246,7 @@ sub tree_object_depend {
             _parent    => $p{parent} || undef,
             _is_leaf   => \0,
             mid        => $_->{$rel_type}{mid},
-            item       => ( $_->{name} // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
+            item       => ( $_->{$rel_type}{name} // $data->{name} // $_->{$rel_type}{collection}  ).':'.$_->{$rel_type}{mid}, # // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
             type       => 'object',
             class      => $class,
             bl         => $bl,
@@ -258,6 +258,7 @@ sub tree_object_depend {
             versionid    => $_->{versionid},
             }
     } $rs->hashref->all;
+    _error \@tree;
     ( $total, @tree );
 }
 
@@ -484,6 +485,7 @@ sub load : Local {
     try {
         my $obj = Baseliner::CI->new( $mid );
         my $rec = $obj->load;
+        $rec->{icon} = $obj->icon;
         $rec->{active} = $rec->{active} ? \1 : \0;
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
     } catch {
