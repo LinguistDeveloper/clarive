@@ -4016,7 +4016,11 @@ msgstr "%1 borró release %3"
 msgid "%1 modified topic: changed release to %4"
 msgstr "%1 modificó tópico: release cambió a %4"
 
+msgid "%1 deleted all revisions"
+msgstr "%1 borró todas las revisiones"
 
+msgid "attached revisions"
+msgstr "tópicos revisiones"
 
 
 

@@ -1102,6 +1102,14 @@
 				//config.push({"text": _(row.data.name) , "leaf": true,  "id": row.data.id, "config": row.data.name });	
 			//}
 		});
+		
+		field_box.on('removeitem',function( obj, value, row){
+			var obj_store = obj.getStore();
+			var index = obj_store.indexOf(row);
+			fields.splice(index,1);
+		});		
+		
+		
 
         //////// --------------- Forms 
         //////var form_category_store = new Baseliner.JsonStore({
@@ -1485,6 +1493,7 @@
 									params: {values: fields},
                                     success: function(f,a){
                                         Baseliner.message(_('Success'), a.result.msg );
+										store_category.load();
                                     },
                                     failure: function(f,a){
                                         Ext.Msg.show({  
