@@ -455,7 +455,7 @@ sub save_data {
     
     foreach my $key  (keys %rel_fields){
         if($rel_fields{$key}){
-            eval( '$self->' . $rel_fields{$key} . '( $topic, $data->{$key} )' );    
+            eval( '$self->' . $rel_fields{$key} . '( $topic, $data->{$key}, $data->{username} )' );    
         }
     } 
     
@@ -524,31 +524,55 @@ sub set_priority {
 }
 
 sub set_topics {
-    my ($self, $rs_topic, $topics ) = @_;
+    my ($self, $rs_topic, $topics, $user ) = @_;
     my @all_topics = ();
     
     # related topics
-    if( my @topics = _array( $topics ) ) {
-        @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@topics});
-        $rs_topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
-        
-        event_new 'event.topic.modify_field' => { username   => 'root',
-                                            field      => _loc('attached topics'),
-                                            old_value      => '',
-                                            new_value  => 'new',
-                                            text_new      => '%1 modified topic: %2 to %4 on %6',
-                                           } => sub {
-            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-        } ## end try
-        => sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
-        };        
-        
-    }else{
-        $rs_topic->set_topics( undef, { rel_type=>'topic_topic'});
-
-
+    my @new_topics = _array( $topics ) ;
+    my @old_topics = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic'})->hashref->all;    
+    
+    use Array::Utils qw(:all);
+    # check if arrays contain same members
+    if ( array_diff(@new_topics, @old_topics) ) {
+        if( @new_topics ) {
+            @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@new_topics});
+            $rs_topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+            
+            
+            
+            my $topics = join(',', map {$_->mid} @all_topics);
+    
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => _loc( 'attached topics' ),
+                                                old_value      => '',
+                                                new_value  => $topics,
+                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };        
+            
+        }else{
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => '',
+                                                old_value      => '',
+                                                new_value  => '',
+                                                text_new      => '%1 deleted all attached topics',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };             
+            $rs_topic->set_topics( undef, { rel_type=>'topic_topic'});
+        }
     }
+    
+
+    
+    
 }
 
 sub set_revisions {

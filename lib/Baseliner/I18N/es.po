@@ -4001,5 +4001,16 @@ msgstr "%1 modificó el campo %2  de %3 a %4 el %6"
 msgid "%1 modified topic on %2"
 msgstr "%1 modificó el tópico el %2"
 
+msgid "%1 deleted all attached topics"
+msgstr "%1 borró todos los tópicos adjuntos"
+
+msgid "%1 modified topic: %2 ( %4 ) on %6"
+msgstr "%1 modificó el tópico: %2 ( %4 ) el %6"
+
+msgid "attached topics"
+msgstr "tópicos adjuntos"
+
+
+
 
 
