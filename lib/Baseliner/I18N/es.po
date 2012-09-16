@@ -3996,7 +3996,10 @@ msgid "Field"
 msgstr "Campo"
 
 msgid "%1 modified topic %2 from %3 to %4 on %5"
-msgstr "%1 modificó el campo %2  de %3 a %4 on %5"
+msgstr "%1 modificó el campo %2  de %3 a %4 el %5"
+
+msgid "%1 modified topic on %2"
+msgstr "%1 modificó el tópico el %2"
 
 
 

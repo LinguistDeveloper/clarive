@@ -62,6 +62,13 @@ register 'event.topic.create' => {
 };
 
 register 'event.topic.modify' => {
+    text => '%1 modified topic on %2',
+    description => 'User modified a topic',
+    vars => ['username', 'ts'],
+};
+
+
+register 'event.topic.modify_field' => {
     text => '%1 modified topic %2 from %3 to %4 on %5',
     description => 'User modified a topic',
     vars => ['username', 'field', 'old_value', 'new_value', 'ts'],
@@ -407,7 +414,7 @@ sub save_data {
             $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
             if ($row{$field} != eval($old_value{$field})){
                 
-                event_new 'event.topic.modify' => { username   => $data->{username},
+                event_new 'event.topic.modify_field' => { username   => $data->{username},
                                                     field      => _loc ($description{ $field }),
                                                     old_value  => $old_text{$field},
                                                     new_value  => $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
