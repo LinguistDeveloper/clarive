@@ -13,6 +13,7 @@ params:
 */
 (function(params){
 	var data = params.topic_data;
+	var meta = params.topic_meta;
 	
     function get_expr_response_time(row){
         var str_expr = '';
@@ -95,6 +96,7 @@ params:
         displayField: 'name',
         valueField: 'id',
         store: store_category_priority,
+		readOnly: meta ? meta.readonly: false,
         //hidden: rec.fields_form.show_priority ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){

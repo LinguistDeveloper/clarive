@@ -23,7 +23,8 @@ params:
 			style: { 'font-size': '16px' },
 			width: '100%',
 			height: 30,
-			allowBlank: false
+			allowBlank: false,
+			readOnly: meta ? meta.readonly: false
 		}
     ]
 })

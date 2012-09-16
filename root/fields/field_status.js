@@ -11,6 +11,7 @@ params:
 ---
 */
 (function(params){
+	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
     var store_category_status = new Baseliner.Topic.StoreCategoryStatus({
@@ -29,6 +30,7 @@ params:
         hiddenName: 'status_new',
         displayField: 'name',
         valueField: 'id',
+		readOnly: meta ? meta.readonly: false,
         //hidden: rec.fields_form.show_status ? false : true,
         store: store_category_status
     });

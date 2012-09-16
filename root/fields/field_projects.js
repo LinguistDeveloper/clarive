@@ -26,7 +26,8 @@ params:
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id' });
 	
     var project_box = new Baseliner.model.Projects({
-        store: project_box_store
+        store: project_box_store,
+		readOnly: true
     });
 	
     project_box_store.on('load',function(){
