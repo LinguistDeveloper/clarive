@@ -4020,7 +4020,17 @@ msgid "%1 deleted all revisions"
 msgstr "%1 borró todas las revisiones"
 
 msgid "attached revisions"
-msgstr "tópicos revisiones"
+msgstr "revisiones adjuntos"
+
+msgid "%1 deleted all projects"
+msgstr "%1 borró todos los proyectos"
+
+msgid "attached projects"
+msgstr "proyectos adjuntos"
+
+msgid "attached users"
+msgstr "usuarios adjuntos"
+
 
 
 
