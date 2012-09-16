@@ -22,6 +22,14 @@ register 'menu.tools.topic' => {
 
 register 'action.topics.admin' => { name=>'Admin topics' };
 
+register 'action.topicsfield.write.title.cambio.nuevo' => {
+    name => 'Write title ',
+};
+
+register 'action.topicsfield.read.title.cambio.nuevo' => {
+    name => 'Read title ',
+};
+
 # XXX
 map {
     register "action.topics.view." . lc($_) => { name=>"Ver $_" };

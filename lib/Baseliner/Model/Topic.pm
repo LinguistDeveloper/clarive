@@ -98,8 +98,8 @@ register 'event.topic.modify_field' => {
 #};
 
 register 'event.topic.change_status' => {
-    text => '%1 changed topic status to %2 on %3',
-    vars => ['username', 'status', 'ts'],
+    text => '%1 changed topic status from %2 to %3 on %4',
+    vars => ['username', 'old_status', 'status', 'ts'],
 };
 
 sub update {
@@ -434,19 +434,29 @@ sub save_data {
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
             next if $field eq 'deadline_min' || $field eq 'expr_deadline';
             
+            
             $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
             if ($row{$field} != eval($old_value{$field})){
                 
-                event_new 'event.topic.modify_field' => { username   => $data->{username},
-                                                    field      => _loc ($description{ $field }),
-                                                    old_value  => $old_text{$field},
-                                                    new_value  => $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
-                                                   } => sub {
-                    { mid => $topic->mid, topic => $topic->title }   # to the event
-                } ## end try
-                => sub {
-                    _throw _loc( 'Error modifying Topic: %1', shift() );
-                };
+                if($field eq 'id_category_status'){
+                    event_new 'event.topic.change_status' => { username => 'root', old_status => $old_text{$field}, status => $row{$field}  } => sub {
+                        { mid => $topic->mid, topic => $topic->title } 
+                    } 
+                    => sub {
+                        _throw _loc( 'Error modifying Topic: %1', shift() );
+                    };                    
+                }else {
+                    event_new 'event.topic.modify_field' => { username   => $data->{username},
+                                                        field      => _loc ($description{ $field }),
+                                                        old_value  => $old_text{$field},
+                                                        new_value  => $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
+                                                       } => sub {
+                        { mid => $topic->mid, topic => $topic->title }   # to the event
+                    } ## end try
+                    => sub {
+                        _throw _loc( 'Error modifying Topic: %1', shift() );
+                    };
+                }
             }
         }        
     }
@@ -670,36 +680,105 @@ sub set_release {
 }
 
 sub set_projects {
-    my ($self, $rs_topic, $projects ) = @_;
+    my ($self, $rs_topic, $projects, $user ) = @_;
     my $topic_mid = $rs_topic->mid;
+    
+    my @new_projects = _array( $projects ) ;
+    my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
     
     my $del_projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
     
-    # projects
-    my @projects = _array( $projects );
-    if (@projects){
-        my $project;
-        my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@projects});
-        while($project = $rs_projects->next){
-            $rs_topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+    # check if arrays contain same members
+    if ( array_diff(@new_projects, @old_projects) ) {
+        # projects
+        if (@new_projects){
+            my @name_projects;
+            my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@new_projects});
+            while( my $project = $rs_projects->next){
+                push @name_projects,  $project->name;
+                $rs_topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+            }
+            
+            my $projects = join(',', @name_projects);
+    
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => _loc( 'attached projects' ),
+                                                old_value      => '',
+                                                new_value  => $projects,
+                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };            
         }
-    }    
+        else{
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => '',
+                                                old_value      => '',
+                                                new_value  => '',
+                                                text_new      => '%1 deleted all projects',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };              
+        }
+    }
 }
 
 sub set_users{
-    my ($self, $rs_topic, $users ) = @_;
+    my ($self, $rs_topic, $users, $user ) = @_;
     my $topic_mid = $rs_topic->mid;
     
+    my @new_users = _array( $users ) ;
+    my @old_users = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->hashref->all;
+
     my $del_users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
     
-    # users
-    my @users = _array( $users );
-    if (@users){
-        my $user;
-        my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({mid =>\@users});
-        while($user = $rs_users->next){
-            $rs_topic->add_to_users( $user, { rel_type=>'topic_users' });
-        }                    
+
+    # check if arrays contain same members
+    if ( array_diff(@new_users, @old_users) ) {
+        # users
+        if (@new_users){
+            my @name_users;
+            my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({mid =>\@new_users});
+            while(my $user = $rs_users->next){
+                push @name_users,  $user->username;
+                $rs_topic->add_to_users( $user, { rel_type=>'topic_users' });
+            }
+
+            my $users = join(',', @name_users);
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => _loc( 'attached users' ),
+                                                old_value      => '',
+                                                new_value  => $users,
+                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };            
+            
+            
+            
+            
+        }else{
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => '',
+                                                old_value      => '',
+                                                new_value  => '',
+                                                text_new      => '%1 deleted all users',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };              
+        }
     }
 }
 

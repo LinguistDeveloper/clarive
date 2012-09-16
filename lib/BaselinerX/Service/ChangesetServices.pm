@@ -304,13 +304,16 @@ sub update_baselines {
             push @changesets, $mid;
         }
     } ## end for my $item ( _array $stash...)
-    my $rs_changesets = $c->model( 'Baseliner::BaliTopic' )->search( {mid => \@changesets} );
+    my $rs_changesets = DB->search( {mid => \@changesets}, { prefetch => 'status'} );
 
     while ( my $row = $rs_changesets->next ) {
-        $row->id_category_status( $status );
-        $row->update;
-        my $status_name = $c->model( 'Baseliner::BaliTopicStatus' )->find( $status )->name;
-        $log->info( _loc( "%1 %2 to %3", $job_type, $row->title, $status_name ) );
+        event_new 'event.topic.change_status' => { username => $job->row->username, status => $status, old_status => $row->status->name } => sub {
+            $row->id_category_status( $status );
+            $row->update;
+            my $status_name = $c->model( 'Baseliner::BaliTopicStatus' )->find( $status )->name;
+            $log->info( _loc( "%1 %2 to %3", $job_type, $row->title, $status_name ) );
+            return { mid => $row->mid, topic => $row->title };
+        }         
     } ## end while ( my $row = $rs_changesets...)
 
     # Git Update Baselines
