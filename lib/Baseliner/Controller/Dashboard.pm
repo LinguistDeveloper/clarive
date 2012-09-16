@@ -765,7 +765,6 @@ sub list_jobs : Private {
 
     if ( @ids_project ) {
 
-        _error "ESTO ES UN PUTADA";
         my $ids_project = 'MID=' . join( ' OR MID=', @ids_project );
 
         #CONFIGURATION DASHLET
