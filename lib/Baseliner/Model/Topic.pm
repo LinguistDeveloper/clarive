@@ -720,19 +720,55 @@ sub set_projects {
 }
 
 sub set_users{
-    my ($self, $rs_topic, $users ) = @_;
+    my ($self, $rs_topic, $users, $user ) = @_;
     my $topic_mid = $rs_topic->mid;
     
+    my @new_users = _array( $users ) ;
+    my @old_users = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->hashref->all;
+
     my $del_users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
     
-    # users
-    my @users = _array( $users );
-    if (@users){
-        my $user;
-        my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({mid =>\@users});
-        while($user = $rs_users->next){
-            $rs_topic->add_to_users( $user, { rel_type=>'topic_users' });
-        }                    
+
+    # check if arrays contain same members
+    if ( array_diff(@new_users, @old_users) ) {
+        # users
+        if (@new_users){
+            my @name_users;
+            my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({mid =>\@new_users});
+            while(my $user = $rs_users->next){
+                push @name_users,  $user->username;
+                $rs_topic->add_to_users( $user, { rel_type=>'topic_users' });
+            }
+
+            my $users = join(',', @name_users);
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => _loc( 'attached users' ),
+                                                old_value      => '',
+                                                new_value  => $users,
+                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };            
+            
+            
+            
+            
+        }else{
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => '',
+                                                old_value      => '',
+                                                new_value  => '',
+                                                text_new      => '%1 deleted all users',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };              
+        }
     }
 }
 

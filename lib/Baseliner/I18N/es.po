@@ -4028,6 +4028,9 @@ msgstr "%1 borró todos los proyectos"
 msgid "attached projects"
 msgstr "proyectos adjuntos"
 
+msgid "attached users"
+msgstr "usuarios adjuntos"
+
 
 
 
