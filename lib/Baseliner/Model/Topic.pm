@@ -576,14 +576,46 @@ sub set_topics {
 sub set_revisions {
     my ($self, $rs_topic, $revisions, $user ) = @_;
     
-    if( my @revs = _array( $revisions ) ) {
-        @revs = split /,/, $revs[0] if $revs[0] =~ /,/ ;
-        my @rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@revs});
-        $rs_topic->set_revisions( \@rs_revs, { rel_type=>'topic_revision'});
-    } else {
-        $rs_topic->set_revisions( undef, { rel_type=>'topic_revision'});
-        #$rs_topic->revisions->delete;
-    }    
+    # related topics
+    my @new_revisions = _array( $revisions ) ;
+    my @old_revisions = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision'})->hashref->all;    
+   
+    if ( array_diff(@new_revisions, @old_revisions) ) {
+        if( @new_revisions ) {
+            @new_revisions  = split /,/, $new_revisions[0] if $new_revisions[0] =~ /,/ ;
+            my @rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@new_revisions});
+            $rs_topic->set_revisions( \@rs_revs, { rel_type=>'topic_revision'});
+            
+            my $revisions = join(',', map { Baseliner::CI->new($_->mid)->load->{name}} @rs_revs);
+    
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => _loc( 'attached revisions' ),
+                                                old_value      => '',
+                                                new_value  => $revisions,
+                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };             
+            
+        } else {
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => '',
+                                                old_value      => '',
+                                                new_value  => '',
+                                                text_new      => '%1 deleted all revisions',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };
+            $rs_topic->set_revisions( undef, { rel_type=>'topic_revision'});
+            #$rs_topic->revisions->delete;
+        }
+    }
 }
 
 sub set_release {
