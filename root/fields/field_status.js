@@ -6,7 +6,8 @@ params:
     html: '/fields/field_status.html'
     js: '/fields/field_status.js'
     field_order: 3
-    section: 'body' 
+    section: 'body'
+    relation: 'status'
 ---
 */
 (function(params){

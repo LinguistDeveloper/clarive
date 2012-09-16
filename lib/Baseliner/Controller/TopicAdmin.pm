@@ -519,7 +519,7 @@ sub list_fields : Local {
         }
     }
     my @id_fields = map { $_->{metadata}->{name} } @fieldlets;
-    my @custom_fields = $c->model('BaliTopicFieldsCategory')->search({id_field => { 'not in' => \@id_fields}})->hashref->all;
+    my @custom_fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => { 'not in' => \@id_fields}})->hashref->all;
     for(@custom_fields){
     	my $params = _load  $_->{params_field};
         $params->{name_field} = $_->{id_field};

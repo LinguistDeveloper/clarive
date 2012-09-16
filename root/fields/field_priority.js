@@ -7,11 +7,12 @@ params:
     js: '/fields/field_priority.js'
     set_method: 'set_priority'
     field_order: 4
-    section: 'body' 
+    section: 'body'
+    relation: priorities
 ---
 */
 (function(params){
-	//var data = params.topic_data;
+	var data = params.topic_data;
 	
     function get_expr_response_time(row){
         var str_expr = '';
@@ -83,7 +84,7 @@ params:
 	
 	
     var combo_priority = new Ext.form.ComboBox({
-        //value: data ? data.name_priority : '',
+        value: data ? data.name_priority : '',
         mode: 'local',
         forceSelection: true,
         emptyText: 'select a priority',
@@ -97,7 +98,7 @@ params:
         //hidden: rec.fields_form.show_priority ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){
-                //load_txt_values_priority(rec);
+                load_txt_values_priority(rec);
             }
         }           
     });

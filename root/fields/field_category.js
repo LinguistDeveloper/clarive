@@ -6,7 +6,8 @@ params:
     html: '/fields/field_category.html'
     js: '/fields/field_category.js'
     field_order: 1
-    section: 'body'    
+    section: 'body'
+    relation: 'categories'
 ---
 */
 (function(params){

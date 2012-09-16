@@ -62,9 +62,9 @@ register 'event.topic.create' => {
 };
 
 register 'event.topic.modify' => {
-    text => '%1 modified topic on %3',
+    text => '%1 modified topic %2 from %3 to %4 on %5',
     description => 'User modified a topic',
-    vars => ['username', 'field', 'ts'],
+    vars => ['username', 'field', 'old_value', 'new_value', 'ts'],
 };
 
 register 'event.topic.change_status' => {
@@ -82,42 +82,46 @@ sub update {
     given ( $action ) {
         when ( 'add' ) {
             event_new 'event.topic.create' => { username=>$p->{username} } => sub {
-                my $meta = $self->get_meta ($topic_mid , $p->{category});
-                my $topic = $self->save_data ($meta, undef, $p);
-                
-                $topic_mid    = $topic->mid;
-                $status = $topic->id_category_status;
-                $return = 'Topic added';
-               { mid => $topic->mid, topic => $topic->title }   # to the event
+                Baseliner->model('Baseliner')->txn_do(sub{
+                    my $meta = $self->get_meta ($topic_mid , $p->{category});
+                    my $topic = $self->save_data ($meta, undef, $p);
+                    
+                    $topic_mid    = $topic->mid;
+                    $status = $topic->id_category_status;
+                    $return = 'Topic added';
+                   { mid => $topic->mid, topic => $topic->title }   # to the event
+                });                   
             } 
             => sub { # catch
                 _throw _loc( 'Error adding Topic: %1', shift() );
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
-            event_new 'event.topic.modify' => { username=>$p->{username} } => sub {
-                my @field;
-                $topic_mid = $p->{topic_mid};
-                
-                my $meta = $self->get_meta ($topic_mid, $p->{category});
-                my $topic = $self->save_data ($meta, $topic_mid, $p);
-                
-                $topic_mid    = $topic->mid;
-                $status = $topic->id_category_status;
-
-                #_log ">>>>>>>>>>>>>>Datos modificados con dirty en el topico: " . _dump $topic->get_dirty_columns;                
-                #_log ">>>>>>>>>>>>>>Datos modificados en el topico: " . _dump @field;
-
-              
-                # event_new 'event.topic.modify' => {
-                #     username => $p->{username},
-                #     mid      => $topic_mid,
-                #     field  => @field ? 'topic' : '',
+            event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
+                Baseliner->model('Baseliner')->txn_do(sub{
+                    my @field;
+                    $topic_mid = $p->{topic_mid};
                     
-                # };                   
-                
-                $return = 'Topic modified';
-               { mid => $topic->mid, topic => $topic->title }   # to the event
+                    my $meta = $self->get_meta ($topic_mid, $p->{category});
+                    my $topic = $self->save_data ($meta, $topic_mid, $p);
+                    
+                    $topic_mid    = $topic->mid;
+                    $status = $topic->id_category_status;
+    
+                    #_log ">>>>>>>>>>>>>>Datos modificados con dirty en el topico: " . _dump $topic->get_dirty_columns;                
+                    #_log ">>>>>>>>>>>>>>Datos modificados en el topico: " . _dump @field;
+    
+                  
+                    # event_new 'event.topic.modify' => {
+                    #     username => $p->{username},
+                    #     mid      => $topic_mid,
+                    #     field  => @field ? 'topic' : '',
+                        
+                    # };                   
+                    
+                    $return = 'Topic modified';
+                   { mid => $topic->mid, topic => $topic->title }   # to the event
+                });
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -352,12 +356,19 @@ sub save_data {
     my ($self, $meta, $topic_mid, $data ) = @_;
    
     # $data = { title=>'xxx' , id_category=>66, docs=>"1,2,3" }
-    my @std_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, method => $_->{set_method}} } grep { $_->{origin} eq 'system' } _array( $meta  );
+    my @std_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, method => $_->{set_method}, relation => $_->{relation} }} grep { $_->{origin} eq 'system' } _array( $meta  );
     
     my %row;
+    my %description;
+    my %old_value;
+    my %old_text;
+    my %relation;
+    
     for( @std_fields ) {
         if  (exists $data->{ $_ -> {name}}){
             $row{ $_->{column} } = $data->{ $_ -> {name}};
+            $description{ $_->{column} } = $_ -> {name}; ##Contemplar otro parametro mas descriptivo
+            $relation{ $_->{column} } = $_ -> {relation};
             if ($_->{method}){
                 my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data )' );
                 foreach my $column (keys $extra_fields ){
@@ -379,8 +390,35 @@ sub save_data {
         }        
         
     }else{
-        $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
+        #$topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
+        $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
+        
+        for my $field (keys %row){
+            $old_value{$field} = eval($topic->$field),
+            $old_text{$field} = $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
+        }
+        
         $topic->update( \%row );
+        
+        for my $field (keys %row){
+            next if $field eq 'response_time_min' || $field eq 'expr_response_time';
+            next if $field eq 'deadline_min' || $field eq 'expr_deadline';
+            
+            $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
+            if ($row{$field} != eval($old_value{$field})){
+                
+                event_new 'event.topic.modify' => { username   => $data->{username},
+                                                    field      => _loc ($description{ $field }),
+                                                    old_value  => $old_text{$field},
+                                                    new_value  => $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
+                                                   } => sub {
+                    { mid => $topic->mid, topic => $topic->title }   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };
+            }
+        }        
     }
 
      
@@ -392,7 +430,11 @@ sub save_data {
         }
     } 
     
-    $topic->update( \%row );
+    
+     
+    #$topic->update( \%row );
+    
+                 
     
     my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}} } grep { $_->{origin} eq 'custom' } _array( $meta  );
     
