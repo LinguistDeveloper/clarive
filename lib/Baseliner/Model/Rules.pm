@@ -169,7 +169,7 @@ sub dsl_build {
 
     my $dsl = join "\n", @dsl;
     my $tidied = '';
-    Perl::Tidy::perltidy( argv => '-npro', source => \$dsl, destination => \$tidied );
+    Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
     return $tidied;
 }
 
