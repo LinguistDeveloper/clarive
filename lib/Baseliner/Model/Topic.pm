@@ -5,6 +5,7 @@ use Baseliner::Sugar;
 use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
+use Array::Utils qw(:all);
 use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
@@ -531,7 +532,7 @@ sub set_topics {
     my @new_topics = _array( $topics ) ;
     my @old_topics = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic'})->hashref->all;    
     
-    use Array::Utils qw(:all);
+
     # check if arrays contain same members
     if ( array_diff(@new_topics, @old_topics) ) {
         if( @new_topics ) {
@@ -570,13 +571,10 @@ sub set_topics {
         }
     }
     
-
-    
-    
 }
 
 sub set_revisions {
-    my ($self, $rs_topic, $revisions ) = @_;
+    my ($self, $rs_topic, $revisions, $user ) = @_;
     
     if( my @revs = _array( $revisions ) ) {
         @revs = split /,/, $revs[0] if $revs[0] =~ /,/ ;
@@ -589,21 +587,53 @@ sub set_revisions {
 }
 
 sub set_release {
-    my ($self, $rs_topic, $release ) = @_;
+    my ($self, $rs_topic, $release, $user ) = @_;
     my $topic_mid = $rs_topic->mid;
-    
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
                             { join=>['categories','children','master'], select=>'mid' }
-                            )->as_query;
-                            
-    my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row}})->delete;
+                            )->first;
+    my @old_release =();
+    if($release_row){
+        @old_release = $release_row->mid;
+        my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}})->delete;
+    }
         
-    # release
-    if( my @releases = _array( $release ) ) {
-        my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $releases[0] );
-        my @topics = Baseliner->model('Baseliner::BaliTopic')->search( {mid => $topic_mid} );
-        $row_release->set_topics( \@topics, { rel_type=>'topic_topic'});
+    my @new_release = _array( $release ) ;
+
+    # check if arrays contain same members
+    if ( array_diff(@new_release, @old_release) ) {
+        # release
+        if( @new_release ) {
+            my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release[0] );
+            my @topics = Baseliner->model('Baseliner::BaliTopic')->search( {mid => $topic_mid} );
+            $row_release->set_topics( \@topics, { rel_type=>'topic_topic'});
+            
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => '',
+                                                old_value      => '',
+                                                new_value  => $row_release->title,
+                                                text_new      => '%1 modified topic: changed release to %4',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };
+            
+        }else{
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => '',
+                                                old_value      => $release_row->title,
+                                                new_value  => '',
+                                                text_new      => '%1 deleted release %3',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };  
+        }
     }
 }
 
