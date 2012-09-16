@@ -62,7 +62,6 @@ params:
 	var data = params.topic_data.revisions || [];
     Ext.each( data, function(row){
         var r = new revision_store.recordType( row, row.mid );
-        console.log( r );
         revision_store.add( r );
         revision_store.commitChanges();
         refresh_field();
@@ -71,8 +70,9 @@ params:
     Baseliner.show_revision = function( mid ) {
         Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
             if( res.url ) {
-                alert( res.url );
-                Baseliner.add_tab( res.url, _(res.title), {} );
+                if( res.url.type == 'iframe' ) {
+                    Baseliner.add_iframe( res.url.url, _( res.title ), {} );
+                }
             }
         });
     };
