@@ -439,7 +439,8 @@ sub save_data {
             if ($row{$field} != eval($old_value{$field})){
                 
                 if($field eq 'id_category_status'){
-                    event_new 'event.topic.change_status' => { username => 'root', old_status => $old_text{$field}, status => $row{$field}  } => sub {
+                    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" . $old_text{$field};
+                    event_new 'event.topic.change_status' => { username => 'root', old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name')  } => sub {
                         { mid => $topic->mid, topic => $topic->title } 
                     } 
                     => sub {
