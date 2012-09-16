@@ -434,19 +434,29 @@ sub save_data {
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
             next if $field eq 'deadline_min' || $field eq 'expr_deadline';
             
+            
             $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
             if ($row{$field} != eval($old_value{$field})){
                 
-                event_new 'event.topic.modify_field' => { username   => $data->{username},
-                                                    field      => _loc ($description{ $field }),
-                                                    old_value  => $old_text{$field},
-                                                    new_value  => $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
-                                                   } => sub {
-                    { mid => $topic->mid, topic => $topic->title }   # to the event
-                } ## end try
-                => sub {
-                    _throw _loc( 'Error modifying Topic: %1', shift() );
-                };
+                if($field eq 'id_category_status'){
+                    event_new 'event.topic.change_status' => { username => 'root', status => $row{$field}  } => sub {
+                        { mid => $topic->mid, topic => $topic->title } 
+                    } 
+                    => sub {
+                        _throw _loc( 'Error modifying Topic: %1', shift() );
+                    };                    
+                }else {
+                    event_new 'event.topic.modify_field' => { username   => $data->{username},
+                                                        field      => _loc ($description{ $field }),
+                                                        old_value  => $old_text{$field},
+                                                        new_value  => $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
+                                                       } => sub {
+                        { mid => $topic->mid, topic => $topic->title }   # to the event
+                    } ## end try
+                    => sub {
+                        _throw _loc( 'Error modifying Topic: %1', shift() );
+                    };
+                }
             }
         }        
     }
