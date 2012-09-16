@@ -32,6 +32,7 @@ features/sonar
 features/checking
 features/svnscm
 features/cvsscm
+features/jazztel
 inc
 t/balitest.db
 t/old
