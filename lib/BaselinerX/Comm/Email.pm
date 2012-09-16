@@ -19,6 +19,7 @@ register 'config.comm.email' => {
         { id=>'domain', name=>'Email domain', default=>'exchange.local' },
         { id=>'max_attempts', name=>'Max attempts', default=>10 },
         { id=>'baseliner_url', name=>'Base URL to access baseliner', default=>'http://localhost:3000' },
+        { id=>'default_template', name=>'Default template for emails', default=>'' },
     ]
 };
 
