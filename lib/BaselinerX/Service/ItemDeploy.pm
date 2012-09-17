@@ -191,9 +191,11 @@ sub select_mappings {
                         $ret = parse_vars( $script, $vars_origin );
                         try {
                             my @vars = DB->BaliMaster->search({ collection=>'variable' })->hashref->all;
-                            my %vh = map { $_->{variable} => $_->{value} } 
-                               map { _load($_->{yaml}) if $_->{yaml} } @vars;
-                            $ret = parse_vars( $ret, \%vh );
+                            if( @vars ) {
+                                my %vh = map { $_->{variable} => $_->{value} } 
+                                   map { _load($_->{yaml}) if $_->{yaml} } @vars;
+                                $ret = parse_vars( $ret, \%vh );
+                            }
                         } catch {};
                     } else {
                         $ret = $script;
