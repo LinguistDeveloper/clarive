@@ -518,6 +518,7 @@ sub job_submit : Path('/job/submit') {
             } else {
                 event_new 'event.job.cancel'  => { c=>$c, self=>$self, job=>$job } => sub {
                     $job->status( 'CANCELLED' );
+                    $job->update;
                     # cancel pending requests
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
 
