@@ -12,6 +12,7 @@ params:
 */
 (function(params){
 	var data = params.topic_data;
+	var meta = params.topic_meta;
 	
 	var store_category = new Baseliner.Topic.StoreCategory({
 		fields: ['category', 'category_name' ]  
@@ -31,6 +32,7 @@ params:
         displayField: 'category_name',
         store: store_category,
         allowBlank: false,
+		readOnly: meta ? meta.readonly: false,
         //hidden: rec.fields_form.show_category  ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){

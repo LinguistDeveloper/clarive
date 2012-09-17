@@ -30,6 +30,22 @@ register 'action.topicsfield.read.title.cambio.nuevo' => {
     name => 'Read title ',
 };
 
+register 'action.topicsfield.write.category.cambio.nuevo' => {
+    name => 'Write category ',
+};
+
+register 'action.topicsfield.read.category.cambio.nuevo' => {
+    name => 'Read category ',
+};
+
+register 'action.topicsfield.write.status_new.cambio.nuevo' => {
+    name => 'Write status ',
+};
+
+register 'action.topicsfield.read.status_new.cambio.nuevo' => {
+    name => 'Read status ',
+};
+
 # XXX
 map {
     register "action.topics.view." . lc($_) => { name=>"Ver $_" };
@@ -338,11 +354,45 @@ sub json : Local {
     my $ret = {};
     
     my $meta = Baseliner::Model::Topic->get_meta( $topic_mid );
+    my $data = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
+
+    $meta = get_meta_permissions ($c, $meta, $data);
+    
+    
     $ret->{topic_meta} = $meta;
-    $ret->{topic_data} = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
+    #$ret->{topic_data} = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
+    $ret->{topic_data} = $data;
     $c->stash->{json} = $ret;
     
     $c->forward('View::JSON');
+}
+
+sub get_meta_permissions : Local {
+    my ($c, $meta, $data) = @_;
+    my @write_field;
+    my @read_field;
+    
+    
+    for (_array $meta){
+        
+    	my $write_action = 'action.topicsfield.write.' . $_->{name_field} . '.' . lc $data->{name_category} . '.' . lc $data->{name_status};
+        
+        if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+        	push @write_field, $_->{name_field};
+        }
+        
+		my $read_action = 'action.topicsfield.read.' . $_->{name_field} . '.' . lc $data->{name_category} . '.' . lc $data->{name_status};
+        if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
+        	push @read_field, $_->{name_field};
+            $_->{readonly} = \1;
+        }        
+    }
+    
+    my %write_field = map { $_ => 1} @write_field;
+    
+    $meta = [grep { $write_field{ $_->{name_field} } } _array $meta];
+    
+    return $meta
 }
 
 sub new_topic : Local {
@@ -353,6 +403,8 @@ sub new_topic : Local {
     my $name_category = $p->{new_category_name};
     my $meta = Baseliner::Model::Topic->get_meta( undef, $id_category );
     my $data = Baseliner::Model::Topic->get_data( $meta, undef );
+    
+    $meta = get_meta_permissions ($c, $meta, $data);    
     
     my $ret = {
         new_category_id     => $id_category,
@@ -394,9 +446,11 @@ sub view : Local {
     
     if( $p->{html} ) {
         my $meta = Baseliner::Model::Topic->get_meta( $topic_mid, $id_category );
+        my $data = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
+        $meta = get_meta_permissions ($c, $meta, $data);        
 
         $c->stash->{topic_meta} = $meta;
-        $c->stash->{topic_data} = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
+        $c->stash->{topic_data} = $data;
         
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
