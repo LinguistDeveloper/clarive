@@ -72,6 +72,7 @@
         Baseliner.add_tabcomp( '/comp/ci-editor.js', _('New: %1' , params.item ), {
                 _parent_grid: ci_grid.id,
                 ci_form: data.ci_form,
+                item: data.collection,
                 collection: data.collection,
                 has_bl: data.has_bl,
                 rec: rec,

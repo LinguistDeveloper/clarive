@@ -15,6 +15,9 @@ msgstr "Avance"
 msgid "Start: %1"
 msgstr "Inicio: %1"
 
+msgid "Edit: %1"
+msgstr "Editar: %1"
+
 msgid "Type: %1"
 msgstr "Tipo: %1"
 
