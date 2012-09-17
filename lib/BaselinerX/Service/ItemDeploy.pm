@@ -189,6 +189,12 @@ sub select_mappings {
                         $vars_origin->{basename} = $origin->basename;
                         $vars_origin->{home} = $ci_destination->{home};
                         $ret = parse_vars( $script, $vars_origin );
+                        try {
+                            my @vars = DB->BaliMaster->search({ collection=>'variable' })->hashref->all;
+                            my %vh = map { $_->{variable} => $_->{value} } 
+                               map { _load($_->{yaml}) if $_->{yaml} } @vars;
+                            $ret = parse_vars( $ret, \%vh );
+                        } catch {};
                     } else {
                         $ret = $script;
                     }
