@@ -9,7 +9,7 @@ sub storage { 'BaliProject' }
 
 has repositories => qw(is rw isa CIs coerce 1);
 
-sub rel_type { { repositories=>[ to_mid => 'project_repository'] } }
+sub rel_type { { repositories=>[ from_mid => 'project_repository'] } }
 
 #around table_update_or_create => sub {
 #    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
