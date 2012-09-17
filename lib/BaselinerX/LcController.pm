@@ -551,14 +551,15 @@ sub cs_menu {
             %dem = ( %dem, %$dem );
         }
         if( @chi ) {
-            if( values( %menu_pro ) == @chi ) {
+            # TODO intersect menus
+            #if( values( %menu_pro ) == @chi ) {
                 push @menu_p, map { (_array( $_ ))[0] } values %menu_pro;
                 $promotable = \%pro;
-            }
-            if( values( %menu_dem ) == @chi ) {
+            #}
+            #if( values( %menu_dem ) == @chi ) {
                 push @menu_d, map { (_array( $_ ))[0] } values %menu_dem;
                 $demotable = \%dem;
-            }
+            #}
         }
     } else {
        my ($menu_p, $menu_d );

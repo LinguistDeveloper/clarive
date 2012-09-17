@@ -694,6 +694,12 @@
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} ) {
                 new Ext.Toolbar.Button({
+                    text: _('Backout'),
+                    icon:'/static/images/icons/left.png',
+                    cls: 'x-btn-text-icon',
+                    handler: function() { }
+                }),
+                new Ext.Toolbar.Button({
                     text: _('Rerun'),
                     icon:'/static/images/icons/restart.gif',
                     cls: 'x-btn-text-icon',
