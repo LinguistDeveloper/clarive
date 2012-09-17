@@ -150,9 +150,21 @@ sub execute {
     my @cmd = map { "$_" } @_ ; # stringify possible Path::Class
     $p{stdout_file} = _tmp_file;  # send output to tmp file
 
-    my $ret = $self->ssh->system( \%p, @cmd );
-    my $rc = $?;
+    my $ret; 
+    my $rc; 
+    my $timeout = length $self->{timeout} ? $self->{timeout} : 60;
 
+    use Try::Tiny;
+    try {
+        local $SIG{ALRM} = sub { die "alarm\n" };
+        alarm $timeout; 
+        $ret = $self->ssh->system( \%p, @cmd );
+        $rc = $?;
+        alarm 0;
+    } catch {
+        alarm 0;
+        _fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ); 
+    };
     my $out = _slurp $p{stdout_file};
     unlink $p{stdout_file};
     $self->ret( $out );
@@ -167,7 +179,12 @@ sub _build_uri {
         my ($conn) = $uri =~ m{//(.*?)(/.*)?$};
         return $conn if $conn;
     } else {
-        return $self->server->hostname; 
+        if( $self->{user} ) {
+            return sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
+        } 
+        else {
+            return $self->server->hostname; 
+        }
     }
     _throw _loc "Could not create connection from uri %1", $self->uri;
 }

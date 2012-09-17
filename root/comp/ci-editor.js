@@ -24,7 +24,7 @@
         icon:'/static/images/icons/save.png',
         cls: 'x-btn-icon-text',
         type: 'submit',
-        handler: function() { submit_form( true ) }
+        handler: function() { form.destroy() }
     });
 
     var btn_form_save = new Ext.Button({
