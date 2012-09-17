@@ -13,6 +13,9 @@ params:
 */
 (function(params){
 	var data = params.topic_data;
+	var meta = params.topic_meta;
+	
+	
 	var labels = new Array();
 	if(data && data.users){
 		for(i=0; i<data.labels.length;i++){
@@ -32,7 +35,8 @@ params:
     
     var label_box = new Baseliner.model.Labels({
         //hidden: rec.fields_form.show_labels ? false : true,
-        store: label_box_store 
+        store: label_box_store,
+		disabled: meta ? meta.readonly: false
     });
 	
 	return [

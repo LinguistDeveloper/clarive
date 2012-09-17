@@ -14,7 +14,8 @@ params:
 */
 (function(params){
 	var data = params.topic_data;
-	
+	var meta = params.topic_meta;
+
 	var ff = params.form.getForm();
 	var topic_mid = ff.findField("topic_mid").getValue();
 
@@ -26,7 +27,8 @@ params:
         fieldLabel: _('Release'),
         singleMode: true,
         //hidden: rec.fields_form.show_release ? false : true,
-        store: release_box_store
+        store: release_box_store,
+		disabled: meta ? meta.readonly: false
     });
 	
     release_box_store.on('load',function(){
