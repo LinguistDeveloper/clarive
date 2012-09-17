@@ -435,6 +435,7 @@ sub run_once {
 
 sub clean {
     my ($self, $c, $bx, $clean, @filenames) = @_;
+    my $config = Baseliner->model('ConfigStore')->get( 'config.changeman.log_connection' );
     foreach my $file (@filenames) {
         $file=_loc_ansi($file);            
         my ($RC, $RET);
