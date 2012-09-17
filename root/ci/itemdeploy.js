@@ -35,8 +35,9 @@
         title:_('Exclude'), label:_('Exclude'), description: _('Element pattern regex to exclude'),
             value: params.exclude, default_value: '\\.ext$'});
 
-    var projects = Baseliner.cis({ name:'projects', hiddenName:'projects', role: 'Internal', allowBlank:true, singleMode:false,
+    var projects = Baseliner.cis({ name:'projects', hiddenName:'projects', role: 'Project', allowBlank:true, singleMode:false,
         fieldLabel:_('Projects'), value: params.projects });
+    //var projects = Baseliner.ci_box({ name:'projects', fieldLabel:_('Projects'), role:'Project', value: params.projects, singleMode:false })
 
     var scripts_multi = Baseliner.cis({ name:'scripts_multi', hiddenName:'scripts_multi', role: 'Script', allowBlank:true,
         fieldLabel:_('Scripts Multi'), value: params.scripts_multi });
