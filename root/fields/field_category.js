@@ -32,7 +32,7 @@ params:
         displayField: 'category_name',
         store: store_category,
         allowBlank: false,
-		readOnly: meta ? meta.readonly: false,
+		readOnly: meta ? !meta.write ? meta.write: meta.readonly : true,
         //hidden: rec.fields_form.show_category  ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){

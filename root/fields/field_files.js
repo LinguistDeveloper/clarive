@@ -191,6 +191,7 @@ params:
 			xtype: 'panel',
 			border: false,
 			layout: 'form',
+			disabled: meta ? !meta.write ? meta.write: meta.readonly : true,
 			//hidden: rec.fields_form.show_files ? false : true,
 			items: [
 				filelist,

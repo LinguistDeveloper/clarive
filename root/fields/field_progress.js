@@ -11,6 +11,7 @@ params:
 */
 (function(params){
 	var data = params.topic_data;
+	var meta = params.topic_meta;
 	
     return [
 		{ xtype:'sliderfield', fieldLabel: _('Progress'), name: 'progress',
@@ -18,7 +19,8 @@ params:
 			//hidden: !rec.fields_form.show_progress,
 			anchor: '40%', tipText: function(thumb){
 					return String(thumb.value) + '%';
-			} 
+			},
+			disabled: meta ? !meta.write ? meta.write: meta.readonly : true
 		}
     ]
 })

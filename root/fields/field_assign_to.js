@@ -14,6 +14,8 @@ params:
 */
 (function(params){
 	var data = params.topic_data;
+	var meta = params.topic_meta;
+	
 	var users = new Array();
 	if(data && data.users){
 		for(i=0; i<data.users.length;i++){
@@ -30,7 +32,9 @@ params:
     
     var user_box = new Baseliner.model.Users({
         //hidden: rec.fields_form.show_assign_to ? false : true,
-        store: user_box_store 
+        store: user_box_store,
+		disabled: meta ? !meta.write ? meta.write: meta.readonly : true
+		
     });
     
     user_box_store.on('load',function(){

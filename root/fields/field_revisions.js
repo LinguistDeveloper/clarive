@@ -13,6 +13,9 @@ params:
 ---
 */
 (function(params){
+	var data = params.topic_data;
+	var meta = params.topic_meta;
+	
     var revision_store = new Ext.data.SimpleStore({
         fields: ['mid','name','id']
     });
@@ -23,6 +26,7 @@ params:
         height: 120,
         fieldLabel: _('Revisions'),
         hideHeaders: true,
+		disabled: meta ? !meta.write ? meta.write: meta.readonly : true,
         viewConfig: {
             headersDisabled: true,
             enableRowBody: true,

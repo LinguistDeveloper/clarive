@@ -33,7 +33,8 @@ params:
         //hidden: rec.fields_form.show_topics ? false : true,
 		fieldLabel: _(meta.name_field),
 		name: meta.name_field,
-        store: topic_box_store
+        store: topic_box_store,
+		disabled: meta ? !meta.write ? meta.write: meta.readonly : true
     });
 	
     topic_box_store.on('load',function(){

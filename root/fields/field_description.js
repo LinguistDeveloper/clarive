@@ -11,6 +11,7 @@ params:
 */
 (function(params){
 	var data = params.topic_data;
+	var meta = params.topic_meta;
 	
 	return [
 		{   xtype:'panel', layout:'fit',
@@ -22,7 +23,8 @@ params:
 					fieldLabel: _('Description'),
 					width: '100%',
 					value: data ? data.description : '',
-					height:350
+					height:350,
+					disabled: meta ? !meta.write ? meta.write: meta.readonly : true
 				}
 			]
 		}

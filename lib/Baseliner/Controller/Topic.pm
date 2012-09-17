@@ -22,29 +22,6 @@ register 'menu.tools.topic' => {
 
 register 'action.topics.admin' => { name=>'Admin topics' };
 
-register 'action.topicsfield.write.title.cambio.nuevo' => {
-    name => 'Write title ',
-};
-
-register 'action.topicsfield.read.title.cambio.nuevo' => {
-    name => 'Read title ',
-};
-
-register 'action.topicsfield.write.category.cambio.nuevo' => {
-    name => 'Write category ',
-};
-
-register 'action.topicsfield.read.category.cambio.nuevo' => {
-    name => 'Read category ',
-};
-
-register 'action.topicsfield.write.status_new.cambio.nuevo' => {
-    name => 'Write status ',
-};
-
-register 'action.topicsfield.read.status_new.cambio.nuevo' => {
-    name => 'Read status ',
-};
 
 # XXX
 map {
@@ -380,6 +357,7 @@ sub get_meta_permissions : Local {
         
         if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
         	push @write_field, $_->{name_field};
+            $_->{write} = \0;
         }
         
 		#my $read_action = 'action.topicsfield.read.' . $_->{name_field} . '.' . lc $data->{name_category} . '.' . lc $data->{name_status};
