@@ -97,6 +97,13 @@
             if( check_sm_events.hasSelection() ) {
                 var rec = check_sm_events.getSelected();
                 d.rule_event = rec.data.key;
+            } else {
+                Baseliner.error( _('Rule'), _('No events selected') );
+                return;
+            }
+            if( d.rule_name.length < 1 ) {
+                Baseliner.error( _('Rule'), _('Missing rule name') );
+                return;
             }
             Baseliner.ajaxEval('/rule/save', d, function(res){
                 if( res.success ) {
