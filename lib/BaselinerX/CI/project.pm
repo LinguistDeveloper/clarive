@@ -8,6 +8,7 @@ sub icon { '/static/images/icons/project.png' }
 sub storage { 'BaliProject' }
 
 has repositories => qw(is rw isa CIs coerce 1);
+has variables => qw(is rw isa CIs coerce 1);
 
 sub rel_type { { repositories=>[ from_mid => 'project_repository'] } }
 
