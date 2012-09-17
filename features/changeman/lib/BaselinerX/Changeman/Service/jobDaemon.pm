@@ -30,7 +30,7 @@ register 'config.changeman.log_connection' => {
       { id=>'host', label=>'Changeman Log Host', type=>'text', default=>'prusv063' },
       { id=>'port', label=>'Changeman Log Port', type=>'text', default=>'58765' },
       { id=>'key', label=>'Changeman Log Key', type=>'text', default=>'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=' },
-      { id=>'user', label=>'Changeman functional user', type=>'text', default=>'vtchm' },
+      { id=>'user', label=>'Changeman functional user', type=>'text', default=>'vpchm01' },
       { id=>'logPath', label=>'Changeman Logdir', type=>'text', default=>'/tmp/CHMT' },
       { id=>'pattern', label=>'Changeman pattern', type=>'text', default=>'CHM.PSCM.P.*' },
       { id=>'clean', label=>'Changeman Log Clean mode', type=>'text', default=>'RENAME' },
@@ -382,7 +382,7 @@ sub run_once {
           _debug $fprefix . $log_action;
           #push @filestoclean, $file->{filename}->stringify;
           ($RC, my $text)=$bx->execute("cat ".$file->{filename}->stringify);
-          ($RC, $text)=$bx->executeas('vpchm01',"cat ".$file->{filename}->stringify) if $RC;
+          ($RC, $text)=$bx->executeas($config->{user},"cat ".$file->{filename}->stringify) if $RC;
           my @RET=split / @==================== /, $text;
           foreach ( @RET ) {
               next if ! $_;
@@ -443,10 +443,10 @@ sub clean {
             $newfile =~ s{\.P\.}{\.T\.};
             _debug $file . "CLEAN " . qq{mv $file $newfile};
             ($RC, $RET)=$bx->execute (qq{mv "$file" "$newfile"});
-            ($RC, $RET)=$bx->executeas('vpchm01',qq{mv "$file" "$newfile"}) if $RC;
+            ($RC, $RET)=$bx->executeas($config->{user},qq{mv "$file" "$newfile"}) if $RC;
         } elsif ($clean eq 'DELETE') {
             ($RC, $RET)=$bx->execute(qq{rm "$file"});
-            ($RC, $RET)=$bx->executeas('vpchm01',qq{rm "$file"}) if $RC;
+            ($RC, $RET)=$bx->executeas($config->{user},qq{rm "$file"}) if $RC;
         }
         _debug $file . "CLEAN" . $RET; 
     }

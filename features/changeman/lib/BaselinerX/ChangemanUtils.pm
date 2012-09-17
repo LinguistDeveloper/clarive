@@ -67,7 +67,7 @@ sub spool_files {
                   mdate=> $mdates{ $filename },
                   app=>$app,
                   bl=>$bl,
-                  filename=>_file('/tmp/CHMT',$filename),
+                  filename=>_file($config->{logPath} ,$filename),
                   jobname=>$jobname
                };
             }
