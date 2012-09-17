@@ -33,7 +33,7 @@ params:
     var user_box = new Baseliner.model.Users({
         //hidden: rec.fields_form.show_assign_to ? false : true,
         store: user_box_store,
-		disabled: meta ? meta.readonly: false
+		disabled: meta ? !meta.write ? meta.write: meta.readonly : true
 		
     });
     

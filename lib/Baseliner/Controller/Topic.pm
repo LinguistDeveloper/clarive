@@ -357,6 +357,7 @@ sub get_meta_permissions : Local {
         
         if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
         	push @write_field, $_->{name_field};
+            $_->{write} = \0;
         }
         
 		#my $read_action = 'action.topicsfield.read.' . $_->{name_field} . '.' . lc $data->{name_category} . '.' . lc $data->{name_status};

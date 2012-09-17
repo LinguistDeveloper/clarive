@@ -24,7 +24,7 @@ params:
 					width: '100%',
 					value: data ? data.description : '',
 					height:350,
-					disabled: meta ? meta.readonly: false
+					disabled: meta ? !meta.write ? meta.write: meta.readonly : true
 				}
 			]
 		}
