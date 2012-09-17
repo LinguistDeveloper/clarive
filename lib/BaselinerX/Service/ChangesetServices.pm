@@ -310,6 +310,7 @@ sub update_baselines {
             push @changesets, $mid;
         }
     } ## end for my $item ( _array $stash...)
+    try {
     my $rs_changesets = DB->search( {mid => \@changesets}, { prefetch => 'status'} );
 
     while ( my $row = $rs_changesets->next ) {
@@ -321,6 +322,7 @@ sub update_baselines {
             return { mid => $row->mid, topic => $row->title };
         }         
     } ## end while ( my $row = $rs_changesets...)
+    } catch {};
 
     # Git Update Baselines
     my $git_checkouts = $stash->{git_checkouts};
