@@ -30,6 +30,12 @@ msgstr "Entorno: %1"
 msgid "Natures: %1"
 msgstr "Naturalezas: %1"
 
+msgid "Missing rule name"
+msgstr "Rellene el nombre de la regla"
+
+msgid "No events selected"
+msgstr "No se han seleccionado eventos"
+
 msgid "Advanced"
 msgstr "Avanzado"
 

@@ -111,12 +111,13 @@ sub to_and_cc : Local {
         my @data;
         #my $id = 1;
         @data = map {
-            my $ns = $_->{username} ? "user/".$_->{mid} : "role/".$_->{mid};
+            my $id = $_->{mid} // $_->{id};
+            my $ns = $_->{username} ? "user/".$id : "role/".$id;
             +{
                 type => $_->{username} ? 'User' : 'Role',
                 name => $_->{username} || $_->{role},
                 long => $_->{description} || $_->{realname} || '',
-                id => $_->{mid},
+                id => $id,
                 ns => $ns,
             }
         } DB->BaliUser->search()->hashref->all, DB->BaliRole->search()->hashref->all;
