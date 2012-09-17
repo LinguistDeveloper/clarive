@@ -51,6 +51,9 @@ msgstr "Ver Stash"
 msgid "Inbox"
 msgstr "Buzón"
 
+msgid "User is not active"
+msgstr "El usuario no está activo"
+
 msgid "Filters"
 msgstr "Filtros"
 
@@ -1368,6 +1371,12 @@ msgstr "Promoción"
 
 msgid "demote"
 msgstr "Marcha Atrás"
+
+msgid "Backout"
+msgstr "Marcha Atrás"
+
+msgid "Rollback"
+msgstr "Rollback"
 
 msgid "rollback"
 msgstr "Rollback"
