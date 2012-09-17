@@ -345,7 +345,7 @@
         { 
             dataIndex: 'icon', 
             renderer: render_icon,
-            width: 20
+            width: 60
         },
         { header: _('Job Item'),
              id:'item',
@@ -440,8 +440,17 @@
                 var attr = n.attributes;
                 var data = n.attributes.data;
                 var job_type = main_form.getForm().getValues()['job_type'];
-                var bl = combo_baseline.getValue();
                 var cnt = jc_grid.getStore().getCount();  // auto set ?
+                if( cnt == 0 ) {
+                    var bl_hash = ( job_type == 'promote' ) ? data.promotable : data.demotable;
+                    var first_bl;
+                    for( var k in bl_hash ) {
+                       first_bl = k;
+                       break;
+                    }
+                    if( first_bl ) combo_baseline.setValue( first_bl ); 
+                }
+                var bl = combo_baseline.getValue();
 
                 //if( data.promotable[ bl ] == 1  || data.demot) {
                 var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];

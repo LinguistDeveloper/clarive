@@ -75,12 +75,13 @@ sub login : Global {
     my $p = $c->req->params;
     my $login= $p->{login};
     my $password = $p->{password};
-    my $case = $c->config->{user_case};
+    my $case = $c->config->{user_case} // '';
     $login= $case eq 'uc' ? uc($login)
      : ( $case eq 'lc' ) ? lc($login) : $login;
      
     $c->log->info( "LOGIN: " . $p->{login} );
     #_log "PW   : " . $p->{password}; #TODO only for testing!
+    my $msg;
 
     if( $login ) {
         if( $login =~ /^local\/(.*)$/i ) {
@@ -90,27 +91,31 @@ sub login : Global {
         } else {
             my $auth = $c->authenticate({ id=>$login, password=> $password });
             
-            if(lc($c->config->{authentication}->{default_realm}) eq 'none'){
-                my $user_key; # (Public key + Username al revés)
-                $user_key = $c->config->{decrypt_key}.reverse ($login);
+            if ( lc( $c->config->{authentication}->{default_realm} ) eq 'none' ) {
+                my $user_key;    # (Public key + Username al revés)
+                $user_key = $c->config->{decrypt_key} . reverse($login);
+
                 #Validamos contra BaliUser si el realm es none
-                my $row = $c->model('Baseliner::BaliUser')->search({username => $login, active => 1})->first;
-                if($row){
-                if( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password ){
+                my $row = $c->model('Baseliner::BaliUser')->search( { username => $login } )->first;
+                if ($row) {
+                    if ( ! $row->active ) {
+                        $msg = _loc( 'User is not active');
+                        $auth = undef;
+                    }
+                    if ( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password ) {
+                        $auth = undef;
+                    }
+                } else {
                     $auth = undef;
-                }
-                }
-                else{
-                $auth = undef;
                 }
             }
             
             if( ref $auth ) {
-                $c->stash->{json} = { success => \1, msg => _loc("OK") };
+                $c->stash->{json} = { success => \1, msg => $msg // _loc("OK") };
                 $c->session->{username} = $login;
                 $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
             } else {
-                $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
+                $c->stash->{json} = { success => \0, msg => $msg // _loc("Invalid User or Password") };
             }
         }
     } else {

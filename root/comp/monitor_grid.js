@@ -4,7 +4,12 @@
   $envs_json       => $ARGS{envs_json}
   $types_json      => $ARGS{types_json}
 </%args>
+<%perl>
+    use Baseliner::Sugar;
+    my $view_natures = config_value('job_new.view_natures');
+</%perl>
 (function(){
+    var view_natures = <% $view_natures ? 'false' : 'true' %>; 
    
     // Eric
     // -- ADDING Arr.map() method --
@@ -168,7 +173,7 @@
     });
    
     var nature_menu_btn = new Ext.Button({
-      text: _('Natures'),
+      //text: _('Natures'),
       icon: '/static/images/icons/nature.gif',
       menu: nature_menu
     });
@@ -244,7 +249,7 @@
       }
     });
     var menu_bl = new Ext.Button({
-      text: _("Baseline"),
+      //text: _("Baseline"),
       icon: '/static/images/icons/baseline.gif',
       menu: menu_list
     });
@@ -523,7 +528,8 @@
     };
 
     Baseliner.openLogTab = function(id, name) {
-        Baseliner.addNewTabComp('/job/log/list?id_job=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
+        //Baseliner.addNewTabComp('/job/log/list?id_job=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
+        Baseliner.addNewTab('/job/log/dashboard?id_job=' + id + '&name=' + name , _('Log') + ' ' + name, { tab_icon: '/static/images/icons/job.png' });
     };
 
     var render_topic = function(value, p, record){
@@ -633,7 +639,7 @@
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
-                { header: _('Natures'), width: 120, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
+                { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
@@ -669,7 +675,7 @@
                 }),
 % }
                 new Ext.Toolbar.Button({
-                    text: _('View Log'),
+                    //text: _('View Log'),
                     icon:'/static/images/icons/moredata.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
@@ -687,6 +693,12 @@
                 button_cancel,
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} ) {
+                new Ext.Toolbar.Button({
+                    text: _('Backout'),
+                    icon:'/static/images/icons/left.png',
+                    cls: 'x-btn-text-icon',
+                    handler: function() { }
+                }),
                 new Ext.Toolbar.Button({
                     text: _('Rerun'),
                     icon:'/static/images/icons/restart.gif',
