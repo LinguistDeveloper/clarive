@@ -116,6 +116,10 @@ sub put_dir {
     my ($self, %p) = @_;
     my $local = delete $p{local} || $self->local || _throw "Missing local";
     my $remote = delete $p{remote} || $self->home || _throw "Missing remote";
+    if( ! -e $local ) {
+        $self->ret( _loc('File skipped: %1', $local ) );
+        return {};
+    }
     length $p{add_path} and $remote = _dir( $remote, $p{add_path} );
     delete $p{add_path};
     $p{recursive} //= 1;
