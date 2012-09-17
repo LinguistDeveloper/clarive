@@ -209,7 +209,7 @@ sub select_mappings {
             };
             # remove base path ?
                 $deployment->{base} = $m->{workspace} unless $m->{no_paths} eq 'true';
-            $log->info( _loc("*Pushed deployment* for `%1`", $_ ), dump=>$deployment );
+                $log->debug( _loc("*Pushed deployment* for `%1`", $_ ), dump=>$deployment );
                 push @deployments, $deployment;
             }
             @deployments;
