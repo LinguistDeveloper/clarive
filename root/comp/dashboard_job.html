@@ -106,6 +106,95 @@
         <div class="clear"></div>
         
         <div class="grid_11">
+            <!--######INICIO TABLA CONTENIDO ###################################################################################-->
+            <h3>Contenido</h3>
+            <table class="table table-bordered table-condensed dashboard">
+                <tbody>
+<%perl>
+        my @aplicaciones;
+        my $tot_aplicaciones;
+        if ( $contenido->{packages} ) {
+            @aplicaciones = keys %{$contenido->{packages} || {}} ;
+            $tot_aplicaciones = scalar @aplicaciones;
+        }
+</%perl>
+                    <tr>     
+                        <td rowspan="<%$tot_aplicaciones%>">Aplicaciones</td>
+%       my $first = 1;                            
+%       for my $aplicacion (@aplicaciones){
+%                   if ( $first ) {    
+                        <td><%$aplicacion%></td>
+%                       $first = 0;
+%                   }
+%                   else {
+                        <td><%$aplicacion%></td>
+%                   }                            
+                    </tr>
+%       }
+<%perl>
+        for my $aplicacion ( @aplicaciones ) {
+            if ( $contenido->{packages}->{$aplicacion} ) {
+                my @paquetes = _array $contenido->{packages}->{$aplicacion};
+                my $tot_paquetes = scalar @paquetes;
+                my $first = 1;
+                for my $paquete ( @paquetes ) {
+                    if ( $first ) {
+</%perl>                        
+                    <tr>
+                        <td rowspan="<%$tot_paquetes%>">Paquetes (<% $aplicacion %>)</td>
+<%perl>
+                        $first = 0;
+                    }
+</%perl>                            
+                        <td><%$paquete->{type}%>/<%$paquete->{name}%></td>
+                    </tr>
+<%perl>
+                }
+            }
+        }
+</%perl>                        
+                    <tr>
+                        <td>Elementos del pase</td>
+                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );">Ver elementos&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
+                    </tr>
+<%perl>
+    my $tot_tecnologias;
+    my @tecnologias = _array $contenido->{technologies};
+    $tot_tecnologias = scalar @tecnologias;
+</%perl> 
+                    <tr>
+                        <td rowspan="<%$tot_tecnologias%>">Técnologias</td>
+%   for my $tecnologia ( @tecnologias ){
+                        <td>
+                            <%$tecnologia%><br>
+                        </td>
+                    </tr>
+%}
+<%perl>
+    my $tot_topicos;
+    my @topicos = _array $contenido->{topics};
+    $tot_topicos = scalar @topicos;
+</%perl>                        
+                    <tr>
+                        <td rowspan="<%$tot_topicos%>">Tópicos</td>
+%   if (@topicos){
+%       for my $topico ( @topicos){
+                        <td><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topico->{id}%>', _('Topics'));"><% $topico->{title} %></a></b></td>
+                    </tr>
+%       }
+%   }
+%   else{
+                        <td>&nbsp;</td>
+                    </tr>
+%   }
+                </tbody>    
+            </table>
+            <!--######FIN TABLA CONTENIDO #######################################################################################-->
+        </div>        
+
+        <div class="grid_1">&nbsp;</div>
+    
+        <div class="grid_12">
             <!--######INICIO TABLA SALIDA ###################################################################################-->
             <h3>Salida</h3>
             <script language="javascript">
@@ -193,95 +282,7 @@
                 </tbody>    
             </table>
             <!--######FIN TABLA SALIDA #######################################################################################-->
-        </div>        
 
-        <div class="grid_1">&nbsp;</div>
-    
-        <div class="grid_12">
-            <!--######INICIO TABLA CONTENIDO ###################################################################################-->
-            <h3>Contenido</h3>
-            <table class="table table-bordered table-condensed dashboard">
-                <tbody>
-<%perl>
-        my @aplicaciones;
-        my $tot_aplicaciones;
-        if ( $contenido->{packages} ) {
-            @aplicaciones = keys %{$contenido->{packages} || {}} ;
-            $tot_aplicaciones = scalar @aplicaciones;
-        }
-</%perl>
-                    <tr>     
-                        <td rowspan="<%$tot_aplicaciones%>">Aplicaciones</td>
-%       my $first = 1;                            
-%       for my $aplicacion (@aplicaciones){
-%                   if ( $first ) {    
-                        <td><%$aplicacion%></td>
-%                       $first = 0;
-%                   }
-%                   else {
-                        <td><%$aplicacion%></td>
-%                   }                            
-                    </tr>
-%       }
-<%perl>
-        for my $aplicacion ( @aplicaciones ) {
-            if ( $contenido->{packages}->{$aplicacion} ) {
-                my @paquetes = _array $contenido->{packages}->{$aplicacion};
-                my $tot_paquetes = scalar @paquetes;
-                my $first = 1;
-                for my $paquete ( @paquetes ) {
-                    if ( $first ) {
-</%perl>                        
-                    <tr>
-                        <td rowspan="<%$tot_paquetes%>">Paquetes (<% $aplicacion %>)</td>
-<%perl>
-                        $first = 0;
-                    }
-</%perl>                            
-                        <td><%$paquete->{type}%>/<%$paquete->{name}%></td>
-                    </tr>
-<%perl>
-                }
-            }
-        }
-</%perl>                        
-                    <tr>
-                        <td>Elementos del pase</td>
-                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );">Ver elementos&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
-                    </tr>
-<%perl>
-    my $tot_tecnologias;
-    my @tecnologias = _array $contenido->{technologies};
-    $tot_tecnologias = scalar @tecnologias;
-</%perl> 
-                    <tr>
-                        <td rowspan="<%$tot_tecnologias%>">Técnologias</td>
-%   for my $tecnologia ( @tecnologias ){
-                        <td>
-                            <%$tecnologia%><br>
-                        </td>
-                    </tr>
-%}
-<%perl>
-    my $tot_topicos;
-    my @topicos = _array $contenido->{topics};
-    $tot_topicos = scalar @topicos;
-</%perl>                        
-                    <tr>
-                        <td rowspan="<%$tot_topicos%>">Tópicos</td>
-%   if (@topicos){
-%       for my $topico ( @topicos){
-                        <td><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topico->{id}%>', _('Topics'));"><% $topico->{title} %></a></b></td>
-                    </tr>
-%       }
-%   }
-%   else{
-                        <td>&nbsp;</td>
-                    </tr>
-%   }
-                </tbody>    
-            </table>
-            <!--######FIN TABLA CONTENIDO #######################################################################################-->
         </div>
     </div>
 </div>
@@ -297,7 +298,7 @@
 	    var div1   = '<div style="white-space:normal !important;">';
         var div2   = '</div>';
         if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
-        else if( status=='READY' ) icon='log_d.gif';
+        else if( status=='READY' ) icon='waiting.png';
         else if( status=='APPROVAL' ) icon='verify.gif';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.gif';

@@ -50,8 +50,10 @@ sub _break_ns {
     if( defined $nsid ) {
         my $mid = $nsid;
         my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $mid );
-        my $projectid = $topic->projects->search()->first->id;
-        my $project = Baseliner::Model::Projects->get_project_name( id => $projectid );
+        my $project = try {
+            my $projectid = $topic->projects->search()->first->mid;
+            Baseliner::Model::Projects->get_project_name( mid => $projectid );
+        } catch { '' };
         return ( $mid, $project, $topic->title );
     } else {
         _throw "Invalid changeset id $nsid";

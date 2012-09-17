@@ -124,15 +124,15 @@ sub topic_contents : Local {
         push @tree, {
             text       => $_->{topic_topic2}{title},
             topic_name => {
-                mid             => $_->{from_mid},
-                category_color => $_->{topic_topic2}{categories}{color},
-                category_name => $_->{topic_topic2}{categories}{name},
-                is_release     => $is_release,
-                is_changeset   => $is_changeset,
+                mid             => $_->{to_mid},
+                category_color  => $_->{topic_topic2}{categories}{color},
+                category_name   => $_->{topic_topic2}{categories}{name},
+                is_release      => $is_release,
+                is_changeset    => $is_changeset,
             },
             url        => '/lifecycle/tree_topic_get_files',
             data       => {
-               topic_mid   => $_->{from_mid},
+               topic_mid   => $_->{to_mid},
                click       => $self->click_for_topic(  $_->{topic_topic2}{categories}{name}, $_->{from_mid} ),
             },
             icon       => $icon, 
@@ -387,13 +387,10 @@ sub changeset : Local {
     }
 
     if ( $bl ne '*' ) {
+        my @rels;
         for my $topic (@changes) {
-            my @rels = $topic->my_releases->hashref->all;  # slow! join me!
+            push @rels, $topic->my_releases->hashref->all;  # slow! join me!
             my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
-            if( @rels ) {
-                #$td->{id_category_status} = $rels[0]->{topic_topic}{id_category_status};
-                #$td->{id_status} = $rels[0]->{topic_topic}{id_status};
-            }
             # get the menus for the changeset
             my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
             my $node = {
@@ -404,10 +401,10 @@ sub changeset : Local {
                 menu => $menu,
                 topic_name => {
                     mid             => $td->{mid},
-                    category_color => $topic->categories->color,
-                    category_name => $topic->categories->name,
-                    is_release     => $topic->categories->is_release,
-                    is_changeset     => $topic->categories->is_changeset,
+                    category_color  => $topic->categories->color,
+                    category_name   => $topic->categories->name,
+                    is_release      => $topic->categories->is_release,
+                    is_changeset    => $topic->categories->is_changeset,
                 },
                 data => {
                     ns           => 'changeset/' . $td->{mid},
@@ -421,20 +418,38 @@ sub changeset : Local {
                     click        => $self->click_for_topic(  $topic->categories->name, $td->{mid} )
                 },
             };
-            if( @rels ) {
-                for my $rel ( @rels ) {
-                    my $title = $rel->{topic_topic}{title};
-                    $node->{text} = $title;
-                    $node->{leaf} = \0;
-                    $node->{icon} = '/static/images/icons/release_lc.png';
-                    $node->{topic_name}{is_release} = \1;
-                    $node->{topic_name}{category_name} = $rel->{topic_topic}{categories}{name};
-                    $node->{topic_name}{category_color} = $rel->{topic_topic}{categories}{color};
-                    $node->{data}{topic_mid} = $rel->{topic_topic}{mid};
-                    $node->{data}{click} = $self->click_for_topic(  $rel->{topic_topic}{categories}{name}, $rel->{topic_topic}{mid} );
-                    push @tree, $node;
-                }
-            } else {
+            # push @tree, $node if ! @rels;
+            push @tree, $node;
+        }
+        if( @rels ) {
+            my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
+            for my $rel ( values %unique ) {
+                $rel = $rel->{topic_topic};
+                my ( $promotable, $demotable, $menu ) = $self->cs_menu( $rel, $bl, $state_name );
+                my $node = {
+                    url  => '/lifecycle/topic_contents',
+                    icon => '/static/images/icons/release_lc.png',
+                    text => $rel->{title},
+                    leaf => \0,
+                    menu => $menu,
+                    topic_name => {
+                        mid             => $rel->{mid},
+                        category_color  => $rel->{categories}{color},
+                        category_name   => $rel->{categories}{name},
+                        is_release      => \1,
+                    },
+                    data => {
+                        ns           => 'changeset/' . $rel->{mid},
+                        bl           => $bl,
+                        name         => $rel->{title},
+                        promotable   => $promotable,
+                        demotable    => $demotable,
+                        state_name   => $state_name,
+                        topic_mid    => $rel->{mid},
+                        topic_status => $rel->{id_category_status},
+                        click        => $self->click_for_topic(  $rel->{categories}{name}, $rel->{mid} )
+                    },
+                };
                 push @tree, $node;
             }
         }
@@ -443,25 +458,9 @@ sub changeset : Local {
     $c->forward( 'View::JSON' );
 }
 
-sub cs_menu {
+sub promotes_and_demotes {
     my ($self, $topic, $bl_state, $state_name ) = @_;
-    return [] if $bl_state eq '*';
-    my @menu;
-    my $sha = ''; #try { $self->head->{commit}->id } catch {''};
-
-    push @menu, {
-        text => 'Deploy',
-        eval => {
-            url            => '/comp/lifecycle/deploy.js',
-            title          => 'Deploy',
-            bl_to          => $bl_state,
-            status_to      => '',                            # id?
-            status_to_name => $state_name,                            # name?
-            job_type       => 'static'
-        },
-        icon => '/static/images/silk/arrow_right.gif'
-    };
-
+    my ( @menu_p, @menu_d );
     # Promote
     my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         { id_category => $topic->{id_category}, id_status_from => $topic->{id_category_status}, job_type => 'promote' },
@@ -475,7 +474,7 @@ sub cs_menu {
     my $promotable={};
     for my $status ( @status_to ) {
         $promotable->{ $status->{statuses_to}{bl} } = \1;
-        push @menu, {
+        push @menu_p, {
             text => _loc( 'Promote to %1', _loc( $status->{statuses_to}{name} ) ),
             eval => {
                 url      => '/comp/lifecycle/deploy.js',
@@ -502,7 +501,7 @@ sub cs_menu {
     my $demotable={};
     for my $status ( @status_from ) {
         $demotable->{ $status->{statuses_to}{bl} } = \1;
-        push @menu, {
+        push @menu_d, {
             text => _loc( 'Demote to %1', _loc( $status->{statuses_to}{name} ) ),
             eval => {
                 url      => '/comp/lifecycle/deploy.js',
@@ -510,12 +509,67 @@ sub cs_menu {
                 job_type => 'demote',
                 bl_to => $status->{statuses_to}{bl},
                 status_to => $status->{statuses_to}{id},
-                status_to => $status->{statuses_to}{id},
                 status_to_name => $status->{statuses_to}{name},
             },
             icon => '/static/images/silk/arrow_up.gif'
         };
     }
+    return ( $promotable, $demotable, \@menu_p, \@menu_d );
+}
+
+sub cs_menu {
+    my ($self, $topic, $bl_state, $state_name ) = @_;
+    return [] if $bl_state eq '*';
+    my ( @menu, @menu_p, @menu_d );
+    my $sha = ''; #try { $self->head->{commit}->id } catch {''};
+
+    push @menu, {
+        text => 'Deploy',
+        eval => {
+            url            => '/comp/lifecycle/deploy.js',
+            title          => 'Deploy',
+            bl_to          => $bl_state,
+            status_to      => '',                            # id?
+            status_to_name => $state_name,                            # name?
+            job_type       => 'static'
+        },
+        icon => '/static/images/silk/arrow_right.gif'
+    };
+
+    my ($promotable, $demotable ) = ( {}, {} );
+    my $row = DB->BaliTopicCategories->find( $topic->{id_category} );
+    if( $row->is_release ) {
+        my @chi = DB->BaliTopic->search({ rel_type=>'topic_topic', from_mid=>$topic->{mid}, },
+           { join=>['parents'] })->hashref->all;
+        
+        my ( @rel_promotable, @rel_demotable, @rel_menu_p, @rel_menu_d );
+        my ( %menu_pro, %menu_dem, %pro, %dem );
+        for my $chi_topic ( @chi ) {
+            my ($pro, $dem, $menu_p, $menu_d ) = $self->promotes_and_demotes( $chi_topic, $bl_state, $state_name );
+            map { push @{ $menu_pro{ $_->{eval}{status_to} } }, $_ } _array( $menu_p );
+            map { push @{ $menu_dem{ $_->{eval}{status_to} } }, $_ } _array( $menu_d );
+            %pro = ( %pro, %$pro );
+            %dem = ( %dem, %$dem );
+        }
+        if( @chi ) {
+            if( values( %menu_pro ) == @chi ) {
+                push @menu_p, map { (_array( $_ ))[0] } values %menu_pro;
+                $promotable = \%pro;
+            }
+            if( values( %menu_dem ) == @chi ) {
+                push @menu_d, map { (_array( $_ ))[0] } values %menu_dem;
+                $demotable = \%dem;
+            }
+        }
+    } else {
+       my ($menu_p, $menu_d );
+       ($promotable, $demotable, $menu_p, $menu_d ) = $self->promotes_and_demotes( $topic, $bl_state, $state_name, @menu );
+       push @menu_p, _array( $menu_p );
+       push @menu_d, _array( $menu_d );
+    }
+
+    push @menu, ( @menu_p, @menu_d );  # promotes, then demotes
+
     ( $promotable, $demotable, \@menu );
 }
 

@@ -133,6 +133,12 @@ sub job_elements {
 
     } ## end else [ if ( $job->job_type eq...)]
 
+    # Releases?
+    my @chi = DB->BaliMasterRel->search({ from_mid=>\@changesets, rel_type=>'topic_topic' })->hashref->all;
+    if( @chi ) {
+        push @changesets, map { $_->{to_mid} } @chi;
+    }
+    $log->debug( _loc("Searching for revisions for mids: %1", join(',',@changesets ) ) );
     #Git revisions
     my @revisions =
         $c->model( 'Baseliner::BaliMasterRel' )
