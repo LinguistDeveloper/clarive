@@ -193,7 +193,7 @@ sub dsl_run {
     }
     my $ret;
     my $stash = $p{stash} // {};
-    my $ret = eval $dsl;
+    $ret = eval $dsl;
     _fail "Error during DSL Execution: $@" if $@;
     return $stash;
 }

@@ -150,8 +150,8 @@ sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
     my $where = { active=> 1, id_parent=>[undef,''] };
-    my $rsallprjs = DB->BaliRoleuser->search({ username=>$c->username, ns=>'/' });
-    if( ! $c->is_root  && ! $rsallprjs->count ) {
+    #my $rsallprjs = DB->BaliRoleuser->search({ username=>$c->username, ns=>'/' });
+    if( ! $c->is_root ){ #}  && ! $rsallprjs->count ) {
         $where->{mid} = { -in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username ) };
     }
     my $rs = Baseliner->model('Baseliner::BaliProject')->search( 
@@ -346,7 +346,7 @@ sub changeset : Local {
 
     if ( $bl ne '*' ) {
         push @tree, {
-            url  => '/lifecycle/repo',
+            url  => '/lifecycle/repository',
             icon => '/static/images/icons/repo.gif',
             text => $_->{name},
             leaf => \1,
@@ -355,7 +355,7 @@ sub changeset : Local {
                 name  => $_->{name},
                 repo_path  => $_->{path},
                 click => {
-                    url   => '/lifecycle/repo',
+                    url   => '/lifecycle/repository',
                     type  => 'comp',
                     icon  => '/static/images/icons/repo.gif',
                     title => "$_->{name} - $bl",
@@ -574,7 +574,7 @@ sub cs_menu {
     ( $promotable, $demotable, \@menu );
 }
 
-sub repo : Local {
+sub repository : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     $c->stash->{ repo } = $p;

@@ -55,7 +55,7 @@ sub log : Local {
         }
     );
     my $pager = $rs->pager;
-    my $cnt = $pager->total_entries;
+    $cnt = $pager->total_entries;
     my @rows = $rs->hashref->all;
     @rows = map {
         # event_key event_status event_data 

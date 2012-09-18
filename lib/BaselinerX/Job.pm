@@ -49,7 +49,8 @@ register 'menu.job.create' => { label => 'Create a new Job', url_comp=>'/job/cre
 #register 'menu.job.list' => { label => 'List Current Jobs', url=>'/maqueta/list.mas', title=>'Job Monitor' };
 #register 'menu.job.exec' => { label => 'Exec Current Jobs', url_run=>'/maqueta/list.mas', title=>'Job Monitor' };
 #register 'menu.job.hist' => { label => 'Historical Data', handler => 'function(){ Ext.Msg.alert("Hello"); }' };
-register 'menu.job.list' => { label => 'Monitor', url_comp => '/job/monitor', title=>'Monitor', icon=>'/static/images/icons/television.gif' };
+register 'menu.job.list' => { label => 'Monitor', url_comp => '/job/monitor', title=>'Monitor', icon=>'/static/images/icons/television.gif', actions=>['action.job.view_monitor'] };
+register 'action.job.view_monitor' => { name=>'View job monitor' };
 #register 'menu.job.hist.all' => { label => 'List all Jobs', url=>'/core/registry', title=>'Registry'  };
 
 register 'portlet.monitor' => { name=>'Job Monitor', url_comp=>'/job/monitor_portlet', url_max=>'/job/monitor', active=>1 };

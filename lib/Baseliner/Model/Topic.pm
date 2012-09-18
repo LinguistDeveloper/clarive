@@ -234,7 +234,7 @@ sub get_meta {
                 { name_field => 'created_on', id_field => 'created_on', origin => 'default', html => '/fields/field_created_on.html', field_order => 5, section => 'body' },
                 { name_field => 'dates', id_field => 'dates', origin => 'rel', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 13, section => 'details' };
     
-    sort { $a->{field_order} <=> $b->{field_order} } @meta;
+    @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
     
     #my @meta = (
     #     { name_field => 'title', id_field => 'title', origin => 'system', html => '/fields/field_title.html', js => '/fields/field_title.js', field_order => 2, section => 'body' },
