@@ -815,6 +815,16 @@
         return json;
     };
 
+    Baseliner.eval_response = function( text, params ) {
+        var comp = eval( text );
+        if( typeof( comp ) == 'function' ) {
+            comp = comp(params);
+        } else if( typeof(comp) == 'undefined' ) { //IE7
+            eval( "comp=(" + text + ")" );
+            comp = comp(params);
+        }
+        return comp;
+    };
     //grabs any eval stuff and feeds it to foo(comp)
     Baseliner.ajaxEval = function( url, params, foo ){
         if(params == undefined ) params = {};
@@ -826,13 +836,7 @@
                 var err_foo;
                 try {
                     try {
-                        var comp = eval(xhr.responseText);
-                        if( typeof( comp ) == 'function' ) {
-                            comp = comp(params);
-                        } else if( typeof(comp) == 'undefined' ) { //IE7
-                            eval( "comp=(" + xhr.responseText + ")" );
-                            comp = comp(params);
-                        }
+                        var comp = Baseliner.eval_response( xhr.responseText, params );
                         try { foo(comp); } catch(ef1) { err_foo = ef1 }
                     } catch(e1) {
                         try {
