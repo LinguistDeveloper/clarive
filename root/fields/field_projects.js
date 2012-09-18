@@ -25,7 +25,7 @@ params:
 		projects = [];
 	}
 	
-    var project_box_store = new Baseliner.store.UserProjects({ id: 'id' });
+    var project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: { include_root: true } });
 	
     var project_box = new Baseliner.model.Projects({
         store: project_box_store,

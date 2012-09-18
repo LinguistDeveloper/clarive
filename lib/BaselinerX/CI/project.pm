@@ -11,17 +11,17 @@ has repositories => qw(is rw isa CIs coerce 1);
 
 sub rel_type { { repositories=>[ from_mid => 'project_repository'] } }
 
-#around table_update_or_create => sub {
-#    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
-#    my $repos = delete $data->{repository};
-#
-#    my $row_mid = $self->$orig( $rs, $mid, $data, @rest );
-#    $mid //= $row_mid;  # necessary when creating
-#
-#    my $row = DB->BaliProject->find( $mid );
-#    my @rs_repos = DB->BaliMaster->search( { mid => $repos } )->all;
-#    $row->set_repositories( \@rs_repos, { rel_type => 'project_repository' } )
-#};
+around table_update_or_create => sub {
+   my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
+ 
+   my $row_mid = $self->$orig( $rs, $mid, $data, @rest );
+   $mid //= $row_mid;  # necessary when creating
+
+   my $row = DB->BaliProject->find( $mid );
+   $row->ns('project/' . $mid );
+   $row->update;
+   $row_mid;
+};
 
 #around load => sub {
 #    my ($orig, $self ) = @_;
