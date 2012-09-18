@@ -391,7 +391,7 @@ sub get_meta_permissions : Local {
                 $sw_read = 1;                
             }
             
-            if ($sw_write  && $sw_read){
+            if (!($sw_write  && $sw_read)){
                 push @hidden_field, $_->{name_field};
             }
         }
