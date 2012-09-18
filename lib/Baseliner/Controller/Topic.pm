@@ -100,7 +100,7 @@ sub list : Local {
     if( $username && ! $perm->is_root( $username )){
         my @user_apps = $perm->user_projects_ids( username => $username );
         push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
-        $where->{'me.project'} =  \@user_apps;
+        $where->{'project_id'} =  \@user_apps;
     }
 
     #DEFAULT VIEWS***************************************************************************************************************
