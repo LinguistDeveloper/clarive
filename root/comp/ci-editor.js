@@ -75,6 +75,7 @@
     });
     form.on( 'afterrender', function(){
         params.rec.collection = params.collection;
+        params.form = form;
         bl_combo.getStore().on( 'load', function(){
             bl_combo.setValue( params.rec.bl );
         });

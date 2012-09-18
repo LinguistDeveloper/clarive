@@ -3,6 +3,9 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "To Open"
+msgstr "Abrir"
+
 msgid "Progress"
 msgstr "Avance"
 
@@ -20,6 +23,15 @@ msgstr "Editar: %1"
 
 msgid "Type: %1"
 msgstr "Tipo: %1"
+
+msgid "Error during DSL Execution: %1"
+msgstr "Error durante la ejecución DSL: %1"
+
+msgid "Error building DSL for rule '%1' (%2): %3"
+msgstr "Error preparando DSL para la regla '%1' (%2): %3"
+
+msgid "Error running rule '%1' (%2): %3"
+msgstr "Error ejecutando regla '%1' (%2): %3"
 
 msgid "End time is equal or earlier than the start time ( %1 <= %2 )"
 msgstr "La hora fin es igual o anterior a la hora inicio ( %1 <= %2 )"

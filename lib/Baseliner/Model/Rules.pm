@@ -94,9 +94,16 @@ register 'service.echo' => {
     data => { msg => '', args=>{}, arr=>[] },
     handler=>sub{
         my ($self, $c, $data ) = @_;
-        Baseliner::Utils::_error( $data );
         $data->{hello} = $data->{msg} || 'world';
         $data;
+    }
+};
+
+register 'service.fail' => {
+    data => { msg => 'dummy fail' },
+    handler=>sub{
+        my ($self, $c, $data ) = @_;
+        Baseliner::Utils::_fail( $data->{msg} || 'dummy fail' );
     }
 };
 
@@ -194,7 +201,7 @@ sub dsl_run {
     my $ret;
     my $stash = $p{stash} // {};
     $ret = eval $dsl;
-    _fail "Error during DSL Execution: $@" if $@;
+    _fail( _loc("Error during DSL Execution: %1", $@) ) if $@;
     return $stash;
 }
 
@@ -208,8 +215,16 @@ sub run_rules {
     my @rule_log;
     for my $rule ( @rules ) {
         my @tree = $self->build_tree( $rule->{id}, undef );
-        my $dsl = $self->dsl_build( \@tree ); 
-        my $ret = $self->dsl_run( dsl=>$dsl, stash=>$stash );
+        my $dsl = try {
+            $self->dsl_build( \@tree ); 
+        } catch {
+            _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+        };
+        my $ret = try {
+            $self->dsl_run( dsl=>$dsl, stash=>$stash );
+        } catch {
+            _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+        };
         push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash };
     }
     return { stash=>$stash, rule_log=>\@rule_log }; 

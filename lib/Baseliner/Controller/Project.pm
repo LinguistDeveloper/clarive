@@ -188,7 +188,7 @@ sub list : Local {
                 project    => $data->{name},
                 sw_crear_editar => \1,
             },	    
-            icon       => '/static/images/icons/project_small.png',
+            icon       => '/static/images/icons/project.png',
             leaf       => \$data->{leaf},
             };
         }

@@ -61,6 +61,7 @@ sub lc_for_project {
     #my $nodes = $lc->{nodes}; $ch ||= {
     my $nodes = [
           {
+            'node' => 'Topics',
             'icon' => '/static/images/icons/topic.png',
             'url' => '/lifecycle/tree_topics_project',
             'data' => {
@@ -72,16 +73,22 @@ sub lc_for_project {
                                    }
                       },
             'type' => 'component',
-            'node' => 'Topics'
           },
           {
-            'icon' => '/static/images/icons/job.png',
-            'url' => '/job/monitor',
+            'node' => 'Releases',
+            'icon' => '/static/images/icons/release.gif',
+            'url' => '/lifecycle/tree_project_releases',
             'type' => 'component',
-            'node' => 'Jobs'
           },
           {
-            'icon' => '/static/images/icons/files.gif',
+            'node' => 'Jobs',
+            'icon' => '/static/images/icons/job.png',
+            'url' => '/lifecycle/tree_project_jobs',
+            'type' => 'component',
+          },
+          {
+            'node' => 'Files',
+            'icon' => '/static/images/icons/directory.png',
             'menu' => [
                         {
                           'icon' => '/static/images/icons/folder.gif',
@@ -96,14 +103,7 @@ sub lc_for_project {
                                      }
                       },
             'type' => 'component',
-            'node' => 'Files'
           },
-          {
-            'icon' => '/static/images/scm/release.gif',
-            'url' => '/release/grid',
-            'type' => 'component',
-            'node' => 'Releases'
-          }
     ];
     
 

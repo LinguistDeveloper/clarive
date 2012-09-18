@@ -41,5 +41,11 @@ __PACKAGE__->set_primary_key("from_mid", "to_mid", "rel_type");
 __PACKAGE__->belongs_to("master_from", "Baseliner::Schema::Baseliner::Result::BaliMaster", { 'foreign.mid' => 'self.from_mid' });
 __PACKAGE__->belongs_to("master_to", "Baseliner::Schema::Baseliner::Result::BaliMaster", { 'foreign.mid' => 'self.to_mid' });
 
+# joining with itself
+__PACKAGE__->has_many("to_children", __PACKAGE__, { 'foreign.from_mid' => 'self.to_mid' });
+__PACKAGE__->has_many("from_children", __PACKAGE__, { 'foreign.from_mid' => 'self.from_mid' });
+__PACKAGE__->has_many("from_parents", __PACKAGE__, { 'foreign.to_mid' => 'self.from_mid' });
+__PACKAGE__->has_many("to_parents", __PACKAGE__, { 'foreign.to_mid' => 'self.to_mid' });
+
 1;
 
