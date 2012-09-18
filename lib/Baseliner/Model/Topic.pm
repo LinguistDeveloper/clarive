@@ -297,7 +297,7 @@ sub get_data {
         }
         
         foreach my $key  (keys %method_fields){
-            $data->{ $key } =  eval( '$self->' . $method_fields{$key} . '( $topic_mid )' );
+            $data->{ $key } =  eval( '$self->' . $method_fields{$key} . '( $topic_mid, $key )' );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' } _array( $meta  );
@@ -375,9 +375,12 @@ sub get_topics{
 }
 
 sub get_files{
-    my ($self, $topic_mid) = @_;
+    my ($self, $topic_mid, $id_field) = @_;
     my @files = map { +{ $_->get_columns } } 
-        Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->files->search( undef, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
+        Baseliner->model('Baseliner::BaliTopic')
+            ->find( $topic_mid )
+            ->files
+            ->search( { rel_field=>$id_field }, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
         order_by => { '-asc' => 'created_on' } } )->all;
     return @files ? \@files : []; 
 }
