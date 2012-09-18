@@ -1,11 +1,11 @@
 //INFORMACIÓN DEL CONTROL DE VERSIONES
 //
 //	CAM .............................. SCM
-//	Pase ............................. N.ANTE0000070155
-//	Fecha de pase .................... 2012/09/06 17:56:59
+//	Pase ............................. N.TEST0000070900
+//	Fecha de pase .................... 2012/09/18 17:19:32
 //	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/root/comp/sqa/grid.js
-//	Versión del elemento ............. 45
-//	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
+//	Versión del elemento ............. 46
+//	Propietario de la version ........ q84405x (Q84405X - FERNANDO GENTO DE CELIS)
 <%args>
 	$action_view_general
 	$action_new_analysis
@@ -1596,7 +1596,7 @@
             var nature = new Ext.form.TextField({
     			name: 'nature',
     			readOnly: true,
-    			value: sel.data.subapl,
+    			value: sel.data.nature,
     			fieldLabel: _('Nature'),
     			style:'background:#dddddd'
     		}); 
