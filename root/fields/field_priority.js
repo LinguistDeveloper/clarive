@@ -96,7 +96,7 @@ params:
         displayField: 'name',
         valueField: 'id',
         store: store_category_priority,
-		readOnly: meta ? meta.write ? meta.write: meta.readonly : true,
+		readOnly: meta ? meta.readonly : true,
         //hidden: rec.fields_form.show_priority ? false : true,
         listeners:{
             'select': function(cmd, rec, idx){

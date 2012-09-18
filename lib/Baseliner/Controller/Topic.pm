@@ -372,26 +372,19 @@ sub get_meta_permissions : Local {
     
     if (!$is_root) {
         for (_array $meta){
-			my $sw_write = 0;
-            my $sw_read = 0;
-            
-            my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . 'write';
+
+            my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . '.write';
             #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
             
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
-                $_->{write} = \1;
-                $sw_write = 1;                
+                $_->{readonly} = \1;
             }
             
-            my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . 'read';
+            my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . '.read';
             #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
+            _error $read_action;
     
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
-                $_->{readonly} = \0;
-                $sw_read = 1;                
-            }
-            
-            if (!($sw_write  && $sw_read)){
                 push @hidden_field, $_->{name_field};
             }
         }

@@ -30,6 +30,7 @@ features/nature.ssrs
 features/gbp
 features/sonar
 features/checking
+<<<<<<< HEAD
 features/svnscm
 features/cvsscm
 features/jazztel

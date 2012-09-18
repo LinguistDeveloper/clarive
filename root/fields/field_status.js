@@ -30,7 +30,7 @@ params:
         hiddenName: 'status_new',
         displayField: 'name',
         valueField: 'id',
-		readOnly: meta ? meta.write ? meta.write: meta.readonly : true,
+		readOnly: meta ? meta.readonly : true,
         //hidden: rec.fields_form.show_status ? false : true,
         store: store_category_status
     });

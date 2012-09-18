@@ -24,7 +24,7 @@ params:
 			width: '100%',
 			height: 30,
 			allowBlank: false,
-			readOnly: meta ? meta.write ? meta.write: meta.readonly : true
+			readOnly: meta ? meta.readonly : true
 		}
     ]
 })

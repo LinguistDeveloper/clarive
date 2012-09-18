@@ -36,7 +36,7 @@ params:
     var label_box = new Baseliner.model.Labels({
         //hidden: rec.fields_form.show_labels ? false : true,
         store: label_box_store,
-		disabled: meta ? meta.write ? meta.write: meta.readonly : true
+		disabled: meta ? meta.readonly : true
     });
 	
 	return [
