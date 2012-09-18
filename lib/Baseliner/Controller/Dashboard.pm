@@ -369,8 +369,11 @@ sub list : Local {
                 $c->stash->{dashboardlets} = \@dashlets;
             }else{
                 my $where = {};
-                my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
-                $where->{"dashboard_roles.id_role"} = \@roles;
+                my $is_root = $c->model('Permissions')->is_root( $c->username );
+                if (!$is_root) {                
+                    my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
+                    $where->{"dashboard_roles.id_role"} = \@roles;
+                }
                 $where->{"is_system"} = '0';
                 
                 #my $dashboard = $c->model('Baseliner::BaliDashboard')->search( {is_system=>'0'}, {order_by => 'is_main desc'} );
