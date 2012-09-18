@@ -5,6 +5,10 @@
 
     <tr>
       <th><% _loc('Release') %>:</th>
-      <td><span class="arrow_box" style="padding: 3px; background-color:<% $data->{release}->{color} %>"><% $data->{release}->{title} || '&nbsp;' %></span></td>
+      <td>
+% if( $data->{release}->{title} ) {
+        <span class="arrow_box" style="padding: 3px; background-color:<% $data->{release}->{color} %>"><% $data->{release}->{title} || '&nbsp;' %></span>
+% }
+      </td>
     </tr>
   
