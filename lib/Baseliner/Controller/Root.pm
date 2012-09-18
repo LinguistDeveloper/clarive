@@ -1,8 +1,11 @@
 package Baseliner::Controller::Root;
-use strict;
-use warnings;
-use base 'Catalyst::Controller';
+use Baseliner::Plug;
+BEGIN { extends 'Catalyst::Controller'; };
 use Baseliner::Utils;
+
+
+register 'action.home.show_lifecycle';
+register 'action.home.show_menu';
 
 use Try::Tiny;
 
@@ -211,6 +214,8 @@ sub index:Private {
     $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
 
     $c->stash->{show_js_reload} = $ENV{BASELINER_DEBUG} && $c->has_action('action.admin.develop');
+    $c->stash->{can_lifecycle} = $c->has_action('action.home.show_lifecycle');
+    $c->stash->{can_menu} = $c->has_action('action.home.show_menu');
 
     $c->stash->{template} = '/site/index.html';
 }

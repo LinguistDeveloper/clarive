@@ -37,10 +37,11 @@
 
     // Generates a pop-in message
     // User stuff
-    Baseliner.user_actions = function() {
+    Baseliner.user_actions = function( params ) {
         Ext.Ajax.request({
             //url: '/user/actions',
-        url: '/user/info',
+            url: '/user/info',
+            params: params,
             success: function(xhr) {
                 try {
                     var comp = eval(xhr.responseText);

@@ -136,8 +136,9 @@ sub infodetail : Local {
     
         push @rows,
                 {
+                  id      	    => $r->{id},
                   id_role		=> $r->{id},
-                  role		=> $r->{role},
+                  role		    => $r->{role},
                   description	=> $r->{description},
                   projects		=> $projects_txt
                 };

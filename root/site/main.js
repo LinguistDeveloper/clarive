@@ -7,13 +7,17 @@
     $show_menu => $c->config->{site}{show_menu} // 1
     $show_lifecycle => $c->config->{site}{show_lifecycle} // 1
     $show_js_reload => 0
+    $show_tabs => $c->config->{site}{show_tabs} // 1
 </%args>
 <%perl>
     if( $c->stash->{site_raw} ) {
+        $show_tabs = 0;
         $show_portal = 0;
         $show_menu  = 0;
         $show_main  = 0;
     }
+    $show_lifecycle and $show_lifecycle = $c->stash->{'can_lifecycle'};
+    $show_menu and $show_menu = $c->stash->{'can_menu'};
 </%perl>
 
 Ext.onReady(function(){
@@ -153,7 +157,7 @@ Ext.onReady(function(){
     Baseliner.main = new Ext.Panel({
         layout: 'border',
         items: [
-% if( $c->stash->{site_raw} ) {
+% if( ! $show_tabs ) {
             new Ext.TabPanel({ 
                 region: 'center',
                 id:'main-panel',
@@ -233,7 +237,7 @@ Ext.onReady(function(){
     Ext.Msg.alert('<% $tab->{title} %>', '<% $tab->{message} %>');
 % }
 
-% if( $c->stash->{site_raw} ) {
+% if( ! $show_tabs ) {
     var tabpanel = Ext.getCmp('main-panel');
     tabpanel.header.setVisibilityMode(Ext.Element.DISPLAY);
     tabpanel.header.hide();

@@ -46,12 +46,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    var render_rol_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( value==undefined || value=='null' || value=='' ) return '';
-        var script = String.format('javascript:Baseliner.showAjaxComp("/user/infoactions/{0}")', value);
-        return String.format("<a href='{0}'>{1}</a>", script, value );
-    };
-    
     var render_projects = function (val){
         if( val == null || val == undefined ) return '';
         if( typeof val != 'object' ) return '';
@@ -130,12 +124,13 @@
             root: 'data' , 
             remoteSort: true,
             totalProperty:"totalCount", 
-            id: 'id', 
+            id: 'id_role', 
             url: '/user/infodetail',
             fields: [ 
-            {name: 'role' },
-            {name: 'description' },
-            {name: 'projects' }         
+                {name: 'id_role' },
+                {name: 'role' },
+                {name: 'description' },
+                {name: 'projects' }         
             ],
             listeners: {
                 'load': function(){
@@ -359,27 +354,6 @@
             autoSizeColumns: true
         });
         
-        var grid_user_roles_projects = new Ext.grid.GridPanel({
-            title: _('Roles/Projects User'),
-            stripeRows: true,
-            autoScroll: true,
-            autoWidth: true,
-            store: store_user_roles_projects,
-            viewConfig: {
-                forceFit: true
-            },
-            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
-            columns: [
-                { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },   
-                { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
-                { header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
-            ],
-            autoSizeColumns: true,
-            deferredRender:true,
-            height:200
-        });
-        
         grid_roles.on('rowclick', function(grid, rowIndex, columnIndex, e) {
             control_buttons();
         });     
@@ -507,6 +481,34 @@
                 })
         });         
 
+        var render_rol_field  = function(value,metadata,rec_grid,rowIndex,colIndex,store) {
+            if( value==undefined || value=='null' || value=='' ) return '';
+            //var script = String.format('javascript:Baseliner.showAjaxComp("/user/infoactions/{0}?id_role={1}&username={2}")', value, rec_grid.data.id_role, rec.data.username );
+            var script = String.format('javascript:Baseliner.user_actions({ username: \"{0}\", id_role: \"{1}\"})', rec.data.username, rec_grid.data.id_role );
+            return String.format("<a href='{0}'>{1}</a>", script, value );
+        };
+        
+        var grid_user_roles_projects = new Ext.grid.GridPanel({
+            title: _('Roles/Projects User'),
+            stripeRows: true,
+            autoScroll: true,
+            autoWidth: true,
+            store: store_user_roles_projects,
+            viewConfig: {
+                forceFit: true
+            },
+            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+            loadMask:'true',
+            columns: [
+                { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },   
+                { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
+                { header: _('Namespace'), width: 150, dataIndex: 'projects', sortable: false, renderer: render_projects }
+            ],
+            autoSizeColumns: true,
+            deferredRender:true,
+            height:200
+        });
+        
         var form_user = new Ext.FormPanel({
             name: form_user,
             url: '/user/update',
@@ -669,7 +671,7 @@
             grid_user_roles_projects
         ]
         });
-        
+
         Ext.apply(Ext.form.VTypes, {
             password : function(val, field) {
             if (field.initialPassField) {
