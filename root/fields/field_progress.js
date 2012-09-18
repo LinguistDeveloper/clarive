@@ -20,7 +20,7 @@ params:
 			anchor: '40%', tipText: function(thumb){
 					return String(thumb.value) + '%';
 			},
-			disabled: meta ? !meta.write ? meta.write: meta.readonly : true
+			disabled: meta ? meta.write ? meta.write: meta.readonly : true
 		}
     ]
 })

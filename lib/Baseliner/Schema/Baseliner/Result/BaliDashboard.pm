@@ -51,4 +51,10 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+__PACKAGE__->has_many(
+  "dashboard_roles",
+  "Baseliner::Schema::Baseliner::Result::BaliDashboardRole",
+  { "foreign.id_dashboard" => "self.id" },
+);
+
 1;

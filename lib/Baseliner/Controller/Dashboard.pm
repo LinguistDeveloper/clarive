@@ -81,11 +81,15 @@ sub list_dashboard : Local {
     my $where = $query
         ? { 'lower(name||description)' => { -like => "%".lc($query)."%" } }
         : undef;   
+
+    my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
+    $where->{"dashboard_roles.id_role"} = \@roles;
     
     my $rs = $c->model('Baseliner::BaliDashboard')->search( $where,
                                                             { page => $page,
                                                               rows => $limit,
-                                                              order_by => $sort ? { "-$dir" => $sort } : undef
+                                                              order_by => $sort ? { "-$dir" => $sort } : undef,
+                                                              join => ['dashboard_roles']
                                                             }
                                                     );
     

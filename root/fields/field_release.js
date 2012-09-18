@@ -28,7 +28,7 @@ params:
         singleMode: true,
         //hidden: rec.fields_form.show_release ? false : true,
         store: release_box_store,
-		disabled: meta ? !meta.write ? meta.write: meta.readonly : true
+		disabled: meta ? meta.write ? meta.write: meta.readonly : true
     });
 	
     release_box_store.on('load',function(){
