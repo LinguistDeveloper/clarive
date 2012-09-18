@@ -228,7 +228,7 @@ sub update : Local {
                         }
                     );
                 };
-                $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->id };
+                $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->mid };
             }else{
                 $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
             }
@@ -240,6 +240,7 @@ sub update : Local {
     when ('update') {
         try{
         my $type_save = $p ->{type};
+		_log ">>>>>>>>>>>>>>>Usuario: " . $p->{username}; 
         if ($type_save eq 'user') {
             my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
             $user->username( $p->{username} );
@@ -693,12 +694,15 @@ sub list : Local {
     $query and $where = query_sql_build( query=>$query, fields=>[qw(username realname alias)] );
 
     $where->{active} = 1 if $p->{active_only};
+	
+	$where->{mid} = {'!=', undef};
 
     my $rs = DB->BaliUser->search(
         $where,
         { page => $page,
           rows => $limit,
-          select=>[qw(username realname alias email active phone)],
+          select=>[qw(username realname alias email active phone mid)],
+		  as=>[qw(username realname alias email active phone mid)],
           distinct => 1,
           order_by => $sort ? { "-$dir" => $sort } : undef
         }
@@ -711,9 +715,13 @@ sub list : Local {
     my $pager = $rs->pager;
     $cnt = $pager->total_entries;	
     
+    #my @rows = map {
+    #    $_
+    #} $rs->hashref->all;
+	
     my @rows = map {
-        $_
-    } $rs->hashref->all;
+		+{ id => $_->{mid}, %{$_}};
+    } $rs->hashref->all;	
 
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
     $c->forward('View::JSON');

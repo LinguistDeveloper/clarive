@@ -766,7 +766,7 @@ sub create_clone : Local {
             $params->{origin} = 'custom';
             $params->{id_field} = $p->{name_field};
             $params->{name_field} = $p->{name_field};
-            $params->{field_order} += 20;
+            #$params->{field_order} += 20;
 
             $params->{rel_field} = $p->{name_field} if exists $params->{rel_field};
             if (exists $params->{filter}) {
