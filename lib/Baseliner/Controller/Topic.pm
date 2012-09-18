@@ -21,13 +21,7 @@ register 'menu.tools.topic' => {
 };
 
 register 'action.topics.admin' => { name=>'Admin topics' };
-
-
-# XXX
-map {
-    register "action.topics.view." . lc($_) => { name=>"Ver $_" };
-    register "action.topics.edit." . lc($_) => { name=>"Editar $_" };
-} (qw/Cambio Tarea Release Peticion Incidencia/, 'Caso de Prueba', 'Plan de Pruebas', 'Funcionalidad');
+register "action.topics.view" => { name=>"View topics menu" };
 
 sub grid : Local {
     my ($self, $c) = @_;

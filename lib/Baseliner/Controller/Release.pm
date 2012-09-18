@@ -40,7 +40,8 @@ register 'config.release' => {
     ],
 };
 
-register 'menu.job.release' => { label => 'Releases', icon=>'/static/images/scm/release.gif' };
+register 'action.job.view_releases' => { name=>'View job monitor' };
+register 'menu.job.release' => { label => 'Releases', icon=>'/static/images/scm/release.gif', actions => ['action.job.view_releases'] };
 register 'menu.job.release.new' => { label => 'Create a new Release', url=>'/release/create', title=>'New Release' };
 register 'menu.job.release.list' => { label => 'List Releases', url_comp => '/release/list', title=>'Releases' };
 
