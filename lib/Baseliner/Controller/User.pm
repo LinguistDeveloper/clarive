@@ -698,7 +698,7 @@ sub list : Local {
         $where,
         { page => $page,
           rows => $limit,
-          select=>[qw(username realname alias email active phone)],
+          select=>[qw(mid username realname alias email active phone)],
           distinct => 1,
           order_by => $sort ? { "-$dir" => $sort } : undef
         }
