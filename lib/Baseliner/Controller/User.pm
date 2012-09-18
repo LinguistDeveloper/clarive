@@ -669,7 +669,7 @@ sub projects_list : Local {
             project    => $data->{name},
             parent_checked => 0,
         },	    
-        icon       => '/static/images/icons/project_small.gif',
+        icon       => '/static/images/icons/project.gif',
         leaf       => \$data->{leaf},
         checked    => \$parent_checked
     };	

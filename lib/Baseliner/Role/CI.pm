@@ -4,9 +4,6 @@ use Moose::Role;
 use Moose::Util::TypeConstraints;
 require Baseliner::CI;
 
-# Empty CI to represent missing relationships
-{ package BaselinerX::CI::Empty; use Moose; with 'Baseliner::Role::CI' }
-
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
 
@@ -226,7 +223,6 @@ has resource => qw(is rw isa Baseliner::CI::URI),
                 handles => qr/.*/;
 
 has debug => qw(is rw isa Bool), default=>sub { $ENV{BASELINER_DEBUG} };
-
 
 1;
 

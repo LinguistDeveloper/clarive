@@ -77,4 +77,19 @@ __PACKAGE__->master_setup( 'repositories', ['project','mid'] => ['repository','B
 
 sub id { $_[0]->mid; }   # for backwards compatibility
 
+sub releases {
+    my ($self ) = @_;
+
+    my $rel_chi = DB->BaliTopic->search({
+       'categories.is_release' => 1,
+    },{ 
+       join=>['categories'], select=>['me.mid'],
+    })->as_query;
+
+    DB->BaliTopic->search(
+            { 'me.mid'=>{-in=>$rel_chi }, 'to_children.to_mid' => $self->mid },
+            { join=>[{ 'master' => { 'children' => 'to_children' } }] }
+    );
+}
+
 1;

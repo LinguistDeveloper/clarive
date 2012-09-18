@@ -51,6 +51,31 @@ sub tree_topic_get_files : Local {
 }
 
 
+sub tree_project_releases : Local {
+    my ($self,$c) = @_;
+    my @rels = DB->BaliProject->find( 560 )->releases->search(undef,{ prefetch=>['categories'] })->hashref->all;
+    my @tree = map {
+       +{
+            text => $_->{title},
+            icon => '/static/images/icons/release.png',
+            url  => '/lifecycle/topic_contents',
+            topic_name => {
+                mid            => $_->{mid},
+                category_color => $_->{categories}{color},
+                category_name  => $_->{categories}{name},
+                is_release     => 1,
+            },
+            data => {
+                topic_mid    => $_->{mid},
+            },
+       }
+    } @rels;
+    #$c->stash->{release_only} = 1;
+    #$c->forward('tree_topics_project');
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
 sub tree_topics_project : Local {
     my ($self,$c) = @_;
     my @tree;
@@ -63,6 +88,7 @@ sub tree_topics_project : Local {
     )->hashref->all;
     for( @topics ) {
         my $is_release = $_->{topic_project}{categories}{is_release};
+        next if $c->stash->{release_only} && ! $is_release;
         my $is_changeset = $_->{topic_project}{categories}{is_changeset};
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
@@ -124,7 +150,7 @@ sub topic_contents : Local {
         push @tree, {
             text       => $_->{topic_topic2}{title},
             topic_name => {
-                mid             => $_->{to_mid},
+                mid             => $_->{topic_topic2}{mid},
                 category_color  => $_->{topic_topic2}{categories}{color},
                 category_name   => $_->{topic_topic2}{categories}{name},
                 is_release      => $is_release,
@@ -133,7 +159,7 @@ sub topic_contents : Local {
             url        => '/lifecycle/tree_topic_get_files',
             data       => {
                topic_mid   => $_->{to_mid},
-               click       => $self->click_for_topic(  $_->{topic_topic2}{categories}{name}, $_->{from_mid} ),
+               click       => $self->click_for_topic(  $_->{topic_topic2}{categories}{name}, $_->{topic_topic2}{mid} ),
             },
             icon       => $icon, 
             leaf       => \1,

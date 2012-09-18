@@ -32,8 +32,8 @@ sub BUILDARGS {
                 ns_info => $r->description || $r->name,
                 user    => $r->username || '',
                 date    => $r->get_column('ts'),
-                icon_on => '/static/images/scm/release.gif',
-                icon_off=> '/static/images/scm/release.gif',
+                icon_on => '/static/images/icons/release.gif',
+                icon_off=> '/static/images/icons/release.gif',
                 service => 'service.runner.release',
                 provider=> 'namespace.release',
                 inspector  => Baseliner::Core::URL->new(

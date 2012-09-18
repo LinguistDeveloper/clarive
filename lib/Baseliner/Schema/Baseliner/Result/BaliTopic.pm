@@ -137,6 +137,16 @@ sub my_releases {
     )
 }
 
+sub release_topics {  
+    my ($self) = @_;
+    DB->BaliTopic->search({
+       'categories.is_release' => 1,
+       'children.to_mid' => $self->mid,
+    },{ 
+        join=>['categories',  { 'master' => 'children' } ], 
+    })
+}
+
 sub is_in_release {
     my ($self) = @_;
     $self->my_releases->count();

@@ -1,3 +1,5 @@
+/* Last css to be executed by Baseliner */
+
 .x-grid3-body .x-grid3-td-checker {
     background: none repeat-y scroll right center transparent;
 }
@@ -11,5 +13,9 @@
     font-size: 11px;
     margin: 0 0 0 4px;
     text-transform: uppercase;
+}
+
+.x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
+    height: 16px;
 }
 
