@@ -56,7 +56,7 @@ for(my $hh=0; $hh<=24; $hh++) {
 (function(){
     var id_cal = "<% $id_cal %>";
 
-    var modify_window = function(cmd) {
+    var modify_window = function(cmd, create) {
         var form = fpanel.getForm();
         //alert( cmd + "=" + form.findField('ven_ini').getValue() );
         var fstart = form.findField('ven_ini').getValue();
@@ -71,6 +71,9 @@ for(my $hh=0; $hh<=24; $hh++) {
             Ext.Msg.alert("Aviso", "Las ventanas cerradas no necesitan borrarse")
             return false;
         } */
+        if( create ) {
+            form.findField('id').setValue('');
+        }
         form.findField('cmd').setValue(cmd);
         form.submit({
             clientValidation: true,
@@ -129,6 +132,7 @@ for(my $hh=0; $hh<=24; $hh++) {
             ,{ icon:'/static/images/icons/cerrar.png', text: 'Crear Inactiva', handler: function(){ modify_window('AD') } }
 %} else {
             {  icon:'/static/images/icons/calendar_edit.png', text: 'Modificar Ventana', handler: function(){ modify_window('A') } }
+            ,{  icon:'/static/images/icons/calendar_add.png', text: 'Solapar', handler: function(){ modify_window('A', true) } }
 
 %}
 % unless( $c->stash->{create} ) { #las ventanas cerradas no se borran 
