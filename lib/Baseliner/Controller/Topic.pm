@@ -375,7 +375,7 @@ sub get_meta_permissions : Local {
 			my $sw_write = 0;
             my $sw_read = 0;
             
-            my $write_action = 'action.topicsfield.write.' . $_->{name_field} . '.' .  lc $data->{name_category} . '.' .  lc $data->{name_status};
+            my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . 'write';
             #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
             
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
@@ -383,7 +383,7 @@ sub get_meta_permissions : Local {
                 $sw_write = 1;                
             }
             
-            my $read_action = 'action.topicsfield.read.' . $_->{name_field} . '.' .  lc $data->{name_category} . '.' .  lc $data->{name_status};
+            my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . 'read';
             #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
     
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
