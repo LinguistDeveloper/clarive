@@ -82,8 +82,8 @@ sub list_dashboard : Local {
         ? { 'lower(name||description)' => { -like => "%".lc($query)."%" } }
         : undef;   
 
-    my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
-    $where->{"dashboard_roles.id_role"} = \@roles;
+    #my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
+    #$where->{"dashboard_roles.id_role"} = \@roles;
     
     my $rs = $c->model('Baseliner::BaliDashboard')->search( $where,
                                                             { page => $page,
@@ -368,7 +368,13 @@ sub list : Local {
                 $c->stash->{is_columns} = $dashboard->is_columns;
                 $c->stash->{dashboardlets} = \@dashlets;
             }else{
-                my $dashboard = $c->model('Baseliner::BaliDashboard')->search( {is_system=>'0'}, {order_by => 'is_main desc'} );
+                my $where = {};
+                my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
+                $where->{"dashboard_roles.id_role"} = \@roles;
+                $where->{"is_system"} = '0';
+                
+                #my $dashboard = $c->model('Baseliner::BaliDashboard')->search( {is_system=>'0'}, {order_by => 'is_main desc'} );
+                my $dashboard = $c->model('Baseliner::BaliDashboard')->search( $where, {join => ['dashboard_roles'],order_by => 'is_main desc'} );
                 
                 if ($dashboard->count > 0){
                     my $i = 0;
