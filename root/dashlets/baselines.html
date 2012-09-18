@@ -18,10 +18,10 @@ html: /dashlets/baselines.html
         <h2>Entornos</h2>
 %foreach my $entorno (_array @entornos){
         <h4><%$entorno->{bl}%></h4>
-        <div class="progress progress-success" style="margin-bottom: 5px;">
+        <div class="progress progress-success" style="margin-bottom: 5px;text-align: left">
             <div class="bar" style="width: <%$entorno->{porcentOk}%>%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/<%$dashboard_id%>/<%$projects%>/ok/<%$entorno->{bl}%>', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));"><%$entorno->{totOk}%></div>
         </div>
-        <div class="progress progress-danger" style="margin-bottom: 5px;">
+        <div class="progress progress-danger" style="margin-bottom: 5px;text-align: left">
             <div class="bar" style="width: <%$entorno->{porcentError}%>%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/<%$dashboard_id%>/<%$projects%>/nook/<%$entorno->{bl}%>', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));"><%$entorno->{totError}%></div>
         </div>
 %}

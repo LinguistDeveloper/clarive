@@ -115,6 +115,12 @@ __PACKAGE__->has_many(
   { id => "id_role" },
 );
 
+__PACKAGE__->has_many(
+  "dashboard_roles",
+  "Baseliner::Schema::Baseliner::Result::BaliDashboardRole",
+  { "foreign.id_role" => "self.id" },
+);
+
 sub name {
     my $self = shift;
     return $self->role;
