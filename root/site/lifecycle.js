@@ -375,6 +375,14 @@ var menu_click = function(node,event){
                         var d = { node: item.node, action: menu_item.comp };
                         Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), d );
                     };
+                } else if( menu_item.page != undefined ) {
+                    url = menu_item.page.url;
+                    menu_item.click_data = { action: menu_item.page }; // need this before to preserve scope
+                    menu_item.handler = function(item) {
+                        item.click_data.node = item.node;   
+                        var d = { node: item.node, action: menu_item.page, tab_icon: menu_item.icon };
+                        Baseliner.add_tab( item.url, _(menu_item.page.title), d );
+                    };
                 } else if( menu_item.eval != undefined ) {
                     url = menu_item.eval.url;
                     menu_item.click_data = { action: menu_item.eval }; // need this before to preserve scope
@@ -390,7 +398,6 @@ var menu_click = function(node,event){
                                 // no op
                                 var x = 0;
                             });
-                            
                         }
                     };
                 }

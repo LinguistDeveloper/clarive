@@ -83,12 +83,12 @@ sub lc_for_project {
           {
             'node' => 'Jobs',
             'icon' => '/static/images/icons/job.png',
-            'url' => '/job/monitor',
+            'url' => '/lifecycle/tree_project_jobs',
             'type' => 'component',
           },
           {
             'node' => 'Files',
-            'icon' => '/static/images/icons/files.gif',
+            'icon' => '/static/images/icons/directory.png',
             'menu' => [
                         {
                           'icon' => '/static/images/icons/folder.gif',

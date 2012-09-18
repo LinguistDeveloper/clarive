@@ -40,7 +40,7 @@ sub tree_topic_get_files : Local {
                   id_topic => $id_topic,
                   sw_get_files =>\1
                },
-               icon       => '/static/images/icons/files.gif',
+               icon       => '/static/images/icons/directory.png',
                leaf       => \0,
                expandable => \1
            };           
@@ -50,10 +50,9 @@ sub tree_topic_get_files : Local {
     $c->forward( 'View::JSON' );
 }
 
-
 sub tree_project_releases : Local {
     my ($self,$c) = @_;
-    my @rels = DB->BaliProject->find( 560 )->releases->search(undef,{ prefetch=>['categories'] })->hashref->all;
+    my @rels = DB->BaliProject->find( $c->req->params->{id_project} )->releases->search(undef,{ prefetch=>['categories'] })->hashref->all;
     my @tree = map {
        +{
             text => $_->{title},
@@ -70,6 +69,45 @@ sub tree_project_releases : Local {
             },
        }
     } @rels;
+    #$c->stash->{release_only} = 1;
+    #$c->forward('tree_topics_project');
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
+sub tree_project_jobs : Local {
+    my ($self,$c) = @_;
+    my $id_project = $c->req->params->{id_project} ;
+
+    # TODO only picks up jobs that have finished, not cancelled due to services needed
+    my @jobs = DB->BaliJob->search({
+    	id_project => $id_project
+    },{
+        select => ['name','id'],
+        join => 'bali_job_items', rows => 20, 
+        order_by => { -desc => 'starttime' }
+    })->hashref->all;
+
+    my @tree = map {
+       +{
+            text => $_->{name},
+            icon => '/static/images/icons/job.png',
+            leaf => \1,
+            menu => [
+                {
+                  icon => '/static/images/icons/job.png',
+                  text => _loc('Open...'),
+                  page => {
+                      url => sprintf( "/job/log/dashboard?id_job=%s&name=%s", $_->{id}, $_->{name} ),
+                      title => $_->{name},
+                  }
+                }
+            ],
+            data => {
+                topic_mid    => $_->{mid},
+            },
+       }
+    } @jobs;
     #$c->stash->{release_only} = 1;
     #$c->forward('tree_topics_project');
     $c->stash->{ json } = \@tree;
@@ -111,7 +149,7 @@ sub tree_topics_project : Local {
             },
             children => [
                 {   text => _loc('Files'),
-                    icon => '/static/images/icons/files.gif',
+                    icon => '/static/images/icons/directory.png',
                     leaf => \0,
                     data => {
                         id_topic     => $_->{from_mid},
