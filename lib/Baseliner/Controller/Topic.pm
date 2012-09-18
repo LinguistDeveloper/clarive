@@ -312,6 +312,31 @@ sub related : Local {
     $c->forward('View::JSON');
 }
 
+our %field_cache;
+
+sub get_field_bodies {
+    my ($self, $meta ) = @_;
+    # load comp body for each field
+    for my $field ( _array( $meta ) ) {
+        next unless defined $field->{js};
+        my $file = Baseliner->path_to( 'root', $field->{js} );
+        next if $file->is_dir;
+        # CACHE check - consider using Mason -- has its own cache
+        my $modified_on = $file->stat->mtime;
+        my $cache = $field_cache{ "$file" };
+        if( defined $cache && $cache->{modified_on} == $modified_on ) {
+            _debug "************ HIT CACHE ( $cache->{modified_on} == $modified_on ) for $file";
+            $field->{body} = $cache->{body};
+        } else {
+            _debug "************ NOOO CACHE ( $cache->{modified_on} != $modified_on )  for $file";
+            my $body = $file->slurp;
+            $field_cache{ "$file" } = { modified_on=>$modified_on, body => $body };
+            $field->{body} = $body;
+        }
+    }
+    return $meta;
+}
+
 sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
@@ -335,6 +360,7 @@ sub json : Local {
 
     $meta = get_meta_permissions ($c, $meta, $data);
     
+    $meta = $self->get_field_bodies( $meta );
     
     $ret->{topic_meta} = $meta;
     #$ret->{topic_data} = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
@@ -383,6 +409,7 @@ sub new_topic : Local {
     my $id_category = $p->{new_category_id};
     my $name_category = $p->{new_category_name};
     my $meta = Baseliner::Model::Topic->get_meta( undef, $id_category );
+    $meta = $self->get_field_bodies( $meta );
     my $data = Baseliner::Model::Topic->get_data( $meta, undef );
     
     $meta = get_meta_permissions ($c, $meta, $data);    
