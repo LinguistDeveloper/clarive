@@ -65,7 +65,7 @@ sub tree_topics_project : Local {
         my $is_release = $_->{topic_project}{categories}{is_release};
         my $is_changeset = $_->{topic_project}{categories}{is_changeset};
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
-            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic_one_lc.png' ;
+            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
         push @tree,
             {
             text       =>  $_->{topic_project}{title},
@@ -119,7 +119,7 @@ sub topic_contents : Local {
         my $is_release = $_->{topic_topic2}{categories}{is_release};
         my $is_changeset = $_->{topic_topic2}{categories}{is_changeset};
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
-            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic_one_lc.png' ;
+            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
         push @tree, {
             text       => $_->{topic_topic2}{title},
@@ -171,7 +171,7 @@ sub tree_projects : Local {
                     title => $r->name,
                 }               
             },
-            icon       => '/static/images/icons/project_small.png',
+            icon       => '/static/images/icons/project.png',
             leaf       => \0,
             expandable => \1
             };
@@ -222,7 +222,7 @@ sub tree_project : Local {
                 id_project => $r->mid,
                 project    => $r->name,
             },
-            icon       => '/static/images/icons/project_small_child.gif',
+            icon       => '/static/images/icons/project.png',
             leaf       => \0,
             expandable => \1
         };

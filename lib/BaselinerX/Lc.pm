@@ -16,6 +16,7 @@ register 'action.lc.ic_editor' => {
 has 'lc' => (
     is      => 'rw',
     isa     => 'Any',
+    lazy    => 1,
     default => sub {
         # loads the lc.yaml file on initialization
         my $feature = Baseliner->features->find( file => __FILE__ );
@@ -55,9 +56,56 @@ has 'state_data' => qw(is rw isa HashRef lazy 1),
 
 sub lc_for_project {
     my ($self, $id_prj) = @_;
-    my $lc = $self->lc;
-    _log "LC==========> $lc , " . ref $lc;
-    my $nodes = $lc->{nodes};
+    #my $lc = $self->lc;
+    #_log "LC==========> $lc , " . ref $lc;
+    #my $nodes = $lc->{nodes}; $ch ||= {
+    my $nodes = [
+          {
+            'icon' => '/static/images/icons/topic.png',
+            'url' => '/lifecycle/tree_topics_project',
+            'data' => {
+                        'click' => {
+                                     'icon' => '/static/images/icons/topic.png',
+                                     'url' => '/topic/grid',
+                                     'title' => 'Topics',
+                                     'type' => 'comp'
+                                   }
+                      },
+            'type' => 'component',
+            'node' => 'Topics'
+          },
+          {
+            'icon' => '/static/images/icons/job.png',
+            'url' => '/job/monitor',
+            'type' => 'component',
+            'node' => 'Jobs'
+          },
+          {
+            'icon' => '/static/images/icons/files.gif',
+            'menu' => [
+                        {
+                          'icon' => '/static/images/icons/folder.gif',
+                          'text' => 'New Folder',
+                          'url' => '/fileversion/new_folder'
+                        }
+                      ],
+            'url' => '/fileversion/tree_file_project',
+            'data' => {
+                        'on_drop' => {
+                                       'url' => '/fileversion/drop'
+                                     }
+                      },
+            'type' => 'component',
+            'node' => 'Files'
+          },
+          {
+            'icon' => '/static/images/scm/release.gif',
+            'url' => '/release/grid',
+            'type' => 'component',
+            'node' => 'Releases'
+          }
+    ];
+    
 
     my @repos =
         map { values %$_ }
