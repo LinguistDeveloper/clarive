@@ -229,7 +229,7 @@ sub get_meta {
         // DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query;
         
     my @meta = sort { $a->{field_order} <=> $b->{field_order} } map {  _load $_->{params_field} } DB->BaliTopicFieldsCategory->search({ id_category => { -in => $id_cat }  })->hashref->all;
-    
+   _error \@meta; 
     push @meta, { name_field => 'created_by', id_field => 'created_by', origin => 'default', html => '/fields/field_created_by.html', field_order => 4, section => 'body' },
                 { name_field => 'created_on', id_field => 'created_on', origin => 'default', html => '/fields/field_created_on.html', field_order => 5, section => 'body' },
                 { name_field => 'dates', id_field => 'dates', origin => 'rel', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 13, section => 'details' };
@@ -297,7 +297,8 @@ sub get_data {
         }
         
         foreach my $key  (keys %method_fields){
-            $data->{ $key } =  eval( '$self->' . $method_fields{$key} . '( $topic_mid, $key )' );
+            my $method = $method_fields{ $key };
+            $data->{ $key } =  $self->$method( $topic_mid, $key );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' } _array( $meta  );

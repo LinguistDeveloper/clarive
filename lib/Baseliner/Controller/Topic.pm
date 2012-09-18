@@ -382,7 +382,7 @@ sub get_meta_permissions : Local {
             
             my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . '.read';
             #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
-            _error $read_action;
+            #_error $read_action;
     
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
                 push @hidden_field, $_->{name_field};
@@ -454,7 +454,7 @@ sub view : Local {
 
         $c->stash->{topic_meta} = $meta;
         $c->stash->{topic_data} = $data;
-        
+
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
         $c->stash->{template} = '/comp/topic/topic_main.js';
