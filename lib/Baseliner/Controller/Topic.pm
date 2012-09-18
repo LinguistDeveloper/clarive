@@ -366,32 +366,40 @@ sub json : Local {
 
 sub get_meta_permissions : Local {
     my ($c, $meta, $data) = @_;
-    my @write_field;
-    my @read_field;
+    my @hidden_field;
     
+    my $is_root = $c->model('Permissions')->is_root( $c->username );
     
-    for (_array $meta){
-        
-    	#my $write_action = 'action.topicsfield.write.' . $_->{name_field} . '.' . lc $data->{name_category} . '.' . lc $data->{name_status};
-        my $write_action = 'action.topicsfield.write.' . $_->{name_field};
-        
-        if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
-        	push @write_field, $_->{name_field};
-            $_->{write} = \0;
+    if (!$is_root) {
+        for (_array $meta){
+			my $sw_write = 0;
+            my $sw_read = 0;
+            
+            my $write_action = 'action.topicsfield.write.' . $_->{name_field} . '.' .  lc $data->{name_category} . '.' .  lc $data->{name_status};
+            #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+            
+            if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+                $_->{write} = \1;
+                $sw_write = 1;                
+            }
+            
+            my $read_action = 'action.topicsfield.read.' . $_->{name_field} . '.' .  lc $data->{name_category} . '.' .  lc $data->{name_status};
+            #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
+    
+            if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
+                $_->{readonly} = \0;
+                $sw_read = 1;                
+            }
+            
+            if ($sw_write  && $sw_read){
+                push @hidden_field, $_->{name_field};
+            }
         }
         
-		#my $read_action = 'action.topicsfield.read.' . $_->{name_field} . '.' . lc $data->{name_category} . '.' . lc $data->{name_status};
-        my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
-
-        if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
-        	push @read_field, $_->{name_field};
-            $_->{readonly} = \1;
-        }        
+        my %hidden_field = map { $_ => 1} @hidden_field;
+        $meta = [grep { !($hidden_field{ $_->{name_field} }) } _array $meta];
+        
     }
-    
-    my %write_field = map { $_ => 1} @write_field;
-    
-    $meta = [grep { $write_field{ $_->{name_field} } } _array $meta];
     
     return $meta
 }

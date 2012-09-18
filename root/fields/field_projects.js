@@ -29,7 +29,7 @@ params:
 	
     var project_box = new Baseliner.model.Projects({
         store: project_box_store,
-		disabled: meta ? !meta.write ? meta.write: meta.readonly : true
+		disabled: meta ? meta.write ? meta.write: meta.readonly : true
     });
 	
     project_box_store.on('load',function(){

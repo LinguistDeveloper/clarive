@@ -26,7 +26,7 @@ params:
         height: 120,
         fieldLabel: _('Revisions'),
         hideHeaders: true,
-		disabled: meta ? !meta.write ? meta.write: meta.readonly : true,
+		disabled: meta ? meta.write ? meta.write: meta.readonly : true,
         viewConfig: {
             headersDisabled: true,
             enableRowBody: true,
