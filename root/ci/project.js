@@ -32,13 +32,17 @@
         };
     */
 
+    var combo_bl = Baseliner.combo_baseline({ value: '*' }); 
+
     var de = new Baseliner.DataEditor({
         fieldLabel: _('Variables'),
         height: 300,
         //hide_type: true,
+        //cols: [{header: _("Baseline"), width: 80, sortable: true, dataIndex: 'bl', editor: new Ext.form.TextArea() }],
         col_key_width: 100, 
         col_value_width: 100, 
         tbar: [
+            combo_bl,
             combo_vars, 
             { icon:'/static/images/icons/delete.gif', handler: del_var },
         ],

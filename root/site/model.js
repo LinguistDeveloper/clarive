@@ -1932,6 +1932,10 @@ Baseliner.DataEditor = function(c) {
         cols.push({header: _("Type"), width: 35, sortable: false, dataIndex: 'type', renderer: function(v){ return _(v) }});
     cols.push({header: _("Value"), width: c.col_value_width || 150, sortable: true, dataIndex: 'value', editor: textedit, renderer: render_value });
 
+    if( c.cols ) {
+        cols.push( c.cols );
+    }
+
     var cm = new Ext.grid.ColumnModel({
       columns: cols,      
       getCellEditor: function( col, row) {
