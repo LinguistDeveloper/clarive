@@ -398,27 +398,30 @@ sub changeset : Local {
     }
 
     ## add what's in this baseline 
-    my @repos = BaselinerX::Lc->new->project_repos( project=>$project );
+    my $repos = Baseliner::CI->new( $id_project )->repositories;
     # ( Girl::Repo->new( path=>"$path" ), $rev, $project );
 
     if ( $bl ne '*' ) {
-        push @tree, {
-            url  => '/lifecycle/repository',
-            icon => '/static/images/icons/repo.gif',
-            text => $_->{name},
-            leaf => \1,
-            data => {
-                bl    => $bl,
-                name  => $_->{name},
-                repo_path  => $_->{path},
-                click => {
-                    url   => '/lifecycle/repository',
-                    type  => 'comp',
-                    icon  => '/static/images/icons/repo.gif',
-                    title => "$_->{name} - $bl",
-                }
-              },
-        } for @repos;
+        for( _array $repos ) {
+            my $d = $_->load;
+            push @tree, {
+                url  => '/lifecycle/repository',
+                icon => '/static/images/icons/repo.gif',
+                text => $d->{name},
+                leaf => \1,
+                data => {
+                    bl    => $bl,
+                    name  => $d->{name},
+                    repo_path  => $d->{repo_dir},
+                    click => {
+                        url   => '/lifecycle/repository',
+                        type  => 'comp',
+                        icon  => '/static/images/icons/repo.gif',
+                        title => "$d->{name} - $bl",
+                    }
+                  },
+            }
+        }
     }
 
     # topic changes
