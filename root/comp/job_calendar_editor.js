@@ -4,10 +4,19 @@
 (function(){
     var id = Ext.id();
     var id2 = 'container-' + id;
-    var ns_store = new Ext.data.SimpleStore({ 
+    var ns_store = new Baseliner.JsonStore({
+       root: 'data' , 
+       fields: ['value', 'name'], 
+       totalProperty: "totalCount", 
+       autoLoad: true,
+       id: 'name',
+       url: '/namespace/all'
+    });
+    /* var ns_store = new Ext.data.SimpleStore({ 
        fields: ['value', 'name'], 
        data : <% js_dumper( $c->stash->{namespaces} ) %>
     }); 
+    */
     var bl_store = new Ext.data.SimpleStore({ 
        fields: ['value', 'name'], 
        data : <% js_dumper( $c->stash->{baselines} ) %>
@@ -68,13 +77,13 @@
                                name: 'ns', 
                                hiddenName: 'ns',
                                fieldLabel: _loc('Namespace'),
-                               mode: 'local', 
+                               mode: 'remote', 
                                editable: false,
                                forceSelection: true,
                                triggerAction: 'all',
                                store: ns_store, 
                                valueField: 'value',
-                               value: '<% $cal->ns  %>',
+                               //value: '<% $cal->ns  %>',
                                displayField:'name', 
                                allowBlank: false
                     },
