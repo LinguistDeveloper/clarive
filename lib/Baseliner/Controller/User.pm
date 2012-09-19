@@ -377,7 +377,8 @@ sub tratar_proyectos{
         my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
                                     {	username => $user_name,
                                     id_role => $role,
-                                    ns => 'project/' . $project
+                                    ns => 'project/' . $project,
+                                    id_project => $project,
                                     },
                                     { key => 'primary' });
         $role_user->update();

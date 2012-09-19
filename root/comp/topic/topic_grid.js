@@ -869,7 +869,7 @@
     var tree_filters = new Ext.tree.TreePanel({
                         region : 'east',
                         header: false,
-                        width: 180,
+                        width: 210,
                         split: true,
                         collapsible: true,
         tbar: [

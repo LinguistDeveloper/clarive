@@ -587,6 +587,7 @@ sub job_submit : Path('/job/submit') {
         my $err = shift;
         _error "Error during job creation: $err";
         $err =~ s{DBIx.*\(\):}{}g;
+        $err =~ s{ at./.*line.*}{}g;
         $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
     };
     $c->forward('View::JSON');	
