@@ -78,15 +78,8 @@ sub tree_project_releases : Local {
 sub tree_project_jobs : Local {
     my ($self,$c) = @_;
     my $id_project = $c->req->params->{id_project} ;
-
-    # TODO only picks up jobs that have finished, not cancelled due to services needed
-    my @jobs = DB->BaliJob->search({
-    	id_project => $id_project
-    },{
-        select => ['name','id'],
-        join => 'bali_job_items', rows => 20, 
-        order_by => { -desc => 'starttime' }
-    })->hashref->all;
+    
+    my @jobs = DB->BaliProject->find( $id_project )->jobs->hashref->all;
 
     my @tree = map {
        +{
