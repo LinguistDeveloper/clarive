@@ -26,6 +26,12 @@ sub get { find(@_) }
 sub find {
     my ($self, $nsid ) = @_;
     my ( $mid, $project, $title ) = $self->_break_ns( $nsid );
+    my $id_project = try {
+        [
+            map { $_->{mid} }
+            DB->BaliTopic->find( $mid )->projects->hashref->all
+        ]->[0];
+    } catch {};
 
     BaselinerX::Namespace::Changeset->new({
             ns       => "changeset/$nsid",
@@ -33,7 +39,7 @@ sub find {
             ns_name  => $title,
             ns_info  => $title,
             ns_type  => 'changeset',
-            ns_data  => { project=>$project },
+            ns_data  => { project=>$project, mid=>$mid, id_project=>$id_project },
             icon     => '/static/images/icons/changeset.gif',
             provider => 'namespace.changeset',
             related  => [],

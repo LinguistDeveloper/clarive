@@ -9,6 +9,9 @@ msgstr "Abrir"
 msgid "Progress"
 msgstr "Avance"
 
+msgid "Job Slots"
+msgstr "Ventanas de Pase"
+
 msgid "Repositories"
 msgstr "Repositorios"
 

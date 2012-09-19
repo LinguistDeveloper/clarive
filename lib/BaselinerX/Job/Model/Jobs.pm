@@ -296,6 +296,7 @@ sub _create {
                     service     => $item->{service},
                     provider    => $item->{provider},
                     id_job      => $job->id,
+                    id_project  => $ns->ns_data->{id_project},
                     application => $app,
                 }
             );
