@@ -11,7 +11,7 @@ use Try::Tiny;
 register 'menu.job.calendar' => {
     label    => _loc('Job Calendars'),
     url_comp => '/job/calendar_list',
-    title    => _loc('Job Calendars'),
+    title    => _loc('Job Slots'),
     actions  => ['action.job.calendar.view'],
     icon     => '/static/images/chromium/history_favicon.png'
 };
@@ -79,6 +79,10 @@ sub calendar_list_json : Path('/job/calendar_list_json') {
             }
             if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
+    my @prjs = map { $_->{ns} } grep { is_number( $_->{ns} ) } grep { length } @rows;
+    my %mids = DB->BaliProject->search({ mid=>\@prjs })->hash_unique_on('mid');
+    _error \%mids;
+    @rows = map { $_->{ns} = $mids{ $_->{ns} } ? $mids{ $_->{ns} }->{name} : $_->{ns}; $_ } @rows;
     $c->stash->{ json } = { data => \@rows };
     $c->forward( 'View::JSON' );
 }

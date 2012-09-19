@@ -52,6 +52,19 @@ sub json : Local {
     $c->forward('View::JSON');
 }
 
+sub all : Local {
+    my ($self,$c)=@_;
+    my $p = $c->stash->{ns_query};
+    my @prjs = map {
+        +{ name=>$_->{name}, value=>$_->{mid} }
+    } DB->BaliProject->search->hashref->all;
+    $c->stash->{json} = { 
+        totalCount=> scalar @prjs,
+        data => [ @prjs ],
+     };	
+    $c->forward('View::JSON');
+}
+
 # Namespace Tree 
 #TODO this should be opened on request by level
 sub ns_list : Path('/core/namespaces') {
