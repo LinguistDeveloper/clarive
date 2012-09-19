@@ -89,8 +89,7 @@ sub list_dashboard : Local {
                                                             { page => $page,
                                                               rows => $limit,
                                                               order_by => $sort ? { "-$dir" => $sort } : undef,
-                                                              join => ['dashboard_roles'],
-                                                              distinct => 1
+                                                              join => ['dashboard_roles']
                                                             }
                                                     );
     
