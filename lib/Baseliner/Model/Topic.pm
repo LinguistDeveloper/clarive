@@ -99,7 +99,7 @@ register 'event.topic.modify_field' => {
 
 register 'event.topic.change_status' => {
     text => '%1 changed topic status from %2 to %3 on %4',
-    vars => ['username', 'old_status', 'status', 'ts'],
+    vars => ['username', 'old_status', 'status', 'projects', 'ts'],
 };
 
 sub update {
@@ -444,7 +444,8 @@ sub save_data {
                 
                 if($field eq 'id_category_status'){
                     _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" . $old_text{$field};
-                    event_new 'event.topic.change_status' => { username => 'root', old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name')  } => sub {
+                    my @projects = $topic->projects->hashref->all;
+                    event_new 'event.topic.change_status' => { username => 'root', old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name'), projects => \@projects  } => sub {
                         { mid => $topic->mid, topic => $topic->title } 
                     } 
                     => sub {
