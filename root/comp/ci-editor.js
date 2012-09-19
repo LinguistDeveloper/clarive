@@ -3,6 +3,7 @@
     //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
     var mid = params.mid;
     var beforesubmit = [];
+    var is_active = params.rec.active || true;
 
     var submit_form = function( close_form ){
             var form2 = form.getForm();
@@ -71,7 +72,7 @@
         items: [
             { xtype: 'container', html:_( txt, params.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
             { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, style:'font-weight:bold' },
-            { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: params.rec.active, allowBlank: true },
+            { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
             ( params.has_bl > 0 ? bl_combo : [] ),
             //Baseliner.combo_baseline({ value: params.bl || '*' }),
             //{ xtype: 'hidden', name:'collection', value: params.collection },
