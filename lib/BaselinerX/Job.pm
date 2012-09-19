@@ -65,6 +65,23 @@ register 'service.job.new' => {
     }
 };
 
+register 'event.job.pre' => {
+    text => 'PRE job step event',
+    description => 'PRE job step event',
+    vars => ['job_name', 'id_job', 'job_stash', 'job' ],
+};
+
+register 'event.job.run' => {
+    text => 'RUN job step event',
+    description => 'RUN job step event',
+    vars => ['job_name', 'id_job', 'job_stash', 'job' ],
+};
+
+register 'event.job.post' => {
+    text => 'post job step event',
+    description => 'POST job step event',
+    vars => ['job_name', 'id_job', 'job_stash', 'job' ],
+};
 
 
 1;
