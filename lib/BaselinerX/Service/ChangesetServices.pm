@@ -298,6 +298,10 @@ sub update_baselines {
     my $status = $stash->{status_to};
 
     ### DANGER!!!! ADDED FOR DEMO PURPOSES ONLY
+    my $jt = $job->job_type;
+    if( $jt eq 'demote' ){
+        $bl = { 'PROD' => 'PREP', PREP => 'IT' }->{ $bl };
+    }
     if ( !$status ) {
         $status = $c->model( 'Baseliner::BaliTopicStatus' )->search( {bl => $bl} )->first->id;
     }
