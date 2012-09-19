@@ -107,7 +107,7 @@ sub action_tree : Local {
     my %tree;
     foreach my $a ( @actions ) {
         my $key = $a->{key};
-        ( my $folder = $key ) =~ s{^\w+\.(\w+)\..*$}{$1}g;
+        ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
         push @{ $tree{ $folder } }, { id=>$a->{key}, text=>_loc_decoded( $a->{name} ), leaf=>\1 }; 
     }
     my @tree_final = map { { id=>$_, text=>$_, leaf=>\0, children=>$tree{$_} } } sort keys %tree;
