@@ -92,4 +92,16 @@ sub releases {
     );
 }
 
+sub jobs {
+    my ($self ) = @_;
+    # TODO only picks up jobs that have finished, not cancelled due to services needed?
+    DB->BaliJob->search({
+    	id_project => $self->mid,
+    },{
+        select => ['name','id'],
+        join => 'bali_job_items', rows => 20, 
+        order_by => { -desc => 'starttime' }
+    });
+}
+
 1;
