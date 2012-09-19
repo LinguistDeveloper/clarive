@@ -89,7 +89,8 @@ sub list_dashboard : Local {
                                                             { page => $page,
                                                               rows => $limit,
                                                               order_by => $sort ? { "-$dir" => $sort } : undef,
-                                                              join => ['dashboard_roles']
+                                                              join => ['dashboard_roles'],
+                                                              distinct => 1
                                                             }
                                                     );
     
@@ -382,6 +383,7 @@ sub list : Local {
                 if ($dashboard->count > 0){
                     my $i = 0;
                     my @dashboard;
+                    my %dash;
                     while (my $dashboard = $dashboard->next){
                         if($i == 0){
                             @dashlets = _array _load $dashboard->dashlets;
@@ -393,12 +395,13 @@ sub list : Local {
                             $c->stash->{is_columns} = $dashboard->is_columns;
                             $c->stash->{dashboardlets} = \@dashlets;
                         }else{
-                            push @dashboard, { name => $dashboard->name,
+                            $dash{$dashboard->id} = { name => $dashboard->name,
                                                id   => $dashboard->id,
                                              };
                         }
                         $i++;
                     }
+                    @dashboard = values %dash;
                     $c->stash->{dashboards} = \@dashboard;
                     
                 }else{
@@ -641,9 +644,16 @@ sub list_baseline : Private {
 sub list_lastjobs: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $order_by = 'STARTTIME DESC'; 
-    my $rs_search = $c->model('Baseliner::BaliJob')->search(
-        undef,
-        {
+
+    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(
+        username => $c->username,
+        action   => 'action.job.viewall',
+        level    => 1
+    );
+    my $rs_search = DB->BaliJob->search( {
+        id_project => { -in => $c->model( 'Permissions' )->user_projects_query( username => $c->username ) } }, 
+        { 
+            join => 'bali_job_items', 
             order_by => $order_by,
         }
     );

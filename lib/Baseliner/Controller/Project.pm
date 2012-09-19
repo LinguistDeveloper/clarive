@@ -507,7 +507,7 @@ sub user_projects : Local {
     $sort ||= 'name';
     $dir ||= 'asc';
     $limit ||= 100;
-    $query and $query = qr/$query/i;
+    #$query and $query = qr/$query/i;
     my @rows;
     my $username = $c->username;
     my $perm = $c->model('Permissions');
@@ -518,15 +518,18 @@ sub user_projects : Local {
     #}
     @rows =  $perm->user_namespaces( $username ); # user apps
     @rows = grep { $_ ne '/' } @rows unless $c->is_root || $p->{include_root};
-    @rows = grep { $_ =~ $query } @rows if $query;
+    _error \@rows;
+   #@rows = grep { $_ =~ $query } @rows if $query;
     my $rs = $c->model('Baseliner::BaliProject')->search({ ns=>\@rows });
     rs_hashref($rs);
+    _error [ $rs->all ];
     @rows = map { 
         $_->{data}=_load($_->{data});
         $_->{ns} = 'project/' . $_->{mid};
         $_->{description} //= $_->{name} // '';
         $_ } $rs->all;
     # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
+    _error \@rows;
     $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
     $c->forward('View::JSON');
 }
