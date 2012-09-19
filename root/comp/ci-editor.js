@@ -2,10 +2,16 @@
     if( params.rec == undefined ) params.rec = {};            // master row record
     //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
     var mid = params.mid;
+    var beforesubmit = [];
 
     var submit_form = function( close_form ){
             var form2 = form.getForm();
             if ( form2.isValid() ) {
+               var flag = true;
+               Ext.each( beforesubmit, function( cb ){
+                  var ret = cb( form2 );
+                  if( !ret ) flag = false;
+               });
                form2.submit({
                    params: {action: params.action, mid: params.mid, collection:params.collection },
                    success: function(f,a){
@@ -43,7 +49,7 @@
     });
     var fieldset = new Ext.form.FieldSet({
         defaults: { 
-           anchor: '70%',
+           anchor: '90%',
            msgTarget: 'under'
         },
         hidden: true,
@@ -59,7 +65,7 @@
         tbar: tb,
         defaults: {
            allowBlank: false,
-           anchor: '70%' 
+           anchor: '90%' 
         },
         bodyStyle:'padding: 10px 0px 0px 15px',
         items: [
@@ -82,8 +88,15 @@
         if( params.ci_form ) {
             Baseliner.ajaxEval( params.ci_form, params, function(res){
                 if( res != undefined ) {
+                    var fields;
+                    if( Ext.isObject( res ) ) {
+                        fields = res.fields;
+                        if( res.beforesubmit ) beforesubmit.push( res.beforesubmit );
+                    } else {
+                        fields = res;
+                    }
                     fieldset.show();
-                    fieldset.add( res );
+                    fieldset.add( fields );
                     fieldset.doLayout();
                     //form.getForm().loadRecord( params.rec );
                     form.getForm().setValues( params.rec );

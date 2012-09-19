@@ -189,6 +189,7 @@ sub select_mappings {
                         $vars_origin->{basename} = $origin->basename;
                         $vars_origin->{home} = $ci_destination->{home};
                         $ret = parse_vars( $script, $vars_origin );
+                        # XXX put this in a top level service
                         try {
                             my @vars = DB->BaliMaster->search({ collection=>'variable' })->hashref->all;
                             if( @vars ) {
@@ -196,7 +197,19 @@ sub select_mappings {
                                    map { _load($_->{yaml}) if $_->{yaml} } @vars;
                                 $ret = parse_vars( $ret, \%vh );
                             }
-                        } catch {};
+                        } catch {
+                            _error shift();
+                        };
+                        try {
+                            my %vh;
+                            map { %vh = ( %vh, %$_ ) if ref $_ eq 'HASH'; }
+                            map { _load( $_->{data} ) }
+                            grep { length $_->{data} }
+                            DB->BaliProject->search(undef,{ select=>'data' })->hashref->all;
+                            $ret = parse_vars( $ret, \%vh ) if %vh;
+                        } catch {
+                            _error shift();
+                        };
                     } else {
                         $ret = $script;
                     }

@@ -1801,6 +1801,7 @@ Baseliner.DataEditor = function(c) {
         reader: new Ext.data.JsonReader({id: '_id'}, Record),
         proxy: proxy
     });
+    self.store = store;
 
     var textedit_key = new Ext.grid.GridEditor(new Ext.form.TextField(), {
                 offsets : [-4, -5],
@@ -1873,10 +1874,14 @@ Baseliner.DataEditor = function(c) {
         allowDepress:false, enableToggle:true, toggleGroup:'dataeditor-btn'});
 
     var close_comp = function( saved ){
-        self.data = saved ? collapse_data( store.getRange(), 0 ) : c.data;
+        self.data = saved ? self.getData() : c.data;
         self.json = Ext.util.JSON.encode( self.data );
         // call onDestroy
         self.destroy();
+    };
+
+    self.getData = function(){
+        return collapse_data( store.getRange(), 0 );
     };
 
     var add_row = function(){
@@ -1899,7 +1904,12 @@ Baseliner.DataEditor = function(c) {
             store.add( rec );
         }
     };
-    var del_row = function(){
+    self.add_var = function( key, type, value ) {
+        var rec = new Record({ key: key, value: value, type: type, _id: ++id, _is_leaf: true, _parent: 0 });
+        store.add( rec );
+    };
+
+    self.del_row = function(){
        var rec = tree.getSelectionModel().getSelected(); 
        if( rec ) {
           store.remove( rec );
@@ -1910,20 +1920,20 @@ Baseliner.DataEditor = function(c) {
         btn_json,
         '-',
         { icon:'/static/images/icons/add.png', handler: add_row },
-        { icon:'/static/images/icons/delete.png', handler: del_row },
+        { icon:'/static/images/icons/delete.gif', handler: self.del_row },
         '->', 
         { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ close_comp(false) } },
         { text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ close_comp(true) } }
     ];
 
+    var cols = [];
+    cols.push({ id:'key', header: _("Key"), width: c.col_key_width || 50, sortable: false, dataIndex: 'key', editor: textedit, renderer: render_key });
+    if( ! c.hide_type )
+        cols.push({header: _("Type"), width: 35, sortable: false, dataIndex: 'type', renderer: function(v){ return _(v) }});
+    cols.push({header: _("Value"), width: c.col_value_width || 150, sortable: true, dataIndex: 'value', editor: textedit, renderer: render_value });
+
     var cm = new Ext.grid.ColumnModel({
-      columns: [
-        { id:'key', header: _("Key"), width: 50, sortable: false, dataIndex: 'key', editor: textedit, renderer: render_key },
-        {header: _("Type"), width: 75, sortable: false, dataIndex: 'type', renderer: function(v){ return _(v) }},
-        {header: _("Value"), width: 150, sortable: true, dataIndex: 'value', editor: textedit, renderer: render_value }
-        //{header: _("_id"), width: 75, sortable: false, dataIndex: '_id' },
-        //{header: _("_parent"), width: 75, sortable: false, dataIndex: '_parent' }
-      ],      
+      columns: cols,      
       getCellEditor: function( col, row) {
         //config[col].setCellEditor( textedit );
         var editor;
@@ -1990,6 +2000,7 @@ Baseliner.DataEditor = function(c) {
         enableRowBody : true
       }
     }, c.editorConfig ));
+    self.editor = tree;
 
     var json_text = new Ext.form.TextArea({ });
 

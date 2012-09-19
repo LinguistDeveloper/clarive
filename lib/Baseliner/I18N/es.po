@@ -9,6 +9,9 @@ msgstr "Abrir"
 msgid "Progress"
 msgstr "Avance"
 
+msgid "Repositories"
+msgstr "Repositorios"
+
 msgid "All-f"
 msgstr "Todas"
 

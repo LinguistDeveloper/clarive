@@ -443,6 +443,10 @@ Create or update a CI.
 sub update : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
+    # cleanup
+    for my $k ( keys %$p ) {
+        delete $p->{$k} if $k =~ /^ext-comp-/
+    }
     # don't store in yaml
     my $name = delete $p->{name};
     my $bl = delete $p->{bl};

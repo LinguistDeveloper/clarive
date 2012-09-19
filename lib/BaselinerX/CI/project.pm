@@ -14,6 +14,10 @@ sub rel_type { { repositories=>[ from_mid => 'project_repository'] } }
 around table_update_or_create => sub {
    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
  
+   if( $data->{data} ) {
+      # json to yaml
+      $data->{data} = _dump( _decode_json( $data->{data} ) );
+   }
    my $row_mid = $self->$orig( $rs, $mid, $data, @rest );
    $mid //= $row_mid;  # necessary when creating
 
@@ -23,16 +27,17 @@ around table_update_or_create => sub {
    $row_mid;
 };
 
-#around load => sub {
-#    my ($orig, $self ) = @_;
-#
-#	my $data = $self->$orig();
-#    
-#    $data->{repository} = [ map { values %$_ }  DB->BaliMasterRel->search( { from_mid => $self->mid, rel_type => 'project_repository' }, { select=>'to_mid'} )->hashref->all ];
-#
-#    _error $data;
-#
-#    return $data;
-#};
+around load => sub {
+    my ($orig, $self ) = @_;
+
+	my $data = $self->$orig();
+    
+    #$data->{repository} = [ map { values %$_ }  DB->BaliMasterRel->search( { from_mid => $self->mid, rel_type => 'project_repository' }, { select=>'to_mid'} )->hashref->all ];
+    $data->{data} = _load( $data->{data} ) if length $data->{data};
+
+    _error $data;
+
+    return $data;
+};
 
 1;
