@@ -441,7 +441,10 @@
                 var data = n.attributes.data;
                 var job_type = main_form.getForm().getValues()['job_type'];
                 var cnt = jc_grid.getStore().getCount();  // auto set ?
-                if( cnt == 0 ) {
+                var bl = combo_baseline.getValue();
+            console.log( data.demotable );
+                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
+                if( cnt == 0 || bl_item == undefined ) {
                     var bl_hash = ( job_type == 'promote' ) ? data.promotable : data.demotable;
                     var first_bl;
                     for( var k in bl_hash ) {

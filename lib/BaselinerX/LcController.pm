@@ -550,27 +550,28 @@ sub promotes_and_demotes {
         { id_category => $topic->{id_category}, id_status_from => $topic->{id_category_status}, job_type => 'demote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
             distinct => 1,
-            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id/],
+            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl/],
             order_by => { -asc => 'statuses_to.seq' }
         }
     )->hashref->all;
 
     my $demotable={};
     for my $status ( @status_from ) {
-        $demotable->{ $status->{statuses_to}{bl} } = \1;
+        $demotable->{ $status->{statuses_from}{bl} } = \1;
         push @menu_d, {
             text => _loc( 'Demote to %1', _loc( $status->{statuses_to}{name} ) ),
             eval => {
                 url      => '/comp/lifecycle/deploy.js',
                 title    => 'Demote',
                 job_type => 'demote',
-                bl_to => $status->{statuses_to}{bl},
+                bl_to => $status->{statuses_from}{bl},
                 status_to => $status->{statuses_to}{id},
                 status_to_name => $status->{statuses_to}{name},
             },
             icon => '/static/images/silk/arrow_up.gif'
         };
     }
+    _error \@menu_d;
     return ( $promotable, $demotable, \@menu_p, \@menu_d );
 }
 

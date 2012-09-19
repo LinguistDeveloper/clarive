@@ -417,6 +417,22 @@
         } 
     });
 
+    /*
+    var do_backout = function(){
+        var sm = grid.getSelectionModel();
+        var sel = sm.getSelected();
+        if( sel ) {
+            Baseliner.ajaxEval('/job/backout', sel.data, function(res){
+                if( res.success ) {
+                    Baseliner.message( _('Backout', _(res.msg) ) ;
+                } else {
+                    Baseliner.error( _('Backout', _(res.msg) ) ;
+                }
+            });
+        }
+    };
+    */
+
     var msg_cancel_delete = [ _('Cancel Job'), _('Delete Job') ];
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
@@ -697,7 +713,7 @@
                     text: _('Backout'),
                     icon:'/static/images/icons/left.png',
                     cls: 'x-btn-text-icon',
-                    handler: function() { }
+                    handler: function() { do_backout() }
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Rerun'),
