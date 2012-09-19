@@ -570,10 +570,18 @@ sub list_baseline : Private {
     my $ids;
     $c->stash->{projects} = $config->{projects};
 
-    if ( $config->{projects} ne 'ALL' ) {
-        $ids = 'MID=' . join( '', grep { $_ =~ $config->{projects} } grep { length }  @ids_project );
+    _error "en la 573";
+     my $is_root = $c->model('Permissions')->is_root( $c->username );
+
+    if (!$is_root) {  
+        if ( $config->{projects} ne 'ALL' ) {
+            $ids = 'MID=' . join( '', grep { $_ =~ $config->{projects} } grep { length }  @ids_project ). ' AND' if grep { length } @ids_project;
+
+        } else {
+            $ids = 'MID=' . join( ' OR MID=', grep { length } @ids_project ). ' AND' if grep { length } @ids_project;
+        }
     } else {
-        $ids = 'MID=' . join( ' OR MID=', grep { length } @ids_project );
+        $ids = '';
     }
 
     if ( @ids_project ) {
@@ -584,14 +592,14 @@ sub list_baseline : Private {
         $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
                         AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids AND ACTIVE = 1) B 
+                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids ACTIVE = 1) B 
                         WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
                 GROUP BY BL
             UNION               
             SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
             WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
                     AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                    (SELECT NAME FROM BALI_PROJECT WHERE $ids AND ACTIVE = 1) B 
+                                                    (SELECT NAME FROM BALI_PROJECT WHERE $ids ACTIVE = 1) B 
                     WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
             GROUP BY BL";
 
@@ -779,7 +787,7 @@ sub list_jobs : Private {
 
     if ( @ids_project ) {
 
-        my $ids_project = 'MID=' . join( ' OR MID=', grep { length } @ids_project );
+        my $ids_project = 'MID=' . join( ' OR MID=', grep { length } @ids_project ). " AND " if grep { length } @ids_project;
 
         #CONFIGURATION DASHLET
         ##########################################################################################################
@@ -813,7 +821,7 @@ sub list_jobs : Private {
                                                             FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
                                                                         FROM BALI_JOB
                                                                         WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                                                                                            (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+                                                                                                                            (SELECT NAME FROM BALI_PROJECT WHERE $ids_project ACTIVE = 1) B 
                                                                                                                     WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
                                                                         
                                                                         
@@ -822,7 +830,7 @@ sub list_jobs : Private {
                                                           UNION
                                                           SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
                                                                                     WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                                                                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+                                                                                                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project ACTIVE = 1) B 
                                                                                                                                 WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
                                                          
                                                          
