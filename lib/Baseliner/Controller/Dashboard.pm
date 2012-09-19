@@ -564,18 +564,16 @@ sub list_baseline : Private {
     my $bl_days = $config->{bl_days};
 
     #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(
-        username => $c->username,
-        action   => 'action.job.viewall',
-        level    => 1
+    my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
+        username => $c->username
     );
-    my $ids_project;
+    my $ids;
     $c->stash->{projects} = $config->{projects};
 
     if ( $config->{projects} ne 'ALL' ) {
-        $ids_project = 'MID=' . join( '', grep { $_ =~ $config->{projects} } @ids_project );
+        $ids = 'MID=' . join( '', grep { $_ =~ $config->{projects} } grep { length }  @ids_project );
     } else {
-        $ids_project = 'MID=' . join( ' OR MID=', @ids_project );
+        $ids = 'MID=' . join( ' OR MID=', grep { length } @ids_project );
     }
 
     if ( @ids_project ) {
@@ -586,14 +584,14 @@ sub list_baseline : Private {
         $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
                         AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids AND ACTIVE = 1) B 
                         WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
                 GROUP BY BL
             UNION               
             SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
             WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
                     AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                    (SELECT NAME FROM BALI_PROJECT WHERE $ids_project AND ACTIVE = 1) B 
+                                                    (SELECT NAME FROM BALI_PROJECT WHERE $ids AND ACTIVE = 1) B 
                     WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
             GROUP BY BL";
 
@@ -644,11 +642,6 @@ sub list_lastjobs: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $order_by = 'STARTTIME DESC'; 
 
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(
-        username => $c->username,
-        action   => 'action.job.viewall',
-        level    => 1
-    );
     my $rs_search = DB->BaliJob->search( {
         id_project => { -in => $c->model( 'Permissions' )->user_projects_query( username => $c->username ) } }, 
         { 
@@ -779,15 +772,14 @@ sub list_jobs : Private {
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
     #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(
-        username => $c->username,
-        action   => 'action.job.viewall',
-        level    => 1
+   #Cojemos los proyectos que el usuario tiene permiso para ver jobs
+    my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
+        username => $c->username
     );
 
     if ( @ids_project ) {
 
-        my $ids_project = 'MID=' . join( ' OR MID=', @ids_project );
+        my $ids_project = 'MID=' . join( ' OR MID=', grep { length } @ids_project );
 
         #CONFIGURATION DASHLET
         ##########################################################################################################
