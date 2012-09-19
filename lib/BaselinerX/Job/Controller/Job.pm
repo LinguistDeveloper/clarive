@@ -45,6 +45,24 @@ sub job_create : Path('/job/create')  {
     $c->stash->{template} = '/comp/job_new.js';
 }
 
+sub backout : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my $old = DB->BaliJob->find( $p->{id} );
+        if( $old ) {
+            my $d = { $old->get_columns };
+            delete $d->{id};
+            #$d->{name} =  
+            #DB->BaliJob->create()
+        }
+        $c->stash->{json} = { success => \1, msg=>_('Job created') };
+    } catch {
+        $c->stash->{json} = { success => \0, msg=>"".shift() };
+    };
+    $c->forward('View::JSON');
+}
+
 # list objects ready for a job
 sub job_items_json : Path('/job/items/json') {
     my ( $self, $c ) = @_;
