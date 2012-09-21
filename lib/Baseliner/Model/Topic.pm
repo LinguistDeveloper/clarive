@@ -801,6 +801,20 @@ sub set_labels{
                                                         });     
     }     
 }
-
+sub get_categories_permissions{
+    my ($self, %param) = @_;
+    
+    my $username = delete $param{username};
+    my $type = delete $param{type};
+    
+    my @permission_categories;
+    my @categories  = Baseliner->model('Baseliner::BaliTopicCategories')->search()->hashref->all;
+    push @permission_categories,    grep { Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.topics.' . $_ . '.' . $type) } 
+                                    map { lc $_->{name} } @categories;
+    
+    my %permission_categories = map { $_ => 1} @permission_categories;
+    @categories = grep { $permission_categories{lc $_->{name}}} @categories;
+    return @categories;
+}
 
 1;
