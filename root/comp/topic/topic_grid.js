@@ -163,13 +163,14 @@
     
     var btn_add = new Baseliner.Grid.Buttons.Add({
         handler: function() {
+			store_category.load({params:{action: 'create'}});
             add_topic();
         }       
     });
     
     var add_topic = function() {
         var win;
-        
+		
         var combo_category = new Ext.form.ComboBox({
             mode: 'local',
             editable: false,
@@ -187,6 +188,8 @@
             tpl: '<tpl for="."><div id="boot" class="x-combo-list-item"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></div></tpl>', 
             allowBlank: false
         });
+
+		//store_category.on( 'load', function(){ combo_category.setValue( store_category.getAt(0).id );  });
 
         var combo_select = function() {
             var title = combo_category.getRawValue();
@@ -221,9 +224,6 @@
             ]
         });
 
-        store_category.load();
-        store_category.on( 'load', function(){ combo_category.setValue( store_category.getAt(0).id );  });
-        
         win = new Ext.Window({
             title: _(title),
             width: 550,

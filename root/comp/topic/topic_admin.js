@@ -463,7 +463,8 @@
                     var datas = me.getStore();
                     var recs = [];
                     datas.each(function(row, index){
-                        if(rec.data.statuses){
+                        //if(rec.data.statuses){
+						if(rec && rec.data && rec.data.statuses){
                             for(i=0;i<rec.data.statuses.length;i++){
                                 if(row.get('id') == rec.data.statuses[i]){
                                     recs.push(index);   
