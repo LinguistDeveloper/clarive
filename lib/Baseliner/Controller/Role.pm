@@ -146,7 +146,7 @@ sub action_tree : Local {
             }
 
         }
-        return $children;
+        return [ sort { $a->{id} cmp $b->{id} } _array $children ];
     };
 
     foreach my $key ( sort map { $_->{key} } @actions ) {
