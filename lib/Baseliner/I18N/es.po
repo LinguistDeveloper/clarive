@@ -2243,7 +2243,7 @@ msgstr "PID"
 
 # root/comp/scheduler_grid.js (171)
 msgid "Frequency"
-msgstr "Frequencia"
+msgstr "Frecuencia"
 
 # root/comp/scheduler_grid.js (173)
 msgid "Workdays"
