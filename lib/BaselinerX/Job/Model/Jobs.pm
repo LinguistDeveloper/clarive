@@ -115,6 +115,12 @@ sub is_in_active_job {
     return undef;
 }
 
+register 'event.job.new';
+register 'event.job.rerun';
+register 'event.job.delete';
+register 'event.job.cancel';
+register 'event.job.cancel_running';
+
 sub cancel {
     my ($self, %p )=@_;
     my $job = Baseliner->model('Baseliner::BaliJob')->search({ id=> $p{id} })->first;
@@ -125,7 +131,8 @@ sub cancel {
         if ( $job->status =~ /^CANCELLED/ ) {
            $job->delete;
         } else {
-           event_new 'event.job.cancel' => { job=>$job, self=>$self } => sub {
+           #event_new 'event.job.cancel' => { job=>$job, self=>$self } => sub {
+           event_new 'event.job.cancel' => { job=>$job } => sub {
                $job->status( 'CANCELLED' );
                $job->update;
            };
@@ -145,8 +152,6 @@ sub resume {
     $job->status('READY');
     $job->update;
 }
-
-register 'event.job.rerun';
 
 sub rerun {
     my ($self, %p )=@_;
@@ -409,7 +414,7 @@ sub notify { #TODO : send to all action+ns users, send to project-team
                 realname  => $realname,
                 status    => _loc($status),
                 subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
-                to        => $username,
+                to        => [$username],
                 username  => $username,
                 url_log   => $url_log,
             }

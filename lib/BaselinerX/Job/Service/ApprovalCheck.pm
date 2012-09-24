@@ -51,7 +51,7 @@ sub run_once {
         _debug "Checking job ". $job->name;
         my @items = map { $_->item } $job->bali_job_items->all;
         my %approvers;
-        my $logger = new BaselinerX::Job::Log({ jobid=>$job->id, job=>$job });
+        my $logger = new BaselinerX::Job::Log({ jobid=>$job->id });
         my @log_me; # deferred logging
 
         # check job approval

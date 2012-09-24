@@ -178,7 +178,7 @@ sub index:Private {
     # set language 
     if( $c->user ) {
         if( $c->user ) {
-            my $username = $c->user->username || $c->user->id;
+            my $username = $c->username;
             if( $username ) {
                 my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
                 $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );

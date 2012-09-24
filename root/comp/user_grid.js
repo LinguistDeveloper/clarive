@@ -9,7 +9,7 @@
         id: 'id', 
         url: '/user/list',
         fields: [
-            {  name: 'id' },
+            {  name: 'mid' },
             {  name: 'username' },
             {  name: 'role' },
             {  name: 'realname' },
@@ -239,8 +239,8 @@
                 });
 
                 ////////////////////////////////////////////////////////////////////
-                if (form.getValues()['id'] > 0) {
-                    if (form.getValues()['id'] > 0) {
+        //        if (form.getValues()['mid'] > 0) {
+                    if (form.getValues()['mid'] > 0) {
                            form.submit({
                            params: { action: action,
                                  type: 'roles_projects',
@@ -271,7 +271,7 @@
                             icon: Ext.Msg.INFO
                         });                         
                     }
-                }
+         //       }
                 //////////////////////////////////////////////////////////////////////////
 
             }
@@ -524,7 +524,7 @@
             ,items:[{
                 columnWidth:0.90,
                 items:[
-                    { xtype: 'hidden', name: 'id', value: -1 },
+                    { xtype: 'hidden', name: 'mid', value: -1 },
                     {
                     // column layout with 2 columns
                     layout:'column'
@@ -791,7 +791,7 @@
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
-                { header: _('Id'), hidden: true, dataIndex: 'id' },
+                { header: _('Id'), hidden: true, dataIndex: 'mid' },
                 { header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },
                 { header: _('Name'), width: 350, dataIndex: 'realname', sortable: true },
                 { header: _('Alias'), width: 150, dataIndex: 'alias', sortable: true },

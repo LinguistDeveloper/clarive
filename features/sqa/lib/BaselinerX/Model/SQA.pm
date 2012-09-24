@@ -1,3 +1,12 @@
+#INFORMACIÃ“N DEL CONTROL DE VERSIONES
+#
+#	CAM .............................. SCM
+#	Pase ............................. N.ANTE0000070494
+#	Fecha de pase .................... 2012/09/12 19:26:32
+#	UbicaciÃ³n del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Model/SQA.pm
+#	VersiÃ³n del elemento ............. 9
+#	Propietario de la versiÃ³n ........ q73898x (Q73898X - LUIS MIGUEL GARCIA MANCEBO)
+
 package BaselinerX::Model::SQA;
 use Moose;
 use Baseliner::Utils;
@@ -305,7 +314,7 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 	#	}
 
 	_log "CAM: $project";
-	_log "Subaplicación: $subproject";
+	_log "Subaplicacin: $subproject";
 	_log "Naturaleza: $nature";
 
 	$compileTests = 0;
@@ -352,7 +361,7 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 			status => 'BALI ERROR',
 			tsend  => 1
 		);
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al crear el directorio en el servidor de SQA. ¿No hay espacio en disco?  Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al crear el directorio en el servidor de SQA. No hay espacio en disco?  Consulte con el administrador de SQA' );
 		$bx->close();
 		$sem->release;
 		die _loc( "Error when creating job dir RC=%1:%2", $rc, $ret ) . "\n";
@@ -384,7 +393,7 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 	_log "cd $path/$CAMPath/$natureFinal;jar cvf $tarfile $prjs";
 	my $RET = `cd "$path/$CAMPath/$natureFinal";jar cvf "$tarfile" $prjs`;
 
-	#Enviamos el tar al directorio de trabajo del job en la máquina de SQA
+	#Enviamos el tar al directorio de trabajo del job en la mquina de SQA
 	_log "Sending file $dir_pase\\src.jar";
 	$rc = 1;
 	( $rc, $ret ) = $bx->sendFile( $tarfile, "$dir_pase\\src.jar" );
@@ -394,7 +403,7 @@ sub ship_project {    # envia un proyecto (subapl+nature) a SQA
 			status => 'BALI ERROR',
 			tsend  => 1
 		);
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al enviar el fichero de fuentes al servidor de SQA. ¿No hay espacio en disco?  Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al enviar el fichero de fuentes al servidor de SQA. No hay espacio en disco?  Consulte con el administrador de SQA' );
 		$bx->close();
 		$sem->release;
 		die _loc( "Error when sending sources tar file %1:%2", $tarfile, $ret )
@@ -413,7 +422,7 @@ qq{ mkdir $dir_pase\\$config->{source_dir} & cd /D "$dir_pase"\\$config->{source
 			status => 'BALI ERROR',
 			tsend  => 1
 		);
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al descomprimir el fichero de fuentes en el servidor de SQA. ¿No hay espacio en disco?  Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al descomprimir el fichero de fuentes en el servidor de SQA. No hay espacio en disco?  Consulte con el administrador de SQA' );
 		$bx->close();
 		$sem->release;
 		die _loc( "Error when unjarring sources file RC=%1:%2", $rc, $ret )
@@ -453,7 +462,7 @@ qq{ mkdir $dir_pase\\$config->{source_dir} & cd /D "$dir_pase"\\$config->{source
 				status => 'BALI ERROR',
 				tsend  => 1
 			);
-			$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al enviar el fichero de ejecutables al servidor de SQA. ¿No hay espacio en disco?  Consulte con el administrador de SQA' );
+			$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al enviar el fichero de ejecutables al servidor de SQA. No hay espacio en disco?  Consulte con el administrador de SQA' );
 			$bx->close();
 			$sem->release;
 			die _loc( "Error when sending sources builds file %1:%2",
@@ -472,7 +481,7 @@ qq{ mkdir "$dir_pase"\\$config->{builds_dir} & cd /D "$dir_pase"\\$config->{buil
 				status => 'BALI ERROR',
 				tsend  => 1
 			);
-			$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al descomprimir el fichero de ejecutables en el servidor de SQA. ¿No hay espacio en disco?  Consulte con el administrador de SQA' );
+			$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al descomprimir el fichero de ejecutables en el servidor de SQA. No hay espacio en disco?  Consulte con el administrador de SQA' );
 			$bx->close();
 			$sem->release;
 			die _loc( "Error when untarring builds file RC=%1:%2", $rc, $ret )
@@ -488,24 +497,24 @@ qq{ mkdir "$dir_pase"\\$config->{builds_dir} & cd /D "$dir_pase"\\$config->{buil
 		_log "$exe_file DOES NOT exists";
 	}
 
-	# Hay que compilar la aplicación de tests para J2EE?
+	# Hay que compilar la aplicacin de tests para J2EE?
 
 	if ($compileTests) {
 
 		my $compileScript =
 qq{ call ant -f $config->{compile_script} -DTestProjectDir=$dir_pase\\$config->{source_dir}\\${subproject}_TEST };
 		_log
-"Ejecutando script de compilación del proyecto de tests $dir_pase\\$config->{source_dir}\\${subproject}_TEST";
+"Ejecutando script de compilacin del proyecto de tests $dir_pase\\$config->{source_dir}\\${subproject}_TEST";
 		$rc = 1;
 		( $rc, $ret ) = $bx->execute($compileScript);
 
 		if ( $rc ne 0 ) {
-			_log "Ha habido un error en la compilación del proyecto de TEST";
+			_log "Ha habido un error en la compilacin del proyecto de TEST";
 		}
 		_log "$ret";
 	}
 
-	#Ejecución del script
+	#Ejecucin del script
 	my $recalc = '';
 	$recalc = "Recalc" if $config->{debug} eq 1;
 
@@ -561,7 +570,7 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $recalc -Dte
 			status => 'SQA ERROR',
 			tsend  => 1
 		);
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error en la ejecuci&oacute;n del análisis en el servidor de SQA.  Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error en la ejecuci&oacute;n del anlisis en el servidor de SQA.  Consulte con el administrador de SQA' );
 	}
 	## Eric @ 20 MAR 2012
 	## Borramos el directorio del pase independientemente del resultado
@@ -648,7 +657,7 @@ sub ship_packages_project {    # envia un proyecto (subapl+nature) a SQA
 		);
 		$bx->close();
 		$sem->release;
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al crear el directorio de pase en el servidor de SQA.  ¿No hay espacio en disco? Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al crear el directorio de pase en el servidor de SQA.  No hay espacio en disco? Consulte con el administrador de SQA' );
 		die _loc( "Error when creating job dir RC=%1:%2", $rc, $ret ) . "\n";
 	}
 
@@ -660,7 +669,7 @@ sub ship_packages_project {    # envia un proyecto (subapl+nature) a SQA
 	my $prjs    = ${CAMPath};
 	my $RET     = `cd "$path";jar cvf "$tarfile" $prjs`;
 
-	#Enviamos el tar al directorio de trabajo del job en la máquina de SQA
+	#Enviamos el tar al directorio de trabajo del job en la mquina de SQA
 	_log "Sending file $dir_pase\\src.jar";
 	( $rc, $ret ) = $bx->sendFile( $tarfile, "$dir_pase\\src.jar" );
 	if ( $rc ne 0 ) {
@@ -671,7 +680,7 @@ sub ship_packages_project {    # envia un proyecto (subapl+nature) a SQA
 		);
 		$bx->close();
 		$sem->release;
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al enviar el comprimido de fuentes al servidor de SQA.  ¿No hay espacio en disco? Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al enviar el comprimido de fuentes al servidor de SQA.  No hay espacio en disco? Consulte con el administrador de SQA' );
 		die _loc( "Error when sending sources tar file %1:%2", $tarfile, $ret )
 		  . "\n";
 	}
@@ -690,7 +699,7 @@ qq{ mkdir "$dir_pase"\\$config->{source_dir} & cd /D $dir_pase\\$config->{source
 		);
 		$bx->close();
 		$sem->release;
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al descomprimir el fichero de fuentes en el servidor de SQA.  ¿No hay espacio en disco? Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al descomprimir el fichero de fuentes en el servidor de SQA.  No hay espacio en disco? Consulte con el administrador de SQA' );
 		die _loc( "Error when unjarring sources file RC=%1:%2", $rc, $ret )
 		  . "\n";
 
@@ -729,7 +738,7 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $recalc -Din
 			status => 'SQA ERROR',
 			tsend  => 1
 		);
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de análisis de la subaplicación/naturaleza.  Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de anlisis de la subaplicacin/naturaleza.  Consulte con el administrador de SQA' );
 		
 	}
 	## Eric @ 20 MAR 2012
@@ -762,7 +771,7 @@ sub calculate_aggregates {
 	my $config = Baseliner->model('ConfigStore')->get('config.sqa');
 	my $job_id = $p{job_id};
 
-	#Calculamos el agregado por subaplicación
+	#Calculamos el agregado por subaplicacin
 	my $script =
 qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} Subaplicacion -Dsubapp="$subproject" -Dentorno=$bl -DCAM="$CAM" -Dproyecto="$project" -DinputDir="$dir_pase"};
 	_log "Ejecutando ... " . $script;
@@ -795,7 +804,7 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} Subaplicacio
 	}
 	else {
 		$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de análisis de la subaplicación.  Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de anlisis de la subaplicacin.  Consulte con el administrador de SQA' );
 	}
 
 	#Calculamos el agregado por CAM
@@ -829,7 +838,7 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} CAM -Dentorn
 	}
 	else {
 		$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
-		$self->write_sqa_error( job_id => $job_id, html => $ret, type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de análisis del CAM.  Consulte con el administrador de SQA' );
+		$self->write_sqa_error( job_id => $job_id, html => $ret, type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de anlisis del CAM.  Consulte con el administrador de SQA' );
 	}
 }
 
@@ -846,7 +855,7 @@ sub calculate_aggregate {
 	my ( $rc, $ret, $xml, $html, $return, $mstestResults, $junitResults );
 	_log "**************************** Empiezo el calculate_aggregate ";
 	my $config = Baseliner->model('ConfigStore')->get('config.sqa');
-	_log "**************************** Después del config ";
+	_log "**************************** Despus del config ";
 	my $dir_pase = $config->{dir_pase} . "\\" . $CAM . "_PACKAGES_" . _nowstamp;
 
 	_log "************ DIRECTORIO DE PASE: $dir_pase";
@@ -1222,7 +1231,7 @@ sub grab_package_results {    # recupera resultados
 			  . $fields[1]
 			  . "/report"
 			  . $fields[2] . ".html";
-			_log "****************************** añadido "
+			_log "****************************** aadido "
 			  . $config->{url_reports}
 			  . $fields[1]
 			  . "/report"
@@ -1259,7 +1268,6 @@ sub request_schedule {
 	my $user       = $p{user};
 	my $bl         = $p{bl};
 	my $job_id     = $p{job_id};
-	my $id_prj     = $p{id_prj};
 	my $return     = 1;
     my $time       = $p{time};
     
@@ -1274,6 +1282,8 @@ sub request_schedule {
         if ( $nextDate < $now ) {
            $nextDate = $nextDate + "1D";
         };
+		
+		my $id_prj = Baseliner->model('Baseliner::BaliProject')->search( { name => substr($project,0,3), id_parent => { "=", undef } } )->first->mid;
 		
         my $schedule_row = Baseliner->model('Baseliner::BaliSqaPlannedTest')->create(
             {
@@ -1323,7 +1333,7 @@ sub request_analysis {
 			tsend  => 1,
 			tsstart    => 1
 		);
-		$self->write_sqa_error( html=> _loc("Could not connect to dist server %1", $config->{dist_server}), job_id => $job_id, type => "pre", reason => "Ha ocurrido un error al conectar al servidor de SCM.  Probablemente está desconectado o existe algún problema de red.  Consulte con el administrador de SCM");
+		$self->write_sqa_error( html=> _loc("Could not connect to dist server %1", $config->{dist_server}), job_id => $job_id, type => "pre", reason => "Ha ocurrido un error al conectar al servidor de SCM.  Probablemente est desconectado o existe algn problema de red.  Consulte con el administrador de SCM");
 		die _loc("Could not connect to dist server %1", $config->{dist_server});
 	  };
 
@@ -1342,7 +1352,7 @@ qq{cd $config->{dist_udp_dir} ; perl AltaDistribucionNodist.pl N $user "$project
 			tsend  => 1,
 			tsstart    => 1
 		);
-		$self->write_sqa_error( html=> $ret, job_id => $job_id, type => "pre", reason => "Ha ocurrido un error solicitar el alta de pase sin distribuci&oacute;n.  Probablemente no hay código fuente para hacer el an&aacute;lisis en el estado seleccionado para la aplicación");
+		$self->write_sqa_error( html=> $ret, job_id => $job_id, type => "pre", reason => "Ha ocurrido un error solicitar el alta de pase sin distribuci&oacute;n.  Probablemente no hay cdigo fuente para hacer el an&aacute;lisis en el estado seleccionado para la aplicaci&oacute;n");
 	}
 	else {
 		$ret =~ /.*\?pase\=(.*)'>.*/;
@@ -1397,18 +1407,18 @@ sub getProjectConfigAll {
 	my $row_global_nature;
 	my $row_global;
 
-	if ($row_subnat) {    # Hay fila de proyecto busco su configuraci—n
+	if ($row_subnat) {    # Hay fila de proyecto busco su configuraciÃ³n
 		$row_subnat_config =
 		  Baseliner->model('Baseliner::BaliConfig')
 		  ->search(
 			{ bl => $bl, ns => 'project/' . $row_subnat->mid, key => $value } )
 		  ->first;
-		if ($row_subnat_config) {    # Si hay configuraci—n, la uso
+		if ($row_subnat_config) {    # Si hay configuraciÃ³n, la uso
 			$return = $row_subnat_config->value;
 			_log "************ CONFIGURACION DE SUBAPLICACION/NATURALEZA";
 		}
 		else
-		{   # No hay configuraci—n, busco la configuraci—n de CAM/naturaleza
+		{   # No hay configuraciÃ³n, busco la configuraciÃ³n de CAM/naturaleza
 			_log "************ NO HAY SUBAPLICACION/NATURALEZA";
 			$row_camnat_config =
 			  Baseliner->model('Baseliner::BaliConfig')->search(
@@ -1419,15 +1429,15 @@ sub getProjectConfigAll {
 				}
 			  )->first;
 			if ($row_camnat_config)
-			{    # Hay configuraci—n CAM/Naturaleza.  La uso
+			{    # Hay configuraciÃ³n CAM/Naturaleza.  La uso
 				$return = $row_camnat_config->value;
 				_log "************ CONFIGURACION DE CAM/NATURALEZA";
 			}
 			else
-			{ # No hay configuraci—n de CAM/Naturaleza.  Uso la de subaplicaci—n
+			{ # No hay configuraciÃ³n de CAM/Naturaleza.  Uso la de subaplicaciÃ³n
 				_log "************ NO HAY DE CAM/NATURALEZA";
 				if ($row_subproject)
-				{    # Hay fila de subproyecto. Busco su configuraci—n
+				{    # Hay fila de subproyecto. Busco su configuraciÃ³n
 					$row_subproject_config =
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
@@ -1437,12 +1447,12 @@ sub getProjectConfigAll {
 						}
 					  )->first;
 					if ($row_subproject_config)
-					{    #Hay configuraci—n de subproyecto.  La uso
+					{    #Hay configuraciÃ³n de subproyecto.  La uso
 						$return = $row_subproject_config->value;
 						_log "************ CONFIGURACION DE SUBAPLICACION";
 					}
 					else
-					{  #No hay configuraci—n de subproyecto.  Busco la del CAM
+					{  #No hay configuraciÃ³n de subproyecto.  Busco la del CAM
 						_log "************ NO HAY DE SUBAPLICACION";
 						$row_project_config =
 						  Baseliner->model('Baseliner::BaliConfig')->search(
@@ -1453,12 +1463,12 @@ sub getProjectConfigAll {
 							}
 						  )->first;
 						if ($row_project_config)
-						{    # Hay configuraci—n del CAM.  La uso
+						{    # Hay configuraciÃ³n del CAM.  La uso
 							$return = $row_project_config->value;
 							_log "************ CONFIGURACION DE CAM";
 						}
 						else
-						{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
+						{ # No hay configuraciÃ³n del CAM.  Uso de de la naturaleza global.  Si no hay se usarÃ¡ la global
 
 #							$config = Baseliner->model('ConfigStore')->get('config.sqa',ns =>'nature/'.$nature, bl => $bl);
 #							$return = $config->{$value};
@@ -1472,13 +1482,13 @@ sub getProjectConfigAll {
 								}
 							  )->first;
 							if ($row_global_nature)
-							{    # Hay configuraci—n del CAM.  La uso
+							{    # Hay configuracin del CAM.  La uso
 								$return = $row_global_nature->value;
 								_log
 "************ CONFIGURACION GLOBAL DE NATURALEZA";
 							}
 							else
-							{ # No hay configuraci—n global de naturaleza.  Uso la global.
+							{ # No hay configuraciÃ³n global de naturaleza.  Uso la global.
 								_log "************ NO HAY GLOBAL DE NATURALEZA";
 								$row_global =
 								  Baseliner->model('Baseliner::BaliConfig')
@@ -1486,7 +1496,7 @@ sub getProjectConfigAll {
 									{ bl => $bl, ns => '/', key => $value } )
 								  ->first;
 								if ($row_global)
-								{    # Hay configuraci—n del CAM.  La uso
+								{    # Hay configuraciÃ³n del CAM.  La uso
 									$return = $row_global->value;
 									_log "************ CONFIGURACION GLOBAL";
 								}
@@ -1495,7 +1505,7 @@ sub getProjectConfigAll {
 					}
 				}
 				else
-				{   # No hay fila de subproyecto. Uso la configuraci—n del CAM
+				{   # No hay fila de subproyecto. Uso la configuraciÃ³n del CAM
 					$row_project_config =
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
@@ -1505,12 +1515,12 @@ sub getProjectConfigAll {
 						}
 					  )->first;
 					if ($row_project_config)
-					{    # Hay configuraci—n del CAM.  La uso
+					{    # Hay configuraciÃ³n del CAM.  La uso
 						$return = $row_project_config->value;
 						_log "************ CONFIGURACION DE CAM";
 					}
 					else
-					{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
+					{ # No hay configuraciÃ³n del CAM.  Uso de de la naturaleza global.  Si no hay se usarÃ¡ la global
 						$row_global_nature =
 						  Baseliner->model('Baseliner::BaliConfig')->search(
 							{
@@ -1520,20 +1530,20 @@ sub getProjectConfigAll {
 							}
 						  )->first;
 						if ($row_global_nature)
-						{    # Hay configuraci—n del CAM.  La uso
+						{    # Hay configuraciÃ³n del CAM.  La uso
 							$return = $row_global_nature->value;
 							_log
 "************ CONFIGURACION GLOBAL DE NATURALEZA";
 						}
 						else
-						{ # No hay configuraci—n global de naturaleza.  Uso la global.
+						{ # No hay configuraciÃ³n global de naturaleza.  Uso la global.
 							$row_global =
 							  Baseliner->model('Baseliner::BaliConfig')
 							  ->search(
 								{ bl => $bl, ns => '/', key => $value } )
 							  ->first;
 							if ($row_global)
-							{    # Hay configuraci—n del CAM.  La uso
+							{    # Hay configuraciÃ³n del CAM.  La uso
 								$return = $row_global->value;
 								_log "************ CONFIGURACION GLOBAL";
 							}
@@ -1544,7 +1554,7 @@ sub getProjectConfigAll {
 		}
 	}
 	else
-	{ # No hay fila de subaplicaci—n/naturaleza, busco la configuraci—n de CAM/naturaleza
+	{ # No hay fila de subaplicaciÃ³n/naturaleza, busco la configuraciÃ³n de CAM/naturaleza
 		$row_camnat_config = Baseliner->model('Baseliner::BaliConfig')->search(
 			{
 				bl  => $bl,
@@ -1552,14 +1562,14 @@ sub getProjectConfigAll {
 				key => $value
 			}
 		)->first;
-		if ($row_camnat_config) {  # Hay configuraci—n CAM/Naturaleza.  La uso
+		if ($row_camnat_config) {  # Hay configuraciÃ³n CAM/Naturaleza.  La uso
 			$return = $row_camnat_config->value;
 			_log "************ CONFIGURACION DE CAM/NATURALEZA";
 		}
 		else
-		{ # No hay configuraci—n de CAM/Naturaleza.  Uso la de subaplicaci—n
+		{ # No hay configuraciÃ³n de CAM/Naturaleza.  Uso la de subaplicaciÃ³n
 			if ($row_subproject)
-			{    # Hay fila de subproyecto. Busco su configuraci—n
+			{    # Hay fila de subproyecto. Busco su configuraciÃ³n
 				$row_subproject_config =
 				  Baseliner->model('Baseliner::BaliConfig')->search(
 					{
@@ -1569,11 +1579,11 @@ sub getProjectConfigAll {
 					}
 				  )->first;
 				if ($row_subproject_config)
-				{    #Hay configuraci—n de subproyecto.  La uso
+				{    #Hay configuraciÃ³n de subproyecto.  La uso
 					$return = $row_subproject_config->value;
 					_log "************ CONFIGURACION DE SUBAPLICACION";
 				}
-				else { #No hay configuraci—n de subproyecto.  Busco la del CAM
+				else { #No hay configuraciÃ³n de subproyecto.  Busco la del CAM
 					$row_project_config =
 					  Baseliner->model('Baseliner::BaliConfig')->search(
 						{
@@ -1583,12 +1593,12 @@ sub getProjectConfigAll {
 						}
 					  )->first;
 					if ($row_project_config)
-					{    # Hay configuraci—n del CAM.  La uso
+					{    # Hay configuraciÃ³n del CAM.  La uso
 						$return = $row_project_config->value;
 						_log "************ CONFIGURACION DE CAM";
 					}
 					else
-					{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
+					{ # No hay configuraciÃ³n del CAM.  Uso de de la naturaleza global.  Si no hay se usarÃ¡ la global
 						$row_global_nature =
 						  Baseliner->model('Baseliner::BaliConfig')->search(
 							{
@@ -1598,20 +1608,20 @@ sub getProjectConfigAll {
 							}
 						  )->first;
 						if ($row_global_nature)
-						{    # Hay configuraci—n del CAM.  La uso
+						{    # Hay configuraciÃ³n del CAM.  La uso
 							$return = $row_global_nature->value;
 							_log
 "************ CONFIGURACION GLOBAL DE NATURALEZA";
 						}
 						else
-						{ # No hay configuraci—n global de naturaleza.  Uso la global.
+						{ # No hay configuraciÃ³n global de naturaleza.  Uso la global.
 							$row_global =
 							  Baseliner->model('Baseliner::BaliConfig')
 							  ->search(
 								{ bl => $bl, ns => '/', key => $value } )
 							  ->first;
 							if ($row_global)
-							{    # Hay configuraci—n global.  La uso
+							{    # Hay configuraciÃ³n global.  La uso
 								$return = $row_global->value;
 								_log "************ CONFIGURACION GLOBAL";
 							}
@@ -1619,7 +1629,7 @@ sub getProjectConfigAll {
 					}
 				}
 			}
-			else {  # No hay fila de subproyecto. Uso la configuraci—n del CAM
+			else {  # No hay fila de subproyecto. Uso la configuraciÃ³n del CAM
 				$row_project_config =
 				  Baseliner->model('Baseliner::BaliConfig')->search(
 					{
@@ -1629,29 +1639,29 @@ sub getProjectConfigAll {
 					}
 				  )->first;
 				if ($row_project_config)
-				{    # Hay configuraci—n del CAM.  La uso
+				{    # Hay configuraciÃ³n del CAM.  La uso
 					$return = $row_project_config->value;
 					_log "************ CONFIGURACION DE CAM";
 				}
 				else
-				{ # No hay configuraci—n del CAM.  Uso de de la naturaleza global.  Si no hay se usar‡ la global
+				{ # No hay configuraciÃ³n del CAM.  Uso de de la naturaleza global.  Si no hay se usarÃ¡ la global
 					$row_global_nature =
 					  Baseliner->model('Baseliner::BaliConfig')
 					  ->search(
 						{ bl => $bl, ns => 'nature/' . $nature, key => $value }
 					  )->first;
 					if ($row_global_nature)
-					{    # Hay configuraci—n del CAM.  La uso
+					{    # Hay configuraciÃ³n del CAM.  La uso
 						$return = $row_global_nature->value;
 						_log "************ CONFIGURACION GLOBAL DE NATURALEZA";
 					}
 					else
-					{ # No hay configuraci—n global de naturaleza.  Uso la global.
+					{ # No hay configuraciÃ³n global de naturaleza.  Uso la global.
 						$row_global =
 						  Baseliner->model('Baseliner::BaliConfig')
 						  ->search( { bl => $bl, ns => '/', key => $value } )
 						  ->first;
-						if ($row_global) { # Hay configuraci—n global.  La uso
+						if ($row_global) { # Hay configuraciÃ³n global.  La uso
 							$return = $row_global->value;
 							_log "************ CONFIGURACION GLOBAL";
 						}
@@ -1690,7 +1700,7 @@ sub getProjectConfigAll_old {
 		  ->get( 'config.sqa', ns => 'project/' . $row->mid, bl => $bl );
 		if ( $config->{$value} ) {
 			$return = $config->{$value};
-			_log "****** Nivel: subaplicaci—n/naturaleza";
+			_log "****** Nivel: subaplicaciÃ³n/naturaleza";
 			_dump $config;
 		}
 		elsif ( $row->parent && $row->parent->parent ) {
@@ -1777,10 +1787,10 @@ sub getProjectLastStatus {
 			  Baseliner->model('Baseliner::BaliSqa')
 			  ->search( { id_prj => $row->mid, bl => $bl->{$bl_dest} } )->first;
 			if ($row_sqa) {
-				_log "Último status en "
+				_log "ltimo status en "
 				  . $bl->{$bl_dest} . ": "
 				  . $row_sqa->status;
-				_log "Última auditor&iacute;a en "
+				_log "ltima auditor&iacute;a en "
 				  . $bl->{$bl_dest} . ": "
 				  . $row_sqa->qualification;
 				my $config =
@@ -2069,14 +2079,14 @@ sub error_analysis_mail {
 			push @users, $username;
 			_log "ENVIANDO CORREO AL PROPIETARIO DEL ANALISIS";
 		} else {
-			_log "NO ENVÍO CORREO AL PROPIETARIO DEL ANALISIS";
+			_log "NO ENVO CORREO AL PROPIETARIO DEL ANALISIS";
 		}
 	} else {
 		if ( $config_sqa->{ send_mail_scm_owner } ) {
 			push @users, $username;
 			_log "ENVIANDO CORREO AL PROPIETARIO DEL PASE";
 		} else {
-			_log "NO ENVÍO CORREO AL PROPIETARIO DEL PASE"
+			_log "NO ENVO CORREO AL PROPIETARIO DEL PASE"
 		}
 	}
 
@@ -2149,14 +2159,14 @@ sub end_analysis_mail {
 			push @users, $username;
 			_log "ENVIANDO CORREO AL PROPIETARIO DEL ANALISIS";
 		} else {
-			_log "NO ENVÍO CORREO AL PROPIETARIO DEL ANALISIS";
+			_log "NO ENVO CORREO AL PROPIETARIO DEL ANALISIS";
 		}
 	} else {
 		if ( $config_sqa->{ send_mail_scm_owner } ) {
 			push @users, $username;
 			_log "ENVIANDO CORREO AL PROPIETARIO DEL PASE";
 		} else {
-			_log "NO ENVÍO CORREO AL PROPIETARIO DEL PASE"
+			_log "NO ENVO CORREO AL PROPIETARIO DEL PASE"
 		}
 	}
 
@@ -2237,13 +2247,13 @@ sub send_ju_email {
 		my $corr = \%p;
 		my $ns   = 'sqa.ju_email/' . $_;
 		my $data = Baseliner->model('Repository')->get( ns => $ns );
-		$data ||= {};    # inicializa si está vacio
+		$data ||= {};    # inicializa si est vacio
 		my $hash_data = $data->{hcorreos} || {};
 		push @{ $data->{correos} }, $corr;
 		#$data->{substr($project,0,3).".$subproject.$nature.$bl"} = _dump $corr;
 		for ( keys %p ) {
 			$hash_data->{ substr($project,0,3).".$subproject.$nature.$bl"}->{$_} = $p{$_};
-			_log "Añadiendo $p{$_} al hash".substr($project,0,3).".$subproject.$nature.$bl";
+			_log "Aadiendo $p{$_} al hash".substr($project,0,3).".$subproject.$nature.$bl";
 		}
 		_log _dump $hash_data;
 		$data->{hcorreos} = $hash_data;

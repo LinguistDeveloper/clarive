@@ -93,11 +93,7 @@ __PACKAGE__->add_columns(
     size => 126,
   },
   "last_exec",
-  {
-    data_type   => "datetime",
-    is_nullable => 1,
-    original    => { data_type => "date" },
-  },
+  { data_type => "varchar2", is_nullable => 0, size => 20 },
   "comments",
   { data_type => "varchar2", is_nullable => 1, size => 500 },
   "scheduled",
@@ -105,11 +101,7 @@ __PACKAGE__->add_columns(
   "bl",
   { data_type => "varchar2", is_nullable => 1, size => 4 },
   "next_exec",
-  {
-    data_type   => "datetime",
-    is_nullable => 1,
-    original    => { data_type => "date" },
-  },
+  { data_type => "varchar2", is_nullable => 0, size => 20 },
   "id_prj",
   {
     data_type => "numeric",

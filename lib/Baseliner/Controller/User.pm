@@ -239,10 +239,10 @@ sub update : Local {
     }
     when ('update') {
         try{
+            _debug 'UPDATE'._dump $p;
         my $type_save = $p ->{type};
         if ($type_save eq 'user') {
-            my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
-            $user->username( $p->{username} );
+            my $user = $c->model('Baseliner::BaliUser')->find( {username=>$p->{username } } );
             $user->realname( $p->{realname} );
             if($p->{pass} ne ''){
             $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
@@ -698,7 +698,7 @@ sub list : Local {
         $where,
         { page => $page,
           rows => $limit,
-          select=>[qw(username realname alias email active phone)],
+          select=>[qw(mid username realname alias email active phone)],
           distinct => 1,
           order_by => $sort ? { "-$dir" => $sort } : undef
         }

@@ -1,3 +1,12 @@
+#INFORMACIÓN DEL CONTROL DE VERSIONES
+#
+#	CAM .............................. SCM
+#	Pase ............................. N.ANTE0000070155
+#	Fecha de pase .................... 2012/09/06 17:56:59
+#	Ubicación del elemento ........... /SCM/FICHEROS/UNIX/baseliner/features/sqa/lib/BaselinerX/Controller/SQA.pm
+#	Versión del elemento ............. 17
+#	Propietario de la version ........ q74612x (Q74612X - RICARDO MARTINEZ HERRERA)
+
 package BaselinerX::Controller::SQA;
 use Baseliner::Plug;
 BEGIN { extends 'Catalyst::Controller' }
@@ -129,30 +138,49 @@ sub grid_json : Local {
     }
 
     my $table = 'Baseliner::BaliSqa';
-
+    my $order_by;
+    
 	if ( $type && $type =~ /CFGNAT/ ) {
         $table = 'Baseliner::BaliProjectNatureConfig';
         $args = {page => $page, rows => $limit};
-        $args->{order_by} = $sort ? "$sort $dir" : 'project_name asc';
+        if ( $sort ) {
+        	push @$order_by, { "-$dir" => $sort };
+        } else {
+        	push @$order_by, { "-asc" => 'project_name' };
+        }
         $groupBy eq 'project' and $groupBy = '';
     } elsif ( $type && $type =~ /^CFG/ ) {
         $table = 'Baseliner::BaliProjectTree';
         $args = {page => $page, rows => $limit};
-        $args->{order_by} = $sort ? "$sort $dir" : 'project_name asc';
+        if ( $sort ) {
+        	push @$order_by, { "-$dir" => $sort };
+        } else {
+        	push @$order_by, { "-asc" => 'project_name' };
+        }
         $groupBy eq 'project' and $groupBy = 'project_name';
     } elsif ( $type ) {
         $where->{'me.type'} = {'=' => $type};
         $args = {join => [ 'project' ], page => $page, rows => $limit};
-        $args->{order_by} = $sort ? "$sort $dir" : 'me.ns asc';
+        if ( $sort ) {
+        	push @$order_by, { "-$dir" => $sort };
+        } else {
+        	push @$order_by, { "-asc" => 'me.ns' };
+        }
         $groupBy eq 'project' and $groupBy = 'me.ns';
     } else {
         $where->{'me.type'} = {'<>' => 'PKG'};
         $args = {join => [ 'project' ], page => $page, rows => $limit};
-        $args->{order_by} = $sort ? "$sort $dir" : 'me.ns asc';
+        if ( $sort ) {
+        	push @$order_by, { "-$dir" => $sort };
+        } else {
+        	push @$order_by, { "-asc" => 'me.ns' };
+        }
         $groupBy eq 'project' and $groupBy = 'me.ns';
     }
-    $groupBy and $args->{order_by} = "$groupBy $groupDir, " . $args->{order_by};
-
+    $groupBy and unshift @$order_by, { "-$groupDir" => $groupBy };
+    
+	$args->{order_by} = $order_by;
+    
     my $projects;
 
     if ( $type && $type =~ /^CFG/ ) {
@@ -1154,13 +1182,57 @@ sub delete_analysis : Local {
     $c->forward( 'View::JSON' );
 }
 
-sub subproject_natures : Local {
+sub delete_schedule : Local {
+    my ( $self, $c ) = @_;
+    my $user       = $c->username;
+    my $p          = $c->request->params;
+    my $id = $p->{id};
+    my $err;
+
+    try {
+		my $row = Baseliner->model('Baseliner::BaliSqaPlannedTest')->find( $id );
+		$row->delete;		
+        $c->stash->{json} = {msg => 'ok', success => \1};
+    } catch {
+        $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error running sqa commands: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub save_schedule : Local {
+    my ( $self, $c ) = @_;
+    my $user       = $c->username;
+    my $p          = $c->request->params;
+    my $id = $p->{id};
+    my $time = $p->{time};
+    my $date = $p->{next_exec};
+    my $active = $p->{active};
+    my $err;
+
+    try {
+		my $row = Baseliner->model('Baseliner::BaliSqaPlannedTest')->find( $id );
+		$row->scheduled($time);
+		$row->next_exec( $date." ".$time.":00" );
+		$row->active( $active && $active eq 'on'?"1":"0" );
+		
+		$row->update;
+				
+        $c->stash->{json} = {msg => 'ok', success => \1};
+    } catch {
+        $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error running sqa commands: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub scheduled_tests : Local {
     my ( $self, $c ) = @_;
 
     my @data;
     my $where = {};
     
-	$where->{'me.id'} = $c->model( 'Permissions' )->user_projects_with_action(
+	$where->{'me.id_prj'} = $c->model( 'Permissions' )->user_projects_with_action(
 	            username => $c->username,
 	            action   => 'action.sqa.view_project'
 	        );
@@ -1178,7 +1250,7 @@ sub subproject_natures : Local {
 	                active     => $row->active,
 	                last_exec     => $row->last_exec,
 	                comments     => $row->comments,
-	                schedule     => $row->schedule,
+	                scheduled     => $row->scheduled,
 	                bl     => $row->bl,
 	                next_exec     => $row->next_exec
                 };

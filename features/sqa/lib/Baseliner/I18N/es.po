@@ -1,4 +1,4 @@
-msgid ""
+﻿msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -391,3 +391,30 @@ msgstr "Análisis de calidad de paquetes finalizado"
 
 msgid "SQA analysis finished"
 msgstr "Análisis de calidad finalizado"
+
+msgid "Last"
+msgstr "Última"
+
+msgid "Active"
+msgstr "Activo"
+
+msgid "Last date and time when the analysis ran"
+msgstr "Última ejecución del análisis planificado"
+
+msgid "Next date and time when the analysis will run"
+msgstr "Siguiente ejecución del análisis planificado"
+
+msgid "Schedule active or not"
+msgstr "Análisis planificado activo o no"
+
+msgid "SQA: Scheduled analysis"
+msgstr "SQA: Análisis planificados"
+
+msgid "Scheduled analysis"
+msgstr "Análisis planificados"
+
+msgid "Can create a scheduled analysis"
+msgstr "Puede editar análisis planificados"
+
+msgid "Time of the day to execute the analysis"
+msgstr "Hora a la que se planificará el siguiente análisis"
