@@ -91,6 +91,8 @@ sub request {
     #Para incluir las observaciones y asociarlas al wiki del request
     my $id_wiki = undef;	
     if($p{comments_job}){
+        $p{comments_job}=~s{<p>}{\n}g;
+        $p{comments_job}=~s{</p>}{}g;
         my $rwiki = Baseliner->model('Baseliner::BaliWiki')->create({text=>$p{comments_job}, username=>$username, modified_on=> _now});				
         $rwiki->update;
         $id_wiki = $rwiki->id;
@@ -503,7 +505,6 @@ sub append_data {
         my $data = _load( $request->{data} );
         if( ref $data eq 'HASH' ) {
             $req->{app} = (ns_split($data->{app}))[1];
-            $req->{rfc} = $data->{rfc};
         } else {
             _log "Invalid request data for request " . $req->{id};
         }

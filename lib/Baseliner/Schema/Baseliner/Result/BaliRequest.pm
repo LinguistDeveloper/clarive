@@ -275,6 +275,13 @@ __PACKAGE__->has_many(
   { "foreign.ns" => "self.ns" },
 );
 
+__PACKAGE__->belongs_to(
+  "my_comment",
+  "Baseliner::Schema::Baseliner::Result::BaliWiki",
+  { "foreign.id" => "self.id_wiki" },
+  { join_type => "LEFT OUTER" }
+);
+
 use Baseliner::Utils;
 use Try::Tiny;
 

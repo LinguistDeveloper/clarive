@@ -14,6 +14,7 @@ use Baseliner::Utils;
 use utf8;
 use Baseliner::Core::DBI;
 use BaselinerX::Job::Log;
+use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
@@ -24,6 +25,7 @@ register 'config.job.approval.check' => {
     name => 'Job Approval Check Daemon Configuration',
     metadata => [
         { id=>'frequency', name=>'Job Approval Check Frequency', default=>20 },
+        { id=>'actions', name=>'Job Approval Check Actions', type=>'array', default=>'action.manualdeploy.role,action.job' },
     ]
 };
 
@@ -45,9 +47,11 @@ sub run_once {
     my $rs = Baseliner->model('Baseliner::BaliJob')->search({ status=>'APPROVAL' }, { order_by=>{ -asc => 'starttime' } });
     my $final_status;
     my ($job_status, $job_req_status, $job_req_who );
-
+    
     # check job by job
     while( my $job = $rs->next ) {
+        my $final_status = 'init';
+        my $comment=undef;
         _debug "Checking job ". $job->name;
         my @items = map { $_->item } $job->bali_job_items->all;
         my %approvers;
@@ -57,42 +61,76 @@ sub run_once {
         # check job approval
         my $ns = 'job/'. $job->name;
         my $job_req_status = $job->request_status;
-        my $reqs = Baseliner->model('Baseliner::BaliRequest')->search(
-                {
-                    action => { -like => 'action.job%' },
-                    ns     => $ns,
-                },
-                { order_by => { -desc => 'id' } }
-        );
-        # get the last approval status for the job
-        my $req = $reqs->first;
-        if( ref $req ) {
-            my $status = $job_status = $req->status;
-            my $job_req_who = $req->finished_by;
-            _debug _loc("Job %1 status '%2'", $job->name, $status );
-            if( $status eq 'approved' ) {
-                $final_status = 'approved';
+        
+        foreach my $action (_array $config->{actions}) {
+            _log "Checking action: " . $action;
+            my $rs = Baseliner->model('Baseliner::BaliRequest')->search(
+				{ 
+				action=>{-like=>"$action.%" }, 
+				status=>{ '<>' => 'cancelled' }, 
+				ns=>$ns
+				}, { 
+				prefetch=>['my_comment'],
+				order_by => { -desc => 'me.id' }
+				}
+			);
+            while ( my $req=$rs->next ) {
+                # get the last approval status for the job
+                # my $req = $reqs->first;
+                if( ref $req ) {
+                    try { $comment .= $req->finished_by.": ".$req->my_comment->text."\n"; } catch {_log ("no comment for " . $req->id)};
+                    my $status = $req->status;
+                    $job_status = $req->status;
+                    my $job_req_who = $req->finished_by;
+                    if( $status eq 'pending' ) {
+                        $final_status = 'pending';
+                    } elsif( $status eq 'approved' ) {
+                        $final_status = $final_status =~ m{init|approved}?'approved':$final_status;
+                    } elsif( $status eq 'rejected' ) {
+                        $final_status = 'rejected';
+                        # Cancelamos las request pending del pase rejected
+                        my $rs=Baseliner->model('Baseliner::BaliRequest')->search({ ns=>$ns, status=>'pending' });
+                        while (my $rec=$rs->next) {
+                            $rec->cancel;
+                        }   
+                        last;
+                    } elsif( $status eq 'cancelled' ) {
+                        $final_status = 'cancelled';
+                        # Cancelamos las request pending del pase rejected
+                        my $rs=Baseliner->model('Baseliner::BaliRequest')->search({ ns=>$ns, status=>'pending' });
+                        while (my $rec=$rs->next) {
+                            $rec->cancel;
+                        }   
+                        last;
+                    } else {
+                        $final_status = $status;
+                    }
+                } else {
+                    _log _loc("No $action requests for job %1", $job->name );
+                    $final_status = $final_status eq 'no request'?'no requests':$final_status;
+                }
+                _log _loc("Job %1 status after action %2: '%3'", $job->name, $action, $final_status );
             }
-            elsif( $status eq 'rejected' ) {
-                $final_status = 'rejected';
-            }
-            elsif( $status eq 'cancelled' ) {
-                $final_status = 'cancelled';
-            }
-            else {
-                $final_status = $status;
-            }
-        } else {
-            _log _loc("No requests for job %1", $job->name );
-            $final_status = 'no requests';
+            last if $final_status =~ m{rejected|cancelled};
         }
-
+        _log _loc("Job %1 status: '%3'", $job->name, $final_status );
+        
         # for each job item 
         if( $final_status eq 'no requests' || $final_status eq 'approved' ) {
             foreach my $item ( @items ) {
                 # get the item job status
-                my $req = Baseliner->model('Baseliner::BaliRequest')->search({ ns=>$item, status=>{ '<>' => 'cancelled' } }, { order_by=>{ -desc => 'id' } })->first;
-                if( ref $req ) {
+                my $rs = Baseliner->model('Baseliner::BaliRequest')->search(
+					{ 
+					ns=>$item, 
+					status=>{ '<>' => 'cancelled' } 
+					}, { 
+					prefetch=>['my_comment'],
+					order_by => { -desc => 'me.id' }
+					}
+				);
+                $final_status = 'no requests';
+                while (my $req=$rs->next) {
+                    try { $comment .= $req->finished_by.": ".$req->my_comment->text."\n"; } catch {_log ("no comment for " . $req->id)};
                     $approvers{$item} = { 
                         _loc('result') => _loc($req->status),
                         _loc('who')    => $req->finished_by,
@@ -103,14 +141,12 @@ sub run_once {
                         last;
                     } elsif( $req->status eq 'rejected' ) {
                         $final_status = $req->status;
+                        
                         push @log_me, [ 'error' =>  _loc('Pase tiene elementos rechazados: %1', $item ), data=>_dump(\%approvers) ]; 
                         last;
                     } elsif( $req->status eq 'approved' ) {
                         $final_status = $req->status;
                     }
-                } else {
-                    # no requests found
-                    $final_status = 'no requests';
                 }
             }
         }
@@ -119,7 +155,7 @@ sub run_once {
         # avoid message repetition
         if( defined $job_req_status && ( $job_status eq $job_req_status || $final_status eq $job_req_status ) ) {
             _debug _loc("Job %1 status '%2' is the same as last '%3'. Approval checking skipped.", $job->name, $job_status, $job_req_status );
-            next;	
+            next;   
         }
         # used by the next iteration, to avoid repeated log messages
         $job->request_status( $final_status ); 
@@ -133,16 +169,16 @@ sub run_once {
         $logger->info(_loc('Status de aprobación de Pase: %1', _loc($job_status) ) );
 
         if( $final_status eq 'approved' ) {
-            $logger->info('Pase aprobado. Se reactiva el pase.' );
+            $logger->info('Pase aprobado. Se reactiva el pase.<br> Ver anexo para más información', $comment );
             $job->status('READY');
             $job->update;
         }
         elsif( $final_status =~ m/rejected|cancelled/i ) {
-            $logger->warn('Pase rechazado/cancelado. Se cancela el pase.' );
-            Baseliner->model('Jobs')->cancel( id=>$job->id );
+            $logger->warn('Pase rechazado/cancelado. Se cancela el pase.<br> Ver anexo para más información', $comment );
+            Baseliner->model('Jobs')->reject( id=>$job->id );
         }
         elsif( $final_status eq 'no requests' ) {
-            $logger->info('No hay peticiones pendientes. Se reanuda el pase.' );
+            $logger->info('No hay peticiones pendientes. Se reanuda el pase.<br> Ver anexo para más información', $comment );
             $job->status('READY');
             $job->update;
         }

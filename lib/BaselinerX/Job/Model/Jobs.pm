@@ -121,6 +121,28 @@ register 'event.job.delete';
 register 'event.job.cancel';
 register 'event.job.cancel_running';
 
+sub reject {
+    my ($self, %p )=@_;
+    my $job = Baseliner->model('Baseliner::BaliJob')->search({ id=> $p{id} })->first;
+    if( ref $job ) {
+        #TODO allow cancel on run, and let the daemon kill the job,
+        #    or let the chained runner or simplechain to decide how to cancel the job nicely
+        _throw _loc('Job %1 is currently running and cannot be deleted') unless( $job->is_not_running );
+        if ( $job->status =~ /^CANCELLED/ ) {
+           $job->delete;
+        } else {
+           #event_new 'event.job.cancel' => { job=>$job, self=>$self } => sub {
+           event_new 'event.job.cancel' => { job=>$job } => sub {
+               $job->stash_key(approval => 'REJECTED');
+               $job->status( 'REJECTED' );
+               $job->update;
+           };
+        }
+    } else {
+        _throw _loc('Could not find job id %1', $p{id} );
+    }
+}
+
 sub cancel {
     my ($self, %p )=@_;
     my $job = Baseliner->model('Baseliner::BaliJob')->search({ id=> $p{id} })->first;
@@ -493,11 +515,12 @@ sub user_has_access {
     return Baseliner->model('Baseliner::BaliJob')->search($where)->first;
 }
 
-sub log {
+sub log_this {
     my ($self,%p) = @_;
     $p{jobid} or _throw 'Missing jobid';
     my $args = { jobid=>$p{jobid} };
     $args->{exec} = $p{job_exec} if $p{job_exec} > 0;
+
     return new BaselinerX::Job::Log( $args );
 }
 

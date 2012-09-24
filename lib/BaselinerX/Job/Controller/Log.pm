@@ -511,12 +511,20 @@ sub annotate : Path('/job/log/annotate') {
     my $level = $p->{level} ||= 'info';
     try {
         _throw 'Missing text' unless $p->{text};
+
         my $text = $p->{text};
         $text = substr($text, 0, 2048 );
         #$text = '<b>' . $c->username . '</b>: ' . $p->{text};
         my %args = ( jobid=>$p->{jobid} );
         $args{job_exec} = $p->{job_exec} if $p->{job_exec} > 0;
-        Baseliner->model('Jobs')->log(  %args  )->comment( $text, data=>$p->{data}, username=>$c->username );
+        if ($level eq 'info') {
+            Baseliner->model('Jobs')->log_this(  %args  )->comment( $text, data=>$p->{data}, username=>$c->username );
+        } elsif ($level eq 'warn') {
+            Baseliner->model('Jobs')->log_this(  %args  )->warn( $text, data=>$p->{data}, username=>$c->username );
+        } elsif ($level eq 'error') {
+            Baseliner->model('Jobs')->log_this(  %args  )->error( $text, data=>$p->{data}, username=>$c->username );
+        } else {
+        }
         $c->stash->{json} = { success=>\1 };
     } catch {
         $c->stash->{json} = { success=>\0, msg=>shift };
