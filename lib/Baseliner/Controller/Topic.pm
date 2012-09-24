@@ -192,10 +192,16 @@ sub list : Local {
     my %projects_report;
     my %assignee;
     my %mid_data;
+    
+    # Controlar que categorias son editables.
+    my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
+    
+    
     for (@mid_data) {
         my $mid = $_->{topic_mid};
         $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
         $mid_data{ $mid }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
+        $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $_->{category_name}};
         $_->{label_id}
             ? $id_label{ $mid }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
             : $id_label{ $mid } = {};
@@ -431,8 +437,14 @@ sub view : Local {
     
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} = $p->{swEdit};
+    $c->stash->{permissionEdit} = 0;
+    
+    my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
     if($topic_mid || $c->stash->{topic_mid} ){
+ 
+        my @id_category = map {$_->{id_category} } DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->hashref->all;
+        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category[0]};
  
         # comments
         $self->list_posts( $c );  # get comments into stash        
@@ -444,7 +456,8 @@ sub view : Local {
  
     }else{
         $id_category = $p->{categoryId};
-
+        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
+        
         $c->stash->{topic_mid} = '';
         $c->stash->{events} = '';
         $c->stash->{comments} = '';
