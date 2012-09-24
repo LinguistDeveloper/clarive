@@ -158,11 +158,22 @@ sub list_json : Path('/request/list_json') {
         my $namespaces = $c->model('Namespaces');
         my @requests;
         my $i=1;
+
+        while (my $request = $list->next) {
+            my $req={ $request->get_columns, %{ $request->load_data() || {} } };
+            delete $req->{inspector};
+            push @requests, $req;
+        }
+        $c->stash->{json} = { 
+            totalCount=> $list->is_paged ? $list->pager->total_entries : scalar @requests,
+            data => \@requests
+        };	
+=head
         foreach my $request ( _array $list->{data} ) {
                 next if $i <= $start;
                 last if $i >= $limit;
                 my $req = $c->model('Request')->append_data( $request, model_namespaces=>$namespaces );
- next unless ref $req;
+                next unless ref $req;
                 next if( $p->{query} && !query_array($p->{query},$req->{ns_name},$req->{id},$req->{bl},$req->{name},$req->{requested_on},$req->{requested_by},$req->{finished_on},$req->{finished_by}) );
 
                 $i+=1;
@@ -173,6 +184,7 @@ sub list_json : Path('/request/list_json') {
         totalCount=> $list->{total},
         data => \@requests
      };	
+=cut
     $c->forward('View::JSON');
 }
 

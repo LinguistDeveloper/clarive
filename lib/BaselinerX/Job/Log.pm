@@ -121,7 +121,7 @@ sub common_log {
 
         # store the current section
         ;
-        $p{username} && $lev eq 'comment'
+        $p{username} && $lev =~ m{comment|warn|error}
             ? $row->section( $p{username} )
             : $row->section( $self->current_section );
 

@@ -1302,6 +1302,9 @@ msgstr "Finalizado"
 msgid "ERROR"
 msgstr "Error"
 
+msgid "REJECTED"
+msgstr "Rechazado"
+
 msgid "CANCELLED"
 msgstr "Cancelado"
 
@@ -1528,6 +1531,9 @@ msgstr "Anotaciones"
 
 msgid "Annotate"
 msgstr "Anotar"
+
+msgid "Annotation completed successfully"
+msgstr "Anotación realizada con éxito"
 
 msgid "Daemon"
 msgstr "Demonio"

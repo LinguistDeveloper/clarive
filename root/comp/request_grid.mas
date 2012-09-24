@@ -1,6 +1,10 @@
 <%perl>
-    use JavaScript::Dumper;
+    use Baseliner::Utils;
+    use Baseliner::Sugar;
+    use utf8;
+    my $iid = "div-" . _nowstamp;
 </%perl>
+
 (function(){
     var filter_key = 'request_filter';
     var filter_cookie; // = Baseliner.cookie.get( filter_key );
@@ -43,7 +47,7 @@
         remoteSort: true,
         totalProperty:"totalCount", 
         baseParams: { limit: 30 },
-        id: 'id', 
+        id: 'id<% $iid %>', 
         url: '/request/list_json',
         fields: fields
     });
@@ -58,7 +62,7 @@
         root: 'data' , 
         remoteSort: true,
         totalProperty:"totalCount", 
-        id: 'id', 
+        id: 'id<% $iid %>', 
         url: '/request/detail',
         fields: fields		
     });
@@ -83,7 +87,7 @@
         name: "text",
         fieldLabel: "Comentarios del aprobador",
         height:  "70",
-        allowBlank: 1
+        allowBlank: 0
     });
     
     var showRequest = function(rec,action){
@@ -347,7 +351,7 @@
                     attrs_xml: {  wysiwyg: 1 },
                     fieldLabel: _('Request ID'),
                     name: 'id',
-                    id: 'id',
+                    id: 'id<% $iid %>',
                     readOnly: true,
                     value: '',
                     allowBlank: 1
@@ -357,7 +361,7 @@
                     attrs_xml: {  wysiwyg: 1 },
                     fieldLabel: _('Request'),
                     name: 'name',
-                    id: 'name',
+                    id: 'name<% $iid %>',
                     readOnly: true,
                     value: '',
                     allowBlank: 1
@@ -367,7 +371,7 @@
                     attrs_xml: {  wysiwyg: 1 },
                     fieldLabel: _('Application'),
                     name: 'app',
-                    id: 'app',
+                    id: 'app<% $iid %>',
                     readOnly: true,
                     value: '',
                     allowBlank: 1
@@ -377,7 +381,7 @@
                     attrs_xml: {  wysiwyg: 1 },
                     fieldLabel: _('Item'),
                     name: 'item',
-                    id: 'ns_name',
+                    id: 'ns_name<% $iid %>',
                     height: 70,
                     readOnly: true,
                     value: '',
@@ -388,7 +392,7 @@
                     attrs_xml: {  wysiwyg: 1 },
                     fieldLabel: _('RFC'),
                     name: 'rfc',
-                    id: 'rfc',
+                    id: 'rfc<% $iid %>',
                     readOnly: true,
                     value: '',
                     allowBlank: 1
