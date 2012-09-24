@@ -148,6 +148,12 @@ Baseliner.quote = function(str) {
     return str.replace( /\"/g, '\\"' );
 };
 
+Baseliner.escape_lt_gt = function(str) {
+    if( ! str ) return '';
+    str = str.replace( /\</g, '&lt;' );
+    return str.replace( /\>/g, '&gt;' );
+};
+
 Baseliner.render_job = function(value,metadata,rec,rowIndex,colIndex,store) {
     if( value!=undefined && value!='' ) {
         var id_job = rec.data.id_job;

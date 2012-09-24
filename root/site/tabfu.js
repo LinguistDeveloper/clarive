@@ -858,7 +858,9 @@
                 if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
             },
             failure: function(xhr) {
-                Baseliner.server_failure( xhr.responseText );
+                if( ! params._ignore_conn_errors ) {
+                    Baseliner.server_failure( xhr.responseText );
+                }
             }
         });
         };
