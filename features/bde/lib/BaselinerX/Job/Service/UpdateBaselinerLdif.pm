@@ -107,12 +107,13 @@ _log "Processing $item";
 
       # So now we have the objects for both the user, cam and role. Let's do
       # some magic.
-      my $href = {username => $user->username,
-                  id_role  => $role->id,
-                  ns       => substr($role_name, 0, 3) eq 'RPT'
+      my $href = {username   => $user->username,
+                  id_role    => $role->id,
+                  id_project => $project->mid,
+                  ns         => substr($role_name, 0, 3) eq 'RPT'
                                 ? '/'
                                 : "project/" . $project->mid};
-      Baseliner->model('Baseliner::BaliRoleUser')->create($href)
+      Baseliner->model('Baseliner::BaliRoleuser')->create($href)
         unless $self->exists_roleuser($href);
 
       # If user is JU and current role is 'RA'...

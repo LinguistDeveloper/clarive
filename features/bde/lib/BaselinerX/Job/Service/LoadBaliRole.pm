@@ -135,6 +135,7 @@ sub index {
             my $username = $value;    # Eso siempre es así
             my $ns       = '/';       # De haber proyecto valdrá 'project/ID'
             my $id_role;
+            my $id_project;
             my $update = 0;           # Si vale 0 no hago update porque petará
 
             # Si es RPT...
@@ -149,6 +150,7 @@ sub index {
                     if ( exists $bali_project{$1} ) {
                         $update  = 1;
                         $id_role = $role{$2};
+                        $id_project = $bali_project{$1};
                         $ns      = "project/$bali_project{$1}";
                     }
                 }
@@ -161,13 +163,18 @@ sub index {
                 }
             }
 
+            my $row = 
+                {   username    => $username,
+                    id_role     => $id_role,
+                    id_project  => $id_project,
+                    ns          => $ns
+                };
+
+            # may be null, which means '/'
+            $row->{id_project} = $id_project if defined $id_project;
+
             # Inserto en BD...
-            Baseliner->model('Baseliner::BaliRoleuser')->create(
-                {   username => $username,
-                    id_role  => $id_role,
-                    ns       => $ns
-                }
-            ) if $update == 1;
+            Baseliner->model('Baseliner::BaliRoleuser')->create( $row ) if $update == 1;
         }
     }
 
