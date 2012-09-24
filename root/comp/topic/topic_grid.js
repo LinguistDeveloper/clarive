@@ -317,6 +317,7 @@
     });
     
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
+		disabled: true,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
@@ -332,6 +333,7 @@
     });
     
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
+		disabled: true,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
@@ -613,9 +615,44 @@
         bbar: ptool
     });
     
-    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-        init_buttons('enable');
+//    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+//        //init_buttons('enable');
+//		alert('pasa');
+//    });
+	
+    grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+        if(columnIndex == 0){
+            var topics_checked = getTopics();
+            if (topics_checked.length == 1){
+				var sw_edit;
+				check_sm.each(function(rec){
+					sw_edit = (rec.get('sw_edit'));
+				});
+				if(sw_edit){
+					init_buttons('enable');	
+				}else{
+					btn_delete.enable();
+					btn_edit.disable();
+				}				
+                //init_buttons('enable');
+            }else{
+                if(topics_checked.length == 0){
+                    init_buttons('disable');
+                }else{
+                    btn_delete.enable();
+                    btn_edit.disable();
+                }
+            }
+        }
     });
+	
+    function getTopics(){
+        var topics_checked = new Array();
+        check_sm.each(function(rec){
+            topics_checked.push(rec.get('topic_mid'));
+        });
+        return topics_checked
+    }	
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);

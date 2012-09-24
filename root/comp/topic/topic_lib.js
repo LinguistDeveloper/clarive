@@ -122,7 +122,8 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'deadline_min' },
                 {  name: 'expr_deadline' },
                 {  name: 'num_file' },
-                {  name: 'assignee' }
+                {  name: 'assignee' },
+                {  name: 'sw_edit'}
             ]
         },config);
         Baseliner.Topic.StoreList.superclass.constructor.call(this, config);
