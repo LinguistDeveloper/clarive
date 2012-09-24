@@ -1313,6 +1313,9 @@ msgstr "abortar"
 msgid "Scheduled"
 msgstr "Planificado"
 
+msgid "Scheduled to run now"
+msgstr "Planificado para este instante"
+
 # Job Status Codes
 msgid "IN EDIT"
 msgstr "En Edición"
