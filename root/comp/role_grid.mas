@@ -401,7 +401,7 @@
             columns: [
                 { header: _('Role'), width: 200, dataIndex: 'role', sortable: true },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },	
-                { header: _('Mailbox'), width: 200, dataIndex: 'mailbox', sortable: true },
+                { header: _('Mailbox'), width: 200, dataIndex: 'mailbox', sortable: true, renderer: Baseliner.escape_lt_gt  },
                 { header: _('Actions'), width: 400, dataIndex: 'actions', sortable: true, renderer: render_actions } 
               //, { header: _('Members'), width: 150, dataIndex: 'users', sortable: true }	
             ],

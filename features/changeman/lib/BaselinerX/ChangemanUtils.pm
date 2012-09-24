@@ -131,13 +131,17 @@ sub log {
     $self->log_purge;
 
     # TODO make this an event
-    Baseliner->model('Repository')->set(
-        domain=>"changeman.logger",
-        ns=> "changeman.log.entry/" . _nowstamp(),
-        data=>{ msg=>$msg, 
-            class => $cl, file=>$fi, line=>$li,            
-            logdate=>""._now(), %args }
-    );
+    try {
+        Baseliner->model('Repository')->set(
+            domain=>"changeman.logger",
+            ns=> "changeman.log.entry/" . _nowstamp(),
+            data=>{ msg=>$msg, 
+                class => $cl, file=>$fi, line=>$li,            
+                logdate=>""._now(), %args }
+        );
+    } catch {
+        _error "Logger error: " . shift();
+    };
 }
 
 use Baseliner::Sugar;

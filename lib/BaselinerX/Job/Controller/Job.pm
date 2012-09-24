@@ -202,6 +202,8 @@ sub job_stash_save : Local {
     $c->forward( 'View::JSON' );
 }
 
+our %CACHE_ICON;
+
 sub monitor_json : Path('/job/monitor_json') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
@@ -214,7 +216,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     my ($select,$order_by, $as) = $sort
         ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' } ], [ 'id', $sort ])
-        : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" } ] , ['id', 'starttime'] );
+        : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" }, { -desc => 'me.id' } ] , ['id', 'starttime'] );
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
 
@@ -245,7 +247,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     # Filter by nature
     if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {      
-      $where->{'bali_job_items.item'} = $p->{filter_nature};
+      $where->{'bali_job_items_2.item'} = $p->{filter_nature};
     }
 
     # Filter by environment name:
@@ -277,7 +279,7 @@ sub monitor_json : Path('/job/monitor_json') {
     my $from = {
         select   => 'me.id',
         as       => $as,
-        join     => [ 'bali_job_items' ],   
+        join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
     };
     _debug $from;
     my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
@@ -315,7 +317,6 @@ sub monitor_json : Path('/job/monitor_json') {
 
     #foreach my $r ( _array $results->{data} ) {
     _debug "Looping start...";
-    my %cache_icon;
     for my $r ( $rs_paged->hashref->all ) {
         my $step = _loc( $r->{step} );
         my $status = _loc( $r->{status} );
@@ -330,9 +331,9 @@ sub monitor_json : Path('/job/monitor_json') {
                   if( $dom eq 'changeset' ) {
                     $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name } catch { $nsid };
                   } elsif( $dom !~ /nature/ ) {
-                    my $icon = $cache_icon{ $dom } // do {
+                    my $icon = $CACHE_ICON{ $dom } // do {
                         my $m = $c->registry->get( $dom )->module;
-                        $cache_icon{ $dom } = $m->icon;
+                        $CACHE_ICON{ $dom } = $m->icon;
                     };
                     $ret = $icon 
                           ? qq{<img src="$icon">&nbsp;$nsid}
@@ -441,43 +442,33 @@ sub refresh_now : Local {
     use String::CRC32;
     my $p = $c->request->parameters;
     my $username = $c->username;
-    my $need_refresh = 0;
+    my $need_refresh = \0;
     my $magic = 0;
+    my $real_top;
+
     try {
         if( exists $p->{top} ) {
             # are there newer jobs?
-            my $max = ( reverse( sort( _array( $p->{ids} ))) )[0];
-            my $where;
-            my $w = $c->session->{job_refresh_where};
-            if( 'HASH' eq ref $w ) {
-                $where = $w;
-            } else {
-                $where = {};
-                my $perm = $c->model('Permissions');
-                if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-                    my @user_apps = $perm->user_namespaces( $username ); # user apps
-                    $where->{'bali_job_items.application'} = { -in => \@user_apps };
-                }
-                $c->session->{job_refresh_where} = $where;
-            }
-            $where->{'me.id'} = { '>' => $p->{top} };
-            delete $where->{id} if defined $where->{id}; # leftover from seesion object
-            my $row = $c->model('Baseliner::BaliJob')->search( $where, { join=>['bali_job_items'], order_by=>{ -desc =>'me.id' } })->first;
-            if( ref $row ) {
-                $need_refresh = 1;
+            my $row = DB->BaliJob->search(undef, { order_by=>{ -desc =>'id' } })->first;
+            $real_top= $row->id;
+            if( $real_top ne $p->{top} && $real_top ne $p->{real_top} ) {
+                $need_refresh = \1;
             }
         }
         if( $p->{ids} ) {
             # are there more info for current jobs?
-            my $rs = $c->model('Baseliner::BaliJob')->search({ id=>$p->{ids} }, { order_by=>{ -desc =>'id' } });
+            my @rows = DB->BaliJob->search({ id=>$p->{ids} }, { order_by=>{ -desc =>'id' } })->hashref->all;
             my $data ='';
-            while( my $r = $rs->next ) {
-                $data.=$r->status . $r->last_log_message; 
-            }
+            map { $data.=$_->{status} . $_->{last_log_message} } @rows;
             $magic = String::CRC32::crc32( $data );
+            my $last_magic = $p->{last_magic};
+            if( $magic ne $last_magic ) {
+                _debug "LAST MAGIC=$last_magic != CURRENT MAGIC $magic";
+                $need_refresh = \1;
+            }
         }
     } catch { _log shift };
-    $c->stash->{json} = { magic=>$magic, need_refresh => $need_refresh, stop_now=>\0 };	
+    $c->stash->{json} = { success=>\1, magic=>$magic, need_refresh => $need_refresh, stop_now=>\0, real_top=>$real_top };	
     $c->forward('View::JSON');
 }
 
@@ -530,6 +521,7 @@ sub job_submit : Path('/job/submit') {
             my $job = $c->model('Jobs')->rerun( jobid=>$p->{id_job}, username=>$username ); 
         }
         else { # new job
+            my $id_job;
             my $bl = $p->{bl};
             my $comments = $p->{comments};
             my $job_date = $p->{job_date};
@@ -578,10 +570,11 @@ sub job_submit : Path('/job/submit') {
             event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
                 my $job = $c->model('Jobs')->create( %$job_data );
                 $job_name = $job->name;
+                $id_job = $job->id;
                 { job=>$job }; 
             };
             
-            $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
+            $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name), job_name=>$job_name, id_job => $id_job };
         }
     } catch {
         my $err = shift;

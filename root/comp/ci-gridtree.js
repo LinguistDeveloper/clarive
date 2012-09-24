@@ -23,22 +23,23 @@
     Baseliner.ci_edit = function( gridid, ix ){
         var g = Ext.getCmp( gridid );
         if( g!= undefined ) 
-            ci_edit( g.getStore().getAt(ix).data );
+            ci_edit( g.getStore(), g.getStore().getAt(ix).data );
     };
 
-    var ci_edit = function(rec){
-        var data = store_ci.baseParams;
+    var ci_edit = function(store, rec){
+        var data = store.baseParams;
         var classname = data.class ;
         Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
             if( res.success ) {
                 var rec = res.rec;
                 Baseliner.add_tabcomp( '/comp/ci-editor.js', _('CI %1' , rec.name ), 
                     {
-                        _parent_grid: ci_grid,
-                        collection: data.collection,
-                        data: data,
+                        _parent_grid: ci_grid.id,
+                        collection: rec.collection,
+                        item: rec.collection,
                         has_bl: data.has_bl,
-                        class: data.class,
+                        bl: data.bl,
+                        class: rec.class,
                         ci_form: rec.ci_form,
                         mid: rec.mid,
                         rec: rec,
@@ -69,8 +70,9 @@
            rec.name = _('Copy of %1', rec.name );
         } 
         Baseliner.add_tabcomp( '/comp/ci-editor.js', _('New: %1' , params.item ), {
-                _parent_grid: ci_grid,
+                _parent_grid: ci_grid.id,
                 ci_form: data.ci_form,
+                item: data.collection,
                 collection: data.collection,
                 has_bl: data.has_bl,
                 rec: rec,
@@ -128,7 +130,7 @@
         var ret = '<table><tr><td width="1">';
         ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
         //ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'text-decoration: line-through;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
-        ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'color: red;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'color: #444;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -181,7 +183,7 @@
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
-        stripeRows: false,
+        stripeRows: true,
         autoScroll: true,
         autoWidth: true,
         sortable: false,
@@ -197,7 +199,7 @@
         tbar: [ 
             //{ xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
             search_field,
-            { xtype:'button', text: _('Create'), icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon', handler: ci_add },
+            { xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
@@ -213,14 +215,14 @@
         columns:[
             check_sm,
             { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
-            { id: id_auto, header: _('Item'), dataIndex: 'item', width: 230, renderer: render_item },
+            { id: id_auto, header: _('Item'), dataIndex: 'item', width: 300, renderer: render_item },
             { id:'mid', header: _('ID'), width: 65, dataIndex: 'mid' },
             { header: _('Collection'), width: 160, dataIndex: 'collection' },
             { header: _('Class'), hidden: true, width: 160, dataIndex: 'class' },
             { header: _('Baseline'), width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl },
             { header: _('Version'), width: 50, dataIndex: 'versionid' },
-            { header: _('Timestamp'), width: 80, dataIndex: 'ts' },
-            { header: _('Tags'), width: 140, dataIndex: 'tags', renderer: render_tags },
+            { header: _('Timestamp'), width: 100, dataIndex: 'ts' },
+            { header: _('Tags'), width: 140, hidden: true, dataIndex: 'tags', renderer: render_tags },
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties },
             { header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv }
         ],
@@ -234,7 +236,7 @@
     });
 
     ci_grid.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
-        ci_edit( grid.getStore().getAt(rowIndex).data );
+        ci_edit( grid.getStore(), grid.getStore().getAt(rowIndex).data );
     });
 
     // Lifecycle tree node listener on click
