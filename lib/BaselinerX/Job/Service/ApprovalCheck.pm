@@ -78,7 +78,7 @@ sub run_once {
                 # get the last approval status for the job
                 # my $req = $reqs->first;
                 if( ref $req ) {
-                    try { $comment .= $req->my_comment->text ."\n"; } catch { $comment.=_loc("no comment for " . $req->id); };
+                    try { $comment .= $req->finished_by.": ".$req->my_comment->text."\n"; } catch {_log ("no comment for " . $req->id)};
                     my $status = $req->status;
                     $job_status = $req->status;
                     my $job_req_who = $req->finished_by;
@@ -130,7 +130,7 @@ sub run_once {
 				);
                 $final_status = 'no requests';
                 while (my $req=$rs->next) {
-                    try { $comment .= $req->my_comment->text ."\n"; } catch {_log ("no comment for " . $req->id)};
+                    try { $comment .= $req->finished_by.": ".$req->my_comment->text."\n"; } catch {_log ("no comment for " . $req->id)};
                     $approvers{$item} = { 
                         _loc('result') => _loc($req->status),
                         _loc('who')    => $req->finished_by,
@@ -169,16 +169,16 @@ sub run_once {
         $logger->info(_loc('Status de aprobación de Pase: %1', _loc($job_status) ) );
 
         if( $final_status eq 'approved' ) {
-            $logger->info('Pase aprobado. Se reactiva el pase.', $comment );
+            $logger->info('Pase aprobado. Se reactiva el pase.<br> Ver anexo para más información', $comment );
             $job->status('READY');
             $job->update;
         }
         elsif( $final_status =~ m/rejected|cancelled/i ) {
-            $logger->warn('Pase rechazado/cancelado. Se cancela el pase.', $comment );
+            $logger->warn('Pase rechazado/cancelado. Se cancela el pase.<br> Ver anexo para más información', $comment );
             Baseliner->model('Jobs')->reject( id=>$job->id );
         }
         elsif( $final_status eq 'no requests' ) {
-            $logger->info('No hay peticiones pendientes. Se reanuda el pase. Ver fichero para comentarios.', $comment );
+            $logger->info('No hay peticiones pendientes. Se reanuda el pase.<br> Ver anexo para más información', $comment );
             $job->status('READY');
             $job->update;
         }

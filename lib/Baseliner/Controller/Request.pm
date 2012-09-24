@@ -152,8 +152,10 @@ sub list_json : Path('/request/list_json') {
                 start   =>$start, limit=>999999,
                 query   =>'',
                 sort    =>$sort,
-                dir     => $dir,
+                dir     =>$dir,
                 filter  =>$filter,
+                row     => 1,
+                rs      => 1,
         );
         my $namespaces = $c->model('Namespaces');
         my @requests;

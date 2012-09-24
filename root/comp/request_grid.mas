@@ -35,11 +35,11 @@
             {  name: 'action' },
             {  name: 'key' },
             {  name: 'app' },
-            {  name: 'rfc' },
             {  name: 'name' },
             {  name: 'type' },
             {  name: 'id_wiki' },
             {  name: 'id_message' },
+            {  name: 'comment' },
             {  name: 'text_wiki' }
     ];
     var store=new Baseliner.JsonStore({
@@ -211,7 +211,6 @@
                 { header: _('Item'), width: 350, dataIndex: 'ns_name', sortable: true, renderer: render_item },	
                 //{ header: 'Elementos', width: 300, dataIndex: 'items', sortable: true },	
                 { header: _('Application'), width: 80, dataIndex: 'app', sortable: true },	
-                { header: _('RFC'), width: 80, dataIndex: 'rfc', sortable: true },	
                 { header: _('Requested By'), width: 80, dataIndex: 'requested_by', sortable: true, renderer: Baseliner.render_user_field },
                 { header: _('Requested On'), width: 130, dataIndex: 'requested_on', sortable: true, renderer: Baseliner.columnWrap },
                 { header: _('Finished By'), width: 80, dataIndex: 'finished_by', sortable: true, renderer: Baseliner.render_user_field },
@@ -388,20 +387,10 @@
                     allowBlank: 1
             },
             {
-                    xtype: 'textfield',
-                    attrs_xml: {  wysiwyg: 1 },
-                    fieldLabel: _('RFC'),
-                    name: 'rfc',
-                    id: 'rfc<% $iid %>',
-                    readOnly: true,
-                    value: '',
-                    allowBlank: 1
-            }, 
-            {
 
                     xtype: 'textarea',
                     attrs_xml: {  wysiwyg: 1 },
-                    name: "text_wiki",
+                    name: 'comment',
                     fieldLabel: "Comentarios del solicitante",
                     height:  "70",
                     readOnly:  true,

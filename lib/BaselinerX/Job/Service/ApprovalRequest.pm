@@ -62,7 +62,6 @@ sub run {
     $approval_items ||= $job->job_stash->{contents}; 
     $reason ||= "Promoción a $bl";
     
-    my $rfcs = join ( ', ', _unique map {$_->{rfc}} _array $job->job_stash->{contents} );
     my $apps = join ( ', ', _unique map {my ($a,$b)=ns_split($_->{application}); $b } _array $job->job_stash->{contents} );
     my $comment = $job->job_data->{comments};
     my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d&annotate_now=1", _notify_address(), $job->jobid );
@@ -89,7 +88,6 @@ sub run {
                 subject  => _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ),
             },
             data         => {
-                rfc      => $rfcs,
                 project  => $apps,
                 app      => $apps,
                 comment  => $comment,
