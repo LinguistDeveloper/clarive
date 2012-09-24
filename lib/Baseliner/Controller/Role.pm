@@ -101,7 +101,7 @@ sub json : Local {
     $c->forward('View::JSON');
 }
 
-sub action_tree : Local {
+sub action_tree_old : Local {
     my ( $self, $c ) = @_;
     my @actions = $c->model('Actions')->list;
     my %tree;
@@ -114,6 +114,50 @@ sub action_tree : Local {
     $c->stash->{json} = \@tree_final;
     $c->forward("View::JSON");
 }
+
+sub action_tree : Local {
+    my ( $self, $c ) = @_;
+    my @actions = $c->model('Actions')->list;
+    my @tree_final;
+    my %tree;
+
+    my $children_of;
+
+    $children_of = sub {
+        my ( $parent, @actions ) = @_;
+        my $children;
+
+        for my $action ( @actions ) {
+
+            my $key = $action->{key};
+            next if $action->{key} !~ /^$parent\.(.*)/;
+            my @tokens = split /\./, $1;
+            my $name = shift @tokens;
+            my $text = _loc_decoded( $action->{name} );
+            my $id = $parent.".".$name;
+            next if $tree{$id};
+            $tree{$id}=1;
+
+            if ( @tokens ) {
+                push @$children, { id=>$id, text => $id, leaf=>\0, children=> $children_of->($id, @actions) };
+            } else {
+                push @$children, { id=>$id, text => $text, leaf=>\1 };
+            }
+
+        }
+        return $children;
+    };
+
+    foreach my $key ( sort map { $_->{key} } @actions ) {
+        ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
+        next if $tree{$folder};
+        $tree{$folder}=1;
+        push @tree_final, { id=>$folder, text=>$folder, leaf=>\0, children => $children_of->( $folder, @actions ) }; 
+    }
+    $c->stash->{json} = \@tree_final;
+    $c->forward("View::JSON");
+}
+
 
 sub update : Local {
     my ( $self, $c ) = @_;
