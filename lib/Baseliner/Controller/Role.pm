@@ -130,18 +130,19 @@ sub action_tree : Local {
         for my $action ( @actions ) {
 
             my $key = $action->{key};
-            next if $action->{key} !~ /^$parent\.(.*)/;
-            my @tokens = split /\./, $1;
-            my $name = shift @tokens;
-            my $text = _loc_decoded( $action->{name} );
-            my $id = $parent.".".$name;
-            next if $tree{$id};
-            $tree{$id}=1;
+            next if $key !~ /^$parent\.(.*)/; # skip if not children
 
-            if ( @tokens ) {
-                push @$children, { id=>$id, text => $id, leaf=>\0, children=> $children_of->($id, @actions) };
-            } else {
-                push @$children, { id=>$id, text => $text, leaf=>\1 };
+            my @tokens = split /\./, $1; # split in tokens
+            my $name = shift @tokens;
+            my $id = $parent.".".$name; # add myself to parent
+            
+            next if $tree{$id}; # skip if already in tree
+            $tree{$id}=1; # declarate myself as in tree
+
+            if ( @tokens ) { # not a leaf
+                push @$children, { id=>$id, text => $name, leaf=>\0, children=> $children_of->($id, @actions) };
+            } else { # a leaf
+                push @$children, { id=>$id, text => _loc_decoded( $action->{name} ), leaf=>\1 };
             }
 
         }
