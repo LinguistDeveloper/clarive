@@ -89,6 +89,22 @@ sub update_category : Local {
                                                                                             });     
                         }
                     }
+                    
+                    my $name = $p->{name};
+                    my %acciones_by_category = (    create  => 'Puede crear tópicos de la categoría ',
+                                                    view    => 'Puede ver tópicos de la categoría ',
+                                                    edit    => 'Puede editar tópicos de la categoría ');
+                                                 
+                    foreach my $action (keys %acciones_by_category){
+                       
+                        my $id_action = 'action.topics.' . lc $name . '.' . $action  ;
+                        my $name = $acciones_by_category{$action} . $name ;
+                                 
+                        my $actions = $c->model('Baseliner::BaliAction')->update_or_create({ action_id => $id_action,
+                                                                                             action_name => $name,
+                                                                                             action_description => $name
+                                                                                            });                                
+                    }                 
 
                     $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=> $category->id };
                 }
@@ -138,6 +154,14 @@ sub update_category : Local {
                 }
                   
                 my $rs = Baseliner->model('Baseliner::BaliTopicCategories')->search({ id => \@ids_category });
+                
+                while (my $row = $rs->next){
+                    foreach ( '%action.topics.' . lc $row->name . '%', '%action.topicsfield.' . lc $row->name . '%'){
+                        my $rs_action = Baseliner->model('Baseliner::BaliAction')->search({ action_id => {'like', $_  }});
+                        $rs_action->delete;
+                    }
+                }
+                
                 $rs->delete;
                 
                 $c->stash->{json} = { success => \1, msg=>_loc('Categories deleted') };
