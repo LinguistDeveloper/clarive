@@ -439,12 +439,14 @@ sub view : Local {
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
     
-    my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
+    my $categories_edit;
+    map { $categories_edit->{$_->{id}} = 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
+    _error $categories_edit;
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
         my @id_category = map {$_->{id_category} } DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->hashref->all;
-        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category[0]};
+        $c->stash->{permissionEdit} = 1 if exists $categories_edit->{$id_category[0]};
  
         # comments
         $self->list_posts( $c );  # get comments into stash        
@@ -456,11 +458,12 @@ sub view : Local {
  
     }else{
         $id_category = $p->{categoryId};
-        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
+        $c->stash->{permissionEdit} = 1 if exists $categories_edit->{$id_category};
         
         $c->stash->{topic_mid} = '';
         $c->stash->{events} = '';
         $c->stash->{comments} = '';
+	_error $c->stash;
     }
     
     if( $p->{html} ) {
