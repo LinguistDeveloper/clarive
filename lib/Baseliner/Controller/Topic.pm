@@ -455,7 +455,7 @@ sub view : Local {
         #];
  
     }else{
-        $id_category = $p->{categoryId};
+        $id_category = $p->{new_category_id};
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
         
         $c->stash->{topic_mid} = '';
