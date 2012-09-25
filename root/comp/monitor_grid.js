@@ -353,7 +353,7 @@
                         store.reload();
                     }
                     last_magic = res.magic;
-                    real_top = res.top_id;
+                    real_top = res.real_top;
                 }
             });
         },
@@ -653,7 +653,7 @@
                 { header: _('MID'), width: 30, dataIndex: 'mid', sortable: true, hidden: true },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
-                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
+                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
@@ -683,10 +683,10 @@
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({
                     text: _('New Job'),
-                    icon:'/static/images/star_on.gif',
+                    icon:'/static/images/icons/job.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
-                        Baseliner.addNewTabComp('/job/create', _('New Job') );
+                        Baseliner.add_tabcomp('/job/create', _('New Job'), { tab_icon: '/static/images/icons/job.png' } );
                     }
                 }),
 % }

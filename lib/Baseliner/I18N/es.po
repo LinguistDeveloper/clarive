@@ -9,6 +9,9 @@ msgstr "Abrir"
 msgid "Progress"
 msgstr "Avance"
 
+msgid "Refresh Node"
+msgstr "Refrescar"
+
 msgid "Job Slots"
 msgstr "Ventanas de Pase"
 
