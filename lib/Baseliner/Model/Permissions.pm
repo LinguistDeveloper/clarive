@@ -1,4 +1,4 @@
-    package Baseliner::Model::Permissions;
+package Baseliner::Model::Permissions;
 use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;

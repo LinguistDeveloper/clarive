@@ -1715,6 +1715,9 @@ msgstr "%1 minutos"
 msgid "Refresh"
 msgstr "Refresco"
 
+msgid "Refresh: %1s"
+msgstr "Refresco: %1s"
+
 msgid "Enabled"
 msgstr "Habilitado"
 
