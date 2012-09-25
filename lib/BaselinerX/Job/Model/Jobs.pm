@@ -403,6 +403,7 @@ sub notify { #TODO : send to all action+ns users, send to project-team
     my $job = Baseliner->model('Baseliner::BaliJob')->find( $jobid )
         or _throw "Job id $jobid not found";
     my $log = new BaselinerX::Job::Log({ jobid=>$jobid });
+    my $stash = _load $job->job_stash->stash;
     my $status = $p{status} || $job->status || $type;
     my $mailcfg   = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
 
@@ -413,7 +414,15 @@ sub notify { #TODO : send to all action+ns users, send to project-team
             $job->status ));
     }
     try {
-        my $subject = _loc('Job %1: %2', $job->name, _loc($status) );
+        my $subject;
+        # $log->debug( _loc("STASH"), data=> _dump $stash);
+        if ( scalar (_array $stash->{chain}) gt 0 ) {
+            $type = 'Resumed';
+            $subject = _loc('Job %1: %2', $job->name, _loc($type) );
+        } else {
+            $type = 'Started';
+            $subject = _loc('Job %1: %2', $job->name, _loc($status) );
+        }
         my $last_log = $job->last_log_message;
         my $message = ref $last_log ? $last_log->{text} : _loc($type);
         my $username = $job->username;

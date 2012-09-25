@@ -226,8 +226,7 @@ sub job_run {
         $self->job_stash->{step} = $step;
 
         # send notifications  
-        Baseliner->model('Jobs')->notify( jobid=>$jobid, type=>'started' )
-            if( $step eq 'RUN' );
+        Baseliner->model('Jobs')->notify( jobid=>$jobid, type=>'resumed' ) if( $step eq 'RUN' );
 
         #******************  start main runner  ******************
         # typically, a Chain runner, like SimpleChain, or a single service

@@ -1375,6 +1375,9 @@ msgstr "Rollback fallido"
 msgid "started"
 msgstr "iniciado"
 
+msgid "resumed"
+msgstr "reanudado"
+
 msgid "finished"
 msgstr "finalizado"
 
@@ -1747,6 +1750,9 @@ msgstr "Rechazando"
 
 msgid "Cancelled"
 msgstr "Cancelado"
+
+msgid "Resumed"
+msgstr "Reanudado"
 
 msgid "Export all to file"
 msgstr "Exportar a ficheros"

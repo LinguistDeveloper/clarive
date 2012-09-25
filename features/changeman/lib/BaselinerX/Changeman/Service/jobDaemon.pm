@@ -157,6 +157,7 @@ sub run_once {
    my @filestoclean;       ## Almacena los ficheros a limpiar al finalizar un pase
 
    foreach my $file (@files) {
+      next unless $file->{filename};
       _log qq{PROCESS $file->{filename}};
       my ($fprefix) = $file->{filename} =~ m{^.*/(.*?)$};
       $fprefix = "[$fprefix] ";
