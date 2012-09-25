@@ -120,6 +120,7 @@ sub update_category : Local {
             try{
                 my $id_category = $p->{id};
                 my $category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
+                my $old_category = $category->name;
                 $category->name( $p->{name} );
                 $category->color( $p->{category_color} );
                 $category->description( $p->{description} );
@@ -136,7 +137,19 @@ sub update_category : Local {
                                                                                             id_status   => $id_status,
                                                                                         });     
                     }
-                }               
+                }
+                
+                foreach ( '%action.topics.' . lc $old_category . '%', '%action.topicsfield.' . lc $old_category . '%'){
+                    my $rs_action = Baseliner->model('Baseliner::BaliAction')->search({ action_id => {'like', $_  }});
+                    while (my $row = $rs_action->next){
+                        my @split_action = split /\./, $row->action_id;
+                        $split_action[2] = lc $p->{name};
+                        my $new_action = join('.',@split_action);
+                        $row->action_id($new_action);
+                        $row->update;
+                    }
+                }                
+                
                 
                 
                 $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, category_id=> $id_category };
