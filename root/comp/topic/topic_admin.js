@@ -1549,9 +1549,9 @@
                             var form = form_category.getForm();
                             if (form.isValid()) {
 								
-									for(i=0;i<fields.length;i++){
-										alert('campos: ' + fields[i]);
-									}								
+									//for(i=0;i<fields.length;i++){
+									//	alert('campos: ' + fields[i]);
+									//}								
 								
                                 form.submit({
 									params: {values: fields},
