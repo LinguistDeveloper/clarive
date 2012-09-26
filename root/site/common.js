@@ -77,13 +77,14 @@ Baseliner.error = function(title, format){
 
 Baseliner.message = function(title, msg, config){
     if( ! config ) config = {};
-    var id = $.gritter.add( Ext.apply({ title: title, text: msg, fade: true, sticky: true, class: 'baseliner-message' }, config));
-    var timeout = config.time || 5000;
-    setTimeout( function(){
-        $.gritter.remove( id, { 
-            fade: true
-        });
-    }, timeout);
+    var id = $.gritter.add( Ext.apply({
+        title: title, text: msg, fade: true, class: 'baseliner-message',
+        time: 5000,
+        image: '/static/images/infomsg.png'
+    }, config));
+    /*
+    setTimeout( function(){ $.gritter.remove( id, { fade: true }); }, timeout);
+    */
 };
 
 Baseliner.message_gray = function(title, format){
