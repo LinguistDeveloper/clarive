@@ -97,6 +97,7 @@ Ext.onReady(function(){
                              icon   =>'/static/images/icons/envelope.gif' },
                          #FIXME { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
+                         { text=>_loc('Avatar'), handler=>\'function(){ Baseliner.change_avatar(); }' },
                          { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
                     ];
                     if($user ne 'root'){

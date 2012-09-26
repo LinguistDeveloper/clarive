@@ -151,6 +151,12 @@ var menu_favorite_add = {
     }
 };
 
+var menu_refresh = {
+    text: _('Refresh Node'),
+    cls: 'x-btn-text-icon',
+    icon: '/static/images/icons/refresh.gif',
+    handler: refresh_lc 
+};
 
 var menu_prueba_add = {
     text: _('Add to Prueba...'),
@@ -420,6 +426,7 @@ var menu_click = function(node,event){
         m.add( menu_favorite_del );
     else
         m.add( menu_favorite_add );
+    m.add( menu_refresh );
     Baseliner.lc_menu.showAt(event.xy);
 }
 
