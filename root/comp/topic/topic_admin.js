@@ -144,7 +144,11 @@
             defaults: { anchor:'100%'},
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
-                { xtype:'textfield', name:'name', fieldLabel:_('Topics: Status'), allowBlank:false, emptyText:_('Name of status') },
+                { xtype:'textfield', name:'name', fieldLabel:_('Topics: Status'),
+				  allowBlank:false, emptyText:_('Name of status'),
+				  regex: /^[^\.]+$/,
+				  regexText: _('Character dot not allowed')				
+				},
                 ta,
                 {
                     xtype: 'radiogroup',
@@ -408,7 +412,11 @@
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
                 category_color,
-                { xtype:'textfield', name:'name', fieldLabel:_('Category'), allowBlank:false, emptyText:_('Name of category') },
+                { xtype:'textfield', name:'name', fieldLabel:_('Category'),
+				  allowBlank:false, emptyText:_('Name of category'),
+				  regex: /^[^\.]+$/,
+				  regexText: _('Character dot not allowed')
+				},
                 ta,
                 {
                     xtype: 'radiogroup',
@@ -1088,18 +1096,38 @@
         var title = _('Create fields');
 		var config = new Array();
 		var fields = new Array();
+		var names_fields = new Array();
 		
         var field_box = new Baseliner.model.Fields({
             store: field_box_store
         });
 		
-        field_box_store.on('load',function(){
+        //field_box_store.on('load',function(){
+			//alert(rec.data.fields);
+			//alert('rec data: ' + rec.data.fields );
             field_box.setValue( rec.data.fields ) ;            
-        });
+        //});
 		
 		field_box.on('additem',function( obj, value, row){
 			//if(row.data.config){
-				fields.push(Ext.util.JSON.encode(row.data.params));
+			
+				//alert('add item: ' + value);
+				//for(i=0;i<names_fields.length;i++){
+				//	alert('ele: ' + names_fields[i]);
+				//}
+				//alert('row data: ' + row.data.params);
+			
+				if (names_fields.indexOf(value)!= -1){
+					//alert('Encontrado');	
+				}else{
+					//alert('No Encontrado');
+					names_fields.push(value);
+					fields.push(Ext.util.JSON.encode(row.data.params));
+					//alert('fields ' + value + ':' + Ext.util.JSON.encode(row.data.params));
+				}
+				
+				
+				
 				//config.push({"text": _(row.data.name) , "leaf": true,  "id": row.data.id, "config": row.data.name });	
 			//}
 		});
@@ -1153,7 +1181,7 @@
 			    icon:'/static/images/icons/wrench.png',
 			    cls: 'x-btn-text-icon',
 			    handler: function() {
-				
+			
 					var clone_field_store = new Baseliner.store.Fields({
 						url: '/topicadmin/list_clone_fields'
 					});
@@ -1194,7 +1222,37 @@
 									params: { id_category: rec.id, params: Ext.util.JSON.encode(row.data.params) },
 									success: function(f,a){
 										Baseliner.message(_('Success'), a.result.msg );
-										//store_config.reload();
+										//rec.data.fields.push(form.findField("name_field").getValue());
+										
+										var lista = field_box.getValue();
+										var list_fields = lista.split(',');
+										var name_field = form.findField("name_field").getValue()
+										row.data.params.origin = 'custom';
+										row.data.params.id_field = name_field;
+										row.data.params.name_field = name_field;
+										if (row.data.params.rel_field){
+											row.data.params.rel_field = name_field;
+										}
+										list_fields.push(name_field);
+								
+										var record_meta = Ext.data.Record.create([
+											{name: 'id'},
+											{name: 'params'}
+										]);
+										
+										var record = new record_meta({
+											id: form.findField("name_field").getValue(),
+											params: row.data.params
+										});
+										//****************************************************
+										//fields.push(Ext.util.JSON.encode(row.data.params));
+										//****************************************************
+										
+										field_box_store.add(record);
+										field_box_store.commitChanges();
+										
+										field_box.setValue( list_fields );
+
 									},
 									failure: function(f,a){
 									Ext.Msg.show({  
@@ -1490,6 +1548,11 @@
                         handler: function() {
                             var form = form_category.getForm();
                             if (form.isValid()) {
+								
+									//for(i=0;i<fields.length;i++){
+									//	alert('campos: ' + fields[i]);
+									//}								
+								
                                 form.submit({
 									params: {values: fields},
                                     success: function(f,a){
@@ -1511,7 +1574,8 @@
                     {
                     text: _('Close'),
                     handler: function(){
-                            store_category.reload();                            
+                            store_category.reload();
+							fields = undefined;
                             win.close();
                         }
                     }
