@@ -4076,8 +4076,8 @@ msgstr "usuarios adjuntos"
 msgid "%1 changed topic status from %2 to %3 on %4"
 msgstr "%1 modificó el estado de %2 a %3 el %4"
 
-
-
+msgid "Character dot not allowed"
+msgstr "Caracter punto no permitido"
 
 
 
