@@ -840,7 +840,7 @@ sub identicon {
             require Image::Identicon;
             my $salt = '1234';
             my $identicon = Image::Identicon->new({ salt=>$salt });
-            my $image = $identicon->render({ code=> int(rand(999999999999999)), size=>32 });
+            my $image = $identicon->render({ code=> int(rand( 2 ** 32)), size=>32 });
             return $image->{image}->png;
     };
     if( ref $user ) {
