@@ -39,7 +39,6 @@ sub run_once {
         #
         $pid = fork;
         if ( $pid ) {
-            BaselinerX::Job::Service::Daemon->reap_children();
             next;
         }
         $SIG{HUP} = 'DEFAULT';
@@ -51,6 +50,8 @@ sub run_once {
         _log "Task ".$task->{description}." finished";
         exit 0;
     }
+    # get rid of zombies
+    BaselinerX::Job::Service::Daemon->reap_children();
 }
 
 sub road_kill {
