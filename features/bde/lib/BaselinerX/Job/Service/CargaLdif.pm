@@ -231,8 +231,28 @@ sub run  {
   _debug(BaselinerX::Comm::Balix->ahora() . " Users after load: "  . keys %end_users);
 
   # Baseliner->launch('service.load.user.roles');  # Start bali update.
+  #     $self->set_deep_permissions();
 
   return;
+}
+
+sub set_deep_permissions {
+    _log "Start deep permissions set...";
+    for my $u ( DB->BaliUser->search->hashref->all ) {
+        $u = $u->{username};
+        my %perm;
+        my %prjs = DB->BaliRoleuser->search({ username=>$u })->hash_on('id_project');
+        for my $pid ( keys %prjs ) { 
+           my @roles = _unique map { $_->{id_role} } _array $prjs{ $pid };
+           for my $p2 ( DB->BaliProject->search({ id_parent=>$pid })->hashref->all  ) {
+             try { DB->BaliRoleuser->create({ username=>$u, id_role=>$_, ns=>"project/$p2->{mid}", id_project=>$p2->{mid} }) } for @roles;
+             for my $p3 ( DB->BaliProject->search({ id_parent=>$p2->{mid} })->hashref->all  ) {
+                try { DB->BaliRoleuser->create({ username=>$u, id_role=>$_, ns=>"project/$p3->{mid}", id_project=>$p3->{mid} }) } for @roles;
+             }
+           }
+        }
+    }
+    _log "Deep permissions done.";
 }
 
 1
