@@ -151,6 +151,6 @@ __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to(
   "project",
   "Baseliner::Schema::Baseliner::Result::BaliProject",
-  { mid => "id_prj" },
+  { id => "id_prj" },
 );
 1;

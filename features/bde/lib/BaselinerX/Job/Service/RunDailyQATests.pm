@@ -55,7 +55,7 @@ sub init {
     Baseliner->model('BaselinerX::Model::SQA')->request_analysis(%$test);
     my $now = sql_date();
     my $rs = Baseliner->model('Baseliner::BaliSqaPlannedTest')->search({id => $test->{id}});
-    $rs->update({active => 0, last_exec => $now});
+    $rs->update({last_exec => $now});
   }
   return;
 }
