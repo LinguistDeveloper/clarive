@@ -151,14 +151,13 @@ sub infoactions : Local {
     my $p = $c->request->parameters;
     my $username = $p->{username};
     my $id_role = $p->{id_role};
-    
     my @actions;
     my @datas;
     my $data;
     my $SQL;
     
     if ($id_role) {
-    my $rs_actions = $c->model('Baseliner::BaliRoleAction')->search( { id_role => $id_role} );
+    my $rs_actions = $c->model('Baseliner::BaliRoleaction')->search( { role => $id_role}, { prefetch=>['id_role'] } );
     while( my $rs = $rs_actions->next ) {
         my $desc = $rs->action;
         eval { # it may fail for keys that are not in the registry
@@ -188,7 +187,7 @@ sub infoactions : Local {
     }
     }
     
-    $c->stash->{json} =  { data=>\@actions};
+    $c->stash->{json} =  { data=>\@actions, totalCount => scalar( @actions ) };
     $c->forward('View::JSON');   
 }
 
