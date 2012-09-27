@@ -462,6 +462,9 @@ msgstr "Solicitar Aprobación"
 msgid "Requested On"
 msgstr "Solicitado"
 
+msgid "Requesting approval for job %1, baseline %2: %3"
+msgstr "Solicitud de aprobación para el pase %1 al entorno %2. Motivo: %3"
+
 msgid "Requested By"
 msgstr "Solicitante"
 
