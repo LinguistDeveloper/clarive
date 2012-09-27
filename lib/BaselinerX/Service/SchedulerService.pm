@@ -39,6 +39,7 @@ sub run_once {
         #
         $pid = fork;
         if ( $pid ) {
+            BaselinerX::Job::Service::Daemon->reap_children();
             next;
         }
         $SIG{HUP} = 'DEFAULT';
