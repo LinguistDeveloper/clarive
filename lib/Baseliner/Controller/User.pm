@@ -241,7 +241,6 @@ sub update : Local {
     when ('update') {
         try{
         my $type_save = $p ->{type};
-		_log ">>>>>>>>>>>>>>>Usuario: " . $p->{username}; 
         if ($type_save eq 'user') {
             my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
             $user->username( $p->{username} );
@@ -358,7 +357,8 @@ sub tratar_proyectos{
         my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
                                     {	username => $user_name,
                                         id_role => $role,
-                                        ns => '/'
+                                        ns => '/',
+										id_project => -1,
                                     },
                                     { key => 'primary' });
         $role_user->update();
@@ -441,7 +441,8 @@ sub tratar_proyectos_padres(){
                                                        {
                                                     username => $user_name,
                                                     id_role => $role,
-                                                    ns => 'project/' . $row[0]
+                                                    ns => 'project/' . $row[0],
+													id_project => $row[0],
                                                        },
                                                        { key => 'primary' });
                                 $role_user->update();
