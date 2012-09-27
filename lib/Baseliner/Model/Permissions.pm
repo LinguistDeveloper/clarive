@@ -694,7 +694,7 @@ sub user_roles {
         while( my $action = $actions->next ) {
             push @actions, $action->action;
         }
-        push @roles, { role=>$role->role, ns=>$ns, description=>$role->description, actions=>[ @actions ] };
+        push @roles, { role=>$role->role, ns=>$ns, id_project=>$r->id_project, description=>$role->description, actions=>[ @actions ] };
     }
     # _log "user_roles: $username got \n";_log Dumper _unique @roles;
     return @roles;

@@ -46,6 +46,7 @@
                     var win = new Ext.Window({
                         layout: 'fit', 
                         autoScroll: true,
+                        maximizable: true,
                         title: "<% _loc('User Actions') %>",
                         height: 400, width: 700, 
                         items: [ { 

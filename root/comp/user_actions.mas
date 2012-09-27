@@ -13,9 +13,11 @@
             {  name: 'ns' }
         ]
     });
-    store.load();
+    store.on('load', function(){
+        Baseliner.hideLoadingMask();
+    });
 
-    var grid = new Ext.grid.EditorGridPanel({
+    var grid = new Ext.grid.GridPanel({
         header: false,
         autoScroll: true,
         autoWidth: true,
@@ -24,17 +26,19 @@
         deferredRender:true,
         clicksToEdit: 'auto',
         store: store,
-        viewConfig: [{
-                forceFit: true
-        }],
+        viewConfig: { forceFit: true },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: '<% _loc('Role') %>', width: 150, dataIndex: 'role', sortable: true },	
-            { header: '<% _loc('Description') %>', width: 150, dataIndex: 'description', sortable: true },	
-            { header: '<% _loc('Action') %>', width: 150, dataIndex: 'action', sortable: true },	
-            { id: 'ns', header: '<% _loc('Namespace') %>', width: 100, dataIndex: 'ns', sortable: true }	
+            { header: _('Role'), width: 150, dataIndex: 'role', sortable: true },	
+            { header: _('Description'), width: 150, dataIndex: 'description', sortable: true },	
+            { header: _('Action'), width: 150, dataIndex: 'action', sortable: true },	
+            { id: 'ns', header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true }	
         ]
+    });
+    grid.on('afterrender', function(){
+        Baseliner.showLoadingMask( grid.el, _('Loading...') );
+        store.load();
     });
     return grid;
 })();
