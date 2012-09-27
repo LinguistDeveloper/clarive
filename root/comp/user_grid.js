@@ -174,7 +174,7 @@
                     });
     
                     ////////////////////////////////////////////////////////////////////
-                    if (form.getValues()['id'] > 0) {
+                    if (form.getValues()['mid'] > 0) {
                            form.submit({
                            params: { action: action,
                                  type: 'roles_projects',
@@ -185,7 +185,7 @@
                            success: function(f,a){
                                Baseliner.message(_('Success'), a.result.msg );
                                store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-                               form.findField("id").setValue(a.result.user_id);
+                               form.findField("mid").setValue(a.result.user_id);
                                form.findField("username").getEl().dom.setAttribute('readOnly', true);
                            },
                            failure: function(f,a){
@@ -292,7 +292,7 @@
             width: 50,
             handler: function(){
                 var form = form_user.getForm();
-                var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
+                var action = form.getValues()['mid'] >= 0 ? 'update' : 'add';
                 
                 if (form.isValid()) {
                     var swDo = true;
@@ -315,7 +315,7 @@
                             success: function(f,a){
                             Baseliner.message(_('Success'), a.result.msg );
                             store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-                            form.findField("id").setValue(a.result.user_id);
+                            form.findField("mid").setValue(a.result.user_id);
                             form.findField("username").getEl().dom.setAttribute('readOnly', true);
                             btn_grabar_user.disable();
                             win.setTitle(_('Edit user'));
@@ -746,7 +746,7 @@
             function(btn){ 
                 if(btn=='yes') {
                     Baseliner.ajaxEval( '/user/update?action=delete',
-                        { id: sel.data.id,
+                        { id: sel.data.mid,
                           username: sel.data.username
                         },
                         function(response) {
@@ -791,7 +791,7 @@
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
-                { header: _('Id'), hidden: true, dataIndex: 'mid' },
+                { header: _('mid'), hidden: true, dataIndex: 'mid' },
                 { header: _('User'), width: 120, dataIndex: 'username', sortable: true, renderer: Baseliner.render_user_field },
                 { header: _('Name'), width: 350, dataIndex: 'realname', sortable: true },
                 { header: _('Alias'), width: 150, dataIndex: 'alias', sortable: true },

@@ -204,6 +204,7 @@ sub update : Local {
     my $user_key; # (Public key + Username al revés)
     $user_key = $c->config->{decrypt_key}.reverse ($p->{username});
 
+    _debug 'USER UPDATE: '._dump $p;
                             
     given ($action) {
     when ('add') {
@@ -239,7 +240,6 @@ sub update : Local {
     }
     when ('update') {
         try{
-            _debug 'UPDATE'._dump $p;
         my $type_save = $p ->{type};
         if ($type_save eq 'user') {
             my $user = $c->model('Baseliner::BaliUser')->find( {username=>$p->{username } } );
@@ -488,7 +488,7 @@ sub actions_list : Local {
     my @data;
     for my $role ( $c->model('Permissions')->user_roles( $c->username ) ) {
         for my $action ( _array $role->{actions} ) {
-            push @data, {  role=>$role->{role}, description=>$role->{description}, ns=>$role->{ns}, action=>$action };
+            push @data, {  role=>$role->{role}, description=>$role->{description}, ns=>ns_get($role->{ns})->ns_type . (ns_get($role->{ns})->name ne 'root' ? ': '.ns_get($role->{ns})->name :''), action=>$action };
         }
     }
     $c->stash->{json} = { data=>\@data, totalCount => scalar( @data ) };
