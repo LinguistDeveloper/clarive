@@ -4,7 +4,7 @@
     my $dashboardlets = $c->stash->{dashboardlets};
 </%perl>
 
-<div id="boot" align="center">
+<div id="boot" style="margin:0 auto 0 auto; width:85%;">
     
 % if($dashboards){
 % if(scalar @{$dashboards} > 0){
@@ -58,5 +58,3 @@
 %}
     </div>
 </div>
-
-   
