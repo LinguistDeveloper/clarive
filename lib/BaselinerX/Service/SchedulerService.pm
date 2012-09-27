@@ -41,6 +41,9 @@ sub run_once {
         if ( $pid ) {
             next;
         }
+        $SIG{HUP} = 'DEFAULT';
+        $SIG{TERM} = 'DEFAULT';
+        $SIG{STOP} = 'DEFAULT';
         _log 'Starting to work...';
         _log "Task ".$task->{description}." started with PID $$";
         $sm->run_task( taskid => $task->{id}, pid=>$$ );    # run scheduled task

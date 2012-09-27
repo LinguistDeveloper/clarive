@@ -485,11 +485,29 @@ sub actions_list : Local {
     my ($self, $c) = @_;
 
     my @data;
+    my %prjs = DB->BaliProject->search(undef, { select=>[qw/mid name id_parent nature/] })->hash_on('mid');
+    %prjs = map { $_ => $prjs{ $_ }->[0] } keys %prjs;
+    my $parent_foo;
+    $parent_foo = sub {
+        my ($p, @parents) = @_;
+        if( defined $p->{id_parent} ) {
+            my $parentprj = $prjs{ $p->{id_parent} };
+            unshift @parents, $parentprj->{nature} // $parentprj->{name};
+            @parents = $parent_foo->( $parentprj, @parents );
+        }
+        return @parents;
+    };
     for my $role ( $c->model('Permissions')->user_roles( $c->username ) ) {
         for my $action ( _array $role->{actions} ) {
-            push @data, {  role=>$role->{role}, description=>$role->{description}, ns=>ns_get($role->{ns})->ns_type . (ns_get($role->{ns})->name ne 'root' ? ': '.ns_get($role->{ns})->name :''), action=>$action };
+            my $prj = $prjs{ $role->{id_project} };
+            my $ns = sprintf '%s (%s)', $prj->{nature} // $prj->{name}, $role->{ns};
+            my @parents = $parent_foo->( $prj );
+            $ns = '/' . join('/', @parents, $ns ) if @parents;
+            push @data, {  role=>$role->{role}, description=>$role->{description}, project=>$prj->{name}, mid=>$prj->{mid}, ns=>$ns, action=>$action };
+            # push @data, {  role=>$role->{role}, description=>$role->{description}, ns=>ns_get($role->{ns})->ns_type . (ns_get($role->{ns})->name ne 'root' ? ': '.ns_get($role->{ns})->name :''), action=>$action };
         }
     }
+    @data = sort { $a->{mid}  <=>  $b->{mid} } @data;
     $c->stash->{json} = { data=>\@data, totalCount => scalar( @data ) };
     $c->forward('View::JSON');
 }
