@@ -153,6 +153,8 @@ sub event_new {
             );
             $rrow->dsl( $rule->{dsl} );
             $rrow->update;
+            $rrow->log_output( $rule->{output} );
+            $rrow->update;
         }
     };
     return try {

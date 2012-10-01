@@ -53,6 +53,23 @@ sub actions : Local {
     $c->forward("View::JSON");
 }
 
+sub activate : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    try {
+        my $row = DB->BaliRule->find( $p->{id_rule} );
+        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
+        my $name = $row->rule_name;
+        $row->update({ rule_active=> $p->{activate} });
+        my $act = $p->{activate} ? _loc('activated') : _loc('deactivated');
+        $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 %2', $name, $act) };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg => $err };
+    };
+    $c->forward("View::JSON");
+}
+
 sub delete : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;

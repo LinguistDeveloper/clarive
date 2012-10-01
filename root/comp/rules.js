@@ -3,7 +3,7 @@
     var rules_store = new Baseliner.JsonStore({
         url: '/rule/grid', root: 'data',
         id: 'id', totalProperty: 'totalCount', 
-        fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'event_name', 'id' ]
+        fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'rule_active', 'event_name', 'id' ]
     });
     var search_field = new Baseliner.SearchField({
         store: rules_store,
@@ -15,7 +15,29 @@
     var rule_del = function(){
         var sm = rules_grid.getSelectionModel();
         if( sm.hasSelection() ) {
-            Baseliner.ajaxEval( '/rule/delete', { id_rule: sm.getSelected().data.id }, function(res){
+            Baseliner.confirm( _('Delete rule %1?', sm.getSelected().data.rule_name ), function(){
+                var id_rule = sm.getSelected().data.id;
+                Baseliner.ajaxEval( '/rule/delete', { id_rule: id_rule }, function(res){
+                    if( res.success ) {
+                        rules_store.reload();
+                        Baseliner.message( _('Rule'), res.msg );
+                        // remove tab if any
+                        var tab_arr = tabpanel.find( 'id_rule', id_rule );
+                        if( tab_arr.length > 0 ) {
+                            tabpanel.remove( tab_arr[0] );
+                        }
+                    } else {
+                        Baseliner.error( _('Error'), res.msg );
+                    }
+                });
+            });
+        }
+    };
+    var rule_activate = function(){
+        var sm = rules_grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            var activate = sm.getSelected().data.rule_active > 0 ? 0 : 1;
+            Baseliner.ajaxEval( '/rule/activate', { id_rule: sm.getSelected().data.id, activate: activate }, function(res){
                 if( res.success ) {
                     rules_store.reload();
                     Baseliner.message( _('Rule'), res.msg );
@@ -67,6 +89,8 @@
     };
 
     var render_rule = function( v,metadata,rec ) {
+        if( rec.data.rule_active == 0 ) 
+            v = String.format('<span style="text-decoration: line-through">{0}</span>', v );
         return String.format(
             '<div style="float:left"><img src="{0}" /></div>&nbsp;'
             + '<b>{2}: {1}</b>',
@@ -100,6 +124,7 @@
             { xtype:'button', icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
             { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
+            { xtype:'button', icon: '/static/images/icons/activate.png', cls: 'x-btn-icon', handler: rule_activate },
             { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon' }
         ]
     });
