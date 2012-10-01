@@ -90,6 +90,7 @@ Baseliner.change_avatar = function() {
             onComplete: function(fu, filename, res){
                 //Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
                 Baseliner.message(_('Upload File'), _(res.msg, filename) );
+                reload_avatar_img();
             },
             onSubmit: function(id, filename){
 				//uploader.setParams({topic_mid: data ? data.topic_mid : obj_topic_mid.getValue(), filter: meta.rel_field });
@@ -115,16 +116,32 @@ Baseliner.change_avatar = function() {
             }
         });
     });
+    var img_id = Ext.id();
+    var reload_avatar_img = function(){
+            // reload image
+            var el = Ext.get( img_id );
+            var rnd = Math.floor(Math.random()*80000);
+            el.dom.src = '/user/avatar/image.png?' + rnd;
+    };
+    var gen_avatar = function(){
+        Baseliner.ajaxEval('/user/avatar_refresh', {}, function(res){
+            Baseliner.message( _('Avatar'), res.msg );
+            reload_avatar_img();
+        });
+    };
+    var rnd = Math.floor(Math.random()*80000);
+    var img = String.format('<img width="32" id="{0}" style="border: 2px solid #bbb" src="/user/avatar/image.png?{1}" />', img_id, rnd );
     var win = new Ext.Window({
-        title: _('Upload your Avatar'),
+        title: _('Manage your Avatar'),
         layout:'fit', width: 300, height: 300, 
-        bodyStyle: { 'background-color':'#fff' },
+        bodyStyle: { 'background-color':'#fff', padding: 20 },
         items: [
-            { xtype:'panel', layout:'form', frame: false, style: { padding: 20 },items: [
-                { xtype:'container', html:'<h4>'+_('Current avatar:')+'</h4><img width="32" style="border: 2px solid #bbb" src="/user/avatar/image.png" />' },
-                { xtype:'container', html: '<h4>' + _('Select your avatar:') + '</h4>' },
-                upload
-              ]
+            { xtype:'panel', layout:'form', frame: false,
+                items: [
+                    { xtype:'container', fieldLabel:_('Current avatar'), html: img },
+                    { xtype:'button', width: 80, fieldLabel: _('Change avatar'), scale:'large', text:_('Generate'), handler:gen_avatar },
+                    { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] },
+                  ]
             }
         ]
     });
@@ -135,7 +152,7 @@ Baseliner.message = function(title, msg, config){
     if( ! config ) config = {};
     var id = $.gritter.add( Ext.apply({
         title: title, text: msg, fade: true, class: 'baseliner-message',
-        time: 4000,
+        time: 3000,
         image: '/static/images/infomsg.png'
     }, config));
     /*
