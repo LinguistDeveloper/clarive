@@ -5,6 +5,17 @@ use base 'CatalystX::Features::View::Mason';
 
 __PACKAGE__->config(use_match => 0);
 
+# put something more than the UID ($<) in the folder. 
+#   the parentpid is usually given by the shell
+
+my $ppid = getppid;
+$ppid < 2 and $ppid = $$;
+
+__PACKAGE__->config( data_dir =>
+        File::Spec->catdir( File::Spec->tmpdir, sprintf('%s_%d_%d_mason_data_dir', 'Baseliner', $<, $ppid ) )
+    );
+
+
 =head1 NAME
 
 Baseliner::View::Mason - Mason View Component
