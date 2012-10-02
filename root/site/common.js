@@ -140,7 +140,7 @@ Baseliner.change_avatar = function() {
                 items: [
                     { xtype:'container', fieldLabel:_('Current avatar'), html: img },
                     { xtype:'button', width: 80, fieldLabel: _('Change avatar'), scale:'large', text:_('Generate'), handler:gen_avatar },
-                    { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] },
+                    { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] }
                   ]
             }
         ]
@@ -148,11 +148,14 @@ Baseliner.change_avatar = function() {
     win.show(); 
 };
 
+$.extend($.gritter.options, { position: 'bottom-right' } );
+
 Baseliner.message = function(title, msg, config){
     if( ! config ) config = {};
+    
     var id = $.gritter.add( Ext.apply({
-        title: title, text: msg, fade: true, class: 'baseliner-message',
-        time: 3000,
+        title: title, text: msg, fade: true, 'class': 'baseliner-message',
+        time: 2200,
         image: '/static/images/infomsg.png'
     }, config));
     /*
