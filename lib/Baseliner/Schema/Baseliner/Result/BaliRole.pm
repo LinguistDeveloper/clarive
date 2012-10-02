@@ -14,39 +14,6 @@ Baseliner::Schema::Baseliner::Result::BaliRole
 
 __PACKAGE__->table("bali_role");
 
-=head1 ACCESSORS
-
-=head2 id
-
-  data_type: NUMBER
-  default_value: undef
-  is_auto_increment: 1
-  is_nullable: 0
-  size: 38
-
-=head2 role
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 0
-  size: 255
-
-=head2 description
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 2048
-
-=head2 mailbox
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=cut
-
 __PACKAGE__->add_columns(
   "id",
   {
