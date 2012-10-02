@@ -22,7 +22,6 @@ __PACKAGE__->add_columns(
   {
     data_type => "NUMBER",
     default_value => undef,
-    is_auto_increment => 1,
     is_nullable => 1,
   },
   "name",

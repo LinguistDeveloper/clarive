@@ -157,13 +157,13 @@ __PACKAGE__->has_many(
 __PACKAGE__->belongs_to(
   "job",
   "Baseliner::Schema::Baseliner::Result::BaliJob",
-  { mid => "id_job" },
+  { id => "id_job" },
 );
 
 __PACKAGE__->belongs_to(
   "jobexec",
   "Baseliner::Schema::Baseliner::Result::BaliJob",
-  { mid => "id_job", "exec"=>"exec" },
+  { id => "id_job", "exec"=>"exec" },
 );
 
 1;
