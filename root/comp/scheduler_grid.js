@@ -369,7 +369,7 @@
                 title: _("Parameters"),
                 tbar: [ 
                     btn_save_config,
-                    { xtype:'button', text: _('Close'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/door_out.png',
+                    { xtype:'button', text: _('Close'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/leave.png',
                         handler: function(){
                             winYaml.close();
                         }

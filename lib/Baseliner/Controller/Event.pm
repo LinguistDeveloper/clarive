@@ -50,7 +50,7 @@ sub log : Local {
     $query and $where = query_sql_build( query=>$query, fields=>[qw(event_key)] );
     my $rs = DB->BaliEvent->search($where, 
         { page => $page, rows => $limit,
-          prefetch => ['rules'],
+          prefetch => [{ 'rules' => 'rule' }],
           order_by => { "-$dir" => $sort }, 
         }
     );
@@ -69,22 +69,24 @@ sub log : Local {
         $e->{data} = _load( $e->{event_data} ) if length $e->{event_data};
         my $rules = delete $e->{rules};
         my @rules = map {
-            _error $_->{stash_data};
+            #_error $_->{stash_data};
             +{
                 %$_, 
-                _parent   => $e->{_id},
-                _id       => $_->{id},
-                type      => 'rule',
-                event_key => $_->{rule_name},
-                data      => ( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
-                dsl       => $_->{dsl},
-                _is_leaf  => \1,
+                _parent       => $e->{_id},
+                _id           => $_->{id},
+                event_status  => $_->{return_code} ? 'ko' : 'ok',
+                type          => 'rule',
+                event_key     => _loc('rule: %1', $_->{rule}{rule_name} ),
+                data          => ( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
+                dsl           => $_->{dsl},
+                output        => $_->{log_output},
+                _is_leaf      => \1,
             }
         } @$rules;
         $e->{_is_leaf} = @rules ? \0 : \1;
         ($e, @rules );
     } @rows;
-    _error \@rows;
+    #_error \@rows;
     $c->stash->{json} = { data => \@rows, totalCount=>$cnt };
     $c->forward("View::JSON");
 }

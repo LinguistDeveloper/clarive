@@ -50,21 +50,26 @@ sub master_setup {
     # topic_post (to get the related topic row)
     Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
         $rel_type, $self,
-        { "foreign.$from_col" => 'self.from_mid' } );
+        { "foreign.$from_col" => 'self.from_mid' },
+        { cascade_delete => 0 , on_delete=>undef, is_foreign_key_constraint=>0, },
+    );
     # topic_post_to (to get the related post row)
     Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
         "${rel_type}_to", $foreign,
-        { "foreign.$from_col" => 'self.to_mid' } );
+        { "foreign.$from_col" => 'self.to_mid' },
+        { cascade_delete => 0, on_delete=>undef, is_foreign_key_constraint=>0, },
+    );
     # post_topic (inverse relationship)
     Baseliner::Schema::Baseliner::Result::BaliMasterRel->belongs_to(
         $rel_type_inverse , $foreign,
-        { "foreign.$to_col" => 'self.to_mid' }
+        { "foreign.$to_col" => 'self.to_mid' },
+        { cascade_delete => 0, on_delete=>undef, is_foreign_key_constraint=>0, },
     );
     $self->has_many(
         $rel_type,
         'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
         { 'foreign.from_mid' => "self.$from_col", },
-        { where=>{'rel_type' => $rel_type} }
+        { where=>{'rel_type' => $rel_type}, cascade_delete=>0, on_delete=>undef, is_foreign_key_constraint=>0, }
     );
     $self->many_to_many( $name, $rel_type, $rel_type_inverse );
 
@@ -73,15 +78,18 @@ sub master_setup {
       "master",
       "Baseliner::Schema::Baseliner::Result::BaliMaster",
       { "foreign.mid" => "self.mid" },
+      { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
     );
 
     $self->has_many(
         'children' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
-        { 'foreign.from_mid' => 'self.mid' }
+        { 'foreign.from_mid' => 'self.mid' },
+        { cascade_delete => 0, on_delete=>undef, is_foreign_key_constraint=>0, },
     );
     $self->has_many(
         'parents' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
-        { 'foreign.to_mid' => 'self.mid' }
+        { 'foreign.to_mid' => 'self.mid' },
+        { cascade_delete => 0, on_delete=>undef, is_foreign_key_constraint=>0, },
     );
 
     # XXX foreign - not sure this is good, maybe children-parent should be a generic thing
@@ -89,14 +97,26 @@ sub master_setup {
     unless( $@ ) {
         $foreign->has_many(
             'children' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
-            { 'foreign.from_mid' => 'self.mid' }
+            { 'foreign.from_mid' => 'self.mid' },
         ) unless $foreign->can('children');
         $foreign->has_many(
             'parents' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
-            { 'foreign.to_mid' => 'self.mid' }
+            { 'foreign.to_mid' => 'self.mid' },
         ) unless $foreign->can('parents');
     }
 
+}
+
+sub has_master {
+    my ($self, $mid_col ) = @_;
+    $mid_col ||= 'mid'; 
+
+    $self->belongs_to(
+      "master",
+      "Baseliner::Schema::Baseliner::Result::BaliMaster",
+      { "mid" => $mid_col },
+      { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
+    );
 }
 
 1;

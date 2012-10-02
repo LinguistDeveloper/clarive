@@ -1,0 +1,104 @@
+<%args>
+    $cis
+</%args>
+<%perl>
+    use v5.10;
+    use Try::Tiny;
+</%perl>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><% _loc( 'CI Export' ) %></title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="/static/jquery/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="/static/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" /> 
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap-responsive.min.css" /> 
+    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
+    <style>
+        body {
+          position: relative;
+          padding-top: 20px;
+          background-color: #fff;
+          background-image: url(../img/grid-18px-masked.png);
+          background-repeat: repeat-x;
+          background-position: 0 40px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+% for my $ci ( _array( $cis ) ) {
+  <div class="row">
+        <h4 style="color: #999"><div style="align:middle; float:left"><img src="<% $ci->icon %>" /></div>&nbsp;<% _loc('Class: %1 #%2', $ci->collection, $ci->mid) %></h4>
+        <h2><% $ci->name %></h2>
+  </div>
+  <div class="row">
+    <div class="span12">
+        <table class="table table-bordered table-condensed" >
+        <thead>
+        <tr>
+            <th style="font-size:18px"><% _loc('Attribute') %></th>
+            <th style="font-size:18px"><% _loc('Value') %>
+        </tr>
+        </thead>
+        <tbody>
+% for my $k ( keys %$ci ) {
+        <tr>
+             <th><% $k %></th>
+             <td><% draw_table( $ci->{$k} ) %></td>
+        </tr>
+% }
+        </tbody>
+        </table>
+    </div>
+  </div>
+  <hr />
+% } # for ci
+</div>
+</body>
+</html>
+<%perl>
+sub ci_title {
+    my $ci = shift;
+    return try {
+        sprintf '<img src="%s" />%s #%s: %s', $ci->icon, $ci->collection, $ci->mid, $ci->name;
+    } catch {
+        $ci->{name};
+    };
+}
+
+sub draw_table {
+    my $value = shift;
+    my $ret = '';
+    if( ref $value eq 'HASH' ) {
+        if( keys( %$value ) ) {
+            $ret .= '<h4>' . ci_title( $value ) . '</h4>' if defined $value->{name};
+            $ret .= q{<table class="table table-striped table-bordered table-condensed" >};
+            for my $k ( keys %$value ) {
+                $ret .= qq{<tr><th width="150">$k</th><td>};
+                $ret .= draw_table( $value->{$k} );
+                $ret .= qq{</td></tr>};
+            }
+            $ret .= q{</table>};
+        }
+    }
+    elsif( ref $value eq 'ARRAY' ) {
+        if( @$value ) {
+            #$ret .= q{<table class="table table-striped table-bordered table-condensed" >};
+            for my $v ( @$value ) {
+                $ret .= draw_table( $v ) ;
+            }
+            #$ret .= q{</table>};
+        }
+    }
+    elsif( ref $value ) {
+        $ret .= draw_table( { %$value }  ) ;
+    }
+    else {
+        $ret .= $value // '&nbsp;';
+    }
+    return $ret;
+}
+</%perl>
+

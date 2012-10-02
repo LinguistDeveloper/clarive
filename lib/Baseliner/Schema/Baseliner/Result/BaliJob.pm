@@ -6,6 +6,7 @@ use warnings;
 use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
 
 __PACKAGE__->table("bali_job");
 
@@ -21,7 +22,6 @@ __PACKAGE__->add_columns(
   {
     data_type => "NUMBER",
     default_value => undef,
-    is_auto_increment => 1,
     is_nullable => 1,
   },
   "name",
@@ -224,18 +224,13 @@ __PACKAGE__->belongs_to(
   { "foreign.id" => "self.id_stash" },
 );
 
-__PACKAGE__->belongs_to(
-  "master",
-  "Baseliner::Schema::Baseliner::Result::BaliMaster",
-  { "foreign.mid" => "self.mid" },
-);
-
 __PACKAGE__->has_many(
   "bali_log",
   "Baseliner::Schema::Baseliner::Result::BaliLog",
   { "foreign.id_job" => "self.id" },
 );
 
+__PACKAGE__->has_master;
 
 # this is the best way to avoid having more than one stash per job
 #  and still maintain ref integrity 

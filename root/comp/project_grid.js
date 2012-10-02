@@ -154,7 +154,7 @@
 	    });
 
 	    var btn_cerrar = new Ext.Toolbar.Button({
-		    icon:'/static/images/icons/door_out.png',
+		    icon:'/static/images/icons/leave.png',
 		    cls: 'x-btn-text-icon',
 		    text: _('Close'),
 		    handler: function() {
