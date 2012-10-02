@@ -153,11 +153,12 @@ sub action_tree : Local {
         ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
         next if $tree{$folder};
         $tree{$folder}=1;
-        my $children = $children_of->( $folder, @actions );
-        if ( $children ) {
+        
+        if ( $folder ne $key ) {
+            my $children = $children_of->( $folder, @actions );
             push @tree_final, { id=>$folder, text=>$folder, leaf=>\0, children => $children }; 
         } else {
-            push @$children, { id=>$folder, text => $folder, leaf=>\1 };
+            push @tree_final, { id=>$key, text => $key, leaf=>\1 };
         }
     }
     $c->stash->{json} = \@tree_final;
