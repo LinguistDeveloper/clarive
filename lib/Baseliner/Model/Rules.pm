@@ -95,6 +95,7 @@ register 'service.echo' => {
     handler=>sub{
         my ($self, $c, $data ) = @_;
         $data->{hello} = $data->{msg} || 'world';
+        _log _loc "Loggin echo: %1", $data->{hello};
         $data;
     }
 };
@@ -214,18 +215,32 @@ sub run_rules {
     my $stash = $p{stash};
     my @rule_log;
     for my $rule ( @rules ) {
-        my @tree = $self->build_tree( $rule->{id}, undef );
-        my $dsl = try {
-            $self->dsl_build( \@tree ); 
+        my ($runner_output, $rc, $dsl, $ret);
+        try {
+            my @tree = $self->build_tree( $rule->{id}, undef );
+            $dsl = try {
+                $self->dsl_build( \@tree ); 
+            } catch {
+                _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+            };
+            $ret = try {
+                ################### RUN THE RULE DSL ######################
+                IO::CaptureOutput::capture( sub {
+                    $self->dsl_run( dsl=>$dsl, stash=>$stash );
+                }, \$runner_output, \$runner_output );
+            } catch {
+                _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+            };
         } catch {
-            _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+            my $err = shift;
+            $rc = 1;
+            if( ref $p{onerror} eq 'CODE') {
+                $p{onerror}->( { err=>$err, ret=>$ret, id=>$rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc } );
+            } elsif( ! $p{onerror} ) {
+                _fail $err;
+            }
         };
-        my $ret = try {
-            $self->dsl_run( dsl=>$dsl, stash=>$stash );
-        } catch {
-            _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
-        };
-        push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash };
+        push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc };
     }
     return { stash=>$stash, rule_log=>\@rule_log }; 
 }

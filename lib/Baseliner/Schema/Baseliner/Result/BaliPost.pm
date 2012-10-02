@@ -46,5 +46,8 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("mid");
 
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
+__PACKAGE__->has_master;
+
 
 1;

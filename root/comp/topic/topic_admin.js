@@ -1482,7 +1482,7 @@
 							    {   xtype:'button',
 								    text: _('Close'),
 								    iconCls:'x-btn-text-icon',
-								    icon:'/static/images/icons/door_out.png',
+								    icon:'/static/images/icons/leave.png',
 								    handler: function(){
 									    winYaml.close();
 								    }
@@ -2094,7 +2094,7 @@
 					{   xtype:'button',
 						text: _('Close'),
 						iconCls:'x-btn-text-icon',
-						icon:'/static/images/icons/door_out.png',
+						icon:'/static/images/icons/leave.png',
 						handler: function(){
 							win.close();
 						}

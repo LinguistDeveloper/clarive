@@ -34,16 +34,20 @@ sub run_once {
         my $stash = $ev->event_data ? _load( $ev->event_data ) : {};
         try {
             # run rules for this event
-            my $ret = Baseliner->model('Rules')->run_rules( event=>$ev->event_key, when=>'post-offline', stash=>$stash );
+            my $ret = Baseliner->model('Rules')->run_rules( event=>$ev->event_key, when=>'post-offline', stash=>$stash, onerror=>1 );
+            my $rc=0;
             # save log
             for my $rule ( _array( $ret->{rule_log} ) ) {
                 my $rulerow = DB->BaliEventRules->create({
-                    id_event=> $ev->id, id_rule=> $rule->{id}, stash_data=> _dump( $rule->{ret} ),
+                    id_event=> $ev->id, id_rule=> $rule->{id}, stash_data=> _dump( $rule->{ret} ), return_code=>$rule->{rc}, 
                 });
+                $rc += $rule->{rc};
                 $rulerow->dsl( $rule->{dsl} );
                 $rulerow->update;
+                $rulerow->log_output( $rule->{output} );
+                $rulerow->update;
             }
-            $ev->update({ event_status=>'ok' });
+            $ev->update({ event_status=>( $rc ? 'ok' : 'ko' ) });
         } catch {
             my $err = shift;
             # TODO global error or a rule by rule 

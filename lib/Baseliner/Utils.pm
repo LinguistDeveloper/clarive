@@ -101,6 +101,7 @@ use Exporter::Tidy default => [
     _hook
     _read_password
     _load_features
+    _ci
 /];
 
 # setup I18n
@@ -147,6 +148,7 @@ use Sys::Hostname;
 use PadWalker qw(peek_my peek_our peek_sub closed_over);
 use Text::Unaccent::PurePerl qw/unac_string/;
 use Path::Class;
+use Term::ANSIColor;
 use strict;
 
 BEGIN {
@@ -300,6 +302,8 @@ sub _log_lev {
     print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
 }
 
+sub isatty { no autodie; return open(my $tty, '+<', '/dev/tty'); }
+
 # internal log engine used by _log and _debug
 sub _log_me {
     my ($lev, $cl,$fi,$li, @msgs ) = @_;
@@ -314,8 +318,14 @@ sub _log_me {
         $cl =~ s{^Baseliner}{B};
         my $pid = sprintf('%s', $$);
         my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
-        if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
-            $cat_log->$lev( $msg );
+        #if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
+            #$cat_log->$lev( $msg );
+        if( $^O ne 'Win32' && -t STDOUT ) { 
+            if( $lev eq 'error' ) {
+                print STDERR color('red') , $msg , color('reset'), "\n"; 
+            } else {
+                print STDERR $msg , "\n"; 
+            }
         } else {
             print STDERR $msg , "\n"; 
         }
@@ -681,26 +691,32 @@ sub _tmp_file {
 
 sub _damn {
     my $blessed = shift;
-    my $damned = $blessed;
+    my $damned;
     try {
-        $damned = { %$blessed };
-        try {
-            # recurse
-            if( ref($damned) eq 'HASH' ) {
-                for my $k ( keys %$damned ) {
-                    next unless ref($k) eq 'HASH'; 
-                    $damned->{$k} = _damn( $damned->{$k} );
-                }
+        # recurse
+        if( ref($blessed) eq 'HASH' ) {
+            $damned = {};
+            for my $k ( keys %$blessed ) { 
+                $damned->{$k} = _damn( $blessed->{$k} );
             }
-        } catch {
-            my $err = shift;
-            warn 'DAMN1=' . $err;
-            exit;
-        };
+        }
+        elsif( ref($blessed) eq 'SCALAR' ) {
+            $damned = "$$blessed";
+        }
+        elsif( ref($blessed) eq 'ARRAY' ) {
+            $damned = [ map { _damn($_) } @$blessed ];
+        }
+        elsif( ref $blessed ) {
+            $damned = _damn( { %$blessed } );
+            
+        }
+        else {
+            $damned = $blessed;
+        }
     } catch {
         my $err = shift;
-        warn 'DAMN1=' . $err;
-        exit;
+        $damned = $blessed;
+        _error( 'DAMN1=' . $err );
     };
     return $damned;
 }
@@ -1141,6 +1157,10 @@ sub _load_features {
         }
     }
     return @dirs;
+}
+
+sub _ci {
+    return Baseliner::CI->new( @_ );
 }
 
 1;

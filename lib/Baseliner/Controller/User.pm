@@ -798,28 +798,6 @@ sub change_pass : Local {
     $c->forward('View::JSON');
 }
 
-sub avatar_upload : Local {
-    my ( $self, $c ) = @_;
-    my $p      = $c->req->params;
-    my $filename = $p->{qqfile};
-    my ($extension) =  $filename =~ /\.(\S+)$/;
-    $extension //= '';
-    my $f =  _file( $c->req->body );
-    _log "Uploading avatar " . $filename;
-    try {
-        require File::Copy;
-        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
-        _debug "Avatar file=$avatar";
-        File::Copy::copy( "$f", "$avatar" ); 
-        $c->stash->{ json } = { success => \1, msg => _loc( 'Changed user avatar' ) } ;            
-    } catch {
-        my $err = shift;
-        _error "Error uploading avatar: " . $err;
-        $c->stash->{ json } = { success => \0, msg => $err };
-    };
-    $c->forward( 'View::JSON' );
-}
-
 sub avatar : Local {
     my ( $self, $c, $username, $dummy_filename ) = @_;
     my ($file, $body, $filename, $extension);
@@ -857,6 +835,43 @@ sub avatar : Local {
     #$c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
     #$c->res->headers->remove_header('Pragma');
     $c->res->content_type('image/png');
+}
+
+sub avatar_refresh : Local {
+    my ( $self, $c ) = @_;
+    my $p      = $c->req->params;
+    try {
+        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        unlink $avatar or _fail $!;
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Avatar refreshed' ) } ;            
+    } catch {
+        my $err = shift;
+        _error "Error refreshing avatar: " . $err;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub avatar_upload : Local {
+    my ( $self, $c ) = @_;
+    my $p      = $c->req->params;
+    my $filename = $p->{qqfile};
+    my ($extension) =  $filename =~ /\.(\S+)$/;
+    $extension //= '';
+    my $f =  _file( $c->req->body );
+    _log "Uploading avatar " . $filename;
+    try {
+        require File::Copy;
+        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        _debug "Avatar file=$avatar";
+        File::Copy::copy( "$f", "$avatar" ); 
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Changed user avatar' ) } ;            
+    } catch {
+        my $err = shift;
+        _error "Error uploading avatar: " . $err;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+    $c->forward( 'View::JSON' );
 }
 
 sub identicon {

@@ -52,5 +52,8 @@ __PACKAGE__->has_many(
   { "foreign.id_file" => "self.mid" },
 );
 
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
+__PACKAGE__->has_master;
+
 1;
 

@@ -370,6 +370,17 @@ sub is_root {
     Baseliner->model('Permissions')->is_root( $c->username );
 }
 
+sub loghome {
+    my $c = shift;
+    my $loghome = $ENV{BASELINER_LOGHOME} // Baseliner->path_to( 'logs' );
+    _mkpath $loghome unless -d $loghome;
+    if( @_ ) {
+        return ''. Baseliner::Utils::_file( $loghome, @_ );
+    } else {
+        return "$loghome";
+    }
+}
+
 # Utils
 sub uri_for_static {
     my ( $self, $asset ) = @_;

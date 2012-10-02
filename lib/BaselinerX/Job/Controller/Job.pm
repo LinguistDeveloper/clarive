@@ -176,11 +176,13 @@ sub job_logfile : Local {
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
     $c->stash->{json}  = try {
         my $file = _load( $job->stash )->{logfile};
-        _fail _log "Error: logfile not found or invalid: %1", $file if ! -f $file;
+        $file //= Baseliner->loghome( $job->name . '.log' ); 
+        _fail _log "Error: logfile not found or invalid: %1", $file unless -f $file;
         my $data = _file( $file )->slurp; 
         { data=>$data, success=>\1 };
     } catch {
-        { success=>\0, msg=>"".shift() };
+        my $err = shift;
+        { success=>\0, msg=>"$err" };
     };
     $c->forward( 'View::JSON' );
 }

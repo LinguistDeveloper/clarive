@@ -4,6 +4,7 @@ use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
 
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Baseliner::Core::Baseline;
 use utf8;
 use v5.10;
@@ -150,14 +151,18 @@ sub update : Local {
                 }                
                 $row = $c->model('Baseliner::BaliBaseline')->search(bl => $p->{bl})->first;
                 if(!$row){
-                    my $baseline = $c->model('Baseliner::BaliBaseline')->create(
-                                    {
-                                        bl    => $p->{bl},
-                                        name  => $p->{name},
-                                        description=> $p->{description},
-                                        seq => $seq
-                                    });
-                    
+                    my $baseline;
+                    master_new 'bl' => $p->{bl} => sub { 
+                        my $mid = shift;
+                        $baseline = $c->model('Baseliner::BaliBaseline')->create(
+                                        {
+                                            bl    => $p->{bl},
+                                            mid   => $mid, 
+                                            name  => $p->{name},
+                                            description=> $p->{description},
+                                            seq => $seq
+                                        });
+                    }; 
                     update_sequence($p->{sq});
                     
                     $c->stash->{json} = { msg=>_loc('Baseline added'), success=>\1, baseline_id=> $baseline->id };

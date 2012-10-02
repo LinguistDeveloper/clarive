@@ -97,19 +97,19 @@ Ext.onReady(function(){
                              icon   =>'/static/images/icons/envelope.gif' },
                          #FIXME { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
-                         { text=>_loc('Avatar'), handler=>\'function(){ Baseliner.change_avatar(); }' },
+                         { text=>_loc('Avatar'), icon=>'/user/avatar/image.png', handler=>\'function(){ Baseliner.change_avatar(); }' },
                          { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
                     ];
                     if($user ne 'root'){
                      $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
                     }
                     $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/icons/users.gif' } );
-                    print js_dumper { text=>$c->username , menu=> [
-            sort {
-                $a->{index}||=0;
-                $b->{index}||=0;
-                $a->{index} <=> $b->{index}
-            } _array($menu) ] };
+                    print js_dumper { xtype=>'button', text=>'<b>'.$c->username.'</b>' , menu=> [
+                        sort {
+                            $a->{index}||=0;
+                            $b->{index}||=0;
+                            $a->{index} <=> $b->{index}
+                        } _array($menu) ] };
                 }else{
                     print js_dumper { text=>_loc('Login'), handler=>\'function(){ Baseliner.login(); }' };
                 }
