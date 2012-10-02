@@ -17,6 +17,8 @@ sub new {
         #_debug "CI NEW: " . _dump $rec;
         my $obj = $ci_class->new( $rec );
         return $obj;
+    } elsif( @_ == 1 && ref( $_[0] ) =~ /^Baseliner.?::CI/ && $_[0]->does('Baseliner::Role::CI') ) {
+        return $_[0];
     } elsif( @_ == 1 && ! ref $_[0] ) {
         $args{uri} = $_[0];
     } elsif( @_ == 2 && ! ref $_[0] && ref $_[1] eq 'HASH' ) {

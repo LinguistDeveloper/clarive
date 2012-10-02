@@ -1,5 +1,6 @@
 <%args>
     $cis
+    $mode => 'shallow'
 </%args>
 <%perl>
     use v5.10;
@@ -43,10 +44,12 @@
         </tr>
         </thead>
         <tbody>
-% for my $k ( keys %$ci ) {
+% for my $k ( sort { uc $a cmp uc $b } keys %$ci ) {
         <tr>
              <th><% $k %></th>
-             <td><% draw_table( $ci->{$k} ) %></td>
+             <td><% $mode eq 'deep' ? draw_table( $ci->{$k} )
+                : draw_one( $ci->{$k} )
+             %></td>
         </tr>
 % }
         </tbody>
@@ -62,10 +65,49 @@
 sub ci_title {
     my $ci = shift;
     return try {
-        sprintf '<img src="%s" />%s #%s: %s', $ci->icon, $ci->collection, $ci->mid, $ci->name;
+        sprintf '<img src="%s" /> <a href="/ci/export_html?mode=%s&mids=%s"><b>CI #%s (%s)</b>: %s</a>', $ci->icon, 'shallow', $ci->mid, $ci->mid, $ci->collection, $ci->name;
     } catch {
         $ci->{name};
     };
+}
+
+sub ci_bool {
+    my $v = shift;
+    $v eq '1' 
+        ? '<img src="/static/images/icons/active.gif" />' 
+        : $v eq '0'
+            ? '<img src="/static/images/icons/inactive.gif" />' 
+            : $v;
+}
+
+sub ci_courier {
+    $_[0] =~ m{^/}
+        ? sprintf('<span style="font-family: Consolas, Courier New, Courier;">%s</span>', $_[0])
+        : $_[0];
+}
+
+
+sub draw_one {
+    my $value = shift;
+    my $ret = '';
+    if( ref $value eq 'ARRAY' ) {
+        if( @$value ) {
+            $ret .= q{<table class="table table-striped table-bordered table-condensed" >};
+            for my $v ( @$value ) {
+                $ret .= qq{<tr><td>};
+                $ret .= draw_one( $v ) ;
+                $ret .= qq{</td></tr>};
+            }
+            $ret .= q{</table>};
+        }
+    }
+    elsif( ref $value && defined $value->{name} ) {
+        $ret .= ci_title( $value );
+    }
+    else {
+        $ret .= ( ci_courier ci_bool( $value ) ) // '&nbsp;';
+    }
+    return $ret;
 }
 
 sub draw_table {
