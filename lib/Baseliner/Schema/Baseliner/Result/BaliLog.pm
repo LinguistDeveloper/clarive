@@ -160,11 +160,5 @@ __PACKAGE__->belongs_to(
   { id => "id_job" },
 );
 
-__PACKAGE__->belongs_to(
-  "jobexec",
-  "Baseliner::Schema::Baseliner::Result::BaliJob",
-  { id => "id_job", "exec"=>"exec" },
-);
-
 1;
 
