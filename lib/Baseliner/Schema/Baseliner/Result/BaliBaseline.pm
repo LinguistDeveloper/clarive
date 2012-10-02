@@ -16,6 +16,12 @@ __PACKAGE__->add_columns(
     is_auto_increment => 1, 
     size => 126,
   },
+  "mid",
+  {
+    data_type => "NUMBER",
+    default_value => undef,
+    is_nullable => 1,
+  },
   "bl",
   {
     data_type => "VARCHAR2",

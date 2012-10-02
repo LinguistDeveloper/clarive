@@ -153,9 +153,11 @@ sub update : Local {
                 if(!$row){
                     my $baseline;
                     master_new 'bl' => $p->{bl} => sub { 
+                        my $mid = shift;
                         $baseline = $c->model('Baseliner::BaliBaseline')->create(
                                         {
                                             bl    => $p->{bl},
+                                            mid   => $mid, 
                                             name  => $p->{name},
                                             description=> $p->{description},
                                             seq => $seq
