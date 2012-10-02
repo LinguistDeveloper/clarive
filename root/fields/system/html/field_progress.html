@@ -1,0 +1,14 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+    <tr>
+        <th><% _loc('Progress') %>:</th>
+        <td>
+%  my $cls = ( $data->{progress} < 20 ? 'danger' : ( $data->{progress} < 40 ? 'warning' : ( $data->{progress} < 80 ? 'info' : 'success' ) ) );
+            <div class="progress progress-<% $cls %>" style="width: 120px; height: 8px">
+                <div class="bar" style="width: <% $data->{progress} %>%"></div>
+            </div>
+        </td>
+    </tr>

@@ -1,0 +1,15 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+% if( !$meta->{hidden} ) {
+    <tr>
+        <th><% _loc('Priority') %>:</th>
+        <td><%  $data->{name_priority} || '&nbsp;' %></td>
+    </tr>
+    <tr>
+        <th><% _loc('Deadline') %>:</th>
+        <td><% $data->{deadline} %></td>
+    </tr>
+% }    

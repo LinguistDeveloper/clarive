@@ -4,8 +4,8 @@ BEGIN { extends 'Catalyst::Controller'; };
 use Baseliner::Utils;
 
 
-register 'action.home.show_lifecycle' => { description => 'User can access the lifecycle panel' };
-register 'action.home.show_menu' => { description => 'User can access the menu' } ;
+register 'action.home.show_lifecycle' => { name => 'User can access the lifecycle panel' };
+register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 
 use Try::Tiny;
 

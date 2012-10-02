@@ -1,0 +1,13 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+    <tr>
+        <th width="1" style="vertical-align: middle">
+            <span class="label" style="background: <% $data->{color_category} %>"><% $data->{name_category} %> #<% $data->{topic_mid} %></span>
+        </th>
+        <th>
+            <h3><% eval('$data->{' . $meta->{bd_field} . '}') %></h3>
+        </th>
+    </tr>    

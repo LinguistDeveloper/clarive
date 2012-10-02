@@ -45,7 +45,7 @@ params:
               renderer: function(v,meta,rec,rowIndex){
                   return '<a href="javascript:Baseliner.delete_revision_row(\''+revision_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
               }
-          },
+          }
 
         ]
     });
