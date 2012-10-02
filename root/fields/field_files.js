@@ -1,5 +1,5 @@
 /*
-name: files
+name: Upload files
 params:
     id_field: 'files'
     origin: 'rel'
