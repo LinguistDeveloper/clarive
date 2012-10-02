@@ -488,7 +488,6 @@ sub save_data {
 
             my $row = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( {topic_mid=> $topic->mid, name => $_->{column}} )->first;
             my $record = {};
-            my 
             $record->{topic_mid} = $topic->mid;
             $record->{name} = $_->{column};
             if ($_->{data}){
