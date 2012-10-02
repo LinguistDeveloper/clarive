@@ -60,6 +60,7 @@
     var init_buttons_category = function(action) {
         eval('btn_edit_category.' + action + '()');
         eval('btn_delete_category.' + action + '()');
+		eval('btn_edit_fields.' + action + '()');
         eval('btn_form_category.' + action + '()');
         eval('btn_admin_category.' + action + '()');
         eval('btn_admin_priority.' + action + '()');
@@ -363,10 +364,10 @@
         
         var combo_providers = new Ext.form.ComboBox({
             store: store_providers,
-                displayField: 'name',
-                valueField: 'provider',
-                hiddenName: 'provider',
-                name: 'provider',
+			displayField: 'name',
+			valueField: 'provider',
+			hiddenName: 'provider',
+			name: 'provider',
             editable: false,
             mode: 'local',
             forceSelection: true,
@@ -1102,34 +1103,17 @@
             store: field_box_store
         });
 		
-        //field_box_store.on('load',function(){
-			//alert(rec.data.fields);
-			//alert('rec data: ' + rec.data.fields );
+        field_box_store.on('load',function(){
             field_box.setValue( rec.data.fields ) ;            
-        //});
+        });
 		
 		field_box.on('additem',function( obj, value, row){
-			//if(row.data.config){
-			
-				//alert('add item: ' + value);
-				//for(i=0;i<names_fields.length;i++){
-				//	alert('ele: ' + names_fields[i]);
-				//}
-				//alert('row data: ' + row.data.params);
-			
 				if (names_fields.indexOf(value)!= -1){
-					//alert('Encontrado');	
+
 				}else{
-					//alert('No Encontrado');
 					names_fields.push(value);
 					fields.push(Ext.util.JSON.encode(row.data.params));
-					//alert('fields ' + value + ':' + Ext.util.JSON.encode(row.data.params));
 				}
-				
-				
-				
-				//config.push({"text": _(row.data.name) , "leaf": true,  "id": row.data.id, "config": row.data.name });	
-			//}
 		});
 		
 		field_box.on('removeitem',function( obj, value, row){
@@ -1345,7 +1329,6 @@
 				hidden: true,
 			    handler: function() {
 					
-				    store_config_field.removeAll();
 				    
 				    var treeRoot = new Ext.tree.AsyncTreeNode({
 					    text: _('Configuration'),
@@ -1371,9 +1354,9 @@
 				    tree_fields.on('click', function(node, checked) {
 						store_config_field.removeAll();
 					    store_config_field.load({params: {config: node.attributes.config, id: node.attributes.id }});
-				    });				
+				    });
 			    
-				    var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+
 				    
 				    var edit_config = function(rec) {
 					    var win_config;
@@ -1390,28 +1373,7 @@
 						    text: _('Save'),
 						    width: 50,
 						    handler: function(){
-							//    var form = form_config.getForm();
-							//    
-							//    var ff_dashboard = form_dashboard.getForm();
-							//    var dashboard_id = ff_dashboard.findField("id").getValue();
-							//    
-							//    if (form.isValid()) {
-							//	    form.submit({
-							//		    params: { id_dashboard: dashboard_id, id: rec.data.id, dashlet: rec.data.dashlet },
-							//		    success: function(f,a){
-							//			    Baseliner.message(_('Success'), a.result.msg );
-							//			    store_config.reload();
-							//		    },
-							//		    failure: function(f,a){
-							//		    Ext.Msg.show({  
-							//			    title: _('Information'), 
-							//			    msg: a.result.msg , 
-							//			    buttons: Ext.Msg.OK, 
-							//			    icon: Ext.Msg.INFO
-							//		    }); 						
-							//		    }
-							//	    });
-							//    }
+
 						    }
 					    })
     
@@ -1609,6 +1571,324 @@
         });
         win.show();     
     };
+
+
+    var edit_fields = function(rec) {
+        var win;
+        var title = _('Edit fields');
+
+		var treeRoot = new Ext.tree.AsyncTreeNode({
+			expanded: true,
+			draggable: false
+		});
+
+		var tree_fields = new Ext.tree.TreePanel({
+			title: _('Fields configuration'),
+			dataUrl: "topicadmin/list_tree_fields",
+			layout: 'form',
+			colapsible: true,
+			useArrows: true,
+			animate: true,
+			containerScroll: true,
+			autoScroll: true,
+			height:300,		    
+			rootVisible: false,
+			enableDD: true,
+			ddGroup: 'tree_fields_dd',			
+			root: treeRoot
+		});
+		
+        tree_fields.getLoader().on("beforeload", function(treeLoader, node) {
+            var loader = tree_fields.getLoader();
+        
+            loader.baseParams.id_category = rec.data.id;
+        });		
+		
+		var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
+		
+		Baseliner.delete_field_row = function( id_grid, id ) {
+			var g = Ext.getCmp( id_grid );
+			var s = g.getStore();
+			s.each( function(row){
+				if( row.data.id == id ) {
+					var data = row.data.params;
+					var parent_id;
+					switch (data.origin){
+						case 'system':  parent_id = 'S';
+										break;
+						case 'custom':  parent_id = 'C';
+										break;
+						case 'templates': parent_id = 'T';
+										break;
+					}					
+                    var parent_node = tree_fields.getNodeById(parent_id);
+					if(!parent_node.expanded){
+						parent_node.expand();	
+					}					
+                    parent_node.appendChild({id:row.data.id, id_field: row.data.id_field, text: row.data.name, params:  row.data.params, icon: row.data.img, leaf: true});
+					s.remove( row );
+				}
+			});
+		};
+		
+		function insert_node(node){
+			var attr = node.attributes;
+			var data = attr.params || {};
+			
+			var id = attr.id;
+			//attr.params.id_field = attr.id_field;
+			var d = { id: id, id_field: attr.id_field, name: attr.text, params: attr.params, img: attr.icon };
+			
+			var r = new category_fields_store.recordType( d, id );
+			category_fields_store.add( r );
+			category_fields_store.commitChanges();
+		}
+		
+		var category_fields_store = new Baseliner.JsonStore({
+			root: 'data' , 
+			remoteSort: true,
+			id: 'id', 
+			url: '/topicadmin/get_conf_fields',
+			fields: [
+				{  name: 'id' },					 
+				{  name: 'id_field' },
+				{  name: 'name' },
+				{  name: 'params' },
+				{  name: 'img' }
+			]			
+		});
+		
+		category_fields_store.load({params: {id_category: rec.data.id}});
+		
+		var btn_save_config = new Ext.Toolbar.Button({
+			text: _('Apply'),
+			icon: '/static/images/icons/cog_edit.png',
+			cls: 'x-btn-text-icon',
+			handler: function() {
+				var fields = new Array();
+				var params = new Array();
+				category_fields_store.each(function (row){
+					fields.push(row.data.id_field);
+					params.push(Ext.util.JSON.encode(row.data.params));
+				})
+				
+				var form = form_fields.getForm();
+				form.submit({
+					params: { 
+						fields: fields,
+						params: params,
+					},
+					success: function(f,a){
+						Baseliner.message(_('Success'), a.result.msg );
+						//store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
+						//form.findField("id").setValue(a.result.user_id);
+						//form.findField("username").getEl().dom.setAttribute('readOnly', true);
+					},
+					failure: function(f,a){
+						Ext.Msg.show({  
+							title: _('Information'), 
+							msg: a.result.msg , 
+							buttons: Ext.Msg.OK, 
+							icon: Ext.Msg.INFO
+						});                      
+					}
+				});				
+			}
+		});
+		
+		var category_fields_grid = new Ext.grid.GridPanel({
+			store: category_fields_store,
+			layout: 'form',
+			height: 300,
+			title: _('Fields category'),
+			hideHeaders: true,
+			enableDragDrop : true,
+			ddGroup : 'mygrid-dd',  
+			viewConfig: {
+				headersDisabled: true,
+				enableRowBody: true,
+				forceFit: true
+			},
+			columns: [
+				{ header: '', width: 20, dataIndex: 'id_field', renderer: function(v,meta,rec,rowIndex){ return '<img style="float:right" src="' + rec.data.img + '" />'} },
+				{ header: _('Name'), width: 240, dataIndex: 'name'},
+				{ width: 20, dataIndex: 'id',
+						renderer: function(v,meta,rec,rowIndex){
+							return '<a href="javascript:Baseliner.delete_field_row(\''+category_fields_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
+						}			  
+				}
+			],
+			bbar: [ btn_save_config ]
+		});
+		
+		category_fields_grid.on( 'afterrender', function(){
+			var el = this.el.dom; 
+			var fields_box_dt = new Ext.dd.DropTarget(el, {
+				ddGroup: 'tree_fields_dd',
+				copy: true,
+				notifyDrop: function(dd, e, id) {
+	                var n = dd.dragData.node;
+	                var attr = n.attributes;
+					var data = attr.params || {};
+					
+					if (!isNaN(attr.id)){
+						if (data.origin == 'template' ){
+							var filter_store = new Baseliner.JsonStore({
+								root: 'data' , 
+								remoteSort: true,
+								totalProperty:"totalCount", 
+								id: 'id', 
+								url: '/topicadmin/list_filters',
+								fields: [
+									{  name: 'name' },
+									{  name: 'filter_json' }
+								]
+							});
+							
+							var btn_cerrar_clone_field = new Ext.Toolbar.Button({
+								text: _('Close'),
+								width: 50,
+								handler: function() {
+									winCloneField.close();
+								}
+							})
+							
+							var btn_grabar_clone_field = new Ext.Toolbar.Button({
+								text: _('Save'),
+								width: 50,
+								handler: function(){
+									
+									var id = category_fields_store.getCount() + 1;
+									var form = form_template_field.getForm();
+									var id_field = form.findField("name_field").getValue();
+									attr.params.id_field = id_field;
+									attr.params.name_field = id_field;
+									attr.params.bd_field = id_field;
+									attr.params.origin = 'custom';
+									
+									var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
+									
+									var r = new category_fields_store.recordType( d, id );
+									category_fields_store.add( r );
+									category_fields_store.commitChanges();									
+								}
+							})
+		
+							var combo_filters = new Ext.form.ComboBox({
+								mode: 'local',
+								triggerAction: 'all',
+								forceSelection: true,
+								editable: false,
+								fieldLabel: _('Filter'),
+								name: 'cmb_filter',
+								hiddenName: 'filter',
+								displayField: 'name',
+								valueField: 'filter_json',
+								hidden: true,						
+								store: filter_store
+							});					
+							
+							
+							var form_template_field = new Ext.FormPanel({
+								url: '/topicadmin/create_clone',
+								frame: true,
+								buttons: [btn_grabar_clone_field, btn_cerrar_clone_field],
+								defaults:{anchor:'100%'},
+								items   : [
+											{ fieldLabel: _('Field'), name: 'name_field', xtype: 'textfield', allowBlank:false },
+											combo_filters
+										]
+							});
+		
+							var winCloneField = new Ext.Window({
+								modal: true,
+								width: 500,
+								title: _('Custom field'),
+								items: [form_template_field]
+							});
+							
+							winCloneField.show();
+							
+						}else{
+							insert_node	(n);
+							n.destroy();
+						}
+					}else{
+						if(attr.id != 'T'){
+							if (n.hasChildNodes()){
+								n.eachChild(function(node) {
+									insert_node	(node);
+								});							
+								n.removeAll();
+							}
+						}
+					}
+					return (true); 
+				}
+			});
+		});
+		
+		category_fields_grid.on('viewready', function() {
+			var ddrow = new Ext.dd.DropTarget(category_fields_grid.getView().mainBody, {  
+				ddGroup : 'mygrid-dd',  
+				notifyDrop : function(dd, e, data){  
+					var sm = category_fields_grid.getSelectionModel();  
+					var rows = sm.getSelections();  
+					var cindex = dd.getDragData(e).rowIndex;  
+					if (sm.hasSelection()) {  
+						for (i = 0; i < rows.length; i++) {  
+							category_fields_store.remove(category_fields_store.getById(rows[i].id));  
+							category_fields_store.insert(cindex,rows[i]);  
+						}  
+						sm.selectRecords(rows);
+					}
+				}
+			});
+		}); 		
+		
+		var form_fields = new Ext.FormPanel({
+			url: '/topicadmin/update_fields',
+			frame: true,
+			items   : [ {
+							xtype: 'panel',
+							layout: 'column',
+							items:  [ {	columnWidth: .49, items:  tree_fields },
+									  { columnWidth: .02, items: blank_image },
+									  {	columnWidth: .49, items: category_fields_grid },
+									  { xtype: 'hidden', name: 'id_category', value: rec.data.id },
+									]  
+						}
+			]
+		});
+
+        
+        win = new Ext.Window({
+            title: _(title),
+            width: 700,
+            autoHeight: true,
+            items: [form_fields]
+        });
+        win.show();     
+    };
+
+
+
+    var btn_edit_fields = new Ext.Toolbar.Button({
+        text: _('Fields'),
+        icon:'/static/images/icons/detail.png',
+        cls: 'x-btn-text-icon',
+        disabled: true,
+        handler: function() {
+            var sm = grid_categories.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                edit_fields(sel);
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));    
+            };          
+        }
+    });
+
 
     var btn_form_category = new Ext.Toolbar.Button({
         text: _('Fields'),
@@ -1879,6 +2159,7 @@
                 btn_edit_category,
                 btn_delete_category,
                 '->',
+				btn_edit_fields,
                 btn_form_category,
                 btn_admin_category,
 				btn_admin_priority
@@ -1901,6 +2182,7 @@
                 }else{
                     btn_delete_category.enable();
                     btn_edit_category.disable();
+					btn_edit_fields.disable();
                     btn_form_category.disable();
                     btn_admin_category.disable();
 					btn_admin_priority.disable();

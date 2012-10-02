@@ -1,0 +1,11 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+% if( !$meta->{hidden} ) {
+    <tr>
+      <th><% _loc('Status') %>:</th>
+      <td><% eval('$data->{' . $meta->{display_field} .'}')  || '&nbsp;' %></td>
+    </tr>
+% }

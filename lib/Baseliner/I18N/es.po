@@ -4079,6 +4079,30 @@ msgstr "%1 modificó el estado de %2 a %3 el %4"
 msgid "Character dot not allowed"
 msgstr "Caracter punto no permitido"
 
+msgid "Fields category"
+msgstr "Campos de categoría"
+
+msgid "Fields configuration"
+msgstr "Configuración de campos"
+
+msgid "System fields"
+msgstr "Campos de sistema"
+
+msgid "Custom fields"
+msgstr "Campos personalizados"
+
+msgid "Templates"
+msgstr "Plantillas"
+
+msgid "Textfield"
+msgstr "Campo de texto"
+
+msgid "Upload files"
+msgstr "Subir ficheros"
+
+
+
+
 
 
 
