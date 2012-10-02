@@ -45,10 +45,7 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("id");
 
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
+__PACKAGE__->has_master;
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2009-06-10 12:25:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dnaPb9fkWsYFTXy36pmR1w
-
-
-# You can replace this text with custom content, and it will be preserved on regeneration
 1;
