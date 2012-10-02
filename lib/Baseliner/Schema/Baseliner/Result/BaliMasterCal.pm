@@ -37,11 +37,8 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
-__PACKAGE__->belongs_to(
-  "master",
-  "Baseliner::Schema::Baseliner::Result::BaliMaster",
-  { "mid" => "mid" },
-);
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
+__PACKAGE__->has_master;
 
 1;
 

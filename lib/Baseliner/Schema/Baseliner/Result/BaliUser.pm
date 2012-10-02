@@ -47,4 +47,7 @@ __PACKAGE__->add_unique_constraint(
 
 sub id { $_[0]->mid; }   # for backwards compatibility
 
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
+__PACKAGE__->has_master;
+
 1;
