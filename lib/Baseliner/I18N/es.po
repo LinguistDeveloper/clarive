@@ -21,11 +21,38 @@ msgstr "Repositorios"
 msgid "All-f"
 msgstr "Todas"
 
+msgid "Current avatar"
+msgstr "Avatar actual"
+
+msgid "Change avatar"
+msgstr "Cambiar avatar"
+
+msgid "Upload avatar"
+msgstr "Subir avatar"
+
+msgid "Manage your Avatar"
+msgstr "Gestión de Avatar"
+
+msgid "deactivated"
+msgstr "desactivada"
+
+msgid "activated"
+msgstr "activada"
+
 msgid "progress"
 msgstr "Avance"
 
 msgid "Start: %1"
 msgstr "Inicio: %1"
+
+msgid "rule: %1"
+msgstr "regla: %1"
+
+msgid "Delete rule %1?"
+msgstr "¿Borrar regla %1?"
+
+msgid "Rule %1 %2"
+msgstr "Regla %1 %2"
 
 msgid "Edit: %1"
 msgstr "Editar: %1"
