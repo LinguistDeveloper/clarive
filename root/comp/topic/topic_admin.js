@@ -1765,7 +1765,7 @@
 								width: 50,
 								handler: function(){
 									if (attr.data) { //Casos especiales, como la plantilla listbox
-										
+										alert('coming soon!!')
 									}else{
 										var id = category_fields_store.getCount() + 1;
 										var form = form_template_field.getForm();
@@ -1776,12 +1776,12 @@
 										attr.params.origin = 'custom';
 										
 										var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
+										
+										var r = new category_fields_store.recordType( d, id );
+										category_fields_store.add( r );
+										category_fields_store.commitChanges();										
 									}
-
-									var r = new category_fields_store.recordType( d, id );
-									category_fields_store.add( r );
-									category_fields_store.commitChanges();
-									
+	
 									winCustomField.close();
 								}
 							})
