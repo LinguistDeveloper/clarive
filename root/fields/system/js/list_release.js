@@ -8,8 +8,6 @@ params:
     set_method: 'set_release'
     field_order: 7
     section: 'body'    
-    rel_field: 'release'
-
 ---
 */
 (function(params){

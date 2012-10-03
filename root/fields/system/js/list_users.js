@@ -1,14 +1,13 @@
 /*
 name: Users
 params:
-    id_field: 'users'
-    html: '/fields/field_assign_to.html'
-    js: '/fields/field_assign_to.js'
-    field_order: 10
-    section: 'details'
+    html: '/fields/system/html/field_users.html'
+    js: '/fields/system/js/list_users.js'
+    relation: 'system'
+    get_method: 'get_users'    
     set_method: 'set_users'
-    rel_field: 'users'
-    method: 'get_users'
+    field_order: 10
+    section: 'details'    
 ---
 */
 (function(params){
@@ -16,9 +15,10 @@ params:
 	var meta = params.topic_meta;
 	
 	var users = new Array();
-	if(data && data.users){
-		for(i=0; i<data.users.length;i++){
-			users.push(data.users[i].mid);
+	var eval_users = eval('data.' + meta.bd_field);
+	if(data && eval('data.' + meta.bd_field)){
+		for(i=0; i<eval_users.length;i++){
+			users.push(eval_users[i].mid);
 		}
 	}else{
 		users = [];
@@ -31,6 +31,9 @@ params:
     
     var user_box = new Baseliner.model.Users({
         //hidden: rec.fields_form.show_assign_to ? false : true,
+        fieldLabel: _(meta.name_field),
+        name: meta.id_field,
+        hiddenName: meta.id_field,		
         store: user_box_store,
 		disabled: meta ? meta.readonly : true
 		
