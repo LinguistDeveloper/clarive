@@ -1,8 +1,7 @@
 /*
-name: projects
+name: Projects
 params:
     id_field: 'projects'
-    origin: 'rel'
     html: '/fields/field_projects.html'
     js: '/fields/field_projects.js'
     field_order: 9

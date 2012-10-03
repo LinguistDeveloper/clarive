@@ -1,8 +1,7 @@
 /*
-name: topics
+name: Topics
 params:
     id_field: 'topics'
-    origin: 'rel'
     html: '/fields/field_topics.html'
     js: '/fields/field_topics.js'
     field_order: 14

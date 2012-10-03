@@ -377,7 +377,6 @@ sub get_topics{
 
 sub get_files{
     my ($self, $topic_mid, $id_field) = @_;
-    _log ">>>>>>>>>>>>>>>>>>>>>>Coger ficheros: " . $id_field;
     my @files = map { +{ $_->get_columns } } 
         Baseliner->model('Baseliner::BaliTopic')
             ->find( $topic_mid )

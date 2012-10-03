@@ -1,8 +1,7 @@
 /*
-name: users
+name: Users
 params:
     id_field: 'users'
-    origin: 'rel'
     html: '/fields/field_assign_to.html'
     js: '/fields/field_assign_to.js'
     field_order: 10

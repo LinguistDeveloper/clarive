@@ -4130,6 +4130,9 @@ msgstr "Subir ficheros"
 msgid "Progress bar"
 msgstr "Barra de progreso"
 
+msgid "Listbox"
+msgstr "Lista de datos"
+
 
 
 

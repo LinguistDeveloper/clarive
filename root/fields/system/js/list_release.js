@@ -1,8 +1,8 @@
 /*
-name: release
+name: Release
 params:
     id_field: 'release'
-    origin: 'rel'
+    relation: 'system'
     html: '/fields/field_release.html'
     js: '/fields/field_release.js'
     field_order: 7
