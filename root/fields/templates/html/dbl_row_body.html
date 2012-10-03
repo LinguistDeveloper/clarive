@@ -1,0 +1,13 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+% if( !$meta->{hidden} ) {
+    <tr>
+        <th colspan="2"><% _loc($meta->{name_field}) %>:</th>
+    </tr>
+    <tr>
+        <td colspan="2"><% $data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;' %></td>
+    </tr>
+% }     
