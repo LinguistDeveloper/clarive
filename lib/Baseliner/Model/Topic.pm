@@ -302,7 +302,7 @@ sub get_data {
             $data->{ $key } =  $self->$method( $topic_mid, $key );
         }
         
-        my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' } _array( $meta  );
+        my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
         my %custom_data = {};
         map { $custom_data{$_->{name}} = $_->{value} ? $_->{value} : $_->{value_clob} }  Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search({topic_mid => $topic_mid})->hashref->all;
         
@@ -376,6 +376,7 @@ sub get_topics{
 
 sub get_files{
     my ($self, $topic_mid, $id_field) = @_;
+    _log ">>>>>>>>>>>>>>>>>>>>>>Coger ficheros: " . $id_field;
     my @files = map { +{ $_->get_columns } } 
         Baseliner->model('Baseliner::BaliTopic')
             ->find( $topic_mid )
@@ -467,7 +468,7 @@ sub save_data {
     }
 
      
-    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{origin} eq 'rel' } _array( $meta  );
+    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
     
     foreach my $key  (keys %rel_fields){
         if($rel_fields{$key}){
@@ -481,7 +482,7 @@ sub save_data {
     
                  
     
-    my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, data => $_->{data} } } grep { $_->{origin} eq 'custom' } _array( $meta  );
+    my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, data => $_->{data} } } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
     
     for( @custom_fields ) {
         if  (exists $data->{ $_ -> {name}}){
