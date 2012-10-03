@@ -1717,7 +1717,7 @@
 			columns: [
 				{ header: '', width: 20, dataIndex: 'id_field', renderer: function(v,meta,rec,rowIndex){ return '<img style="float:right" src="' + rec.data.img + '" />'} },
 				{ header: _('Name'), width: 240, dataIndex: 'name'},
-				{ width: 20, dataIndex: 'id',
+				{ width: 40, dataIndex: 'id',
 						renderer: function(v,meta,rec,rowIndex){
 							return '<a href="javascript:Baseliner.delete_field_row(\''+category_fields_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
 						}			  
@@ -1764,24 +1764,30 @@
 								text: _('Save'),
 								width: 50,
 								handler: function(){
-									if (attr.data) { //Casos especiales, como la plantilla listbox
-										alert('coming soon!!')
+									var id = category_fields_store.getCount() + 1;
+									var form = form_template_field.getForm();
+									var id_field = form.findField("name_field").getValue();
+									
+									if (attr.meta) { //Casos especiales, como la plantilla listbox
+										attr.data[combo_system_fields.getValue()].id_field = id_field;
+										attr.data[combo_system_fields.getValue()].name_field = id_field;
+										attr.data[combo_system_fields.getValue()].bd_field = id_field;
+										attr.data[combo_system_fields.getValue()].origin = 'custom';
+										
+										var d = { id: id, id_field: id_field, name: id_field, params: attr.data[combo_system_fields.getValue()], img: '/static/images/icons/icon_wand.gif' };										
+										
 									}else{
-										var id = category_fields_store.getCount() + 1;
-										var form = form_template_field.getForm();
-										var id_field = form.findField("name_field").getValue();
 										attr.params.id_field = id_field;
 										attr.params.name_field = id_field;
 										attr.params.bd_field = id_field;
 										attr.params.origin = 'custom';
 										
 										var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
-										
-										var r = new category_fields_store.recordType( d, id );
-										category_fields_store.add( r );
-										category_fields_store.commitChanges();										
 									}
-	
+									
+									var r = new category_fields_store.recordType( d, id );
+									category_fields_store.add( r );
+									category_fields_store.commitChanges();
 									winCustomField.close();
 								}
 							})
@@ -1809,7 +1815,7 @@
 								fieldLabel: _('Type'),
 								hiddenName: 'cmb_system_fields',
 								hidden: true,
-								store: attr.data ? attr.data : []
+								store: attr.meta ? attr.meta : []
 							});					
 							
 							if (attr.id_field == 'listbox') combo_system_fields.show();

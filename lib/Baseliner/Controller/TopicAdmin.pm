@@ -690,11 +690,13 @@ sub list_tree_fields : Local {
     }
 
     my $j = 0;
-    my @system_listbox;
+    my @meta_system_listbox;
+    my @data_system_listbox;
     for my $system_listbox (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
                         grep {!$_->{metadata}->{params}->{origin}} @tmp_templates ) {
         
-        push @system_listbox, [$j++, _loc $system_listbox->{metadata}->{name}];    
+        push @meta_system_listbox, [$j++, _loc $system_listbox->{metadata}->{name}];
+        push @data_system_listbox, $system_listbox->{metadata}->{params};
     }
     
     
@@ -705,7 +707,8 @@ sub list_tree_fields : Local {
                             id_field    => 'listbox',
                             text        => _loc ('Listbox'),
                             params	    => {origin=> 'template'},
-                            data        => \@system_listbox,
+                            meta        => \@meta_system_listbox,
+                            data        => \@data_system_listbox,
                             leaf        => \1                             
                         };
     
