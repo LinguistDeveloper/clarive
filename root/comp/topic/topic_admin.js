@@ -1092,6 +1092,11 @@
 
 	var field_box_store = new Baseliner.store.Fields();
     
+	
+	
+	
+	////Limpiar codigo
+	
     var edit_form_category = function(rec) {
         var win;
         var title = _('Create fields');
@@ -1890,21 +1895,21 @@
     });
 
 
-    var btn_form_category = new Ext.Toolbar.Button({
-        text: _('Fields'),
-        icon:'/static/images/icons/detail.png',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-            var sm = grid_categories.getSelectionModel();
-            if (sm.hasSelection()) {
-                var sel = sm.getSelected();
-                edit_form_category(sel);
-            } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));    
-            };          
-        }
-    });
+    //var btn_form_category = new Ext.Toolbar.Button({
+    //    text: _('Fields'),
+    //    icon:'/static/images/icons/detail.png',
+    //    cls: 'x-btn-text-icon',
+    //    disabled: true,
+    //    handler: function() {
+    //        var sm = grid_categories.getSelectionModel();
+    //        if (sm.hasSelection()) {
+    //            var sel = sm.getSelected();
+    //            edit_form_category(sel);
+    //        } else {
+    //            Baseliner.message( _('ERROR'), _('Select at least one row'));    
+    //        };          
+    //    }
+    //});
     
     var btn_admin_category = new Ext.Toolbar.Button({
         text: _('Workflow'),
@@ -2160,7 +2165,7 @@
                 btn_delete_category,
                 '->',
 				btn_edit_fields,
-                btn_form_category,
+                //btn_form_category,
                 btn_admin_category,
 				btn_admin_priority
         ]       
