@@ -6,9 +6,7 @@
     <tr>
       <th><% _loc($meta->{id_field}) %>:</th>
       <td>
-% if( $data->{$meta->{id_field}}->{title} ) {
-        <span class="arrow_box" style="padding: 3px; background-color:<% $data->{$meta->{id_field}}->{color} %>"><% $data->{$meta->{id_field}}->{title} || '&nbsp;' %></span>
-% }
+        <span class="arrow_box" style="padding: 3px; background-color:<% $data->{$meta->{id_field}}->{color} || 'transparent' %>"><% $data->{$meta->{id_field}}->{title} || '&nbsp;' %></span>
       </td>
     </tr>
   
