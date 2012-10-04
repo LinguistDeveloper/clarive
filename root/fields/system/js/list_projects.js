@@ -1,14 +1,13 @@
 /*
 name: Projects
 params:
-    id_field: 'projects'
-    html: '/fields/field_projects.html'
-    js: '/fields/field_projects.js'
+    html: '/fields/system/html/field_projects.html'
+    js: '/fields/system/js/list_projects.js'
+    relation: 'system'    
+    get_method: 'get_projects'    
+    set_method: 'set_projects'
     field_order: 9
     section: 'details'
-    set_method: 'set_projects'
-    rel_field: 'projects'
-    method: 'get_projects'
 ---
 */
 (function(params){
@@ -16,9 +15,10 @@ params:
 	var meta = params.topic_meta;
 	
 	var projects = new Array();
+	var eval_projects = eval('data.' + meta.bd_field);	
 	if(data && data.projects){
-		for(i=0; i<data.projects.length;i++){
-			projects.push(data.projects[i].mid);
+		for(i=0; i<data.eval_projects.length;i++){
+			projects.push(data.eval_projects[i].mid);
 		}
 	}else{
 		projects = [];
@@ -27,6 +27,9 @@ params:
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: { include_root: true } });
 	
     var project_box = new Baseliner.model.Projects({
+        fieldLabel: _(meta.name_field),
+        name: meta.id_field,
+        hiddenName: meta.id_field,			
         store: project_box_store,
 		disabled: meta ? meta.readonly : true
     });
@@ -35,25 +38,25 @@ params:
         project_box.setValue (projects) ;            
     });
     
-    project_box.on('blur',function(obj){
-        var projects = new Array();
-        projects = (obj.getValue()).split(",");
-		var form = params.form.getForm();
-		//**************************************************Ojo con esto, puede que compartan el name cuando se duplica
-		var user_box = form.findField("users");
-		if (user_box){
-			user_box.store.load({
-				params:{ projects: projects}
-			});
-		}
-    });	
+
+// Habria que ver como tratar dependencias entre campos	
+//    project_box.on('blur',function(obj){
+//        var projects = new Array();
+//        projects = (obj.getValue()).split(",");
+//		var form = params.form.getForm();
+//
+//		var user_box = form.findField("users");
+//		if (user_box){
+//			user_box.store.load({
+//				params:{ projects: projects}
+//			});
+//		}
+//    });	
 	
     var pb_panel = new Ext.Panel({
         layout: 'form',
         enableDragDrop: true,
         border: false,
-        //hidden: rec.fields_form.show_projects ? false : true,
-        //style: 'border-top: 0px',
         items: [ project_box ]
     });
 	

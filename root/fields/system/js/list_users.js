@@ -30,7 +30,6 @@ params:
     });
     
     var user_box = new Baseliner.model.Users({
-        //hidden: rec.fields_form.show_assign_to ? false : true,
         fieldLabel: _(meta.name_field),
         name: meta.id_field,
         hiddenName: meta.id_field,		
