@@ -3,7 +3,6 @@ name: Projects
 params:
     html: '/fields/system/html/field_projects.html'
     js: '/fields/system/js/list_projects.js'
-    relation: 'system'    
     get_method: 'get_projects'    
     set_method: 'set_projects'
     field_order: 9
@@ -15,10 +14,11 @@ params:
 	var meta = params.topic_meta;
 	
 	var projects = new Array();
-	var eval_projects = eval('data.' + meta.bd_field);	
-	if(data && data.projects){
-		for(i=0; i<data.eval_projects.length;i++){
-			projects.push(data.eval_projects[i].mid);
+	
+	if(data && eval('data.' + meta.bd_field)){
+		var eval_projects = eval('data.' + meta.bd_field);
+		for(i=0; i<eval_projects.length;i++){
+			projects.push(eval_projects[i].mid);
 		}
 	}else{
 		projects = [];

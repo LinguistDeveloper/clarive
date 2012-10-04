@@ -15,8 +15,9 @@ params:
 	var meta = params.topic_meta;
 	
 	var users = new Array();
-	var eval_users = eval('data.' + meta.bd_field);
+	
 	if(data && eval('data.' + meta.bd_field)){
+		var eval_users = eval('data.' + meta.bd_field);
 		for(i=0; i<eval_users.length;i++){
 			users.push(eval_users[i].mid);
 		}

@@ -3,14 +3,14 @@
     $data
 </%args>
 
-% if( _array( $data->{topics} ) ) {
+% if( _array( $data->{$meta->{id_field}} ) ) {
     <ul class="nav nav-list">
         <li class="nav-header">
-            <% _loc("Topics") %>
+            <% _loc($meta->{name_field}) %>
         </li>
     </ul>
     <ul class="" style="margin-left: 20px">
-% foreach my $topic ( _array( $data->{topics} ) ) {
+% foreach my $topic ( _array( $meta->{id_field} ) ) {
         <li style="margin: 6px 0px 6px 0px;">
             <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
             style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
