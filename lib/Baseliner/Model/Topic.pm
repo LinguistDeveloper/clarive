@@ -57,9 +57,9 @@ register 'event.topic.file_remove' => {
 };
 
 register 'event.topic.create' => {
-    text => '%1 created topic on %2',
+    text => '%1 created a topic of %2 on %3',
     description => 'User created a topic',
-    vars => ['username', 'ts'],
+    vars => ['username', 'category', 'ts'],
 };
 
 register 'event.topic.modify' => {
@@ -105,7 +105,7 @@ sub update {
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
-                   { mid => $topic->mid, topic => $topic->title }   # to the event
+                   { mid => $topic->mid, topic => $topic->title, , category=> $topic->categories->name }   # to the event
                 });                   
             } 
             => sub { # catch
