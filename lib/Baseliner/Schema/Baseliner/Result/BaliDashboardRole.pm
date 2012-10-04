@@ -31,5 +31,5 @@ __PACKAGE__->add_columns(
   },  
 );
 
-
+__PACKAGE__->set_primary_key("id_dashboard", "id_role");
 1;
