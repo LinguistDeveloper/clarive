@@ -33,6 +33,9 @@ msgstr "Subir avatar"
 msgid "Manage your Avatar"
 msgstr "Gestión de Avatar"
 
+msgid "Attribute"
+msgstr "Atributo"
+
 msgid "deactivated"
 msgstr "desactivada"
 
