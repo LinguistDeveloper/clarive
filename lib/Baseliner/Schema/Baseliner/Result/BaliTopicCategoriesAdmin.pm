@@ -49,7 +49,7 @@ __PACKAGE__->belongs_to(
   { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 
-__PACKAGE__->has_many(
+__PACKAGE__->belongs_to(
   "user_role",
   "Baseliner::Schema::Baseliner::Result::BaliRoleuser",
   { id_role => "id_role" },
