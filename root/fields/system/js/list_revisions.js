@@ -1,14 +1,13 @@
 /*
 name: Revisions
 params:
-    id_field: 'revisions'
-    html: '/fields/field_revisions.html'
-    js: '/fields/field_revisions.js'
+    html: '/fields/system/html/field_revisions.html'
+    js: '/fields/system/js/list_revisions.js'
+    relation: system
     field_order: 12
     section: 'details'
+    get_method: 'get_revisions'    
     set_method: 'set_revisions'
-    rel_field: 'revisions'
-    method: 'get_revisions'
 ---
 */
 (function(params){
@@ -23,7 +22,7 @@ params:
         store: revision_store,
         layout: 'form',
         height: 120,
-        fieldLabel: _('Revisions'),
+        fieldLabel: _(meta.name_field),
         hideHeaders: true,
 		disabled: meta ? meta.readonly : true,
         viewConfig: {
@@ -50,7 +49,7 @@ params:
     });
     
     // a hidden form field, needed for this to save data in a form
-    var field = new Ext.form.TextField({ hidden: true, name:'revisions' });
+    var field = new Ext.form.TextField({ hidden: true, name: meta.id_field });
     var refresh_field = function(){
         var mids = [];
         revision_store.each(function(row){
@@ -62,7 +61,8 @@ params:
     // Load data
     if( ! params ) params = {};
     if( ! params.topic_data ) params.topic_data = {};
-	var data = params.topic_data.revisions || [];
+	var data = eval('params.topic_data.' + meta.id_field) || [];
+
     Ext.each( data, function(row){
         var r = new revision_store.recordType( row, row.mid );
         revision_store.add( r );
