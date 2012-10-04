@@ -57,16 +57,24 @@ sub begin : Private {
     #};
 }
 
+=head2 auto
+
+auto centralizes all auhtentication check and dispatch. 
+
+=cut
 sub auto : Private {
     my ( $self, $c ) = @_;
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
-    return 1 if $c->stash->{auth_skip};
-    return 1 if $c->req->path eq 'i18n/js';
-    return 1 if try { $c->user_exists } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
+
+    # auth check skip
+    return 1 if $c->stash->{auth_skip};
+    return 1 if try { $c->user_exists } catch { 0 };
+    return 1 if $path eq 'i18n/js';
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
+
     # saml?
-    if( $c->config->{saml_auth} eq 'on' ) {
+    if( exists $c->config->{saml_auth} && $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
         return 1 if $saml_username;
     }
@@ -78,6 +86,9 @@ sub auto : Private {
     } elsif( $c->request->params->{fail_on_auth} ) {
         $c->response->status( 401 );
         $c->response->body("Unauthorized");
+    } elsif( $c->stash->{auth_basic} ) {
+        my $ret = $c->forward('/auth/login_basic');
+        return $ret; 
     } else {
         $c->forward('/auth/logoff');
         $c->stash->{after_login} = '/' . $path;

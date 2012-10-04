@@ -323,6 +323,10 @@ sub _log_me {
         if( $^O ne 'Win32' && -t STDOUT ) { 
             if( $lev eq 'error' ) {
                 print STDERR color('red') , $msg , color('reset'), "\n"; 
+            } elsif( $lev eq 'debug' ) {
+                print STDERR color('yellow') , $msg , color('reset'), "\n"; 
+            } elsif( $lev eq 'info' ) {
+                print STDERR color('green') , $msg , color('reset'), "\n"; 
             } else {
                 print STDERR $msg , "\n"; 
             }
