@@ -77,7 +77,7 @@ __PACKAGE__->add_columns(
   "attempts",
   { data_type => "NUMBER", default_value => 0, is_nullable => 1, size => 126 },
   "swreaded",
-  { data_type => "char", is_nullable => 1, size => 1, default => 0 },
+  { data_type => "char", is_nullable => 1, size => 1, default_value => 0 },
 );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to(
