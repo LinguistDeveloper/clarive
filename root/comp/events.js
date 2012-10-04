@@ -74,6 +74,21 @@
             });
         }
     };
+    var event_status_change = function(event_status){
+        if( ! event_status ) event_status = 'new';
+        var sm = grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            var sels = sm.getSelections();
+            var ids = [];
+            Ext.each( sels, function(sel) {
+                ids.push( sel.data.id ); 
+            });
+            Baseliner.ajaxEval('/event/status', { ids: ids, event_status: event_status }, function( res ){
+                Baseliner.message( _('Event Delete'), res.msg );
+                store_events.reload();
+            });
+        }
+    };
     var grid = new Ext.ux.maximgb.tg.GridPanel({ 
         store: store_events,
         master_column_id : '_id',
@@ -93,8 +108,9 @@
         ],
         tbar: [ 
             search_field,
-            { icon:'/static/images/icons/refresh.gif', handler: function(){ store_events.reload(); } },
-            { icon:'/static/images/icons/delete.gif', handler: del_event }
+            { icon:'/static/images/icons/refresh.gif', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
+            { icon:'/static/images/icons/delete.gif', handler: del_event , tooltip:_('Delete event')},
+            { icon:'/static/images/icons/hourglass.png', handler: function(){ event_status_change('new') }, tooltip:_('Reset event status') }
         ],
         bbar: new Ext.ux.maximgb.tg.PagingToolbar({
             store: store_events,
