@@ -413,8 +413,6 @@ sub save_data {
     
     my $topic;
     
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>>PARametros: " . _dump %row;
-    
     if (!$topic_mid){
         $topic = master_new 'topic' => $data->{title} => sub {
             $topic_mid = shift;
@@ -476,8 +474,6 @@ sub save_data {
         }
     } 
      
-    #$topic->update( \%row );
-    
     my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, data => $_->{data} } } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
     
     for( @custom_fields ) {
@@ -552,6 +548,9 @@ sub set_priority {
 sub set_topics {
     my ($self, $rs_topic, $topics, $user ) = @_;
     my @all_topics = ();
+    
+    _log ">>>>>>>>>>>>>>>>PASPASAPSASPASAPSASAPS";
+    _log _dump $topics; 
     
     # related topics
     my @new_topics = _array( $topics ) ;

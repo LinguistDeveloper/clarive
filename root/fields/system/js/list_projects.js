@@ -3,6 +3,7 @@ name: Projects
 params:
     html: '/fields/system/html/field_projects.html'
     js: '/fields/system/js/list_projects.js'
+    relation: 'system'    
     get_method: 'get_projects'    
     set_method: 'set_projects'
     field_order: 9
