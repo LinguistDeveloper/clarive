@@ -404,6 +404,7 @@ sub list : Local {
                     $c->stash->{dashboards} = \@dashboard;
                     
                 }else{
+                    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PASAPSASAPSAPSAPSAPSASPA";
                     ##Dashboard proporcionado por clarive (default)
                     @dashlets = (	{ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
                                     { html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},
@@ -413,20 +414,25 @@ sub list : Local {
                                     { html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
                                 );
                     
-                    my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
-                                    {
-                                        name  => 'Clarive',
-                                        description => 'Demo dashboard Clarive configurable',
-                                        dashlets => _dump \@dashlets,
-                                    });
-                    
-                    if ($dashboard->id){
-                        my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-                                            {
-                                                id_dashboard  => $dashboard->id,
-                                                id_role => 100, #Public
-                                            });
+                    my $dashboard = $c->model('Baseliner::BaliDashboard')->search({is_system => 1, name => 'Clarive'})->first;
+                    if (!$dashboard) {
+                        $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+                                        {
+                                            name  => 'Clarive',
+                                            description => 'Demo dashboard Clarive configurable',
+                                            dashlets => _dump (\@dashlets),
+                                            is_system => '1',
+                                        });
+                        
+                        if ($dashboard->id){
+                            my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
+                                                {
+                                                    id_dashboard  => $dashboard->id,
+                                                    id_role => 100, #Public
+                                                });
+                        }
                     }
+                    
                     for my $dash ( @dashlets ) {
                         $c->forward( $dash->{url} . '/' . $dashboard->id );
                         $c->stash->{is_columns} = $dashboard->is_columns;

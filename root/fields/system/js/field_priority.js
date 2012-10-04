@@ -97,7 +97,7 @@ params:
         valueField: 'id',
         store: store_category_priority,
 		readOnly: meta ? meta.readonly : true,
-        //hidden: rec.fields_form.show_priority ? false : true,
+        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
         listeners:{
             'select': function(cmd, rec, idx){
                 load_txt_values_priority(rec);

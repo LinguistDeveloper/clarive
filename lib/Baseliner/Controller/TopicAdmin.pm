@@ -573,6 +573,158 @@ sub list_fields : Local {
     $c->forward('View::JSON');
 }
 
+
+sub list_tree_fields : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $id_category = $p->{id_category};
+    my @tree_fields;
+    my @system;
+    my $system_fields = Baseliner::Model::Topic->get_system_fields();
+    #my %conf_fields = map{ $_->{id_field} => 1 } $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
+    
+    my @temp_fields =  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
+    my %conf_fields;
+    
+    for(@temp_fields){
+        my $params = _load $_->{params_field};
+        $conf_fields{$_->{id_field}} = 1 if ! exists ($params->{hidden});
+    }
+
+    my $i = (scalar keys %conf_fields) + 1;
+    for ( sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} } grep { $_->{params}->{origin} eq 'system' && !exists $conf_fields{$_->{id_field}} } _array $system_fields){
+        push @system,   {
+                            id          => $i++,
+                            id_field    => $_->{id_field},
+                            text        => _loc ($_->{params}->{name_field}),
+                            params	    => $_->{params},
+                            icon        => '/static/images/icons/lock_small.png',
+                            leaf        => \1
+                        }
+    }
+    
+    push @tree_fields, {
+        id          => 'S',
+        text        => _loc('System fields'),
+        expanded    => scalar @system gt 0 ? \1 : \0, 
+        children    => \@system
+    };       
+    
+    my @custom;
+    my @id_fields = map { $_->{id_field} } _array $system_fields;
+    my @custom_fields = grep {!exists $conf_fields{$_->{id_field}} } $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => { 'not in' => \@id_fields}})->hashref->all;
+    my %unique_fields;
+    for(@custom_fields){
+        if (exists $unique_fields{$_->{id_field}}){
+            next;
+        }
+        else {
+            my $params = _load  $_->{params_field};
+            $params->{name_field} = $_->{id_field};
+            push @custom,
+                {
+                  id        => $i++,
+                  id_field  => $_->{id_field},
+                  text      => $params->{name_field},
+                  params	=> $params,
+                  icon    => '/static/images/icons/icon_wand.gif',
+                  leaf      => \1
+                };        
+            $unique_fields{$_->{id_field}} = '1';    
+        }
+    }
+    
+    push @tree_fields, {
+        id          => 'C',
+        text        => _loc('Custom fields'),
+        expanded    => scalar @custom gt 0 ? \1 : \0,        
+        children    => \@custom
+    };
+    
+
+    my @template_dirs;
+    push @template_dirs, $c->path_to( 'root/fields/templates/js' ) . "/*.js";
+    push @template_dirs, $c->path_to( 'root/fields/system/js' ) . "/list*.js";
+    #@template_dirs = grep { -d } @template_dirs;
+    
+    my @tmp_templates = map {
+        my @ret;
+        for my $f ( map { _file($_) } grep { -f } glob "$_" ) { 
+            my $d = $f->slurp;
+            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
+           
+            my $metadata;
+            if(length $yaml ) {
+                $metadata =  _load( $yaml );    
+            } else {
+                $metadata = {};
+            }
+            my @rows = map {
+                +{  field=>$_, value => $metadata->{$_} } 
+            } keys %{ $metadata || {} };
+            
+            push @ret, {
+                file => "$f",
+                yaml => $yaml,
+                metadata => $metadata,
+                rows => \@rows,
+            };
+        }
+       @ret;
+    } @template_dirs;
+
+    my @templates;
+    for my $template (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
+                        grep {$_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
+        if( $template->{metadata}->{name} ){
+            $template->{metadata}->{params}->{name_field} = $template->{metadata}->{name};
+            push @templates,
+                {
+                    id          => $i++,
+                    id_field    => $template->{metadata}->{name},
+                    text        => _loc ($template->{metadata}->{name}),
+                    params	    => $template->{metadata}->{params},
+                    leaf        => \1                  
+                };		
+        }
+    }
+
+    my $j = 0;
+    my @meta_system_listbox;
+    my @data_system_listbox;
+    for my $system_listbox (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
+                        grep {!$_->{metadata}->{params}->{origin}} @tmp_templates ) {
+        
+        push @meta_system_listbox, [$j++, _loc $system_listbox->{metadata}->{name}];
+        push @data_system_listbox, $system_listbox->{metadata}->{params};
+    }
+    
+    
+    
+    
+    push @templates,    {
+                            id          => $i++,
+                            id_field    => 'listbox',
+                            text        => _loc ('Listbox'),
+                            params	    => {origin=> 'template'},
+                            meta        => \@meta_system_listbox,
+                            data        => \@data_system_listbox,
+                            leaf        => \1                             
+                        };
+    
+    push @tree_fields, {
+        id          => 'T',
+        text        => _loc('Templates'),
+        children    => \@templates
+    };       
+    
+    $c->stash->{json} = \@tree_fields;
+    $c->forward('View::JSON');
+}
+
+
+
+
 sub list_forms : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
@@ -597,19 +749,26 @@ sub list_forms : Local {
 sub update_fields : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my $id_category = $p->{id};
+    my $id_category = $p->{id_category};
     my @ids_field = _array $p->{fields};
-    my @values_field = _array $p->{values};
-
+    my @values_field = _array $p->{params};
+    
     my $category = $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $id_category} );
     if($category->count > 0){
         $category->delete;
     }
-    
+    my $order = 1;
     my $param_field;
+    my %visible_system_fields;
+    
     foreach my $field (@ids_field){
         my $params = _decode_json(shift(@values_field));
-
+        
+        $visible_system_fields{$field} = 1 if $params->{origin} eq 'system';
+        
+        $params->{field_order} = $order++;
+        $params->{id_field} = $field;
+    
         my $fields_category = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
                                                                                 id_category         => $id_category,
                                                                                 id_field            => $field,
@@ -617,27 +776,42 @@ sub update_fields : Local {
         });                                                                                
     }
     
-    #my $i = 1;
-    #foreach my $id_field (@ids_field){
-    #    
-    #    my @id_path = split /#/, $id_field;
-    #    my $fields_category = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
-    #                                                                            id_category         => $id_category,
-    #                                                                            id_field            => $id_path[0],
-    #                                                                            path_field          => $id_path[1],
-    #                                                                            column_json_field   => shift(@values_field),
-    #                                                                            #params_field => shift(@params_field),
-    #                                                                            order_field => $i++,
-    #    });
-    #}    
-    #
-    #if( $p->{forms} ) {
-    #    my $forms = join ',', _array $p->{forms};
-    #    my $row = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
-    #    $row->update({ forms=>$forms }) if ref $row;
-    #}
-
+    my $system_fields = Baseliner::Model::Topic->get_system_fields();
+    #my %conf_fields = map{ $_->{id_field} => 1} $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
+    
+    for ( grep { !exists $visible_system_fields{$_->{id_field}} } _array $system_fields){
+        $_->{params}->{hidden}= \1 if $_->{params}->{origin} eq 'system';
+        $_->{params}->{id_field}= $_->{id_field};
+        my $fields_category = $c->model('Baseliner::BaliTopicFieldsCategory')->create({
+                                                                                id_category         => $id_category,
+                                                                                id_field            => $_->{id_field},
+                                                                                params_field          => _dump $_->{params},
+        }); 
+    }    
+    
     $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
+    $c->forward('View::JSON');    
+}
+
+sub get_conf_fields : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $id_category = $p->{id_category};
+
+    #my @conf_fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
+    my @conf_fields = grep { !exists $_->{params}->{hidden} && $_->{params}->{origin} ne 'default' } map { +{id_field=> $_->{id_field}, params=> _load $_->{params_field}} } $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
+    my @system;
+    for ( sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} } @conf_fields){
+        push @system,   {
+                            id          => $_->{params}->{field_order},
+                            id_field    => $_->{id_field},
+                            name        => _loc ($_->{params}->{name_field}),
+                            params	    => $_->{params},
+                            img         => $_->{params}->{origin} eq 'system' ? '/static/images/icons/lock_small.png' : '/static/images/icons/icon_wand.gif',
+                        }
+    }
+
+    $c->stash->{json} = { data=>\@system};
     $c->forward('View::JSON');    
 }
 

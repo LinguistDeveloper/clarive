@@ -576,6 +576,7 @@
         header: false,
         stripeRows: true,
         autoScroll: true,
+        //stateful: true, stateId: 'topic-grid',
         //enableHdMenu: false,
         store: store_topics,
         //enableDragDrop: true,

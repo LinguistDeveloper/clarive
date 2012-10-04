@@ -75,7 +75,6 @@
     return {
         beforesubmit: on_submit,
         fields: [
-           { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 },
            Baseliner.ci_box({ name:'repositories', fieldLabel:_('Repositories'), allowBlank: true,
                role:'Repository', value: params.rec.repository, singleMode: false }),
            de,

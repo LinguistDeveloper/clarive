@@ -31,7 +31,7 @@ params:
         displayField: 'name',
         valueField: 'id',
 		readOnly: meta ? meta.readonly : true,
-        //hidden: rec.fields_form.show_status ? false : true,
+        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
         store: store_category_status
     });
 	

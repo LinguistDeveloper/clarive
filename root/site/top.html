@@ -32,7 +32,7 @@
     
     <!-- ExtJS -->
     <script type="text/javascript" src="/static/ext/adapter/jquery/ext-jquery-adapter<% $debug %>.js"></script>
-    <link rel="stylesheet" href="/static/metal/metal.css" type="text/css" />
+    <!-- <link rel="stylesheet" href="/static/metal/metal.css" type="text/css" /> -->
     <link rel="stylesheet" type="text/css" href="/static/ext/resources/css/ext-all.css" />
 
     <script type="text/javascript" src="/site/stacktrace.js"></script>
@@ -48,20 +48,15 @@
     <!-- <script type="text/javascript" src="/static/ext/build/locale/ext-lang-es-min.js"></script> -->
     <script type="text/javascript" src="/static/ext/src/locale/ext-lang-es.js"></script>
 
+    <!-- docs.css has things like the <A> tag -->
     <link rel="stylesheet" type="text/css" href="/static/ext/docs/resources/docs.css" />
 
     <!-- site is the global stylesheet -->
     <link rel="stylesheet" type="text/css" href="/static/site.css" />
 
-% if( my $theme_dir = $c->stash->{theme_dir} ) {
-    <link rel="stylesheet" type="text/css" href="/static<% $theme_dir %>/style.css" />
-% }
-
-    <!--script type="text/javascript" src="/static/ext/air/ext-air.js"></script-->
-    <!-- link rel="stylesheet" type="text/css" href="/static/ext/air/resources/ext-air.css" /-->
-
-    <style type="text/css">
-    </style>
+    <!-- Gritter, used in common.js -->
+    <script src="/static/gritter/js/jquery.gritter.min.js"></script>
+    <link rel="stylesheet" href="/static/gritter/css/jquery.gritter.css">
 
     <script type="text/javascript" src="/i18n/js"></script>
     <script type="text/javascript" src="/site/globals.js"></script>
@@ -74,3 +69,7 @@
     <!-- #reset namespace
         <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
     -->
+% if( my $theme_dir = $c->stash->{theme_dir} ) {
+    <link rel="stylesheet" type="text/css" href="/static<% $theme_dir %>/style.css" />
+% }
+

@@ -1,15 +1,13 @@
 /*
-name: release
+name: Release
 params:
-    id_field: 'release'
-    origin: 'rel'
-    html: '/fields/field_release.html'
-    js: '/fields/field_release.js'
-    field_order: 7
-    section: 'body'
+    html: '/fields/system/html/field_release.html'
+    js: '/fields/system/js/list_release.js'
+    relation: 'system'    
+    get_method: 'get_release'    
     set_method: 'set_release'
-    rel_field: 'release'
-    method: 'get_release'
+    field_order: 7
+    section: 'body'    
 ---
 */
 (function(params){
@@ -22,17 +20,18 @@ params:
     var release_box_store = new Baseliner.store.Topics({ baseParams: { mid: topic_mid, show_release: 1 } });
 
     var release_box = new Baseliner.model.Topics({
-        hiddenName: 'release',
-        name: 'release',
-        fieldLabel: _('Release'),
+        hiddenName: meta.id_field,
+        name: meta.id_field,
+        fieldLabel: _(meta.name_field),
         singleMode: true,
-        //hidden: rec.fields_form.show_release ? false : true,
+        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
         store: release_box_store,
 		disabled: meta ? meta.readonly : true
     });
 	
     release_box_store.on('load',function(){
-		release_box.setValue (data ? (data.release.mid ? data.release.mid : '') : '');
+		release_box.setValue (data ? (eval('data.' + meta.bd_field + '.mid') ? eval('data.' + meta.bd_field + '.mid') : '') : '');
+		
     });
 
 
