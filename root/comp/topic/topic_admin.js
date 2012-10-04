@@ -61,7 +61,7 @@
         eval('btn_edit_category.' + action + '()');
         eval('btn_delete_category.' + action + '()');
 		eval('btn_edit_fields.' + action + '()');
-        eval('btn_form_category.' + action + '()');
+        //eval('btn_form_category.' + action + '()');
         eval('btn_admin_category.' + action + '()');
         eval('btn_admin_priority.' + action + '()');
     }   
@@ -1092,6 +1092,11 @@
 
 	var field_box_store = new Baseliner.store.Fields();
     
+	
+	
+	
+	////Limpiar codigo
+	
     var edit_form_category = function(rec) {
         var win;
         var title = _('Create fields');
@@ -1712,7 +1717,7 @@
 			columns: [
 				{ header: '', width: 20, dataIndex: 'id_field', renderer: function(v,meta,rec,rowIndex){ return '<img style="float:right" src="' + rec.data.img + '" />'} },
 				{ header: _('Name'), width: 240, dataIndex: 'name'},
-				{ width: 20, dataIndex: 'id',
+				{ width: 40, dataIndex: 'id',
 						renderer: function(v,meta,rec,rowIndex){
 							return '<a href="javascript:Baseliner.delete_field_row(\''+category_fields_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
 						}			  
@@ -1733,81 +1738,107 @@
 					
 					if (!isNaN(attr.id)){
 						if (data.origin == 'template' ){
-							var filter_store = new Baseliner.JsonStore({
-								root: 'data' , 
-								remoteSort: true,
-								totalProperty:"totalCount", 
-								id: 'id', 
-								url: '/topicadmin/list_filters',
-								fields: [
-									{  name: 'name' },
-									{  name: 'filter_json' }
-								]
-							});
+						
+							//var filter_store = new Baseliner.JsonStore({
+							//	root: 'data' , 
+							//	remoteSort: true,
+							//	totalProperty:"totalCount", 
+							//	id: 'id', 
+							//	url: '/topicadmin/list_filters',
+							//	store: attr.data
+							//	//fields: [
+							//	//	{  name: 'name' },
+							//	//	{  name: 'filter_json' }
+							//	//]
+							//});
 							
-							var btn_cerrar_clone_field = new Ext.Toolbar.Button({
+							var btn_cerrar_custom_field = new Ext.Toolbar.Button({
 								text: _('Close'),
 								width: 50,
 								handler: function() {
-									winCloneField.close();
+									winCustomField.close();
 								}
 							})
 							
-							var btn_grabar_clone_field = new Ext.Toolbar.Button({
+							var btn_grabar_custom_field = new Ext.Toolbar.Button({
 								text: _('Save'),
 								width: 50,
 								handler: function(){
-									
 									var id = category_fields_store.getCount() + 1;
 									var form = form_template_field.getForm();
 									var id_field = form.findField("name_field").getValue();
-									attr.params.id_field = id_field;
-									attr.params.name_field = id_field;
-									attr.params.bd_field = id_field;
-									attr.params.origin = 'custom';
 									
-									var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
+									if (attr.meta) { //Casos especiales, como la plantilla listbox
+										attr.data[combo_system_fields.getValue()].id_field = id_field;
+										attr.data[combo_system_fields.getValue()].name_field = id_field;
+										attr.data[combo_system_fields.getValue()].bd_field = id_field;
+										attr.data[combo_system_fields.getValue()].origin = 'custom';
+										
+										var d = { id: id, id_field: id_field, name: id_field, params: attr.data[combo_system_fields.getValue()], img: '/static/images/icons/icon_wand.gif' };										
+										
+									}else{
+										attr.params.id_field = id_field;
+										attr.params.name_field = id_field;
+										attr.params.bd_field = id_field;
+										attr.params.origin = 'custom';
+										
+										var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
+									}
 									
 									var r = new category_fields_store.recordType( d, id );
 									category_fields_store.add( r );
-									category_fields_store.commitChanges();									
+									category_fields_store.commitChanges();
+									winCustomField.close();
 								}
 							})
 		
-							var combo_filters = new Ext.form.ComboBox({
+		
+							//var combo_filters = new Ext.form.ComboBox({
+							//	mode: 'local',
+							//	triggerAction: 'all',
+							//	forceSelection: true,
+							//	editable: false,
+							//	fieldLabel: _('Filter'),
+							//	name: 'cmb_filter',
+							//	hiddenName: 'filter',
+							//	displayField: 'name',
+							//	valueField: 'filter_json',
+							//	//hidden: true,						
+							//	store: attr.data
+							//});
+							
+							var combo_system_fields = new Ext.form.ComboBox({
 								mode: 'local',
 								triggerAction: 'all',
 								forceSelection: true,
 								editable: false,
-								fieldLabel: _('Filter'),
-								name: 'cmb_filter',
-								hiddenName: 'filter',
-								displayField: 'name',
-								valueField: 'filter_json',
-								hidden: true,						
-								store: filter_store
+								fieldLabel: _('Type'),
+								hiddenName: 'cmb_system_fields',
+								hidden: true,
+								store: attr.meta ? attr.meta : []
 							});					
 							
+							if (attr.id_field == 'listbox') combo_system_fields.show();
 							
 							var form_template_field = new Ext.FormPanel({
 								url: '/topicadmin/create_clone',
 								frame: true,
-								buttons: [btn_grabar_clone_field, btn_cerrar_clone_field],
+								buttons: [btn_grabar_custom_field, btn_cerrar_custom_field],
 								defaults:{anchor:'100%'},
 								items   : [
 											{ fieldLabel: _('Field'), name: 'name_field', xtype: 'textfield', allowBlank:false },
-											combo_filters
+											combo_system_fields
 										]
 							});
 		
-							var winCloneField = new Ext.Window({
+							var winCustomField = new Ext.Window({
 								modal: true,
 								width: 500,
 								title: _('Custom field'),
 								items: [form_template_field]
 							});
 							
-							winCloneField.show();
+							winCustomField.show();
 							
 						}else{
 							insert_node	(n);
@@ -1890,21 +1921,21 @@
     });
 
 
-    var btn_form_category = new Ext.Toolbar.Button({
-        text: _('Fields'),
-        icon:'/static/images/icons/detail.png',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-            var sm = grid_categories.getSelectionModel();
-            if (sm.hasSelection()) {
-                var sel = sm.getSelected();
-                edit_form_category(sel);
-            } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));    
-            };          
-        }
-    });
+    //var btn_form_category = new Ext.Toolbar.Button({
+    //    text: _('Fields'),
+    //    icon:'/static/images/icons/detail.png',
+    //    cls: 'x-btn-text-icon',
+    //    disabled: true,
+    //    handler: function() {
+    //        var sm = grid_categories.getSelectionModel();
+    //        if (sm.hasSelection()) {
+    //            var sel = sm.getSelected();
+    //            edit_form_category(sel);
+    //        } else {
+    //            Baseliner.message( _('ERROR'), _('Select at least one row'));    
+    //        };          
+    //    }
+    //});
     
     var btn_admin_category = new Ext.Toolbar.Button({
         text: _('Workflow'),
@@ -2160,7 +2191,7 @@
                 btn_delete_category,
                 '->',
 				btn_edit_fields,
-                btn_form_category,
+                //btn_form_category,
                 btn_admin_category,
 				btn_admin_priority
         ]       
@@ -2183,7 +2214,7 @@
                     btn_delete_category.enable();
                     btn_edit_category.disable();
 					btn_edit_fields.disable();
-                    btn_form_category.disable();
+                    //btn_form_category.disable();
                     btn_admin_category.disable();
 					btn_admin_priority.disable();
                 }

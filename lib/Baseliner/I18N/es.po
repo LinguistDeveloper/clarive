@@ -4130,6 +4130,16 @@ msgstr "Campo de texto"
 msgid "Upload files"
 msgstr "Subir ficheros"
 
+msgid "Progress bar"
+msgstr "Barra de progreso"
+
+msgid "Listbox"
+msgstr "Lista de datos"
+
+msgid "%1 created a topic of %2 on %3"
+msgstr "%1 creó un tópico de categoría: %2 el %3"
+
+
 
 
 

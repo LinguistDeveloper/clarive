@@ -413,7 +413,7 @@ sub list : Local {
                                     { html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
                                 );
                     
-                    my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+                    my $dashboard = $c->model('Baseliner::BaliDashboard')->update_or_create(
                                     {
                                         name  => 'Clarive',
                                         description => 'Demo dashboard Clarive configurable',

@@ -36,7 +36,7 @@ __PACKAGE__->add_columns(
   { data_type => "clob", is_nullable => 1 },  
 );
 
-__PACKAGE__->set_primary_key("topic_mid");
+__PACKAGE__->set_primary_key("topic_mid", "name");
 
 
 1;

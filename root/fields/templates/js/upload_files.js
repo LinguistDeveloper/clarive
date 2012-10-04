@@ -1,15 +1,13 @@
 /*
 name: Upload files
 params:
-    id_field: 'files'
-    origin: 'rel'
-    html: '/fields/field_files.html'
-    js: '/fields/field_files.js'
-    field_order: 15
+    origin: 'template'
+    html: '/fields/templates/html/upload_files.html'
+    js: '/fields/templates/js/upload_files.js'
+    relation: 'system'
+    get_method: 'get_files'    
+    field_order: 3
     section: 'details'
-    rel_field: 'files'
-    method: 'get_files'
-    is_clone: 1
 ---
 */
 (function(params){
@@ -41,7 +39,7 @@ params:
     var store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/topic/file_tree',
-	   baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue(), filter: meta.rel_field },
+	   baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue(), filter: meta.id_field },
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
     });
 	
@@ -156,12 +154,12 @@ params:
                     
                 }
                 else{
-					store_file.baseParams = {topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue(), filter: meta.rel_field };
+					store_file.baseParams = {topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue(), filter: meta.id_field };
                     store_file.load();                    
                 }
             },
             onSubmit: function(id, filename){
-				uploader.setParams({topic_mid: data ? data.topic_mid : obj_topic_mid.getValue(), filter: meta.rel_field });
+				uploader.setParams({topic_mid: data ? data.topic_mid : obj_topic_mid.getValue(), filter: meta.id_field });
             },
             onProgress: function(id, filename, loaded, total){},
             onCancel: function(id, filename){ },

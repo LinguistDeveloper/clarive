@@ -643,12 +643,13 @@ sub list_tree_fields : Local {
     
 
     my @template_dirs;
-    push @template_dirs, $c->path_to( 'root/fields/templates/js' ) . "";
-    @template_dirs = grep { -d } @template_dirs;
+    push @template_dirs, $c->path_to( 'root/fields/templates/js' ) . "/*.js";
+    push @template_dirs, $c->path_to( 'root/fields/system/js' ) . "/list*.js";
+    #@template_dirs = grep { -d } @template_dirs;
     
     my @tmp_templates = map {
         my @ret;
-        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
+        for my $f ( map { _file($_) } grep { -f } glob "$_" ) { 
             my $d = $f->slurp;
             my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
            
@@ -672,9 +673,9 @@ sub list_tree_fields : Local {
        @ret;
     } @template_dirs;
 
-
     my @templates;
-    for my $template ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } @tmp_templates ) {
+    for my $template (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
+                        grep {$_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
         if( $template->{metadata}->{name} ){
             $template->{metadata}->{params}->{name_field} = $template->{metadata}->{name};
             push @templates,
@@ -686,8 +687,30 @@ sub list_tree_fields : Local {
                     leaf        => \1                  
                 };		
         }
-    }    
-     
+    }
+
+    my $j = 0;
+    my @meta_system_listbox;
+    my @data_system_listbox;
+    for my $system_listbox (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
+                        grep {!$_->{metadata}->{params}->{origin}} @tmp_templates ) {
+        
+        push @meta_system_listbox, [$j++, _loc $system_listbox->{metadata}->{name}];
+        push @data_system_listbox, $system_listbox->{metadata}->{params};
+    }
+    
+    
+    
+    
+    push @templates,    {
+                            id          => $i++,
+                            id_field    => 'listbox',
+                            text        => _loc ('Listbox'),
+                            params	    => {origin=> 'template'},
+                            meta        => \@meta_system_listbox,
+                            data        => \@data_system_listbox,
+                            leaf        => \1                             
+                        };
     
     push @tree_fields, {
         id          => 'T',

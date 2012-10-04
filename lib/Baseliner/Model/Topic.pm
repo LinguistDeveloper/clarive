@@ -57,9 +57,9 @@ register 'event.topic.file_remove' => {
 };
 
 register 'event.topic.create' => {
-    text => '%1 created topic on %2',
+    text => '%1 created a topic of %2 on %3',
     description => 'User created a topic',
-    vars => ['username', 'ts'],
+    vars => ['username', 'category', 'ts'],
 };
 
 register 'event.topic.modify' => {
@@ -105,7 +105,7 @@ sub update {
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
-                   { mid => $topic->mid, topic => $topic->title }   # to the event
+                   { mid => $topic->mid, topic => $topic->title, , category=> $topic->categories->name }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -209,6 +209,7 @@ sub get_system_fields {
             { id_field => 'created_on', params => {name_field => 'Created On', bd_field => 'created_on', origin => 'default', html => '/fields/templates/html/row_body.html', field_order => 0, section => 'body' }},
             { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body' }},
             { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'body' }},
+            { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => 8, section => 'body' }},
             #{ id_field => 'release', params => {name_field => 'Release', bd_field => 'release', origin => 'system', set_method => 'set_release', rel_field => 'release', method => 'get_release', html => $pathHTML . 'field_release.html', js => $pathJS . 'field_release.js', field_order => 7, section => 'body' }},
     );
     return \@system_fields
@@ -302,7 +303,7 @@ sub get_data {
             $data->{ $key } =  $self->$method( $topic_mid, $key );
         }
         
-        my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' } _array( $meta  );
+        my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
         my %custom_data = {};
         map { $custom_data{$_->{name}} = $_->{value} ? $_->{value} : $_->{value_clob} }  Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search({topic_mid => $topic_mid})->hashref->all;
         
@@ -467,21 +468,17 @@ sub save_data {
     }
 
      
-    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{origin} eq 'rel' } _array( $meta  );
+    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
     
     foreach my $key  (keys %rel_fields){
         if($rel_fields{$key}){
             eval( '$self->' . $rel_fields{$key} . '( $topic, $data->{$key}, $data->{username} )' );    
         }
     } 
-    
-    
      
     #$topic->update( \%row );
     
-                 
-    
-    my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, data => $_->{data} } } grep { $_->{origin} eq 'custom' } _array( $meta  );
+    my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, data => $_->{data} } } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
     
     for( @custom_fields ) {
         if  (exists $data->{ $_ -> {name}}){
@@ -490,7 +487,7 @@ sub save_data {
             my $record = {};
             $record->{topic_mid} = $topic->mid;
             $record->{name} = $_->{column};
-            if ($_->{data}){
+            if ($_->{data}){ ##Cuando el tipo de dato es CLOB
             	$record->{value_clob} = $data->{ $_ -> {name}};
             }else{
             	$record->{value} = $data->{ $_ -> {name}};
@@ -500,8 +497,22 @@ sub save_data {
                 my $field_custom = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->create($record);                 
             }
             else{
-                if ($row->value != $data->{ $_ -> {name}}){
-                    
+                my $modified = 0;
+                
+                if ($_->{data}){ ##Cuando el tipo de dato es CLOB
+                    $row->value_clob ( $data->{ $_ -> {name}} );
+                    if ($row->value != $data->{ $_ -> {name}}){
+                        $modified = 0;    
+                    }                    
+                }else{
+                    $row->value ( $data->{ $_ -> {name}} );
+                    if ($row->value != $data->{ $_ -> {name}}){
+                        $modified = 1;    
+                    }
+                }
+                $row->update;
+                
+                if ( $modified ){
                     event_new 'event.topic.modify_field' => { username   => $data->{username},
                                                         field      => _loc ($_->{column}),
                                                         old_value  => $row->value,
@@ -512,14 +523,8 @@ sub save_data {
                     => sub {
                         _throw _loc( 'Error modifying Topic: %1', shift() );
                     };
-                }                
-                $row->value ( $data->{ $_ -> {name}} );
-                $row->update;
+                }
             }
-            
-            
-            
-            
         }
     }    
     
