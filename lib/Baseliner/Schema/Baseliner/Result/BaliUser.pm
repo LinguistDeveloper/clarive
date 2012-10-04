@@ -31,7 +31,7 @@ __PACKAGE__->add_columns(
   "phone",
   { data_type => "varchar2", is_nullable => 1, size => 25 },
   "active",
-  { data_type => "char", is_nullable => 1, size => 1, default => 1 },  
+  { data_type => "char", is_nullable => 1, size => 1, default_value => 1 },  
 );
 __PACKAGE__->set_primary_key("mid");
 
