@@ -68,12 +68,13 @@ sub log : Local {
         #_error "EV=$e->{event_data}";
         $e->{data} = _load( $e->{event_data} ) if length $e->{event_data};
         my $rules = delete $e->{rules};
+        my $k = 1;
         my @rules = map {
             #_error $_->{stash_data};
             +{
                 %$_, 
                 _parent       => $e->{_id},
-                _id           => $_->{id},
+                _id           => $e->{_id} . '_' . $k++,  # $_->{id} useless and may repeat
                 event_status  => $_->{return_code} ? 'ko' : 'ok',
                 type          => 'rule',
                 event_key     => _loc('rule: %1', $_->{rule}{rule_name} ),
