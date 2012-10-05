@@ -378,28 +378,29 @@ sub get_meta_permissions : Local {
     my @hidden_field;
     
     my $is_root = $c->model('Permissions')->is_root( $c->username );
-    
+
     if (!$is_root) {
         for (_array $meta){
 
-            my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_field} . '.' . lc $_->{name_status} . '.write';
+            my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
             #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+            
             
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                 $_->{readonly} = \1;
             }
             
-            my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_field} . '.' . lc $_->{name_status} . '.read';
+            my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
             #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
             #_error $read_action;
     
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
-                push @hidden_field, $_->{name_field};
+                push @hidden_field, $_->{id_field};
             }
         }
         
         my %hidden_field = map { $_ => 1} @hidden_field;
-        $meta = [grep { !($hidden_field{ $_->{name_field} }) } _array $meta];
+        $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
     }
     
