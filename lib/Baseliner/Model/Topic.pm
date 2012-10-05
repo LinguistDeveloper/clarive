@@ -380,8 +380,6 @@ sub save_data {
         if  (exists $data->{ $_ -> {name}}){
             $row{ $_->{column} } = $data->{ $_ -> {name}};
             $description{ $_->{column} } = $_ -> {name}; ##Contemplar otro parametro mas descriptivo
-            _log ">>>>>>>>>>>>>>>Campo: " . $_ -> {name};
-            _log ">>>>>>>>>>>>>>>Relacion: " . $_ -> {relation};
             $relation{ $_->{column} } = $_ -> {relation};
             if ($_->{method}){
                 my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data )' );
@@ -421,8 +419,6 @@ sub save_data {
             
             $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
             if ($row{$field} != eval($old_value{$field})){
-                _log ">>>>>>>>>>>>>>>>>>>>>>>>RELACION: " . $relation{ $field };
-                _log ">>>>>>>>>>>>>>>>>>ESTADO: " . $old_text{$field};
                 if($field eq 'id_category_status'){
                     my @projects = $topic->projects->hashref->all;
                     event_new 'event.topic.change_status' => { username => $data->{username}, old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name'), projects => \@projects  } => sub {
