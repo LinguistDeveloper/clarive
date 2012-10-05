@@ -203,14 +203,13 @@ sub get_system_fields {
     my $pathJS = '/fields/system/js/';
     my @system_fields = (
             { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => 2, section => 'body' }},
-            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => 1, section => 'body' }},
-            { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status' , origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => 3, section => 'body' }},
+            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => 1, section => 'body', relation => 'categories' }},
+            { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status' , origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => 3, section => 'body', relation => 'status' }},
             { id_field => 'created_by', params => {name_field => 'Created By', bd_field => 'created_by', origin => 'default', html => '/fields/templates/html/row_body.html', field_order => 0, section => 'body' }},
             { id_field => 'created_on', params => {name_field => 'Created On', bd_field => 'created_on', origin => 'default', html => '/fields/templates/html/row_body.html', field_order => 0, section => 'body' }},
-            { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body' }},
+            { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body', relation => 'priorities' }},
             { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'body' }},
             { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => 8, section => 'body' }},
-            #{ id_field => 'release', params => {name_field => 'Release', bd_field => 'release', origin => 'system', set_method => 'set_release', rel_field => 'release', method => 'get_release', html => $pathHTML . 'field_release.html', js => $pathJS . 'field_release.js', field_order => 7, section => 'body' }},
     );
     return \@system_fields
 }
@@ -234,26 +233,6 @@ sub get_meta {
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
     
-    #my @meta = (
-    #     { name_field => 'title', id_field => 'title', origin => 'system', html => '/fields/field_title.html', js => '/fields/field_title.js', field_order => 2, section => 'body' },
-    #     { name_field => 'category', id_field => 'id_category', origin => 'system', html => '/fields/field_category.html', js => '/fields/field_category.js', field_order => 1, section => 'body' },
-    #     { name_field => 'status_new', id_field => 'id_category_status', origin => 'system', html => '/fields/field_status.html', js => '/fields/field_status.js', field_order => 3, section => 'body' },
-    #     { name_field => 'created_by', id_field => 'created_by', origin => 'default', html => '/fields/field_created_by.html', field_order => 4, section => 'body' },
-    #     { name_field => 'created_on', id_field => 'created_on', origin => 'default', html => '/fields/field_created_on.html', field_order => 5, section => 'body' },
-    #     { name_field => 'priority', id_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => '/fields/field_priority.html', js => '/fields/field_priority.js', field_order => 6, section => 'body' },
-    #     { name_field => 'description', id_field => 'description', origin => 'system', html => '/fields/field_description.html', js => '/fields/field_description.js', field_order => 15, section => 'body' },
-    #     { name_field => 'release', id_field => 'release', origin => 'rel', set_method => 'set_release', rel_field => 'release', method => 'get_release', html => '/fields/field_release.html', js => '/fields/field_release.js', field_order => 7, section => 'body' },
-    #     { name_field => 'progress', id_field => 'progress', origin => 'system', html => '/fields/field_progress.html', js => '/fields/field_progress.js', field_order => 8, section => 'body' },
-    #     { name_field => 'projects', id_field => 'projects', origin => 'rel', set_method => 'set_projects', rel_field => 'projects', method => 'get_projects', html => '/fields/field_projects.html', js => '/fields/field_projects.js', field_order => 9, section => 'details' },
-    #     { name_field => 'users', id_field => 'users', origin => 'rel', set_method => 'set_users', rel_field => 'users', method => 'get_users', html => '/fields/field_assign_to.html', js => '/fields/field_assign_to.js', field_order => 10, section => 'details' },
-    #     { name_field => 'labels', id_field => 'labels', origin => 'rel', set_method => 'set_labels', method => 'get_labels', html => '/fields/field_labels.html', js => '/fields/field_labels.js', field_order => 11, section => 'head' },
-    #     { name_field => 'revisions', id_field => 'revisions', origin => 'rel', set_method => 'set_revisions', rel_field => 'revisions', method => 'get_revisions', html => '/fields/field_revisions.html', js => '/fields/field_revisions.js', field_order => 12, section => 'details' },
-    #     { name_field => 'dates', id_field => 'dates', origin => 'rel', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 13, section => 'details' },
-    #     { name_field => 'topics', id_field => 'topics', origin => 'rel', set_method => 'set_topics', method => 'get_topics', html => '/fields/field_topics.html', js => '/fields/field_topics.js', field_order => 14, section => 'details' },
-    #     { name_field => 'files', id_field => 'files', origin => 'rel', method => 'get_files', html => '/fields/field_files.html', js => '/fields/field_files.js', field_order => 15, section => 'details' },
-    #     #{ id_field =>'comentario', origin =>'custom' },
-    #     #{ id_field =>'docs', origin =>'rel', rel_type =>'topic_file' },
-    #);
     return \@meta;
 }
 
@@ -401,6 +380,8 @@ sub save_data {
         if  (exists $data->{ $_ -> {name}}){
             $row{ $_->{column} } = $data->{ $_ -> {name}};
             $description{ $_->{column} } = $_ -> {name}; ##Contemplar otro parametro mas descriptivo
+            _log ">>>>>>>>>>>>>>>Campo: " . $_ -> {name};
+            _log ">>>>>>>>>>>>>>>Relacion: " . $_ -> {relation};
             $relation{ $_->{column} } = $_ -> {relation};
             if ($_->{method}){
                 my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data )' );
@@ -440,10 +421,11 @@ sub save_data {
             
             $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
             if ($row{$field} != eval($old_value{$field})){
-                
+                _log ">>>>>>>>>>>>>>>>>>>>>>>>RELACION: " . $relation{ $field };
+                _log ">>>>>>>>>>>>>>>>>>ESTADO: " . $old_text{$field};
                 if($field eq 'id_category_status'){
                     my @projects = $topic->projects->hashref->all;
-                    event_new 'event.topic.change_status' => { username => 'root', old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name'), projects => \@projects  } => sub {
+                    event_new 'event.topic.change_status' => { username => $data->{username}, old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name'), projects => \@projects  } => sub {
                         { mid => $topic->mid, topic => $topic->title } 
                     } 
                     => sub {
@@ -548,9 +530,6 @@ sub set_priority {
 sub set_topics {
     my ($self, $rs_topic, $topics, $user ) = @_;
     my @all_topics = ();
-    
-    _log ">>>>>>>>>>>>>>>>PASPASAPSASPASAPSASAPS";
-    _log _dump $topics; 
     
     # related topics
     my @new_topics = _array( $topics ) ;
