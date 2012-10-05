@@ -47,7 +47,7 @@ sub run_once {
                 $rulerow->log_output( $rule->{output} );
                 $rulerow->update;
             }
-            $ev->update({ event_status=>( $rc ? 'ok' : 'ko' ) });
+            $ev->update({ event_status=>( $rc ? 'ko' : 'ok' ) });
         } catch {
             my $err = shift;
             # TODO global error or a rule by rule 

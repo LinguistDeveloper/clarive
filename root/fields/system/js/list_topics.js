@@ -3,7 +3,7 @@ name: Topics
 params:
     html: '/fields/system/html/field_topics.html'
     js: '/fields/system/js/list_topics.js'
-    section: 'system'
+    relation: 'system'
     get_method: 'get_topics'    
     set_method: 'set_topics'
     field_order: 14
@@ -31,6 +31,7 @@ params:
     var topic_box = new Baseliner.model.Topics({
 		fieldLabel: _(meta.name_field),
 		name: meta.name_field,
+        hiddenName: meta.id_field,
         store: topic_box_store,
 		disabled: meta ? meta.readonly : true
     });

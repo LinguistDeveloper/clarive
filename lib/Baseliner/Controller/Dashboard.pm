@@ -404,7 +404,6 @@ sub list : Local {
                     $c->stash->{dashboards} = \@dashboard;
                     
                 }else{
-                    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PASAPSASAPSAPSAPSAPSASPA";
                     ##Dashboard proporcionado por clarive (default)
                     @dashlets = (	{ html => '/dashlets/baselines.html', url => '/dashboard/list_baseline', order => 1},
                                     { html => '/dashlets/lastjobs.html', url => '/dashboard/list_lastjobs', order => 2},

@@ -74,10 +74,10 @@ sub log : Local {
             +{
                 %$_, 
                 _parent       => $e->{_id},
-                _id           => $e->{_id} . '_' . $k++,  # $_->{id} useless and may repeat
+                _id           => $e->{_id} . '-' . $k++,  # $_->{id} useless and may repeat
                 event_status  => $_->{return_code} ? 'ko' : 'ok',
                 type          => 'rule',
-                event_key     => _loc('rule: %1', $_->{rule}{rule_name} ),
+                event_key     => _loc('rule: %1', $_->{rule}{id} . ': ' . $_->{rule}{rule_name} ),
                 data          => ( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
                 dsl           => $_->{dsl},
                 output        => $_->{log_output},
@@ -103,6 +103,22 @@ sub del : Local {
         $c->stash->{json} = { success=>\1, msg => _loc('Event deleted ok') };
     } else {
         $c->stash->{json} = { success=>\1, msg => _loc('Event not found') };
+    }
+    $c->forward("View::JSON");
+}
+
+sub status : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $rs = defined $p->{id}
+        ? DB->BaliEvent->find( $p->{id} )
+        : DB->BaliEvent->search({ id=>$p->{ids} });
+    if( $rs ) {
+        $p->{event_status} or _fail 'Missing status';
+        $rs->update({ event_status => $p->{event_status} });
+        $c->stash->{json} = { success=>\1, msg => _loc('Event status changed to: %1', $p->{event_status} ) };
+    } else {
+        $c->stash->{json} = { success=>\1, msg => ''.shift() };
     }
     $c->forward("View::JSON");
 }

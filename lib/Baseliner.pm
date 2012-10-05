@@ -355,7 +355,7 @@ sub username {
     Baseliner::Utils::_debug "No user user";
     $user = try { return $c->user->id
     } catch {
-        Baseliner::Utils::_error "No user id.";
+        Baseliner::Utils::_debug "No user id.";
         return undef;   
     } and return $user;
 }

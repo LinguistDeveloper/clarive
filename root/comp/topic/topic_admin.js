@@ -1739,18 +1739,19 @@
 					if (!isNaN(attr.id)){
 						if (data.origin == 'template' ){
 						
-							//var filter_store = new Baseliner.JsonStore({
-							//	root: 'data' , 
-							//	remoteSort: true,
-							//	totalProperty:"totalCount", 
-							//	id: 'id', 
-							//	url: '/topicadmin/list_filters',
-							//	store: attr.data
-							//	//fields: [
-							//	//	{  name: 'name' },
-							//	//	{  name: 'filter_json' }
-							//	//]
-							//});
+							var filter_store = new Baseliner.JsonStore({
+								root: 'data' , 
+								remoteSort: true,
+								totalProperty:"totalCount", 
+								id: 'id', 
+								url: '/topicadmin/list_filters',
+								fields: [
+									{  name: 'name' },
+									{  name: 'filter_json' }
+								]
+							});
+							
+							filter_store.load();							
 							
 							var btn_cerrar_custom_field = new Ext.Toolbar.Button({
 								text: _('Close'),
@@ -1768,44 +1769,65 @@
 									var form = form_template_field.getForm();
 									var id_field = form.findField("name_field").getValue();
 									
-									if (attr.meta) { //Casos especiales, como la plantilla listbox
-										attr.data[combo_system_fields.getValue()].id_field = id_field;
-										attr.data[combo_system_fields.getValue()].name_field = id_field;
-										attr.data[combo_system_fields.getValue()].bd_field = id_field;
-										attr.data[combo_system_fields.getValue()].origin = 'custom';
-										
-										var d = { id: id, id_field: id_field, name: id_field, params: attr.data[combo_system_fields.getValue()], img: '/static/images/icons/icon_wand.gif' };										
-										
+									var recordIndex = category_fields_store.findBy(
+										function(record, id){
+											if(record.get('id_field') === id_field) {
+												  return true;  // a record with this data exists
+											}
+											return false;  // there is no record in the store with this data
+										}
+									);
+
+									if(recordIndex != -1){
+                                        Ext.Msg.show(	{	title: _('Information'), 
+															msg: _('Field already exists, introduce another field name') , 
+															buttons: Ext.Msg.OK, 
+															icon: Ext.Msg.INFO
+														});
 									}else{
-										attr.params.id_field = id_field;
-										attr.params.name_field = id_field;
-										attr.params.bd_field = id_field;
-										attr.params.origin = 'custom';
+										if (attr.meta) { //Casos especiales, como la plantilla listbox
+											attr.data[combo_system_fields.getValue()].id_field = id_field;
+											attr.data[combo_system_fields.getValue()].name_field = id_field;
+											attr.data[combo_system_fields.getValue()].bd_field = id_field;
+											attr.data[combo_system_fields.getValue()].origin = 'custom';
+											
+											if (attr.data[combo_system_fields.getValue()].filter){
+												attr.data[combo_system_fields.getValue()].filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
+											}
+											
+											var d = { id: id, id_field: id_field, name: id_field, params: attr.data[combo_system_fields.getValue()], img: '/static/images/icons/icon_wand.gif' };										
+											
+										}else{
+											attr.params.id_field = id_field;
+											attr.params.name_field = id_field;
+											attr.params.bd_field = id_field;
+											attr.params.origin = 'custom';
+											
+											var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
+										}
 										
-										var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
+										var r = new category_fields_store.recordType( d, id );
+										category_fields_store.add( r );
+										category_fields_store.commitChanges();
+										winCustomField.close();
 									}
-									
-									var r = new category_fields_store.recordType( d, id );
-									category_fields_store.add( r );
-									category_fields_store.commitChanges();
-									winCustomField.close();
 								}
-							})
+							});
 		
 		
-							//var combo_filters = new Ext.form.ComboBox({
-							//	mode: 'local',
-							//	triggerAction: 'all',
-							//	forceSelection: true,
-							//	editable: false,
-							//	fieldLabel: _('Filter'),
-							//	name: 'cmb_filter',
-							//	hiddenName: 'filter',
-							//	displayField: 'name',
-							//	valueField: 'filter_json',
-							//	//hidden: true,						
-							//	store: attr.data
-							//});
+							var combo_filters = new Ext.form.ComboBox({
+								mode: 'local',
+								triggerAction: 'all',
+								forceSelection: true,
+								editable: false,
+								fieldLabel: _('Filter'),
+								name: 'cmb_filter',
+								hiddenName: 'filter',
+								displayField: 'name',
+								valueField: 'filter_json',
+								hidden: true,						
+								store: filter_store
+							});
 							
 							var combo_system_fields = new Ext.form.ComboBox({
 								mode: 'local',
@@ -1816,7 +1838,15 @@
 								hiddenName: 'cmb_system_fields',
 								hidden: true,
 								store: attr.meta ? attr.meta : []
-							});					
+							});
+							
+							combo_system_fields.on('select', function(cmb,row,index){
+								if (attr.data[combo_system_fields.getValue()].filter){
+									combo_filters.show();
+								}else{
+									combo_filters.hide();
+								};
+							});							
 							
 							if (attr.id_field == 'listbox') combo_system_fields.show();
 							
@@ -1827,7 +1857,8 @@
 								defaults:{anchor:'100%'},
 								items   : [
 											{ fieldLabel: _('Field'), name: 'name_field', xtype: 'textfield', allowBlank:false },
-											combo_system_fields
+											combo_system_fields,
+											combo_filters
 										]
 							});
 		
