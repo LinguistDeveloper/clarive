@@ -148,9 +148,16 @@ use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 
 sub resolve_address {
     my ( $self, $username ) = @_;
-    my $config = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
-    my $domain = $config->{domain};
-    return "$username\@$domain";
+
+    my $email = DB->BaliUser->search( { username => $username } )->first->email;
+
+    if ( $email ) {
+        return $email;
+    } else {
+        my $config = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
+        my $domain = $config->{domain};
+        return "$username\@$domain";        
+    }
 }
 
 sub send {

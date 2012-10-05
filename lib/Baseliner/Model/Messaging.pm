@@ -80,7 +80,6 @@ register 'service.notify.create' => {
             template_engine => 'mason',            
             subject => $config->{subject},
             carrier => 'email',
-            sender => 'Clarive@jazztel',
             vars => {
                 msg => $config->{body},
                 to => $final_to,
