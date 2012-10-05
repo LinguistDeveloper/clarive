@@ -422,7 +422,7 @@
         if(btn_mini.pressed){
             return tag_color_html + "<div style='font-weight:bold; font-size: 12px; "+strike+"' >" + value + "</div>";          
         }else{
-            return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>";                        
+            return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>" + _('by %1', rec.data.created_by) + "</font ></div>";                        
         }
         
     };

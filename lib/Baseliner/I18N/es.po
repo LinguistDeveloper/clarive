@@ -18,6 +18,9 @@ msgstr "Ventanas de Pase"
 msgid "Repositories"
 msgstr "Repositorios"
 
+msgid "by %1"
+msgstr "por %1"
+
 msgid "All-f"
 msgstr "Todas"
 
