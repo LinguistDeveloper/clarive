@@ -1765,7 +1765,7 @@
 								text: _('Save'),
 								width: 50,
 								handler: function(){
-									var id = category_fields_store.getCount() + 1;
+									var id = category_fields_store.getCount();
 									var form = form_template_field.getForm();
 									var id_field = form.findField("name_field").getValue();
 									
@@ -1794,7 +1794,7 @@
 											if (attr.data[combo_system_fields.getValue()].filter){
 												attr.data[combo_system_fields.getValue()].filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
 											}
-											
+
 											var d = { id: id, id_field: id_field, name: id_field, params: attr.data[combo_system_fields.getValue()], img: '/static/images/icons/icon_wand.gif' };										
 											
 										}else{
