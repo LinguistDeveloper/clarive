@@ -61,7 +61,7 @@ sub calendar_list_json : Path('/job/calendar_list_json') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my ( $start, $limit, $query, $dir, $sort, $cnt ) = @{ $p }{ qw/start limit query dir sort/ };
-    my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( undef, { order_by => $sort ? "$sort $dir" : undef } );
+    my $rs = DB->BaliCalendar->search( undef, { order_by => $sort ? "$sort $dir" : undef } );
     my @rows;
 
     while ( my $r = $rs->next ) {
@@ -71,6 +71,7 @@ sub calendar_list_json : Path('/job/calendar_list_json') {
             id          => $r->id,
             name        => $r->name,
             description => $r->description,
+            active      => $r->active,
             seq         => $r->seq,
             bl          => $r->bl,
             bl_desc     => Baseliner::Core::Baseline->name( $r->bl ),
@@ -111,6 +112,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                         name        => $p->{ name },
                         description => $p->{ description },
                         seq         => $p->{ seq },
+                        active      => '1',
                         ns          => $p->{ ns },
                         bl          => $p->{ bl }
                     }
@@ -147,6 +149,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             $row->name( $p->{ name } );
             $row->description( $p->{ description } );
             length $p->{ seq } and $row->seq( $p->{ seq } );
+            $p->{ active } eq 'on' ?  $row->active( '1' ) : $row->active( '0' );
             $p->{ ns } and $row->ns( $p->{ ns } );
             $p->{ bl } and $row->bl( $p->{ bl } );
             $row->update;
@@ -387,7 +390,7 @@ sub build_job_window : Path('/job/build_job_window') {
             my @ns_list = _array $item->{ns}, _array $namespace->nature, $namespace->application, '/';
             foreach my $curr_ns (@ns_list){
                 _debug "NS=$curr_ns";
-                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $curr_ns } });
+                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $curr_ns }, active=>'1' });
                 push @ns, $curr_ns if $r->count;
             }
         }
@@ -454,7 +457,7 @@ sub db_to_slots {
           prefetch=>'windows',
           order_by=>[
               { -asc =>'seq' },
-              { -asc=>'windows.id' }, # last creation/edit is most important
+              { -asc =>'windows.id' }, # last creation/edit is most important
               { -asc =>'windows.day' },
               { -asc =>'windows.start_time' }
           ]
@@ -583,7 +586,9 @@ sub merge_calendars {
          # now choose which slot to use for this minute
          #   giving higher precedence to the ASCII value of TYPE letter 
          #     X > U > N - using ord for ascii values
-         if( ! exists $list{$time} || ord $s->data->{type} > ord $list{ $time }->{type} ) {
+         if( ! exists $list{$time}
+             || $s->data->{seq} > $list{ $time }->{seq}
+             || ord $s->data->{type} > ord $list{ $time }->{type} ) {
             $list{ $time } = {
                 type=>$s->data->{type}, cal=>$s->data->{cal}, 
                 hour => sprintf( '%s:%s', substr($time,0,2), substr($time,2,2) ),

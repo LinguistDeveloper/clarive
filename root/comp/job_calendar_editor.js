@@ -59,6 +59,11 @@
                         name: 'seq',
                         value: '<% $cal->seq %>'
                     },
+                    {  xtype: 'checkbox',
+                        fieldLabel: _loc('Active'),
+                        name: 'active',
+                        checked: <% $cal->active > 0 ? "true" : "false" %>
+                    },
                     {  xtype: 'textarea',
                         fieldLabel: _('Description'),
                         name: 'description',
