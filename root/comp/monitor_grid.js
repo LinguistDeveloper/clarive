@@ -142,9 +142,12 @@
     });
     var nature_menu = natures.map(function (x) {
       // Por defecto siempre se van a mostrar en uppercase, pero tampoco est￡ de m￡s filtrar un poco esto.
-      var nature_name = x.name == 'ZOS'      ? 'z/OS' 
-                      : x.name == 'FICHEROS' ? 'Ficheros'
-                      : x.name == 'TODAS'    ? 'Todas'
+      var nature_name = x.name == 'ZOS'              ? 'z/OS' 
+                      : x.name == 'ZOS-Linklist'     ? 'z/OS LinkList' 
+                      : x.name == 'ZOS-Linklist-DB2' ? 'z/OS Linklist DB2' 
+                      : x.name == 'ZOS-DB2'          ? 'z/OS DB2' 
+                      : x.name == 'FICHEROS'         ? 'Ficheros'
+                      : x.name == 'TODAS'            ? 'Todas'
                       : x.name
                       ;
       return {
