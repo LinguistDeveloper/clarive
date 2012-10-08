@@ -80,9 +80,8 @@ sub execute {
 
       if ($package->{returncode}) {
          unless ( $package->{returncode} =~ m{ok}i ) {
-            $job->job_fail(_loc('Error during changeman execution'));
             $chm->xml_cancelJob(job=>$job->{name}, items=>$package->{item}) if ($job->{origin} ne 'changeman');
-            return 1;
+            _throw _loc('Error during changeman execution');
          }
       } elsif ( $job->{origin} ne 'changeman' ) {
          my $ret=undef;
@@ -100,8 +99,8 @@ sub execute {
          } elsif ( $job->bl ne 'PROD' && $job->{job_data}->{type} eq 'demote') {
             $log->debug( _loc( qq{Execute package <b>%1</b> type <b>%2</b> to site <b>%3</b>},$ns->{ns_name}, 'demote', $ns->{ns_data}->{site} ));
          } else {
-            $job->job_fail(_loc('Invalid job for Changeman'));
             $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+            _throw _loc('Invalid job for Changeman');
             return 1;
          }
 
@@ -112,10 +111,9 @@ sub execute {
              bl        =>$job->{job_data}->{bl},
          );
          if ( $ret->{ReturnCode} !~ m{^00$|^0$} ) {
-            $log->error (_loc("Can't execute changeman package %1", $ns->{ns_name}), _dump $ret);
-            $job->job_fail(_loc('Error during changeman execution'));
             $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
-            return 1;
+            $log->error (_loc("Can't execute changeman package %1", $ns->{ns_name}), _dump $ret);
+            _throw _loc('Error during changeman execution');
          } else {
             $log->info(_loc("Execution for changeman package %1 correctly submitted", $ns->{ns_name}), _dump $ret);
             $job->suspend (status=>'WAITING', message=>_loc("Waiting for JES spool outputs"), level=>'info');
@@ -145,10 +143,9 @@ sub execute {
       my $ret = $chm->xml_refreshLLA( sites=>$data );
 
       if ($ret->{ReturnCode} ne '00') {
-         $log->error (_loc("Can't execute Linklist refresh"), $ret->{Message});
-         $job->job_fail(_loc('Error during changeman execution'));
          $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
-         return 1;
+         $log->error (_loc("Can't execute Linklist refresh"), $ret->{Message});
+         _throw _loc('Error during changeman execution');
       } else {
          $log->info(_loc("Linklist refresh correctly submitted"));
       }
@@ -198,7 +195,7 @@ sub job_elements {
       $nature.=$item->{data}->{db2} eq 'SI'?'-DB2':'';
 
       my $ns = ns_get $item->{item};
-      my $application = $1 if $ns->{ns_name}=~m{^(....).*};
+      my $application = $1 if $ns->{ns_name}=~m{^(...).*};
       next unless $ns->provider eq 'namespace.changeman.package';
 
 # TODO .- Añadir installDate y fromInstallTime agrupado por site a la información del paquete.
@@ -223,13 +220,13 @@ sub job_elements {
       }
 
       foreach ( _array $xml->{result} ) {
-         push @elems,{ name=>$_->{component}, type=>$cfgChangeman->{typedef}->{$_->{componentType}}, path=>qq{/$application/$nature/}.$_->{component} };
+         push @elems,{ name=>$_->{component}, type=>$cfgChangeman->{typedef}->{$_->{componentType}}, path=>qq{/$application/$nature/}, fullpath=>qq{/$application/$nature/}.$_->{component}, package=>$ns->{ns_name} };
          push @list,sprintf("%-10s%-42s",$_->{component},$cfgChangeman->{typedef}->{$_->{componentType}});
       }
 
       $log->info( _loc( "<b>Changeman</b> Job Elements from package %1", $ns->{ns_name} ), data=>join"\n",@list );
       @elems = map {
-         BaselinerX::ChangemanComponent->new( name=>$_->{name}, type=>$_->{type}, path=>$_->{path} );
+         BaselinerX::ChangemanComponent->new( name=>$_->{name}, type=>$_->{type}, path=>$_->{path}, fullpath=>$_->{fullpath}, package=>$_->{package} );
       } @elems;
 
       my $e = $job->job_stash->{elements} || BaselinerX::Job::Elements->new;
@@ -247,5 +244,7 @@ with 'BaselinerX::Job::Element';
 
 has 'mask' => ( is=>'rw', isa=>'Str', default=>'/application/nature');
 has 'path' => ( is=>'rw', isa=>'Str');
+has 'fullpath' => ( is=>'rw', isa=>'Str');
+has 'package' => ( is=>'rw', isa=>'Str');
 
 1;
