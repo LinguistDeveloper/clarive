@@ -132,6 +132,8 @@ sub check_approvals {
                 _throw "No action found for current state" unless $action;
                 #my $rs = $c->model('Harvest::Harpkghistory')->search({ packageobjid=>
                 try {
+                    my $message  = _loc('Requesting Approval for %1', $pkg);
+                    my @users    = users_with_permission $action;
                     Baseliner->model('Request')->request(
                             name   => "$hist_state",
                             action => $action,
@@ -139,11 +141,16 @@ sub check_approvals {
                             callback => 'service.harvest.approval.callback',
 							template_engine => 'mason',
                             template => 'email/approval.html',
-                            vars   => { reason=>'' },
                             username => $username,
-                            #TODO role_filter => $p->{role},    # not working, no user selected??
                             ns     => $ns_package,
                             bl     => $bl,
+                            vars     => {
+                                reason  => '',
+                                message => $message,
+                                subject => $message,
+                                to      => [ @users ],
+                                url     => _notify_address(),
+                            },
                     );
                 } catch {
                     #try-catch, if cannot request, inform the package owner - group of error

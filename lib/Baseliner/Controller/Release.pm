@@ -193,6 +193,7 @@ sub add_item : Local {
                 message => _loc("User '%1' added item '%2' to release '%3'", $username, $name, $rel_name),
                 subject => _loc('New item added to release %1', $rel_name ),
                 to      => $owner,
+                url     => _notify_address(),
             } 
         );
         $c->stash->{json} = { success => \1, msg => _loc("Item %1 added.", $name ) };

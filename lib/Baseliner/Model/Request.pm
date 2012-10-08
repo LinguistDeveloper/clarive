@@ -337,6 +337,7 @@ sub notify_request {
             realname     => $realname,
             url_approve  => _notify_address . "/request/approve/$key",
             url_reject   => _notify_address . "/request/reject/$key",
+            url          => _notify_address(),
             %vars,
         }
     );
