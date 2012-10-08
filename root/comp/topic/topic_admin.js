@@ -344,7 +344,7 @@
     var add_edit_category = function(rec) {
         var win;
         var title = 'Create category';
-        
+		
         // Combo Providers
         //   TODO read from provider.topic.*
         var store_providers =new Ext.data.SimpleStore({
@@ -387,9 +387,10 @@
         
         //   Color settings 
         var category_color = new Ext.form.Hidden({ name:'category_color' });
+		category_color.setValue(rec.data.color);
 
         var color_pick = new Ext.ColorPalette({ 
-            value:'FF43B8',
+            value: rec.data.color,
             listeners: {
                 select: function(cp, color){
                    category_color.setRawValue( '#' + color.toLowerCase() ); 
@@ -1766,6 +1767,7 @@
 								width: 50,
 								handler: function(){
 									var id = category_fields_store.getCount() + 1;
+									
 									var form = form_template_field.getForm();
 									var id_field = form.findField("name_field").getValue();
 									
@@ -1794,7 +1796,7 @@
 											if (attr.data[combo_system_fields.getValue()].filter){
 												attr.data[combo_system_fields.getValue()].filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
 											}
-											
+
 											var d = { id: id, id_field: id_field, name: id_field, params: attr.data[combo_system_fields.getValue()], img: '/static/images/icons/icon_wand.gif' };										
 											
 										}else{
@@ -1806,8 +1808,15 @@
 											var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
 										}
 										
-										var r = new category_fields_store.recordType( d, id );
-										category_fields_store.add( r );
+										try{
+											var r = new category_fields_store.recordType( d, id );
+											category_fields_store.add( r );	
+										}catch(err){
+											id += 1; 
+											var r = new category_fields_store.recordType( d, id );
+											category_fields_store.add( r )
+										};
+										
 										category_fields_store.commitChanges();
 										winCustomField.close();
 									}

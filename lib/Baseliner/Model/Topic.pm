@@ -85,7 +85,7 @@ register 'event.topic.modify_field' => {
 
 register 'event.topic.change_status' => {
     text => '%1 changed topic status from %2 to %3 on %4',
-    vars => ['username', 'old_status', 'status', 'projects', 'ts'],
+    vars => ['username', 'old_status', 'status', 'ts'],
 };
 
 sub update {
@@ -421,7 +421,7 @@ sub save_data {
             if ($row{$field} != eval($old_value{$field})){
                 if($field eq 'id_category_status'){
                     my @projects = $topic->projects->hashref->all;
-                    event_new 'event.topic.change_status' => { username => $data->{username}, old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name'), projects => \@projects  } => sub {
+                    event_new 'event.topic.change_status' => { username => $data->{username}, old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name')  } => sub {
                         { mid => $topic->mid, topic => $topic->title } 
                     } 
                     => sub {
@@ -673,12 +673,11 @@ sub set_projects {
     my $topic_mid = $rs_topic->mid;
     
     my @new_projects = _array( $projects ) ;
-    my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
-    
-    my $del_projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
+    my @old_projects = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
+        my $del_projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
         # projects
         if (@new_projects){
             my @name_projects;
@@ -723,13 +722,11 @@ sub set_users{
     my $topic_mid = $rs_topic->mid;
     
     my @new_users = _array( $users ) ;
-    my @old_users = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->hashref->all;
-
-    my $del_users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
-    
+    my @old_users = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->hashref->all;
 
     # check if arrays contain same members
     if ( array_diff(@new_users, @old_users) ) {
+        my $del_users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
         # users
         if (@new_users){
             my @name_users;

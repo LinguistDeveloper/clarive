@@ -299,20 +299,21 @@ sub update_priority : Local {
                                                                                     expr_deadline => $deadline[0]
                                                                                     });
                     
-                    $c->stash->{json} = { msg=>_loc('Priority added'), success=>\1, status_id=> $priority->id };
+                    $c->stash->{json} = { msg => _loc('Priority added'), success => \1, priority_id => $priority->id };
                 }
                 else{
-                    $c->stash->{json} = { msg=>_loc('Priority name already exists, introduce another priority name'), failure=>\1 };
+                    $c->stash->{json} = { msg => _loc('Priority name already exists, introduce another priority name'), failure => \1 };
                 }
             }
             catch{
-                $c->stash->{json} = { msg=>_loc('Error adding Priority: %1', shift()), failure=>\1 }
+                $c->stash->{json} = { msg => _loc('Error adding Priority: %1', shift()), failure => \1 }
             }
         }
         when ('update') {
             try{
                 my $id_priority = $p->{id};
                 my $priority = $c->model('Baseliner::BaliTopicPriority')->find( $id_priority );
+                
                 $priority->name( $p->{name} );
                 $priority->response_time_min( $rsptime[1] );
                 $priority->expr_response_time( $rsptime[0] );

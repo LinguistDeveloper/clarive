@@ -302,17 +302,24 @@ sub user_projects {
 
 sub user_projects_query {
     my ( $self, %p ) = @_;
-    _throw 'Missing username' unless exists $p{ username };
+    _throw 'Missing username' unless exists $p{username};
 
     if ( $self->is_root( $p{username} ) ) {
-        DB->BaliProject->search( {}, { select => ['mid'], as => ['id'] } )->as_query;
-    } else {    
-        Baseliner->model( 'Baseliner::BaliRoleuser' )
-            ->search( { username => $p{username} },
-            { distinct=>1, select => [ 'id_project' ], as => [ 'id' ] } )->as_query ;
-    }
+        DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
+    } else {
+        my @rs = Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => 'ricardo'},
+            {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->hashref->all;
+        if ( @rs ) {
+            if ( !$rs[ 0 ]->{id} ) {
+                DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
+            } else {
+                Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => $p{username}},
+                    {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->as_query;
+            }
 
-}
+        } ## end if ( @rs )
+    } ## end else [ if ( $self->is_root( $p...))]
+} ## end sub user_projects_query
 
 =head2 user_projects_ids( username=>Str )
 
