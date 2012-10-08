@@ -8,6 +8,7 @@
 	$subject 
 	$url_approve
 	$url_log
+	$url
 	$url_reject
 </%args>
 
@@ -26,6 +27,12 @@
 body {
     font-family: arial;
     font-size: 10pt;
+}
+.imgRight {
+    vertical-align: middle;
+    text-align: right;
+    padding: 0px;
+    margin: 0px;
 }
 .backGroundPrimeraFila {
     font-family: Verdana;
@@ -54,7 +61,10 @@ body {
 
 <body>
 <div id="tablaContenedor_div">
-    <TABLE cellpadding="0" cellspacing="0" width="100%">
+    <TABLE border=0 cellpadding="0" cellspacing="0" width="100%">
+        <TR style="height:54px">
+            <TD class="imgRight" ><img src="<% $url %>/static/images/filigrana.png" /></TD>
+        </TR>
         <TR height="20">
             <TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">&nbsp;SCM/Baseliner</TD>
         </TR>

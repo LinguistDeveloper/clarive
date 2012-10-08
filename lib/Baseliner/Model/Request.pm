@@ -398,6 +398,7 @@ sub status_by_key {
             template      => "/email/action.html",
             username      => $p{username},
             to            => [ $request->requested_by ],
+            url           => _notify_address(),
         }
     );
 

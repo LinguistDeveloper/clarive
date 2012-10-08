@@ -398,6 +398,7 @@ sub status {
 
 sub notify { #TODO : send to all action+ns users, send to project-team
     my ($self,%p) = @_;
+
     my $type = $p{type};
     my $jobid = $p{jobid} or _throw 'Missing jobid';
     my $job = Baseliner->model('Baseliner::BaliJob')->find( $jobid )
@@ -416,15 +417,30 @@ sub notify { #TODO : send to all action+ns users, send to project-team
     try {
         my $subject;
         # $log->debug( _loc("STASH"), data=> _dump $stash);
+
+        if ($status eq 'FINISHED' && $job->rollback) {
+            $status = "FINISHED DOING ROLLBACK CORRECTLY";
+        }  elsif ($status eq 'FINISHED' && ! $job->rollback) {
+            $status = "FINISHED CORRECTLY";
+        }  elsif ($status eq 'ERROR' && ! $job->rollback) {
+            $status = "FINISHED WITH ERROR";
+        }  elsif ($status eq 'ERROR' && $job->rollback) {
+            $status = "FINISHED WITH ERROR DURING ROLLBACK";
+        }
+
         if ( scalar (_array $stash->{chain}) gt 0 ) {
             $type = 'Resumed';
             $subject = _loc('Job %1: %2', $job->name, _loc($type) );
         } else {
-            $type = 'Started';
             $subject = _loc('Job %1: %2', $job->name, _loc($status) );
         }
-        my $last_log = $job->last_log_message;
-        my $message = ref $last_log ? $last_log->{text} : _loc($type);
+
+        my @packageList;
+        foreach (_array $stash->{contents}) {
+            next if $_->{item} =~ m{nature/};
+            push @packageList, ns_get($_->{item})->ns_name;
+        }
+
         my $username = $job->username;
         my $u = Baseliner->model('Users')->get( $username );
         my $realname = $u->{realname};
@@ -432,7 +448,6 @@ sub notify { #TODO : send to all action+ns users, send to project-team
         my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $jobid );
         Baseliner->model('Messaging')->notify(
             subject => $subject,
-            message => $message,
             sender  => $mailcfg->{from},
             to => { users => [ $username ] },
             carrier =>'email',
@@ -440,14 +455,18 @@ sub notify { #TODO : send to all action+ns users, send to project-team
             template_engine => 'mason',
             vars   => {
                 action    => _loc($type), #started or finished
+                bl        => $job->bl,
                 job       => $job->name,
-                message   => $message,  # last log msg
+                packageList => [@packageList],
                 realname  => $realname,
                 status    => _loc($status),
                 subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
                 to        => [$username],
+                type      => $job->type,
                 username  => $username,
                 url_log   => $url_log,
+                url       => _notify_address(),
+                windowType=> $stash->{approval_needed}->{reason} eq 'Pase Urgente'?'Urgente':'Normal'
             }
             #cc => { actions=> ['action.notify.job.end'] },
         );

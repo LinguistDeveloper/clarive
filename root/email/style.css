@@ -10,6 +10,12 @@
         :link, :link:hover, :visited, :visited:hover {
             color: #000;
         }
+        .img-right {
+            position: rigth;
+            border: 1px solid #aaa;
+            padding: 0px;
+            margin: 0px;
+        }
         div.box {
             position: relative;
             background-color: #ccc;

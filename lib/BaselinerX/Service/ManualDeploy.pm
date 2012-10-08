@@ -184,6 +184,7 @@ sub send_requests {
                 vars            => {
                     jobname  => $job->name,
                     url_log  => $url_log,
+                    url      => _notify_address(),
                     reason   => $reason,
                     comments => _textile( $desc ),
                     subject  => $subject,
