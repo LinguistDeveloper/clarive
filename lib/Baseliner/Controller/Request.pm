@@ -1,6 +1,7 @@
 package Baseliner::Controller::Request;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Baseliner::Core::Baseline;
 use Try::Tiny;
 use JSON::XS;
@@ -49,9 +50,15 @@ sub approve_request : Local {
     try {
         _log "Starting approval of request " . $p->{key};
         my $username = $c->username;
-        $c->model('Request')->approve_by_key( ns=>$p->{ns}, bl=>$p->{bl}, key=> $p->{key}, id_wiki=>$p->{id_wiki}, wiki_text=>$p->{text}, username=>$username );
-        _log "Finished approval of request " . $p->{key};
-        $c->stash->{json} = { success => \1 };
+
+        my $req=bali_rs('Request')->search({key=>$p->{key}})->first;
+        if ($c->model('Permissions')->user_has_action(username=>$username, action=>$req->action)) {
+            $c->model('Request')->approve_by_key( ns=>$p->{ns}, bl=>$p->{bl}, key=> $p->{key}, id_wiki=>$p->{id_wiki}, wiki_text=>$p->{text}, username=>$username );
+            _log "Finished approval of request " . $p->{key};
+            $c->stash->{json} = { success => \1 };
+        } else {
+            $c->stash->{json} = { success => \0, errors=>{ reason => _loc('User does not have permission to perform the operation') } };
+        }
     } catch {
         my $err = shift;
         $err =~ s/\\/\\\\/g;

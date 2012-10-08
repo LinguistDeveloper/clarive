@@ -51,7 +51,9 @@ sub run_once {
     # check job by job
     while( my $job = $rs->next ) {
         my $final_status = 'init';
-        my $comment=undef;
+        my @comments;
+        push @comments, sprintf("%-10s%-10s%-s","APROBADOR","ACCION","COMENTARIO");
+        push @comments, sprintf("%-10s%-10s%-s","=========","=========","==========");
         _debug "Checking job ". $job->name;
         my @items = map { $_->item } $job->bali_job_items->all;
         my %approvers;
@@ -78,7 +80,8 @@ sub run_once {
                 # get the last approval status for the job
                 # my $req = $reqs->first;
                 if( ref $req ) {
-                    try { $comment .= $req->finished_by.": ".$req->my_comment->text."\n"; } catch {_log ("no comment for " . $req->id)};
+                    try   { push @comments, sprintf("%-10s%-10s%-s", $req->finished_by, _loc($req->status), $req->my_comment->text); } 
+                    catch { push @comments, sprintf("%-10s%-10s%-s", $req->finished_by, _loc($req->status), "Sin comentario para " . $req->id); };
                     my $status = $req->status;
                     $job_status = $req->status;
                     my $job_req_who = $req->finished_by;
@@ -130,7 +133,8 @@ sub run_once {
 				);
                 $final_status = 'no requests';
                 while (my $req=$rs->next) {
-                    try { $comment .= $req->finished_by.": ".$req->my_comment->text."\n"; } catch {_log ("no comment for " . $req->id)};
+                    try   { push @comments, sprintf("%-10s%-10s%-s", $req->finished_by, _loc($req->status), $req->my_comment->text); } 
+                    catch { push @comments, sprintf("%-10s%-10s%-s", $req->finished_by, _loc($req->status), "Sin comentario para " . $req->id); };
                     $approvers{$item} = { 
                         _loc('result') => _loc($req->status),
                         _loc('who')    => $req->finished_by,
@@ -169,16 +173,16 @@ sub run_once {
         $logger->info(_loc('Status de aprobación de Pase: %1', _loc($job_status) ) );
 
         if( $final_status eq 'approved' ) {
-            $logger->info('Pase aprobado. Se reactiva el pase.<br> Ver anexo para más información', $comment );
+            $logger->info('Pase aprobado. Se reactiva el pase.<br> Ver anexo para más información', data=>join"\n",@comments );
             $job->status('READY');
             $job->update;
         }
         elsif( $final_status =~ m/rejected|cancelled/i ) {
-            $logger->warn('Pase rechazado/cancelado. Se cancela el pase.<br> Ver anexo para más información', $comment );
+            $logger->warn('Pase rechazado/cancelado. Se cancela el pase.<br> Ver anexo para más información', data=>join"\n",@comments );
             Baseliner->model('Jobs')->reject( id=>$job->id );
         }
         elsif( $final_status eq 'no requests' ) {
-            $logger->info('No hay peticiones pendientes. Se reanuda el pase.<br> Ver anexo para más información', $comment );
+            $logger->info('No hay peticiones pendientes. Se reanuda el pase.<br> Ver anexo para más información', data=>join"\n",@comments );
             $job->status('READY');
             $job->update;
         }
