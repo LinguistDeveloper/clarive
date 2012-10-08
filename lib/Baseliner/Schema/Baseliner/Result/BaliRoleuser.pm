@@ -78,10 +78,10 @@ __PACKAGE__->has_many(
   ]
 );
 
-__PACKAGE__->belongs_to(
+__PACKAGE__->might_have(
   "projects",
   "Baseliner::Schema::Baseliner::Result::BaliProject",
-  { mid => 'id_project' },
+  { 'foreign.mid' => 'self.id_project' },
 );
 
 __PACKAGE__->has_one(
