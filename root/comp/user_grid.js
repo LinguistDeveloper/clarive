@@ -48,7 +48,7 @@
 
     var render_rol_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value==undefined || value=='null' || value=='' ) return '';
-        var script = String.format('javascript:Baseliner.showAjaxComp("/user/infoactions/{0}")', value);
+        var script = String.format('javascript:Baseliner.showAjaxComp("/user/infoactions?id_role={0}")', value);
         return String.format("<a href='{0}'>{1}</a>", script, value );
     };
     
