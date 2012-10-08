@@ -344,7 +344,7 @@
     var add_edit_category = function(rec) {
         var win;
         var title = 'Create category';
-        
+		
         // Combo Providers
         //   TODO read from provider.topic.*
         var store_providers =new Ext.data.SimpleStore({
@@ -387,9 +387,10 @@
         
         //   Color settings 
         var category_color = new Ext.form.Hidden({ name:'category_color' });
+		category_color.setValue(rec.data.color);
 
         var color_pick = new Ext.ColorPalette({ 
-            value:'FF43B8',
+            value: rec.data.color,
             listeners: {
                 select: function(cp, color){
                    category_color.setRawValue( '#' + color.toLowerCase() ); 
