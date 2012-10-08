@@ -858,11 +858,11 @@ Give cam, receive bacon.
 sub cam_to_projectid {
   my ($cam) = @_;
   my $model = Baseliner->model('Baseliner::BaliProject');
-  my $where = {name => 'SCT', id_parent => undef, nature => undef};
-  my $args  = {select => 'id'};
+  my $where = {name => $cam, id_parent => undef, nature => undef};
+  my $args  = {select => 'mid'};
   my $rs = $model->search($where, $args);
   rs_hashref($rs);
-  $rs->next->{id};
+  $rs->next->{mid};
 }
 
 =head2 users_with_permission : Str &optional Str * Str -> Array[Str]
