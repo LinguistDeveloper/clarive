@@ -1,5 +1,6 @@
 <%init>
     my $cal = $c->stash->{calendar};
+    my $readOnly = $c->stash->{user_action}->{'action.job.calendar.edit'}?'false':'true';
 </%init>
 (function(){
     var id = Ext.id();
@@ -37,6 +38,7 @@
                             });
                         } 
                     },*/
+% if( $c->stash->{user_action}->{'action.job.calendar.edit'} ) {
                     {  text: _loc('Update'),
                         handler: function(){ 
                             var ff = cal_form.getForm();
@@ -46,18 +48,21 @@
                             });
                         } 
                     }                   
+% } 
                 ],
                 items: [
                     {  xtype: 'hidden', name: 'id_cal', value: '<% $cal->id %>' },
                     {  xtype: 'textfield',
                         fieldLabel: _loc('Name'),
                         name: 'name',
-                        value: '<% $cal->name %>'
+                        value: '<% $cal->name %>',
+                        disabled: '<% $readOnly %>'
                     },
                     {  xtype: 'textfield',
                         fieldLabel: _loc('Priority'),
                         name: 'seq',
-                        value: '<% $cal->seq %>'
+                        value: '<% $cal->seq %>',
+                        disabled: '<% $readOnly %>'
                     },
                     {  xtype: 'checkbox',
                         fieldLabel: _loc('Active'),
@@ -67,35 +72,38 @@
                     {  xtype: 'textarea',
                         fieldLabel: _('Description'),
                         name: 'description',
-                        value: '<% $cal->description %>'
+                        value: '<% $cal->description %>',
+                        disabled: '<% $readOnly %>'
                     },
                     {  xtype: 'combo', 
-                               name: 'ns', 
-                               hiddenName: 'ns',
-                               fieldLabel: _loc('Namespace'),
-                               mode: 'local', 
-                               editable: false,
-                               forceSelection: true,
-                               triggerAction: 'all',
-                               store: ns_store, 
-                               valueField: 'value',
-                               value: '<% $cal->ns  %>',
-                               displayField:'name', 
-                               allowBlank: false
+                       name: 'ns', 
+                       hiddenName: 'ns',
+                       fieldLabel: _loc('Namespace'),
+                       mode: 'local', 
+                       editable: false,
+                       forceSelection: true,
+                       triggerAction: 'all',
+                       store: ns_store, 
+                       valueField: 'value',
+                       value: '<% $cal->ns  %>',
+                       displayField:'name', 
+                       allowBlank: false,
+                       disabled: '<% $readOnly %>'
                     },
                     {  xtype: 'combo', 
-                               name: 'bl', 
-                               hiddenName: 'bl',
-                               fieldLabel: _('Baseline'),
-                               mode: 'local', 
-                               editable: false,
-                               forceSelection: true,
-                               triggerAction: 'all',
-                               store: bl_store, 
-                               valueField: 'value',
-                               value: '<% $cal->bl  %>',
-                               displayField:'name', 
-                               allowBlank: false
+                       name: 'bl', 
+                       hiddenName: 'bl',
+                       fieldLabel: _('Baseline'),
+                       mode: 'local', 
+                       editable: false,
+                       forceSelection: true,
+                       triggerAction: 'all',
+                       store: bl_store, 
+                       valueField: 'value',
+                       value: '<% $cal->bl  %>',
+                       displayField:'name', 
+                       allowBlank: false,
+                       disabled: '<% $readOnly %>'
                     }
                 ]
     });
@@ -189,6 +197,7 @@
                         'afterdateclick':function(picker,t){
                             //_selectWeek(this, this.currentDateRef);
                             _setSelectedWeek(picker, t);
+                            console.log('Click');
                             var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
                             Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>', date: fecha}});
                         },

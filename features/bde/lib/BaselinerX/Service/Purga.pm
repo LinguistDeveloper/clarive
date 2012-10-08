@@ -4,8 +4,10 @@ use warnings;
 use 5.010;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use BaselinerX::BdeUtils;
 use BaselinerX::Dist::Utils;
+use BaselinerX::Comm::Balix;
 use Try::Tiny;
 
 ### NOTA: Si no se quiere tocar nada, comentar todas las líneas en las que
@@ -63,6 +65,7 @@ sub run {
   delete_poll_log($log_dias);
   delete_bali_logs();
   delete_bali_pases();
+  delete_chm_logs();
   purge_baseliner_jobs();
   mylog "Fin de purga.";
   return;
@@ -118,6 +121,24 @@ sub delete_bali_logs {
   $fn->($_) for ("find -L $log_home -type f -name bali_web* -time +${log_dias_baseliner} -exec rm -f {} \\; 2>&1",
                  "find -L $log_home -type f -name balid* -time +${log_dias_baseliner} -exec rm -f {} \\; 2>&1");
   mylog "Logs de Baseliner purgados.";
+}
+
+sub delete_chm_logs {
+  mylog "Purgando logs de Changeman.";
+
+  my $cfg_chm=config_get('config.changeman.log_connection');
+  my $balix = BaselinerX::Comm::Balix->new(os=>"unix", host=>$cfg_chm->{host}, port=>$cfg_chm->{port}, key=>$cfg_chm->{key});
+
+  my $log_dias_baseliner = _bde_conf 'log_dias_baseliner';
+  my $log_home = car map { chomp $_; $_ } qx|echo \$BASELINER_LOGHOME|;
+  my $cmd = "find -L $cfg_chm->{logPath} -type f -name $cfg_chm->{pattern} -time +${log_dias_baseliner} -exec rm -f {} \\; 2>&1";
+  mylog "cmd: $cmd";
+
+  my ($rc, $ret) = $balix->execute($cmd);
+  if ($rc != 0) {
+    mylog "Purga Warning: no se ha podido limpiar los ficheros de Chengeman en '$cfg_chm->{host}' ('$cfg_chm->{logPath}/$cfg_chm->{pattern}'):\n$ret";
+  }
+  mylog "Logs de Changeman purgados.";
 }
 
 sub delete_poll_log {

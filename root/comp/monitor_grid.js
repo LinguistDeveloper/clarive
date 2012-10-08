@@ -683,7 +683,7 @@
                         };
                     }
                 }),
-% if( $c->stash->{user_action}->{'action.job.create'} ) {
+% if( $c->stash->{user_action}->{'action.job.cancel'} ) {
                 button_cancel,
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} ) {

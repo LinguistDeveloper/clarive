@@ -5,3 +5,19 @@ msgstr ""
 
 msgid "Subapplications"
 msgstr "Subaplicaciones"
+
+msgid "Error during Baseliner users update"
+msgstr "Error durante la actualización de los usuarios de Baseliner"
+
+msgid "Error during LDIF files parse process"
+msgstr "Error durante el proceso de los ficheros LDIF"
+
+msgid "Error during LDIF files backup"
+msgstr "Error durante el backup de los ficheros LDIF"
+
+msgid "Error during update LDIF users process"
+msgstr "Error durante la actualización de usuarios en LDIF"
+
+msgid "Update LDIF user process finished successfully"
+msgstr "Actualización de usuarios LDIF finalizada con éxito"
+

@@ -55,12 +55,12 @@ body {
         <td class="backGroundPrimeraFila">CAM</td>
         <td class="backGroundPrimeraFila">Estado</td>
         <td class="backGroundPrimeraFila">Entorno</td>
-        <td class="backGroundPrimeraFila">Tecnolog�a</td>
+        <td class="backGroundPrimeraFila">Tecnología</td>
         <td class="backGroundPrimeraFila">Subaplicación</td>
         <td class="backGroundPrimeraFila">Usuario</td>
         <td class="backGroundPrimeraFila">Desde</td>
         <td class="backGroundPrimeraFila">Hasta</td>
-        <td class="backGroundPrimeraFila">Paquetes / Motivos</td>
+        <td class="backGroundPrimeraFila">Paquetes</td>
         <!-- <td class="backGroundPrimeraFila">Acciones</td> -->
 	</tr>
 % for my $row (@{$mail_data}) {
@@ -74,7 +74,7 @@ body {
         <td class="backGroundFilaDatos"><% $row->{username} %></td>
         <td class="backGroundFilaDatos"><% $row->{start_time} %></td>
         <td class="backGroundFilaDatos"><% $row->{end_time} %></td>
-        <td class="backGroundFilaDatos"><% join '<br>*&nbsp;', @{$row->{package_list}} %></td>
+        <td class="backGroundFilaDatos"><li><% join '<li>', @{$row->{package_list}} %></td>
         <!-- <td class="backGroundFilaDatos"><% 'acciones aqui' %></td> -->
 	</tr>
 % }

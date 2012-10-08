@@ -37,7 +37,7 @@ sub make_backups {
   }
   catch {
   	notify_ldif_error "Ldif Backups :: Error al rotar ficheros de backup entre directorios";
-  }
+  };
   # Backup files to newest version.
   logf $_ for map { "mv $files_home/$_ $backup_home/.last/" } @filenames;
   return;

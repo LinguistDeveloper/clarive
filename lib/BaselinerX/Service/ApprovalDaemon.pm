@@ -161,6 +161,7 @@ sub check_approvals {
                         state   => $state,
                         reason  => $reason,
                         ts      => _now(),
+                        url     => _notify_address(),
                     },
                     template    => '/email/approval.html',
                     template_engine => 'mason',
@@ -191,6 +192,7 @@ sub check_approvals {
                         status        => _loc('Request Error'),
                         subject       => $subject,
                         to            => $to,
+                        url           => _notify_address(),
                     }
                 );
                 #_throw 'Interrupted but shoudnt';

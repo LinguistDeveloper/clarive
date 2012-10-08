@@ -93,11 +93,15 @@ Ext.onReady(function(){
                     onmouseover='javascript:this.className="cal_slot $class slot_hover";'
                     onmouseout='javascript:this.className="cal_slot $class";'
                     align="center" class="cal_slot $class" ];
-                if( $type eq 'B' ) {
-                    print qq[ onclick='javascript: Baseliner.editSlot("$panel", "$id_cal", "$day0","$startt","$endt","")'>];
-                } else {							
-                    print qq[ onclick='javascript: Baseliner.editId("$panel", "$id_cal", "$id", "$datet")'>];
-                }	
+                if( $c->stash->{user_action}->{'action.job.calendar.edit'} ) {
+                    if( $type eq 'B' ) {
+                        print qq[ onclick='javascript: Baseliner.editSlot("$panel", "$id_cal", "$day0","$startt","$endt","")'>];
+                    } else {							
+                        print qq[ onclick='javascript: Baseliner.editId("$panel", "$id_cal", "$id", "$datet")'>];
+                    }	
+                } else {
+                    print qq[>];
+                }
                 my $date_icon = ' <img height=12 onmouseover="$(this).tooltip()" src="/static/images/icons/calendar.png" />' if $slot->type eq 'date';
                 print qq[ $startt - $endt$date_icon</TD>];	
                 #print sprintf q{<td style="font-size:8px" rowspan=%s>%s - %s (%s)</td>}, $span, $slot->start, $slot->end, $span;
@@ -120,7 +124,9 @@ Ext.onReady(function(){
         my ($year, $month, $day) = ($date->year,$date->month,$date->day);
         my $msg = _loc( 'new window') . "<br>$day/$month/$year";
         print qq{ <TD width='100'> };
-        print qq{	<a href="javascript: Baseliner.createRange('$panel','$id_cal','0','$dd','$day/$month/$year')" class="x-link-button" style="font-size: 10px;">$msg</a>};		
+        if( $c->stash->{user_action}->{'action.job.calendar.edit'} ) {
+            print qq{	<a href="javascript: Baseliner.createRange('$panel','$id_cal','0','$dd','$day/$month/$year')" class="x-link-button" style="font-size: 10px;">$msg</a>};		
+        }
         print qq{ </TD>};
     }
 </%perl>

@@ -47,17 +47,22 @@ sub run_once {
 	    my @jobs = $self->new_jobs;    # find new jobs to dispatch
 	    _log "Number of jobs to dispatch: ".@jobs;
 	    for my $job ( @jobs ) {
-	         #cada #job contiene una estructura de info de job: paquetes, status, naturalezas
-	         $pid = fork;
-	         if ( $pid ) {	
-			next;  #FIXME this leaves zombies behind - use POSIX::_exit() instead?
-		 }
-		 _log 'Starting to work...';
-         	 _log "Job started with PID $$";
-         	$self->dispatch_job( $job );    # dispatch to sqa
-         	_log 'Work finished';
-         	 exit 0;
-	    }
+            #cada #job contiene una estructura de info de job: paquetes, status, naturalezas
+            $pid = fork;
+            if ( $pid ) {	
+               next;  #FIXME this leaves zombies behind - use POSIX::_exit() instead?
+            }
+            $SIG{HUP} = 'DEFAULT';
+            $SIG{TERM} = 'DEFAULT';
+            $SIG{STOP} = 'DEFAULT';
+            _log 'Starting to work...';
+            _log "Job started with PID $$";
+            $self->dispatch_job( $job );    # dispatch to sqa
+            _log 'Work finished';
+             exit 0;
+        }
+        # get rid of zombies
+        BaselinerX::Job::Service::Daemon->reap_children();
     } else {
     	_log "Directory $job_home does not exist" ;
     }

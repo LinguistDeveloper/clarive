@@ -465,6 +465,9 @@ msgstr "Solicitado"
 msgid "Requesting approval for job %1, baseline %2: %3"
 msgstr "Solicitud de aprobación para el pase %1 al entorno %2. Motivo: %3"
 
+msgid "User does not have permission to perform the operation"
+msgstr "El usuario no tiene permiso para realiza la operación"
+
 msgid "Requested By"
 msgstr "Solicitante"
 
@@ -4091,12 +4094,15 @@ msgstr "usuarios adjuntos"
 msgid "%1 changed topic status from %2 to %3 on %4"
 msgstr "%1 modificó el estado de %2 a %3 el %4"
 
+msgid "FINISHED DOING ROLLBACK CORRECTLY"
+msgstr "Finalizado realizando Rollback correctamente"
 
+msgid "FINISHED CORRECTLY"
+msgstr "Finalizado correctamente"
 
+msgid "FINISHED WITH ERROR"
+msgstr "Finalizado con error"
 
-
-
-
-
-
+msgid "FINISHED WITH ERROR DURING ROLLBACK"
+msgstr "Finalizado con error durante el Rollback"
 

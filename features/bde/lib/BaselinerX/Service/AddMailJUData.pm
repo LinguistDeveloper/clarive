@@ -28,7 +28,7 @@ sub main {
     job_name     => $job->job_data->{name},
     status       => $job->job_data->{status},
     username     => $job->job_data->{username},
-    start_time   => $job->job_data->{startime},
+    start_time   => $job->job_data->{starttime},
     end_time     => $job->job_data->{endtime},
     cam_list     => [_unique map { _pathxs $_->{fullpath}, 1 } @elements],
     nature_list  => [get_job_natures $job->{jobid}],
