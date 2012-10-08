@@ -1766,7 +1766,8 @@
 								text: _('Save'),
 								width: 50,
 								handler: function(){
-									var id = category_fields_store.getCount();
+									var id = category_fields_store.getCount() + 1;
+									
 									var form = form_template_field.getForm();
 									var id_field = form.findField("name_field").getValue();
 									
@@ -1807,8 +1808,15 @@
 											var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
 										}
 										
-										var r = new category_fields_store.recordType( d, id );
-										category_fields_store.add( r );
+										try{
+											var r = new category_fields_store.recordType( d, id );
+											category_fields_store.add( r );	
+										}catch(err){
+											id += 1; 
+											var r = new category_fields_store.recordType( d, id );
+											category_fields_store.add( r )
+										};
+										
 										category_fields_store.commitChanges();
 										winCustomField.close();
 									}
