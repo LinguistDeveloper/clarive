@@ -895,8 +895,11 @@ sub notify_ldif_error {
                     carrier         => 'email',
                     template        => 'email/ldif_load_error.html',
                     template_engine => 'mason',
-                    vars            => {error_str => $error_msg,
-                      	                message   => 'Error carga ficheros ldif.'});
+                    vars            => {
+                        error_str => $error_msg,
+                      	message   => 'Error carga ficheros ldif.',
+                        url       => _notify_address(),
+                        });
   return;
 }
 

@@ -201,6 +201,7 @@ sub notify {
             message => $message,
             subject => $message,
             to      => [ @users ],
+            url     => _notify_address(),
         }
     );
 }

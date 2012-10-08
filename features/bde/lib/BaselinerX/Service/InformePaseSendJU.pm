@@ -68,8 +68,11 @@ sub main {
                       carrier         => 'email',
                       template        => 'email/analysis_informepase_ju.html',
                       template_engine => 'mason',
-                      vars            => {mail_data => $users{$username},
-                      	                  message   => 'Resumen de pases lanzados.'});
+                      vars            => {
+                          mail_data => $users{$username},
+                          url     => _notify_address(),
+                      	  message   => 'Resumen de pases lanzados.'
+                      });
   }
 }
 
