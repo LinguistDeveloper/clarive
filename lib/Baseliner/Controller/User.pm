@@ -339,51 +339,51 @@ sub tratar_proyectos{
         my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
         my $dbh = $db->dbh;
         my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
-    $sth->bind_param( 1, $user_name );
-    $sth->execute();
-    @roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
+        $sth->bind_param( 1, $user_name );
+        $sth->execute();
+        @roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
     }
     else{
-    foreach $role (_array $roles_checked){
-        push @roles_checked, $role;
-    }
+        foreach $role (_array $roles_checked){
+            push @roles_checked, $role;
+        }
     }
 
     foreach $role ( @roles_checked ){
-    foreach $project (_array $projects_checked){
-        if ($project eq 'todos'){
-        my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
-        $rs->delete;
-        my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-                                    {	username => $user_name,
-                                        id_role => $role,
-                                        ns => '/',
-										id_project => -1,
-                                    },
-                                    { key => 'primary' });
-        $role_user->update();
-        last				
-        }else{
-        my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
-                                         id_role => $role,
-                                         ns => '/'
-                                        },
-                                        { key => 'primary' });
-        if($all_projects){
-            my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>'/'});
-            $rs->delete;
+        foreach $project (_array $projects_checked){
+            if ($project eq 'todos'){
+                my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
+                $rs->delete;
+                my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+                                            {	username => $user_name,
+                                                id_role => $role,
+                                                ns => '/',
+                                                id_project => undef,
+                                            },
+                                            { key => 'primary' });
+                $role_user->update();
+                last				
+            }else{
+                my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
+                                                 id_role => $role,
+                                                 ns => '/'
+                                                },
+                                                { key => 'primary' });
+                if($all_projects){
+                    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>'/'});
+                    $rs->delete;
+                }
+                
+                my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+                                            {	username => $user_name,
+                                            id_role => $role,
+                                            ns => 'project/' . $project,
+                                            id_project => $project,
+                                            },
+                                            { key => 'primary' });
+                $role_user->update();
+            }
         }
-        
-        my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-                                    {	username => $user_name,
-                                    id_role => $role,
-                                    ns => 'project/' . $project,
-                                    id_project => $project,
-                                    },
-                                    { key => 'primary' });
-        $role_user->update();
-        }
-    }
     }
 }
 
@@ -399,14 +399,14 @@ sub tratar_proyectos_padres(){
     my $sth;
     
     if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-    $sth = $dbh->prepare("SELECT MID FROM BALI_PROJECT START WITH MID = ? AND ACTIVE = 1 CONNECT BY PRIOR MID = ID_PARENT AND ACTIVE = 1");
+        $sth = $dbh->prepare("SELECT MID FROM BALI_PROJECT START WITH MID = ? AND ACTIVE = 1 CONNECT BY PRIOR MID = ID_PARENT AND ACTIVE = 1");
     }
     else{
-    ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
-    $sth = $dbh->prepare("WITH N(MID) AS (SELECT MID FROM BALI_PROJECT WHERE MID = ? AND ACTIVE = 1
-                        UNION ALL
-                        SELECT NPLUS1.MID FROM BALI_PROJECT AS NPLUS1, N WHERE N.MID = NPLUS1.ID_PARENT AND ACTIVE = 1)
-                        SELECT N.MID FROM N ");
+        ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
+        $sth = $dbh->prepare("WITH N(MID) AS (SELECT MID FROM BALI_PROJECT WHERE MID = ? AND ACTIVE = 1
+                            UNION ALL
+                            SELECT NPLUS1.MID FROM BALI_PROJECT AS NPLUS1, N WHERE N.MID = NPLUS1.ID_PARENT AND ACTIVE = 1)
+                            SELECT N.MID FROM N ");
     }
     
     given ($accion) {
