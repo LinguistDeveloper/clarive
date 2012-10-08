@@ -176,6 +176,14 @@ sub event_new {
             if( !length $data->{mid} ) {
                 _debug 'event_new is missing mid parameter' ;
                 #_throw 'event_new is missing mid parameter' ;
+            } else {
+                try {
+                    my $ci = _ci( $data->{mid} );
+                    my $ci_data = $ci->load;
+                    $data = { %$ci_data, ci=>$ci, %$data };
+                } catch {
+                    _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
+                };
             }
             # POST hooks
             $obj->data( $data );
