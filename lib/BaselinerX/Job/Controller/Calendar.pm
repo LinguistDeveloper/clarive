@@ -32,6 +32,7 @@ sub calendar : Path( '/job/calendar' ) {
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
     $c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
+    $c->forward('/permissions/load_user_actions');
 
     # load the calendar row data
     $self->init_date( $c );
@@ -46,6 +47,7 @@ sub calendar_slots : Path( '/job/calendar_slots' ) {
 
     # get the panel id to be able to refresh it
     $c->stash->{ panel } = $c->req->params->{ panel };
+#    $c->forward('/permissions/load_user_actions');
 
     # load the calendar row data
     $self->init_date( $c );
