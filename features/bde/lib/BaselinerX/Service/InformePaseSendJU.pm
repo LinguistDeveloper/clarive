@@ -11,6 +11,7 @@ package BaselinerX::Service::InformePaseSendJU;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
+use Baseliner::Sugar;
 use Try::Tiny;
 
 with 'Baseliner::Role::Service';
@@ -42,9 +43,11 @@ sub main {
   # my @cams = sort { $a lt $b } _unique map { map { $_ } @{$_->{cam_list}} } @data_store;
 
   # Construimos users con key: username, values: [data].
+
   my %users;
   for my $data (@data_store) {
     my @_users = build_users($data->{environment}, @{$data->{cam_list}});
+    $data->{status}=_loc(bali_rs('Job')->find( $data->{job_id} )->status);
     for my $user (@_users) {
       push @{$users{$user}}, $data;
     }
@@ -55,11 +58,13 @@ sub main {
   }
 
   # Enviamos mails.
+  my $mailcfg  = config_get( 'config.comm.email' );
+
   my $m_sender = Baseliner->model('Messaging');
   for my $username (keys %users) {
     $m_sender->notify(to              => {users => [$username]},
                       subject         => "Informe de pases - $Day/$Month/$Year",
-                      sender          => 'Baseliner',
+                      sender          => $mailcfg->{from},
                       carrier         => 'email',
                       template        => 'email/analysis_informepase_ju.html',
                       template_engine => 'mason',
