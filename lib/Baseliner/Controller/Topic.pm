@@ -101,7 +101,7 @@ sub list : Local {
         #my @user_apps = $perm->user_projects_ids( username => $username );
         #push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
         #$where->{'project_id'} =  \@user_apps;
-        $where->{'project_id'} = { -in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username ) };
+        $where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username )}, { "=", undef }];
     }
 
     #DEFAULT VIEWS***************************************************************************************************************
