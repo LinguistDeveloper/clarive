@@ -307,7 +307,7 @@ sub user_projects_query {
     if ( $self->is_root( $p{username} ) ) {
         DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
     } else {
-        my @rs = Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => 'ricardo'},
+        my @rs = Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => $p{username}},
             {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->hashref->all;
         if ( @rs ) {
             if ( !$rs[ 0 ]->{id} ) {

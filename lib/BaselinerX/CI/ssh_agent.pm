@@ -25,7 +25,7 @@ has ssh     => (
     },
     handles => [ qw/error/ ],
 );
-has _method => qw(is ro default scp);  # for replacing scp with rsync on inheritance
+has _method => qw(is ro isa Any default scp);  # for replacing scp with rsync on inheritance
 
 #with 'Baseliner::Role::Node::Filesys';
 with 'Baseliner::Role::CI::Agent';
