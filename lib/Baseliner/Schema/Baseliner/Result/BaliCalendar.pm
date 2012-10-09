@@ -61,6 +61,7 @@ __PACKAGE__->add_columns(
   "seq",
   {
     data_type => "number",
+    is_nullable => 1,
     default_value => 100,
   },
 );

@@ -56,24 +56,25 @@
                         fieldLabel: _loc('Name'),
                         name: 'name',
                         value: '<% $cal->name %>',
-                        disabled: '<% $readOnly %>'
+                        disabled: <% $readOnly %>
                     },
                     {  xtype: 'textfield',
                         fieldLabel: _loc('Priority'),
                         name: 'seq',
                         value: '<% $cal->seq %>',
-                        disabled: '<% $readOnly %>'
+                        disabled: <% $readOnly %>
                     },
                     {  xtype: 'checkbox',
                         fieldLabel: _loc('Active'),
                         name: 'active',
+                        disabled: <% $readOnly %>,
                         checked: <% $cal->active > 0 ? "true" : "false" %>
                     },
                     {  xtype: 'textarea',
                         fieldLabel: _('Description'),
                         name: 'description',
                         value: '<% $cal->description %>',
-                        disabled: '<% $readOnly %>'
+                        disabled: <% $readOnly %>
                     },
                     {  xtype: 'combo', 
                        name: 'ns', 
@@ -88,7 +89,7 @@
                        value: '<% $cal->ns  %>',
                        displayField:'name', 
                        allowBlank: false,
-                       disabled: '<% $readOnly %>'
+                       disabled: <% $readOnly %>
                     },
                     {  xtype: 'combo', 
                        name: 'bl', 
@@ -103,7 +104,7 @@
                        value: '<% $cal->bl  %>',
                        displayField:'name', 
                        allowBlank: false,
-                       disabled: '<% $readOnly %>'
+                       disabled: <% $readOnly %>
                     }
                 ]
     });

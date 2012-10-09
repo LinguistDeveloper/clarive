@@ -55,6 +55,7 @@ sub calendar_slots : Path( '/job/calendar_slots' ) {
     my $slots = $self->week_of( $id_cal, $c->stash->{ monday } );
     $c->stash->{ slots } = $slots;
 
+    $c->forward('/permissions/load_user_actions');
     $c->stash->{ template } = '/comp/job_calendar_slots.js';
 }
 
@@ -63,6 +64,7 @@ sub calendar_list_json : Path('/job/calendar_list_json') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my ( $start, $limit, $query, $dir, $sort, $cnt ) = @{ $p }{ qw/start limit query dir sort/ };
+    $sort eq 'bl_desc' and $sort = 'bl';
     my $rs = DB->BaliCalendar->search( undef, { order_by => $sort ? "$sort $dir" : undef } );
     my @rows;
 
@@ -113,7 +115,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                 my $row = $c->model('Baseliner::BaliCalendar')->create({
                         name        => $p->{ name },
                         description => $p->{ description },
-                        seq         => $p->{ seq },
+                        seq         => $p->{ seq } // 100,
                         active      => '1',
                         ns          => $p->{ ns },
                         bl          => $p->{ bl }
@@ -354,7 +356,7 @@ sub db_merge_slots {
                 end_date   => $date,
                 day        => ( $_->weekday - 1 ),
                 type       => $_->data->{type},
-                active     => $_->data->{active},
+                active     => $_->data->{active} // 1,
                 id_cal     => $id_cal,
             }
         );
@@ -560,7 +562,7 @@ sub merge_calendars {
                     start   => $win->{start_time},
                     end     => $win->{end_time},
                     name    => $name,
-                    data    => { cal => $cal->{name}, type => $win->{type} }
+                    data    => { cal => $cal->{name}, type => $win->{type}, seq => $cal->{seq} }
                 );
             }
         }

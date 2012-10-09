@@ -12,6 +12,7 @@
             {  name: 'id' },
             {  name: 'name' },
             {  name: 'description' },
+            {  name: 'active' },
             {  name: 'seq' },
             {  name: 'bl' },
             {  name: 'bl_desc' },
@@ -26,9 +27,18 @@
         //Seleccion multiple con checkboxes		
         var checkSelectionModel = new Ext.grid.CheckboxSelectionModel();
 
+        var render_ns = function(v,metadata,rec,rowIndex,colIndex,store) {
+            return v == '/' ? '(' + _('All') + ')' : v ;
+        };
+
+        var render_bl = function(v,metadata,rec,rowIndex,colIndex,store) {
+            return v == '*' ? '(' + _('Common') + ')' : String.format( "{0} ({1})", v, rec.data.bl );
+        };
+
         var render_cal = function(v,metadata,rec,rowIndex,colIndex,store) {
-            return String.format('<a href="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\')" style="font-size: 13px;">{0}</a>',
-                v, grid.id, rowIndex );
+            var style = rec.data.active == '1' ? '' : 'text-decoration: line-through';
+            return String.format('<a href="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\')" style="font-size: 13px;{3}">{0}</a>',
+                v, grid.id, rowIndex, style );
         };
 
         Baseliner.edit_calendar = function( id_or_rec, ix ) {
@@ -53,10 +63,10 @@
                 checkSelectionModel,
                 { header: _('Calendar'), width: 200, dataIndex: 'name', sortable: true, renderer: render_cal },	
                 { header: _('Priority'), width: 40, dataIndex: 'seq', sortable: true },	
-                { header: _('Baseline'), width: 100, dataIndex: 'bl_desc', sortable: true },	
-                { header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true },	
+                { header: _('Baseline'), width: 100, dataIndex: 'bl_desc', sortable: true, renderer: render_bl },	
+                { header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true, renderer: render_ns },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_wrap },	
-                { header: _('Namespace Description'), width: 200, dataIndex: 'ns_desc', sortable: true }	
+                { header: _('Namespace Description'), width: 200, dataIndex: 'ns_desc', hidden: true, sortable: true }	
             ],
             autoSizeColumns: true,
             deferredRender:true,
@@ -127,6 +137,7 @@
                             items: [
                                 {  xtype: 'hidden', name: 'action', value: 'create' },
                                 {  xtype: 'textfield', name: 'name', fieldLabel: _('Calendar Name'), allowBlank: false }, 
+                                {  xtype: 'textfield', name: 'seq', fieldLabel: _('Prioridad'), allowBlank: false, value: 100 }, 
                                 {  xtype: 'textarea', name: 'description', fieldLabel: _('Description') }, 
                                 {
                                     xtype: 'radiogroup',
