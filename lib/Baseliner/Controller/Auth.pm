@@ -47,8 +47,8 @@ sub login_basic : Local {
         _debug "LOGIN USER=" . $c->user;
         return 1; # don't stop chain on auto, let the caller decide based on $c->username
     } else {
-        _debug 'Notifying WWW-Authenticate = basic';
-        $c->response->headers->push_header( 'WWW-Authenticate' => 'Basic' );
+        _debug 'Notifying WWW-Authenticate = Basic';
+        $c->response->headers->push_header( 'WWW-Authenticate' => 'Basic realm="clarive"' );
         $c->response->body( _loc('Authentication required') );
         $c->response->status( 401 );
         return 0;  # stops chain, sends auth required
