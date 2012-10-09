@@ -459,7 +459,7 @@ sub refresh_now : Local {
             # are there more info for current jobs?
             my @rows = DB->BaliJob->search({ id=>$p->{ids} }, { order_by=>{ -desc =>'id' } })->hashref->all;
             my $data ='';
-            map { $data.=$_->{status} . $_->{last_log_message} } @rows;
+            map { $data.= ( $_->{status} // '') . ( $_->{last_log_message} // '') } @rows;
             $magic = String::CRC32::crc32( $data );
             my $last_magic = $p->{last_magic};
             if( $magic ne $last_magic ) {
