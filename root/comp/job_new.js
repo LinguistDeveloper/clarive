@@ -593,6 +593,9 @@
 
     combo_search.on('beforeselect', function(combo, record, index) {
         if( record.get('can_job') != 1 ) {
+            var wn = record.get('why_not');
+            var s = wn ? ':' + wn : '';
+            Baseliner.message(_('Job'), _('Package cannot be added to job') + s );
             /* 
             Ext.Msg.show({icon: 'ext-mb-error',
             buttons: { cancel: true },
