@@ -4142,7 +4142,11 @@ msgstr "Lista de datos"
 msgid "%1 created a topic of %2 on %3"
 msgstr "%1 creó un tópico de categoría: %2 el %3"
 
+msgid "User duplicated"
+msgstr "Usuario duplicado"
 
+msgid "Error duplicating user"
+msgstr "Error duplicando usuario"
 
 
 
