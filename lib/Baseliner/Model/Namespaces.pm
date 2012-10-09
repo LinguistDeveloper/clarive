@@ -158,7 +158,13 @@ sub list {
         $self->{provider_factory}->{$provider} ||= $provider->new;
         my $instance = $self->{provider_factory}->{$provider};
         _debug "START LIST for $provider";
-        my $ns_list = $instance->list( Baseliner->app, $p );
+        my $ns_list = try {
+            $instance->list( Baseliner->app, $p );
+        } catch {
+            my $err = shift;
+            _error _loc "Provider error: %1", $err;
+            [];
+        };
         _debug "END LIST for $provider";
         if( ref $ns_list eq 'HASH' ) {
             push @ns, _array $ns_list->{data};
