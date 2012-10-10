@@ -112,7 +112,8 @@ sub select_mappings {
     my @workspaces;
     sub files_clean { my @arr = map { "$_" } _array @_; \@arr };
     for my $m ( @mappings ) {
-        next unless $m->{bl} eq '*' || $m->{bl} eq $job->bl;
+        $m->{bl} = { map { $_ => 1 } split /,/, $m->{bl} } unless ref $m->{bl} eq 'HASH'; # in the future, all CI bl should be {}
+        next unless $m->{bl}->{'*'} || $m->{bl}->{ $job->bl() };
 
         if( defined $m->{active} && !$m->{active} ) {
             $log->debug( _loc("Mapping name %1 not active. Ignored", $m->{name} ) );
@@ -172,7 +173,7 @@ sub select_mappings {
         $log->debug( "path_deploy = " . $m->{path_deploy} );
         my @origins = $m->{path_deploy}  # path_deploy = deploy paths that match workspace
             ? $self->_unique_paths( elements=>$wkels, workspace=>$m->{workspace}, job_root=>$job_root )
-            : map { _file( $_->filepath ) } $wkels->all;
+            : map { _file( $job_root, $_->filepath ) } $wkels->all;
 
         # prepare and push deployments into the stash
         my @deploy = map {
@@ -248,7 +249,7 @@ sub _unique_paths {
             $paths{ $path } = ();
         }
     }
-    $log->info( "Unique paths", dump=>[keys %paths] );
+    $log->info( "Unique paths", dump=>[ sort keys %paths] );
     return map { _dir( $job_root, $_ ) } keys %paths;
 }
 

@@ -59,7 +59,7 @@
      return [
         //new Baseliner.model.Projects({ value: params.projects || params.project }),
         projects,
-        Baseliner.combo_baseline({ value: params.bl || '*' }) ,
+        //Baseliner.combo_baseline({ value: params.bl || '*' }) ,
         {
             xtype: 'textfield',
             name: "workspace",
