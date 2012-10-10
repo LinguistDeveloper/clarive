@@ -172,7 +172,7 @@ sub select_mappings {
         $log->debug( "path_deploy = " . $m->{path_deploy} );
         my @origins = $m->{path_deploy}  # path_deploy = deploy paths that match workspace
             ? $self->_unique_paths( elements=>$wkels, workspace=>$m->{workspace}, job_root=>$job_root )
-            : map { _file( $job_root, $_->filepath ) } $wkels->all;
+            : map { _file( $_->filepath ) } $wkels->all;
 
         # prepare and push deployments into the stash
         my @deploy = map {
