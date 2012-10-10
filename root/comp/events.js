@@ -84,7 +84,7 @@
                 ids.push( sel.data.id ); 
             });
             Baseliner.ajaxEval('/event/status', { ids: ids, event_status: event_status }, function( res ){
-                Baseliner.message( _('Event Delete'), res.msg );
+                Baseliner.message( _('Event Status Changed'), res.msg );
                 store_events.reload();
             });
         }

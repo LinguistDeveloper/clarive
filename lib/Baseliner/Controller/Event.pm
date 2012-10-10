@@ -66,7 +66,7 @@ sub log : Local {
         $e->{_parent} = undef;
         $e->{type} = 'event';
         #_error "EV=$e->{event_data}";
-        $e->{data} = _load( $e->{event_data} ) if length $e->{event_data};
+        $e->{data} = _damn( _load( $e->{event_data} ) ) if length $e->{event_data};
         my $rules = delete $e->{rules};
         my $k = 1;
         my @rules = map {
