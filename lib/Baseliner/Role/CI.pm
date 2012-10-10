@@ -214,7 +214,7 @@ sub load {
         # use old value unless there's a master_rel object 
         $data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
     }
-    _log $data;
+    #_log $data;
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form;
     $data->{ci_class} //= $class;

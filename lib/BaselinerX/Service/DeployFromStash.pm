@@ -57,8 +57,19 @@ sub deployments {
         : do { $log->debug( _loc "No Deployments detected. Skipped" ); return };
 
     require Baseliner::Core::Deployment;
+    # delayed logging
+    my @results;
+    my $log_results = sub { 
+        my $level = shift // 'info'; 
+        my $group = shift;
+        return unless @results;
+        my $msgs = join "\n", map { $_->{msg} } @results;
+        my $result = $level eq 'info' ? _loc("Items deployed ok") : _loc('Error during item deployments');
+        $log->$level( $result , data=> $msgs );
+    };
+    # loop deployments by group 
     for my $group ( keys %{  $job_stash->{deployments} } ) {
-        $log->info( _loc("Deployment files for group %1", $group ), dump=>$job_stash->{deployments}->{$group});
+        $log->info( _loc("Starting deployments (group %1)", $group ), dump=>$job_stash->{deployments}->{$group});
         for my $deployment ( _array $job_stash->{deployments}->{$group} ) {
             # rollback?
             next if $self->job->rollback && ! $deployment->{needs_rollback} ;
@@ -70,25 +81,17 @@ sub deployments {
             };
             ref $deployment eq 'HASH' and $deployment = Baseliner::Core::Deployment->new( $deployment );
             my $name = $deployment->destination->load->{name};
-            $log->info( _loc( "Running deployment: %1", $name ), dump=>$deployment );
+            $log->debug( _loc( "Running deployment: %1", $name ), dump=>$deployment );
             $deployment->destination->throw_errors( 0 );  # I'll catch them myself
             my %vars;
             $vars{bl} = $self->job->bl;
             $deployment->push_vars( %vars );
 
             # now deploy and run scripts
-            my @results;
-            my $log_results = sub { 
-                my $level = shift // 'info'; 
-                return unless @results;
-                my $msgs = join "\n", map { $_->{msg} } @results;
-                my $result = $level eq 'info' ? _loc("Items deployed ok") : _loc('Error during item deployments');
-                $log->$level( $result , data=> $msgs );
-            };
             $deployment->deploy_and_run( callback=>sub {
                 my ($type, $ret, $f) = @_;
                 if( $ret->rc ) {
-                    $log_results->('error');
+                    $log_results->('error', $group);
                     $log->error( _loc("Deployment error for %1", $name ), data=>$ret->output, milestone => 1, data_name => 'Deployment_error_'.$name.'.txt' );
                     _throw _loc( "Error during deployment %1", $name );
                 } elsif( $type eq 'deploy') {
@@ -100,12 +103,11 @@ sub deployments {
                 }
             });
 
-            $log_results->('info');
-
             $deployment->{needs_rollback} = 1;
 
-            $log->info( _loc( 'Deployed %1 files/dirs to `%2`', $deployment->count, $deployment->destination->uri ) ); 
+            push @results, { msg => _loc( 'Deployed %1 files/dirs to `%2`', $deployment->count, $deployment->destination->name ) };
         }
+        $log_results->('info', $group);
     }
 }
 
