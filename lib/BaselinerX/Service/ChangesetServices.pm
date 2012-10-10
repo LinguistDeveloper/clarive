@@ -156,10 +156,14 @@ sub job_elements {
             my $repo = $rev->{repo};
             push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev->{sha};
             my $topic     = Baseliner->model( 'Baseliner::BaliTopic' )->find( $_->{from_mid} );
-            my $projectid = $topic->projects->search()->first->id;
-            my $prj       = Baseliner::Model::Projects->get_project_name( id => $projectid );
-            $revisions_shas->{$repo->{mid}}->{prj} = $prj;
-            $git_checkouts->{$repo->{mid}}->{prj}  = $prj;
+            try {
+                my $projectid = $topic->projects->search()->first->id;
+                my $prj       = Baseliner::Model::Projects->get_project_name( id => $projectid );
+                $revisions_shas->{$repo->{mid}}->{prj} = $prj;
+                $git_checkouts->{$repo->{mid}}->{prj}  = $prj;
+            } catch {
+                $log->warn( _loc( 'No project found for revision *%1*', $rev->name ) );
+            };
         } ## end for ( @revisions )
 
         for ( keys %{$revisions_shas} ) {
