@@ -77,19 +77,30 @@ sub deployments {
             $deployment->push_vars( %vars );
 
             # now deploy and run scripts
+            my @results;
+            my $log_results = sub { 
+                my $level = shift // 'info'; 
+                return unless @results;
+                my $msgs = join "\n", map { $_->{msg} } @results;
+                my $result = $level eq 'info' ? _loc("Items deployed ok") : _loc('Error during item deployments');
+                $log->$level( $result , data=> $msgs );
+            };
             $deployment->deploy_and_run( callback=>sub {
                 my ($type, $ret, $f) = @_;
                 if( $ret->rc ) {
+                    $log_results->('error');
                     $log->error( _loc("Deployment error for %1", $name ), data=>$ret->output, milestone => 1, data_name => 'Deployment_error_'.$name.'.txt' );
                     _throw _loc( "Error during deployment %1", $name );
                 } elsif( $type eq 'deploy') {
                     my $file_or_script = ref $f =~ /Path::Class/ ? $f->basename : "$f";
-                    $log->info( _loc("Deployment ok to *%1* of %2", $name, $file_or_script ), data=>$ret->output );
+                    push @results, { msg => _loc("Deployment ok to *%1* of %2", $name, $file_or_script ), data=>$ret->output };
                 } elsif( $type eq 'run') {
                     my $ci_name = $ret->load->{name};
-                    $log->info( _loc("Deployment script ok for *%1*", $ci_name, $f ), data=>$ret->output );
+                    push @results, { msg => _loc("Deployment script ok for *%1*", $ci_name, $f ), data=>$ret->output };
                 }
             });
+
+            $log_results->('info');
 
             $deployment->{needs_rollback} = 1;
 
