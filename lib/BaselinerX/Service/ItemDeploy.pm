@@ -87,7 +87,6 @@ sub mappings {
     my @m = map { _ci( $_->{mid} ) } 
         DB->BaliMaster->search({ collection=>'itemdeploy' })->hashref->all;
     
-    die _dump \@m;
     # sort by order
     @m = sort { $_->{order} <=> $_->{order} } @m;
     return wantarray ? @m : \@m;
