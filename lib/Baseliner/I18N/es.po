@@ -4155,7 +4155,14 @@ msgid "Error duplicating category"
 msgstr "Error duplicando categoría"
 
 
+msgid "Values"
+msgstr "Valores"
 
+msgid "Single"
+msgstr "Único"
+
+msgid "Multiple"
+msgstr "Múltiple"
 
 
 

@@ -8,7 +8,7 @@ params:
     set_method: 'set_topics'
     field_order: 14
     section: 'details'
-    filter: none
+    filter: 'none'
 ---
 */
 (function(params){

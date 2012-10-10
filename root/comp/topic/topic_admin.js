@@ -1715,9 +1715,6 @@
 					},
 					success: function(f,a){
 						Baseliner.message(_('Success'), a.result.msg );
-						//store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-						//form.findField("id").setValue(a.result.user_id);
-						//form.findField("username").getEl().dom.setAttribute('readOnly', true);
 					},
 					failure: function(f,a){
 						Ext.Msg.show({  
@@ -1825,6 +1822,10 @@
 											if (attr.data[combo_system_fields.getValue()].filter){
 												attr.data[combo_system_fields.getValue()].filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
 											}
+											if (attr.data[combo_system_fields.getValue()].singleMode){
+												var value = form.findField("valuesgroup").getValue().getGroupValue();
+												attr.data[combo_system_fields.getValue()].singleMode = (value ==  'M') ? false : true ;
+											}											
 
 											var d = { id: id, id_field: id_field, name: id_field, params: attr.data[combo_system_fields.getValue()], img: '/static/images/icons/icon_wand.gif' };										
 											
@@ -1884,6 +1885,13 @@
 								}else{
 									combo_filters.hide();
 								};
+								if (attr.data[combo_system_fields.getValue()].singleMode){
+									var form = form_template_field.getForm();
+									form.findField("valuesgroup").show();
+								}else{
+									var form = form_template_field.getForm();
+									form.findField("valuesgroup").hide();
+								};
 							});							
 							
 							if (attr.id_field == 'listbox') combo_system_fields.show();
@@ -1896,7 +1904,18 @@
 								items   : [
 											{ fieldLabel: _('Field'), name: 'name_field', xtype: 'textfield', allowBlank:false },
 											combo_system_fields,
-											combo_filters
+											{
+												xtype: 'radiogroup',
+												id: 'valuesgroup',
+												fieldLabel: _('Values'),
+												hidden: true,
+												defaults: {xtype: "radio",name: "type"},
+												items: [
+													{boxLabel: _('Single'), inputValue: 'S', checked: true},
+													{boxLabel: _('Multiple'), inputValue: 'M'}
+												]
+											},											
+											combo_filters,
 										]
 							});
 		
