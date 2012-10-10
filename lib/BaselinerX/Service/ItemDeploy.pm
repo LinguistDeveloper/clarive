@@ -87,7 +87,6 @@ sub mappings {
     my @m = map { _ci( $_->{mid} ) } 
         DB->BaliMaster->search({ collection=>'itemdeploy' })->hashref->all;
     
-    die _dump \@m;
     # sort by order
     @m = sort { $_->{order} <=> $_->{order} } @m;
     return wantarray ? @m : \@m;
@@ -113,7 +112,8 @@ sub select_mappings {
     my @workspaces;
     sub files_clean { my @arr = map { "$_" } _array @_; \@arr };
     for my $m ( @mappings ) {
-        next unless $m->{bl} eq '*' || $m->{bl} eq $job->bl;
+        $m->{bl} = { map { $_ => 1 } split /,/, $m->{bl} } unless ref $m->{bl} eq 'HASH'; # in the future, all CI bl should be {}
+        next unless $m->{bl}->{'*'} || $m->{bl}->{ $job->bl() };
 
         if( defined $m->{active} && !$m->{active} ) {
             $log->debug( _loc("Mapping name %1 not active. Ignored", $m->{name} ) );
@@ -249,7 +249,7 @@ sub _unique_paths {
             $paths{ $path } = ();
         }
     }
-    $log->info( "Unique paths", dump=>[keys %paths] );
+    $log->info( "Unique paths", dump=>[ sort keys %paths] );
     return map { _dir( $job_root, $_ ) } keys %paths;
 }
 
