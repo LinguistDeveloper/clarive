@@ -1069,12 +1069,12 @@ sub list_filters : Local {
     my $p = $c->request->parameters;
     
     my @rows;
-    my @filters = $c->model('Baseliner::BaliTopicView')->search(undef, {order_by => 'name'})->hashref->all;
-    for(@filters){
+    my $filters = $c->model('Baseliner::BaliTopicView')->search(undef, {order_by => 'name'});
+    while (my $filter = $filters->next){
         push @rows,
                 {
-                  name        => $_->{name},
-                  filter_json	=> $_->{filter_json}
+                  name          => $filter->{name},
+                  filter_json	=> $filter->{filter_json}
                 };	
     }
     
@@ -1085,7 +1085,7 @@ sub list_filters : Local {
 sub duplicate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    try{
+    #try{
         my $rs_category = $c->model('Baseliner::BaliTopicCategories')->find({ id => $p->{id_category} });
         if( $rs_category ){
             my $new_category;
@@ -1117,6 +1117,7 @@ sub duplicate : Local {
             ##BaliTopicCategoriesAdmin
             my @rs_categories_admin =  $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({ id_category => $rs_category->id })->hashref->all;
             for (@rs_categories_admin){
+                delete $_->{id};
                 $_->{id_category} = $new_category->id;
                 $c->model('Baseliner::BaliTopicCategoriesAdmin')->create($_);
             }            
@@ -1128,10 +1129,10 @@ sub duplicate : Local {
             }            
         }
         $c->stash->{json} = { success => \1, msg => _loc("Category duplicated") };  
-    }
-    catch{
-        $c->stash->{json} = { success => \0, msg => _loc('Error duplicating category') };
-    };
+    #}
+    #catch{
+    #    $c->stash->{json} = { success => \0, msg => _loc('Error duplicating category') };
+    #};
 
     $c->forward('View::JSON');  
 }

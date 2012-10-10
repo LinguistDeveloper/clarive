@@ -17,7 +17,7 @@ __PACKAGE__->add_columns(
   "username",
   { data_type => "varchar2", is_nullable => 0, size => 45 },
   "password",
-  { data_type => "varchar2", is_nullable => 0, size => 45 },
+  { data_type => "varchar2", is_nullable => 1, size => 45 },
   "realname",
   { data_type => "varchar2", is_nullable => 1, size => 4000 },
   "avatar",
