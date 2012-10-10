@@ -253,6 +253,14 @@ sub update : Local {
                     }
                 }
                 if ( $swDo ){
+                    ##BaliRoleUser
+                    my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
+                    $rs_role_user->update( {username => $p->{username}} );
+                    ##Master
+                    my $row_master = $c->model('Baseliner::BaliMaster')->find({mid => $user->mid });
+                    $row_master->name( $p->{username} );
+                    $row_master->update();
+                    ##BaliUser
                     $user->username( $p->{username} );
                     $user->realname( $p->{realname} );
                     if($p->{pass} ne ''){
@@ -262,13 +270,6 @@ sub update : Local {
                     $user->email( $p->{email} );
                     $user->phone( $p->{phone} );                      
                     $user->update();
-                    ##Master
-                    my $row_master = $c->model('Baseliner::BaliMaster')->find({mid => $user->mid });
-                    $row_master->name( $user->username );
-                    $row_master->update();
-                    ##BaliRoleUser
-                    my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
-                    $rs_role_user->update( {username => $user->username} );
                     
                     $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
                 }
