@@ -505,74 +505,74 @@ sub list_categories_admin : Local {
     $c->forward('View::JSON');
 }
 
-sub list_fields : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-
-    my @field_dirs;
-    push @field_dirs, $c->path_to( 'root/fields' ) . "";
-    @field_dirs = grep { -d } @field_dirs;
-    
-    my @fieldlets = map {
-        my @ret;
-        #for my $f ( grep { -f } _dir( $_ . '/*.html')->children ) {
-        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
-            my $d = $f->slurp;
-            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
-           
-            my $metadata;
-            if(length $yaml ) {
-                $metadata =  _load( $yaml );    
-            } else {
-                $metadata = {};
-            }
-            my @rows = map {
-                +{  field=>$_, value => $metadata->{$_} } 
-            } keys %{ $metadata || {} };
-            
-            push @ret, {
-                file => "$f",
-                yaml => $yaml,
-                metadata => $metadata,
-                rows => \@rows,
-            };
-        }
-       @ret;
-    } @field_dirs;
-    
-    
-    my @rows;
-    my $i = 1;
-    for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } @fieldlets ) {
-        if( $field->{metadata}->{name} ){
-            $field->{metadata}->{params}->{name_field} = $field->{metadata}->{name};
-            push @rows,
-                {
-                  #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
-                  id        => $field->{metadata}->{name},
-                  params	=> $field->{metadata}->{params},
-                  #order     => $field->{metadata}->{order},
-                  #value     => $field->{metadata}->{value},
-                };		
-        }
-    }
-    my @id_fields = map { $_->{metadata}->{name} } @fieldlets;
-    my @custom_fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => { 'not in' => \@id_fields}})->hashref->all;
-    for(@custom_fields){
-    	my $params = _load  $_->{params_field};
-        $params->{name_field} = $_->{id_field};
-        push @rows,
-            {
-              id        => $_->{id_field},
-              params	=> $params,
-            };        
-    }
-    
-    
-    
-    $c->stash->{json} = {data=>\@rows};
-    $c->forward('View::JSON');
-}
+######sub list_fields : Local {
+######    my ($self,$c) = @_;
+######    my $p = $c->request->parameters;
+######
+######    my @field_dirs;
+######    push @field_dirs, $c->path_to( 'root/fields' ) . "";
+######    @field_dirs = grep { -d } @field_dirs;
+######    
+######    my @fieldlets = map {
+######        my @ret;
+######        #for my $f ( grep { -f } _dir( $_ . '/*.html')->children ) {
+######        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
+######            my $d = $f->slurp;
+######            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
+######           
+######            my $metadata;
+######            if(length $yaml ) {
+######                $metadata =  _load( $yaml );    
+######            } else {
+######                $metadata = {};
+######            }
+######            my @rows = map {
+######                +{  field=>$_, value => $metadata->{$_} } 
+######            } keys %{ $metadata || {} };
+######            
+######            push @ret, {
+######                file => "$f",
+######                yaml => $yaml,
+######                metadata => $metadata,
+######                rows => \@rows,
+######            };
+######        }
+######       @ret;
+######    } @field_dirs;
+######    
+######    
+######    my @rows;
+######    my $i = 1;
+######    for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } @fieldlets ) {
+######        if( $field->{metadata}->{name} ){
+######            $field->{metadata}->{params}->{name_field} = $field->{metadata}->{name};
+######            push @rows,
+######                {
+######                  #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
+######                  id        => $field->{metadata}->{name},
+######                  params	=> $field->{metadata}->{params},
+######                  #order     => $field->{metadata}->{order},
+######                  #value     => $field->{metadata}->{value},
+######                };		
+######        }
+######    }
+######    my @id_fields = map { $_->{metadata}->{name} } @fieldlets;
+######    my @custom_fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => { 'not in' => \@id_fields}})->hashref->all;
+######    for(@custom_fields){
+######    	my $params = _load  $_->{params_field};
+######        $params->{name_field} = $_->{id_field};
+######        push @rows,
+######            {
+######              id        => $_->{id_field},
+######              params	=> $params,
+######            };        
+######    }
+######    
+######    
+######    
+######    $c->stash->{json} = {data=>\@rows};
+######    $c->forward('View::JSON');
+######}
 
 
 sub list_tree_fields : Local {
@@ -726,26 +726,26 @@ sub list_tree_fields : Local {
 
 
 
-sub list_forms : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-    my @rows;
-
-    my $dir = _dir( $c->path_to('root/forms') );
-    if( $dir ) {
-        for my $f ( $dir->children ) {
-            my $name = $f->basename;
-            ($name) = $name =~ m{^(.*)(\..*?)$};
-            push @rows, {
-                form_name => $name,
-                form_path => "$f",
-            };
-        }
-    }
-    
-    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};
-    $c->forward('View::JSON');
-}
+###sub list_forms : Local {
+###    my ($self,$c) = @_;
+###    my $p = $c->request->parameters;
+###    my @rows;
+###
+###    my $dir = _dir( $c->path_to('root/forms') );
+###    if( $dir ) {
+###        for my $f ( $dir->children ) {
+###            my $name = $f->basename;
+###            ($name) = $name =~ m{^(.*)(\..*?)$};
+###            push @rows, {
+###                form_name => $name,
+###                form_path => "$f",
+###            };
+###        }
+###    }
+###    
+###    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};
+###    $c->forward('View::JSON');
+###}
 
 sub update_fields : Local {
     my ($self,$c)=@_;
@@ -923,47 +923,47 @@ sub update_category_priority : Local {
     $c->forward('View::JSON');    
 }
 
-sub get_config_field : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-    my @rows;
-    
-    #if($p->{config}){
-    #    try{
-    #        my $default_config = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
-    #        my %dashlet_config;
-    #        my %key_description;
-    #        foreach my $field (_array $default_config){
-    #            $dashlet_config{$field->{id}} = $field->{default};
-    #            $key_description{$field->{id}} = $field->{label};
-    #        }		
-    #        
-    #        foreach my $key (keys %dashlet_config){
-    #            push @rows,
-    #                {
-    #                    id 			=> $key,
-    #                    description	=> $key_description{$key},
-    #                    value 		=> $dashlet_config{$key}
-    #                };		
-    #        }
-    #    }
-    #    catch{
-    #        $c->stash->{json} = { data => undef};  
-    #    };
-    #}
-    
-    if($p->{config}){
-        try{
-            my @settings = $c->model('Registry')->get('config.field.general')->metadata;
-            #my @settings = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
-            $c->stash-> {json} = {data => @settings};
-        }
-        catch{
-            $c->stash-> {json} = {data => undef};  
-        };
-    }    
-    $c->forward('View::JSON');    
-}
+#####sub get_config_field : Local {
+#####    my ($self,$c) = @_;
+#####    my $p = $c->request->parameters;
+#####    my @rows;
+#####    
+#####    #if($p->{config}){
+#####    #    try{
+#####    #        my $default_config = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
+#####    #        my %dashlet_config;
+#####    #        my %key_description;
+#####    #        foreach my $field (_array $default_config){
+#####    #            $dashlet_config{$field->{id}} = $field->{default};
+#####    #            $key_description{$field->{id}} = $field->{label};
+#####    #        }		
+#####    #        
+#####    #        foreach my $key (keys %dashlet_config){
+#####    #            push @rows,
+#####    #                {
+#####    #                    id 			=> $key,
+#####    #                    description	=> $key_description{$key},
+#####    #                    value 		=> $dashlet_config{$key}
+#####    #                };		
+#####    #        }
+#####    #    }
+#####    #    catch{
+#####    #        $c->stash->{json} = { data => undef};  
+#####    #    };
+#####    #}
+#####    
+#####    if($p->{config}){
+#####        try{
+#####            my @settings = $c->model('Registry')->get('config.field.general')->metadata;
+#####            #my @settings = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
+#####            $c->stash-> {json} = {data => @settings};
+#####        }
+#####        catch{
+#####            $c->stash-> {json} = {data => undef};  
+#####        };
+#####    }    
+#####    $c->forward('View::JSON');    
+#####}
 
 sub create_clone : Local {
     my ($self,$c)=@_;
@@ -1009,60 +1009,60 @@ sub create_clone : Local {
     $c->forward('View::JSON');    
 }
 
-sub list_clone_fields : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-
-    my @field_dirs;
-    push @field_dirs, $c->path_to( 'root/fields' ) . "";
-    @field_dirs = grep { -d } @field_dirs;
-    
-    my @fieldlets = map {
-        my @ret;
-        #for my $f ( grep { -f } _dir( $_ . '/*.html')->children ) {
-        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
-            my $d = $f->slurp;
-            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
-           
-            my $metadata;
-            if(length $yaml ) {
-                $metadata =  _load( $yaml );    
-            } else {
-                $metadata = {};
-            }
-            my @rows = map {
-                +{  field=>$_, value => $metadata->{$_} } 
-            } keys %{ $metadata || {} };
-            
-            push @ret, {
-                file => "$f",
-                yaml => $yaml,
-                metadata => $metadata,
-                rows => \@rows,
-            };
-        }
-       @ret;
-    } @field_dirs;
-    
-    my @rows;
-    my $i = 1;
-    for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } grep { $_->{metadata}->{params}->{is_clone} eq 1} @fieldlets ) {
-        if( $field->{metadata}->{name} ){
-            $field->{metadata}->{params}->{name_field} = $field->{metadata}->{name};
-            push @rows,
-                {
-                  #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
-                  id        => $field->{metadata}->{name},
-                  params	=> $field->{metadata}->{params},
-                  name      => _loc $field->{metadata}->{name},
-                  #value     => $field->{metadata}->{value},
-                };		
-        }
-    }	    
-    
-    $c->stash->{json} = {data=>\@rows};
-    $c->forward('View::JSON');
-}
+###sub list_clone_fields : Local {
+###    my ($self,$c) = @_;
+###    my $p = $c->request->parameters;
+###
+###    my @field_dirs;
+###    push @field_dirs, $c->path_to( 'root/fields' ) . "";
+###    @field_dirs = grep { -d } @field_dirs;
+###    
+###    my @fieldlets = map {
+###        my @ret;
+###        #for my $f ( grep { -f } _dir( $_ . '/*.html')->children ) {
+###        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
+###            my $d = $f->slurp;
+###            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
+###           
+###            my $metadata;
+###            if(length $yaml ) {
+###                $metadata =  _load( $yaml );    
+###            } else {
+###                $metadata = {};
+###            }
+###            my @rows = map {
+###                +{  field=>$_, value => $metadata->{$_} } 
+###            } keys %{ $metadata || {} };
+###            
+###            push @ret, {
+###                file => "$f",
+###                yaml => $yaml,
+###                metadata => $metadata,
+###                rows => \@rows,
+###            };
+###        }
+###       @ret;
+###    } @field_dirs;
+###    
+###    my @rows;
+###    my $i = 1;
+###    for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } grep { $_->{metadata}->{params}->{is_clone} eq 1} @fieldlets ) {
+###        if( $field->{metadata}->{name} ){
+###            $field->{metadata}->{params}->{name_field} = $field->{metadata}->{name};
+###            push @rows,
+###                {
+###                  #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
+###                  id        => $field->{metadata}->{name},
+###                  params	=> $field->{metadata}->{params},
+###                  name      => _loc $field->{metadata}->{name},
+###                  #value     => $field->{metadata}->{value},
+###                };		
+###        }
+###    }	    
+###    
+###    $c->stash->{json} = {data=>\@rows};
+###    $c->forward('View::JSON');
+###}
 
 sub list_filters : Local {
     my ($self,$c) = @_;
@@ -1080,6 +1080,60 @@ sub list_filters : Local {
     
     $c->stash->{json} = {data=>\@rows};
     $c->forward('View::JSON');
+}
+
+sub duplicate : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        my $rs_category = $c->model('Baseliner::BaliTopicCategories')->find({ id => $p->{id_category} });
+        if( $rs_category ){
+            my $new_category;
+            my %data = $rs_category->get_columns; 
+            delete $data{id};
+            delete $data{description};
+            
+            ##BaliTopicCategories
+            $new_category = Baseliner->model('Baseliner::BaliTopicCategories')->create({%data});
+            $new_category->name( $new_category->name . '-' . $new_category->id );
+            $new_category->update();
+
+            ##BaliTopicCategoriesStatus
+            my @rs_categories_status =  $c->model('Baseliner::BaliTopicCategoriesStatus')->search({ id_category => $rs_category->id })->hashref->all;
+            for (@rs_categories_status){
+                $c->model('Baseliner::BaliTopicCategoriesStatus')->create(
+                    {
+                        id_category => $new_category->id,
+                        id_status   => $_->{id_status},
+                    }    
+                );
+            }
+            ##BaliTopicCategoriesPriority
+            my @rs_categories_priority =  $c->model('Baseliner::BaliTopicCategoriesPriority')->search({ id_category => $rs_category->id })->hashref->all;
+            for (@rs_categories_priority){
+                $_->{id_category} = $new_category->id;
+                $c->model('Baseliner::BaliTopicCategoriesPriority')->create($_);
+            }
+            ##BaliTopicCategoriesAdmin
+            my @rs_categories_admin =  $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({ id_category => $rs_category->id })->hashref->all;
+            for (@rs_categories_admin){
+                $_->{id_category} = $new_category->id;
+                $c->model('Baseliner::BaliTopicCategoriesAdmin')->create($_);
+            }            
+            ##BaliTopicFieldsCategory
+            my @rs_categories_fields =  $c->model('Baseliner::BaliTopicFieldsCategory')->search({ id_category => $rs_category->id })->hashref->all;
+            for (@rs_categories_fields){
+                $_->{id_category} = $new_category->id;
+                $c->model('Baseliner::BaliTopicFieldsCategory')->create($_);
+            }            
+        }
+        $c->stash->{json} = { success => \1, msg => _loc("Category duplicated") };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error duplicating category') };
+    };
+
+    $c->forward('View::JSON');  
 }
 
 1;

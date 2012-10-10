@@ -8,7 +8,8 @@ params:
     set_method: 'set_topics'
     field_order: 14
     section: 'details'
-    filter: none
+    filter: 'none'
+    singleMode: 'false'    
 ---
 */
 (function(params){
@@ -33,7 +34,8 @@ params:
 		name: meta.name_field,
         hiddenName: meta.id_field,
         store: topic_box_store,
-		disabled: meta ? meta.readonly : true
+		disabled: meta ? meta.readonly : true,
+		singleMode: meta.singleMode
     });
 	
     topic_box_store.on('load',function(){

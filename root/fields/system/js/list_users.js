@@ -7,7 +7,8 @@ params:
     get_method: 'get_users'    
     set_method: 'set_users'
     field_order: 10
-    section: 'details'    
+    section: 'details'
+    singleMode: 'false'
 ---
 */
 (function(params){
@@ -35,7 +36,8 @@ params:
         name: meta.id_field,
         hiddenName: meta.id_field,		
         store: user_box_store,
-		disabled: meta ? meta.readonly : true
+		disabled: meta ? meta.readonly : true,
+		singleMode: meta.singleMode
 		
     });
     

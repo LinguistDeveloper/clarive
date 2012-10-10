@@ -240,27 +240,47 @@ sub update : Local {
     }
     when ('update') {
         try{
-        my $type_save = $p ->{type};
-        if ($type_save eq 'user') {
-            my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
-            $user->username( $p->{username} );
-            $user->realname( $p->{realname} );
-            if($p->{pass} ne ''){
-            $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
+            my $type_save = $p ->{type};
+            if ($type_save eq 'user') {
+                my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+                my $old_username = $user->username;
+                my $swDo = 1;
+                if ($old_username ne $p->{username}){
+                    my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
+                    if ($row) {
+                        $swDo = 0;
+                        $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };    
+                    }
+                }
+                if ( $swDo ){
+                    $user->username( $p->{username} );
+                    $user->realname( $p->{realname} );
+                    if($p->{pass} ne ''){
+                        $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
+                    }
+                    $user->alias( $p->{alias} );
+                    $user->email( $p->{email} );
+                    $user->phone( $p->{phone} );                      
+                    $user->update();
+                    ##Master
+                    my $row_master = $c->model('Baseliner::BaliMaster')->find({mid => $user->mid });
+                    $row_master->name( $user->username );
+                    $row_master->update();
+                    ##BaliRoleUser
+                    my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
+                    $rs_role_user->update( {username => $user->username} );
+                    
+                    $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
+                }
             }
-            $user->alias( $p->{alias} );
-            $user->email( $p->{email} );
-            $user->phone( $p->{phone} );
-            $user->update();
-        }
-        else{
-            tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
-            tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
-        }
-        $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
+            else{
+                tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
+                tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
+                $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
+            }
         }
         catch{
-        $c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
+            $c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
         }
     }
     when ('delete') {
@@ -902,6 +922,46 @@ sub identicon {
         _debug "User not found, avatar generated anyway";
         return $generate->();
     }
+}
+
+sub duplicate : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        my $r = $c->model('Baseliner::BaliUser')->find({ mid => $p->{id_user} });
+        if( $r ){
+            my $user;
+            my $new_user;
+            my $user_mid = master_new 'user' => 'Duplicate of ' . $r->username => sub {
+                my $mid = shift;
+                $new_user = $r->username . '-' . $mid;
+                $user = Baseliner->model('Baseliner::BaliUser')->create(
+                    {
+                        mid			=> $mid,
+                        username    => $new_user,
+                    }
+                );
+            };
+            
+            my @rs_roles =  $c->model('Baseliner::BaliRoleUser')->search({ username => $r->username })->hashref->all;
+            for (@rs_roles){
+                Baseliner->model('Baseliner::BaliRoleUser')->create(
+                    {
+                        username    => $new_user,
+                        id_role     => $_->{id_role},
+                        ns          => $_->{ns},
+                        id_project  => $_->{id_project},
+                    }
+                );
+            }
+        }
+        $c->stash->{json} = { success => \1, msg => _loc("User duplicated") };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error duplicating user') };
+    };
+
+    $c->forward('View::JSON');  
 }
 
 1;

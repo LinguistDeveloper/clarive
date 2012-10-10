@@ -922,7 +922,7 @@ sub favorite_del : Local {
 sub click_for_topic {
     my ($self, $catname, $mid ) = @_;
     +{ 
-        url   => sprintf('/comp/topic/topic_main.js'),
+        url   => sprintf('/topic/view?topic_mid='.$mid),
         type  => 'comp',
         icon  => '/static/images/icons/topic.png',
         title => sprintf( "%s #%d", $catname, $mid ),

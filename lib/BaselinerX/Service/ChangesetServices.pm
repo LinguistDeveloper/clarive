@@ -154,7 +154,7 @@ sub job_elements {
             my $rev  = Baseliner::CI->new( $_->{to_mid} );
             next if ref $rev ne 'BaselinerX::CI::GitRevision';
             my $repo = $rev->{repo};
-            push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev->{sha};
+            push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev;
             my $topic     = Baseliner->model( 'Baseliner::BaliTopic' )->find( $_->{from_mid} );
             try {
                 my $projectid = $topic->projects->search()->first->id;
