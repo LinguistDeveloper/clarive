@@ -914,7 +914,7 @@
             button_no_filter, '->', button_create_view, button_delete_view,
             '<div class="x-tool x-tool-expand-west" style="margin:-2px -4px 0px 0px" id="'+id_collapse+'"></div>'
         ],
-        dataUrl: "topic/filters_list",
+        dataUrl: "/topic/filters_list",
         split: true,
         colapsible: true,
         useArrows: true,
