@@ -863,9 +863,8 @@ sub filters_list : Local {
                     checked => \0,
                     leaf    => 'true'
                 };
-        }  
-
-
+        }
+        
         push @tree, {
             id          => 'C',
             text        => _loc('Categories'),
@@ -873,7 +872,7 @@ sub filters_list : Local {
             iconCls     => 'forum-parent',
             expanded    => 'true',
             children    => \@categories
-        };
+        };           
     }       
     
     # Filter: Labels
@@ -881,7 +880,7 @@ sub filters_list : Local {
 
     $row = $c->model('Baseliner::BaliLabel')->search();
     
-    if($row->next){
+    if($row->count() gt 0){
         while( my $r = $row->next ) {
             push @labels, {
                 id  => $i++,
@@ -907,7 +906,7 @@ sub filters_list : Local {
     my @statuses;
     $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
-    if($row->next){
+    if($row->count() gt 0){
         while( my $r = $row->next ) {
             push @statuses,
                 {
@@ -936,7 +935,7 @@ sub filters_list : Local {
     my @priorities;
     $row = $c->model('Baseliner::BaliTopicPriority')->search();
     
-    if($row->next){
+    if($row->count() gt 0){
         while( my $r = $row->next ) {
             push @priorities,
             {

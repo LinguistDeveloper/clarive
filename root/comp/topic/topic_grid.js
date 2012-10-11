@@ -10,7 +10,7 @@
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
-    var store_label = new Baseliner.Topic.StoreLabel();
+    //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList({
         baseParams: { start: 0, limit: ps },
         listeners: {
@@ -1006,7 +1006,7 @@
     var query_id = '<% $c->stash->{query_id} %>';
     //var category_id = '<% $c->stash->{category_id} %>';
     store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>', categories: '<% $c->stash->{category_id} %>'}});
-    store_label.load();
+    //store_label.load();
     
     return panel;
 })
