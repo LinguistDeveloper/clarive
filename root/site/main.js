@@ -91,7 +91,7 @@ Ext.onReady(function(){
                          { text=>_loc('Inbox'),
                              handler=>\'function(){ Baseliner.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.gif" } ); }',
                              icon   =>'/static/images/icons/envelope.gif' },
-                         #FIXME { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
+                         # FIXME { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
                          { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
                     ];
