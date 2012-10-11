@@ -894,16 +894,15 @@ sub filters_list : Local {
                 leaf    => 'true'
             };	
         }  
-    }
     
-    push @tree, {
-        id          => 'L',
-        text        => _loc('Labels'),
-        cls         => 'forum-ct',
-        iconCls     => 'forum-parent',
-        children    => \@labels
-    };
-    
+        push @tree, {
+            id          => 'L',
+            text        => _loc('Labels'),
+            cls         => 'forum-ct',
+            iconCls     => 'forum-parent',
+            children    => \@labels
+        };
+    }    
     # Filter: Status
     my @statuses;
     $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
@@ -921,16 +920,17 @@ sub filters_list : Local {
                     leaf    => 'true'
                 };
         }  
+
+        push @tree, {
+            id          => 'S',
+            text        => _loc('Statuses'),
+            cls         => 'forum-ct',
+            iconCls     => 'forum-parent',
+            expanded    => 'true',
+            children    => \@statuses
+        };
     }
     
-    push @tree, {
-        id          => 'S',
-        text        => _loc('Statuses'),
-        cls         => 'forum-ct',
-        iconCls     => 'forum-parent',
-        expanded    => 'true',
-        children    => \@statuses
-    };
     
     
     my @priorities;
@@ -948,18 +948,18 @@ sub filters_list : Local {
                 checked => \0,
                 leaf    => 'true'
             };
-        }  
+        }
+        
+        push @tree, {
+            id          => 'P',
+            text        => _loc('Priorities'),
+            cls         => 'forum-ct',
+            iconCls     => 'forum-parent',
+            expanded    => 'true',
+            children    => \@priorities
+        };
+        
     }       
-       
-    push @tree, {
-        id          => 'P',
-        text        => _loc('Priorities'),
-        cls         => 'forum-ct',
-        iconCls     => 'forum-parent',
-        expanded    => 'true',
-        children    => \@priorities
-    };
-       
         
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
