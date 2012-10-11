@@ -89,6 +89,7 @@ sub main {
             requested_to => [ _unique(@users_with_realname) ] ,
             subject      => $subject,
             url_log      => $url_log,
+            url          => _notify_address(),
             to           => [ _unique(@users) ],
             subject      => $subject,
             }
