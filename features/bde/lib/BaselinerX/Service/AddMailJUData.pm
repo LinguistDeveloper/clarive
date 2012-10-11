@@ -20,6 +20,7 @@ sub main {
   my $job      = $c->stash->{job};
   my $log      = $job->logger;
   my @elements = @{$job->job_stash->{elements}->{elements}};
+  my @contents = @{$job->job_stash->{contents}};
   
   # Set data.
   my $data = {
@@ -32,7 +33,7 @@ sub main {
     end_time     => $job->job_data->{endtime},
     cam_list     => [_unique map { _pathxs $_->{fullpath}, 1 } @elements],
     nature_list  => [get_job_natures $job->{jobid}],
-    package_list => [_unique map { $_->{package} } @elements],
+    package_list => [ map { $self->message($_) } @contents ],
     subapps_list => [get_job_subapps $job->{jobid}]
   };
   # Turn it to utf8.
@@ -54,4 +55,19 @@ sub main {
   $repo->set(ns => $ns, data => $data);
 }
 
+sub message {
+    my ($self, $p) = @_;
+    my $name = (ns_split($p->{item}))[1];
+    my $tipo = undef;
+    my $codigo = undef;
+    if ( $p->{provider} eq 'namespace.changeman.package') { 
+        $tipo=$p->{data}->{motivo} eq 'PRO'?'<b>Proyecto      :</b> ':$_->{data}->{motivo} eq 'PET'?'<b>Peticion      :</b>':$_->{data}->{motivo} eq 'MTO'?'<b>Mantenimiento :</b>':'<b>Incidencia    :</b>';
+        $codigo=$p->{data}->{codigo};
+    } elsif ( $p->{provider} eq 'namespace.harvest.package') {
+        ## TODO en Harvest cogerlo del formulario de paquete:
+        ## $tipo
+        ## $codigo
+    }
+    return "<tr><td rowspan=2><li></td><td colspan=2 nowrap><b>$name</b></td></tr><tr><b>$tipo</b></td><td width=100%>$codigo</td></tr>";
+}
 1;
