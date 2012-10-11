@@ -121,7 +121,7 @@ sub authenticate : Private {
                     $auth = undef;
                 }
                 if ( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password 
-                    && $row->auth_key ne $password )
+                    && $row->api_key ne $password )
                 {
                     $auth = undef;
                 }
