@@ -272,24 +272,47 @@ sub update : Local {
             if ($type_save eq 'user') {
                 my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
                 my $old_username = $user->username;
-                my $swDo = 1;
+                #my $swDo = 1;
                 if ($old_username ne $p->{username}){
                     my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
                     if ($row) {
-                        $swDo = 0;
+                        #$swDo = 0;
                         $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };    
+                    }else{
+                        my $user_mid;
+                        my $user_new;
+                        $user_mid = master_new 'user' => $p->{username} => sub {
+                            my $mid = shift;
+                            
+                            $user_new = Baseliner->model('Baseliner::BaliUser')->create(
+                                {
+                                    mid			=> $mid,
+                                    username    => $p->{username},
+                                    realname  	=> $p->{realname},
+                                    password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
+                                    alias	=> $p->{alias},
+                                    email	=> $p->{email},
+                                    phone	=> $p->{phone}
+                                }
+                            );
+                        };
+                        ##BaliRoleUser
+                        my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
+                        $rs_role_user->update( {username => $p->{username}} );
+                        ##BaliMasterRel
+                        my $user_from = $c->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{id}} );
+                        if ($user_from) {
+                            $user_from->update( {from_mid => $user_new->mid} );
+                        }
+                        my $user_to = $c->model('Baseliner::BaliMasterRel')->search( {to_mid => $p->{id}} );
+                        if ($user_to){
+                            $user_to->update( {to_mid => $user_new->mid} );    
+                        }
+                        ##Borramos el antiguo
+                        $user->delete();
                     }
                 }
-                if ( $swDo ){
-                    ##BaliRoleUser
-                    my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
-                    $rs_role_user->update( {username => $p->{username}} );
-                    ##Master
-                    my $row_master = $c->model('Baseliner::BaliMaster')->find({mid => $user->mid });
-                    $row_master->name( $p->{username} );
-                    $row_master->update();
-                    ##BaliUser
-                    $user->username( $p->{username} );
+                else{
                     $user->realname( $p->{realname} );
                     if($p->{pass} ne ''){
                         $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
@@ -297,10 +320,31 @@ sub update : Local {
                     $user->alias( $p->{alias} );
                     $user->email( $p->{email} );
                     $user->phone( $p->{phone} );                      
-                    $user->update();
-                    
-                    $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
+                    $user->update();                    
                 }
+                
+                $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
+                
+                ###if ( $swDo ){
+                ###    ##BaliRoleUser
+                ###    my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
+                ###    $rs_role_user->update( {username => $p->{username}} );
+                ###    ##Master
+                ###    my $row_master = $c->model('Baseliner::BaliMaster')->find({mid => $user->mid });
+                ###    $row_master->name( $p->{username} );
+                ###    $row_master->update();
+                ###    ##BaliUser
+                ###    $user->username( $p->{username} );
+                ###    $user->realname( $p->{realname} );
+                ###    if($p->{pass} ne ''){
+                ###        $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
+                ###    }
+                ###    $user->alias( $p->{alias} );
+                ###    $user->email( $p->{email} );
+                ###    $user->phone( $p->{phone} );                      
+                ###    $user->update();
+                ###    
+                ###}
             }
             else{
                 tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);

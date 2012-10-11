@@ -576,18 +576,18 @@ sub list_baseline : Private {
     $c->stash->{projects} = $config->{projects};
 
     _error "en la 573";
-     my $is_root = $c->model('Permissions')->is_root( $c->username );
+    # my $is_root = $c->model('Permissions')->is_root( $c->username );
 
-    if (!$is_root) {  
+    #if (!$is_root) {  
         if ( $config->{projects} ne 'ALL' ) {
             $ids = 'MID=' . join( '', grep { $_ =~ $config->{projects} } grep { length }  @ids_project ). ' AND' if grep { length } @ids_project;
 
         } else {
             $ids = 'MID=' . join( ' OR MID=', grep { length } @ids_project ). ' AND' if grep { length } @ids_project;
         }
-    } else {
-        $ids = '';
-    }
+    #} else {
+    #    $ids = '';
+    #}
 
     if ( @ids_project ) {
 

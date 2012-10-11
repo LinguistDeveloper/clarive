@@ -328,7 +328,14 @@ Returns an array of project ids for the projects the user has access to.
 =cut
 sub user_projects_ids {
     my ( $self, %p ) = @_;
-    _unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );
+	_throw 'Missing username' unless exists $p{username};
+	my $is_root = $self->is_root( $p{username} );
+	my $todos = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
+	if ($todos || $is_root){
+		map { $_->{mid} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+	}else{
+		_unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );	
+	}
 }
 
 =head2 user_projects_names( username=>Str )
