@@ -171,56 +171,41 @@
     var add_topic = function() {
         var win;
 		
-        var combo_category = new Ext.form.ComboBox({
-            mode: 'local',
-            editable: false,
-            autoSelect: true,
-            selectOnFocus: true,
-            forceSelection: true,
-            emptyText: _('select a category'),
-            triggerAction: 'all',
-            fieldLabel: _('Category'),
-            name: 'category',
-            hiddenName: 'category',
-            displayField: 'name',
-            valueField: 'id',
-            store: store_category,
-            tpl: '<tpl for="."><div id="boot" class="x-combo-list-item"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></div></tpl>', 
-            allowBlank: false
-        });
-
-		//store_category.on( 'load', function(){ combo_category.setValue( store_category.getAt(0).id );  });
-
-        var combo_select = function() {
-            var title = combo_category.getRawValue();
-            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
-            win.close();
-        };
-        combo_category.on('select', combo_select );
-
-        var title = 'Create topic';
+		var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
+			var color = rec.data.color;
+			var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+			return ret;
+		};
+		
+		var topic_category_grid = new Ext.grid.GridPanel({
+			store: store_category,
+			height: 200,
+			hideHeaders: true,
+			viewConfig: {
+				headersDisabled: true,
+				enableRowBody: true,
+				forceFit: true
+			},
+			columns: [
+			  { header: _('Name'), width: 200, dataIndex: 'name', renderer: render_category },
+			  { header: _('Name'), width: 450, dataIndex: 'description' }
+	
+			]
+		});
+		
+		topic_category_grid.on("rowclick", function(grid, rowIndex, e ) {
+			var r = grid.getStore().getAt(rowIndex);
+            var title = _(r.get( 'name' ));
+            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ) } );
+			win.close();
+		});		
+	 
+        var title = 'Select a category';
         
         var form_topic = new Ext.FormPanel({
             frame: true,
-            buttons: [
-                {
-                text: _('Accept'),
-                type: 'submit',
-                handler: function() {
-                    var form = form_topic.getForm();
-                    if (form.isValid()) { combo_select() }
-                }
-                },
-                {
-                text: _('Close'),
-                handler: function(){ 
-                        win.close();
-                    }
-                }
-            ],
-            defaults: { width: 400 },
             items: [
-                combo_category
+				topic_category_grid
             ]
         });
 

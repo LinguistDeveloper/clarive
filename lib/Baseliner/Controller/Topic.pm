@@ -243,8 +243,6 @@ sub list : Local {
 sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    
-    _log ">>>>>>>>>>>>PARAMETROS: " . _dump keys $p;
 
     $p->{username} = $c->username;
     

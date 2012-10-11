@@ -4167,6 +4167,9 @@ msgstr "Único"
 msgid "Multiple"
 msgstr "Múltiple"
 
+msgid "Select a category"
+msgstr "Seleccione una categoría"
+
 
 
 
