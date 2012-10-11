@@ -66,7 +66,7 @@ sub run {
   delete_bali_logs();
   delete_bali_pases();
   delete_chm_logs();
-  purge_baseliner_jobs();
+  ## purge_baseliner_jobs();
   mylog "Fin de purga.";
   return;
 }
@@ -75,7 +75,7 @@ sub run {
 sub purge_baseliner_jobs {
   my $days = 30;                       #TODO
   mylog "Purgando datos en Baseliner de jobs con fecha superior a $days días.";
-  my @ids_to_delete = get_older_than_n_days $days;
+  my @ids_to_delete = get_older_than_n_days($days);
   ## Delete from BALI_JOB.
   my $bali_job_del = Baseliner->model('Baseliner::BaliJob')->search({id => [@ids_to_delete]});
   $bali_job_del->delete;               # COTTON
@@ -88,7 +88,7 @@ sub purge_baseliner_jobs {
 ### get_older_than_n_days : Int -> Array[Int]
 ### Gets the ids from all the jobs that started more than N days ago.
 sub get_older_than_n_days {
-  my ($n_days) = @_;
+  my ( $n_days) = @_;
   use Time::Interval;
   ## Get all the jobs from the database.
   my $rs = Baseliner->model('Baseliner::BaliJob')->search(undef, {select => [qw/id starttime/]});
@@ -104,9 +104,13 @@ sub delete_bali_pases {
   mylog "Purgando datos de los pases de Baseliner en disco.";
   my $log_dias_baseliner_pases = _bde_conf 'log_dias_baseliner_pase';
   my $log_home = car map { chomp $_; $_ } qx|echo \$BASELINER_LOGHOME|;
-  my $cmd = "find $log_home -type f \( -name 'N.TEST*' -o -name 'N.ANTE*' -o -name 'N.PROD*' \) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1"; # XXX
-  mylog $cmd;
-  qx|$cmd|;                            # COTTON
+  my $fn = sub {
+    mylog $_[0];
+    qx|$_[0]|;                         # COTTON
+  };
+  $fn->($_) for (qq{find -L $log_home -type f \\( -name 'N.TEST*' -o -name 'N.ANTE*' -o -name 'N.CURS*' -o -name 'N.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1},
+                 qq{find -L $log_home -type f \\( -name 'B.TEST*' -o -name 'N.ANTE*' -o -name 'B.CURS*' -o -name 'B.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1}
+                 );
   mylog "Datos de pases de Baseliner en disco purgados.";
 }
 
@@ -118,8 +122,8 @@ sub delete_bali_logs {
     mylog $_[0];
     qx|$_[0]|;                         # COTTON
   };
-  $fn->($_) for ("find -L $log_home -type f -name bali_web* -time +${log_dias_baseliner} -exec rm -f {} \\; 2>&1",
-                 "find -L $log_home -type f -name balid* -time +${log_dias_baseliner} -exec rm -f {} \\; 2>&1");
+  $fn->($_) for (qq{find -L $log_home -type f -name "bali_web*" -mtime +${log_dias_baseliner} -exec rm -f {} \\; 2>&1},
+                 qq{find -L $log_home -type f -name "balid*" -mtime +${log_dias_baseliner} -exec rm -f {} \\; 2>&1});
   mylog "Logs de Baseliner purgados.";
 }
 
@@ -131,7 +135,9 @@ sub delete_chm_logs {
 
   my $log_dias_baseliner = _bde_conf 'log_dias_baseliner';
   my $log_home = car map { chomp $_; $_ } qx|echo \$BASELINER_LOGHOME|;
-  my $cmd = "find -L $cfg_chm->{logPath} -type f -name $cfg_chm->{pattern} -time +${log_dias_baseliner} -exec rm -f {} \\; 2>&1";
+  my $pattern=$cfg_chm->{pattern};
+  $pattern=~s{\.P\.}{\.T\.};
+  my $cmd = "find -L $cfg_chm->{logPath} -type f -name $pattern -mtime +${log_dias_baseliner} -exec rm -f {} \\; 2>&1";
   mylog "cmd: $cmd";
 
   my ($rc, $ret) = $balix->execute($cmd);
