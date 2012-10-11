@@ -43,6 +43,7 @@ register 'config.job' => {
 };
 
 register 'action.job.create' => { name=>'Create New Jobs' };
+register 'action.job.cancel' => { name=>'Cancel Jobs' };
 register 'menu.job' => { label => 'Jobs' };
 register 'menu.job.create' => { label => 'Create a new Job', url_comp=>'/job/create', title=>'New Job',
     icon=>'/static/images/icons/job.png', actions=>['action.job.create'] };

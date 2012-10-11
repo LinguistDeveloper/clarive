@@ -58,10 +58,14 @@
                         value: '<% $cal->name %>',
                         disabled: <% $readOnly %>
                     },
-                    {  xtype: 'textfield',
+                    {  xtype: 'numberfield',
                         fieldLabel: _loc('Priority'),
                         name: 'seq',
                         value: '<% $cal->seq %>',
+                        allowNegative: false,
+                        allowDecimals: false,
+                        minValue:1,
+                        maxValue:999,
                         disabled: <% $readOnly %>
                     },
                     {  xtype: 'checkbox',
