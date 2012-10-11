@@ -1,0 +1,59 @@
+<%args>
+  $message
+  $subject
+  $url
+</%args>
+
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+</head>
+
+<style>
+body {
+	font-family: arial;
+	font-size: 10pt;
+}
+.imgRight {
+    vertical-align: middle;
+    text-align: right;
+    padding: 0px;
+    margin: 0px;
+}
+.backGroundPrimeraFila {
+    font-family: Verdana;
+    font-size: 8pt;
+    font-weight: bold;
+    color: #CCCCCC;
+    background-color: #666666;
+    vertical-align: middle;
+}
+</style>
+
+
+<body>
+<div id="tablaContenedor_div">
+    <TABLE border=0 cellpadding="0" cellspacing="0" width="100%">
+        <TR style="height:54px">
+            <TD class="imgRight" ><img src="<% $url %>/static/images/filigrana.png" /></TD>
+        </TR>
+        <TR height="20">
+            <TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">&nbsp;SCM/Baseliner</TD>
+        </TR>
+    </TABLE>
+</div>
+
+<table border=0 cellspacing=2>
+    <tr>
+        <td><br><h3><% $subject %></h3><br></td>
+    </tr>
+</table>
+
+<table border=0 cellspacing=2>
+    <tr>
+        <td><br><h3><% $message %></h3><br></td>
+    </tr>
+</table>
+
+</body>
