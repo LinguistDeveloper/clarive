@@ -32,4 +32,10 @@ __PACKAGE__->belongs_to(
   "Baseliner::Schema::Baseliner::Result::BaliTopic",
   { 'foreign.id_category' => 'self.id' },
 );
+
+__PACKAGE__->has_many(
+  "fields",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicFieldsCategory",
+  { 'foreign.id_category' => "self.id" },
+);
 1;
