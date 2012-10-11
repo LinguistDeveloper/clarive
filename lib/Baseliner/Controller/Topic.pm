@@ -273,13 +273,10 @@ sub related : Local {
     $where->{'categories.is_release'} = $show_release;
     
     if($p->{filter} && $p->{filter} ne 'none'){
+        ##Tratamos todos los tópicos, independientemente si son releases o no.
+        delete $where->{'categories.is_release'}; 
         my $p = _decode_json($p->{filter});
         
-        #if($p->{labels}){
-        #    my @labels = _array $p->{labels};
-        #    $where->{'label_id'} = \@labels;
-        #}
-    
         if($p->{categories}){
             my @categories = _array $p->{categories};
             if(@categories){

@@ -1069,13 +1069,9 @@ sub list_filters : Local {
     my $p = $c->request->parameters;
     
     my @rows;
-    my $filters = $c->model('Baseliner::BaliTopicView')->search(undef, {order_by => 'name'});
-    while (my $filter = $filters->next){
-        push @rows,
-                {
-                  name          => $filter->{name},
-                  filter_json	=> $filter->{filter_json}
-                };	
+    my @filters = $c->model('Baseliner::BaliTopicView')->search(undef, {order_by => 'name'})->hashref->all;
+    for (@filters){
+            push @rows, $_;
     }
     
     $c->stash->{json} = {data=>\@rows};
