@@ -36,7 +36,7 @@ BEGIN {
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
             Unicode::Encoding
-            Session     Session::Store::DBIC    Session::State::Cookie
+            Session     Session::Store::DBI    Session::State::Cookie
             Singleton           
             +CatalystX::Features::Plugin::I18N
             +CatalystX::Features::Plugin::Static::Simple/;
@@ -57,10 +57,15 @@ __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
 
+
 __PACKAGE__->config(
     'Plugin::Session' => {
-        dbic_class => 'Baseliner::BaliSession', 
-        expires    => 3600000,
+        expires    => 2592000, # One month
+        dbi_dbh   => 'Baseliner', # which means MyApp::Model::DBIC
+        dbi_table => 'bali_session',
+        dbi_id_field => 'id',
+        dbi_data_field => 'session_data',
+        dbi_expires_field => 'expires',    
     },
 );
 
@@ -355,7 +360,7 @@ sub username {
     Baseliner::Utils::_debug "No user user";
     $user = try { return $c->user->id
     } catch {
-        Baseliner::Utils::_error "No user id.";
+        Baseliner::Utils::_debug "No user id.";
         return undef;   
     } and return $user;
 }
@@ -368,6 +373,17 @@ sub has_action {
 sub is_root {
     my $c = shift;
     Baseliner->model('Permissions')->is_root( $c->username );
+}
+
+sub loghome {
+    my $c = shift;
+    my $loghome = $ENV{BASELINER_LOGHOME} // Baseliner->path_to( 'logs' );
+    _mkpath $loghome unless -d $loghome;
+    if( @_ ) {
+        return ''. Baseliner::Utils::_file( $loghome, @_ );
+    } else {
+        return "$loghome";
+    }
 }
 
 # Utils

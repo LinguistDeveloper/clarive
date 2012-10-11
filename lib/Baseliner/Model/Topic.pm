@@ -57,9 +57,9 @@ register 'event.topic.file_remove' => {
 };
 
 register 'event.topic.create' => {
-    text => '%1 created topic on %2',
+    text => '%1 created a topic of %2 on %3',
     description => 'User created a topic',
-    vars => ['username', 'ts'],
+    vars => ['username', 'category', 'ts'],
 };
 
 register 'event.topic.modify' => {
@@ -83,23 +83,9 @@ register 'event.topic.modify_field' => {
     }      
 };
 
-#register 'event.topic.modify_field' => {
-#    text => '%1 modified topic %2 to %3 on %4',
-#    description => 'User modified a topic',
-#    vars => ['username', 'field', 'text_new', 'ts'],
-#    filter=>sub{
-#        my ($txt, @vars)=@_;
-#        my $text_new = $vars[2];
-#        if( $text_new ) {
-#            $txt = $text_new;
-#        }
-#        return ($txt, @vars);
-#    }    
-#};
-
 register 'event.topic.change_status' => {
     text => '%1 changed topic status from %2 to %3 on %4',
-    vars => ['username', 'old_status', 'status', 'projects', 'ts'],
+    vars => ['username', 'old_status', 'status', 'ts'],
 };
 
 sub update {
@@ -119,7 +105,7 @@ sub update {
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
-                   { mid => $topic->mid, topic => $topic->title }   # to the event
+                   { mid => $topic->mid, topic => $topic->title, , category=> $topic->categories->name }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -138,17 +124,6 @@ sub update {
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
     
-                    #_log ">>>>>>>>>>>>>>Datos modificados con dirty en el topico: " . _dump $topic->get_dirty_columns;                
-                    #_log ">>>>>>>>>>>>>>Datos modificados en el topico: " . _dump @field;
-    
-                  
-                    # event_new 'event.topic.modify' => {
-                    #     username => $p->{username},
-                    #     mid      => $topic_mid,
-                    #     field  => @field ? 'topic' : '',
-                        
-                    # };                   
-                    
                     $return = 'Topic modified';
                    { mid => $topic->mid, topic => $topic->title }   # to the event
                 });
@@ -222,6 +197,24 @@ sub next_status_for_user {
     return @to_status;
 }
 
+sub get_system_fields {
+    my ($self);
+    my $pathHTML = '/fields/system/html/';
+    my $pathJS = '/fields/system/js/';
+    my @system_fields = (
+            { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => 2, section => 'body' }},
+            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => 1, section => 'body', relation => 'categories' }},
+            { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status' , origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => 3, section => 'body', relation => 'status' }},
+            { id_field => 'created_by', params => {name_field => 'Created By', bd_field => 'created_by', origin => 'default', html => '/fields/templates/html/row_body.html', field_order => 0, section => 'body' }},
+            { id_field => 'created_on', params => {name_field => 'Created On', bd_field => 'created_on', origin => 'default', html => '/fields/templates/html/row_body.html', field_order => 0, section => 'body' }},
+            { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body', relation => 'priorities' }},
+            { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'body' }},
+            { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => 8, section => 'body' }},
+    );
+    return \@system_fields
+}
+
+
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
 
@@ -229,33 +222,17 @@ sub get_meta {
         // DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query;
         
     my @meta = sort { $a->{field_order} <=> $b->{field_order} } map {  _load $_->{params_field} } DB->BaliTopicFieldsCategory->search({ id_category => { -in => $id_cat }  })->hashref->all;
-   _error \@meta; 
-    push @meta, { name_field => 'created_by', id_field => 'created_by', origin => 'default', html => '/fields/field_created_by.html', field_order => 4, section => 'body' },
-                { name_field => 'created_on', id_field => 'created_on', origin => 'default', html => '/fields/field_created_on.html', field_order => 5, section => 'body' },
-                { name_field => 'dates', id_field => 'dates', origin => 'rel', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 13, section => 'details' };
+    #_error \@meta;
+    
+    #system fields
+    #push @meta,
+    #            { name_field => 'created_by', id_field => 'created_by', origin => 'default', html => '/fields/field_created_by.html', field_order => 4, section => 'body' },
+    #            { name_field => 'created_on', id_field => 'created_on', origin => 'default', html => '/fields/field_created_on.html', field_order => 5, section => 'body' },
+    #            { name_field => 'dates', id_field => 'dates', origin => 'rel', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 13, section => 'details' };
+                
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
     
-    #my @meta = (
-    #     { name_field => 'title', id_field => 'title', origin => 'system', html => '/fields/field_title.html', js => '/fields/field_title.js', field_order => 2, section => 'body' },
-    #     { name_field => 'category', id_field => 'id_category', origin => 'system', html => '/fields/field_category.html', js => '/fields/field_category.js', field_order => 1, section => 'body' },
-    #     { name_field => 'status_new', id_field => 'id_category_status', origin => 'system', html => '/fields/field_status.html', js => '/fields/field_status.js', field_order => 3, section => 'body' },
-    #     { name_field => 'created_by', id_field => 'created_by', origin => 'default', html => '/fields/field_created_by.html', field_order => 4, section => 'body' },
-    #     { name_field => 'created_on', id_field => 'created_on', origin => 'default', html => '/fields/field_created_on.html', field_order => 5, section => 'body' },
-    #     { name_field => 'priority', id_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => '/fields/field_priority.html', js => '/fields/field_priority.js', field_order => 6, section => 'body' },
-    #     { name_field => 'description', id_field => 'description', origin => 'system', html => '/fields/field_description.html', js => '/fields/field_description.js', field_order => 15, section => 'body' },
-    #     { name_field => 'release', id_field => 'release', origin => 'rel', set_method => 'set_release', rel_field => 'release', method => 'get_release', html => '/fields/field_release.html', js => '/fields/field_release.js', field_order => 7, section => 'body' },
-    #     { name_field => 'progress', id_field => 'progress', origin => 'system', html => '/fields/field_progress.html', js => '/fields/field_progress.js', field_order => 8, section => 'body' },
-    #     { name_field => 'projects', id_field => 'projects', origin => 'rel', set_method => 'set_projects', rel_field => 'projects', method => 'get_projects', html => '/fields/field_projects.html', js => '/fields/field_projects.js', field_order => 9, section => 'details' },
-    #     { name_field => 'users', id_field => 'users', origin => 'rel', set_method => 'set_users', rel_field => 'users', method => 'get_users', html => '/fields/field_assign_to.html', js => '/fields/field_assign_to.js', field_order => 10, section => 'details' },
-    #     { name_field => 'labels', id_field => 'labels', origin => 'rel', set_method => 'set_labels', method => 'get_labels', html => '/fields/field_labels.html', js => '/fields/field_labels.js', field_order => 11, section => 'head' },
-    #     { name_field => 'revisions', id_field => 'revisions', origin => 'rel', set_method => 'set_revisions', rel_field => 'revisions', method => 'get_revisions', html => '/fields/field_revisions.html', js => '/fields/field_revisions.js', field_order => 12, section => 'details' },
-    #     { name_field => 'dates', id_field => 'dates', origin => 'rel', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 13, section => 'details' },
-    #     { name_field => 'topics', id_field => 'topics', origin => 'rel', set_method => 'set_topics', method => 'get_topics', html => '/fields/field_topics.html', js => '/fields/field_topics.js', field_order => 14, section => 'details' },
-    #     { name_field => 'files', id_field => 'files', origin => 'rel', method => 'get_files', html => '/fields/field_files.html', js => '/fields/field_files.js', field_order => 15, section => 'details' },
-    #     #{ id_field =>'comentario', origin =>'custom' },
-    #     #{ id_field =>'docs', origin =>'rel', rel_type =>'topic_file' },
-    #);
     return \@meta;
 }
 
@@ -264,11 +241,13 @@ sub get_data {
     
     my $data;
     if ($topic_mid){
-        my @std_fields = map { $_->{id_field} } grep { $_->{origin} eq 'standard' } _array( $meta  );
-        my %rel_fields = map { $_->{id_field} => 1  } grep { $_->{origin} eq 'rel' } _array( $meta );
-        my %method_fields = map { $_->{id_field} => $_->{method}  } grep { $_->{method} } _array( $meta );
         
+        ##************************************************************************************************************************
+        ##CAMPOS DE SISTEMA ******************************************************************************************************
+        ##************************************************************************************************************************
+        #my @std_fields = map { $_->{id_field} } grep { $_->{origin} eq 'system' } _array( $meta  );
         #my $rs = Baseliner->model('Baseliner::BaliTopic')->search({ mid => $topic_mid },{ select=>\@std_fields });
+        
         my @select_fields = ('title', 'id_category', 'categories.name', 'categories.color',
                              'id_category_status', 'status.name', 'created_by', 'created_on',
                              'id_priority','priorities.name', 'deadline_min', 'description','progress');
@@ -277,18 +256,20 @@ sub get_data {
         
         my $rs = Baseliner->model('Baseliner::BaliTopic')
                 ->search({ mid => $topic_mid },{ join => ['categories','status','priorities'], select => \@select_fields, as => \@as_fields});
-       
-        
         my $row = $rs->first;
         
-        
         $data = { topic_mid => $topic_mid, $row->get_columns };
-        
         $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
         #$data->{deadline} = $row->deadline_min ? $row->created_on->clone->add( minutes => $row->deadline_min ):_loc('unassigned');
         $data->{deadline} = _loc('unassigned');
         
+        ##*************************************************************************************************************************
+        ###************************************************************************************************************************
         
+        
+        my %rel_fields = map { $_->{id_field} => 1  } grep { $_->{relation} eq 'system' } _array( $meta );
+        my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
+
         my @rels = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$topic_mid })->hashref->all;
         for my $rel ( @rels ) {
             next unless $rel->{rel_field};
@@ -301,17 +282,15 @@ sub get_data {
             $data->{ $key } =  $self->$method( $topic_mid, $key );
         }
         
-        my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' } _array( $meta  );
+        my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
         my %custom_data = {};
-        map { $custom_data{$_->{name}} = $_->{value} }  Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search({topic_mid => $topic_mid})->hashref->all;
+        map { $custom_data{$_->{name}} = $_->{value} ? $_->{value} : $_->{value_clob} }  Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search({topic_mid => $topic_mid})->hashref->all;
         
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};
         }
-        
-    }else{
-        _log ">>>>>>>>>>>>>>>topic_mid: " . $topic_mid;
     }
+    
     return $data;
 }
 
@@ -388,9 +367,8 @@ sub get_files{
 
 sub save_data {
     my ($self, $meta, $topic_mid, $data ) = @_;
-   
-    # $data = { title=>'xxx' , id_category=>66, docs=>"1,2,3" }
-    my @std_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, method => $_->{set_method}, relation => $_->{relation} }} grep { $_->{origin} eq 'system' } _array( $meta  );
+
+    my @std_fields = map { +{name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} }} grep { $_->{origin} eq 'system' } _array( $meta  );
     
     my %row;
     my %description;
@@ -441,11 +419,9 @@ sub save_data {
             
             $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
             if ($row{$field} != eval($old_value{$field})){
-                
                 if($field eq 'id_category_status'){
-                    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" . $old_text{$field};
                     my @projects = $topic->projects->hashref->all;
-                    event_new 'event.topic.change_status' => { username => 'root', old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name'), projects => \@projects  } => sub {
+                    event_new 'event.topic.change_status' => { username => $data->{username}, old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name')  } => sub {
                         { mid => $topic->mid, topic => $topic->title } 
                     } 
                     => sub {
@@ -468,36 +444,49 @@ sub save_data {
     }
 
      
-    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{origin} eq 'rel' } _array( $meta  );
+    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
     
     foreach my $key  (keys %rel_fields){
         if($rel_fields{$key}){
             eval( '$self->' . $rel_fields{$key} . '( $topic, $data->{$key}, $data->{username} )' );    
         }
     } 
-    
-    
      
-    #$topic->update( \%row );
-    
-                 
-    
-    my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}} } grep { $_->{origin} eq 'custom' } _array( $meta  );
+    my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, data => $_->{data} } } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
     
     for( @custom_fields ) {
         if  (exists $data->{ $_ -> {name}}){
 
             my $row = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( {topic_mid=> $topic->mid, name => $_->{column}} )->first;
+            my $record = {};
+            $record->{topic_mid} = $topic->mid;
+            $record->{name} = $_->{column};
+            if ($_->{data}){ ##Cuando el tipo de dato es CLOB
+            	$record->{value_clob} = $data->{ $_ -> {name}};
+            }else{
+            	$record->{value} = $data->{ $_ -> {name}};
+            }
+            
             if(!$row){
-                my $field_custom = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->create({
-                                                                                            topic_mid  => $topic->mid,
-                                                                                            name       => $_->{column},
-                                                                                            value   => $data->{ $_ -> {name}},
-                });            
+                my $field_custom = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->create($record);                 
             }
             else{
-                if ($row->value != $data->{ $_ -> {name}}){
-                    
+                my $modified = 0;
+                
+                if ($_->{data}){ ##Cuando el tipo de dato es CLOB
+                    $row->value_clob ( $data->{ $_ -> {name}} );
+                    if ($row->value != $data->{ $_ -> {name}}){
+                        $modified = 0;    
+                    }                    
+                }else{
+                    $row->value ( $data->{ $_ -> {name}} );
+                    if ($row->value != $data->{ $_ -> {name}}){
+                        $modified = 1;    
+                    }
+                }
+                $row->update;
+                
+                if ( $modified ){
                     event_new 'event.topic.modify_field' => { username   => $data->{username},
                                                         field      => _loc ($_->{column}),
                                                         old_value  => $row->value,
@@ -508,14 +497,8 @@ sub save_data {
                     => sub {
                         _throw _loc( 'Error modifying Topic: %1', shift() );
                     };
-                }                
-                $row->value ( $data->{ $_ -> {name}} );
-                $row->update;
+                }
             }
-            
-            
-            
-            
         }
     }    
     
@@ -690,12 +673,11 @@ sub set_projects {
     my $topic_mid = $rs_topic->mid;
     
     my @new_projects = _array( $projects ) ;
-    my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
-    
-    my $del_projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
+    my @old_projects = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
+        my $del_projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
         # projects
         if (@new_projects){
             my @name_projects;
@@ -740,13 +722,11 @@ sub set_users{
     my $topic_mid = $rs_topic->mid;
     
     my @new_users = _array( $users ) ;
-    my @old_users = map {$_->{from_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->hashref->all;
-
-    my $del_users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
-    
+    my @old_users = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->hashref->all;
 
     # check if arrays contain same members
     if ( array_diff(@new_users, @old_users) ) {
+        my $del_users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
         # users
         if (@new_users){
             my @name_users;

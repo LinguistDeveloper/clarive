@@ -176,11 +176,13 @@ sub job_logfile : Local {
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
     $c->stash->{json}  = try {
         my $file = _load( $job->stash )->{logfile};
-        _fail _log "Error: logfile not found or invalid: %1", $file if ! -f $file;
+        $file //= Baseliner->loghome( $job->name . '.log' ); 
+        _fail _log "Error: logfile not found or invalid: %1", $file unless -f $file;
         my $data = _file( $file )->slurp; 
         { data=>$data, success=>\1 };
     } catch {
-        { success=>\0, msg=>"".shift() };
+        my $err = shift;
+        { success=>\0, msg=>"$err" };
     };
     $c->forward( 'View::JSON' );
 }
@@ -257,7 +259,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     # Filter by nature
     if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {      
-      $where->{'bali_job_items.item'} = $p->{filter_nature};
+      $where->{'bali_job_items_2.item'} = $p->{filter_nature};
     }
 
     # Filter by environment name:
@@ -289,7 +291,7 @@ sub monitor_json : Path('/job/monitor_json') {
     my $from = {
         select   => 'me.id',
         as       => $as,
-        join     => [ 'bali_job_items' ],   
+        join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
     };
     _debug $from;
     my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
@@ -453,43 +455,33 @@ sub refresh_now : Local {
     use String::CRC32;
     my $p = $c->request->parameters;
     my $username = $c->username;
-    my $need_refresh = 0;
+    my $need_refresh = \0;
     my $magic = 0;
+    my $real_top;
+
     try {
         if( exists $p->{top} ) {
             # are there newer jobs?
-            my $max = ( reverse( sort( _array( $p->{ids} ))) )[0];
-            my $where;
-            my $w = $c->session->{job_refresh_where};
-            if( 'HASH' eq ref $w ) {
-                $where = $w;
-            } else {
-                $where = {};
-                my $perm = $c->model('Permissions');
-                if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-                    my @user_apps = $perm->user_namespaces( $username ); # user apps
-                    $where->{'bali_job_items.application'} = { -in => \@user_apps };
-                }
-                $c->session->{job_refresh_where} = $where;
-            }
-            $where->{'me.id'} = { '>' => $p->{top} };
-            delete $where->{id} if defined $where->{id}; # leftover from seesion object
-            my $row = $c->model('Baseliner::BaliJob')->search( $where, { join=>['bali_job_items'], order_by=>{ -desc =>'me.id' } })->first;
-            if( ref $row ) {
-                $need_refresh = 1;
+            my $row = DB->BaliJob->search(undef, { order_by=>{ -desc =>'id' } })->first;
+            $real_top= $row->id;
+            if( $real_top ne $p->{top} && $real_top ne $p->{real_top} ) {
+                $need_refresh = \1;
             }
         }
         if( $p->{ids} ) {
             # are there more info for current jobs?
-            my $rs = $c->model('Baseliner::BaliJob')->search({ id=>$p->{ids} }, { order_by=>{ -desc =>'id' } });
+            my @rows = DB->BaliJob->search({ id=>$p->{ids} }, { order_by=>{ -desc =>'id' } })->hashref->all;
             my $data ='';
-            while( my $r = $rs->next ) {
-                $data.=$r->status . $r->last_log_message; 
-            }
+            map { $data.= ( $_->{status} // '') . ( $_->{last_log_message} // '') } @rows;
             $magic = String::CRC32::crc32( $data );
+            my $last_magic = $p->{last_magic};
+            if( $magic ne $last_magic ) {
+                _debug "LAST MAGIC=$last_magic != CURRENT MAGIC $magic";
+                $need_refresh = \1;
+            }
         }
     } catch { _log shift };
-    $c->stash->{json} = { magic=>$magic, need_refresh => $need_refresh, stop_now=>\0 };	
+    $c->stash->{json} = { success=>\1, magic=>$magic, need_refresh => $need_refresh, stop_now=>\0, real_top=>$real_top };	
     $c->forward('View::JSON');
 }
 

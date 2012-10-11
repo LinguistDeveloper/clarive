@@ -49,24 +49,24 @@ sub actions : Local {
 }
 
 sub info : Local {
-    my ($self, $c, $username) = @_;
+    my ( $self, $c, $username ) = @_;
     $c->stash->{swAsistentePermisos} = 0;
 
-    if($username eq ''){
-    $username = $c->username;
-    $c->stash->{swAsistentePermisos} = 1;
+    if ( $username eq '' ) {
+        $username = $c->username;
+        $c->stash->{swAsistentePermisos} = 1;
     }
-    
-    my $u = $c->model('Users')->get( $username );
-    if( ref $u ) {
-    my $user_data = $u->{data} || {};
-    $c->stash->{username}  = $username;
-    $c->stash->{realname}  = $u->{realname};
-    $c->stash->{alias} = $u->{alias};
-    $c->stash->{email}  = $u->{email};
-    $c->stash->{phone}  = $u->{phone};	
-    
-    # Data from LDAP, or other user data providers:
+
+    my $u = $c->model('Users')->get($username);
+    if ( ref $u ) {
+        my $user_data = $u->{data} || {};
+        $c->stash->{username} = $username;
+        $c->stash->{realname} = $u->{realname};
+        $c->stash->{alias}    = $u->{alias};
+        $c->stash->{email}    = $u->{email};
+        $c->stash->{phone}    = $u->{phone};
+
+        # Data from LDAP, or other user data providers:
         $c->stash->{$_} ||= $user_data->{$_} for keys %$user_data;
     }
     $c->stash->{template} = '/comp/user_info.mas';
@@ -144,6 +144,34 @@ sub infodetail : Local {
                 };
     }
     $c->stash->{json} = { data=>\@rows};		
+    $c->forward('View::JSON');    
+}
+
+sub user_data : Local {
+    my ($self, $c) = @_;
+    try {
+        my $user = DB->BaliUser->search({ username => $c->username })->first;
+        _fail _loc('User not found: %1', $c->username ) unless $user;
+        $c->stash->{json} = { data=>{ $user->get_columns }, msg=>'ok', success=>\1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 };
+    };
+    $c->forward('View::JSON');    
+}
+
+sub gen_api_key : Local {
+    my ($self, $c) = @_;
+    try {
+        my $user = DB->BaliUser->search({ username => $c->username })->first;
+        _fail _loc('User not found: %1', $c->username ) unless $user;
+        my $new_key = _md5 $c->username . ( int ( rand( 32 * 32 ) % time ) ) ;
+        $user->update({ api_key => $new_key });
+        $c->stash->{json} = { api_key=>$new_key, msg=>'ok', success=>\1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 };
+    };
     $c->forward('View::JSON');    
 }
 
@@ -240,28 +268,92 @@ sub update : Local {
     }
     when ('update') {
         try{
-        my $type_save = $p ->{type};
-		_log ">>>>>>>>>>>>>>>Usuario: " . $p->{username}; 
-        if ($type_save eq 'user') {
-            my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
-            $user->username( $p->{username} );
-            $user->realname( $p->{realname} );
-            if($p->{pass} ne ''){
-            $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
+            my $type_save = $p ->{type};
+            if ($type_save eq 'user') {
+                my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+                my $old_username = $user->username;
+                #my $swDo = 1;
+                if ($old_username ne $p->{username}){
+                    my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
+                    if ($row) {
+                        #$swDo = 0;
+                        $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };    
+                    }else{
+                        my $user_mid;
+                        my $user_new;
+                        $user_mid = master_new 'user' => $p->{username} => sub {
+                            my $mid = shift;
+                            
+                            $user_new = Baseliner->model('Baseliner::BaliUser')->create(
+                                {
+                                    mid			=> $mid,
+                                    username    => $p->{username},
+                                    realname  	=> $p->{realname},
+                                    password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
+                                    alias	=> $p->{alias},
+                                    email	=> $p->{email},
+                                    phone	=> $p->{phone}
+                                }
+                            );
+                        };
+                        ##BaliRoleUser
+                        my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
+                        $rs_role_user->update( {username => $p->{username}} );
+                        ##BaliMasterRel
+                        my $user_from = $c->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{id}} );
+                        if ($user_from) {
+                            $user_from->update( {from_mid => $user_new->mid} );
+                        }
+                        my $user_to = $c->model('Baseliner::BaliMasterRel')->search( {to_mid => $p->{id}} );
+                        if ($user_to){
+                            $user_to->update( {to_mid => $user_new->mid} );    
+                        }
+                        ##Borramos el antiguo
+                        $user->delete();
+                    }
+                }
+                else{
+                    $user->realname( $p->{realname} );
+                    if($p->{pass} ne ''){
+                        $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
+                    }
+                    $user->alias( $p->{alias} );
+                    $user->email( $p->{email} );
+                    $user->phone( $p->{phone} );                      
+                    $user->update();                    
+                }
+                
+                $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
+                
+                ###if ( $swDo ){
+                ###    ##BaliRoleUser
+                ###    my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
+                ###    $rs_role_user->update( {username => $p->{username}} );
+                ###    ##Master
+                ###    my $row_master = $c->model('Baseliner::BaliMaster')->find({mid => $user->mid });
+                ###    $row_master->name( $p->{username} );
+                ###    $row_master->update();
+                ###    ##BaliUser
+                ###    $user->username( $p->{username} );
+                ###    $user->realname( $p->{realname} );
+                ###    if($p->{pass} ne ''){
+                ###        $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
+                ###    }
+                ###    $user->alias( $p->{alias} );
+                ###    $user->email( $p->{email} );
+                ###    $user->phone( $p->{phone} );                      
+                ###    $user->update();
+                ###    
+                ###}
             }
-            $user->alias( $p->{alias} );
-            $user->email( $p->{email} );
-            $user->phone( $p->{phone} );
-            $user->update();
-        }
-        else{
-            tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
-            tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
-        }
-        $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
+            else{
+                tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
+                tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
+                $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
+            }
         }
         catch{
-        $c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
+            $c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
         }
     }
     when ('delete') {
@@ -340,50 +432,51 @@ sub tratar_proyectos{
         my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
         my $dbh = $db->dbh;
         my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
-    $sth->bind_param( 1, $user_name );
-    $sth->execute();
-    @roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
+        $sth->bind_param( 1, $user_name );
+        $sth->execute();
+        @roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
     }
     else{
-    foreach $role (_array $roles_checked){
-        push @roles_checked, $role;
-    }
+        foreach $role (_array $roles_checked){
+            push @roles_checked, $role;
+        }
     }
 
     foreach $role ( @roles_checked ){
-    foreach $project (_array $projects_checked){
-        if ($project eq 'todos'){
-        my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
-        $rs->delete;
-        my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-                                    {	username => $user_name,
-                                        id_role => $role,
-                                        ns => '/'
-                                    },
-                                    { key => 'primary' });
-        $role_user->update();
-        last				
-        }else{
-        my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
-                                         id_role => $role,
-                                         ns => '/'
-                                        },
-                                        { key => 'primary' });
-        if($all_projects){
-            my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>'/'});
-            $rs->delete;
+        foreach $project (_array $projects_checked){
+            if ($project eq 'todos'){
+                my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
+                $rs->delete;
+                my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+                                            {	username => $user_name,
+                                                id_role => $role,
+                                                ns => '/',
+                                                id_project => undef,
+                                            },
+                                            { key => 'primary' });
+                $role_user->update();
+                last				
+            }else{
+                my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
+                                                 id_role => $role,
+                                                 ns => '/'
+                                                },
+                                                { key => 'primary' });
+                if($all_projects){
+                    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>'/'});
+                    $rs->delete;
+                }
+                
+                my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
+                                            {	username => $user_name,
+                                            id_role => $role,
+                                            ns => 'project/' . $project,
+                                            id_project => $project,
+                                            },
+                                            { key => 'primary' });
+                $role_user->update();
+            }
         }
-        
-        my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-                                    {	username => $user_name,
-                                    id_role => $role,
-                                    ns => 'project/' . $project,
-                                    id_project => $project,
-                                    },
-                                    { key => 'primary' });
-        $role_user->update();
-        }
-    }
     }
 }
 
@@ -399,14 +492,14 @@ sub tratar_proyectos_padres(){
     my $sth;
     
     if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-    $sth = $dbh->prepare("SELECT MID FROM BALI_PROJECT START WITH MID = ? AND ACTIVE = 1 CONNECT BY PRIOR MID = ID_PARENT AND ACTIVE = 1");
+        $sth = $dbh->prepare("SELECT MID FROM BALI_PROJECT START WITH MID = ? AND ACTIVE = 1 CONNECT BY PRIOR MID = ID_PARENT AND ACTIVE = 1");
     }
     else{
-    ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
-    $sth = $dbh->prepare("WITH N(MID) AS (SELECT MID FROM BALI_PROJECT WHERE MID = ? AND ACTIVE = 1
-                        UNION ALL
-                        SELECT NPLUS1.MID FROM BALI_PROJECT AS NPLUS1, N WHERE N.MID = NPLUS1.ID_PARENT AND ACTIVE = 1)
-                        SELECT N.MID FROM N ");
+        ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
+        $sth = $dbh->prepare("WITH N(MID) AS (SELECT MID FROM BALI_PROJECT WHERE MID = ? AND ACTIVE = 1
+                            UNION ALL
+                            SELECT NPLUS1.MID FROM BALI_PROJECT AS NPLUS1, N WHERE N.MID = NPLUS1.ID_PARENT AND ACTIVE = 1)
+                            SELECT N.MID FROM N ");
     }
     
     given ($accion) {
@@ -441,7 +534,8 @@ sub tratar_proyectos_padres(){
                                                        {
                                                     username => $user_name,
                                                     id_role => $role,
-                                                    ns => 'project/' . $row[0]
+                                                    ns => 'project/' . $row[0],
+													id_project => $row[0],
                                                        },
                                                        { key => 'primary' });
                                 $role_user->update();
@@ -798,8 +892,12 @@ sub change_pass : Local {
 }
 
 sub avatar : Local {
-    my ( $self, $c, $username ) = @_;
+    my ( $self, $c, $username, $dummy_filename ) = @_;
     my ($file, $body, $filename, $extension);
+    if( ! $dummy_filename ) {
+        $dummy_filename = $username;
+        $username = $c->username; 
+    }
     $filename = "$username.png";
     try {
         $file = _dir( $c->path_to( "/root/identicon" ) );
@@ -832,6 +930,43 @@ sub avatar : Local {
     $c->res->content_type('image/png');
 }
 
+sub avatar_refresh : Local {
+    my ( $self, $c ) = @_;
+    my $p      = $c->req->params;
+    try {
+        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        unlink $avatar or _fail $!;
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Avatar refreshed' ) } ;            
+    } catch {
+        my $err = shift;
+        _error "Error refreshing avatar: " . $err;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub avatar_upload : Local {
+    my ( $self, $c ) = @_;
+    my $p      = $c->req->params;
+    my $filename = $p->{qqfile};
+    my ($extension) =  $filename =~ /\.(\S+)$/;
+    $extension //= '';
+    my $f =  _file( $c->req->body );
+    _log "Uploading avatar " . $filename;
+    try {
+        require File::Copy;
+        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        _debug "Avatar file=$avatar";
+        File::Copy::copy( "$f", "$avatar" ); 
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Changed user avatar' ) } ;            
+    } catch {
+        my $err = shift;
+        _error "Error uploading avatar: " . $err;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+    $c->forward( 'View::JSON' );
+}
+
 sub identicon {
     my ($self, $c, $username)=@_;
     my $user = $c->model('Baseliner::BaliUser')->search({ username=>$username })->first;
@@ -840,7 +975,7 @@ sub identicon {
             require Image::Identicon;
             my $salt = '1234';
             my $identicon = Image::Identicon->new({ salt=>$salt });
-            my $image = $identicon->render({ code=> int(rand(999999999999999)), size=>32 });
+            my $image = $identicon->render({ code=> int(rand( 2 ** 32)), size=>32 });
             return $image->{image}->png;
     };
     if( ref $user ) {
@@ -860,6 +995,46 @@ sub identicon {
         _debug "User not found, avatar generated anyway";
         return $generate->();
     }
+}
+
+sub duplicate : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        my $r = $c->model('Baseliner::BaliUser')->find({ mid => $p->{id_user} });
+        if( $r ){
+            my $user;
+            my $new_user;
+            my $user_mid = master_new 'user' => 'Duplicate of ' . $r->username => sub {
+                my $mid = shift;
+                $new_user = $r->username . '-' . $mid;
+                $user = Baseliner->model('Baseliner::BaliUser')->create(
+                    {
+                        mid			=> $mid,
+                        username    => $new_user,
+                    }
+                );
+            };
+            
+            my @rs_roles =  $c->model('Baseliner::BaliRoleUser')->search({ username => $r->username })->hashref->all;
+            for (@rs_roles){
+                Baseliner->model('Baseliner::BaliRoleUser')->create(
+                    {
+                        username    => $new_user,
+                        id_role     => $_->{id_role},
+                        ns          => $_->{ns},
+                        id_project  => $_->{id_project},
+                    }
+                );
+            }
+        }
+        $c->stash->{json} = { success => \1, msg => _loc("User duplicated") };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error duplicating user') };
+    };
+
+    $c->forward('View::JSON');  
 }
 
 1;

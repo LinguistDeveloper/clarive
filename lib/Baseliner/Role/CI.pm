@@ -6,6 +6,10 @@ require Baseliner::CI;
 
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
+subtype BoolCheckbox   => as 'Bool';
+
+coerce 'BoolCheckbox' =>
+  from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 
 coerce 'CI' =>
   from 'Str' => via { length $_ ? Baseliner::CI->new( $_ ) : BaselinerX::CI::Empty->new()  }, 
@@ -13,7 +17,8 @@ coerce 'CI' =>
   from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; Baseliner::CI->new( $first ) }; 
 
 coerce 'CIs' => 
-  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] }; 
+  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
+  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
 has mid => qw(is rw isa Num);
 #has rec => qw(is rw isa Any);  # the original DB record returned by load()
@@ -21,6 +26,7 @@ has mid => qw(is rw isa Num);
 requires 'icon';
 #requires 'collection';
 
+has name    => qw(is rw isa Maybe[Str]);
 has job     => qw(is rw isa Baseliner::Role::JobRunner),
     lazy    => 1,
     default => sub {
@@ -30,6 +36,7 @@ has job     => qw(is rw isa Baseliner::Role::JobRunner),
 
 # methods 
 sub has_bl { 1 } 
+sub has_description { 1 } 
 sub icon_class { '/static/images/ci/class.gif' }
 sub rel_type { +{} }   # { field => rel_type, ... }
 
@@ -53,7 +60,7 @@ sub save {
     Baseliner->model('Baseliner')->txn_do(sub{
         if( length $mid ) { 
             ######## update
-            _debug "****************** CI UPDATE: $mid";
+            #_debug "****************** CI UPDATE: $mid";
             my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
             $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
             $row->name( $name ) if defined $name;
@@ -68,7 +75,7 @@ sub save {
             }
         } else {  
             ######## new
-            _debug "****************** CI NEW: $collection";
+            #_debug "****************** CI NEW: $collection";
             my $row = Baseliner->model('Baseliner::BaliMaster')->create({
                 collection => $collection, name=> $name, active => $active,
             });
@@ -105,6 +112,14 @@ sub save_data {
             #_fail( "$field is $type - $rel_type" );
         }
     }
+    # attribute specific conversions
+    for my $attr ( $meta->get_all_attributes ) {
+        if( $attr->type_constraint->name eq 'BoolCheckbox' ) {
+            my $attr_name = $attr->name;
+            # fix the on versus nothing on form submit
+            $data->{ $attr_name } = 0 unless exists $data->{ $attr_name };
+        }
+    }
     # now store the data
     if( $storage eq 'yaml' ) {
         $master_row->yaml( _dump( $data ) );
@@ -128,8 +143,8 @@ sub save_data {
         my $rel_type_name = $rel->{rel_type}->[1];
         DB->BaliMasterRel->search({ $my_rel, $master_row->mid, rel_type=>$rel_type_name })->delete;
         for my $other_mid ( _array $rel->{value} ) {
-            _debug ">>>>>>>> SAVING REL $rel_type_name - FROM $my_rel => $other_rel ( $other_mid )";
-            _debug { $my_rel, $master_row->mid, $other_rel, $other_mid, rel_type=>$rel_type_name };
+            #_debug ">>>>>>>> SAVING REL $rel_type_name - FROM $my_rel => $other_rel ( $other_mid )";
+            #_debug { $my_rel, $master_row->mid, $other_rel, $other_mid, rel_type=>$rel_type_name };
             DB->BaliMasterRel->create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name })
         }
     }
@@ -200,7 +215,7 @@ sub load {
         # use old value unless there's a master_rel object 
         $data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
     }
-    _log $data;
+    #_log $data;
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form;
     $data->{ci_class} //= $class;

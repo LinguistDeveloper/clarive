@@ -50,7 +50,7 @@ sub log : Local {
     $query and $where = query_sql_build( query=>$query, fields=>[qw(event_key)] );
     my $rs = DB->BaliEvent->search($where, 
         { page => $page, rows => $limit,
-          prefetch => ['rules'],
+          prefetch => [{ 'rules' => 'rule' }],
           order_by => { "-$dir" => $sort }, 
         }
     );
@@ -66,25 +66,28 @@ sub log : Local {
         $e->{_parent} = undef;
         $e->{type} = 'event';
         #_error "EV=$e->{event_data}";
-        $e->{data} = _load( $e->{event_data} ) if length $e->{event_data};
+        $e->{data} = _damn( _load( $e->{event_data} ) ) if length $e->{event_data};
         my $rules = delete $e->{rules};
+        my $k = 1;
         my @rules = map {
-            _error $_->{stash_data};
+            #_error $_->{stash_data};
             +{
                 %$_, 
-                _parent   => $e->{_id},
-                _id       => $_->{id},
-                type      => 'rule',
-                event_key => $_->{rule_name},
-                data      => ( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
-                dsl       => $_->{dsl},
-                _is_leaf  => \1,
+                _parent       => $e->{_id},
+                _id           => $e->{_id} . '-' . $k++,  # $_->{id} useless and may repeat
+                event_status  => $_->{return_code} ? 'ko' : 'ok',
+                type          => 'rule',
+                event_key     => _loc('rule: %1', $_->{rule}{id} . ': ' . $_->{rule}{rule_name} ),
+                data          => ( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
+                dsl           => $_->{dsl},
+                output        => $_->{log_output},
+                _is_leaf      => \1,
             }
         } @$rules;
         $e->{_is_leaf} = @rules ? \0 : \1;
         ($e, @rules );
     } @rows;
-    _error \@rows;
+    #_error \@rows;
     $c->stash->{json} = { data => \@rows, totalCount=>$cnt };
     $c->forward("View::JSON");
 }
@@ -100,6 +103,22 @@ sub del : Local {
         $c->stash->{json} = { success=>\1, msg => _loc('Event deleted ok') };
     } else {
         $c->stash->{json} = { success=>\1, msg => _loc('Event not found') };
+    }
+    $c->forward("View::JSON");
+}
+
+sub status : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $rs = defined $p->{id}
+        ? DB->BaliEvent->find( $p->{id} )
+        : DB->BaliEvent->search({ id=>$p->{ids} });
+    if( $rs ) {
+        $p->{event_status} or _fail 'Missing status';
+        $rs->update({ event_status => $p->{event_status} });
+        $c->stash->{json} = { success=>\1, msg => _loc('Event status changed to: %1', $p->{event_status} ) };
+    } else {
+        $c->stash->{json} = { success=>\1, msg => ''.shift() };
     }
     $c->forward("View::JSON");
 }

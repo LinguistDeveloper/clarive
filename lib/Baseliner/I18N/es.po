@@ -9,20 +9,59 @@ msgstr "Abrir"
 msgid "Progress"
 msgstr "Avance"
 
+msgid "Refresh Node"
+msgstr "Refrescar"
+
 msgid "Job Slots"
 msgstr "Ventanas de Pase"
 
 msgid "Repositories"
 msgstr "Repositorios"
 
+msgid "by %1"
+msgstr "por %1"
+
 msgid "All-f"
 msgstr "Todas"
+
+msgid "Change password"
+msgstr "Cambiar contraseña"
+
+msgid "Current avatar"
+msgstr "Avatar actual"
+
+msgid "Change avatar"
+msgstr "Cambiar avatar"
+
+msgid "Upload avatar"
+msgstr "Subir avatar"
+
+msgid "Manage your Avatar"
+msgstr "Gestión de Avatar"
+
+msgid "Attribute"
+msgstr "Atributo"
+
+msgid "deactivated"
+msgstr "desactivada"
+
+msgid "activated"
+msgstr "activada"
 
 msgid "progress"
 msgstr "Avance"
 
 msgid "Start: %1"
 msgstr "Inicio: %1"
+
+msgid "rule: %1"
+msgstr "regla: %1"
+
+msgid "Delete rule %1?"
+msgstr "¿Borrar regla %1?"
+
+msgid "Rule %1 %2"
+msgstr "Regla %1 %2"
 
 msgid "Edit: %1"
 msgstr "Editar: %1"
@@ -1714,6 +1753,9 @@ msgstr "%1 minutos"
 
 msgid "Refresh"
 msgstr "Refresco"
+
+msgid "Refresh: %1s"
+msgstr "Refresco: %1s"
 
 msgid "Enabled"
 msgstr "Habilitado"
@@ -4070,9 +4112,60 @@ msgstr "usuarios adjuntos"
 msgid "%1 changed topic status from %2 to %3 on %4"
 msgstr "%1 modificó el estado de %2 a %3 el %4"
 
+msgid "Character dot not allowed"
+msgstr "Caracter punto no permitido"
+
+msgid "Fields category"
+msgstr "Campos de categoría"
+
+msgid "Fields configuration"
+msgstr "Configuración de campos"
+
+msgid "System fields"
+msgstr "Campos de sistema"
+
+msgid "Custom fields"
+msgstr "Campos personalizados"
+
+msgid "Templates"
+msgstr "Plantillas"
+
+msgid "Textfield"
+msgstr "Campo de texto"
+
+msgid "Upload files"
+msgstr "Subir ficheros"
+
+msgid "Progress bar"
+msgstr "Barra de progreso"
+
+msgid "Listbox"
+msgstr "Lista de datos"
+
+msgid "%1 created a topic of %2 on %3"
+msgstr "%1 creó un tópico de categoría: %2 el %3"
+
+msgid "User duplicated"
+msgstr "Usuario duplicado"
+
+msgid "Error duplicating user"
+msgstr "Error duplicando usuario"
+
+msgid "Category duplicated"
+msgstr "Categoría duplicada"
+
+msgid "Error duplicating category"
+msgstr "Error duplicando categoría"
 
 
+msgid "Values"
+msgstr "Valores"
 
+msgid "Single"
+msgstr "Único"
+
+msgid "Multiple"
+msgstr "Múltiple"
 
 
 

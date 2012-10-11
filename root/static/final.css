@@ -19,3 +19,19 @@
     height: 16px;
 }
 
+.baseliner-message a {
+    color: #fff;
+}
+
+/* -- put gritter close on the right
+    
+.gritter-close {
+	left:270px;
+}
+*/
+
+.bali-avatar {
+    height: 16px !important;
+    width: 16px !important;
+}
+

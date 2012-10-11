@@ -25,7 +25,7 @@ has ssh     => (
     },
     handles => [ qw/error/ ],
 );
-has _method => qw(is ro default scp);  # for replacing scp with rsync on inheritance
+has _method => qw(is ro isa Any default scp);  # for replacing scp with rsync on inheritance
 
 #with 'Baseliner::Role::Node::Filesys';
 with 'Baseliner::Role::CI::Agent';
@@ -116,7 +116,7 @@ sub put_dir {
     my ($self, %p) = @_;
     my $local = delete $p{local} || $self->local || _throw "Missing local";
     my $remote = delete $p{remote} || $self->home || _throw "Missing remote";
-    if( ! -e $local ) {
+    if( ! (-e $local) && ($local !~ /.*\*$/) ) {
         $self->ret( _loc('File skipped: %1', $local ) );
         return {};
     }

@@ -17,7 +17,7 @@ __PACKAGE__->add_columns(
   "username",
   { data_type => "varchar2", is_nullable => 0, size => 45 },
   "password",
-  { data_type => "varchar2", is_nullable => 0, size => 45 },
+  { data_type => "varchar2", is_nullable => 1, size => 45 },
   "realname",
   { data_type => "varchar2", is_nullable => 1, size => 4000 },
   "avatar",
@@ -30,8 +30,10 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 45 },
   "phone",
   { data_type => "varchar2", is_nullable => 1, size => 25 },
+  "api_key",
+  { data_type => "varchar2", is_nullable => 1, size => 4000 },
   "active",
-  { data_type => "char", is_nullable => 1, size => 1, default => 1 },  
+  { data_type => "char", is_nullable => 1, size => 1, default_value => 1 },  
 );
 __PACKAGE__->set_primary_key("mid");
 
@@ -46,5 +48,8 @@ __PACKAGE__->add_unique_constraint(
 );
 
 sub id { $_[0]->mid; }   # for backwards compatibility
+
+__PACKAGE__->load_components("+Baseliner::Schema::Master");
+__PACKAGE__->has_master;
 
 1;

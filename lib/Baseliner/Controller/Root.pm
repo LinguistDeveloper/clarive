@@ -4,8 +4,8 @@ BEGIN { extends 'Catalyst::Controller'; };
 use Baseliner::Utils;
 
 
-register 'action.home.show_lifecycle' => { description => 'User can access the lifecycle panel' };
-register 'action.home.show_menu' => { description => 'User can access the menu' } ;
+register 'action.home.show_lifecycle' => { name => 'User can access the lifecycle panel' };
+register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 
 use Try::Tiny;
 
@@ -57,16 +57,24 @@ sub begin : Private {
     #};
 }
 
+=head2 auto
+
+auto centralizes all auhtentication check and dispatch. 
+
+=cut
 sub auto : Private {
     my ( $self, $c ) = @_;
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
-    return 1 if $c->stash->{auth_skip};
-    return 1 if $c->req->path eq 'i18n/js';
-    return 1 if try { $c->user_exists } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
+
+    # auth check skip
+    return 1 if $c->stash->{auth_skip};
+    return 1 if try { $c->user_exists } catch { 0 };
+    return 1 if $path eq 'i18n/js';
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
+
     # saml?
-    if( $c->config->{saml_auth} eq 'on' ) {
+    if( exists $c->config->{saml_auth} && $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
         return 1 if $saml_username;
     }
@@ -78,6 +86,9 @@ sub auto : Private {
     } elsif( $c->request->params->{fail_on_auth} ) {
         $c->response->status( 401 );
         $c->response->body("Unauthorized");
+    } elsif( $c->stash->{auth_basic} ) {
+        my $ret = $c->forward('/auth/login_basic');
+        return $ret; 
     } else {
         $c->forward('/auth/logoff');
         $c->stash->{after_login} = '/' . $path;
@@ -324,10 +335,14 @@ sub end : ActionClass('RenderView') {
             $c->forward( 'View::JSON');
         }
     }
-    #if( $c->res->content_type eq 'text/html' ) {
-    #    _debug _dump $c->req;
-    #    $c->res->content_type( 'text/css' );
-    #}
+    # set correct content-type, for Mason
+    if( $c->req->path =~ /\.css$/ ) {
+        $c->response->content_type('text/css; charset=utf-8');
+    }
+    elsif( $c->req->path =~ /\.js$/ ) {
+        $c->response->content_type('text/javascript; charset=utf-8');
+    }
+    # send params to mason 
     $c->stash->{$_}=$c->request->parameters->{$_} 
         foreach( keys %{ $c->req->parameters || {} });
 }

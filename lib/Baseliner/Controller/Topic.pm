@@ -98,9 +98,10 @@ sub list : Local {
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
     if( $username && ! $perm->is_root( $username )){
-        my @user_apps = $perm->user_projects_ids( username => $username );
-        push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
-        $where->{'project_id'} =  \@user_apps;
+        #my @user_apps = $perm->user_projects_ids( username => $username );
+        #push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
+        #$where->{'project_id'} =  \@user_apps;
+        $where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username )}, { "=", undef }];
     }
 
     #DEFAULT VIEWS***************************************************************************************************************
@@ -192,10 +193,16 @@ sub list : Local {
     my %projects_report;
     my %assignee;
     my %mid_data;
+    
+    # Controlar que categorias son editables.
+    my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
+    
+    
     for (@mid_data) {
         my $mid = $_->{topic_mid};
         $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
         $mid_data{ $mid }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
+        $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $_->{category_name}};
         $_->{label_id}
             ? $id_label{ $mid }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
             : $id_label{ $mid } = {};
@@ -266,13 +273,10 @@ sub related : Local {
     $where->{'categories.is_release'} = $show_release;
     
     if($p->{filter} && $p->{filter} ne 'none'){
+        ##Tratamos todos los tópicos, independientemente si son releases o no.
+        delete $where->{'categories.is_release'}; 
         my $p = _decode_json($p->{filter});
         
-        #if($p->{labels}){
-        #    my @labels = _array $p->{labels};
-        #    $where->{'label_id'} = \@labels;
-        #}
-    
         if($p->{categories}){
             my @categories = _array $p->{categories};
             if(@categories){
@@ -372,28 +376,29 @@ sub get_meta_permissions : Local {
     my @hidden_field;
     
     my $is_root = $c->model('Permissions')->is_root( $c->username );
-    
+
     if (!$is_root) {
         for (_array $meta){
 
-            my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . '.write';
+            my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
             #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+            
             
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                 $_->{readonly} = \1;
             }
             
-            my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $data->{name_status} . '.' . lc $_->{name_field} . '.read';
+            my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
             #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
             #_error $read_action;
     
             if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
-                push @hidden_field, $_->{name_field};
+                push @hidden_field, $_->{id_field};
             }
         }
         
         my %hidden_field = map { $_ => 1} @hidden_field;
-        $meta = [grep { !($hidden_field{ $_->{name_field} }) } _array $meta];
+        $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
     }
     
@@ -431,8 +436,14 @@ sub view : Local {
     
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} = $p->{swEdit};
+    $c->stash->{permissionEdit} = 0;
+    
+    my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
     if($topic_mid || $c->stash->{topic_mid} ){
+ 
+        my @id_category = map {$_->{id_category} } DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->hashref->all;
+        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category[0]};
  
         # comments
         $self->list_posts( $c );  # get comments into stash        
@@ -443,8 +454,9 @@ sub view : Local {
         #];
  
     }else{
-        $id_category = $p->{categoryId};
-
+        $id_category = $p->{new_category_id};
+        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
+        
         $c->stash->{topic_mid} = '';
         $c->stash->{events} = '';
         $c->stash->{comments} = '';

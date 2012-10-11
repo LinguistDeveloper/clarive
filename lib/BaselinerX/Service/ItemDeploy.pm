@@ -83,9 +83,12 @@ Get all mappings from DB.
 =cut
 sub mappings {
     my ($self, %p ) = @_;
-    my @m = map { $_->kv } kv->find( provider => DOMAIN )->all;
+    # my @m = map { $_->kv } kv->find( provider => DOMAIN )->all;
+    my @m = map { _ci( $_->{mid} ) } 
+        DB->BaliMaster->search({ collection=>'itemdeploy' })->hashref->all;
+    
     # sort by order
-    #@m = sort { $_->{order} <=> $_->{order} } @m;
+    @m = sort { $_->{order} <=> $_->{order} } @m;
     return wantarray ? @m : \@m;
 }
 
@@ -109,7 +112,8 @@ sub select_mappings {
     my @workspaces;
     sub files_clean { my @arr = map { "$_" } _array @_; \@arr };
     for my $m ( @mappings ) {
-        next unless $m->{bl} eq '*' || $m->{bl} eq $job->bl;
+        $m->{bl} = { map { $_ => 1 } split /,/, $m->{bl} } unless ref $m->{bl} eq 'HASH'; # in the future, all CI bl should be {}
+        next unless $m->{bl}->{'*'} || $m->{bl}->{ $job->bl() };
 
         if( defined $m->{active} && !$m->{active} ) {
             $log->debug( _loc("Mapping name %1 not active. Ignored", $m->{name} ) );
@@ -175,19 +179,17 @@ sub select_mappings {
         my @deploy = map {
             my @deployments;
             my $destination_node = $_;
-            my $ci_destination = Baseliner::CI->new( $destination_node );
             for my $origin ( @origins ) {
                 my $re_wks = qr/$m->{workspace}/;
                 # parse vars again for single scripts
                 my @scripts_single_parsed = map {
-                    my $ci = Baseliner::CI->new( $_ );
-                    my $script = $ci;
+                    my $script = $_;
                     my $ret;
                     if( "$origin" =~ $re_wks ) {  # if there's matching
                         my $vars_origin = { %+ };
                         $vars_origin->{origin} = "$origin";
                         $vars_origin->{basename} = $origin->basename;
-                        $vars_origin->{home} = $ci_destination->{home};
+                        $vars_origin->{home} = $destination_node->{home};
                         $ret = parse_vars( $script, $vars_origin );
                         # XXX put this in a top level service
                         try {
@@ -221,18 +223,14 @@ sub select_mappings {
                 scripts     => \@scripts_single_parsed,
             };
             # remove base path ?
-                $deployment->{base} = $m->{workspace} unless $m->{no_paths} eq 'true';
+                $deployment->{base} = $m->{workspace} unless $m->{no_paths} ;
                 $log->debug( _loc("*Pushed deployment* for `%1`", $_ ), dump=>$deployment );
                 push @deployments, $deployment;
             }
             @deployments;
         } _array $m->{deployments};
         push @{ $job_stash->{deployments}->{ DOMAIN() } }, @deploy;
-
-        push @{ $job_stash->{deployment_scripts}->{ DOMAIN() } }, 
-            map {
-                Baseliner::CI->new( $_ )
-            } _array $m->{scripts_multi};
+        push @{ $job_stash->{deployment_scripts}->{ DOMAIN() } }, _array $m->{scripts_multi};
     }
     return @workspaces;
 }
@@ -251,7 +249,7 @@ sub _unique_paths {
             $paths{ $path } = ();
         }
     }
-    $log->info( "Unique paths", dump=>[keys %paths] );
+    $log->info( "Unique paths", dump=>[ sort keys %paths] );
     return map { _dir( $job_root, $_ ) } keys %paths;
 }
 

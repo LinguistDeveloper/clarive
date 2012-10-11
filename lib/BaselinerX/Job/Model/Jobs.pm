@@ -489,11 +489,12 @@ sub user_has_access {
     return Baseliner->model('Baseliner::BaliJob')->search($where)->first;
 }
 
-sub log {
+sub log_this {
     my ($self,%p) = @_;
     $p{jobid} or _throw 'Missing jobid';
     my $args = { jobid=>$p{jobid} };
     $args->{exec} = $p{job_exec} if $p{job_exec} > 0;
+
     return new BaselinerX::Job::Log( $args );
 }
 

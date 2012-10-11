@@ -39,10 +39,10 @@
         fieldLabel:_('Projects'), value: params.projects });
     //var projects = Baseliner.ci_box({ name:'projects', fieldLabel:_('Projects'), role:'Project', value: params.projects, singleMode:false })
 
-    var scripts_multi = Baseliner.cis({ name:'scripts_multi', hiddenName:'scripts_multi', role: 'Script', allowBlank:true,
+    var scripts_multi = Baseliner.cis({ name:'scripts_multi', hiddenName:'scripts_multi', role: 'Script', allowBlank:true, singleMode:false,
         fieldLabel:_('Scripts Multi'), value: params.scripts_multi });
 
-    var scripts_single = Baseliner.cis({ name:'scripts_single', hiddenName:'scripts_single', role: 'Script', allowBlank:true,
+    var scripts_single = Baseliner.cis({ name:'scripts_single', hiddenName:'scripts_single', role: 'Script', allowBlank:true, singleMode:false,
         fieldLabel:_('Scripts Single'), value: params.scripts_single });
 
     var deployments = Baseliner.cis({ name:'deployments', hiddenName:'deployments', role: 'Destination', description: _('List of nodes to deploy to'),
@@ -59,7 +59,7 @@
      return [
         //new Baseliner.model.Projects({ value: params.projects || params.project }),
         projects,
-        Baseliner.combo_baseline({ value: params.bl || '*' }) ,
+        //Baseliner.combo_baseline({ value: params.bl || '*' }) ,
         {
             xtype: 'textfield',
             name: "workspace",

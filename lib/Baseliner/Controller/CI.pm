@@ -147,6 +147,7 @@ sub tree_classes {
             class      => $_,
             icon       => $_->icon,
             has_bl     => $_->has_bl,
+            has_description     => $_->has_description,
             versionid    => '',
             ts         => '-',
             properties => '',
@@ -513,6 +514,43 @@ sub delete : Local {
         $c->stash->{json} = { success=>\0, msg=>_loc('Error deleting CIs: %1', $err) };
     };
     $c->forward('View::JSON');
+}
+
+sub export : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $mids = delete $p->{mids};
+    my $format = $p->{format} || 'yaml';
+
+    try {
+        my @cis = map { _ci( $_ ) } _array $mids;
+        my $data;
+        if( $format eq 'yaml' ) {
+            $data = _dump( \@cis );
+        }
+        elsif( $format eq 'json' ) {
+            $data = _encode_json( [ map { _damn( $_ ) } @cis ] );
+        }
+        else {
+            _fail _loc "Unknown export format: %1", $format;
+        }
+        $c->stash->{json} = { success=>\1, msg=>_loc('CIs exported ok' ), data=>$data };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg=>_loc('Error exporting CIs: %1', $err) };
+    };
+    $c->forward('View::JSON');
+}
+
+sub export_html : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $mids = delete $p->{mids};
+    my $format = $p->{format} || 'yaml';
+
+    my @cis = map { _ci( $_ ) } _array $mids;
+    $c->stash->{cis} = \@cis;
+    $c->stash->{template} = '/comp/ci-data.html';
 }
 
 sub url : Local {

@@ -11,6 +11,8 @@ BEGIN { extends 'Catalyst::Controller' }
 
 #register 'menu.admin.chain' => { label => ' Chains' };
 
+register 'action.admin.view_distribution_chains' => { name => 'Administer job chains'};
+
 register 'menu.admin.chain' => {
   label    => 'Job Chains',
   url_comp => '/chain/grid',

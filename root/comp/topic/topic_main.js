@@ -2,6 +2,7 @@
     use Baseliner::Utils;
     my $ii = Baseliner::Utils::_nowstamp();
     my $swEdit = $c->stash->{swEdit};
+    my $permEdit = $c->stash->{permissionEdit};
 </%perl>
 
 (function(params){
@@ -289,14 +290,22 @@
     };
     detail.on( 'render', function() {
         detail_reload();
-%if($swEdit){    
+%if($swEdit){
+%    if(!$permEdit){
+        btn_edit.hide();
+%    }
+%    else{
         btn_edit.toggle(true);
         btn_detail.toggle(false);
-        show_form();
+        show_form();        
+%    }
 %}        
     });
     
-
+%if(!$permEdit){
+    btn_edit.hide();
+%}
+    
     //Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
     //    load_form( rec );
     //});

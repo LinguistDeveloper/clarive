@@ -38,6 +38,7 @@
                         collection: rec.collection,
                         item: rec.collection,
                         has_bl: data.has_bl,
+                        has_description: data.has_description,
                         bl: data.bl,
                         class: rec.class,
                         ci_form: rec.ci_form,
@@ -75,6 +76,7 @@
                 item: data.collection,
                 collection: data.collection,
                 has_bl: data.has_bl,
+                has_description: data.has_description,
                 rec: rec,
                 data: data,
                 class: data.class,
@@ -108,6 +110,26 @@
                     Ext.Msg.alert( _('CI'), res.msg );
                 }
             });
+        }
+    };
+
+    var ci_export = function(format, mode){
+        var checked = Baseliner.multi_check_data( check_sm, 'mid' );
+        if ( checked.count > 0 ) {
+            if( format == 'html' ) {
+                window.open('/ci/export_html?mids=' + checked.data.join('&mids=') + '&mode=' + mode );
+            } else {
+                Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format }, function(res) {
+                    if( res.success ) {
+                        var win = new Ext.Window({ height: 400, width: 800, items: { xtype:'textarea', value: res.data }, layout:'fit', maximizable: true });       
+                        win.show();
+                    } else {
+                        Baseliner.error( _('CI'), res.msg );
+                    }
+                });
+            }
+        } else {
+            Baseliner.message( _('Error'), _('Select rows first') );
         }
     };
 
@@ -202,7 +224,14 @@
             { xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon', 
+                menu:[
+                    { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },
+                    { text:_('JSON'), icon: '/static/images/icons/json.png', handler:function(){ ci_export('json') } },
+                    { text:_('HTML'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'shallow') } },
+                    { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } }
+                ]
+            },
         ],
         viewConfig: {
             //headersDisabled: true,

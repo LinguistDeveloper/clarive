@@ -69,7 +69,11 @@ Ext.onReady(function(){
         //height: 26,
         height: <% $c->config->{toolbar_height} // 26 %>,
         items: [
+% if( $c->config->{logo_file} ) {
+            '<img src="<% $c->config->{logo_file} %>" style="border:0px;"/>',
+% } else {
             '<img src="/static<% $c->stash->{theme_dir} %>/images/<% $c->config->{logo_filename} || 'logo.jpg' %>" style="border:0px;"/>',
+% }
             '-',
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
             ,
@@ -95,20 +99,21 @@ Ext.onReady(function(){
                          { text=>_loc('Inbox'),
                              handler=>\'function(){ Baseliner.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.gif" } ); }',
                              icon   =>'/static/images/icons/envelope.gif' },
-                         #FIXME { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
+                         # XXX  { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
+                         { text=>_loc('Preferences'), icon=>'/user/avatar/image.png', handler=>\'function(){ Baseliner.change_avatar(); }' },
                          { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
                     ];
-                    if($user ne 'root'){
-                     $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
+                    if( $c->config->{authentication}->{default_realm} eq 'none' ) { 
+                        $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
                     }
                     $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/icons/users.gif' } );
-                    print js_dumper { text=>$c->username , menu=> [
-            sort {
-                $a->{index}||=0;
-                $b->{index}||=0;
-                $a->{index} <=> $b->{index}
-            } _array($menu) ] };
+                    print js_dumper { xtype=>'button', text=>'<b>'.$c->username.'</b>' , menu=> [
+                        sort {
+                            $a->{index}||=0;
+                            $b->{index}||=0;
+                            $a->{index} <=> $b->{index}
+                        } _array($menu) ] };
                 }else{
                     print js_dumper { text=>_loc('Login'), handler=>\'function(){ Baseliner.login(); }' };
                 }

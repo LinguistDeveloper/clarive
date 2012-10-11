@@ -80,7 +80,6 @@ register 'service.notify.create' => {
             template_engine => 'mason',            
             subject => $config->{subject},
             carrier => 'email',
-            sender => 'Clarive@jazztel',
             vars => {
                 msg => $config->{body},
                 to => $final_to,
@@ -211,7 +210,12 @@ sub notify {
     my ($self,%p)=@_;
 
     my @carriers = _array( $p{carriers} , $p{carrier} );
-    $p{sender}.='@'.config_get('config.comm.email')->{domain} unless $p{sender} =~ m{@};
+
+    if ( $p{sender} ) {
+        $p{sender} .='@'.config_get('config.comm.email')->{domain} unless $p{sender} =~ m{@};
+    } else {
+        $p{sender} = config_get('config.comm.email')->{from};
+    }
     _throw 'Missing carrier' unless @carriers;
 
     my %users;

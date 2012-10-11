@@ -69,6 +69,7 @@
         eval('btn_surrogate.' + action + '()');
         eval('btn_buzon.' + action + '()');
         eval('btn_edit.' + action + '()');
+        eval('btn_duplicate.' + action + '()');
         eval('btn_delete.' + action + '()');
     }
 
@@ -118,7 +119,7 @@
 
     var add_edit = function(rec) {
         var win;
-        var username_readonly = false;
+        //var username_readonly = false;
         
         var store_user_roles_projects = new Baseliner.JsonStore({
             root: 'data' , 
@@ -541,7 +542,7 @@
                         // left column
                         defaults:{anchor:'100%'}
                         ,items:[
-                            { fieldLabel: _('User'), name: 'username', emptyText: 'Usuario', allowBlank:false, xtype: 'textfield', readOnly: rec?true:false}
+                            { fieldLabel: _('User'), name: 'username', emptyText: 'Usuario', allowBlank:false, xtype: 'textfield'}
                             ]
                         },
                         {
@@ -692,7 +693,7 @@
             ff.loadRecord( rec );
             username = rec.get('username');
             title = 'Edit user';
-            username_readonly = true;
+            //username_readonly = true;
         }
 
         win = new Ext.Window({
@@ -735,6 +736,34 @@
             };
         }
     });
+    
+    
+    var btn_duplicate = new Ext.Toolbar.Button({
+        text: _('Duplicate'),
+        icon:'/static/images/icons/copy.gif',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                Baseliner.ajaxEval( '/user/duplicate',
+                    { id_user: sel.data.id },
+                    function(response) {
+                        if ( response.success ) {
+                            store.reload();
+                            Baseliner.message( _('Success'), response.msg );
+                            init_buttons('disable');
+                        } else {
+                            Baseliner.message( _('ERROR'), response.msg );
+                        }
+                    }
+                
+                );                
+            } else {
+                Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+            };
+        }
+    });    
     
     var btn_delete = new Ext.Toolbar.Button({
         text: _('Delete'),
@@ -823,6 +852,7 @@
 % if ($c->stash->{can_maintenance}) {
                 btn_add,
                 btn_edit,
+                btn_duplicate,
                 btn_delete,
 %}
                 '->'

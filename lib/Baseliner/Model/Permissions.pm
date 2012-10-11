@@ -1,4 +1,4 @@
-    package Baseliner::Model::Permissions;
+package Baseliner::Model::Permissions;
 use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
@@ -302,11 +302,24 @@ sub user_projects {
 
 sub user_projects_query {
     my ( $self, %p ) = @_;
-    _throw 'Missing username' unless exists $p{ username };
-    Baseliner->model( 'Baseliner::BaliRoleuser' )
-        ->search( { username => $p{username} },
-        { distinct=>1, select => [ 'id_project' ], as => [ 'id' ] } )->as_query ;
-}
+    _throw 'Missing username' unless exists $p{username};
+
+    if ( $self->is_root( $p{username} ) ) {
+        DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
+    } else {
+        my @rs = Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => $p{username}},
+            {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->hashref->all;
+        if ( @rs ) {
+            if ( !$rs[ 0 ]->{id} ) {
+                DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
+            } else {
+                Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => $p{username}},
+                    {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->as_query;
+            }
+
+        } ## end if ( @rs )
+    } ## end else [ if ( $self->is_root( $p...))]
+} ## end sub user_projects_query
 
 =head2 user_projects_ids( username=>Str )
 
@@ -315,7 +328,14 @@ Returns an array of project ids for the projects the user has access to.
 =cut
 sub user_projects_ids {
     my ( $self, %p ) = @_;
-    _unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );
+	_throw 'Missing username' unless exists $p{username};
+	my $is_root = $self->is_root( $p{username} );
+	my $todos = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
+	if ($todos || $is_root){
+		map { $_->{mid} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+	}else{
+		_unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );	
+	}
 }
 
 =head2 user_projects_names( username=>Str )

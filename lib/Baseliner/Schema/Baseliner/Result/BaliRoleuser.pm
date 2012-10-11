@@ -18,32 +18,6 @@ Baseliner::Schema::Baseliner::Result::BaliRoleuser
 
 __PACKAGE__->table("bali_roleuser");
 
-=head1 ACCESSORS
-
-=head2 username
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 0
-  size: 255
-
-=head2 id_role
-
-  data_type: NUMBER
-  default_value: undef
-  is_foreign_key: 1
-  is_nullable: 0
-  size: 38
-
-=head2 ns
-
-  data_type: VARCHAR2
-  default_value: /
-  is_nullable: 0
-  size: 100
-
-=cut
-
 __PACKAGE__->add_columns(
   "username",
   {

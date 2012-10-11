@@ -85,6 +85,13 @@ sub lc_for_project {
             'icon' => '/static/images/icons/job.png',
             'url' => '/lifecycle/tree_project_jobs',
             'type' => 'component',
+            'menu' => [
+                {
+                  icon => '/static/images/icons/job.png',
+                  text => _loc('Open...'),
+                  comp => { url => '/job/monitor' },
+                }
+            ],
           },
           {
             'node' => 'Files',

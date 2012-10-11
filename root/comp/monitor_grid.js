@@ -91,6 +91,7 @@
     var is_portlet = '<% $c->stash->{is_portlet} %>';
     var ps = is_portlet ? 10 : 25; //page_size
     var last_magic = 0;
+    var real_top;
     var div1   = '<div style="white-space:normal !important;">';
     var div2   = '</div>';
     // La fuente de Datos JSON con todos el listado:
@@ -331,31 +332,28 @@
         run: function() {
             var ids=[];
             var top_id=0;
-            var q = store.baseParams['query']; //current search query 
-            if( q != undefined && q !='' ) { return; } //no refresh while querying
-            refresh_button_on();
+            //var q = store.baseParams['query']; //current search query 
+            //if( q != undefined && q !='' ) { return; } //no refresh while querying
+            refresh_button_wait_on();
             store.each( function(rec) {
                 var id = rec.data.id;
-                if( id>top_id ) top_id = id;
+                if( parseInt(id) > parseInt( top_id ) ) {
+                    top_id = id;
+                }
                 ids.push(id);
             });
-            Ext.Ajax.request({
-                url: '/job/refresh_now',
-                params: { ids: ids, top: top_id },
-                failure: function(xhr) { },
-                success: function(xhr) {
-                    refresh_button_off();
-                    try {
-                        var res = xhr.responseText;
-                        var data = Ext.util.JSON.decode( res );
-                        if( last_magic>0 && data.magic!=last_magic ) {
-                            store.load();
-                        } 
-                        if( data.need_refresh > 0 ) {
-                            store.load();
-                        }
-                        last_magic = data.magic;
-                    } catch(e) { }
+            // send from and where, to determine if there's a more recent job
+            Baseliner.ajaxEval( '/job/refresh_now',
+                { ids: ids, top: top_id, real_top: real_top, last_magic: last_magic, _ignore_conn_errors: true  }, function(res) {
+                refresh_button_wait_off();
+                if( ! res.success ) {
+                    refresh_stop();
+                } else {
+                    if( res.need_refresh  ) {
+                        store.reload();
+                    }
+                    last_magic = res.magic;
+                    real_top = res.real_top;
                 }
             });
         },
@@ -366,13 +364,14 @@
         if( checked && item.value>0 ) {
             task.interval = item.value * 1000;
             autorefresh.start(task); 
+            item.parentMenu.ownerCt.setText( '<b>' + _('Refresh: %1s', item.value ) + '</b>' );
         } 
         else if( checked && item.value<1 ) {
-            autorefresh.stop( task );
+            refresh_stop();
         }
     };
-    var refresh_button_on = function() { refresh_button.getEl().setOpacity( .3 ); };
-    var refresh_button_off = function() { refresh_button.getEl().setOpacity( 1 ); };
+    var refresh_button_wait_on = function() { refresh_button.getEl().setOpacity( .3 ); };
+    var refresh_button_wait_off = function() { refresh_button.getEl().setOpacity( 1 ); };
     var refresh_menu = new Ext.menu.Menu({
             items: [
                 { text: _('Stopped'), value: 0, checked: true, group: 'refresh', checkHandler: refresh_set },
@@ -390,6 +389,7 @@
     });
     var refresh_stop = function() {
         refresh_menu.items.first().setChecked(true);
+        refresh_button.setText( _('Refresh') );
         autorefresh.stop(task);
     };
 
@@ -653,7 +653,7 @@
                 { header: _('MID'), width: 30, dataIndex: 'mid', sortable: true, hidden: true },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
-                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
+                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
@@ -683,10 +683,10 @@
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({
                     text: _('New Job'),
-                    icon:'/static/images/star_on.gif',
+                    icon:'/static/images/icons/job.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
-                        Baseliner.addNewTabComp('/job/create', _('New Job') );
+                        Baseliner.add_tabcomp('/job/create', _('New Job'), { tab_icon: '/static/images/icons/job.png' } );
                     }
                 }),
 % }

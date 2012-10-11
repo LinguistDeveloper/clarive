@@ -30,11 +30,13 @@ __PACKAGE__->add_columns(
   {
     data_type => "varchar2",
     size => 2048,
-    is_nullable => 0,
+    is_nullable => 1,
   },
+  "value_clob",
+  { data_type => "clob", is_nullable => 1 },  
 );
 
-__PACKAGE__->set_primary_key("topic_mid");
+__PACKAGE__->set_primary_key("topic_mid", "name");
 
 
 1;
