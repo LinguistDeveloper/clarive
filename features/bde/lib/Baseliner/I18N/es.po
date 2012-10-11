@@ -21,3 +21,6 @@ msgstr "Error durante la actualización de usuarios en LDIF"
 msgid "Update LDIF user process finished successfully"
 msgstr "Actualización de usuarios LDIF finalizada con éxito"
 
+msgid "Notify when an error acurred during reports generation"
+msgstr "Notificar cuando se produzca un error durante la generación de errores"
+

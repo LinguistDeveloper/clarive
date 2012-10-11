@@ -21,8 +21,8 @@ use Exporter::Tidy default => [
     write_arg_file car cdr _package natures_json job_states_json envs_json
     existsp harver intp dir_has_files_p job_assert _har_db natures_from_packagenames
     types_json packagep get_job_natures get_job_subapps cam_to_projectid
-    users_with_permission notify_ldif_error split_date month_to_quarter in_natures_p
-    bali_natures packagenames_to_natures baseliner_projects_1stlevel sql_date
+    users_with_permission notify_ldif_error notify_error split_date month_to_quarter
+    in_natures_p bali_natures packagenames_to_natures baseliner_projects_1stlevel sql_date
   }
 ];
 
@@ -879,6 +879,30 @@ sub users_with_permission {
   $p_model->list(action => $action, ns => $ns, bl => $bl);
 }
 
+
+=head2
+
+Notifies a custom error for all the users that can be notified about action errors.
+
+=cut
+sub notify_error {
+  my ($subject, $message, $action) = @_;
+  my $mailcfg   = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
+  my @users    = users_with_permission '$action';
+  my $m_sender = Baseliner->model('Messaging');
+  $m_sender->notify(to              => {users => \@users},
+                    subject         => $subject,
+                    sender          => $mailcfg->{from},
+                    carrier         => 'email',
+                    template        => 'email/bde_error.html',
+                    template_engine => 'mason',
+                    vars            => {
+                      	subject   => $subject,
+                      	message   => $message,
+                        url       => _notify_address(),
+                        });
+  return;
+}
 
 =head2
 

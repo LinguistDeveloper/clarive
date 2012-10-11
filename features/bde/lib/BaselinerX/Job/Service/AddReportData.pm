@@ -2,12 +2,15 @@ package BaselinerX::Job::Service::AddReportData;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
+use Try::Tiny;
 use Time::Interval;
 
 with 'Baseliner::Role::Service';
 
 register 'service.baseliner.job.add_report_data' => {name    => 'Puts job data into BALI_JOB_REPORT',
                                                      handler => \&main};
+register 'action.bde.receive.generate_reports_error' => { name=>'Notify when an error acurred during reports generation' };
+
 
 {
   package Month::Convert;
@@ -54,8 +57,28 @@ sub main {
   my ($self, $c, $config) = @_;
   my $job        = $c->stash->{job};
   my $log        = $job->logger;
+  my $job_name   = $job->job_data->{name};
+
+  $log->info(_loc("Generating reports...") );
+  try {
+      $self->GenerateReport_1($c,$config);
+      $self->GenerateReport_2($c,$config);
+  } catch {
+      my $message=$_;
+      my $action = "action.bde.receive.generate_reports_error";
+
+      notify_error(_loc("Error during report generation"), $message, $action);
+  };
+  $log->info(_loc("Reports generated") );
+}
+
+sub GenerateReport_1 {
+  my ($self, $c, $config) = @_;
+  my $job        = $c->stash->{job};
+  my $log        = $job->logger;
   my $elements   = $job->job_stash->{elements}->{elements};
   my $job_name   = $job->job_data->{name};
+  my $job_owner  = $job->job_data->{username};
   my $bl         = $job->job_data->{bl};
   my $start_time = $job->job_data->{starttime};
   my $end_time   = $job->job_data->{endtime};
@@ -68,7 +91,6 @@ sub main {
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
   # Capture the providers so we can identify whether it is a ZOS job.
   my $is_zos_p = 'namespace.changeman.package' ~~ _unique map { $_->{provider} } @{$job->job_stash->{contents}};
-  $log->info("Capturando informacion del pase.");
   my $month_converter = Month::Convert->new;
   my $addf = sub {
     my ($hashref) = @_; 
@@ -84,24 +106,23 @@ sub main {
     $_->{duration}    = $duration;
     $_->{status}      = $status eq 'RUNNING' ? 'FINISHED' : $status; # This is the last step anyway so let's assume everything's fine
     $_->{month_str}   = $month_converter->month_int_to_str($_->{month});
+    $_->{username}    = $job_owner;
     $_;
   };
-  my @data = $is_zos_p ? $self->build_changeman_data($addf, map { _pathxs $_, 1 } grep {$_} map { $_->{application} } @{$job->job_stash->{contents}})
+  my @data = $is_zos_p ? $self->build_changeman_data($addf, map { _pathxs $_, 1 } grep {$_} map { $_->{application} } @{$job->job_stash->{contents}}, $job )
                        : map  { $addf->($_) } # Add the rest of the stuff
                          grep { $_->{technology} ~~ @natures } # Remove unwanted natures, get only those that are registered
                          map +{project => $_->[0], subapplication => $_->[1], technology => $_->[2]}, # Hashify!
                          map  { [split '#', $_] } _unique map { join '#', @{$_} } # Remove duplicates
                          map  { $self->data_tuple($_->{fullpath}, @natures_with_subapps) } @{$elements}; # Make tuple
-  $log->info("Creando reportes de pase.");
   my $m = Baseliner->model('Baseliner::BaliJobReport');
   $m->create($_) for @data;
-  $log->info("Reportes creados");
   return;
 }
 
 sub build_changeman_data {
-  my ($self, $addf, @applications) = @_;
-  map { $addf->($_) } map +{project => $_, subapplication => '', technology => 'ZOS'}, @applications;
+  my ($self, $addf, @applications, $job) = @_;
+  map { $addf->($_) } map +{project => $_, subapplication => '', technology => 'ZOS', statename => Baseliner->model('Baseliner::BaliBaseline')->search({bl=>$job->job_data->{bl}})->first->name ,origin => uc ( $job->job_stash->{origin}||'baseliner' ) }, @applications;
 }
 
 sub data_tuple {

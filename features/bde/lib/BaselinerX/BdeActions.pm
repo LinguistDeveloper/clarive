@@ -18,4 +18,7 @@ register 'action.bde.view_distribution_chains' =>
 register 'action.bde.receive.ldif_errors' =>
   {name => 'Receives mails with information regarding Ldif file load errors'};
 
+register 'action.bde.receive.generate_reports_error' =>
+  {name => 'Receives mails with information regarding Report generation errors'};
+
 1;

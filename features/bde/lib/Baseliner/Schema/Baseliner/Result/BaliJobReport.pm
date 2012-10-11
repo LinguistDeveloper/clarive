@@ -23,7 +23,10 @@ __PACKAGE__->add_columns(
   'duration', {data_type => 'integer', is_nullable => 0},
   'environment', {data_type => 'varchar2', is_nullable => 0, size => 20},
   'status', {data_type => 'varchar2', is_nullable => 0, size => 20},
-  'month_str', {data_type => 'varchar2', is_nullable => 1, size => 20}
+  'month_str', {data_type => 'varchar2', is_nullable => 1, size => 20},
+  'origin', {data_type => 'varchar2', is_nullable => 1, size => 9},
+  'username', {data_type => 'varchar2', is_nullable => 1, size => 8},
+  'nodist', {data_type => 'char', is_nullable => 0, size => 1, default_value => '0'},
 );
 
 __PACKAGE__->set_primary_key('id');
