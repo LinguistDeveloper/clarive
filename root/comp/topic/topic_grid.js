@@ -188,7 +188,7 @@
 			},
 			columns: [
 			  { header: _('Name'), width: 200, dataIndex: 'name', renderer: render_category },
-			  { header: _('Name'), width: 450, dataIndex: 'description' }
+			  { header: _('Description'), width: 450, dataIndex: 'description' }
 	
 			]
 		});
