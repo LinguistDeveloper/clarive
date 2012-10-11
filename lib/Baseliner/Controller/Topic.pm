@@ -881,7 +881,7 @@ sub filters_list : Local {
 
     $row = $c->model('Baseliner::BaliLabel')->search();
     
-    if($row){
+    if($row->next){
         while( my $r = $row->next ) {
             push @labels, {
                 id  => $i++,
@@ -907,7 +907,7 @@ sub filters_list : Local {
     my @statuses;
     $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
-    if($row){
+    if($row->next){
         while( my $r = $row->next ) {
             push @statuses,
                 {
@@ -936,7 +936,7 @@ sub filters_list : Local {
     my @priorities;
     $row = $c->model('Baseliner::BaliTopicPriority')->search();
     
-    if($row){
+    if($row->next){
         while( my $r = $row->next ) {
             push @priorities,
             {
