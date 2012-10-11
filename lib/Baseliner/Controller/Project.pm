@@ -508,7 +508,7 @@ sub user_projects : Local {
     $dir ||= 'asc';
     $limit ||= 100;
     #$query and $query = qr/$query/i;
-    my @rows;
+    #my @rows;
     my $username = $c->username;
     my $perm = $c->model('Permissions');
     #if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
