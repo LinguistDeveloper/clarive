@@ -516,11 +516,16 @@ sub user_projects : Local {
         # username can view jobs where the user has access to view the jobcontents corresponding app
         # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
     #}
-    @rows =  $perm->user_namespaces( $username ); # user apps
-    @rows = grep { $_ ne '/' } @rows unless $c->is_root || $p->{include_root};
-    _error \@rows;
-   #@rows = grep { $_ =~ $query } @rows if $query;
-    my $rs = $c->model('Baseliner::BaliProject')->search({ ns=>\@rows });
+    #@rows =  $perm->user_namespaces( $username ); # user apps
+    #@rows = grep { $_ ne '/' } @rows unless $c->is_root || $p->{include_root};
+    #_error \@rows;
+    #@rows = grep { $_ =~ $query } @rows if $query;
+   
+    my @rows = $c->model( 'Permissions' )->user_projects_ids(
+        username => $username
+    );
+	
+    my $rs = $c->model('Baseliner::BaliProject')->search({ mid => \@rows });
     rs_hashref($rs);
     _error [ $rs->all ];
     @rows = map { 
