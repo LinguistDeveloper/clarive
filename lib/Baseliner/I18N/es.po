@@ -24,6 +24,9 @@ msgstr "por %1"
 msgid "All-f"
 msgstr "Todas"
 
+msgid "Change password"
+msgstr "Cambiar contraseña"
+
 msgid "Current avatar"
 msgstr "Avatar actual"
 

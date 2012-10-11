@@ -147,6 +147,7 @@ sub tree_classes {
             class      => $_,
             icon       => $_->icon,
             has_bl     => $_->has_bl,
+            has_description     => $_->has_description,
             versionid    => '',
             ts         => '-',
             properties => '',

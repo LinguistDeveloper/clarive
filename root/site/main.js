@@ -99,13 +99,13 @@ Ext.onReady(function(){
                          { text=>_loc('Inbox'),
                              handler=>\'function(){ Baseliner.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.gif" } ); }',
                              icon   =>'/static/images/icons/envelope.gif' },
-                         #FIXME { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
-                         { text=>_loc('Avatar'), icon=>'/user/avatar/image.png', handler=>\'function(){ Baseliner.change_avatar(); }' },
+                         # XXX  { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
+                         { text=>_loc('Preferences'), icon=>'/user/avatar/image.png', handler=>\'function(){ Baseliner.change_avatar(); }' },
                          { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
                     ];
-                    if($user ne 'root'){
-                     $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
+                    if( $c->config->{authentication}->{default_realm} eq 'none' ) { 
+                        $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
                     }
                     $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/icons/users.gif' } );
                     print js_dumper { xtype=>'button', text=>'<b>'.$c->username.'</b>' , menu=> [

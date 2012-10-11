@@ -36,6 +36,7 @@ has job     => qw(is rw isa Baseliner::Role::JobRunner),
 
 # methods 
 sub has_bl { 1 } 
+sub has_description { 1 } 
 sub icon_class { '/static/images/ci/class.gif' }
 sub rel_type { +{} }   # { field => rel_type, ... }
 

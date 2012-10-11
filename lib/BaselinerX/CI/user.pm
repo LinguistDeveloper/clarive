@@ -5,6 +5,7 @@ with 'Baseliner::Role::CI::Internal';
 sub icon { '/static/images/icons/user.gif' }
 
 sub storage { 'BaliUser' }
+sub has_description { 0 }
 
 around table_update_or_create => sub {
     my ($orig, $self, $rs, $mid, $data, @rest ) = @_;

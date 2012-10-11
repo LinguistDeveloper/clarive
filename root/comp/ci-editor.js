@@ -61,6 +61,7 @@
     });
     var txt = (params.action == 'add' ? 'New: %1' : 'Edit: %1' );
     var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'] });
+    var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 };
     var form = new Ext.FormPanel({
         url:'/ci/update',
         tbar: tb,
@@ -75,10 +76,7 @@
                 style:'font-size: 18px;' },
             { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
             ( params.has_bl > 0 ? bl_combo : [] ),
-            { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 },
-            //Baseliner.combo_baseline({ value: params.bl || '*' }),
-            //{ xtype: 'hidden', name:'collection', value: params.collection },
-            //{ xtype: 'hidden', name:'mid' , value: params.rec.mid },
+            ( params.has_description > 0 ? desc : [] ),
             fieldset
         ]
     });

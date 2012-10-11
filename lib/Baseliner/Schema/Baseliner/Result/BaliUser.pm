@@ -30,6 +30,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 45 },
   "phone",
   { data_type => "varchar2", is_nullable => 1, size => 25 },
+  "api_key",
+  { data_type => "varchar2", is_nullable => 1, size => 4000 },
   "active",
   { data_type => "char", is_nullable => 1, size => 1, default_value => 1 },  
 );
