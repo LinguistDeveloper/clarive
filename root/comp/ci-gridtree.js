@@ -38,6 +38,7 @@
                         collection: rec.collection,
                         item: rec.collection,
                         has_bl: data.has_bl,
+                        has_description: data.has_description,
                         bl: data.bl,
                         class: rec.class,
                         ci_form: rec.ci_form,
@@ -75,6 +76,7 @@
                 item: data.collection,
                 collection: data.collection,
                 has_bl: data.has_bl,
+                has_description: data.has_description,
                 rec: rec,
                 data: data,
                 class: data.class,
@@ -126,6 +128,8 @@
                     }
                 });
             }
+        } else {
+            Baseliner.message( _('Error'), _('Select rows first') );
         }
     };
 

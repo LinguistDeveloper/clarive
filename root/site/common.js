@@ -129,23 +129,44 @@ Baseliner.change_avatar = function() {
             reload_avatar_img();
         });
     };
-    var rnd = Math.floor(Math.random()*80000);
-    var img = String.format('<img width="32" id="{0}" style="border: 2px solid #bbb" src="/user/avatar/image.png?{1}" />', img_id, rnd );
-    var win = new Ext.Window({
-        title: _('Manage your Avatar'),
-        layout:'fit', width: 300, height: 300, 
-        bodyStyle: { 'background-color':'#fff', padding: 20 },
-        items: [
-            { xtype:'panel', layout:'form', frame: false,
-                items: [
-                    { xtype:'container', fieldLabel:_('Current avatar'), html: img },
-                    { xtype:'button', width: 80, fieldLabel: _('Change avatar'), scale:'large', text:_('Generate'), handler:gen_avatar },
-                    { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] }
-                  ]
-            }
-        ]
+    var rnd = Math.floor(Math.random()*80000); // avoid caching
+    Baseliner.ajaxEval('/user/user_data', {}, function(res){
+        if( !res.success ) {
+            Baseliner.error( _('User data'), res.msg );
+            return;
+        }
+        var img = String.format('<img width="32" id="{0}" style="border: 2px solid #bbb" src="/user/avatar/image.png?{1}" />', img_id, rnd );
+        var api_key = res.data.api_key;
+        var gen_apikey = function(){
+            Baseliner.ajaxEval('/user/gen_api_key', {}, function(res){
+                Baseliner.message( _('API Key'), res.msg );
+                if( res.success ) {
+                    api_key.setValue( res.api_key );
+                }
+            });
+        };
+        var api_key = new Ext.form.TextArea({ height: 50, anchor:'90%',fieldLabel:_('API Key'), value: api_key });
+        var api_key_form = [
+            api_key,
+            { xtype:'button',  fieldLabel: _('Generate api key'), scale:'large', text:_('Generate API Key'), handler:gen_apikey }
+        ];
+        var win = new Ext.Window({
+            title: _('Manage your Avatar'),
+            layout:'fit', width: 600, height: 400, 
+            bodyStyle: { 'background-color':'#fff', padding: 20 },
+            items: [
+                { xtype:'panel', layout:'form', frame: false,
+                    items: [
+                        api_key_form,
+                        { xtype:'container', fieldLabel:_('Current avatar'), html: img },
+                        { xtype:'button', width: 80, fieldLabel: _('Change avatar'), scale:'large', text:_('Generate Avatar'), handler:gen_avatar },
+                        { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] }
+                      ]
+                }
+            ]
+        });
+        win.show(); 
     });
-    win.show(); 
 };
 
 $.extend($.gritter.options, { position: 'bottom-right' } );

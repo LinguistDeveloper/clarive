@@ -92,11 +92,19 @@ sub authenticate : Private {
 
     if( $login =~ /^local\/(.*)$/i ) {
         $login = $1;
-        $auth = try {
-            $c->authenticate({ id=>$login, password=> Digest::MD5::md5_hex( $password ) }, 'local');
-        } catch {
-            $c->log->error( "**** LOGIN ERROR: " . shift() );
-        }; # realm may not exist
+        my $local_store = try { $c->config->{authentication}{realms}{local}{store}{users}{ $login } } catch { +{} };
+        _debug $c->config->{authentication}{realms}{local};
+        _debug $local_store; 
+        if( exists $local_store->{api_key} && $password eq $local_store->{ api_key } ) {
+            _debug "Login with API_KEY";
+            $auth = $c->authenticate({ id=>$login }, 'none');
+        } else {
+            $auth = try {
+                $c->authenticate({ id=>$login, password=> Digest::MD5::md5_hex( $password ) }, 'local');
+            } catch {
+                $c->log->error( "**** LOGIN ERROR: " . shift() );
+            }; # realm may not exist
+        }
     } else {
         # default realm authentication:
         $auth = $c->authenticate({ id=>$login, password=> $password });
@@ -112,7 +120,9 @@ sub authenticate : Private {
                     $c->stash->{auth_message} = _loc( 'User is not active');
                     $auth = undef;
                 }
-                if ( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password ) {
+                if ( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password 
+                    && $row->api_key ne $password )
+                {
                     $auth = undef;
                 }
             } else {

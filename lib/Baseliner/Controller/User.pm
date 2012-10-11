@@ -49,24 +49,24 @@ sub actions : Local {
 }
 
 sub info : Local {
-    my ($self, $c, $username) = @_;
+    my ( $self, $c, $username ) = @_;
     $c->stash->{swAsistentePermisos} = 0;
 
-    if($username eq ''){
-    $username = $c->username;
-    $c->stash->{swAsistentePermisos} = 1;
+    if ( $username eq '' ) {
+        $username = $c->username;
+        $c->stash->{swAsistentePermisos} = 1;
     }
-    
-    my $u = $c->model('Users')->get( $username );
-    if( ref $u ) {
-    my $user_data = $u->{data} || {};
-    $c->stash->{username}  = $username;
-    $c->stash->{realname}  = $u->{realname};
-    $c->stash->{alias} = $u->{alias};
-    $c->stash->{email}  = $u->{email};
-    $c->stash->{phone}  = $u->{phone};	
-    
-    # Data from LDAP, or other user data providers:
+
+    my $u = $c->model('Users')->get($username);
+    if ( ref $u ) {
+        my $user_data = $u->{data} || {};
+        $c->stash->{username} = $username;
+        $c->stash->{realname} = $u->{realname};
+        $c->stash->{alias}    = $u->{alias};
+        $c->stash->{email}    = $u->{email};
+        $c->stash->{phone}    = $u->{phone};
+
+        # Data from LDAP, or other user data providers:
         $c->stash->{$_} ||= $user_data->{$_} for keys %$user_data;
     }
     $c->stash->{template} = '/comp/user_info.mas';
@@ -144,6 +144,34 @@ sub infodetail : Local {
                 };
     }
     $c->stash->{json} = { data=>\@rows};		
+    $c->forward('View::JSON');    
+}
+
+sub user_data : Local {
+    my ($self, $c) = @_;
+    try {
+        my $user = DB->BaliUser->search({ username => $c->username })->first;
+        _fail _loc('User not found: %1', $c->username ) unless $user;
+        $c->stash->{json} = { data=>{ $user->get_columns }, msg=>'ok', success=>\1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 };
+    };
+    $c->forward('View::JSON');    
+}
+
+sub gen_api_key : Local {
+    my ($self, $c) = @_;
+    try {
+        my $user = DB->BaliUser->search({ username => $c->username })->first;
+        _fail _loc('User not found: %1', $c->username ) unless $user;
+        my $new_key = _md5 $c->username . ( int ( rand( 32 * 32 ) % time ) ) ;
+        $user->update({ api_key => $new_key });
+        $c->stash->{json} = { api_key=>$new_key, msg=>'ok', success=>\1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 };
+    };
     $c->forward('View::JSON');    
 }
 
