@@ -249,7 +249,7 @@
 
     var render_status_type = function (val){
         if( val == null || val == undefined ) return '';
-        var str = val == 'G' ? _('General') : val == 'I' ? _('Initial') : _('Final');
+        var str = val == 'G' ? _('General') : val == 'I' ? _('Initial') : val == 'D' ? _('Deployable') : _('Final');
         return str;
     }   
     
