@@ -388,10 +388,10 @@
         
         //   Color settings 
         var category_color = new Ext.form.Hidden({ name:'category_color' });
-		category_color.setValue(rec.data.color);
+		category_color.setValue(rec ? rec.data.color : '');
 
         var color_pick = new Ext.ColorPalette({ 
-            value: rec.data.color,
+            value: rec ? rec.data.color : '',
             listeners: {
                 select: function(cp, color){
                    category_color.setRawValue( '#' + color.toLowerCase() ); 
