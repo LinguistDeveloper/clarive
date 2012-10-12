@@ -109,6 +109,34 @@ register 'registor.action.topic_category' => {
     }
 };
 
+register 'registor.action.topic_category_fields' => {
+    generator => sub {
+        my @categories =
+            Baseliner->model('Baseliner::BaliTopicCategories')->search( undef, { order_by => 'name' } )->hashref->all;        
+        
+        my %actions_category_fields;
+        foreach my $category (@categories){
+            my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
+            my @statuses = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')
+                ->search({id_category => $category->{id}}, {join=>'status', 'select'=>'status.name', 'as'=>'name'})->hashref->all;
+            for my $field (_array $meta){
+                for my $status (@statuses){
+                    my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.write';
+                    my $description = _loc('Can not edit the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                    
+                    $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                    
+                    $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
+                    $description = _loc('Can not view the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                    
+                    $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                }
+            }
+        }
+        return \%actions_category_fields;    
+    }
+};
+
 
 sub update {
     my ( $self, $p ) = @_;

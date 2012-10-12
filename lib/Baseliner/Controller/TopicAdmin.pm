@@ -21,17 +21,17 @@ register 'menu.admin.topic' => {
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };
 
-register 'config.field.general' => {
-    metadata => [
-        { id => 'status', label => '', default => 'visible', values => ['visible','hidden','readonly'] },
-    ]
-};
-
-register 'config.field.title' => {
-    metadata => [
-        { id => 'status', label => '', default => 'visible', values => ['visible','hidden','readonly'] },
-    ]
-};
+##register 'config.field.general' => {
+##    metadata => [
+##        { id => 'status', label => '', default => 'visible', values => ['visible','hidden','readonly'] },
+##    ]
+##};
+##
+##register 'config.field.title' => {
+##    metadata => [
+##        { id => 'status', label => '', default => 'visible', values => ['visible','hidden','readonly'] },
+##    ]
+##};
 
 
 sub grid : Local {
@@ -139,16 +139,16 @@ sub update_category : Local {
                     }
                 }
                 
-                foreach ( '%action.topics.' . lc $old_category . '%', '%action.topicsfield.' . lc $old_category . '%'){
-                    my $rs_action = Baseliner->model('Baseliner::BaliAction')->search({ action_id => {'like', $_  }});
-                    while (my $row = $rs_action->next){
-                        my @split_action = split /\./, $row->action_id;
-                        $split_action[2] = lc $p->{name};
-                        my $new_action = join('.',@split_action);
-                        $row->action_id($new_action);
-                        $row->update;
-                    }
-                }                
+                ##foreach ( '%action.topics.' . lc $old_category . '%', '%action.topicsfield.' . lc $old_category . '%'){
+                ##    my $rs_action = Baseliner->model('Baseliner::BaliAction')->search({ action_id => {'like', $_  }});
+                ##    while (my $row = $rs_action->next){
+                ##        my @split_action = split /\./, $row->action_id;
+                ##        $split_action[2] = lc $p->{name};
+                ##        my $new_action = join('.',@split_action);
+                ##        $row->action_id($new_action);
+                ##        $row->update;
+                ##    }
+                ##}                
                 
                 
                 

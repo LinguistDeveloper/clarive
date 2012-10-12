@@ -4178,3 +4178,15 @@ msgstr "Puede ver tópicos de la categoría"
 
 msgid "Can edit topic for this category"
 msgstr "Puede editar tópicos de la categoría"
+
+msgid "Can not edit the field"
+msgstr "No puede editar el campo"
+
+msgid "in the category"
+msgstr "en la categoria"
+
+msgid "for the status"
+msgstr "para el estado"
+
+msgid "Can not view the field"
+msgstr "No puede ver el campo"
