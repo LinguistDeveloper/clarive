@@ -50,6 +50,20 @@ __PACKAGE__->belongs_to(
 );
 
 __PACKAGE__->belongs_to(
+  "category_statuses_from",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus",
+  { id => "id_status_from" },
+  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
+);
+
+__PACKAGE__->belongs_to(
+  "category_statuses_to",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus",
+  { id => "id_status_to" },
+  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
+);
+
+__PACKAGE__->belongs_to(
   "user_role",
   "Baseliner::Schema::Baseliner::Result::BaliRoleuser",
   { id_role => "id_role" },
