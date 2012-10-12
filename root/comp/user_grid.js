@@ -15,7 +15,8 @@
             {  name: 'realname' },
             {  name: 'alias' },
             {  name: 'email' },
-            {  name: 'phone' }
+            {  name: 'phone' },
+            {  name: 'active'}
         ],
         listeners: {
             'load': function(){
@@ -860,7 +861,13 @@
         });
 
         grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-            init_buttons('enable');
+			var r = grid.getStore().getAt(rowIndex);
+            var active = r.get( 'active' );
+            if(active != '0'){
+                init_buttons('enable');   
+            }else{
+                init_buttons('disable');   
+            }
         });
             
     return grid;
