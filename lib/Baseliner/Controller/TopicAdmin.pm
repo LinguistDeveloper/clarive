@@ -168,12 +168,12 @@ sub update_category : Local {
                   
                 my $rs = Baseliner->model('Baseliner::BaliTopicCategories')->search({ id => \@ids_category });
                 
-                while (my $row = $rs->next){
-                    foreach ( '%action.topics.' . lc $row->name . '%', '%action.topicsfield.' . lc $row->name . '%'){
-                        my $rs_action = Baseliner->model('Baseliner::BaliAction')->search({ action_id => {'like', $_  }});
-                        $rs_action->delete;
-                    }
-                }
+                #while (my $row = $rs->next){
+                #    foreach ( '%action.topics.' . lc $row->name . '%', '%action.topicsfield.' . lc $row->name . '%'){
+                #        my $rs_action = Baseliner->model('Baseliner::BaliAction')->search({ action_id => {'like', $_  }});
+                #        $rs_action->delete;
+                #    }
+                #}
                 
                 $rs->delete;
                 
