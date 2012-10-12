@@ -51,7 +51,7 @@
         <tr>
 % for my $col ( _array( $data->{columns} ) ) {
             <th>
-                <% $col->{name} %>
+                <% _loc( $col->{name} ) %>
             </th>
 % }
         </tr>

@@ -401,6 +401,7 @@ sub monitor_json : Path('/job/monitor_json') {
             name         => $r->{name},
             bl           => $r->{bl},
             bl_text      => $r->{bl},                        #TODO resolve bl name
+            ts           => $r->{ts},
             starttime    => $r->{starttime},
             schedtime    => $r->{schedtime},
             maxstarttime => $r->{maxstarttime},

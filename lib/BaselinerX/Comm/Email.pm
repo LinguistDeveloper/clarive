@@ -149,7 +149,11 @@ use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 sub resolve_address {
     my ( $self, $username ) = @_;
 
-    my $email = DB->BaliUser->search( {username => $username} )->first->email;
+    my $row= DB->BaliUser->search( {username => $username} )->first;
+    my $email="";
+    if ( $row )  {
+      $email = $row->email;
+    }
 
     if ( $email ) {
         return $email;

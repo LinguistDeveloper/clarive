@@ -827,7 +827,7 @@
         return comp;
     };
     //grabs any eval stuff and feeds it to foo(comp)
-    Baseliner.ajaxEval = function( url, params, foo ){
+    Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
         params['_bali_notify_valid_session'] = true;
         var the_request = function() { Ext.Ajax.request({
@@ -838,14 +838,14 @@
                 try {
                     try {
                         var comp = Baseliner.eval_response( xhr.responseText, params );
-                        try { foo(comp); } catch(ef1) { err_foo = ef1 }
+                        try { foo(comp, scope); } catch(ef1) { err_foo = ef1 }
                     } catch(e1) {
                         try {
                             var comp = eval("("+xhr.responseText+")"); //json data structs need this
                             if( comp.logged_out ) {
-                                Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo)} });
+                                Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
                             } else {
-                                try { foo(comp); } catch(ef1) { err_foo = ef1 }
+                                try { foo(comp,scope); } catch(ef1) { err_foo = ef1 }
                             }
                         } catch(e2) { throw e1; }
                     }

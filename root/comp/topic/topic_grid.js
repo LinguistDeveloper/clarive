@@ -279,6 +279,14 @@
         }
     };
 
+    var btn_html_desc = {
+        icon: '/static/images/icons/html.png',
+        text: _('Basic HTML Report (Description)'),
+        handler: function() {
+            form_report_submit({ url: '/topic/report_html?show_desc=1' });
+        }
+    };
+
     var btn_yaml = {
         icon: '/static/images/icons/yaml.png',
         text: _('YAML'),
@@ -298,7 +306,7 @@
     var btn_reports = new Ext.Button({
         icon: '/static/images/icons/reports.png',
         iconCls: 'x-btn-icon',
-        menu: [ btn_html, btn_csv, btn_yaml ]
+        menu: [ btn_html, btn_html_desc, btn_csv, btn_yaml ]
     });
     
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
