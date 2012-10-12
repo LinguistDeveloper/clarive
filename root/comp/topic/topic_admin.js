@@ -1817,18 +1817,18 @@
 											attr.data[combo_system_fields.getValue()].id_field = id_field;
 											attr.data[combo_system_fields.getValue()].name_field = id_field;
 											attr.data[combo_system_fields.getValue()].bd_field = id_field;
-											attr.data[combo_system_fields.getValue()].origin = 'custom';
+											attr.data[combo_system_fields.getValue()].origin = 'custom';											
 											
-											if (attr.data[combo_system_fields.getValue()].filter){
+											if (attr.data[combo_system_fields.getValue()].filter != undefined){
 												attr.data[combo_system_fields.getValue()].filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
 											}
-											if (attr.data[combo_system_fields.getValue()].singleMode){
+											if (attr.data[combo_system_fields.getValue()].singleMode != undefined){
 												var value = form.findField("valuesgroup").getValue().getGroupValue();
 												attr.data[combo_system_fields.getValue()].singleMode = (value ==  'M') ? false : true ;
-											}											
-
-											var d = { id: id, id_field: id_field, name: id_field, params: attr.data[combo_system_fields.getValue()], img: '/static/images/icons/icon_wand.gif' };										
+											}
 											
+											var objTemp = eval(uneval(attr.data[combo_system_fields.getValue()]));
+											var d = { id: id, id_field: id_field, name: id_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
 										}else{
 											attr.params.id_field = id_field;
 											attr.params.name_field = id_field;
@@ -1885,7 +1885,7 @@
 								}else{
 									combo_filters.hide();
 								};
-								if (attr.data[combo_system_fields.getValue()].singleMode){
+								if (attr.data[combo_system_fields.getValue()].singleMode != undefined){
 									var form = form_template_field.getForm();
 									form.findField("valuesgroup").show();
 								}else{
