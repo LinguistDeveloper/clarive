@@ -58,6 +58,7 @@ use Exporter::Tidy default => [
     _parameters
     _notify_address
     _replace_tags
+    _strip_html
     is_oracle
     is_number
     _dump
@@ -632,6 +633,14 @@ sub _replace_tags {
     $str =~ s{<}{&lt;}g;
     $str =~ s{>}{&gt;}g;
     return $str;
+}
+
+sub _strip_html {
+    my $d = shift;
+    require HTML::Strip;
+    my $hs = HTML::Strip->new();
+    my $clean_text = $hs->parse($d);
+    $clean_text;
 }
 
 sub _check_parameters {

@@ -72,6 +72,7 @@ sub list : Local {
         project_id
         project_name
         file_name
+        description
         text
         progress
         /
@@ -1380,12 +1381,21 @@ sub kanban_status : Local {
 }
 
 sub report_data_replace {
-    my ($self, $data ) = @_;
+    my ($self, $data, $show_desc ) = @_;
+    my @mids;
     for( _array( $data->{rows} ) ) {
+        push @mids, $_->{topic_mid};
         # find and replace report_data columns 
         for my $col ( keys %{ $_->{report_data} || {} } ) {
             $_->{ $col } = $_->{report_data}->{ $col };
         }
+    }
+    if( $show_desc ) {
+        my @descs = DB->BaliTopic->search({ mid=>\@mids }, { select=>'description' })->hashref->all;
+        map {
+            $_->{description} = ( shift @descs )->{description};
+        } _array( $data->{rows} );
+        push @{ $data->{columns} }, { name=>'Description', id=>'description' };
     }
     return $data;
 }
@@ -1393,8 +1403,9 @@ sub report_data_replace {
 sub report_html : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
-    my $data = _decode_json $p->{data_json};
-    $data = $self->report_data_replace( $data );
+    my $data = $p->{data_json};
+    $data = _decode_json $data;
+    $data = $self->report_data_replace( $data, $p->{show_desc} );
     $c->stash->{data} = $data;
     $c->stash->{template} = '/reports/basic.html';
 }
@@ -1404,11 +1415,9 @@ sub report_yaml : Local {
     my $p = $c->req->params;
     my $data_json = $p->{data_json};
     my $data = _decode_json $data_json;
-    my $yaml = YAML::XS::Dump( $data );
-    #utf8::encode( $yaml );
+    my $yaml = _dump( $data );
+    $yaml = _utf8( $yaml );
     $c->res->body( qq{<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n</head>\n<body>\n<pre>${yaml}</pre></body></html>} );
-    #$c->res->headers->header( 'content-type', 'plain/text' );
-    #$c->res->body( $yaml );
 }
 
 sub report_csv : Local {

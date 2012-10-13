@@ -10,7 +10,6 @@ use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
 
-
 my $post_filter = sub {
         my ($text, @vars ) = @_;
         $vars[2] =~ s{\n|\r|<(.+?)>}{ }gs;
@@ -795,6 +794,44 @@ sub get_categories_permissions{
     my %permission_categories = map { $_ => 1} @permission_categories;
     @categories = grep { $permission_categories{lc $_->{name}}} @categories;
     return @categories;
+}
+
+# Global search
+
+with 'Baseliner::Role::Search';
+
+sub search_provider_name { 'Topics' };
+sub search_provider_type { 'Topic' };
+sub search_query {
+    my ($self, %p ) = @_;
+    my $c = $p{c};
+    $c->request->params->{limit} = 1000;
+    $c->forward( '/topic/list');
+    my $json = delete $c->stash->{json};
+    my @mids = map { $_->{topic_mid} } _array( $json->{data} ); 
+    my %descs = DB->BaliTopic->search({ mid=>\@mids }, { select=>['mid', 'description'] })->hash_on('mid');
+    return map {
+        my $r = $_;
+        #my $text = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
+        my @text = 
+            map { "$_" }
+            map { _array( $_ ) }
+            grep { defined }
+            map { $r->{$_} }
+            qw/projects category_name
+                assignee file_name created_on category_status_name created_by 
+                labels text/;
+        push @text, _loc('Release') if $r->{is_release};
+        push @text, _loc('Changeset') if $r->{is_changeset};
+        my $desc = _strip_html( $descs{ $r->{topic_mid} }->[0]->{description} );
+        push @text, $desc;
+        +{
+            title => sprintf( '%s - %s', $_->{topic_name}, $_->{title} ),
+            text  => join(', ',@text),
+            url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color} ],
+            type  => 'topic'
+        }
+    } _array( $json->{data} );
 }
 
 1;
