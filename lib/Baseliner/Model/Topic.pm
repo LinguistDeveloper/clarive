@@ -260,6 +260,8 @@ sub get_system_fields {
             { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body', relation => 'priorities' }},
             { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'body' }},
             { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => 8, section => 'body' }},
+            { id_field => 'include_into', params => {name_field => 'Include into', bd_field => 'include_into', origin => 'default', html => $pathHTML . 'field_include_into.html', field_order => 0, section => 'details' }},
+            #{ id_field => 'dates', params => { name_field => 'dates',  origin => 'default', relation => 'system', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 9999, section => 'details' }},
     );
     return \@system_fields
 }
