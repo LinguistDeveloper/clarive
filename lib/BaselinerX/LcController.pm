@@ -52,7 +52,8 @@ sub tree_topic_get_files : Local {
 
 sub tree_project_releases : Local {
     my ($self,$c) = @_;
-    my @rels = DB->BaliProject->find( $c->req->params->{id_project} )->releases->search(undef,{ prefetch=>['categories'] })->hashref->all;
+    my %seen = ();
+    my @rels = grep {!$seen{$_->{mid}}++} DB->BaliProject->find( $c->req->params->{id_project} )->releases->search(undef,{ prefetch=>['categories'] })->hashref->all;
     my @tree = map {
        +{
             text => $_->{title},
