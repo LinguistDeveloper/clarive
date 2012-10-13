@@ -4202,4 +4202,10 @@ msgstr "Fila borrada"
 msgid "Delete row"
 msgstr "Borrar fila"
 
+msgid "Bind releases"
+msgstr "Agrupar releases"
+
+msgid "Content"
+msgstr "Contenido"
+
 

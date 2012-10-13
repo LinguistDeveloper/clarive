@@ -207,7 +207,8 @@ sub list_status : Local {
                 description => $r->description,
                 bl          => $r->bl,
                 seq         => $r->seq,
-                type        => $r->type
+                type        => $r->type,
+                bind_releases => $r->bind_releases eq '1'?\1:\0,
               };
         }  
     }
@@ -229,7 +230,7 @@ sub update_status : Local {
                 if(!$row){
                     my $status = $c->model('Baseliner::BaliTopicStatus')
                         ->create(
-                        { name => $p->{name}, bl => $p->{bl}, description => $p->{description}, type => $p->{type}, seq => $p->{seq} } );
+                        { name => $p->{name}, bind_releases => $p->{bind_releases} eq 'on'?'1':'0', bl => $p->{bl}, description => $p->{description}, type => $p->{type}, seq => $p->{seq} } );
                     $c->stash->{json} = { msg=>_loc('Status added'), success=>\1, status_id=> $status->id };
                 }
                 else{
@@ -249,6 +250,7 @@ sub update_status : Local {
                 $status->bl( $p->{bl} );
                 $status->type( $p->{type} );
                 $status->seq( $p->{seq} );
+                $status->bind_releases($p->{bind_releases} eq 'on'?'1':'0');
                 $status->update();
                 
                 $c->stash->{json} = { msg=>_loc('Status modified'), success=>\1, status_id=> $id_status };
