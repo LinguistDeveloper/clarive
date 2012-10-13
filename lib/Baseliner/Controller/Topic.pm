@@ -864,9 +864,8 @@ sub filters_list : Local {
                     checked => \0,
                     leaf    => 'true'
                 };
-        }  
-
-
+        }
+        
         push @tree, {
             id          => 'C',
             text        => _loc('Categories'),
@@ -874,7 +873,7 @@ sub filters_list : Local {
             iconCls     => 'forum-parent',
             expanded    => 'true',
             children    => \@categories
-        };
+        };           
     }       
     
     # Filter: Labels
@@ -882,7 +881,7 @@ sub filters_list : Local {
 
     $row = $c->model('Baseliner::BaliLabel')->search();
     
-    if($row){
+    if($row->count() gt 0){
         while( my $r = $row->next ) {
             push @labels, {
                 id  => $i++,
@@ -895,21 +894,20 @@ sub filters_list : Local {
                 leaf    => 'true'
             };	
         }  
-    }
     
-    push @tree, {
-        id          => 'L',
-        text        => _loc('Labels'),
-        cls         => 'forum-ct',
-        iconCls     => 'forum-parent',
-        children    => \@labels
-    };
-    
+        push @tree, {
+            id          => 'L',
+            text        => _loc('Labels'),
+            cls         => 'forum-ct',
+            iconCls     => 'forum-parent',
+            children    => \@labels
+        };
+    }    
     # Filter: Status
     my @statuses;
     $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
-    if($row){
+    if($row->count() gt 0){
         while( my $r = $row->next ) {
             push @statuses,
                 {
@@ -922,22 +920,23 @@ sub filters_list : Local {
                     leaf    => 'true'
                 };
         }  
+
+        push @tree, {
+            id          => 'S',
+            text        => _loc('Statuses'),
+            cls         => 'forum-ct',
+            iconCls     => 'forum-parent',
+            expanded    => 'true',
+            children    => \@statuses
+        };
     }
     
-    push @tree, {
-        id          => 'S',
-        text        => _loc('Statuses'),
-        cls         => 'forum-ct',
-        iconCls     => 'forum-parent',
-        expanded    => 'true',
-        children    => \@statuses
-    };
     
     
     my @priorities;
     $row = $c->model('Baseliner::BaliTopicPriority')->search();
     
-    if($row){
+    if($row->count() gt 0){
         while( my $r = $row->next ) {
             push @priorities,
             {
@@ -949,18 +948,18 @@ sub filters_list : Local {
                 checked => \0,
                 leaf    => 'true'
             };
-        }  
+        }
+        
+        push @tree, {
+            id          => 'P',
+            text        => _loc('Priorities'),
+            cls         => 'forum-ct',
+            iconCls     => 'forum-parent',
+            expanded    => 'true',
+            children    => \@priorities
+        };
+        
     }       
-       
-    push @tree, {
-        id          => 'P',
-        text        => _loc('Priorities'),
-        cls         => 'forum-ct',
-        iconCls     => 'forum-parent',
-        expanded    => 'true',
-        children    => \@priorities
-    };
-       
         
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');

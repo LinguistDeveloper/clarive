@@ -36,5 +36,11 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id_category", "id_field");
 
+__PACKAGE__->belongs_to(
+  "category",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategories",
+  { 'foreign.id' => 'self.id_category' },
+  {join_type => 'inner'},
+);
 
 1;
