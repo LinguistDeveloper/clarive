@@ -10,6 +10,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 register 'config.search' => {
     metadata => [
         { id=>'block_lucy', text=>'Block the use of Lucy in searches', default=>0 },
+        { id=>'lucy_boolop', text=>'AND or OR default', default=>'OR' },
         { id=>'max_results', text=>'Number of results to return to user', default=>10_000 },
         { id=>'max_results_provider', text=>'Limit sent to provider', default=>10_000 },
     ]
@@ -80,7 +81,7 @@ sub query_lucy : Local {
             { name => 'id', type => 'string', },
         ],
         'search_fields' => ['title', 'text'],
-        'search_boolop' => 'OR',
+        'search_boolop' => $config->{lucy_boolop} // 'OR',
     );
      
     my @provs = packages_that_do('Baseliner::Role::Search');
