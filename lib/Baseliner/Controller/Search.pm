@@ -1,10 +1,19 @@
 package Baseliner::Controller::Search;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Try::Tiny;
 use 5.010;
 
 BEGIN {  extends 'Catalyst::Controller' }
+
+register 'config.search' => {
+    metadata => [
+        { id=>'block_lucy', text=>'Block the use of Lucy in searches', default=>0 },
+        { id=>'max_results', text=>'Number of results to return to user', default=>10_000 },
+        { id=>'max_results_provider', text=>'Limit sent to provider', default=>10_000 },
+    ]
+};
 
 sub providers : Local {
     my ($self,$c) = @_;
@@ -17,13 +26,16 @@ sub providers : Local {
 
 sub query : Local {
     my ( $self, $c ) = @_;
-    my $lucy_here = try {
-        require 'LucyX::Simple';
+    my $config = config_get 'config.search';
+    my $lucy_here = !$config->{block_lucy} && try {
+        require LucyX::Simple;
         1;
     } catch {
         0
     };
     my $t0 = [ Time::HiRes::gettimeofday ]; 
+
+    $c->stash->{search_config} = $config;
 
     $lucy_here 
         ? $c->forward('/search/query_lucy')
@@ -50,19 +62,20 @@ sub query_sql : Local {
 sub query_lucy : Local {
     my ( $self, $c ) = @_;
     my $p        = $c->request->parameters;
+    my $config   = $c->stash->{search_config};
     my $provider = $p->{provider} or _throw _loc('Missing provider');
-    my $query    = $p->{query} // _throw _loc('Missing query');
+    my $query    = delete $p->{query} // _throw _loc('Missing query');
     my $lang = $c->languages->[0] || 'en';
 
-    my $dir = '/tmp/search_index_' . _md5( join ',', $c->username , $$ , time );
+    my $dir = _dir _tmp_dir(), 'search_index_' . _md5( join ',', $c->username , $$ , time );
     my $searcher = LucyX::Simple->new(
-        index_path => $dir,
+        index_path => "$dir",
         language   => $lang, 
         resultclass => 'LucyX::Simple::Result::Hash',
+        entries_per_page => $config->{max_results},
         schema     => [
             { 'name' => 'title', 'boost' => 3, },
             { name => 'text' },
-            { name  => 'url' },
             { name  => 'type' },
             { name => 'id', type => 'string', },
         ],
@@ -73,25 +86,32 @@ sub query_lucy : Local {
     my @provs = packages_that_do('Baseliner::Role::Search');
 
     # create Lucy docs
-    my @results  = $provider->search_query( query => $query, c => $c );
+    my @results  = $provider->search_query( c => $c, limit=>$config->{max_results_provider} ); # query => $query don't send a query, its faster
+    #push @results, @results for 1..8;
     my $id=0;
     #_debug( \@results );
+    my %extra_data; # for things that don't need to go into the index
     map { 
         my $r = $_;
-        $r->{id} //= $r->{mid} // $id++;
-        $r->{text} = _utf8( $r->{text} );
+        $r->{id} //= $r->{mid} // $r->{type} . '_' . $id++;
+        $r->{text} = $r->{text};
+        $extra_data{ $r->{id} }{url} = delete $r->{url};
         $searcher->create($r);
     } @results;
 
     $searcher->commit;
 
     my ( $results, $pager ) = try {
-        $searcher->search( $query );
+        ( $searcher->search( $query ) );
     } catch {
-        _debug shift();
-        ();
+        _debug shift(); # usually a "no results" exception
+        ([],undef);
     };
-    _dir( $dir )->rmtree; 
+    $dir->rmtree; 
+    for( _array( $results ) ) {
+        $_->{url} = $extra_data{ $_->{id} }{url};
+    }
+    #_debug( $results );
 
     $c->stash->{json} = {
         results  => $results,

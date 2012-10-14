@@ -721,7 +721,6 @@ sub _damn {
         }
         elsif( ref $blessed ) {
             $damned = _damn( { %$blessed } );
-            
         }
         else {
             $damned = $blessed;

@@ -20,7 +20,7 @@ sub search_provider_type { 'Job' };
 sub search_query {
     my ($self, %p ) = @_;
     my $c = $p{c};
-    $c->request->params->{limit} = 1000;
+    $c->request->params->{limit} = $p{limit} // 1000;
     $c->forward( '/job/monitor_json');
     my $json = delete $c->stash->{json};
     return map {

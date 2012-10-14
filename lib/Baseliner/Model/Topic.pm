@@ -805,7 +805,7 @@ sub search_provider_type { 'Topic' };
 sub search_query {
     my ($self, %p ) = @_;
     my $c = $p{c};
-    $c->request->params->{limit} = 1000;
+    $c->request->params->{limit} = $p{limit} // 1000;
     $c->forward( '/topic/list');
     my $json = delete $c->stash->{json};
     my @mids = map { $_->{topic_mid} } _array( $json->{data} ); 
@@ -815,6 +815,7 @@ sub search_query {
         #my $text = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
         my @text = 
             map { "$_" }
+            grep { length }
             map { _array( $_ ) }
             grep { defined }
             map { $r->{$_} }
@@ -823,8 +824,11 @@ sub search_query {
                 labels text/;
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
-        my $desc = _strip_html( $descs{ $r->{topic_mid} }->[0]->{description} );
-        push @text, $desc;
+        if( my $desc = $descs{ $r->{topic_mid} }->[0]->{description} ) {
+            $desc = _strip_html( $desc );
+            $desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
+            push @text, _utf8 $desc;  # strip html messes up utf8
+        }
         +{
             title => sprintf( '%s - %s', $_->{topic_name}, $_->{title} ),
             text  => join(', ',@text),
