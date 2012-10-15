@@ -105,8 +105,15 @@
     // open a window given a username link
     Baseliner.render_user_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value==undefined || value=='null' || value=='' ) return '';
-        var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
-        return String.format("<a href='{0}'>{1}</a>", script, value );
+        
+        //alert(rec.data.active);
+        if (rec && rec.data && rec.data.active > 0){
+                var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
+                return String.format("<a href='{0}'>{1}</a>", script, value );
+        }
+        else{
+            return String.format('<span style="text-decoration: line-through">{0}</span>',value);
+        }
     };
 
     Baseliner.render_active  = function(value,metadata,rec,rowIndex,colIndex,store) {
