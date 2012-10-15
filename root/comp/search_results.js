@@ -47,14 +47,15 @@
                         var url;
                         if( r.type == 'topic' ) {
                             r.title = ['<table><tr><td>', Baseliner.topic_name({ category_name:r.url[1], category_color:r.url[2] }),
-                                '</td><td><h4>&nbsp;', r.title, '</h4></td></tr></table>' ].join(''); 
+                                '&nbsp;</td><td><h4>', r.title, '</h4></td></tr></table>' ].join(''); 
                         }
                         var block = '<div id="boot" style="margin:4"><div id="search-result-block">'
                             + '<div id="search-result-block-title"><h4>'
                             + r.title
                             + '</h4>'
-                            + '</div>'
-                            +  '<p>' + r.text + '</p>'
+                            + '</div>';
+                        block +=  '<p style="color:#aaa;margin: 6 0 0 0">' + r.info + '</p>';
+                        block +=  '<p>' + r.excerpt + '</p>'
                             + '</div></div>'
                             ;
                         var hit_panel = new Ext.Container({ html: block, style:'padding-right:20px; cursor:pointer; border: 1px solid #fff;' });

@@ -809,7 +809,7 @@ sub search_query {
     $c->forward( '/topic/list');
     my $json = delete $c->stash->{json};
     my @mids = map { $_->{topic_mid} } _array( $json->{data} ); 
-    my %descs = DB->BaliTopic->search({ mid=>\@mids }, { select=>['mid', 'description'] })->hash_on('mid');
+    #my %descs = DB->BaliTopic->search({ mid=>\@mids }, { select=>['mid', 'description'] })->hash_on('mid');
     return map {
         my $r = $_;
         #my $text = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
@@ -819,19 +819,22 @@ sub search_query {
             map { _array( $_ ) }
             grep { defined }
             map { $r->{$_} }
-            qw/projects category_name
-                assignee file_name created_on category_status_name created_by 
-                labels text/;
+            qw/created_on category_name projects 
+                assignee file_name category_status_name created_by 
+                labels /;
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
-        if( my $desc = $descs{ $r->{topic_mid} }->[0]->{description} ) {
-            $desc = _strip_html( $desc );
-            $desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
-            push @text, _utf8 $desc;  # strip html messes up utf8
+        my $info = join(', ',@text);
+        my $desc = _strip_html( $r->{description} . ' ' . $r->{text} );
+        if( length $desc ) {
+            $desc = _utf8 $desc;  # strip html messes up utf8
+            $desc =~ s/[^\w\s]//g; 
+            #$desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
         }
         +{
             title => sprintf( '%s - %s', $_->{topic_name}, $_->{title} ),
-            text  => join(', ',@text),
+            text  => $desc,
+            info  => $info,
             url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color} ],
             type  => 'topic'
         }

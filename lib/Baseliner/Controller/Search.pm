@@ -29,7 +29,7 @@ sub query : Local {
     my ( $self, $c ) = @_;
     my $config = config_get 'config.search';
     my $lucy_here = !$config->{block_lucy} && try {
-        require LucyX::Simple;
+        require Baseliner::Lucy; # fails if no Lucy installed
         1;
     } catch {
         0
@@ -68,20 +68,22 @@ sub query_lucy : Local {
     my $query    = delete $p->{query} // _throw _loc('Missing query');
     my $lang = $c->languages->[0] || 'en';
 
-    my $dir = _dir _tmp_dir(), 'search_index_' . _md5( join ',', $c->username , $$ , time );
-    my $searcher = LucyX::Simple->new(
-        index_path => "$dir",
-        language   => $lang, 
+    #my $dir = _dir _tmp_dir(), 'search_index_' . _md5( join ',', $c->username , $$ , time );
+    my $searcher = Baseliner::Lucy->new(
+        index_path => Lucy::Store::RAMFolder->new, # in-memory files "$dir",
+        language   => $lang || $c->config->{default_lang} || 'en', 
         resultclass => 'LucyX::Simple::Result::Hash',
         entries_per_page => $config->{max_results},
         schema     => [
-            { 'name' => 'title', 'boost' => 3, },
-            { name => 'text' },
+            { name  => 'title', 'boost' => 3, highlightable=>1 },
+            { name  => 'text', highlightable=>1 },
+            { name  => 'info', highlightable=>1 },
             { name  => 'type' },
-            { name => 'id', type => 'string', },
+            { name  => 'id', type => 'string', },
         ],
-        'search_fields' => ['title', 'text'],
-        'search_boolop' => $config->{lucy_boolop} // 'OR',
+        highlighter => 'Baseliner::Lucy::Highlighter',
+        search_fields => ['title', 'text'],
+        search_boolop => $config->{lucy_boolop} // 'OR',
     );
      
     my @provs = packages_that_do('Baseliner::Role::Search');
@@ -95,7 +97,6 @@ sub query_lucy : Local {
     map { 
         my $r = $_;
         $r->{id} //= $r->{mid} // $r->{type} . '_' . $id++;
-        $r->{text} = $r->{text};
         $extra_data{ $r->{id} }{url} = delete $r->{url};
         $searcher->create($r);
     } @results;
@@ -108,11 +109,14 @@ sub query_lucy : Local {
         _debug shift(); # usually a "no results" exception
         ([],undef);
     };
-    $dir->rmtree; 
+    #$dir->rmtree; 
+
+    # post procesing of results
     for( _array( $results ) ) {
         $_->{url} = $extra_data{ $_->{id} }{url};
+        #$_->{excerpt} .= '[' . join ',',unpack('H*', $_->{excerpt} ) . ']';
     }
-    #_debug( $results );
+    _debug( $results );
 
     $c->stash->{json} = {
         results  => $results,

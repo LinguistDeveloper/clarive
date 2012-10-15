@@ -36,6 +36,7 @@ sub search_query {
         chomp @text;
         +{
             title => $r->{name},
+            info  => $r->{ts},
             text  => join(', ', @text ),
             url   => [ $r->{id}, $r->{name} ],
             type  => 'log'
