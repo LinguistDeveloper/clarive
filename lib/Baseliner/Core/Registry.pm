@@ -277,9 +277,37 @@ sub search_for {
     return map { $_->instance } @found_nodes;
 }
 
+sub registor_keys {
+    my ($self, $key_prefix )=@_;
+
+    my @registor_data;
+    my @dynamic_keys;
+    $key_prefix = $key_prefix . '.' unless $key_prefix =~ /\.$/;
+    for my $key ( grep /^registor\.$key_prefix/, keys %{ $self->registrar || {} } ) {
+        my $registor = $self->get( $key );
+        push @registor_data, { registor=>$registor, data=>$registor->generator->($key_prefix) };
+    }
+    my $flag = 0;
+    for my $regs ( @registor_data ) {
+        my $data = $regs->{data};
+        my $registor = $regs->{registor};
+        next unless ref $data eq 'HASH'; 
+        for my $key ( keys %$data ) {
+            next if exists $self->registrar->{$key} && ! $data->{$key}->{_overwrite};
+            #  register( $key, $data->{$key} );
+            Baseliner::Core::Registry->add( $registor->module, $key, $data->{$key} );
+            push @dynamic_keys, $key;
+            $flag = 1 unless $flag;
+        }
+    }
+    $self->initialize if $flag;
+    return @dynamic_keys;
+}
+
 sub starts_with {
     my ($self, $key_prefix )=@_;
     my @keys;
+    my @dynamic = $self->registor_keys( $key_prefix );
     for my $key ( keys %{ $self->registrar || {} } ) {
         push @keys, $key if( $key =~ /^$key_prefix/ );
     }

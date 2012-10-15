@@ -87,6 +87,13 @@ register 'event.topic.change_status' => {
     vars => ['username', 'old_status', 'status', 'ts'],
 };
 
+register 'registor.action.topic_category' => {
+    generator => sub {
+       #my @u = DB->BaliUser->search->hashref->all;
+       return { 'action.xxx.yyy' => { name=>'xxx', description=>'yyy' } }
+    }
+};
+
 sub update {
     my ( $self, $p ) = @_;
     my $action = $p->{action};
