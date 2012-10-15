@@ -1288,3 +1288,24 @@ Baseliner.JitTree = function(c){
     };
 };
 Ext.extend( Baseliner.JitTree, Ext.Panel ); 
+
+Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
+    initComponent : function(){
+        var self = this;
+        Baseliner.HtmlEditor.superclass.initComponent.call(this);
+        if( Ext.isChrome ) {
+            this.on('initialize', function(ht){
+                ht.iframe.contentDocument.onpaste = function(e){ 
+                    var items = e.clipboardData.items;
+                    var blob = items[0].getAsFile();
+                    var reader = new FileReader();
+                    reader.onload = function(event){
+                        self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
+                    }; 
+                    reader.readAsDataURL(blob); 
+                };
+            }, this);
+        }
+    }
+});
+

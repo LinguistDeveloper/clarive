@@ -148,7 +148,7 @@
     // if id_com is undefined, then its add, otherwise it's an edit
     Baseliner.Topic.comment_edit = function(topic_mid, id_com) {
         var win_comment;    
-        var comment_field = new Ext.form.HtmlEditor({
+        var comment_field = new Baseliner.HtmlEditor({
             listeners: { 'initialize': function(){ comment_field.focus() } }
         });
         var btn_submit = {
@@ -282,7 +282,7 @@
         items: [ detail, form ]
     });
     var detail_reload = function(){
-        detail.load({ url: '/topic/view', params: { topic_mid: params.topic_mid, ii: ii, html: 1, categoryId: params.categoryId }, scripts: true, callback: function(x){ 
+        detail.load({ url: '/topic/view', params: { topic_mid: params.topic_mid, ii: ii, html: 1, categoryId: params.new_category_id }, scripts: true, callback: function(x){ 
             // loading HTML has finished
             //   careful: errors here block will break js in baseliner
         }});

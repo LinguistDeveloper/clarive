@@ -17,15 +17,14 @@ params:
 		{   xtype: 'panel', layout:'fit',
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			items: [ //this panel is here to make the htmleditor fit
-				{
-					xtype: 'htmleditor',
+				new Baseliner.HtmlEditor({
 					name: meta.id_field,
 					fieldLabel: _('Description'),
 					width: '100%',
 					value: data ? eval('data.' + meta.bd_field): '',
 					height: 350,
 					disabled: meta ? meta.readonly : true
-				}
+				})
 			]
 		}
     ]
