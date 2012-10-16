@@ -23,26 +23,11 @@ __PACKAGE__->add_columns(
 
 );
 
-=head1 PRIMARY KEY
-
-=over 4
-
-=item * L</id>
-
-=back
-
-=cut
-
-
-
-# Created by DBIx::Class::Schema::Loader v0.07012 @ 2012-01-17 18:19:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kPypxdTqp7bcXeLkSRdC7A
-
+__PACKAGE__->set_primary_key("id_status", "id_category");
 __PACKAGE__->belongs_to(
   "status",
   "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
   { id => "id_status" },
 );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;

@@ -52,14 +52,14 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->belongs_to(
   "category_statuses_from",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus",
-  { id => "id_status_from" },
+  { id_status => "id_status_from", id_category => "id_category" },
   { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 
 __PACKAGE__->belongs_to(
   "category_statuses_to",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus",
-  { id => "id_status_to" },
+  { id_status => "id_status_to", id_category => "id_category" },
   { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 
