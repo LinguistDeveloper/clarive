@@ -4170,8 +4170,11 @@ msgstr "Múltiple"
 msgid "Select a category"
 msgstr "Seleccione una categoría"
 
+msgid "Can create topic for this category"
+msgstr "Puede crear tópicos de la categoría"
 
+msgid "Can view topic for this category"
+msgstr "Puede ver tópicos de la categoría"
 
-
-
-
+msgid "Can edit topic for this category"
+msgstr "Puede editar tópicos de la categoría"

@@ -90,21 +90,21 @@ sub update_category : Local {
                         }
                     }
                     
-                    my $name = $p->{name};
-                    my %acciones_by_category = (    create  => 'Puede crear tópicos de la categoría ',
-                                                    view    => 'Puede ver tópicos de la categoría ',
-                                                    edit    => 'Puede editar tópicos de la categoría ');
-                                                 
-                    foreach my $action (keys %acciones_by_category){
-                       
-                        my $id_action = 'action.topics.' . lc $name . '.' . $action  ;
-                        my $name = $acciones_by_category{$action} . $name ;
-                                 
-                        my $actions = $c->model('Baseliner::BaliAction')->update_or_create({ action_id => $id_action,
-                                                                                             action_name => $name,
-                                                                                             action_description => $name
-                                                                                            });                                
-                    }                 
+                    #my $name = $p->{name};
+                    #my %acciones_by_category = (    create  => 'Puede crear tópicos de la categoría ',
+                    #                                view    => 'Puede ver tópicos de la categoría ',
+                    #                                edit    => 'Puede editar tópicos de la categoría ');
+                    #                             
+                    #foreach my $action (keys %acciones_by_category){
+                    #   
+                    #    my $id_action = 'action.topics.' . lc $name . '.' . $action  ;
+                    #    my $name = $acciones_by_category{$action} . $name ;
+                    #             
+                    #    my $actions = $c->model('Baseliner::BaliAction')->update_or_create({ action_id => $id_action,
+                    #                                                                         action_name => $name,
+                    #                                                                         action_description => $name
+                    #                                                                        });                                
+                    #}                 
 
                     $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=> $category->id };
                 }

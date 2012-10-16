@@ -89,20 +89,23 @@ register 'event.topic.change_status' => {
 
 register 'registor.action.topic_category' => {
     generator => sub {
-        my %type_actions_category = (   create  => 'Puede crear tópicos de la categoría ',
-                                        view    => 'Puede ver tópicos de la categoría ',
-                                        edit    => 'Puede editar tópicos de la categoría ');
-        
-        my @categories  = Baseliner->model('Baseliner::BaliTopicCategories')->search(undef,{order_by=>'name'})->hashref->all;
-        
+        my %type_actions_category = (
+            create => _loc('Can create topic for this category'),
+            view   => _loc('Can view topic for this category'),
+            edit   => _loc('Can edit topic for this category'),
+        );
+
+        my @categories =
+            Baseliner->model('Baseliner::BaliTopicCategories')->search( undef, { order_by => 'name' } )->hashref->all;
+
         my %actions_category;
-        foreach my $action (keys %type_actions_category){
-            foreach my $category (@categories){
-                my $id_action = 'action.topics.' . lc $category->{name} . '.' . $action  ;
-                $actions_category{$id_action} = { name =>  $id_action, description => $type_actions_category{$action}};
+        foreach my $action ( keys %type_actions_category ) {
+            foreach my $category (@categories) {
+                my $id_action = 'action.topics.' . _name_to_id( $category->{name} ) . '.' . $action;
+                $actions_category{$id_action} = { name => $id_action, description => $type_actions_category{$action} };
             }
         }
-       return \%actions_category;
+        return \%actions_category;
     }
 };
 

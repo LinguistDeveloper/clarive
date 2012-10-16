@@ -42,6 +42,7 @@ use Exporter::Tidy default => [
     _logts
     _logt0
     _unac
+    _name_to_id
     _whereami
     _throw_stack
     _parse_template
@@ -661,6 +662,16 @@ sub _rmpath {
     my $dir = _dir( @_ );
     return unless -e $dir;
     $dir->rmtree;
+}
+
+sub _name_to_id {
+    my $name = lc shift;
+    $name =~ s{\s+}{_}g;
+    $name =~ s{\W}{_}g;
+    $name =~ s{_+}{_}g;
+    $name =~ s{_$}{}g;
+    $name =~ s{^_}{}g;
+    return _unac( $name );
 }
 
 # returns the official tmp dir
