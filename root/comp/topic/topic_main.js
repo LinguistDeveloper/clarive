@@ -282,10 +282,15 @@
         items: [ detail, form ]
     });
     var detail_reload = function(){
-        detail.load({ url: '/topic/view', params: { topic_mid: params.topic_mid, ii: ii, html: 1, categoryId: params.new_category_id }, scripts: true, callback: function(x){ 
-            // loading HTML has finished
-            //   careful: errors here block will break js in baseliner
-        }});
+        detail.load({
+            url: '/topic/view',
+            params: { topic_mid: params.topic_mid, ii: ii, html: 1, categoryId: params.new_category_id },
+            scripts: true,
+            callback: function(x){ 
+                // loading HTML has finished
+                //   careful: errors here block will break js in baseliner
+            }
+        });
         detail.body.setStyle('overflow', 'auto');
     };
     detail.on( 'render', function() {
@@ -312,5 +317,8 @@
 
     
     cardpanel.tab_icon = '/static/images/icons/topic_one.png';
+    if( ! params.title ) {
+        cardpanel.setTitle("#" + params.topic_mid) 
+    }
     return cardpanel;
 })

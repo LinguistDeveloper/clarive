@@ -4157,7 +4157,6 @@ msgstr "Categoría duplicada"
 msgid "Error duplicating category"
 msgstr "Error duplicando categoría"
 
-
 msgid "Values"
 msgstr "Valores"
 

@@ -163,54 +163,54 @@
     
     var btn_add = new Baseliner.Grid.Buttons.Add({
         handler: function() {
-			store_category.load({params:{action: 'create'}});
+            store_category.load({params:{action: 'create'}});
             add_topic();
         }       
     });
     
     var add_topic = function() {
         var win;
-		
-		var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
-			var color = rec.data.color;
-			var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
-			return ret;
-		};
-		
-		var topic_category_grid = new Ext.grid.GridPanel({
-			store: store_category,
-			height: 200,
-			hideHeaders: true,
-			viewConfig: {
-				headersDisabled: true,
-				enableRowBody: true,
-				forceFit: true
-			},
-			columns: [
-			  { header: _('Name'), width: 200, dataIndex: 'name', renderer: render_category },
-			  { header: _('Description'), width: 450, dataIndex: 'description' }
-	
-			]
-		});
-		
-		topic_category_grid.on("rowclick", function(grid, rowIndex, e ) {
-			var r = grid.getStore().getAt(rowIndex);
+        
+        var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
+            var color = rec.data.color;
+            var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+            return ret;
+        };
+        
+        var topic_category_grid = new Ext.grid.GridPanel({
+            store: store_category,
+            height: 200,
+            hideHeaders: true,
+            viewConfig: {
+                headersDisabled: true,
+                enableRowBody: true,
+                forceFit: true
+            },
+            columns: [
+              { header: _('Name'), width: 200, dataIndex: 'name', renderer: render_category },
+              { header: _('Description'), width: 450, dataIndex: 'description' }
+    
+            ]
+        });
+        
+        topic_category_grid.on("rowclick", function(grid, rowIndex, e ) {
+            var r = grid.getStore().getAt(rowIndex);
             var title = _(r.get( 'name' ));
             Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ) } );
-			win.close();
-		});		
-	 
-        var title = 'Select a category';
+            win.close();
+        });     
+     
+        var cat_title = _('Select a category');
         
         var form_topic = new Ext.FormPanel({
             frame: true,
             items: [
-				topic_category_grid
+                topic_category_grid
             ]
         });
 
         win = new Ext.Window({
-            title: _(title),
+            title: cat_title,
             width: 550,
             autoHeight: true,
             closeAction: 'close',
@@ -310,7 +310,7 @@
     });
     
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
-		disabled: true,
+        disabled: true,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
@@ -326,7 +326,7 @@
     });
     
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
-		disabled: true,
+        disabled: true,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
@@ -611,23 +611,23 @@
     
 //    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 //        //init_buttons('enable');
-//		alert('pasa');
+//      alert('pasa');
 //    });
-	
+    
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
         if(columnIndex == 0){
             var topics_checked = getTopics();
             if (topics_checked.length == 1){
-				var sw_edit;
-				check_sm.each(function(rec){
-					sw_edit = (rec.get('sw_edit'));
-				});
-				if(sw_edit){
-					init_buttons('enable');	
-				}else{
-					btn_delete.enable();
-					btn_edit.disable();
-				}				
+                var sw_edit;
+                check_sm.each(function(rec){
+                    sw_edit = (rec.get('sw_edit'));
+                });
+                if(sw_edit){
+                    init_buttons('enable'); 
+                }else{
+                    btn_delete.enable();
+                    btn_edit.disable();
+                }               
                 //init_buttons('enable');
             }else{
                 if(topics_checked.length == 0){
@@ -639,14 +639,14 @@
             }
         }
     });
-	
+    
     function getTopics(){
         var topics_checked = new Array();
         check_sm.each(function(rec){
             topics_checked.push(rec.get('topic_mid'));
         });
         return topics_checked
-    }	
+    }   
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
