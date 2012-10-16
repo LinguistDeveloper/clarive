@@ -657,10 +657,13 @@ Return true if a user has the root action C<action.admin.root>.
 Or if its username is 'root'
 
 =cut
+our $root_username;
+
 sub is_root {
     my ( $self, $username ) = @_;
     $username or die _loc('Missing username');
-    return 1 if $username eq 'root' || config_value('root_username') && $username eq config_value('root_username'); 
+    $root_username //= config_value('root_username') || '';
+    return 1 if $username eq 'root' || length $root_username && $username eq $root_username;
 
     return Baseliner->model('Baseliner')->dbi->value(qq{
         select count(*) 
