@@ -32,7 +32,15 @@ use Lucy::Plan::Int64Type;
 use Lucy::Plan::StringType;
 
 use Data::Page;
-use Exception::Simple;
+#use Exception::Simple;
+{
+    # we don't need this in Baseliner
+    package Exception::Simple;
+    sub throw {
+        my $self = shift;
+        Baseliner::Utils::_fail( @_ );
+    }
+}
 
 has _language => (
     'is' => 'ro',

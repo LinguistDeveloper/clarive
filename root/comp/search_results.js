@@ -55,7 +55,7 @@
                             + '</h4>'
                             + '</div>';
                         block +=  '<p style="color:#aaa;margin: 6 0 0 0">' + r.info + '</p>';
-                        block +=  '<p>' + r.excerpt + '</p>'
+                        block +=  '<p>' + ( r.excerpt ? r.excerpt : r.text ) + '</p>'
                             + '</div></div>'
                             ;
                         var hit_panel = new Ext.Container({ html: block, style:'padding-right:20px; cursor:pointer; border: 1px solid #fff;' });
