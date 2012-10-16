@@ -11,17 +11,72 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
-register 'menu.tools.topic' => {
-    label    => 'Topics',
-    title    => _loc ('Topics'),
-    action   => 'action.topics.view',
-    url_comp => '/topic/grid',
-    icon     => '/static/images/icons/topic.png',
-    tab_icon => '/static/images/icons/topic.png'
-};
-
 register 'action.topics.admin' => { name=>'Admin topics' };
 register "action.topics.view" => { name=>"View topics menu" };
+
+register 'registor.menu.topics' => {
+    generator => sub {
+       # action.topics.<category_name>.[create|edit|view]
+       my @cats = DB->BaliTopicCategories->search(undef,{ select=>[qw/name id color/] })->hashref->all;
+       my $seq = 10;
+       my %menu_view = map {
+           my $name = $_->{name};
+           my $id = _name_to_id( $name );
+           my $data = $_;
+           "menu.topic.$id" => {
+                label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
+                title    => qq[<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:$data->{color}">$name</span></div>],
+                index    => $seq++,
+                action   => "action.topics.$id.view",
+                url_comp => "/topic/grid?category_id=" . $data->{id},
+                #icon     => '/static/images/icons/topic.png',
+                tab_icon => '/static/images/icons/topic.png'
+           }
+       } sort { lc $a->{name} cmp lc $b->{name} } @cats;
+
+       my %menu_create = map {
+           my $name = $_->{name};
+           my $id = _name_to_id( $name );
+           my $data = $_;
+           "menu.topic.create.$id" => {
+                label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
+                title    => _loc ('New: %1', $name),
+                index    => $seq++,
+                action   => "action.topics.$id.create",
+                url_comp => '/topic/view?swEdit=1',
+                comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
+                #icon     => '/static/images/icons/topic.png',
+                tab_icon => '/static/images/icons/topic.png'
+           }
+       } sort { lc $a->{name} cmp lc $b->{name} } @cats;
+
+       return {
+            'menu.topic' => {
+                    label => _loc('Topics'),
+                    title    => _loc('Topics'),
+                    action   => 'action.topics.view',
+            },
+            'menu.topic.topics' => {
+                    index => 1,
+                    label => _loc('All'),
+                    title    => _loc ('Topics'),
+                    action   => 'action.topics.view',
+                    url_comp => '/topic/grid',
+                    icon     => '/static/images/icons/topic.png',
+                    tab_icon => '/static/images/icons/topic.png'
+            },
+            'menu.topic.create' => {
+                    label    => _loc('Create'),
+                    icon     => '/static/images/icons/add.gif',
+                    index => 2,
+                    #action   => 'action.topics.view',
+            },
+            'menu.topic._sep_' => { index=>3, separator=>1 },
+            %menu_create,
+            %menu_view,
+       } 
+    }
+};
 
 sub grid : Local {
     my ($self, $c) = @_;

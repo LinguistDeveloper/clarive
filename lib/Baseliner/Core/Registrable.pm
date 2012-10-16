@@ -22,7 +22,8 @@ sub get_children {
     my ($self, %p) = @_;
     my @current_depth = split(/\./, "" .$self->{key}) ;
     my $current_depth = @current_depth - 1 ;
-    return $self->registry->search_for( key => $self->{key} . '.' , depth => $current_depth + 1, allowed_actions=>$p{allowed_actions} );
+    my @chi = $self->registry->search_for( key => $self->{key} . '.' , depth => $current_depth + 1, allowed_actions=>$p{allowed_actions} );
+    return @chi;
 }
 
 1;

@@ -282,8 +282,8 @@ sub registor_keys {
 
     my @registor_data;
     my @dynamic_keys;
-    $key_prefix = $key_prefix . '.' unless $key_prefix =~ /\.$/;
-    for my $key ( grep /^registor\.$key_prefix/, keys %{ $self->registrar || {} } ) {
+    ($key_prefix) = split /\./, $key_prefix; # look for registor like 'registor.menu', 'registor.action', ...
+    for my $key ( grep /^registor\.$key_prefix\./, keys %{ $self->registrar || {} } ) {
         my $registor = $self->get( $key );
         push @registor_data, { registor=>$registor, data=>$registor->generator->($key_prefix) };
     }
@@ -309,7 +309,7 @@ sub starts_with {
     my @keys;
     my @dynamic = $self->registor_keys( $key_prefix );
     for my $key ( keys %{ $self->registrar || {} } ) {
-        push @keys, $key if( $key =~ /^$key_prefix/ );
+        push @keys, $key if index( $key, $key_prefix ) == 0;
     }
     return @keys;
 }

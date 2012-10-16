@@ -24,6 +24,8 @@ has 'handler' => ( is=> 'rw', isa=> 'Str' );
 has 'icon' => ( is=> 'rw', isa=> 'Str', default=>'' );
 has 'cls' => ( is=> 'rw', isa=> 'Str', default=>'bali-main-menu' );
 has 'actions' => ( is=> 'rw', isa=> 'ArrayRef' );
+has 'comp_data' => ( is=> 'rw', isa=> 'HashRef', default=>sub{+{}} );
+has 'separator' => ( is=> 'rw', isa=> 'Bool', default=>0 );
 
 sub BUILDARGS {
     my $class = shift;
@@ -43,6 +45,7 @@ sub ext_menu_json {
 sub ext_menu {
     my ($self, %p)=@_;
     #my $ret={ xtype=> 'tbbutton', text=> _loc($self->{label}) };
+    return '-' if $self->separator;
     my $ret={ text=> \"_('$self->{label}')" };
     my @children;
     my $top_level = delete $p{top_level};
@@ -54,9 +57,13 @@ sub ext_menu {
 
     my $title = $self->{title} || $self->{label};
     my $icon  = $self->{icon};
+    
+    my $comp_data = $self->comp_data;
 
     if( defined $self->{url} ) {
-        $ret->{handler}=\"function(){ Baseliner.addNewTab('$self->{url}', _('$title'), { tab_icon: '$icon' } ); }";
+        $comp_data->{tab_icon} //= $icon;
+        $comp_data = _encode_json( $comp_data );
+        $ret->{handler}=\"function(){ Baseliner.addNewTab('$self->{url}', _('$title'), $comp_data ); }";
     }
     elsif( defined $self->{url_run} ) {
         $ret->{handler}=\"function(){ Baseliner.runUrl('$self->{url_run}'); }";
@@ -68,10 +75,14 @@ sub ext_menu {
         $ret->{handler}=\"function(){ Baseliner.addNewBrowserWindow('$self->{url_browser_window}', _('$title') ); }";
     }
     elsif( defined $self->{url_iframe} ) {
-        $ret->{handler}=\"function(){ Baseliner.addNewIframe('$self->{url_iframe}', _('$title'), { tab_icon: '$icon' } ); }";
+        $comp_data->{tab_icon} //= $icon;
+        $comp_data = _encode_json( $comp_data );
+        $ret->{handler}=\"function(){ Baseliner.addNewIframe('$self->{url_iframe}', _('$title'), $comp_data ); }";
     }
     elsif( defined $self->{url_comp} ) {
-        $ret->{handler}=\"function(){  Baseliner.addNewTabComp('$self->{url_comp}', _('$title'), { tab_icon: '$icon' } ); }";
+        $comp_data->{tab_icon} //= $icon;
+        $comp_data = _encode_json( $comp_data );
+        $ret->{handler}=\"function(){  Baseliner.addNewTabComp('$self->{url_comp}', _('$title'), $comp_data ); }";
     }
     elsif( defined $self->{handler} ) {
         $ret->{handler}=\"$self->{handler}";
