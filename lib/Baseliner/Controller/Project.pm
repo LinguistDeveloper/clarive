@@ -527,14 +527,14 @@ sub user_projects : Local {
 	
     my $rs = $c->model('Baseliner::BaliProject')->search({ mid => \@rows });
     rs_hashref($rs);
-    _error [ $rs->all ];
+    _debug [ $rs->all ];
     @rows = map { 
         $_->{data}=_load($_->{data});
         $_->{ns} = 'project/' . $_->{mid};
         $_->{description} //= $_->{name} // '';
         $_ } $rs->all;
     # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
-    _error \@rows;
+    _debug \@rows;
     $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
     $c->forward('View::JSON');
 }
