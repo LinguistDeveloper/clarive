@@ -167,7 +167,8 @@
                 Baseliner.combo_baseline(),
                 { xtype:'textfield', name:'seq', fieldLabel:_('Position') },
                 { xtype:'checkbox', name:'frozen', boxLabel:_('Frozen') },
-                { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
+                { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') },
+                { xtype:'checkbox', name:'bind_releases', boxLabel:_('Bind releases') }
             ]
         });
 
