@@ -1814,20 +1814,23 @@
 														});
 									}else{
 										if (attr.meta) { //Casos especiales, como la plantilla listbox
-											attr.data[combo_system_fields.getValue()].id_field = id_field;
-											attr.data[combo_system_fields.getValue()].name_field = id_field;
-											attr.data[combo_system_fields.getValue()].bd_field = id_field;
-											attr.data[combo_system_fields.getValue()].origin = 'custom';											
+											var objTemp = attr.data[combo_system_fields.getValue()];
+                                            // clone
+                                            objTemp = Ext.util.JSON.decode( Ext.util.JSON.encode( objTemp ) );
+
+											objTemp.id_field = id_field;
+											objTemp.name_field = id_field;
+											objTemp.bd_field = id_field;
+											objTemp.origin = 'custom';											
 											
-											if (attr.data[combo_system_fields.getValue()].filter != undefined){
-												attr.data[combo_system_fields.getValue()].filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
+											if ( objTemp.filter != undefined){
+												 objTemp.filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
 											}
-											if (attr.data[combo_system_fields.getValue()].singleMode != undefined){
+											if ( objTemp.singleMode != undefined){
 												var value = form.findField("valuesgroup").getValue().getGroupValue();
-												attr.data[combo_system_fields.getValue()].singleMode = (value ==  'M') ? false : true ;
+												 objTemp.singleMode = (value ==  'M') ? false : true ;
 											}
 											
-											var objTemp = eval(uneval(attr.data[combo_system_fields.getValue()]));
 											var d = { id: id, id_field: id_field, name: id_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
 										}else{
 											attr.params.id_field = id_field;
