@@ -492,11 +492,13 @@ sub list_categories_admin : Local {
             }
            _log _dump \@statuses_to; 
             push @rows, {
-                         role      => $rec->roles->name,
+                         role           => $rec->roles->name,
                          status_from    => $rec->statuses_from->name,
+                         id_category    => $p->{categoryId},
+                         id_role        =>  $rec->id_role,
+                         id_status_from => $rec->id_status_from,                         
                          statuses_to    => \@statuses_to
                      };             
-
         }
     }
     $cnt = $#rows + 1 ;
@@ -1081,7 +1083,7 @@ sub list_filters : Local {
 sub duplicate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    #try{
+    try{
         my $rs_category = $c->model('Baseliner::BaliTopicCategories')->find({ id => $p->{id_category} });
         if( $rs_category ){
             my $new_category;
@@ -1141,12 +1143,31 @@ sub duplicate : Local {
             }            
         }
         $c->stash->{json} = { success => \1, msg => _loc("Category duplicated") };  
-    #}
-    #catch{
-    #    $c->stash->{json} = { success => \0, msg => _loc('Error duplicating category') };
-    #};
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error duplicating category') };
+    };
 
     $c->forward('View::JSON');  
+}
+
+sub delete_row : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $id_category = $p->{id_category};
+    my $id_role = $p->{id_role};
+    my $id_status_from = $p->{id_status_from};    
+    
+    try{
+        my $category_admin = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $id_category, id_role => $id_role, id_status_from => $id_status_from});
+        $category_admin->delete();
+        $c->stash->{json} = { msg=>_loc('Row deleted'), success=>\1 };
+    }
+    catch{
+        $c->stash->{json} = { msg=>_loc('Error deleting row: %1', shift()), failure=>\1 }
+    };
+    
+    $c->forward('View::JSON');    
 }
 
 1;

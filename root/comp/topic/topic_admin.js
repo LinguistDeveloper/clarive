@@ -860,6 +860,9 @@
             [ 
                     {name: 'role' },
                     {name: 'status_from' },
+                    {name: 'id_category' },					
+                    {name: 'id_role' },
+                    {name: 'id_status_from' },					
                     {name: 'statuses_to' }  
             ]
         );
@@ -871,7 +874,39 @@
             sortInfo:{field: 'role', direction: "ASC"}
         });
         
-    
+		var btn_delete_row = new Ext.Toolbar.Button({
+			text: _('Delete row'),
+			icon:'/static/images/icons/delete.gif',
+			cls: 'x-btn-text-icon',
+			disabled: true,
+			handler: function() {
+				var sm = grid_categories_admin.getSelectionModel();
+				if (sm.hasSelection()) {
+					var row = sm.getSelected();
+					Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), 
+					function(btn){ 
+						if(btn=='yes') {
+							var id_category = row.data.id_category;
+							var id_role = row.data.id_role;
+							var id_status_from = row.data.id_status_from;
+							Baseliner.ajaxEval( '/topicadmin/delete_row',{ id_category: id_category, id_role: id_role, id_status_from: id_status_from },
+								function(response) {
+									if ( response.success ) {
+										Baseliner.message( _('Success'), response.msg );
+										btn_delete_row.disable();
+										store_categories_admin.load({params:{categoryId: id_category}});
+									} else {
+										Baseliner.message( _('ERROR'), response.msg );
+									}
+								}
+							);
+						}
+					});
+				}
+			}
+		});
+		
+		
         var grid_categories_admin = new Ext.grid.GridPanel({
             height: 300,
             title: _('Roles/Workflow'),
@@ -893,8 +928,13 @@
                 { header: _('To Status'), width: 150, dataIndex: 'statuses_to', renderer: render_status2 }
             ],
             autoSizeColumns: true,
-            deferredRender:true
-        });      
+            deferredRender:true,
+			bbar: [btn_delete_row]
+        });
+		
+        grid_categories_admin.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+			btn_delete_row.enable();
+        });		
          
         store_categories_admin.load({params:{categoryId: rec.data.id}});
 

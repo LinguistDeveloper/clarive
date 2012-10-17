@@ -4189,3 +4189,17 @@ msgstr "para el estado"
 
 msgid "Can not view the field"
 msgstr "No puede ver el campo"
+
+msgid "Are you sure you want to delete the row selected?"
+msgstr "¿Seguro que quiere borrar la fila?"
+
+msgid "Error deleting row: %1"
+msgstr "Error borrando fila"
+
+msgid "Row deleted"
+msgstr "Fila borrada"
+
+msgid "Delete row"
+msgstr "Borrar fila"
+
+
