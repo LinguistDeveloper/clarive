@@ -425,7 +425,7 @@ sub changeset : Local {
     }
 
     # topic changes
-    my $where = { -or=>[ {is_changeset => 1},{is_release=>1} ], rel_type=>'topic_project', to_mid=>$id_project };
+    my $where = { is_changeset => 1, rel_type=>'topic_project', to_mid=>$id_project };
     my @changes;
     if( defined $p->{id_status} ) {
         $where->{id_category_status} = $p->{id_status};
