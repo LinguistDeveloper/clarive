@@ -106,13 +106,24 @@
     Baseliner.render_user_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value==undefined || value=='null' || value=='' ) return '';
         
-        //alert(rec.data.active);
-        if (rec && rec.data && rec.data.active > 0){
+        if (rec && rec.data){
+            if (rec.data.active == undefined){
                 var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
                 return String.format("<a href='{0}'>{1}</a>", script, value );
+            }
+            else{
+                if (rec.data.active > 0){
+                    var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
+                    return String.format("<a href='{0}'>{1}</a>", script, value );                    
+                }
+                else{
+                    return String.format('<span style="text-decoration: line-through">{0}</span>',value);
+                }
+            }
         }
         else{
-            return String.format('<span style="text-decoration: line-through">{0}</span>',value);
+            var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
+            return String.format("<a href='{0}'>{1}</a>", script, value );  
         }
     };
 

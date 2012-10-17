@@ -7,7 +7,8 @@ params:
     get_method: 'get_release'    
     set_method: 'set_release'
     field_order: 7
-    section: 'body'    
+    section: 'body'
+    filter: 'none'    
 ---
 */
 (function(params){
@@ -17,7 +18,7 @@ params:
 	var ff = params.form.getForm();
 	var topic_mid = ff.findField("topic_mid").getValue();
 
-    var release_box_store = new Baseliner.store.Topics({ baseParams: { mid: topic_mid, show_release: 1 } });
+    var release_box_store = new Baseliner.store.Topics({ baseParams: { mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''} });
 
     var release_box = new Baseliner.model.Topics({
         hiddenName: meta.id_field,

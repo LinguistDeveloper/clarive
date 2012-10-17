@@ -292,12 +292,17 @@ ie, if the user has ANY role in them.
 sub user_projects {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{ username };
-    _array( Baseliner->model( 'Baseliner::BaliRoleuser' )
-        ->search( { username => $p{username} }, { select => [ 'ns' ] } ) ~~ sub {
-        my $rs = shift;
-        rs_hashref( $rs );
-        [ grep { length } _unique map { $_->{ ns } } $rs->all ];
-    } );
+	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
+	if($all_projects){
+		map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+	}else{
+		_array( Baseliner->model( 'Baseliner::BaliRoleuser' )
+			->search( { username => $p{username} }, { select => [ 'ns' ] } ) ~~ sub {
+			my $rs = shift;
+			rs_hashref( $rs );
+			[ grep { length } _unique map { $_->{ ns } } $rs->all ];
+		} );
+	}
 }
 
 sub user_projects_query {
@@ -330,8 +335,8 @@ sub user_projects_ids {
     my ( $self, %p ) = @_;
 	_throw 'Missing username' unless exists $p{username};
 	my $is_root = $self->is_root( $p{username} );
-	my $todos = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
-	if ($todos || $is_root){
+	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
+	if ($all_projects || $is_root){
 		map { $_->{mid} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
 	}else{
 		_unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );	
