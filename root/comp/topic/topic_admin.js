@@ -1660,7 +1660,7 @@
 
 		var tree_fields = new Ext.tree.TreePanel({
 			title: _('Fields configuration'),
-			dataUrl: "topicadmin/list_tree_fields",
+			dataUrl: "/topicadmin/list_tree_fields",
 			layout: 'form',
 			colapsible: true,
 			useArrows: true,
