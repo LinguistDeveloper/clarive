@@ -64,6 +64,7 @@ sub run {
   ## delete_log_files($log_dias);
   delete_poll_log($log_dias);
   delete_bali_logs();
+  delete_bali_tmp();
   delete_bali_pases();
   delete_chm_logs();
   ## purge_baseliner_jobs();
@@ -114,6 +115,21 @@ sub delete_bali_pases {
   mylog "Datos de pases de Baseliner en disco purgados.";
 }
 
+sub delete_bali_tmp {
+  mylog "Purgando directorios de trabajo de los pases de Baseliner en disco.";
+  my $log_dias_baseliner_pases = _bde_conf 'log_dias_baseliner_pase';
+  my $tmp_home = car map { chomp $_; $_ } qx|echo \$BASELINER_TMPHOME|;
+  my $fn = sub {
+    mylog $_[0];
+    qx|$_[0]|;                         # COTTON
+  };
+  $fn->($_) for (qq{find -L $tmp_home -type d \\( -name 'N.TEST*' -o -name 'N.ANTE*' -o -name 'N.CURS*' -o -name 'N.PROD*' -o -name 'harvest*' \\) -mtime +$log_dias_baseliner_pases -exec rm -rf {} + 2>&1},
+                 qq{find -L $tmp_home -type d \\( -name 'B.TEST*' -o -name 'B.ANTE*' -o -name 'B.CURS*' -o -name 'B.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -rf {} + 2>&1},
+                 qq{find -L $tmp_home -type f \\( -name 'harvest*' -o -name 'job-export*'\\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1}
+                 );
+  mylog "Datos de directorios de trabajo de los pases de Baseliner en disco purgados.";
+}
+
 sub delete_bali_logs {
   mylog "Purgando logs de Baseliner.";
   my $log_dias_baseliner = _bde_conf 'log_dias_baseliner';
@@ -134,7 +150,6 @@ sub delete_chm_logs {
   my $balix = BaselinerX::Comm::Balix->new(os=>"unix", host=>$cfg_chm->{host}, port=>$cfg_chm->{port}, key=>$cfg_chm->{key});
 
   my $log_dias_baseliner = _bde_conf 'log_dias_baseliner';
-  my $log_home = car map { chomp $_; $_ } qx|echo \$BASELINER_LOGHOME|;
   my $pattern=$cfg_chm->{pattern};
   $pattern=~s{\.P\.}{\.T\.};
   my $cmd = "find -L $cfg_chm->{logPath} -type f -name $pattern -mtime +${log_dias_baseliner} -exec rm -f {} \\; 2>&1";
