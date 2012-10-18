@@ -167,13 +167,16 @@
                 Baseliner.combo_baseline(),
                 { xtype:'textfield', name:'seq', fieldLabel:_('Position') },
                 { xtype:'checkbox', name:'frozen', boxLabel:_('Frozen') },
-                { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
+                { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') },
+                { xtype:'checkbox', name:'bind_releases', boxLabel:_('Bind releases') }
             ]
         });
 
         if(rec){
             var ff = form_status.getForm();
             ff.loadRecord( rec );
+            var bind_releases = ff.findField('bind_releases');
+            bind_releases.setValue(rec.data.bind_releases);
             title = 'Edit status';
         }
         

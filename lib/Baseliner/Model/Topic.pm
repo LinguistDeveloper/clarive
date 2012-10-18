@@ -260,6 +260,8 @@ sub get_system_fields {
             { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body', relation => 'priorities' }},
             { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'body' }},
             { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => 8, section => 'body' }},
+            { id_field => 'include_into', params => {name_field => 'Include into', bd_field => 'include_into', origin => 'default', html => $pathHTML . 'field_include_into.html', field_order => 0, section => 'details' }},
+            #{ id_field => 'dates', params => { name_field => 'dates',  origin => 'default', relation => 'system', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 9999, section => 'details' }},
     );
     return \@system_fields
 }
@@ -396,8 +398,8 @@ sub get_dates {
 }
 
 sub get_topics{
-    my ($self, $topic_mid) = @_;
-    my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->topics->search( undef, { order_by => { '-asc' => ['categories.name', 'mid'] }, prefetch=>['categories'] } );
+    my ($self, $topic_mid, $id_field) = @_;
+    my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->topics->search( {rel_field => $id_field}, { order_by => { '-asc' => ['categories.name', 'mid'] }, prefetch=>['categories'] } );
     rs_hashref ( $rs_rel_topic );
     my @topics = $rs_rel_topic->all;
     @topics = Baseliner->model('Topic')->append_category( @topics );
@@ -498,7 +500,7 @@ sub save_data {
     
     foreach my $key  (keys %rel_fields){
         if($rel_fields{$key}){
-            eval( '$self->' . $rel_fields{$key} . '( $topic, $data->{$key}, $data->{username} )' );    
+            eval( '$self->' . $rel_fields{$key} . '( $topic, $data->{$key}, $data->{username}, $key )' );    
         }
     } 
      
@@ -574,23 +576,26 @@ sub set_priority {
 }
 
 sub set_topics {
-    my ($self, $rs_topic, $topics, $user ) = @_;
+    my ($self, $rs_topic, $topics, $user, $id_field ) = @_;
     my @all_topics = ();
     
     # related topics
     my @new_topics = _array( $topics ) ;
-    my @old_topics = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic'})->hashref->all;    
+    my @old_topics = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
     
-
     # check if arrays contain same members
     if ( array_diff(@new_topics, @old_topics) ) {
         if( @new_topics ) {
-            @all_topics = Baseliner->model('Baseliner::BaliTopic')->search({mid =>\@new_topics});
-            $rs_topic->set_topics( \@all_topics, { rel_type=>'topic_topic'});
+            if(@old_topics){
+                my $rs_old_topics = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => \@old_topics});
+                $rs_old_topics->delete();
+            }
             
+            for (@new_topics){
+                Baseliner->model('Baseliner::BaliMasterRel')->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field });
+            }
             
-            
-            my $topics = join(',', map {$_->mid} @all_topics);
+            my $topics = join(',', @new_topics);
     
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => _loc( 'attached topics' ),
