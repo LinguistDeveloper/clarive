@@ -427,12 +427,14 @@ sub changeset : Local {
     # topic changes
     my $where = { is_changeset => 1, rel_type=>'topic_project', to_mid=>$id_project };
     my @changes;
+    my $bind_releases;
     if( defined $p->{id_status} ) {
         $where->{id_category_status} = $p->{id_status};
         @changes = $c->model('Baseliner::BaliTopic')->search(
             $where,
             { prefetch=>['categories','children','master'] }
         )->all;
+        $bind_releases = DB->BaliTopicStatus->find( $p->{id_status} )->bind_releases;
     } else {
         # Available 
         $where->{'status.bl'} = '*';
@@ -449,7 +451,9 @@ sub changeset : Local {
     if ( $bl ne '*' ) {
         my @rels;
         for my $topic (@changes) {
-            push @rels, $topic->my_releases->hashref->all;  # slow! join me!
+            my @releases = $topic->my_releases->hashref->all;
+            push @rels, @releases;  # slow! join me!
+            next if $bind_releases && @releases;
             my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
             # get the menus for the changeset
             my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );

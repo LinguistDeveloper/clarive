@@ -175,6 +175,8 @@
         if(rec){
             var ff = form_status.getForm();
             ff.loadRecord( rec );
+            var bind_releases = ff.findField('bind_releases');
+            bind_releases.setValue(rec.data.bind_releases);
             title = 'Edit status';
         }
         
