@@ -90,7 +90,8 @@ sub check_scheduled {
 sub job_name {
     my $self = shift;
     my $p = shift;
-    my $prefix = $p->{type} eq 'promote' ? 'N' : 'B';
+    my $config = Baseliner->model('ConfigStore')->get( 'config.job' );
+    my $prefix = $p->{job_type} eq $config->{emer_window}?'U':$p->{type} eq 'promote' ? 'N' : 'B';
     return sprintf( $p->{mask}, $prefix, $p->{bl} eq '*' ? 'ALL' : $p->{bl} , $p->{id} );
 }
 
@@ -271,7 +272,7 @@ sub _create {
 
     # setup name
     my $name = $config->{name}
-        || $self->job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job->id });
+        || $self->job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job->id, job_type=>$jobType });
 
     _log "****** Creating JOB id=" . $job->id . ", name=$name, mask=" . $config->{mask};
     $config->{runner} && $job->runner( $config->{runner} );
