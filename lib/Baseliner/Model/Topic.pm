@@ -317,7 +317,7 @@ sub get_data {
         ###************************************************************************************************************************
         
         
-        my %rel_fields = map { $_->{id_field} => 1  } grep { $_->{relation} eq 'system' } _array( $meta );
+        my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
         my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
 
         my @rels = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$topic_mid })->hashref->all;
