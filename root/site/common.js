@@ -51,6 +51,7 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/comp/topic/topic_lib.js', 'js' );
 
     Baseliner.loadFile( '/static/site.css', 'css' );
+    Baseliner.loadFile( '/static/final.css', 'css' );
 
     Baseliner.message(_('JS'), _('Reloaded successfully') );  
 };

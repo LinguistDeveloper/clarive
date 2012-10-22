@@ -1503,4 +1503,18 @@ sub report_csv : Local {
     $c->forward('/serve_file');
 }
 
+sub img : Local {
+    my ($self, $c, $id ) = @_;
+    my $p = $c->req->params;
+    my $img = DB->BaliTopicImage->search({ id_hash=>$id })->first;
+    if( $img ) {
+        $c->res->content_type( $img->content_type || 'image/png');
+        $c->res->body( $img->img_data );
+    } else {
+        $c->res->content_type( 'image/png');
+        my $broken = $c->path_to('/root/static/images/icons/help.png')->slurp;
+        $c->res->body( $broken );
+    }
+}
+
 1;

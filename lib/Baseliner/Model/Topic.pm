@@ -427,7 +427,38 @@ sub save_data {
     my %old_value;
     my %old_text;
     my %relation;
-    
+
+    my @imgs;
+
+    # TODO falta bucle de todos los campos HTMLEditor
+    #_debug $data->{description};
+    if( length $topic_mid ) {
+        my @img_current_ids;
+        for my $img ( $data->{description} =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
+            push @img_current_ids, $img;
+        }
+        if( @img_current_ids ) {
+            DB->BaliTopicImage->search({ topic_mid=>$topic_mid, -not => { id_hash=>{ -in => \@img_current_ids } } })->delete;
+        } else {
+            DB->BaliTopicImage->search({ topic_mid=>$topic_mid })->delete;
+        }
+    }
+
+    _error $data->{description};
+    for my $img ( $data->{description} =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
+        my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
+        $img_data = from_base64( $img_data );
+        _error "IMG_DATA LEN=" . length( $img_data );
+        my $row = { topic_mid=>$topic_mid, img_data=>$img_data, content_type=>$ct };
+        $row->{topic_mid} = $topic_mid if length $topic_mid;
+        my $img_row = DB->BaliTopicImage->create( $row );
+        push @imgs, $img_row; 
+        my $img_id = $img_row->id;
+        my $id_hash = _md5( join(',',$img_id,_nowstamp) ); 
+        $img_row->update({ id_hash => $id_hash });
+        $data->{description} =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
+    }
+
     for( @std_fields ) {
         if  (exists $data->{ $_ -> {name}}){
             $row{ $_->{column} } = $data->{ $_ -> {name}};
@@ -447,10 +478,17 @@ sub save_data {
     if (!$topic_mid){
         $topic = master_new 'topic' => $data->{title} => sub {
             $topic_mid = shift;
+
             #Defaults
             $row{ mid } = $topic_mid;
             $row{ created_by } = $data->{username};
             DB->BaliTopic->create( \%row );
+
+            # update images
+            for( @imgs ) {
+                $_->update({ topic_mid => $topic_mid });
+            }
+
         }        
         
     }else{

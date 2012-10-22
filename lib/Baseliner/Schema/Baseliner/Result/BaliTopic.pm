@@ -101,6 +101,12 @@ __PACKAGE__->belongs_to(
   { 'foreign.id_category' => 'self.id_category' },
 );
 
+__PACKAGE__->has_many(
+  "images",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicImage",
+  { "topic_mid" => "mid" },
+);
+
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
 __PACKAGE__->master_setup( 'files', ['topic','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid'] );
