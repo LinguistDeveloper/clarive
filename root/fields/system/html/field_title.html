@@ -3,11 +3,25 @@
     $data
 </%args>
 
+%use Date::Parse;
+%use DateTime;
+
+%my $epoch = str2time($data->{created_on});
+%my $datetime = DateTime->from_epoch(epoch => $epoch);
+
     <tr>
-        <td width = "1" style="vertical-align: middle">
+        <td style="vertical-align: middle">
             <span class="label" style="background: <% $data->{color_category} %>"><% $data->{name_category} %> #<% $data->{topic_mid} %></span>
         </td>
-        <td style = "padding-left:10px">
-            <h3><% eval('$data->{' . $meta->{bd_field} . '}') %></h3>
+    </tr>
+    <tr >
+        <td style="padding-top: 5px">
+            <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
+            <% $data->{created_by}%>, <small><%$datetime->dmy %> <%$datetime->hms%></small>    
         </td>
-    </tr>    
+    </tr>
+    <tr>
+        <td colspan='2'>
+            <h3><% eval('$data->{' . $meta->{bd_field} . '}') %></h3>
+        </td>    
+    </tr>

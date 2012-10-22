@@ -1,0 +1,24 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+% if( !$meta->{hidden} ) {
+% #my $date = DateTime->new($data->{created_on});
+
+%use Date::Parse;
+%use DateTime;
+
+%my $str = 'sadkfj sdkfj ssdf dsf' ;
+%$str =~ s/\r|\n//g;
+
+%my $epoch = str2time($data->{created_on});
+%my $datetime = DateTime->from_epoch(epoch => $epoch);
+
+    <tr>
+      <td >
+          <img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
+          <% $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}}%>, <small><%$datetime->dmy %> <%$datetime->hms%></small>    
+      </td>
+    </tr>
+% }
