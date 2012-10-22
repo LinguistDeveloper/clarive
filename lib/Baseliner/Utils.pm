@@ -71,6 +71,7 @@ use Exporter::Tidy default => [
     domain_match
     to_pages
     to_base64
+    from_base64
     rs_hashref
     packages_that_do
     query_array
@@ -665,13 +666,13 @@ sub _rmpath {
 }
 
 sub _name_to_id {
-    my $name = lc shift;
+    my $name = _unac( lc shift );
     $name =~ s{\s+}{_}g;
     $name =~ s{\W}{_}g;
     $name =~ s{_+}{_}g;
     $name =~ s{_$}{}g;
     $name =~ s{^_}{}g;
-    return _unac( $name );
+    return $name;
 }
 
 # returns the official tmp dir
@@ -752,6 +753,10 @@ sub to_pages {
 
 sub to_base64 {
     return MIME::Lite::encode_base64( shift );
+}
+
+sub from_base64 {
+    return  MIME::Base64::decode_base64( shift() );
 }
 
 sub rs_hashref {
