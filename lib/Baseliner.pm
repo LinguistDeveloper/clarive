@@ -51,7 +51,7 @@ use Baseliner::CI;
 my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
-our $VERSION = '5.2.0';
+our $VERSION = '6.0';
 
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
