@@ -12,13 +12,14 @@
     <ul class="" style="margin-left: 20px">
 % foreach my $topic ( _array( $data->{$meta->{id_field}} ) ) {
         <li style="margin: 6px 0px 6px 0px;">
-            <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
-            style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
-% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
-            &nbsp;&nbsp;<b><% $topic->{title} %></b>&nbsp;&nbsp;
+% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );            
 % if($topic->{progress}){                            
-            <span class="badge badge-<%$cls%>"><%$topic->{progress}%>%</span>
-%}
+            <span class="badge badge-<%$cls%>" style="float:right;"><%$topic->{progress}%>%</span>
+%}            
+            <span class="label" onclick="javascript:Baseliner.show_topic(<% $topic->{mid} %>, '<% $topic->{name} %>')" 
+            style="padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
+            &nbsp;&nbsp;<b><% $topic->{title} %></b>&nbsp;&nbsp;
+
         </li>
 % }
     </ul>

@@ -41,7 +41,7 @@
 % my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
             &nbsp;&nbsp;<b><% $topic->{title} %></b>&nbsp;&nbsp;
 % if($topic->{progress}){
-            <span class="badge badge-<%$cls%>"><%$topic->{progress}%>%</span>
+            <span class="badge badge-<%$cls%>" style="float:right;"><%$topic->{progress}%>%</span>
 %}
         </li>
 % }
@@ -62,7 +62,7 @@
 % my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
             &nbsp;&nbsp;<b><% $topic->{title} %></b>&nbsp;&nbsp;
 % if($topic->{progress}){
-            <span class="badge badge-<%$cls%>"><%$topic->{progress}%>%</span>
+            <span class="badge badge-<%$cls%>" style="float:right;"><%$topic->{progress}%>%</span>
 %}
         </li>
 % }
