@@ -18,58 +18,58 @@ my $post_filter = sub {
         ($text,@vars);
     };
 register 'event.post.create' => {
-    text => '%1 posted a comment on %2: %3',
+    text => '%1 posted a comment: %3',
     description => 'User posted a comment',
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
 };
 
 register 'event.post.delete' => {
-    text => '%1 deleted a comment on %2: %3',
+    text => '%1 deleted a comment: %3',
     description => 'User deleted a comment',
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
 };
 
 register 'event.file.create' => {
-    text => '%1 posted a file on %2: %3',
+    text => '%1 posted a file: %3',
     description => 'User uploaded a file',
     vars => ['username', 'ts', 'filename'],
 };
 
 register 'event.file.attach' => {
-    text => '%1 attached %2 on %3',
+    text => '%1 attached %2',
     description => 'User attached a file',
     vars => ['username', 'filename', 'ts'],
 };
 
 register 'event.file.remove' => {
-    text => '%1 removed %2 on %3',
+    text => '%1 removed %2',
     description => 'User removed a file',
     vars => ['username', 'filename', 'ts'],
 };
 
 register 'event.topic.file_remove' => {
-    text => '%1 removed %2 on %3',
+    text => '%1 removed %2',
     description => 'User removed a file',
     vars => ['username', 'filename', 'ts'],
 };
 
 register 'event.topic.create' => {
-    text => '%1 created a topic of %2 on %3',
+    text => '%1 created a topic of %2',
     description => 'User created a topic',
     vars => ['username', 'category', 'ts'],
 };
 
 register 'event.topic.modify' => {
-    text => '%1 modified topic on %2',
+    text => '%1 modified topic',
     description => 'User modified a topic',
     vars => ['username', 'ts'],
 };
 
 
 register 'event.topic.modify_field' => {
-    text => '%1 modified topic %2 from %3 to %4 on %6',
+    text => '%1 modified topic %2 from %3 to %4',
     description => 'User modified a topic',
     vars => ['username', 'field', 'old_value', 'new_value', 'text_new', 'ts',],
     filter=>sub{
@@ -83,7 +83,7 @@ register 'event.topic.modify_field' => {
 };
 
 register 'event.topic.change_status' => {
-    text => '%1 changed topic status from %2 to %3 on %4',
+    text => '%1 changed topic status from %2 to %3',
     vars => ['username', 'old_status', 'status', 'ts'],
 };
 
