@@ -252,13 +252,13 @@ sub get_system_fields {
     my $pathHTML = '/fields/system/html/';
     my $pathJS = '/fields/system/js/';
     my @system_fields = (
-            { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => 2, section => 'body' }},
-            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => 1, section => 'body', relation => 'categories' }},
+            { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => 1, section => 'head', field_order_html => 1 }},
+            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => 2, section => 'body', relation => 'categories' }},
             { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status' , origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => 3, section => 'body', relation => 'status' }},
-            { id_field => 'created_by', params => {name_field => 'Created By', bd_field => 'created_by', origin => 'default', html => '/fields/templates/html/row_body.html', field_order => 0, section => 'body' }},
-            { id_field => 'created_on', params => {name_field => 'Created On', bd_field => 'created_on', origin => 'default', html => '/fields/templates/html/row_body.html', field_order => 0, section => 'body' }},
+            { id_field => 'created_by', params => {name_field => 'Created By', bd_field => 'created_by', origin => 'default'}},
+            { id_field => 'created_on', params => {name_field => 'Created On', bd_field => 'created_on', origin => 'default'}},
             { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body', relation => 'priorities' }},
-            { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'body' }},
+            { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'head', field_order_html => 2 }},
             { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => 8, section => 'body' }},
             { id_field => 'include_into', params => {name_field => 'Include into', bd_field => 'include_into', origin => 'default', html => $pathHTML . 'field_include_into.html', field_order => 0, section => 'details' }},
             #{ id_field => 'dates', params => { name_field => 'dates',  origin => 'default', relation => 'system', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 9999, section => 'details' }},
@@ -476,13 +476,14 @@ sub save_data {
     my $topic;
     
     if (!$topic_mid){
-        $topic = master_new 'topic' => $data->{title} => sub {
+        my $rstopic = master_new 'topic' => $data->{title} => sub {
             $topic_mid = shift;
 
             #Defaults
             $row{ mid } = $topic_mid;
             $row{ created_by } = $data->{username};
-            DB->BaliTopic->create( \%row );
+            
+            $topic = DB->BaliTopic->create( \%row );
 
             # update images
             for( @imgs ) {
