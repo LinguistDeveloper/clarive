@@ -202,6 +202,8 @@ sub list : Local {
     if($p->{statuses}){
         my @statuses = _array $p->{statuses};
         $where->{'category_status_id'} = \@statuses;
+    }else{
+        $where->{'category_status_type'} = {'!=', 'F'};
     }
       
     if($p->{priorities}){
