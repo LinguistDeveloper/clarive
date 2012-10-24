@@ -476,13 +476,14 @@ sub save_data {
     my $topic;
     
     if (!$topic_mid){
-        $topic = master_new 'topic' => $data->{title} => sub {
+        my $rstopic = master_new 'topic' => $data->{title} => sub {
             $topic_mid = shift;
 
             #Defaults
             $row{ mid } = $topic_mid;
             $row{ created_by } = $data->{username};
-            DB->BaliTopic->create( \%row );
+            
+            $topic = DB->BaliTopic->create( \%row );
 
             # update images
             for( @imgs ) {
