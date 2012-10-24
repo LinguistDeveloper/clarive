@@ -575,7 +575,6 @@ sub list_baseline : Private {
     my $ids;
     $c->stash->{projects} = $config->{projects};
 
-    _error "en la 573";
     # my $is_root = $c->model('Permissions')->is_root( $c->username );
 
     #if (!$is_root) {  
