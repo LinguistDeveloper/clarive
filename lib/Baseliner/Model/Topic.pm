@@ -433,32 +433,35 @@ sub save_data {
 
     # TODO falta bucle de todos los campos HTMLEditor
     #_debug $data->{description};
-    if( length $topic_mid ) {
-        my @img_current_ids;
-        for my $img ( $data->{description} =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
-            push @img_current_ids, $img;
-        }
-        if( @img_current_ids ) {
-            DB->BaliTopicImage->search({ topic_mid=>$topic_mid, -not => { id_hash=>{ -in => \@img_current_ids } } })->delete;
-        } else {
-            DB->BaliTopicImage->search({ topic_mid=>$topic_mid })->delete;
-        }
-    }
-
-    _error $data->{description};
-    for my $img ( $data->{description} =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
-        my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
-        $img_data = from_base64( $img_data );
-        _error "IMG_DATA LEN=" . length( $img_data );
-        my $row = { topic_mid=>$topic_mid, img_data=>$img_data, content_type=>$ct };
-        $row->{topic_mid} = $topic_mid if length $topic_mid;
-        my $img_row = DB->BaliTopicImage->create( $row );
-        push @imgs, $img_row; 
-        my $img_id = $img_row->id;
-        my $id_hash = _md5( join(',',$img_id,_nowstamp) ); 
-        $img_row->update({ id_hash => $id_hash });
-        $data->{description} =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
-    }
+    #if( length $topic_mid ) {
+    #    my @img_current_ids;
+    #    for my $img ( $data->{description} =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
+    #        push @img_current_ids, $img;
+    #    }
+    #    if( @img_current_ids ) {
+    #        DB->BaliTopicImage->search({ topic_mid=>$topic_mid, -not => { id_hash=>{ -in => \@img_current_ids } } })->delete;
+    #    } else {
+    #        DB->BaliTopicImage->search({ topic_mid=>$topic_mid })->delete;
+    #    }
+    #}
+    #
+    #_error $data->{description};
+    #for my $img ( $data->{description} =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
+    #    my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
+    #    $img_data = from_base64( $img_data );
+    #    _error "IMG_DATA LEN=" . length( $img_data );
+    #    my $row = { topic_mid=>$topic_mid, img_data=>$img_data, content_type=>$ct };
+    #    $row->{topic_mid} = $topic_mid if length $topic_mid;
+    #    my $img_row = DB->BaliTopicImage->create( $row );
+    #    push @imgs, $img_row; 
+    #    my $img_id = $img_row->id;
+    #    my $id_hash = _md5( join(',',$img_id,_nowstamp) ); 
+    #    $img_row->update({ id_hash => $id_hash });
+    #    $data->{description} =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
+    #}
+    
+    
+    $data->{description} = $self->deal_with_images({topic_mid => $topic_mid, field => $data->{description}});
 
     for( @std_fields ) {
         if  (exists $data->{ $_ -> {name}}){
@@ -547,13 +550,16 @@ sub save_data {
     my @custom_fields = map { +{name => $_->{name_field}, column => $_->{id_field}, data => $_->{data} } } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
     
     for( @custom_fields ) {
-        if  (exists $data->{ $_ -> {name}}){
+        if  (exists $data->{ $_ -> {name}} && $data->{ $_ -> {name}} ne '' ){
+
+            $data->{ $_ -> {name}} = $self->deal_with_images({topic_mid => $topic_mid, field => $data->{ $_ -> {name}}});
 
             my $row = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( {topic_mid=> $topic->mid, name => $_->{column}} )->first;
             my $record = {};
             $record->{topic_mid} = $topic->mid;
             $record->{name} = $_->{column};
             if ($_->{data}){ ##Cuando el tipo de dato es CLOB
+                
             	$record->{value_clob} = $data->{ $_ -> {name}};
             }else{
             	$record->{value} = $data->{ $_ -> {name}};
@@ -564,7 +570,6 @@ sub save_data {
             }
             else{
                 my $modified = 0;
-                
                 if ($_->{data}){ ##Cuando el tipo de dato es CLOB
                     $row->value_clob ( $data->{ $_ -> {name}} );
                     if ($row->value != $data->{ $_ -> {name}}){
@@ -595,6 +600,49 @@ sub save_data {
     }    
     
     return $topic;
+}
+
+sub deal_with_images{
+    #params:  topic_mid, field
+    my ($self, $params ) = @_;
+    my $topic_mid = $params->{topic_mid};
+    my $field = $params->{field};
+    
+    my @imgs;
+    
+    # TODO falta bucle de todos los campos HTMLEditor
+    #_debug $data->{description};
+    if( length $topic_mid ) {
+        my @img_current_ids;
+        #for my $img ( $data->{description} =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
+        for my $img ( $field =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
+            push @img_current_ids, $img;
+        }
+        if( @img_current_ids ) {
+            DB->BaliTopicImage->search({ topic_mid=>$topic_mid, -not => { id_hash=>{ -in => \@img_current_ids } } })->delete;
+        } else {
+            DB->BaliTopicImage->search({ topic_mid=>$topic_mid })->delete;
+        }
+    }
+    
+    #_debug $field;
+    ###for my $img ( $data->{description} =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
+    for my $img ( $field =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
+        my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
+        $img_data = from_base64( $img_data );
+        _error "IMG_DATA LEN=" . length( $img_data );
+        my $row = { topic_mid=>$topic_mid, img_data=>$img_data, content_type=>$ct };
+        $row->{topic_mid} = $topic_mid if length $topic_mid;
+        my $img_row = DB->BaliTopicImage->create( $row );
+        push @imgs, $img_row; 
+        my $img_id = $img_row->id;
+        my $id_hash = _md5( join(',',$img_id,_nowstamp) ); 
+        $img_row->update({ id_hash => $id_hash });
+        #$data->{description} =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
+        $field =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
+    }
+    
+    return $field;
 }
 
 sub set_priority {
