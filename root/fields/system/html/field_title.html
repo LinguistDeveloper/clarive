@@ -15,14 +15,31 @@
             <span class="label" style="background: <% $data->{color_category} %>"><% $data->{name_category} %> #<% $data->{topic_mid} %></span>
         </td>
     </tr>
-    <tr >
-        <td style="padding-top: 5px">
-            <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
-            <% $data->{created_by}%>, <small><%$data->{created_on}%></small>    
-        </td>
-    </tr>
     <tr>
         <td colspan='2'>
             <h3><% eval('$data->{' . $meta->{bd_field} . '}') %></h3>
         </td>    
+    </tr>
+    <tr >
+        <td style="padding-top: 5px; color: #999">
+            <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
+            <% $data->{created_by}%>, <small><%$data->{created_on}%></small>    
+% my $id = Baseliner::Utils::_nowstamp();
+<% _dump( $data->{labels} ) %>
+% if( _array( $data->{labels} ) ) {        
+    <div style="margin-bottom:25px;">
+% foreach my $label ( _array( $data->{labels} ) ) {
+        <div id='<%$id . '_' . $label->{name} %>'></div>
+            <script language="javascript">
+                var label_color = '<% $label->{color} %>';
+                var label_name = '<% $label->{name} %>'
+                var div_name = '<%$id . '_' . $label->{name} %>'
+                var div_label = document.getElementById(div_name);
+                div_label.innerHTML = "<span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span>";
+            </script>
+        
+% }
+    </div>
+% }
+        </td>
     </tr>
