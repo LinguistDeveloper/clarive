@@ -6,8 +6,9 @@
 %use Date::Parse;
 %use DateTime;
 
-%my $epoch = str2time($data->{created_on});
-%my $datetime = DateTime->from_epoch(epoch => $epoch);
+%#my $date = $data->{created_on};
+%#my $epoch = str2time( $date );
+%#my $datetime = DateTime->from_epoch(epoch => $epoch);
 
     <tr>
         <td style="vertical-align: middle">
@@ -17,7 +18,7 @@
     <tr >
         <td style="padding-top: 5px">
             <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
-            <% $data->{created_by}%>, <small><%$datetime->dmy %> <%$datetime->hms%></small>    
+            <% $data->{created_by}%>, <small><%$data->{created_on}%></small>    
         </td>
     </tr>
     <tr>
