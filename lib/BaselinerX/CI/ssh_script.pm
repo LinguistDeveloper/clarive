@@ -6,6 +6,12 @@ has script => qw(is rw isa Any);
 
 with 'Baseliner::Role::CI::Script';
 
+sub rel_type {
+    {
+        server    => [ from_mid => 'ssh_script_server' ],
+    };
+}
+
 sub run {
     my ($self) = @_;
     use Baseliner::Utils;
