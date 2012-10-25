@@ -4208,4 +4208,8 @@ msgstr "Agrupar releases"
 msgid "Content"
 msgstr "Contenido"
 
+msgid "Topics open by category"
+msgstr "Tópicos abiertos por categorías"
 
+msgid "Chart pie (Topics open by category)"
+msgstr "Gráfico circular (Tópicos abiertos por categorías)"
