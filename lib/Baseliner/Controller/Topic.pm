@@ -503,7 +503,7 @@ sub view : Local {
  
         # comments
         $self->list_posts( $c );  # get comments into stash        
-        $c->stash->{events} = events_by_mid( $topic_mid );
+        $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
         
         #$c->stash->{forms} = [
         #    map { "/forms/$_" } split /,/,$topic->categories->forms

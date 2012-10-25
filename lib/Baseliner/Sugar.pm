@@ -223,17 +223,23 @@ sub events_by_key {
 }
 
 sub events_by_mid {
-    my ($mid, $args ) = @_;
-    my $evs_rs = Baseliner->model('Baseliner::BaliEvent')->search({ mid=>$mid }, { order_by=>{ '-desc' => 'ts' } });
-    rs_hashref( $evs_rs );
-    my @evs = $evs_rs->all;
+    my ($mid, %p ) = @_;
+    my $min_level = $p{min_level} // 0;
+    my @evs = DB->BaliEvent->search({ mid=>$mid }, { order_by=>{ '-desc' => 'ts' } })->hashref->all;
     return [] unless @evs;
-    return [ map { 
+    return [
+      grep {
+         $_->{ev_level} == 0 || $_->{level} >= $min_level;
+      }
+      map { 
         # merge 2 hashes
-        my $d = { %$_ , %{ _load( $_->{event_data} ) } };
+        my $event_data = _load( _to_utf8( $_->{event_data} ) );
+        delete $event_data->{ts};
+        my $d = { %$_ , %$event_data };
         try {
             my $ev = Baseliner->model('Registry')->get( $d->{event_key} ); # this throws an exception if key not found
             $d->{text} = $ev->event_text( $d );
+            $d->{ev_level} = $ev->level;
         };  
         $d; 
     } @evs ];

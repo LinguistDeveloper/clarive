@@ -64,7 +64,8 @@ register 'event.topic.create' => {
 register 'event.topic.modify' => {
     text => '%1 modified topic',
     description => 'User modified a topic',
-    vars => ['username', 'ts'],
+    vars => ['username', 'topic_name', 'ts'],
+    level => 1,
 };
 
 
@@ -274,7 +275,14 @@ sub get_meta {
     my $id_cat =  $id_category
         // DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query;
         
-    my @meta = sort { $a->{field_order} <=> $b->{field_order} } map {  _load $_->{params_field} } DB->BaliTopicFieldsCategory->search({ id_category => { -in => $id_cat }  })->hashref->all;
+    my @meta =
+        sort { $a->{field_order} <=> $b->{field_order} }
+        map  { 
+            my $d = _load $_->{params_field};
+            $d->{field_order} //= 1;
+            $d
+        }
+        DB->BaliTopicFieldsCategory->search( { id_category => { -in => $id_cat } } )->hashref->all;
     #_error \@meta;
     
     #system fields
@@ -689,7 +697,7 @@ sub set_topics {
                                                 field      => _loc( 'attached topics' ),
                                                 old_value      => '',
                                                 new_value  => $topics,
-                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                                text_new      => '%1 modified topic: %2 ( %4 )',
                                                } => sub {
                 { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
             } ## end try
@@ -737,7 +745,7 @@ sub set_revisions {
                                                 field      => _loc( 'attached revisions' ),
                                                 old_value      => '',
                                                 new_value  => $revisions,
-                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                                text_new      => '%1 modified topic: %2 ( %4 )',
                                                } => sub {
                 { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
             } ## end try
@@ -839,7 +847,7 @@ sub set_projects {
                                                 field      => _loc( 'attached projects' ),
                                                 old_value      => '',
                                                 new_value  => $projects,
-                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                                text_new      => '%1 modified topic: %2 ( %4 )',
                                                } => sub {
                 { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
             } ## end try
@@ -887,7 +895,7 @@ sub set_users{
                                                 field      => _loc( 'attached users' ),
                                                 old_value      => '',
                                                 new_value  => $users,
-                                                text_new      => '%1 modified topic: %2 ( %4 ) on %6',
+                                                text_new      => '%1 modified topic: %2 ( %4 )',
                                                } => sub {
                 { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
             } ## end try
