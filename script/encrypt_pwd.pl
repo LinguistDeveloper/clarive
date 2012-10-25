@@ -5,7 +5,7 @@ use lib "$FindBin::Bin/../lib";
 use Baseliner;
 use 5.010;
 require Crypt::Blowfish::Mod;
-my $key = Baseliner->config->{dec_key};
+my $key = Baseliner->config->{dec_key} // Baseliner->config->{decrypt_key};
 my $encrypt = Crypt::Blowfish::Mod->new($key);
 my $pwd = do {
   print "Insert new password: ";
