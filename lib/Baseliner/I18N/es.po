@@ -2992,11 +2992,11 @@ msgstr "Comentar"
 msgid "Activity"
 msgstr "Actividad"
 
-msgid "%1 posted a comment on %2: %3"
-msgstr "%1 publicó un comentario el %2: %3"
+msgid "%1 posted a comment: %3"
+msgstr "%1 publicó un comentario: %3"
 
-msgid "%1 deleted a comment on %2: %3"
-msgstr "%1 borró un comentario el %2: %3"
+msgid "%1 deleted a comment: %3"
+msgstr "%1 borró un comentario: %3"
 
 msgid "Depends On"
 msgstr "Dependo De"
@@ -3361,17 +3361,17 @@ msgstr "No es una revisión"
 msgid "Node is not a project"
 msgstr "No es un proyecto"
 
-msgid "%1 created topic on %2"
-msgstr "%1 creó tópico el %2"
+msgid "%1 created topic"
+msgstr "%1 creó el tópico"
 
-msgid "%1 removed %2 on %3"
-msgstr "%1 borró el fichero %2 el %3"
+msgid "%1 removed file %2"
+msgstr "%1 borró el fichero %2"
 
-msgid "%1 attached %2 on %3"
-msgstr "%1 adjuntó el fichero %2 el %3"
+msgid "%1 attached file %2"
+msgstr "%1 adjuntó el fichero %2"
 
-msgid "%1 modified topic on %3"
-msgstr "%1 modificó tópico el %3"
+msgid "%1 modified topic"
+msgstr "%1 modificó el tópico"
 
 msgid "%1 created topic '%2'"
 msgstr "%1 ha creado el tópico '%2'"
@@ -4073,17 +4073,17 @@ msgstr "Personalizar campo"
 msgid "Field"
 msgstr "Campo"
 
-msgid "%1 modified topic %2 from %3 to %4 on %6"
-msgstr "%1 modificó el campo %2  de %3 a %4 el %6"
+msgid "%1 modified topic %2 from %3 to %4"
+msgstr "%1 modificó el campo %2  de %3 a %4"
 
-msgid "%1 modified topic on %2"
-msgstr "%1 modificó el tópico el %2"
+msgid "%1 modified topic"
+msgstr "%1 modificó el tópico"
 
 msgid "%1 deleted all attached topics of "
 msgstr "%1 borró todos los tópicos adjuntos de "
 
-msgid "%1 modified topic: %2 ( %4 ) on %6"
-msgstr "%1 modificó el tópico: %2 ( %4 ) el %6"
+msgid "%1 modified topic: %2 ( %4 )"
+msgstr "%1 modificó el tópico: %2 ( %4 )"
 
 msgid "attached topics"
 msgstr "tópicos adjuntos"
@@ -4109,8 +4109,8 @@ msgstr "proyectos adjuntos"
 msgid "attached users"
 msgstr "usuarios adjuntos"
 
-msgid "%1 changed topic status from %2 to %3 on %4"
-msgstr "%1 modificó el estado de %2 a %3 el %4"
+msgid "%1 changed topic status from %2 to %3"
+msgstr "%1 modificó el estado de %2 a %3"
 
 msgid "Character dot not allowed"
 msgstr "Caracter punto no permitido"
@@ -4142,8 +4142,8 @@ msgstr "Barra de progreso"
 msgid "Listbox"
 msgstr "Lista de datos"
 
-msgid "%1 created a topic of %2 on %3"
-msgstr "%1 creó un tópico de categoría: %2 el %3"
+msgid "%1 created a topic of %2"
+msgstr "%1 creó un tópico de categoría: %2"
 
 msgid "User duplicated"
 msgstr "Usuario duplicado"

@@ -66,6 +66,7 @@ has 'text' => (
 );
 has 'vars' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] }, lazy => 1 );
 has 'filter' => ( is => 'rw', isa => 'CodeRef' );
+has level => ( is=>'rw', isa => 'Num', default=>0 );
 
 sub event_text {
     my ($self, $data ) = @_;
