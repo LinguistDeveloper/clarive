@@ -21,19 +21,6 @@ register 'menu.admin.topic' => {
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };
 
-##register 'config.field.general' => {
-##    metadata => [
-##        { id => 'status', label => '', default => 'visible', values => ['visible','hidden','readonly'] },
-##    ]
-##};
-##
-##register 'config.field.title' => {
-##    metadata => [
-##        { id => 'status', label => '', default => 'visible', values => ['visible','hidden','readonly'] },
-##    ]
-##};
-
-
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -89,22 +76,6 @@ sub update_category : Local {
                                                                                             });     
                         }
                     }
-                    
-                    #my $name = $p->{name};
-                    #my %acciones_by_category = (    create  => 'Puede crear tópicos de la categoría ',
-                    #                                view    => 'Puede ver tópicos de la categoría ',
-                    #                                edit    => 'Puede editar tópicos de la categoría ');
-                    #                             
-                    #foreach my $action (keys %acciones_by_category){
-                    #   
-                    #    my $id_action = 'action.topics.' . lc $name . '.' . $action  ;
-                    #    my $name = $acciones_by_category{$action} . $name ;
-                    #             
-                    #    my $actions = $c->model('Baseliner::BaliAction')->update_or_create({ action_id => $id_action,
-                    #                                                                         action_name => $name,
-                    #                                                                         action_description => $name
-                    #                                                                        });                                
-                    #}                 
 
                     $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=> $category->id };
                 }
@@ -138,20 +109,6 @@ sub update_category : Local {
                                                                                         });     
                     }
                 }
-                
-                ##foreach ( '%action.topics.' . lc $old_category . '%', '%action.topicsfield.' . lc $old_category . '%'){
-                ##    my $rs_action = Baseliner->model('Baseliner::BaliAction')->search({ action_id => {'like', $_  }});
-                ##    while (my $row = $rs_action->next){
-                ##        my @split_action = split /\./, $row->action_id;
-                ##        $split_action[2] = lc $p->{name};
-                ##        my $new_action = join('.',@split_action);
-                ##        $row->action_id($new_action);
-                ##        $row->update;
-                ##    }
-                ##}                
-                
-                
-                
                 $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, category_id=> $id_category };
             }
             catch{
@@ -167,14 +124,6 @@ sub update_category : Local {
                 }
                   
                 my $rs = Baseliner->model('Baseliner::BaliTopicCategories')->search({ id => \@ids_category });
-                
-                #while (my $row = $rs->next){
-                #    foreach ( '%action.topics.' . lc $row->name . '%', '%action.topicsfield.' . lc $row->name . '%'){
-                #        my $rs_action = Baseliner->model('Baseliner::BaliAction')->search({ action_id => {'like', $_  }});
-                #        $rs_action->delete;
-                #    }
-                #}
-                
                 $rs->delete;
                 
                 $c->stash->{json} = { success => \1, msg=>_loc('Categories deleted') };
@@ -509,76 +458,6 @@ sub list_categories_admin : Local {
     $c->forward('View::JSON');
 }
 
-######sub list_fields : Local {
-######    my ($self,$c) = @_;
-######    my $p = $c->request->parameters;
-######
-######    my @field_dirs;
-######    push @field_dirs, $c->path_to( 'root/fields' ) . "";
-######    @field_dirs = grep { -d } @field_dirs;
-######    
-######    my @fieldlets = map {
-######        my @ret;
-######        #for my $f ( grep { -f } _dir( $_ . '/*.html')->children ) {
-######        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
-######            my $d = $f->slurp;
-######            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
-######           
-######            my $metadata;
-######            if(length $yaml ) {
-######                $metadata =  _load( $yaml );    
-######            } else {
-######                $metadata = {};
-######            }
-######            my @rows = map {
-######                +{  field=>$_, value => $metadata->{$_} } 
-######            } keys %{ $metadata || {} };
-######            
-######            push @ret, {
-######                file => "$f",
-######                yaml => $yaml,
-######                metadata => $metadata,
-######                rows => \@rows,
-######            };
-######        }
-######       @ret;
-######    } @field_dirs;
-######    
-######    
-######    my @rows;
-######    my $i = 1;
-######    for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } @fieldlets ) {
-######        if( $field->{metadata}->{name} ){
-######            $field->{metadata}->{params}->{name_field} = $field->{metadata}->{name};
-######            push @rows,
-######                {
-######                  #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
-######                  id        => $field->{metadata}->{name},
-######                  params	=> $field->{metadata}->{params},
-######                  #order     => $field->{metadata}->{order},
-######                  #value     => $field->{metadata}->{value},
-######                };		
-######        }
-######    }
-######    my @id_fields = map { $_->{metadata}->{name} } @fieldlets;
-######    my @custom_fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => { 'not in' => \@id_fields}})->hashref->all;
-######    for(@custom_fields){
-######    	my $params = _load  $_->{params_field};
-######        $params->{name_field} = $_->{id_field};
-######        push @rows,
-######            {
-######              id        => $_->{id_field},
-######              params	=> $params,
-######            };        
-######    }
-######    
-######    
-######    
-######    $c->stash->{json} = {data=>\@rows};
-######    $c->forward('View::JSON');
-######}
-
-
 sub list_tree_fields : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
@@ -586,7 +465,6 @@ sub list_tree_fields : Local {
     my @tree_fields;
     my @system;
     my $system_fields = Baseliner::Model::Topic->get_system_fields();
-    #my %conf_fields = map{ $_->{id_field} => 1 } $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
     
     my @temp_fields =  $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
     my %conf_fields;
@@ -704,9 +582,6 @@ sub list_tree_fields : Local {
         push @data_system_listbox, $system_listbox->{metadata}->{params};
     }
     
-    
-    
-    
     push @templates,    {
                             id          => $i++,
                             id_field    => 'listbox',
@@ -726,30 +601,6 @@ sub list_tree_fields : Local {
     $c->stash->{json} = \@tree_fields;
     $c->forward('View::JSON');
 }
-
-
-
-
-###sub list_forms : Local {
-###    my ($self,$c) = @_;
-###    my $p = $c->request->parameters;
-###    my @rows;
-###
-###    my $dir = _dir( $c->path_to('root/forms') );
-###    if( $dir ) {
-###        for my $f ( $dir->children ) {
-###            my $name = $f->basename;
-###            ($name) = $name =~ m{^(.*)(\..*?)$};
-###            push @rows, {
-###                form_name => $name,
-###                form_path => "$f",
-###            };
-###        }
-###    }
-###    
-###    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};
-###    $c->forward('View::JSON');
-###}
 
 sub update_fields : Local {
     my ($self,$c)=@_;
@@ -782,7 +633,6 @@ sub update_fields : Local {
     }
     
     my $system_fields = Baseliner::Model::Topic->get_system_fields();
-    #my %conf_fields = map{ $_->{id_field} => 1} $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
     
     for ( grep { !exists $visible_system_fields{$_->{id_field}} } _array $system_fields){
         $_->{params}->{hidden}= \1 if $_->{params}->{origin} eq 'system';
@@ -803,7 +653,6 @@ sub get_conf_fields : Local {
     my $p = $c->request->parameters;
     my $id_category = $p->{id_category};
 
-    #my @conf_fields = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
     my @conf_fields = grep { !exists $_->{params}->{hidden} && $_->{params}->{origin} ne 'default' } map { +{id_field=> $_->{id_field}, params=> _load $_->{params_field}} } $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
     my @system;
     for ( sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} } @conf_fields){
@@ -927,54 +776,11 @@ sub update_category_priority : Local {
     $c->forward('View::JSON');    
 }
 
-#####sub get_config_field : Local {
-#####    my ($self,$c) = @_;
-#####    my $p = $c->request->parameters;
-#####    my @rows;
-#####    
-#####    #if($p->{config}){
-#####    #    try{
-#####    #        my $default_config = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
-#####    #        my %dashlet_config;
-#####    #        my %key_description;
-#####    #        foreach my $field (_array $default_config){
-#####    #            $dashlet_config{$field->{id}} = $field->{default};
-#####    #            $key_description{$field->{id}} = $field->{label};
-#####    #        }		
-#####    #        
-#####    #        foreach my $key (keys %dashlet_config){
-#####    #            push @rows,
-#####    #                {
-#####    #                    id 			=> $key,
-#####    #                    description	=> $key_description{$key},
-#####    #                    value 		=> $dashlet_config{$key}
-#####    #                };		
-#####    #        }
-#####    #    }
-#####    #    catch{
-#####    #        $c->stash->{json} = { data => undef};  
-#####    #    };
-#####    #}
-#####    
-#####    if($p->{config}){
-#####        try{
-#####            my @settings = $c->model('Registry')->get('config.field.general')->metadata;
-#####            #my @settings = $c->model('Registry')->get( 'config.field.' . $p->{config} )->metadata;
-#####            $c->stash-> {json} = {data => @settings};
-#####        }
-#####        catch{
-#####            $c->stash-> {json} = {data => undef};  
-#####        };
-#####    }    
-#####    $c->forward('View::JSON');    
-#####}
-
 sub create_clone : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     
     try{
-        #my $row = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $p->{id_category}})->first;
         my $row = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => $p->{name_field}})->first;
         if(!$row){
             my $params = _decode_json($p->{params});
@@ -982,7 +788,6 @@ sub create_clone : Local {
             $params->{origin} = 'custom';
             $params->{id_field} = $p->{name_field};
             $params->{name_field} = $p->{name_field};
-            #$params->{field_order} += 20;
 
             $params->{rel_field} = $p->{name_field} if exists $params->{rel_field};
             if (exists $params->{filter}) {
@@ -1012,61 +817,6 @@ sub create_clone : Local {
 
     $c->forward('View::JSON');    
 }
-
-###sub list_clone_fields : Local {
-###    my ($self,$c) = @_;
-###    my $p = $c->request->parameters;
-###
-###    my @field_dirs;
-###    push @field_dirs, $c->path_to( 'root/fields' ) . "";
-###    @field_dirs = grep { -d } @field_dirs;
-###    
-###    my @fieldlets = map {
-###        my @ret;
-###        #for my $f ( grep { -f } _dir( $_ . '/*.html')->children ) {
-###        for my $f ( map { _file($_) } grep { -f } glob "$_/*.js" ) { 
-###            my $d = $f->slurp;
-###            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
-###           
-###            my $metadata;
-###            if(length $yaml ) {
-###                $metadata =  _load( $yaml );    
-###            } else {
-###                $metadata = {};
-###            }
-###            my @rows = map {
-###                +{  field=>$_, value => $metadata->{$_} } 
-###            } keys %{ $metadata || {} };
-###            
-###            push @ret, {
-###                file => "$f",
-###                yaml => $yaml,
-###                metadata => $metadata,
-###                rows => \@rows,
-###            };
-###        }
-###       @ret;
-###    } @field_dirs;
-###    
-###    my @rows;
-###    my $i = 1;
-###    for my $field ( sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} } grep { $_->{metadata}->{params}->{is_clone} eq 1} @fieldlets ) {
-###        if( $field->{metadata}->{name} ){
-###            $field->{metadata}->{params}->{name_field} = $field->{metadata}->{name};
-###            push @rows,
-###                {
-###                  #id		=> $field->{metadata}->{name} . '#' . $field->{metadata}->{path} ,
-###                  id        => $field->{metadata}->{name},
-###                  params	=> $field->{metadata}->{params},
-###                  name      => _loc $field->{metadata}->{name},
-###                  #value     => $field->{metadata}->{value},
-###                };		
-###        }
-###    }	    
-###    
-###    $c->stash->{json} = {data=>\@rows};
-###    $c->forward('View::JSON');
-###}
 
 sub list_filters : Local {
     my ($self,$c) = @_;
@@ -1098,22 +848,6 @@ sub duplicate : Local {
             $new_category->name( $new_category->name . '-' . $new_category->id );
             $new_category->update();
 
-            #my $name = $new_category->name;
-            #my %acciones_by_category = (    create  => 'Puede crear tópicos de la categoría ',
-            #                                view    => 'Puede ver tópicos de la categoría ',
-            #                                edit    => 'Puede editar tópicos de la categoría ');
-            #                             
-            #foreach my $action (keys %acciones_by_category){
-            #   
-            #    my $id_action = 'action.topics.' . lc $name . '.' . $action  ;
-            #    my $name = $acciones_by_category{$action} . $name ;
-            #             
-            #    my $actions = $c->model('Baseliner::BaliAction')->update_or_create({ action_id => $id_action,
-            #                                                                         action_name => $name,
-            #                                                                         action_description => $name
-            #                                                                        });                                
-            #}
-                    
             ##BaliTopicCategoriesStatus
             my @rs_categories_status =  $c->model('Baseliner::BaliTopicCategoriesStatus')->search({ id_category => $rs_category->id })->hashref->all;
             for (@rs_categories_status){
