@@ -702,14 +702,17 @@ sub set_topics {
                                                 field      => '',
                                                 old_value      => '',
                                                 new_value  => '',
-                                                text_new      => '%1 deleted all attached topics',
+                                                text_new      => '%1 deleted all attached topics of ' . $id_field ,
                                                } => sub {
                 { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
-            };             
-            $rs_topic->set_topics( undef, { rel_type=>'topic_topic'});
+            };
+
+            #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
+            my $rs_old_topics = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => \@old_topics});
+            $rs_old_topics->delete();            
         }
     }
     
