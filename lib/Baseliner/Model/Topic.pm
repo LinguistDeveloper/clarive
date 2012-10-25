@@ -795,15 +795,19 @@ sub set_release {
     my @old_release =();
     if($release_row){
         @old_release = $release_row->mid;
-        my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
-    }
+        #my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
+    }        
         
     my @new_release = _array( $release ) ;
 
     # check if arrays contain same members
     if ( array_diff(@new_release, @old_release) ) {
+        if($release_row){
+            my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
+        }
         # release
         if( @new_release ) {
+            
             my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release[0] );
             my $topic_row = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
             $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic'} );
@@ -821,6 +825,7 @@ sub set_release {
             };
             
         }else{
+            my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => '',
                                                 old_value      => $release_row->title,
