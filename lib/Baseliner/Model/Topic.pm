@@ -268,6 +268,27 @@ sub get_system_fields {
     return \@system_fields
 }
 
+sub get_update_system_fields {
+    my ($self, $id_category) = @_;
+    
+    my $system_fields = $self->get_system_fields();
+    my @rs_categories_fields =  Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search(undef,{select=>'id_category', distinct=>1})->hashref->all;
+    for my $category ( @rs_categories_fields ){
+        my $id_category = $category->{id_category};
+        for (_array $system_fields){
+            my $field = Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category, id_field => $_->{id_field}})->first;
+            if ($field){
+                my $tmp_params = _load $field->params_field;
+                for my $attr (keys $_->{params}){
+                    next unless $attr ne 'field_order';
+                    $tmp_params->{$attr} = $_->{params}->{$attr};
+                    $field->params_field( _dump $tmp_params );
+                    $field->update();
+                }
+            }
+        }
+    }
+}
 
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
@@ -283,13 +304,6 @@ sub get_meta {
             $d
         }
         DB->BaliTopicFieldsCategory->search( { id_category => { -in => $id_cat } } )->hashref->all;
-    #_error \@meta;
-    
-    #system fields
-    #push @meta,
-    #            { name_field => 'created_by', id_field => 'created_by', origin => 'default', html => '/fields/field_created_by.html', field_order => 4, section => 'body' },
-    #            { name_field => 'created_on', id_field => 'created_on', origin => 'default', html => '/fields/field_created_on.html', field_order => 5, section => 'body' },
-    #            { name_field => 'dates', id_field => 'dates', origin => 'rel', method => 'get_dates', html => '/fields/field_scheduling.html', field_order => 13, section => 'details' };
                 
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;

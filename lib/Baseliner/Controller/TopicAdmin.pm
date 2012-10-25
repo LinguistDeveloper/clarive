@@ -652,8 +652,11 @@ sub get_conf_fields : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my $id_category = $p->{id_category};
-
-    my @conf_fields = grep { !exists $_->{params}->{hidden} && $_->{params}->{origin} ne 'default' } map { +{id_field=> $_->{id_field}, params=> _load $_->{params_field}} } $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
+    
+    #Baseliner::Model::Topic->get_update_system_fields ($id_category);
+    
+    my @conf_fields = grep { !exists $_->{params}->{hidden} && $_->{params}->{origin} ne 'default' }
+                      map { +{id_field=> $_->{id_field}, params=> _load $_->{params_field}} } $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category})->hashref->all;
     my @system;
     for ( sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} } @conf_fields){
         push @system,   {
@@ -904,6 +907,19 @@ sub delete_row : Local {
     };
     
     $c->forward('View::JSON');    
+}
+
+sub update_system : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        Baseliner::Model::Topic->get_update_system_fields;
+        $c->stash->{json} = { success => \1, msg => _loc("System updated") };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error updating system') };
+    };
+    $c->forward('View::JSON');  
 }
 
 1;

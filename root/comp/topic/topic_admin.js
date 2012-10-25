@@ -641,6 +641,29 @@
             });
         }
     });
+	
+    var btn_update_fields = new Ext.Toolbar.Button({
+        text: _('System'),
+        icon:'/static/images/icons/restart.png',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to update the system?'), 
+            function(btn){ 
+                if(btn=='yes') {
+                    Baseliner.ajaxEval( '/topicadmin/update_system',{},
+                        function(response) {
+                            if ( response.success ) {
+                                Baseliner.message( _('Success'), response.msg );
+                            } else {
+                                Baseliner.message( _('ERROR'), response.msg );
+                            }
+                        }
+                    
+                    );
+                }
+            });
+        }
+    });	
     
 
     var add_edit_admin_category = function(rec) {
@@ -1714,6 +1737,7 @@
 				btn_duplicate_category,
                 btn_delete_category,
                 '->',
+				btn_update_fields,
 				btn_edit_fields,
                 //btn_form_category,
                 btn_admin_category,
