@@ -100,7 +100,7 @@ sub authenticate : Private {
             $auth = $c->authenticate({ id=>$login }, 'none');
         } else {
             $auth = try {
-                $c->authenticate({ id=>$login, password=> Digest::MD5::md5_hex( $password ) }, 'local');
+                $c->authenticate({ id=>$login, password=>$c->model('Users')->encrypt_password( $login, $password ) }, 'local');
             } catch {
                 $c->log->error( "**** LOGIN ERROR: " . shift() );
             }; # realm may not exist
@@ -110,9 +110,6 @@ sub authenticate : Private {
         $auth = $c->authenticate({ id=>$login, password=> $password });
         
         if ( lc( $c->config->{authentication}->{default_realm} ) eq 'none' ) {
-            my $user_key;    # (Public key + Username al revés)
-            $user_key = $c->config->{decrypt_key} . reverse($login);
-
             # BaliUser (internal) auth when realm is 'none'
             my $row = $c->model('Baseliner::BaliUser')->search( { username => $login } )->first;
             if ($row) {
@@ -120,7 +117,7 @@ sub authenticate : Private {
                     $c->stash->{auth_message} = _loc( 'User is not active');
                     $auth = undef;
                 }
-                if ( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password 
+                if ( $c->model('Users')->encrypt_password( $login, $password ) ne $row->password 
                     && $row->api_key ne $password )
                 {
                     $auth = undef;

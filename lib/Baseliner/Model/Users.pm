@@ -42,10 +42,11 @@ sub populate_from_ldap {
     }
 }
 
-sub encriptar_password{
-    my ($self, $string, $key) = @_;
-    my $b = Crypt::Blowfish::Mod->new( $key );
-    return Digest::MD5::md5_hex($b->encrypt($string));    
+sub encrypt_password {
+    my ($self, $username, $password) = @_;
+    my $user_key = ( Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key} ) .reverse ( $username );
+    my $b = Crypt::Blowfish::Mod->new( $user_key );
+    return Digest::MD5::md5_hex( $b->encrypt($password) );    
 }
 
 sub get_users_friends_by_username{

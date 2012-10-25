@@ -5,13 +5,23 @@ use lib "$FindBin::Bin/../lib";
 use Baseliner;
 use 5.010;
 require Crypt::Blowfish::Mod;
-my $key = Baseliner->config->{dec_key} // Baseliner->config->{decrypt_key};
+
+my $username =  shift @ARGV // do {
+  print "Username: ";
+  <STDIN>;
+};
+chomp $username;
+my $key = Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key};
 my $encrypt = Crypt::Blowfish::Mod->new($key);
 my $pwd = do {
-  print "Insert new password: ";
+  print "Password: ";
   <STDIN>;
 };
 chomp $pwd;
 my $encrypted_password = $encrypt->encrypt($pwd);
-say "Encrypted password: $encrypted_password";
+say '*' x 80;
+say "* Username: $username";
+say "* Encrypted DB password: $encrypted_password";
+say "* Encrypted login password: " .  Baseliner->model('Users')->encrypt_password( $username, $pwd );
+say '*' x 80;
 say "Have a nice day.";
