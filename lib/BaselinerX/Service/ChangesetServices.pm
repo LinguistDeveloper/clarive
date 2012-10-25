@@ -61,6 +61,7 @@ sub checkout {
     for ( keys %{$git_checkouts} ) {
         my $repo = Baseliner::CI->new( $_ );
         $repo->job( $job );
+        $log->debug( "Llamando a repo->checkout para la revision ".$git_checkouts->{$_}->{rev}." del proyecto ".$git_checkouts->{$_}->{prj} );
         $repo->checkout( rev => $git_checkouts->{$_}->{rev}, prj => $git_checkouts->{$_}->{prj} );
     }
 
