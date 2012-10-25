@@ -4,6 +4,7 @@ params:
     html: '/fields/system/html/field_revisions.html'
     js: '/fields/system/js/list_revisions.js'
     relation: system
+    type: 'listbox'    
     field_order: 12
     section: 'details'
     get_method: 'get_revisions'    

@@ -3,7 +3,8 @@ name: Release
 params:
     html: '/fields/system/html/field_release.html'
     js: '/fields/system/js/list_release.js'
-    relation: 'system'    
+    relation: 'system'
+    type: 'listbox'    
     get_method: 'get_release'    
     set_method: 'set_release'
     field_order: 7

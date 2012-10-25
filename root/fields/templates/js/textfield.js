@@ -2,6 +2,7 @@
 name: Textfield
 params:
     origin: 'template'
+    type: 'textfield'
     html: '/fields/templates/html/row_body.html'
     js: '/fields/templates/js/textfield.js'
     field_order: 1

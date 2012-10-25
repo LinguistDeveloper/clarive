@@ -2,6 +2,7 @@
 name: Upload files
 params:
     origin: 'template'
+    type: 'upload_files'
     html: '/fields/templates/html/upload_files.html'
     js: '/fields/templates/js/upload_files.js'
     relation: 'system'
