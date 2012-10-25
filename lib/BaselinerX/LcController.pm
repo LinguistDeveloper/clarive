@@ -83,9 +83,19 @@ sub tree_project_jobs : Local {
     my @jobs = DB->BaliProject->find( $id_project )->jobs->hashref->all;
 
     my @tree = map {
+        my $status = $_->{status};
+        my $icon   = 'job.png';
+        my $rollback = $_->{rollback};
+        if    ( $status eq 'RUNNING' )  { $icon = 'gears.gif' }
+        elsif ( $status eq 'READY' )    { $icon = 'waiting.png' }
+        elsif ( $status eq 'APPROVAL' ) { $icon = 'verify.gif' }
+        elsif ( $status eq 'FINISHED' && !$rollback ) { $icon = 'log_i.gif' }
+        elsif ( $status eq 'EXPIRED' || $status eq 'ERROR' || $status eq 'CANCELLED' ) { $icon = 'log_e.gif' }
+        elsif ( $status eq 'IN-EDIT' ) { $icon = 'log_w.gif' }
+        elsif ( $status eq 'WAITING' ) { $icon = 'waiting.png' }
        +{
             text => $_->{name},
-            icon => '/static/images/icons/job.png',
+            icon => '/static/images/'.$icon,
             leaf => \1,
             menu => [
                 {

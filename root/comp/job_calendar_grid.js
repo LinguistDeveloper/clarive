@@ -56,12 +56,16 @@
                 enableRowBody: true,
                 getRowClass : function(rec, index, p, store){
                     var s = rec.data.description;
-                    if( ! s ) return;
-                    s = s.replace( /\<br\>/g , ', ');
-                    p.body = String.format(
-                        '<div style="margin: 0 0 0 35; color:#999">{0}</div>'
-                        , s );
-                    return ' x-grid3-row-expanded';
+                    if( s ) {
+                        s = s.replace( /\<br\>/g , ', ');
+                        p.body = String.format(
+                            '<div style="margin: 0 0 0 35; color:#999">{0}</div>'
+                            , s );
+                        return ' x-grid3-row-expanded';
+                    } else {
+                        p.body = '';
+                        return ' ';
+                    }
                 }
             },
             selModel: checkSelectionModel, //new Ext.grid.RowSelectionModel({singleSelect:true}),

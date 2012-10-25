@@ -266,7 +266,7 @@ To do:
                     }
                 });
             }),
-            Baseliner.button('Maximize', '/static/images/icons/application_double.png', function(b) { 
+            Baseliner.button(_('Maximize'), '/static/images/icons/application_double.png', function(b) { 
                 var tab = cons.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
@@ -274,6 +274,13 @@ To do:
                     var to = new Ext.form.TextArea({ title: 'Output', value: output.getValue() });
                     Baseliner.addNewTabItem( to , '' );
                 }
+            }),
+            Baseliner.button(_('Raw'), '/static/images/icons/application_double.png', function(b) { 
+                var tab = cons.getActiveTab();
+                var ww = window.open('about:blank', '_blank' );
+                ww.document.title = _('REPL');
+                ww.document.write( '<pre>' + output.getValue() + '</pre>' );
+                ww.document.close();
             }),
             '->',
             Baseliner.button('Collapse', '/static/images/icons/arrow_down.gif', function(b) { cons.collapse(true) } )

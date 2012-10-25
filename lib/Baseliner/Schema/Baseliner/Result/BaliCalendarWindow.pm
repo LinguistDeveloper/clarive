@@ -12,7 +12,6 @@ __PACKAGE__->add_columns(
   {
     data_type => "NUMBER",
     is_nullable => 0,
-    size => 126,
     is_auto_increment => 1,
   },
   "start_time",
@@ -55,7 +54,6 @@ __PACKAGE__->add_columns(
     data_type => "NUMBER",
     default_value => 1,
     is_nullable => 0,
-    size => 126,
   },
   "start_date",
   { data_type => "DATE", default_value => undef, is_nullable => 1, size => 19 },
@@ -63,11 +61,11 @@ __PACKAGE__->add_columns(
   { data_type => "DATE", default_value => undef, is_nullable => 1, size => 19 },
 );
 __PACKAGE__->set_primary_key("id");
+
 __PACKAGE__->belongs_to(
-  "id_cal",
+  "calendar",
   "Baseliner::Schema::Baseliner::Result::BaliCalendar",
   { id => "id_cal" },
-  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 
 1;
