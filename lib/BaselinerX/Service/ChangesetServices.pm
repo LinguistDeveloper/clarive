@@ -177,6 +177,7 @@ sub job_elements {
                 $repo->get_last_commit( commits => $revisions_shas->{$_}->{shas} );
             $log->debug( "Detected last commit", data => $last_commit );
             $log->debug( "Generating git list of elements" );
+            #TODO: Comprobar si tengo last_commit
             my @git_elements =
                 $repo->list_elements( rev => $last_commit, prj => $revisions_shas->{$_}->{prj} );
             $log->debug( "Generated git list of elements", data => _dump @git_elements );

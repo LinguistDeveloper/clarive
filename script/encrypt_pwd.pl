@@ -14,7 +14,7 @@ chomp $username;
 my $key = Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key};
 my $encrypt = Crypt::Blowfish::Mod->new($key);
 my $pwd = do {
-  print "Password: ";
+  print "New Password: ";
   <STDIN>;
 };
 chomp $pwd;
