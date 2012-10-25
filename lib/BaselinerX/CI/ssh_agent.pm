@@ -30,6 +30,12 @@ has _method => qw(is ro isa Any default scp);  # for replacing scp with rsync on
 #with 'Baseliner::Role::Node::Filesys';
 with 'Baseliner::Role::CI::Agent';
 
+sub rel_type {
+    {
+        server    => [ from_mid => 'ssh_agent_server' ],
+    };
+}
+
 sub rc {
     my $self = shift;
     $self->error ? 1 : 0;
