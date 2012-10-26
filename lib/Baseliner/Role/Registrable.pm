@@ -1,10 +1,12 @@
 package Baseliner::Role::Registrable;
 use Moose::Role;
 
-has 'key' => (is=>'rw', isa=>'Any', default=>'' );
-has 'module' => (is=>'rw', isa=>'Str', required=>1 );
-has 'version' => (is=>'rw', isa=>'Str', default=>'0.1', required=>1 );
-has 'registry_node' => (is=>'rw', isa=>'Object' , required=>1, weak_ref=>1 );
+has key           => ( is => 'rw', isa => 'Any',    default  => '' );
+has module        => ( is => 'rw', isa => 'Str',    required => 1 );
+has version       => ( is => 'rw', isa => 'Str',    default  => '0.1', required => 1 );
+has registry_node => ( is => 'rw', isa => 'Object', required => 1, weak_ref => 1 );
+has actions => ( is => 'rw', isa => 'ArrayRef' );
+has action  => ( is => 'rw', isa => 'Str' );
 
 sub registry {
     return 'Baseliner::Core::Registry';
