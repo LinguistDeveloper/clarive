@@ -1,15 +1,15 @@
 <!--
-name: Topics by category
-description: Chart pie (Topics by category)
-url: /dashboard/topics_by_category
-html: /dashlets/topics_by_category_pie.html
+name: Topics open by category
+description: Chart pie (Topics open by category)
+url: /dashboard/topics_open_by_category
+html: /dashlets/topics_open_by_category_pie.html
 ---
 -->
 <%perl>
     use Baseliner::Utils;
-    my $graph_id = "topics_pie". _nowstamp;
-    my @topics_by_category = $c->stash->{topics_by_category};
-    my $title = $c->stash->{topics_by_category_title};
+    my $graph_id = "topics_open_pie". _nowstamp;
+    my @topics_open_by_category = $c->stash->{topics_open_by_category};
+    my $title = $c->stash->{topics_open_by_category_title};
 </%perl>
 
 
@@ -18,7 +18,7 @@ $(function () {
 var data = new Array();
 var category_id = new Array();
 
-%foreach my $topic (_array @topics_by_category){
+%foreach my $topic (_array @topics_open_by_category){
     data.push({ label: "<%$topic->{category}%>", category_id: "<%$topic->{category_id}%>", color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
     category_id["<%$topic->{category}%>"] = <%$topic->{category_id}%>;
 %}
