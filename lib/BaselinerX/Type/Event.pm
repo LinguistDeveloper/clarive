@@ -47,7 +47,7 @@ You may define filters to change data before translation:
 package BaselinerX::Type::Event;
 use Baseliner::Plug;
 use Baseliner::Utils;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'event' => __PACKAGE__;
 

@@ -16,7 +16,7 @@ sub menus {
         )
       )
     {
-        my $item =  $_->ext_menu_json( allowed_actions => $p{allowed_actions}, top_level=>1 );
+        my $item =  $_->ext_menu_json( top_level=>1 );
         next unless $item;  # discard items without children at top menu level
         push @menus, $item;
     }

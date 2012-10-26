@@ -3,36 +3,28 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use JavaScript::Dumper;
 use utf8;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'menu' => __PACKAGE__;
 
-has 'id'=> (is=>'rw', isa=>'Str', default=>'');
-has 'name' => ( is=> 'rw', isa=> 'Str' );
-has 'label' => ( is=> 'rw', isa=> 'Str' );
-has 'index' => ( is=> 'rw', isa=> 'Int', default=>100 );  ## menu ordering 
-has 'url' => ( is=> 'rw', isa=> 'Str' );
-has 'url_comp' => ( is=> 'rw', isa=> 'Str' );
-has 'url_run' => ( is=> 'rw', isa=> 'Str' );
-has 'url_eval' => ( is=> 'rw', isa=> 'Str' );
-has 'url_js' => ( is=> 'rw', isa=> 'Str' );
-has 'url_browser_window' => ( is=> 'rw', isa=> 'Str' );
-has 'url_iframe' => ( is=> 'rw', isa=> 'Str' );
-has 'title' => ( is=> 'rw', isa=> 'Str' );
-has 'level' => ( is=> 'rw', isa=> 'Int' );
-has 'handler' => ( is=> 'rw', isa=> 'Str' );
-has 'icon' => ( is=> 'rw', isa=> 'Str', default=>'' );
-has 'cls' => ( is=> 'rw', isa=> 'Str', default=>'bali-main-menu' );
-has 'actions' => ( is=> 'rw', isa=> 'ArrayRef' );
-has 'comp_data' => ( is=> 'rw', isa=> 'HashRef', default=>sub{+{}} );
-has 'separator' => ( is=> 'rw', isa=> 'Bool', default=>0 );
-
-sub BUILDARGS {
-    my $class = shift;
-    my $args = shift;
-    $args->{registry_node}->{actions} = [ $args->{action} ] if $args->{action} && ! ref $args->{registry_node}->{actions};
-    return $args;
-};
+has id                 => ( is => 'rw', isa => 'Str', default => '' );
+has name               => ( is => 'rw', isa => 'Str' );
+has label              => ( is => 'rw', isa => 'Str' );
+has index              => ( is => 'rw', isa => 'Int', default => 100 );                ## menu ordering
+has url                => ( is => 'rw', isa => 'Str' );
+has url_comp           => ( is => 'rw', isa => 'Str' );
+has url_run            => ( is => 'rw', isa => 'Str' );
+has url_eval           => ( is => 'rw', isa => 'Str' );
+has url_js             => ( is => 'rw', isa => 'Str' );
+has url_browser_window => ( is => 'rw', isa => 'Str' );
+has url_iframe         => ( is => 'rw', isa => 'Str' );
+has title              => ( is => 'rw', isa => 'Str' );
+has level              => ( is => 'rw', isa => 'Int' );
+has handler            => ( is => 'rw', isa => 'Str' );
+has icon               => ( is => 'rw', isa => 'Str', default => '' );
+has cls                => ( is => 'rw', isa => 'Str', default => 'bali-main-menu' );
+has comp_data          => ( is => 'rw', isa => 'HashRef', default => sub { +{} } );
+has separator          => ( is => 'rw', isa => 'Bool', default => 0 );
 
 sub ext_menu_json {
     my ($self, %p)=@_;

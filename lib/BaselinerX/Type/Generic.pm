@@ -1,6 +1,6 @@
 package BaselinerX::Type::Generic;
 use Baseliner::Plug;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 has 'config' => (is=>'rw', isa=>'Str', default=>'' );
 

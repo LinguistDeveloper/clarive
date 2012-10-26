@@ -1,6 +1,6 @@
 package BaselinerX::Type::Role;
 use Baseliner::Plug;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'role' => __PACKAGE__;
 

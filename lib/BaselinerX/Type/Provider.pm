@@ -1,6 +1,6 @@
 package BaselinerX::Type::Provider;
 use Baseliner::Plug;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'provider' => __PACKAGE__;
 
