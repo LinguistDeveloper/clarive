@@ -138,6 +138,217 @@ register 'registor.action.topic_category_fields' => {
     }
 };
 
+# this is the main topic grid 
+
+sub topics_for_user {
+    my ($self, $p) = @_;
+
+    my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
+    $dir ||= 'desc';
+    $start||= 0;
+    $limit ||= 100;
+
+    $p->{page} //= to_pages( start=>$start, limit=>$limit );
+
+    my $where = {};
+    my $query_limit = 300;
+    my $perm = Baseliner->model('Permissions');
+    my $username = $p->{username};
+    
+    $query and $where = query_sql_build( query=>$query, fields=>{
+        map { $_ => "me.$_" } qw/
+        topic_mid 
+        title
+        created_on
+        created_by
+        status
+        numcomment
+        category_id
+        category_name
+        category_status_id
+        category_status_name        
+        category_status_seq
+        priority_id
+        priority_name
+        response_time_min
+        expr_response_time
+        deadline_min
+        expr_deadline
+        category_color
+        label_id
+        label_name
+        label_color
+        project_id
+        project_name
+        file_name
+        description
+        text
+        progress
+        /
+    });
+
+    my ($select,$order_by, $as, $group_by);
+    if( $sort eq 'category_status_name' ) {
+        $sort = 'category_status_seq'; # status orderby sequence
+        ($select, $order_by, $as, $group_by) = (
+            [{ distinct=>'me.topic_mid'} , 'category_status_seq', 'category_status_name' ],
+            [{ "-$dir" => 'category_status_seq'},{ "-$dir" => 'category_status_name'}, {-desc => 'me.topic_mid' }],
+            ['topic_mid', 'category_status_seq', 'category_status_name' ],
+            ['topic_mid', 'category_status_seq', 'category_status_name' ]
+        );
+    } else {
+        # sort fixups 
+        $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
+        $sort eq 'topic_mid' and $sort = '';
+        
+        ($select,$order_by, $as, $group_by) = $sort
+        ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
+        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' }, { "-$dir" => "me.topic_mid" } ], ['topic_mid'], ['topic_mid'] );
+    }
+
+    #Filtramos por las aplicaciones a las que tenemos permisos.
+    if( $username && ! $perm->is_root( $username )){
+        #my @user_apps = $perm->user_projects_ids( username => $username );
+        #push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
+        #$where->{'project_id'} =  \@user_apps;
+        $where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}, { "=", undef }];
+    }
+
+    #DEFAULT VIEWS***************************************************************************************************************
+    if($p->{today}){
+        my $today = DateTime->now();
+        $where->{created_on} = {'between' => [ $today->ymd, $today->add(days=>1)->ymd]};
+    }
+    
+    if ( $p->{assigned_to_me} ) {
+        my $rs_user = DB->BaliUser->search( username => $username )->first;
+        if ($rs_user) {
+            my @topic_mids
+                = map { $_->{from_mid} }
+                Baseliner->model('Baseliner::BaliMasterRel')
+                ->search( { to_mid => $rs_user->mid, rel_type => 'topic_users' }, { select => [qw(from_mid)] } )
+                ->hashref->all;
+            if (@topic_mids) {
+                $where->{'me.topic_mid'} = \@topic_mids;
+            } else {
+                $where->{'me.topic_mid'} = -1;
+            }
+        } else {
+            $where->{'me.topic_mid'} = -1;
+        }
+    }
+    #*****************************************************************************************************************************
+    
+    #FILTERS**********************************************************************************************************************
+    if($p->{labels}){
+        my @labels = _array $p->{labels};
+        $where->{'label_id'} = \@labels;
+    }
+    
+    if($p->{categories}){
+        my @categories = _array $p->{categories};
+        $where->{'category_id'} = \@categories;
+    }else{
+        my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
+        $where->{'category_id'} = \@categories;
+    }
+    
+    if($p->{statuses}){
+        my @statuses = _array $p->{statuses};
+        $where->{'category_status_id'} = \@statuses;
+    }else{
+        $where->{'category_status_type'} = {'!=', 'F'};
+    }
+      
+    if($p->{priorities}){
+        my @priorities = _array $p->{priorities};
+        $where->{'priority_id'} = \@priorities;
+    }
+
+    #*****************************************************************************************************************************
+    
+    #Filtro cuando viene por la parte del Dashboard.
+    if($p->{query_id}){
+        $where->{topic_mid} = $p->{query_id};
+    }
+    
+    #Filtro cuando viene por la parte del lifecycle.
+    if($p->{id_project}){
+        my @topics_project = map {$_->{from_mid}} DB->BaliMasterRel->search({ to_mid=>$p->{id_project}, collection =>'bali_topic' }, {join => ['master_from']})->hashref->all;
+        $where->{topic_mid} = \@topics_project;
+    }    
+    
+    # SELECT GROUP_BY MID:
+    my $args = { select=>$select, as=>$as, order_by=>$order_by, group_by=>$group_by };
+    if( $limit >= 0 ) {
+        $args->{page} = $p->{page};
+        $args->{rows} = $limit;
+    }
+    my $rs = DB->TopicView->search(  $where, $args );                                                             
+    
+    if( $limit >= 0 ) {
+        my $pager = $rs->pager;
+        $cnt = $pager->total_entries;
+    } else {
+        $cnt = $rs->count;
+    }
+    rs_hashref( $rs );
+    my @mids = map { $_->{topic_mid} } $rs->all;
+    my $rs_sub = $rs->search(undef, { select=>'topic_mid', distinct=>1});
+            # _log _dump $rs_sub->as_query;
+    
+    # SELECT MID DATA:
+    my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>$rs_sub->as_query  } })->hashref->all;
+    my @rows;
+    my %id_label;
+    my %projects;
+    my %projects_report;
+    my %assignee;
+    my %mid_data;
+    
+    # Controlar que categorias son editables.
+    my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
+    
+    
+    for (@mid_data) {
+        my $mid = $_->{topic_mid};
+        $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
+        $mid_data{ $mid }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
+        $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $_->{category_name}};
+        $_->{label_id}
+            ? $id_label{ $mid }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
+            : $id_label{ $mid } = {};
+        if( $_->{project_id} ) {
+            $projects{ $mid }{ $_->{project_id} . ";" . $_->{project_name} } = ();
+            $projects_report{ $mid }{ $_->{project_name} } = ();
+        } else {
+            $projects{ $mid } = {};
+            $projects_report{ $mid } = {};
+        }
+        $assignee{ $mid }{ $_->{assignee} } = () if defined $_->{assignee};
+    }
+    for my $mid (@mids) {
+        my $data = $mid_data{$mid};
+        $data->{calevent} = {
+            mid    => $mid,
+            color  => $data->{category_color},
+            title  => sprintf("%s #%d - %s", $data->{category_name}, $mid, $data->{title}),
+            allDay => \1
+        };
+        push @rows, {
+            %$data,
+            topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
+            labels   => [ keys %{ $id_label{$mid} || {} } ],
+            projects => [ keys %{ $projects{$mid} || {} } ],
+            assignee => [ keys %{ $assignee{$mid} || {} } ],
+            report_data => {
+                projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
+            },
+        };
+    }
+    return $cnt, @rows;
+}
+
 
 sub update {
     my ( $self, $p ) = @_;
