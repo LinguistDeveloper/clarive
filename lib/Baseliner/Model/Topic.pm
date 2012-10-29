@@ -479,6 +479,19 @@ sub get_system_fields {
     return \@system_fields
 }
 
+sub tratar{
+    my $field = shift;
+    my $params = _load $field->{params_field} ;
+    if ($params->{origin} eq 'custom'){ 
+        $_->{type} = $params->{type};
+        $_->{js} = $params->{js};
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+    
 sub get_update_system_fields {
     my ($self, $id_category) = @_;
     
@@ -496,6 +509,83 @@ sub get_update_system_fields {
                     $field->params_field( _dump $tmp_params );
                     $field->update();
                 }
+            }
+        }
+    }
+    
+    my @template_dirs;
+    push @template_dirs, Baseliner->path_to( 'root/fields/templates/js' ) . "/*.js";
+    push @template_dirs, Baseliner->path_to( 'root/fields/system/js' ) . "/list*.js";
+    #@template_dirs = grep { -d } @template_dirs;
+    
+    my @tmp_templates = map {
+        my @ret;
+        for my $f ( map { _file($_) } grep { -f } glob "$_" ) { 
+            my $d = $f->slurp;
+            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
+           
+            my $metadata;
+            if(length $yaml ) {
+                $metadata =  _load( $yaml );    
+            } else {
+                $metadata = {};
+            }
+            my @rows = map {
+                +{  field=>$_, value => $metadata->{$_} } 
+            } keys %{ $metadata || {} };
+            
+            push @ret, {
+                file => "$f",
+                yaml => $yaml,
+                metadata => $metadata,
+                rows => \@rows,
+            };
+        }
+       @ret;
+    } @template_dirs;
+    
+    my @fields =  grep { tratar $_ } Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search()->hashref->all;    
+    
+    for my $template (  grep {$_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
+        if( $template->{metadata}->{name} ){
+    	    my @select_fields = grep { $_->{type} eq $template->{metadata}->{params}->{type}} @fields;
+            for my $select_field (@select_fields){
+                my $update_field = Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $select_field->{id_category},
+                																					id_field => $select_field->{id_field}})->first;
+                if ($update_field){
+                    my $tmp_params = _load $update_field->params_field;
+                    for my $attr (keys $template->{metadata}->{params}){
+                        next unless $attr ne 'field_order' && $attr ne 'bd_field' && $attr ne 'id_field' && $attr ne 'name_field' && $attr ne 'origin';
+                        $tmp_params->{$attr} = $template->{metadata}->{params}->{$attr};
+
+                    }   
+                    $update_field->params_field( _dump $tmp_params );
+                    $update_field->update();                    
+                }
+                
+            }
+	
+        }
+    }
+    
+    for my $system_listbox ( grep {!$_->{metadata}->{params}->{origin}} @tmp_templates ) {
+        if( $system_listbox->{metadata}->{name} ){
+    		my @select_fields = grep { $_->{js} eq $system_listbox->{metadata}->{params}->{js}} @fields;
+            for my $select_field (@select_fields){
+                my $update_field = Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $select_field->{id_category},
+                																					id_field => $select_field->{id_field}})->first;
+                if ($update_field){
+                    my $tmp_params = _load $update_field->params_field;
+                    for my $attr (keys $system_listbox->{metadata}->{params}){
+                        next unless $attr ne 'field_order' && $attr ne 'bd_field' && $attr ne 'id_field' 
+                        && $attr ne 'name_field' && $attr ne 'origin' && $attr ne 'singleMode' && $attr ne 'filter' ;
+                        $tmp_params->{$attr} = $system_listbox->{metadata}->{params}->{$attr};
+                    }
+                            
+                    $update_field->params_field( _dump $tmp_params );
+                    $update_field->update();
+                }
+
             }
         }
     }

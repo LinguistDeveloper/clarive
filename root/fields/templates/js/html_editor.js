@@ -2,6 +2,7 @@
 name: HTML/Editor
 params:
     origin: 'template'
+    type: 'html/editor'
     html: '/fields/templates/html/dbl_row_body.html'
     js: '/fields/templates/js/html_editor.js'
     field_order: 2

@@ -4,6 +4,7 @@ params:
     html: '/fields/system/html/field_users.html'
     js: '/fields/system/js/list_users.js'
     relation: 'system'
+    type: 'listbox'
     get_method: 'get_users'    
     set_method: 'set_users'
     field_order: 10

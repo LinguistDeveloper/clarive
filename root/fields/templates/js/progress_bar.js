@@ -2,6 +2,7 @@
 name: Progress bar
 params:
     origin: 'template'
+    type: 'progress_bar'
     html: '/fields/templates/html/progress_bar.html'
     js: '/fields/templates/js/progress_bar.js'
     field_order: 4

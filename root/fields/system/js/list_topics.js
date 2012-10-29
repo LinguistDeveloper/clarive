@@ -4,6 +4,7 @@ params:
     html: '/fields/system/html/field_topics.html'
     js: '/fields/system/js/list_topics.js'
     relation: 'system'
+    type: 'listbox'    
     get_method: 'get_topics'    
     set_method: 'set_topics'
     field_order: 14

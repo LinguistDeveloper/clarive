@@ -3,6 +3,7 @@ name: CIs
 params:
     js: '/fields/system/js/list_ci.js'
     relation: 'system'
+    type: 'listbox'
     get_method: 'get_topics'    
     set_method: 'set_topics'
     field_order: 100
