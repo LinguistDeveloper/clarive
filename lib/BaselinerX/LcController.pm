@@ -83,9 +83,19 @@ sub tree_project_jobs : Local {
     my @jobs = DB->BaliProject->find( $id_project )->jobs->hashref->all;
 
     my @tree = map {
+        my $status = $_->{status};
+        my $icon   = 'job.png';
+        my $rollback = $_->{rollback};
+        if    ( $status eq 'RUNNING' )  { $icon = 'gears.gif' }
+        elsif ( $status eq 'READY' )    { $icon = 'waiting.png' }
+        elsif ( $status eq 'APPROVAL' ) { $icon = 'verify.gif' }
+        elsif ( $status eq 'FINISHED' && !$rollback ) { $icon = 'log_i.gif' }
+        elsif ( $status eq 'EXPIRED' || $status eq 'ERROR' || $status eq 'CANCELLED' ) { $icon = 'log_e.gif' }
+        elsif ( $status eq 'IN-EDIT' ) { $icon = 'log_w.gif' }
+        elsif ( $status eq 'WAITING' ) { $icon = 'waiting.png' }
        +{
             text => $_->{name},
-            icon => '/static/images/icons/job.png',
+            icon => '/static/images/'.$icon,
             leaf => \1,
             menu => [
                 {
@@ -169,8 +179,15 @@ sub topic_contents : Local {
     my ($self,$c) = @_;
     my @tree;
     my $topic_mid = $c->req->params->{topic_mid};
+    my $state = $c->req->params->{state_id};
+    my $where = { from_mid => $topic_mid };
+
+    if ( $state ) {
+        $where->{'topic_topic2.id_category_status'} = $state;
+    }
+
     my @topics = $c->model('Baseliner::BaliMasterRel')->search(
-        { from_mid => $topic_mid },
+        $where,
         { prefetch => {'topic_topic2'=>'categories'} }
     )->hashref->all;
     for ( @topics ) {
@@ -490,7 +507,7 @@ sub changeset : Local {
             my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
             for my $rel ( values %unique ) {
                 $rel = $rel->{topic_topic};
-                my ( $promotable, $demotable, $menu ) = $self->cs_menu( $rel, $bl, $state_name );
+                my ( $promotable, $demotable, $menu ) = $self->cs_menu( $rel, $bl, $state_name, $p->{id_status} );
                 my $node = {
                     url  => '/lifecycle/topic_contents',
                     icon => '/static/images/icons/release_lc.png',
@@ -510,6 +527,7 @@ sub changeset : Local {
                         promotable   => $promotable,
                         demotable    => $demotable,
                         state_name   => $state_name,
+                        state_id     => $p->{id_status},
                         topic_mid    => $rel->{mid},
                         topic_status => $rel->{id_category_status},
                         click        => $self->click_for_topic(  $rel->{categories}{name}, $rel->{mid} )
@@ -524,11 +542,13 @@ sub changeset : Local {
 }
 
 sub promotes_and_demotes {
-    my ($self, $topic, $bl_state, $state_name ) = @_;
+    my ($self, $topic, $bl_state, $state_name, $id_status_from ) = @_;
     my ( @menu_p, @menu_d );
     # Promote
+    _debug( "Buscando promotes y demotes para el estado $id_status_from");
+    my $id_status_from_lc = $id_status_from ? $id_status_from: $topic->{id_category_status};
     my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_category => $topic->{id_category}, id_status_from => $topic->{id_category_status}, job_type => 'promote' },
+        { id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'promote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
             distinct => 1,
             +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id/],
@@ -549,13 +569,14 @@ sub promotes_and_demotes {
                 status_to => $status->{statuses_to}{id},
                 status_to_name => $status->{statuses_to}{name},
             },
+            id_status_from => $id_status_from_lc,
             icon => '/static/images/silk/arrow_down.gif'
         };
     }
 
     # Demote
     my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_category => $topic->{id_category}, id_status_from => $topic->{id_category_status}, job_type => 'demote' },
+        { id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'demote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
             distinct => 1,
             +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl/],
@@ -576,6 +597,7 @@ sub promotes_and_demotes {
                 status_to => $status->{statuses_to}{id},
                 status_to_name => $status->{statuses_to}{name},
             },
+            id_status_from => $id_status_from_lc,
             icon => '/static/images/silk/arrow_up.gif'
         };
     }
@@ -584,7 +606,7 @@ sub promotes_and_demotes {
 }
 
 sub cs_menu {
-    my ($self, $topic, $bl_state, $state_name ) = @_;
+    my ($self, $topic, $bl_state, $state_name, $id_status_from ) = @_;
     return [] if $bl_state eq '*';
     my ( @menu, @menu_p, @menu_d );
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
@@ -611,7 +633,8 @@ sub cs_menu {
         my ( @rel_promotable, @rel_demotable, @rel_menu_p, @rel_menu_d );
         my ( %menu_pro, %menu_dem, %pro, %dem );
         for my $chi_topic ( @chi ) {
-            my ($pro, $dem, $menu_p, $menu_d ) = $self->promotes_and_demotes( $chi_topic, $bl_state, $state_name );
+            _debug( "Generando el menú para la release $topic->{mid} y el estado $id_status_from");
+            my ($pro, $dem, $menu_p, $menu_d ) = $self->promotes_and_demotes( $chi_topic, $bl_state, $state_name, $id_status_from );
             map { push @{ $menu_pro{ $_->{eval}{status_to} } }, $_ } _array( $menu_p );
             map { push @{ $menu_dem{ $_->{eval}{status_to} } }, $_ } _array( $menu_d );
             %pro = ( %pro, %$pro );
@@ -630,7 +653,7 @@ sub cs_menu {
         }
     } else {
        my ($menu_p, $menu_d );
-       ($promotable, $demotable, $menu_p, $menu_d ) = $self->promotes_and_demotes( $topic, $bl_state, $state_name, @menu );
+       ($promotable, $demotable, $menu_p, $menu_d ) = $self->promotes_and_demotes( $topic, $bl_state, $state_name );
        push @menu_p, _array( $menu_p );
        push @menu_d, _array( $menu_d );
     }
