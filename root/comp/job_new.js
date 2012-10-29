@@ -298,17 +298,16 @@
                     function(res){
                         if( res.success ) {
                             store_time.loadData( res.data ); // async
-                            jc_store.each(function( obj ){
-                                if( ! obj.data.mid ) return;
-                                var ci = res.cis[ obj.data.mid ];
+                            jc_store.each(function( jc_row ){
+                                if( ! jc_row.data.mid ) return;
+                                var ci = res.cis[ jc_row.data.mid ];
                                 if( ! ci ) return;
+                                var arr_rels = [];
                                 Ext.each( ci.related, function( rel ){
                                     if( rel.rel_type != 'topic_revision' ) return;
-                                    var arr_rels = obj.get('rels');
-                                    if( !arr_rels ) arr_rels = [];
                                     arr_rels.push( rel );
-                                    obj.set('rels', arr_rels );
                                 });
+                                jc_row.set('rels', arr_rels );
                             });
                         } else {
                             Baseliner.hideLoadingMask();
@@ -419,7 +418,7 @@
                     if( !s ) s='';
                     s+='<ul>';
                     Ext.each( rec.data.rels, function(rel){
-                        s+= String.format('<li>{0}</li>', rel.name );
+                        s+= String.format('<li>#{0}</li>', rel.name );
                     });
                     s+='</ul>';
                 }
