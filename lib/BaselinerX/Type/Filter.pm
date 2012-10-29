@@ -1,7 +1,7 @@
 package BaselinerX::Type::Filter;
 use Baseliner::Plug;
 use Baseliner::Utils;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 extends 'BaselinerX::Type::Service';
 register_class 'filter' => __PACKAGE__;
 

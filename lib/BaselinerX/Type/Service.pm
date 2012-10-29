@@ -3,7 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
 
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'service' => __PACKAGE__;
 sub service_noun { 'service' };

@@ -105,6 +105,7 @@ use Exporter::Tidy default => [
     _read_password
     _load_features
     _ci
+    _any
 /];
 
 # setup I18n
@@ -1190,6 +1191,8 @@ sub _load_features {
 sub _ci {
     return Baseliner::CI->new( @_ );
 }
+
+*_any = \&List::MoreUtils::any;
 
 1;
 

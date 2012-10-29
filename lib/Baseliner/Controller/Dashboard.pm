@@ -758,22 +758,10 @@ sub list_topics: Private{
     }	
     ##########################################################################################################		
     
-    my $limit = $default_config->{rows};
-    my @columns = ('topic_mid','title', 'category_name', 'created_on', 'created_by', 'category_status_name', 'numcomment');
-    my ($select, $as, $order_by,  $group_by) = ([map {'me.' . $_} @columns], #select
-                                                [@columns], #as
-                                                [{-desc => 'me.created_on' }], #order_by
-                                                [@columns] #group_by
-                                                );
-    my $where = {};
-    $where->{'me.status'} = 'O';
-    
-    my @datas = $c->model('Baseliner::TopicView')->search(  
-        $where,
-        { select=>$select, as=>$as, order_by=>$order_by, rows=>$limit, group_by=>$group_by }
-    )->hashref->all; 	
-    
-    $c->stash->{topics} =\@datas;
+    # go to the controller for the list
+    my $p = { limit => $default_config->{rows}, username=>$c->username };
+    my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
+    $c->stash->{topics} = \@rows ;
 }
 
 sub list_jobs : Private {

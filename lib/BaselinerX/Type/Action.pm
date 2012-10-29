@@ -1,6 +1,6 @@
 package BaselinerX::Type::Action;
 use Baseliner::Plug;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'action' => __PACKAGE__;
 

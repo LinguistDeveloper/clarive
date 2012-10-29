@@ -2,7 +2,7 @@ package BaselinerX::Type::Nature;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use utf8;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'nature' => __PACKAGE__;
 

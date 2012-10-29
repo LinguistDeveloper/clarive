@@ -7,7 +7,7 @@
         remoteSort: true,
         totalProperty: "totalCount", 
         id: 'id', 
-        url: '/job/calendar_list_json',
+        url: '/job/calendar_grid_json',
         fields: [ 
             {  name: 'id' },
             {  name: 'name' },
@@ -25,6 +25,14 @@
 
         //Seleccion multiple con checkboxes		
         var checkSelectionModel = new Ext.grid.CheckboxSelectionModel();
+
+        var render_bl = function(v,metadata,rec,rowIndex,colIndex,store) {
+            return v == null || v == '*' ? '['+_('Global')+']' : String.format('<b>{0} ({1})</b>', v, rec.data.bl );
+        };
+
+        var render_ns = function(v,metadata,rec,rowIndex,colIndex,store) {
+            return v == null || v == '/' ? '['+_('Global')+']' : String.format('{0} ({1})', v, rec.data.ns_desc );
+        };
 
         var render_cal = function(v,metadata,rec,rowIndex,colIndex,store) {
             return String.format('<a href="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\')" style="font-size: 13px;">{0}</a>',
@@ -44,19 +52,28 @@
             autoScroll: true,
             autoWidth: true,
             store: store,
-            viewConfig: [{
-                    forceFit: true
-            }],
+            viewConfig: { forceFit: true,
+                enableRowBody: true,
+                getRowClass : function(rec, index, p, store){
+                    var s = rec.data.description;
+                    if( ! s ) return;
+                    s = s.replace( /\<br\>/g , ', ');
+                    p.body = String.format(
+                        '<div style="margin: 0 0 0 35; color:#999">{0}</div>'
+                        , s );
+                    return ' x-grid3-row-expanded';
+                }
+            },
             selModel: checkSelectionModel, //new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask:'true',
             columns: [
                 checkSelectionModel,
                 { header: _('Calendar'), width: 200, dataIndex: 'name', sortable: true, renderer: render_cal },	
-                { header: _('Priority'), width: 40, dataIndex: 'seq', sortable: true },	
-                { header: _('Baseline'), width: 100, dataIndex: 'bl_desc', sortable: true },	
-                { header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true },	
-                { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_wrap },	
-                { header: _('Namespace Description'), width: 200, dataIndex: 'ns_desc', sortable: true }	
+                { header: _('Precedence'), width: 80, dataIndex: 'seq', sortable: true },	
+                { header: _('Baseline'), width: 100, dataIndex: 'bl_desc', sortable: true, renderer: render_bl },	
+                { header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true, renderer: render_ns },	
+                { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, hidden: true, renderer: Baseliner.render_wrap },	
+                { header: _('Namespace Description'), width: 200, dataIndex: 'ns_desc', hidden: true, sortable: true }	
             ],
             autoSizeColumns: true,
             deferredRender:true,
@@ -128,6 +145,7 @@
                                 {  xtype: 'hidden', name: 'action', value: 'create' },
                                 {  xtype: 'textfield', name: 'name', fieldLabel: _('Calendar Name'), allowBlank: false }, 
                                 {  xtype: 'textarea', name: 'description', fieldLabel: _('Description') }, 
+                                {  xtype: 'textfield', name: 'seq', fieldLabel: _('Precedence'), allowBlank: false, value: 100 }, 
                                 {
                                     xtype: 'radiogroup',
                                     fieldLabel: 'Modo de creacion',
@@ -147,7 +165,7 @@
                                 {  xtype: 'combo', 
                                            name: 'copyof', 
                                            hiddenName: 'copyof',
-                                           fieldLabel: 'Copia de', 
+                                           fieldLabel: _('Copy of'), 
                                            disabled: true,
                                            mode: 'local', 
                                            editable: false,
@@ -159,21 +177,6 @@
                                            displayField:'name', 
                                            allowBlank: false
                                 },								
-                                {  xtype: 'combo', 
-                                           name: 'ns', 
-                                           hiddenName: 'ns',
-                                           fieldLabel: _('Namespace'), 
-                                           resizable: true,
-                                           mode: 'local', 
-                                           editable: false,
-                                           forceSelection: true,
-                                           triggerAction: 'all',
-                                           store: ns_store, 
-                                           valueField: 'value',
-                                           value: '/',
-                                           displayField:'name', 
-                                           allowBlank: false
-                                },
                                 {  xtype: 'combo', 
                                            name: 'bl', 
                                            hiddenName: 'bl',
@@ -187,8 +190,8 @@
                                            value: '*',
                                            displayField:'name', 
                                            allowBlank: false
-                                }	
-                                
+                                },	
+                                Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Namespace'), emptyText: _('Global') })
                             ]
                         });
                         var win = new Ext.Window({

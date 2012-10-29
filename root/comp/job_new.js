@@ -298,6 +298,18 @@
                     function(res){
                         if( res.success ) {
                             store_time.loadData( res.data ); // async
+                            jc_store.each(function( obj ){
+                                if( ! obj.data.mid ) return;
+                                var ci = res.cis[ obj.data.mid ];
+                                if( ! ci ) return;
+                                Ext.each( ci.related, function( rel ){
+                                    if( rel.rel_type != 'topic_revision' ) return;
+                                    var arr_rels = obj.get('rels');
+                                    if( !arr_rels ) arr_rels = [];
+                                    arr_rels.push( rel );
+                                    obj.set('rels', arr_rels );
+                                });
+                            });
                         } else {
                             Baseliner.hideLoadingMask();
                             combo_time.disable();
@@ -357,13 +369,19 @@
         { header: _('Item Type'),
              width: 120 + adder,
              sortable: true,
+             hidden: true,
              dataIndex: 'ns_type'},
         { header: _('User'),
              width: 60 + adder,
              sortable: true,
+             hidden: true,
              dataIndex: 'user',
              renderer: Baseliner.render_user_field },
-        { header: _('Location'),
+        { header: _('ID'),
+             width: 30 + adder,
+             sortable: true,
+             dataIndex: 'mid' },
+        { header: _('Namespace'),
              width: 98 + adder,
              sortable: true,
              dataIndex: 'ns' },
@@ -373,6 +391,7 @@
              dataIndex: 'date' },
         { header: _('Description'),
              width: 240 + adder,
+             renderer: Baseliner.render_wrap,
              sortable: true,
              dataIndex: 'text'}
     ]);
@@ -396,6 +415,14 @@
             getRowClass : function(rec, index, p, store){
                 // slot squares
                 var s = rec.data.moreInfo;
+                if( rec.data.rels ) {
+                    if( !s ) s='';
+                    s+='<ul>';
+                    Ext.each( rec.data.rels, function(rel){
+                        s+= String.format('<li>{0}</li>', rel.name );
+                    });
+                    s+='</ul>';
+                }
                 if( ! s ) return;
                 s = s.replace( /\<br\>/g , ', ');
                 p.body = String.format(
@@ -418,19 +445,19 @@
             copy: true,
             notifyDrop: function(dd, e, data) {
                 var n = dd.dragData.node;
-                var s = jc_grid.store;
                 var add_node = function(node) {
                     var data = node.attributes.data;
-                    // console.log( node );
+                    var mid = data.mid || data.topic_mid;
                     var rec = new Ext.data.Record({
                         ns: data.ns,
+                        mid: mid,
                         icon: node.attributes.icon,
                         //item: data.name,
                         item: node.text,
                         text: node.text 
                     });
-                    s.add(rec);
-                    //s.sort('action', 'ASC');
+                    jc_store.add(rec);
+                    //jc_store.sort('action', 'ASC');
                     var parent_node = node.parentNode;
                     // node.disable();
                     calendar_reload();
@@ -440,7 +467,7 @@
                 var attr = n.attributes;
                 var data = n.attributes.data;
                 var job_type = main_form.getForm().getValues()['job_type'];
-                var cnt = jc_grid.getStore().getCount();  // auto set ?
+                var cnt = jc_store.getCount();  // auto set ?
                 var bl = combo_baseline.getValue();
                 var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
                 if( cnt == 0 || bl_item == undefined ) {

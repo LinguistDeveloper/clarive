@@ -1,6 +1,6 @@
 package BaselinerX::Type::Registor;
 use Baseliner::Plug;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'registor' => __PACKAGE__;
 

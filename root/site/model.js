@@ -900,6 +900,9 @@ Baseliner.ci_box = function(c) {
             });
         }
     };
+    if( value ) {
+        ci_box.setValue( value );
+    }
     return ci_box;
 };
 
