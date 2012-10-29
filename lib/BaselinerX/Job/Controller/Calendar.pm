@@ -9,8 +9,8 @@ use DateTime;
 use Try::Tiny;
 
 register 'menu.job.calendar' => {
-    label    => _loc('Job Calendars'),
-    url_comp => '/job/calendar_list',
+    label    => _loc('Job Slots'),
+    url_comp => '/job/calendar_grid',
     title    => _loc('Job Slots'),
     actions  => ['action.job.calendar.view'],
     icon     => '/static/images/chromium/history_favicon.png'
@@ -57,7 +57,7 @@ sub calendar_slots : Path( '/job/calendar_slots' ) {
 }
 
 # used by the grid
-sub calendar_list_json : Path('/job/calendar_list_json') {
+sub calendar_grid_json : Path('/job/calendar_grid_json') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my ( $start, $limit, $query, $dir, $sort, $cnt ) = @{ $p }{ qw/start limit query dir sort/ };
@@ -87,7 +87,7 @@ sub calendar_list_json : Path('/job/calendar_list_json') {
     $c->forward( 'View::JSON' );
 }
 
-sub calendar_list : Path('/job/calendar_list') {
+sub calendar_grid : Path('/job/calendar_grid') {
     my ( $self, $c ) = @_;
 
     #$c->stash->{ns_query} = { does=>['Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
@@ -107,6 +107,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
     my $p = $c->req->params;
     try {
         if( $p->{action} eq 'create' ) {
+            $p->{ns} = '/' unless length $p->{ns};
             my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } );
             if ( my $r = $r1->first ) {
                 _fail _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->name, $p->{ ns }, $p->{ bl } );
@@ -151,7 +152,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             $row->name( $p->{ name } );
             $row->description( $p->{ description } );
             length $p->{ seq } and $row->seq( $p->{ seq } );
-            $p->{ ns } and $row->ns( $p->{ ns } );
+            $row->ns( length $p->{ns} ? $p->{ns} : '/' );
             $p->{ bl } and $row->bl( $p->{ bl } );
             $row->update;
         }
@@ -385,22 +386,34 @@ sub build_job_window : Path('/job/build_job_window') {
             : _dt();  # _dt = now with timezone
 
         my @ns;
+        my %cis;  # keep track of all ci relations found
+        my $depth_default = 2;
         # $contents = $c->model('Jobs')->container_expand( $contents );
-        for my $item ( @{ $contents || [] } ) {
-            my $namespace = $c->model('Namespaces')->get($item->{ns});
-            my @ns_list = _array $item->{ns}, _array $namespace->nature, $namespace->application, '/';
-            foreach my $curr_ns (@ns_list){
-                _debug "NS=$curr_ns";
-                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $curr_ns } });
-                push @ns, $curr_ns if $r->count;
-            }
+        for my $item ( _array( $contents ) ) {
+            my $mid = $item->{mid};
+            my $ci = _ci( $mid );
+            # recurse into ci relations up to depth
+            my @related = $ci->related( depth=>$depth_default );  # projects, natures, etc.
+            # ask for nature from revisions TODO this is a placeholder still, revisions need to support nature
+            my @natures = grep { defined } map { $_->nature if $_->can('nature') } $ci, @related;
+            _debug "Natures for $mid: ", @natures;
+            # save for later
+            $cis{ $mid } = { ci=>$ci, related=>\@related, natures=>\@natures };
+            # keep the ids
+            my @rel_ids = map { $_->{mid} } @related;
+            push @ns, ( $mid, @rel_ids );
         }
-        _debug "NS with Calendar: " . join ',',@ns;
-        my %tmp_hash   = map { $_ => 1 } @ns;
-        @ns = keys %tmp_hash;    
+        @ns = _unique @ns;
         _debug "------Checking dates for namespaces: " . _dump \@ns;
+        my @rel_cals = $c->model('Baseliner::BaliCalendar')->search({ ns=>[ @ns, '/', undef ], bl=>[$bl,'*'] })->hashref->all;
+        my @ns_cals = map { $_->{ns} } @rel_cals;
+        _debug "Calendars Found: " . _dump( \@rel_cals );
+        _debug "NS with Calendar: " . join ',', @ns_cals; 
 
-        my $hours = $self->merge_calendars( ns=>\@ns, bl=>$bl, date=>$date );
+        # produce the hour list for matching calendars
+        my $hours = @ns_cals
+                ? $self->merge_calendars( ns=>\@ns_cals, bl=>$bl, date=>$date )
+                : {};
 
         # remove X
         while( my ($k,$v) = each %$hours ) {
@@ -411,7 +424,7 @@ sub build_job_window : Path('/job/build_job_window') {
            [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
         } sort keys %$hours ];
 
-        $c->stash->{json} = {success=>\1, data => $hour_store };
+        $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ) };
     } catch {
         my $error = shift;
         _error $error;

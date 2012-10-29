@@ -26,8 +26,7 @@ __PACKAGE__->add_columns(
   "ns",
   {
     data_type => "varchar2",
-    default_value => "/",
-    is_nullable => 0,
+    is_nullable => 1,
     size => 100,
   },
   "bl",

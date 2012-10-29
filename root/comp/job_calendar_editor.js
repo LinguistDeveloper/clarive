@@ -4,19 +4,6 @@
 (function(){
     var id = Ext.id();
     var id2 = 'container-' + id;
-    var ns_store = new Baseliner.JsonStore({
-       root: 'data' , 
-       fields: ['value', 'name'], 
-       totalProperty: "totalCount", 
-       autoLoad: true,
-       id: 'name',
-       url: '/namespace/all'
-    });
-    /* var ns_store = new Ext.data.SimpleStore({ 
-       fields: ['value', 'name'], 
-       data : <% js_dumper( $c->stash->{namespaces} ) %>
-    }); 
-    */
     var bl_store = new Ext.data.SimpleStore({ 
        fields: ['value', 'name'], 
        data : <% js_dumper( $c->stash->{baselines} ) %>
@@ -50,8 +37,8 @@
                         handler: function(){ 
                             var ff = cal_form.getForm();
                             ff.submit({
-                                success: function(form, action) { Baseliner.message("<% _loc('Calendar') %>", action.result.msg); },
-                                failure: function(form, action) { Baseliner.message("<% _loc('Failure') %>", action.result.msg); }
+                                success: function(form, action) { Baseliner.message(_('Calendar'), action.result.msg); },
+                                failure: function(form, action) { Baseliner.message(_('Failure'), action.result.msg); }
                             });
                         } 
                     }                   
@@ -73,20 +60,7 @@
                         name: 'description',
                         value: '<% $cal->description %>'
                     },
-                    {  xtype: 'combo', 
-                               name: 'ns', 
-                               hiddenName: 'ns',
-                               fieldLabel: _loc('Namespace'),
-                               mode: 'remote', 
-                               editable: false,
-                               forceSelection: true,
-                               triggerAction: 'all',
-                               store: ns_store, 
-                               valueField: 'value',
-                               //value: '<% $cal->ns  %>',
-                               displayField:'name', 
-                               allowBlank: false
-                    },
+                    Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Namespace'), value: '<% $cal->ns %>', emptyText: _('Global')  }),
                     {  xtype: 'combo', 
                                name: 'bl', 
                                hiddenName: 'bl',

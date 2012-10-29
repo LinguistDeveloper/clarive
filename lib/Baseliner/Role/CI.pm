@@ -232,6 +232,57 @@ sub ci_form {
 sub storage { 'yaml' }   # ie. yaml, fields, BaliUser, BaliProject
 sub storage_pk { 'mid' }  # primary key (mid) column for foreing table
 
+sub related_cis {
+    my ($self, %opts )=@_;
+    my $mid = $self->mid;
+    my $where = {};
+    my $edge = $opts{edge} // '';
+    my $dir_normal = $edge =~ /^to/ ? 'to_mid' : 'from_mid';
+    my $dir_reverse = $edge =~ /^to/ ? 'from_mid' : 'to_mid';
+    if( $edge ) {
+        $where->{$dir_reverse} = $mid;
+    } else {
+        $where->{'-or'} = [ from_mid=>$mid, to_mid=>$mid ];
+    }
+    $where->{rel_type} = { -like=>$opts{rel_type} } if defined $opts{rel_type};
+    return map {
+        my $rel_mid = $_->{from_mid} == $mid
+            ? $_->{to_mid}
+            : $_->{from_mid}; 
+        my $ci = _ci( $rel_mid );
+        $ci->{rel_type} = $_->{rel_type};  # adhoc info
+        $ci;
+    } DB->BaliMasterRel->search( $where, { } )->hashref->all;
+}
+
+sub related {
+    my ($self, %opts)=@_;
+    my $mid = $self->mid;
+    my $depth = $opts{depth} // 1;
+    $depth = 1 if $depth < 1; # otherwise we go into infinite loop
+    my @cis = $self->related_cis( %opts );
+    if( --$depth ) {
+        if( $opts{mode} eq 'tree' ) {
+            for my $ci( @cis ) {
+                push @{ $ci->{ci_rel} }, $ci->related( %opts, depth=>$depth );
+            }
+        } else {  # flat mode
+            push @cis, map { $_->related( %opts, depth=>$depth ) } @cis;
+        }
+    }
+    return @cis;
+}
+
+sub parents {
+    my ($self, %opts)=@_;
+    return $self->related( %opts, edge=>'from' );
+}
+
+sub children {
+    my ($self, %opts)=@_;
+    return $self->related( %opts, edge=>'to' );
+}
+
 # from Node
 has uri      => qw(is rw isa Str);   # maybe a URI someday...
 has resource => qw(is rw isa Baseliner::CI::URI), 

@@ -24,6 +24,18 @@ msgstr "por %1"
 msgid "All-f"
 msgstr "Todas"
 
+msgid "Velocity"
+msgstr "Velocidad"
+
+msgid "Copy of"
+msgstr "Copia de"
+
+msgid "[Select a calendar]"
+msgstr "[Seleccione calendario]"
+
+msgid "%1 days"
+msgstr "%1 días"
+
 msgid "Change password"
 msgstr "Cambiar contraseña"
 
