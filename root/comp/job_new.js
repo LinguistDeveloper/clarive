@@ -40,6 +40,7 @@
     var picker_format = '<% $picker_format %>'; // Y-m-d
     var today = '<% $today %>';
     var min_chars = 3; 
+    var rel_cals = [];
 
     var data_any_time = function() {
         var arr = [];
@@ -304,11 +305,14 @@
                                 if( ! ci ) return;
                                 var arr_rels = [];
                                 Ext.each( ci.related, function( rel ){
-                                    if( rel.rel_type != 'topic_revision' ) return;
-                                    arr_rels.push( rel );
+                                    if( rel._edge.rel_type == 'topic_revision' && rel._edge.rel == 'child' ) {
+                                        arr_rels.push( rel );
+                                    }
                                 });
-                                jc_row.set('rels', arr_rels );
+                                jc_row.set('revisions', arr_rels );
+                                jc_row.set('rels', ci.related );
                             });
+                            rel_cals = res.cals ? res.cals : [];
                         } else {
                             Baseliner.hideLoadingMask();
                             combo_time.disable();
@@ -350,6 +354,46 @@
             }
         }
     });
+    var render_edge = function( v ) {
+        return String.format('{0} - {1}', v.rel_type, v.rel );
+    };
+
+    var render_ci_name = function( v ) {
+        return String.format('<b>{0}</b>', Baseliner.render_wrap(v) );
+    };
+
+    var button_cis = new Ext.Button({
+        text: _('Relationships'),
+        disabled: true,
+        icon:'/static/images/ci/ci.png',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = jc_grid.getSelectionModel();
+            var sel = sm.getSelected();
+            if( sel ) {
+                var store_rel = new Ext.data.Store({});
+                Ext.each( sel.data.rels, function(rel){
+                    var rec = new Ext.data.Record( Ext.apply( rel, rel._ci ) );
+                    store_rel.add( rec );
+                });
+                //store_rel.sort('collection');
+                var t = new Ext.grid.GridPanel({
+                    store: store_rel,
+                    viewConfig: { forceFit: true },
+                    columns: [
+                        { header:_(''), dataIndex:'ci_icon', width: 18, renderer: render_icon },
+                        { header:_('Name'), dataIndex:'name', renderer: render_ci_name },
+                        { header:_('Collection'), dataIndex:'collection' },
+                        { header:_('Class'), dataIndex:'ci_class' },
+                        { header:_('ID'), dataIndex:'mid', width: 30 },
+                        { header:_('Relationship'), dataIndex:'_edge', renderer: render_edge }
+                    ]
+                });
+                var win_ci = new Ext.Window({ width:800, height:400, layout:'fit', maximizable:true, items: t });
+                win_ci.show();
+            }
+        }
+    });
     var adder = 80;
 
     var colModel = new Ext.grid.ColumnModel([
@@ -360,7 +404,7 @@
         },
         { header: _('Job Item'),
              id:'item',
-             width: 160 + adder,
+             width: 260 + adder,
              sortable: true,
              locked: false,
              renderer: function(v){ return String.format("<b>{0}</b>", v) },
@@ -414,27 +458,37 @@
             getRowClass : function(rec, index, p, store){
                 // slot squares
                 var s = rec.data.moreInfo;
-                if( rec.data.rels ) {
+                if( rec.data.revisions ) {
                     if( !s ) s='';
-                    s+='<ul>';
-                    Ext.each( rec.data.rels, function(rel){
-                        s+= String.format('<li>#{0}</li>', rel.name );
+                    var arr = [];
+                    Ext.each( rec.data.revisions, function(rel){
+                        arr.push( rel.name );
                     });
-                    s+='</ul>';
+                    s+= '<p><pre>' + arr.join(', ') + '</pre></p>';
                 }
-                if( ! s ) return;
-                s = s.replace( /\<br\>/g , ', ');
-                p.body = String.format(
-                    '<div style="margin: 0 0 0 32;">{0}</div>'
-                    , s );
-                return ' x-grid3-row-expanded';
+                if( s ) {
+                    s = s.replace( /\<br\>/g , ', ');
+                    p.body = String.format(
+                        '<div style="margin: 0 0 0 32;">{0}</div>'
+                        , s );
+                    return ' x-grid3-row-expanded';
+                } else {
+                    p.body = '';
+                    return ' ';
+                }
             }
         },
-        tbar: [ button_remove_item ]
+        tbar: [ button_remove_item, button_cis ]
     });
 
-    jc_grid.on('rowclick', function(){ button_remove_item.enable() } );
-    jc_grid.on('rowdeselect', function(){ button_remove_item.disable() });
+    jc_grid.on('rowclick', function(){
+        button_remove_item.enable();
+        button_cis.enable();
+    });
+    jc_grid.on('rowdeselect', function(){
+        button_remove_item.disable();
+        button_cis.disable();
+    });
     
     // Drag and drop support
     jc_grid.on( 'render', function(){
@@ -682,6 +736,49 @@
         //tb.el.parent().setStyle({ 'padding':'-10px' });
     });
 
+    Baseliner.CalendarViewer = function(c){
+        var store = new Ext.data.Store({});
+        Ext.each( c.calendars, function( row ) {
+            var rec = new Ext.data.Record( row );
+            store.add( rec );
+        });
+
+        Baseliner.CalendarViewer.superclass.constructor.call(this, Ext.apply({
+            store: store,
+            viewConfig: { forceFit: true },
+            columns: [
+                { header:_('Calendar'), dataIndex:'name', width: 140, renderer: function(v){ return '<b>'+v+'</b>' } },
+                { header:_('Description'), dataIndex:'description', width: 200, renderer: Baseliner.render_wrap },
+                { header:_('Baseline'), dataIndex:'bl' },
+                { header:_('Namespace'), dataIndex:'ns' }
+            ]
+        }, c) );
+    };
+    Ext.extend( Baseliner.CalendarViewer, Ext.grid.GridPanel );
+
+    var button_show_cals = new Ext.Button({
+        cls: 'x-btn-icon',
+        layout: 'form',
+        tooltip: _('View Applied Slots'),
+        icon: '/static/images/icons/calendar_view_month.png',
+        handler: function(){
+            if( rel_cals.length == 0 ) {
+                Baseliner.alert( _('No slots selected') );
+            } else {
+                var cals = [];
+                Ext.each( rel_cals, function( cal ) {
+                    cals.push( cal );
+                });
+                var cal_viewer = new Baseliner.CalendarViewer({ calendars: cals });
+                var win_cals = new Ext.Window({
+                    width: 800, height: 400, layout:'fit', items: cal_viewer, maximizable: true });
+                win_cals.show();
+            }
+        }
+    });
+    combo_time.on('enable', function(){ button_show_cals.enable(); });
+    combo_time.on('disable', function(){ button_show_cals.disable(); });
+
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
         //frame: true,
@@ -726,13 +823,14 @@
             { 
                 layout: 'column',
                 fieldLabel: _('When'),
-                columns: 2, bodyStyle: { 'background-color': '#eee'},
+                columns: 3, bodyStyle: { 'background-color': '#eee'},
                 bodyBorder: false,
                 defaults: { bodyBorder: false, bodyStyle: { 'background-color': '#eee', 'padding': '0 25px 0 0'} },
                 items: [
                     { width: 250, layout:'form', items: job_date, labelWidth: 40, bodyStyle: { 'background-color': '#eee'} },
-                    { width: 500, layout:'form', items: combo_time , labelWidth: 40, bodyStyle: { 'background-color': '#eee'}},
-                    time_not_available
+                    { width: 470, layout:'form', items: combo_time , labelWidth: 40, bodyStyle: { 'background-color': '#eee'}},
+                    time_not_available,
+                    { width: 30, layout:'form', items: button_show_cals, labelWidth: 40, bodyStyle: { 'background-color': '#eee', 'margin-left':4 } }
                 ]
             },
             check_no_cal,
