@@ -226,7 +226,7 @@ for(my $hh=0; $hh<=24; $hh++) {
     });
     var win = new Ext.Window({
         layout: 'fit',
-        height: 230, width: 500,
+        height: 230, width: 650,
         title: '<% $title %>',
         items: fpanel
     });
