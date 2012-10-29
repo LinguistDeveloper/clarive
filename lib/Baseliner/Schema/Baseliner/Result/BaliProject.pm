@@ -99,9 +99,9 @@ sub jobs {
     	id_project => $self->mid,
     },{
         select => ['name','id'],
+        distinct => 1,
         join => 'bali_job_items', rows => 20, 
-        order_by => { -desc => 'starttime' },
-        group_by => ['me.name','me.id']
+        order_by => { -desc => 'starttime' }
     });
 }
 
