@@ -1386,6 +1386,7 @@ sub newjob : Local {
         );
         $job->stash_key( status_from => $p->{status_from} );
         $job->stash_key( status_to => $p->{status_to} );
+        $job->stash_key( id_status_from => $p->{id_status_from});
         $job->update;
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
     } catch {
