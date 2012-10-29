@@ -98,7 +98,7 @@ sub jobs {
     DB->BaliJob->search({
     	id_project => $self->mid,
     },{
-        select => ['name','id'],
+        select => ['name','id','status','rollback'],
         distinct => 1,
         join => 'bali_job_items', rows => 20, 
         order_by => { -desc => 'starttime' }
