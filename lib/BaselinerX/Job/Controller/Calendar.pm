@@ -423,7 +423,7 @@ sub build_job_window : Path('/job/build_job_window') {
            [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
         } sort keys %$hours ];
 
-        $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ) };
+        $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ), cals=>\@rel_cals };
     } catch {
         my $error = shift;
         _error $error;
