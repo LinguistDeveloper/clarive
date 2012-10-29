@@ -100,7 +100,8 @@ sub jobs {
     },{
         select => ['name','id'],
         join => 'bali_job_items', rows => 20, 
-        order_by => { -desc => 'starttime' }
+        order_by => { -desc => 'starttime' },
+        group_by => ['name','id']
     });
 }
 
