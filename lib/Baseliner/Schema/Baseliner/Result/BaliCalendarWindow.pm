@@ -11,9 +11,9 @@ __PACKAGE__->add_columns(
   "id",
   {
     data_type => "NUMBER",
-    default_value => 1,
     is_nullable => 0,
     size => 126,
+    is_auto_increment => 1,
   },
   "start_time",
   {
@@ -67,6 +67,7 @@ __PACKAGE__->belongs_to(
   "id_cal",
   "Baseliner::Schema::Baseliner::Result::BaliCalendar",
   { id => "id_cal" },
+  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 
 1;

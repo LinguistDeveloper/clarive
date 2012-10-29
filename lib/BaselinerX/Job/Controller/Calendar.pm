@@ -115,7 +115,6 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                 my $row = $c->model('Baseliner::BaliCalendar')->create({
                         name        => $p->{ name },
                         description => $p->{ description },
-                        seq         => $p->{ seq },
                         ns          => $p->{ ns },
                         bl          => $p->{ bl }
                     }

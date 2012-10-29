@@ -998,15 +998,12 @@ sub viewjobs: Local{
 }
 
 sub topics_by_category: Local{
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
+    my ( $self, $c, $action ) = @_;
+    #my $p = $c->request->parameters;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_by_category, @datas);
     
-    #$SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
-    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP
-                    INNER JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID AND TYPE <> 'F'
-                    INNER JOIN BALI_TOPIC_CATEGORIES C ON TP.ID_CATEGORY = C.ID  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
+    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
     
     @topics_by_category = $db->array_hash( $SQL );
 
@@ -1021,6 +1018,32 @@ sub topics_by_category: Local{
      }
     $c->stash->{topics_by_category} = \@datas;
     $c->stash->{topics_by_category_title} = _loc('Topics by category');
+
+}
+
+sub topics_open_by_category: Local{
+    my ( $self, $c, $action ) = @_;
+    #my $p = $c->request->parameters;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my ($SQL, @topics_open_by_category, @datas);
+    
+    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP
+                    INNER JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID AND TYPE <> 'F'
+                    INNER JOIN BALI_TOPIC_CATEGORIES C ON TP.ID_CATEGORY = C.ID  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
+    
+    @topics_open_by_category = $db->array_hash( $SQL );
+
+    
+    foreach my $topic (@topics_open_by_category){
+        push @datas, {
+                    total 			=> $topic->{total},
+                    category		=> $topic->{category},
+                    color			=> $topic->{color},
+                    category_id		=> $topic->{id_category}
+                };
+     }
+    $c->stash->{topics_open_by_category} = \@datas;
+    $c->stash->{topics_open_by_category_title} = _loc('Topics open by category');
 
 }
 
