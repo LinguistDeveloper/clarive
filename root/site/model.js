@@ -1951,6 +1951,7 @@ Baseliner.DataEditor = function(c) {
         if( col == 2 && self.metadata ) {
            var rec = store.getAt(row);
            var key_meta = self.metadata[ rec.data.key_long ];
+
            if( key_meta ) {
               var v = key_meta.value;
               if( key_meta.read_only ) {
@@ -1977,21 +1978,24 @@ Baseliner.DataEditor = function(c) {
                  }
               } 
            }
-        } 
+        }
         if( ! editor ) {
             if( col == 2 ) {
                 var rec = store.getAt(row);
-                var ta = new Ext.form.TextArea({ value: rec.get('value'),
+////                var ta = new Ext.form.TextArea({ value: rec.get('value'),
+////                    style:{ 'font-family':'Consolas, Courier New' }, readOnly: read_only });
+////                var win = new Ext.Window({ modal:true, width: 500, height: 250,
+////                    layout:'fit',
+////                    items:[ ta ]
+////                });
+////                //win.on('afterrender', function(){ ta.focus() });
+////                win.on('close', function(){
+////					rec.set('value', ta.getValue() );
+////				});
+////                win.show();
+            //} else {
+                editor = new Ext.form.TextArea({ value: rec.get('value'),
                     style:{ 'font-family':'Consolas, Courier New' }, readOnly: read_only });
-                var win = new Ext.Window({ modal:true, width: 500, height: 250,
-                    layout:'fit',
-                    items:[ ta ]
-                });
-                //win.on('afterrender', function(){ ta.focus() });
-                win.on('close', function(){ rec.set('value', ta.getValue() ); });
-                win.show();
-            } else {
-                editor = new Ext.form.TextField();
             }
         }
         this.setEditor( col, editor );
@@ -2017,6 +2021,7 @@ Baseliner.DataEditor = function(c) {
         enableRowBody : true
       }
     }, c.editorConfig ));
+	
     self.editor = tree;
 
     var json_text = new Ext.form.TextArea({ });
