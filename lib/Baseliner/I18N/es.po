@@ -18,6 +18,12 @@ msgstr "Ventanas de Pase"
 msgid "Repositories"
 msgstr "Repositorios"
 
+msgid "Relationship"
+msgstr "Relación"
+
+msgid "Relationships"
+msgstr "Relaciones"
+
 msgid "by %1"
 msgstr "por %1"
 

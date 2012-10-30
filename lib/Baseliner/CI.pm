@@ -3,6 +3,8 @@ use strict;
 use Baseliner::Utils;
 use Module::Loaded;
 
+our $_no_record = 0;
+
 sub new {
     my $class = shift;
     my %args;
@@ -13,9 +15,15 @@ sub new {
     } elsif( @_ == 1 && is_number( $_[0] ) ) {   # mid! a CI!
         my $rec = Baseliner::Role::CI->load( $_[0] );
         my $ci_class = $rec->{ci_class}; 
-        #$rec->{rec} = $rec;
-        #_debug "CI NEW: " . _dump $rec;
+        # instantiate
         my $obj = $ci_class->new( $rec );
+        # add the original record to _ci
+        unless( $Baseliner::CI::_no_record ) {
+            delete $rec->{yaml}; # lots of useless data
+            $obj->{_ci} = $rec; 
+            $obj->{_ci}{ci_icon} = $obj->icon;
+        }
+
         return $obj;
     } elsif( @_ == 1 && ref( $_[0] ) =~ /^Baseliner.?::CI/ && $_[0]->does('Baseliner::Role::CI') ) {
         return $_[0];

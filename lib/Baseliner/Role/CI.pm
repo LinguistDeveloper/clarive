@@ -20,8 +20,9 @@ coerce 'CIs' =>
   from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
   from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
-has mid => qw(is rw isa Num);
-#has rec => qw(is rw isa Any);  # the original DB record returned by load()
+has mid      => qw(is rw isa Num);
+#has ci_class => qw(is rw isa Maybe[Str]);
+has _ci      => qw(is rw isa Any);          # the original DB record returned by load()
 
 requires 'icon';
 #requires 'collection';
@@ -246,11 +247,15 @@ sub related_cis {
     }
     $where->{rel_type} = { -like=>$opts{rel_type} } if defined $opts{rel_type};
     return map {
-        my $rel_mid = $_->{from_mid} == $mid
+        my $rel_edge = $_->{from_mid} == $mid
+            ? 'child'
+            : 'parent';
+        my $rel_mid = $rel_edge eq 'child'
             ? $_->{to_mid}
             : $_->{from_mid}; 
         my $ci = _ci( $rel_mid );
-        $ci->{rel_type} = $_->{rel_type};  # adhoc info
+        # adhoc ci data with relationship info
+        $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid };
         $ci;
     } DB->BaliMasterRel->search( $where, { } )->hashref->all;
 }
@@ -259,6 +264,7 @@ sub related {
     my ($self, %opts)=@_;
     my $mid = $self->mid;
     my $depth = $opts{depth} // 1;
+    $opts{mode} //= 'flat';
     $depth = 1 if $depth < 1; # otherwise we go into infinite loop
     my @cis = $self->related_cis( %opts );
     if( --$depth ) {
