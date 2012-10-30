@@ -665,10 +665,23 @@ sub get_conf_fields : Local {
                             name        => _loc ($_->{params}->{name_field}),
                             params	    => $_->{params},
                             img         => $_->{params}->{origin} eq 'system' ? '/static/images/icons/lock_small.png' : '/static/images/icons/icon_wand.gif',
+                            meta        => {bd_field => {read_only => \1},
+                                            field_order => {read_only => \1},
+                                            filter => {read_only => \1},
+                                            get_method => {read_only => \1},
+                                            set_method => {read_only => \1},
+                                            html => {read_only => \1},
+                                            js => {read_only => \1},
+                                            id_field => {read_only => \1},
+                                            relation => {read_only => \1},
+                                            section => { value => ['head','body','details']},
+                                            singleMode => {value => [\1, \0]},
+                                            type => {read_only => \1},
+                                            origin => {read_only => \1}},
                         }
     }
 
-    $c->stash->{json} = { data=>\@system};
+    $c->stash->{json} = { data=>\@system };
     $c->forward('View::JSON');    
 }
 
