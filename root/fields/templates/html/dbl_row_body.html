@@ -4,11 +4,11 @@
 </%args>
 
 % if( !$meta->{hidden} ) {
-% if( $meta->{name_field} eq 'description'){
+%# if( $meta->{name_field} eq 'description'){
     <tr>
         <th colspan="2"><% _loc($meta->{name_field}) %>:</th>
     </tr>
-%}
+%#}
     <tr>
         <td colspan="2"><% $data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;' %></td>
     </tr>
