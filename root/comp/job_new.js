@@ -354,8 +354,9 @@
             }
         }
     });
+
     var render_edge = function( v ) {
-        return String.format('{0} - {1}', v.rel_type, v.rel );
+        return String.format('{0} - {1}<p>{2}</p>', v.rel_type, v.rel, v.path.join('/') );
     };
 
     var render_ci_name = function( v ) {
@@ -383,7 +384,7 @@
                     columns: [
                         { header:_(''), dataIndex:'ci_icon', width: 18, renderer: render_icon },
                         { header:_('Name'), dataIndex:'name', renderer: render_ci_name },
-                        { header:_('Collection'), dataIndex:'collection' },
+                        { header:_('Collection'), dataIndex:'collection', width: 50 },
                         { header:_('Class'), dataIndex:'ci_class' },
                         { header:_('ID'), dataIndex:'mid', width: 30 },
                         { header:_('Relationship'), dataIndex:'_edge', renderer: render_edge }
@@ -771,10 +772,18 @@
                 });
                 var cal_viewer = new Baseliner.CalendarViewer({ calendars: cals });
                 var win_cals = new Ext.Window({
-                    width: 800, height: 400, layout:'fit', items: cal_viewer, maximizable: true });
+                    width: 800, height: 400, layout:'fit', title: _('Applied Calendar Slots'),
+                    items: cal_viewer, maximizable: true });
                 win_cals.show();
             }
         }
+    });
+    var button_refresh_cals = new Ext.Button({
+        cls: 'x-btn-icon',
+        layout: 'form',
+        tooltip: _('Reload Calendar Slots'),
+        icon: '/static/images/icons/refresh.gif',
+        handler: function(){ calendar_reload(); }
     });
     combo_time.on('enable', function(){ button_show_cals.enable(); });
     combo_time.on('disable', function(){ button_show_cals.disable(); });
@@ -827,10 +836,11 @@
                 bodyBorder: false,
                 defaults: { bodyBorder: false, bodyStyle: { 'background-color': '#eee', 'padding': '0 25px 0 0'} },
                 items: [
-                    { width: 250, layout:'form', items: job_date, labelWidth: 40, bodyStyle: { 'background-color': '#eee'} },
+                    { width: 225, layout:'form', items: job_date, labelWidth: 40, bodyStyle: { 'background-color': '#eee'} },
                     { width: 470, layout:'form', items: combo_time , labelWidth: 40, bodyStyle: { 'background-color': '#eee'}},
                     time_not_available,
-                    { width: 30, layout:'form', items: button_show_cals, labelWidth: 40, bodyStyle: { 'background-color': '#eee', 'margin-left':4 } }
+                    { width: 30, layout:'form', items: button_show_cals, labelWidth: 40, bodyStyle: { 'background-color': '#eee', 'margin-left':5 } },
+                    { width: 30, layout:'form', items: button_refresh_cals, labelWidth: 40, bodyStyle: { 'background-color': '#eee' } }
                 ]
             },
             check_no_cal,

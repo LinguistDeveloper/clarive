@@ -106,6 +106,7 @@ use Exporter::Tidy default => [
     _load_features
     _ci
     _any
+    _package_is_loaded
 /];
 
 # setup I18n
@@ -1193,6 +1194,13 @@ sub _ci {
 }
 
 *_any = \&List::MoreUtils::any;
+
+sub _package_is_loaded {
+    my $cl = shift;
+    $cl =~ s/::/\//g;
+    $cl = $cl . '.pm';
+    exists $INC{ $cl };
+}
 
 1;
 
