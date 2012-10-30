@@ -22,7 +22,7 @@ coerce 'CIs' =>
 
 has mid      => qw(is rw isa Num);
 #has ci_class => qw(is rw isa Maybe[Str]);
-has _ci      => qw(is rw isa Any);          # the original DB record returned by load()
+#has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
 requires 'icon';
 #requires 'collection';
@@ -176,6 +176,8 @@ sub load {
     my $class = "BaselinerX::CI::" . $row->collection;
     # fix static generic calling from Baseliner::CI
     $self = $class if $self eq 'Baseliner::Role::CI';
+    # check class is available, otherwise use a dummy ci class
+    $self = $class = 'BaselinerX::CI::Empty' unless _package_is_loaded( $class );
     # get my storage type
     my $storage = $class->storage;
     # setup the base data from master row
@@ -238,9 +240,9 @@ sub related_cis {
     my $mid = $self->mid;
     my $where = {};
     my $edge = $opts{edge} // '';
-    my $dir_normal = $edge =~ /^to/ ? 'to_mid' : 'from_mid';
-    my $dir_reverse = $edge =~ /^to/ ? 'from_mid' : 'to_mid';
     if( $edge ) {
+        my $dir_normal = $edge =~ /^out/ ? 'to_mid' : 'from_mid';
+        my $dir_reverse = $edge =~ /^out/ ? 'from_mid' : 'to_mid';
         $where->{$dir_reverse} = $mid;
     } else {
         $where->{'-or'} = [ from_mid=>$mid, to_mid=>$mid ];
@@ -255,38 +257,104 @@ sub related_cis {
             : $_->{from_mid}; 
         my $ci = _ci( $rel_mid );
         # adhoc ci data with relationship info
-        $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid };
+        $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid, depth=>$opts{depth_original}-$opts{depth}, path=>$opts{path} };
         $ci;
     } DB->BaliMasterRel->search( $where, { } )->hashref->all;
 }
 
+sub _filter_cis {
+    my ($self, %opts) = @_;
+    return () unless ref $opts{_cis} eq 'ARRAY';
+    my @cis = @{ delete $opts{_cis} };
+    if( $opts{does} || $opts{does_any} || $opts{does_all} ) {
+        @cis = grep { 
+            my @does = map { "Baseliner::Role::CI::$_" } _array( $opts{does}, $opts{does_all}, $opts{does_any} );
+            my $ci = $_;
+            if( exists $opts{does_all} ) {
+                List::MoreUtils::all( sub { $ci->does( $_ ) }, @does );
+            } else {
+                _any( sub { $ci->does( $_ ) }, @does );
+            }
+        } @cis;
+    }
+    return @cis;
+}
+
+=head2 related
+
+Traverses the master_rel relationships, recursing if necessary.
+
+Returns an instantiated ci list.
+
+Options:
+
+    edge => 'in' | 'out' | undef
+        type of edges to traverse. 
+            out: where from_mid == mid
+            in: where to_mid == mid
+            undef: both in and out
+
+    depth => 1
+        how many levels to recurse. Default is 1, which means no recursion.  
+
+    mode => 'flat' | 'tree'
+        how to return the data. Tree mode will return nodes nested into 
+        an attribute called 'ci_rel' 
+
+    does => ['Server']
+        filters CIs that do the role "Baseliner::Role::Server"
+
+    does_any => ['Server', 'Project']
+        filters CIs that do any of the roles (OR)
+
+    does_all => ['Server', 'Project']
+        filters CIs that do all of the roles (AND)
+
+    filter_early => 1|0
+        checks CIs filters (does) before recursing. 
+
+=cut
 sub related {
     my ($self, %opts)=@_;
     my $mid = $self->mid;
     my $depth = $opts{depth} // 1;
+    $opts{depth_original} //= $depth;
     $opts{mode} //= 'flat';
+    $opts{visited} //= {};
+    $opts{path} //= [];
+    push @{ $opts{path} }, $mid;
+    return () if exists $opts{visited}{$mid};
+    local $Baseliner::CI::_no_record = $opts{no_record} // 0; # make sure we include a _ci 
+    $opts{visited}{ $mid } = 1;
     $depth = 1 if $depth < 1; # otherwise we go into infinite loop
+    # get my related cis
     my @cis = $self->related_cis( %opts );
+    # filter before
+    @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
+    # now delve deeper if needed
     if( --$depth ) {
+        my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
         if( $opts{mode} eq 'tree' ) {
             for my $ci( @cis ) {
-                push @{ $ci->{ci_rel} }, $ci->related( %opts, depth=>$depth );
+                push @{ $ci->{ci_rel} }, $ci->related( %opts, depth=>$depth, path=>$path );
             }
         } else {  # flat mode
-            push @cis, map { $_->related( %opts, depth=>$depth ) } @cis;
+            push @cis, map { $_->related( %opts, depth=>$depth, path=>$path ) } @cis;
         }
     }
+    # filter
+    @cis = $self->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
     return @cis;
 }
 
 sub parents {
     my ($self, %opts)=@_;
-    return $self->related( %opts, edge=>'from' );
+    return $self->related( %opts, edge=>'in' );
 }
 
 sub children {
     my ($self, %opts)=@_;
-    return $self->related( %opts, edge=>'to' );
+    return $self->related( %opts, edge=>'out' );
 }
 
 # from Node

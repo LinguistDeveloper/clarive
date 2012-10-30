@@ -386,13 +386,16 @@ sub build_job_window : Path('/job/build_job_window') {
 
         my @ns;
         my %cis;  # keep track of all ci relations found
-        my $depth_default = 2;
+        my $depth_default = 4;
         # $contents = $c->model('Jobs')->container_expand( $contents );
         for my $item ( _array( $contents ) ) {
             my $mid = $item->{mid};
             my $ci = _ci( $mid );
             # recurse into ci relations up to depth
-            my @related = $ci->related( depth=>$depth_default );  # projects, natures, etc.
+            my @related; 
+            push @related, $ci->children( depth => $depth_default, does => [ 'Infrastructure', 'Revision' ] ) ;   
+            push @related, $ci->children( depth => 1, does => [ 'Project'] ) ;   
+
             # ask for nature from revisions TODO this is a placeholder still, revisions need to support nature
             my @natures = grep { defined } map { $_->nature if $_->can('nature') } $ci, @related;
             _debug "Natures for $mid: ", @natures;

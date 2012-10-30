@@ -24,6 +24,15 @@ msgstr "Relación"
 msgid "Relationships"
 msgstr "Relaciones"
 
+msgid "View Applied Slots"
+msgstr "Ver Ventanas Relacionadas"
+
+msgid "Reload Calendar Slots"
+msgstr "Recargar Ventanas de Pase"
+
+msgid "Applied Calendar Slots"
+msgstr "Ventanas de Pase Relacionadas"
+
 msgid "by %1"
 msgstr "por %1"
 
