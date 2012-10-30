@@ -9,7 +9,7 @@ params:
     set_method: 'set_projects'
     field_order: 9
     section: 'details'
-    singleMode: 'false'
+    single_mode: 'false'
 ---
 */
 (function(params){
@@ -35,7 +35,7 @@ params:
         hiddenName: meta.id_field,			
         store: project_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.singleMode
+		singleMode: meta.single_mode
     });
 	
     project_box_store.on('load',function(){

@@ -10,7 +10,7 @@ params:
     field_order: 14
     section: 'details'
     filter: 'none'
-    singleMode: 'false'    
+    single_mode: 'false'    
 ---
 */
 (function(params){
@@ -36,7 +36,7 @@ params:
         hiddenName: meta.id_field,
         store: topic_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.singleMode
+		singleMode: meta.single_mode
     });
 	
     topic_box_store.on('load',function(){

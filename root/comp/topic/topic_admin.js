@@ -1301,9 +1301,9 @@
 											if ( objTemp.filter != undefined){
 												 objTemp.filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
 											}
-											if ( objTemp.singleMode != undefined){
+											if ( objTemp.single_mode != undefined){
 												var value = form.findField("valuesgroup").getValue().getGroupValue();
-												 objTemp.singleMode = (value ==  'M') ? false : true ;
+												 objTemp.single_mode = (value ==  'M') ? false : true ;
 											}
 											
 											var d = { id: id, id_field: id_field, name: id_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
@@ -1363,7 +1363,7 @@
 								}else{
 									combo_filters.hide();
 								};
-								if (attr.data[combo_system_fields.getValue()].singleMode != undefined){
+								if (attr.data[combo_system_fields.getValue()].single_mode != undefined){
 									var form = form_template_field.getForm();
 									form.findField("valuesgroup").show();
 								}else{

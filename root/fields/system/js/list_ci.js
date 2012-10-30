@@ -8,7 +8,7 @@ params:
     set_method: 'set_topics'
     field_order: 100
     section: 'details'
-    singleMode: 'false'    
+    single_mode: 'false'    
 ---
 */
 (function(params){
@@ -35,7 +35,7 @@ params:
         hiddenName: meta.id_field,
         store: topic_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.singleMode
+		singleMode: meta.single_mode
     });
 	
     topic_box_store.on('load',function(){
@@ -47,7 +47,7 @@ params:
        Baseliner.ci_box({
            fieldLabel: _(meta.name_field),
            name: meta.name_field,
-           singleMode: meta.singleMode,
+           singleMode: meta.single_mode,
            role: 'Server'
        })
     ]

@@ -675,7 +675,7 @@ sub get_conf_fields : Local {
                                             id_field => {read_only => \1},
                                             relation => {read_only => \1},
                                             section => { value => ['head','body','details']},
-                                            singleMode => {value => [\1, \0]},
+                                            single_mode => {value => [\1, \0]},
                                             type => {read_only => \1},
                                             origin => {read_only => \1}},
                         }

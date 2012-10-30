@@ -9,7 +9,7 @@ params:
     set_method: 'set_users'
     field_order: 10
     section: 'details'
-    singleMode: 'false'
+    single_mode: 'false'
 ---
 */
 (function(params){
@@ -38,7 +38,7 @@ params:
         hiddenName: meta.id_field,		
         store: user_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.singleMode
+		singleMode: meta.single_mode
 		
     });
     
