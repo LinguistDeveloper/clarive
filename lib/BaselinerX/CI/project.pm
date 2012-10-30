@@ -14,15 +14,19 @@ sub rel_type { { repositories=>[ from_mid => 'project_repository'] } }
 around table_update_or_create => sub {
    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
  
+   my $temp_data; 
    if( $data->{data} ) {
       # json to yaml
-      $data->{data} = _dump( _decode_json( $data->{data} ) );
+      $temp_data = _dump( _decode_json( $data->{data} ) );
+      delete $data->{data};
    }
+   
    my $row_mid = $self->$orig( $rs, $mid, $data, @rest );
    $mid //= $row_mid;  # necessary when creating
 
    my $row = DB->BaliProject->find( $mid );
    $row->ns('project/' . $mid );
+   $row->data($temp_data);
    $row->update;
    $row_mid;
 };
