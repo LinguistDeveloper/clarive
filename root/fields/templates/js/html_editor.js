@@ -8,6 +8,7 @@ params:
     field_order: 2
     section: 'body'
     data: 'clob'
+    field_order_html: 99
 ---
 */
 (function(params){
