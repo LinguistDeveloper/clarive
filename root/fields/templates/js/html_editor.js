@@ -15,10 +15,18 @@ params:
 	var meta = params.topic_meta;
 	
 	return [
+		{
+		  xtype: 'box',
+		  autoEl: {cn: '<br>' + _(meta.name_field) + ':'}
+		},
+		{
+		  xtype: 'box',
+		  autoEl: {cn: '<br>'}
+		},			
 		{   xtype: 'panel', layout:'fit',
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			items: [ //this panel is here to make the htmleditor fit
-				new Baseliner.HtmlEditor({
+			new Baseliner.HtmlEditor({
 					name: meta.id_field,
 					fieldLabel: _('Description'),
 					width: '100%',
@@ -27,6 +35,10 @@ params:
 					disabled: meta ? meta.readonly : true
 				})
 			]
-		}
+		},
+		{
+		  xtype: 'box',
+		  autoEl: {cn: '<br>'}
+		}					
     ]
 })
