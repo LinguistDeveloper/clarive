@@ -21,7 +21,6 @@ Thumbs.db
 logs
 datos
 xx
-templates
 Makefile
 tmp
 features/#*
@@ -30,13 +29,9 @@ features/nature.ssrs
 features/gbp
 features/sonar
 features/checking
-<<<<<<< HEAD
-<<<<<<< HEAD
 features/svnscm
 features/cvsscm
 features/jazztel
-=======
->>>>>>> 615f5d1d0221f0137ba85907f0b6a21190b87eed
 inc
 t/balitest.db
 t/old
