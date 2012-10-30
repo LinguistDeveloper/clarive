@@ -1733,7 +1733,10 @@ Ext.extend( Baseliner.Wizard, Ext.Panel );
     
     var tree = new Baseliner.DataEditor({
         data: { aa: 11, bb: [ 'x','y','z' ], cc: [{ mm:99 },{ nn:88 }] },
-        metadata: {  aa: { value: [ 1, 2, 3 ] }, 'cc.mm': { value: [ 'a','b' ] } }
+        metadata: { 
+            aa: { value: [ 1, 2, 3 ], read_only: true },
+            'cc.mm': { value: { 'Young': 18, 'Old': 70 } },
+        }
     });
 
     var w = new Ext.Window({ layout:'fit',width:400, height:400, items: tree });
@@ -1944,17 +1947,22 @@ Baseliner.DataEditor = function(c) {
       getCellEditor: function( col, row) {
         //config[col].setCellEditor( textedit );
         var editor;
+        var read_only = false;
         if( col == 2 && self.metadata ) {
            var rec = store.getAt(row);
            var key_meta = self.metadata[ rec.data.key_long ];
            if( key_meta ) {
               var v = key_meta.value;
+              if( key_meta.read_only ) {
+                 read_only = key_meta.read_only;
+              }
               if( key_meta.value ) {
                  if( Ext.isArray( v ) ) {
                      var arr=[];
                      Ext.each( v, function(i){ arr.push([ i,i ]); } );
                      editor = new Ext.form.ComboBox({
                         typeAhead: true, triggerAction:"all", lazyRender: true,
+                        readOnly: read_only,
                         store: arr
                      });
                  }
@@ -1963,6 +1971,7 @@ Baseliner.DataEditor = function(c) {
                      for( var k in v){  arr.push([ k, v[k] ]) }
                      editor = new Ext.form.ComboBox({
                         typeAhead: true, triggerAction:"all", lazyRender: true,
+                        readOnly: read_only,
                         store: arr
                      });
                  }
@@ -1972,7 +1981,8 @@ Baseliner.DataEditor = function(c) {
         if( ! editor ) {
             if( col == 2 ) {
                 var rec = store.getAt(row);
-                var ta = new Ext.form.TextArea({ value: rec.get('value'), style:{ 'font-family':'Consolas, Courier New' } });
+                var ta = new Ext.form.TextArea({ value: rec.get('value'),
+                    style:{ 'font-family':'Consolas, Courier New' }, readOnly: read_only });
                 var win = new Ext.Window({ modal:true, width: 500, height: 250,
                     layout:'fit',
                     items:[ ta ]
