@@ -2045,8 +2045,10 @@
                 btn_add_label,
                 btn_delete_label,
 				'->',
+% if ($c->stash->{can_admin_labels}) { 				
 				btn_by_project,
 				btn_choose_projects
+% }				
         ]
     });
     

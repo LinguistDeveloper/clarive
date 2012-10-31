@@ -21,10 +21,12 @@ register 'menu.admin.topic' => {
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };
 
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    $c->stash->{query_id} = $p->{query};    
+    $c->stash->{query_id} = $p->{query};
+    $c->stash->{can_admin_labels} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.labels.admin' );    
     $c->stash->{template} = '/comp/topic/topic_admin.js';
 }
 
