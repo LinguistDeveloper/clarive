@@ -13,7 +13,7 @@ BEGIN { extends 'Catalyst::Model' }
 register 'action.labels.admin' => { name=>'Admin generic labels' };
 
 sub get_labels {
-    my ($self, $username) = @_;
+    my ($self, $username, $mode) = @_;
     my @labels;
     my $perm = Baseliner->model('Permissions');
     
@@ -21,7 +21,7 @@ sub get_labels {
     my @user_labels = Baseliner->model('Baseliner::BaliLabel')->search({username => $username}, {join => 'users'})->hashref->all;
     push @labels, map {$_} @user_labels;
     
-    if ($perm->user_has_action( username=> $username, action => 'action.labels.admin' || $perm->is_root( $username )  )){
+    if ($perm->user_has_action( username=> $username, action => 'action.labels.admin') || $perm->is_root( $username ) || $mode ne 'admin'  ){
         #global labels
         my @global_labels = Baseliner->model('Baseliner::BaliLabel')->search({sw_allprojects => 1})->hashref->all;
         push @labels, map {$_} @global_labels;

@@ -579,7 +579,7 @@ sub list_label : Local {
     #    }  
     #}
     
-    @rows = Baseliner::Model::Label->get_labels( $c->username );
+    @rows = Baseliner::Model::Label->get_labels( $c->username, 'admin' );
     
     $cnt = $#rows + 1 ; 
     
