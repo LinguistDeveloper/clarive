@@ -1810,7 +1810,19 @@
         cls: 'x-btn-text-icon',
         handler: function() {
             if(label_box.getValue() != ''){
-                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl},
+				if ( btn_by_project.pressed ) {
+					if (!projects_box.getValue()){
+						Ext.Msg.show({
+                                title: _('Information'), 
+                                msg: _('There are not projects selected'), 
+                                buttons: Ext.Msg.OK, 
+                                icon: Ext.Msg.INFO
+                            });
+						return
+					}       
+				}
+				
+                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl, projects: projects_box.getValue()},
                     function(response) {
                         if ( response.success ) {
                             store_label.load();
@@ -1893,11 +1905,13 @@
     var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}});
     
     var label_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
+	
+	var projects_box = new Ext.form.TextField({ hidden:true });
     
     label_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
             if(f.getValue() != ''){
-                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl},
+                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl, projects: projects_box.getValue()},
                     function(response) {
                         if ( response.success ) {
                             store_label.load();
@@ -1917,6 +1931,107 @@
         }
     });
 
+    var btn_by_project = new Ext.Toolbar.Button({
+		text: _('By project'),
+        icon:'/static/images/icons/project.png',
+        cls: 'x-btn-text-icon',
+        enableToggle: true, pressed: false, allowDepress: true,
+        handler: function() {
+			if (btn_by_project.pressed){
+				btn_choose_projects.enable();
+			}else{
+				btn_choose_projects.disable();
+				projects_box.setValue('');
+			}
+        }       
+    });
+	
+	
+    var btn_choose_projects = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/add_new_form_16.png',
+        cls: 'x-btn-text-icon',
+		disabled: true,
+        //enableToggle: true, pressed: false, allowDepress: true,
+        handler: function() {
+			
+			var treeRoot = new Ext.tree.AsyncTreeNode({
+				text: _('All'),
+				draggable: false,
+				checked: false,
+				id: 'All',
+				data: {
+					project: '',
+					id_project: 'todos',
+					parent_checked: ''
+				}
+			});
+        
+
+			var tree_projects = new Ext.tree.TreePanel({
+				title: _('Available Projects'),
+				dataUrl: "user/projects_list",
+				split: true,
+				colapsible: true,
+				useArrows: true,
+				ddGroup: 'secondGridDDGroup',
+				animate: true,
+				enableDrag: true,
+				containerScroll: true,
+				autoScroll: true,
+				height:200,         
+				rootVisible: true,
+				preloadChildren: true,
+				root: treeRoot
+			});
+			
+			tree_projects.getLoader().on("beforeload", function(treeLoader, node) {
+				var loader = tree_projects.getLoader();
+			
+				loader.baseParams = node.attributes.data;
+				node.attributes.data.parent_checked = (node.attributes.checked)?1:0;
+			});
+			
+			tree_projects.on('checkchange', function(node, checked) {
+				if(node != treeRoot){
+					if (node.attributes.checked == false){
+						 treeRoot.attributes.checked = false;
+						 treeRoot.getUI().checkbox.checked = false;
+					}
+				}
+				node.eachChild(function(n) {
+					n.getUI().toggleCheck(checked);
+				});
+				
+			});
+			
+			var w = new Ext.Window({ layout:'fit',width:400, height:400, items: tree_projects });
+			w.show();
+			
+			tree_projects.on('beforedestroy', function(){
+                var projects_checked = new Array();
+                var projects_parents_checked = new Array();
+				selNodes = tree_projects.getChecked();
+				Ext.each(selNodes, function(node){
+					if(node.attributes.leaf){
+						projects_checked.push(node.attributes.data.id_project);
+					}else{
+						if(node.childNodes.length > 0 || node.attributes.data.id_project == 'todos'){
+							projects_checked.push(node.attributes.data.id_project);
+						}
+						else{
+							projects_parents_checked.push(node.attributes.data.id_project);
+						}
+					}
+				});				
+				
+				//console.log( projects_checked );
+				projects_box.setValue( projects_checked );
+				w.close();
+			});			
+            
+        }       
+    });	
+	
     var tb = new Ext.Toolbar({
         items: [
                 {
@@ -1926,8 +2041,12 @@
                 color_label,
                 blank_image,
                 label_box,
+				projects_box,
                 btn_add_label,
-                btn_delete_label
+                btn_delete_label,
+				'->',
+				btn_by_project,
+				btn_choose_projects
         ]
     });
     
