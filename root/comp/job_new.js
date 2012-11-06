@@ -383,10 +383,10 @@
                     viewConfig: { forceFit: true },
                     columns: [
                         { header:_(''), dataIndex:'ci_icon', width: 18, renderer: render_icon },
-                        { header:_('Name'), dataIndex:'name', renderer: render_ci_name },
-                        { header:_('Collection'), dataIndex:'collection', width: 50 },
-                        { header:_('Class'), dataIndex:'ci_class' },
-                        { header:_('ID'), dataIndex:'mid', width: 30 },
+                        { header:_('Name'), dataIndex:'name', sortable: true, renderer: render_ci_name },
+                        { header:_('Collection'), dataIndex:'collection', sortable: true, width: 50 },
+                        { header:_('Class'), sortable: true, dataIndex:'ci_class' },
+                        { header:_('ID'), dataIndex:'mid', sortable: true, width: 30 },
                         { header:_('Relationship'), dataIndex:'_edge', renderer: render_edge }
                     ]
                 });
