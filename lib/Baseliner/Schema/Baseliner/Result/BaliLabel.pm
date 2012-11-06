@@ -72,6 +72,10 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 0, size => 255 },
   "color",
   { data_type => "varchar2", is_nullable => 0, size => 255 },
+  "mid_user",
+  { data_type => "number", is_nullable => 1, size => 255 },
+  "sw_allprojects",
+  { data_type => "char", is_nullable => 0, size => 1, default_value => '0' },  
 );
 
 =head1 PRIMARY KEY
@@ -104,6 +108,16 @@ __PACKAGE__->has_many(
   "Baseliner::Schema::Baseliner::Result::BaliTopicLabel",
   { "foreign.id_label" => "self.id" },
 );
+
+__PACKAGE__->belongs_to(
+  "users",
+  "Baseliner::Schema::Baseliner::Result::BaliUser",
+  { mid => "mid_user" },
+);
+
+
+
+
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;

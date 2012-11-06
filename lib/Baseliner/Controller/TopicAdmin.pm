@@ -21,10 +21,12 @@ register 'menu.admin.topic' => {
 
 register 'action.admin.topics' => { name=>'View and Admin topics' };
 
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    $c->stash->{query_id} = $p->{query};    
+    $c->stash->{query_id} = $p->{query};
+    $c->stash->{can_admin_labels} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.labels.admin' );    
     $c->stash->{template} = '/comp/topic/topic_admin.js';
 }
 
@@ -307,14 +309,36 @@ sub update_label : Local {
     my $action = $p->{action};
     my $label = $p->{label};
     my $color = $p->{color};
+    my @projects = split ",", $p->{projects};
+    my $username = $c->username;
     
     given ($action) {
         when ('add') {
             try{
                 my $row = $c->model('Baseliner::BaliLabel')->search({name => $p->{label}})->first;
                 if(!$row){
-                    my $label = $c->model('Baseliner::BaliLabel')->create({name => $label, color => $color});
-                    $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=> $label->id };
+                    my $rslabel;
+                    my $label = { name => $label, color => $color};
+                    if (!@projects){
+                        if ($username eq 'root'){
+                            $label->{sw_allprojects} = 1;
+                        }else{
+                            my $rs_user = $c->model('Baseliner::BaliUser')->search({username => $username}, {select => 'mid'})->hashref->first;
+                            $label->{mid_user} = $rs_user->{mid};
+                        }
+                        $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
+                        
+                    }else{
+                        if ($projects[0] eq 'todos'){
+                            $label->{sw_allprojects} = 1;
+                        }
+                        $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
+                        foreach my $project (@projects){
+                            next if $project eq 'todos';
+                            $c->model('Baseliner::BaliLabelProject')->create({id_label => $rslabel->id, mid_project => $project});
+                        }                        
+                    }
+                    $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=> $rslabel->id };
                 }
                 else{
                     $c->stash->{json} = { msg=>_loc('Label name already exists, introduce another label name'), failure=>\1 };
@@ -336,6 +360,9 @@ sub update_label : Local {
                   
                 my $rs = Baseliner->model('Baseliner::BaliLabel')->search({ id => \@ids_label });
                 $rs->delete;
+                
+                $rs = Baseliner->model('Baseliner::BaliLabelProject')->search({ id_label => \@ids_label });
+                $rs->delete;                
                 
                 $rs = Baseliner->model('Baseliner::BaliTopicLabel')->search({ id_label => \@ids_label });
                 $rs->delete;                

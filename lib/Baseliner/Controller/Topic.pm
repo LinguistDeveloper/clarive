@@ -565,18 +565,22 @@ sub list_label : Local {
     my $cnt;
     my $row;
     my @rows;
-    $row = $c->model('Baseliner::BaliLabel')->search();
     
-    if($row){
-        while( my $r = $row->next ) {
-            push @rows,
-              {
-                id          => $r->id,
-                name        => $r->name,
-                color       => $r->color
-              };
-        }  
-    }
+    #$row = $c->model('Baseliner::BaliLabel')->search();
+    #
+    #if($row){
+    #    while( my $r = $row->next ) {
+    #        push @rows,
+    #          {
+    #            id          => $r->id,
+    #            name        => $r->name,
+    #            color       => $r->color
+    #          };
+    #    }  
+    #}
+    
+    @rows = Baseliner::Model::Label->get_labels( $c->username );
+    
     $cnt = $#rows + 1 ; 
     
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
@@ -736,21 +740,35 @@ sub filters_list : Local {
     # Filter: Labels
     my @labels; 
 
-    $row = $c->model('Baseliner::BaliLabel')->search();
+    #$row = $c->model('Baseliner::BaliLabel')->search();
+    my @row = Baseliner::Model::Label->get_labels( $c->username );
     
-    if($row->count() gt 0){
-        while( my $r = $row->next ) {
+    #if($row->count() gt 0){
+    if(@row){
+        foreach ( @row ) {
             push @labels, {
-                id  => $i++,
-                idfilter      => $r->id,
-                text    => $r->name,
-                color   => $r->color,
-                cls     => 'forum label',
-                iconCls => 'icon-no',
-                checked => \0,
-                leaf    => 'true'
+                id          => $i++,
+                idfilter    => $_->{id},
+                text        => $_->{name},
+                color       => $_->{color},
+                cls         => 'forum label',
+                iconCls     => 'icon-no',
+                checked     => \0,
+                leaf        => 'true'
             };	
-        }  
+        }          
+        #while( my $r = $row->next ) {
+        #    push @labels, {
+        #        id  => $i++,
+        #        idfilter      => $r->id,
+        #        text    => $r->name,
+        #        color   => $r->color,
+        #        cls     => 'forum label',
+        #        iconCls => 'icon-no',
+        #        checked => \0,
+        #        leaf    => 'true'
+        #    };	
+        #}  
     
         push @tree, {
             id          => 'L',
