@@ -690,12 +690,13 @@
 
     Baseliner.addNewIframe = function(url,title,params) {
         var tabpanel = Baseliner.tabpanel();
+        var idif = Ext.id();
         var tab = tabpanel.add({ 
                     xtype: 'panel', 
                     layout: 'fit', 
                     autoScroll: false,
                     style: { overflow: 'hidden' },
-                    html: '<iframe style="margin: -2px" border=0 width="100%" height="100%" src="' + url + '"></iframe>',
+                    html: '<iframe id="'+idif+'" style="margin: -2px" border=0 width="100%" height="100%" src="' + url + '"></iframe>',
                     title: title
         }); 
         Ext.getCmp('main-panel').setActiveTab(tab); 

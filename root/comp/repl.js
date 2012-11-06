@@ -323,9 +323,16 @@ To do:
                     ( action.result.stdout ?  action.result.stdout + "\n" : "" ) +  
                     ( action.result.stderr ?  action.result.stderr + "\n" : "" ) +  
                     action.result.result ;
-                set_output( data );
-                status.setValue( "OK" );
-                document.getElementById( output.getId() ).style.color = "#10c000"; // green
+                if( parms.show == 'table' ) {
+                    var d = Ext.util.JSON.decode( action.result.result );
+                    var ag = new Baseliner.AutoGrid({ data: d, closable:true, title:_('%1', cons.items.length ) });
+                    cons.add( ag );
+                    cons.setActiveTab( ag );
+                } else {
+                    set_output( data );
+                    status.setValue( "OK" );
+                    document.getElementById( output.getId() ).style.color = "#10c000"; // green
+                }
                 elapsed.setValue( action.result.elapsed );
                 save({ c: code.getValue(), o: output.getValue() });
                 editor.focus();
@@ -419,6 +426,14 @@ To do:
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     submit({ sql: 'array', dump: 'yaml' });
+                }
+            },
+            {   xtype: 'button',
+                text: _('Table'),
+                icon:'/static/images/scm/debug/memory_view.gif',
+                cls: 'x-btn-text-icon',
+                handler: function(){
+                    submit({ sql: 'array', dump: 'json', show:'table' });
                 }
             },
             {   xtype: 'button',

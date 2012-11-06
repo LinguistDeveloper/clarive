@@ -1980,20 +1980,12 @@ Baseliner.DataEditor = function(c) {
            }
         }
         if( ! editor ) {
-            if( col == 2 ) {
+            if( col == 0 ) {
                 var rec = store.getAt(row);
-////                var ta = new Ext.form.TextArea({ value: rec.get('value'),
-////                    style:{ 'font-family':'Consolas, Courier New' }, readOnly: read_only });
-////                var win = new Ext.Window({ modal:true, width: 500, height: 250,
-////                    layout:'fit',
-////                    items:[ ta ]
-////                });
-////                //win.on('afterrender', function(){ ta.focus() });
-////                win.on('close', function(){
-////					rec.set('value', ta.getValue() );
-////				});
-////                win.show();
-            //} else {
+                editor = new Ext.form.TextField({ value: rec.get('key') });
+            } 
+            else if( col == 2 ) {
+                var rec = store.getAt(row);
                 editor = new Ext.form.TextArea({ value: rec.get('value'),
                     style:{ 'font-family':'Consolas, Courier New' }, readOnly: read_only });
             }
@@ -2048,8 +2040,54 @@ Baseliner.DataEditor = function(c) {
 };
 Ext.extend( Baseliner.DataEditor, Ext.Panel ); 
 
-/*
-
-
-*/
+Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
+    open_win: function(){
+        var sm = this.getSelectionModel();
+        if( ! sm.hasSelection() ) return;
+        var cell = sm.getSelectedCell();
+        var fieldName = this.getColumnModel().getDataIndex( cell[1] );
+        var rec = this.store.getAt( cell[ 0 ] );
+        var v = rec.get( fieldName );
+        var ta = new Ext.form.TextArea({ value: v,
+            style:{ 'font-family':'Consolas, Courier New' } });
+        var win = new Ext.Window({ modal:true, width: 600, height: 350,
+            layout:'fit', items:[ ta ], maximizable: true
+        });
+        win.on('afterrender', function(){ ta.focus() });
+        win.on('close', function(){
+            rec.set( fieldName, ta.getValue() );
+        });
+        win.show();
+    },
+    initComponent : function(){
+        var self = this;
+        var cols = [];
+        var fields = [];
+        var keys = {};
+        Ext.each( self.data, function(row){ // find all data keys, unique
+            for( var k in row ) {
+                keys[k] = null;
+            }
+        });
+        var te = new Ext.form.TextArea();
+        for( var k in keys ) {
+           cols.push({ name:k, header:k, dataIndex:k, sortable:true, editor:te  });
+           fields.push({ name:k });
+        }
+        var s = new Ext.data.SimpleStore({ fields: fields });
+        Ext.each( self.data, function(row){
+             var rt = new s.recordType( row, Ext.id() );
+             s.add( rt );
+        });
+        s.commitChanges();
+        self.store = s;
+        self.columns = cols;
+        self.viewConfig = Ext.apply( { forceFit: true }, self.viewConfig );
+        var tbar = [
+           { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } 
+        ];
+        self.tbar = self.tbar ? self.tbar.push( tbar ) : tbar; 
+        Baseliner.AutoGrid.superclass.initComponent.call(self);
+    }
+});
 
