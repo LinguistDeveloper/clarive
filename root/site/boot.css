@@ -4430,6 +4430,12 @@
 .icon-forum {
     background-image:url(/static/images/icons/track.gif) !important;
 }
+
+.icon-si {
+    background-image:url('/static/images/icons/restart.png') !important;
+    padding-left: 5px;
+}
+
 .icon-no {
     background-image:url('') !important;
 }
@@ -4438,6 +4444,29 @@
     font-weight:bold;
     color:green;
 }
+
+
+.styledCheckbox {
+	height: 13px;
+	width: 13px;
+	filter: alpha(opacity=0.0);
+	opacity: 0.0;
+	outline: 0;
+}
+
+.styledCheckboxWrap {
+	position: relative;
+	background: url('/static/images/icons/checkboxes.gif') no-repeat top left;
+	width: 13px;
+	height: 13px;
+	margin: 3px;
+}
+
+.wrapChecked{ background-position: 0px -13px; }
+
+.wrapPartial{ background-position: 0px -26px; }
+
+
 /*
 .x-tree-selected {
     border:1px dotted #a3bae9;
