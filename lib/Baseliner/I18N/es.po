@@ -1967,6 +1967,15 @@ msgstr "Bloqueado"
 msgid "Release Item"
 msgstr "Elemento en Release"
 
+msgid "Output: %1"
+msgstr "Salida: %1"
+
+msgid "Table"
+msgstr "Tabla"
+
+msgid "Run"
+msgstr "Ejecutar"
+
 msgid "Run Now"
 msgstr "Ejecutar Ahora"
 

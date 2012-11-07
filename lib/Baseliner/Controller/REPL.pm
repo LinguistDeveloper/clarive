@@ -107,14 +107,25 @@ sub sql {
 
     my @sts = $self->sql_normalize( $code );
 
-    my $db = new Baseliner::Core::DBI({ model=>$model });
-    if( $sql_out eq 'hash' ) {
+    my $db = Baseliner::Core::DBI->new({ model=>$model });
+    if( $code !~ m/^[\s\W]*select/si ) {   # run script
+        my @rets;
+        for my $st ( split /\;/, $code  ) {
+            $st =~ s{^\s+}{}g;
+            $st =~ s{\s+$}{}g;
+            next unless $st;
+            next if $st =~ /^--/;
+            my $cnt = $db->do( $st );
+            push @rets, { Rows=>$cnt, 'Error Code' => $db->dbh->err, 'Error Message' => $db->dbh->errstr, Statement=>$st };
+        }
+        return \@rets;
+    } elsif( $sql_out eq 'hash' ) {   # select returning hash on first col
         my %results;
         for my $st ( @sts ) {
             %results = $db->hash( $st );
         }
         return \%results;
-    } else {
+    } else {  # select returning array ref
         my @results;
         for my $st ( @sts ) {
             next unless $st;
