@@ -939,7 +939,6 @@
 			if( stop_filters ) return;
 			var swDisable = true;
 			var selNodes = tree_filters.getChecked();
-			console.log(selNodes);
 			var tot_view_defaults = 1;
 			Ext.each(selNodes, function(node){
 				var type = node.parentNode.attributes.id;
