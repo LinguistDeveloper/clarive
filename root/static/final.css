@@ -38,3 +38,10 @@
 .bali-topic-editor-image {
 	width: 100%;
 }
+
+.bali-topic-status {
+    font-size: 8px;
+    text-transform:uppercase;
+    font-family:Helvetica Neue,Verdana,Helvetica,Arial,sans-serif;
+    color:#555;
+}
