@@ -813,6 +813,7 @@
         for( var i=0; i<selNodes.length; i++ ) {
             var node = selNodes[ i ];
             type = node.parentNode.attributes.id;
+			var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
             switch (type){
                 //Views
                 case 'V':   
@@ -823,18 +824,20 @@
                             selected_views = Baseliner.merge(selected_views, d );
                             break;
                 //Labels
-                case 'L':   labels_checked.push(node.attributes.idfilter);
+                case 'L':	labels_checked.push(node_value);
+							//labels_checked.push(node.attributes.idfilter);
                             break;
                 //Statuses
-                case 'S':   statuses_checked.push(node.attributes.idfilter);
+                case 'S':   statuses_checked.push(node_value);
+							//statuses_checked.push(node.attributes.idfilter);
                             break;
                 //Categories
-                case 'C':	var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
-							categories_checked.push(node_value);
+                case 'C':	categories_checked.push(node_value);
 							//categories_checked.push(node.attributes.idfilter);
                             break;
                 //Priorities
-                case 'P':   priorities_checked.push(node.attributes.idfilter);
+                case 'P':	priorities_checked.push(node_value);
+							//priorities_checked.push(node.attributes.idfilter);
                             break;
             }
         }
@@ -934,38 +937,37 @@
 			changing = false;
 		}
 		
-		
-			if( stop_filters ) return;
-			var swDisable = true;
-			var selNodes = tree_filters.getChecked();
-			console.log(selNodes);
-			var tot_view_defaults = 1;
-			Ext.each(selNodes, function(node){
-				var type = node.parentNode.attributes.id;
-				if(type == 'V'){
-					if(!node.attributes.default){
-						button_delete_view.enable();
-						swDisable = false;
-						return false;
-					}else{
-						if(selNodes.length == tot_view_defaults){
-							swDisable = true;
-						}else{
-							swDisable = false;
-						}
-					}
+		if( stop_filters ) return;
+		var swDisable = true;
+		var selNodes = tree_filters.getChecked();
+		console.log(selNodes);
+		var tot_view_defaults = 1;
+		Ext.each(selNodes, function(node){
+			var type = node.parentNode.attributes.id;
+			if(type == 'V'){
+				if(!node.attributes.default){
+					button_delete_view.enable();
+					swDisable = false;
+					return false;
 				}else{
-					swDisable = true;
+					if(selNodes.length == tot_view_defaults){
+						swDisable = true;
+					}else{
+						swDisable = false;
+					}
 				}
-			});
-			
-			if (swDisable)
-				button_delete_view.disable();
-			if( checked ) {
-				loadfilters();
-			} else {
-				loadfilters( node_selected );
+			}else{
+				swDisable = true;
 			}
+		});
+		
+		if (swDisable)
+			button_delete_view.disable();
+		if( checked ) {
+			loadfilters();
+		} else {
+			loadfilters( node_selected );
+		}
 	}	
 
     tree_filters.on('beforechildrenrendered', function(node){
