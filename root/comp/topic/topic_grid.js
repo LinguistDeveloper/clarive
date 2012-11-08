@@ -932,7 +932,7 @@
 	function checkchange(node_selected, checked) {
 		var type = node_selected.parentNode.attributes.id;
 		if (!changing || type == 'V' ) {
-				if (type != 'V') {
+			if (type != 'V') {
 				changing = true;
 				var c3 = node_selected.attributes.checked3;
 				node_selected.getUI().toggleCheck( c3 );
