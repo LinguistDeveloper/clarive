@@ -723,7 +723,8 @@ sub filters_list : Local {
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     checked => \0,
-                    leaf    => 'true'
+                    leaf    => 'true',
+                    uiProvider => 'Baseliner.CBTreeNodeUI'				
                 };
         }
         

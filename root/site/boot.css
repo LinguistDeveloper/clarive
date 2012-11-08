@@ -4431,11 +4431,6 @@
     background-image:url(/static/images/icons/track.gif) !important;
 }
 
-.icon-si {
-    background-image:url('/static/images/icons/restart.png') !important;
-    padding-left: 5px;
-}
-
 .icon-no {
     background-image:url('') !important;
 }

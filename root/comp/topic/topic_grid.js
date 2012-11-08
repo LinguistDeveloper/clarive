@@ -829,7 +829,9 @@
                 case 'S':   statuses_checked.push(node.attributes.idfilter);
                             break;
                 //Categories
-                case 'C':   categories_checked.push(node.attributes.idfilter);
+                case 'C':	var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
+							categories_checked.push(node_value);
+							//categories_checked.push(node.attributes.idfilter);
                             break;
                 //Priorities
                 case 'P':   priorities_checked.push(node.attributes.idfilter);
@@ -916,8 +918,55 @@
         rootVisible: false,
         root: tree_root,
         enableDD: true,
-        ddGroup: 'lifecycle_dd'
+        ddGroup: 'lifecycle_dd',
+		listeners: {
+			'checkchange': checkchange
+		}		
     });
+	
+	var changing = false;
+	
+	function checkchange(node_selected, checked) {
+		if (!changing) {
+			changing = true;
+			var c3 = node_selected.attributes.checked3;
+			node_selected.getUI().toggleCheck( c3 );
+			changing = false;
+		}
+		
+		
+			if( stop_filters ) return;
+			var swDisable = true;
+			var selNodes = tree_filters.getChecked();
+			console.log(selNodes);
+			var tot_view_defaults = 1;
+			Ext.each(selNodes, function(node){
+				var type = node.parentNode.attributes.id;
+				if(type == 'V'){
+					if(!node.attributes.default){
+						button_delete_view.enable();
+						swDisable = false;
+						return false;
+					}else{
+						if(selNodes.length == tot_view_defaults){
+							swDisable = true;
+						}else{
+							swDisable = false;
+						}
+					}
+				}else{
+					swDisable = true;
+				}
+			});
+			
+			if (swDisable)
+				button_delete_view.disable();
+			if( checked ) {
+				loadfilters();
+			} else {
+				loadfilters( node_selected );
+			}
+	}	
 
     tree_filters.on('beforechildrenrendered', function(node){
         /* Changing node text
@@ -928,6 +977,7 @@
         */
         if(node.attributes.id == 'C' || node.attributes.id == 'L'){
             node.eachChild(function(n) {
+				//console.log(n.getUI());
                 var color = n.attributes.color;
                 if( ! color ) color = '#999';
                 var style = document.createElement('style');
@@ -950,37 +1000,37 @@
     });
     
     
-    tree_filters.on('checkchange', function(node_selected, checked) {
-        if( stop_filters ) return;
-        var swDisable = true;
-        var selNodes = tree_filters.getChecked();
-        var tot_view_defaults = 1;
-        Ext.each(selNodes, function(node){
-            var type = node.parentNode.attributes.id;
-            if(type == 'V'){
-                if(!node.attributes.default){
-                    button_delete_view.enable();
-                    swDisable = false;
-                    return false;
-                }else{
-                    if(selNodes.length == tot_view_defaults){
-                        swDisable = true;
-                    }else{
-                        swDisable = false;
-                    }
-                }
-            }else{
-                swDisable = true;
-            }
-        });
-        if (swDisable)
-            button_delete_view.disable();
-        if( checked ) {
-            loadfilters();
-        } else {
-            loadfilters( node_selected );
-        }
-    }); 
+    //tree_filters.on('checkchange', function(node_selected, checked) {
+    //    if( stop_filters ) return;
+    //    var swDisable = true;
+    //    var selNodes = tree_filters.getChecked();
+    //    var tot_view_defaults = 1;
+    //    Ext.each(selNodes, function(node){
+    //        var type = node.parentNode.attributes.id;
+    //        if(type == 'V'){
+    //            if(!node.attributes.default){
+    //                button_delete_view.enable();
+    //                swDisable = false;
+    //                return false;
+    //            }else{
+    //                if(selNodes.length == tot_view_defaults){
+    //                    swDisable = true;
+    //                }else{
+    //                    swDisable = false;
+    //                }
+    //            }
+    //        }else{
+    //            swDisable = true;
+    //        }
+    //    });
+    //    if (swDisable)
+    //        button_delete_view.disable();
+    //    if( checked ) {
+    //        loadfilters();
+    //    } else {
+    //        loadfilters( node_selected );
+    //    }
+    //}); 
         
     // expand the whole tree
     tree_filters.getLoader().on( 'load', function(){
