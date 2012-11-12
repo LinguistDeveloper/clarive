@@ -3,7 +3,7 @@
     my $id = _nowstamp;
 </%perl>
 
-(function(){
+(function(params){
     var ps = 25; //page_size
     var filter_current;
     var stop_filters = false;
@@ -485,7 +485,7 @@
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
         var size = btn_mini.pressed ? '8' : '8';
         var ret = String.format(
-            '<b><span style="font-size: {0}px; text-transform:uppercase;font-family:Helvetica Neue,Verdana,Helvetica,Arial,sans-serif;color:#555">{1}</span></b>',
+            '<b><span class="bali-topic-status" style="font-size: {0}px;">{1}</span></b>',
             size, value );
            //+ '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background:#ddd;color:#222;font-weight:normal;text-transform:lowercase;text-shadow:none;"><small>' + value + '</small></span></div>'
         return ret;
@@ -582,7 +582,7 @@
         loadMask:'true',
         columns: [
             check_sm,
-            { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 80, sortable: true, renderer: render_topic_name  },
+            { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name  },
             { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
             { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
