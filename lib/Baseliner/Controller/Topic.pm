@@ -723,7 +723,8 @@ sub filters_list : Local {
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     checked => \0,
-                    leaf    => 'true'
+                    leaf    => 'true',
+                    uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
         }
         
@@ -754,7 +755,8 @@ sub filters_list : Local {
                 cls         => 'forum label',
                 iconCls     => 'icon-no',
                 checked     => \0,
-                leaf        => 'true'
+                leaf        => 'true',
+                uiProvider => 'Baseliner.CBTreeNodeUI'                
             };	
         }          
         #while( my $r = $row->next ) {
@@ -792,7 +794,8 @@ sub filters_list : Local {
                     cls     => 'forum status',
                     iconCls => 'icon-no',
                     checked => \0,
-                    leaf    => 'true'
+                    leaf    => 'true',
+                    uiProvider => 'Baseliner.CBTreeNodeUI'                    
                 };
         }  
 
@@ -821,7 +824,8 @@ sub filters_list : Local {
                 cls     => 'forum',
                 iconCls => 'icon-no',
                 checked => \0,
-                leaf    => 'true'
+                leaf    => 'true',
+                uiProvider => 'Baseliner.CBTreeNodeUI'                
             };
         }
         

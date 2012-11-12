@@ -242,12 +242,34 @@ sub topics_for_user {
     #FILTERS**********************************************************************************************************************
     if($p->{labels}){
         my @labels = _array $p->{labels};
-        $where->{'label_id'} = \@labels;
+        my @not_in = map { abs $_ } grep { $_ < 0 } @labels;
+        my @in = @not_in ? grep { $_ > 0 } @labels : @labels;
+        if (@not_in && @in){
+            $where->{'label_id'} = [{'not in' => \@not_in},{'in' => \@in}, undef];
+        }else{
+            if (@not_in){
+                $where->{'label_id'} = [{'not in' => \@not_in}, undef];
+            }else{
+                $where->{'label_id'} = \@in;
+            }
+        }            
+        #$where->{'label_id'} = \@labels;
     }
     
     if($p->{categories}){
         my @categories = _array $p->{categories};
-        $where->{'category_id'} = \@categories;
+        my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
+        my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
+        if (@not_in && @in){
+            $where->{'category_id'} = [{'not in' => \@not_in},{'in' => \@in}];    
+        }else{
+            if (@not_in){
+                $where->{'category_id'} = {'not in' => \@not_in};
+            }else{
+                $where->{'category_id'} = \@in;
+            }
+        }        
+        #$where->{'category_id'} = \@categories;
     }else{
         my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
         $where->{'category_id'} = \@categories;
@@ -255,14 +277,38 @@ sub topics_for_user {
     
     if($p->{statuses}){
         my @statuses = _array $p->{statuses};
-        $where->{'category_status_id'} = \@statuses;
+        my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
+        my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
+        if (@not_in && @in){
+            $where->{'category_status_id'} = [{'not in' => \@not_in},{'in' => \@in}];    
+        }else{
+            if (@not_in){
+                $where->{'category_status_id'} = {'not in' => \@not_in};
+            }else{
+                $where->{'category_status_id'} = \@in;
+            }
+        }
+        
+        #$where->{'category_status_id'} = \@statuses;
+        
     }else{
         $where->{'category_status_type'} = {'!=', 'F'};
     }
       
     if($p->{priorities}){
         my @priorities = _array $p->{priorities};
-        $where->{'priority_id'} = \@priorities;
+        my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
+        my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
+        if (@not_in && @in){
+            $where->{'priority_id'} = [{'not in' => \@not_in},{'in' => \@in}, undef];
+        }else{
+            if (@not_in){
+                $where->{'priority_id'} = [{'not in' => \@not_in}, undef];
+            }else{
+                $where->{'priority_id'} = \@in;
+            }
+        }          
+        #$where->{'priority_id'} = \@priorities;
     }
 
     #*****************************************************************************************************************************
