@@ -930,11 +930,14 @@
 	var changing = false;
 	
 	function checkchange(node_selected, checked) {
-		if (!changing) {
-			changing = true;
-			var c3 = node_selected.attributes.checked3;
-			node_selected.getUI().toggleCheck( c3 );
-			changing = false;
+		var type = node_selected.parentNode.attributes.id;
+		if (!changing || type == 'V' ) {
+			if (type != 'V') {
+				changing = true;
+				var c3 = node_selected.attributes.checked3;
+				node_selected.getUI().toggleCheck( c3 );
+				changing = false;
+			}
 		
 			if( stop_filters ) return;
 			var swDisable = true;

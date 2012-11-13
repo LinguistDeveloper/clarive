@@ -136,21 +136,55 @@ sub related : Local {
         if($p->{categories}){
             my @categories = _array $p->{categories};
             if(@categories){
-                $where->{'id_category'} = \@categories;
+                my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
+                my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
+                if (@not_in && @in){
+                    $where->{'id_category'} = [{'not in' => \@not_in},{'in' => \@in}];    
+                }else{
+                    if (@not_in){
+                        $where->{'id_category'} = {'not in' => \@not_in};
+                    }else{
+                        $where->{'id_category'} = \@in;
+                    }
+                }                   
+                
+                #$where->{'id_category'} = \@categories;
             }
         }
         
         if($p->{statuses}){
             my @statuses = _array $p->{statuses};
             if(@statuses){
-                $where->{'id_category_status'} = \@statuses;
+                my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
+                my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
+                if (@not_in && @in){
+                    $where->{'id_category_status'} = [{'not in' => \@not_in},{'in' => \@in}];    
+                }else{
+                    if (@not_in){
+                        $where->{'id_category_status'} = {'not in' => \@not_in};
+                    }else{
+                        $where->{'id_category_status'} = \@in;
+                    }
+                }                
+                #$where->{'id_category_status'} = \@statuses;
             }
         }
           
         if($p->{priorities}){
             my @priorities = _array $p->{priorities};
             if(@priorities){
-                $where->{'id_priority'} = \@priorities;            
+                my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
+                my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
+                if (@not_in && @in){
+                    $where->{'id_priority'} = [{'not in' => \@not_in},{'in' => \@in}, undef];
+                }else{
+                    if (@not_in){
+                        $where->{'id_priority'} = [{'not in' => \@not_in}, undef];
+                    }else{
+                        $where->{'id_priority'} = \@in;
+                    }
+                }                
+                #$where->{'id_priority'} = \@priorities;            
             }
         
         }        
