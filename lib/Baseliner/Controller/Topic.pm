@@ -456,17 +456,13 @@ sub list_category : Local {
     my @rows;
     
     if( !$p->{categoryId} ){    
-        #my $rs = $c->model('Baseliner::BaliTopicCategories')->search();
         
         my @categories;
-        if($p->{action} eq 'create'){
+        if( $p->{action} && $p->{action} eq 'create' ){
             @categories  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => $p->{action} );
-        }
-        else{
+        } else {
             @categories  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
-            #@categories = $c->model('Baseliner::BaliTopicCategories')->search()->hashref->all;
         }
-
         
         if(@categories){
   
@@ -479,9 +475,11 @@ sub list_category : Local {
 
                 my $type = $category->{is_changeset} ? 'C' : $category->{is_release} ? 'R' : 'N';
                 
-                my @fields = map { $_->{name_field} } sort { $a->{field_order} <=> $b->{field_order} } 
-                             map {  _load $_->{params_field} } DB->BaliTopicFieldsCategory->search({id_category => $category->{id}})->hashref->all;
-    
+                my @fields =
+                    map { $_->{name_field} }
+                    sort { ( $a->{field_order} // 100 ) <=> ( $b->{field_order} // 100 ) }
+                    map { _load $_->{params_field} }
+                    DB->BaliTopicFieldsCategory->search( { id_category => $category->{id} } )->hashref->all;
                     
                 my @priorities = map { $_->id_priority } 
                     $c->model('Baseliner::BaliTopicCategoriesPriority')->search( {id_category => $category->{id}, is_active => 1}, {order_by=> {'-asc'=> 'id_priority'}} )->all;
@@ -1169,15 +1167,18 @@ sub list_users : Local {
     $c->stash->{json} = { data=>\@rows };
     $c->forward('View::JSON');
 }
+
 sub form_build {
     my ($self, $form_str ) = @_;
-    [ map {
-        my $form_name = $_;
-        +{
-            form_name => $_,
-            form_path => "/forms/$form_name.js",
-        }
-    } split /,/, $form_str ];
+    return $form_str
+        ? [ map {
+                my $form_name = $_;
+                +{
+                    form_name => $_,
+                    form_path => "/forms/$form_name.js",
+                }
+            } split /,/, $form_str ]
+        : [];
 }
 
 sub newjob : Local {
