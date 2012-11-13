@@ -1,6 +1,8 @@
 (function(rec){
     var form_is_loaded = false;
     var data = rec.topic_data;
+    if( data == undefined ) data = {};
+    var on_submit_events = [];
     
     var main_fieldset = new Ext.form.FieldSet({
         collapsible: false,
@@ -10,7 +12,7 @@
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]
     });
-    
+
     var form_topic = new Ext.FormPanel({
         url:'/topic/update',
         bodyStyle:'padding: 10px 0px 0px 15px',
@@ -18,6 +20,12 @@
         items: main_fieldset
     });
 
+    form_topic.on_submit = function(){
+        Ext.each( on_submit_events, function(ev) {
+            ev();
+        });
+    };
+    
     // if we have an id, then async load the form
     form_topic.on('afterrender', function(){
         form_topic.body.setStyle('overflow', 'auto');
@@ -31,9 +39,14 @@
             if(fields[i].body) {
                 var comp = Baseliner.eval_response(
                     fields[i].body,
-                    {form: form_topic, topic_data: rec.topic_data, topic_meta: fields[i], value: ''}
+                    {form: form_topic, topic_data: data, topic_meta: fields[i], value: ''}
                 );
-                main_fieldset.add (comp );
+                if( comp.items ) {
+                    if( comp.on_submit ) on_submit_events.push( comp.on_submit );
+                    main_fieldset.add (comp.items );
+                } else {
+                    main_fieldset.add (comp );
+                }
             }
         }  // for fields
 
