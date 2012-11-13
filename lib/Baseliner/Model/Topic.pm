@@ -706,8 +706,14 @@ sub get_data {
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
         my %custom_data = {};
-        map { $custom_data{$_->{name}} = $_->{value} ? $_->{value} : $_->{value_clob} }  Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search({topic_mid => $topic_mid})->hashref->all;
+        map { $custom_data{ $_->{name} } = $_->{value} ? $_->{value} : $_->{value_clob} }
+            Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( { topic_mid => $topic_mid } )->hashref->all;
         
+        push @custom_fields, map { 
+            my $cf = $_;
+            _array $_->{custom_fields};
+        } grep { $_->{type} eq 'customform' } _array($meta);
+
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};
         }
@@ -916,8 +922,18 @@ sub save_data {
         }
     } 
      
-    my @custom_fields = map { +{name => $_->{id_field}, column => $_->{id_field}, data => $_->{data} } } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
-    
+    my @custom_fields =
+        map { +{ name => $_->{id_field}, column => $_->{id_field}, data => $_->{data} } }
+        grep { $_->{origin} eq 'custom' && !$_->{relation} } _array($meta);
+
+    push @custom_fields, 
+        map { 
+            my $cf = $_;
+            map {
+                +{ name => $_, column => $_, data=>'CLOB' }
+            } _array $_->{custom_fields};
+        } grep { $_->{type} eq 'customform' } _array($meta);
+
     for( @custom_fields ) {
         if  (exists $data->{ $_ -> {name}} && $data->{ $_ -> {name}} ne '' ){
 
