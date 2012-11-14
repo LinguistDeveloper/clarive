@@ -265,159 +265,63 @@ sub jesSpool : Path('/job/log/jesSpool') {
 
 sub jobList : Path('/job/log/jobList') {
     my ( $self, $c ) = @_;
-    my (@sites, @jobs, @files, @packages)=((),(),(),());
+    my (@jobs, @leaf)=((),());
     my $p = $c->req->params;
-    my $log;
     # _log _dump $p;
-    my $pkgIcon='/static/images/icons/package_green.gif';
-    my $siteIcon='/static/images/site.gif';
-    my $jobIcon='/static/images/book.gif';
-    my $spoolIcon='/static/images/page.gif';
-    my $infoIcon='/static/images/log_i.gif';
+    my $jobIcon='/static/images/jobIcon.png';
+    my $spoolIcon='/static/images/spoolIcon.png';
     _db_setup;
-    if (ref $p->{logId}) {
-        $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{logId} }, { order_by=>'path, id' });
-    } else {
-        $log = $c->model('Baseliner::BaliLogData')->search({ id_job=> $p->{jobId} }, { order_by=>'path, id' });
-        }
-    my ($package, $site, $parent, $lastSite, $lastParent, $lastPackage)=(undef,undef,undef,undef,undef,undef,undef) ;
-
+    my $log = $c->model('Baseliner::BaliLogData')->search({ id_log=> $p->{id} }, { order_by=>'id asc' });
+    my $lastParent=undef;
     while (my $rec=$log->next) {
-       if ( $rec->name =~ m{\/(.*)\/.*\/(fin(..))}i ) {
-          push @sites,
-             {
-             id       => "$1$3",
-             cls      => 'x-tree-node-leaf',
-             icon     => $infoIcon,
-             leaf     => 1,
-             text     => $2,
-             data     => $3
-             } ;
-          next;
-       }
-
-       my ($root,$packageText,$siteText,$parentText,$file)=split /\//, $rec->name;
-
-       $parent={
-          key=>"/$packageText/$siteText/$parentText",
-          text=>$parentText
-       };
-       $site={
-          key=>"/$packageText/$siteText",
-          text=>$siteText
-       };
-       $package={
-          key=>"/$packageText",
-          text=>$packageText
-       };
-
-       if ($parent->{key} ne $lastParent->{key}) {
-          #_log $rec->name ."=". _dump $parent . ".." . _dump $lastParent;
-           push @jobs,
-              {
-              id       => $lastParent->{text} !~ m{siteok|siteko}i?$lastParent->{id}:'~'.$lastParent->{id},
-              cls      => 'x-tree-node',
-              icon     => $lastParent->{text} !~ m{siteok|siteko}i?$jobIcon:$infoIcon,
-              leaf     => $lastParent->{text} !~ m{siteok|siteko}i?0:1,
-              text     => $lastParent->{text},
-              children => [@files]
-              } if $lastParent->{text};
-          @files=();
-          $lastParent={
-             text=>$parent->{text},
-             key=>$parent->{key},
-             id=>$parent->{key}
-          };
-       }
-       if ($site->{key} ne $lastSite->{key}) {
-       # _log $site->{key}." vs ".$lastSite->{key};
-          push @sites,
-             {
-             id       => $lastSite->{key},
-             cls      => 'x-tree-node',
-             icon     => $siteIcon,
-             leaf     => 0,
-             text     => $lastSite->{text},
-             children => [@jobs]
-             } if $lastSite->{text};
-         @jobs=();
-         $lastSite={
-            text=>$site->{text},
-            key=>$site->{key},
-            id=>$site->{key}
-         };
-      }
-
-      if ($package->{key} ne $lastPackage->{key}) {
-          push @packages,
-             {
-             id       => $lastPackage->{text},
-             cls      => 'x-tree-node',
-             icon     => $pkgIcon,
-             leaf     => 0,
-             text     => $lastPackage->{text},
-             children => [@sites]
-             } if $lastPackage->{text};
-         @sites=();
-         $lastPackage={
-            text=>$package->{text},
-            key=>$package->{key},
-            id=>$package->{key}
-         };
-      }
-      push @files,
-         {
-         id       => $rec->id,
-         cls      => 'x-tree-node-leaf',
-         icon     => $spoolIcon,
-         leaf     => 1,
-         needLoad => 1,
-         text     => $file,
-         data     => ''
-         } if length $file > 0 && $parent->{text} !~ m{siteok|siteko}i;
-   }
-   push @jobs,
-     {
-     id       => $lastParent->{text} !~ m{siteok|siteko}i?$lastParent->{id}:'~'.$lastParent->{id},
-     cls      => 'x-tree-node',
-     icon     => $lastParent->{text} !~ m{siteok|siteko}i?$jobIcon:$infoIcon,
-     leaf     => $lastParent->{text} !~ m{siteok|siteko}i?0:1,
-     text     => $lastParent->{text},
-     children => [@files]
-     };
-
-   push @sites,
+        my ($null,$site,$parent,$file)=split /\//, $rec->name;
+        if ($parent  ne $lastParent) {
+            push @jobs,
+                {
+                id       => $lastParent,
+                cls      => 'x-tree-node',
+                icon     => $jobIcon,
+                leaf     => 0,
+                text     => $lastParent,
+                children => [@leaf]
+                } if $lastParent;
+            @leaf=();
+            $lastParent=$parent;
+            }
+        push @leaf,
+            {
+            id       => $rec->id,
+            cls      => 'x-tree-node-leaf',
+            icon     => $spoolIcon,
+            leaf     => 1,
+            needLoad => 1,
+            text     => $file,
+            data     => ''
+            };
+        }
+    push @jobs,
       {
-      id       => $lastSite->{key},
+      id       => $lastParent,
       cls      => 'x-tree-node',
-      icon     => $siteIcon,
+      icon     => $jobIcon,
       leaf     => 0,
-      text     => $lastSite->{text},
-      children => [@jobs]
-      } if $lastSite->{text};
-
-   push @packages,
-      {
-      id       => $lastPackage->{text},
-      cls      => 'x-tree-node',
-      icon     => $pkgIcon,
-      leaf     => 0,
-      text     => $lastPackage->{text},
-      children => [@sites]
-      } if $lastPackage->{text};
-
-   push my @ret,
-      {
-      id       => 'first',
-      text     => _loc('Executed JOBS for <b>%1</b>', $p->{jobName} ),
-      cls      => 'x-tree-node',
-      leaf     => 0,
-      children     => [@packages]
+      text     => $lastParent,
+      children => [@leaf]
       };
 
-   $c->stash->{json} = [ @ret ];
-   $c->forward('View::JSON');
-}
+    push my @ret,
+        {
+        id       => 'first',
+        text     => _loc('Executed JOBS for %1', $p->{job} ),
+        cls      => 'x-tree-node',
+        leaf     => 0,
+        children     => [@jobs]
+        };
+
+    $c->stash->{json} = [ @ret ];
+    $c->forward('View::JSON');
+    }
+
 
 sub jesFile : Path('/job/log/jesFile') {
     my ( $self, $c ) = @_;
