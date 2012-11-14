@@ -322,7 +322,7 @@ sub jobList : Path('/job/log/jobList') {
                 id       => $lastParent->{text} !~ m{siteok|siteko}i ? $lastParent->{id} : '~' . $lastParent->{id},
                 cls      => 'x-tree-node',
                 icon     => $lastParent->{text} !~ m{siteok|siteko}i ? $jobIcon : $infoIcon,
-                needLoad => 1,
+                needLoad => \1,
                 _id       => $rec->id,
                 leaf     => $lastParent->{text} !~ m{siteok|siteko}i ? 0 : 1,
                 text     => $lastParent->{text},
@@ -392,6 +392,7 @@ sub jobList : Path('/job/log/jobList') {
         id => $lastParent->{text} !~ m{siteok|siteko}i ? $lastParent->{id} : '~' . $lastParent->{id},
         cls      => 'x-tree-node',
         icon     => $lastParent->{text} !~ m{siteok|siteko}i ? $jobIcon : $infoIcon,
+        needLoad => \1,
         leaf     => $lastParent->{text} !~ m{siteok|siteko}i ? 0 : 1,
         text     => $lastParent->{text},
         children => [@files]
