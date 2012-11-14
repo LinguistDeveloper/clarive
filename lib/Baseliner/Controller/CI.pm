@@ -334,15 +334,19 @@ sub store : Local {
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
     }
     elsif( my $role = $p->{role} ) {
-        $role = "Baseliner::Role::CI::$role" if $role !~ /^Baseliner/;
-        for my $class(  packages_that_do( $role ) ) {
+        my @roles;
+        for my $r ( _array $role ) {
+            if( $r !~ /^Baseliner/ ) {
+                $r = $r eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
+            }
+            push @roles, $r;
+        }
+        for my $class(  packages_that_do( @roles ) ) {
             my ($t, @rows) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
             push @data, @rows; 
             $total += $t;
         }
     }
-
-    _debug _dump \@data;
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
     $c->forward('View::JSON');
