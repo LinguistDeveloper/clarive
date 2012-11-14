@@ -116,7 +116,7 @@
     
     tree.on('click', function(n,e) {
        if( n.attributes.needLoad ) {
-          var id = n.attribute['_id'] || n.attributes.id;
+          var id = n.attributes['_id'] || n.attributes.id;
           Ext.Ajax.request({
                 url: '/job/log/jesFile?id=' + id, 
                 params: { id: id }, 
