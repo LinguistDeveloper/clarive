@@ -1180,7 +1180,7 @@ Baseliner.JitTree = function(c){
             'injectInto': el.id,
             height: el.getHeight(),
             //set duration for the animation
-            duration: 800,
+            duration: 500,
             //set animation transition type
             transition: $jit.Trans.Quart.easeInOut,
             //set distance between node and its children
@@ -1323,3 +1323,147 @@ function returnOpposite(hexcolor) {
     var yiq = ((r*299)+(g*587)+(b*114))/1000;
     return (yiq >= 128) ? '#000000' : '#FFFFFF';
 }    
+
+
+Baseliner.JitRGraph = function(c){
+    var self = this;
+    var json = c.json;
+
+    Baseliner.JitRGraph.superclass.constructor.call( this, Ext.apply( {
+        layout: 'fit' ,
+        bodyCfg: { style:{ 'background-color':'#fff' } }
+    }, c ) );
+
+    self.on( 'afterrender', function(cont){
+        setTimeout( function(){
+            do_tree( self.body );
+        }, 500);
+    });
+
+    self._resize = self.resize;
+    self.resize = function(args){
+        if( self._resize ) self._resize( args ); 
+        do_tree( self.body ); 
+    };
+
+    self.images = {}; // indexed by mid
+
+    $jit.RGraph.Plot.NodeTypes.implement({
+       'icon': {
+           'render': function(node, canvas) { 
+               var ctx = canvas.getCtx(); 
+               var pos = node.getPos().getc(); 
+               var img = self.images[ node.id ];
+               if( !img ) { 
+                   img = new Image(); 
+                   img.src = node.data.icon;
+                   self.images[ node.id ] = img;
+               }
+               //img.onload = function(){ 
+               ctx.drawImage(img, pos.x-8, pos.y-16 );
+               //} 
+           },
+           'contains': function(node, pos) { 
+                var npos = node.pos.getc(true), 
+                    dim = node.getData('dim'); 
+                    return this.nodeHelper.square.contains(npos, pos, dim); 
+           } 
+       } 
+    });
+    
+    var do_tree = function( el ) {
+        var rgraph = new $jit.RGraph({
+            //Where to append the visualization
+            injectInto: el.id,
+            //Optional: create a background canvas that plots
+            //concentric circles.
+            background: {
+              CanvasStyles: {
+                strokeStyle: '#bbb'
+              }
+            },
+            //Add navigation capabilities:
+            //zooming by scrolling and panning.
+            Navigation: {
+              enable: true,
+              panning: true,
+              zooming: 20
+            },
+            //Set Node and Edge styles.
+            Node: {
+                type: 'icon',
+                color: '#ddeeff'
+            },
+            
+            Edge: {
+              color: '#C17878',
+              lineWidth:1.5
+            },
+
+            onBeforeCompute: function(node){
+                //Log.write("centering " + node.name + "...");
+                //Add the relation list in the right column.
+                //This list is taken from the data property of each JSON node.
+                //$jit.id('inner-details').innerHTML = node.data.relation;
+            },
+            
+            //Add the name of the node in the correponding label
+            //and a click handler to move the graph.
+            //This method is called once, on label creation.
+            onCreateLabel: function(domElement, node){
+                domElement.innerHTML = node.name;
+                domElement.onclick = function(){
+                    rgraph.onClick(node.id, {
+                        onComplete: function() {
+                            //Log.write("done");
+                        }
+                    });
+                };
+            },
+            //Change some label dom properties.
+            //This method is called each time a label is plotted.
+            onPlaceLabel: function(domElement, node){
+                var style = domElement.style;
+                style.display = '';
+                style.cursor = 'pointer';
+                var d = node.data;
+                var icon = d.icon;
+
+                if (node._depth <= 1) {
+                    style.fontSize = "0.8em";
+                    style.color = "#111";
+                
+                } else if(node._depth > 1){
+                    style.fontSize = "0.7em";
+                    style.color = "#333";
+                
+                } 
+                //else {
+                   // style.display = 'none';
+                //}
+
+                //console.log( node );
+                //style.background = String.format("#fff url('{0}') no-repeat", icon );
+
+                var left = parseInt(style.left);
+                var w = domElement.offsetWidth;
+                style.left = (left - w / 2) + 'px';
+            }
+        });
+        //load JSON data
+        rgraph.loadJSON(json);
+        //trigger small animation
+        /* rgraph.graph.eachNode(function(n) {
+          var pos = n.getPos();
+          pos.setc(-200, -200);
+        }); */
+        rgraph.compute('end');
+        rgraph.fx.animate({
+          modes:['polar'],
+          duration: 500
+        });
+
+    }
+};
+Ext.extend( Baseliner.JitRGraph, Ext.Panel ); 
+
