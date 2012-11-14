@@ -1,5 +1,6 @@
 <%args>
     $theme_dir => ''
+    $loading_mask => 1
 </%args>
 <%perl>
     my $debug = $c->debug ? '-debug' : '';
@@ -15,6 +16,7 @@
 
 
     <!-- Loading masks -->                                            
+% if( $loading_mask ) {
     <div id="bali-loading-mask" style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>
     <div id="bali-loading" style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">
       <center>
@@ -24,6 +26,7 @@
       </div>
       </center>
     </div>
+% }
 
     <!--JQuery -->
     <script type="text/javascript" src="/static/jquery/jquery-1.7.1.min.js"></script>
