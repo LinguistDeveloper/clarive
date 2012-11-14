@@ -117,14 +117,14 @@
     tree.on('click', function(n,e) {
        if( n.attributes.needLoad ) {
           var id = n.attributes.id;
-      Ext.Ajax.request({
+          Ext.Ajax.request({
                 url: '/job/log/jesFile?id=' + n.attributes.id,
-        params: { id: id }, 
-        success: function(xhr) {
-        var json = Ext.util.JSON.decode( xhr.responseText );
-                n.attributes.code=json.data;
-                n.attributes.needLoad=false;
-        code.setValue( json.data );
+                params: { id: id }, 
+                success: function(xhr) {
+                    var json = Ext.util.JSON.decode( xhr.responseText );
+                    n.attributes.code=json.data;
+                    n.attributes.needLoad=false;
+                    code.setValue( json.data );
                 }
           });
     } else {
