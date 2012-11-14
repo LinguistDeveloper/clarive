@@ -1367,24 +1367,24 @@ Baseliner.KanbanColumn = Ext.extend(Ext.Panel, {
 });
 Ext.reg('kanbancolumn', Baseliner.KanbanColumn);
 
-Baseliner.kanban = function( args ){
-    var store_topics = args.store;
-    var topics = [];
+Baseliner.kanban = function(c){
+    var store_topics = c.store;
+    c.background = c.background || "#555 url('/static/images/bg/cork.jpg')";
     var statuses_hash = {};
-    store_topics.each( function(rec) {
-        topics.push( rec.data.topic_mid );
-    });
     var status_btn = new Ext.Button({ text:_('Statuses'), menu:[] });
     var tab_btn = new Ext.Button({ 
-        icon:'/static/images/icons/tab.png', iconCls:'x-btn-icon', handler: function(){
-        kanban.in_tab = true;
-        var id = Baseliner.addNewTabItem( kanban, 'Kanban', { tab_icon: '/static/images/icons/kanban.png' } );
-        Baseliner.viewport.remove( kanban, false );
-        Baseliner.main.getEl().show();
-        Baseliner.viewport.getLayout().setActiveItem( 0 );
-    }});
+        icon:'/static/images/icons/tab.png', iconCls:'x-btn-icon',
+        handler: function(){
+            kanban.in_tab = true;
+            var id = Baseliner.addNewTabItem( kanban, 'Kanban', { tab_icon: '/static/images/icons/kanban.png' } );
+            Baseliner.viewport.remove( kanban, false );
+            Baseliner.main.getEl().show();
+            Baseliner.viewport.getLayout().setActiveItem( 0 );
+            if( c.on_tab ) c.on_tab();
+        }
+    });
 
-    var kanban =  new Ext.ux.Portal({
+    kanban =  new Ext.ux.Portal({
         margins:'5 5 5 0',
         height: 400, width: 800,
         status_btn: status_btn,
@@ -1405,7 +1405,7 @@ Baseliner.kanban = function( args ){
         ],
         bodyCfg: { 
             style: {
-             'background': "#555 url('/static/images/bg/cork.jpg')", 
+             'background': c.background, 
              'background-repeat': 'repeat'
             }
         },
@@ -1417,11 +1417,14 @@ Baseliner.kanban = function( args ){
                 var portlet = e.panel;
                 var mid =  portlet.mid;
                 var id_status_current = portlet.initialConfig.id_status;
-                var wk = kanban.workflow[ mid ];
                 var dests = {};
-                for( var i=0; i<wk.length; i++ ) {
-                    if( wk[i].id_status_from == id_status_current ) {
-                        dests[ wk[i].id_status_to ] = true;
+                // reconfigure workflow
+                var wk = kanban.workflow[ mid ];
+                if( wk ) {
+                    for( var i=0; i<wk.length; i++ ) {
+                        if( wk[i].id_status_from == id_status_current ) {
+                            dests[ wk[i].id_status_to ] = true;
+                        }
                     }
                 }
                 // mask columns
@@ -1487,169 +1490,216 @@ Baseliner.kanban = function( args ){
         });
     };
 
+    kanban.load_workflow = function(topics){
+        Baseliner.ajaxEval( '/topic/kanban_status', { topics: topics }, function(res){
+            if( res.success ) {
+                //console.log( res.workflow );
+                var statuses = res.statuses;
+                var workflow = res.workflow;
+                var col_num = statuses.length;
+                var col_width = 1 / col_num;
+                var btns = [];
+                kanban.workflow = workflow;
 
-    Baseliner.ajaxEval( '/topic/kanban_status', { topics: topics }, function(res){
-        if( res.success ) {
-            //console.log( res.workflow );
-            var statuses = res.statuses;
-            var workflow = res.workflow;
-            kanban.workflow = workflow;
-            var col_num = statuses.length;
-            var col_width = 1 / col_num;
-            var btns = [];
-
-            var add_column = function( id_status, name ) {
-               var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + name + '</span>';
-               // create columns
-               var col_obj = new Baseliner.KanbanColumn({
-                  xtype: 'kanbancolumn',
-                  title: status_title,
-                  columnWidth: col_width,
-                  id_status: id_status
-               });
-               kanban.add( col_obj );
-            };
-            for( var i=0; i<col_num; i++ ) {
-                add_column( statuses[i].id, statuses[i].name );
-                statuses_hash[ statuses[i].name ] = i;  // store colnum for status
-            }
-
-            for( var k=0; k< statuses.length; k++ ) {
-                status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler: check_column });
-            }
-            // method to reconfigure all columnwidths
-            kanban.reconfigure_columns = function(){
-                var cols = kanban.items.items;
-                var col_num = 0;
-                for( var i = 0; i<cols.length; i++ ) {
-                    if( ! cols[i].hidden ) col_num++;
+                var add_column = function( id_status, name ) {
+                   var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + name + '</span>';
+                   // create columns
+                   var col_obj = new Baseliner.KanbanColumn({
+                      xtype: 'kanbancolumn',
+                      title: status_title,
+                      columnWidth: col_width,
+                      id_status: id_status
+                   });
+                   kanban.add( col_obj );
+                };
+                for( var i=0; i<col_num; i++ ) {
+                    add_column( statuses[i].id, statuses[i].name );
+                    statuses_hash[ statuses[i].name ] = i;  // store colnum for status
                 }
-                var col_width = 1/col_num;
-                for( var i = 0; i<cols.length; i++ ) {
-                    cols[i].columnWidth = col_width;
-                };
-                kanban.doLayout();
-            };
-            kanban.load_from_store = function( store, id_status ){
-                store.each( function(rec) {
-                    if( id_status != undefined && rec.data.category_status_id != id_status ) return;
-                    var t = String.format('{0} #{1}', rec.data.category_name, rec.data.topic_mid );
-                    var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + rec.data.topic_mid + '</span></div>';
-                    var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, rec.data.title);
-                    //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
-                    var col = statuses_hash[ rec.data.category_status_name ];
-                    var comp = new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true, mid: rec.data.topic_mid });
-                    comp.on('afterrender', function(){ 
-                        this.ownerCt.body.on('dblclick',function(){ 
-                            var mid = rec.data.topic_mid;
-                            var title = rec.data.topic_name;
-                            var params = { topic_mid: mid, title: title };
-                            if( kanban.in_tab ) {
-                                Baseliner.add_tabcomp( '/topic/view?topic_mid=' + mid, title, params );
-                            } else {
-                                Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
-                                    var win = new Ext.Window({
-                                        layout: 'fit', 
-                                        modal: true,
-                                        autoScroll: true,
-                                        style: { overflow: 'hide' },
-                                        border: false,
-                                        title: title,
-                                        height: 600, width: 800, 
-                                        maximizable: true,
-                                        items: topic_panel
-                                    });
-                                    //topic_panel.on('afterrender', function(){ topic_panel.header.hide() } );
-                                    topic_panel.title = undefined;
-                                    win.show();
-                                });
-                            }
-                        });
-                    });
-                    add_portlet({ 
-                      title: t,
-                      comp: comp, 
-                      mid: rec.data.topic_mid,
-                      id_status: rec.data.category_status_id,
-                      portlet_type: 'comp',
-                      col: col,
-                      url_portlet: 'http://xxxx', url_max: 'http://xxxx'
-                    });
-                });
-            };
-            // add portlet to column
-            var add_portlet = function( params ) {
-                    var col = params.col || 0;
-                    var comp = params.comp;
-                    comp.height = comp.height || 350;
-                    var title = comp.title || params.title || 'Portlet';
-                    //comp.collapsible = true;
-                    var cols = kanban.items.items;
-                    var column_obj = kanban.findById( cols[col].id );
-                    var portlet = {
-                        //collapsible: true,
-                        title: title,
-                        height: 50,
-                        mid: params.mid,
-                        id_status: params.id_status,
-                        //headerCfg: { style: 'background: #d44' },
-                        portlet_type: params.portlet_type,
-                        header: false,
-                        footer: false,
-                        footerCfg: { hide: true },
-                        //url_portlet: params.url_portlet,
-                        url_max: params.url_max,
-                        //tools: Baseliner.portalTools,  // tools are visible when header: true
-                        //collapsed: true,
-                        autoHeight: true,
-                        items: comp
-                    };
-                    var portlet_obj = column_obj.add( portlet );
-                    return portlet_obj;
-                    //column_obj.doLayout();
-            };
 
-            kanban.on('afterrender', function(cmp){
-                kanban.load_from_store( store_topics );
-                kanban.doLayout();
-                
-                // show/hide tools for the column 
-                var cols = kanban.findByType( 'kanbancolumn' );
-                for( var i = 0; i<cols.length; i++ ) {
-                    cols[i].header.on( 'mouseover', function(ev,obj){
-                        var col_obj = Ext.getCmp( obj.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
-                        if( col_obj != undefined ) {
-                            var t = col_obj.getTool('close');
-                            var w = col_obj.el.dom.offsetWidth;
-                            t.setStyle('display','block');
-                            t.setStyle('position','absolute');
-                            t.setStyle('margin-left', w-30 );
-                        }
-                    });
-                    cols[i].header.on( 'mouseout', function(ev,obj){
-                        var col_obj = Ext.getCmp( obj.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
-                        if( col_obj != undefined ) col_obj.getTool('close').hide();
-                    });
-                };
+                for( var k=0; k< statuses.length; k++ ) {
+                    status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler: check_column });
+                }
+
+                kanban.render_me();
+                if( c.on_ready ) c.on_ready();
+            } else {
+                Ext.Msg.alert( _('Error'), res.msg );
+            }
+        });
+    };
+
+    // add portlet to column
+    kanban.add_portlet = function( params ) {
+        var col = params.col || 0;
+        var comp = params.comp;
+        comp.height = comp.height || 350;
+        var title = comp.title || params.title || 'Portlet';
+        //comp.collapsible = true;
+        var cols = kanban.items.items;
+        var column_obj = kanban.findById( cols[col].id );
+        var portlet = {
+            //collapsible: true,
+            title: title,
+            height: 50,
+            mid: params.mid,
+            id_status: params.id_status,
+            //headerCfg: { style: 'background: #d44' },
+            portlet_type: params.portlet_type,
+            header: false,
+            footer: false,
+            footerCfg: { hide: true },
+            //url_portlet: params.url_portlet,
+            url_max: params.url_max,
+            //tools: Baseliner.portalTools,  // tools are visible when header: true
+            //collapsed: true,
+            autoHeight: true,
+            items: comp
+        };
+        var portlet_obj = column_obj.add( portlet );
+        return portlet_obj;
+        //column_obj.doLayout();
+    };
+
+    // method to reconfigure all columnwidths
+    kanban.reconfigure_columns = function(){
+        var cols = kanban.items.items;
+        var col_num = 0;
+        for( var i = 0; i<cols.length; i++ ) {
+            if( ! cols[i].hidden ) col_num++;
+        }
+        var col_width = 1/col_num;
+        for( var i = 0; i<cols.length; i++ ) {
+            cols[i].columnWidth = col_width;
+        };
+        kanban.doLayout();
+    };
+
+    kanban.load_topics = function( store, id_status ){
+        store.each( function(rec) {
+            if( id_status != undefined && rec.data.category_status_id != id_status ) return;
+            var t = String.format('{0} #{1}', rec.data.category_name, rec.data.topic_mid );
+            var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + rec.data.topic_mid + '</span></div>';
+            var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, rec.data.title);
+            //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
+            var col = statuses_hash[ rec.data.category_status_name ];
+            var comp = new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true, mid: rec.data.topic_mid });
+            comp.on('afterrender', function(){ 
+                this.ownerCt.body.on('dblclick',function(){ 
+                    var mid = rec.data.topic_mid;
+                    var title = rec.data.topic_name;
+                    var params = { topic_mid: mid, title: title };
+                    if( kanban.in_tab ) {
+                        Baseliner.add_tabcomp( '/topic/view?topic_mid=' + mid, title, params );
+                    } else {
+                        Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
+                            var win = new Ext.Window({
+                                layout: 'fit', 
+                                modal: true,
+                                autoScroll: true,
+                                style: { overflow: 'hide' },
+                                border: false,
+                                title: title,
+                                height: 600, width: 800, 
+                                maximizable: true,
+                                items: topic_panel
+                            });
+                            //topic_panel.on('afterrender', function(){ topic_panel.header.hide() } );
+                            topic_panel.title = undefined;
+                            win.show();
+                        });
+                    }
+                });
             });
+            kanban.add_portlet({ 
+              title: t,
+              comp: comp, 
+              mid: rec.data.topic_mid,
+              id_status: rec.data.category_status_id,
+              portlet_type: 'comp',
+              col: col,
+              url_portlet: 'http://xxxx', url_max: 'http://xxxx'
+            });
+        });
+    };
+
+    kanban.render_me = function(){
+        kanban.load_topics( store_topics );
+        kanban.doLayout();
+        
+        // show/hide tools for the column 
+        var cols = kanban.findByType( 'kanbancolumn' );
+        for( var i = 0; i<cols.length; i++ ) {
+            cols[i].header.on( 'mouseover', function(ev,obj){
+                var col_obj = Ext.getCmp( obj.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
+                if( col_obj != undefined ) {
+                    var t = col_obj.getTool('close');
+                    var w = col_obj.el.dom.offsetWidth;
+                    t.setStyle('display','block');
+                    t.setStyle('position','absolute');
+                    t.setStyle('margin-left', w-30 );
+                }
+            });
+            cols[i].header.on( 'mouseout', function(ev,obj){
+                var col_obj = Ext.getCmp( obj.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
+                if( col_obj != undefined ) col_obj.getTool('close').hide();
+            });
+        };
+    }
+
+    kanban.on('afterrender', function(cmp){
+        var topics = [];
+        // load data
+        if( ! store_topics ) {
+            if( Ext.isArray( c.topics ) && c.topics.length > 0 ) {
+                // create my own store
+                store_topics = new Baseliner.Topic.StoreList({
+                    baseParams: { start: 0, limit: 10, query_id: c.topics }   // query_id
+                });
+                store_topics.on('load', function(){
+                    store_topics.each( function(rec) {
+                        topics.push( rec.data.topic_mid );
+                    });
+                    kanban.load_workflow( topics );
+                });
+                store_topics.load();
+            } else {
+                // no topics to show
+            }
+        }
+        else {
+            store_topics.each( function(rec) {
+                topics.push( rec.data.topic_mid );
+            });
+            kanban.load_workflow( topics );
+        }
+    });
+
+    return kanban;
+};
+
+Baseliner.kanban_from_store = function( args ){
+    var kanban = Baseliner.kanban({
+        store: args.store,
+        on_ready: function(){
             //Baseliner.viewport.add( kanban );
             /* Baseliner.main.getEl().fadeOut({ duration: .2, easing: 'easeOut', remove: false, callback: function() {
                     Baseliner.viewport.add( kanban );
                     Baseliner.viewport.getLayout().setActiveItem( 1 );
                 }
             }); */
-            Baseliner.viewport.add( kanban );
-            Baseliner.viewport.getLayout().setActiveItem( 1 );
-        } else {
-            Ext.Msg.alert( _('Error'), res.msg );
+
+            // Baseliner.viewport.doLayout() ???
         }
     });
+    Baseliner.viewport.add( kanban );
+    Baseliner.viewport.getLayout().setActiveItem( 1 );
 };
 
 /*
