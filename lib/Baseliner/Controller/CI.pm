@@ -569,5 +569,44 @@ sub url : Local {
     $c->forward('View::JSON');
 }
 
+sub json_tree : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $mid = delete $p->{mid};
+    my $direction = delete $p->{direction} || 'related';
+    $c->stash->{json} = try {
+        my $ci = _ci( $mid );
+        my @rels = $ci->$direction( depth=>2, mode=>'tree', %$p );
+        my $recurse;
+        $recurse = sub {
+            my $chi = shift;
+            +{
+                id       => $chi->{mid},
+                name     => $chi->{name},
+                data => {
+                    '$type' => 'icon',
+                    icon     => $chi->{_ci}{ci_icon},
+                },
+                #data     => { '$type' => 'arrow' },
+                children => [ map { $recurse->($_) } _array( $chi->{ci_rel} ) ]
+            }
+        };
+        my @data = map { $recurse->( $_ ) } @rels; 
+        my $d = {
+            id => $mid, 
+            name => $ci->name, 
+            data => {
+                icon => $ci->icon
+            },
+            children => \@data,
+        };
+        _debug $d;
+        { success=>\1, data=>$d };
+    } catch {
+        { success=>\0, msg=>shift() };
+    };
+    $c->forward('View::JSON');
+}
+
 1;
 
