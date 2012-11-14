@@ -35,7 +35,7 @@
             panel.doLayout();
             Baseliner.ajaxEval( '/search/query', { provider: provider.pkg, query: query },
                 function(res_query, scope ) {
-                    console.log( res_query );
+                    //console.log( res_query );
                     var prov_panel = scope[0];
                     var prov_wait = scope[1];
                     var provider = scope[3];

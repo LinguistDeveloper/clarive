@@ -1445,8 +1445,8 @@
 		
 		category_fields_grid.on("rowdblclick", function(grid, rowIndex, e ) {
 			var sel = grid.getStore().getAt(rowIndex);
-			console.log(sel.data.params);
-			console.log(sel.data.meta);
+			//console.log(sel.data.params);
+			//console.log(sel.data.meta);
 			var tree = new Baseliner.DataEditor({
 				data: sel.data.params,
 				metadata: sel.data.meta
@@ -1456,7 +1456,7 @@
 			var w = new Ext.Window({ layout:'fit',width:400, height:400, items: tree });
 			w.show();
 			tree.on('destroy', function(){
-			   console.log( tree.data );
+			   //console.log( tree.data );
 			   sel.data.params = tree.data;
 			   w.close();
 			});
