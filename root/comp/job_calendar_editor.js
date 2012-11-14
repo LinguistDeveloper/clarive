@@ -1,6 +1,6 @@
-<%init>
+<%perl>
     my $cal = $c->stash->{calendar};
-</%init>
+</%perl>
 (function(){
     var id = Ext.id();
     var id2 = 'container-' + id;
@@ -8,6 +8,8 @@
        fields: ['value', 'name'], 
        data : <% js_dumper( $c->stash->{baselines} ) %>
     }); 
+
+    var id_cal = '<% $c->stash->{id_cal} %>' ;
 
     var calendar_type_help = '<b>Ventanas de pase:</b><br>';    
     calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
@@ -37,45 +39,80 @@
                         handler: function(){ 
                             var ff = cal_form.getForm();
                             ff.submit({
-                                success: function(form, action) { Baseliner.message(_('Calendar'), action.result.msg); },
+                                params: { id_cal: id_cal },
+                                success: function(form, action) { 
+                                    Baseliner.message(_('Calendar'), action.result.msg);
+                                    if( !id_cal || id_cal == '' || id_cal == -1  ) {
+                                        id_cal = action.result.id_cal;
+                                        cal_slots.load({ url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, scripts: true  } });
+                                        cal_windows.show();
+                                    }
+                                },
+                                failure: function(form, action) { Baseliner.message(_('Failure'), action.result.msg); }
+                            });
+                        } 
+                    },
+                    {  text: _loc('Delete'),
+                        handler: function(){ 
+                            var ff = cal_form.getForm();
+                            ff.submit({
+                                params: { action: 'delete', id_cal: id_cal },
+                                success: function(form, action) { 
+                                    Baseliner.message(_('Calendar'), action.result.msg);
+                                    id_cal = '';
+                                    cal_windows.hide();
+                                },
                                 failure: function(form, action) { Baseliner.message(_('Failure'), action.result.msg); }
                             });
                         } 
                     }                   
                 ],
                 items: [
-                    {  xtype: 'hidden', name: 'id_cal', value: '<% $cal->id %>' },
-                    {  xtype: 'textfield',
-                        fieldLabel: _loc('Name'),
-                        name: 'name',
-                        value: '<% $cal->name %>'
-                    },
-                    {  xtype: 'textfield',
-                        fieldLabel: _loc('Priority'),
-                        name: 'seq',
-                        value: '<% $cal->seq %>'
-                    },
-                    {  xtype: 'textarea',
-                        fieldLabel: _('Description'),
-                        name: 'description',
-                        value: '<% $cal->description %>'
-                    },
-                    Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Namespace'), value: '<% $cal->ns %>', emptyText: _('Global')  }),
-                    {  xtype: 'combo', 
-                               name: 'bl', 
-                               hiddenName: 'bl',
-                               fieldLabel: _('Baseline'),
-                               mode: 'local', 
-                               editable: false,
-                               forceSelection: true,
-                               triggerAction: 'all',
-                               store: bl_store, 
-                               valueField: 'value',
-                               value: '<% $cal->bl  %>',
-                               displayField:'name', 
-                               allowBlank: false
-                    }
+                    { layout:'column', anchor:'90%',  items:[
+                        { layout: 'form', columnWidth: 0.5, defaults:{ anchor:'90%' },items: [
+                            {  xtype: 'textfield',
+                                fieldLabel: _loc('Name'),
+                                name: 'name',
+                                value: '<% $cal->{name} %>'
+                            },
+                            {  xtype: 'textfield',
+                                fieldLabel: _loc('Priority'),
+                                name: 'seq',
+                                value: '<% $cal->{seq} %>'
+                            },
+                            {  xtype: 'textarea',
+                                fieldLabel: _('Description'),
+                                name: 'description',
+                                value: '<% $cal->{description} %>'
+                            } ] },
+                        { layout: 'form', columnWidth: 0.5, items: [
+                            Baseliner.ci_box({ name:'ns', role:['Infrastructure','Project'] , fieldLabel:_('Namespace'), value: '<% $cal->{ns} %>', emptyText: _('Global')  }),
+                            {  xtype: 'combo', 
+                                       name: 'bl', 
+                                       hiddenName: 'bl',
+                                       fieldLabel: _('Baseline'),
+                                       mode: 'local', 
+                                       editable: false,
+                                       forceSelection: true,
+                                       triggerAction: 'all',
+                                       store: bl_store, 
+                                       valueField: 'value',
+                                       value: '<% $cal->{bl}  %>',
+                                       displayField:'name', 
+                                       allowBlank: false
+                            }
+                       ]}
+                    ]}
                 ]
+    });
+
+    var cal_slots = new Ext.Panel({       
+        id: id,
+        region:'west',
+        width: 720,             
+        autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, scripts: true  } },
+        split: true,
+        frame: true
     });
 
     var _CurrentDate = new Date(<% $c->stash->{fecha_anyo} %>,<% $c->stash->{fecha_mes} - 1 %>, <% $c->stash->{fecha_dia} %>);
@@ -110,33 +147,15 @@
         picker.setSelectedDates(_dates);        
     }
     
-    var panel = new Ext.Panel({
-        layout: 'fit',
-        id: id2,
-        style: 'padding: 5px',
-        autoScroll: true,
-        items: [
-            cal_form,
-            {  
-                layout: 'border',
-                title: _('Calendar Windows'),
-                style: 'margin-top: 20px',
-                height: 450,
-                frame: true,
-/*              items: [{  xtype: 'panel', id: id, layout: 'fit',
-                    autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  }
-                }]
-*/              
+    var cal_windows = new Ext.Panel({  
+        layout: 'border',
+        title: _('Calendar Windows'),
+        hidden: ( id_cal == -1 ? true : false ),   // don't show if its a CI calendar not created yet
+        style: 'margin-top: 20px',
+        height: 450,
+        frame: true,
         items: [    
-            {       
-                xtype: 'panel',
-                id: id,
-                region:'west',
-                width: 720,             
-                autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>' }, scripts: true  },
-                split: true,
-                frame: true
-            },
+            cal_slots,
             {           
                 region:'center',
                 frame: true,
@@ -168,12 +187,12 @@
                             //_selectWeek(this, this.currentDateRef);
                             _setSelectedWeek(picker, t);
                             var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
-                            Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>', date: fecha}});
+                            Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, date: fecha}});
                         },
                         'afterweekclick':function(picker,t){
                             _setSelectedWeek(picker, t);    
                             var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
-                            Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>', date: fecha}});
+                            Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, date: fecha}});
                         }                       
                         
                     } 
@@ -182,8 +201,14 @@
             }
         ]
                 
-            }
-        ],
+    });
+
+    var panel = new Ext.Panel({
+        layout: 'fit',
+        id: id2,
+        style: 'padding: 5px',
+        autoScroll: true,
+        items: [ cal_form, cal_windows ],
         destroy: function()
         {
             //Esta linea es muy importante, debido a un bug en Ext el autoDestroy no funciona correctamente en el TabPanel
@@ -194,4 +219,6 @@
     });
     return panel;
 })
+
+
 

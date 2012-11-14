@@ -26,6 +26,25 @@
                });
             }
     };
+
+    var calendar;
+    var show_calendar = function(){
+        if( btn_form_calendar.pressed ) {
+            if( ! calendar ) {
+                var cal = { id_cal: -1, bl: params.rec.bl || '*', ns: mid, name: params.rec.name };
+                Baseliner.ajaxEval( '/job/calendar', cal, function(comp){
+                    calendar = comp;
+                    cardpanel.add( calendar );
+                    cardpanel.getLayout().setActiveItem( 1 );
+                });
+            } else {
+                cardpanel.getLayout().setActiveItem( 1 );
+            }
+        } else {
+            cardpanel.getLayout().setActiveItem( 0 );
+        }
+    }
+    
     var btn_form_ok = new Ext.Button({
         text: _('Close'),
         icon:'/static/images/icons/left.png',
@@ -42,9 +61,17 @@
         handler: function() { submit_form( false ) }
     });
 
+    var btn_form_calendar = new Ext.Button({
+        text: _('Calendar'),
+        icon:'/static/images/icons/calendar.png',
+        cls: 'x-btn-icon-text',
+        enableToggle: true, pressed: false, toggleGroup: 'ci-editor-panel',
+        handler: show_calendar
+    });
+
     var tb = new Ext.Toolbar({
         items: [
-            btn_form_ok, btn_form_save
+            btn_form_ok, btn_form_save, '-', btn_form_calendar
             //btn_form_reset
         ]
     });
@@ -64,7 +91,6 @@
     var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 };
     var form = new Ext.FormPanel({
         url:'/ci/update',
-        tbar: tb,
         defaults: {
            allowBlank: false,
            anchor: '90%' 
@@ -119,6 +145,12 @@
             if( s ) s.reload();
         }
     });
-    return form;
+    var cardpanel = new Ext.Panel({
+       layout: 'card',
+       activeItem: 0,
+       tbar: tb,
+       items: [ form ]
+    });
+    return cardpanel;
 })
 
