@@ -695,7 +695,7 @@ sub get_conf_fields : Local {
                             meta => {
                                 bd_field    => { read_only => \0 },
                                 field_order => { read_only => \0 },
-                                filter      => { read_only => \1 },
+                                filter      => { read_only => \0 },
                                 get_method  => { read_only => \1 },
                                 set_method  => { read_only => \1 },
                                 html        => { read_only => \0 },
