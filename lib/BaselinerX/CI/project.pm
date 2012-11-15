@@ -39,8 +39,6 @@ around load => sub {
     #$data->{repository} = [ map { values %$_ }  DB->BaliMasterRel->search( { from_mid => $self->mid, rel_type => 'project_repository' }, { select=>'to_mid'} )->hashref->all ];
     $data->{data} = _load( $data->{data} ) if length $data->{data};
 
-    _error $data;
-
     return $data;
 };
 
