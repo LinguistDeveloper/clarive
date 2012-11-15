@@ -1433,7 +1433,7 @@ Baseliner.JitRGraph = function(c){
                     style.fontSize = "0.8em";
                     style.color = "#111";
                 
-                } else if(node._depth > 1){
+                } else {
                     style.fontSize = "0.7em";
                     style.color = "#333";
                 

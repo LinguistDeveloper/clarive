@@ -575,14 +575,16 @@ sub json_tree : Local {
     my $p = $c->req->params;
     my $mid = delete $p->{mid};
     my $direction = delete $p->{direction} || 'related';
+    my $k = 1;
     $c->stash->{json} = try {
         my $ci = _ci( $mid );
         my @rels = $ci->$direction( depth=>2, mode=>'tree', %$p );
         my $recurse;
         $recurse = sub {
             my $chi = shift;
+            $k++;
             +{
-                id       => $chi->{mid},
+                id       => $k . '-' . $chi->{mid},
                 name     => $chi->{name},
                 data => {
                     '$type' => 'icon',
