@@ -1294,6 +1294,14 @@ sub kanban_status : Local {
     $c->forward('View::JSON');
 }
 
+sub children : Local {
+    my ($self, $c) = @_;
+    my $mid = $c->req->params->{mid};
+    my @chi = map { $_->{to_mid} } DB->BaliMasterRel->search({ from_mid => $mid, rel_type=>'topic_topic' })->hashref->all; 
+    $c->stash->{json} = { success=>\1, msg=>'', children=>\@chi };
+    $c->forward('View::JSON');
+}
+
 sub report_data_replace {
     my ($self, $data, $show_desc ) = @_;
     my @mids;

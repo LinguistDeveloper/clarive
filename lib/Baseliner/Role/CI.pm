@@ -186,7 +186,7 @@ sub load {
         $data = { %$data, %{ _load( $row->yaml ) || {} } };
     }
     elsif( $storage eq 'fields' ) {
-       # TODO  
+       # TODO a vertical table to store fields 
     }
     else {  # dbic result source
         my $rs = Baseliner->model("Baseliner::$storage");

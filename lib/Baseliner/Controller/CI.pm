@@ -163,6 +163,7 @@ sub form_for_collection {
     return $component_exists ? $ci_form : '';
 }
 
+# adjacency flat tree
 sub tree_objects {
     my ($self, %p)=@_;
     my $class = $p{class};

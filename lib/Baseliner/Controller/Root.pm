@@ -342,8 +342,8 @@ sub end : ActionClass('RenderView') {
     elsif( $c->req->path =~ /\.js$/ ) {
         $c->response->content_type('text/javascript; charset=utf-8');
     }
-    # send params to mason 
-    $c->stash->{$_}=$c->request->parameters->{$_} 
+    # send params to mason, unless already on stash with the same name
+    $c->stash->{$_} //= $c->request->parameters->{$_} 
         foreach( keys %{ $c->req->parameters || {} });
 }
 
