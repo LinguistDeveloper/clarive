@@ -159,7 +159,7 @@
     };
 
     var show_graph = function(){
-        Baseliner.ajaxEval( '/ci/json_tree', { mid: params.topic_mid, does_any:['Project', 'Infrastructure'], direction:'children', depth:4 }, function(res){
+        Baseliner.ajaxEval( '/ci/json_tree', { mid: params.topic_mid, does_any:['Project', 'Infrastructure','Topic'], direction:'children', depth:4 }, function(res){
             if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
             var rg = new Baseliner.JitRGraph({ json: res.data });
             cardpanel.add( rg );
