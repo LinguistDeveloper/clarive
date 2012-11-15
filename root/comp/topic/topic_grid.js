@@ -379,7 +379,7 @@
         pressed: false,
         handler: function(){
             // kanban fullscreen 
-            Baseliner.kanban({ store: store_topics });
+            Baseliner.kanban_from_store({ store: store_topics });
         }
     }); 
     
