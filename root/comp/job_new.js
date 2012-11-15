@@ -364,7 +364,7 @@
     };
 
     var button_cis = new Ext.Button({
-        text: _('Relationships'),
+        text: _('Dependencies'),
         disabled: true,
         icon:'/static/images/ci/ci.png',
         cls: 'x-btn-text-icon',

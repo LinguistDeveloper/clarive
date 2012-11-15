@@ -18,6 +18,9 @@ msgstr "Ventanas de Pase"
 msgid "Repositories"
 msgstr "Repositorios"
 
+msgid "Dependencies"
+msgstr "Dependencias"
+
 msgid "Relationship"
 msgstr "Relación"
 
