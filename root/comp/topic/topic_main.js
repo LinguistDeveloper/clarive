@@ -142,6 +142,31 @@
         cardpanel.getLayout().setActiveItem( 1 );
     };
 
+
+    var kanban;
+    var show_kanban = function(){
+        Baseliner.ajaxEval('/topic/children', { mid: params.topic_mid }, function(res){
+            var topics = res.children;
+            kanban = Baseliner.kanban({ topics: topics, background: '#888',
+                on_tab: function(){
+                    cardpanel.getLayout().setActiveItem( 0 );
+                    btn_detail.toggle( true );
+                }
+            });
+            cardpanel.add( kanban );
+            cardpanel.getLayout().setActiveItem( kanban );
+        });
+    };
+
+    var show_graph = function(){
+        Baseliner.ajaxEval( '/ci/json_tree', { mid: params.topic_mid, does_any:['Project', 'Infrastructure'], direction:'children', depth:4 }, function(res){
+            if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
+            var rg = new Baseliner.JitRGraph({ json: res.data });
+            cardpanel.add( rg );
+            cardpanel.getLayout().setActiveItem( rg );
+        });
+    };
+
     Baseliner.show_topic = function(topic_mid, title) {
         Baseliner.add_tabcomp('/topic/view', title , { topic_mid: topic_mid, title: title } );
     };
@@ -265,6 +290,18 @@
         enableToggle: true, handler: show_form, allowDepress: false, toggleGroup: 'form'
     });
         
+    var btn_kanban = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/kanban.png',
+        cls: 'x-btn-icon',
+        enableToggle: true, handler: show_kanban, allowDepress: false, toggleGroup: 'form'
+    });
+        
+    var btn_graph = new Ext.Toolbar.Button({
+        icon:'/static/images/ci/ci-grey.png',
+        cls: 'x-btn-icon',
+        enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: 'form'
+    });
+        
     var tb = new Ext.Toolbar({
         isFormField: true,
         items: [
@@ -272,7 +309,10 @@
             btn_edit,
             '-',
             btn_comment,
-            btn_form_ok
+            btn_form_ok,
+            '->',
+            btn_kanban,
+            btn_graph
         ]
     });
     var cardpanel = new Ext.Panel({
