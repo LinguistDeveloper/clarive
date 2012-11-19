@@ -88,7 +88,7 @@ params:
         value: data ? data.name_priority : '',
         mode: 'local',
         forceSelection: true,
-        emptyText: 'select a priority',
+        emptyText: _('select a priority'),
         triggerAction: 'all',
         fieldLabel: _('Priority'),
         name: 'priority',

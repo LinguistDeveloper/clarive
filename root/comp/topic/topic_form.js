@@ -4,25 +4,17 @@
     if( data == undefined ) data = {};
     var on_submit_events = [];
     
-    var main_fieldset = new Ext.form.FieldSet({
-        collapsible: false,
-        //border: false,
-        style: {
-            padding: 15  
-        },
-        //title: 'asd',
-        //autoHeight : true,
+    var form_topic = new Ext.FormPanel({
+        url:'/topic/update',
+        //frame: true,
+        // style: { padding: 15  },
+        bodyStyle:'padding: 15px 15px 15px 15px',
+        border: false,
+        //style: { padding: '15px' },
+        defaults: { anchor:'70%'},
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]
-    });
-
-    var form_topic = new Ext.FormPanel({
-        url:'/topic/update',
-        frame: true,
-        bodyStyle:'padding: 15px 15px 15px 15px',
-        defaults: { anchor:'100%'},
-        items: main_fieldset
     });
 
     form_topic.on_submit = function(){
@@ -48,9 +40,9 @@
                 );
                 if( comp.items ) {
                     if( comp.on_submit ) on_submit_events.push( comp.on_submit );
-                    main_fieldset.add (comp.items );
+                    form_topic.add (comp.items );
                 } else {
-                    main_fieldset.add (comp );
+                    form_topic.add (comp );
                 }
             }
         }  // for fields

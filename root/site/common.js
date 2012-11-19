@@ -1360,7 +1360,7 @@ Baseliner.JitRGraph = function(c){
                    self.images[ node.id ] = img;
                }
                //img.onload = function(){ 
-               ctx.drawImage(img, pos.x-8, pos.y-16 );
+               ctx.drawImage(img, pos.x-8, pos.y-8 );
                //} 
            },
            'contains': function(node, pos) { 
@@ -1436,7 +1436,7 @@ Baseliner.JitRGraph = function(c){
                 } else {
                     style.fontSize = "0.7em";
                     style.color = "#333";
-                
+                    //style['margin-top'] = '20px'; 
                 } 
                 //else {
                    // style.display = 'none';
@@ -1448,6 +1448,10 @@ Baseliner.JitRGraph = function(c){
                 var left = parseInt(style.left);
                 var w = domElement.offsetWidth;
                 style.left = (left - w / 2) + 'px';
+
+                var top = parseInt(style.top);
+                var h = domElement.offsetHeight;
+                style.top = (top - h / 2 + 15)  + 'px';
             }
         });
         //load JSON data
@@ -1467,3 +1471,17 @@ Baseliner.JitRGraph = function(c){
 };
 Ext.extend( Baseliner.JitRGraph, Ext.Panel ); 
 
+Baseliner.loading_panel = function(){
+    return new Ext.Container({
+        html: [ 
+            '<div id="bali-loading-mask" style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>',
+            '<div id="bali-loading" style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">',
+            '<center>',
+            '<img style="" src="/static/images/loading.gif" />',
+            '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
+            _('Loading'),
+            '</div>',
+            '</center>',
+            '</div>' ].join('')
+    });
+}
