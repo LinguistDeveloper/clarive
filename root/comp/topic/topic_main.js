@@ -158,10 +158,12 @@
         });
     };
 
+    var rg;
     var show_graph = function(){
+        if( rg ) { rg.destroy(); rg=null }
         Baseliner.ajaxEval( '/ci/json_tree', { mid: params.topic_mid, does_any:['Project', 'Infrastructure','Topic'], direction:'children', depth:4 }, function(res){
             if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
-            var rg = new Baseliner.JitRGraph({ json: res.data });
+            rg = new Baseliner.JitRGraph({ json: res.data });
             cardpanel.add( rg );
             cardpanel.getLayout().setActiveItem( rg );
         });
