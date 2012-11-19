@@ -95,7 +95,14 @@
     };
 
     // Form Panel
-    var form = new Ext.Panel({ layout:'fit' });
+    var form = new Ext.Panel({
+        layout:'form',
+        autoHeight: true,
+        style: { padding: '15px' },
+        defaults: {anchor:'80%' }
+    });
+    
+    
     var form_topic;
     var load_form = function(rec) {
         Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
@@ -322,8 +329,11 @@
         activeItem: 0,
         title: params.title,
         tbar: tb,
+        //frame: true,
+        defaults: {border: false},
         items: [ detail, form ]
     });
+        
     var detail_reload = function(){
         detail.load({
             url: '/topic/view',

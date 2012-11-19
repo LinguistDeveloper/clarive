@@ -28,7 +28,6 @@
         <div class="grid_10" style="margin-bottom: 5px;">
 % if($dashboardlets){        
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
-% _error $dash;
 % if ($dash->{order} % 2 != 0){
     <& $dash->{html} &>
 % }}
@@ -47,12 +46,14 @@
 
 %}else{
 
-        <div class="grid_24" style="margin-bottom: 5px;">
+        
 % if($dashboardlets){        
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
+    <div class="grid_22" style="margin-bottom: 5px;">
     <& $dash->{html} &>
+    </div>
 % }
-        </div> 
+         
 %}
 
 %}

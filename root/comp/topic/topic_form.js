@@ -6,8 +6,12 @@
     
     var main_fieldset = new Ext.form.FieldSet({
         collapsible: false,
-        border: false,
-        autoHeight : true,
+        //border: false,
+        style: {
+            padding: 15  
+        },
+        //title: 'asd',
+        //autoHeight : true,
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]
@@ -15,8 +19,9 @@
 
     var form_topic = new Ext.FormPanel({
         url:'/topic/update',
-        bodyStyle:'padding: 10px 0px 0px 15px',
-        defaults: { anchor:'70%'},
+        frame: true,
+        bodyStyle:'padding: 15px 15px 15px 15px',
+        defaults: { anchor:'100%'},
         items: main_fieldset
     });
 
