@@ -42,6 +42,7 @@ use Exporter::Tidy default => [
     _logts
     _logt0
     _unac
+    _name_to_id
     _whereami
     _throw_stack
     _parse_template
@@ -58,6 +59,7 @@ use Exporter::Tidy default => [
     _parameters
     _notify_address
     _replace_tags
+    _strip_html
     is_oracle
     is_number
     _dump
@@ -69,6 +71,7 @@ use Exporter::Tidy default => [
     domain_match
     to_pages
     to_base64
+    from_base64
     rs_hashref
     packages_that_do
     query_array
@@ -101,6 +104,9 @@ use Exporter::Tidy default => [
     _hook
     _read_password
     _load_features
+    _ci
+    _any
+    _package_is_loaded
 /];
 
 # setup I18n
@@ -147,6 +153,7 @@ use Sys::Hostname;
 use PadWalker qw(peek_my peek_our peek_sub closed_over);
 use Text::Unaccent::PurePerl qw/unac_string/;
 use Path::Class;
+use Term::ANSIColor;
 use strict;
 
 BEGIN {
@@ -300,6 +307,8 @@ sub _log_lev {
     print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
 }
 
+sub isatty { no autodie; return open(my $tty, '+<', '/dev/tty'); }
+
 # internal log engine used by _log and _debug
 sub _log_me {
     my ($lev, $cl,$fi,$li, @msgs ) = @_;
@@ -314,8 +323,18 @@ sub _log_me {
         $cl =~ s{^Baseliner}{B};
         my $pid = sprintf('%s', $$);
         my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
-        if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
-            $cat_log->$lev( $msg );
+        #if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
+            #$cat_log->$lev( $msg );
+        if( $^O ne 'Win32' && -t STDOUT ) { 
+            if( $lev eq 'error' ) {
+                print STDERR color('red') , $msg , color('reset'), "\n"; 
+            } elsif( $lev eq 'debug' ) {
+                print STDERR color('yellow') , $msg , color('reset'), "\n"; 
+            } elsif( $lev eq 'info' ) {
+                print STDERR color('green') , $msg , color('reset'), "\n"; 
+            } else {
+                print STDERR $msg , "\n"; 
+            }
         } else {
             print STDERR $msg , "\n"; 
         }
@@ -620,6 +639,14 @@ sub _replace_tags {
     return $str;
 }
 
+sub _strip_html {
+    my $d = shift;
+    require HTML::Strip;
+    my $hs = HTML::Strip->new();
+    my $clean_text = $hs->parse($d);
+    $clean_text;
+}
+
 sub _check_parameters {
     my $p = shift;
     for my $param ( @_ ) {
@@ -638,6 +665,16 @@ sub _rmpath {
     my $dir = _dir( @_ );
     return unless -e $dir;
     $dir->rmtree;
+}
+
+sub _name_to_id {
+    my $name = _unac( lc shift );
+    $name =~ s{\s+}{_}g;
+    $name =~ s{\W}{_}g;
+    $name =~ s{_+}{_}g;
+    $name =~ s{_$}{}g;
+    $name =~ s{^_}{}g;
+    return $name;
 }
 
 # returns the official tmp dir
@@ -713,6 +750,10 @@ sub to_pages {
 
 sub to_base64 {
     return MIME::Lite::encode_base64( shift );
+}
+
+sub from_base64 {
+    return  MIME::Base64::decode_base64( shift() );
 }
 
 sub rs_hashref {
@@ -973,6 +1014,14 @@ sub parse_vars_raw {
             $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
         }
         return \%ret;
+    } elsif( ref( $data ) =~ /Baseliner/ ) {
+        my $class = ref($data);
+        my %ret;
+        for my $k ( keys %$data ) {
+            my $v = $data->{$k};
+            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
+        }
+        return bless \%ret => $class;
     } elsif( ref $data eq 'ARRAY' ) {
         my @tmp;
         for my $i ( @$data ) {
@@ -1133,6 +1182,19 @@ sub _load_features {
         }
     }
     return @dirs;
+}
+
+sub _ci {
+    return Baseliner::CI->new( @_ );
+}
+
+*_any = \&List::MoreUtils::any;
+
+sub _package_is_loaded {
+    my $cl = shift;
+    $cl =~ s/::/\//g;
+    $cl = $cl . '.pm';
+    exists $INC{ $cl };
 }
 
 1;
