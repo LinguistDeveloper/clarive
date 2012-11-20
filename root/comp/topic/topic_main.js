@@ -8,6 +8,8 @@
 (function(params){
     var view_is_dirty = false;
     var form_is_loaded = false;
+    var swEdit = <% $swEdit ? 'true' : 'false' %>;
+    var permEdit = <% $permEdit ? 'true' : 'false' %>;
     var ii = "<% $ii %>";  // used by the detail page
     var btn_form_ok = new Ext.Button({
             text: _('Save'),
@@ -86,7 +88,7 @@
     // Detail Panel
     var detail = new Ext.Panel({ });
     var show_detail = function(){
-        cardpanel.getLayout().setActiveItem( 0 );
+        cardpanel.getLayout().setActiveItem( detail );
         btn_form_ok.hide();
         if( view_is_dirty ) {
             view_is_dirty = false;
@@ -107,24 +109,26 @@
     };
 
     // Form Panel
-    var form = new Ext.Panel({
+    var form_panel = new Ext.Panel({
         layout:'form',
-        autoHeight: true,
+        //autoHeight: true
         style: { padding: '15px' },
         defaults: {anchor:'80%' }
     });
-    
     
     var form_topic;
     var load_form = function(rec) {
         Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
             if( ! form_is_loaded ) {
-                form.removeAll();
+                //form_panel.removeAll();
                 form_topic = comp;
-                form.add( comp );
-                form.doLayout();
+                ////form_panel.add( comp );
+                //form_panel.doLayout();
+                cardpanel.add( form_topic );
+                cardpanel.getLayout().setActiveItem( form_topic );
                 form_is_loaded = true;
             }
+            // now show/hide buttons
             btn_form_ok.show();
             if(params.topic_mid){
                 btn_comment.show();
@@ -135,13 +139,16 @@
             }
         });            
     };
+
     var show_form = function(){
+        cardpanel.getLayout().setActiveItem( loading_panel );
         if( params!==undefined && params.topic_mid !== undefined ) {
             if (!form_is_loaded){
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
                     load_form( rec );
                 });
             }else{
+                cardpanel.getLayout().setActiveItem( form_topic );
                 btn_form_ok.show();
                 if(params.topic_mid){
                     btn_comment.show();
@@ -152,15 +159,12 @@
                 }                
             }
         } else {
-            
             Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name }, function(rec) {
                 load_form( rec );
             });
         }
           
-        cardpanel.getLayout().setActiveItem( 1 );
     };
-
 
     var kanban;
     var show_kanban = function(){
@@ -168,7 +172,7 @@
             var topics = res.children;
             kanban = Baseliner.kanban({ topics: topics, background: '#888',
                 on_tab: function(){
-                    cardpanel.getLayout().setActiveItem( 0 );
+                    cardpanel.getLayout().setActiveItem( detail );
                     btn_detail.toggle( true );
                 }
             });
@@ -336,6 +340,9 @@
             btn_graph
         ]
     });
+
+    var loading_panel = Baseliner.loading_panel();
+
     var cardpanel = new Ext.Panel({
         layout: 'card',
         activeItem: 0,
@@ -343,7 +350,7 @@
         tbar: tb,
         //frame: true,
         defaults: {border: false},
-        items: [ detail, form ]
+        items: [ loading_panel, detail ]
     });
         
     var detail_reload = function(){
@@ -354,32 +361,33 @@
             callback: function(x){ 
                 // loading HTML has finished
                 //   careful: errors here block will break js in baseliner
+                if( ! swEdit ) {
+                    var layout = cardpanel.getLayout().setActiveItem( detail );
+                }
             }
         });
         detail.body.setStyle('overflow', 'auto');
     };
     detail.on( 'render', function() {
         detail_reload();
-%if($swEdit){
-%    if(!$permEdit){
-        btn_edit.hide();
-%    }
-%    else{
-        btn_edit.toggle(true);
-        btn_detail.toggle(false);
-        show_form();        
-%    }
-%}        
+        if( swEdit ) {
+            if( !permEdit ) {
+                btn_edit.hide();
+            } else {
+                btn_edit.toggle(true);
+                btn_detail.toggle(false);
+                show_form();        
+            }
+        }
     });
     
-%if(!$permEdit){
-    btn_edit.hide();
-%}
+    if( !permEdit ) {
+        btn_edit.hide();
+    }
     
     //Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
     //    load_form( rec );
     //});
-
     
     cardpanel.tab_icon = '/static/images/icons/topic_one.png';
     if( ! params.title ) {
