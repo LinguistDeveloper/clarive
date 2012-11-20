@@ -1121,6 +1121,7 @@
 			s.each( function(row){
 				if( row.data.id == id ) {
 					var data = row.data.params;
+					console.log(data);
 					var parent_id;
 					switch (data.origin){
 						case 'system':  parent_id = 'S';

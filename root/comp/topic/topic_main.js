@@ -66,10 +66,7 @@
                                 form2.findField('title').setValue(a.result.title);
                                 form2.findField('gdi_solicitud').setValue(a.result.title);
                                 form2.findField('gdi_solicitud').show();
-                                //Ext.getCmp('gdi_solicitud').setText(a.result.title);
-                                //objSolicitud.setStyle('visibility', 'visible');
-                                
-                                //form2.findField(custom_form + "status_new").show();
+                                form2.findField('status_new').show();
                             }
                             
                        },
