@@ -58,7 +58,11 @@
                             }
                             view_is_dirty = true;
                             
-                            
+                            var cetelem = Ext.getCmp('cetelem');
+                            if (cetelem) {
+                                Ext.get('solicitud').setStyle('visibility', 'visible');
+                                form2.findField("status_new1").show();
+                            }
                             
                        },
                        failure: function(f,a){
