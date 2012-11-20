@@ -947,6 +947,23 @@ sub favorite_del : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub favorite_rename : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        _fail _loc "Invalid name" unless length $p->{text};
+        my $domain = 'lifecycle.favorites.' . $c->username;
+        my $ns = "$domain/" . $p->{id} ;
+        my $d = kv->get( ns=>$ns );
+        $d->{text} = $p->{text};
+        kv->set( ns=>$ns, data=>$d );
+        { success=>\1, msg=>_loc("Favorite renamed ok") }
+    } catch {
+        { success=>\0, msg=>shift() }
+    };
+    $c->forward( 'View::JSON' );
+}
+
 sub click_for_topic {
     my ($self, $catname, $mid ) = @_;
     +{ 

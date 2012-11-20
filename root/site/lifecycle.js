@@ -204,6 +204,28 @@ var menu_favorite_del = {
     }
 };
 
+var menu_favorite_rename = {
+    text: _('Rename'),
+    icon: '/static/images/icons/rename.gif',
+    handler: function(n) {
+        var sm = Baseliner.lifecycle.getSelectionModel();
+        var node = sm.getSelectedNode();
+        if( node ) {
+            Ext.Msg.prompt(_('Rename'), _('New name:'), function(btn, text){
+                if( btn == 'ok' ) {
+                    Baseliner.ajaxEval( '/lifecycle/favorite_rename',
+                        { id: node.attributes.id_favorite, text: text },
+                        function(res) {
+                            Baseliner.message( _('Favorite'), res.msg );
+                            if( res.success ) node.setText( text );
+                        }
+                    );
+                }
+            }, this, false, node.text );
+        }
+    }
+};
+
 
 function new_folder(node){
     var btn_cerrar = new Ext.Toolbar.Button({
@@ -422,10 +444,12 @@ var menu_click = function(node,event){
     }
     // add base menu
     m.add( base_menu_items );
-    if( node.attributes != undefined && node.attributes.id_favorite !=undefined ) 
+    if( node.attributes != undefined && node.attributes.id_favorite !=undefined ) {
         m.add( menu_favorite_del );
-    else
+        m.add( menu_favorite_rename );
+    } else {
         m.add( menu_favorite_add );
+    }
     m.add( menu_refresh );
     Baseliner.lc_menu.showAt(event.xy);
 }
