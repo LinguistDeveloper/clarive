@@ -18,7 +18,9 @@
             type: 'submit',
             hidden: true,
             handler: function() {
+                
                 form_topic.on_submit();
+                
                 var form2 = form_topic.getForm();
                 var action = form2.getValues()['topic_mid'] >= 0 ? 'update' : 'add';
                 
