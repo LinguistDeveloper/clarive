@@ -105,12 +105,13 @@ sub update : Local {
     $p->{username} = $c->username;
     
     try  {    
-        my ($msg, $topic_mid, $status) = Baseliner::Model::Topic->update( $p );
+        my ($msg, $topic_mid, $status, $title) = Baseliner::Model::Topic->update( $p );
         $c->stash->{json} = {
             success      => \1,
             msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
             topic_mid    => $topic_mid,
-            topic_status => $status
+            topic_status => $status,
+            title        => $title
         };
     } catch {
         my $e = shift;

@@ -402,9 +402,17 @@ sub update {
     my $return;
     my $topic_mid;
     my $status;
-
+    
     given ( $action ) {
         when ( 'add' ) {
+            my $form = $p->{form};
+            given ( $form ){
+                when ( 'gdi' ) {
+                    my $numSolicitud = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ name => 'gdi_dni', value => $p->{gdi_dni} })->count;
+                    $p->{title} = $p->{gdi_dni} . '.' . ++$numSolicitud;
+                }
+            }
+            
             event_new 'event.topic.create' => { username=>$p->{username} } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
@@ -451,6 +459,9 @@ sub update {
                 $row->delete;
                 $topic_mid    = $topic_mid;
                 
+                $row = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid=>$topic_mid });
+                $row->delete;
+                
                 $return = '%1 topic(s) deleted';
             } ## end try
             catch {
@@ -472,7 +483,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $topic_mid, $status );
+    return ( $return, $topic_mid, $status, $p->{title} );
 } ## end sub update
 
 sub append_category {

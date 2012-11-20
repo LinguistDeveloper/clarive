@@ -20,9 +20,12 @@
                 var form2 = form_topic.getForm();
                 var action = form2.getValues()['topic_mid'] >= 0 ? 'update' : 'add';
                 
+                var gdi = form2.findField('gdi');
+                var custom_form = gdi ? 'gdi' : '';
+                
                 if (form2.isValid()) {
                    form2.submit({
-                       params: {action: action},
+                       params: {action: action, form: custom_form},
                        success: function(f,a){
                             Baseliner.message(_('Success'), a.result.msg );
                             
@@ -58,10 +61,15 @@
                             }
                             view_is_dirty = true;
                             
-                            var cetelem = Ext.getCmp('cetelem');
-                            if (cetelem) {
-                                Ext.get('solicitud').setStyle('visibility', 'visible');
-                                form2.findField("status_new1").show();
+                            if (gdi) {
+                                var objSolicitud = Ext.get('gdi_solicitud');
+                                form2.findField('title').setValue(a.result.title);
+                                form2.findField('gdi_solicitud').setValue(a.result.title);
+                                form2.findField('gdi_solicitud').show();
+                                //Ext.getCmp('gdi_solicitud').setText(a.result.title);
+                                //objSolicitud.setStyle('visibility', 'visible');
+                                
+                                //form2.findField(custom_form + "status_new").show();
                             }
                             
                        },
