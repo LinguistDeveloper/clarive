@@ -57,6 +57,9 @@
                                 info.title = title;
                             }
                             view_is_dirty = true;
+                            
+                            
+                            
                        },
                        failure: function(f,a){
                            Ext.Msg.show({  

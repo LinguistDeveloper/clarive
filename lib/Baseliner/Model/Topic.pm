@@ -650,8 +650,22 @@ sub get_meta {
             $d->{field_order} //= 1;
             $d
         }
+        #grep { my $d = _load $_->{params_field};
+        #       $d->{type} ne 'form'}
+        
         DB->BaliTopicFieldsCategory->search( { id_category => { -in => $id_cat } } )->hashref->all;
-                
+    
+    #my @form_fields =       map  { 
+    #           my $d = _load $_->{params_field};
+    #           $d->{field_order} //= 1;
+    #           $d->{fields}
+    #       }        
+    #       
+    #       grep { my $d = _load $_->{params_field};
+    #              $d->{type} eq 'form'}
+    #       DB->BaliTopicFieldsCategory->search( { id_category => { -in => 81 } } )->hashref->all;
+    #
+    #push @meta, @form_fields;                
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
     
@@ -709,10 +723,8 @@ sub get_data {
         map { $custom_data{ $_->{name} } = $_->{value} ? $_->{value} : $_->{value_clob} }
             Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( { topic_mid => $topic_mid } )->hashref->all;
         
-        push @custom_fields, map { 
-            my $cf = $_;
-            _array $_->{custom_fields};
-        } grep { $_->{type} eq 'customform' } _array($meta);
+        push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { $_->{type} eq 'form' } _array($meta);
+                             
 
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};
@@ -930,9 +942,9 @@ sub save_data {
         map { 
             my $cf = $_;
             map {
-                +{ name => $_, column => $_, data=>'CLOB' }
-            } _array $_->{custom_fields};
-        } grep { $_->{type} eq 'customform' } _array($meta);
+                +{ name => $_->{id_field}, column => $_->{id_field}, data=> $_->{data} }
+            } _array $_->{fields};
+        } grep { $_->{type} eq 'form' } _array($meta);
 
     for( @custom_fields ) {
         if  (exists $data->{ $_ -> {name}} && $data->{ $_ -> {name}} ne '' ){
