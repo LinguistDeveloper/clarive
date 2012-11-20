@@ -4,5 +4,6 @@ with 'Baseliner::Role::CI::Server';
 
 sub error {}
 sub rc {}
+sub ping {'OK'};
 
 1;
