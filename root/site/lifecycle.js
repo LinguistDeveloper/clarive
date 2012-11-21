@@ -450,6 +450,20 @@ var menu_click = function(node,event){
     } else {
         m.add( menu_favorite_add );
     }
+    if( Baseliner.DEBUG ) {
+        m.add({ text: _('Properties'), icon:'/static/images/icons/properties.png', handler: function(n){
+            var sm = Baseliner.lifecycle.getSelectionModel();
+            var node = sm.getSelectedNode();
+            var d = node.attributes;
+            var loader = d.loader;
+            delete d['loader'];
+            var de = new Baseliner.DataEditor({ data: { id: node.id, attributes: d, text: node.text } });
+            var dump_win = new Ext.Window({ width: 800, height: 400, layout:'fit', items:de });
+            dump_win.show();
+            de.on('destroy', function(){ dump_win.close() });
+            //node.attributes.loader = loader;
+        }});
+    }
     m.add( menu_refresh );
     Baseliner.lc_menu.showAt(event.xy);
 }
