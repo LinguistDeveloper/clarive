@@ -145,7 +145,7 @@ sub load_kv {
             && !grep { lc $r->{k} eq $_ } _array( $p{select} );
         # deserialize if needed
         $r->{v} = _load( $r->{v} )
-            if defined $r->{v} && $r->{datatype} eq 'yaml';
+            if defined $r->{v} && defined $r->{datatype} && $r->{datatype} eq 'yaml';
         $data->{ $r->{k} } = $r->{v} ;
     }
     return $data;

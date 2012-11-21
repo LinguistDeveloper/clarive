@@ -1121,6 +1121,7 @@
 			s.each( function(row){
 				if( row.data.id == id ) {
 					var data = row.data.params;
+					console.log(data);
 					var parent_id;
 					switch (data.origin){
 						case 'system':  parent_id = 'S';
@@ -1293,10 +1294,12 @@
                                             // clone
                                             objTemp = Ext.util.JSON.decode( Ext.util.JSON.encode( objTemp ) );
 
-											objTemp.id_field = id_field;
-											objTemp.name_field = id_field;
-											objTemp.bd_field = id_field;
-											objTemp.origin = 'custom';											
+											if (objTemp.type != 'form'){ 
+												objTemp.id_field = id_field;
+												objTemp.name_field = id_field;
+												objTemp.bd_field = id_field;
+												objTemp.origin = 'custom';
+											}
 											
 											if ( objTemp.filter != undefined){
 												 objTemp.filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
@@ -1372,7 +1375,7 @@
 								};
 							});							
 							
-							if (attr.id_field == 'listbox') combo_system_fields.show();
+							if (attr.id_field == 'listbox' || attr.id_field == 'form' ) combo_system_fields.show();
 							
 							var form_template_field = new Ext.FormPanel({
 								url: '/topicadmin/create_clone',

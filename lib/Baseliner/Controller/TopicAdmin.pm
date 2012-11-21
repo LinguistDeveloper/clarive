@@ -552,9 +552,12 @@ sub list_tree_fields : Local {
     };
     
 
-    my @template_dirs;
+    #my @template_dirs;
+    my @template_dirs = map { $_->root . '/forms/*.js' } Baseliner->features->list;
+    
     push @template_dirs, $c->path_to( 'root/fields/templates/js' ) . "/*.js";
     push @template_dirs, $c->path_to( 'root/fields/system/js' ) . "/list*.js";
+    push @template_dirs, $c->path_to( 'root/forms' ) . "/*.js";
     #@template_dirs = grep { -d } @template_dirs;
     
     my @tmp_templates = map {
@@ -603,7 +606,7 @@ sub list_tree_fields : Local {
     my @meta_system_listbox;
     my @data_system_listbox;
     for my $system_listbox (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
-                        grep {!$_->{metadata}->{params}->{origin}} @tmp_templates ) {
+                        grep {$_->{metadata}->{params}->{type} eq 'listbox'} @tmp_templates ) {
         
         push @meta_system_listbox, [$j++, _loc $system_listbox->{metadata}->{name}];
         push @data_system_listbox, $system_listbox->{metadata}->{params};
@@ -619,11 +622,38 @@ sub list_tree_fields : Local {
                             leaf        => \1                             
                         };
     
+    #push @tree_fields, {
+    #    id          => 'T',
+    #    text        => _loc('Templates'),
+    #    children    => \@templates
+    #};
+    
+    
+    $j = 0;
+    my @meta_forms;
+    my @data_forms;
+    for my $forms (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
+                        grep {$_->{metadata}->{params}->{type} eq 'form'} @tmp_templates ) {
+        
+        push @meta_forms, [$j++, _loc $forms->{metadata}->{name}];
+        push @data_forms, $forms->{metadata}->{params};
+    }
+    
+    push @templates,    {
+                            id          => $i++,
+                            id_field    => 'form',
+                            text        => _loc ('Custom forms'),
+                            params	    => {origin=> 'template'},
+                            meta        => \@meta_forms,
+                            data        => \@data_forms,
+                            leaf        => \1                             
+                        };
+    
     push @tree_fields, {
         id          => 'T',
         text        => _loc('Templates'),
         children    => \@templates
-    };       
+    };      
     
     $c->stash->{json} = \@tree_fields;
     $c->forward('View::JSON');
@@ -689,7 +719,7 @@ sub get_conf_fields : Local {
         push @system,   {
                             id          => $_->{params}->{field_order},
                             id_field    => $_->{id_field},
-                            name        => _loc ($_->{params}->{name_field}),
+                            name        => _loc ($_->{params}->{name_field} // $_->{id_field}),
                             params	    => $_->{params},
                             img         => $_->{params}->{origin} eq 'system' ? '/static/images/icons/lock_small.png' : '/static/images/icons/icon_wand.gif',
                             meta => {

@@ -1485,3 +1485,19 @@ Baseliner.loading_panel = function(){
             '</div>' ].join('')
     });
 }
+
+Baseliner.editSlot =  function(panel, id_cal, dia,ini,fin, date) {
+    var comp = Baseliner.showAjaxComp( '/job/calendar_slot_edit',
+        {  panel: panel, id_cal: id_cal, pdia: 'day-'+dia, pini: ini, pfin: fin, date: date } );
+}
+
+Baseliner.editId = function( panel, id_cal, id, date) {
+    var comp = Baseliner.showAjaxComp( '/job/calendar_slot_edit',
+        { id: id, id_cal: id_cal, panel: panel, date: date} );
+}
+
+Baseliner.createRange = function(panel, id_cal, id, pdia, date) {
+    var comp = Baseliner.showAjaxComp( '/job/calendar_slot_edit',
+        { id: id,  pdia: 'day-'+pdia, id_cal: id_cal, panel: panel, date: date, pini: "00:00", pfin: "24:00"} );
+}	
+

@@ -402,9 +402,17 @@ sub update {
     my $return;
     my $topic_mid;
     my $status;
-
+    
     given ( $action ) {
         when ( 'add' ) {
+            my $form = $p->{form};
+            given ( $form ){
+                when ( 'gdi' ) {
+                    my $numSolicitud = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ name => 'gdi_dni', value => $p->{gdi_dni} })->count;
+                    $p->{title} = $p->{gdi_dni} . '.' . ++$numSolicitud;
+                }
+            }
+            
             event_new 'event.topic.create' => { username=>$p->{username} } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
@@ -451,6 +459,9 @@ sub update {
                 $row->delete;
                 $topic_mid    = $topic_mid;
                 
+                $row = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid=>$topic_mid });
+                $row->delete;
+                
                 $return = '%1 topic(s) deleted';
             } ## end try
             catch {
@@ -472,7 +483,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $topic_mid, $status );
+    return ( $return, $topic_mid, $status, $p->{title} );
 } ## end sub update
 
 sub append_category {
@@ -510,15 +521,15 @@ sub get_system_fields {
     my $pathHTML = '/fields/system/html/';
     my $pathJS = '/fields/system/js/';
     my @system_fields = (
-            { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => 1, section => 'head', field_order_html => 1 }},
-            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => 2, section => 'body', relation => 'categories' }},
-            { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status', origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => 3, section => 'body', relation => 'status' }},
+            { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => -1, section => 'head', field_order_html => 1 }},
+            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => -2, section => 'body', relation => 'categories' }},
+            { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status', origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => -3, section => 'body', relation => 'status' }},
             { id_field => 'created_by', params => {name_field => 'Created By', bd_field => 'created_by', origin => 'default'}},
             { id_field => 'created_on', params => {name_field => 'Created On', bd_field => 'created_on', origin => 'default'}},
             { id_field => 'labels', params => {name_field => 'Labels', bd_field => 'labels', origin => 'default', relation=>'system', get_method=>'get_labels', field_order_html => 1 }},
-            { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body', relation => 'priorities' }},
-            { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'head', field_order_html => 2 }},
-            { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => 8, section => 'body' }},
+            { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => -6, section => 'body', relation => 'priorities' }},
+            { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => -7, section => 'head', field_order_html => 2 }},
+            { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => -8, section => 'body' }},
             { id_field => 'include_into', params => {name_field => 'Include into', bd_field => 'include_into', origin => 'default', html => $pathHTML . 'field_include_into.html', field_order => 0, section => 'details' }},
             { id_field => 'dates', params => { name_field => 'dates',  origin => 'default', relation => 'system', get_method => 'get_dates', html => $pathHTML . 'field_scheduling.html', field_order => 9999, section => 'details' }},
     );
@@ -650,8 +661,22 @@ sub get_meta {
             $d->{field_order} //= 1;
             $d
         }
+        #grep { my $d = _load $_->{params_field};
+        #       $d->{type} ne 'form'}
+        
         DB->BaliTopicFieldsCategory->search( { id_category => { -in => $id_cat } } )->hashref->all;
-                
+    
+    #my @form_fields =       map  { 
+    #           my $d = _load $_->{params_field};
+    #           $d->{field_order} //= 1;
+    #           $d->{fields}
+    #       }        
+    #       
+    #       grep { my $d = _load $_->{params_field};
+    #              $d->{type} eq 'form'}
+    #       DB->BaliTopicFieldsCategory->search( { id_category => { -in => 81 } } )->hashref->all;
+    #
+    #push @meta, @form_fields;                
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
     
@@ -709,10 +734,8 @@ sub get_data {
         map { $custom_data{ $_->{name} } = $_->{value} ? $_->{value} : $_->{value_clob} }
             Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( { topic_mid => $topic_mid } )->hashref->all;
         
-        push @custom_fields, map { 
-            my $cf = $_;
-            _array $_->{custom_fields};
-        } grep { $_->{type} eq 'customform' } _array($meta);
+        push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { $_->{type} eq 'form' } _array($meta);
+                             
 
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};
@@ -930,9 +953,9 @@ sub save_data {
         map { 
             my $cf = $_;
             map {
-                +{ name => $_, column => $_, data=>'CLOB' }
-            } _array $_->{custom_fields};
-        } grep { $_->{type} eq 'customform' } _array($meta);
+                +{ name => $_->{id_field}, column => $_->{id_field}, data=> $_->{data} }
+            } _array $_->{fields};
+        } grep { $_->{type} eq 'form' } _array($meta);
 
     for( @custom_fields ) {
         if  (exists $data->{ $_ -> {name}} && $data->{ $_ -> {name}} ne '' ){
