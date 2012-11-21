@@ -30,6 +30,34 @@ var add_workspace = function() {
     Baseliner.ajaxEval( '/comp/lifecycle/workspace_new.js', {}, function(){} );
 };
 
+var add_to_fav_folder = function() {
+    Ext.Msg.prompt(_('Favorite'), _('Folder name:'), function(btn, folder){
+        if( btn == 'ok' ) {
+            var on_drop = { url: '/comp/lifecycle/add_to_fav_folder.js' };
+            Baseliner.ajaxEval( '/lifecycle/favorite_add',
+                {
+                    text: folder,
+                    id_folder: folder,
+                    data: Ext.util.JSON.encode({ on_drop: on_drop }),
+                    icon: '/static/images/icons/favorite.png'
+                },
+                function(res) {
+                    Baseliner.message( _('Favorite'), res.msg );
+                    if( res.success ) {
+                        var new_node = Baseliner.lifecycle.getLoader().createNode({
+                            text: folder + ' ('+res.id_folder+')',
+                            icon: '/static/images/icons/favorite.png',
+                            data: { on_drop: on_drop },
+                            url: '/lifecycle/tree_favorite_folder?id_folder=' + res.id_folder
+                        });
+                        Baseliner.lifecycle.root.appendChild( new_node );
+                    }
+                }
+            );
+        }
+    });
+};
+
 var refresh_node = function(node){
     var loader = Baseliner.lifecycle.getLoader();
     loader.dataUrl = Baseliner.lc.dataUrl;
@@ -100,6 +128,7 @@ var button_menu = new Ext.Button({
     //icon: '/static/images/icons/config.gif',
     tooltip: _('Config'),
     menu: [
+        { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder },
         { text: _('Add Workspace'), handler: add_workspace }
     ]
 });
@@ -158,34 +187,6 @@ var menu_refresh = {
     handler: refresh_lc 
 };
 
-var menu_prueba_add = {
-    text: _('Add to Prueba...'),
-    icon: '/static/images/icons/favorite.png',
-    handler: function(n) {
-        var sm = Baseliner.lifecycle.getSelectionModel();
-        var node = sm.getSelectedNode();
-        if( node != undefined ) {
-            var name = new Array();
-            node.bubble( function(pnode){
-               if( pnode.text != '/' && pnode.text != undefined ) 
-                  name.unshift( pnode.text ); 
-            });
-            Baseliner.ajaxEval( '/lifecycle/favorite_add',
-                {
-                    text: name.join(':'),
-                    url: node.attributes.url,
-                    icon: node.attributes.icon,
-                    data: Ext.encode( node.attributes.data ),
-                    menu: Ext.encode( node.attributes.menu )
-                },
-                function(res) {
-                    Baseliner.message( _('Favorite'), res.msg );
-                }
-            );
-        }
-    }
-};
-
 var menu_favorite_del = {
     text: _('Remove from Favorites'),
     icon: '/static/images/icons/favorite.png',
@@ -194,7 +195,7 @@ var menu_favorite_del = {
         var node = sm.getSelectedNode();
         if( node != undefined ) {
             Baseliner.ajaxEval( '/lifecycle/favorite_del',
-                { id: node.attributes.id_favorite },
+                { id: node.attributes.id_favorite, favorite_folder: node.attributes.favorite_folder, id_folder: node.attributes.id_folder },
                 function(res) {
                     Baseliner.message( _('Favorite'), res.msg );
                     node.remove();
@@ -214,7 +215,7 @@ var menu_favorite_rename = {
             Ext.Msg.prompt(_('Rename'), _('New name:'), function(btn, text){
                 if( btn == 'ok' ) {
                     Baseliner.ajaxEval( '/lifecycle/favorite_rename',
-                        { id: node.attributes.id_favorite, text: text },
+                        { id: node.attributes.id_favorite, favorite_folder: node.attributes.favorite_folder, id_folder: node.attributes.id_folder, text: text },
                         function(res) {
                             Baseliner.message( _('Favorite'), res.msg );
                             if( res.success ) node.setText( text );
@@ -225,7 +226,6 @@ var menu_favorite_rename = {
         }
     }
 };
-
 
 function new_folder(node){
     var btn_cerrar = new Ext.Toolbar.Button({
@@ -508,16 +508,20 @@ var drop_handler = function(e) {
         var on_drop = node_data2.on_drop;
         if( on_drop.url != undefined ) {
             var id_project = n2.parentNode.attributes.data.id_project
-            Baseliner.ajaxEval( on_drop.url, { id_file: node_data1.id_file, id_project: id_project  }, function(res){
-                if( res.success ) {
-                    Baseliner.message(  _('Drop'), res.msg );
-                    //e.target.appendChild( n1 );
-                    //e.target.expand();
-                    refresh_node( e.target );
+            Baseliner.ajaxEval( on_drop.url, { node1: n1, node2: n2, id_file: node_data1.id_file, id_project: id_project  }, function(res){
+                if( res ) {
+                    if( res.success ) {
+                        Baseliner.message(  _('Drop'), res.msg );
+                        //e.target.appendChild( n1 );
+                        //e.target.expand();
+                        refresh_node( e.target );
+                    } else {
+                        Baseliner.message( _('Drop'), res.msg );
+                        //Ext.Msg.alert( _('Error'), res.msg );
+                        return false;
+                    }
                 } else {
-                    Baseliner.message( _('Drop'), res.msg );
-                    //Ext.Msg.alert( _('Error'), res.msg );
-                    return false;
+                    return true;
                 }
             });
         }else{

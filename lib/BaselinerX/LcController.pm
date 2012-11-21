@@ -799,14 +799,27 @@ sub tree_favorites : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my @tree;
+    my $provider;
+    if( my $id_folder = $p->{id_folder} ) {
+        $provider = join '.', 'lifecycle.favorites' , $c->username , $id_folder;
+    } else {
+        $provider = 'lifecycle.favorites.' . $c->username;
+    }
     my $favs = [ map { $_->kv } sort { $a->{ns} <=> $b->{ns} }
-        kv->find( provider => 'lifecycle.favorites.' . $c->username )->all ];
+        kv->find( provider => $provider )->all ];
 
     for my $node ( @$favs ) {
         ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
         push @tree, $node;
     }
     $c->stash->{json} = \@tree;
+}
+
+sub tree_favorite_folder : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    $c->forward( 'tree_favorites' );
+    $c->forward( 'View::JSON' );
 }
 
 sub agent_ftp : Local {
@@ -919,14 +932,19 @@ sub favorite_add : Local {
     $c->stash->{json} = try {
         # create the id for the user
         my $domain = 'lifecycle.favorites.' . $c->username;
-        my $id = time . '.' .  int rand(9999);
+        my $id = time . '-' .  int rand(9999);
         # delete empty ones
         $p->{$_} eq 'null' and delete $p->{$_} for qw/data menu/;
+        # if its a folder
+        if( length $p->{id_folder} ) {
+           $p->{id_folder} = _name_to_id delete $p->{id_folder};
+           $p->{url} //= '/lifecycle/tree_favorite_folder?id_folder=' . $p->{id_folder};
+        }
         # decode data structures
         defined $p->{$_} and $p->{$_} = _decode_json( $p->{$_} ) for qw/data menu/;
         $p->{id_favorite} = $id;
         kv->set( ns=>"$domain/$id", data=>$p );
-        { success=>\1, msg=>_loc("Favorite added ok") }
+        { success=>\1, msg=>_loc("Favorite added ok"), id_folder => $p->{id_folder} }
     } catch {
         { success=>\0, msg=>shift() }
     };
@@ -938,7 +956,13 @@ sub favorite_del : Local {
     my $p = $c->req->params;
     $c->stash->{json} = try {
         my $domain = 'lifecycle.favorites.' . $c->username;
+        $domain .= '.' . $p->{favorite_folder} if length $p->{favorite_folder};
         my $ns = "$domain/" . $p->{id} ;
+        # delete children if folder?
+        if( $p->{id_folder} ) {
+            map { kv->delete( ns => $_->{ns} ) } kv->find( provider=>"$domain.$p->{id_folder}" );
+        }
+        # delete node
         kv->delete( ns=>$ns ) if $p->{id};
         { success=>\1, msg=>_loc("Favorite removed ok") }
     } catch {
@@ -953,11 +977,38 @@ sub favorite_rename : Local {
     $c->stash->{json} = try {
         _fail _loc "Invalid name" unless length $p->{text};
         my $domain = 'lifecycle.favorites.' . $c->username;
+        $domain .= '.' . $p->{favorite_folder} if length $p->{favorite_folder};
+        # TODO rename id_folder in case it's a folder?
         my $ns = "$domain/" . $p->{id} ;
         my $d = kv->get( ns=>$ns );
         $d->{text} = $p->{text};
         kv->set( ns=>$ns, data=>$d );
         { success=>\1, msg=>_loc("Favorite renamed ok") }
+    } catch {
+        { success=>\0, msg=>shift() }
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub favorite_add_to_folder : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        my $from_ns = my $to_ns = 'lifecycle.favorites.' . $c->username;
+        $from_ns .= '.'.$p->{favorite_folder} if length $p->{favorite_folder};
+        $from_ns .= '/' . $p->{id_favorite};
+        # get data
+        my $d = kv->get( ns => $from_ns ); 
+        _fail _loc "Not found: %1", $from_ns unless defined $d; 
+        # delete old
+        kv->delete( ns => $from_ns );
+        # set new 
+        $d->{favorite_folder} = $p->{id_folder};
+        $to_ns .= '.' . $p->{id_folder};
+        $to_ns .= '/' . $p->{id_favorite};
+        _debug "TO_NS $to_ns";
+        kv->set( ns => $to_ns, data=>$d );
+        { success=>\1, msg=>_loc("Favorite moved ok") }
     } catch {
         { success=>\0, msg=>shift() }
     };
