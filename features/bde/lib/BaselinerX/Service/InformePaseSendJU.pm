@@ -24,6 +24,7 @@ sub main {
 
   # El provider por defecto.
   my $provider = 'informepase.ju_email';
+  my $p_model = Baseliner->model('Permissions');
 
   # Tenemos que filtrar también por fecha, para que vaya un poco más rápido esto.
   my ($Second, $Minute, $Hour, $Day, $Month, $Year, $WeekDay, $DayOfYear, $IsDST) = localtime(time);
@@ -49,7 +50,12 @@ sub main {
     my @_users = build_users($data->{environment}, @{$data->{cam_list}});
     $data->{status}=_loc(bali_rs('Job')->find( $data->{job_id} )->status);
     for my $user (@_users) {
-      push @{$users{$user}}, $data;
+      for my $cam (_array $data->{cam_list}) {
+        if ( $p_model->user_has_project(username=>$user, project_name=>$cam) ){
+          push @{$users{$user}}, $data;
+          last;
+        }
+      }
     }
   }
   unless (keys %users) {

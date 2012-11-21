@@ -155,33 +155,35 @@ sub wait_for {
     my $wait_secs = 0;
     $self->busy_secs( - time );
     $self->update;
-    $p{logger}->warn( _loc("Waiting for semaphore %1...", $sem-$bl) ) if defined $p{logger};
+    $p{logger}->debug( _loc("Waiting for semaphore %1...", "$sem-$bl") ) if defined $p{logger};
     while( 1 ) {
         $self->discard_changes; # reselect the row
         if( $self->status eq 'granted' ) {
             $self->status( 'busy' );
-            $self->wait_secs( $wait_secs );
+            $self->wait_secs( $self->ts_grant->subtract_datetime($self->ts_request)->{seconds} );
             $self->ts_grant( _now() );
             $self->update;
-            $p{logger}->warn( _loc("Semaphore %1 granted", $sem-$bl) ) if defined $p{logger};
+            $p{logger}->debug( _loc("Semaphore %1 granted", "$sem-$bl") ) if defined $p{logger};
             ref( $p{critical} ) eq 'CODE' and $p{critical}->($p{args});
             return $self;
-        }
-        elsif( $self->status eq 'cancel' ) {
-            _throw new Baseliner::Exception::Semaphore::Cancelled( message=>_loc( 'Semaphore %1 cancelled', $sem-$bl ) );
-        }
-        elsif( $self->run_now ) {
+        } elsif( $self->status eq 'cancel' ) {
+            _throw new Baseliner::Exception::Semaphore::Cancelled( message=>_loc( 'Semaphore %1 cancelled', "$sem-$bl" ) );
+        } elsif( $self->run_now ) {
             $self->status( 'done' );
+    _debug _now . " $$ Releasing semaphore at wait_for:".$self->id."\n";
             $self->ts_grant( _now() );
             $self->ts_release( _now() );
-            $self->wait_secs( $wait_secs );
+            $self->wait_secs( $self->ts_grant->subtract_datetime($self->ts_request)->{seconds} );
+            #$self->wait_secs( parse_dt('%F %T',$self->ts_grant)->subtract_datetime(parse_dt('%F %T',$self->ts_request))->{seconds} );
+            #$self->wait_secs( $wait_secs );
             $self->update;
-            $p{logger}->warn( _loc("Semaphore %1 skipped", $sem-$bl) ) if defined $p{logger};
+            $p{logger}->debug( _loc("Semaphore %1 skipped", "$sem-$bl") ) if defined $p{logger};
             return $self;
         }
-        sleep $freq;
+
+        sleep $freq unless $p{no_wait};
         ref($p{callback}) eq 'CODE' and $p{callback}->();
-        $wait_secs += $freq;
+        #$wait_secs += $freq;
         defined $p{timeout} and do {
             _throw _loc("Semaphore Timeout") if $p{timeout} < $wait_secs;
         };
@@ -194,12 +196,16 @@ Release semaphore.
 
 =cut
 sub release {
-    my $self = shift;
-    $self->status('done');
-    $self->update;
-    $self->busy_secs( time + $self->busy_secs );
+    my ($self, %p ) = @_;
+    my $sem = $self->sem;
+    my $bl = $self->bl;
+
+    $p{logger}->debug( _loc("Releasing semaphore %1...", "$sem-$bl") ) if defined $p{logger};
     $self->ts_release( _now() );
+    $self->status('done');
+    #$self->busy_secs( time + $self->busy_secs );
     $self->update;
+    _debug _now." $$ Releasing semaphore at release : ". $self->id. "\n";
 }
 
 =head2 next_status
@@ -218,6 +224,7 @@ sub next_status {
         busy    => 'done'
     };
     if( my $next_status = $statuses->{ $self->status } ) {
+        _debug "Changing semaphore " . $self->id . " status to ".$next_status;
         $self->status( $next_status );
         $self->update;
     }
@@ -231,14 +238,15 @@ Unfortunately, if the status is C<granted>, this check
 does not work because the C<discard_changes> method in 
 C<wait_for> will trigger a C<DESTROY> everytime. 
 
-=cut
 sub DESTROY {
     my $self = shift;
     if( $self->status && $self->status =~ /busy|waiting|idle/ ) {
+        _debug _now . " $$ Releasing from DESTROY: " . $self->id . "\n";
         $self->release;
         #$self->ts_release( \'sysdate' );
     }
 }
+=cut
 
 1;
 

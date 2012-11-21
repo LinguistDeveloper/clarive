@@ -436,7 +436,7 @@ event_hook 'event.job.new' => 'before'=> sub {
 
     my $ll = $p->{check_linked_list} eq 'on' ? 1 : 0;
     if ( $ll ) {
-        $job_data->{approval}->{reason}.= '<br><b>Changeman: el pase va a refrescar la linked-list</b>';
+        $job_data->{approval}->{reason}.= '<br><b>Changeman: '. _loc ("Needs to restart the LINKLIST") ."</b>";
     }
 };
 

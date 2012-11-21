@@ -35,30 +35,12 @@ Get a package using a USS REXX routine.
 =cut
 sub get_pkg {
     my ($self, %args) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-    my $timeout;
-    my $prompt;
-
     # _log _dump %args;
     
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
-
     my $filter = $args{filter} || '*';
-    # my $job_type = $args{job_type} || 'p';
-    # my $to = $args{to_env} eq 'ANTE'?'PREP':$args{to_env};
-    
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'llpackage' );
-    my $cmd = $utility . ' ' . $filter;
+    my $cmd = 'llpackage ' . $filter;
 
-    # _log 'get_pkg' . $cmd;
-    
-    return $self->execute_cmd( $bx, $cmd );
+    return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.ListItems', frequency=>3} );
 }
 
 =head2 xml_getPkg
@@ -96,35 +78,30 @@ List packages using a USS REXX routine.
 =cut
 sub list_pkgs {
     my ($self, %args) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-    my $timeout;
-    my $prompt;
-
     # _log _dump %args;
     
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
-
-    # *,p|m,PREP|FORM|PROD,CAM1 CAM2
-    # *,p,PROD,XXX SCT
     my $filter = '"'.($args{filter} || '*').'"';
     my $job_type = $args{job_type} || 'p';
-    # my $to = $args{to_env} || 'PROD';
     my $to = $args{to_env};
     my $apps = join ' ', _array( $args{projects} );
-    
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'll01' );
-    my $cmd = $utility . ' ' . join(',', $filter, $job_type, $to, $apps ) ;
+    my $cmd=undef;
+    my $ret=undef;
+   
+    for ( _array $to) {
+        $cmd = 'll01 ' . join(',', $filter, $job_type, $_, $apps ) ;
+        _debug "Invoco a la lista: $cmd"; 
+        my $xml= $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.ListItems', frequency=>1} );
 
-    #_log  "list_pkgs: " . $cmd;
-    
-    return $self->execute_cmd( $bx, $cmd );
-
+        if ( ref $ret ) {
+            for ($xml->{PackList}->{Package}) {
+                print "Adding package " . _dump $_ . " to XML";
+                $ret->{PackList}->{Package} = $_;
+            }
+        } else {
+            $ret = $xml;
+        }
+    }
+    return $ret;
 }
 
 =head2 xml_pkgs
@@ -162,18 +139,7 @@ Associates packages to SCM job
 =cut
 sub addToJob {
     my ($self, %args) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-    my $timeout;
-    my $prompt;
-
     my $job = Baseliner->model('Baseliner::BaliJob')->search({ name=>$args{job} })->first;
-
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
 
     # N.TEST-00000250,p|m,PREP|FORM|PROD, R, YYYYMMDDHHMISS, PACKAGE_1, PACKAGE_2,... PACKAGE_N
     my $pase = $job->name;
@@ -188,13 +154,9 @@ sub addToJob {
     }
     chop $items;
 
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'll02' );
-    my $cmd = $utility . ' ' . join(',', $pase, $job_type, $to, $refresh, $date, $items ) ;
+    my $cmd = 'll02 ' . join(',', $pase, $job_type, $to, $refresh, $date, $items ) ;
 
-    #_log "AddToJob: $cmd";
-
-    return $self->execute_cmd( $bx, $cmd );
+    return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', frequency=>3} );
 }
 
 =head2 xml_addToJob
@@ -226,31 +188,20 @@ Removes association betwen job and packages
 =cut
 sub cancelJob {
     my ($self, %args) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-    my $timeout;
-    my $prompt;
-
     my $job = Baseliner->model('Baseliner::BaliJob')->search({ name=>$args{job} })->first;
-    
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
     
     # N.TEST-00000250, PACKAGE_1, PACKAGE_2,... PACKAGE_N
     my $pase = $job->name;
     my $job_type = $job->type eq 'promote'?'p':'m';
     my $to = $job->bl;
 
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'll05' );
-    my $cmd = $utility . ' ' . join(',', $job_type, $to, $pase, _array( $args{items} ) ) ;
+    my $cmd = 'll05 ' . join(',', $job_type, $to, $pase, _array( $args{items} ) ) ;
 
-    #_log "cancelJob: $cmd";
-    
-    return $self->execute_cmd( $bx, $cmd );
+    if ( $args{jobName} ) {
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', job=>$args{jobName}, log=>$args{logger}, frequency=>3} );
+    } else {
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', frequency=>3} );
+    }
 }
 
 =head2 xml_addToJob
@@ -288,28 +239,22 @@ Execute a Changeman Package
 =cut
 sub runPackageInJob {
     my ($self, %args) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
     
+    print "runPackageInJob: "._dump %args;
+
     # p|m, PREP|FORM|PROD, PACKAGE_1, N.TEST-00000250 
     my $job_type = $args{job_type};
     my $job = $args{job};
     my $to = $args{bl};
     my $package = $args{package};
     
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'll03' );
-    my $cmd = $utility . ' ' . join(',', $job_type, $to, $package, $job ) ;
+    my $cmd = 'll03 ' . join(',', $job_type, $to, $package, $job ) ;
     
-    #_log "runPackageInJob: $cmd";
-    
-    return $self->execute_cmd( $bx, $cmd );
+    if ( $args{jobName} ) {
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', job=>$args{jobName}, log=>$args{logger}, frequency=>3} );
+    } else {
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', frequency=>3} );
+    }
 }
 
 =head2 xml_runPackageInJob
@@ -346,23 +291,15 @@ Refresh LLA
 =cut
 sub refreshLLA {
     my ($self, %args) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-
     _throw 'Missing sites' unless length $args{sites};
 
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
+    my $cmd = 'llreflla '. $args{sites};
     
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'llreflla' );
-    my $cmd = $utility;
-    
-    #_log "refreshLLA: $cmd";
-    return $self->execute_cmd( $bx, "$cmd $args{sites}" );
+    if ( $args{jobName} ) {
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', job=>$args{jobName}, log=>$args{logger}, frequency=>3} );
+    } else {
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', frequency=>3} );
+    }
 }
 
 =head2 xml_refreshLLA
@@ -400,22 +337,10 @@ Recover Changeman cache
 =cut
 sub cache {
     my ($self) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-    my $timeout;
-    my $prompt;
-
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
     
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'llcache' );
-    my $cmd = $utility;
+    my $cmd = 'llcache';
 
-    return $self->execute_cmd( $bx, $cmd );
+    return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.ListItems', frequency=>3} );
 }
 
 =head2 xml_cache
@@ -454,23 +379,9 @@ Recover Changeman applications
 =cut
 sub listApplications {
     my ($self) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-    my $timeout;
-    my $prompt;
+    my $cmd = 'llaplics';
 
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
-    
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'llaplics' );
-    my $cmd = $utility;
-
-    # _log "aplications: $cmd";
-    return $self->execute_cmd( $bx, $cmd );
+    return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.ListItems', frequency=>3} );
 }
 =head2 xml_applications
 
@@ -507,24 +418,17 @@ Recover Changeman Package components
 =cut
 sub listComponents {
     my ($self, %args) = @_;
-    my $host = $self->host; #'prue';
-    my $port = $self->port; #58765;
-    my $key = $self->key; #'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=';
-    my $timeout;
-    my $prompt;
-
-    # critical section
-    #my $sem = Baseliner->model('Semaphores')->wait_for( sem=>'changeman.semaphore', who=>'changeman benchmark' );
-    my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$host, port=>$port|58765, key=>$key|'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE=');
-    #$sem->release;
-    
     my $package = $args{package};
-    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
-    my $utility=File::Spec->catfile($utildir, 'llcomponentes' );
-    my $cmd = $utility . ' ' . $package;
+    my $cmd = 'llcomponentes ' . $package;
 
     #_log "components: $cmd";
-    return $self->execute_cmd( $bx, $cmd );
+    if ( defined $args{jobName} ) {
+        _debug "1";
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.ListItems', job=>$args{jobName}, log=>$args{logger}, frequency=>3} );
+    } else {
+        _debug "2";
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.ListItems', frequency=>3} );
+    }
 }
 =head2 xml_components
 
@@ -566,10 +470,24 @@ sub _loc_xml_chm {
 }
 
 sub execute_cmd {
-    my ($self, $bx, $cmd ) = @_;
+    my ($self, $args) = @_;
+
     my ($oper,$top,$xml,$basecmd);
 
+    my $utildir = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' )->{utildir};
+    my $cmd=File::Spec->catfile($utildir, $args->{cmd});
+
+    my $who = $args->{job}||'changeman benchmark';
+    my $logger = $args->{log}||undef;
+
     CMD: {
+### Critical region
+        #my $sem = Baseliner->model('Semaphores')->request( sem=>$args->{sem}, who=>$who, logger=>$logger, frequency=>$args->{frequency} );
+        my $sem = Baseliner->model("Semaphores")->request( sem=>$args->{sem}, who=>$who, logger=>$logger, bl=>"*", no_wait=>1); 
+
+        my $bx = BaselinerX::Comm::Balix->new(os=>"mvs", host=>$self->host, port=>$self->port, key=>$self->key);
+
+        $logger->debug( _loc("Running"), data=>$cmd ) if defined $logger;
         my ($RC,$RET)=$bx->execute( $cmd );
         my @cal = caller(1);
         $oper = $cal[3];  # calling sub name 
@@ -584,6 +502,9 @@ sub execute_cmd {
         # log this to the repository
         $basecmd = $cmd =~ m{^.*/(\w+) .*$};
         $basecmd ||= $cmd;
+
+        $sem->release(logger=>$logger);
+### Critical region
 
         redo CMD if $top=~m{IKJ56225I};
     }

@@ -61,18 +61,17 @@ sub main {
 
   $log->info(_loc("Generating reports...") );
   try {
-      $self->GenerateReport_1($c,$config);
-      $self->GenerateReport_2($c,$config);
+      $self->GenerateJobReport($c,$config);
+      $self->GenerateJobDetailReport($c,$config);
   } catch {
       my $message=$_;
       my $action = "action.bde.receive.generate_reports_error";
-
       notify_error(_loc("Error during report generation"), $message, $action);
   };
   $log->info(_loc("Reports generated") );
 }
 
-sub GenerateReport_1 {
+sub GenerateJobReport {
   my ($self, $c, $config) = @_;
   my $job        = $c->stash->{job};
   my $log        = $job->logger;
@@ -89,8 +88,9 @@ sub GenerateReport_1 {
   my @natures = _unique map { $_->{name} } 
                 grep $_->can_i_haz_nature($elements), 
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
+  my $technology = join ' ', @natures;
   # Capture the providers so we can identify whether it is a ZOS job.
-  my $is_zos_p = 'namespace.changeman.package' ~~ _unique map { $_->{provider} } @{$job->job_stash->{contents}};
+  my $is_zos_p = grep /namespace.changeman.package/, _unique map { $_->{provider} } @{ $job->job_stash->{contents}};
   my $month_converter = Month::Convert->new;
   my $addf = sub {
     my ($hashref) = @_; 
@@ -107,22 +107,64 @@ sub GenerateReport_1 {
     $_->{status}      = $status eq 'RUNNING' ? 'FINISHED' : $status; # This is the last step anyway so let's assume everything's fine
     $_->{month_str}   = $month_converter->month_int_to_str($_->{month});
     $_->{username}    = $job_owner;
+    $_->{technology}   = $technology;
     $_;
   };
-  my @data = $is_zos_p ? $self->build_changeman_data($addf, map { _pathxs $_, 1 } grep {$_} map { $_->{application} } @{$job->job_stash->{contents}}, $job )
+  my @data = $is_zos_p ? $self->build_changeman_data(addf=>$addf, job=>$job, applications=>map { _pathxs $_, 1 } grep {$_} map { $_->{application} } @{$job->job_stash->{contents}} )
                        : map  { $addf->($_) } # Add the rest of the stuff
                          grep { $_->{technology} ~~ @natures } # Remove unwanted natures, get only those that are registered
                          map +{project => $_->[0], subapplication => $_->[1], technology => $_->[2]}, # Hashify!
                          map  { [split '#', $_] } _unique map { join '#', @{$_} } # Remove duplicates
                          map  { $self->data_tuple($_->{fullpath}, @natures_with_subapps) } @{$elements}; # Make tuple
   my $m = Baseliner->model('Baseliner::BaliJobReport');
+  _debug "REPORT DATA: "._dump @data;
+  $m->create($_) for @data;
+  return;
+}
+
+sub GenerateJobDetailReport {
+  use Baseliner::Sugar;
+  my ($self, $c, $config) = @_;
+  my $job        = $c->stash->{job};
+  my $job_name   = $job->name;
+  my $elements   = $job->job_stash->{elements}->{elements};
+  my $contents   = $job->job_stash->{contents};
+  my $bl         = $job->bl;
+  my $start_time = $job->job_data->{starttime};
+
+  my @natures = _unique map { $_->{name} }
+                grep $_->can_i_haz_nature($elements),
+                map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
+  my $technology = join ' ', @natures;
+
+  my $addf = sub {
+    my ($hashref) = @_;
+    $_->{job_name} = $job_name;
+    $_->{bl} = $bl;
+    $_->{fecha} = $start_time;
+    $_->{technology} = $technology;
+    $_->{subappl} = undef;
+    $_->{packagegroup} = undef;
+    $_;
+    };
+
+  my @data = map  { $addf->($_) } map { +{package_name=>ns_get($_->{item})->ns_name, cam=>ns_get($_->{application})->ns_name, node=>$_->{data}->{site}, type=>$_->{data}->{motivo} eq 'PRO'?'Proyecto':$_->{data}->{motivo} eq 'PET'?'PeticiÃ³n':$_->{data}->{motivo} eq 'MTO'?'Mantenimiento':'Incidencia', description=>$_->{data}->{codigo} }} @{$contents};
+  my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
   $m->create($_) for @data;
   return;
 }
 
 sub build_changeman_data {
-  my ($self, $addf, @applications, $job) = @_;
-  map { $addf->($_) } map +{project => $_, subapplication => '', technology => 'ZOS', statename => Baseliner->model('Baseliner::BaliBaseline')->search({bl=>$job->job_data->{bl}})->first->name ,origin => uc ( $job->job_stash->{origin}||'baseliner' ) }, @applications;
+  my ($self, %p) = @_;
+  my $addf = $p{addf};
+  my $job = $p{job};
+  my @applications = $p{applications};
+
+  my $statename = Baseliner->model('Baseliner::BaliBaseline')->search({bl=>$job->job_data->{bl}})->first->name;
+  my $origin = uc ( $job->job_stash->{origin}||'baseliner' ) ;
+  my $linklistRefresh = $job->job_stash->{chm_linked_list};
+
+  map { $addf->($_) } map +{project => $_, subapplication => '', linklistrefresh => $linklistRefresh, statename => $statename, origin => $origin}, @applications;
 }
 
 sub data_tuple {

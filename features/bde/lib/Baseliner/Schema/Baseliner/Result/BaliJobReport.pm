@@ -1,5 +1,5 @@
 package Baseliner::Schema::Baseliner::Result::BaliJobReport;
-use strict;
+strict;
 use warnings;
 use base 'DBIx::Class::Core';
 
@@ -12,7 +12,7 @@ __PACKAGE__->add_columns(
   'job_name', {data_type => 'varchar2', is_nullable => 0, size => 50},
   'project', {data_type => 'varchar2', is_nullable => 0, size => 3},
   'subapplication', {data_type => 'varchar2', is_nullable => 1, size => 20},
-  'technology', {data_type => 'varchar2', is_nullable => 0, size => 20},
+  'technology', {data_type => 'varchar2', is_nullable => 0, size => 1024},
   'urgent', {data_type => 'integer', is_nullable => 0, default => 0},
   'year', {data_type => 'integer', is_nullable => 0},
   'quarter', {data_type => 'integer', is_nullable => 0},
@@ -25,8 +25,12 @@ __PACKAGE__->add_columns(
   'status', {data_type => 'varchar2', is_nullable => 0, size => 20},
   'month_str', {data_type => 'varchar2', is_nullable => 1, size => 20},
   'origin', {data_type => 'varchar2', is_nullable => 1, size => 9},
-  'username', {data_type => 'varchar2', is_nullable => 1, size => 8},
+  'username', {data_type => 'varchar2', is_nullable => 1, size => 20},
   'nodist', {data_type => 'char', is_nullable => 0, size => 1, default_value => '0'},
+  'statename', {data_type => 'varchar2', is_nullable => 0, size => 50},
+  'motivo', {data_type => 'varchar2', is_nullable => 0, size => 25},
+  'descripcion', {data_type => 'varchar2', is_nullable => 0, size => 4000},
+  'linklistrefresh', {data_type => 'integer', is_nullable => 0, default => 0},
 );
 
 __PACKAGE__->set_primary_key('id');

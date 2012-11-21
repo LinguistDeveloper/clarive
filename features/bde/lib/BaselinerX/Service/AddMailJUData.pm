@@ -21,38 +21,43 @@ sub main {
   my $log      = $job->logger;
   my @elements = @{$job->job_stash->{elements}->{elements}};
   my @contents = @{$job->job_stash->{contents}};
-  
-  # Set data.
-  my $data = {
-  	job_id       => $job->{jobid},
-    environment  => $job->job_data->{bl},
-    job_name     => $job->job_data->{name},
-    status       => $job->job_data->{status},
-    username     => $job->job_data->{username},
-    start_time   => $job->job_data->{starttime},
-    end_time     => $job->job_data->{endtime},
-    cam_list     => [_unique map { _pathxs $_->{fullpath}, 1 } @elements],
-    nature_list  => [get_job_natures $job->{jobid}],
-    package_list => [ map { $self->message($_) } @contents ],
-    subapps_list => [get_job_subapps $job->{jobid}]
-  };
-  # Turn it to utf8.
-  # Encode::from_to($_, 'iso-8859-1', 'utf8') for values %$data;
-  
-  # Calculate date so we can identify ns allowing for faster search results.
-  my ($Second, $Minute, $Hour, $Day, $Month, $Year, $WeekDay, $DayOfYear, $IsDST) = localtime(time);
-  $Year  += 1900;
-  $Month += 1;
-  $Month = '0' . $Month if $Month < 10;
-  $Day   = '0' . $Day if $Day < 10;
-  
-  # Set data in Baseliner Repository.
-  my $repo = Baseliner->model('Repository');
-  my $provider = 'informepase.ju_email';
-  my $cnt = (scalar Baseliner->model('Repository')->list(provider => $provider)) + 1;
-  my $ns = "$provider/$Year$Month$Day#$cnt";
-  _log "ns -> $ns";
-  $repo->set(ns => $ns, data => $data);
+  my $username=$job->job_data->{username};
+  $username=~s{vpchm|desconocido}{Pase lanzado desde Changeman}ig;
+ 
+  if ( $job->job_data->{bl} ne 'DESA' ){ 
+      # Set data.
+      my $data = {
+        job_id       => $job->{jobid},
+        environment  => $job->job_data->{bl},
+        job_name     => $job->job_data->{name},
+        status       => $job->job_data->{status} eq 'RUNNING'?$job->job_data->{rollback}?_loc('FINISHED DOING ROLLBACK CORRECTLY'):_loc('FINISHED CORRECTLY'):$job->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR'),
+        username     => $username,
+        start_time   => $job->job_data->{starttime},
+        end_time     => $job->job_data->{endtime},
+        cam_list     => [_unique map { _pathxs $_->{fullpath}, 1 } @elements],
+        node_list    => [get_job_nodes [@contents]],
+        nature_list  => [get_job_natures $job->{jobid}],
+        package_list => [ map { $self->message($_) } @contents ],
+        subapps_list => [get_job_subapps $job->{jobid}],
+      };
+      # Turn it to utf8.
+      # Encode::from_to($_, 'iso-8859-1', 'utf8') for values %$data;
+      
+      # Calculate date so we can identify ns allowing for faster search results.
+      my ($Second, $Minute, $Hour, $Day, $Month, $Year, $WeekDay, $DayOfYear, $IsDST) = localtime(time);
+      $Year  += 1900;
+      $Month += 1;
+      $Month = '0' . $Month if $Month < 10;
+      $Day   = '0' . $Day if $Day < 10;
+      
+      # Set data in Baseliner Repository.
+      my $repo = Baseliner->model('Repository');
+      my $provider = 'informepase.ju_email';
+      my $cnt = (scalar Baseliner->model('Repository')->list(provider => $provider)) + 1;
+      my $ns = "$provider/$Year$Month$Day#$cnt";
+      _log "ns -> $ns";
+      $repo->set(ns => $ns, data => $data);
+  }
 }
 
 sub message {
@@ -68,6 +73,6 @@ sub message {
         ## $tipo
         ## $codigo
     }
-    return "<tr><td rowspan=2><li></td><td colspan=2 nowrap><b>$name</b></td></tr><tr><b>$tipo</b></td><td width=100%>$codigo</td></tr>";
+    return "<tr><td rowspan=2><li></td><td colspan=2 nowrap><b>$name</b></td></tr><tr><td nowrap><b>$tipo</b></td><td width=100%>$codigo</td></tr>";
 }
 1;

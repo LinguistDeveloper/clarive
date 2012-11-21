@@ -20,7 +20,7 @@ use Exporter::Tidy default => [
     print_harax net_r7_r12 net_r12_r7 create_package _har_conf promote_packages
     write_arg_file car cdr _package natures_json job_states_json envs_json
     existsp harver intp dir_has_files_p job_assert _har_db natures_from_packagenames
-    types_json packagep get_job_natures get_job_subapps cam_to_projectid
+    types_json packagep get_job_nodes get_job_natures get_job_subapps cam_to_projectid
     users_with_permission notify_ldif_error notify_error split_date month_to_quarter
     in_natures_p bali_natures packagenames_to_natures baseliner_projects_1stlevel sql_date
   }
@@ -830,6 +830,12 @@ truly looks like a package name.
 =cut
 sub packagep { /\w{3}\.\w{1}-\d*/ }
 
+sub get_job_nodes {
+  my ($contents) = @_;
+  _debug "CONTENTS"._dump $contents;
+  sort {$a cmp $b} _unique map { split (/, |,/,$_->{data}->{site}) } _array $contents ;
+}
+
 sub get_job_natures {
   my ($job_id) = @_;
   my $model = Baseliner->model('Baseliner::BaliJobItems');
@@ -837,7 +843,7 @@ sub get_job_natures {
   my $args = {select => {distinct => 'item'}, as => 'nature'};
   my $rs = $model->search($where, $args);
   rs_hashref($rs);
-  map { lc substr($_->{nature}, length 'nature/', length $_->{nature}) } $rs->all;
+  map { _loc ( lc substr($_->{nature}, length 'nature/', length $_->{nature}) ) } $rs->all;
 }
 
 sub get_job_subapps {

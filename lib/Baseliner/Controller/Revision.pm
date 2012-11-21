@@ -233,9 +233,10 @@ sub list : Local {
 
         my $bl = [ $n->bl ];
         my $inspector = try { $n->inspector->stringify } catch { '' };
+print "\nPROCESSING LIST: " . $n->ns_name ."\n";
         push @items,
           {
-            id => $cnt++,
+            id        => $cnt++,
             provider  => $n->provider,
             related   => $app, #$n->related,
             ns_type   => $n->ns_type,
@@ -262,7 +263,7 @@ sub list : Local {
             why_not   => '',
             can_rename => \( $n->does('Baseliner::Role::Namespace::Rename') ),
             can_delete => \( $n->does('Baseliner::Role::Namespace::Delete') ),
-            data      => $n->ns_data,
+            #data      => $n->ns_data,
           };
     }
     $c->stash->{json} = {

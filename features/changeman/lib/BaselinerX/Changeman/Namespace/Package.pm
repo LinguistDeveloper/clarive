@@ -53,7 +53,10 @@ sub can_job {
     }
 
 	# check if it's included in another release
-	my $relid = $1 if $p{ns} =~ m/release\/(.*)/;
+    my $relid = undef;
+    if (defined $p{ns} ) {
+        $relid = $1 if $p{ns} =~ m/release\/(.*)/;
+    }
 	my $relsearch = ($relid?{ns=>"changeman.package/".$self->ns_name,id_rel=>{ '<>' => $relid } }:{ns=>"changeman.package/".$self->ns_name }) ;
 	my $rs = Baseliner->model('Baseliner::BaliReleaseItems')->search($relsearch);
 	while ( my $r = $rs->next ) {

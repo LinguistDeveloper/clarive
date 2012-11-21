@@ -165,7 +165,6 @@ sub job_run {
     my ($self,$c,$config)=@_;
 
     # redirect log $BASELINER_LOGHOME/
-
     my $jobid = $config->{jobid};
     $self->status('RUNNING');
     $c->stash->{job} = $self;
@@ -173,6 +172,9 @@ sub job_run {
     $self->logger( new BaselinerX::Job::Log({ jobid=>$jobid }) );
     $self->report_pid;
     $self->config( $config );
+    
+    # Avoid cancelled jobs to run
+    return 1 if ! $self->row->is_active();
 
     # trap all die signals
     $SIG{__DIE__} = \&_throw;

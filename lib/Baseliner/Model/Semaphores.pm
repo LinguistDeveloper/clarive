@@ -82,6 +82,7 @@ sub create {
     #$req->seq( $req->id );
     $req->update;
 
+    _debug _now." $$ Creating semaphore". "\n";
     return $req;
 }
 
@@ -94,9 +95,10 @@ Creates and waits for its place in the semaphore queue.
 sub request {
     my $self = shift;
     my $p = _parameters(@_);
+    my $frequency=$p->{frequency}||=10;
     $self->logger( $p->{logger} ) if defined $p->{logger};
     my $sem_req = $self->create( @_ );
-    return $self->wait_for( id=>$sem_req->id, sem=>$sem_req->sem );
+    return $self->wait_for( id=>$sem_req->id, sem=>$sem_req->sem, frequency=>$frequency, no_wait=>$p->{no_wait} );
 }
 
 sub wait_for {
@@ -105,7 +107,7 @@ sub wait_for {
     _throw _loc('Semaphore %1 not found', $p{sem} ) unless ref $req;
     $req->status( 'waiting' );
     $req->update;
-    $req->wait_for( logger=>$self->logger );
+    $req->wait_for( logger=>$self->logger, %p); #frequency=>$p{frequency} );
     return $req;
 }
 
@@ -133,7 +135,9 @@ sub process_queue {
         }
 
         if ( $free_slots > 0 || $sem->queue_mode eq 'free' || $sem->active == 0 ) {
+            _debug _now." $$ Granted semaphore ". $req->id . " SEM: " . $req->sem . " FREE SLOTS " . $free_slots . " SLOTS " . $slots . " OCCUPIED " . $occupied . " QUEUE MODE " . $sem->queue_mode . "\n";
             $req->status('granted');
+            $req->ts_grant(_now);
             $req->update;
             --$free_slots;
             $ENV{BASELINER_DEBUG} and _log $req->id . " granted";

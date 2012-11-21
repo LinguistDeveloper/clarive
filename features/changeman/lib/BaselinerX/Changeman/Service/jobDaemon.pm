@@ -411,7 +411,7 @@ sub run_once {
           my $chm = BaselinerX::Changeman->new( host=>$chmConfig->{host}, port=>$chmConfig->{port}, key=>$chmConfig->{key} );
           my $ret;
           if ($scm eq 'A') { # Comes from Baseliner
-              $ret= $chm->xml_cancelJob(job=>$runner->name, items=>[$pkg] ) ;
+              $ret= $chm->xml_cancelJob(job=>$runner->name, items=>[$pkg], jobName=>$runner->name, logger=>$runner->logger ) ;
               if ($ret->{ReturnCode} ne '00') {
                   $log_action = _loc( "Package %1 can not be dessassociatted from job %2", $pkg, $runner->name );
                   $row=$runner->logger->warn( $log_action, _dump $ret );

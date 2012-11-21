@@ -110,7 +110,7 @@ sub delete_bali_pases {
     qx|$_[0]|;                         # COTTON
   };
   $fn->($_) for (qq{find -L $log_home -type f \\( -name 'N.TEST*' -o -name 'N.ANTE*' -o -name 'N.CURS*' -o -name 'N.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1},
-                 qq{find -L $log_home -type f \\( -name 'B.TEST*' -o -name 'N.ANTE*' -o -name 'B.CURS*' -o -name 'B.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1}
+                 qq{find -L $log_home -type f \\( -name 'B.TEST*' -o -name 'B.ANTE*' -o -name 'B.CURS*' -o -name 'B.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1}
                  );
   mylog "Datos de pases de Baseliner en disco purgados.";
 }

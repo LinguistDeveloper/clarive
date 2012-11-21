@@ -70,7 +70,7 @@ sub run {
     $log->info( _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ) );
     try {
         Baseliner->model('Request')->request(
-            name   => _loc("Aprobación del Pase %1", $job->name),
+            name   => _loc("Approval for job %1", $job->name),
             action => 'action.job.approve',
             item   => $job->name,
             template_engine => 'mason',

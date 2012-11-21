@@ -462,8 +462,11 @@ msgstr "Solicitar Aprobación"
 msgid "Requested On"
 msgstr "Solicitado"
 
+msgid "Approval for job %1"
+msgstr "Aprobación del pase %1"
+
 msgid "Requesting approval for job %1, baseline %2: %3"
-msgstr "Solicitud de aprobación para el pase %1 al entorno %2. Motivo: %3"
+msgstr "Solicitud de aprobación para el pase %1 al entorno %2.<br>Motivo: %3"
 
 msgid "User does not have permission to perform the operation"
 msgstr "El usuario no tiene permiso para realiza la operación"

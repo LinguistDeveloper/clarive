@@ -59,9 +59,7 @@ sub execute {
    if ($job->{origin} ne 'changeman') {
       foreach my $package (_array $job_stash->{contents}) {  ## Desasociamos los paquetes del pase.
          next if ! defined $package->{provider} || ( defined $package->{provider} && $package->{provider} ne "namespace.changeman.package" );
-      _debug 1;
          push @pkgs, $package->{item} if defined $package->{provider} && $package->{provider} eq "namespace.changeman.package";
-      _debug 1;
       }
    }
 
@@ -74,13 +72,11 @@ sub execute {
 
    foreach my $package (_array $job_stash->{contents}) {
       next if ! defined $package->{provider} || ( defined $package->{provider} && $package->{provider} ne "namespace.changeman.package" );
-      _debug '2' . $package->{item};
       my $ns = ns_get( $package->{item} );
-      _debug '2' . $package->{item};
 
       if ($package->{returncode}) {
          unless ( $package->{returncode} =~ m{ok}i ) {
-            $chm->xml_cancelJob(job=>$job->{name}, items=>$package->{item}) if ($job->{origin} ne 'changeman');
+            $chm->xml_cancelJob(job=>$job->{name}, items=>$package->{item}, jobName=>$job->{name}, logger=>$log) if ($job->{origin} ne 'changeman');
             _throw _loc('Error during changeman execution');
          }
       } elsif ( $job->{origin} ne 'changeman' ) {
@@ -99,7 +95,7 @@ sub execute {
          } elsif ( $job->bl ne 'PROD' && $job->{job_data}->{type} eq 'demote') {
             $log->debug( _loc( qq{Execute package <b>%1</b> type <b>%2</b> to site <b>%3</b>},$ns->{ns_name}, 'demote', $ns->{ns_data}->{site} ));
          } else {
-            $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+            $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs, jobName=>$job->{name}, logger=>$log) if ($job->{origin} ne 'changeman');
             _throw _loc('Invalid job for Changeman');
             return 1;
          }
@@ -108,10 +104,12 @@ sub execute {
              job       =>$job->{name},
              'package' =>$ns->ns_name,
              job_type  =>$job->{job_data}->{type} =~ m{PROMOTE}i?'P':'M',
-             bl        =>$job->{job_data}->{bl},
+             bl        =>$job->{job_data}->{bl}, 
+             jobName   =>$job->{name}, 
+             logger    =>$log,
          );
          if ( $ret->{ReturnCode} !~ m{^00$|^0$} ) {
-            $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+            $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs, jobName=>$job->{name}, logger=>$log) if ($job->{origin} ne 'changeman');
             $log->error (_loc("Can't execute changeman package %1", $ns->{ns_name}), _dump $ret);
             _throw _loc('Error during changeman execution');
          } else {
@@ -140,20 +138,20 @@ sub execute {
         _fail _loc "Empty xml data from changeman";
       }
 
-      my $ret = $chm->xml_refreshLLA( sites=>$data );
+      my $ret = $chm->xml_refreshLLA( sites=>$data, jobName=>$job->{name}, logger=>$log);
 
       if ($ret->{ReturnCode} ne '00') {
-         $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) if ($job->{origin} ne 'changeman');
+         $chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs, jobName=>$job->{name}, logger=>$log) if ($job->{origin} ne 'changeman');
          $log->error (_loc("Can't execute Linklist refresh"), $ret->{Message});
          _throw _loc('Error during changeman execution');
       } else {
          $log->info(_loc("Linklist refresh correctly submitted"));
       }
    }
-   if ($job->{origin} ne 'changeman') {
-   		$chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs) 
-      }
-        Baseliner->model('Jobs')->resume(id=>$job->jobid, silent=>1) if $p->{finalize};
+#   if ($job->{origin} ne 'changeman') {
+#   		$chm->xml_cancelJob(job=>$job->{name}, items=>\@pkgs, jobName=>$job->{name}, logger=>$log) 
+#      }
+   Baseliner->model('Jobs')->resume(id=>$job->jobid, silent=>1) if $p->{finalize};
 }
 
 sub finalize {
@@ -185,8 +183,6 @@ sub job_elements {
    my @elems;
    my @list;
 
-   $log->debug( "Changeman package list elements", _dump  $stash );
-
    for my $item ( _array $stash->{contents} ) {
       next if $item->{item} =~ 'nature/.*';
       
@@ -209,7 +205,7 @@ sub job_elements {
 #         }
 #      }
 
-      my $xml = $chm->xml_components( package=>$ns->{ns_name} );
+      my $xml = $chm->xml_components( package=>$ns->{ns_name}, jobName=>$job->{name}, logger=>$log);
       @list=();  ## Vaciamos el array de elementos
 
       if ( scalar _array $xml->{result} ) {

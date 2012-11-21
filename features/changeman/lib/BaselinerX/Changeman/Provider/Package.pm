@@ -157,7 +157,9 @@ sub list {
     return if $bl eq 'TEST';  ## En changeman no hay pases a TEST
     my $rfc = $p->{rfc};
     ( ref $c && ref $c->stash ) and $bl ||= $c->stash->{bl};
-    my $job_type = $p->{job_type};
+    my $job_type = $p->{job_type}||'promote';
+
+    _log _dump $p;
     
     my ($query, $pattern) = ($1||$3, uc($2)) if $p->{query} =~ m{(\S+)\s+(.*)|(\S+)};
     my @projects;
@@ -275,7 +277,8 @@ sub list {
             }
         }
 
-    # _log "provider list finished (records=".scalar (@ns)."/$total).";
+#    _log "provider list finished (records=".scalar (@ns)."/$total).\n" . _dump @ns;
+
     return { data=>\@ns, total=>$total, count=>scalar(@ns) };
 }
 

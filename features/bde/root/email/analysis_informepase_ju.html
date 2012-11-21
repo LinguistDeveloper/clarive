@@ -63,7 +63,8 @@ body {
         <td class="backGroundPrimeraFila">CAM</td>
         <td class="backGroundPrimeraFila">Estado</td>
         <td class="backGroundPrimeraFila">Entorno</td>
-        <td class="backGroundPrimeraFila">Tecnología</td>
+        <td class="backGroundPrimeraFila">Nodo</td>
+        <td class="backGroundPrimeraFila">Tipología</td>
         <td class="backGroundPrimeraFila">Subaplicación</td>
         <td class="backGroundPrimeraFila">Usuario</td>
         <td class="backGroundPrimeraFila">Desde</td>
@@ -77,6 +78,7 @@ body {
         <td nowrap class="backGroundFilaDatos"><li><% join '<li>', @{$row->{cam_list}} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{status} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{environment} %></td>
+        <td nowrap class="backGroundFilaDatos"><li><% join '<li>', @{$row->{node_list}} %></td>
         <td nowrap class="backGroundFilaDatos"><li><% join '<li>', @{$row->{nature_list}} %></td>
         <td nowrap class="backGroundFilaDatos"><% join '<br>', @{$row->{subapps_list}} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{username} %></td>

@@ -3,6 +3,9 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Changeman Utils"
+msgstr "Utilidades de Changeman"
+
 msgid "Changeman package"
 msgstr "Paquete de Changeman"
 
@@ -31,10 +34,10 @@ msgid "<b>Changeman</b> Job Elements"
 msgstr "Listado de elementos de Changeman"
 
 msgid "Execution for changeman package %1 correctly submitted"
-msgstr "Aprobación del paquete Changeman %1 solicitada correctamente"
+msgstr "AprobaciÃ³n del paquete Changeman %1 solicitada correctamente"
 
 msgid "Can't execute changeman package %1"
-msgstr "Se ha producido un error durante la solicitud de la aprobación del paquete Changeman %1"
+msgstr "Se ha producido un error durante la solicitud de la aprobaciÃ³n del paquete Changeman %1"
 
 msgid "LINKLIST refresh correctly submitted"
 msgstr "Refresco de LINKLIST solicitado correctamente"
@@ -46,16 +49,16 @@ msgid "Recovered output for job %1"
 msgstr "Recuperada salida del job %1"
 
 msgid "Changeman job for package %1 in site %2 finished successfully"
-msgstr "Instalación del paquete Changeman %1 en el site %2 finalizó correctamente"
+msgstr "InstalaciÃ³n del paquete Changeman %1 en el site %2 finalizÃ³ correctamente"
 
 msgid "Changeman job for package %1 in site %2 finished with error"
-msgstr "Se ha producido un error durante la instalación del paquete Changeman %1 en el site %2"
+msgstr "Se ha producido un error durante la instalaciÃ³n del paquete Changeman %1 en el site %2"
 
 msgid "Changeman job for package %1 finished successfully"
-msgstr "Instalación del paquete Changeman %1 finalizó correctamente"
+msgstr "InstalaciÃ³n del paquete Changeman %1 finalizÃ³ correctamente"
 
 msgid "Error during execution of changeman package %1"
-msgstr "Se ha producido un error durante la ejecución del paquete Changeman %1"
+msgstr "Se ha producido un error durante la ejecuciÃ³n del paquete Changeman %1"
 
 msgid "With the next options:"
 msgstr "El pase se ha creado con las siguientes opciones:"
@@ -82,7 +85,7 @@ msgid "Notify when job needs to refresh the LINKLIST"
 msgstr "Notificar cuando un job necesite refrescar la LINKLIST"
 
 msgid "File %1 can't assign to any SCM job"
-msgstr "No puedo asociar el fichero %1 con ningún job de SCM"
+msgstr "No puedo asociar el fichero %1 con ningÃºn job de SCM"
 
 msgid "Can't create job because %1"
 msgstr "No se puede crear el job: <br>%1"
@@ -97,16 +100,16 @@ msgid "Can't create job for file %1 because we don't know user who creates it"
 msgstr "No se puede crear el job para el fichero %1 porque no conocemos el owner"
 
 msgid "Package is in job %1 with status %2"
-msgstr "El paquete está asociado al job %1 con estado %2"
+msgstr "El paquete estÃ¡ asociado al job %1 con estado %2"
 
 msgid "Fill job_elements"
 msgstr "Recupera los componentes de un paquete"
 
 msgid "Execute package <b>%1</b> type <b>%2</b> to site <b>%3</b>"
-msgstr "Operación de <b>%2</b> al site <b>%3</b> sobre el paquete <b>%1</b> "
+msgstr "OperaciÃ³n de <b>%2</b> al site <b>%3</b> sobre el paquete <b>%1</b> "
 
 msgid "<b>Changeman</b> package %1 will not be installed in site <b>%2</b> until <b>%3</b>"
-msgstr "El paquete Changeman <b>%1</b> no se instalará en el site <b>%2</b> hasta <b>%3</b>"
+msgstr "El paquete Changeman <b>%1</b> no se instalarÃ¡ en el site <b>%2</b> hasta <b>%3</b>"
 
 msgid "<b>Changeman</b> Job Elements from package %1"
 msgstr "Listado de elementos de Changeman del paquete <b>%1</b>"
@@ -115,7 +118,7 @@ msgid "Package <b>%1</b> does not exists in Changeman"
 msgstr "El paquete <b>%1</b> no existe en Changeman"
 
 msgid "Package <b>%1</b> is in active job <b>%2</b>"
-msgstr "El paquete <b>%1</b> está en el job <b>%2</b>"
+msgstr "El paquete <b>%1</b> estÃ¡ en el job <b>%2</b>"
 
 msgid "Can't create job because %1"
 msgstr "No se puede crear el job: %1"
@@ -124,34 +127,34 @@ msgid "Recovered spool outputs for job <b>%1</b>"
 msgstr "Recuperadas salidas de JES para el job <b>%1</b>"
 
 msgid "User <b>%1</b> creates <b>PROMOTION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
-msgstr "El usuario <b>%1</b> crea un job de <b>PROMOCIÓN</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+msgstr "El usuario <b>%1</b> crea un job de <b>PROMOCIÃ“N</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
 
 msgid "Promotion for package <b>%1</b> to <b>%2</b> finished successfully"
-msgstr "La promoción del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
+msgstr "La promociÃ³n del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
 
 msgid "Promotion for package <b>%1</b> to <b>%2</b> finished with error"
-msgstr "La promoción del paquete <b>%1</b> a <b>%2</b> finaliza  con error"
+msgstr "La promociÃ³n del paquete <b>%1</b> a <b>%2</b> finaliza con error"
 
 msgid "User <b>%1</b> creates <b>DEMOTION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
-msgstr "El usuario <b>%1</b> crea un job de <b>DEVOLUCIÓN</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+msgstr "El usuario <b>%1</b> crea un job de <b>DEVOLUCIÃ“N</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
 
 msgid "Demotion for package <b>%1</b> to <b>%2</b> finished successfully"
-msgstr "La devolución del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
+msgstr "La devoluciÃ³n del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
 
 msgid "Demotion for package <b>%1</b> to <b>%2</b> finished with error"
-msgstr "La devolución del paquete <b>%1</b> a <b>%2</b> finaliza  con error"
+msgstr "La devoluciÃ³n del paquete <b>%1</b> a <b>%2</b> finaliza con error"
 
 msgid "User <b>%1</b> creates <b>INSTALLATION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
-msgstr "El usuario <b>%1</b> crea un job de <b>INSTALACIÓN</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+msgstr "El usuario <b>%1</b> crea un job de <b>INSTALACIÃ“N</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully"
-msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> en el site <b>%3</b> con éxito"
+msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> en el site <b>%3</b> con Ã©xito"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error"
 msgstr "Se ha producido un error al cambiar el paquete <b>%1</b> al estado <b>%2</b> en el site <b>%3</b>"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state finished successfully"
-msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> con éxito"
+msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> con Ã©xito"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state finished with error"
 msgstr "Se ha producido un error al cambiar el paquete <b>%1</b> al estado <b>%2</b>"
@@ -195,7 +198,7 @@ msgstr "Orden"
 
 # features/changeman/root/changeman/main.js (139)
 msgid "Where"
-msgstr "Dónde"
+msgstr "DÃ³nde"
 
 # features/changeman/lib/BaselinerX/Changeman/Namespace/Package.pm (106)
 msgid "Error during %1: %2"
@@ -291,7 +294,19 @@ msgstr "FIN from Daemon. Job: %1. Return Code: %2. Action: %3"
 
 # features/changeman/lib/BaselinerX/Changeman/Service/notify.pm (48)
 msgid "No users found for action %1"
-msgstr "Usuarios no encontrados para la acción %1"
+msgstr "Usuarios no encontrados para la acciÃ³n %1"
 
 msgid "Error creating Changeman Job:<br>%1"
 msgstr "Error creando pase Changeman<br>%1"
+
+msgid "zos"
+msgstr "Elementos z/OS"
+
+msgid "zos.linklist"
+msgstr "Elementos z/OS de uso general"
+
+msgid "zos.linklist.db2"
+msgstr "Elementos z/OS de uso general con DB2"
+
+msgid "zos.db2"
+msgstr "Elementos z/OS con DB2"
