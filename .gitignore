@@ -1,5 +1,6 @@
 baseliner_local.conf
 etc/bali_cache
+etc/repl
 .DS_Store
 *.old
 *.bak
