@@ -16,5 +16,7 @@ sub rc {
     $self->error ? 1 : 0;
 }
 
+sub ping {'OK'};
+
 1;
 
