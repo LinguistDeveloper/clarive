@@ -7,6 +7,9 @@
     var ps = 25; //page_size
     var filter_current;
     var stop_filters = false;
+	
+	var typeApplication = '<% $c->stash->{typeApplication} %>';
+	typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
@@ -912,7 +915,7 @@
             button_no_filter, '->', button_create_view, button_delete_view,
             '<div class="x-tool x-tool-expand-west" style="margin:-2px -4px 0px 0px" id="'+id_collapse+'"></div>'
         ],
-        dataUrl: "/topic/filters_list",
+        dataUrl: "/topic/filters_list" + typeApplication,
         split: true,
         colapsible: true,
         useArrows: true,
@@ -1068,7 +1071,7 @@
     
     var query_id = '<% $c->stash->{query_id} %>';
     //var category_id = '<% $c->stash->{category_id} %>';
-    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>', categories: '<% $c->stash->{category_id} %>'}});
+    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>', categories: '<% $c->stash->{category_id} %>', typeApplication: typeApplication}});
     //store_label.load();
     
     return panel;

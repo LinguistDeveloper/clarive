@@ -67,11 +67,11 @@
     }
     
     //Para cuando se envia el formulario no coja el atributo emptytext de los textfields
-    Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
-        Ext.applyIf(this.options, {
-        submitEmptyText:false
-        });
-    });
+    //Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+    //    Ext.applyIf(this.options, {
+    //    submitEmptyText:false
+    //    });
+    //});
 
     var add_edit_status = function(rec) {
         var win;
@@ -102,6 +102,7 @@
                             
                             if (form.isValid()) {
                                 form.submit({
+									submitEmptyText: false,
                                     params: {action: action},
                                     success: function(f,a){
                                         Baseliner.message(_('Success'), a.result.msg );
@@ -507,6 +508,7 @@
                                 
                                 
                                 form.submit({
+									submitEmptyText: false,
                                     params: {action: action, idsstatus: statuses_checked},
                                     success: function(f,a){
                                         Baseliner.message(_('Success'), a.result.msg );
@@ -969,6 +971,7 @@
                                 }
 
                                 form.submit({
+									submitEmptyText: false,
                                     params: {action: action, idsroles: roles_checked, idsstatus_to: statuses_to_checked},
                                     success: function(f,a){
                                         Baseliner.message(_('Success'), a.result.msg );
@@ -1185,6 +1188,7 @@
 				
 				var form = form_fields.getForm();
 				form.submit({
+					submitEmptyText: false,
 					params: { 
 						fields: fields,
 						params: params,
@@ -1619,6 +1623,7 @@
 								
 								if (form.isValid()) {
 									form.submit({
+										submitEmptyText: false,
 										params: {action: action, rsptime: rsptime, deadline: deadline},
 										success: function(f,a){
 											Baseliner.message(_('Success'), a.result.msg );
@@ -2387,6 +2392,7 @@
 							
 							if (form.isValid()) {
 								form.submit({
+									submitEmptyText: false,
 									params: {action: action, rsptime: rsptime, deadline: deadline},
 									success: function(f,a){
 										Baseliner.message(_('Success'), a.result.msg );

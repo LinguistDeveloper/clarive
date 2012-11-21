@@ -121,16 +121,37 @@ register 'registor.action.topic_category_fields' => {
             my @statuses = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')
                 ->search({id_category => $category->{id}}, {join=>'status', 'select'=>'status.name', 'as'=>'name'})->hashref->all;
             for my $field (_array $meta){
-                for my $status (@statuses){
-                    my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.write';
-                    my $description = _loc('Can not edit the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                if ($field->{fields}) {
+                	my @fields_form = _array $field->{fields};
                     
-                    $actions_category_fields{$id_action} = { name => $id_action, description => $description };
-                    
-                    $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
-                    $description = _loc('Can not view the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
-                    
-                    $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                    for my $field_form (@fields_form){
+                        for my $status (@statuses){
+                            my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
+                                    . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.write';
+                            my $description = _loc('Can not edit the field') . ' ' . lc $field_form->{id_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                            
+                            $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                            
+                            $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
+                                    . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.read';
+                            $description = _loc('Can not view the field') . ' ' . lc $field_form->{id_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                            
+                            $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                        }                    
+                    }
+                }
+                else{
+                    for my $status (@statuses){
+                        my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.write';
+                        my $description = _loc('Can not edit the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                        
+                        $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                        
+                        $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
+                        $description = _loc('Can not view the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                        
+                        $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                    }
                 }
             }
         }
@@ -212,6 +233,15 @@ sub topics_for_user {
         #push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
         #$where->{'project_id'} =  \@user_apps;
         $where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}, { "=", undef }];
+    }
+    
+    #Filtros especificos para GDI
+    if( $p->{typeApplication} && $p->{typeApplication} eq 'gdi'){
+        if (!$perm->is_root( $username )){
+            if(!Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.GDI.admin')){
+                $where->{'created_by'} = $username;
+            }
+        }
     }
 
     #DEFAULT VIEWS***************************************************************************************************************

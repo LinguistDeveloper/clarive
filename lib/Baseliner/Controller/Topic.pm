@@ -79,8 +79,12 @@ register 'registor.menu.topics' => {
 };
 
 sub grid : Local {
-    my ($self, $c) = @_;
+    my ($self, $c, $typeApplication) = @_;
     my $p = $c->req->params;
+    
+    #Parametro para casos especiales como la aplicacion GDI
+    $c->stash->{typeApplication} = $typeApplication;
+    
     $c->stash->{id_project} = $p->{id_project}; 
     $c->stash->{query_id} = $p->{query};
     $c->stash->{category_id} = $p->{category_id};
@@ -263,28 +267,60 @@ sub json : Local {
 }
 
 sub get_meta_permissions : Local {
-    my ($c, $meta, $data) = @_;
+    my ($c, $meta, $data, $name_category, $name_status) = @_;
     my @hidden_field;
+    
+    my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
+    my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
     
     my $is_root = $c->model('Permissions')->is_root( $c->username );
 
     if (!$is_root) {
         for (_array $meta){
-
-            my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
-            #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+            my $parse_id_field = _name_to_id($_->{id_field});
             
+            if($_->{fields}){
+            	my @fields_form = _array $_->{fields};
+                for my $field_form ( @fields_form ){
+                    my $parse_field_form_id = $field_form->{id_field};
+                    my $write_action = 'action.topicsfield.' .  $parse_category 
+                    		. '.' .  $parse_id_field . '.' .  $parse_field_form_id . '.' . $parse_status . '.write';
+                    #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+                    #print ">>>>>>>>>Accion: " . $write_action . "\n";
+                    
+                    if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+                        $field_form->{readonly} = \1;
+                    }
+                    
+                    my $read_action = 'action.topicsfield.' .  $parse_category 
+                    		. '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.' . $parse_status . '.read';
+                    #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
+                    #_error $read_action;
+                    #print ">>>>>>>>>Accion: " . $read_action . "\n";
             
-            if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
-                $_->{readonly} = \1;
-            }
-            
-            my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
-            #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
-            #_error $read_action;
-    
-            if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
-                push @hidden_field, $_->{id_field};
+                    if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
+                    	$field_form->{hidden} = \1;
+                        #push @hidden_field, $field_form->{id_field};
+                    }
+                }
+            }else{
+                my $write_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.write';
+                #my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
+                #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+                
+                
+                if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+                    $_->{readonly} = \1;
+                }
+                
+                my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.read';
+                #my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
+                #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
+                #_error $read_action;
+        
+                if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
+                    push @hidden_field, $_->{id_field};
+                }
             }
         }
         
@@ -302,11 +338,18 @@ sub new_topic : Local {
     
     my $id_category = $p->{new_category_id};
     my $name_category = $p->{new_category_name};
+    my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => 81, type => 'I'},
+                                                                                        {
+                                                                                        prefetch=>['status'],
+                                                                                        }                                                                                 
+                                                                                     )->first; 
+    my $name_status = $rs_status->status->name;
     my $meta = Baseliner::Model::Topic->get_meta( undef, $id_category );
     $meta = $self->get_field_bodies( $meta );
     my $data = Baseliner::Model::Topic->get_data( $meta, undef );
     
-    $meta = get_meta_permissions ($c, $meta, $data);    
+    $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
+    
     
     my $ret = {
         new_category_id     => $id_category,
@@ -677,7 +720,7 @@ sub update_project : Local {
 }
 
 sub filters_list : Local {
-    my ($self,$c) = @_;
+    my ($self, $c, $typeApplication) = @_;
     my $id = $c->req->params->{node};
     
     my @tree;
@@ -699,18 +742,19 @@ sub filters_list : Local {
         leaf    => 'true'
     };
     
-    push @views, {
-        id  => $i++,
-        idfilter      => 2,
-        text    => _loc('Assigned To Me'),
-        filter  => '{"assigned_to_me":true}',
-        default    => \1,
-        cls     => 'forum default',
-        iconCls => 'icon-no',
-        checked => \0,
-        leaf    => 'true'
-    };
-    
+    if(!$typeApplication){
+        push @views, {
+            id  => $i++,
+            idfilter      => 2,
+            text    => _loc('Assigned To Me'),
+            filter  => '{"assigned_to_me":true}',
+            default    => \1,
+            cls     => 'forum default',
+            iconCls => 'icon-no',
+            checked => \0,
+            leaf    => 'true'
+        };
+    }
     ##################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
@@ -739,81 +783,77 @@ sub filters_list : Local {
         children    => \@views
     };   
     
-    # Filter: Categories
-    my @categories;
-    
-    #$row = $c->model('Baseliner::BaliTopicCategories')->search();
-    my @categories_permissions  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
-    
-    if(@categories_permissions && $#categories_permissions gt 0){
-        for( @categories_permissions ) {
-            push @categories,
-                {
-                    id  => $i++,
-                    idfilter      => $_->{id},
-                    text    => $_->{name},
-                    color   => $_->{color},
-                    cls     => 'forum',
-                    iconCls => 'icon-no',
-                    checked => \0,
-                    leaf    => 'true',
-                    uiProvider => 'Baseliner.CBTreeNodeUI'
-                };
-        }
-        
-        push @tree, {
-            id          => 'C',
-            text        => _loc('Categories'),
-            cls         => 'forum-ct',
-            iconCls     => 'forum-parent',
-            expanded    => 'true',
-            children    => \@categories
-        };           
-    }       
-    
-    # Filter: Labels
-    my @labels; 
 
-    #$row = $c->model('Baseliner::BaliLabel')->search();
-    my @row = Baseliner::Model::Label->get_labels( $c->username );
+    # Filter: Categories ########################################################################################################
+    if(!$typeApplication){
+        
+        my @categories;
+        
+        #$row = $c->model('Baseliner::BaliTopicCategories')->search();
+        my @categories_permissions  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+        
+        if(@categories_permissions && $#categories_permissions gt 0){
+            for( @categories_permissions ) {
+                push @categories,
+                    {
+                        id  => $i++,
+                        idfilter      => $_->{id},
+                        text    => $_->{name},
+                        color   => $_->{color},
+                        cls     => 'forum',
+                        iconCls => 'icon-no',
+                        checked => \0,
+                        leaf    => 'true',
+                        uiProvider => 'Baseliner.CBTreeNodeUI'
+                    };
+            }
+            
+            push @tree, {
+                id          => 'C',
+                text        => _loc('Categories'),
+                cls         => 'forum-ct',
+                iconCls     => 'forum-parent',
+                expanded    => 'true',
+                children    => \@categories
+            };
+        }
+    }
     
-    #if($row->count() gt 0){
-    if(@row){
-        foreach ( @row ) {
-            push @labels, {
-                id          => $i++,
-                idfilter    => $_->{id},
-                text        => $_->{name},
-                color       => $_->{color},
-                cls         => 'forum label',
-                iconCls     => 'icon-no',
-                checked     => \0,
-                leaf        => 'true',
-                uiProvider => 'Baseliner.CBTreeNodeUI'                
-            };	
-        }          
-        #while( my $r = $row->next ) {
-        #    push @labels, {
-        #        id  => $i++,
-        #        idfilter      => $r->id,
-        #        text    => $r->name,
-        #        color   => $r->color,
-        #        cls     => 'forum label',
-        #        iconCls => 'icon-no',
-        #        checked => \0,
-        #        leaf    => 'true'
-        #    };	
-        #}  
+    # Filter: Labels ##############################################################################################################
+    if(!$typeApplication){
+        my @labels; 
     
-        push @tree, {
-            id          => 'L',
-            text        => _loc('Labels'),
-            cls         => 'forum-ct',
-            iconCls     => 'forum-parent',
-            children    => \@labels
-        };
-    }    
-    # Filter: Status
+        #$row = $c->model('Baseliner::BaliLabel')->search();
+        my @row = Baseliner::Model::Label->get_labels( $c->username );
+        
+        #if($row->count() gt 0){
+        if(@row){
+            foreach ( @row ) {
+                push @labels, {
+                    id          => $i++,
+                    idfilter    => $_->{id},
+                    text        => $_->{name},
+                    color       => $_->{color},
+                    cls         => 'forum label',
+                    iconCls     => 'icon-no',
+                    checked     => \0,
+                    leaf        => 'true',
+                    uiProvider => 'Baseliner.CBTreeNodeUI'                
+                };	
+            }          
+            
+            push @tree, {
+                id          => 'L',
+                text        => _loc('Labels'),
+                cls         => 'forum-ct',
+                iconCls     => 'forum-parent',
+                children    => \@labels
+            };
+        }
+    }
+    
+    
+    # Filter: Status #############################################################################################################
     my @statuses;
     $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
@@ -843,35 +883,37 @@ sub filters_list : Local {
     }
     
     
-    
-    my @priorities;
-    $row = $c->model('Baseliner::BaliTopicPriority')->search();
-    
-    if($row->count() gt 0){
-        while( my $r = $row->next ) {
-            push @priorities,
-            {
-                id  => $i++,
-                idfilter      => $r->id,
-                text    => $r->name,
-                cls     => 'forum',
-                iconCls => 'icon-no',
-                checked => \0,
-                leaf    => 'true',
-                uiProvider => 'Baseliner.CBTreeNodeUI'                
+    #Filter: Priority ########################################################################################################
+    if(!$typeApplication){    
+        my @priorities;
+        $row = $c->model('Baseliner::BaliTopicPriority')->search();
+        
+        if($row->count() gt 0){
+            while( my $r = $row->next ) {
+                push @priorities,
+                {
+                    id  => $i++,
+                    idfilter      => $r->id,
+                    text    => $r->name,
+                    cls     => 'forum',
+                    iconCls => 'icon-no',
+                    checked => \0,
+                    leaf    => 'true',
+                    uiProvider => 'Baseliner.CBTreeNodeUI'                
+                };
+            }
+            
+            push @tree, {
+                id          => 'P',
+                text        => _loc('Priorities'),
+                cls         => 'forum-ct',
+                iconCls     => 'forum-parent',
+                expanded    => 'true',
+                children    => \@priorities
             };
+            
         }
-        
-        push @tree, {
-            id          => 'P',
-            text        => _loc('Priorities'),
-            cls         => 'forum-ct',
-            iconCls     => 'forum-parent',
-            expanded    => 'true',
-            children    => \@priorities
-        };
-        
-    }       
+    }
         
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
