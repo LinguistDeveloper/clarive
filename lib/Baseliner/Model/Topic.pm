@@ -236,7 +236,9 @@ sub topics_for_user {
     }
     
     #Filtros especificos para GDI
+     _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PAASASASASASAS" .  $p->{typeApplication} ;
     if( $p->{typeApplication} && $p->{typeApplication} eq 'gdi'){
+        _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PAASASASASASAS" . $username;        
         if (!$perm->is_root( $username )){
             if(!Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.GDI.admin')){
                 $where->{'created_by'} = $username;

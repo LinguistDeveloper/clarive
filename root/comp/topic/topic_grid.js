@@ -9,7 +9,7 @@
     var stop_filters = false;
 	
 	var typeApplication = '<% $c->stash->{typeApplication} %>';
-	typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
+	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
@@ -915,7 +915,7 @@
             button_no_filter, '->', button_create_view, button_delete_view,
             '<div class="x-tool x-tool-expand-west" style="margin:-2px -4px 0px 0px" id="'+id_collapse+'"></div>'
         ],
-        dataUrl: "/topic/filters_list" + typeApplication,
+        dataUrl: "/topic/filters_list" + parse_typeApplication,
         split: true,
         colapsible: true,
         useArrows: true,
