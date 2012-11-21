@@ -26,16 +26,33 @@ register 'config.job.calendar' => {
     ],
 };
 
+# main editor window
+
 sub calendar : Path( '/job/calendar' ) {
     my ( $self, $c ) = @_;
-    my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
+
+    my $p = $c->req->params;
+    my $id_cal = delete $p->{ id_cal };
+    my $row;
+    if( $id_cal < 0 && $p->{ns} ) {
+        if( $row = DB->BaliCalendar->search({ ns => $p->{ns} })->first ) {
+            $id_cal = $row->id;
+        }
+    }
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
     $c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
 
     # load the calendar row data
     $self->init_date( $c );
-    $c->stash->{ calendar } = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first;
+    $c->stash->{ calendar } = $row
+        ? { $row->get_columns }   # ci calendar
+        : (!$id_cal || $id_cal < 0)
+            ? $p   # new calendar, from ci editor
+            : { $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first->get_columns() };  # regular existing calendar
+
+    $c->stash->{ id_cal } = $id_cal;
+    _debug $c->stash;
     $c->stash->{ template } = '/comp/job_calendar_editor.js';
 }
 
@@ -105,8 +122,26 @@ sub calendar_grid : Path('/job/calendar_grid') {
 sub calendar_update : Path( '/job/calendar_update' ) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    my $new_id;
+
+    my @msgs = ();
+
     try {
+        # may be a CI calendar, search for its id_cal if we don't have one
+        if( !length $p->{id_cal} || $p->{id_cal} == -1 ) {
+            _fail 'Missing ns parameter' unless defined $p->{ns};
+            my $cal = DB->BaliCalendar->search({ ns => $p->{ns} })->first;
+            if( ref $cal ) {
+                $p->{id_cal} = $cal->id;
+                $p->{action} = 'update';
+            }
+            else {
+                $p->{action} = 'create';
+            }
+        }
+
         if( $p->{action} eq 'create' ) {
+            @msgs = ( 'created', 'creating' );
             $p->{ns} = '/' unless length $p->{ns};
             my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } );
             if ( my $r = $r1->first ) {
@@ -119,10 +154,10 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                         bl          => $p->{ bl }
                     }
                 );
+                $new_id = $row->id;
                 if ( $p->{ copyof } ) {
                     my $copyOf = int( $p->{ copyof } );
                     $row = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } )->first;
-                    my $new_id = $row->id;
                     my $rs = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $copyOf } );
 
                     while ( my $r = $rs->next ) {
@@ -143,10 +178,12 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             }
         }
         elsif ( $p->{ action } eq 'delete' ) {
+            @msgs = ( 'deleted', 'deleting' );
             my $row = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $p->{ id_cal } } );
             $row->delete;
         }
         else { # update
+            @msgs = ( 'modified', 'modifying' );
             my $row = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $p->{ id_cal } } )->first;
             $row->name( $p->{ name } );
             $row->description( $p->{ description } );
@@ -155,11 +192,11 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             $p->{ bl } and $row->bl( $p->{ bl } );
             $row->update;
         }
-        $c->stash->{ json } = { success => \1, msg => _loc( "Calendar '%1' modified", $p->{ name } ) };
+        $c->stash->{ json } = { success => \1, msg => _loc( "Calendar '%1' $msgs[0]", $p->{ name } ), id_cal=>$new_id // $p->{id_cal} };
     } catch {
         my $err = shift;
         _error $err;
-        $c->stash->{ json } = { success => \0, msg => ( _loc( "Error modifying the calendar: " ) . $err ) };
+        $c->stash->{ json } = { success => \0, msg => ( _loc( "Error $msgs[1] the calendar: " ) . $err ) };
     };
     $c->forward( 'View::JSON' );
 }
