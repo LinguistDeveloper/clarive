@@ -462,8 +462,8 @@ sub update {
         when ( 'update' ) {
             given ( $form ){
                 when ( 'gdi' ) {
-                    my $custom_data = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid => $p->{topic_mid} });
-                    $custom_data->delete;
+                    #my $custom_data = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid => $p->{topic_mid} });
+                    #$custom_data->delete;
                 }
             }            
             event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
@@ -866,36 +866,6 @@ sub save_data {
 
     my @imgs;
 
-    # TODO falta bucle de todos los campos HTMLEditor
-    #_debug $data->{description};
-    #if( length $topic_mid ) {
-    #    my @img_current_ids;
-    #    for my $img ( $data->{description} =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
-    #        push @img_current_ids, $img;
-    #    }
-    #    if( @img_current_ids ) {
-    #        DB->BaliTopicImage->search({ topic_mid=>$topic_mid, -not => { id_hash=>{ -in => \@img_current_ids } } })->delete;
-    #    } else {
-    #        DB->BaliTopicImage->search({ topic_mid=>$topic_mid })->delete;
-    #    }
-    #}
-    #
-    #_error $data->{description};
-    #for my $img ( $data->{description} =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
-    #    my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
-    #    $img_data = from_base64( $img_data );
-    #    _error "IMG_DATA LEN=" . length( $img_data );
-    #    my $row = { topic_mid=>$topic_mid, img_data=>$img_data, content_type=>$ct };
-    #    $row->{topic_mid} = $topic_mid if length $topic_mid;
-    #    my $img_row = DB->BaliTopicImage->create( $row );
-    #    push @imgs, $img_row; 
-    #    my $img_id = $img_row->id;
-    #    my $id_hash = _md5( join(',',$img_id,_nowstamp) ); 
-    #    $img_row->update({ id_hash => $id_hash });
-    #    $data->{description} =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
-    #}
-    
-    
     $data->{description} = $self->deal_with_images({topic_mid => $topic_mid, field => $data->{description}});
 
     for( @std_fields ) {
@@ -936,8 +906,8 @@ sub save_data {
         $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
         
         for my $field (keys %row){
-            $old_value{$field} = eval($topic->$field),
-            $old_text{$field} = $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
+            $old_value{$field} = $topic->$field,
+            $old_text{$field} = $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') : $topic->$field,
         }
         
         $topic->update( \%row );
@@ -948,7 +918,7 @@ sub save_data {
             
             
             $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
-            if ($row{$field} != eval($old_value{$field})){
+            if ($row{$field} != $old_value{$field}){
                 if($field eq 'id_category_status'){
                     my @projects = $topic->projects->hashref->all;
                     event_new 'event.topic.change_status' => { username => $data->{username}, old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name')  } => sub {
@@ -1015,23 +985,26 @@ sub save_data {
             }
             else{
                 my $modified = 0;
+                my $old_value;
                 if ($_->{data}){ ##Cuando el tipo de dato es CLOB
-                    $row->value_clob ( $data->{ $_ -> {name}} );
-                    if ($row->value != $data->{ $_ -> {name}}){
-                        $modified = 0;    
-                    }                    
-                }else{
-                    $row->value ( $data->{ $_ -> {name}} );
-                    if ($row->value != $data->{ $_ -> {name}}){
+                    if ($row->value ne $data->{$_->{name}}){
+                        $old_value = $row->value;
                         $modified = 1;    
                     }
+                    $row->value_clob($data->{$_->{name}});
+                }else{
+                    if ($row->value ne $data->{$_->{name}}){
+                        $modified = 1;
+                        $old_value = $row->value;
+                    }
+                    $row->value($data->{$_->{name}});
                 }
                 $row->update;
                 
                 if ( $modified ){
                     event_new 'event.topic.modify_field' => { username   => $data->{username},
                                                         field      => _loc ($_->{column}),
-                                                        old_value  => $row->value,
+                                                        old_value  => $old_value,
                                                         new_value  => $data->{ $_ -> {name}},
                                                        } => sub {
                         { mid => $topic->mid, topic => $topic->title }   # to the event
