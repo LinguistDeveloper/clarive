@@ -75,6 +75,15 @@ padding: 2px 4px 2px 7px;
 }
 
 </style>
+% my @form = grep { $_->{fields} } _array( $topic_meta );
+% if (@form) {
+<div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
+% foreach my $field (  @form ) {
+% if ($field->{html}){
+    <& $field->{html}, data=>$topic_data, meta=>$field &>
+%}
+% }
+% }else {
 <div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
     <div class="grid_24">
         <div class="grid_13">
@@ -114,7 +123,7 @@ padding: 2px 4px 2px 7px;
         </div>
     </div>
             
-
+%}
     <div class="clear"></div>
     <br><br>
     <ul class="nav nav-tabs">
