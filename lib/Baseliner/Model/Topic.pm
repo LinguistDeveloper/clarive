@@ -236,9 +236,7 @@ sub topics_for_user {
     }
     
     #Filtros especificos para GDI
-     _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PAASASASASASAS" .  $p->{typeApplication} ;
     if( $p->{typeApplication} && $p->{typeApplication} eq 'gdi'){
-        _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PAASASASASASAS" . $username;        
         if (!$perm->is_root( $username )){
             if(!Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.GDI.admin')){
                 $where->{'created_by'} = $username;
@@ -436,12 +434,13 @@ sub update {
     my $status;
     
     given ( $action ) {
+        #Casos especiales, por ejemplo la aplicacion GDI
+        my $form = $p->{form};
         when ( 'add' ) {
-            my $form = $p->{form};
             given ( $form ){
                 when ( 'gdi' ) {
-                    my $numSolicitud = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ name => 'gdi_dni', value => $p->{gdi_dni} })->count;
-                    $p->{title} = $p->{gdi_dni} . '.' . ++$numSolicitud;
+                    my $numSolicitud = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ name => 'gdi_perfil_dni', value => $p->{gdi_perfil_dni} })->count;
+                    $p->{title} = $p->{gdi_perfil_dni} . '.' . ++$numSolicitud;
                 }
             }
             
@@ -461,6 +460,12 @@ sub update {
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
+            given ( $form ){
+                when ( 'gdi' ) {
+                    my $custom_data = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid => $p->{topic_mid} });
+                    $custom_data->delete;
+                }
+            }            
             event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my @field;
