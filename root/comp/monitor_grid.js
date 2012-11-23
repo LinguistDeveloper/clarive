@@ -181,7 +181,7 @@
 
     var job_states_json = <% $job_states_json %>;
     var job_states_check_state = {
-      CANCELLED: true,
+      CANCELLED: false,
       ERROR: true,
       EXPIRED: true,
       FINISHED: true,

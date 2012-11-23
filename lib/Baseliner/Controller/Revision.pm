@@ -38,13 +38,17 @@ sub request : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
 
+    my $approval_type = 'Pruebas Funcionales';
+    my $action_type = 'action.approve.pruebas_integradas';
+
+    my @users = Baseliner->model('Permissions')->list(action => $action_type, ns => '/', bl => '*');
+    my $to = [ _unique(@users) ];
+
     try {
         my $item = $p->{item};
         my $action = $p->{action};
         my $username = $c->username;
         my $bl = 'PREP';
-        my $approval_type = 'Pruebas Funcionales';
-        my $action_type = 'action.approve.pruebas_integradas';
         Baseliner->model('Request')->request(
                 name   => $approval_type,
                 action => $action_type,
@@ -53,6 +57,7 @@ sub request : Local {
                 template => 'email/approval.html',
                 vars   => { reason=>'' },
                 username => $username,
+                to     => $to,
                 #TODO role_filter => $p->{role},    # not working, no user selected??
                 ns     => $item,
                 bl     => $bl,

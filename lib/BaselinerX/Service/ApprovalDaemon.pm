@@ -145,6 +145,8 @@ sub check_approvals {
             my $last_job = Baseliner->model('Jobs')->top_job( item=>$ns->ns, bl=>$bl ); 
             my $username = ref $last_job ? $last_job->username : $ns->user || 'internal';
             my $reason = ref $last_job ? $last_job->comments : $action->{name};
+            my @users = Baseliner->model('Permissions')->list(action => $action, ns => '/', bl => '*');
+            my $to = [ _unique(@users) ];
 
             _log "Role action for this approval: $action->{name} ($next_action)";
 
@@ -160,6 +162,7 @@ sub check_approvals {
                         app     => $app,
                         state   => $state,
                         reason  => $reason,
+                        to      => $to,
                         ts      => _now(),
                         url     => _notify_address(),
                     },
@@ -174,10 +177,6 @@ sub check_approvals {
                 #TODO try-catch, if cannot request, inform the package owner - group of error
                 my $err = shift;
                 #my @users    = users_with_permission 'action.notify.error';
-                my @users = Baseliner->model('Permissions')->list(action => $action, ns => '/', bl => '*');
-
-                my $to = [ _unique(@users) ];
-                
                 _log _loc("Error creating request: %1", $err );
                 _log "Notifying admins that this is not working";	
                 my $subject =_loc("Error creating a request for %1", $name );

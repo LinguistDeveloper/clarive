@@ -1,6 +1,7 @@
 <%args>
   $mail_data
   $message
+  $to
   $url
 </%args>
 <head>
@@ -89,4 +90,9 @@ body {
 	</tr>
 % }
 </table>
+    <p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+Enviado a: <% join ",",@$to %>
+%}
+    </p>
 </body>

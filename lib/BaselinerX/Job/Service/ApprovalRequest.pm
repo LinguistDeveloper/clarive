@@ -66,6 +66,9 @@ sub run {
     my $comment = $job->job_data->{comments};
     my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $job->jobid );
 
+    my @users = Baseliner->model('Permissions')->list(action => 'action.job.approve', ns => '/', bl => '*');
+    my $to = [ _unique(@users) ];
+
     #my $item_ns = 'endevor.package/' . $item->{item};   #TODO get real ns names
     $log->info( _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ) );
     try {
@@ -84,6 +87,7 @@ sub run {
                 jobname  => $job->name,
                 reason   => $reason,
                 comments => $job->job_data->{comments},
+                to       => $to,
                 url_log  => $url_log,
                 url      => _notify_address(),
                 subject  => _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ),

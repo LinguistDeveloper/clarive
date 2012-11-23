@@ -24,3 +24,6 @@ msgstr "Actualización de usuarios LDIF finalizada con éxito"
 msgid "Notify when an error acurred during reports generation"
 msgstr "Notificar cuando se produzca un error durante la generación de errores"
 
+msgid "The job haven't got any element"
+msgstr "El Job no tiene elementos"
+

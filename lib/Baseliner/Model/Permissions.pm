@@ -554,6 +554,7 @@ sub list {
     my $ns = defined $p{ns} ? $p{ns} : 'any';
     ref $ns eq 'ARRAY' and _throw "Parameter ns: ARRAY of namespaces not supported yet.";
     my $bl = $p{bl} || 'any';
+    my $givemeusers=$p{givemeusers} || 0;
 
     $p{recurse} = defined $p{recurse} ? $p{recurse} : 1;
     $p{action} or $p{username} or die _loc( 'No action or username specified' );
@@ -594,7 +595,7 @@ sub list {
         
         push @list,
             # map { $p{action} ? $_->{username} : $_->{action} }
-            map { $p{action} ? ( $role->{mailbox} ? split ",",$role->{mailbox} : $_->{username} ) : $_->{action} }
+            map { $p{action} ? ( $givemeusers ? $_->{username} : $role->{mailbox} ? split ",",$role->{mailbox} : $_->{username} ) : $_->{action} }
             
             ####
             # Ricardo 2011/11/03 ... no hace falta quitar los ns.  Ya están filtrados en la query

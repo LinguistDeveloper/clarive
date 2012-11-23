@@ -310,3 +310,6 @@ msgstr "Elementos z/OS de uso general con DB2"
 
 msgid "zos.db2"
 msgstr "Elementos z/OS con DB2"
+
+msgid "Deleted package"
+msgstr "Paquete borrado en Changeman"

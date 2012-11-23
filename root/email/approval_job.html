@@ -6,6 +6,7 @@
 	$requested_by
 	$requested_to => []
 	$subject 
+    $to
 	$url_approve
 	$url_reject
 	$url_log
@@ -123,4 +124,9 @@ body {
         </td>
     </tr>
 </table>
+    <p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+Enviado a: <% join ",",@$to %>
+%}
+    </p>
 </body>

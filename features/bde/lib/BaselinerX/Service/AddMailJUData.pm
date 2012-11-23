@@ -6,6 +6,8 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use BaselinerX::Dist::Utils;
+use Baseliner::Sugar;
+
 use utf8;
 
 with 'Baseliner::Role::Service';
@@ -21,7 +23,12 @@ sub main {
   my $log      = $job->logger;
   my @elements = @{$job->job_stash->{elements}->{elements}};
   my @contents = @{$job->job_stash->{contents}};
-  my $username=$job->job_data->{username};
+  my $username = $job->job_data->{username};
+
+  my @camlist  =  map { _pathxs $_->{fullpath}, 1 } @elements;
+  push @camlist, map {substr (ns_get($_->{item})->ns_name, 0,3) unless $_->{provider} =~ m{nature}} @contents;
+  @camlist = _unique @camlist;
+
   $username=~s{vpchm|desconocido}{Pase lanzado desde Changeman}ig;
  
   if ( $job->job_data->{bl} ne 'DESA' ){ 
@@ -34,7 +41,7 @@ sub main {
         username     => $username,
         start_time   => $job->job_data->{starttime},
         end_time     => $job->job_data->{endtime},
-        cam_list     => [_unique map { _pathxs $_->{fullpath}, 1 } @elements],
+        cam_list     => [@camlist],
         node_list    => [get_job_nodes [@contents]],
         nature_list  => [get_job_natures $job->{jobid}],
         package_list => [ map { $self->message($_) } @contents ],
@@ -66,13 +73,15 @@ sub message {
     my $tipo = undef;
     my $codigo = undef;
     if ( $p->{provider} eq 'namespace.changeman.package') { 
-        $tipo=$p->{data}->{motivo} eq 'PRO'?'<b>Proyecto      :</b> ':$_->{data}->{motivo} eq 'PET'?'<b>Peticion      :</b>':$_->{data}->{motivo} eq 'MTO'?'<b>Mantenimiento :</b>':'<b>Incidencia    :</b>';
-        $codigo=$p->{data}->{codigo};
+        $tipo=$p->{data}->{motivo} eq 'PRO'?'<b>Proyecto      :</b> ':$_->{data}->{motivo} eq 'PET'?'<b>Peticion      :</b>':$_->{data}->{motivo} eq 'MTO'?'<b>Mantenimiento :</b>':$_->{data}->{motivo} eq 'INC'?'<b>Incidencia    :</b>':_loc "Deleted package";
+        $codigo=ref $p->{data}->{codigo}?undef:$p->{data}->{codigo} ;
     } elsif ( $p->{provider} eq 'namespace.harvest.package') {
         ## TODO en Harvest cogerlo del formulario de paquete:
         ## $tipo
         ## $codigo
     }
-    return "<tr><td rowspan=2><li></td><td colspan=2 nowrap><b>$name</b></td></tr><tr><td nowrap><b>$tipo</b></td><td width=100%>$codigo</td></tr>";
+    my $ret="<tr><td rowspan=2><li></td><td colspan=2 nowrap><b>$name</b></td></tr><tr><td nowrap><b>$tipo</b></td>";
+    $ret .= "<td width=100%>$codigo</td></tr>" if defined $codigo;
+    return $ret;
 }
 1;

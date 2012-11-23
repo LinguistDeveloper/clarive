@@ -125,7 +125,7 @@ sub delete_bali_tmp {
   };
   $fn->($_) for (qq{find -L $tmp_home -type d \\( -name 'N.TEST*' -o -name 'N.ANTE*' -o -name 'N.CURS*' -o -name 'N.PROD*' -o -name 'harvest*' \\) -mtime +$log_dias_baseliner_pases -exec rm -rf {} + 2>&1},
                  qq{find -L $tmp_home -type d \\( -name 'B.TEST*' -o -name 'B.ANTE*' -o -name 'B.CURS*' -o -name 'B.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -rf {} + 2>&1},
-                 qq{find -L $tmp_home -type f \\( -name 'harvest*' -o -name 'job-export*'\\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1}
+                 qq{find -L $tmp_home -type f \\( -name 'harvest*' -o -name 'job-export*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1}
                  );
   mylog "Datos de directorios de trabajo de los pases de Baseliner en disco purgados.";
 }

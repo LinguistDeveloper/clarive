@@ -75,9 +75,10 @@ sub main {
                       template        => 'email/analysis_informepase_ju.html',
                       template_engine => 'mason',
                       vars            => {
-                          mail_data => $users{$username},
-                          url     => _notify_address(),
-                      	  message   => 'Resumen de pases lanzados.'
+                          mail_data    => $users{$username},
+                          url         => _notify_address(),
+                      	  message     => 'Resumen de pases lanzados.',
+                      	  to          => [$username]
                       });
   }
 }
@@ -86,9 +87,11 @@ sub build_users {
   my ($environment, @projects) = @_;
   my $p_model = Baseliner->model('Permissions');
   _unique map { 
-    $p_model->list(action => 'action.informepase.ju_mail',
-                   ns     => "project/$_",
-                   bl     => $environment)
+    $p_model->list(action      => 'action.informepase.ju_mail',
+                   ns          => "project/$_",
+                   bl          => $environment,
+                   givemeusers => $environment
+                   )
   } map { cam_to_projectid $_ } @projects;
 }
 

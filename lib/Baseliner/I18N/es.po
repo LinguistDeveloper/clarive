@@ -4109,3 +4109,6 @@ msgstr "Finalizado con error"
 msgid "FINISHED WITH ERROR DURING ROLLBACK"
 msgstr "Finalizado con error durante el Rollback"
 
+msgid "Unknown %1"
+msgstr "Desconocido (%1)"
+

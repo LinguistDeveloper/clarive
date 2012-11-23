@@ -82,13 +82,16 @@ sub GenerateJobReport {
   my $start_time = $job->job_data->{starttime};
   my $end_time   = $job->job_data->{endtime};
   my $status     = $job->job_data->{status};
+  my $urgent     = $job->job_stash->{approval_needed}->{reason}=~m{pase urgente}i?1:0;
   my $duration   = convertInterval %{getInterval $start_time, $end_time}, ConvertTo => 'seconds';
   my @natures_with_subapps = @{_bde_conf 'natures_with_subapps'};
   # Consider getting from bali job items instead.
   my @natures = _unique map { $_->{name} } 
                 grep $_->can_i_haz_nature($elements), 
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
+
   my $technology = join ' ', @natures;
+  $technology ||= _loc ("The job haven't got any element");
   # Capture the providers so we can identify whether it is a ZOS job.
   my $is_zos_p = grep /namespace.changeman.package/, _unique map { $_->{provider} } @{ $job->job_stash->{contents}};
   my $month_converter = Month::Convert->new;
@@ -96,7 +99,7 @@ sub GenerateJobReport {
     my ($hashref) = @_; 
     $_->{job_name}    = $job_name;
     $_->{environment} = $bl;
-    $_->{urgent}      = substr($job_name, 0, 1) eq 'U' ? 1 : 0;
+    $_->{urgent}      = $urgent;
     $_->{year}        = [split_date $start_time]->[0];
     $_->{month}       = [split_date $start_time]->[1];
     $_->{day}         = [split_date $start_time]->[2];
@@ -131,11 +134,14 @@ sub GenerateJobDetailReport {
   my $contents   = $job->job_stash->{contents};
   my $bl         = $job->bl;
   my $start_time = $job->job_data->{starttime};
+  my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
 
   my @natures = _unique map { $_->{name} }
                 grep $_->can_i_haz_nature($elements),
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
+
   my $technology = join ' ', @natures;
+  $technology ||= _loc ("The job haven't got any element");
 
   my $addf = sub {
     my ($hashref) = @_;
@@ -148,8 +154,15 @@ sub GenerateJobDetailReport {
     $_;
     };
 
-  my @data = map  { $addf->($_) } map { +{package_name=>ns_get($_->{item})->ns_name, cam=>ns_get($_->{application})->ns_name, node=>$_->{data}->{site}, type=>$_->{data}->{motivo} eq 'PRO'?'Proyecto':$_->{data}->{motivo} eq 'PET'?'PeticiÃ³n':$_->{data}->{motivo} eq 'MTO'?'Mantenimiento':'Incidencia', description=>$_->{data}->{codigo} }} @{$contents};
-  my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
+  my @data = map  { $addf->($_) } map { +{
+       package_name=>ns_get($_->{item})->ns_name, 
+       cam=>ns_get($_->{application})->ns_name, 
+       node=>$_->{data}->{site}||_loc 'Deleted package',
+       type=>$_->{data}->{motivo} eq 'PRO'?'Proyecto':$_->{data}->{motivo} eq 'PET'?'Peticion':$_->{data}->{motivo} eq 'MTO'?'Mantenimiento':$_->{data}->{motivo} eq 'INC'?'<b>Incidencia    :</b>':_loc "Deleted package",
+       description=>$_->{data}->{codigo}||_loc 'Deleted package', 1 } } @{$contents};
+
+_debug _dump @data;
+
   $m->create($_) for @data;
   return;
 }
