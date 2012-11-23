@@ -72,18 +72,18 @@
                             if(type !== 'V'){
                                 return false;
                             }else{
-                                if(!node.attributes.default){
+                                if(!eval('node.attributes.default')){  //se pone eval, al parecer hay conflicto con I.E, palabra reservada default
                                     views_delete.push(node.attributes.idfilter);
                                     node.remove();
                                 }
                             }
                         });
-
+                        
                         Baseliner.ajaxEval( '/topic/view_filter?action=delete',{ ids_view: views_delete },
                             function(response) {
                                 if ( response.success ) {
                                     Baseliner.message( _('Success'), response.msg );
-                                    //tree_filters.getLoader().load(tree_root);
+                                    tree_filters.getLoader().load(tree_root);
                                     loadfilters();
                                     button_delete_view.disable();
                                 } else {
@@ -121,7 +121,7 @@
                                     var ff;
                                     ff = form_view.getForm();
                                     var name = ff.findField("name").getValue();
-                                    parent_node.appendChild({id:a.result.data.id, idfilter: a.result.data.idfilter, text:name, filter:  Ext.util.JSON.encode( filter_current ), default: false, cls: 'forum', iconCls: 'icon-no', checked: false, leaf: true});
+                                    parent_node.appendChild({id:a.result.data.id, idfilter: a.result.data.idfilter, text:name, filter:  Ext.util.JSON.encode( filter_current ), 'default': false, cls: 'forum', iconCls: 'icon-no', checked: false, leaf: true});
                                     win.close();
                                 },
                                 failure: function(f,a){
@@ -192,7 +192,7 @@
             columns: [
               { header: _('Name'), width: 200, dataIndex: 'name', renderer: render_category },
               { header: _('Description'), width: 450, dataIndex: 'description' }
-    
+        
             ]
         });
         
@@ -202,7 +202,7 @@
             Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ) } );
             win.close();
         });     
-     
+        
         var cat_title = _('Select a category');
         
         var form_topic = new Ext.FormPanel({
@@ -598,7 +598,8 @@
             { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
         ],
         tbar:   [ 
-                search_field,
+                search_field
+				,
                 btn_add,
                 btn_edit,
                 btn_delete,
@@ -949,7 +950,7 @@
 			Ext.each(selNodes, function(node){
 				var type = node.parentNode.attributes.id;
 				if(type == 'V'){
-					if(!node.attributes.default){
+					if(!eval('node.attributes.default')){   //Eval, I.E
 						button_delete_view.enable();
 						swDisable = false;
 						return false;

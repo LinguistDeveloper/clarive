@@ -338,7 +338,7 @@ sub new_topic : Local {
     
     my $id_category = $p->{new_category_id};
     my $name_category = $p->{new_category_name};
-    my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => 81, type => 'I'},
+    my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
                                                                                         {
                                                                                         prefetch=>['status'],
                                                                                         }                                                                                 
@@ -376,8 +376,9 @@ sub view : Local {
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
-        my @id_category = map {$_->{id_category} } DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->hashref->all;
-        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category[0]};
+        my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { join=>'topics' })->first;
+        $c->stash->{category} = { $category->get_columns };
+        $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
  
         # comments
         $self->list_posts( $c );  # get comments into stash        
@@ -387,6 +388,13 @@ sub view : Local {
         #    map { "/forms/$_" } split /,/,$topic->categories->forms
         #];
  
+        # jobs for release and changeset
+        if( $category->is_changeset || $category->is_release ) {
+            my @jobs = DB->BaliJob->search({ item=>{ -like => '%/' . $topic_mid } }, 
+            { prefetch=>'bali_job_items', page=>0, rows=>20, order_by=>{ -desc=>'me.id' } })->hashref->all;
+            $c->stash->{jobs} = \@jobs;
+        }
+    
     }else{
         $id_category = $p->{new_category_id};
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};

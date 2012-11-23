@@ -168,7 +168,13 @@ sub tree_objects {
     my ($self, %p)=@_;
     my $class = $p{class};
     my $collection = $p{collection} // $class->collection;
-    my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
+    my $opts = { order_by=>{ -asc=>['mid'] } };
+    my $page;
+    if( length $p{start} && length $p{limit} ) {
+        $page =  to_pages( start=>$p{start}, limit=>$p{limit} );
+        $opts->{rows} = $p{limit};
+        $opts->{page} = $page;
+    }
     my $where;
     $p{query} and $where = query_sql_build(
            query  => $p{query},
@@ -178,10 +184,8 @@ sub tree_objects {
     );
     $where->{collection} = $collection;
 
-    my $rs = Baseliner->model('Baseliner::BaliMaster')->search(
-        $where, { order_by=>{ -asc=>['mid'] }, rows=>$p{limit}, page=>$page }
-    );
-    my $total = $rs->pager->total_entries;
+    my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
+    my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my @tree = map {
         my $data = _load( $_->{yaml} );

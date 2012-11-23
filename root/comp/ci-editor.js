@@ -5,6 +5,11 @@
     var beforesubmit = [];
     var is_active = params.rec.active || true;
 
+    var activate_save = function(){
+        setTimeout( function(){
+            btn_form_save.enable();
+        }, 1000);
+    };
     var submit_form = function( close_form ){
             var form2 = form.getForm();
             if ( form2.isValid() ) {
@@ -16,14 +21,21 @@
                form2.submit({
                    params: {action: params.action, mid: params.mid, collection:params.collection },
                    success: function(f,a){
-                        params.mid = a.result.mid;
-                        Baseliner.message(_('Success'), a.result.msg );
+                        mid = params.mid = a.result.mid;
+                        params.action = 'edit';
+                        set_txt();
+                        Baseliner.message(_('Success: %1', mid), a.result.msg );
                         if( close_form ) form.destroy();
+                        activate_save();
                    },
                    failure: function(f,a){
+                       activate_save();
                        Ext.Msg.alert( _('Error'), a.result.msg );
                    }
                });
+            }
+            else {
+                btn_form_save.enable();
             }
     };
 
@@ -58,7 +70,10 @@
         icon:'/static/images/icons/save.png',
         cls: 'x-btn-icon-text',
         type: 'submit',
-        handler: function() { submit_form( false ) }
+        handler: function() { 
+            btn_form_save.disable();
+            submit_form( false )
+        }
     });
 
     var btn_form_calendar = new Ext.Button({
@@ -86,7 +101,11 @@
         collapsible: true,
         autoHeight : true
     });
-    var txt = (params.action == 'add' ? 'New: %1' : 'Edit: %1' );
+    var set_txt = function(){
+        var txt = (params.action == 'add' ? 'New: %1' : 'Edit: %1 (%2)' );
+        txt_cont.update( _( txt, params.item, params.mid ) );
+    };
+    var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
     var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'] });
     var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 };
     var form = new Ext.FormPanel({
@@ -97,7 +116,7 @@
         },
         bodyStyle:'padding: 10px 0px 0px 15px',
         items: [
-            { xtype: 'container', html:_( txt, params.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
+            txt_cont,
             { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, height: 30,
                 style:'font-size: 18px;' },
             { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
@@ -105,6 +124,9 @@
             ( params.has_description > 0 ? desc : [] ),
             fieldset
         ]
+    });
+    txt_cont.on('afterrender', function(){
+        set_txt();
     });
     form.on( 'afterrender', function(){
         params.rec.collection = params.collection;
