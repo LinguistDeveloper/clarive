@@ -13,7 +13,7 @@
         bodyStyle:'padding: 15px 15px 15px 15px',
         border: false,
         //style: { padding: '15px' },
-        defaults: { anchor:'80%'},
+        //defaults: { anchor:'80%'},
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]

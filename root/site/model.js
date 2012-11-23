@@ -783,7 +783,7 @@ Baseliner.store.CI = function(c) {
         remoteSort: true,
         autoLoad: true,
         totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','collection','class','description', 'properties', 'pretty_properties'] 
+        fields: ['mid','item', 'name','collection','class','description', 'properties', 'pretty_properties','data'] 
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
