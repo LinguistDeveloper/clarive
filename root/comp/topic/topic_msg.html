@@ -5,6 +5,8 @@
     $events
     $topic_meta
     $topic_data
+    $category
+    $jobs => 0
 </%args>
 <%perl>
     my @tabactive = _array( $comments ) ? ( 1,0 ) : ( 0,1);
@@ -133,6 +135,9 @@ padding: 2px 4px 2px 7px;
         <li <% $tabactive[1] and 'class="active"' %>>
             <a href="#activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a>
         </li>
+        <li <% $jobs or 'style="display: none"' %>>
+            <a href="#jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
+        </li>
     </ul>
 
     <div class="grid_24">
@@ -178,6 +183,15 @@ padding: 2px 4px 2px 7px;
 %  foreach ( _array( $events ) ) {
                 <div style="margin-left: 20px">
                     <p><img style="margin: 5px" width=16 src="/user/avatar/<% $_->{username} %>/image.png" /><% Baseliner::Utils::_to_utf8( $_->{text} ) %> <small><% $_->{ts} %></small></p>
+                    <hr />
+                </div> 
+%}
+            </div> <!-- activity tab -->
+
+            <div class="tab-pane <% $tabactive[2] and 'active' %>" id="jobs<% $ii %>">
+%  foreach my $job ( _array $jobs ) {
+                <div style="margin-left: 20px">
+                    <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<% $job->{id} %>&name=<% $job->{name} %>','<% $job->{name} %>')"><% $job->{name} %></a> - <% _loc( $job->{status} ) %>  <small><% $job->{ts} %></small></p>
                     <hr />
                 </div> 
 %}
