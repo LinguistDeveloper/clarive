@@ -65,7 +65,7 @@
     var rule_editor = function(rec){
         Baseliner.ajaxEval( '/comp/rule_new.js', { rec: rec }, function(comp){
             if( comp ) {
-                var win = new Ext.Window({
+                var win = new Baseliner.Window({
                     title: _('Edit Rule'),
                     width: 900,
                     items: [ comp ]
@@ -182,7 +182,7 @@
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
                 var show_win = function(item, opts) {
-                    var win = new Ext.Window(Ext.apply({
+                    var win = new Baseliner.Window(Ext.apply({
                         layout: 'fit',
                         title: _('Edit'),
                         items: item
@@ -283,7 +283,7 @@
                             dsl_cons.setValue( res.msg ); 
                         });
                     };
-                    var win = new Ext.Window({
+                    var win = new Baseliner.Window({
                        layout: 'border', width: 800, height: 600, maximizable: true,
                        tbar: [ { text:_('Run'), icon:'/static/images/icons/run.png', handler: dsl_run } ],
                        items: [

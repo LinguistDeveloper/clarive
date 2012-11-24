@@ -63,11 +63,10 @@ Ext.onReady(function(){
         tab.setTitle( '&nbsp;' );
     };
     Baseliner.help_button.on('click', Baseliner.help_off );
-    var tb = new Ext.Toolbar({
+    Baseliner.main_toolbar = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
-        //height: 26,
-        height: <% $c->config->{toolbar_height} // 26 %>,
+        height: <% $c->config->{toolbar_height} // 28 %>,
         items: [
 % if( $c->config->{logo_file} ) {
             '<img src="<% $c->config->{logo_file} %>" style="border:0px;"/>',
@@ -174,7 +173,7 @@ Ext.onReady(function(){
                 activeTab: 0
             })
 % } else {
-            tb,
+            Baseliner.main_toolbar,
 %   if( $show_lifecycle ) {
             Baseliner.lifecycle,
 %   }
