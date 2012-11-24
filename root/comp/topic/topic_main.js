@@ -352,7 +352,7 @@
         title: params.title,
         tbar: tb,
         //frame: true,
-        padding: '15 45 15 45',
+        padding: '15px 15px 15px 15px',
         defaults: {border: false},
         items: [ loading_panel, detail ]
     });

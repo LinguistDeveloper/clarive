@@ -10,10 +10,18 @@
         url:'/topic/update',
         //frame: true,
         // style: { padding: 15  },
-        bodyStyle:'padding: 15px 15px 15px 15px',
+        bodyStyle: {
+          'padding': '15px 90px 15px 90px'
+        },
+            ////bodyStyle:{
+            ////    'padding': '15px 90px 15px 90px',
+            ////    'color': '#468847',
+            ////    'background-color': '#ffffbe',
+            ////    'border-color': '#d6e9c6',
+            ////    'font-weight':'bold'},         
         border: false,
         //style: { padding: '15px' },
-        //defaults: { anchor:'80%'},
+        defaults: { anchor:'99%'},
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]
