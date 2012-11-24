@@ -130,6 +130,7 @@
                 cardpanel.getLayout().setActiveItem( form_topic );
                 form_is_loaded = true;
             }
+
             // now show/hide buttons
             btn_form_ok.show();
             if(params.topic_mid){
