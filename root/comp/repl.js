@@ -18,16 +18,16 @@ To do:
 
     // editor generator function
     var editor_gen = function(args) {
-        if( args!=undefined ) {
+        if( args ) {
             Baseliner.editor_defaults = Ext.apply( Baseliner.editor_defaults, args );
         }
         /*
         var ret = CodeMirror( function(elt) { 
-            // document.getElementById( code.getId() );
-            code.getEl().dom.parentNode.replaceChild( elt, code.getEl().dom );
+            // document.getElementById( fcode.getId() );
+            fcode.getEl().dom.parentNode.replaceChild( elt, fcode.getEl().dom );
         }, Ext.apply({
         */
-        var ret = CodeMirror.fromTextArea( code.getEl().dom , Ext.apply({
+        var ret = CodeMirror.fromTextArea( fcode.getEl().dom , Ext.apply({
                lineNumbers: true,
                tabMode: "indent",
                smartIndent: true,
@@ -69,10 +69,10 @@ To do:
             }, Baseliner.editor_defaults )
         );
         var hlLine = ret.setLineClass(0, "activeline");
-        // ret.setSize( '100%', code.getEl().getHeight() );
+        // ret.setSize( '100%', fcode.getEl().getHeight() );
         return ret;
     };
-    var code = new Ext.form.TextArea({
+    var fcode = new Ext.form.TextArea({
         name: 'code',
         value: "$c->model('Repository');\n",
         style: style_cons,
@@ -83,7 +83,7 @@ To do:
     var editor;
 
     // Codemirror 
-    code.on( 'afterrender', function(){
+    fcode.on( 'afterrender', function(){
         editor = editor_gen(); 
     });
 
@@ -193,7 +193,7 @@ To do:
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
                 if( res.code != undefined ) { 
                     last_name= n.text;
-                    editor.setValue( res.code ); code.setValue( res.code );
+                    editor.setValue( res.code ); fcode.setValue( res.code );
                 }
                 if( res.output != undefined ) set_output( res.output );
                 if( res.div != undefined ) {
@@ -215,12 +215,12 @@ To do:
                 params: { ns: ns }, 
                 success: function(xhr) {
                     var json = Ext.util.JSON.decode( xhr.responseText );
-                    code.setValue( json.code );
+                    fcode.setValue( json.code );
                     set_output( json.output );
                 }
             });
         } else {
-            code.setValue(n.attributes.code);
+            fcode.setValue(n.attributes.code);
             set_output(n.attributes.output);
         } */
     });
@@ -300,7 +300,7 @@ To do:
         var node_name = params.tx || dt.format("Y-m-d H:i:s") + ": " + short;
         if( params.save!=undefined && params.save ) {
             last_name = node_name;
-            code.setValue( editor.getValue() );  // copy from codemirror to textarea
+            fcode.setValue( editor.getValue() );  // copy from codemirror to textarea
             var f = form.getForm();
             f.submit({ url:'/repl/save', params: { id: params.tx, output: params.o } });
         }
@@ -326,7 +326,7 @@ To do:
         last_mode = parms;
         var f = form.getForm();
         set_output( "" );
-        code.setValue( editor.getValue() );  // copy from codemirror to textarea
+        fcode.setValue( editor.getValue() );  // copy from codemirror to textarea
         f.submit({
             params: parms,
             waitMsg: _('Running...'),
@@ -346,7 +346,7 @@ To do:
                     document.getElementById( output.getId() ).style.color = "#10c000"; // green
                 }
                 elapsed.setValue( action.result.elapsed );
-                save({ c: code.getValue(), o: output.getValue() });
+                save({ c: fcode.getValue(), o: output.getValue() });
                 editor.focus();
             },
             failure: function(f,action){
@@ -408,18 +408,18 @@ To do:
     };
 
     var change_theme = function(x) {
-        if( x.checked ) { 
+        if( x.checked && editor ) { 
             var txt = editor.getValue();
-            editor = editor_gen({ theme: x.theme });
+            editor.setOption('theme', x.theme );
             editor.setValue( txt );
         }
     };
     var default_lang = function(x) { return Baseliner.editor_defaults.mode.name == x; };
     var default_theme = function(x) { return Baseliner.editor_defaults.theme == x; };
     var change_lang = function(x) {
-        if( x.checked ) { 
+        if( x.checked && editor ) { 
             var txt = editor.getValue();
-            editor = editor_gen({ mode: { name: x.syntax } });
+            editor.setOption('mode', { name: x.syntax });
             editor.setValue( txt );
             btn_lang.setText( _('Lang: %1', '<b>'+x.text+'</b>') );
             btn_lang.setIcon( '/static/images/icons/' + x.lang + '.png' );
@@ -428,7 +428,7 @@ To do:
         }
     };
     var change_out = function(x) {
-        if( x.checked ) { 
+        if( x.checked && editor ) { 
             btn_out.setText( _('Output: %1', '<b>'+x.text+'</b>') );
             btn_out.setIcon( '/static/images/icons/' + x.out + '.png' );
             btn_out.out = x.out;
@@ -463,7 +463,7 @@ To do:
                 menu: menu_lang 
             });
 
-    code.on('afterrender', function(){
+    fcode.on('afterrender', function(){
         change_lang({ text:'Perl', lang:'perl', syntax:'perl', checked: true });
         change_out({ text:'YAML', out:'yaml', checked: true });
     });
@@ -497,7 +497,7 @@ To do:
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
                         if (btn == 'ok'){
-                            save({ c: code.getValue(), o: output.getValue(), tx: text, save: true });
+                            save({ c: fcode.getValue(), o: output.getValue(), tx: text, save: true });
                         }
                     }, undefined, false, last_name );
                 }
@@ -557,21 +557,15 @@ To do:
             frame    : false,
             hideLabel: false,
             tbar     : tbar,
-            items    : [ code ]
+            items    : [ fcode ]
         }
     );
     form.setTitle("REPL");
 
-    var panel_center = new Ext.Panel({
-        layout: 'border',
-        region: 'center',
-        items: [ form, cons ]
-    });
-
     var panel = new Ext.Panel({
         title: _('REPL'),
         layout: 'border',
-        items: [ tree, panel_center ]
+        items: [ tree, form, cons ]
     });
 
     Baseliner.edit_check( panel, true );  // block window closing from the beginning
@@ -580,4 +574,5 @@ To do:
 
     return panel;
 })();
+
 

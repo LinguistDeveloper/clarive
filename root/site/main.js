@@ -9,6 +9,7 @@
     $show_js_reload => 0
     $show_tabs => $c->config->{site}{show_tabs} // 1
 </%args>
+
 <%perl>
     if( $c->stash->{site_raw} ) {
         $show_tabs = 0;
@@ -188,7 +189,6 @@ Ext.onReady(function(){
         layout: 'card',
         activeItem: 0,
         id: 'main-view',
-        //renderTo: Ext.getBody(),
         renderTo: 'main-div',
         items: [ Baseliner.main ]
     });
@@ -266,10 +266,11 @@ Ext.onReady(function(){
 setTimeout(function(){
     Ext.get('bali-loading').remove();
     Ext.get('bali-loading-mask').fadeOut({
-	    remove:true
+        remove:true
     });
 }, 2050);
 
 if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
     window.onbeforeunload=  function(){ if( Baseliner.is_in_edit() ) return '' };
 }
+
