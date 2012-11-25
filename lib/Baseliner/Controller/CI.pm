@@ -175,7 +175,7 @@ sub tree_objects {
         $opts->{rows} = $p{limit};
         $opts->{page} = $page;
     }
-    my $where;
+    my $where = {};
     $p{query} and $where = query_sql_build(
            query  => $p{query},
            fields => {
@@ -183,6 +183,7 @@ sub tree_objects {
             }
     );
     $where->{collection} = $collection;
+    $where = { %$where, %{ $p{where} } } if $p{where};
 
     my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
@@ -330,13 +331,19 @@ sub store : Local {
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
+    my $where = {};
+
+    if($p->{mid}){
+        my @rel_items = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid => $p->{mid}, rel_type =>$p->{rel_type} })->hashref->all;
+        $where->{mid} = \@rel_items;
+    }
 
     my @data;
     my $total = 0; 
 
     if( my $class = $p->{class} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where );
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
