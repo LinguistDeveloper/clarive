@@ -423,6 +423,66 @@ sub build_job_window : Path('/job/build_job_window') {
     $c->forward('View::JSON');
 }
 
+sub begin : Private {
+    my ($self,$c) = @_;
+    if( $c->req->path =~ /build_job_window_direct/ ) {
+        $c->stash->{auth_skip} = 1;
+    }
+}
+
+sub build_job_window_direct : Path('/job/build_job_window_direct') {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    try {
+        my $date = $p->{job_date};
+        my $date_format = $p->{date_format};
+        _fail "Missing date format" if length $date && ! $date_format ;
+        
+        my $bl = $p->{bl};
+        my $month_days = 31;	
+
+        # get calendar range list
+        $date =  $date
+            ? parse_dt( $date_format, $date )
+            : _dt();  # _dt = now with timezone
+
+        if( $p->{day_add} ) {
+            $date->add( days=>$p->{day_add} );
+        }
+
+        my @ns;
+
+        for my $ns ( _array $p->{ns} ) {
+            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $ns }, active=>'1' });
+            push @ns, $ns if $r->count;
+        }
+        _debug "NS with Calendar: " . join ',',@ns;
+        my %tmp_hash   = map { $_ => 1 } @ns;
+        @ns = keys %tmp_hash;    
+        _debug "------Checking dates for namespaces ($date): " . _dump \@ns;
+
+        my $hours = $self->merge_calendars( ns=>\@ns, bl=>$bl, date=>$date );
+
+        # remove X
+        while( my ($k,$v) = each %$hours ) {
+            delete $hours->{$k} if $v->{type} eq 'X'; 
+        }
+        # get it ready for a combo simplestore
+        my $hour_store = [ map {
+           [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
+        } sort keys %$hours ];
+
+        $c->stash->{json} = {success=>\1, data => $hour_store };
+    } catch {
+        my $error = shift;
+        _error $error;
+        $c->stash->{json} = {success=>\0, msg=>$error, data => $error };
+    };
+    $c->forward('View::JSON');
+}
+
+
 ### Private Methods
 
 sub init_date {
