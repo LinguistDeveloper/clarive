@@ -344,14 +344,6 @@
                             //}
                         };
 
-                        // Javi -- Hay que permitir duplicados, por ejemplo, se pueden crear job en varios entornos
-                        // Eric -- Aqui hay que hacer una comprobacion
-                        // iterando si en el store del grid_role ya existe el
-                        // elemento que vamos a añadir.
-                        // if (node_exists_p(s, n)) {
-                        //     alert("La accion ya existe.");
-                        //     return;
-                        // }
                         if( n.leaf ) {
                             add_node(n);
                         } else {

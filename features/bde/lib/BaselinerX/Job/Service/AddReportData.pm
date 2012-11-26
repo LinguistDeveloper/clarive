@@ -99,7 +99,6 @@ sub GenerateJobReport {
     my ($hashref) = @_; 
     $_->{job_name}    = $job_name;
     $_->{environment} = $bl;
-    $_->{urgent}      = $urgent;
     $_->{year}        = [split_date $start_time]->[0];
     $_->{month}       = [split_date $start_time]->[1];
     $_->{day}         = [split_date $start_time]->[2];
@@ -113,16 +112,35 @@ sub GenerateJobReport {
     $_->{technology}   = $technology;
     $_;
   };
-  my @data = $is_zos_p ? $self->build_changeman_data(addf=>$addf, job=>$job, applications=>map { _pathxs $_, 1 } grep {$_} map { $_->{application} } @{$job->job_stash->{contents}} )
+  my @data = $is_zos_p ? $self->build_changeman_data(addf=>$addf, job=>$job )
                        : map  { $addf->($_) } # Add the rest of the stuff
                          grep { $_->{technology} ~~ @natures } # Remove unwanted natures, get only those that are registered
-                         map +{project => $_->[0], subapplication => $_->[1], technology => $_->[2]}, # Hashify!
+                         map +{urgent=>$urgent, project => $_->[0], subapplication => $_->[1], technology => $_->[2]}, # Hashify!
                          map  { [split '#', $_] } _unique map { join '#', @{$_} } # Remove duplicates
                          map  { $self->data_tuple($_->{fullpath}, @natures_with_subapps) } @{$elements}; # Make tuple
   my $m = Baseliner->model('Baseliner::BaliJobReport');
   _debug "REPORT DATA: "._dump @data;
   $m->create($_) for @data;
   return;
+}
+
+sub build_changeman_data {
+  my ($self, %p) = @_;
+  my $addf = $p{addf};
+  my $job = $p{job};
+  my @applications = map { _pathxs $_, 1 } grep {$_} map { $_->{application} } @{$job->job_stash->{contents}};
+
+  my $statename       = Baseliner->model('Baseliner::BaliBaseline')->search({bl=>$job->job_data->{bl}})->first->name;
+  my $origin          = uc ( $job->job_stash->{origin}||'baseliner' ) ;
+  my $urgent          = $job->job_stash->{approval_needed}->{reason}=~m{pase urgente}i?1:0;
+  my $linklistRefresh = $job->job_stash->{chm_linked_list};
+  
+  for (@{ $job->job_stash->{contents}}) {
+      $urgent = $urgent || $_->{data}->{urgente} eq 'S';
+      $linklistRefresh = $linklistRefresh || ( $_->{data}->{urgente} eq 'S' && $_->{data}->{linklist} eq 'SI' )
+  }
+  
+  map { $addf->($_) } map +{project => $_, subapplication => '', urgent=>$urgent, linklistrefresh => $linklistRefresh, statename => $statename, origin => $origin}, @applications;
 }
 
 sub GenerateJobDetailReport {
@@ -165,19 +183,6 @@ _debug _dump @data;
 
   $m->create($_) for @data;
   return;
-}
-
-sub build_changeman_data {
-  my ($self, %p) = @_;
-  my $addf = $p{addf};
-  my $job = $p{job};
-  my @applications = $p{applications};
-
-  my $statename = Baseliner->model('Baseliner::BaliBaseline')->search({bl=>$job->job_data->{bl}})->first->name;
-  my $origin = uc ( $job->job_stash->{origin}||'baseliner' ) ;
-  my $linklistRefresh = $job->job_stash->{chm_linked_list};
-
-  map { $addf->($_) } map +{project => $_, subapplication => '', linklistrefresh => $linklistRefresh, statename => $statename, origin => $origin}, @applications;
 }
 
 sub data_tuple {

@@ -209,6 +209,7 @@ sub monitor_json : Path('/job/monitor_json') {
     my $p = $c->request->parameters;
     my $username = $c->username;
     my $perm = $c->model('Permissions');
+    my $state_filter = $p->{job_state_filter} || '{"CANCELLED":0,"ERROR":1,"EXPIRED":1,"FINISHED":1,"KILLED":1,"RUNNING":1,"WAITING":1}';
 
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = @{$p}{qw/start limit query query_id dir sort/};
     $start||=0;
@@ -237,15 +238,27 @@ sub monitor_json : Path('/job/monitor_json') {
         end      =>"me.endtime",
         items    =>"bali_job_items.item",
     });
-    if( exists $p->{job_state_filter} ) {
+
+=head
+    if( exists $p->{job_state_filter}) {
         my @job_state_filters = do {
                 my $job_state_filter = decode_json $p->{job_state_filter};
                 _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
         };
         $where->{status} = \@job_state_filters;
     }
+=cut
+
+    # Filter by status
+
 
     # Filter by nature
+    my @job_state_filters = do {
+       my $job_state_filter = decode_json $state_filter;
+       _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
+    };
+    $where->{status} = \@job_state_filters;
+
     if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {      
       $where->{'bali_job_items_2.item'} = $p->{filter_nature};
     }

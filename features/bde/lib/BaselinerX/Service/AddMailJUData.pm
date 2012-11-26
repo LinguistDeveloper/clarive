@@ -81,7 +81,7 @@ sub message {
         ## $codigo
     }
     my $ret="<tr><td rowspan=2><li></td><td colspan=2 nowrap><b>$name</b></td></tr><tr><td nowrap><b>$tipo</b></td>";
-    $ret .= "<td width=100%>$codigo</td></tr>" if defined $codigo;
+    $ret .= "<td nowrap width=100%>$codigo</td></tr>" if defined $codigo;
     return $ret;
 }
 1;
