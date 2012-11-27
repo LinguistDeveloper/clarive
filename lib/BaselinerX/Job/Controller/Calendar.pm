@@ -470,7 +470,9 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
         }
         # get it ready for a combo simplestore
         my $hour_store = [ map {
-           [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
+            my $st = substr($hours->{$_}{start}, 0,2 ) . ':' . substr($hours->{$_}{start}, 2,2);
+            my $et = substr($hours->{$_}{end}, 0,2 ) . ':' . substr($hours->{$_}{end}, 2,2 );
+            [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type}, $st, $et ]
         } sort keys %$hours ];
 
         $c->stash->{json} = {success=>\1, data => $hour_store };
@@ -653,11 +655,14 @@ sub merge_calendars {
          if( ! exists $list{$time}
              || $s->data->{seq} > $list{ $time }->{seq}
              || ord $s->data->{type} > ord $list{ $time }->{type} ) {
-            $list{ $time } = {
-                type=>$s->data->{type}, cal=>$s->data->{cal}, 
-                hour => sprintf( '%s:%s', substr($time,0,2), substr($time,2,2) ),
-                name=>sprintf "%s (%s)", $s->data->{cal}, $s->data->{type} 
-            }; 
+            $list{$time} = {
+                type => $s->data->{type},
+                cal  => $s->data->{cal},
+                hour => sprintf( '%s:%s', substr( $time, 0, 2 ), substr( $time, 2, 2 ) ),
+                name => sprintf( "%s (%s)", $s->data->{cal}, $s->data->{type} ),
+                start => $s->start,
+                end   => $s->end,
+            };
          }
        }
     }
