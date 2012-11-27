@@ -1505,8 +1505,6 @@ Baseliner.Window = Ext.extend( Ext.Window, {
     initComponent: function(){
         Baseliner.Window.superclass.initComponent.call(this);
     },
-    width: 800, // consider using percentages
-    height: 600,
     minimizable: true,
     maximizable: true,
     minimize: function(){

@@ -80,7 +80,7 @@
         icon:'/static/images/icons/left.png',
         cls: 'x-btn-icon-text',
         type: 'submit',
-        handler: function() { form.destroy() }
+        handler: function() { cardpanel.destroy() }
     });
 
     var btn_form_save = new Ext.Button({

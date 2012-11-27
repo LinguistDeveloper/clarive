@@ -17,6 +17,7 @@ coerce 'CI' =>
   from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; Baseliner::CI->new( $first ) }; 
 
 coerce 'CIs' => 
+  from 'Str' => via { length $_ ? [ Baseliner::CI->new( $_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
   from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
   from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
