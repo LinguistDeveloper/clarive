@@ -347,10 +347,15 @@ sub new_topic : Local {
     my $name_status = $rs_status->status->name;
     my $meta = Baseliner::Model::Topic->get_meta( undef, $id_category );
     $meta = $self->get_field_bodies( $meta );
-    my $data = Baseliner::Model::Topic->get_data( $meta, undef );
+    
+    my $data;
+    if ($p->{ci}){
+        $data = _ci($p->{ci})->{_ci};   
+    }else{
+        $data = Baseliner::Model::Topic->get_data( $meta, undef );
+    }
     
     $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
-    
     
     my $ret = {
         new_category_id     => $id_category,
@@ -372,6 +377,12 @@ sub view : Local {
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
+    
+    $c->stash->{swGDI} = $p->{GDI};
+    
+    _log ">>>>>>>>>>>>>>>>>>>>>>>>GDI: " . $p->{GDI};
+    
+    _log ">>>>>>>>>>>>>>>>>>>>>>>gdi: " . $p->{type};
     
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
@@ -396,7 +407,6 @@ sub view : Local {
         }
     
     }else{
-        _log ">>>>>>>>>>>>>>PASASASASAS: " . $id_category;
         $id_category = $p->{new_category_id};
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
         
@@ -415,6 +425,7 @@ sub view : Local {
 
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
+        _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PAPA";
         $c->stash->{template} = '/comp/topic/topic_main.js';
     }
 }
