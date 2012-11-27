@@ -350,7 +350,8 @@ sub new_topic : Local {
     
     my $data;
     if ($p->{ci}){
-        $data = _ci($p->{ci})->{_ci};   
+        $data = _ci($p->{ci})->{_ci};
+        $data->{title} = $data->{gdi_perfil_dni};
     }else{
         $data = Baseliner::Model::Topic->get_data( $meta, undef );
     }
