@@ -959,7 +959,9 @@ sub save_data {
                                         }
                                         when( 'update' ) {
                                             _debug "ci update $ci->{ci_mid}";
-                                            _ci( $ci->{ci_mid} )->save( %$ci_master, data=>$ci_data );
+                                            my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
+                                            #_ci( $ci->{ci_mid} )->save( %$ci_master, data=>$ci_data );
+                                            _ci( $ci_mid )->save( %$ci_master, data=>$ci_data );
                                             $ci->{_ci_updated} = 1;
                                         }
                                         when( 'delete' ) {
