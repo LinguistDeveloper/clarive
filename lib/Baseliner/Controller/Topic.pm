@@ -148,8 +148,11 @@ sub list : Local {
     #Filtramos por las aplicaciones a las que tenemos permisos.
     if( $username && ! $perm->is_root( $username )){
         my @user_apps = $perm->user_projects_ids( $username );
-        push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
-        $where->{'me.project'} =  \@user_apps;
+
+        unless ( scalar grep /^\/$/, @user_apps ) {  ## Si no tiene visibilidad sobre todos los proyectos.
+            push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
+            $where->{'me.project'} =  \@user_apps;
+        }
     }
 
     #DEFAULT VIEWS***************************************************************************************************************

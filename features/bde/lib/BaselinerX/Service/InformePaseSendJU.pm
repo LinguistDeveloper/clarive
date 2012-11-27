@@ -12,6 +12,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use Baseliner::Sugar;
+use DateTime;
 use Try::Tiny;
 
 with 'Baseliner::Role::Service';
@@ -34,6 +35,9 @@ sub main {
   $Day   = '0' . $Day if $Day < 10;
   my $item = "$Year$Month$Day";
 
+  my $sdt = parse_dt( '%Y-%m-%d %H:%M', "$Year-$Month-$Day $Hour:$Minute"  );
+  $sdt->{locale} = DateTime::Locale->load( 'es' ); # day names in local language
+
   # Cogemos todos los datos de los jobs que se han lanzado hoy.
   my @data_store = map  { Baseliner->model('Repository')->get(ns => $_) }
                    map  { "$provider/$_"} # Add the provider again :D
@@ -46,13 +50,15 @@ sub main {
   # Construimos users con key: username, values: [data].
 
   my %users;
+  my %cams;
   for my $data (@data_store) {
     my @_users = build_users($data->{environment}, @{$data->{cam_list}});
-    $data->{status}=_loc(bali_rs('Job')->find( $data->{job_id} )->status);
+#    $data->{status}=_loc(bali_rs('Job')->find( $data->{job_id} )->status);
     for my $user (@_users) {
       for my $cam (_array $data->{cam_list}) {
-        if ( $p_model->user_has_project(username=>$user, project_name=>$cam) ){
+        if ( $p_model->user_has_project(username=>$user, project_name=>"application/$cam") ){
           push @{$users{$user}}, $data;
+          push @{$cams{$user}}, $cam;
           last;
         }
       }
@@ -77,8 +83,9 @@ sub main {
                       vars            => {
                           mail_data    => $users{$username},
                           url         => _notify_address(),
-                      	  message     => 'Resumen de pases lanzados.',
-                      	  to          => [$username]
+                      	  message     => 'Informe de pases realizados el ' . $sdt->day_name . " $Day/$Month/$Year",
+                      	  to          => [$username],
+                      	  cams        => join ", ",_unique @{$cams{$username}}
                       });
   }
 }

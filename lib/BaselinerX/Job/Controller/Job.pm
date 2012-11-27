@@ -209,7 +209,7 @@ sub monitor_json : Path('/job/monitor_json') {
     my $p = $c->request->parameters;
     my $username = $c->username;
     my $perm = $c->model('Permissions');
-    my $state_filter = $p->{job_state_filter} || '{"CANCELLED":0,"ERROR":1,"EXPIRED":1,"FINISHED":1,"KILLED":1,"RUNNING":1,"WAITING":1}';
+    my $state_filter = $p->{job_state_filter} || '{"CANCELLED":0,"ERROR":1,"EXPIRED":1,"FINISHED":1,"KILLED":1,"RUNNING":1,"WAITING":1}'; 
 
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = @{$p}{qw/start limit query query_id dir sort/};
     $start||=0;
