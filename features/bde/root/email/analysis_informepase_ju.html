@@ -3,6 +3,7 @@
   $message
   $to
   $url
+  $cams
 </%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
@@ -15,6 +16,7 @@
 body {
 	font-family: arial;
 	font-size: 10pt;
+	overflow: auto;
 }
 .imgRight {
     vertical-align: middle;
@@ -23,16 +25,16 @@ body {
     margin: 0px;
 }
 .backGroundPrimeraFila {
-	font-family: Verdana;
-	font-size: 8pt;
+	font-family: arial;
+	font-size: 10pt;
 	font-weight: bold;
 	color: #CCCCCC;
 	background-color: #666666;
 	vertical-align: middle;
 }
 .backGroundFilaDatos {
-	font-family: Verdana;
-	font-size: 8pt;
+	font-family: arial;
+	font-size: 10pt;
 	color: #111111;
 	background-color: #ffffff;
 	vertical-align: top;
@@ -49,24 +51,35 @@ body {
         </TR>
     </TABLE>
 </div>
-
 <table border=0 cellspacing=2>
 	<tr>
-		<td>
+		<td colspan=2>
 			<h3><% $message %></h3>
 		</td>
-	</tr>
+	</tr> <br> <tr>
+		<td width=45px><b>Usuario J.U. Informado :</b></td><td><% join ",",@$to %></td>
+	</tr> <tr>
+		<td width=45px><b>Lista de CAMS:</b></td><td><% $cams %></td>
+	</tr> <tr>
+        <td style="text-align:left; width:45px"><a style="text-align:left;" href="<% $url %>/raw/job/monitor"><b>Consultar Monitor</b></a></td>
+        <td style='text-align:left; width:60%;' >
+% if ($ENV{BASELINER_DEBUG} ) {
+<% $url %>/raw/job/monitor
+%}
+        </td>
+    </tr> <br>
 </table>
+<br>
 
 <table border=1 cellspacing=1 cellpadding="2" width=100%>
 	<tr>
-        <td class="backGroundPrimeraFila">Código de Pase</td>
+        <td class="backGroundPrimeraFila">Codigo de Pase</td>
         <td class="backGroundPrimeraFila">CAM</td>
         <td class="backGroundPrimeraFila">Estado</td>
         <td class="backGroundPrimeraFila">Entorno</td>
         <td class="backGroundPrimeraFila">Nodo</td>
-        <td class="backGroundPrimeraFila">Tipología</td>
-        <td class="backGroundPrimeraFila">Subaplicación</td>
+        <td class="backGroundPrimeraFila">Tipologia</td>
+        <td class="backGroundPrimeraFila">Subaplicacion</td>
         <td class="backGroundPrimeraFila">Usuario</td>
         <td class="backGroundPrimeraFila">Desde</td>
         <td class="backGroundPrimeraFila">Hasta</td>
@@ -90,9 +103,4 @@ body {
 	</tr>
 % }
 </table>
-    <p>
-% if ( $ENV{BASELINER_DEBUG} ) {
-Enviado a: <% join ",",@$to %>
-%}
-    </p>
 </body>

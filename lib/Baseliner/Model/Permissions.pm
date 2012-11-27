@@ -271,14 +271,19 @@ Returns an array of ns for the projects the user has access to.
 sub user_has_project {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
+    my $qr=qr{^\/$};
 
     # is root?
     return 1 if $self->is_root( $p{username} );
 
     if( my $name = delete $p{project_name} ) {
-        return scalar grep /^$name$/, $self->user_projects_names( %p );
+        my @ns=$self->user_projects_names( %p );
+        return 1 if scalar grep /$qr/, @ns;
+        return scalar grep /^$name$/, @ns;
     } elsif( my $id = delete $p{project_id} ) {
-        return scalar grep /$id/, $self->user_projects_ids( %p );
+        my @ns=$self->user_projects_ids( %p );
+        return 1 if scalar grep /$qr/, @ns;
+        return scalar grep /$id/,@ns
     }
     return 0;
 }
@@ -315,7 +320,11 @@ Returns an array of project ids for the projects the user has access to.
 =cut
 sub user_projects_ids {
     my ( $self, %p ) = @_;
-    _unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );
+    my $pattern=_loc('All projects');
+
+    my @ns = $self->user_projects( %p );
+    _unique map { $_!~m{^project}?s{^(.*?)/}{\/}g:s{^(.*?)/}{}g; $_ } @ns;
+#_unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );
 }
 
 =head2 user_projects_names( username=>Str )
@@ -358,6 +367,7 @@ sub user_projects_names {
             }
         }
     }
+    push @ret, '/' if scalar grep /^\/$/, @ns;
     return sort { $a cmp $b } _unique( @ret );
     # _unique map { $_->{name} } $rs->all;
 }
