@@ -3,7 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller' };
 
-register 'menu.tools' => { label => 'Tools' };
+register 'menu.tools' => { label => 'Tools', index=>20 };
 
 1;
 

@@ -7,7 +7,7 @@ use Baseliner::Utils;
 register 'action.admin.default' =>  { name=>'Administrator' };
 register 'action.reports.view' => { name=>'View Reports' };
 
-register 'menu.admin' => { label => 'Admin', actions=>['action.admin.default'] };
+register 'menu.admin' => { label => 'Admin', actions=>['action.admin.default'], index=>10 };
 register 'menu.reports' => { label => 'Reports', actions=>['action.reports.view'] };
 register 'menu.admin.core' => { label => 'Core', actions=>['action.admin.default'] };
 register 'menu.admin.core.registry' => { label => 'List Registry Data', url=>'/core/registry', title=>'Registry', actions=>['action.admin.default'] };

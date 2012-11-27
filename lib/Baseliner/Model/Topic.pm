@@ -947,7 +947,7 @@ sub save_data {
                             if( $ci_update && ( my $cis = $data->{_cis} ) ) {
                                 _debug $cis;
                                 for my $ci ( _array $cis ) {
-                                    my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } _array( $ci->{ci_fields} // @custom_fields ) };
+                                    my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } grep { length } _array( $ci->{ci_fields} // @custom_fields ) };
                                     my $ci_master = $ci->{ci_master} // $ci_data;
                                     _debug $ci_data;
                                     given( $ci->{ci_action} ) {
