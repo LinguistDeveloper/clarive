@@ -96,6 +96,9 @@ msgstr "Regla %1 %2"
 msgid "Edit: %1"
 msgstr "Editar: %1"
 
+msgid "Edit: %1 (%2)"
+msgstr "Editar: %1 (%2)"
+
 msgid "Type: %1"
 msgstr "Tipo: %1"
 
