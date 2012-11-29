@@ -72,13 +72,17 @@ sub bl_list : Path('/core/baselines') {
 sub json : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
+    my $common = _loc('Common');
     my @bl_list =
     map {
+        my $bl = $_->{bl} eq '*' ? $common : $_->{bl};
         +{  name        => $_->{name},
             description => $_->{description} || $_->{name},
             id          => $_->{bl},
             bl          => $_->{bl},
-            active      => 1
+            active      => 1,
+            bl_name=>sprintf( ( defined $_->{name} ? "%s (%s)" : "%s" ),$bl, $_->{name} ),
+            name_bl=>( defined $_->{name} ? sprintf("%s (%s)" ,$_->{name}, $bl ) : $bl )  
          }
     } Baseliner::Core::Baseline->baselines();
     @bl_list = grep { $_->{bl} ne '*' } @bl_list if $p->{no_common};

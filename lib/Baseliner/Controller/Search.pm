@@ -60,6 +60,17 @@ sub query_sql : Local {
     };
 } 
 
+=head2 query_lucy
+
+Normally, this runs once for each provider. Gets called 
+many times for a search.
+
+Parameters:
+
+    provider : where to search 
+    tokenizer_pattern : how to break down words
+
+=cut
 sub query_lucy : Local {
     my ( $self, $c ) = @_;
     my $p        = $c->request->parameters;
@@ -69,9 +80,12 @@ sub query_lucy : Local {
     my $lang = $c->languages->[0] || 'en';
 
     #my $dir = _dir _tmp_dir(), 'search_index_' . _md5( join ',', $c->username , $$ , time );
+    my $string_tokenizer = Lucy::Analysis::RegexTokenizer->new( pattern => $p->{tokenizer_pattern} // '\w');
+    my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$string_tokenizer]);
     my $searcher = Baseliner::Lucy->new(
         index_path => Lucy::Store::RAMFolder->new, # in-memory files "$dir",
         language   => $lang || $c->config->{default_lang} || 'en', 
+        analyser   => $analyzer, 
         resultclass => 'LucyX::Simple::Result::Hash',
         entries_per_page => $config->{max_results},
         schema     => [
@@ -86,10 +100,9 @@ sub query_lucy : Local {
         search_boolop => $config->{lucy_boolop} // 'OR',
     );
      
-    my @provs = packages_that_do('Baseliner::Role::Search');
-
     # create Lucy docs
     my @results  = $provider->search_query( c => $c, limit=>$config->{max_results_provider} ); # query => $query don't send a query, its faster
+
     #push @results, @results for 1..8;
     my $id=0;
     #_debug( \@results );
