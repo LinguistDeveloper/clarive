@@ -4,6 +4,8 @@
     if( data == undefined ) data = {};
     var on_submit_events = [];
     
+
+    
     var form_topic = new Ext.FormPanel({
         url:'/topic/update',
         //frame: true,
@@ -11,7 +13,7 @@
         bodyStyle:'padding: 15px 15px 15px 15px',
         border: false,
         //style: { padding: '15px' },
-        defaults: { anchor:'100%'},
+        defaults: { anchor:'80%'},
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]
@@ -23,6 +25,7 @@
         });
     };
     
+   
     // if we have an id, then async load the form
     form_topic.on('afterrender', function(){
         form_topic.body.setStyle('overflow', 'auto');
@@ -32,12 +35,14 @@
     ///*****************************************************************************************************************************
     if (rec.topic_meta != undefined){
         var fields = rec.topic_meta;
+
         for( var i = 0; i < fields.length; i++ ) {
             if(fields[i].body) {
                 var comp = Baseliner.eval_response(
                     fields[i].body,
                     {form: form_topic, topic_data: data, topic_meta: fields[i], value: ''}
                 );
+                
                 if( comp.items ) {
                     if( comp.on_submit ) on_submit_events.push( comp.on_submit );
                     form_topic.add (comp.items );
@@ -50,7 +55,7 @@
         form_topic.on( 'afterrender', function(){
             var form2 = form_topic.getForm();
             var id_category = rec.new_category_id ? rec.new_category_id : data.id_category;
-
+        
             var obj_combo_category = form2.findField("category");
             var obj_store_category;
             if(obj_combo_category){
@@ -60,7 +65,7 @@
                 });
                 obj_store_category.load();
             }
-
+        
             var obj_combo_status = form2.findField("status_new");
             var obj_store_category_status;                
             
@@ -90,7 +95,7 @@
             
             var obj_combo_priority = form2.findField("priority");
             var obj_store_category_priority;
-
+        
             if(obj_combo_priority){
                 obj_store_category_priority = obj_combo_priority.getStore();
                 obj_store_category_priority.on("load", function() {
@@ -101,7 +106,8 @@
         });
         form_topic.doLayout();
     } // if rec.meta
-    ///******************************************************************************************************************************    
+    ///******************************************************************************************************************************
+            
     return form_topic;
 })
 

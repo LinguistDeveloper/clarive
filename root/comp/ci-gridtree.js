@@ -113,6 +113,19 @@
         }
     };
 
+    var ci_ping = function(){
+        var checked = Baseliner.multi_check_data( check_sm, 'mid' );
+        if ( checked.count > 0 ) {
+            Baseliner.ajaxEval( '/ci/ping', { mids: checked.data }, function(res) {
+                if( res.success ) {
+                    alert(res.msg);
+                } else {
+                    Ext.Msg.alert( _('CI'), res.msg );
+                }
+            });
+        }
+    };
+
     var ci_export = function(format, mode){
         var checked = Baseliner.multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
@@ -225,7 +238,7 @@
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon', 
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },

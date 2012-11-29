@@ -26,5 +26,8 @@ sub rel_type {
     };
 }
 
+sub ping {'OK'};
+
+
 1;
 

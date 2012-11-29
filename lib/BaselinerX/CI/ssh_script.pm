@@ -23,4 +23,6 @@ sub args { @{ shift->arg } }
 
 sub error {}
 
+sub ping {'OK'};
+
 1;

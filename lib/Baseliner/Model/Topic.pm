@@ -121,16 +121,37 @@ register 'registor.action.topic_category_fields' => {
             my @statuses = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')
                 ->search({id_category => $category->{id}}, {join=>'status', 'select'=>'status.name', 'as'=>'name'})->hashref->all;
             for my $field (_array $meta){
-                for my $status (@statuses){
-                    my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.write';
-                    my $description = _loc('Can not edit the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                if ($field->{fields}) {
+                	my @fields_form = _array $field->{fields};
                     
-                    $actions_category_fields{$id_action} = { name => $id_action, description => $description };
-                    
-                    $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
-                    $description = _loc('Can not view the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
-                    
-                    $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                    for my $field_form (@fields_form){
+                        for my $status (@statuses){
+                            my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
+                                    . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.write';
+                            my $description = _loc('Can not edit the field') . ' ' . lc $field_form->{id_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                            
+                            $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                            
+                            $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
+                                    . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.read';
+                            $description = _loc('Can not view the field') . ' ' . lc $field_form->{id_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                            
+                            $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                        }                    
+                    }
+                }
+                else{
+                    for my $status (@statuses){
+                        my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.write';
+                        my $description = _loc('Can not edit the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                        
+                        $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                        
+                        $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
+                        $description = _loc('Can not view the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                        
+                        $actions_category_fields{$id_action} = { name => $id_action, description => $description };
+                    }
                 }
             }
         }
@@ -212,6 +233,15 @@ sub topics_for_user {
         #push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
         #$where->{'project_id'} =  \@user_apps;
         $where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}, { "=", undef }];
+    }
+    
+    #Filtros especificos para GDI
+    if( $p->{typeApplication} && $p->{typeApplication} eq 'gdi'){
+        if (!$perm->is_root( $username )){
+            if(!Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.GDI.admin')){
+                $where->{'created_by'} = $username;
+            }
+        }
     }
 
     #DEFAULT VIEWS***************************************************************************************************************
@@ -402,9 +432,18 @@ sub update {
     my $return;
     my $topic_mid;
     my $status;
-
+    
     given ( $action ) {
+        #Casos especiales, por ejemplo la aplicacion GDI
+        my $form = $p->{form};
         when ( 'add' ) {
+            given ( $form ){
+                when ( 'gdi' ) {
+                    my $numSolicitud = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ name => 'gdi_perfil_dni', value => $p->{gdi_perfil_dni} })->count;
+                    $p->{title} = $p->{gdi_perfil_dni} . '.' . ++$numSolicitud;
+                }
+            }
+            
             event_new 'event.topic.create' => { username=>$p->{username} } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
@@ -421,6 +460,12 @@ sub update {
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
+            given ( $form ){
+                when ( 'gdi' ) {
+                    #my $custom_data = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid => $p->{topic_mid} });
+                    #$custom_data->delete;
+                }
+            }            
             event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my @field;
@@ -451,6 +496,9 @@ sub update {
                 $row->delete;
                 $topic_mid    = $topic_mid;
                 
+                $row = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid=>$topic_mid });
+                $row->delete;
+                
                 $return = '%1 topic(s) deleted';
             } ## end try
             catch {
@@ -472,7 +520,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $topic_mid, $status );
+    return ( $return, $topic_mid, $status, $p->{title} );
 } ## end sub update
 
 sub append_category {
@@ -510,15 +558,15 @@ sub get_system_fields {
     my $pathHTML = '/fields/system/html/';
     my $pathJS = '/fields/system/js/';
     my @system_fields = (
-            { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => 1, section => 'head', field_order_html => 1 }},
-            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => 2, section => 'body', relation => 'categories' }},
-            { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status', origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => 3, section => 'body', relation => 'status' }},
+            { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => -1, section => 'head', field_order_html => 1 }},
+            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => -2, section => 'body', relation => 'categories' }},
+            { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status', origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => -3, section => 'body', relation => 'status' }},
             { id_field => 'created_by', params => {name_field => 'Created By', bd_field => 'created_by', origin => 'default'}},
             { id_field => 'created_on', params => {name_field => 'Created On', bd_field => 'created_on', origin => 'default'}},
             { id_field => 'labels', params => {name_field => 'Labels', bd_field => 'labels', origin => 'default', relation=>'system', get_method=>'get_labels', field_order_html => 1 }},
-            { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => 6, section => 'body', relation => 'priorities' }},
-            { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => 7, section => 'head', field_order_html => 2 }},
-            { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => 8, section => 'body' }},
+            { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => -6, section => 'body', relation => 'priorities' }},
+            { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => -7, section => 'head', field_order_html => 2 }},
+            { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => -8, section => 'body' }},
             { id_field => 'include_into', params => {name_field => 'Include into', bd_field => 'include_into', origin => 'default', html => $pathHTML . 'field_include_into.html', field_order => 0, section => 'details' }},
             { id_field => 'dates', params => { name_field => 'dates',  origin => 'default', relation => 'system', get_method => 'get_dates', html => $pathHTML . 'field_scheduling.html', field_order => 9999, section => 'details' }},
     );
@@ -818,36 +866,6 @@ sub save_data {
 
     my @imgs;
 
-    # TODO falta bucle de todos los campos HTMLEditor
-    #_debug $data->{description};
-    #if( length $topic_mid ) {
-    #    my @img_current_ids;
-    #    for my $img ( $data->{description} =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
-    #        push @img_current_ids, $img;
-    #    }
-    #    if( @img_current_ids ) {
-    #        DB->BaliTopicImage->search({ topic_mid=>$topic_mid, -not => { id_hash=>{ -in => \@img_current_ids } } })->delete;
-    #    } else {
-    #        DB->BaliTopicImage->search({ topic_mid=>$topic_mid })->delete;
-    #    }
-    #}
-    #
-    #_error $data->{description};
-    #for my $img ( $data->{description} =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
-    #    my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
-    #    $img_data = from_base64( $img_data );
-    #    _error "IMG_DATA LEN=" . length( $img_data );
-    #    my $row = { topic_mid=>$topic_mid, img_data=>$img_data, content_type=>$ct };
-    #    $row->{topic_mid} = $topic_mid if length $topic_mid;
-    #    my $img_row = DB->BaliTopicImage->create( $row );
-    #    push @imgs, $img_row; 
-    #    my $img_id = $img_row->id;
-    #    my $id_hash = _md5( join(',',$img_id,_nowstamp) ); 
-    #    $img_row->update({ id_hash => $id_hash });
-    #    $data->{description} =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
-    #}
-    
-    
     $data->{description} = $self->deal_with_images({topic_mid => $topic_mid, field => $data->{description}});
 
     for( @std_fields ) {
@@ -888,8 +906,8 @@ sub save_data {
         $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
         
         for my $field (keys %row){
-            $old_value{$field} = eval($topic->$field),
-            $old_text{$field} = $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
+            $old_value{$field} = $topic->$field,
+            $old_text{$field} = $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') : $topic->$field,
         }
         
         $topic->update( \%row );
@@ -900,7 +918,7 @@ sub save_data {
             
             
             $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
-            if ($row{$field} != eval($old_value{$field})){
+            if ($row{$field} != $old_value{$field}){
                 if($field eq 'id_category_status'){
                     my @projects = $topic->projects->hashref->all;
                     event_new 'event.topic.change_status' => { username => $data->{username}, old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name')  } => sub {
@@ -967,23 +985,26 @@ sub save_data {
             }
             else{
                 my $modified = 0;
+                my $old_value;
                 if ($_->{data}){ ##Cuando el tipo de dato es CLOB
-                    $row->value_clob ( $data->{ $_ -> {name}} );
-                    if ($row->value != $data->{ $_ -> {name}}){
-                        $modified = 0;    
-                    }                    
-                }else{
-                    $row->value ( $data->{ $_ -> {name}} );
-                    if ($row->value != $data->{ $_ -> {name}}){
+                    if ($row->value ne $data->{$_->{name}}){
+                        $old_value = $row->value;
                         $modified = 1;    
                     }
+                    $row->value_clob($data->{$_->{name}});
+                }else{
+                    if ($row->value ne $data->{$_->{name}}){
+                        $modified = 1;
+                        $old_value = $row->value;
+                    }
+                    $row->value($data->{$_->{name}});
                 }
                 $row->update;
                 
                 if ( $modified ){
                     event_new 'event.topic.modify_field' => { username   => $data->{username},
                                                         field      => _loc ($_->{column}),
-                                                        old_value  => $row->value,
+                                                        old_value  => $old_value,
                                                         new_value  => $data->{ $_ -> {name}},
                                                        } => sub {
                         { mid => $topic->mid, topic => $topic->title }   # to the event

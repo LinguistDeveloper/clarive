@@ -615,5 +615,27 @@ sub json_tree : Local {
     $c->forward('View::JSON');
 }
 
+sub ping : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my @mids = _array delete $p->{mids};
+    try {
+        my $msg;
+        for my $mid ( @mids ) {
+            my $ci = _ci( $mid );
+            if ( $ci->does( 'Baseliner::Role::CI::Infrastructure' ) ) {
+                my ( $status, $out ) = $ci->ping;
+                $msg .= "\nCI: ".$ci->name . "\nStatus: " . $status . "\nOutput:\n" . $out . "\n----------------------------------------------";
+            }
+        } ## end for $mid ( @mids )
+        $c->stash->{json} = {success => \1, msg => $msg};
+    } ## end try
+    catch {
+        $c->stash->{json} = {success => \0, msg => shift()};
+    };
+    $c->forward('View::JSON');
+
+}
+
 1;
 
