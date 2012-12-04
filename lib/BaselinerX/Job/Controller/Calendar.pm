@@ -8,6 +8,8 @@ use Calendar::Slots 0.15;
 use DateTime;
 use Try::Tiny;
 
+our $DEFAULT_SEQ = 100;
+
 register 'menu.job.calendar' => {
     label    => _loc('Job Slots'),
     url_comp => '/job/calendar_grid',
@@ -150,6 +152,8 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                 my $row = $c->model('Baseliner::BaliCalendar')->create({
                         name        => $p->{ name },
                         description => $p->{ description },
+                        seq         => $p->{ seq } // $DEFAULT_SEQ,
+                        active      => '1',
                         ns          => $p->{ ns },
                         bl          => $p->{ bl }
                     }
@@ -390,7 +394,7 @@ sub db_merge_slots {
                 end_date   => $date,
                 day        => ( $_->weekday - 1 ),
                 type       => $_->data->{type},
-                active     => $_->data->{active},
+                active     => $_->data->{active} // 1,
                 id_cal     => $id_cal,
             }
         );
@@ -472,6 +476,68 @@ sub build_job_window : Path('/job/build_job_window') {
     $c->forward('View::JSON');
 }
 
+sub begin : Private {
+    my ($self,$c) = @_;
+    if( $c->req->path =~ /build_job_window_direct/ ) {
+        $c->stash->{auth_skip} = 1;
+    }
+}
+
+sub build_job_window_direct : Path('/job/build_job_window_direct') {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    try {
+        my $date = $p->{job_date};
+        my $date_format = $p->{date_format};
+        _fail "Missing date format" if length $date && ! $date_format ;
+        
+        my $bl = $p->{bl};
+        my $month_days = 31;	
+
+        # get calendar range list
+        $date =  $date
+            ? parse_dt( $date_format, $date )
+            : _dt();  # _dt = now with timezone
+
+        if( $p->{day_add} ) {
+            $date->add( days=>$p->{day_add} );
+        }
+
+        my @ns;
+
+        for my $ns ( _array $p->{ns} ) {
+            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $ns }, active=>'1' });
+            push @ns, $ns if $r->count;
+        }
+        _debug "NS with Calendar: " . join ',',@ns;
+        my %tmp_hash   = map { $_ => 1 } @ns;
+        @ns = keys %tmp_hash;    
+        _debug "------Checking dates for namespaces ($date): " . _dump \@ns;
+
+        my $hours = $self->merge_calendars( ns=>\@ns, bl=>$bl, date=>$date );
+
+        # remove X
+        while( my ($k,$v) = each %$hours ) {
+            delete $hours->{$k} if $v->{type} eq 'X'; 
+        }
+        # get it ready for a combo simplestore
+        my $hour_store = [ map {
+            my $st = substr($hours->{$_}{start}, 0,2 ) . ':' . substr($hours->{$_}{start}, 2,2);
+            my $et = substr($hours->{$_}{end}, 0,2 ) . ':' . substr($hours->{$_}{end}, 2,2 );
+            [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type}, $st, $et ]
+        } sort keys %$hours ];
+
+        $c->stash->{json} = {success=>\1, data => $hour_store };
+    } catch {
+        my $error = shift;
+        _error $error;
+        $c->stash->{json} = {success=>\0, msg=>$error, data => $error };
+    };
+    $c->forward('View::JSON');
+}
+
+
 ### Private Methods
 
 sub init_date {
@@ -536,7 +602,8 @@ sub db_to_slots {
                     name  => $name,
                     data  => $win
                 );
-            } else {
+            }
+            else {
                 $when = $win->{day} + 1;
                 $slots->slot(
                     weekday => $when,
@@ -548,6 +615,7 @@ sub db_to_slots {
             }
         }
     }
+    _debug $slots;
     return $slots;
 }
 
@@ -611,7 +679,7 @@ sub merge_calendars {
                     start   => $win->{start_time},
                     end     => $win->{end_time},
                     name    => $name,
-                    data    => { cal => $cal->{name}, type => $win->{type} }
+                    data    => { cal => $cal->{name}, type => $win->{type}, seq => $cal->{seq} }
                 );
             }
         }
@@ -639,12 +707,20 @@ sub merge_calendars {
          # now choose which slot to use for this minute
          #   giving higher precedence to the ASCII value of TYPE letter 
          #     X > U > N - using ord for ascii values
-         if( ! exists $list{$time} || ord $s->data->{type} > ord $list{ $time }->{type} ) {
-            $list{ $time } = {
-                type=>$s->data->{type}, cal=>$s->data->{cal}, 
-                hour => sprintf( '%s:%s', substr($time,0,2), substr($time,2,2) ),
-                name=>sprintf "%s (%s)", $s->data->{cal}, $s->data->{type} 
-            }; 
+         $s->data->{seq} //= $DEFAULT_SEQ;
+         if( ! exists $list{$time}
+             || ord $s->data->{type} > ord $list{ $time }->{type}
+             || $s->data->{seq} > $list{ $time }->{seq}
+             ) {
+            $list{$time} = {
+                type => $s->data->{type},
+                cal  => $s->data->{cal},
+                seq  => $s->data->{seq},
+                hour => sprintf( '%s:%s', substr( $time, 0, 2 ), substr( $time, 2, 2 ) ),
+                name => sprintf( "%s (%s)", $s->data->{cal}, $s->data->{type} ),
+                start => $s->start,
+                end   => $s->end,
+            };
          }
        }
     }
