@@ -1699,7 +1699,7 @@ Baseliner.kanban_from_store = function( args ){
         }
     });
     Baseliner.viewport.add( kanban );
-    Baseliner.viewport.getLayout().setActiveItem( 1 );
+    Baseliner.viewport.getLayout().setActiveItem( kanban );
 };
 
 /*
