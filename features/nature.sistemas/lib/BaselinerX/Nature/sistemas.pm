@@ -6,8 +6,8 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use utf8;
 
-register 'nature.sistemas' => {name => 'Sistemas',
-                            icon => 'sistemas',
-                            ns   => 'nature/sistemas'};
+register 'action.admin.sistemas' => { name=>'Systems adminitration' };
+
+register 'nature.sistemas' => {name => 'Sistemas', icon => 'sistemas', ns   => 'nature/sistemas', action => 'action.admin.sistemas'};
 
 1;

@@ -6,8 +6,8 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use utf8;
 
-register 'nature.biztalk' => {name => 'Biztalk',
-                            icon => 'biztalk',
-                            ns   => 'nature/biztalk'};
+register 'action.admin.biztalik' => { name=>'Biztalk administration'};
+
+register 'nature.biztalk' => {name => 'Biztalk', icon => 'biztalk', ns   => 'nature/biztalk', action=>'action.admin.biztalik'};
 
 1;

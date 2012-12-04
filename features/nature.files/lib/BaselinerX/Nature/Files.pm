@@ -6,8 +6,8 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use utf8;
 
-register 'nature.files' => {name => 'FICHEROS',
-                            icon => 'files',
-                            ns   => 'nature/files'};
+register 'action.admin.j2ee' => { name=>'J2EE administration'};
+
+register 'nature.files' => {name => 'FICHEROS', icon => 'files', ns   => 'nature/files', action => 'action.admin.j2ee'};
 
 1;

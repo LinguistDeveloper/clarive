@@ -6,8 +6,9 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use utf8;
 
-register 'nature.net' => {name => '.NET',
-                          icon => 'net',
-                          ns   => 'nature/.net'};
+register 'action.admin.net' => { name=>'.NET administration' };
+
+register 'nature.net' => {name => '.NET', icon => 'net', ns   => 'nature/.net', action => 'action.admin.net'};
+
 
 1;

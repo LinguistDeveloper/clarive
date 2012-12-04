@@ -6,12 +6,12 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use utf8;
 
-register 'nature.linklist_db2' => {name => 'ZOS-Linklist-DB2', ns   => 'nature/zos.linklist.db2', icon=>'zos' };
+register 'action.admin.zos' =>  { name=>'z/OS administration' };
 
-register 'nature.linklist' => {name => 'ZOS-Linklist', ns   => 'nature/zos.linklist', icon=>'zos'};
+register 'nature.zos.linklist.db2' => {name => 'ZOS-Linklist-DB2', ns   => 'nature/zos.linklist.db2', icon=>'zos', action=>'action.admin.zos' };
+register 'nature.zos.linklist' => {name => 'ZOS-Linklist', ns   => 'nature/zos.linklist', icon=>'zos', action=>'action.admin.zos'};
+register 'nature.zos.db2' => {name => 'ZOS-DB2', ns   => 'nature/zos.db2', icon=>'zos', action=>'action.admin.zos'};
+register 'nature.zos' => {name => 'ZOS', ns   => 'nature/zos', icon=>'zos', action=>'action.admin.zos'};
 
-register 'nature.bd2' => {name => 'ZOS-DB2', ns   => 'nature/zos.db2', icon=>'zos'};
-
-register 'nature.zos' => {name => 'ZOS', ns   => 'nature/zos', icon=>'zos'};
 
 1;

@@ -6,8 +6,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use utf8;
 
-register 'nature.j2ee' => {name => 'J2EE',
-                            icon => 'j2ee',
-                           ns   => 'nature/j2ee'};
+register 'action.admin.j2ee' => { name=>'J2EE administration'};
+register 'nature.j2ee' => {name => 'J2EE', icon => 'j2ee', ns   => 'nature/j2ee', action=>'action.admin.j2ee'};
 
 1;

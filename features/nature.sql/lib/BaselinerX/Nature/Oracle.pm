@@ -6,8 +6,9 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use utf8;
 
-register 'nature.sql' => {name => 'ORACLE',
-                            icon => 'oracle',
-                          ns   => 'nature/oracle'};
+register 'action.admin.oracle' => { name=>'Oracle administration' };
+
+register 'nature.sql' => {name => 'ORACLE', icon => 'oracle', ns   => 'nature/oracle', action => 'action.admin.oracle'};
+
 
 1;

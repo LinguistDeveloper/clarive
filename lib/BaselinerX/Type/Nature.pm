@@ -9,7 +9,8 @@ register_class 'nature' => __PACKAGE__;
 has 'id',   is => 'rw', isa => 'Str', default => '';
 has 'name', is => 'rw', isa => 'Str';
 has 'ns',   is => 'rw', isa => 'Str';
-has 'icon',   is => 'rw', isa => 'Str', default => sub { shift->key };
+has 'icon', is => 'rw', isa => 'Str', default => sub { shift->key };
+has 'action',  is => 'rw', isa => 'Str';
 
 sub can_i_haz_nature { # ArrayRef -> Bool
   my ($self, $elements) = @_;
