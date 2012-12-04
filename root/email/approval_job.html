@@ -1,6 +1,7 @@
 <%args>
 	$comments => '(vacio)'
 	$jobname 
+    $message
 	$realname => ''
 	$reason => '(vacio)'
 	$requested_by
@@ -78,12 +79,14 @@ body {
 <table border=0 cellspacing=4 cellpadding=2 width=80%>
     <tr><td colspan=2><hr></td></tr>
     <tr>
-        <td class="backGroundFilaDatos" style="width: 16%;"><b>Solicitado por</b></td><td style='width: 64%;'><% $requested_by %> (<% $realname %>)</td>
+        <td class="backGroundFilaDatos" colspan=2 nowrap class="backGroundFilaDatos" style="width: 16%;"><b><% $message %></b></td>
     </tr><tr>
-        <td class="backGroundFilaDatos" style="width: 16%;"><b>Solicitado a</b></td><td style='width: 64%;'><li><% join '<li>', @{ $requested_to } %></td>
+        <td nowrap class="backGroundFilaDatos" style="width: 16%;"><b>Solicitado por</b></td><td style='width: 64%;'><% $requested_by %> (<% $realname %>)</td>
+    </tr><tr>
+        <td nowrap class="backGroundFilaDatos" style="width: 16%;"><b>Solicitado a</b></td><td style='width: 64%;'><li><% join '<li>', @{ $requested_to } %></td>
     </tr>
-    <% $reason ? '<tr><td class="backGroundFilaDatos" style="width: 16%;"><b>Motivo</b></td><td style="width: 64%;">'.$reason.'</td></tr>' : '' %>
-    <% $comments ? '<tr><td class="backGroundFilaDatos" style="width: 16%;"><b>Comentarios</b></td><td style="width: 64%;">'.$comments.'</td></tr>' : '' %>
+    <% $reason ? '<tr><td nowrap class="backGroundFilaDatos" style="width: 16%;"><b>Motivo</b></td><td style="width: 64%;">'.$reason.'</td></tr>' : '' %>
+    <% $comments ? '<tr><td nowrap class="backGroundFilaDatos" style="width: 16%;"><b>Comentarios</b></td><td style="width: 64%;">'.$comments.'</td></tr>' : '' %>
 </table>
 
 <table border=0 cellspacing=6 width=80%>

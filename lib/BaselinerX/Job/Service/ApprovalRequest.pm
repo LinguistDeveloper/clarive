@@ -40,6 +40,7 @@ sub run {
 
     # check the job stash
     my $job_approve = $job->job_stash->{approval_needed};
+    my $start=parse_dt( '%Y-%m-%d %H:%M',$job->job_data->{starttime} );
     
     #unless( ref $job_approve ) {
     unless( defined $job_approve and defined $job_approve->{reason} ) {  ## evitamos que salte la aprobacion si no estÃ¡ informado reason, se estÃ¡ creando la clave vacia.
@@ -50,7 +51,7 @@ sub run {
 
 
     $reason = $job_approve->{reason};
-    $log->debug( 'Aprobación requerida en stash de pase', data=>_dump( $job_approve ) );
+    $log->debug( 'AprobaciÃ³n requerida en stash de pase', data=>_dump( $job_approve ) );
 
     # check the config : this has precedence
        # my $config_approve = Baseliner->model('ConfigStore')->get('config.job.approve', bl=>$bl);
@@ -60,17 +61,18 @@ sub run {
     # }
     
     $approval_items ||= $job->job_stash->{contents}; 
-    $reason ||= "Promoción a $bl";
+    $reason ||= "PromociÃn a $bl";
     
     my $apps = join ( ', ', _unique map {my ($a,$b)=ns_split($_->{application}); $b } _array $job->job_stash->{contents} );
     my $comment = $job->job_data->{comments};
     my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $job->jobid );
+    my $message = _loc("Scheduled at %1 of %2",$start->hms(':'),$start->dmy('/'));
 
     my @users = Baseliner->model('Permissions')->list(action => 'action.job.approve', ns => '/', bl => '*');
     my $to = [ _unique(@users) ];
 
     #my $item_ns = 'endevor.package/' . $item->{item};   #TODO get real ns names
-    $log->info( _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ) );
+    $log->info( _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, _loc($reason) ) );
     try {
         Baseliner->model('Request')->request(
             name   => _loc("Approval for job %1", $job->name),
@@ -85,12 +87,13 @@ sub run {
             id_job       => $job->jobid,
             vars         => {
                 jobname  => $job->name,
-                reason   => $reason,
+                reason   => _loc($reason),
+                message  => $message,
                 comments => $job->job_data->{comments},
                 to       => $to,
                 url_log  => $url_log,
                 url      => _notify_address(),
-                subject  => _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, $reason ),
+                subject  => _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, _loc($reason) ),
             },
             data         => {
                 project  => $apps,
@@ -104,7 +107,7 @@ sub run {
         $job->status('APPROVAL');
     } catch {
         my $e = shift;
-        $log->info( _loc("El pase '%1' no necesita aprobación (no hay usuarios para aprobarlo)", $job->name ) );
+        $log->info( _loc("El pase '%1' no necesita aprobaciÃ³n (no hay usuarios para aprobarlo)", $job->name ) );
     };
 }
 
