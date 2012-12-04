@@ -975,12 +975,19 @@ sub hash_flatten {
     $prefix ||= '';
     my %flat;
     while( my ($k,$v) = each %$stash ) {
-        if( ref $v eq 'HASH') {
+        my $ref = ref $v;
+        if( $ref eq 'HASH') {
+            $flat{$prefix . $k} = _dump( $v ); # used to represent complex variables as text
             my %flat_sub = hash_flatten( $v, "$prefix$k." );
             %flat = ( %flat, %flat_sub );
-        } elsif( ref $v eq 'ARRAY') {
+        } elsif( $ref eq 'ARRAY') {
             $flat{$prefix . $k} = join ',', @$v;
-        } elsif( ! ref $v ) {
+        } elsif( $ref ) {
+            $flat{$prefix . $k} = _dump( $v ); # used to represent complex variables as text TODO consider JSON or something that shows in oneline
+            $v = _damn( $v );
+            my %flat_sub = hash_flatten( $v, "$prefix$k." );
+            %flat = ( %flat, %flat_sub );
+        } else {
             $flat{$prefix . $k} = $v;
         }
     }
@@ -1012,28 +1019,31 @@ sub parse_vars {
 sub parse_vars_raw {
     my %args = @_;
     my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
-    if( ref $data eq 'HASH' ) {
+    my $ref = ref $data;
+    if( $ref eq 'HASH' ) {
         my %ret;
         for my $k ( keys %$data ) {
             my $v = $data->{$k};
             $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
         }
         return \%ret;
-    } elsif( ref( $data ) =~ /Baseliner/ ) {
-        my $class = ref($data);
+    } elsif( $ref =~ /Baseliner/ ) {
+        my $class = $ref;
         my %ret;
         for my $k ( keys %$data ) {
             my $v = $data->{$k};
             $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
         }
         return bless \%ret => $class;
-    } elsif( ref $data eq 'ARRAY' ) {
+    } elsif( $ref eq 'ARRAY' ) {
         my @tmp;
         for my $i ( @$data ) {
             push @tmp, parse_vars_raw( data=>$i, vars=>$vars, throw=>$throw );
         }
         return \@tmp;
-    } elsif( ! ref $data ) {
+    } elsif($ref) {
+        return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw );
+    } else {
         # string
         return $data unless $data =~ m/\$\{.+\}/;
         my $str = "$data";
@@ -1050,8 +1060,6 @@ sub parse_vars_raw {
             $str =~ s/\$\{.*?\}//g; 
         }
         return $str;
-    } else {
-        return $data;
     }
 }
 
