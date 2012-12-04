@@ -22,7 +22,7 @@ register 'action.job.restart' => { name=>'Restart Jobs' };
 register 'config.job.states' => {
   metadata => [
     { id      => "states",
-      default => [qw/EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED WAITING/]
+      default => [qw/EXPIRED READY APPROVAL REJECTED RUNNING FINISHED CANCELLED ERROR KILLED WAITING/]
     }
   ]
 };
@@ -209,7 +209,7 @@ sub monitor_json : Path('/job/monitor_json') {
     my $p = $c->request->parameters;
     my $username = $c->username;
     my $perm = $c->model('Permissions');
-    my $state_filter = $p->{job_state_filter} || '{"CANCELLED":0,"ERROR":1,"EXPIRED":1,"FINISHED":1,"KILLED":1,"RUNNING":1,"WAITING":1}'; 
+    my $state_filter = $p->{job_state_filter} || '{"CANCELLED":0,"REJECTED":0,"APPROVAL":1,"READY":1,"ERROR":1,"EXPIRED":1,"FINISHED":1,"KILLED":1,"RUNNING":1,"WAITING":1}'; 
 
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = @{$p}{qw/start limit query query_id dir sort/};
     $start||=0;
@@ -365,7 +365,7 @@ sub monitor_json : Path('/job/monitor_json') {
         } _array $job_items{ $r->{id} };
 
         my @natures = _unique map {
-            $_->{item}   # the ns name of the nature
+            $_->{item}  # the ns name of the nature
         } grep {
             $_->{item} =~ /^nature/
         } _array $job_items{ $r->{id} };
@@ -620,15 +620,15 @@ sub restart : Local {
 
 sub natures_json {
   my @data = sort { uc $a->{name} cmp uc $b->{name} } 
-             map { { key=>$_->{key}, id=>$_->{id}, name => $_->{name}, ns => $_->{ns}, icon => $_->{icon}} }
+             map { { key=>$_->{key}, id=>$_->{id}, name => _loc($_->{name}), ns => $_->{ns}, icon => $_->{icon}} }
              map { Baseliner::Core::Registry->get($_) }
              Baseliner->registry->starts_with('nature');
   _encode_json \@data;
 }
 
 sub job_states_json {
-  my @data = map { {name => $_} }
-             sort @{config_get('config.job.states')->{states}};
+  my @data = sort {_loc($a->{name}) cmp _loc($b->{name})} map { {name => $_} }
+                 @{config_get('config.job.states')->{states}};
   _encode_json \@data;
 }
 

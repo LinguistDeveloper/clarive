@@ -138,14 +138,15 @@
     var natures = <% $natures_json %>;
     var nature_hash = {}; // this is used by the render_nature
     Ext.each( natures, function(nat) {
+        //console.log('natures',nat);
         nature_hash[ nat.ns ] = nat; 
     });
     var nature_menu = natures.map(function (x) {
       // Por defecto siempre se van a mostrar en uppercase, pero tampoco est￡ de m￡s filtrar un poco esto.
       var nature_name = x.name == 'ZOS'              ? 'z/OS' 
-                      : x.name == 'ZOS-Linklist'     ? 'z/OS LinkList' 
-                      : x.name == 'ZOS-Linklist-DB2' ? 'z/OS Linklist DB2' 
-                      : x.name == 'ZOS-DB2'          ? 'z/OS DB2' 
+                      : x.name == 'ZOS-Linklist'     ? 'z/OS de uso general'
+                      : x.name == 'ZOS-Linklist-DB2' ? 'z/OS de uso general con DB2' 
+                      : x.name == 'ZOS-DB2'          ? 'z/OS con DB2' 
                       : x.name == 'FICHEROS'         ? 'Ficheros'
                       : x.name == 'TODAS'            ? 'Todas'
                       : x.name
@@ -182,12 +183,15 @@
     var job_states_json = <% $job_states_json %>;
     var job_states_check_state = {
       CANCELLED: false,
+      REJECTED: false,
+      APPROVAL: true,
       ERROR: true,
       EXPIRED: true,
       FINISHED: true,
       KILLED: true,
       RUNNING: true,
-      WAITING: true
+      WAITING: true,
+      READY: true
     };
     var to_perl_bool = function (obj) { // Object -> Object
       // Converts Javascript booleans to Perl's C-like notation. Just in case. 
@@ -292,7 +296,7 @@
     var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/monitor_json',
-            baseParams: { limit: ps },
+            baseParams: { limit: ps, job_state_filter: Ext.util.JSON.encode(to_perl_bool(job_states_check_state)) },
             remoteSort: true,
             sortInfo: { field: 'starttime', direction: "DESC" },
             groupField: group_field
@@ -314,6 +318,12 @@
         //store.baseParams.next_start = next_start;
         //alert(next_start);
     });
+
+    store.on( 'beforeload', function( obj, opt ) {
+        var f = Ext.util.JSON.encode(to_perl_bool(job_states_check_state));
+        obj.baseParams.job_state_filter = f;
+    });
+
 
     paging.on("beforechange", function(p,opts) {
         opts.next_start = next_start;
