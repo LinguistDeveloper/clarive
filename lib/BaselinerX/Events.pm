@@ -10,7 +10,7 @@ register 'event.repository.create' => {
 
 register 'event.repository.update' => {
     text => 'user %1 updated the repository %2',
-    vars => [qw/username repository commit diff mid/],   # mid=revision-mid, diff=diff text, commit=object for commit
+    vars => [qw/username repository commit diff mid/], # mid=revision-mid, diff=diff text, commit=object for commit
 };
 
 1;
