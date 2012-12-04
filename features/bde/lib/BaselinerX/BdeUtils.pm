@@ -831,8 +831,12 @@ truly looks like a package name.
 sub packagep { /\w{3}\.\w{1}-\d*/ }
 
 sub get_job_nodes {
-  my ($contents) = @_;
-  sort {$a cmp $b} _unique map { ref $_->{data}->{site}?_loc 'Deleted package':map {$_=~s{SPR}{}; $_} split (/, |,/,$_->{data}->{site}) } _array $contents ;
+  my (%p) = @_;
+  if ( $p{type} eq 'promote' ) {
+     sort {$a cmp $b} _unique map { ref $_->{data}->{site}?_loc 'Deleted package':map {$_=~s{SPR}{}; $_} split (/, |,/,$_->{data}->{site}) } _array $p{contents} ;
+  } else {
+     sort {$a cmp $b} _unique map { ref $_->{data}->{promoteFrom}?_loc 'Deleted package':map {$_=~s{SPR}{}; $_} split (/, |,/,$_->{data}->{promoteFrom}) } _array $p{contents} ;
+  }
 }
 
 sub get_job_natures {
