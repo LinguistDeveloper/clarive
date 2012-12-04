@@ -182,6 +182,7 @@ sub job_elements {
    my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
    my @elems;
    my @list;
+   my $linklist=0;
 
    for my $item ( _array $stash->{contents} ) {
       next if $item->{item} =~ 'nature/.*';
@@ -192,6 +193,8 @@ sub job_elements {
 
       my $ns = ns_get $item->{item};
       my $application = $1 if $ns->{ns_name}=~m{^(...).*};
+
+      $linklist||=$item->{data}->{linklist} eq 'SI' && $item->{data}->{urgente} eq 'S';
       next unless $ns->provider eq 'namespace.changeman.package';
 
 # TODO .- Añadir installDate y fromInstallTime agrupado por site a la información del paquete.
@@ -229,6 +232,7 @@ sub job_elements {
       $e->push_elements( @elems );
       $job->job_stash->{elements} = $e;
    }
+   $log->warn(_loc("Job %1 needs to restart the LINKLIST",$job->{name})) if $linklist || $job->job_stash->{chm_linked_list};
 }
 
 package BaselinerX::ChangemanComponent;
