@@ -373,7 +373,6 @@ sub view : Local {
     $c->stash->{permissionEdit} = 0;
     
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
-    _debug \%categories_edit;
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
