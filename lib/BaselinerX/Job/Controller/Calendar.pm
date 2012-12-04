@@ -8,6 +8,8 @@ use Calendar::Slots 0.15;
 use DateTime;
 use Try::Tiny;
 
+our $DEFAULT_SEQ = 100;
+
 register 'menu.job.calendar' => {
     label    => _loc('Job Calendars'),
     url_comp => '/job/calendar_list',
@@ -115,7 +117,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                 my $row = $c->model('Baseliner::BaliCalendar')->create({
                         name        => $p->{ name },
                         description => $p->{ description },
-                        seq         => $p->{ seq } // 100,
+                        seq         => $p->{ seq } // $DEFAULT_SEQ,
                         active      => '1',
                         ns          => $p->{ ns },
                         bl          => $p->{ bl }
@@ -549,7 +551,8 @@ sub db_to_slots {
                     name  => $name,
                     data  => $win
                 );
-            } else {
+            }
+            else {
                 $when = $win->{day} + 1;
                 $slots->slot(
                     weekday => $when,
@@ -561,6 +564,7 @@ sub db_to_slots {
             }
         }
     }
+    _debug $slots;
     return $slots;
 }
 
@@ -652,12 +656,15 @@ sub merge_calendars {
          # now choose which slot to use for this minute
          #   giving higher precedence to the ASCII value of TYPE letter 
          #     X > U > N - using ord for ascii values
+         $s->data->{seq} //= $DEFAULT_SEQ;
          if( ! exists $list{$time}
+             || ord $s->data->{type} > ord $list{ $time }->{type}
              || $s->data->{seq} > $list{ $time }->{seq}
-             || ord $s->data->{type} > ord $list{ $time }->{type} ) {
+             ) {
             $list{$time} = {
                 type => $s->data->{type},
                 cal  => $s->data->{cal},
+                seq  => $s->data->{seq},
                 hour => sprintf( '%s:%s', substr( $time, 0, 2 ), substr( $time, 2, 2 ) ),
                 name => sprintf( "%s (%s)", $s->data->{cal}, $s->data->{type} ),
                 start => $s->start,
