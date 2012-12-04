@@ -338,7 +338,7 @@ sub new_topic : Local {
     
     my $id_category = $p->{new_category_id};
     my $name_category = $p->{new_category_name};
-    my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => 81, type => 'I'},
+    my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
                                                                                         {
                                                                                         prefetch=>['status'],
                                                                                         }                                                                                 
@@ -373,12 +373,13 @@ sub view : Local {
     $c->stash->{permissionEdit} = 0;
     
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
+    _debug \%categories_edit;
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
         my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { join=>'topics' })->first;
         $c->stash->{category} = { $category->get_columns };
-        $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->{id} };
+        $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
  
         # comments
         $self->list_posts( $c );  # get comments into stash        
