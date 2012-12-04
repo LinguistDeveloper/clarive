@@ -27,3 +27,60 @@ msgstr "Notificar cuando se produzca un error durante la generación de errores"
 msgid "The job haven't got any element"
 msgstr "El Job no tiene elementos"
 
+msgid "JobId"
+msgstr "Código de Pase"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Environment"
+msgstr "Entorno"
+
+msgid "Node"
+msgstr "Nodo"
+
+msgid "Tipology"
+msgstr "Tipología"
+
+msgid "Subapplication"
+msgstr "Subaplicación"
+
+msgid "User"
+msgstr "Usuario"
+
+msgid "From"
+msgstr "Desde"
+
+msgid "To"
+msgstr "Hasta"
+
+msgid "Packages / Reasons"
+msgstr "Paquetes / Motivos"
+
+msgid "Report of jobs made on %1 %2"
+msgstr "Informe de pases realizados el %1 %2"
+
+msgid "Monday"
+msgstr "lunes"
+
+msgid "Tuesday"
+msgstr "martes"
+
+msgid "Wednesday"
+msgstr "miércoles"
+
+msgid "Thursday"
+msgstr "jueves"
+
+msgid "Friday"
+msgstr "viernes"
+
+msgid "Saturday"
+msgstr "sábado"
+
+msgid "Sunday"
+msgstr "domingo"
+
+msgid "Scheduled at %1 of %2"
+msgstr "Planificado a las %1 del día %2"
+

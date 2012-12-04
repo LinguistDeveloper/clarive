@@ -104,7 +104,7 @@ msgid "SUCCESS"
 msgstr "CORRECTO"
 
 msgid "ERROR"
-msgstr "ERROR"
+msgstr "Error"
 
 msgid "Please wait..."
 msgstr "Espere, por favor..."
@@ -312,7 +312,7 @@ msgstr "Ayuda de SQA"
 
 # features\sqa\root\comp\sqa\grid.js (257)
 msgid "ERROR"
-msgstr "ERROR"
+msgstr "Error"
 
 # features\sqa\root\comp\sqa\grid.js (319)
 msgid "Please, confirm that you want to remove the SQA configuration for the project"

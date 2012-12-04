@@ -299,17 +299,29 @@ msgstr "Usuarios no encontrados para la acción %1"
 msgid "Error creating Changeman Job:<br>%1"
 msgstr "Error creando pase Changeman<br>%1"
 
+msgid "ZOS"
+msgstr "z/OS"
+
+msgid "ZOS-Linklist"
+msgstr "z/OS de uso general"
+
+msgid "ZOS-Linklist-DB2"
+msgstr "z/OS de uso general con DB2"
+
+msgid "ZOS-DB2"
+msgstr "z/OS con DB2"
+
 msgid "zos"
-msgstr "Elementos z/OS"
+msgstr "z/OS"
 
 msgid "zos.linklist"
-msgstr "Elementos z/OS de uso general"
+msgstr "z/OS de uso general"
 
 msgid "zos.linklist.db2"
-msgstr "Elementos z/OS de uso general con DB2"
+msgstr "z/OS de uso general con DB2"
 
 msgid "zos.db2"
-msgstr "Elementos z/OS con DB2"
+msgstr "z/OS con DB2"
 
 msgid "Deleted package"
 msgstr "Paquete borrado en Changeman"
