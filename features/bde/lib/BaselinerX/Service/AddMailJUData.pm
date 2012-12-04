@@ -42,7 +42,7 @@ sub main {
         start_time   => $job->job_data->{starttime},
         end_time     => $job->job_data->{endtime},
         cam_list     => [@camlist],
-        node_list    => $job->job_data->{bl} eq 'PROD'?[get_job_nodes [@contents]]:[],
+        node_list    => $job->job_data->{bl} eq 'PROD'?[ get_job_nodes (type=>$job->job_data->{type}, contents=>[@contents]) ]:[],
         nature_list  => [get_job_natures $job->{jobid}],
         package_list => [ map { $self->message($_) } @contents ],
         subapps_list => [get_job_subapps $job->{jobid}],

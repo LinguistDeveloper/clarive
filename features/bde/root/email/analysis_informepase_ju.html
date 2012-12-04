@@ -1,13 +1,13 @@
 <%args>
   $mail_data
-  $message
   $to
   $url
   $cams
+  $message
 </%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8898-15" />
     <title>Accion</title>
 	<& /email/style.css &>
 </head>
@@ -73,17 +73,17 @@ body {
 
 <table border=1 cellspacing=1 cellpadding="2" width=100%>
 	<tr>
-        <td class="backGroundPrimeraFila">Codigo de Pase</td>
+        <td class="backGroundPrimeraFila">Código de Pase</td>
         <td class="backGroundPrimeraFila">CAM</td>
         <td class="backGroundPrimeraFila">Estado</td>
         <td class="backGroundPrimeraFila">Entorno</td>
         <td class="backGroundPrimeraFila">Nodo</td>
-        <td class="backGroundPrimeraFila">Tipologia</td>
-        <td class="backGroundPrimeraFila">Subaplicacion</td>
+        <td class="backGroundPrimeraFila">Tipología</td>
+        <td class="backGroundPrimeraFila">Subaplicación</td>
         <td class="backGroundPrimeraFila">Usuario</td>
         <td class="backGroundPrimeraFila">Desde</td>
         <td class="backGroundPrimeraFila">Hasta</td>
-        <td class="backGroundPrimeraFila">Paquetes / Motivos</td>
+        <td class="backGroundPrimeraFila">Paquete / Motivo</td>
         <!-- <td class="backGroundPrimeraFila">Acciones</td> -->
 	</tr>
 % for my $row (@{$mail_data}) {
@@ -92,9 +92,21 @@ body {
         <td nowrap class="backGroundFilaDatos"><li><% join '<li>', @{$row->{cam_list}} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{status} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{environment} %></td>
-        <td nowrap class="backGroundFilaDatos"><li><% join '<li>', @{$row->{node_list}} %></td>
-        <td nowrap class="backGroundFilaDatos"><li><% join '<li>', @{$row->{nature_list}} %></td>
-        <td nowrap class="backGroundFilaDatos"><% join '<br>', @{$row->{subapps_list}} %></td>
+        <td nowrap class="backGroundFilaDatos">
+% if ( scalar @{ $row->{node_list} } ) { 
+    <li><% join '<li>', @{$row->{node_list}} %>
+% }
+        </td>
+        <td nowrap class="backGroundFilaDatos">
+% if ( scalar @{ $row->{nature_list} } ) { 
+    <li><% join '<li>', @{$row->{nature_list}} %>
+% }
+         </td>
+        <td nowrap class="backGroundFilaDatos">
+% if ( scalar @{ $row->{subapps_list} } ) { 
+    <% join '<br>', @{$row->{subapps_list}} %>
+% }
+        </td>
         <td nowrap class="backGroundFilaDatos"><% $row->{username} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{start_time} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{end_time} %></td>

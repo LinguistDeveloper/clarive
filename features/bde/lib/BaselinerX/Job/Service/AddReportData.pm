@@ -86,8 +86,8 @@ sub GenerateJobReport {
   my $duration   = convertInterval %{getInterval $start_time, $end_time}, ConvertTo => 'seconds';
   my @natures_with_subapps = @{_bde_conf 'natures_with_subapps'};
   # Consider getting from bali job items instead.
-  my @natures = _unique map { $_->{name} } 
-                grep $_->can_i_haz_nature($elements), 
+  my @natures = _unique map { _loc($_->{name}) }
+                grep $_->can_i_haz_nature($elements),
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
 
   my $technology = join ' ', @natures;
@@ -134,13 +134,13 @@ sub build_changeman_data {
   my $origin          = uc ( $job->job_stash->{origin}||'baseliner' ) ;
   my $urgent          = $job->job_stash->{approval_needed}->{reason}=~m{pase urgente}i?1:0;
   my $linklistRefresh = $job->job_stash->{chm_linked_list};
-  
   for (@{ $job->job_stash->{contents}}) {
-      $urgent = $urgent || $_->{data}->{urgente} eq 'S';
-      $linklistRefresh = $linklistRefresh || ( $_->{data}->{urgente} eq 'S' && $_->{data}->{linklist} eq 'SI' )
+      $urgent = $urgent || ( $_->{data}->{urgente} eq 'S' || 0 ); 
+      $linklistRefresh = $linklistRefresh || ( ( $_->{data}->{urgente} eq 'S' && $_->{data}->{linklist} eq 'SI' ) || 0 )
   }
   
-  map { $addf->($_) } map +{project => $_, subapplication => '', urgent=>$urgent, linklistrefresh => $linklistRefresh, statename => $statename, origin => $origin}, @applications;
+  #map { $addf->($_) } map +{project => $_, subapplication => '', urgent=>$urgent, linklistrefresh => $linklistRefresh, statename => $statename, origin => $origin}, _unique @applications;
+  map { $addf->($_) } +{project => join (" ",_unique @applications), subapplication => '', urgent=>$urgent, linklistrefresh => $linklistRefresh, statename => $statename, origin => $origin};
 }
 
 sub GenerateJobDetailReport {
@@ -154,7 +154,7 @@ sub GenerateJobDetailReport {
   my $start_time = $job->job_data->{starttime};
   my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
 
-  my @natures = _unique map { $_->{name} }
+  my @natures = _unique map { _loc($_->{name}) }
                 grep $_->can_i_haz_nature($elements),
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
 
@@ -173,11 +173,12 @@ sub GenerateJobDetailReport {
     };
 
   my @data = map  { $addf->($_) } map { +{
-       package_name=>ns_get($_->{item})->ns_name, 
-       cam=>ns_get($_->{application})->ns_name, 
-       node=>$_->{data}->{site}||_loc 'Deleted package',
-       type=>$_->{data}->{motivo} eq 'PRO'?'Proyecto':$_->{data}->{motivo} eq 'PET'?'Peticion':$_->{data}->{motivo} eq 'MTO'?'Mantenimiento':$_->{data}->{motivo} eq 'INC'?'<b>Incidencia    :</b>':_loc "Deleted package",
-       description=>$_->{data}->{codigo}||_loc 'Deleted package', 1 } } @{$contents};
+       package_name=>( ns_split($_->{item} ))[1],
+       cam =>( ns_split($_->{application}) )[1],
+       node=>( $_->{data}->{site}||_loc ('Deleted package') ),
+       type=>( $_->{data}->{motivo} eq 'PRO'?'Proyecto':$_->{data}->{motivo} eq 'PET'?'Peticion':$_->{data}->{motivo} eq 'MTO'?'Mantenimiento':$_->{data}->{motivo} eq 'INC'?'<b>Incidencia    :</b>':_loc ("Deleted package") ),
+       description=>( $_->{data}->{codigo}||_loc ('Deleted package') )
+     } } @{$contents};
 
 _debug _dump @data;
 
