@@ -208,10 +208,10 @@ sub index:Private {
     $c->forward('/user/can_surrogate');
     if( $c->username ) {
         my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
-        $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>[ @actions ]);
+        $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions );
         $c->stash->{portlets} = [
             grep { $_->active }
-            $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>[ @actions ])
+            $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>\@actions )
         ];
         my @features_list = Baseliner->features->list;
         # header_include hooks
