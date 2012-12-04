@@ -14,13 +14,15 @@ sub storage { 'BaliTopic' }
 around load => sub {
     my ($orig, $self ) = @_;
     my $data = $self->$orig();
-    $data->{category} = { DB->BaliTopic->find( $self->mid )->categories->get_columns };
+    #$data->{category} = { DB->BaliTopic->find( $self->mid )->categories->get_columns };
     return $data;
 };
 
 around table_update_or_create => sub {
     my ( $orig, $self, $rs, $mid, $data, @rest ) = @_;
-    $data->{username} = delete $data->{name};
+    $data->{title} = delete $data->{name};
+    $data->{created_by} = 'internal';
+    delete $data->{active};
     $self->$orig( $rs, $mid, $data, @rest );
 };
 
