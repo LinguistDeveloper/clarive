@@ -66,8 +66,7 @@ Ext.onReady(function(){
     Baseliner.main_toolbar = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
-        //height: 26,
-        height: <% $c->config->{toolbar_height} // 26 %>,
+        height: <% $c->config->{toolbar_height} // 28 %>,
         items: [
 % if( $c->config->{logo_file} ) {
             '<img src="<% $c->config->{logo_file} %>" style="border:0px;"/>',
