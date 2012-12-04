@@ -166,7 +166,7 @@
             title = 'Edit status';
         }
         
-        win = new Ext.Window({
+        win = new Baseliner.Window({
             title: _(title),
             width: 400,
             autoHeight: true,
@@ -552,7 +552,7 @@
             title = 'Edit category';
         }
         
-        win = new Ext.Window({
+        win = new Baseliner.Window({
             title: _(title),
             width: 750,
             autoHeight: true,
@@ -1074,7 +1074,7 @@
             ff.loadRecord( rec );
         }
         
-        win = new Ext.Window({
+        win = new Baseliner.Window({
             title: _(title),
             width: 700,
             autoHeight: true,
@@ -1404,7 +1404,7 @@
 										]
 							});
 		
-							var winCustomField = new Ext.Window({
+							var winCustomField = new Baseliner.Window({
 								modal: true,
 								width: 500,
 								title: _('Custom field'),
@@ -1460,7 +1460,7 @@
 			});
 			
 		
-			var w = new Ext.Window({ layout:'fit',width:400, height:400, items: tree });
+			var w = new Baseliner.Window({ layout:'fit',width:400, height:400, items: tree });
 			w.show();
 			tree.on('destroy', function(){
 			   //console.log( tree.data );
@@ -1485,7 +1485,7 @@
 		});
 
         
-        win = new Ext.Window({
+        win = new Baseliner.Window({
             title: _(title),
             width: 700,
             autoHeight: true,
@@ -1599,7 +1599,7 @@
 				title = 'Edit configuration';
 			}
 		
-			win_config = new Ext.Window({
+			win_config = new Baseliner.Window({
 				title: _(title),
 				autoHeight: true,
 				width: 400,
@@ -1690,7 +1690,7 @@
 		});
 					
        
-        win = new Ext.Window({
+        win = new Baseliner.Window({
             title: _(title),
             width: 800,
             autoHeight: true,
@@ -2012,7 +2012,7 @@
 				
 			});
 			
-			var w = new Ext.Window({ layout:'fit',width:400, height:400, items: tree_projects });
+			var w = new Baseliner.Window({ layout:'fit',width:400, height:400, items: tree_projects });
 			w.show();
 			
 			tree_projects.on('beforedestroy', function(){
@@ -2372,7 +2372,7 @@
             title = 'Edit priority';
         }
  	
-        win = new Ext.Window({
+        win = new Baseliner.Window({
             title: _(title),
             width: 450,
             autoHeight: true,

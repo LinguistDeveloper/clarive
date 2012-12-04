@@ -1501,3 +1501,32 @@ Baseliner.createRange = function(panel, id_cal, id, pdia, date) {
         { id: id,  pdia: 'day-'+pdia, id_cal: id_cal, panel: panel, date: date, pini: "00:00", pfin: "24:00"} );
 }	
 
+Baseliner.Window = Ext.extend( Ext.Window, {
+    initComponent: function(){
+        Baseliner.Window.superclass.initComponent.call(this);
+    },
+    width: 800, // consider using percentages
+    height: 600,
+    minimizable: true,
+    maximizable: true,
+    minimize: function(){
+        var self = this;
+        if( Baseliner.main_toolbar ) {
+            self.min_obj = new Ext.Button({
+                xtype: 'button',
+                icon: '/static/images/icons/window_min.png',
+                tooltip: self.title,
+                handler: function(){
+                    self.show();
+                    self.min_obj.destroy();
+                }
+            });
+            Baseliner.main_toolbar.insert( -2, self.min_obj );
+            Baseliner.main_toolbar.doLayout();
+            self.hide( self.min_obj.el );
+        }
+        this.fireEvent('minimize', this);
+        return this;
+    }
+});
+
