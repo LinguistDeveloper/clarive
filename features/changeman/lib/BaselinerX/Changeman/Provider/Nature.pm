@@ -15,7 +15,7 @@ register 'namespace.changeman.nature' => {
 };
 
 sub namespace { 'BaselinerX::Changeman::Namespace::Nature' }
-sub domain    { 'chaneman.nature' }
+sub domain    { 'changeman.nature' }
 sub icon      { '/static/images/icon/nature.gif' }
 sub name      { 'Natures' }
 
