@@ -198,6 +198,38 @@ sub deny_role {
     return $denied;
 }
 
+=head2 user_address_for_action username=>Str, action=>Str, bl=>Str
+
+Returns a list of address to notify for a user and an action
+
+=cut
+sub user_address_for_action {
+  my ($self, %p ) = @_;
+  my $ret=undef;
+  _check_parameters( \%p, qw/username action bl cam/ );
+
+  my @rs=Baseliner->model('Baseliner::BaliRoleUser')->search(
+     {  
+       'me.username'=>$p{username}, 
+       'bali_roleactions.action'=>$p{action},
+       'bali_roleactions.bl'=>{in=>[$p{bl},'*']
+     }
+     },{ 
+       join=>[{'role'=>'bali_roleactions'},'projects'], 
+       select=>['me.ns','role.mailbox', 'projects.name'], 
+       as=>['ns','address', 'cam'] 
+     }
+     )->hashref->all;
+  my %address;
+  
+  map { my $pattern=$_->{cam};( grep /$pattern/, @{$p{cam}} ) ? $address{$_->{cam}}=$_->{address}//$p{username} : $_->{ns} eq '/' ? $address{'/'}=$_->{address}//$p{username} : undef } @rs;
+  
+  for (keys %address) {
+     $ret=$address{$_} unless $_ eq '/';
+  }
+
+  $ret // $address{'/'};
+}
 
 =head2 user_baselines_for_action username=>Str, action=>Str
 
@@ -584,6 +616,8 @@ sub list {
     $query->{ns} = [ -or => [ $ns, '/' ] ]
         unless $ns eq 'any';
 
+    $query = { %$query, %{ $p{query} } } if ref $p{query} eq 'HASH';
+
     # search roles
     my $roles = Baseliner->model('Baseliner::BaliRole')->search(
         $query,
@@ -592,12 +626,21 @@ sub list {
         }
     );
 
+    my %not_roles = map { $_->{role} => 1 } Baseliner->model('Baseliner::BaliRole')->search(
+            { %$query, action=>[ -or => [ $p{not_action}, { -like => "$p{not_action}.%" } ] ] }, { join => ['bali_roleusers', 'bali_roleactions'],
+            prefetch=>[ 'bali_roleusers' ] })->hashref->all if $p{not_action};
+
+# _debug $roles->as_query();
+# _debug  %not_roles;
+
     $roles->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
     # now, foreach role
     my @list;
     while( my $role = $roles->next ) {
         my $role_name = $role->{role};
+        # not_actions
+        next if $not_roles{$role_name};
         # if asked for, don't include certain roles
         next if $p{role_filter} and ! grep( /$role_name/i, _array($p{role_filter}) );
         # return either users or roles, depending on the query

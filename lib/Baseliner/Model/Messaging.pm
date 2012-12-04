@@ -9,6 +9,7 @@ use Try::Tiny;
 
 register 'action.notify.admin' =>  { name=>'Receive General Admin Messages' };
 register 'action.notify.error' =>  { name=>'Receive Error Notifications' };
+register 'action.notify.disabled' =>  { name=>'Disable Receive Notifications' };
 
 =head1 DESCRIPTION
 
