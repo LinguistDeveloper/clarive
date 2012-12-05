@@ -90,7 +90,7 @@ sub GenerateJobReport {
                 grep $_->can_i_haz_nature($elements),
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');
 
-  my $technology = join ' ', @natures;
+  my $technology = join ';', @natures;
   $technology ||= _loc ("The job haven't got any element");
   # Capture the providers so we can identify whether it is a ZOS job.
   my $is_zos_p = grep /namespace.changeman.package/, _unique map { $_->{provider} } @{ $job->job_stash->{contents}};
