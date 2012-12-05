@@ -373,7 +373,8 @@ sub monitor_json : Path('/job/monitor_json') {
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
         my $grouping='';
         my $day;  
-        my $sdt = parse_dt( '%Y-%m-%d %H:%M', $r->{starttime}  );
+        #my $sdt = parse_dt( '%Y-%m-%d %H:%M', $r->{starttime}  );
+        my $sdt = parse_dt( '%Y-%m-%d', $r->{starttime}  );
         my $dur =  $today - $sdt; 
         $sdt->{locale} = DateTime::Locale->load( $c->languages->[0] || 'en' ); # day names in local language
         $day =
