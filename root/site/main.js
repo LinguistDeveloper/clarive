@@ -9,6 +9,7 @@
     $show_js_reload => 0
     $show_tabs => $c->config->{site}{show_tabs} // 1
 </%args>
+
 <%perl>
     if( $c->stash->{site_raw} ) {
         $show_tabs = 0;
