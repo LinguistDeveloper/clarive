@@ -272,3 +272,4 @@ setTimeout(function(){
 if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
     window.onbeforeunload=  function(){ if( Baseliner.is_in_edit() ) return '' };
 }
+
