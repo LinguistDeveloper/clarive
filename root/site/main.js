@@ -265,7 +265,7 @@ Ext.onReady(function(){
 setTimeout(function(){
     Ext.get('bali-loading').remove();
     Ext.get('bali-loading-mask').fadeOut({
-	    remove:true
+        remove:true
     });
 }, 2050);
 
