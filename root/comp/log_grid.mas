@@ -428,7 +428,7 @@
             loadMask: true,
             wait: _('Loading...'),
             columns: [
-                { header: _('Job'), width: 120, dataIndex: 'job', sortable: true, renderer: render_job_exec },   
+                { header: _('Job'), width: 120, dataIndex: 'job', sortable: true, hidden: true, renderer: render_job_exec },   
                 { header: _('Step'), width: 60, dataIndex: 'step', sortable: true },
                 { header: _('Execution'), width: 60, dataIndex: 'exec', sortable: true, hidden: true },
                 { header: _('Level'), width: 60, dataIndex: 'lev', renderer: Baseliner.levRenderer, sortable: true },
