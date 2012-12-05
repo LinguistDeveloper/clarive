@@ -1,13 +1,13 @@
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=iso-8898-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Subapplications"
 msgstr "Subaplicaciones"
 
 msgid "Error during Baseliner users update"
-msgstr "Error durante la actualizaci贸n de los usuarios de Baseliner"
+msgstr "Error durante la actualizaci髇 de los usuarios de Baseliner"
 
 msgid "Error during LDIF files parse process"
 msgstr "Error durante el proceso de los ficheros LDIF"
@@ -16,19 +16,19 @@ msgid "Error during LDIF files backup"
 msgstr "Error durante el backup de los ficheros LDIF"
 
 msgid "Error during update LDIF users process"
-msgstr "Error durante la actualizaci贸n de usuarios en LDIF"
+msgstr "Error durante la actualizaci髇 de usuarios en LDIF"
 
 msgid "Update LDIF user process finished successfully"
-msgstr "Actualizaci贸n de usuarios LDIF finalizada con 茅xito"
+msgstr "Actualizaci髇 de usuarios LDIF finalizada con 閤ito"
 
 msgid "Notify when an error acurred during reports generation"
-msgstr "Notificar cuando se produzca un error durante la generaci贸n de errores"
+msgstr "Notificar cuando se produzca un error durante la generaci髇 de errores"
 
 msgid "The job haven't got any element"
 msgstr "El Job no tiene elementos"
 
 msgid "JobId"
-msgstr "C贸digo de Pase"
+msgstr "C骴igo de Pase"
 
 msgid "Status"
 msgstr "Estado"
@@ -40,10 +40,10 @@ msgid "Node"
 msgstr "Nodo"
 
 msgid "Tipology"
-msgstr "Tipolog铆a"
+msgstr "Tipolog韆"
 
 msgid "Subapplication"
-msgstr "Subaplicaci贸n"
+msgstr "Subaplicaci髇"
 
 msgid "User"
 msgstr "Usuario"
@@ -67,7 +67,7 @@ msgid "Tuesday"
 msgstr "martes"
 
 msgid "Wednesday"
-msgstr "mi茅rcoles"
+msgstr "mi閞coles"
 
 msgid "Thursday"
 msgstr "jueves"
@@ -76,11 +76,14 @@ msgid "Friday"
 msgstr "viernes"
 
 msgid "Saturday"
-msgstr "s谩bado"
+msgstr "s醔ado"
 
 msgid "Sunday"
 msgstr "domingo"
 
-msgid "Scheduled at %1 of %2"
-msgstr "Planificado a las %1 del d铆a %2"
+msgid "Application: %1. Scheduled Job at %2 of %3"
+msgstr "Aplicaci髇: %1. Pase planificado a las %2 del d韆 %3"
+
+msgid "Applications: %1. Scheduled Job at %2 of %3"
+msgstr "Aplicaciones: %1. Pase planificado a las %2 del d韆 %3"
 

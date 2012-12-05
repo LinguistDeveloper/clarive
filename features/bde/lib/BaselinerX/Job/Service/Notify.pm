@@ -43,10 +43,12 @@ sub main {
    my $action = 'action.notify.scheduled_job';
    my $not_action = 'action.notify.disabled';
    my @ns;
+   my @cam;
 
    my @users = sort {$a cmp $b} _unique map {
    if ( $_->{provider} ) {
       push @ns, "project/".cam_to_projectid((ns_split($_->{application}))[1]);
+      push @cam, (ns_split($_->{application}))[1];
       Baseliner->model('Permissions')->list(
          action      => [ $action ],
          not_action  => [$not_action ],
@@ -91,7 +93,7 @@ sub main {
    } @users;
 
    my @packageList = _unique map{ (ns_split($_->{item}))[1] if $_->{provider}} _array $job_stash->{contents};
-   my $subject = _loc("Scheduled at %1 of %2",$start->hms(':'),$start->dmy('/'));
+   my $subject .= scalar @cam == 1?_loc("Application: %1. Scheduled Job at %2 of %3",join (", ",@cam), $start->hms(':'),$start->dmy('/')): _loc("Applications: %1. Scheduled Job at %2 of %3",join (", ",@cam), $start->hms(':'),$start->dmy('/'));
    # Queue email
    my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $job->jobid ); 
 

@@ -51,7 +51,7 @@ sub run {
 
 
     $reason = $job_approve->{reason};
-    $log->debug( 'AprobaciÃ³n requerida en stash de pase', data=>_dump( $job_approve ) );
+    $log->debug( 'Approval required by job stash', data=>_dump( $job_approve ) );
 
     # check the config : this has precedence
        # my $config_approve = Baseliner->model('ConfigStore')->get('config.job.approve', bl=>$bl);
@@ -59,7 +59,13 @@ sub run {
         # $log->info( _loc('No hay aprobaciones para esta linea base %1', $bl ) );
         # return;
     # }
-    
+
+    my %cam;
+    for (_array $job->job_stash->{contents}) {
+       $cam{(ns_split($_->{application}))[1]}=1 if ( $_->{provider} );
+    }
+
+
     $approval_items ||= $job->job_stash->{contents}; 
     $reason ||= "PromociÃn a $bl";
     
@@ -73,9 +79,13 @@ sub run {
 
     #my $item_ns = 'endevor.package/' . $item->{item};   #TODO get real ns names
     $log->info( _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, _loc($reason) ) );
+    my $subject = scalar keys %cam == 1 
+        ? _loc('Application: %1. Requesting approval for job %2, baseline %3: %4', join(', ',keys %cam), $job->name, $bl, _loc($reason) )
+        : _loc('Applications: %1. Requesting approval for job %2, baseline %3: %4', join(', ',keys %cam), $job->name, $bl, _loc($reason) );
     try {
         Baseliner->model('Request')->request(
-            name   => _loc("Approval for job %1", $job->name),
+           # name   => _loc("Approval for job %1", $job->name),
+            name  => $subject,
             action => 'action.job.approve',
             item   => $job->name,
             template_engine => 'mason',
@@ -93,7 +103,7 @@ sub run {
                 to       => $to,
                 url_log  => $url_log,
                 url      => _notify_address(),
-                subject  => _loc('Requesting approval for job %1, baseline %2: %3', $job->name, $bl, _loc($reason) ),
+                subject  => $subject,
             },
             data         => {
                 project  => $apps,

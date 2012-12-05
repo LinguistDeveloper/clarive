@@ -1,4 +1,4 @@
-﻿msgid ""
+msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -465,8 +465,11 @@ msgstr "Solicitado"
 msgid "Approval for job %1"
 msgstr "Aprobación del pase %1"
 
-msgid "Requesting approval for job %1, baseline %2: %3"
-msgstr "Solicitud de aprobación para el pase %1 al entorno %2.<br>Motivo: %3"
+msgid "Application: %1. Requesting approval for job %2, baseline %3: %4"
+msgstr "Aplicación: %1. Solicitud de aprobación para el pase %2 al entorno %3.<br>Motivo: %4"
+
+msgid "Applications: %1. Requesting approval for job %2, baseline %3: %4"
+msgstr "Aplicaciones: %1. Solicitud de aprobación para el pase %2 al entorno %3.<br>Motivo: %4"
 
 msgid "User does not have permission to perform the operation"
 msgstr "El usuario no tiene permiso para realiza la operación"
