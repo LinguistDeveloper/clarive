@@ -62,7 +62,7 @@ sub launch {
 
   # This identifies whether every step in the chain will generate a semaphore
   # request.
-  my $sem_chain = $self->_conf( 'chain.sem' );
+  my $sem_chain = $self->_conf(key=>'chain.sem', bl=>$job->{job_data}->{bl});
 
   my $chain_id = config_value('config.job.default_chain_id');
 
@@ -106,7 +106,10 @@ sub launch {
     eval qq| sub service { \$row->{service} } $row->{dsl_code}; |;
     my $ret = $@;
     $sem->release if $sem;
-    _throw $ret if $ret && $self->_conf('kill_chain');
+
+    _debug "RET: $ret, KILL_CHAIN: ".$self->_conf(key=>'kill_chain', bl=>$job->{job_data}->{bl});
+
+    _throw $ret if $ret && $self->_conf(key=>'kill_chain', bl=>$job->{job_data}->{bl});
   }
 
   # Iterate every element in the chain until it runs out, if the DSL happens
@@ -131,8 +134,17 @@ sub launch {
   return; 
 }
 
+=head 
 sub _conf {
   config_get( 'config.bde' )->{ shift() };
+}
+=cut 
+
+sub _conf {
+    my ($self, %p)=@_;
+    my $bl=$p{bl} ||= '*';
+    my $key=$p{key} || return 0;
+    Baseliner->model('ConfigStore')->get( 'config.bde', bl=>$bl )->{$key}
 }
 
 1;
