@@ -188,7 +188,6 @@ Ext.onReady(function(){
         layout: 'card',
         activeItem: 0,
         id: 'main-view',
-        //renderTo: Ext.getBody(),
         renderTo: 'main-div',
         items: [ Baseliner.main ]
     });
