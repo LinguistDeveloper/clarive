@@ -45,3 +45,11 @@
     font-family:Helvetica Neue,Verdana,Helvetica,Arial,sans-serif;
     color:#555;
 }
+
+.CodeMirror {
+  height: 100%;
+}
+.CodeMirror-scroll {
+  overflow: auto;
+}
+
