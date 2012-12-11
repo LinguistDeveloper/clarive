@@ -1933,7 +1933,8 @@ Baseliner.DataEditor = function(c) {
         self.data = saved ? self.getData() : c.data;
         self.json = Ext.util.JSON.encode( self.data );
         // call onDestroy
-        self.destroy();
+        if( c.on_save ) c.on_save( self, self.data, self.json );
+        if( ! c.save_only ) self.destroy();
     };
 
     self.getData = function(){
@@ -1977,10 +1978,11 @@ Baseliner.DataEditor = function(c) {
         '-',
         { icon:'/static/images/icons/add.png', handler: add_row },
         { icon:'/static/images/icons/delete.gif', handler: self.del_row },
-        '->', 
-        { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ close_comp(false) } },
-        { text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ close_comp(true) } }
+        '->' 
     ];
+
+    if( ! c.hide_cancel )  bar.push( { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ close_comp(false) } } );
+    if( ! c.hide_save )  tbar.push({ text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ close_comp(true) } } );
 
     var cols = [];
     cols.push({ id:'key', header: _("Key"), width: c.col_key_width || 50, sortable: false, dataIndex: 'key', editor: textedit, renderer: render_key });

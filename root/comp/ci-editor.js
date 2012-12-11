@@ -47,10 +47,28 @@
                 Baseliner.ajaxEval( '/job/calendar', cal, function(comp){
                     calendar = comp;
                     cardpanel.add( calendar );
-                    cardpanel.getLayout().setActiveItem( 1 );
+                    cardpanel.getLayout().setActiveItem( calendar );
                 });
             } else {
-                cardpanel.getLayout().setActiveItem( 1 );
+                cardpanel.getLayout().setActiveItem( calendar );
+            }
+        } else {
+            cardpanel.getLayout().setActiveItem( 0 );
+        }
+    }
+    
+    var data_panel;
+    var show_data = function(){
+        if( btn_data.pressed ) {
+            if( ! data_panel ) {
+                var save_foo = function(de, de_data){
+                    form.getForm().setValues( de_data ); 
+                };
+                data_panel = new Baseliner.DataEditor({ data: form.getForm().getValues(), hide_cancel: true, save_only: true, on_save: save_foo });
+                cardpanel.add( data_panel );
+                cardpanel.getLayout().setActiveItem( data_panel );
+            } else {
+                cardpanel.getLayout().setActiveItem( data_panel );
             }
         } else {
             cardpanel.getLayout().setActiveItem( 0 );
@@ -76,6 +94,14 @@
         }
     });
 
+    var btn_data = new Ext.Button({
+        text: _('Data'),
+        icon:'/static/images/icons/detail.png',
+        cls: 'x-btn-icon-text',
+        enableToggle: true, pressed: false, toggleGroup: 'ci-editor-panel',
+        handler: show_data
+    });
+
     var btn_form_calendar = new Ext.Button({
         text: _('Calendar'),
         icon:'/static/images/icons/calendar.png',
@@ -86,7 +112,7 @@
 
     var tb = new Ext.Toolbar({
         items: [
-            btn_form_ok, btn_form_save, '-', btn_form_calendar
+            btn_form_ok, btn_form_save, '-', btn_form_calendar, btn_data
             //btn_form_reset
         ]
     });
