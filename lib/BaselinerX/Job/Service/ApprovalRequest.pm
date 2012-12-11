@@ -67,7 +67,7 @@ sub run {
 
 
     $approval_items ||= $job->job_stash->{contents}; 
-    $reason ||= "PromociÃn a $bl";
+    $reason ||= _loc("Promote to %1",$bl);
     
     my $apps = join ( ', ', _unique map {my ($a,$b)=ns_split($_->{application}); $b } _array $job->job_stash->{contents} );
     my $comment = $job->job_data->{comments};
@@ -82,10 +82,13 @@ sub run {
     my $subject = scalar keys %cam == 1 
         ? _loc('Application: %1. Requesting approval for job %2, baseline %3: %4', join(', ',keys %cam), $job->name, $bl, _loc($reason) )
         : _loc('Applications: %1. Requesting approval for job %2, baseline %3: %4', join(', ',keys %cam), $job->name, $bl, _loc($reason) );
+    my $name = scalar keys %cam == 1 
+        ? _loc('Application: %1. Requesting approval for job %2', join(', ',keys %cam), $job->name )
+        : _loc('Applications: %1. Requesting approval for job %2', join(', ',keys %cam), $job->name );
     try {
         Baseliner->model('Request')->request(
            # name   => _loc("Approval for job %1", $job->name),
-            name  => $subject,
+            name  => $name,
             action => 'action.job.approve',
             item   => $job->name,
             template_engine => 'mason',

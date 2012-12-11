@@ -465,6 +465,12 @@ msgstr "Solicitado"
 msgid "Approval for job %1"
 msgstr "Aprobación del pase %1"
 
+msgid "Application: %1. Requesting approval for job %2"
+msgstr "Aplicación: %1. Solicitud de aprobación para el pase %2"
+
+msgid "Applications: %1. Requesting approval for job %2"
+msgstr "Aplicaciones: %1. Solicitud de aprobación para el pase %2"
+
 msgid "Application: %1. Requesting approval for job %2, baseline %3: %4"
 msgstr "Aplicación: %1. Solicitud de aprobación para el pase %2 al entorno %3.<br>Motivo: %4"
 
@@ -4117,4 +4123,10 @@ msgstr "Desconocido (%1)"
 
 msgid "All projects"
 msgstr "Todos los proyectos"
+
+msgid "Application: %1. Scheduled Job at %2 of %3"
+msgstr "Aplicación: %1. Pase planificado a las %2 del día %3"
+
+msgid "Applications: %1. Scheduled Job at %2 of %3"
+msgstr "Aplicaciones: %1. Pase planificado a las %2 del día %3"
 

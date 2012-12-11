@@ -102,7 +102,7 @@ sub main {
             sender  => $mailcfg->{from},
             to      => { users => [ _unique(@users) ] },
             carrier =>'email',
-            template => 'email/job.html',
+            template => 'email/scheduled.html',
             template_engine => 'mason',
             vars   => {
                 action    => _loc('scheduled'),
