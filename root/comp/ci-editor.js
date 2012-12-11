@@ -140,6 +140,7 @@
            allowBlank: false,
            anchor: '90%' 
         },
+        autoScroll: true,
         bodyStyle:'padding: 10px 0px 0px 15px',
         items: [
             txt_cont,
