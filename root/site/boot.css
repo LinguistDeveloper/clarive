@@ -4461,6 +4461,20 @@
 
 .wrapPartial{ background-position: 0px -26px; }
 
+.legend_cetelem{
+    font:bold 11px tahoma, arial, helvetica, sans-serif;
+    color:#777777;
+}
+
+.column_cetelem{
+    color: #468847;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -khtml-border-radius: 20px;
+    border-radius: 20px;    
+}
 
 /*
 .x-tree-selected {

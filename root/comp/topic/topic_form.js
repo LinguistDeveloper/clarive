@@ -21,7 +21,7 @@
             ////    'font-weight':'bold'},         
         border: false,
         //style: { padding: '15px' },
-        defaults: { anchor:'99%'},
+        defaults: { anchor:'98%'},
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]

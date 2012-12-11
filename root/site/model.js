@@ -883,7 +883,8 @@ Baseliner.ci_box = function(c) {
     if( cl !=undefined ) bp['class'] = cl;
     else bp.role = role;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
-    var store = new Baseliner.store.CI({ baseParams: bp });
+	var autoload = c.autoLoad != undefined ? c.autoLoad : true;
+    var store = new Baseliner.store.CI({ baseParams: bp, autoLoad: autoload });
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
         singleMode: true, 
