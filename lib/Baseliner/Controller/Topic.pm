@@ -377,7 +377,6 @@ sub view : Local {
     if($topic_mid || $c->stash->{topic_mid} ){
  
         my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { join=>'topics' })->first;
-        $c->stash->{category} = { $category->get_columns };
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
  
         # comments
