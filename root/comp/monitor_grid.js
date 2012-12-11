@@ -212,11 +212,11 @@
     };
     var item_job_states = job_states_json.map(function (x) {
       return {
-        id: x.name,
+        id_status: x.name,
         text: _(x.name),
         checked: job_states_check_state[x.name],
         checkHandler: function (obj) {
-          modify_job_states_check_state(obj.id);
+          modify_job_states_check_state(obj.id_status);
           store.load({
             params: {
               job_state_filter: Ext.util.JSON.encode(to_perl_bool(job_states_check_state))
