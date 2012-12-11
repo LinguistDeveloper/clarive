@@ -216,7 +216,7 @@ sub monitor_json : Path('/job/monitor_json') {
     $limit||=50;
 
     my ($select,$order_by, $as) = $sort
-        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' } ], [ 'id', $sort ])
+        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.id' } ], [ 'id', $sort ])
         : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" }, { -desc => 'me.id' } ] , ['id', 'starttime'] );
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
@@ -310,6 +310,10 @@ sub monitor_json : Path('/job/monitor_json') {
             order_by => $order_by,
         }
     );
+
+
+    _debug $rs_paged->as_query();
+
     my $pager = $rs_paged->pager;
     $cnt = $pager->total_entries;
 
