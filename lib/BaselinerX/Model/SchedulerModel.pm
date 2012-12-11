@@ -195,10 +195,9 @@ sub next_workday {
 sub is_workday {
     my ( $self, %p ) = @_;
 
-    my @workdays = ('Monday','Tuesday','Wednesday','Thursday','Friday');
-
-    my $date = Class::Date->new($p{date});
-    return $date->day_of_weekname ~~ @workdays;
+    my @workdays = (1,2,3,4,5);
+    my $date = $p{date};
+    return $date->_wday ~~ @workdays;
 }
 
 sub toggle_activation {
