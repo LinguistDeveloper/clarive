@@ -258,6 +258,8 @@ sub run_once {
                   $row=$runner->logger->info( _loc( "Promotion for package <b>%1</b> to <b>%2</b> finished successfully", $pkg, $site ) );
                } else {
                   $row=$runner->logger->error( _loc( "Promotion for package <b>%1</b> to <b>%2</b> finished with error", $pkg, $site ) );
+                  $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+                  _debug $fprefix . "CLEANED";
                }
                BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
             }
@@ -276,6 +278,8 @@ sub run_once {
                   $row=$runner->logger->info( _loc( "Demotion for package <b>%1</b> to <b>%2</b> finished successfully", $pkg, $site ) );
                } else {
                   $row=$runner->logger->error( _loc( "Demotion for package <b>%1</b> to <b>%2</b> finished with error", $pkg, $site ) );
+                  $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+                  _debug $fprefix . "CLEANED";
                }
                BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
             }
@@ -309,6 +313,8 @@ sub run_once {
                       $row=$runner->logger->info( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully", $pkg, 'INSTALLED', $site ) );
                   } else {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error", $pkg, 'INSTALLED', $site ) );
+                      $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+                      _debug $fprefix . "CLEANED";
                   }
               } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## BASELINED
                   _debug $fprefix . "BASELINED";
@@ -316,6 +322,8 @@ sub run_once {
                       $row=$runner->logger->info( _loc( "Package <b>%1</b> put into <b>%2</b> state finished successfully", $pkg, 'BASELINED' ) );
                   } else {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> put into <b>%2</b> state finished with error", $pkg, 'BASELINED' ) );
+                      $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+                      _debug $fprefix . "CLEANED";
                   }
                   BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
               } else {
@@ -345,6 +353,8 @@ sub run_once {
                       $row=$runner->logger->info( _loc( "Package <b>%1</b> has been <b>%2</b> successfully", $pkg, 'BACKED OUT' ) );
                   } else {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> has been <b>%2</b> with error", $pkg, 'BACKED OUT' ) );
+                      $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+                      _debug $fprefix . "CLEANED";
                   }
                   BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
               }

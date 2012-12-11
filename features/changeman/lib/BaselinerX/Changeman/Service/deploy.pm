@@ -76,7 +76,7 @@ sub execute {
 
       if ($package->{returncode}) {
          unless ( $package->{returncode} =~ m{ok}i ) {
-            $chm->xml_cancelJob(job=>$job->{name}, items=>$package->{item}, jobName=>$job->{name}, logger=>$log) if ($job->{origin} ne 'changeman');
+            $chm->xml_cancelJob(job=>$job->{name}, items=>(ns_split($package->{item}))[1], jobName=>$job->{name}, logger=>$log) if ($job->{origin} ne 'changeman');
             _throw _loc('Error during changeman execution');
          }
       } elsif ( $job->{origin} ne 'changeman' ) {
