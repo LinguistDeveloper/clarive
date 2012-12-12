@@ -395,6 +395,7 @@ sub view : Local {
         }
     
     }else{
+        _log ">>>>>>>>>>>>>>PASASASASAS: " . $id_category;
         $id_category = $p->{new_category_id};
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
         
@@ -792,38 +793,36 @@ sub filters_list : Local {
     
 
     # Filter: Categories ########################################################################################################
-    if(!$typeApplication){
         
-        my @categories;
-        
-        #$row = $c->model('Baseliner::BaliTopicCategories')->search();
-        my @categories_permissions  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
-        
-        if(@categories_permissions && $#categories_permissions gt 0){
-            for( @categories_permissions ) {
-                push @categories,
-                    {
-                        id  => $i++,
-                        idfilter      => $_->{id},
-                        text    => $_->{name},
-                        color   => $_->{color},
-                        cls     => 'forum',
-                        iconCls => 'icon-no',
-                        checked => \0,
-                        leaf    => 'true',
-                        uiProvider => 'Baseliner.CBTreeNodeUI'
-                    };
-            }
-            
-            push @tree, {
-                id          => 'C',
-                text        => _loc('Categories'),
-                cls         => 'forum-ct',
-                iconCls     => 'forum-parent',
-                expanded    => 'true',
-                children    => \@categories
-            };
+    my @categories;
+    
+    #$row = $c->model('Baseliner::BaliTopicCategories')->search();
+    my @categories_permissions  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+    
+    if(@categories_permissions && $#categories_permissions gt 0){
+        for( @categories_permissions ) {
+            push @categories,
+                {
+                    id  => $i++,
+                    idfilter      => $_->{id},
+                    text    => $_->{name},
+                    color   => $_->{color},
+                    cls     => 'forum',
+                    iconCls => 'icon-no',
+                    checked => \0,
+                    leaf    => 'true',
+                    uiProvider => 'Baseliner.CBTreeNodeUI'
+                };
         }
+        
+        push @tree, {
+            id          => 'C',
+            text        => _loc('Categories'),
+            cls         => 'forum-ct',
+            iconCls     => 'forum-parent',
+            expanded    => 'true',
+            children    => \@categories
+        };
     }
     
     # Filter: Labels ##############################################################################################################
