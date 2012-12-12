@@ -1576,10 +1576,11 @@ Ext.extend( Baseliner.Kanban, Baseliner.Portal );
 
 */
 Baseliner.Wizard = function(config) {
+    var self = this;
     var current = config.current==undefined ? 0 : config.current;
     var first = config.first==undefined ? 0 : config.first;
     var last = config.last==undefined ? config.items.length-1 : config.last;
-    var button_setup = function(){
+    self.button_setup = function(){
         if( current == first ) bback.disable();
         if( current > first ) bback.enable();
         if( current == last ) {
@@ -1593,7 +1594,7 @@ Baseliner.Wizard = function(config) {
             bdone.hide();
             bnext.show();
         }
-        button_setup();
+        self.button_setup();
         this.getLayout().setActiveItem( current ); 
     };
     var bback = new Ext.Button({
@@ -1621,6 +1622,436 @@ Baseliner.Wizard = function(config) {
             '->', bback, bnext,bdone
         ]
     }, config ));
-    this.on( 'afterrender', function(){ button_setup() });
+    this.on( 'afterrender', function(){ self.button_setup() });
 };
 Ext.extend( Baseliner.Wizard, Ext.Panel ); 
+
+/*
+
+ Baseliner.DataEditor - a Registry like data editor
+
+ Usage:
+    
+    var tree = new Baseliner.DataEditor({
+        data: { aa: 11, bb: [ 'x','y','z' ], cc: [{ mm:99 },{ nn:88 }] },
+        metadata: { 
+            aa: { value: [ 1, 2, 3 ], read_only: true },
+            'cc.mm': { value: { 'Young': 18, 'Old': 70 } },
+        }
+    });
+
+    var w = new Ext.Window({ layout:'fit',width:400, height:400, items: tree });
+    w.show();
+    tree.on('destroy', function(){
+       console.log( tree.data );
+       w.close();
+    });
+
+*/
+Baseliner.DataEditor = function(c) {
+    var self = this;
+    var Record = Ext.data.Record.create([  // Record is a Class
+        {name: 'key'},
+        {name: 'key_long'},
+        {name: 'type'},
+        {name: 'value'},
+        {name: '_is_leaf', type: 'bool'},
+        {name: '_id', type: 'int'},
+        {name: '_parent', type: 'int'}
+    ]);
+    var id;
+    var data;
+    var flatten = function( d, parent, parent_key ) {
+       if( Ext.isArray( d ) ) {
+         var cnt=0;
+         for( var i=0; i<d.length; i++) {
+           var myid = id++;
+           var v = flatten( d[i], myid, parent_key );
+           data.push({ key: '['+i+']', key_long: parent_key, type:v[2], value:v[0], _is_leaf:v[1], _id: myid,_parent:parent });
+           cnt++;
+         }
+         var _is_leaf = cnt > 0 ? false : true;
+         return ['',_is_leaf,'Array', cnt];
+       } else if( Ext.isObject(d) ) {
+         var cnt=0;
+         for( var k in d ){
+           var myid = id++;
+           var v = flatten(d[k], myid, k);
+           var key_long = parent_key ? parent_key + '.' + k : k;
+           var row = { key: k, key_long: key_long, type: v[2], value: v[0], _is_leaf: v[1], _id: myid, _parent: parent }; 
+           data.push(row);
+           cnt++;
+         }
+         var _is_leaf = cnt > 0 ? false : true;
+         return ['',_is_leaf,'Hash',cnt];
+       } else {
+         return [d,true,'Value',1];
+       }
+    };
+    //console.log( c.data );
+    var set_data = function( d) {
+        id = 1;
+        data=[];
+        flatten( d );
+        data = data.sort( function(a,b){ return a._id < b._id ? -1 : 1 });
+    }
+    set_data( c.data );
+    /*[
+    { key: 'aa', type:'array', value: 111, _is_leaf:true, _id:1 },
+    { key: 'bb', type:'array', value: 2, _is_leaf:false, _id:2 },
+    { key: 'cc', type:'array', value: 2, _is_leaf:true, _parent:2, _id:3 },
+    ];
+    */
+    var proxy = new Ext.data.MemoryProxy(data);
+    var store = new Ext.ux.maximgb.tg.AdjacencyListStore({  
+        autoLoad : true,
+        reader: new Ext.data.JsonReader({id: '_id'}, Record),
+        proxy: proxy
+    });
+    self.store = store;
+
+    var textedit_key = new Ext.grid.GridEditor(new Ext.form.TextField(), {
+                offsets : [-4, -5],
+                realign : function(auto_size) {
+                    var size;
+                    textedit.boundEl = textedit.boundEl.child('.ux-maximgb-tg-mastercol-editorplace');
+                    Ext.grid.GridEditor.prototype.realign.call(this, auto_size);
+                    size = this.boundEl.getSize();
+                    this.setSize(size.width + 10, size.height);
+                }
+            });
+    var textedit = new Ext.form.TextField();
+    var render_key = function(v) {
+      return '<b>' + v + '</b>'
+    };
+    var render_value = function(v){
+      return Baseliner.render_wrap( '<pre>'+v+'</pre>' ); //'<span class="ux-maximgb-tg-mastercol-editorplace">' + v + '</span>'
+    };
+
+    var collapse_data = function( rows, id_parent ){
+        var ret = {};
+        Ext.each( rows, function(rec){
+            var row = rec.data;
+            if( row._parent == id_parent ) {
+                var v = row.value;
+                if( row.type == 'Value' ) {
+                    ret[ row.key ] = v;
+                }
+                else if( row.type == 'Array' ) {
+                    var chi = [];
+                    var arr = collapse_data( rows, row._id );
+                    Ext.each( arr, function( arow ) {
+                        for( var k in arow ) {
+                            chi.push( arow[ k ] );
+                        }
+                    });
+                    ret[ row.key ] = chi;
+                }
+                else if( row.type == 'Hash' ) {
+                    var chi = collapse_data( rows, row._id );
+                    ret[ row.key ] = chi;
+                }
+            }
+        });
+        return ret;
+    };
+    var view_editor = function(){
+        var v = json_text.getValue() ;
+        if( v ) {
+            var ret = Ext.util.JSON.decode( v );
+            //store.removeAll();
+            //store.reload();
+            set_data( ret );
+            store.proxy = new Ext.data.MemoryProxy( data );
+            store.reload();
+        }
+        self.getLayout().setActiveItem( 0 );
+    };
+    var btn_editor = new Ext.Button({
+        tooltip: _('Edit'), icon:'/static/images/icons/table_edit.png', handler: view_editor,
+        pressed: true, allowDepress:false, enableToggle:true, toggleGroup:'dataeditor-btn'});
+
+    var view_json = function(){
+        var ret = collapse_data( store.getRange(), 0 );
+        json_text.setValue( Ext.util.JSON.encode( ret ) ); 
+        self.getLayout().setActiveItem( 1 );
+    };
+    var btn_json = new Ext.Button({
+        tooltip: _('JSON'), icon:'/static/images/icons/script_edit.png', handler: view_json,
+        allowDepress:false, enableToggle:true, toggleGroup:'dataeditor-btn'});
+
+    var close_comp = function( saved ){
+        self.data = saved ? self.getData() : c.data;
+        self.json = Ext.util.JSON.encode( self.data );
+        // call onDestroy
+        if( c.on_save ) c.on_save( self, self.data, self.json );
+        if( ! c.save_only ) self.destroy();
+    };
+
+    self.getData = function(){
+        return collapse_data( store.getRange(), 0 );
+    };
+
+    var add_row = function(){
+        var sel = tree.getSelectionModel().getSelected(); 
+        if( sel ) {
+            if( sel.data.type == 'Hash' ) {
+                var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: sel.data._id });
+                sel.data._is_leaf = false;
+                store.add( rec );
+                store.expandNode( sel );
+            } 
+            else if( sel.data.type == 'Array' ) {
+                var rec = new Record({ key: '[...]', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: sel.data._id });
+                sel.data._is_leaf = false;
+                store.add( rec );
+                store.expandNode( sel );
+            }
+        } else {
+            var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: 0 });
+            store.add( rec );
+        }
+    };
+    self.add_var = function( key, type, value ) {
+        var rec = new Record({ key: key, value: value, type: type, _id: ++id, _is_leaf: true, _parent: 0 });
+        store.add( rec );
+    };
+
+    self.del_row = function(){
+       var rec = tree.getSelectionModel().getSelected(); 
+       if( rec ) {
+          store.remove( rec );
+       }
+    };
+    var tbar = [
+        btn_editor,
+        btn_json,
+        '-',
+        { icon:'/static/images/icons/add.png', handler: add_row },
+        { icon:'/static/images/icons/delete.gif', handler: self.del_row },
+        '->' 
+    ];
+
+    if( ! c.hide_cancel )  tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ close_comp(false) } } );
+    if( ! c.hide_save )  tbar.push({ text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ close_comp(true) } } );
+
+    var cols = [];
+    cols.push({ id:'key', header: _("Key"), width: c.col_key_width || 50, sortable: false, dataIndex: 'key', editor: textedit, renderer: render_key });
+    if( ! c.hide_type )
+        cols.push({header: _("Type"), width: 35, sortable: false, dataIndex: 'type', renderer: function(v){ return _(v) }});
+    cols.push({header: _("Value"), width: c.col_value_width || 150, sortable: true, dataIndex: 'value', editor: textedit, renderer: render_value });
+
+    if( c.cols ) {
+        cols.push( c.cols );
+    }
+
+    var cm = new Ext.grid.ColumnModel({
+      columns: cols,      
+      getCellEditor: function( col, row) {
+        //config[col].setCellEditor( textedit );
+        var editor;
+        var read_only = false;
+        if( col == 2 && self.metadata ) {
+           var rec = store.getAt(row);
+           var key_meta = self.metadata[ rec.data.key_long ];
+
+           if( key_meta ) {
+              var v = key_meta.value;
+              if( key_meta.read_only ) {
+                 read_only = key_meta.read_only;
+              }
+              if( key_meta.value ) {
+                 if( Ext.isArray( v ) ) {
+                     var arr=[];
+                     Ext.each( v, function(i){ arr.push([ i,i ]); } );
+                     editor = new Ext.form.ComboBox({
+                        typeAhead: true, triggerAction:"all", lazyRender: true,
+                        readOnly: read_only,
+                        store: arr
+                     });
+                 }
+                 else if( Ext.isObject(v) ) {
+                     var arr=[];
+                     for( var k in v){  arr.push([ k, v[k] ]) }
+                     editor = new Ext.form.ComboBox({
+                        typeAhead: true, triggerAction:"all", lazyRender: true,
+                        readOnly: read_only,
+                        store: arr
+                     });
+                 }
+              } 
+           }
+        }
+        if( ! editor ) {
+            if( col == 0 ) {
+                var rec = store.getAt(row);
+                editor = new Ext.form.TextField({ value: rec.get('key') });
+            } 
+            else if( col == 2 ) {
+                var rec = store.getAt(row);
+                editor = new Ext.form.TextArea({ value: rec.get('value'),
+                    style:{ 'font-family':'Consolas, Courier New' }, readOnly: read_only });
+            }
+        }
+        this.setEditor( col, editor );
+        return Ext.grid.ColumnModel.prototype.getCellEditor.call(this, col, row);
+      },
+      isCellEditable: function(col, row) {
+          if( col == 0 ) return true; // the key is always editable
+          if( col == 1 ) return false; // not sure about the type
+          var rec = store.getAt(row);
+          if( rec.data.type != 'Value' ) return false;
+          return Ext.grid.ColumnModel.prototype.isCellEditable.call(this, col, row);
+      }
+    });
+    var tree = new Ext.ux.maximgb.tg.EditorGridPanel( Ext.apply({
+      store: store,
+      colModel: cm,
+      master_column_id : 'key',
+      stripeRows: true,
+      autoExpandColumn: 'key',
+      //plugins: expander,
+      viewConfig : {
+        forceFit: true,
+        enableRowBody : true
+      }
+    }, c.editorConfig ));
+	
+    self.editor = tree;
+
+    var json_text = new Ext.form.TextArea({ });
+
+    Baseliner.DataEditor.superclass.constructor.call(this, Ext.apply({
+        layout: 'card',
+        tbar: tbar,
+        activeItem: 0,
+        items: [ tree, json_text ]
+    }, c));
+
+    /* tree.on('beforeedit', function(e){
+        Baseliner.xxx = tree;
+        //var ed = tree.colModel.getCellEditor( e.col, e.row );
+        //console.log( ed );
+        return true;
+    }); */
+    /* tree.on('afteredit', function(e){
+        e.record.commit();
+        store.commitChanges();
+        //console.log( store.getRange() );
+        return true;
+    }); */
+};
+Ext.extend( Baseliner.DataEditor, Ext.Panel ); 
+
+Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
+    open_win: function(){
+        var sm = this.getSelectionModel();
+        if( ! sm.hasSelection() ) return;
+        var cell = sm.getSelectedCell();
+        var fieldName = this.getColumnModel().getDataIndex( cell[1] );
+        var rec = this.store.getAt( cell[ 0 ] );
+        var v = rec.get( fieldName );
+        var ta = new Ext.form.TextArea({ value: v,
+            style:{ 'font-family':'Consolas, Courier New' } });
+        var win = new Ext.Window({ modal:true, width: 600, height: 350,
+            layout:'fit', items:[ ta ], maximizable: true
+        });
+        win.on('afterrender', function(){ ta.focus() });
+        win.on('close', function(){
+            rec.set( fieldName, ta.getValue() );
+        });
+        win.show();
+    },
+    initComponent : function(){
+        var self = this;
+        var cols = [];
+        var fields = [];
+        var keys = {};
+        Ext.each( self.data, function(row){ // find all data keys, unique
+            for( var k in row ) {
+                keys[k] = null;
+            }
+        });
+        var te = new Ext.form.TextArea();
+        for( var k in keys ) {
+           cols.push({ name:k, header:k, dataIndex:k, sortable:true, editor:te  });
+           fields.push({ name:k });
+        }
+        var s = new Ext.data.SimpleStore({ fields: fields });
+        Ext.each( self.data, function(row){
+             var rt = new s.recordType( row, Ext.id() );
+             s.add( rt );
+        });
+        s.commitChanges();
+        self.store = s;
+        self.columns = cols;
+        self.viewConfig = Ext.apply( { forceFit: true }, self.viewConfig );
+        var tbar = [
+           { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } 
+        ];
+        self.tbar = self.tbar ? self.tbar.push( tbar ) : tbar; 
+        Baseliner.AutoGrid.superclass.initComponent.call(self);
+    }
+});
+
+Baseliner.CBTreeNodeUI = function () {
+    Baseliner.CBTreeNodeUI.superclass.constructor.apply(this, arguments);
+};
+
+Ext.extend(Baseliner.CBTreeNodeUI, Ext.tree.TreeNodeUI, {
+    renderElements: function (n, a, targetNode, bulkRender) {
+        // add some indent caching, this helps performance when rendering a large tree
+        this.indentMarkup = n.parentNode ? n.parentNode.ui.getChildIndent() : '';
+        a.checked3 = a.checked3 ? a.checked3 : a.checked ? 1 : 0;
+        a.checked = a.checked ? a.checked : ( a.checked3 == 0 ? false : true );
+
+        var cb = Ext.isBoolean(a.checked),
+            nel,
+            href = this.getHref(a.href),
+            c3class = 'styledCheckboxWrap' + (a.checked3 != 0 ? (a.checked3 == -1 ? ' wrapPartial' : ' wrapChecked') : ''),
+            buf = ['<li class="x-tree-node"><div ext:tree-node-id="', n.id, '" class="x-tree-node-el x-tree-node-leaf x-unselectable ', a.cls, '" unselectable="on">',
+                '<span class="x-tree-node-indent">', this.indentMarkup, "</span>",
+                '<img src="', this.emptyIcon, '" class="x-tree-ec-icon x-tree-elbow" />',
+                '<img src="', a.icon || this.emptyIcon, '" class="x-tree-node-icon', (a.icon ? " x-tree-node-inline-icon" : ""), (a.iconCls ? " " + a.iconCls : ""), '" unselectable="on" />',
+            cb ? ('<span class="' + c3class + '"><input class="x-tree-node-cb styledCheckbox" type="checkbox" ' + (a.checked ? 'checked="checked" />' : '/>') + '</span>') : '',
+                '<a hidefocus="on" class="x-tree-node-anchor" href="', href, '" tabIndex="1" ',
+            a.hrefTarget ? ' target="' + a.hrefTarget + '"' : "", '><span unselectable="on">', n.text, "</span></a></div>",
+                '<ul class="x-tree-node-ct" style="display:none;"></ul>',
+                "</li>"].join('');
+
+        if (bulkRender !== true && n.nextSibling && (nel = n.nextSibling.ui.getEl())) {
+            this.wrap = Ext.DomHelper.insertHtml("beforeBegin", nel, buf);
+        } else {
+            this.wrap = Ext.DomHelper.insertHtml("beforeEnd", targetNode, buf);
+        }
+
+        this.elNode = this.wrap.childNodes[0];
+        this.ctNode = this.wrap.childNodes[1];
+        var cs = this.elNode.childNodes;
+        this.indentNode = cs[0];
+        this.ecNode = cs[1];
+        this.iconNode = cs[2];
+        var index = 3;
+        if (cb) {
+            this.checkbox = cs[3];
+            // fix for IE6
+            this.checkbox.defaultChecked = this.checkbox.checked;
+            index++;
+        }
+        this.anchor = cs[index];
+        this.textNode = cs[index].firstChild;
+    },
+
+    toggleCheck: function ( c3 ) {
+        var cb = this.checkbox;
+        if (cb) {
+            //c3++;
+            //c3 = c3 > 1 ? -1 : c3;
+			c3 == 0 ? c3 = 1 : c3 == 1 ? c3 = -1 : c3 = 0;
+            cb.checked = ( c3 == 0 ? false : true );
+            cb.className = 'styledCheckboxWrap' + ( c3 == 0 ? '' : ( c3 == -1 ? ' wrapPartial' : ' wrapChecked') );
+            this.onCheckChange();
+            this.node.attributes.checked3 = c3;
+        }
+    }
+});
