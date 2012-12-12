@@ -36,9 +36,6 @@ sub main {
 #   return unless $start->delta_ms($now)->in_units('minutes') > 10 ;
 
    use Encode;
-   my $action = 'action.notify.scheduled_job';
-   my $not_action = 'action.notify.disabled';
-
    # find receivers
    my $action = 'action.notify.scheduled_job';
    my $not_action = 'action.notify.disabled';
@@ -79,9 +76,9 @@ sub main {
    my $realname;
    try {
        $u = Baseliner->model('Users')->get( $job->{job_data}->{username} );
-       $realname = $u->{realname} || $job->username ;
+       $realname = $u->{realname} || $job->{job_data}->{username};
    } catch {
-       $realname = $job->username ;
+       $realname = $job->{job_data}->{username} ;
    };
    $realname = encode("iso-8859-15", $realname);
    $realname =~ s{\?}{}g;
