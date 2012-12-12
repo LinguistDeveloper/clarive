@@ -133,13 +133,14 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
         while (ctx.type == "statement") ctx = popContext(state);
       }
       else if (curPunc == ctx.type) popContext(state);
-      else if (ctx.type == "}" || ctx.type == "top" || (ctx.type == "statement" && curPunc == "newstatement"))
+      else if (((ctx.type == "}" || ctx.type == "top") && curPunc != ';') || (ctx.type == "statement" && curPunc == "newstatement"))
         pushContext(state, stream.column(), "statement");
       state.startOfLine = false;
       return style;
     },
 
     indent: function(state, textAfter) {
+      if (state.tokenize == tokenComment) return CodeMirror.Pass;
       if (state.tokenize != tokenBase && state.tokenize != null) return 0;
       var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
       if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;

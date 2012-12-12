@@ -1,3 +1,5 @@
+/* Last css to be executed by Baseliner */
+
 .x-grid3-body .x-grid3-td-checker {
     background: none repeat-y scroll right center transparent;
 }
@@ -11,5 +13,43 @@
     font-size: 11px;
     margin: 0 0 0 4px;
     text-transform: uppercase;
+}
+
+.x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
+    height: 16px;
+}
+
+.baseliner-message a {
+    color: #fff;
+}
+
+/* -- put gritter close on the right
+    
+.gritter-close {
+	left:270px;
+}
+*/
+
+.bali-avatar {
+    height: 16px !important;
+    width: 16px !important;
+}
+
+.bali-topic-editor-image {
+	width: 100%;
+}
+
+.bali-topic-status {
+    font-size: 8px;
+    text-transform:uppercase;
+    font-family:Helvetica Neue,Verdana,Helvetica,Arial,sans-serif;
+    color:#555;
+}
+
+.CodeMirror {
+  height: 100%;
+}
+.CodeMirror-scroll {
+  overflow: auto;
 }
 

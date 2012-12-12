@@ -16,24 +16,24 @@ To do:
     // setup defaults
     if( Baseliner.editor_defaults == undefined ) Baseliner.editor_defaults = { theme: 'lesser-dark', mode: { name:'perl' } };
 
-    var run_now = function(cm) {  // fires with Ctrl-E , Cmd-E
-        submit({ last: true });
-    };
     // editor generator function
     var editor_gen = function(args) {
-        if( args!=undefined ) {
+        if( args ) {
             Baseliner.editor_defaults = Ext.apply( Baseliner.editor_defaults, args );
         }
         /*
         var ret = CodeMirror( function(elt) { 
-            // document.getElementById( code.getId() );
-            code.getEl().dom.parentNode.replaceChild( elt, code.getEl().dom );
+            // document.getElementById( fcode.getId() );
+            fcode.getEl().dom.parentNode.replaceChild( elt, fcode.getEl().dom );
         }, Ext.apply({
         */
-        var ret = CodeMirror.fromTextArea( code.getEl().dom , Ext.apply({
+        var ret = CodeMirror.fromTextArea( fcode.getEl().dom , Ext.apply({
                lineNumbers: true,
                tabMode: "indent",
                smartIndent: true,
+               indentUnit: 4,
+               tabSize: 4,
+               electricChars: false,  // allow editor to reindent according to certain chars
                matchBrackets: true,
                extraKeys: { 
                     "Ctrl-W": function() {
@@ -60,8 +60,8 @@ To do:
                       }
                     },
                
-                   "Cmd-E": run_now, 
-                   "Ctrl-E": run_now, 
+                   "Cmd-E": run_repl, 
+                   "Ctrl-E": run_repl, 
                    "Ctrl-Space": function(cm) {
                          CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
                     }
@@ -69,10 +69,10 @@ To do:
             }, Baseliner.editor_defaults )
         );
         var hlLine = ret.setLineClass(0, "activeline");
-        // ret.setSize( '100%', code.getEl().getHeight() );
+        // ret.setSize( '100%', fcode.getEl().getHeight() );
         return ret;
     };
-    var code = new Ext.form.TextArea({
+    var fcode = new Ext.form.TextArea({
         name: 'code',
         value: "$c->model('Repository');\n",
         style: style_cons,
@@ -83,7 +83,7 @@ To do:
     var editor;
 
     // Codemirror 
-    code.on( 'afterrender', function(){
+    fcode.on( 'afterrender', function(){
         editor = editor_gen(); 
     });
 
@@ -193,7 +193,7 @@ To do:
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
                 if( res.code != undefined ) { 
                     last_name= n.text;
-                    editor.setValue( res.code ); code.setValue( res.code );
+                    editor.setValue( res.code ); fcode.setValue( res.code );
                 }
                 if( res.output != undefined ) set_output( res.output );
                 if( res.div != undefined ) {
@@ -215,12 +215,12 @@ To do:
                 params: { ns: ns }, 
                 success: function(xhr) {
                     var json = Ext.util.JSON.decode( xhr.responseText );
-                    code.setValue( json.code );
+                    fcode.setValue( json.code );
                     set_output( json.output );
                 }
             });
         } else {
-            code.setValue(n.attributes.code);
+            fcode.setValue(n.attributes.code);
             set_output(n.attributes.output);
         } */
     });
@@ -266,7 +266,7 @@ To do:
                     }
                 });
             }),
-            Baseliner.button('Maximize', '/static/images/icons/application_double.png', function(b) { 
+            Baseliner.button(_('Maximize'), '/static/images/icons/application_double.png', function(b) { 
                 var tab = cons.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
@@ -274,6 +274,13 @@ To do:
                     var to = new Ext.form.TextArea({ title: 'Output', value: output.getValue() });
                     Baseliner.addNewTabItem( to , '' );
                 }
+            }),
+            Baseliner.button(_('Raw'), '/static/images/icons/application_double.png', function(b) { 
+                var tab = cons.getActiveTab();
+                var ww = window.open('about:blank', '_blank' );
+                ww.document.title = _('REPL');
+                ww.document.write( '<pre>' + output.getValue() + '</pre>' );
+                ww.document.close();
             }),
             '->',
             Baseliner.button('Collapse', '/static/images/icons/arrow_down.gif', function(b) { cons.collapse(true) } )
@@ -293,11 +300,23 @@ To do:
         var node_name = params.tx || dt.format("Y-m-d H:i:s") + ": " + short;
         if( params.save!=undefined && params.save ) {
             last_name = node_name;
-            code.setValue( editor.getValue() );  // copy from codemirror to textarea
+            fcode.setValue( editor.getValue() );  // copy from codemirror to textarea
             var f = form.getForm();
             f.submit({ url:'/repl/save', params: { id: params.tx, output: params.o } });
         }
     }
+
+    var show_table = function( d ) {
+        try {
+            if( ! Ext.isArray( d ) ) {
+                if( Ext.isObject( d ) ) d = [d];
+                else { d = [ { value: d } ] ; }
+            }
+            var ag = new Baseliner.AutoGrid({ data: d, closable:true, title:_('%1', cons.items.length ) });
+            cons.add( ag );
+            cons.setActiveTab( ag );
+        } catch(e) { set_output( e ); }
+    };
 
     var submit = function(parms) {
         //Baseliner.showLoadingMask(form.getEl(), _("Loading") );
@@ -307,7 +326,7 @@ To do:
         last_mode = parms;
         var f = form.getForm();
         set_output( "" );
-        code.setValue( editor.getValue() );  // copy from codemirror to textarea
+        fcode.setValue( editor.getValue() );  // copy from codemirror to textarea
         f.submit({
             params: parms,
             waitMsg: _('Running...'),
@@ -316,11 +335,18 @@ To do:
                     ( action.result.stdout ?  action.result.stdout + "\n" : "" ) +  
                     ( action.result.stderr ?  action.result.stderr + "\n" : "" ) +  
                     action.result.result ;
-                set_output( data );
-                status.setValue( "OK" );
-                document.getElementById( output.getId() ).style.color = "#10c000"; // green
+                if( parms.show == 'table' ) {
+                    try {
+                        var d = Ext.util.JSON.decode( action.result.result );
+                        show_table( d ); 
+                    } catch(e){ set_output( e ) };
+                } else {
+                    set_output( data );
+                    status.setValue( "OK" );
+                    document.getElementById( output.getId() ).style.color = "#10c000"; // green
+                }
                 elapsed.setValue( action.result.elapsed );
-                save({ c: code.getValue(), o: output.getValue() });
+                save({ c: fcode.getValue(), o: output.getValue() });
                 editor.focus();
             },
             failure: function(f,action){
@@ -342,33 +368,76 @@ To do:
             }
         });
     };
+     
+    var run_repl = function(){
+        var lang = btn_lang.lang;
+        var dump = 'yaml', show = 'cons';
+        if( btn_out.out == 'yaml' ) dump = 'yaml';
+        else if( btn_out.out == 'json' ) dump = 'json';
+        else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table' };
+
+        if( lang == 'perl' ) {
+            submit({ eval: true, dump: dump, show: show });
+        }
+        else if( lang=='javascript' ) {
+            var d;
+            try { 
+                set_output( '' );
+                d = eval("(function(){ " + editor.getValue() + " }) ");
+                d = d();
+                if( show == 'table' && d != undefined ) {
+                    show_table( d ); 
+                } else {
+                    set_output( d );
+                }
+            } catch(e) {
+                set_output( e + "" );
+            }
+            /* window
+                    eval( "var code_evaled = " + editor.getValue() );
+                    var win = new Ext.Window( code_evaled );
+                    if( win.width == undefined ) { win.width = '90%' }
+                    win.show();
+            */
+        }
+        else {
+            submit({ sql: 'array', dump: dump, show: show });
+            //submit({ sql: 'array', dump: 'json', show:'table' });
+            //submit({ sql: 'hash', dump: 'yaml' });
+        }
+    };
 
     var change_theme = function(x) {
-        if( x.checked ) { 
+        if( x.checked && editor ) { 
             var txt = editor.getValue();
-            editor = editor_gen({ theme: x.theme });
+            editor.setOption('theme', x.theme );
             editor.setValue( txt );
         }
     };
     var default_lang = function(x) { return Baseliner.editor_defaults.mode.name == x; };
     var default_theme = function(x) { return Baseliner.editor_defaults.theme == x; };
     var change_lang = function(x) {
-        if( x.checked ) { 
+        if( x.checked && editor ) { 
             var txt = editor.getValue();
-            editor = editor_gen({ mode: { name: x.lang } });
+            editor.setOption('mode', { name: x.syntax });
             editor.setValue( txt );
+            btn_lang.setText( _('Lang: %1', '<b>'+x.text+'</b>') );
+            btn_lang.setIcon( '/static/images/icons/' + x.lang + '.png' );
+            btn_lang.lang = x.lang;
+            editor.focus();
+        }
+    };
+    var change_out = function(x) {
+        if( x.checked && editor ) { 
+            btn_out.setText( _('Output: %1', '<b>'+x.text+'</b>') );
+            btn_out.setIcon( '/static/images/icons/' + x.out + '.png' );
+            btn_out.out = x.out;
+            editor.focus();
         }
     };
     var config_menu = new Ext.menu.Menu({
         items: [
             {
-                text: _('Programming-Language'),
-                menu: { items: [ 
-                        { text: 'Perl', lang: 'perl', checked: default_lang('perl'), group: 'lang', checkHandler: change_lang },
-                        { text: 'Javascript', lang: 'javascript', checked: default_lang('javascript'), group: 'lang', checkHandler: change_lang },
-                        { text: 'SQL', lang: 'sql', checked: default_lang('sql'), group: 'lang', checkHandler: change_lang }
-                ]}
-            },{
                 text: _('Theme'),
                 menu: { items: [ 
                         { text: 'Lesser-Dark', theme: 'lesser-dark', checked: default_theme('lesser-dark'), group: 'theme', checkHandler: change_theme },
@@ -380,74 +449,47 @@ To do:
             }
         ]
     });
+    var menu_lang = new Ext.menu.Menu({ 
+                items: [
+                    { text:'Perl', lang:'perl', checked: true, syntax:'perl', group:'repl-lang', checkHandler: change_lang },
+                    { text:'JavaScript', lang:'javascript', syntax:'javascript', checked: true, group:'repl-lang', checkHandler: change_lang  },
+                    { text:'SQL', lang:'sql', syntax:'plsql', checked: true, group:'repl-lang', checkHandler: change_lang }
+                ]
+    });
+    var btn_lang = new Ext.Button({  
+                text: _('Lang'),
+                icon:'/static/images/scm/debug/genericregister_obj.gif',
+                cls: 'x-btn-text-icon',
+                menu: menu_lang 
+            });
+
+    fcode.on('afterrender', function(){
+        change_lang({ text:'Perl', lang:'perl', syntax:'perl', checked: true });
+        change_out({ text:'YAML', out:'yaml', checked: true });
+    });
+    var menu_out = new Ext.menu.Menu({ 
+                items: [
+                    { text:_('YAML'), out:'yaml', checked: true, group:'repl-out', checkHandler: change_out },
+                    { text:_('JSON'), out:'json', checked: true, group:'repl-out', checkHandler: change_out  },
+                    { text:_('Table'), out:'table', checked: true, group:'repl-out', checkHandler: change_out }
+                ]
+    });
+    var btn_out = new Ext.Button({  
+                text: _('Output'),
+                icon:'/static/images/scm/debug/genericregister_obj.gif',
+                cls: 'x-btn-text-icon',
+                menu: menu_out
+            });
 
     var tbar = [
             {   xtype: 'button',
-                text: _('Eval'),
+                text: _('Run'),
                 icon:'/static/images/scm/debug/debug_view.gif',
                 cls: 'x-btn-text-icon',
-                handler: function(){
-                    submit({ eval: true });
-                }
+                handler: run_repl
             },
-            {   xtype: 'button',
-                text: _('Dump'),
-                icon:'/static/images/scm/debug/genericregister_obj.gif',
-                cls: 'x-btn-text-icon',
-                handler: function(){
-                    submit({ dump: 'yaml' });
-                }
-            },
-            {   xtype: 'button',
-                text: _('JSON'),
-                icon:'/static/images/scm/debug/hierarchicalLayout.gif',
-                cls: 'x-btn-text-icon',
-                handler: function(){
-                    submit({ dump: 'json' });
-                }
-            },
-            {   xtype: 'button',
-                text: _('SQL'),
-                icon:'/static/images/scm/debug/memory_view.gif',
-                cls: 'x-btn-text-icon',
-                handler: function(){
-                    submit({ sql: 'array', dump: 'yaml' });
-                }
-            },
-            {   xtype: 'button',
-                text: _('SQL-Hash'),
-                icon:'/static/images/scm/debug/memory_view.gif',
-                cls: 'x-btn-text-icon',
-                handler: function(){
-                    submit({ sql: 'hash', dump: 'yaml' });
-                }
-            },
-            {   xtype: 'button',
-                text: _('JS'),
-                icon:'/static/images/gears.gif',
-                cls: 'x-btn-text-icon',
-                handler: function(){
-                    try { eval(editor.getValue());
-                    } catch(e) {
-                        set_output( e + "" );
-                    }
-                }
-            },
-            {   xtype: 'button',
-                text: _('JS Win'),
-                icon:'/static/images/gears.gif',
-                cls: 'x-btn-text-icon',
-                handler: function(){
-                    eval( "var code_evaled = " + editor.getValue() );
-                    var win = new Ext.Window( code_evaled );
-                    if( win.width == undefined ) { win.width = '90%' }
-                    win.show();
-                    /* try { eval("new Ext.Window("+ code.getValue() + ").show()");
-                    } catch(e) {
-                        cons.setValue( e + "");
-                    } */
-                }
-            },
+            btn_lang,
+            btn_out,
             {   xtype: 'button',
                 text: _('Save'),
                 icon:'/static/images/scm/debug/write_obj.gif',
@@ -455,7 +497,7 @@ To do:
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
                         if (btn == 'ok'){
-                            save({ c: code.getValue(), o: output.getValue(), tx: text, save: true });
+                            save({ c: fcode.getValue(), o: output.getValue(), tx: text, save: true });
                         }
                     }, undefined, false, last_name );
                 }
@@ -515,21 +557,15 @@ To do:
             frame    : false,
             hideLabel: false,
             tbar     : tbar,
-            items    : [ code ]
+            items    : [ fcode ]
         }
     );
     form.setTitle("REPL");
 
-    var panel_center = new Ext.Panel({
-        layout: 'border',
-        region: 'center',
-        items: [ form, cons ]
-    });
-
     var panel = new Ext.Panel({
         title: _('REPL'),
         layout: 'border',
-        items: [ tree, panel_center ]
+        items: [ tree, form, cons ]
     });
 
     Baseliner.edit_check( panel, true );  // block window closing from the beginning
@@ -538,4 +574,5 @@ To do:
 
     return panel;
 })();
+
 

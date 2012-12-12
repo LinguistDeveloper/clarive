@@ -11,10 +11,13 @@
 
 <h1><span class="logo-braces">{ }</span> <a href="http://codemirror.net/">CodeMirror</a></h1>
 
-<pre class="grey">
-<img src="baboon.png" class="logo" alt="logo"/>/* User manual and
+<div class="grey">
+<img src="baboon.png" class="logo" alt="logo"/>
+<pre>
+/* User manual and
    reference guide */
 </pre>
+</div>
 
 <div class="clear"><div class="leftbig blk">
 
@@ -249,11 +252,6 @@
       <dd>When given, will be called whenever the editor is
       scrolled.</dd>
 
-      <dt id="option_onHighlightComplete"><code>onHighlightComplete (function)</code></dt>
-      <dd>Whenever the editor's content has been fully highlighted,
-      this function (if given) will be called. It'll be given a single
-      argument, the editor instance.</dd>
-
       <dt id="option_onUpdate"><code>onUpdate (function)</code></dt>
       <dd>Will be called whenever CodeMirror updates its DOM display.</dd>
 
@@ -357,7 +355,7 @@
     also contains the <code>"default"</code> keymap holding the
     default bindings.</p>
 
-    <p>The values of properties in keymaps can be either functions of
+    <p id="commands">The values of properties in keymaps can be either functions of
     a single argument (the CodeMirror instance), strings, or
     <code>false</code>. Such strings refer to properties of the
     <code>CodeMirror.commands</code> object, which defines a number of
@@ -524,6 +522,10 @@
       <dd>Get an <code>{x, y, width, height}</code> object that
       represents the current scroll position and scrollable area size
       of the editor.</dd>
+      <dt id="scrollIntoView"><code>scrollIntoView(pos)</code></dt>
+      <dd>Scrolls the given <code>{line, ch}</code> position into
+      view. If no argument is given, this will scroll the cursor into
+      view.</dd>
 
       <dt id="setOption"><code>setOption(option, value)</code></dt>
       <dd>Change the configuration of the editor. <code>option</code>
@@ -533,6 +535,11 @@
       <dt id="getOption"><code>getOption(option) → value</code></dt>
       <dd>Retrieves the current value of the given option for this
       editor instance.</dd>
+      <dt id="getMode"><code>getMode() → object</code></dt>
+      <dd>Gets the mode object for the editor. Note that this is
+      distinct from <code>getOption("mode")</code>, which gives you
+      the mode specification, rather than the resolved, instantiated
+      <a href="#defineMode">mode object</a>.</dd>
 
       <dt id="cursorCoords"><code>cursorCoords(start, mode) → object</code></dt>
       <dd>Returns an <code>{x, y, yBot}</code> object containing the
@@ -551,6 +558,8 @@
       <dd>Given an <code>{x, y}</code> object (in page coordinates),
       returns the <code>{line, ch}</code> position that corresponds to
       it.</dd>
+      <dt id="defaultTextHeight"><code>defaultTextHeight() → number</code></dt>
+      <dd>Returns the line height of the default font for the editor.</dd>
 
       <dt id="undo"><code>undo()</code></dt>
       <dd>Undo one edit (if any undo events are stored).</dd>
@@ -592,14 +601,30 @@
         <dt><code>state</code></dt><dd>The mode's state at the end of this token.</dd>
       </dl></dd>
 
-      <dt id="markText"><code>markText(from, to, className) → object</code></dt>
+      <dt id="markText"><code>markText(from, to, className, options) → object</code></dt>
       <dd>Can be used to mark a range of text with a specific CSS
       class name. <code>from</code> and <code>to</code> should
-      be <code>{line, ch}</code> objects. The method will return an
-      object with two methods, <code>clear()</code>, which removes the
-      mark, and <code>find()</code>, which returns a <code>{from,
-      to}</code> (both document positions), indicating the current
-      position of the marked range.</dd>
+      be <code>{line, ch}</code> objects. The <code>options</code>
+      parameter is optional. When given, it should be an object that
+      may contain the following configuration options:
+      <dl>
+        <dt><code>inclusiveLeft</code></dt><dd>Determines whether
+        text inserted on the left of the marker will end up inside
+        or outside of it.</dd>
+        <dt><code>inclusiveRight</code></dt><dd>Like <code>inclusiveLeft</code>,
+        but for the right side.</dd>
+        <dt><code>startStyle</code></dt><dd>Can be used to specify
+        an extra CSS class to be applied to the leftmost span that
+        is part of the marker.</dd>
+        <dt><code>endStyle</code></dt><dd>Equivalent
+        to <code>startStyle</code>, but for the rightmost span.</dd>
+      </dl>
+      The method will return an object with two methods,
+      <code>clear()</code>, which removes the mark,
+      and <code>find()</code>, which returns a <code>{from, to}</code>
+      (both document positions), indicating the current position of
+      the marked range, or <code>undefined</code> if the marker is no
+      longer in the document.</dd>
 
       <dt id="setBookmark"><code>setBookmark(pos) → object</code></dt>
       <dd>Inserts a bookmark, a handle that follows the text around it
@@ -782,13 +807,23 @@
       contextual information for a line.</dd>
     </dl>
 
-    <p id="fromTextArea">Finally, the <code>CodeMirror</code> object
-    itself has a method <code>fromTextArea</code>. This takes a
+    <p id="version">The <code>CodeMirror</code> object itself provides
+    several useful properties. Firstly, its <code>version</code>
+    property contains a string that indicates the version of the
+    library. For releases, this simply
+    contains <code>"major.minor"</code> (for
+    example <code>"2.33"</code>. For beta versions, <code>" B"</code>
+    (space, capital B) is added at the end of the string, for
+    development snapshots, <code>" +"</code> (space, plus) is
+    added.</p>
+
+    <p id="fromTextArea">The <code>CodeMirror.fromTextArea</code>
+    method provides another way to initialize an editor. It takes a
     textarea DOM node as first argument and an optional configuration
     object as second. It will replace the textarea with a CodeMirror
     instance, and wire up the form of that textarea (if any) to make
     sure the editor contents are put into the textarea when the form
-    is submitted. A CodeMirror instance created this way has two
+    is submitted. A CodeMirror instance created this way has three
     additional methods:</p>
 
     <dl>
@@ -808,6 +843,13 @@
     use <code>CodeMirror.defineExtension(name, value)</code>. This
     will cause the given value (usually a method) to be added to all
     CodeMirror instances created from then on.</p>
+
+    <p id="defineInitHook">If your extention just needs to run some
+    code whenever a CodeMirror instance is initialized,
+    use <code>CodeMirror.defineInitHook</code>. Give it a function as
+    its only argument, and from then on, that function will be called
+    (with the instance as argument) whenever a new CodeMirror instance
+    is initialized.</p>
 
     <h2 id="addons">Add-ons</h2>
 
@@ -930,6 +972,11 @@
       Depends on
       the <a href="#util_searchcursor"><code>searchcursor</code></a>
       add-on. Demo <a href="../demo/matchhighlighter.html">here</a>.</dd>
+      <dt id="util_formatting"><a href="../lib/util/formatting.js"><code>formatting.js</code></a></dt>
+      <dd>Adds <code>commentRange</code>, <code>autoIndentRange</code>,
+      and <code>autoFormatRange</code> methods that, respectively,
+      comment (or uncomment), indent, or format (add line breaks) a
+      range of code. <a href="../demo/formatting.html">Demo here.</a></dd>
       <dt id="util_closetag"><a href="../lib/util/closetag.js"><code>closetag.js</code></a></dt>
       <dd>Provides utility functions for adding automatic tag closing
       to XML modes. See
@@ -946,6 +993,11 @@
       which will ensure the given mode is loaded and cause the given
       editor instance to refresh its mode when the loading
       succeeded. See the <a href="../demo/loadmode.html">demo</a>.</dd>
+      <dt id="util_continuecomment"><a href="../lib/util/continuecomment.js"><code>continuecomment.js</code></a></dt>
+      <dd>Adds a <a href="#commands">command</a>
+      called <code>newlineAndIndentContinueComment</code> that you can
+      bind <code>Enter</code> to in order to have the editor prefix
+      new lines inside C-like block comments with an asterisk.</dd>
     </dl>
 
     <h2 id="modeapi">Writing CodeMirror Modes</h2>
@@ -1085,20 +1137,8 @@
     which is given a state and should return a safe copy of that
     state.</p>
 
-    <p id="compareStates">By default, CodeMirror will stop re-parsing
-    a document as soon as it encounters a few lines that were
-    highlighted the same in the old parse as in the new one. It is
-    possible to provide an explicit way to test whether a state is
-    equivalent to another one, which CodeMirror will use (instead of
-    the unchanged-lines heuristic) to decide when to stop
-    highlighting. You do this by providing
-    a <code>compareStates</code> method on your mode object, which
-    takes two state arguments and returns a boolean indicating whether
-    they are equivalent. See the XML mode, which uses this to provide
-    reliable highlighting of bad closing tags, as an example.</p>
-
     <p id="indent">If you want your mode to provide smart indentation
-    (though the <a href="#indentLine"><code>indentLine</code></a>
+    (through the <a href="#indentLine"><code>indentLine</code></a>
     method and the <code>indentAuto</code>
     and <code>newlineAndIndent</code> commands, which keys can be
     <a href="#option_extraKeys">bound</a> to), you must define
@@ -1142,6 +1182,16 @@
     where <code>mode</code> is the mode that created the given
     state.</p>
 
+    <p id="innerMode">In a nested mode, it is recommended to add an
+    extra methods, <code>innerMode</code> which, given a state object,
+    returns a <code>{state, mode}</code> object with the inner mode
+    and its state for the current position. These are used by utility
+    scripts such as the <a href="#util_formatting">autoformatter</a>
+    and the <a href="#util_closetag">tag closer</a> to get context
+    information. Use the <code>CodeMirror.innerMode</code> helper
+    function to, starting from a mode and a state, recursively walk
+    down to the innermost mode and state.</p>
+
     <p>To make indentation work properly in a nested parser, it is
     advisable to give the <code>startState</code> method of modes that
     are intended to be nested an optional argument that provides the
@@ -1159,6 +1209,15 @@
     where <code>modeSpec</code> can be a string or object specifying a
     mode, as in the <a href="#option_mode"><code>mode</code></a>
     option.</p>
+
+    <p id="extendMode">Sometimes, it is useful to add or override mode
+    object properties from external code.
+    The <code>CodeMirror.extendMode</code> can be used to add
+    properties to mode objects produced for a specific mode. Its first
+    argument is the name of the mode, its second an object that
+    specifies the properties that should be added. This is mostly
+    useful to add utilities that can later be looked
+    up <a href="#getMode"><code>getMode</code></a>.</p>
 
 </div><div class="rightsmall blk">
 
