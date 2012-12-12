@@ -1982,7 +1982,7 @@ Baseliner.DataEditor = function(c) {
         '->' 
     ];
 
-    if( ! c.hide_cancel )  bar.push( { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ close_comp(false) } } );
+    if( ! c.hide_cancel )  tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ close_comp(false) } } );
     if( ! c.hide_save )  tbar.push({ text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ close_comp(true) } } );
 
     var cols = [];
