@@ -75,8 +75,14 @@ sub main {
    _throw _loc( "No users found for action %1", $action ) unless @users;
 
    # Get user info
-   my $u = Baseliner->model('Users')->get( $job->{job_data}->{username} );
-   my $realname = $u->{realname} || $job->username ;
+   my $u;
+   my $realname;
+   try {
+       $u = Baseliner->model('Users')->get( $job->{job_data}->{username} );
+       $realname = $u->{realname} || $job->username ;
+   } catch {
+       $realname = $job->username ;
+   };
    $realname = encode("iso-8859-15", $realname);
    $realname =~ s{\?}{}g;
    $realname =~ s{}{}g;
