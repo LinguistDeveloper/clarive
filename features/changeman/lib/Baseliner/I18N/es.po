@@ -148,13 +148,13 @@ msgid "User <b>%1</b> creates <b>INSTALLATION</b> job for package <b>%2</b> to <
 msgstr "El usuario <b>%1</b> crea un job de <b>INSTALACIÓN</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully"
-msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> en el site <b>%3</b> con éxito"
+msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> en el site <b>%3</b> correctamente"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error"
 msgstr "Se ha producido un error al cambiar el paquete <b>%1</b> al estado <b>%2</b> en el site <b>%3</b>"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state finished successfully"
-msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> con éxito"
+msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> correctamente"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state finished with error"
 msgstr "Se ha producido un error al cambiar el paquete <b>%1</b> al estado <b>%2</b>"

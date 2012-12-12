@@ -78,6 +78,7 @@ sub creaPase {  ## $self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, 
    my $chmConfig = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' );
 
    try {
+
        if( defined ( my $activeJob = Baseliner->model('Jobs')->is_in_active_job( "changeman.package/$package" ) ) ) {
            _debug _loc("Package <b>%1</b> is in active job <b>%2</b>", $package,$activeJob->id) if $activeJob;
            return $runner;
@@ -233,6 +234,12 @@ sub run_once {
          $runner->{job_data} = $jobRow->{_column_data};
          $job_stash=_load $job->stash;
          $type=$job->type;
+ 
+         my @processedSites = split (', ',$job_stash->{processedSites});
+         push @processedSites, $site;
+         my $sites = join ', ',_unique @processedSites;
+         $job->stash_key( processedSites => $sites );
+
          if (($job->step eq 'RUN' && $job->status eq 'WAITING') || $job->step =~ m{POST|END} ) {
             $logrow  = bali_rs('Log')->find( $job_stash->{JESrow} );
             if (! $logrow) {
@@ -242,10 +249,10 @@ sub run_once {
             }
          }
       }
-
+      
       _debug $fprefix . "TYPE: ".$file->{jobname} ." ==> ". $type;
 
-      my $package = BaselinerX::Changeman::Provider::Package->get("changeman.package/$pkg"); ## Cargamos los datos del paquete CHM
+      # - No hace falta?  my $package = BaselinerX::Changeman::Provider::Package->get("changeman.package/$pkg"); ## Cargamos los datos del paquete CHM
       if ( $type eq 'promote' and $bl ne 'PROD' ) {
          _debug $fprefix . "PROMOTE";
          if ( ! defined $job ) { ## No está asociado aún a ningún pase, lo creamos.
@@ -315,6 +322,7 @@ sub run_once {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error", $pkg, 'INSTALLED', $site ) );
                       $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
                       _debug $fprefix . "CLEANED";
+                      BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
                   }
               } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## BASELINED
                   _debug $fprefix . "BASELINED";
@@ -364,8 +372,8 @@ sub run_once {
       next unless ref $runner;
 
       $job=bali_rs('Job')->find( $runner->{job_data}->{id});
-      unless( $job->step =~ m{RUN|POST|END} && $logrow ) {
-          _debug $fprefix . "step not in RUN,POST,END and logrow - skipped logging phase";
+      unless( $logrow && ( $job->step =~ m{RUN|POST|END} || $job->status eq 'FINISHED' ) ) {
+          _debug $fprefix . "step not in RUN,POST,END and logrow - skipped logging phase" . "\nLOGROW: $logrow\nSTEP: ". $job->step ."\nSTATUS:".$job->status;
           next;
       }
 
