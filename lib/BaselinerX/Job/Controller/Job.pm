@@ -627,7 +627,8 @@ sub natures_json {
   my @data = sort { uc $a->{name} cmp uc $b->{name} } 
              map { { key=>$_->{key}, id=>$_->{id}, name => _loc($_->{name}), ns => $_->{ns}, icon => $_->{icon}} }
              map { Baseliner::Core::Registry->get($_) }
-             Baseliner->registry->starts_with('nature');
+             Baseliner->registry->starts_with('nature.zos');  ## SÃ³lo quieren ver CHM de momento...
+#             Baseliner->registry->starts_with('nature');
   _encode_json \@data;
 }
 
@@ -638,8 +639,13 @@ sub job_states_json {
 }
 
 sub envs_json {
-  my @data =  Baseliner::Core::Baseline->baselines;
-  _encode_json \@data;
+
+    my $rs = Baseliner->model('Baseliner::BaliBaseline')->search({ 'seq' => { '>' => 1 } }, { order_by => { -asc =>'seq'  } });
+    rs_hashref $rs;
+    my @data = $rs->all;
+    _encode_json \@data;
+#  my @data =  Baseliner::Core::Baseline->baselines;
+#  _encode_json \@data;
 }
 
 sub types_json {

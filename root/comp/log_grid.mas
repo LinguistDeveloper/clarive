@@ -460,12 +460,14 @@
                 menu_exec_left,
                 menu_exec,
                 menu_exec_right,
+% if( $c->stash->{user_action}->{'action.job.annotate'} ) {
                 {
                     text: _('Annotate'),
                     icon: '/static/images/icons/post.gif', 
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
+% }
 % if( $c->stash->{user_action}->{'action.admin.default'} ) {
                 button_resume,
                 new Ext.Toolbar.Button({ 

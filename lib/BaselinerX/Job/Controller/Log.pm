@@ -1,12 +1,15 @@
 package BaselinerX::Job::Controller::Log;
 use Moose;
 use Baseliner::Utils;
+use Baseliner::Plug;
 use JavaScript::Dumper;
 use Compress::Zlib;
 use Try::Tiny;
 use JSON::XS;
 
 BEGIN { extends 'Catalyst::Controller' }
+
+register 'action.job.annotate' => { name=>'Can Annotate Jobs' };
 
 sub logs_list : Path('/job/log/list') {
     my ( $self, $c, $id_job ) = @_;

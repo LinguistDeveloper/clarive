@@ -16,12 +16,17 @@ use BaselinerX::Comm::Balix;
 use Baseliner::Core::DBI;
 use Try::Tiny;
 
+=head
+
+Por GDF 72799 se elimina la opción de menu.
+
 register 'menu.job.sqa' => {
     label    => _loc( 'Quality portal' ),
     url_comp => '/sqa/grid',
     title    => _loc( 'Quality portal' ),
     action   => 'action.sqa.view'
 };
+=cut
 
 my @filters = ( 'J2EE', '.NET', 'ORACLE', 'FICHEROS', 'BIZTALK', 'ECLIPSE' );
 
