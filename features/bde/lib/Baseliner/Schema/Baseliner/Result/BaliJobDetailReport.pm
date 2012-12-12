@@ -25,9 +25,4 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key('id');
 
-  "ts",
-  {
-    data_type => "DATE", is_nullable => 1, size => 19,
-  },
-
 1;

@@ -58,7 +58,7 @@ sub trim_beginning_whitespace {
 
 sub trim_ending_whitespace {
   my $string = shift;
-  $string =~ s/$\s+//xig;
+  $string =~ s/\s+$//xig;
   $string }
 
 sub to_array_hash {
