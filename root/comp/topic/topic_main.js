@@ -26,10 +26,10 @@
                 
                 var gdi = form2.findField('gdi');
                 var custom_form = gdi ? 'gdi' : '';
-                
+
                 if (form2.isValid()) {
                    form2.submit({
-                       params: {action: action, form: custom_form},
+                       params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( _cis ) },
                        success: function(f,a){
                             Baseliner.message(_('Success'), a.result.msg );
                             
@@ -119,7 +119,13 @@
     });
     
     var form_topic;
+    var _cis = [];
     var load_form = function(rec) {
+        if( rec._cis ) {
+            _cis = rec._cis;
+        } else {
+            rec._cis = _cis;
+        }
         Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
             if( ! form_is_loaded ) {
                 //form_panel.removeAll();

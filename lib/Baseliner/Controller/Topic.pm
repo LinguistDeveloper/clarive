@@ -217,6 +217,7 @@ sub get_field_bodies {
         next unless defined $field->{js};
         my $file = Baseliner->path_to( 'root', $field->{js} );
         next if $file->is_dir;
+        _fail _loc("Template not found: %1 (%2)", $field->{js}, $file ) unless -e $file;
         # CACHE check - consider using Mason -- has its own cache
         my $modified_on = $file->stat->mtime;
         my $cache = $field_cache{ "$file" };

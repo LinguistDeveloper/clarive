@@ -4,7 +4,7 @@
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
         'type', 'pretty_properties', 'name', 'item', 'ci_form', 'active',
-        'class','versionid','ts','tags','data','properties','icon','collection']);
+        'class','versionid','ts','tags','data','properties','icon','collection', 'title' ]);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
@@ -61,12 +61,24 @@
             ci_add( g.getStore().getAt(ix).data );
     };
 
+    var get_valid_selections = function(){
+        var arr = [];
+        if (check_sm.hasSelection()) {
+           Ext.each( check_sm.getSelections(), function(r){
+              if( r.data.type == 'object' ) {
+                arr.push( r );
+              }
+           });
+        }
+        return arr;
+    };
+
     var ci_add = function(){
         var data = store_ci.baseParams;
         var classname = data.class ;
         var rec = {};
         if (check_sm.hasSelection()) {
-           var sel = check_sm.getSelections();
+           var sel = get_valid_selections();
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
         } 
@@ -88,7 +100,7 @@
     // Usage:   var checked = Baseliner.multi_check_data( check_sm, 'mid' );
     Baseliner.multi_check_data = function(obj, field){
        if (obj.hasSelection()) {
-           var sel = obj.getSelections();
+           var sel = get_valid_selections();
            var data = [];
            for( var i=0; i<sel.length; i++ ) {
                data.push( sel[i].data[field] );
@@ -160,6 +172,19 @@
         if( rec.data.type == 'class' ) {
             // we create objects
             value = String.format('<a href="javascript:Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
+        } 
+        else if( rec.data.type == 'topic' ) {
+            var d = rec.data.data;
+            return Baseliner.topic_name({
+                mid: rec.data.mid, 
+                mini: false,
+                size: '11',
+                category_name: d.name,
+                category_color:  d.color,
+                category_icon: d.icon,
+                is_changeset: d.is_changeset,
+                is_release: d.is_release
+            }) + ' ' + String.format('<span style="background: none; font-size: 10px">{0}</span>', rec.data.title ) ;
         }
         var ed = String.format('Baseliner.ci_edit(\'{0}\',{1})', ci_grid.id, rowIndex, value );
         var ret = '<table><tr><td width="1">';
@@ -253,6 +278,20 @@
             enableRowBody: true,
             scrollOffset: 2,
             forceFit: true
+            /*,
+            getRowClass: function(record, index, p, store){
+                var css='';
+                p.body='';
+                var title = record.data.title;
+                if( title && title.length > 0  ) {
+                    p.body +='<div style="color: #333; font-weight: normal; padding-left: 100px; margin: 0 0 5 150;">';
+                    //p.body += '<img style="vertical-align:middle" src="/static/images/icons/post.gif">';
+                    p.body += '&nbsp;' + title + '</div>';
+                    css += ' x-grid3-row-expanded '; 
+                }
+                //css += index % 2 > 0 ? ' level-row info-odd ' : ' level-row info-even ' ;
+                return css;
+            } */
         },
         master_column_id : id_auto,
         autoExpandColumn: id_auto,

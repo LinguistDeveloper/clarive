@@ -436,6 +436,8 @@ sub update {
     given ( $action ) {
         #Casos especiales, por ejemplo la aplicacion GDI
         my $form = $p->{form};
+        $p->{_cis} = _decode_json( $p->{_cis} ) if $p->{_cis};
+
         when ( 'add' ) {
             given ( $form ){
                 when ( 'gdi' ) {
@@ -856,7 +858,9 @@ sub get_files{
 sub save_data {
     my ($self, $meta, $topic_mid, $data ) = @_;
 
-    my @std_fields = map { +{name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} }} grep { $_->{origin} eq 'system' } _array( $meta  );
+    my @std_fields =
+        map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
+        grep { $_->{origin} eq 'system' } _array($meta);
     
     my %row;
     my %description;
@@ -881,6 +885,18 @@ sub save_data {
             }
         }
     }
+
+    my @custom_fields =
+        map { +{ name => $_->{id_field}, column => $_->{id_field}, data => $_->{data} } }
+        grep { $_->{origin} eq 'custom' && !$_->{relation} } _array($meta);
+
+    push @custom_fields, 
+        map { 
+            my $cf = $_;
+            map {
+                +{ name => $_->{id_field}, column => $_->{id_field}, data=> $_->{data} }
+            } _array $_->{fields};
+        } grep { $_->{type} eq 'form' } _array($meta);
     
     my $topic;
     
@@ -903,35 +919,69 @@ sub save_data {
         
     }else{
         #$topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
-        $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
-        
+        $topic = DB->BaliTopic->find( $topic_mid, { prefetch =>['categories','status','priorities'] } );
+
         for my $field (keys %row){
             $old_value{$field} = $topic->$field,
-            $old_text{$field} = $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') : $topic->$field,
+            my $method = $relation{ $field };
+            $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,
         }
         
         $topic->update( \%row );
-        
+
         for my $field (keys %row){
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
             next if $field eq 'deadline_min' || $field eq 'expr_deadline';
-            
-            
-            $topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid, {prefetch=>['categories','status','priorities']} );
+
+            my $method = $relation{ $field };
+
             if ($row{$field} != $old_value{$field}){
                 if($field eq 'id_category_status'){
                     my @projects = $topic->projects->hashref->all;
-                    event_new 'event.topic.change_status' => { username => $data->{username}, old_status => $old_text{$field}, status => eval('$topic->' . $relation{ $field } . '->name')  } => sub {
-                        { mid => $topic->mid, topic => $topic->title } 
-                    } 
-                    => sub {
-                        _throw _loc( 'Error modifying Topic: %1', shift() );
-                    };                    
+                    event_new 'event.topic.change_status'
+                        => { username => $data->{username}, old_status => $old_text{$field}, status => $method ? $topic->$method->name : undef }
+                        => sub {
+                            # check if it's a CI update
+                            my $status_new = DB->BaliTopicStatus->find( $row{id_category_status} );
+                            my $ci_update = $status_new->ci_update;
+                            if( $ci_update && ( my $cis = $data->{_cis} ) ) {
+                                _debug $cis;
+                                for my $ci ( _array $cis ) {
+                                    my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } _array( $ci->{ci_fields} // @custom_fields ) };
+                                    _debug $ci_data;
+                                    given( $ci->{ci_action} ) {
+                                        when( 'create' ) {
+                                            my $ci_class = $ci->{ci_class};
+                                            $ci_class = 'BaselinerX::CI::' . $ci_class unless $ci_class =~ /^Baseliner/;
+                                            $ci->{ci_mid} = $ci_class->save( $ci_data );
+                                            $ci->{_ci_updated} = 1;
+                                        }
+                                        when( 'update' ) {
+                                            _debug "ci update $ci->{ci_mid}";
+                                            _ci( $ci->{ci_mid} )->save( $ci_data );
+                                            $ci->{_ci_updated} = 1;
+                                        }
+                                        when( 'delete' ) {
+                                            DB->BaliMaster->find( $ci->{ci_mid} )->delete; 
+                                            $ci->{_ci_updated} = 1;
+                                        }
+                                        default {
+                                            _throw _loc "Invalid ci action '%1' for mid '%2'", $ci->{ci_action}, $ci->{ci_mid};
+                                        }
+                                    }
+                                }
+                            }
+
+                            { mid => $topic->mid, topic => $topic->title } 
+                        } 
+                        => sub {
+                            _throw _loc( 'Error modifying Topic: %1', shift() );
+                        };                    
                 }else {
                     event_new 'event.topic.modify_field' => { username   => $data->{username},
                                                         field      => _loc ($description{ $field }),
                                                         old_value  => $old_text{$field},
-                                                        new_value  => $relation{ $field } ? eval('$topic->' . $relation{ $field } . '->name') :eval($topic->$field),
+                                                        new_value  => $method ? $topic->$method->name : $topic->$field,
                                                        } => sub {
                         { mid => $topic->mid, topic => $topic->title }   # to the event
                     } ## end try
@@ -943,6 +993,13 @@ sub save_data {
         }        
     }
 
+    if( my $cis = $data->{_cis} ) {
+        for my $ci ( _array $cis ) {
+            if( length $ci->{ci_mid} && $ci->{_ci_updated} ) {
+                DB->BaliMasterRel->update_or_create({ rel_type=>'ci_request', from_mid=>$ci->{ci_mid}, to_mid=>$topic->mid });
+            }
+        }
+    }
      
     my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
     
@@ -952,18 +1009,6 @@ sub save_data {
         }
     } 
      
-    my @custom_fields =
-        map { +{ name => $_->{id_field}, column => $_->{id_field}, data => $_->{data} } }
-        grep { $_->{origin} eq 'custom' && !$_->{relation} } _array($meta);
-
-    push @custom_fields, 
-        map { 
-            my $cf = $_;
-            map {
-                +{ name => $_->{id_field}, column => $_->{id_field}, data=> $_->{data} }
-            } _array $_->{fields};
-        } grep { $_->{type} eq 'form' } _array($meta);
-
     for( @custom_fields ) {
         if  (exists $data->{ $_ -> {name}} && $data->{ $_ -> {name}} ne '' ){
 

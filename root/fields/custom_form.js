@@ -2,7 +2,7 @@
 name: Custom Form
 params:
     origin: template
-    js: /fields/templates/js/custom_form.js
+    js: /fields/templates/custom_form.js
     type: customform
     field_order: 100
     section: details

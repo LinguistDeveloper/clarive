@@ -90,6 +90,15 @@ sub dispatch {
             query      => $p->{query},
             collection => $p->{collection}
         );
+    } elsif ( $p->{type} eq 'ci_request' ) {
+        ( $total, @tree ) = $self->tree_ci_request(
+            mid        => $p->{mid},
+            parent     => $p->{anode},
+            start      => $p->{start},
+            limit      => $p->{limit},
+            query      => $p->{query},
+            collection => $p->{collection}
+        );
     }
     
     #_debug _dump( \@tree );
@@ -265,7 +274,41 @@ sub tree_object_depend {
             versionid    => $_->{versionid},
             }
     } $rs->hashref->all;
-    _error \@tree;
+    _debug \@tree;
+    ( $total, @tree );
+}
+
+sub tree_ci_request {
+    my ($self, %p)=@_;
+    my $class = $p{class};
+    my $where = {};
+    my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
+    my @rs = DB->BaliTopic->search(
+        { from_mid=>$p{mid}, rel_type=>'ci_request' },
+        { prefetch=>['parents','status','categories'] },
+    )->hashref->all;
+    my $total = @rs;
+    my $cnt = $p{parent} * 10;
+    my @tree = map {
+        +{
+            _id        => ++$cnt,
+            _parent    => $p{parent} || undef,
+            _is_leaf   => \1,
+            mid        => $_->{mid},
+            item       => $_->{categories}{name} . ' #' . $_->{mid},
+            title      => $_->{title},
+            type       => 'topic',
+            class      => 'BaselinerX::CI::topic',
+            bl         => $p{bl},
+            collection => $_->{status}{name}, 
+            icon       => '/static/images/icons/topic_one.png',
+            ts         => $_->{master_to}{ts},
+            data       => { %{ $_->{categories} } }, 
+            properties => '',
+            versionid    => '',
+        }
+    } @rs;
+    _debug \@tree;
     ( $total, @tree );
 }
 
@@ -296,6 +339,18 @@ sub tree_object_info {
             type     => 'depend_to',
             class    => '-',
             icon     => '/static/images/ci/in.png',
+            ts       => '-',
+            versionid  => '',
+        },
+        {
+            _id      => $cnt++,
+            _parent  => $p{parent} || undef,
+            _is_leaf => \0,
+            mid      => $mid,
+            item     => _loc('Requests'), 
+            type     => 'ci_request',
+            class    => '-',
+            icon     => '/static/images/icons/topic.png',
             ts       => '-',
             versionid  => '',
         },

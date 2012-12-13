@@ -34,7 +34,10 @@ Baseliner.Topic.StoreStatus = Ext.extend(Baseliner.JsonStore, {
                 {  name: 'bl' },
                 {  name: 'seq' },
                 {  name: 'type' },
-                {  name: 'bind_releases' }
+                {  name: 'bind_releases' },
+                {  name: 'ci_update' },
+                {  name: 'frozen' },
+                {  name: 'readonly' }
             ]
         }, config);
         Baseliner.Topic.StoreStatus.superclass.constructor.call(this, config);

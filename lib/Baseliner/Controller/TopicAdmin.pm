@@ -159,6 +159,9 @@ sub list_status : Local {
                 bl          => $r->bl,
                 seq         => $r->seq,
                 type        => $r->type,
+                frozen      => $r->frozen eq '1'?\1:\0,
+                readonly    => $r->readonly eq '1'?\1:\0,
+                ci_update   => $r->ci_update eq '1'?\1:\0,
                 bind_releases => $r->bind_releases eq '1'?\1:\0,
               };
         }  
@@ -181,7 +184,17 @@ sub update_status : Local {
                 if(!$row){
                     my $status = $c->model('Baseliner::BaliTopicStatus')
                         ->create(
-                        { name => $p->{name}, bind_releases => $p->{bind_releases} eq 'on'?'1':'0', bl => $p->{bl}, description => $p->{description}, type => $p->{type}, seq => $p->{seq} } );
+                        {
+                            name          => $p->{name},
+                            bind_releases => ($p->{bind_releases} eq 'on' ? '1' : '0'),
+                            ci_update     => ($p->{ci_update} eq 'on' ? '1' : '0'),
+                            readonly      => ($p->{readonly} eq 'on' ? '1' : '0'),
+                            frozen        => ($p->{frozen} eq 'on' ? '1' : '0'),
+                            bl            => $p->{bl},
+                            description   => $p->{description},
+                            type          => $p->{type},
+                            seq           => $p->{seq}
+                        } );
                     $c->stash->{json} = { msg=>_loc('Status added'), success=>\1, status_id=> $status->id };
                 }
                 else{
@@ -202,6 +215,9 @@ sub update_status : Local {
                 $status->type( $p->{type} );
                 $status->seq( $p->{seq} );
                 $status->bind_releases($p->{bind_releases} eq 'on'?'1':'0');
+                $status->ci_update($p->{ci_update} eq 'on'?'1':'0');
+                $status->readonly($p->{readonly} eq 'on'?'1':'0');
+                $status->frozen($p->{frozen} eq 'on'?'1':'0');
                 $status->update();
                 
                 $c->stash->{json} = { msg=>_loc('Status modified'), success=>\1, status_id=> $id_status };

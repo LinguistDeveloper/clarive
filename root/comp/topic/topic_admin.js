@@ -154,15 +154,19 @@
                 { xtype:'textfield', name:'seq', fieldLabel:_('Position') },
                 { xtype:'checkbox', name:'frozen', boxLabel:_('Frozen') },
                 { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') },
+                { xtype:'checkbox', name:'ci_update', boxLabel:_('CI Update') },
                 { xtype:'checkbox', name:'bind_releases', boxLabel:_('Bind releases') }
             ]
         });
 
         if(rec){
             var ff = form_status.getForm();
+            console.log( rec );
             ff.loadRecord( rec );
-            var bind_releases = ff.findField('bind_releases');
-            bind_releases.setValue(rec.data.bind_releases);
+            ff.findField('bind_releases').setValue(rec.data.bind_releases);
+            ff.findField('ci_update').setValue(rec.data.ci_update);
+            ff.findField('frozen').setValue(rec.data.frozen);
+            ff.findField('readonly').setValue(rec.data.readonly);
             title = 'Edit status';
         }
         

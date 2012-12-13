@@ -52,8 +52,15 @@ sub collection {
 sub save {
     use Baseliner::Utils;
     use Baseliner::Sugar;
-    my ( $self, %p ) = @_;
+    my $self = shift;
+    my %p;
+    if( ref $_[0] eq 'HASH' ) {
+        %p = %{ $_[0] };
+    } else {
+        %p = @_;
+    }
     my ($mid,$name,$data,$bl,$active) = @{\%p}{qw/mid name data bl active/};
+    $mid = $self->mid if !defined $mid && ref $self;
     my $collection = $self->collection;
     my $ret = $mid;
 
@@ -78,7 +85,7 @@ sub save {
             ######## new
             #_debug "****************** CI NEW: $collection";
             my $row = Baseliner->model('Baseliner::BaliMaster')->create({
-                collection => $collection, name=> $name, active => $active,
+                collection => $collection, name=> $name, active => $active // 1,
             });
             my $mid = $row->mid;
             $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
@@ -92,6 +99,10 @@ sub save {
         }
     });
     return $ret;  # mid
+}
+
+sub update {
+    my ( $self, %p ) = @_;
 }
 
 # save data to table or yaml

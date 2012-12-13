@@ -48,7 +48,7 @@
             if(fields[i].body) {
                 var comp = Baseliner.eval_response(
                     fields[i].body,
-                    {form: form_topic, topic_data: data, topic_meta: fields[i], value: ''}
+                    {form: form_topic, topic_data: data, topic_meta: fields[i], value: '', _cis: rec._cis }
                 );
                 
                 if( comp.items ) {
