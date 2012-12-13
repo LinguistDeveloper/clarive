@@ -948,17 +948,18 @@ sub save_data {
                                 _debug $cis;
                                 for my $ci ( _array $cis ) {
                                     my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } _array( $ci->{ci_fields} // @custom_fields ) };
+                                    my $ci_master = $ci->{ci_master} // $ci_data;
                                     _debug $ci_data;
                                     given( $ci->{ci_action} ) {
                                         when( 'create' ) {
                                             my $ci_class = $ci->{ci_class};
                                             $ci_class = 'BaselinerX::CI::' . $ci_class unless $ci_class =~ /^Baseliner/;
-                                            $ci->{ci_mid} = $ci_class->save( $ci_data );
+                                            $ci->{ci_mid} = $ci_class->save( %$ci_master, data=>$ci_data );
                                             $ci->{_ci_updated} = 1;
                                         }
                                         when( 'update' ) {
                                             _debug "ci update $ci->{ci_mid}";
-                                            _ci( $ci->{ci_mid} )->save( $ci_data );
+                                            _ci( $ci->{ci_mid} )->save( %$ci_master, data=>$ci_data );
                                             $ci->{_ci_updated} = 1;
                                         }
                                         when( 'delete' ) {
