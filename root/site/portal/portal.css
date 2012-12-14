@@ -10,13 +10,6 @@
     margin-bottom:10px;
 }
 
-#theportal .x-panel-body {
-     background: #A3A9B5 url('/site/portal/bg.jpg'); 
-    /* background: #FFFFFF url('/static/metal/body_bg.png'); */
-    /* background: #FFFFFF url('/static/images/bg/bg-main.png'); */
-    background-repeat: repeat-x;
-}
-
 .x-portlet {
     margin-bottom:10px;
 }

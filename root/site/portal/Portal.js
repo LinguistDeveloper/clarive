@@ -9,7 +9,6 @@ Ext.ux.Portal = Ext.extend(Ext.Panel, {
     autoScroll : true,
     cls : 'x-portal',
     defaultType : 'portalcolumn',
-    
     initComponent : function(){
         Ext.ux.Portal.superclass.initComponent.call(this);
         this.addEvents({

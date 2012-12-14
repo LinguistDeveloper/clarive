@@ -14,7 +14,7 @@
     Baseliner.portal = new Ext.ux.Portal({
             region:'center',
             margins:'5 5 5 0',
-            id: 'theportal',
+            bodyStyle: { "background": "#A3A9B5 url('/site/portal/bg.jpg')", 'background-repeat': 'repeat-x' },
             items:[{
                 columnWidth: col_width,
                 id: 'baseliner-portal-column-1',
