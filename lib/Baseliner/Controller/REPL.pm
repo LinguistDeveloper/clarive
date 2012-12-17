@@ -11,7 +11,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.admin.develop' =>  { name=>'Baseliner Developer' };
 
-register 'menu.development' => { label => 'Development', action=>'action.admin.develop' };
+register 'menu.development' => { label => 'Development', action=>'action.admin.develop', index=>30 };
 register 'menu.development.repl' => {
     label    => 'REPL',
     url_comp => '/repl/main',
