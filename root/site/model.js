@@ -893,17 +893,17 @@ Baseliner.ci_box = function(c) {
         hiddenName: 'ci', 
         allowBlank: true
     }, c )); 
-    ci_box._setValue = ci_box.setValue; // save original
-    ci_box.setValue = function(value) {
-        if( value != undefined )  {
-            store.on('load',function(){
-                ci_box._setValue( value ) ;  // call original
-            });
-        }
-    };
-    if( value ) {
-        ci_box.setValue( value );
-    }
+    //ci_box._setValue = ci_box.setValue; // save original
+    //ci_box.setValue = function(value) {
+    //    if( value != undefined )  {
+    //        store.on('load',function(){
+    //            ci_box._setValue( value ) ;  // call original
+    //        });
+    //    }
+    //};
+    //if( value ) {
+    //    ci_box.setValue( value );
+    //}
     return ci_box;
 };
 

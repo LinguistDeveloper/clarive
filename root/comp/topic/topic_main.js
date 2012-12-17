@@ -168,7 +168,7 @@
                 }                
             }
         } else {
-            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name }, function(rec) {
+            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name, ci: params.ci }, function(rec) {
                 load_form( rec );
             });
         }
