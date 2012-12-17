@@ -220,6 +220,7 @@ sub tree_objects {
             icon              => $class->icon,
             ts                => $_->{ts},
             bl                => $_->{bl},
+            description       => $data->{description},
             active            => ( $_->{active} eq 1 ? \1 : \0 ),
             data              => $data,
             properties        => $_->{yaml},
