@@ -78,7 +78,7 @@ sub log : Local {
                 event_status  => $_->{return_code} ? 'ko' : 'ok',
                 type          => 'rule',
                 event_key     => _loc('rule: %1', $_->{rule}{id} . ': ' . $_->{rule}{rule_name} ),
-                data          => ( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
+                data          => _damn( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
                 dsl           => $_->{dsl},
                 output        => $_->{log_output},
                 _is_leaf      => \1,
