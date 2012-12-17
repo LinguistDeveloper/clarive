@@ -184,7 +184,7 @@
                 category_icon: d.icon,
                 is_changeset: d.is_changeset,
                 is_release: d.is_release
-            }) + ' ' + String.format('<span style="background: none; font-size: 10px">{0}</span>', rec.data.title ) ;
+            }) + ' ' + rec.data.title;
         }
         var ed = String.format('Baseliner.ci_edit(\'{0}\',{1})', ci_grid.id, rowIndex, value );
         var ret = '<table><tr><td width="1">';
