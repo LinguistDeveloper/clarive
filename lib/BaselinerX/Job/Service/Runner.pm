@@ -75,8 +75,8 @@ register 'action.notify.job.start' => { name=>'Notify when job has started' };
 register 'action.notify.job.end' => { name=>'Notify when job has finished' };
 register 'action.job.approve' => { name=>'Approve jobs' };
 
-our %next_step = ( PRE => 'RUN',   RUN => 'POST',  POST => 'END' );
-our %next_state  = ( PRE => 'READY', RUN => 'READY', POST => 'FINISHED' );
+our %next_step   = ( PRE => 'RUN',   RUN => 'POST',  FINISHED => 'POST',  POST => 'END' );
+our %next_state  = ( PRE => 'READY', RUN => 'READY', FINISHED => 'READY', POST => 'FINISHED' );
 
 sub row {
     my ($self)=@_;
@@ -354,6 +354,8 @@ sub finish {
     $r->status( $status || $self->status( 'FINISHED' ) );
     $r->endtime( _now ); 
     $r->update;
+
+    $self->goto_step( 'FINISHED' ) if $self->step ne 'POST'
 }
 
 sub goto_next_step {
