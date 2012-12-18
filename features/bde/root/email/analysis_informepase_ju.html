@@ -79,7 +79,7 @@ body {
         <td class="backGroundPrimeraFila">Entorno</td>
         <td class="backGroundPrimeraFila">Nodo</td>
         <td class="backGroundPrimeraFila">Tipología</td>
-        <td class="backGroundPrimeraFila">Subaplicación</td>
+        <td class="backGroundPrimeraFila">Urgencia</td>
         <td class="backGroundPrimeraFila">Usuario</td>
         <td class="backGroundPrimeraFila">Desde</td>
         <td class="backGroundPrimeraFila">Hasta</td>
@@ -102,11 +102,7 @@ body {
     <li><% join '<li>', @{$row->{nature_list}} %>
 % }
          </td>
-        <td nowrap class="backGroundFilaDatos">
-% if ( scalar @{ $row->{subapps_list} } ) { 
-    <% join '<br>', @{$row->{subapps_list}} %>
-% }
-        </td>
+        <td nowrap class="backGroundFilaDatos"><% $row->{urgent} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{username} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{start_time} %></td>
         <td nowrap class="backGroundFilaDatos"><% $row->{end_time} %></td>

@@ -26,12 +26,23 @@ sub main {
   my $username = $job->job_data->{username};
 
   my @camlist  =  map { _pathxs $_->{fullpath}, 1 } @elements;
-  push @camlist, map {substr (ns_get($_->{item})->ns_name, 0,3) unless $_->{provider} =~ m{nature}} @contents;
+  my %camlist=map { substr ((ns_split($_->{item}))[1], 0,3) => $_->{item} =~ m{^nature}?1:0 } @contents;
+  for (keys %camlist) {
+    push @camlist, $_ unless $camlist{$_}; 
+  }
   @camlist = _unique @camlist;
 
   $username=~s{vpchm|desconocido}{Pase lanzado desde Changeman}ig;
  
   if ( $job->job_data->{bl} ne 'DESA' ){ 
+
+      my $urgent          = $job->job_stash->{approval_needed}->{reason}=~m{pase urgente}i?1:0;
+      my $linklistRefresh = $job->job_stash->{chm_linked_list};
+      for (@{ $job->job_stash->{contents}}) {
+          $urgent = $urgent || ( $_->{data}->{urgente} eq 'S' || 0 ); 
+          $linklistRefresh = $linklistRefresh || ( ( $_->{data}->{urgente} eq 'S' && $_->{data}->{linklist} eq 'SI' ) || 0 )
+      }
+
       # Set data.
       my $data = {
         job_id       => $job->{jobid},
@@ -42,10 +53,11 @@ sub main {
         start_time   => $job->job_data->{starttime},
         end_time     => $job->job_data->{endtime},
         cam_list     => [@camlist],
-        node_list    => $job->job_data->{bl} eq 'PROD'?[ get_job_nodes (type=>$job->job_data->{type}, contents=>[@contents]) ]:[],
+        node_list    => $job->job_data->{bl} eq 'PROD'?$job->job_stash->{procSites}:[],
         nature_list  => [get_job_natures $job->{jobid}],
         package_list => [ map { $self->message($_) } @contents ],
         subapps_list => [get_job_subapps $job->{jobid}],
+        urgent       => $linklistRefresh?_loc("Linklist refresh forced"):$urgent?_loc("Urgent"):_loc("Normal"),
       };
       # Turn it to utf8.
       # Encode::from_to($_, 'iso-8859-1', 'utf8') for values %$data;
