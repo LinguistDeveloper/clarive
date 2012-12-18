@@ -56,6 +56,8 @@ sub execute {
    my $isCHM=undef;
    my @pkgs;      ## Changeman Packages in Job
 
+   return 0 if $job->rollback;
+
    if ($job->{origin} ne 'changeman') {
       foreach my $package (_array $job_stash->{contents}) {  ## Desasociamos los paquetes del pase.
          next if ! defined $package->{provider} || ( defined $package->{provider} && $package->{provider} ne "namespace.changeman.package" );
@@ -215,7 +217,7 @@ sub job_elements {
          push @list, sprintf("%-10s%-42s","ELEMENTO","TIPO");
          push @list, sprintf("%-10s%-42s","=========","==========================================");
       } else {
-         push @elems,{ name=>'---', type=>'---', path=>qq{/$application/ZOS} };
+         push @elems,{ name=>'---', type=>'---', path=>qq{/$application/ZOS}, fullpath=>qq{/$application/ZOS} };
       }
 
       foreach ( _array $xml->{result} ) {
