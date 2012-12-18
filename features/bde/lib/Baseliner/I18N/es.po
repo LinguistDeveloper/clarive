@@ -80,7 +80,3 @@ msgstr "sábado"
 
 msgid "Sunday"
 msgstr "domingo"
-
-msgid "Scheduled at %1 of %2"
-msgstr "Pase planificado a las %1 del día %2"
-

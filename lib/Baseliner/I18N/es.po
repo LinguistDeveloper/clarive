@@ -4124,9 +4124,34 @@ msgstr "Desconocido (%1)"
 msgid "All projects"
 msgstr "Todos los proyectos"
 
-msgid "Application: %1. Scheduled Job at %2 of %3"
-msgstr "Aplicación: %1. Pase planificado a las %2 del día %3"
 
-msgid "Applications: %1. Scheduled Job at %2 of %3"
-msgstr "Aplicaciones: %1. Pase planificado a las %2 del día %3"
+msgid "Scheduled at %1 of %2"
+msgstr "Pase planificado a las %1 del %2"
+
+msgid "Application: %1. Scheduled Job %2 at %3 of %4"
+msgstr "Aplicación: %1. Pase planificado a las %3 del día %4"
+
+msgid "Applications: %1. Scheduled Job %2 at %3 of %4"
+msgstr "Aplicaciones: %1. Pase planificado a las %3 del %4"
+
+msgid "Application: %1. %2"
+msgstr "Aplicación: %1. %2"
+
+msgid "Applications: %1. %2"
+msgstr "Aplicaciones: %1. %2"
+
+msgid "Job %1: %2"
+msgstr "Pase %1: %2"
+
+msgid "PROJECT"
+msgstr "Proyecto"
+
+msgid "ISSUE"
+msgstr "Incidencia"
+
+msgid "MAINTENANCE"
+msgstr "Mantenimiento"
+
+msgid "REQUEST"
+msgstr "Petición"
 
