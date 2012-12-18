@@ -136,7 +136,7 @@ var check_ll = new Ext.form.Checkbox({
 var alert_ll = false;
 
 combo_search.on('collapse', function(){
-    if( alert_ll ) {
+    if( alert_ll && combo_baseline.getValue() == 'PROD') {
         alert_ll = false;
         Ext.Msg.alert( 'Aviso', 'Opción de LinkedList añadida' );
     }
@@ -190,7 +190,7 @@ var ll_set = function(recs){
         if( ! ns_data ) return;
         var linklist = ns_data.linklist;  
         if( typeof linklist == 'object'  ) return;
-        if( linklist == 'SI' ) {
+        if( linklist == 'SI' && combo_baseline.getValue() == 'PROD' ) {
             show_ll = true;
         }
     });
