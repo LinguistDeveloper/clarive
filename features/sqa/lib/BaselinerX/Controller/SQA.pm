@@ -16,17 +16,15 @@ use BaselinerX::Comm::Balix;
 use Baseliner::Core::DBI;
 use Try::Tiny;
 
-=head
+register 'menu.sqa' => { label => 'SQA', action => 'action.sqa.view' };
 
-Por GDF 72799 se elimina la opción de menu.
-
-register 'menu.job.sqa' => {
+register 'menu.sqa.sqa' => {
     label    => _loc( 'Quality portal' ),
     url_comp => '/sqa/grid',
     title    => _loc( 'Quality portal' ),
-    action   => 'action.sqa.view'
+    action   => 'action.sqa.view',
+    icon     => '/static/images/icons/q.png'
 };
-=cut
 
 my @filters = ( 'J2EE', '.NET', 'ORACLE', 'FICHEROS', 'BIZTALK', 'ECLIPSE' );
 
@@ -191,7 +189,7 @@ sub grid_json : Local {
     if ( $type && $type =~ /^CFG/ ) {
         $where->{'me.id'} = $c->model( 'Permissions' )->user_projects_with_action(
             username => $c->username,
-            action   => 'action.sqa.view_project'
+            action   => 'action.sqa.project_view'
         );
         if ( $type eq 'CFGSNA' ) {
             $where->{'me.tree_level'} = 'NAT';
@@ -208,7 +206,7 @@ sub grid_json : Local {
     } else {
         $where->{'me.id_prj'} = $c->model( 'Permissions' )->user_projects_with_action(
             username => $c->username,
-            action   => 'action.sqa.view_project'
+            action   => 'action.sqa.project_view'
         );
     }
 
@@ -1239,7 +1237,7 @@ sub scheduled_tests : Local {
     
 	$where->{'me.id_prj'} = $c->model( 'Permissions' )->user_projects_with_action(
 	            username => $c->username,
-	            action   => 'action.sqa.view_project'
+	            action   => 'action.sqa.project_view'
 	        );
         my $rs =
             Baseliner->model( 'Baseliner::BaliSqaPlannedTest' )

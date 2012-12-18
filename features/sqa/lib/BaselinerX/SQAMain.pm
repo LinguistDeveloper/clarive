@@ -60,7 +60,7 @@ register 'action.sqa.global_config' => {
 	name => "Can configure the global SQA properties"
 };
 
-register 'action.sqa.view_project' => {
+register 'action.sqa.project_view' => {
 	name => "Can see the project in SQA grid"
 };
 
