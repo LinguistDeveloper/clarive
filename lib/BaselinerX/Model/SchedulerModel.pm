@@ -19,11 +19,11 @@ sub tasks_list {
     rs_hashref($tasks);
 
     while ( my $task = $tasks->next ){
-        _log "Evaluating task ".$task->{description};
+        _debug "Evaluating task ".$task->{description};
         if ( $self->needs_execution( $task ) ) {
             my $task_to_run = {};
             for ( keys %{$task} ) {
-                _log $_.":".$task->{$_};
+                _debug $_.":".$task->{$_};
                 $task_to_run->{$_} = $task->{$_};
             }
             push @tasks_to_return, $task_to_run;
@@ -41,9 +41,9 @@ sub road_kill {
     while( my $r = $rs->next ) {
         my $pid = $r->pid;
         next unless $pid > 0;
-        _log _loc("Checking if process $pid exists");
+        _debug _loc("Checking if process $pid exists");
         next if pexists( $pid );
-        _log _loc("Process $pid does not exist");
+        _debug _loc("Process $pid does not exist");
         $self->set_task_data( taskid=>$r->id, status=>'IDLE');
         $self->schedule_task( taskid=>$r->id, when=>$self->next_from_last_schedule( taskid=>$r->id ));
     }
@@ -67,8 +67,8 @@ sub needs_execution {
         
         my $now= Class::Date->new([$Year,$Month,$Day,$Hour,$Minute]);
         
-        _log "Next date is: $nextDate";
-        _log "Now is $now";			
+        _debug "Next date is: $nextDate";
+        _debug "Now is $now";			
         $exec_now = $nextDate <= $now;
     }
 
@@ -83,7 +83,7 @@ sub run_task {
     my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
     my $status = $task->status;
 
-    _log "Running task ".$task->description;
+    _debug "Running task ".$task->description;
 
     $self->set_last_execution( taskid=>$taskid, when=>$self->now );
     $self->set_task_data( taskid=>$taskid, status=>'RUNNING', pid=>$pid );
@@ -123,10 +123,10 @@ sub schedule_task {
 
     if ( $when eq 'now') {
         $task->status( 'RUNNOW' );		
-        _log "Task will run now";
+        _debug "Task will run now";
     } else {
         $task->next_exec( $when );
-        _log "New next exec is ".$when;
+        _debug "New next exec is ".$when;
     }
 
     $task->update;
@@ -176,7 +176,7 @@ sub next_from_last_schedule {
         $next_exec = $now+$task->frequency;
     }
     if ( $task->{workdays} ) {
-        $next_exec = next_workday( date => $next_exec);	
+        $next_exec =  $self->next_workday( date => $next_exec);	
     }
     return $next_exec;
 }
@@ -186,7 +186,7 @@ sub next_workday {
 
     my $date = Class::Date->new($p{date});	
 
-    while ( !is_workday( date=>$date ) ) {
+    while ( ! $self->is_workday( date=>$date ) ) {
         $date = $date+"1D";
     }
     return $date;
@@ -224,7 +224,7 @@ sub kill_schedule {
      my $rs = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
      my $pid = $rs->pid;
 
-     _log "Killing PID $pid";
+     _debug "Killing PID $pid";
 
     if ( pexists( $pid ) ) {
         kill 9,$pid;
