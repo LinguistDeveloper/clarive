@@ -62,6 +62,7 @@ sub launch {
 
   # This identifies whether every step in the chain will generate a semaphore
   # request.
+
   my $sem_chain = $self->_conf(key=>'chain.sem', bl=>$job->{job_data}->{bl});
 
   my $chain_id = config_value('config.job.default_chain_id');
@@ -106,8 +107,6 @@ sub launch {
     eval qq| sub service { \$row->{service} } $row->{dsl_code}; |;
     my $ret = $@;
     $sem->release if $sem;
-
-    _debug "RET: $ret, KILL_CHAIN: ".$self->_conf(key=>'kill_chain', bl=>$job->{job_data}->{bl});
 
     _throw $ret if $ret && $self->_conf(key=>'kill_chain', bl=>$job->{job_data}->{bl});
   }

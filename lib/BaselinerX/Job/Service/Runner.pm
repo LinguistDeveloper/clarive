@@ -248,7 +248,7 @@ sub job_run {
             $goto_next = 1;
         } else {  # rollback
             if( $self->job_stash->{rollback_broken_step} eq 'PRE' ) {
-                $self->finish();
+                $self->go_to_post();
             } else {
                 $goto_next = 1;
             }
@@ -348,14 +348,23 @@ sub job_run {
     _log _loc( "Job finished step %1 with status %2",  $self->step, $self->status );
 }
 
+sub go_to_post {
+    my ($self, $status ) = @_;
+    my $r = $self->row;
+    $r->status( 'READY');
+    $r->step( 'POST');
+    $r->update;
+
+    $self->job_stash->{step} = 'POST';
+    $self->freeze;
+}
+
 sub finish {
     my ($self, $status ) = @_;
     my $r = $self->row;
     $r->status( $status || $self->status( 'FINISHED' ) );
     $r->endtime( _now ); 
     $r->update;
-
-    $self->goto_step( 'FINISHED' ) if $self->step ne 'POST'
 }
 
 sub goto_next_step {
@@ -378,9 +387,7 @@ sub goto_step {
         my $next_step = $next_state{ $current_step };
         $r->status( $self->status( $next_step ) ) if defined $next_step;
     }
-    $self->logger->debug(
-         _loc('Going from step %1 to next step %2', $current_step, $next_step{$current_step} )
-    );
+    $self->logger->debug( _loc('Going from step %1 to next step %2', $current_step, $next_step{$current_step} ));
     $r->step( $next_step{ $current_step } );
     $r->update;
 }
