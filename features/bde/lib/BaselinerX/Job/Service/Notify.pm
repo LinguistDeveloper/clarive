@@ -96,7 +96,8 @@ sub main {
    } @users;
 
    my @packageList = _unique map{ (ns_split($_->{item}))[1] if $_->{provider}} _array $job_stash->{contents};
-   my $subject .= scalar @cam == 1?_loc("Application: %1. Scheduled Job at %2 of %3",join (", ",@cam), $start->hms(':'),$start->dmy('/')): _loc("Applications: %1. Scheduled Job at %2 of %3",join (", ",@cam), $start->hms(':'),$start->dmy('/'));
+   my $jobname = $job->{job_data}->{name};
+   my $subject .= scalar @cam == 1?_loc("Application: %1. Scheduled Job %2 at %3 of %4", join (", ",@cam), $jobname, $start->hms(':'), $start->dmy('/')) : _loc("Applications: %1. Scheduled Job %2 at %3 of %4", $jobname, join (", ",@cam), $start->hms(':'), $start->dmy('/'));
    # Queue email
    my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $job->jobid ); 
 
