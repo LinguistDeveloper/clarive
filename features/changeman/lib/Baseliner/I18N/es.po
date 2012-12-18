@@ -24,6 +24,9 @@ msgstr "Changeman Batch-LINKLIST"
 msgid "Changeman Online"
 msgstr "Changeman Online"
 
+msgid "Linklist refresh forced"
+msgstr "Refresco Linklist"
+
 msgid "Changeman Force LINKLIST Refresh"
 msgstr "Forzar refresco LINKLIST"
 

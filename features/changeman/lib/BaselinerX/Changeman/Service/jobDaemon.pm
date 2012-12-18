@@ -159,7 +159,7 @@ sub run_once {
 
    foreach my $file (@files) {
       next unless $file->{filename};
-      _log qq{PROCESS $file->{filename}};
+      _debug qq{PROCESS $file->{filename}};
       my ($fprefix) = $file->{filename} =~ m{^.*/(.*?)$};
       $fprefix = "[$fprefix] ";
       my $log_action = '';
@@ -234,17 +234,25 @@ sub run_once {
          $runner->{job_data} = $jobRow->{_column_data};
          $job_stash=_load $job->stash;
          $type=$job->type;
- 
-         my @processedSites = split (', ',$job_stash->{processedSites});
-         push @processedSites, $site;
-         my $sites = join ', ',_unique @processedSites;
-         $job->stash_key( processedSites => $sites );
+
+         my @procFiles = _array $job_stash->{procFiles};
+         push @procFiles, $file->{filename}->stringify;
+         $job_stash->{procFiles}=[_unique (@procFiles)];
+         $job->stash(_dump $job_stash);
+
+         if ($site ne 'XXXX'){
+             my @procSites = _array $job_stash->{procSites};
+             push @procSites, $site;
+             $job_stash->{procSites}=[_unique (@procSites)];
+             $job->stash(_dump $job_stash);
+         }
 
          if (($job->step eq 'RUN' && $job->status eq 'WAITING') || $job->step =~ m{POST|END} ) {
             $logrow  = bali_rs('Log')->find( $job_stash->{JESrow} );
             if (! $logrow) {
                $logrow=$runner->logger->info( _loc( "Recovered spool outputs for job <b>%1</b>", $runner->{job_data}->{name} ), more=>'jes' );
-               $job->stash_key('JESrow',$logrow->id);
+               $job_stash->{JESrow}=$logrow->id;
+               $job->stash(_dump $job_stash);
                $runner->job_stash(_load bali_rs('Job')->find( $runner->jobid )->stash);
             }
          }
@@ -322,6 +330,21 @@ sub run_once {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error", $pkg, 'INSTALLED', $site ) );
                       $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
                       _debug $fprefix . "CLEANED";
+
+                      my $chm = BaselinerX::Changeman->new( host=>$chmConfig->{host}, port=>$chmConfig->{port}, key=>$chmConfig->{key} );
+                      my $ret;
+
+                      if ($scm eq 'A') { # Comes from Baseliner
+                          $ret= $chm->xml_cancelJob(job=>$runner->name, items=>[$pkg], jobName=>$runner->name, logger=>$runner->logger ) ;
+                          if ($ret->{ReturnCode} ne '00') {
+                              $log_action = _loc( "Package %1 can not be dessassociatted from job %2", $pkg, $runner->name );
+                              $row=$runner->logger->warn( $log_action, _dump $ret );
+                          } else {
+                              $log_action = _loc( "Package %1 dessassociatted from job %2", $pkg, $runner->name );
+                              $row=$runner->logger->debug( $log_action, _dump $ret );
+                          }
+                      }
+
                       BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
                   }
               } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## BASELINED
