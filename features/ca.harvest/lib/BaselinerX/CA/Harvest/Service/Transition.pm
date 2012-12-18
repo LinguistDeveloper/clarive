@@ -60,6 +60,7 @@ sub run {
 		foreach my $job_item ( _array $contents ) {
 			#my $data = YAML::Load( $job_item->{data} );
 			my $item = $job_item->{item};
+            next unless $item =~ m{^harvest.*};
 			my $ns_package = $c->model('Namespaces')->get( $item ); 
 			next unless ref $ns_package;
 			next unless $ns_package->isa('BaselinerX::CA::Harvest::Namespace::Package');
