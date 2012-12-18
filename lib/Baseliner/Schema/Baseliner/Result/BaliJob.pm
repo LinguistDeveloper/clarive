@@ -260,6 +260,7 @@ sub stash {
             my $stash = $self->job_stash; # the foreign key row
             ref $stash ? $stash->stash : undef;
         } catch {
+            _error (shift);
             undef;
         };
     }
