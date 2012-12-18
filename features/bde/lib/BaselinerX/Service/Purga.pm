@@ -103,30 +103,34 @@ sub get_older_than_n_days {
 
 sub delete_bali_pases {
   mylog "Purgando datos de los pases de Baseliner en disco.";
-  my $log_dias_baseliner_pases = _bde_conf 'log_dias_baseliner_pase';
-  my $log_home = car map { chomp $_; $_ } qx|echo \$BASELINER_LOGHOME|;
-  my $fn = sub {
-    mylog $_[0];
-    qx|$_[0]|;                         # COTTON
-  };
-  $fn->($_) for (qq{find -L $log_home -type f \\( -name 'N.TEST*' -o -name 'N.ANTE*' -o -name 'N.CURS*' -o -name 'N.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1},
-                 qq{find -L $log_home -type f \\( -name 'B.TEST*' -o -name 'B.ANTE*' -o -name 'B.CURS*' -o -name 'B.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1}
-                 );
+  for (qw {TEST ANTE CURS PROD}) {
+    my $log_dias_baseliner_pases = config_get ('config.bde', bl=>$_)->{log_dias_baseliner_pase};
+    my $log_home = car map { chomp $_; $_ } qx|echo \$BASELINER_LOGHOME|;
+    my $fn = sub {
+      mylog $_[0];
+      qx|$_[0]|;                         # COTTON
+    };
+    $fn->( qq{find -L $log_home -type f \\( -name "N.$_*" -o -name "B.$_*" \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1} );
+  }
   mylog "Datos de pases de Baseliner en disco purgados.";
 }
 
 sub delete_bali_tmp {
   mylog "Purgando directorios de trabajo de los pases de Baseliner en disco.";
-  my $log_dias_baseliner_pases = _bde_conf 'log_dias_baseliner_pase';
+
   my $tmp_home = car map { chomp $_; $_ } qx|echo \$BASELINER_TMPHOME|;
+  my $log_dias_baseliner_pases;
   my $fn = sub {
     mylog $_[0];
     qx|$_[0]|;                         # COTTON
   };
-  $fn->($_) for (qq{find -L $tmp_home -type d \\( -name 'N.TEST*' -o -name 'N.ANTE*' -o -name 'N.CURS*' -o -name 'N.PROD*' -o -name 'harvest*' \\) -mtime +$log_dias_baseliner_pases -exec rm -rf {} + 2>&1},
-                 qq{find -L $tmp_home -type d \\( -name 'B.TEST*' -o -name 'B.ANTE*' -o -name 'B.CURS*' -o -name 'B.PROD*' \\) -mtime +$log_dias_baseliner_pases -exec rm -rf {} + 2>&1},
-                 qq{find -L $tmp_home -type f \\( -name 'harvest*' -o -name 'job-export*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1}
-                 );
+
+  for (qw {TEST ANTE CURS PROD}) {
+    $log_dias_baseliner_pases = config_get ('config.bde', bl=>$_)->{log_dias_baseliner_pase};
+    $fn->( qq{find -L $tmp_home -type d \\( -name "N.$_*" -o -name "B.$_*" -o -name "harvest*" \\) -mtime +$log_dias_baseliner_pases -exec rm -rf {} + 2>&1} );
+  }
+
+  $fn->( qq{find -L $tmp_home -type f \\( -name 'harvest*' -o -name 'job-export*' \\) -mtime +$log_dias_baseliner_pases -exec rm -f {} \\; 2>&1} );
   mylog "Datos de directorios de trabajo de los pases de Baseliner en disco purgados.";
 }
 
