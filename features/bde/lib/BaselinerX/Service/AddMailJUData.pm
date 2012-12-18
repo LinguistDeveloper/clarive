@@ -72,7 +72,7 @@ sub main {
       # Set data in Baseliner Repository.
       my $repo = Baseliner->model('Repository');
       my $provider = 'informepase.ju_email';
-      my $cnt = (scalar Baseliner->model('Repository')->list(provider => $provider)) + 2;
+      my $cnt = (scalar Baseliner->model('Repository')->list(provider => $provider)) + 1;
       my $ns = "$provider/$Year$Month$Day#$cnt";
       _log "ns -> $ns";
       $repo->set(ns => $ns, data => $data);
