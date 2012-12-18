@@ -1,12 +1,16 @@
 <%args>
     $observaciones
     $realname
+    $realname_by
+    $requested_by
     $reason
     $status
     $subject
     $to
     $username
+    $packages
     $url
+    $url_log
 </%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
@@ -69,13 +73,36 @@ body {
     <table border=0 cellspacing=4 cellpadding=2 width=80%>
         <td colspan=2><hr></td>
         <tr>
-            <td class="backGroundFilaDatos" style='width: 25%;'><b>Estado de aprobaci&oacute;n</b></td><td style='width: 64%;'><% $status %></td>
+            <td nowrap class="backGroundFilaDatos" style='width: 25%;'><b>Estado de aprobaci&oacute;n</b></td><td style='width: 64%;'><% $status %></td>
         </tr><tr>
-            <td class="backGroundFilaDatos" style="width: 25%;"><b>Aprobado por</b></td><td style='width: 64%;'><% $username %> (<% $realname %>)</td>
+            <td nowrap class="backGroundFilaDatos" style="width: 25%;"><b>Solicitado por</b></td><td style='width: 64%;'><% $requested_by %> (<% $realname_by %>)</td>
         </tr><tr>
-            <td class="backGroundFilaDatos" style="width: 25%;"><b>Observaciones</b></td><td style='width: 64%;'><% $observaciones %></td>
+            <td nowrap class="backGroundFilaDatos" style="width: 25%;"><b>Aprobado por</b></td><td style='width: 64%;'><% $username %> (<% $realname %>)</td>
+        </tr><tr>
+            <td nowrap class="backGroundFilaDatos" style="width: 25%;"><b>Observaciones</b></td><td style='width: 64%;'><% $observaciones %></td>
+        </tr><tr>
+            <td nowrap class="backGroundFilaDatos" style="width: 25%;"><b>Paquetes:</b></td><td style='width: 64%;'><li><% join '<li>', @{ $packages } %></td>
+        </tr>
+
+    </table>
+    <table border=0 cellspacing=6 width=80%>
+        <tr class="backGroundFilaLinks">
+            <td colspan=2 class="backGroundFilaLinks">
+                <br>
+                <hr>
+                <p>Puede consultar el log haciendo clic en el siguiente enlace:
+                <br>
+            </td>
+        </tr> <tr>
+            <td style="text-align:left; width:17%; background-color:#81bef7"><a style="text-align:left;" href="<% $url_log %>"><b>Consultar Log</b></a></td>
+            <td style='text-align:left; width:60%;' >
+% if ($ENV{BASELINER_DEBUG} ) {
+<% $url_log %>
+%}
+            </td>
         </tr>
     </table>
+
     <p>
 % if ( $ENV{BASELINER_DEBUG} ) {
 Enviado a: <% join ",",@$to %>

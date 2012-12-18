@@ -1,5 +1,6 @@
 package Baseliner::Model::Request;
 use Baseliner::Plug;
+use Baseliner::Sugar;
 extends qw/Catalyst::Model/;
 no Moose;
 use Baseliner::Utils;
@@ -381,10 +382,32 @@ sub status_by_key {
     # Get user info
     my $u = Baseliner->model('Users')->get( $p{username} );
     my $realname = $u->{realname} || $p{username};
+    # Get requested_by info
+    my $u = Baseliner->model('Users')->get( $request->requested_by );
+    my $realname_by = $u->{realname} || $request->requested_by;
 
+    my @contents;
+    my @cams;
+    my $ns_request=ns_get($request->ns);
+    if ( $ns_request->provider eq 'namespace.job' ) {
+       @contents = map {
+          push @cams, (ns_split($_->{application}))[1];
+          my $data=_load $_->{data};
+          sprintf ("%s: %s - %s",
+            ns_get($_->{item})->name,
+            $data->{motivo} eq 'PRO'?_loc('PROJECT')
+           :$data->{motivo} eq 'INC'?_loc('ISSUE')
+           :$data->{motivo} eq 'MTO'?_loc('MAINTENANCE')
+           :_loc('REQUEST'),
+            $data->{codigo})
+       } Baseliner->model('Baseliner::BaliJobItems')->search( {id_job=>$ns_request->ns_id, provider=>{like=>'%package'}})->hashref->all;
+    } 
+    @cams = _unique @cams;
+    my $literal = _loc("Job %1: %2",$itemname,$status);
+    my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $ns_request->ns_id);
     my $msg = Baseliner->model('Messaging')->notify(
         to       => { users => [ $request->requested_by ] },
-        subject  => "$status $itemname",
+        subject  => scalar @cams == 1?_loc ("Application: %1. %2",join (", ",@cams), $literal):_loc ("Applications: %1. %2",$literal),
         sender   => $p{username},
         carrier  => 'email',
         template => 'email/action.html',
@@ -392,8 +415,10 @@ sub status_by_key {
         vars     => {
             observaciones => $p{wiki_text},
             items         => $itemname,
+            packages      => [@contents],
             reason        => $request->data_hash->{reason},
             requested_by  => $request->requested_by,
+            realname_by   => $realname_by,
             realname      => $realname,
             status        => $status,
             subject       => "Estado de la aprobación del item $itemname: <b>$status</b>",
@@ -401,6 +426,7 @@ sub status_by_key {
             username      => $p{username},
             to            => [ $request->requested_by ],
             url           => _notify_address(),
+            url_log       => $url_log,
         }
     );
 
