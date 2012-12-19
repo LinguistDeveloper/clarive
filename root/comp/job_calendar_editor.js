@@ -202,7 +202,6 @@
                         'afterdateclick':function(picker,t){
                             //_selectWeek(this, this.currentDateRef);
                             _setSelectedWeek(picker, t);
-                            console.log('Click');
                             var fecha = t.getDate() + "/" + (t.getMonth() + 1) + "/" + t.getFullYear();
                             Ext.get(id).load({url: '/job/calendar_slots', params: { panel: id, id_cal: '<% $c->stash->{id_cal} %>', date: fecha}});
                         },
