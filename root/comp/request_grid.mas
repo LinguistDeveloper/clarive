@@ -412,11 +412,18 @@
             buttons:[{
                 text: _('Approve'),
                 handler : function() {  
-                     formApprove.getForm().submit({ 
+                    if( ! formApprove.getForm().isValid() ) {
+                        return;
+                    }
+                    formApprove.getForm().submit({ 
                          titleMsg:	'Espere por favor',
                          waitMsg : action_gerund(_currentAction) + ' espere por favor...',  
                          failure: function (form, action) {  
-                            if (action.failureType == 'server') {
+                            if( ! action.response || ! action.response.responseText ) {
+                                Baseliner.message( _('Error'), _( 'No ha sido posible aprobar/rechazar la solicitud' ) );
+                                return;
+                            }
+                            else if (action.failureType == 'server') {
                                 var data = Ext.util.JSON.decode(action.response.responseText);
                                  Ext.MessageBox.show({  
                                      title: 'Error al ' + action_verb(_currentAction) + '.',  
