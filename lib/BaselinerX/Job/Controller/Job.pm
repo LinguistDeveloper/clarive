@@ -399,6 +399,7 @@ sub monitor_json : Path('/job/monitor_json') {
                                : $sdt > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
           :                      [ 0,  _loc('Upcoming') ];
         $grouping = $day->[0];
+        $r->{comments} = _strip_html( $r->{comments} ) if length $r->{comments};
 
         push @rows, {
             id           => $r->{id},

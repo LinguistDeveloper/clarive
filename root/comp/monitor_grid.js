@@ -600,9 +600,10 @@
                 p.body='';
                 var desc = record.data.comments;
                 if( desc != undefined ) {
+                    //desc = desc.replace(/\n|\r|/,'');
                     p.body +='<div style="color: #333; font-weight: bold; margin: 0 0 5 30;">';
-                    p.body += '<img style="vertical-align:middle" src="/static/images/icons/post.gif">';
-                    p.body += '&nbsp;' + desc + '</img></div>';
+                    p.body += '<img style="float:left" src="/static/images/icons/post.gif" />';
+                    p.body += '&nbsp;' + desc + '</div>';
                     css += ' x-grid3-row-expanded '; 
                 }
                 var cont = record.data.contents;

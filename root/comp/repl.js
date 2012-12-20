@@ -318,6 +318,18 @@ To do:
         } catch(e) { set_output( e ); }
     };
 
+    var show_data_editor = function( d ) {
+        try {
+            if( ! Ext.isArray( d ) ) {
+                if( Ext.isObject( d ) ) d = [d];
+                else { d = [ { value: d } ] ; }
+            }
+            var ag = new Baseliner.DataEditor({ data: d, closable:true, title:_('%1', cons.items.length ) });
+            cons.add( ag );
+            cons.setActiveTab( ag );
+        } catch(e) { set_output( e ); }
+    };
+
     var submit = function(parms) {
         //Baseliner.showLoadingMask(form.getEl(), _("Loading") );
         if( parms.last ) {
@@ -335,10 +347,13 @@ To do:
                     ( action.result.stdout ?  action.result.stdout + "\n" : "" ) +  
                     ( action.result.stderr ?  action.result.stderr + "\n" : "" ) +  
                     action.result.result ;
-                if( parms.show == 'table' ) {
+                if( parms.show == 'table' || parms.show == 'data_editor' ) {
                     try {
                         var d = Ext.util.JSON.decode( action.result.result );
-                        show_table( d ); 
+                        if( parms.show == 'table' ) 
+                            show_table( d ); 
+                        else
+                            show_data_editor( d );
                     } catch(e){ set_output( e ) };
                 } else {
                     set_output( data );
@@ -374,7 +389,8 @@ To do:
         var dump = 'yaml', show = 'cons';
         if( btn_out.out == 'yaml' ) dump = 'yaml';
         else if( btn_out.out == 'json' ) dump = 'json';
-        else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table' };
+        else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table' }
+        else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor' }
 
         if( lang == 'perl' ) {
             submit({ eval: true, dump: dump, show: show });
@@ -383,11 +399,14 @@ To do:
             var d;
             try { 
                 set_output( '' );
-                d = eval("(function(){ " + editor.getValue() + " }) ");
+                eval("d=(function(){ " + editor.getValue() + " }) ");
                 d = d();
                 if( show == 'table' && d != undefined ) {
                     show_table( d ); 
+                } else if( show == 'data_editor' && d != undefined ) {
+                    show_data_editor( d );
                 } else {
+                    if( Ext.isObject( d ) || Ext.isArray( d ) ) d = Ext.util.JSON.encode( d );
                     set_output( d );
                 }
             } catch(e) {
@@ -471,7 +490,8 @@ To do:
                 items: [
                     { text:_('YAML'), out:'yaml', checked: true, group:'repl-out', checkHandler: change_out },
                     { text:_('JSON'), out:'json', checked: true, group:'repl-out', checkHandler: change_out  },
-                    { text:_('Table'), out:'table', checked: true, group:'repl-out', checkHandler: change_out }
+                    { text:_('Table'), out:'table', checked: true, group:'repl-out', checkHandler: change_out },
+                    { text:_('Data Editor'), out:'data_editor', checked: true, group:'repl-out', checkHandler: change_out }
                 ]
     });
     var btn_out = new Ext.Button({  
