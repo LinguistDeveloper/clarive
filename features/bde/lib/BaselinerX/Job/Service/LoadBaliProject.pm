@@ -113,7 +113,7 @@ sub run_once {
                        my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$sa_id, nature=>$nat })->first;
                        my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
-                       DB->BaliProject->create({ name=>$sa, id_parent=>$sa_id, nature=>$nat });
+                       $r = DB->BaliProject->create({ name=>$sa, id_parent=>$sa_id, nature=>$nat });
                        push @created_mids, { id=>$r->id, name=>$sa };
                    } else {
                        my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
