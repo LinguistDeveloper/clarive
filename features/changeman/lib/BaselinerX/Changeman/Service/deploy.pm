@@ -217,7 +217,7 @@ sub job_elements {
          push @list, sprintf("%-10s%-42s","ELEMENTO","TIPO");
          push @list, sprintf("%-10s%-42s","=========","==========================================");
       } else {
-         push @elems,{ name=>'---', type=>'---', path=>qq{/$application/ZOS}, fullpath=>qq{/$application/ZOS} };
+         push @elems,{ name=>'---', type=>'---', path=>qq{/$application/ZOS}, fullpath=>qq{/$application/ZOS}, package=>$ns->{ns_name} };
       }
 
       foreach ( _array $xml->{result} ) {
