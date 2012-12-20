@@ -125,7 +125,7 @@ sub run_once {
            }
         }
 
-        map { DB->BaliMaster->create({ mid=>$_->{id}, name=>$_->{name} }) } @created_mids; 
+        map { DB->BaliMaster->create({ mid=>$_->{id}, name=>$_->{name} }) unless DB->BaliMaster->find( $_->{id} ) } @created_mids; 
     } catch {
         my $err = shift;
         _log "ERROR AL CARGAR PROYECTOS: $err";
