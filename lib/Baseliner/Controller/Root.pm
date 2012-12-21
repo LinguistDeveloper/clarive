@@ -68,6 +68,9 @@ sub auto : Private {
     # saml?
     if( $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
+        _debug "S-SESSION USER OBJ: " . $c->session->{user};
+        _debug "S-USER_EXISTS: " . $c->user_exists;
+        _debug "S-SESSION: " . _dump( $c->session ); 
         return 1 if $saml_username;
     }
     # reject request
