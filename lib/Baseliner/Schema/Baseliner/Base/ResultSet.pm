@@ -13,8 +13,8 @@ use strict;
 use warnings;
 use parent qw/DBIx::Class::ResultSet/;
 
-#__PACKAGE__->load_components("Helper::ResultSet::SetOperations");  # for the union
-__PACKAGE__->load_components("Helper::ResultSet");  # all helpers, but need testing
+__PACKAGE__->load_components("Helper::ResultSet::SetOperations");  # for the union
+#__PACKAGE__->load_components("Helper::ResultSet");  # all helpers, but need testing
 
 =head2 hashref
 
