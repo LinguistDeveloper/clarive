@@ -59,6 +59,9 @@ sub auto : Private {
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     return 1 if $c->stash->{auth_skip};
     return 1 if $c->req->path eq 'i18n/js';
+    _debug "SESSION USER OBJ: " . $c->session->{user};
+    _debug "USER_EXISTS: " . $c->user_exists;
+    _debug "SESSION: " . _dump( $c->session ); 
     return 1 if try { $c->session->{user} // 0 } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
