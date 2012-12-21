@@ -65,6 +65,7 @@ sub auto : Private {
     # saml?
     if( $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
+	$c->change_session_expires( 1_000_000_000 );
         return 1 if $saml_username;
     }
     # reject request
