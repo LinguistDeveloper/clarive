@@ -458,14 +458,14 @@ sub user_projects_with_action {
             my @subapls;
             @granted_projects = @data;
             if ( $level eq 'all' || $level ge 2 ) {
-                @natures    = parent_ids(
+                @subapls = parent_ids(
                     scalar Baseliner->model('Baseliner::BaliProject')
                         ->search( { id_parent => \@data, nature => { '=', undef } }, { select => [qw/mid/] } ) );
                 @granted_projects = _unique @granted_projects, @subapls
             }
 
             if ( $level eq 'all' || $level ge 3 ) {
-                @subapls    = parent_ids(
+                @natures    = parent_ids(
                     scalar Baseliner->model('Baseliner::BaliProject')
                         ->search( { id_parent => \@subapls, nature => { '!=', undef } }, { select => [qw/mid/] } ) );
                 @granted_projects = _unique @granted_projects, @natures
@@ -475,6 +475,7 @@ sub user_projects_with_action {
     }
     return wantarray ? @granted_projects : \@granted_projects;
 }
+
 
 
 #### Ricardo (21/6/2011): Listado de todos los proyectos
