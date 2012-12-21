@@ -187,10 +187,11 @@ sub grid_json : Local {
     my $projects;
 
     if ( $type && $type =~ /^CFG/ ) {
-        $where->{'me.id'} = $c->model( 'Permissions' )->user_projects_with_action(
+        $where->{'me.id'} = { -in => $c->model( 'Permissions' )->user_projects_with_action(
             username => $c->username,
-            action   => 'action.sqa.project_view'
-        );
+            action   => 'action.sqa.project_view',
+            as_query => 1,
+        ) };
         if ( $type eq 'CFGSNA' ) {
             $where->{'me.tree_level'} = 'NAT';
         } elsif ( $type eq 'CFGSUB' ) {
@@ -199,15 +200,18 @@ sub grid_json : Local {
             $where->{'me.tree_level'} = 'CAM';
         }
     } elsif ( $type && $type =~ /PKG/ ) {
-        $where->{'me.id_prj'} = $c->model( 'Permissions' )->user_projects_with_action(
+        $where->{'me.id_prj'} = { -in => $c->model( 'Permissions' )->user_projects_with_action(
             username => $c->username,
-            action   => 'action.sqa.packages'
-        );
+            action   => 'action.sqa.packages',
+            as_query => 1,
+        ) };
     } else {
-        $where->{'me.id_prj'} = $c->model( 'Permissions' )->user_projects_with_action(
+        #$where->{'me.id_prj'} = { -in => DB->BaliRoleuser->search( { username=>$c->username }, { select=>'id_project' })->as_query };
+        $where->{'me.id_prj'} = { -in => $c->model( 'Permissions' )->user_projects_with_action(
             username => $c->username,
-            action   => 'action.sqa.project_view'
-        );
+            action   => 'action.sqa.project_view',
+            as_query => 1,
+        ) };
     }
 
     my @data;
@@ -707,14 +711,15 @@ sub harvest_all_projects : Local {
     my $query = $p->{query};
 
     my @data;
-    my @projects = $c->model( 'Permissions' )->user_projects_with_action(
+    my $rs_projects = $c->model( 'Permissions' )->user_projects_with_action(
         username => $c->username,
-        action   => 'action.sqa.new_analysis'
+        action   => 'action.sqa.new_analysis',
+        as_query => 1,
     );
 
     my $rs =
         Baseliner->model( 'Baseliner::BaliProject' )
-        ->search( {id_parent => {'=', undef}, name => {'like', uc( "$query%" )}, mid => \@projects},
+        ->search( {id_parent => {'=', undef}, name => {'like', uc( "$query%" )}, mid => { -in => $rs_projects } },
         {order_by => 'name asc'} );
 
     #rs_hashref( $rs );
@@ -1237,10 +1242,11 @@ sub scheduled_tests : Local {
     my @data;
     my $where = {};
     
-	$where->{'me.id_prj'} = $c->model( 'Permissions' )->user_projects_with_action(
+	$where->{'me.id_prj'} = { -in => $c->model( 'Permissions' )->user_projects_with_action(
 	            username => $c->username,
-	            action   => 'action.sqa.project_view'
-	        );
+	            action   => 'action.sqa.project_view',
+                as_query => 1,
+	        ) };
         my $rs =
             Baseliner->model( 'Baseliner::BaliSqaPlannedTest' )
             ->search( $where, {order_by => { -asc => 'project'}} );

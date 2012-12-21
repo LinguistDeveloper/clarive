@@ -421,9 +421,71 @@ sub user_projects_with_action {
     $bl_filter = qq{ AND ra.bl in ('$bl','*') } if $bl ne '*';
     my @granted_projects = [];
 
+    my $rs;
+
+    # check if all
+    my $roles_all = DB->BaliRoleuser->search(
+        { username=>$username, action=>$action, ns=>'/' },
+        { join=>['actions', 'role' ], select=>'id_project' }
+    );
+    if( $self->is_root($username) || $roles_all->count ) {
+        $rs = DB->BaliProject->search({ id_parent=>undef },{ select=>'mid' });
+    } else {
+        my $roles = DB->BaliRoleuser->search(
+            { username=>$username, action=>$action, ns=>{ '!='=>'/' } },
+            { join=>['actions', 'role' ], select=>'id_project' }
+        );
+
+        # app
+        $rs = DB->BaliProject->search(
+            { mid => {-in => $roles->as_query }, id_parent=>undef }, 
+            { select=>'mid', distinct=>1 }
+        );
+    }
+
+    my ($lev2, $lev3);
+    if ( $level eq 'all' || $level ge 2 ) {
+        # supapp
+        $lev2 = DB->BaliProject->search(
+            { id_parent => {-in => $rs->as_query }, nature=>undef }, 
+            { select=>'mid', distinct=>1 }
+        );
+        $rs = $rs->union( $lev2 );
+    }
+
+    if ( $level eq 'all' || $level ge 3 ) {
+        # nature
+        $lev3 = DB->BaliProject->search(
+            { id_parent => {-in => $lev2->as_query }, nature=>{ '!=' => undef } }, 
+            { select=>'mid', distinct=>1 }
+        );
+        $rs = $rs->union( $lev3 );
+    }
+
+    if( $p{as_query} ) {
+        return $rs->as_query ;
+    } else {
+        my @mids = map { $_->{mid} } $rs->hashref->all;
+        return wantarray ? @mids : \@mids; 
+    }
+}
+
+# XXX deprecated: 
+sub user_projects_with_action_old {
+    my ( $self, %p ) = @_;
+    _check_parameters( \%p, qw/username action/ );
+    my $username  = $p{username};
+    my $action    = $p{action};
+    my $bl        = $p{bl} || '*';
+    my $level     = $p{level} || 'all';
+    my $bl_filter = '';
+    $bl_filter = qq{ AND ra.bl in ('$bl','*') } if $bl ne '*';
+    my @granted_projects = [];
+
     if ( $self->is_root($username) ) {
         @granted_projects = $self->all_projects();
     } else {
+
         my $db = new Baseliner::Core::DBI( { model => 'Baseliner' } );
         my @data = $db->array(
             qq{
@@ -458,14 +520,14 @@ sub user_projects_with_action {
             my @subapls;
             @granted_projects = @data;
             if ( $level eq 'all' || $level ge 2 ) {
-                @natures    = parent_ids(
+                @subapls = parent_ids(
                     scalar Baseliner->model('Baseliner::BaliProject')
                         ->search( { id_parent => \@data, nature => { '=', undef } }, { select => [qw/mid/] } ) );
                 @granted_projects = _unique @granted_projects, @subapls
             }
 
             if ( $level eq 'all' || $level ge 3 ) {
-                @subapls    = parent_ids(
+                @natures    = parent_ids(
                     scalar Baseliner->model('Baseliner::BaliProject')
                         ->search( { id_parent => \@subapls, nature => { '!=', undef } }, { select => [qw/mid/] } ) );
                 @granted_projects = _unique @granted_projects, @natures
@@ -475,7 +537,6 @@ sub user_projects_with_action {
     }
     return wantarray ? @granted_projects : \@granted_projects;
 }
-
 
 #### Ricardo (21/6/2011): Listado de todos los proyectos
 sub all_projects {
