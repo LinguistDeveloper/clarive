@@ -16,7 +16,7 @@ use BaselinerX::Comm::Balix;
 use Baseliner::Core::DBI;
 use Try::Tiny;
 
-register 'menu.sqa' => { label => 'SQA', action => 'action.sqa.view' };
+register 'menu.sqa' => { label => 'SQA', action => 'action.sqa.menuview' };
 
 register 'menu.sqa.sqa' => {
     label    => _loc( 'Quality portal' ),
@@ -229,6 +229,8 @@ sub grid_json : Local {
     my $block_deployment_prod = '';
 
     _log "************************* Filtros: ".join ',',@filters;
+
+_log _dump $rs->as_query();
 
     #rs_hashref( $rs );
     while ( my $row = $rs->next ) {
