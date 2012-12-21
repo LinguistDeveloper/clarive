@@ -122,12 +122,13 @@ as a Hash with the following structure:
 =cut
 sub xml_pkgs {
     my ($self, %args) = @_;
+    _log "xml_pkgs";
     my $xml_str = $self->list_pkgs( %args );
-    # _log $xml_str;
+    _log $xml_str;
     require XML::Simple;
     my $xml = XML::Simple::XMLin( $xml_str, ForceArray => [qw(Package)] );
 
-    # _log "list_pkgs: " . _dump $xml;
+    _log "list_pkgs: " . _dump $xml;
 
     $xml
 }
@@ -480,6 +481,8 @@ sub execute_cmd {
     my $who = $args->{job}||'changeman benchmark';
     my $logger = $args->{log}||undef;
 
+
+_debug "CHM CMD: $cmd";
     CMD: {
 ### Critical region
         #my $sem = Baseliner->model('Semaphores')->request( sem=>$args->{sem}, who=>$who, logger=>$logger, frequency=>$args->{frequency} );
@@ -503,6 +506,7 @@ sub execute_cmd {
         $basecmd = $cmd =~ m{^.*/(\w+) .*$};
         $basecmd ||= $cmd;
 
+        _debug "Changeman Command " . _loc('%2: USS command "%1"', $basecmd, $oper) . "\ncmd: $cmd\n$top: $top\nxml: $xml";
         $sem->release(logger=>$logger);
 ### Critical region
 
