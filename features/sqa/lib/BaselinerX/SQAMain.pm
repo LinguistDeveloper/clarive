@@ -4,6 +4,10 @@ use Baseliner::Utils;
 use utf8;
 
 ##Acciones
+register 'action.sqa.menuview' => {
+	name => "View then SQA menu"
+};
+
 register 'action.sqa.view' => {
 	name => "Access to the quality portal"
 };
