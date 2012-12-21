@@ -36,7 +36,7 @@ BEGIN {
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
             Unicode::Encoding
-            Session     Session::Store::DBI    Session::State::Cookie
+            Session     Session::Store::DBIC    Session::State::Cookie
             Singleton           
             +CatalystX::Features::Plugin::I18N
             +CatalystX::Features::Plugin::Static::Simple/;
@@ -66,6 +66,7 @@ __PACKAGE__->config(
         dbi_id_field => 'id',
         dbi_data_field => 'session_data',
         dbi_expires_field => 'expires',    
+        dbic_class => 'Baseliner::BaliSession',
     },
 );
 
