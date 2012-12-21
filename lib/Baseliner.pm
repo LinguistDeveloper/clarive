@@ -61,11 +61,6 @@ __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
 __PACKAGE__->config(
     'Plugin::Session' => {
         expires    => 2592000, # One month
-        dbi_dbh   => 'Baseliner', # which means MyApp::Model::DBIC
-        dbi_table => 'bali_session',
-        dbi_id_field => 'id',
-        dbi_data_field => 'session_data',
-        dbi_expires_field => 'expires',    
         dbic_class => 'Baseliner::BaliSession',
     },
 );
