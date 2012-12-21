@@ -69,9 +69,6 @@ sub auto : Private {
     if( $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
 	$c->change_session_expires( 1_000_000_000 );
-        _debug "S-SESSION USER OBJ: " . $c->session->{user};
-        _debug "S-USER_EXISTS: " . $c->user_exists;
-        _debug "S-SESSION: " . _dump( $c->session ); 
         return 1 if $saml_username;
     }
     # reject request
@@ -83,13 +80,12 @@ sub auto : Private {
         $c->response->status( 401 );
         $c->response->body("Unauthorized");
     } else {
-        $c->forward('/auth/logoff');
+        #$c->forward('/auth/logoff');
         $c->stash->{after_login} = '/' . $path;
         my $qp = $c->req->query_parameters // {};
         $c->stash->{after_login_query} = join '&', map { "$_=$qp->{$_}" } keys %$qp;
         $c->response->status( 401 );
         $c->forward('/auth/logon');
-        #$c->detach('/end');
     }
     return 0;
 }

@@ -163,7 +163,6 @@ sub saml_check : Private {
         $username = $username->{content} if ref $username eq 'HASH';
         _log _loc('SAML starting session for username: %1', $username);
         $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
-        $c->_user( $c->session->{user} );
         $c->session->{username} = $username;
         return $username;
     } catch {
