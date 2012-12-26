@@ -135,6 +135,7 @@ sub init {
           && ! exists  $roleusers{ $href->{username} }{ $role->id }{ 0 } ) {   # 0 quiere decir "todos", lo mismo que NS=/
           _log "Creating $item for $user_name : " . _dump($href);
           Baseliner->model('Baseliner::BaliRoleuser')->create($href);
+          $roleusers{ $href->{username} }{ $href->{id_role} }{ $href->{id_project} } = undef; # actualizar
       }
 
       # If user is JU and current role is 'RA'...
@@ -147,6 +148,7 @@ sub init {
             && ! exists  $roleusers{ $href->{username} }{ $role->id }{ 0 } ) {   # 0 quiere decir "todos", lo mismo que NS=/
             _log "Creating $item for $user_name (RA-JU): " . _dump( $href );;
             Baseliner->model('Baseliner::BaliRoleUser')->create($href);
+            $roleusers{ $href->{username} }{ $href->{id_role} }{ $href->{id_project} } = undef; # actualizar
         }
       }
     }
