@@ -88,8 +88,10 @@ sub run_once {
         for my $cam ( keys %cam ) {
             my $r = DB->BaliProject->search({ name=>$cam, id_parent=>undef, nature=>undef })->first;
             if( $r ) { $cam{ $cam }{id} = $r->id; next }
-            DB->BaliProject->create({ name=>$cam });
-            $cam{ $cam }{id} = $r->id;
+            master_new project => $cam => sub {
+                DB->BaliProject->create({ name=>$cam });
+                $cam{ $cam }{id} = $r->id;
+            };
             push @created_mids, { id=>$r->id, name=>$cam };
         }
 
@@ -98,8 +100,10 @@ sub run_once {
             for my $sa ( keys %{ $cam{ $cam }{subapls} || {} } ) {
                my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef })->first;
                if( $r ) { $cam{ $cam }{subapls}{ $sa } = $r->id; next }
-               $r = DB->BaliProject->create({ name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef });    
-               $cam{ $cam }{subapls}{ $sa } = $r->id;       
+               master_new project => $sa => sub {
+                   $r = DB->BaliProject->create({ name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef });    
+                   $cam{ $cam }{subapls}{ $sa } = $r->id;       
+               };
                push @created_mids, { id=>$r->id, name=>$sa };
             }
         }
@@ -113,19 +117,25 @@ sub run_once {
                        my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$sa_id, nature=>$nat })->first;
                        my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
-                       $r = DB->BaliProject->create({ name=>$sa, id_parent=>$sa_id, nature=>$nat });
+                       master_new project => $sa => sub {
+                           $r = DB->BaliProject->create({ name=>$sa, id_parent=>$sa_id, nature=>$nat });
+                           $r->mid;
+                       };
                        push @created_mids, { id=>$r->id, name=>$sa };
                    } else {
                        my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
-                       $r = DB->BaliProject->create({ name=>$cam, id_parent=>$sa_id, nature=>$nat });
+                       master_new project => $cam => sub {
+                           $r = DB->BaliProject->create({ name=>$cam, id_parent=>$sa_id, nature=>$nat });
+                           $r->mid;
+                       };
                        push @created_mids, { id=>$r->id, name=>$cam };
                    }
                }
            }
         }
 
-        map { DB->BaliMaster->create({ mid=>$_->{id}, name=>$_->{name} }) unless DB->BaliMaster->find( $_->{id} ) } @created_mids; 
+        #map { DB->BaliMaster->create({ mid=>$_->{id}, name=>$_->{name} }) unless DB->BaliMaster->find( $_->{id} ) } @created_mids; 
 
         _log _loc "Created %1 projects", scalar( @created_mids );
     } catch {
