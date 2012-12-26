@@ -161,7 +161,9 @@ sub init {
   # borrar role-user sobrantes
   if( %ldif_roleusers ) {
       _log "Borrando role-users que no vienen en el LDIF: " . _dump(\%ldif_roleusers);
-      for my $row ( DB->BaliRoleuser->search->hashref->all ) {
+      my $rs_protected_roles = DB->BaliRole->search({'substr(role, 0, 1)' => '#'}, {select => 'id'});
+      _log "ID ROLE protegidos por empezar por almoadilla: " . join ',', map { $_->{id} } $rs_protected_roles->hashref->all;
+      for my $row ( DB->BaliRoleuser->search({ -not => { id_role=> { -in => $rs_protected_roles->as_query } }  })->hashref->all ) {
          if( ! exists $ldif_roleusers{ $row->{username} }{ $row->{id_role} }{ $row->{id_project} } ) {
              _log "Borrando role-user: $row->{username}, id_role: $row->{id_role}, id_project: $row->{id_project}";
              DB->BaliRoleuser->search( $row )->delete;
