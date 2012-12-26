@@ -32,54 +32,59 @@ sub run_daemon {
 }
 
 sub init {
-  my ($self, $c, $config) = @_;
-  my %user_groups = %{$config->{user_groups}};
+    my ($self, $c, $config) = @_;
+    my %user_groups = %{$config->{user_groups}};
 
-  #warn "INIT"._dump $config->{group};
+    #warn "INIT"._dump $config->{group};
 
-  # Make sure we have some data...
-  if (keys %user_groups < 50) {
-    my $err_msg = 'Something went wrong when parsing ldif files.';
-    _log $err_msg;
-    _throw $err_msg;
-    notify_ldif_error $err_msg;
-    return;
-  }
-
-  _log "Inserting new projects...";
-  my @added_projects;
-  #for my $cam (sort @{_unique map { substr($_, 0, 3) } keys %{$config->{group}}}) {
-  for my $cam (sort {$a cmp $b} _unique map { substr($_, 0, 3) } keys %{$config->{group}}) {
-    unless ($self->exists_project($cam)) {
-      $self->insert_project($cam) unless $self->exists_project($cam);
-      push @added_projects, $cam;
+    # Make sure we have some data...
+    if (keys %user_groups < 50) {
+        my $err_msg = 'Something went wrong when parsing ldif files.';
+        _log $err_msg;
+        _throw $err_msg;
+        notify_ldif_error $err_msg;
+        return;
     }
-  }
-  if (scalar @added_projects) {
-    _log "Projects updated: " . join ', ', @added_projects;
-  }
-  
+
+    _log "Inserting new projects...";
+    my %projects = DB->BaliProject->search({ id_parent=>undef, nature=>undef })->hash_on('name');
+    _log "Total de projectos en BBDD: " . scalar keys %projects;
+    _debug "Proyectos en BBDD: " . join ',',sort keys %projects;
+    my @group_cams = _unique map { substr($_, 0, 3) } keys %{$config->{group}}; 
+    _debug "CAMs detectados en los LDIF de grupo: " . join',',sort @group_cams;
+    my @missing_projects = grep { !exists $projects{$_} } @group_cams; 
+    _log "Total de projectos que faltan en BBDD: " . scalar @missing_projects;
+    if( @missing_projects ) {
+        _log "Proyectos a actualizar: " . join ', ', @missing_projects;
+        $self->insert_project($_) for @missing_projects;
+    }
+
    # It's not a bad idea to update the projects now.
    _log "Applying changes...";
    try {
-   $c->launch('service.load.bali.project_once');
+       $c->launch('service.load.bali.project_once');
    }
    catch {
    	 notify_ldif_error 'Error al actualizar los proyectos en Baseliner.';
    };
    _log "Baseliner Projects fully updated";
 
+  #    infroox: ya no se borra todo, la carga es progresiva
   # We have to delete all users and their roles as they can be deleted from the
   # ldif files. Meaning that they shouldn't exist in the database.
-  _log "Deleting users and their roles...";
-  Baseliner->model('Baseliner::BaliUser')->delete;
-  $self->delete_non_immutable_data;
-  # Baseliner->model('Baseliner::BaliRoleUser')->delete;
-  _log "Users and roles deleted.";
+  #_log "Deleting users and their roles...";
+  #Baseliner->model('Baseliner::BaliUser')->delete;
+  #$self->delete_non_immutable_data;
+  #_log "Users and roles deleted.";
+
+  my %current_users = DB->BaliUser->search->hash_on('username');
 
   _log "Getting JU users...";
   my @ju_usernames = map { lc $_ } $self->_ju_usernames;
   _log join ', ', @ju_usernames;
+
+  my @ldif_users; # lista de usuarios encontrados en LDIF, para luego borrar los que sobran
+  my %ldif_roleusers; # tuplas de usuario-role-proyecto que viene en el LDIF
 
   for my $user_name (keys %user_groups) {
     _log "Processing: ".$user_name;;
@@ -87,45 +92,79 @@ sub init {
     # New user object. Remember that a new user is created automatically if
     # the username is not found in the table.
     $user_name = lc($user_name);
-    my $user = BaselinerX::Model::BaliUser->new(username => $user_name);
-    _log "CREADO: $user";
-    $user->mid;  # Lazy update...
+    push @ldif_users, $user_name;
+    if( ! exists $current_users{ $user_name } ) {
+        _log "Usuario no encontrado: $user_name. Lo creamos...";
+        my $user = BaselinerX::Model::BaliUser->new(username => $user_name);
+        _log "CREADO: $user";
+        $user->mid;  # Lazy update...
+    }
 
     # Is the user contained in JU list?
     my $user_is_ju = $user_name ~~ @ju_usernames ? 1 : 0;
     _log "user $user_name is JU" if $user_is_ju;
     _log "user $user_name not is JU" unless $user_is_ju;
 
+    # cache de roles-usuario
+    my %roleusers;
+    map { $roleusers{ $_->{username} }{ $_->{id_role} }{ $_->{id_project} } = undef } DB->BaliRoleuser->search->hashref->all;
+
     # These are all the roles that apply to the given user:
     for my $item (@{$user_groups{uc($user_name)}}) {
       my ($cam, $role_name) = $self->_cam_role($item);
       $role_name ||= 'RO';  # Default, read-only role.
       $role_name = "$cam-$role_name" if $cam eq 'RPT';
-_log "Processing $item";
+      _log "Processing $item for $user_name";
       my $role = BaselinerX::Model::BaliRole->new(role => $role_name);
       my $project = BaselinerX::Model::BaliProject->new(name => $cam);
 
       # So now we have the objects for both the user, cam and role. Let's do
       # some magic.
-      my $href = {username   => $user->username,
+      my $is_rpt = substr($role_name, 0, 3) eq 'RPT';
+
+      my $href = {username   => $user_name,
                   id_role    => $role->id,
-                  id_project => $project->mid,
-                  ns         => substr($role_name, 0, 3) eq 'RPT'
+                  id_project => $is_rpt ? 0 : $project->mid,
+                  ns         => $is_rpt  
                                 ? '/'
                                 : "project/" . $project->mid};
-      Baseliner->model('Baseliner::BaliRoleuser')->create($href)
-        unless $self->exists_roleuser($href);
+
+      $ldif_roleusers{ $href->{username} }{ $href->{id_role} }{ $href->{id_project} } = undef; # preparar tuple para el borrado posterior
+      
+      if( ! exists $roleusers{ $href->{username} }{ $role->id }{ $project->mid } 
+          && ! exists  $roleusers{ $href->{username} }{ $role->id }{ 0 } ) {   # 0 quiere decir "todos", lo mismo que NS=/
+          Baseliner->model('Baseliner::BaliRoleuser')->create($href);
+      }
 
       # If user is JU and current role is 'RA'...
       if (($role_name eq 'RA') && $user_is_ju) {
         _log "user $user_name is JU and also RA in project: " . $project->name;
         my $new_role = BaselinerX::Model::BaliRole->new(role => 'JU');
-        $href->{id_role} = $new_role->id;
 
-        Baseliner->model('Baseliner::BaliRoleUser')->create($href)
-          unless $self->exists_roleuser($href);
+        $href->{id_role} = $new_role->id;
+        if( ! exists $roleusers{ $href->{username} }{ $new_role->id }{ $project->mid } 
+            && ! exists  $roleusers{ $href->{username} }{ $role->id }{ 0 } ) {   # 0 quiere decir "todos", lo mismo que NS=/
+            Baseliner->model('Baseliner::BaliRoleUser')->create($href);
+        }
       }
     }
+  }
+
+  # borrar usuarios sobrantes
+  if( @ldif_users ) {    # safeguard contra fallos en la carga de ldif (ldif vacio) 
+      _log "Borrando users: " . join ',',@ldif_users;
+      DB->BaliUser->search({ username=>{ -not => { -in => \@ldif_users } } })->delete;
+  }
+
+  # borrar role-user sobrantes
+  if( %ldif_roleusers ) {
+      _log "Borrando role-users que no vienen en el LDIF: " . _dump(\%ldif_roleusers);
+      for my $row ( DB->BaliRoleuser->search->hashref->all ) {
+         if( ! exists $ldif_roleusers{ $row->{username} }{ $row->{id_role} }{ $row->{id_project} } ) {
+             _log "Borrando role-user: $row->{username}, id_role: $row->{id_role}, id_project: $row->{id_project}";
+             DB->BaliRoleuser->search( $row )->delete;
+         }
+      }
   }
 
   # Finally, update the relationships for the 2nd and 3rd project levels.
@@ -145,6 +184,7 @@ sub _cam_role { # Str -> Str Str
   $cam, $role;
 }
 
+# infroox: deprecated, slow
 sub exists_project { # Str -> Bool
   my ($self, $project_name) = @_;
   my $model = Baseliner->model('Baseliner::BaliProject');
@@ -169,13 +209,10 @@ sub exists_roleuser { # Int -> Bool
 
 sub insert_project { # Str -> ResultSet
   my ($self, $project_name) = @_;
-  my $model = Baseliner->model('Baseliner::BaliProject');
   master_new "project"=>$project_name=>sub{
       my $mid=shift;
-      $model->create({mid=>$mid, name => $project_name});
+      DB->BaliProject->create({mid=>$mid, name => $project_name});
   };
-
-
 }
 
 sub _ju_usernames { # Undef -> Array
