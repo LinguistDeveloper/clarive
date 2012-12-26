@@ -114,7 +114,7 @@ sub init {
       my ($cam, $role_name) = $self->_cam_role($item);
       $role_name ||= 'RO';  # Default, read-only role.
       $role_name = "$cam-$role_name" if $cam eq 'RPT';
-      _log "Processing $item for $user_name";
+
       my $role = BaselinerX::Model::BaliRole->new(role => $role_name);
       my $project = BaselinerX::Model::BaliProject->new(name => $cam);
 
@@ -133,6 +133,7 @@ sub init {
       
       if( ! exists $roleusers{ $href->{username} }{ $role->id }{ $project->mid } 
           && ! exists  $roleusers{ $href->{username} }{ $role->id }{ 0 } ) {   # 0 quiere decir "todos", lo mismo que NS=/
+          _log "Creating $item for $user_name : " . _dump($href);
           Baseliner->model('Baseliner::BaliRoleuser')->create($href);
       }
 
@@ -144,6 +145,7 @@ sub init {
         $href->{id_role} = $new_role->id;
         if( ! exists $roleusers{ $href->{username} }{ $new_role->id }{ $project->mid } 
             && ! exists  $roleusers{ $href->{username} }{ $role->id }{ 0 } ) {   # 0 quiere decir "todos", lo mismo que NS=/
+            _log "Creating $item for $user_name (RA-JU): " . _dump( $href );;
             Baseliner->model('Baseliner::BaliRoleUser')->create($href);
         }
       }
@@ -153,7 +155,7 @@ sub init {
   # borrar usuarios sobrantes
   if( @ldif_users ) {    # safeguard contra fallos en la carga de ldif (ldif vacio) 
       _log "Borrando users: " . join ',',@ldif_users;
-      DB->BaliUser->search({ username=>{ -not => { -in => \@ldif_users } } })->delete;
+      DB->BaliUser->search({ -not=>{ username => { -in => \@ldif_users } } })->delete;
   }
 
   # borrar role-user sobrantes
