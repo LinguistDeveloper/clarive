@@ -620,7 +620,7 @@ sub merge_calendars {
                     start => $win->{start_time},
                     end   => $win->{end_time},
                     name  => $name,
-                    data => { cal => $cal->{name}, type => $win->{type} }
+                    data => { cal => $cal->{name}, type => $win->{type}, seq => $cal->{seq} }
                 );
             } else {
                 $slots->slot(
@@ -641,6 +641,7 @@ sub merge_calendars {
     my $date_s = $date->strftime('%Y%m%d');
     my %list;
     _debug "TOD=$date, W=$date_w, S=$date_s, START=$start_hour";
+    _debug [ grep { ($_->type eq 'date' && $_->when eq $date_s) || ($_->type eq 'weekday' && $_->when eq $date_w) } map { $_->sorted } @slots_cal ];
 
     # loop all slots in all calendars - calendars are sorted by the SEQ field
     for my $s ( map { $_->sorted } @slots_cal ) {
