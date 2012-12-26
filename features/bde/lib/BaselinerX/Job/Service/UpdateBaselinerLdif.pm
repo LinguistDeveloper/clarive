@@ -86,6 +86,10 @@ sub init {
   my @ldif_users; # lista de usuarios encontrados en LDIF, para luego borrar los que sobran
   my %ldif_roleusers; # tuplas de usuario-role-proyecto que viene en el LDIF
 
+  # cache de roles-usuario
+  my %roleusers;
+  map { $roleusers{ $_->{username} }{ $_->{id_role} }{ $_->{id_project} } = undef } DB->BaliRoleuser->search->hashref->all;
+
   for my $user_name (keys %user_groups) {
     _log "Processing: ".$user_name;;
     
@@ -103,11 +107,7 @@ sub init {
     # Is the user contained in JU list?
     my $user_is_ju = $user_name ~~ @ju_usernames ? 1 : 0;
     _log "user $user_name is JU" if $user_is_ju;
-    _log "user $user_name not is JU" unless $user_is_ju;
-
-    # cache de roles-usuario
-    my %roleusers;
-    map { $roleusers{ $_->{username} }{ $_->{id_role} }{ $_->{id_project} } = undef } DB->BaliRoleuser->search->hashref->all;
+    _log "user $user_name is not JU" unless $user_is_ju;
 
     # These are all the roles that apply to the given user:
     for my $item (@{$user_groups{uc($user_name)}}) {
