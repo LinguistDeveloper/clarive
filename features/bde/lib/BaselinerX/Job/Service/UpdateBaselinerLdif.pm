@@ -17,19 +17,9 @@ register 'service.baseliner.update.ldif' => {
   handler => \&init
 };
 
-register 'service.baseliner.update.ldif.cyclic' => {
-  name    => 'Update Baseliner from Ldif files once a day more or less at 2am',
-  handler => \&run_daemon
-};
+=head2 init
 
-sub run_daemon {
-  my $self = shift;
-  while (1) {
-    my $date = now;
-    $self->init(1) if $date->hour == _bde_conf('update_user_hour');
-    sleep 3600;
-  }
-}
+Parametros:
 
     group => {}
     user_groups => {}
