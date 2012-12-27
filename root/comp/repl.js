@@ -61,6 +61,8 @@ To do:
                     },
                
                    "Cmd-E": run_repl, 
+                   "Cmd-Enter": run_repl, 
+                   "Ctrl-Enter": run_repl, 
                    "Ctrl-E": run_repl, 
                    "Ctrl-Space": function(cm) {
                          CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
@@ -538,7 +540,7 @@ To do:
             },
             {   xtype: 'button',
                 text: _('Delete'),
-                icon:'/static/images/scm/debug/delete_config.gif',
+                icon:'/static/images/icons/delete.gif',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     var selectedNode = tree.getSelectionModel().getSelectedNode();
@@ -558,6 +560,34 @@ To do:
                                 }
                             }
                     );
+                }
+            },
+            {   xtype: 'button',
+                text: _('Tidy'),
+                icon:'/static/images/icons/tidy.gif',
+                cls: 'x-btn-text-icon',
+                handler: function(){
+                    var lang = btn_lang.lang;
+                    var from = editor.getCursor(true);
+                    var to = editor.getCursor(false);
+                    if( from.line == to.line && from.ch == to.ch ) { // no selection?
+                        // select all
+                        from = editor.posFromIndex(0);
+                        to = editor.posFromIndex(999999);
+                        editor.setSelection( from, to );
+                    }
+                    if( lang == 'perl' ) {
+                        var txt = editor.getSelection();
+                        Baseliner.ajaxEval('/repl/tidy', { code: txt }, function(res){
+                            if( res.success ) {
+                                editor.replaceSelection( res.code );
+                            } else {
+                                set_output( res.msg );
+                            }
+                        });
+                    } else {
+                        editor.autoFormatRange(from,to);
+                    }
                 }
             },
             '->',

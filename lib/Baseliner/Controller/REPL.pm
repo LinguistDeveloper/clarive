@@ -348,4 +348,20 @@ sub save_to_file : Local {
     };
     $c->forward('View::JSON');
 }
+
+sub tidy : Local {
+    my ($self, $c ) = @_;
+    my $p    = $c->req->parameters;
+    try {
+        require Perl::Tidy;
+        my $code = $p->{code};
+        my $tidied;
+        Perl::Tidy::perltidy( argv=>' ', source=>\$code, destination=>\$tidied );
+        $c->stash->{json} = { success=>\1, code=>$tidied };
+    } catch {
+        $c->stash->{json} = { success=>\0, msg=>shift };
+    };
+    $c->forward('View::JSON');
+}
+
 1;
