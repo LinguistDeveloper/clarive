@@ -154,8 +154,14 @@ sub init {
   try {
       _log "Updating Baseliner...";
       $c->launch('service.baseliner.update.ldif',
-             data => {group       => \%group, 
-             	      user_groups => \%user_group});
+             data => {
+                      group       => \%group, 
+             	      user_groups => \%user_group,
+                      user_filter => $config->{user_filter},
+                      delete_users => $config->{delete_users},
+                      delete_roleusers => $config->{delete_roleusers},
+                     }, 
+      );
   } catch {
       my $message=shift;
       _log $message;
@@ -179,7 +185,9 @@ sub init {
       exit 1;
   };
 
-  $self->notify({message=>_loc ("Update LDIF user process finished successfully")});
+  $self->notify({message=>_loc ("Update LDIF user process finished successfully")})
+    unless $config->{'no-mail'};
+
   exit 0;
 }
 

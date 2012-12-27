@@ -31,9 +31,21 @@ sub run_daemon {
   }
 }
 
+    group => {}
+    user_groups => {}
+    user_filter => <regex> (undef,opcional) - filtra los usuarios que se cargan
+    delete_users => Bool (0,opcional) - flag que indica que se debe borrar BaliUser al principio
+    delete_roleusers => Bool (0,opcional) - flag que indica que se debe borrar BaliRoleuser al principio
+
+=cut 
 sub init {
     my ($self, $c, $config) = @_;
     my %user_groups = %{$config->{user_groups}};
+    my $user_filter = $config->{user_filter}; # ejecuta para solo este usuario
+    if( length $user_filter ) {
+        _log "Filtro usuario=$user_filter";
+        $user_filter = qr/$user_filter/i;
+    }
 
     #warn "INIT"._dump $config->{group};
 
