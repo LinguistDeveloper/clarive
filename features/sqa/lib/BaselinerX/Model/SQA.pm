@@ -1335,7 +1335,7 @@ sub request_analysis {
 	my $nature     = $p{nature};
 	my $user       = $p{user};
 	my $bl         = $p{bl};
-	my $job_id     = $p{job_id};
+	my $job_id     = $p{job_id} // $p{id};  # infroox: SQAScheduler no manda job_id nunca, sino id que Â¿viene a ser lo mismo?
 	my $return     = 1;
 
 	my $type = 'pre';
