@@ -26,7 +26,7 @@ ren_log() {
     echo "Log file: $LOGFILE"
 }
 
-message="Baseliner Dispatcher starting in background..."
+message="Baseliner Dispatcher starting in the background..."
 if [ "$1" == "restart" ];
 then
         bali stop service.dispatcher 
