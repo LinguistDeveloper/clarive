@@ -1028,6 +1028,11 @@ sub write_sqa_error {
 
 	$html =~ s/\n/<br>/g;
 
+    if( ! defined $job_id ) {
+        _error "ERROR SQA (no se ha podido reportar a BBDD): " . _dump(\%p);
+        return;
+    }
+
 	my $row       = Baseliner->model('Baseliner::BaliSqa')->find($job_id);
 	my $hash_data = _load $row->data;
 	my $html_final = "";
