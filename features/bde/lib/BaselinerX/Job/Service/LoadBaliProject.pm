@@ -37,25 +37,27 @@ sub run { # bucle de demonio aqui
     _log "Ending service.load.bali.project";
 }
 
-sub iii { require DBIx::Simple;
-    return DBIx::Simple->connect( Baseliner->model('Inf')->storage->dbh );
-}
-
 sub run_once {
     my ( $self, $c, $config ) = @_;
 
-    try {
-        _log "Updating or creating Baseliner projects... ";
+    my $k = 0;
+    require DBIx::Simple;
+    my $inf = DBIx::Simple->connect( Baseliner->model('Inf')->storage->dbh );
 
+    try {
+        _log "Updating or creating Baseliner projects (desde harpathfullname e inf)... ";
+
+        _log "Queries de Infraestructura...";
         my %win = map { $_->{cc} => 1 } 
-        iii->query(q{select cam||'-'||mv_valor cc from inf_data_mv m, inf_data d where d.idform in (select idform from inf_form_max) and column_name='WIN_APPL' and valor='@#'||id})->hashes;
+        $inf->query(q{select cam||'-'||mv_valor cc from inf_data_mv m, inf_data d where d.idform in (select idform from inf_form_max) and column_name='WIN_APPL' and valor='@#'||id})->hashes;
 
         my %java = map { $_->{cc} => 1 } 
-        iii->query(q{select cam||'-'||mv_valor cc from inf_data_mv m, inf_data d where d.idform in (select idform from inf_form_max) and column_name='JAVA_APPL' and valor='@#'||id})->hashes;
+        $inf->query(q{select cam||'-'||mv_valor cc from inf_data_mv m, inf_data d where d.idform in (select idform from inf_form_max) and column_name='JAVA_APPL' and valor='@#'||id})->hashes;
 
         my %pubs = map { $_->{cam} => 1 } 
-        iii->query(q{select cam from inf_data d where d.idform in (select idform from inf_form_max) and column_name='SCM_APL_PUBLICA' and valor='Si'})->hashes;
+        $inf->query(q{select cam from inf_data d where d.idform in (select idform from inf_form_max) and column_name='SCM_APL_PUBLICA' and valor='Si'})->hashes;
 
+        _log "Query de Harpathfullname...";
         my $r = $c->model('Harvest::HarPathFullName')->search({ -not => { pathfullname=>{ -like => '\%\%\%\%' } }, pathfullname=>{-like=>'\%\%\%'} }, { distinct=>1, select=>'pathfullname' });
         rs_hashref( $r );
         my (%cam,%sa,%nat);
@@ -83,61 +85,69 @@ sub run_once {
         }
 
         #my %cam = %{ _load( scalar $c->path_to( 'yy' )->slurp ) };
-        my @created_mids;
 
+        _log "Nivel 1 - CAM...";
         for my $cam ( keys %cam ) {
             my $r = DB->BaliProject->search({ name=>$cam, id_parent=>undef, nature=>undef })->first;
             if( $r ) { $cam{ $cam }{id} = $r->id; next }
             master_new project => $cam => sub {
-                DB->BaliProject->create({ name=>$cam });
+                my $mid = shift;
+                _debug "Creando proyecto $cam lev=1 CAM ($mid)"; 
+                $r = DB->BaliProject->create({ name=>$cam, mid=>$mid });
+                $k++;
                 $cam{ $cam }{id} = $r->id;
             };
-            push @created_mids, { id=>$r->id, name=>$cam };
         }
 
         #my %id_cam = map { $_->{name} => $_ } DB->BaliProject->search({ id_parent=>undef, nature=>undef })->all;
+        _log "Nivel 2 - SUBAPL...";
         for my $cam ( keys %cam ) {
             for my $sa ( keys %{ $cam{ $cam }{subapls} || {} } ) {
                my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef })->first;
                if( $r ) { $cam{ $cam }{subapls}{ $sa } = $r->id; next }
                master_new project => $sa => sub {
-                   $r = DB->BaliProject->create({ name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef });    
+                   my $mid = shift;
+                   _debug "Creando proyecto $sa lev=2 Subapl ($mid)"; 
+                   $r = DB->BaliProject->create({ mid=>$mid, name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef });    
+                   $k++;
                    $cam{ $cam }{subapls}{ $sa } = $r->id;       
                };
-               push @created_mids, { id=>$r->id, name=>$sa };
             }
         }
 
+        _log "Nivel 3 - NAT...";
         for my $cam ( keys %cam ) {
             for my $nat ( keys %{ $cam{ $cam }{natures} || {} } ) {
                for my $sa ( keys %{ $cam{ $cam }{natures}{$nat} || {} } ) {
                    my $sa_id = $cam{$cam}{subapls}{ $sa };
                    next unless defined $sa_id;
                    if( $nat =~ /^(\.NET|BIZTALK|J2EE|JAVABATCH)$/ ) {
+                       # en estas naturalezas los proyectos tienen NAME = subapl
                        my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$sa_id, nature=>$nat })->first;
-                       my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
                        master_new project => $sa => sub {
-                           $r = DB->BaliProject->create({ name=>$sa, id_parent=>$sa_id, nature=>$nat });
+                           my $mid = shift;
+                           _debug "Creando proyecto $sa lev=3 NAT[$nat] ($mid)"; 
+                           $k++;
+                           $r = DB->BaliProject->create({ mid=>$mid, name=>$sa, id_parent=>$sa_id, nature=>$nat });
                            $r->mid;
                        };
-                       push @created_mids, { id=>$r->id, name=>$sa };
                    } else {
+                       # en el resto de naturalezas los proyectos tienen NAME = CAM
                        my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
                        master_new project => $cam => sub {
-                           $r = DB->BaliProject->create({ name=>$cam, id_parent=>$sa_id, nature=>$nat });
+                           my $mid = shift;
+                           _debug "Creando proyecto $cam lev=3 NAT[$nat] ($mid)"; 
+                           $k++;
+                           $r = DB->BaliProject->create({ mid=>$mid, name=>$cam, id_parent=>$sa_id, nature=>$nat });
                            $r->mid;
                        };
-                       push @created_mids, { id=>$r->id, name=>$cam };
                    }
                }
            }
         }
-
-        #map { DB->BaliMaster->create({ mid=>$_->{id}, name=>$_->{name} }) unless DB->BaliMaster->find( $_->{id} ) } @created_mids; 
-
-        _log _loc "Created %1 projects", scalar( @created_mids );
+        _log sprintf "Creados %d proyectos", $k;
     } catch {
         my $err = shift;
         _log "ERROR AL CARGAR PROYECTOS: $err";
