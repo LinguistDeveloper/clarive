@@ -44,6 +44,8 @@ sub iii { require DBIx::Simple;
 sub run_once {
     my ( $self, $c, $config ) = @_;
 
+    my $k = 0;
+
     try {
         _log "Updating or creating Baseliner projects... ";
 
@@ -89,8 +91,9 @@ sub run_once {
             if( $r ) { $cam{ $cam }{id} = $r->id; next }
             master_new project => $cam => sub {
                 my $mid = shift;
-                _debug "Creando proyecto $cam ($mid)"; 
+                _debug "Creando proyecto $cam lev=1 CAM ($mid)"; 
                 $r = DB->BaliProject->create({ name=>$cam, mid=>$mid });
+                $k++;
                 $cam{ $cam }{id} = $r->id;
             };
         }
@@ -102,8 +105,9 @@ sub run_once {
                if( $r ) { $cam{ $cam }{subapls}{ $sa } = $r->id; next }
                master_new project => $sa => sub {
                    my $mid = shift;
-                   _debug "Creando proyecto $sa ($mid)"; 
+                   _debug "Creando proyecto $sa lev=2 Subapl ($mid)"; 
                    $r = DB->BaliProject->create({ mid=>$mid, name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef });    
+                   $k++;
                    $cam{ $cam }{subapls}{ $sa } = $r->id;       
                };
             }
@@ -115,21 +119,24 @@ sub run_once {
                    my $sa_id = $cam{$cam}{subapls}{ $sa };
                    next unless defined $sa_id;
                    if( $nat =~ /^(\.NET|BIZTALK|J2EE|JAVABATCH)$/ ) {
-                       #my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$sa_id, nature=>$nat })->first;
-                       my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
+                       # en estas naturalezas los proyectos tienen NAME = subapl
+                       my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
                        master_new project => $sa => sub {
                            my $mid = shift;
-                           _debug "Creando proyecto $sa ($mid)"; 
+                           _debug "Creando proyecto $sa lev=3 NAT[$nat] ($mid)"; 
+                           $k++;
                            $r = DB->BaliProject->create({ mid=>$mid, name=>$sa, id_parent=>$sa_id, nature=>$nat });
                            $r->mid;
                        };
                    } else {
+                       # en el resto de naturalezas los proyectos tienen NAME = CAM
                        my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
                        master_new project => $cam => sub {
                            my $mid = shift;
-                           _debug "Creando proyecto $sa ($mid)"; 
+                           _debug "Creando proyecto $cam lev=3 NAT[$nat] ($mid)"; 
+                           $k++;
                            $r = DB->BaliProject->create({ mid=>$mid, name=>$cam, id_parent=>$sa_id, nature=>$nat });
                            $r->mid;
                        };
@@ -137,6 +144,7 @@ sub run_once {
                }
            }
         }
+        _log sprintf "Creados %d proyectos", $k;
     } catch {
         my $err = shift;
         _log "ERROR AL CARGAR PROYECTOS: $err";
