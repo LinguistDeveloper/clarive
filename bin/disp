@@ -65,6 +65,18 @@ then
         exit 0
 fi
 
+if [ "$1" == "log" ];
+then
+        if [ "$BASELINER_LOGHOME" == "" ];
+        then
+            echo "BASELINER_LOGHOME is not set"
+            exit 1
+        fi
+        echo "Cat log '$BASELINER_LOGHOME/balid.log'..."
+        cat $BASELINER_LOGHOME/balid.log
+        exit 0
+fi
+
 export BASELINER_PERL_OPTS=-X
 exec bali service.dispatcher $*
 
