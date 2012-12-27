@@ -10,6 +10,7 @@
 package BaselinerX::Model::SQA;
 use Moose;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
@@ -55,6 +56,12 @@ sub update_status {    # actualiza el status de una fila en el portal
 		}
 		else {
 			$project = substr( $project, 0, 3 );
+            if( ! length $project ) {   # empty project name?
+               _log "Parameter 'project' is empty. Returning";
+               _log "Model::SQL::update_status parameters: " . _dump \%p;
+               return;
+            }
+
 			_log "Buscando project con nombre *$project*";
 			my $project_row;
 
@@ -65,9 +72,12 @@ sub update_status {    # actualiza el status de una fila en el portal
 
 			if ( !$project_row ) {
 				_log "El project *$project* no existe";
-				$project_row =
-				  Baseliner->model('Baseliner::BaliProject')
-				  ->create( { name => $project, ns => '/', bl => '*' } );
+                master_new project => $project => sub {
+                    my $mid = shift;
+                    $project_row =
+                      Baseliner->model('Baseliner::BaliProject')
+                      ->create( { mid=>$mid, name => $project, ns => '/', bl => '*' } );
+                };
 				_log "El project *$project* ahora existe.  File creada";
 				if ( $type ne 'package' ) {
 					$subproject_row =
@@ -110,15 +120,19 @@ sub update_status {    # actualiza el status de una fila en el portal
 						  . lc($subproject)
 						  . " hijo de "
 						  . $project_row->mid;
-						$subproject_row =
-						  Baseliner->model('Baseliner::BaliProject')->create(
-							{
-								name      => lc($subproject),
-								id_parent => $project_row->mid,
-								ns        => '/',
-								bl        => '*'
-							}
-						  );
+                        master_new project => lc($subproject) => sub {
+                            my $mid = shift;
+                            $subproject_row =
+                              Baseliner->model('Baseliner::BaliProject')->create(
+                                {
+                                    mid       => $mid,
+                                    name      => lc($subproject),
+                                    id_parent => $project_row->mid,
+                                    ns        => '/',
+                                    bl        => '*'
+                                }
+                              );
+                        };
 					}
 					if ( $nivel ne 'subapp' ) {
 						$subprojectnature_row =
@@ -131,17 +145,21 @@ sub update_status {    # actualiza el status de una fila en el portal
 						  )->first;
 
 						if ( !$subprojectnature_row ) {
-							$subprojectnature_row =
-							  Baseliner->model('Baseliner::BaliProject')
-							  ->create(
-								{
-									name      => $subproject,
-									nature    => $nature,
-									id_parent => $subproject_row->mid,
-									ns        => '/',
-									bl        => '*'
-								}
-							  );
+                            master_new project => $subproject => sub {
+                                my $mid = shift;
+                                $subprojectnature_row =
+                                  Baseliner->model('Baseliner::BaliProject')
+                                  ->create(
+                                    {
+                                        mid       => $mid,
+                                        name      => $subproject,
+                                        nature    => $nature,
+                                        id_parent => $subproject_row->mid,
+                                        ns        => '/',
+                                        bl        => '*'
+                                    }
+                                  );
+                            };
 						}
 					}
 				}
@@ -1349,6 +1367,8 @@ qq{cd $config->{dist_udp_dir} ; perl AltaDistribucionNodist.pl N $user "$project
 		$self->update_status(
 			status => 'SCM ERROR',
 			job_id => $job_id,
+			project    => $project,
+			subproject    => { subproject=>$subproject, nature=>$nature },
 			tsend  => 1,
 			tsstart    => 1
 		);
