@@ -37,27 +37,27 @@ sub run { # bucle de demonio aqui
     _log "Ending service.load.bali.project";
 }
 
-sub iii { require DBIx::Simple;
-    return DBIx::Simple->connect( Baseliner->model('Inf')->storage->dbh );
-}
-
 sub run_once {
     my ( $self, $c, $config ) = @_;
 
     my $k = 0;
+    require DBIx::Simple;
+    my $inf = DBIx::Simple->connect( Baseliner->model('Inf')->storage->dbh );
 
     try {
-        _log "Updating or creating Baseliner projects... ";
+        _log "Updating or creating Baseliner projects (desde harpathfullname e inf)... ";
 
+        _log "Queries de Infraestructura...";
         my %win = map { $_->{cc} => 1 } 
-        iii->query(q{select cam||'-'||mv_valor cc from inf_data_mv m, inf_data d where d.idform in (select idform from inf_form_max) and column_name='WIN_APPL' and valor='@#'||id})->hashes;
+        $inf->query(q{select cam||'-'||mv_valor cc from inf_data_mv m, inf_data d where d.idform in (select idform from inf_form_max) and column_name='WIN_APPL' and valor='@#'||id})->hashes;
 
         my %java = map { $_->{cc} => 1 } 
-        iii->query(q{select cam||'-'||mv_valor cc from inf_data_mv m, inf_data d where d.idform in (select idform from inf_form_max) and column_name='JAVA_APPL' and valor='@#'||id})->hashes;
+        $inf->query(q{select cam||'-'||mv_valor cc from inf_data_mv m, inf_data d where d.idform in (select idform from inf_form_max) and column_name='JAVA_APPL' and valor='@#'||id})->hashes;
 
         my %pubs = map { $_->{cam} => 1 } 
-        iii->query(q{select cam from inf_data d where d.idform in (select idform from inf_form_max) and column_name='SCM_APL_PUBLICA' and valor='Si'})->hashes;
+        $inf->query(q{select cam from inf_data d where d.idform in (select idform from inf_form_max) and column_name='SCM_APL_PUBLICA' and valor='Si'})->hashes;
 
+        _log "Query de Harpathfullname...";
         my $r = $c->model('Harvest::HarPathFullName')->search({ -not => { pathfullname=>{ -like => '\%\%\%\%' } }, pathfullname=>{-like=>'\%\%\%'} }, { distinct=>1, select=>'pathfullname' });
         rs_hashref( $r );
         my (%cam,%sa,%nat);
@@ -86,6 +86,7 @@ sub run_once {
 
         #my %cam = %{ _load( scalar $c->path_to( 'yy' )->slurp ) };
 
+        _log "Nivel 1 - CAM...";
         for my $cam ( keys %cam ) {
             my $r = DB->BaliProject->search({ name=>$cam, id_parent=>undef, nature=>undef })->first;
             if( $r ) { $cam{ $cam }{id} = $r->id; next }
@@ -99,6 +100,7 @@ sub run_once {
         }
 
         #my %id_cam = map { $_->{name} => $_ } DB->BaliProject->search({ id_parent=>undef, nature=>undef })->all;
+        _log "Nivel 2 - SUBAPL...";
         for my $cam ( keys %cam ) {
             for my $sa ( keys %{ $cam{ $cam }{subapls} || {} } ) {
                my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef })->first;
@@ -113,6 +115,7 @@ sub run_once {
             }
         }
 
+        _log "Nivel 3 - NAT...";
         for my $cam ( keys %cam ) {
             for my $nat ( keys %{ $cam{ $cam }{natures} || {} } ) {
                for my $sa ( keys %{ $cam{ $cam }{natures}{$nat} || {} } ) {
