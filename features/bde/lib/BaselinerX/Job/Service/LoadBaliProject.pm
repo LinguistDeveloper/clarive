@@ -83,17 +83,16 @@ sub run_once {
         }
 
         #my %cam = %{ _load( scalar $c->path_to( 'yy' )->slurp ) };
-        my @created_mids;
 
         for my $cam ( keys %cam ) {
             my $r = DB->BaliProject->search({ name=>$cam, id_parent=>undef, nature=>undef })->first;
             if( $r ) { $cam{ $cam }{id} = $r->id; next }
             master_new project => $cam => sub {
                 my $mid = shift;
-                DB->BaliProject->create({ name=>$cam, mid=>$mid });
+                _debug "Creando proyecto $cam ($mid)"; 
+                $r = DB->BaliProject->create({ name=>$cam, mid=>$mid });
                 $cam{ $cam }{id} = $r->id;
             };
-            push @created_mids, { id=>$r->id, name=>$cam };
         }
 
         #my %id_cam = map { $_->{name} => $_ } DB->BaliProject->search({ id_parent=>undef, nature=>undef })->all;
@@ -103,10 +102,10 @@ sub run_once {
                if( $r ) { $cam{ $cam }{subapls}{ $sa } = $r->id; next }
                master_new project => $sa => sub {
                    my $mid = shift;
+                   _debug "Creando proyecto $sa ($mid)"; 
                    $r = DB->BaliProject->create({ mid=>$mid, name=>$sa, id_parent=>$cam{$cam}{id}, nature=>undef });    
                    $cam{ $cam }{subapls}{ $sa } = $r->id;       
                };
-               push @created_mids, { id=>$r->id, name=>$sa };
             }
         }
 
@@ -116,32 +115,28 @@ sub run_once {
                    my $sa_id = $cam{$cam}{subapls}{ $sa };
                    next unless defined $sa_id;
                    if( $nat =~ /^(\.NET|BIZTALK|J2EE|JAVABATCH)$/ ) {
-                       my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$sa_id, nature=>$nat })->first;
+                       #my $r = DB->BaliProject->search({ name=>$sa, id_parent=>$sa_id, nature=>$nat })->first;
                        my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
                        master_new project => $sa => sub {
                            my $mid = shift;
+                           _debug "Creando proyecto $sa ($mid)"; 
                            $r = DB->BaliProject->create({ mid=>$mid, name=>$sa, id_parent=>$sa_id, nature=>$nat });
                            $r->mid;
                        };
-                       push @created_mids, { id=>$r->id, name=>$sa };
                    } else {
                        my $r = DB->BaliProject->search({ name=>$cam, id_parent=>$sa_id, nature=>$nat })->first;
                        next if $r;
                        master_new project => $cam => sub {
                            my $mid = shift;
+                           _debug "Creando proyecto $sa ($mid)"; 
                            $r = DB->BaliProject->create({ mid=>$mid, name=>$cam, id_parent=>$sa_id, nature=>$nat });
                            $r->mid;
                        };
-                       push @created_mids, { id=>$r->id, name=>$cam };
                    }
                }
            }
         }
-
-        #map { DB->BaliMaster->create({ mid=>$_->{id}, name=>$_->{name} }) unless DB->BaliMaster->find( $_->{id} ) } @created_mids; 
-
-        _log _loc "Created %1 projects", scalar( @created_mids );
     } catch {
         my $err = shift;
         _log "ERROR AL CARGAR PROYECTOS: $err";
