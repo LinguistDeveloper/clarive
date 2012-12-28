@@ -581,6 +581,7 @@ To do:
                         Baseliner.ajaxEval('/repl/tidy', { code: txt }, function(res){
                             if( res.success ) {
                                 editor.replaceSelection( res.code );
+                                editor.focus();
                             } else {
                                 set_output( res.msg );
                             }
