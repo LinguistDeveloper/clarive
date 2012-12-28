@@ -86,7 +86,7 @@ sub eval : Local {
     }, \$stdout, \$stderr );
     my $elapsed = tv_interval( $t0 );
     $res = _to_utf8( _dump( $res ) ) if $dump eq 'yaml';
-    $res = _to_utf8 JSON::XS::encode_json( $res ) if $dump eq 'json' && ref $res && !blessed $res;
+    $res = _to_utf8( JSON::XS->new->pretty->encode( _damn( $res ) ) ) if $dump eq 'json' && ref $res && !blessed $res;
     my ($line) = ( $err . $stderr . $stdout ) =~ /line ([0-9]+)/;
     
     $c->stash->{json} = {
