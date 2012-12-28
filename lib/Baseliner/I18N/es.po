@@ -9,14 +9,74 @@ msgstr "Abrir"
 msgid "Progress"
 msgstr "Avance"
 
+msgid "Refresh Node"
+msgstr "Refrescar"
+
 msgid "Job Slots"
 msgstr "Ventanas de Pase"
 
 msgid "Repositories"
 msgstr "Repositorios"
 
+msgid "Dependencies"
+msgstr "Dependencias"
+
+msgid "Relationship"
+msgstr "Relación"
+
+msgid "Relationships"
+msgstr "Relaciones"
+
+msgid "View Applied Slots"
+msgstr "Ver Ventanas Relacionadas"
+
+msgid "Reload Calendar Slots"
+msgstr "Recargar Ventanas de Pase"
+
+msgid "Applied Calendar Slots"
+msgstr "Ventanas de Pase Relacionadas"
+
+msgid "by %1"
+msgstr "por %1"
+
 msgid "All-f"
 msgstr "Todas"
+
+msgid "Velocity"
+msgstr "Velocidad"
+
+msgid "Copy of"
+msgstr "Copia de"
+
+msgid "[Select a calendar]"
+msgstr "[Seleccione calendario]"
+
+msgid "%1 days"
+msgstr "%1 días"
+
+msgid "Change password"
+msgstr "Cambiar contraseña"
+
+msgid "Current avatar"
+msgstr "Avatar actual"
+
+msgid "Change avatar"
+msgstr "Cambiar avatar"
+
+msgid "Upload avatar"
+msgstr "Subir avatar"
+
+msgid "Manage your Avatar"
+msgstr "Gestión de Avatar"
+
+msgid "Attribute"
+msgstr "Atributo"
+
+msgid "deactivated"
+msgstr "desactivada"
+
+msgid "activated"
+msgstr "activada"
 
 msgid "progress"
 msgstr "Avance"
@@ -24,8 +84,20 @@ msgstr "Avance"
 msgid "Start: %1"
 msgstr "Inicio: %1"
 
+msgid "rule: %1"
+msgstr "regla: %1"
+
+msgid "Delete rule %1?"
+msgstr "¿Borrar regla %1?"
+
+msgid "Rule %1 %2"
+msgstr "Regla %1 %2"
+
 msgid "Edit: %1"
 msgstr "Editar: %1"
+
+msgid "Edit: %1 (%2)"
+msgstr "Editar: %1 (%2)"
 
 msgid "Type: %1"
 msgstr "Tipo: %1"
@@ -815,6 +887,12 @@ msgstr "Acciones"
 
 msgid "Role"
 msgstr "Rol"
+
+msgid "New Role"
+msgstr "Nuevo Rol"
+
+msgid "Role: %1"
+msgstr "Rol: %1"
 
 msgid "Create Role"
 msgstr "Crear Rol"
@@ -1933,6 +2011,15 @@ msgstr "Bloqueado"
 
 msgid "Release Item"
 msgstr "Elemento en Release"
+
+msgid "Output: %1"
+msgstr "Salida: %1"
+
+msgid "Table"
+msgstr "Tabla"
+
+msgid "Run"
+msgstr "Ejecutar"
 
 msgid "Run Now"
 msgstr "Ejecutar Ahora"
@@ -3355,17 +3442,17 @@ msgstr "No es una revisión"
 msgid "Node is not a project"
 msgstr "No es un proyecto"
 
-msgid "%1 created topic on %2"
-msgstr "%1 creó tópico el %2"
+msgid "%1 created topic"
+msgstr "%1 creó el tópico"
 
-msgid "%1 removed %2 on %3"
-msgstr "%1 borró el fichero %2 el %3"
+msgid "%1 removed file %2"
+msgstr "%1 borró el fichero %2"
 
-msgid "%1 attached %2 on %3"
-msgstr "%1 adjuntó el fichero %2 el %3"
+msgid "%1 attached file %2"
+msgstr "%1 adjuntó el fichero %2"
 
-msgid "%1 modified topic on %3"
-msgstr "%1 modificó tópico el %3"
+msgid "%1 modified topic"
+msgstr "%1 modificó el tópico"
 
 msgid "%1 created topic '%2'"
 msgstr "%1 ha creado el tópico '%2'"
@@ -4067,17 +4154,17 @@ msgstr "Personalizar campo"
 msgid "Field"
 msgstr "Campo"
 
-msgid "%1 modified topic %2 from %3 to %4 on %6"
-msgstr "%1 modificó el campo %2  de %3 a %4 el %6"
+msgid "%1 modified topic %2 from %3 to %4"
+msgstr "%1 modificó el campo %2  de %3 a %4"
 
-msgid "%1 modified topic on %2"
-msgstr "%1 modificó el tópico el %2"
+msgid "%1 modified topic"
+msgstr "%1 modificó el tópico"
 
-msgid "%1 deleted all attached topics"
-msgstr "%1 borró todos los tópicos adjuntos"
+msgid "%1 deleted all attached topics of "
+msgstr "%1 borró todos los tópicos adjuntos de "
 
-msgid "%1 modified topic: %2 ( %4 ) on %6"
-msgstr "%1 modificó el tópico: %2 ( %4 ) el %6"
+msgid "%1 modified topic: %2 ( %4 )"
+msgstr "%1 modificó el tópico: %2 ( %4 )"
 
 msgid "attached topics"
 msgstr "tópicos adjuntos"
@@ -4103,55 +4190,107 @@ msgstr "proyectos adjuntos"
 msgid "attached users"
 msgstr "usuarios adjuntos"
 
-msgid "%1 changed topic status from %2 to %3 on %4"
-msgstr "%1 modificó el estado de %2 a %3 el %4"
+msgid "%1 changed topic status from %2 to %3"
+msgstr "%1 modificó el estado de %2 a %3"
 
-msgid "FINISHED DOING ROLLBACK CORRECTLY"
-msgstr "Finalizado realizando Rollback correctamente"
+msgid "Character dot not allowed"
+msgstr "Caracter punto no permitido"
 
-msgid "FINISHED CORRECTLY"
-msgstr "Finalizado correctamente"
+msgid "Fields category"
+msgstr "Campos de categoría"
 
-msgid "FINISHED WITH ERROR"
-msgstr "Finalizado con error"
+msgid "Fields configuration"
+msgstr "Configuración de campos"
 
-msgid "FINISHED WITH ERROR DURING ROLLBACK"
-msgstr "Finalizado con error durante el Rollback"
+msgid "System fields"
+msgstr "Campos de sistema"
 
-msgid "Unknown %1"
-msgstr "Desconocido (%1)"
+msgid "Custom fields"
+msgstr "Campos personalizados"
 
-msgid "All projects"
-msgstr "Todos los proyectos"
+msgid "Templates"
+msgstr "Plantillas"
 
+msgid "Textfield"
+msgstr "Campo de texto"
 
-msgid "Scheduled at %1 of %2"
-msgstr "Pase planificado a las %1 del %2"
+msgid "Upload files"
+msgstr "Subir ficheros"
 
-msgid "Application: %1. Scheduled Job %2 at %3 of %4"
-msgstr "Aplicación: %1. Pase planificado a las %3 del día %4"
+msgid "Progress bar"
+msgstr "Barra de progreso"
 
-msgid "Applications: %1. Scheduled Job %2 at %3 of %4"
-msgstr "Aplicaciones: %1. Pase planificado a las %3 del %4"
+msgid "Listbox"
+msgstr "Lista de datos"
 
-msgid "Application: %1. %2"
-msgstr "Aplicación: %1. %2"
+msgid "%1 created a topic of %2"
+msgstr "%1 creó un tópico de categoría: %2"
 
-msgid "Applications: %1. %2"
-msgstr "Aplicaciones: %1. %2"
+msgid "User duplicated"
+msgstr "Usuario duplicado"
 
-msgid "Job %1: %2"
-msgstr "Pase %1: %2"
+msgid "Error duplicating user"
+msgstr "Error duplicando usuario"
 
-msgid "PROJECT"
-msgstr "Proyecto"
+msgid "Category duplicated"
+msgstr "Categoría duplicada"
 
-msgid "ISSUE"
-msgstr "Incidencia"
+msgid "Error duplicating category"
+msgstr "Error duplicando categoría"
 
-msgid "MAINTENANCE"
-msgstr "Mantenimiento"
+msgid "Values"
+msgstr "Valores"
 
-msgid "REQUEST"
-msgstr "Petición"
+msgid "Single"
+msgstr "Único"
 
+msgid "Multiple"
+msgstr "Múltiple"
+
+msgid "Select a category"
+msgstr "Seleccione una categoría"
+
+msgid "Can create topic for this category"
+msgstr "Puede crear tópicos de la categoría"
+
+msgid "Can view topic for this category"
+msgstr "Puede ver tópicos de la categoría"
+
+msgid "Can edit topic for this category"
+msgstr "Puede editar tópicos de la categoría"
+
+msgid "Can not edit the field"
+msgstr "No puede editar el campo"
+
+msgid "in the category"
+msgstr "en la categoria"
+
+msgid "for the status"
+msgstr "para el estado"
+
+msgid "Can not view the field"
+msgstr "No puede ver el campo"
+
+msgid "Are you sure you want to delete the row selected?"
+msgstr "¿Seguro que quiere borrar la fila?"
+
+msgid "Error deleting row: %1"
+msgstr "Error borrando fila"
+
+msgid "Row deleted"
+msgstr "Fila borrada"
+
+msgid "Delete row"
+msgstr "Borrar fila"
+
+msgid "Bind releases"
+msgstr "Agrupar releases"
+
+msgid "Content"
+msgstr "Contenido"
+
+msgid "Topics open by category"
+msgstr "Tópicos abiertos por categorías"
+
+msgid "Chart pie (Topics open by category)"
+msgstr "Gráfico circular (Tópicos abiertos por categorías)"

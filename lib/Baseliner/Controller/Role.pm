@@ -86,7 +86,7 @@ sub json : Local {
             && !query_array($query, $r->role, $r->description, $r->mailbox, map { values %$_ } @actions );
         
         # if the query has a dot, filter actions
-        if( $query =~ /\./ ) {
+        if( defined $query && $query =~ /\./ ) {
             @actions = grep { $a = join ',', values %$_; $a =~ /$query/i } @actions;
         }
 
@@ -104,18 +104,70 @@ sub json : Local {
     $c->forward('View::JSON');
 }
 
-sub action_tree : Local {
+sub action_tree_old : Local {
     my ( $self, $c ) = @_;
     my @actions = $c->model('Actions')->list;
     my %tree;
     foreach my $a ( @actions ) {
         my $key = $a->{key};
         ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>_loc_decoded($a->name), leaf=>\1 }; 
+        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>_loc_decoded( $a->{name} ), leaf=>\1 }; 
     }
-    $c->stash->{json} = [ map { { id=>$_, text=>$_, leaf=>\0, children=>$tree{$_} } } sort keys %tree ];
+    my @tree_final = map { { id=>$_, text=>$_, leaf=>\0, children=>$tree{$_} } } sort keys %tree;
+    $c->stash->{json} = \@tree_final;
     $c->forward("View::JSON");
 }
+
+sub action_tree : Local {
+    my ( $self, $c ) = @_;
+    my @actions = $c->model('Actions')->list;
+    my @tree_final;
+    my %tree;
+
+    my $children_of;
+
+    $children_of = sub {
+        my ( $parent, @actions ) = @_;
+        my $children;
+
+        for my $action ( @actions ) {
+
+            my $key = $action->{key};
+            next if $key !~ /^$parent\.(.*)/; # skip if not children
+
+            my @tokens = split /\./, $1; # split in tokens
+            my $name = shift @tokens;
+            my $id = $parent.".".$name; # add myself to parent
+            
+            next if $tree{$id}; # skip if already in tree
+            $tree{$id}=1; # declarate myself as in tree
+
+            if ( @tokens ) { # not a leaf
+                push @$children, { id=>$id, text => $name, leaf=>\0, children=> $children_of->($id, @actions) };
+            } else { # a leaf
+                push @$children, { id=>$id, text => sprintf( "%s (%s)",_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
+            }
+
+        }
+        return [ sort { $a->{id} cmp $b->{id} } _array $children ];
+    };
+
+    foreach my $key ( sort map { $_->{key} } @actions ) {
+        ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
+        next if $tree{$folder};
+        $tree{$folder}=1;
+        
+        if ( $folder ne $key ) {
+            my $children = $children_of->( $folder, @actions );
+            push @tree_final, { id=>$folder, text=>$folder, leaf=>\0, children => $children }; 
+        } else {
+            push @tree_final, { id=>$key, text => $key, leaf=>\1 };
+        }
+    }
+    $c->stash->{json} = \@tree_final;
+    $c->forward("View::JSON");
+}
+
 
 sub update : Local {
     my ( $self, $c ) = @_;
@@ -205,5 +257,47 @@ sub all : Local {
     $c->forward('View::JSON');  
 }
 
+
+sub roleusers : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my @data = ();
+        #my %projects = DB->BaliProject->search({ id_parent=>undef, nature=>undef }, { select=>[qw(id name)] } )->hash_unique_on('id');
+        #my %user_projects = DB->BaliRoleuser->search({ id_role=>$p->{id_role} })->hash_on('username');
+        my %user_projects = DB->BaliRoleuser->search({ id_role=>$p->{id_role},  }, 
+            { join=>'projects', select=>[qw(username projects.name)] })->hash_on('username');
+
+        my @data = map {
+            my $u=$_;
+            +{ user=>$u, projects=>join(', ', sort map { $_->{projects}{name} } _array $user_projects{$u} ) }
+        } sort keys %user_projects;
+        $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar @data };
+    } catch { 
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub roleprojects : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my @data = ();
+        #my %projects = DB->BaliProject->search({ id_parent=>undef, nature=>undef }, { select=>[qw(id name)] } )->hash_unique_on('id');
+        #my %project_users = DB->BaliRoleuser->search({ id_role=>$p->{id_role} })->hash_on('username');
+        my %project_users = DB->BaliRoleuser->search({ id_role=>$p->{id_role},  }, 
+            { join=>'projects', select=>[qw(username projects.name)], as=>[qw(username pname)] })->hash_on('pname');
+
+        my @data = map {
+            my $u=$_;
+            +{ project=>$u, users=>join(', ', sort map { $_->{username} } _array $project_users{$u} ) }
+        } sort keys %project_users;
+        $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar @data };
+    } catch { 
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
+    };
+    $c->forward('View::JSON');  
+}
 
 1;

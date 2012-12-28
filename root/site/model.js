@@ -845,6 +845,39 @@ Baseliner.form.ComboList = function(c) {
 };
 Ext.extend( Baseliner.form.ComboList, Ext.form.ComboBox );
 
+Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, { 
+    mode: 'local',
+    fieldLabel: _("Baseline"),
+       name: 'bl',
+       hiddenName: 'bl',
+       valueField: 'bl', 
+       displayField: 'name',
+    allowBlank: false,
+    msgTarget: 'under',
+    allowAddNewData: true,
+    addNewDataOnBlur: true, 
+    singleMode: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    triggerAction: 'all',
+    resizable: true,
+    typeAhead: true,
+    initComponent: function(){
+        var store = new Baseliner.JsonStore({
+            root: 'data' , 
+            remoteSort: true,
+            autoLoad: true,
+            totalProperty:"totalCount", 
+            baseParams: {}, //{ no_common: true },
+            id: 'id', 
+            url: '/baseline/json',
+            fields: ['id','bl','name','description', 'active'] 
+        });
+        this.store = store;
+        Baseliner.model.ComboBaseline.superclass.initComponent.call(this);
+    }
+});
+
 Baseliner.model.SelectBaseline = function(c) {
     var self = this;
     var tpl_list = new Ext.XTemplate(
