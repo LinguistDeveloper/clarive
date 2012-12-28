@@ -26,7 +26,7 @@ ren_log() {
     echo "Log file: $LOGFILE"
 }
 
-message="Baseliner Dispatcher starting in background..."
+message="Baseliner Dispatcher starting in the background..."
 if [ "$1" == "restart" ];
 then
         bali stop service.dispatcher 
@@ -62,6 +62,18 @@ then
         fi
         echo "Tail following Baseliner log '$BASELINER_LOGHOME/balid.log'..."
         tail -f $BASELINER_LOGHOME/balid.log
+        exit 0
+fi
+
+if [ "$1" == "log" ];
+then
+        if [ "$BASELINER_LOGHOME" == "" ];
+        then
+            echo "BASELINER_LOGHOME is not set"
+            exit 1
+        fi
+        echo "Cat log '$BASELINER_LOGHOME/balid.log'..."
+        cat $BASELINER_LOGHOME/balid.log
         exit 0
 fi
 

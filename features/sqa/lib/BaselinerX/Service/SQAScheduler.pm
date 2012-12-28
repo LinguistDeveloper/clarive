@@ -28,7 +28,7 @@ sub daemon {
 }
 register 'service.sqa.scheduler_once' => {
   name    => '',
-  handler => \&daemon,
+  handler => \&run_once,
   config => 'config.sqa.scheduler'
 };
 
