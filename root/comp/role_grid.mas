@@ -140,12 +140,8 @@
         });
 
         var new_role_tree = new Ext.tree.TreePanel({
-            region:'west',
             title: _('Available Actions'),
             loader: treeLoader,
-            width: 300,
-            split: true,
-            colapsible: true,
             useArrows: true,
             ddGroup: 'secondGridDDGroup',
             animate: true,
@@ -154,6 +150,68 @@
             autoScroll: true,
             rootVisible: false,
             root: treeRoot
+        });
+
+        var id_role = rec && rec.data ? rec.data.id : -1;
+        var store_role_users=new Baseliner.JsonStore({ 
+            root: 'data',
+            remoteSort: true,
+            totalProperty: 'totalCount',
+            id: 'id',
+            baseParams: { id_role: id_role },
+            url: '/role/roleusers',
+            fields: [ 'user','projects' ]
+        });
+        var role_users = new Ext.grid.GridPanel({
+            title: _('Users'),
+            store: store_role_users,
+            defaults: { sortable: true },
+            stripeRows: true,
+            autoScroll: true,
+            viewConfig: { forceFit: true },
+            columns: [
+                { header: _('User'), width: 100, dataIndex: 'user', sortable: true },	
+                { header: _('Projects'), width: 100, dataIndex: 'projects', sortable: true, renderer: Baseliner.render_wrap }
+            ]
+        });
+        role_users.on('activate', function(){
+            if( id_role!=-1 && store_role_users.getCount() == 0 ) 
+                store_role_users.load();
+        });
+
+        var store_role_projects=new Baseliner.JsonStore({ 
+            root: 'data',
+            remoteSort: true,
+            totalProperty: 'totalCount',
+            id: 'id',
+            baseParams: { id_role: id_role },
+            url: '/role/roleprojects',
+            fields: [ 'project','users' ]
+        });
+        var role_projects = new Ext.grid.GridPanel({
+            title: _('Projects'),
+            store: store_role_projects,
+            defaults: { sortable: true },
+            stripeRows: true,
+            autoScroll: true,
+            viewConfig: { forceFit: true },
+            columns: [
+                { header: _('Project'), width: 100, dataIndex: 'project', sortable: true },	
+                { header: _('Users'), width: 100, dataIndex: 'users', sortable: true, renderer: Baseliner.render_wrap }
+            ]
+        });
+        role_projects.on('activate', function(){
+            if( id_role!=-1 && store_role_projects.getCount() == 0 ) 
+                store_role_projects.load();
+        });
+
+        var role_navigator = new Ext.TabPanel({
+            region:'west',
+            split: true,
+            width: '50%',
+            colapsible: true,
+            activeTab: 0,
+            items: [ new_role_tree, role_users, role_projects ]
         });
         //////////////// Actions belonging to a role
         var action_store=new Ext.data.Store({ fields: [ {  name: 'action' }, {  name: 'description' }, { name: 'bl' } ] });
@@ -194,9 +252,7 @@
             autoScroll: true,
             store: action_store,
             split: true,
-            viewConfig: {
-                forceFit: true
-            },
+            viewConfig: { forceFit: true },
             clicksToEdit: 1,
             width: 350,
             cm: cm,
@@ -239,22 +295,32 @@
                 return json_res;
         };
 
-        var win = new Ext.Window({
+        var panel_title = rec && rec.data ? _('Role: %1', rec.data.name ) : _('New Role');
+        var rol_panel = new Ext.Panel({
+            layout: 'border',
+            tab_icon:'/static/images/icons/users.gif',
+            title: panel_title,
+              items : [
+                  new_role_form,
+                  grid_role,
+                  role_navigator
+              ] 
+        });
+        Baseliner.addNewTabItem( rol_panel );
+        /* var win = new Ext.Window({
             layout: 'border',
             height: 550, width: 700,
             maximizable: true,
             closeAction: 'close',
             autoDestroy: true,
-            title: '<% _loc('Create Role') %>',
+            title: _('Role'),
               items : [
                   new_role_form,
                   grid_role,
-                  new_role_tree
+                  role_navigator
               ] 
         });
-
-        //////// Show the Window
-        win.show();
+        win.show(); */
 
         //////// Load form and grid data
         grid_role.store.removeAll();
@@ -278,7 +344,7 @@
             height: 450, width: 600,
             closeAction: 'close',
             autoDestroy: true,
-            title: '<% _loc('Create Role') %>',
+            title: _('Create Role'),
               items : [
                   { xtype: 'form',
                   items: [
@@ -381,13 +447,13 @@
     }
 
 
-        var ps = 30; //page_size
+        var ps = 100; //page_size
         store.load({params:{start:0 , limit: ps}}); 
 
         // create the grid
         var grid = new Ext.grid.GridPanel({
             renderTo: 'main-panel',
-            title: '<% _loc('Roles') %>',
+            title: _('Roles'),
             header: false,
             stripeRows: true,
             autoScroll: true,
@@ -496,5 +562,3 @@
         
     return grid;
 })();
-
-
