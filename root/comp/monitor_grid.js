@@ -210,11 +210,11 @@
     };
     var item_job_states = job_states_json.map(function (x) {
       return {
-        id: x.name,
+        id_status: x.name,
         text: _(x.name),
         checked: job_states_check_state[x.name],
         checkHandler: function (obj) {
-          modify_job_states_check_state(obj.id);
+          modify_job_states_check_state(obj.id_status);
           store.load({
             params: {
               job_state_filter: Ext.util.JSON.encode(to_perl_bool(job_states_check_state))
@@ -609,9 +609,10 @@
                 p.body='';
                 var desc = record.data.comments;
                 if( desc != undefined ) {
+                    //desc = desc.replace(/\n|\r|/,'');
                     p.body +='<div style="color: #333; font-weight: bold; margin: 0 0 5 30;">';
-                    p.body += '<img style="vertical-align:middle" src="/static/images/icons/post.gif">';
-                    p.body += '&nbsp;' + desc + '</img></div>';
+                    p.body += '<img style="float:left" src="/static/images/icons/post.gif" />';
+                    p.body += '&nbsp;' + desc + '</div>';
                     css += ' x-grid3-row-expanded '; 
                 }
                 var cont = record.data.contents;
