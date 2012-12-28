@@ -374,7 +374,7 @@
     }
 
 
-        var ps = 30; //page_size
+        var ps = 100; //page_size
         store.load({params:{start:0 , limit: ps}}); 
 
         // create the grid

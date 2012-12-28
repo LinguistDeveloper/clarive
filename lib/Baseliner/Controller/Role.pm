@@ -82,10 +82,13 @@ sub json : Local {
 #        }
 #        my $users_txt = @users ? join(', ', sort(unique(@users))) : '-';
         # produce the grid
-        next if( $query && !query_array($query, $r->role, $r->description, $r->mailbox, $actions_txt
-#            , $users_txt 
-          ));
-#        _log $users_txt;
+        next if $query 
+            && !query_array($query, $r->role, $r->description, $r->mailbox, map { values %$_ } @actions );
+        
+        # if the query has a dot, filter actions
+        if( $query =~ /\./ ) {
+            @actions = grep { $a = join ',', values %$_; $a =~ /$query/i } @actions;
+        }
 
         push @rows,
           {
