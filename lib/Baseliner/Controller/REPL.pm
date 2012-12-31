@@ -59,12 +59,7 @@ sub eval : Local {
     my $sql = $p->{sql};
      
     # save history
-    my @hist;
-    if( @hist = @{ $c->session->{repl_hist} || [] } > 20 ) {
-        @hist = shift @hist; 
-    }
-    push @hist, { text=>_now(), code=>$code };
-    $c->session->{repl_hist} = \@hist;
+    $self->push_to_history( $c->session, $code, $p->{lang} ); 
 
     my ($res,$err);
     my $t0 = [gettimeofday];
@@ -216,25 +211,39 @@ sub tree_hist : Local {
     my $p    = $c->req->parameters;
     my $query = $p->{query};
     my $i = 0;
+    $c->session->{repl_hist} = {} unless ref $c->session->{repl_hist} eq 'HASH';
     $c->stash->{json} = [
         map {
-            { text=>$_->{text}, leaf=>\1, url_click=>'/repl/load_hist', data=>{ i=>$i++ } }
+            my $code = $_->{code};
+            $code =~ s/\n|\r//g;
+            $code = substr( $code, 0, 30 );
+            +{ text=>sprintf('%s (%s): %s', $_->{text}, $_->{lang}, $code ), leaf=>\1, url_click=>'/repl/load_hist', data=>{ text=>$_->{text} } }
         }
+        sort { $b->{text} cmp $a->{text} }  # by date DESC
         grep { $query ? $_->{code}=~/$query/i : 1 }
         grep { ref eq 'HASH' }
-        _array( $c->session->{repl_hist} )
+        values %{ $c->session->{repl_hist} }
     ];
+    _debug $c->stash->{json};
     $c->forward('View::JSON');
 }
 
 sub load_hist : Local {
     my ($self, $c ) = @_;
     my $p    = $c->req->parameters;
-    my $i    = $p->{i};
-    my $h    = $c->session->{repl_hist}->[ $i ];
+    my $text    = $p->{text};
+    my $h    = $c->session->{repl_hist}->{ $text };
     $c->stash->{json} = ref $h 
-        ? { code=>$h->{eval}, output=>$h->{output} }
+        ? { code=>$h->{code}, output=>$h->{output}, lang=>$h->{lang}, output=>$h->{output} }
         : { output=>'not found' };
+    $c->forward('View::JSON');
+}
+
+sub save_hist : Local {
+    my ($self, $c ) = @_;
+    my $p    = $c->req->parameters;
+    $self->push_to_history( $c->session, $p->{code}, $p->{lang} ); 
+    $c->stash->{json} = {};
     $c->forward('View::JSON');
 }
 
@@ -362,6 +371,23 @@ sub tidy : Local {
         $c->stash->{json} = { success=>\0, msg=>shift };
     };
     $c->forward('View::JSON');
+}
+
+sub push_to_history {
+    my ($self, $session, $code, $lang, $output ) = @_;
+    $session->{repl_hist} = {} unless ref $session->{repl_hist} eq 'HASH';
+    my $hist = $session->{repl_hist} ;
+    my $md5 = _md5( $code ); # don't store duplicate repetitions
+    if( ! $session->{repl_md5} || $session->{repl_md5} ne $md5 ) {
+        if( ( keys %$hist ) > 20 ) {
+            my $oldest = [ sort keys %$hist ]->[0];
+            delete $hist->{ $oldest } if $oldest;
+        }
+        my $key = _now(); 
+        $hist->{ $key } = { text=>$key, code=>$code, lang=>$lang, output=>$output };
+        #$session->{repl_hist} = \@hist;
+        $session->{repl_md5} = $md5;
+    }
 }
 
 1;
