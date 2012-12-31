@@ -94,7 +94,7 @@
                             var sel = sm.getSelected();
                             role_detail(sel.data.id, sel.data.role);
                         } else {
-                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+                            Ext.Msg.alert('Error', _('Select at least one row'));	
                         };
                     }
                 }),
@@ -111,10 +111,10 @@
                                 url: '/role/duplicate',
                                 params: { id_role: sel.data.id },
                                 success: function(resp,opt) { grid.getStore().load(); },
-                                failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not duplicate the role') %>'); }
+                                failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not duplicate the role')); }
                             });	
                         } else {
-                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+                            Ext.Msg.alert('Error', _('Select at least one row'));	
                         };
                     }
                 }),
@@ -125,7 +125,7 @@
                     handler: function() {
                         var sm = grid.getSelectionModel();						
                         var sel = sm.getSelected();
-                        Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to delete the role') %>' + ' ' + sel.data.role + '?', 
+                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the role %1?',sel.data.role), 
                             function(btn){ 
                                 if(btn=='yes') {
                                     var conn = new Ext.data.Connection();
@@ -133,7 +133,7 @@
                                         url: '/role/delete',
                                         params: { id_role: sel.data.id },
                                         success: function(resp,opt) { grid.getStore().remove(sel); },
-                                        failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the role') %>'); }
+                                        failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the role')); }
                                     });	
                                 }
                             } );

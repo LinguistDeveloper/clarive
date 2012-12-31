@@ -76,9 +76,15 @@ sub list : Local {
 
 sub json : Local {
     my ($self,$c)=@_;
+    my $common = _loc('Common');
     my @bl_list =
-      map { { name => $_->{name}, description => $_->{description} || $_->{name},
-          id => $_->{bl}, bl=>$_->{bl}, active => 1 }
+      map { 
+          my $bl = $_->{bl} eq '*' ? $common : $_->{bl};
+          +{ name => $_->{name}, description => $_->{description} || $_->{name},
+              id => $_->{bl}, bl=>$_->{bl}, active => 1, 
+              bl_name=>sprintf( ( defined $_->{name} ? "%s (%s)" : "%s" ),$bl, $_->{name} ),
+              name_bl=>( defined $_->{name} ? sprintf("%s (%s)" ,$_->{name}, $bl ) : $bl )  
+          }
       }
       Baseliner::Core::Baseline->baselines();
     $c->stash->{json} = { totalCount=>scalar(@bl_list), data=> \@bl_list };

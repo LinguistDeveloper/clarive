@@ -3497,7 +3497,7 @@ msgid "Are you sure you want to deploy/rollback %1 to baseline %2?"
 msgstr "¿Quiere mover %1 al entorno de %2?"
 
 msgid "Are you sure you want to delete the role %1?"
-msgstr "¿Seguro que quieres borrar el rol %1?"
+msgstr "¿Seguro que quiere borrar el rol %1?"
 
 msgid "Update Baselines"
 msgstr "Actualiza Líneas Bases"

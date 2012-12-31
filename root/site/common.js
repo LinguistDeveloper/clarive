@@ -213,6 +213,12 @@ Baseliner.render_bl = function (val){
     return String.format('<b>{0}</b>', val );
 }
 
+Baseliner.render_bl_name = function(val,metadata,rec,rowIndex,colIndex,store) {
+    if( val == null || val == undefined ) return '';
+    if( val == '*' ) val = _('Common');
+    return String.format('<b>{0}</b>', rec.data.bl_name );
+}
+
 Baseliner.render_loc = function (val){
     return _(val);
 }

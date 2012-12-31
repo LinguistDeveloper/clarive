@@ -4,11 +4,12 @@
         region: 'center',
         frame: true,
         labelWidth: 100, 
-        defaults: { width: 250 },
+        defaults: { width: 250,  msgTarget: 'under' },
         buttons: [
             {  text: _('OK'),
                 handler: function(){ 
                     var ff = new_role_form.getForm();
+                    if( ! ff.isValid() ) return;
                     var actions_json = action_grid_data();
                     ff.submit({
                         params: { role_actions: actions_json },
@@ -27,8 +28,8 @@
         ],
         items: [
             {  xtype: 'hidden', name: 'id', value: -1 }, 
-            {  xtype: 'textfield', name: 'name', fieldLabel: '<% _loc('Role Name') %>' }, 
-            {  xtype: 'textarea', name: 'description', height: 100, fieldLabel: '<% _loc('Description') %>' },
+            {  xtype: 'textfield', name: 'name', fieldLabel: _('Role Name'), allowBlank: false }, 
+            {  xtype: 'textarea', name: 'description', height: 100, fieldLabel: _('Description') },
             {  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') } 
         ]
     });
@@ -41,7 +42,7 @@
     });
 
     var tree_check_folder_enabled = function(root) { // checks if parent folder has children
-            var flag= grid_role.store.getCount()<1 ? false : true;
+            var flag= action_store.getCount()<1 ? false : true;
             root.eachChild( function(child) {
                 if( ! child.disabled ) {
                     flag = false;
@@ -52,7 +53,7 @@
     };
 
     var tree_check_in_grid = function(node) {
-            var ff = grid_role.store.find('action', node.id );
+            var ff = action_store.find('action', node.id );
             if( ff  >=0 ) { // check if its in the grid already
                 node.disable();
             } else {
@@ -82,7 +83,7 @@
     };
             
     var treeRoot = new Ext.tree.AsyncTreeNode({
-            text: '<% _loc('actions') %>',
+            text: _('actions'),
             draggable: false,
             id:'action.root',
             listeners: {
@@ -174,6 +175,7 @@
                 { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_loc },
                 { header: _('Baseline'), width: 150, dataIndex: 'bl', sortable: true,
+                          renderer: Baseliner.render_bl,
                           editor: new Baseliner.model.ComboBaseline()
                 }
         ]
@@ -235,7 +237,7 @@
                 ddGroup    : 'secondGridDDGroup',
                 notifyDrop : function(dd, e, data){
                         var n = dd.dragData.node;
-                        var s = grid_role.store;
+                        var s = action_store;
                         var add_node = function(node ) {
                             //if( s.find('action', node.id ) < 0 ) {
                                 var rec = new Ext.data.Record({ action: node.id, description: node.text });
@@ -297,10 +299,10 @@
         try {
             var rec = role_data_store.getAt(0);
             //////// Load form and grid data
-            grid_role.store.removeAll();
+            action_store.removeAll();
             if( rec ) {
                 // Grid
-                var gs = grid_role.store;
+                var gs = action_store;
                 var rd = rec.data.actions;
                 if( rd!=undefined ) {
                     for( var i=0; i < rd.length; i++ ) {

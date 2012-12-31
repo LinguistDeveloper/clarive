@@ -848,10 +848,10 @@ Ext.extend( Baseliner.form.ComboList, Ext.form.ComboBox );
 Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, { 
     mode: 'local',
     fieldLabel: _("Baseline"),
-       name: 'bl',
-       hiddenName: 'bl',
-       valueField: 'bl', 
-       displayField: 'name',
+    name: 'bl',
+    hiddenName: 'bl',
+    valueField: 'bl', 
+    displayField: 'bl_name',
     allowBlank: false,
     msgTarget: 'under',
     allowAddNewData: true,
@@ -871,9 +871,16 @@ Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, {
             baseParams: {}, //{ no_common: true },
             id: 'id', 
             url: '/baseline/json',
-            fields: ['id','bl','name','description', 'active'] 
+            fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
         });
         this.store = store;
+        var tpl_list = new Ext.XTemplate(
+            '<tpl for=".">',
+            '<div class="x-combo-list-item"><strong>{[ values.bl == "*" ? _("Common") : values.bl ]}</strong> {[ values.name ? "(" + values.name + ")" : "" ]}</div>',
+            '</tpl>'
+        );
+        this.tpl = tpl_list;
+        this.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">{[ values.name ? values.bl + " (" + values.name + ")" : ( values.bl == "*" ? _("Common") : values.bl ) ]}</tpl>' );
         Baseliner.model.ComboBaseline.superclass.initComponent.call(this);
     }
 });
@@ -894,7 +901,7 @@ Baseliner.model.SelectBaseline = function(c) {
         baseParams: {}, //{ no_common: true },
         id: 'id', 
         url: '/baseline/json',
-        fields: ['id','bl','name','description', 'active'] 
+        fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
     });
     Baseliner.model.SelectBaseline.superclass.constructor.call(this, Ext.apply({
        fieldLabel: _("Baseline"),
