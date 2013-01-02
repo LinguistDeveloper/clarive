@@ -224,7 +224,6 @@ sub tree_hist : Local {
         grep { ref eq 'HASH' }
         values %{ $c->session->{repl_hist} }
     ];
-    _debug $c->stash->{json};
     $c->forward('View::JSON');
 }
 
