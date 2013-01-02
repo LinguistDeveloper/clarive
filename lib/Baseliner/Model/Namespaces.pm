@@ -53,7 +53,7 @@ sub namespaces {
         } catch {
             my $error = shift;
             _log $error;
-        }
+        };
     }
     return sort {
         return -1 if $a->ns eq '/';
