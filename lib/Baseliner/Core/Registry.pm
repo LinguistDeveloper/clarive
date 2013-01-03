@@ -86,7 +86,17 @@ sub add_class {
 sub setup {
     my $self= shift; 
     $self->load_enabled_list;
+    $self->load_config_registry;
     $self->initialize( @_ );
+}
+
+sub load_config_registry {
+    my $self= shift; 
+    my $keys = Baseliner->config->{registry}{'keys'};
+    return unless ref $keys eq 'HASH';
+    for my $key ( keys %$keys ) {
+        $self->add( 'config', $key, $keys->{$key} );
+    }
 }
 
 ## blesses all registered objects into their registrable classes (new Service, new Config, etc.)
@@ -281,7 +291,7 @@ sub starts_with {
     my ($self, $key_prefix )=@_;
     my @keys;
     for my $key ( keys %{ $self->registrar || {} } ) {
-        push @keys, $key if( $key =~ /^$key_prefix/ );
+        push @keys, $key if( !defined $key_prefix || $key =~ /^$key_prefix/ );
     }
     return @keys;
 }

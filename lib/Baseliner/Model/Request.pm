@@ -383,8 +383,8 @@ sub status_by_key {
     my $u = Baseliner->model('Users')->get( $p{username} );
     my $realname = $u->{realname} || $p{username};
     # Get requested_by info
-    my $u = Baseliner->model('Users')->get( $request->requested_by );
-    my $realname_by = $u->{realname} || $request->requested_by;
+    my $u2 = Baseliner->model('Users')->get( $request->requested_by );
+    my $realname_by = $u2->{realname} || $request->requested_by;
 
     my @contents;
     my @cams;
