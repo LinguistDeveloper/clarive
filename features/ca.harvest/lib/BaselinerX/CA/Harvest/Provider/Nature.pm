@@ -1,6 +1,7 @@
 package BaselinerX::CA::Harvest::Provider::Nature;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use BaselinerX::CA::Harvest::Namespace::Nature;
 use Baseliner::Core::DBI;
 
@@ -26,6 +27,14 @@ sub domain    { 'harvest.nature' }
 sub icon      { '/static/images/icon/nature.gif' }
 sub name      { 'Natures' }
 
+register 'config.harvest.natures' => {
+   name => 'Harvest Natures',
+   metadata => [
+            { id=>'harvest', label=>'Natures to process', type=>'hash', 
+              default=>qq{BIZTALK=>'Biztalk','ECLIPSE'=>'Eclipse','FICHEROS'=>'Ficheros','J2EE'=>'J2EE','.NET'=>'.Net',ORACLE=>'Oracle','RS'=>'Reporting Services','SISTEMAS'=>'Sistemas','VIGNETTE'=>'Vignette' } }
+      ]
+};
+
 sub find {
     my ($self, $item ) = @_;
 	$self->not_implemented;
@@ -36,13 +45,34 @@ sub find {
 sub list {
     my ($self, $c, $p) = @_;
 	_log "provider list started...";
+	my @ns;
+    my $natures=config_get('config.harvest.natures');
+
+    foreach ( keys $natures->{harvest} ) {
+        push @ns, BaselinerX::CA::Harvest::Namespace::Nature->new({
+            ns      => 'nature/' . $_,
+            ns_name => $natures->{harvest}{$_},
+            ns_type => _loc('Harvest Nature'),
+            ns_id   => 0,
+            ns_data => { },
+            provider=> 'namespace.harvest.nature',
+        });
+    }
+
+	_log "provider list finished.";
+	return \@ns;
+}
+
+sub list_query {
+    my ($self, $c, $p) = @_;
+	_log "provider list started...";
     my $bl = $p->{bl};
     my $job_type = $p->{job_type};
     my $query = $p->{query};
 	my @ns;
 	my $db = Baseliner::Core::DBI->new({ model=>'Harvest' });
 
-	my $config = Baseliner->registry->get('config.harvest.nature')->data;
+	my $config = Baseliner->registry->get('config.harvest.natures')->data;
 	my $cnt = $config->{position};
 
 	my @folders = $db->array(qq{
@@ -75,7 +105,7 @@ sub list_slow {
     my $sql_query;
 	my $rs = Baseliner->model('Harvest::Harpathfullname')->search({  }); #TODO find a condition to make this query fast
 	my @ns;
-	my $config = Baseliner->registry->get('config.harvest.nature')->data;
+	my $config = Baseliner->registry->get('config.harvest.natures')->data;
 	my $cnt = $config->{position};
 	my %done;
 	while( my $r = $rs->next ) {
