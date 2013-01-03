@@ -262,7 +262,6 @@ sub roleusers : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-        my @data = ();
         #my %projects = DB->BaliProject->search({ id_parent=>undef, nature=>undef }, { select=>[qw(id name)] } )->hash_unique_on('id');
         #my %user_projects = DB->BaliRoleuser->search({ id_role=>$p->{id_role} })->hash_on('username');
         my %user_projects = DB->BaliRoleuser->search({ id_role=>$p->{id_role},  }, 
@@ -283,7 +282,6 @@ sub roleprojects : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-        my @data = ();
         #my %projects = DB->BaliProject->search({ id_parent=>undef, nature=>undef }, { select=>[qw(id name)] } )->hash_unique_on('id');
         #my %project_users = DB->BaliRoleuser->search({ id_role=>$p->{id_role} })->hash_on('username');
         my %project_users = DB->BaliRoleuser->search({ id_role=>$p->{id_role},  }, 
