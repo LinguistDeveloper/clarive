@@ -593,8 +593,9 @@ sub merge_calendars {
 
     $where->{bl} = ['*'];
     push @{ $where->{bl} }, $p{bl} if $p{bl};
-    $where->{ns} = $p{ns} if $p{ns}; # [ 'xxxx.nature/yyyy', '/'  ]
+    $where->{ns} = [ _unique _array ( '/', ( $p{ns} and $p{ns} ) ) ]; # [ 'xxxx.nature/yyyy', '/'  ]
     _debug "Calendar search: " . _dump $where;
+
     
     my @cals = DB->BaliCalendar->search(
         $where,
