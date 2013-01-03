@@ -8,6 +8,6 @@ use utf8;
 
 register 'action.admin.biztalik' => { name=>'Biztalk administration'};
 
-register 'nature.biztalk' => {name => 'Biztalk', icon => 'biztalk', ns   => 'nature/biztalk', action=>'action.admin.biztalik'};
+register 'nature.biztalk' => {name => 'Biztalk', icon => 'biztalk', ns   => 'nature/biztalk', action=>'action.admin.biztalk'};
 
 1;
