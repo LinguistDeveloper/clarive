@@ -55,10 +55,14 @@ sub namespaces {
             _log $error;
         }
     }
+
+return sort { $a->ns cmp $b->ns } @ns_list;
+=head
     return sort {
         return -1 if $a->ns eq '/';
         ( $a->ns_type . $a->ns ) cmp ( $b->ns_type . $b->ns )
     } @ns_list;
+=cut
 }
 
 sub providers {
