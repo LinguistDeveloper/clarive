@@ -29,6 +29,7 @@ sub js : Local {
         $text .= $self->parse_po($c,  'features', $feature->id, 'lib', 'Baseliner', 'I18N', $lang . '.po' );
     }
     $text .= ' "" : "" ';  # finish up
+    $c->response->content_type('text/javascript; charset=utf-8');
     $c->stash->{po} = $text;
     $c->stash->{template} = '/site/i18n.js';
 }

@@ -69,5 +69,16 @@ sub hash_on {
     }
     return wantarray ? %ret : \%ret;
 }
+
+# same, but with one hash per key
+sub hash_unique_on {
+    my ($self, $col ) = @_;
+    my %ret;
+    for my $row ( $self->hashref->all ) {
+        my $k = $row->{ $col };
+        $ret{ $k } = $row;
+    }
+    return wantarray ? %ret : \%ret;
+}
 1;
 

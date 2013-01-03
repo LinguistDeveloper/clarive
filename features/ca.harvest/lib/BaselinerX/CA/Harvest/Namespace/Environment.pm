@@ -1,6 +1,6 @@
 package BaselinerX::CA::Harvest::Namespace::Environment;
 use Moose;
-with 'Baseliner::Role::Namespace::Application';
+with 'Baseliner::Role::Namespace::Project';
 use Baseliner::Utils;
 
 sub BUILDARGS {

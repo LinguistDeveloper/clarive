@@ -17,9 +17,9 @@ Returns a stashed Core::Namespace object list.
 =cut
 sub list : Private {
     my ($self,$c)=@_;
-    my $p = $c->stash->{ns_query};
-    $p->{username} = $c->username;
-    $c->stash->{ns_list} = [ $c->model('Namespaces')->namespaces($p) ];
+    my $args = $c->stash->{ns_query} // {};
+    $args->{username} = $c->username;
+    $c->stash->{ns_list} = [ $c->model('Namespaces')->namespaces($args) ];
 }
 
 =head2 load_namespaces
@@ -59,7 +59,7 @@ sub ns_list : Path('/core/namespaces') {
     my @ns_list = $c->model('Namespaces')->namespaces();
     my $res='<pre>';
     for my $n ( @ns_list ) {
-        $res.= Dump $n
+        $res.= _dump( $n )
     }
     $c->res->body($res);
 }

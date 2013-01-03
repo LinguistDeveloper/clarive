@@ -53,7 +53,7 @@ sub namespaces {
         } catch {
             my $error = shift;
             _log $error;
-        }
+        };
     }
 
 return sort { $a->ns cmp $b->ns } @ns_list;

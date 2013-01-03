@@ -193,12 +193,13 @@ To do:
     tree.on('click', function(n,e) {
         if( n.attributes.url_click != undefined ) {
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
-                if( res.code != undefined ) { 
+                if( res.code ) { 
                     last_name= n.text;
                     editor.setValue( res.code ); fcode.setValue( res.code );
                 }
-                if( res.output != undefined ) set_output( res.output );
-                if( res.div != undefined ) {
+                if( res.output ) set_output( res.output );
+                if( res.lang ) change_lang({ lang: res.lang, checked: true });
+                if( res.div ) {
                     var tab = cons.add({ xtype:'panel', closable: true,
                         style: { padding: '10px 10px 10px 10px' },
                         title: n.text, html: '<div id="boot">' + res.div + '</div>',
@@ -341,6 +342,7 @@ To do:
         var f = form.getForm();
         set_output( "" );
         fcode.setValue( editor.getValue() );  // copy from codemirror to textarea
+        parms.lang = btn_lang.lang ;
         f.submit({
             params: parms,
             waitMsg: _('Running...'),
@@ -365,6 +367,7 @@ To do:
                 elapsed.setValue( action.result.elapsed );
                 save({ c: fcode.getValue(), o: output.getValue() });
                 editor.focus();
+                reload_hist();
             },
             failure: function(f,action){
                 status.setValue( "ERROR" );
@@ -385,6 +388,19 @@ To do:
             }
         });
     };
+
+    var save_hist = function(){ // only browser-eval needs this (javascript)
+        Baseliner.ajaxEval( '/repl/save_hist', { code: editor.getValue(), lang: btn_lang.lang }, function(res){ 
+            reload_hist();
+        });
+    }
+
+    var reload_hist = function(){
+        var hist = tree.root.firstChild;
+        if( hist && hist.isExpanded() ) {
+            hist.reload();
+        }
+    }
      
     var run_repl = function(){
         var lang = btn_lang.lang;
@@ -401,6 +417,7 @@ To do:
             var d;
             try { 
                 set_output( '' );
+                save_hist();
                 eval("d=(function(){ " + editor.getValue() + " }) ");
                 d = d();
                 if( show == 'table' && d != undefined ) {
@@ -440,6 +457,12 @@ To do:
     var change_lang = function(x) {
         if( x.checked && editor ) { 
             var txt = editor.getValue();
+            if( ! x.syntax ) {
+               x.syntax = ( x.lang == 'sql' ? 'plsql' : x.lang ); 
+            }
+            if( ! x.text ) {
+                x.text = ( x.lang == 'perl' ? 'Perl' : x.lang=='sql' ? 'SQL' : 'JavaScript' );
+            }
             editor.setOption('mode', { name: x.syntax });
             editor.setValue( txt );
             btn_lang.setText( _('Lang: %1', '<b>'+x.text+'</b>') );

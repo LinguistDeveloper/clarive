@@ -718,26 +718,31 @@ sub _tmp_file {
 
 sub _damn {
     my $blessed = shift;
-    my $damned = $blessed;
+    my $damned;
     try {
-        $damned = { %$blessed };
-        try {
-            # recurse
-            if( ref($damned) eq 'HASH' ) {
-                for my $k ( keys %$damned ) {
-                    next unless ref($k) eq 'HASH'; 
-                    $damned->{$k} = _damn( $damned->{$k} );
-                }
+        # recurse
+        if( ref($blessed) eq 'HASH' ) {
+            $damned = {};
+            for my $k ( keys %$blessed ) { 
+                $damned->{$k} = _damn( $blessed->{$k} );
             }
-        } catch {
-            my $err = shift;
-            warn 'DAMN1=' . $err;
-            exit;
-        };
+        }
+        elsif( ref($blessed) eq 'SCALAR' ) {
+            $damned = "$$blessed";
+        }
+        elsif( ref($blessed) eq 'ARRAY' ) {
+            $damned = [ map { _damn($_) } @$blessed ];
+        }
+        elsif( ref $blessed ) {
+            $damned = _damn( { %$blessed } );
+        }
+        else {
+            $damned = $blessed;
+        }
     } catch {
         my $err = shift;
-        warn 'DAMN1=' . $err;
-        exit;
+        $damned = $blessed;
+        _error( 'DAMN1=' . $err );
     };
     return $damned;
 }
