@@ -31,7 +31,8 @@ register 'config.job.calendar' => {
 sub calendar : Path( '/job/calendar' ) {
     my ( $self, $c ) = @_;
     my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
-    $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
+    $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application' ] };
+    $c->stash->{ list_calendar } = 1;
     $c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
     $c->forward('/permissions/load_user_actions');
