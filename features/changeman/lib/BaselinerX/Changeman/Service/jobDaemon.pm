@@ -372,8 +372,34 @@ sub run_once {
           } elsif ($job->step eq 'RUN' && $job->status eq 'WAITING') {
               _debug $fprefix . "WAITING";
               if ( $file->{jobname} =~ m{SITE(..)}i ) { ## NO HAY CAMBIO
-                  next unless ($job->step eq 'RUN' && $job->status eq 'WAITING');
-                  $row=$runner->logger->info( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully", $pkg, 'BACKED OUT', $site ) );
+                  _debug $fprefix . "BACKEDOUT";
+                  unless ($job->step eq 'RUN' && $job->status eq 'WAITING') {
+                      _debug $fprefix . "JOB " . $job->id . " exists but not in RUN-WAITING - skipped";
+                      next;
+                  }
+                  if ( $1 eq 'OK' ) {
+                      $row=$runner->logger->info( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully", $pkg, 'BACKED OUT', $site ) );
+                  } else {
+                      $row=$runner->logger->error( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error", $pkg, 'BACKED OUT', $site ) );
+                      $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+                      _debug $fprefix . "CLEANED";
+
+                      my $chm = BaselinerX::Changeman->new( host=>$chmConfig->{host}, port=>$chmConfig->{port}, key=>$chmConfig->{key} );
+                      my $ret;
+
+                      if ($scm eq 'A') { # Comes from Baseliner
+                          $ret= $chm->xml_cancelJob(job=>$runner->name, items=>[$pkg], jobName=>$runner->name, logger=>$runner->logger ) ;
+                          if ($ret->{ReturnCode} ne '00') {
+                              $log_action = _loc( "Package %1 can not be dessassociatted from job %2", $pkg, $runner->name );
+                              $row=$runner->logger->warn( $log_action, _dump $ret );
+                          } else {
+                              $log_action = _loc( "Package %1 dessassociatted from job %2", $pkg, $runner->name );
+                              $row=$runner->logger->debug( $log_action, _dump $ret );
+                          }
+                      }
+
+                      BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
+                  }
               } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## BACKED OUT
                   _debug $fprefix . "FIN - BACKED OUT";
                   unless ($job->step eq 'RUN' && $job->status eq 'WAITING') {
