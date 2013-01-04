@@ -1437,18 +1437,6 @@ msgstr "Marcha Atrás"
 msgid "RUNNING"
 msgstr "En Ejecución"
 
-msgid "FINISHED DOING ROLLBACK CORRECTLY"
-msgstr "Finalizado con error. Rollback OK"
-
-msgid "FINISHED CORRECTLY"
-msgstr "Finalizado OK"
-
-msgid "FINISHED WITH ERROR DURING ROLLBACK"
-msgstr "Finalizado con error. Ha fallado el Rollback"
-
-msgid "FINISHED WITH ERROR"
-msgstr "Finalizado con error"
-
 msgid "FINISHED"
 msgstr "Finalizado"
 
@@ -4306,3 +4294,53 @@ msgstr "Tópicos abiertos por categorías"
 
 msgid "Chart pie (Topics open by category)"
 msgstr "Gráfico circular (Tópicos abiertos por categorías)"
+
+# BDE 
+
+msgid "FINISHED DOING ROLLBACK CORRECTLY"
+msgstr "Finalizado realizando Rollback correctamente"
+
+msgid "FINISHED CORRECTLY"
+msgstr "Finalizado correctamente"
+
+msgid "FINISHED WITH ERROR"
+msgstr "Finalizado con error"
+
+msgid "FINISHED WITH ERROR DURING ROLLBACK"
+msgstr "Finalizado con error durante el Rollback"
+
+msgid "Unknown %1"
+msgstr "Desconocido (%1)"
+
+msgid "All projects"
+msgstr "Todos los proyectos"
+
+msgid "Scheduled at %1 of %2"
+msgstr "Pase planificado a las %1 del %2"
+
+msgid "Application: %1. Scheduled Job %2 at %3 of %4"
+msgstr "Aplicación: %1. Pase planificado a las %3 del día %4"
+
+msgid "Applications: %1. Scheduled Job %2 at %3 of %4"
+msgstr "Aplicaciones: %1. Pase planificado a las %3 del %4"
+
+msgid "Application: %1. %2"
+msgstr "Aplicación: %1. %2"
+
+msgid "Applications: %1. %2"
+msgstr "Aplicaciones: %1. %2"
+
+msgid "Job %1: %2"
+msgstr "Pase %1: %2"
+
+msgid "PROJECT"
+msgstr "Proyecto"
+
+msgid "ISSUE"
+msgstr "Incidencia"
+
+msgid "MAINTENANCE"
+msgstr "Mantenimiento"
+
+msgid "REQUEST"
+msgstr "Petición"
