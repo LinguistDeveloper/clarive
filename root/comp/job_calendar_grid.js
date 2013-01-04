@@ -25,7 +25,7 @@
         store.load({params:{start:0 , limit: ps}}); 
 
         //Seleccion multiple con checkboxes		
-        var checkSelectionModel = new Ext.grid.CheckboxSelectionModel();
+        var checkSelectionModel = new Ext.grid.CheckboxSelectionModel({singleSelect:true});
 
         var render_ns = function(v,metadata,rec,rowIndex,colIndex,store) {
             return v == '/' ? '(' + _('All') + ')' : v ;
