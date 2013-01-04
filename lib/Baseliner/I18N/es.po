@@ -1437,6 +1437,18 @@ msgstr "Marcha Atrás"
 msgid "RUNNING"
 msgstr "En Ejecución"
 
+msgid "FINISHED DOING ROLLBACK CORRECTLY"
+msgstr "Finalizado con error. Rollback OK"
+
+msgid "FINISHED CORRECTLY"
+msgstr "Finalizado OK"
+
+msgid "FINISHED WITH ERROR DURING ROLLBACK"
+msgstr "Finalizado con error. Ha fallado el Rollback"
+
+msgid "FINISHED WITH ERROR"
+msgstr "Finalizado con error"
+
 msgid "FINISHED"
 msgstr "Finalizado"
 
