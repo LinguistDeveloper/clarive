@@ -322,11 +322,15 @@ sub end : ActionClass('RenderView') {
             $c->forward( 'View::JSON');
         }
     }
-    #if( $c->res->content_type eq 'text/html' ) {
-    #    _debug _dump $c->req;
-    #    $c->res->content_type( 'text/css' );
-    #}
-    $c->stash->{$_}=$c->request->parameters->{$_} 
+    # set correct content-type, for Mason
+    if( $c->req->path =~ /\.css$/ ) {
+        $c->response->content_type('text/css; charset=utf-8');
+    }
+    elsif( $c->req->path =~ /\.js$/ ) {
+        $c->response->content_type('text/javascript; charset=utf-8');
+    }
+    # send params to mason, unless already on stash with the same name
+    $c->stash->{$_} //= $c->request->parameters->{$_} 
         foreach( keys %{ $c->req->parameters || {} });
 }
 
