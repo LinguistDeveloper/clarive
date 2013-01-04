@@ -1,0 +1,58 @@
+<div class="header">
+	<div class="head_left"> <img id="form:imagen0" src="/bde-header/pastillas.gif" /></div>
+</div>
+
+<div id="smoothmenu1" class="ddsmoothmenu">
+<ul>
+<li>
+    <a href="<% $c->config->{bde_scm_web} %>/scmdist/index2.jsp" id="home">SCM</a>
+</li>
+<li>
+  <a href="#">Distribuidor</a>
+  <ul>
+      <li>
+        <a href="<% $c->config->{bde_scm_web} %>/scmdist/monitor.jsp" id="home">Ver Monitor</a>
+      </li>
+      <li>
+        <a href="<% $c->config->{bde_scm_web} %>/scmdist/pase.jsp" id="home">Nuevo Pase</a>
+      </li>
+  </ul>
+</li>
+<li><a href="#">Changeman</a>
+  <ul>
+      <li><a href="/tab/job/monitor">Ver Monitor</a></li>
+      <li><a href="/tab/job/create">Nuevo Pase</a></li>
+  </ul>
+</li>
+<li><a href="#">Formulario Infraestructura</a>
+  <ul>
+      <li>
+        <a href="<% $c->config->{bde_scm_web} %>/scm_inf/inf/infTareasRPT.jsp" id="home">Peticiones de Infraestructura</a>
+      </li>
+      <li>
+        <a href="<% $c->config->{bde_scm_web} %>/scm_inf/inf/infMant.jsp" id="home">Mantenimiento</a>
+      </li>
+  </ul>
+</li>
+<li>
+    <a href="<% 'http://scm-sqa.bde.es' %>">SCM-SQA</a>
+</li>
+<li>
+    <a href="<% $c->config->{bde_scm_web} %>/scm_inf/inf/infReport.jsp">Informes</a>
+</li>
+</ul>
+<br style="clear: left" />
+</div>
+
+<script type="text/javascript">
+
+ddsmoothmenu.init({
+	mainmenuid: "smoothmenu1", //menu DIV id
+	orientation: 'h', //Horizontal or vertical menu: Set to "h" or "v"
+	classname: 'ddsmoothmenu', //class added to menu's outer DIV
+	//customtheme: ["#1c5a80", "#18374a"],
+	contentsource: "markup" //"markup" or ["container_id", "path_to_menu_file"]
+})
+
+</script>
+

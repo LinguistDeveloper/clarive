@@ -1,0 +1,21 @@
+
+.header {
+	margin-top: -11;
+	padding-top: 0;
+	border: 0;
+}
+
+.head_left { 
+	height:54px;
+	text-align:right;
+	width: 100%;
+	margin-top:0;
+	padding-top:0;
+	background:url('/bde-header/fondocab_base.gif') no-repeat; 
+	float:left;
+	text-align:right;
+	margin:0;
+}
+
+
+
