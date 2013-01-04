@@ -152,6 +152,7 @@ sub GenerateJobDetailReport {
   my $contents   = $job->job_stash->{contents};
   my $bl         = $job->bl;
   my $start_time = $job->job_data->{starttime};
+  my $node       = join(", ",_array $job->stash->{procSites});
   my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
 
   my @natures = _unique map { _loc($_->{name}) }
@@ -169,13 +170,13 @@ sub GenerateJobDetailReport {
     $_->{technology} = $technology;
     $_->{subappl} = undef;
     $_->{packagegroup} = undef;
+    $_->{node} = $node;
     $_;
     };
 
   my @data = map  { $addf->($_) } map { +{
        package_name=>( ns_split($_->{item} ))[1],
        cam =>( ns_split($_->{application}) )[1],
-       node=>( $_->{data}->{site}||_loc ('Deleted package') ),
        type=>( $_->{data}->{motivo} eq 'PRO'?'Proyecto':$_->{data}->{motivo} eq 'PET'?'Peticion':$_->{data}->{motivo} eq 'MTO'?'Mantenimiento':$_->{data}->{motivo} eq 'INC'?'<b>Incidencia    :</b>':_loc ("Deleted package") ),
        description=>( $_->{data}->{codigo}||_loc ('Deleted package') )
      } } @{$contents};
