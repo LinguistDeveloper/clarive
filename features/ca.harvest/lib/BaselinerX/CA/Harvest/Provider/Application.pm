@@ -50,6 +50,8 @@ sub list {
     my $bl = $p->{bl};
     my $job_type = $p->{job_type};
     my $query = $p->{query};
+    my $listCalendar = $c->stash->{list_calendar} || 0;
+    delete $c->stash->{list_calendar};
 
 	_log "provider list started...";
 	
@@ -58,7 +60,7 @@ sub list {
 	my $sql_query = { envobjid=>{ '>', '0'}, envisactive=>'Y' };
 
 	# user control
-	if( $p->{username} && ! $hardb->is_superuser($p->{username}) ) {
+	if( ( $p->{username} && ! $hardb->is_superuser($p->{username}) ) && ! $listCalendar ) {
 		my @envs = $hardb->envs_for_user( $p->{username} ); 
 		$sql_query->{envobjid} = { -in => [ @envs ] }; 
 	}
