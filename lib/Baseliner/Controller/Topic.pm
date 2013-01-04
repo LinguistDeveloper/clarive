@@ -354,6 +354,11 @@ sub new_topic : Local {
         $data->{title} = $data->{gdi_perfil_dni};
     }else{
         $data = Baseliner::Model::Topic->get_data( $meta, undef );
+        #Cetelem
+        if($p->{dni}){
+            $data->{gdi_perfil_dni} = $p->{dni};
+            $data->{title} = $data->{gdi_perfil_dni};
+        }
     }
     
     $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
@@ -379,11 +384,9 @@ sub view : Local {
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
     
-    $c->stash->{swGDI} = $p->{GDI};
+    #$c->stash->{swGDI} = $p->{GDI};
+    #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>GDI: " . $p->{GDI};
     
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>GDI: " . $p->{GDI};
-    
-    _log ">>>>>>>>>>>>>>>>>>>>>>>gdi: " . $p->{type};
     
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
@@ -426,7 +429,6 @@ sub view : Local {
 
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
-        _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>PAPA";
         $c->stash->{template} = '/comp/topic/topic_main.js';
     }
 }
