@@ -152,7 +152,7 @@ sub GenerateJobDetailReport {
   my $contents   = $job->job_stash->{contents};
   my $bl         = $job->bl;
   my $start_time = $job->job_data->{starttime};
-  my $node       = join(", ",_array $job->stash->{procSites});
+  my $node       = $bl eq 'PROD'?join(", ",_array $job->stash->{procSites}):"";
   my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
 
   my @natures = _unique map { _loc($_->{name}) }
