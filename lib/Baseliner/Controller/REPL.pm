@@ -364,7 +364,7 @@ sub tidy : Local {
         require Perl::Tidy;
         my $code = $p->{code};
         my $tidied;
-        Perl::Tidy::perltidy( argv=>' ', source=>\$code, destination=>\$tidied );
+        Perl::Tidy::perltidy( argv=>' -l=140', source=>\$code, destination=>\$tidied );
         $c->stash->{json} = { success=>\1, code=>$tidied };
     } catch {
         $c->stash->{json} = { success=>\0, msg=>shift };
