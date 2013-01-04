@@ -451,21 +451,26 @@ if( Baseliner->debug ) {
         my $c = shift;
 
         my @vars = $c->$orig( @_ );
-        my @ret;
-        for my $d ( @vars ) {
-            my ($type,$obj)=@$d;
-            if( $type eq 'Request' ){
-                if( defined $obj->{_log}{_body} && $obj->{_log}{_body} =~ m{(password\s+\|\s+)(.+?)(\s+)}s ) {
-                   my $p = $2;
-                   my $np = '*' x length($p) ;
-                   $obj->{_log}{_body} =~ s{$p}{$np}gsm;
+        if( exists $c->req->params->{password} ) {
+            my @ret;
+            for my $d ( @vars ) {
+                my ($type,$obj)=@$d;
+                if( $type eq 'Request' ){
+                    if( defined $obj->{_log}{_body} && $obj->{_log}{_body} =~ m{(\| password\s+\|\s+)(\S+?)(\s+)\|}s ) {
+                       my $p = $2;
+                       warn "==============> $p";
+                       my $np = '*' x length($p) ;
+                       $obj->{_log}{_body} =~ s{$p}{$np}gsm if length $p;
+                    }
+                    push @ret, $d;
+                } else {
+                    push @ret, $d;
                 }
-                push @ret, $d;
-            } else {
-                push @ret, $d;
             }
+            return @ret;
+        } else {
+            return @vars;
         }
-        return @ret;
     };
 }
 
