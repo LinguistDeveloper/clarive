@@ -710,7 +710,7 @@ sub list : Local {
     my $where={};
     $query and $where = query_sql_build( query=>$query, fields=>[qw(username realname alias)] );
 
-    $where->{active} = 1 if $p->{active_only};
+    $where->{active} = 1; # JRL. Muestra usuarios borrados if $p->{active_only};
 
     my $rs = DB->BaliUser->search(
         $where,
