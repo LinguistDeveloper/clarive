@@ -965,7 +965,8 @@ sub save_data {
                                             $ci->{_ci_updated} = 1;
                                         }
                                         when( 'delete' ) {
-                                            DB->BaliMaster->find( $ci_data->{ci_mid} )->delete; 
+                                            my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
+                                            DB->BaliMaster->find( $ci_mid )->delete; 
                                             $ci->{_ci_updated} = 1;
                                         }
                                         default {
