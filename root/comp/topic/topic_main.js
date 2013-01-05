@@ -3,6 +3,7 @@
     my $ii = Baseliner::Utils::_nowstamp();
     my $swEdit = $c->stash->{swEdit};
     my $permEdit = $c->stash->{permissionEdit};
+    my $app = $c->stash->{app};
 </%perl>
 
 (function(params){
@@ -11,6 +12,8 @@
     var swEdit = <% $swEdit ? 'true' : 'false' %>;
     var permEdit = <% $permEdit ? 'true' : 'false' %>;
     var ii = "<% $ii %>";  // used by the detail page
+    var app = '<% $app %>';
+    
     var btn_form_ok = new Ext.Button({
             text: _('Save'),
             icon:'/static/images/icons/save.png',
@@ -337,22 +340,57 @@
         enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: 'form'
     });
         
-    var tb = new Ext.Toolbar({
-        isFormField: true,
-        items: [
-            btn_detail,
-            btn_edit,
-            '-',
-            btn_comment,
-            btn_form_ok,
-            '->',
-            btn_kanban,
-            btn_graph
-        ]
-    });
-
     var loading_panel = Baseliner.loading_panel();
 
+    if(app && app == 'gdi'){
+        var btn_form_volver = new Ext.Button({
+                text: _('Volver'),
+                icon:'/static/images/icons/save.png',
+                cls: 'x-btn-icon-text',
+                type: 'submit',
+                hidden: false,
+                handler: function() {
+                    //alert('pasa');
+                    //alert(cardpanel.id);
+                    //var card = Ext.getCmp(cardpanel.id);
+                    cardpanel.getLayout().setActiveItem(form_topic);
+                    
+    //    var current_card = Ext.getCmp( id_current_card );
+    //    card.getLayout().setActiveItem(current_card);                    
+                    //card.getLayout().setActiveItem(current_card);
+                    //card.getLayout().setActiveItem(current_card);
+                    //btn_form_volver.hide();
+                    //console.log(card.getLayout().);
+                }
+                    
+        });
+        
+        var tb = new Ext.Toolbar({
+            isFormField: true,
+            anchor: '100%',
+            items: [
+                btn_form_volver
+            ]
+        });  
+
+        
+
+    }else{
+        var tb = new Ext.Toolbar({
+            isFormField: true,
+            items: [
+                btn_detail,
+                btn_edit,
+                '-',
+                btn_comment,
+                btn_form_ok,
+                '->',
+                btn_kanban,
+                btn_graph
+            ]
+        });
+    }
+    
     var cardpanel = new Ext.Panel({
         layout: 'card',
         activeItem: 0,
@@ -363,7 +401,20 @@
         defaults: {border: false},
         items: [ loading_panel, detail ]
     });
-        
+    
+  
+
+    ///cardpanel.elements += ',tbar';
+    //console.log(tb);
+    //cardpanel.getTopToolbar().add(tb);
+    //cardpanel.doLayout();
+    
+    //cardpanel.doLayout();
+    //cardpanel.setTopToolbar(tb);
+    console.log(cardpanel.getTopToolbar());
+    
+    console.log(cardpanel.getTopToolbar().items);
+    
     var detail_reload = function(){
         detail.load({
             url: '/topic/view',

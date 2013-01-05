@@ -383,9 +383,8 @@ sub view : Local {
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
-    
-    #$c->stash->{swGDI} = $p->{GDI};
-    #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>GDI: " . $p->{GDI};
+    $c->stash->{app} = $p->{app};
+    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>GDI: " . $p->{app};
     
     
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
