@@ -175,7 +175,7 @@ sub next_from_last_schedule {
     if ( $next_exec < $now ) {
         $next_exec = $now+$task->frequency;
     }
-    if ( $task->{workdays} ) {
+    if ( $task->workdays ) {
         $next_exec =  $self->next_workday( date => $next_exec);	
     }
     return $next_exec;
