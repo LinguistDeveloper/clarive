@@ -50,7 +50,7 @@ register 'config.bde.purga_inf' => {
     ]
 };
 
-register 'service.bde.purga_inf_hist' => {
+register 'service.bde.purga_inf' => {
   name    => 'Purga historico de formularios (inf_data e inf_data_mv).',
   config  => 'config.bde.purga_inf',
   handler => \&run
