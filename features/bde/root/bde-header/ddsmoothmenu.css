@@ -1,7 +1,14 @@
-.ddsmoothmenu{
+.ddsmoothmenu {
 font: normal 11px Verdana;
 background: #666; /*background of menu bar (default state)*/
 width: 100%;
+}
+
+.ddsmoothmenu a {
+	font-family: Tahoma !important;
+	font-size: 8pt !important;
+	font-weight: bold !important;
+	vertical-align : middle !important;
 }
 
 #smoothmenu2 {background: #CCC;}
@@ -42,9 +49,8 @@ color: #CCC;
 #smoothmenu2 ul li a{background: #CCC; color: #666;}
 
 .ddsmoothmenu ul li a.selected{ /*CSS class that's dynamically added to the currently active menu items' LI A element*/
-background: maroon; 
-color: #EDD;
-z-index: 1000;
+background: maroon !important;
+color: #EDD !important;
 }
 
 .ddsmoothmenu ul li a:hover{
@@ -75,7 +81,7 @@ top: 0;
 /* Sub level menu links style */
 .ddsmoothmenu ul li ul li a{
 background: maroon !important;
-font: normal 13px Verdana;
+font: normal 13px Verdana !important;
 width: 160px; /*width of sub menus*/
 padding: 5px;
 margin: 0;
@@ -117,3 +123,5 @@ background: silver;
 .toplevelshadow{ /*shadow opacity for NON CSS3 capable browsers. Doesn't work in IE*/
 opacity: 0.8;
 }
+
+.time_user {float:right !important;}
