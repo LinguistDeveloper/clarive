@@ -14,7 +14,7 @@ __PACKAGE__->add_columns(
   "ts", { data_type     => "datetime", default_value => \"SYSDATE", is_nullable   => 0,
     original      => { data_type => "date", default_value => \"sysdate" },
   },
-  "html", { data_type => "clob", is_nullable => 1 },
+  "html", { data_type => "blob", is_nullable => 1 },
   "html_size", { data_type => "number", is_nullable => 0 },
 );
 
