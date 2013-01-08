@@ -41,7 +41,7 @@ sub list {
 	my @ns;
     my $natures=config_get('config.changeman.natures');
 
-    foreach ( keys $natures->{changeman} ) {
+    foreach ( keys %{ $natures->{changeman} || {} } ) {
         push @ns, BaselinerX::CA::Harvest::Namespace::Nature->new({
             ns      => 'nature/' . $_,
             ns_name => $natures->{changeman}{$_},

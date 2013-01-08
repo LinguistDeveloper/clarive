@@ -48,7 +48,7 @@ sub list {
 	my @ns;
     my $natures=config_get('config.harvest.natures');
 
-    foreach ( keys $natures->{harvest} ) {
+    foreach ( keys %{ $natures->{harvest} || {} } ) {
         push @ns, BaselinerX::CA::Harvest::Namespace::Nature->new({
             ns      => 'nature/' . $_,
             ns_name => $natures->{harvest}{$_},
