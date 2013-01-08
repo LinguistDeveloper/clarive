@@ -133,7 +133,7 @@ sub run {
                     require Compress::Zlib;
                     my $cont_orig = $res->content;
                     my $len = length( $cont_orig );
-                    my $cont = Compress::Zlib::compress( $cont_orig );
+                    my $html_zip = Compress::Zlib::compress( $cont_orig );
                     $len_total += $len;
                     # verifica si el HTML es sospechoso (error login, error en la pagina, error oracle...
                     if( defined $min_size && $len < $min_size ) {
@@ -145,11 +145,11 @@ sub run {
                     }
                     # actualiza la fila
                     if( $row ) {
-                        $row->update({ html=>$cont, html_size=>$len });
+                        $row->update({ html=>$html_zip, html_size=>$len });
                         _log "Fila idform = $idform y env = $e actualizada (force_update=1)";
                     } else {
                         # new
-                        Baseliner->model('Inf::InfPeticionForm')->create({ idform=>$idform, env=>$e, html=>$cont, html_size=>$len });
+                        Baseliner->model('Inf::InfPeticionForm')->create({ idform=>$idform, env=>$e, html=>$html_zip, html_size=>$len });
                         _log "Fila idform = $idform y env = $e creada";
                     }
                 } else {
