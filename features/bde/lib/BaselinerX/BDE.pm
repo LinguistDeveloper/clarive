@@ -418,7 +418,13 @@ register 'config.bde' => {
             default     => 600,
             label       => 'Tiempo de espera en cada iteración del demonio lanzamiento análisis SQA',
             description => 'Tiempo de espera en cada iteración del demonio lanzamiento análisis SQA'
-        }
+        },
+        {
+            id          => 'iv-user',
+            default     => 'vpscm',
+            label       => 'IV-User',
+            description => 'Usuario para enviar en la cabecera iv-user para peticiones a URLs de Distribuidor. Siempre vpscm, independiente del entorno',
+        },
     ]
 };
 
