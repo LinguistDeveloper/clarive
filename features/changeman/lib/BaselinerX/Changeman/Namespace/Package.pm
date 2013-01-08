@@ -134,7 +134,7 @@ sub demote {
 
 sub nature {
 	my $self = shift;
-    return $self->{ns_data}->{linklist} eq 'SI'?'changeman.nature/changeman_batch_linklist':$self->{ns_data}->{db2} eq 'SI'?'changeman.nature/changeman_batch_db2':'changeman.nature/changeman_batch',
+    return $self->{ns_data}->{linklist} eq 'SI'?'nature/ZOS-Linklist':$self->{ns_data}->{db2} eq 'SI'?'nature/ZOS-DB2':'nature/ZOS',
 	}
 
 sub approve {
