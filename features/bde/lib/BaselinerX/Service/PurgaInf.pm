@@ -19,13 +19,13 @@ register 'config.bde.purga_inf' => {
     metadata => [
         {   id          => 'url',
             default     => '%s/inf/infFormIPrint.jsp?ENV=%s&IDFORM=%s',
-            label       => 'URL de impresión del formulario',
+            label       => 'URL de impresiÃ³n del formulario',
             description => 'La URL para recuperar el formulario para imprimir. El primer %s es el servidor, el segundo el env y el tercer el idform',
         },
         {   id          => 'dias',
             default     => 365,
-            label       => 'Antiguedad en Días para borrar',
-            description => 'Número de días de cierre de peticion a partir del cuál se purgan formularios',
+            label       => 'Antiguedad en DÃ­as para borrar',
+            description => 'NÃºmero de dÃ­as de cierre de peticion a partir del cuÃ¡l se purgan formularios',
         },
         {   id          => 'no_del',
             default     => 1,
@@ -39,8 +39,8 @@ register 'config.bde.purga_inf' => {
         },
         {   id          => 'min_size',
             default     => 5000,
-            label       => 'Bytes mínimo HTML',
-            description => 'Tamaño minimo en bytes para considerar el HTML bueno',
+            label       => 'Bytes mÃ­nimo HTML',
+            description => 'TamaÃ±o minimo en bytes para considerar el HTML bueno',
         },
         {   id          => 'envs',
             default     => 'T,A,P',
@@ -121,7 +121,7 @@ sub run {
         for my $e ( @envs ) {
             my $row = Baseliner->model('Inf::InfPeticionForm')->find({ idform=>$idform, env=>$e });
             if( $row && !$config->{force_update} ) { # update solo si se fuerza por config 
-                _log "HTML ya existe. No se actualizará la fila idform = $idform y env = $e (force_update=0)";
+                _log "HTML ya existe. No se actualizarÃ¡ la fila idform = $idform y env = $e (force_update=0)";
             } else {
                 my $url = sprintf $config->{url}, $serv, $e, $idform;  
                 my $ua = new LWP::UserAgent;
@@ -137,7 +137,7 @@ sub run {
                     $len_total += $len;
                     # verifica si el HTML es sospechoso (error login, error en la pagina, error oracle...
                     if( defined $min_size && $len < $min_size ) {
-                        _error "ERROR: HTML recuperado sospechoso - tamaño $len < $min_size para idform=$idform y env=$e. No se borrará." ;
+                        _error "ERROR: HTML recuperado sospechoso - tamaÃ±o $len < $min_size para idform=$idform y env=$e. No se borrarÃ¡." ;
                         $cont_orig =~ s{[\n|\r|\t]}{}g unless $config->{no_short_html};
                         $cont_orig = _strip_html( $cont_orig ) unless $config->{no_strip_html};
                         _error "HTML Sospechoso:\n" . $cont_orig;
@@ -184,8 +184,8 @@ sub hist_get {
 
     require DBIx::Simple;
     my $inf = DBIx::Simple->connect( Baseliner->model('Inf')->storage->dbh );
-    my $idform = $config->{idform} // _throw 'Falta el parámetro --idform';
-    my $env = $config->{env} // _throw 'Falta el parámetro --env';
+    my $idform = $config->{idform} // _throw 'Falta el parÃ¡metro --idform';
+    my $env = $config->{env} // _throw 'Falta el parÃ¡metro --env';
     my $html = $inf->query('select html,html_size from inf_peticion_form where env=? and idform=?', $env, $idform)->flat;
     if( ref $html eq 'ARRAY' && $html->[0] ) {
         _log sprintf "SIZE %.02f KBs" , $html->[1]/1024;
@@ -202,7 +202,7 @@ sub hist_get {
             print STDERR $data;
         }
     } else {
-        _throw "HTML no encontrado o vacío";
+        _throw "HTML no encontrado o vacÃ­o";
     }
 }
 
