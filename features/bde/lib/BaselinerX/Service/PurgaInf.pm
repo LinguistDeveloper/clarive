@@ -15,14 +15,13 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
-register 'service.bde.purga_inf_hist' => {
-  name    => 'Purga historico de formularios (inf_data e inf_data_mv).',
-  config  => 'config.bde.purga_inf',
-  handler => \&run
-};
-
 register 'config.bde.purga_inf' => {
     metadata => [
+        {   id          => 'url',
+            default     => '%s/inf/infFormIPrint.jsp?ENV=%s&IDFORM=%s',
+            label       => 'URL de impresión del formulario',
+            description => 'La URL para recuperar el formulario para imprimir. El primer %s es el servidor, el segundo el env y el tercer el idform',
+        },
         {   id          => 'dias',
             default     => 365,
             label       => 'Antiguedad en Días para borrar',
@@ -43,7 +42,23 @@ register 'config.bde.purga_inf' => {
             label       => 'Bytes mínimo HTML',
             description => 'Tamaño minimo en bytes para considerar el HTML bueno',
         },
+        {   id          => 'envs',
+            default     => 'T,A,P',
+            label       => 'Entornos de formulario',
+            description => 'Letra que se utiliza en la llamada a la url de formulario, separada por comas',
+        },
     ]
+};
+
+register 'service.bde.purga_inf_hist' => {
+  name    => 'Purga historico de formularios (inf_data e inf_data_mv).',
+  config  => 'config.bde.purga_inf',
+  handler => \&run
+};
+
+register 'service.bde.hist_get' => {
+  name    => 'Recupera el HTML de la tabla INF_PETICION_FORM',
+  handler => \&hist_get
 };
 
 sub run {
@@ -93,21 +108,22 @@ sub run {
     my $min_size = $config->{min_size};
 
     my $k = 1;
+    my $serv = $config_bde->{scminfreal} // _throw('URL de scminfreal no definida en config.bde'); #'http://prusvc61:52024/scm_inf';  # http://prusvc61:52024/scm_inf/inf/infFormIPrint.jsp?ENV=%s&CAM=DWB
+    my $whoami = $config_bde->{'iv-user'} // _throw 'Falta definir config.bde.iv-user'; # en cualquier entorno es lo mismo, siempre vpscm
+    my @envs = grep { length } split /,/, $config->{envs};
+    _log "Envs de formulario: " . join ',', @envs;
 
     for my $idform ( sort { $a <=> $b } grep { !$config->{idform} || $config->{idform} == $_ } @borrables ) {
-
         _log "Recuperando html para idform=$idform ($k/$borrables_total)";
         $k++;
-        my $serv = $config_bde->{scminfreal} // _throw('URL de scminfreal no definida en config.bde'); #'http://prusvc61:52024/scm_inf';  # http://prusvc61:52024/scm_inf/inf/infFormIPrint.jsp?ENV=%s&CAM=DWB
         #my $serv = 'http://wassva61:52024/scm_inf';
-        my $whoami = 'vpscm'; # en cualquier entorno es lo mismo, siempre vpscm
         my $html;
-        for my $e ( qw/T A P/ ) {
+        for my $e ( @envs ) {
             my $row = Baseliner->model('Inf::InfPeticionForm')->find({ idform=>$idform, env=>$e });
             if( $row && !$config->{force_update} ) { # update solo si se fuerza por config 
-                _log "No se actualizará la fila idform = $idform y env = $e (force_update=0)";
+                _log "HTML ya existe. No se actualizará la fila idform = $idform y env = $e (force_update=0)";
             } else {
-                my $url = sprintf '%s/inf/infFormIPrint.jsp?ENV=%s&IDFORM=%s', $serv, $e, $idform;  
+                my $url = sprintf $config->{url}, $serv, $e, $idform;  
                 my $ua = new LWP::UserAgent;
                 $ua->cookie_jar( {} );
                 my $req = HTTP::Request->new( GET => $url );
@@ -115,11 +131,19 @@ sub run {
                 my $res = $ua->request($req);
                 if(  $res->is_success ) {
                     require Compress::Zlib;
-                    my $cont = $res->content;
-                    my $len = length( $cont );
-                    $cont = Compress::Zlib::compress( $cont );
-                    my $len_compress = length( $cont );
+                    my $cont_orig = $res->content;
+                    my $len = length( $cont_orig );
+                    my $cont = Compress::Zlib::compress( $cont_orig );
                     $len_total += $len;
+                    # verifica si el HTML es sospechoso (error login, error en la pagina, error oracle...
+                    if( defined $min_size && $len < $min_size ) {
+                        _error "ERROR: HTML recuperado sospechoso - tamaño $len < $min_size para idform=$idform y env=$e. No se borrará." ;
+                        $cont_orig =~ s{[\n|\r|\t]}{}g unless $config->{no_short_html};
+                        $cont_orig = _strip_html( $cont_orig ) unless $config->{no_strip_html};
+                        _error "HTML Sospechoso:\n" . $cont_orig;
+                        next;
+                    }
+                    # actualiza la fila
                     if( $row ) {
                         $row->update({ html=>$cont, html_size=>$len });
                         _log "Fila idform = $idform y env = $e actualizada (force_update=1)";
@@ -128,11 +152,9 @@ sub run {
                         Baseliner->model('Inf::InfPeticionForm')->create({ idform=>$idform, env=>$e, html=>$cont, html_size=>$len });
                         _log "Fila idform = $idform y env = $e creada";
                     }
-                    #push @descargados, { idform => $idform, env=>$e, html=>$cont, size=>length($cont) };
-                    if( defined $min_size && $len < $min_size ) {
-                        _error "ERROR: HTML recuperado sospechoso - tamaño $len < $min_size para $idform y $e. No se borrará." ;
-                        next;
-                    }
+                } else {
+                    _error sprintf "ERROR (code=%d) al recuperar HTML: %s" , $res->code, $res->message ;
+                    next;
                 }
             }
             $descargados_3{ $idform } ++;
@@ -155,6 +177,33 @@ sub run {
     }
 
     _log "Purga de Peticiones antiguas de Inf terminado ok.";
+}
+
+sub hist_get {
+    my ($self, $c, $config) = @_;
+
+    require DBIx::Simple;
+    my $inf = DBIx::Simple->connect( Baseliner->model('Inf')->storage->dbh );
+    my $idform = $config->{idform} // _throw 'Falta el parámetro --idform';
+    my $env = $config->{env} // _throw 'Falta el parámetro --env';
+    my $html = $inf->query('select html,html_size from inf_peticion_form where env=? and idform=?', $env, $idform)->flat;
+    if( ref $html eq 'ARRAY' && $html->[0] ) {
+        _log sprintf "SIZE %.02f KBs" , $html->[1]/1024;
+        _log "LEN=" . length $html->[0];
+        require Compress::Zlib;
+        my $data = $html->[0];
+        $data = Compress::Zlib::uncompress( $data ) or _throw "No se ha podido descomprimir el fichero html";
+        if( $config->{file} ) {
+            open my $ff, '>', $config->{file} or _throw "Error al intentar abrir el fichero $config->{file}: $!";
+            binmode $ff;
+            print $ff $data;
+            close $ff;
+        } else {
+            print STDERR $data;
+        }
+    } else {
+        _throw "HTML no encontrado o vacío";
+    }
 }
 
 1;
