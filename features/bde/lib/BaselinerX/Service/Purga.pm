@@ -172,7 +172,7 @@ sub delete_poll_log {
   my $poll_log_name = _bde_conf 'poll_log_name';
   my $poll_log_dir  = _bde_conf 'poll_log_dir';
   my ($filename, $extension) = ($1, $2) if $poll_log_name =~ m/(.+)\.(.+)/x;
-  my $cmd = "find -L $poll_log_dir -type f -name *.${extension}.gz -time +${log_dias} -exec rm -f {} \\; 2>&1";
+  my $cmd = "find -L $poll_log_dir -type f -name '*.${extension}.gz' -mtime +${log_dias} -exec rm -f {} \\; 2>&1";
   mylog "cmd: $cmd";
   qx|$cmd|;                            # COTTON
   mylog "Logs del scripts poll purgados.";
