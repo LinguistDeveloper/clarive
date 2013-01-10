@@ -230,8 +230,6 @@ sub grid_json : Local {
 
     _log "************************* Filtros: ".join ',',@filters;
 
-_log _dump $rs->as_query();
-
     #rs_hashref( $rs );
     while ( my $row = $rs->next ) {
 
