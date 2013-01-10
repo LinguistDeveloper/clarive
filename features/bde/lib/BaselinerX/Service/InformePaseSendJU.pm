@@ -75,7 +75,7 @@ sub main {
   my $m_sender = Baseliner->model('Messaging');
   for my $username (keys %users) {
     $m_sender->notify(to              => {users => [$username]},
-                      subject         => "Informe de pases - $Day/$Month/$Year",
+                      subject         => "Informe SCM de Pases Changeman - $Day/$Month/$Year",
                       sender          => $mailcfg->{from},
                       carrier         => 'email',
                       template        => 'email/analysis_informepase_ju.html',

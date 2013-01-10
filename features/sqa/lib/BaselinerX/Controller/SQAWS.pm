@@ -27,6 +27,11 @@ sub job_approve : Path('/sqa/job_approve') {
     $c->forward('View::JSON');
 }
 
+=head2 job_config
+
+Called from clients to check bali_config values.
+
+=cut
 sub job_config : Path('/sqa/job_config') {
     my ($self,$c)=@_;
     my $p = $c->request->params;
