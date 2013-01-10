@@ -50,7 +50,7 @@ sub list {
 
     foreach ( keys %{ $natures->{harvest} || {} } ) {
         push @ns, BaselinerX::CA::Harvest::Namespace::Nature->new({
-            ns      => 'nature/' . $_,
+            ns      => 'harvest.nature/' . $_,
             ns_name => $natures->{harvest}{$_},
             ns_type => _loc('Harvest Nature'),
             ns_id   => 0,
