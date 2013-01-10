@@ -149,27 +149,7 @@
                         });
                     }
                 }),
-                new Ext.Toolbar.Button({
-                    text: _('CSV'),
-                    icon:'/static/images/download.gif',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var html = '';
-                       grid.getStore().each( function(row){
-                            var arr = [];
-                           for( var k in row.data ) {
-                              var v = row.data[ k ];
-                              if( v == null ) v='';
-                              arr.push( '"' + v + '"'  );
-                           }
-                           html += arr.join(',') + "\n";
-                       });
-                       var ww = window.open('about:blank', '_blank' );
-                       ww.document.title = _('config.csv');
-                       ww.document.write( '<pre>' + html + '</pre>' );
-                       ww.document.close();
-                    }
-                }),
+                new Baseliner.button.CSVExport(),
                 '->'
                 ]
         });

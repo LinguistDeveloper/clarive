@@ -2028,34 +2028,7 @@ Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.viewConfig = Ext.apply( { forceFit: true }, self.viewConfig );
         var tbar = [
            { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } ,
-           { xtype: 'button', 
-                    text: _('CSV'),
-                    icon:'/static/images/download.gif',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var html = '';
-                        var cfg = self.getColumnModel().config;
-                        var cols = [];
-                        for( var i=0; i<cfg.length; i++ ) {
-                            if( ! cfg[i].hidden )
-                                cols.push(cfg[i].report_header || cfg[i].header );
-                        }
-                        html += cols.join(',') + "\n";
-                        s.each( function(row){
-                            var arr = [];
-                           for( var k in row.data ) {
-                              var v = row.data[ k ];
-                              if( v == null ) v='';
-                              arr.push( '"' + v + '"'  );
-                           }
-                           html += arr.join(',') + "\n";
-                        });
-                        var ww = window.open('about:blank', '_blank' );
-                        ww.document.title = _('config.csv');
-                        ww.document.write( '<pre>' + html + '</pre>' );
-                        ww.document.close();
-                    }
-            }
+           new Baseliner.button.CSVExport({ grid: self, store: s })
         ];
         self.tbar = self.tbar ? self.tbar.push( tbar ) : tbar; 
         Baseliner.AutoGrid.superclass.initComponent.call(self);
