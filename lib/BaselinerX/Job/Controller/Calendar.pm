@@ -101,6 +101,7 @@ sub calendar_list : Path('/job/calendar_list') {
         $c->model('Permissions')
             ->user_has_action( username=>$c->username, action=>'action.job.calendar.edit', bl=>'*' );
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
+    $c->stash->{ list_calendar } = 1;
     $c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
     $c->stash->{ template } = '/comp/job_calendar_grid.js';
