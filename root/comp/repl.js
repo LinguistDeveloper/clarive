@@ -253,7 +253,7 @@ To do:
         activeTab: 0,
         enableTabScroll: true,
         layoutOnTabChange: true,
-        autoScroll: true,
+        autoScroll: false,
         height: 350,
         items: [ output ],
         tbar: [
