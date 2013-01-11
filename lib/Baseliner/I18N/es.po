@@ -534,6 +534,24 @@ msgstr "Solicitar Aprobación"
 msgid "Requested On"
 msgstr "Solicitado"
 
+msgid "Approval for job %1"
+msgstr "Aprobación del pase %1"
+
+msgid "Application: %1. Requesting approval for job %2"
+msgstr "Aplicación: %1. Solicitud de aprobación para el pase %2"
+
+msgid "Applications: %1. Requesting approval for job %2"
+msgstr "Aplicaciones: %1. Solicitud de aprobación para el pase %2"
+
+msgid "Application: %1. Requesting approval for job %2, baseline %3: %4"
+msgstr "Aplicación: %1. Solicitud de aprobación para el pase %2 al entorno %3.<br>Motivo: %4"
+
+msgid "Applications: %1. Requesting approval for job %2, baseline %3: %4"
+msgstr "Aplicaciones: %1. Solicitud de aprobación para el pase %2 al entorno %3.<br>Motivo: %4"
+
+msgid "User does not have permission to perform the operation"
+msgstr "El usuario no tiene permiso para realiza la operación"
+
 msgid "Requested By"
 msgstr "Solicitante"
 
@@ -869,6 +887,12 @@ msgstr "Acciones"
 
 msgid "Role"
 msgstr "Rol"
+
+msgid "New Role"
+msgstr "Nuevo Rol"
+
+msgid "Role: %1"
+msgstr "Rol: %1"
 
 msgid "Create Role"
 msgstr "Crear Rol"
@@ -1385,6 +1409,9 @@ msgstr "abortar"
 msgid "Scheduled"
 msgstr "Planificado"
 
+msgid "Scheduled to run now"
+msgstr "Planificado para este instante"
+
 # Job Status Codes
 msgid "IN EDIT"
 msgstr "En Edición"
@@ -1416,6 +1443,9 @@ msgstr "Finalizado"
 msgid "ERROR"
 msgstr "Error"
 
+msgid "REJECTED"
+msgstr "Rechazado"
+
 msgid "CANCELLED"
 msgstr "Cancelado"
 
@@ -1443,6 +1473,9 @@ msgstr "Rollback fallido"
 # Job email types
 msgid "started"
 msgstr "iniciado"
+
+msgid "resumed"
+msgstr "reanudado"
 
 msgid "finished"
 msgstr "finalizado"
@@ -1649,6 +1682,9 @@ msgstr "Anotaciones"
 msgid "Annotate"
 msgstr "Anotar"
 
+msgid "Annotation completed successfully"
+msgstr "Anotación realizada con éxito"
+
 msgid "Daemon"
 msgstr "Demonio"
 
@@ -1813,6 +1849,9 @@ msgstr "Rechazando"
 
 msgid "Cancelled"
 msgstr "Cancelado"
+
+msgid "Resumed"
+msgstr "Reanudado"
 
 msgid "Export all to file"
 msgstr "Exportar a ficheros"

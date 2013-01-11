@@ -61,6 +61,8 @@ To do:
                     },
                
                    "Cmd-E": run_repl, 
+                   "Cmd-Enter": run_repl, 
+                   "Ctrl-Enter": run_repl, 
                    "Ctrl-E": run_repl, 
                    "Ctrl-Space": function(cm) {
                          CodeMirror.simpleHint(cm, CodeMirror.javascriptHint);
@@ -191,12 +193,13 @@ To do:
     tree.on('click', function(n,e) {
         if( n.attributes.url_click != undefined ) {
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
-                if( res.code != undefined ) { 
+                if( res.code ) { 
                     last_name= n.text;
                     editor.setValue( res.code ); fcode.setValue( res.code );
                 }
-                if( res.output != undefined ) set_output( res.output );
-                if( res.div != undefined ) {
+                if( res.output ) set_output( res.output );
+                if( res.lang ) change_lang({ lang: res.lang, checked: true });
+                if( res.div ) {
                     var tab = cons.add({ xtype:'panel', closable: true,
                         style: { padding: '10px 10px 10px 10px' },
                         title: n.text, html: '<div id="boot">' + res.div + '</div>',
@@ -318,6 +321,18 @@ To do:
         } catch(e) { set_output( e ); }
     };
 
+    var show_data_editor = function( d ) {
+        try {
+            if( ! Ext.isArray( d ) ) {
+                if( Ext.isObject( d ) ) d = [d];
+                else { d = [ { value: d } ] ; }
+            }
+            var ag = new Baseliner.DataEditor({ data: d, closable:true, title:_('%1', cons.items.length ) });
+            cons.add( ag );
+            cons.setActiveTab( ag );
+        } catch(e) { set_output( e ); }
+    };
+
     var submit = function(parms) {
         //Baseliner.showLoadingMask(form.getEl(), _("Loading") );
         if( parms.last ) {
@@ -327,6 +342,7 @@ To do:
         var f = form.getForm();
         set_output( "" );
         fcode.setValue( editor.getValue() );  // copy from codemirror to textarea
+        parms.lang = btn_lang.lang ;
         f.submit({
             params: parms,
             waitMsg: _('Running...'),
@@ -335,10 +351,13 @@ To do:
                     ( action.result.stdout ?  action.result.stdout + "\n" : "" ) +  
                     ( action.result.stderr ?  action.result.stderr + "\n" : "" ) +  
                     action.result.result ;
-                if( parms.show == 'table' ) {
+                if( parms.show == 'table' || parms.show == 'data_editor' ) {
                     try {
                         var d = Ext.util.JSON.decode( action.result.result );
-                        show_table( d ); 
+                        if( parms.show == 'table' ) 
+                            show_table( d ); 
+                        else
+                            show_data_editor( d );
                     } catch(e){ set_output( e ) };
                 } else {
                     set_output( data );
@@ -348,6 +367,7 @@ To do:
                 elapsed.setValue( action.result.elapsed );
                 save({ c: fcode.getValue(), o: output.getValue() });
                 editor.focus();
+                reload_hist();
             },
             failure: function(f,action){
                 status.setValue( "ERROR" );
@@ -368,13 +388,27 @@ To do:
             }
         });
     };
+
+    var save_hist = function(){ // only browser-eval needs this (javascript)
+        Baseliner.ajaxEval( '/repl/save_hist', { code: editor.getValue(), lang: btn_lang.lang }, function(res){ 
+            reload_hist();
+        });
+    }
+
+    var reload_hist = function(){
+        var hist = tree.root.firstChild;
+        if( hist && hist.isExpanded() ) {
+            hist.reload();
+        }
+    }
      
     var run_repl = function(){
         var lang = btn_lang.lang;
         var dump = 'yaml', show = 'cons';
         if( btn_out.out == 'yaml' ) dump = 'yaml';
         else if( btn_out.out == 'json' ) dump = 'json';
-        else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table' };
+        else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table' }
+        else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor' }
 
         if( lang == 'perl' ) {
             submit({ eval: true, dump: dump, show: show });
@@ -383,11 +417,15 @@ To do:
             var d;
             try { 
                 set_output( '' );
-                d = eval("(function(){ " + editor.getValue() + " }) ");
+                save_hist();
+                eval("d=(function(){ " + editor.getValue() + " }) ");
                 d = d();
                 if( show == 'table' && d != undefined ) {
                     show_table( d ); 
+                } else if( show == 'data_editor' && d != undefined ) {
+                    show_data_editor( d );
                 } else {
+                    if( Ext.isObject( d ) || Ext.isArray( d ) ) d = Ext.util.JSON.encode( d );
                     set_output( d );
                 }
             } catch(e) {
@@ -419,6 +457,12 @@ To do:
     var change_lang = function(x) {
         if( x.checked && editor ) { 
             var txt = editor.getValue();
+            if( ! x.syntax ) {
+               x.syntax = ( x.lang == 'sql' ? 'plsql' : x.lang ); 
+            }
+            if( ! x.text ) {
+                x.text = ( x.lang == 'perl' ? 'Perl' : x.lang=='sql' ? 'SQL' : 'JavaScript' );
+            }
             editor.setOption('mode', { name: x.syntax });
             editor.setValue( txt );
             btn_lang.setText( _('Lang: %1', '<b>'+x.text+'</b>') );
@@ -471,7 +515,8 @@ To do:
                 items: [
                     { text:_('YAML'), out:'yaml', checked: true, group:'repl-out', checkHandler: change_out },
                     { text:_('JSON'), out:'json', checked: true, group:'repl-out', checkHandler: change_out  },
-                    { text:_('Table'), out:'table', checked: true, group:'repl-out', checkHandler: change_out }
+                    { text:_('Table'), out:'table', checked: true, group:'repl-out', checkHandler: change_out },
+                    { text:_('Data Editor'), out:'data_editor', checked: true, group:'repl-out', checkHandler: change_out }
                 ]
     });
     var btn_out = new Ext.Button({  
@@ -518,7 +563,7 @@ To do:
             },
             {   xtype: 'button',
                 text: _('Delete'),
-                icon:'/static/images/scm/debug/delete_config.gif',
+                icon:'/static/images/icons/delete.gif',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     var selectedNode = tree.getSelectionModel().getSelectedNode();
@@ -538,6 +583,35 @@ To do:
                                 }
                             }
                     );
+                }
+            },
+            {   xtype: 'button',
+                text: _('Tidy'),
+                icon:'/static/images/icons/tidy.gif',
+                cls: 'x-btn-text-icon',
+                handler: function(){
+                    var lang = btn_lang.lang;
+                    var from = editor.getCursor(true);
+                    var to = editor.getCursor(false);
+                    if( from.line == to.line && from.ch == to.ch ) { // no selection?
+                        // select all
+                        from = editor.posFromIndex(0);
+                        to = editor.posFromIndex(999999);
+                        editor.setSelection( from, to );
+                    }
+                    if( lang == 'perl' ) {
+                        var txt = editor.getSelection();
+                        Baseliner.ajaxEval('/repl/tidy', { code: txt }, function(res){
+                            if( res.success ) {
+                                editor.replaceSelection( res.code );
+                                editor.focus();
+                            } else {
+                                set_output( res.msg );
+                            }
+                        });
+                    } else {
+                        editor.autoFormatRange(from,to);
+                    }
                 }
             },
             '->',

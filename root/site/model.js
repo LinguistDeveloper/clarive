@@ -945,6 +945,46 @@ Baseliner.form.ComboList = function(c) {
 };
 Ext.extend( Baseliner.form.ComboList, Ext.form.ComboBox );
 
+Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, { 
+    mode: 'local',
+    fieldLabel: _("Baseline"),
+    name: 'bl',
+    hiddenName: 'bl',
+    valueField: 'bl', 
+    displayField: 'bl_name',
+    allowBlank: false,
+    msgTarget: 'under',
+    allowAddNewData: true,
+    addNewDataOnBlur: true, 
+    singleMode: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    triggerAction: 'all',
+    resizable: true,
+    typeAhead: true,
+    initComponent: function(){
+        var store = new Baseliner.JsonStore({
+            root: 'data' , 
+            remoteSort: true,
+            autoLoad: true,
+            totalProperty:"totalCount", 
+            baseParams: {}, //{ no_common: true },
+            id: 'id', 
+            url: '/baseline/json',
+            fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
+        });
+        this.store = store;
+        var tpl_list = new Ext.XTemplate(
+            '<tpl for=".">',
+            '<div class="x-combo-list-item"><strong>{[ values.bl == "*" ? _("Common") : values.bl ]}</strong> {[ values.name ? "(" + values.name + ")" : "" ]}</div>',
+            '</tpl>'
+        );
+        this.tpl = tpl_list;
+        this.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">{[ values.name ? values.bl + " (" + values.name + ")" : ( values.bl == "*" ? _("Common") : values.bl ) ]}</tpl>' );
+        Baseliner.model.ComboBaseline.superclass.initComponent.call(this);
+    }
+});
+
 Baseliner.model.SelectBaseline = function(c) {
     var self = this;
     var tpl_list = new Ext.XTemplate(
@@ -961,7 +1001,7 @@ Baseliner.model.SelectBaseline = function(c) {
         baseParams: {}, //{ no_common: true },
         id: 'id', 
         url: '/baseline/json',
-        fields: ['id','bl','name','description', 'active'] 
+        fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
     });
     Baseliner.model.SelectBaseline.superclass.constructor.call(this, Ext.apply({
        fieldLabel: _("Baseline"),
@@ -2137,7 +2177,8 @@ Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.columns = cols;
         self.viewConfig = Ext.apply( { forceFit: true }, self.viewConfig );
         var tbar = [
-           { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } 
+           { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } ,
+           new Baseliner.button.CSVExport({ grid: self, store: s })
         ];
         self.tbar = self.tbar ? self.tbar.push( tbar ) : tbar; 
         Baseliner.AutoGrid.superclass.initComponent.call(self);

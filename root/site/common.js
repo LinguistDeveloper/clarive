@@ -328,6 +328,12 @@ Baseliner.render_bl = function (val){
     return String.format('<b>{0}</b>', val );
 }
 
+Baseliner.render_bl_name = function(val,metadata,rec,rowIndex,colIndex,store) {
+    if( val == null || val == undefined ) return '';
+    if( val == '*' ) val = _('Common');
+    return String.format('<b>{0}</b>', rec.data.bl_name );
+}
+
 Baseliner.render_loc = function (val){
     return _(val);
 }
@@ -1528,3 +1534,42 @@ Baseliner.Window = Ext.extend( Ext.Window, {
     }
 });
 
+Baseliner.button.CSVExport = Ext.extend( Ext.Toolbar.Button, {
+        text: _('CSV'),
+        icon:'/static/images/download.gif',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var self = this;
+            if( !self.grid ) {
+                self.grid = self.findParentByType('grid');
+            }
+            var cfg = self.grid.getColumnModel().config;
+            var s = self.store ? self.store : self.grid.getStore();
+            var html = '';
+            var cols = [], col_names = [];
+            for( var i=0; i<cfg.length; i++ ) {
+                if( ! cfg[i].hidden )
+                    var n = cfg[i].report_header || cfg[i].header;
+                    col_names.push( n );
+                    cols.push({ id: cfg[i].dataIndex, name: n });
+            }
+            html += col_names.join(',') + "\n";
+            s.each( function(row){
+                var arr = [];
+                Ext.each( cols, function(col){
+                    var v = row.data[ col.id ];
+                    if( v == null ) {
+                        v='';
+                    } else {
+                        v = v.replace( '"', '\\"' );
+                    }
+                    arr.push( '"' + v + '"'  );
+                })
+               html += arr.join(',') + "\n";
+            });
+            var ww = window.open('about:blank', '_blank' );
+            ww.document.title = _('config.csv');
+            ww.document.write( '<pre>' + html + '</pre>' );
+            ww.document.close();
+        }
+});

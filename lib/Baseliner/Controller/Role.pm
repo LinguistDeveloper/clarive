@@ -82,10 +82,13 @@ sub json : Local {
 #        }
 #        my $users_txt = @users ? join(', ', sort(unique(@users))) : '-';
         # produce the grid
-        next if( $query && !query_array($query, $r->role, $r->description, $r->mailbox, $actions_txt
-#            , $users_txt 
-          ));
-#        _log $users_txt;
+        next if $query 
+            && !query_array($query, $r->role, $r->description, $r->mailbox, map { values %$_ } @actions );
+        
+        # if the query has a dot, filter actions
+        if( defined $query && $query =~ /\./ ) {
+            @actions = grep { $a = join ',', values %$_; $a =~ /$query/i } @actions;
+        }
 
         push @rows,
           {
@@ -142,7 +145,7 @@ sub action_tree : Local {
             if ( @tokens ) { # not a leaf
                 push @$children, { id=>$id, text => $name, leaf=>\0, children=> $children_of->($id, @actions) };
             } else { # a leaf
-                push @$children, { id=>$id, text => _loc_decoded( $action->{name} ), leaf=>\1 };
+                push @$children, { id=>$id, text => sprintf( "%s (%s)",_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
             }
 
         }
@@ -254,5 +257,47 @@ sub all : Local {
     $c->forward('View::JSON');  
 }
 
+
+sub roleusers : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my @data = ();
+        #my %projects = DB->BaliProject->search({ id_parent=>undef, nature=>undef }, { select=>[qw(id name)] } )->hash_unique_on('id');
+        #my %user_projects = DB->BaliRoleuser->search({ id_role=>$p->{id_role} })->hash_on('username');
+        my %user_projects = DB->BaliRoleuser->search({ id_role=>$p->{id_role},  }, 
+            { join=>'projects', select=>[qw(username projects.name)] })->hash_on('username');
+
+        my @data = map {
+            my $u=$_;
+            +{ user=>$u, projects=>join(', ', sort map { $_->{projects}{name} } _array $user_projects{$u} ) }
+        } sort keys %user_projects;
+        $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar @data };
+    } catch { 
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub roleprojects : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my @data = ();
+        #my %projects = DB->BaliProject->search({ id_parent=>undef, nature=>undef }, { select=>[qw(id name)] } )->hash_unique_on('id');
+        #my %project_users = DB->BaliRoleuser->search({ id_role=>$p->{id_role} })->hash_on('username');
+        my %project_users = DB->BaliRoleuser->search({ id_role=>$p->{id_role},  }, 
+            { join=>'projects', select=>[qw(username projects.name)], as=>[qw(username pname)] })->hash_on('pname');
+
+        my @data = map {
+            my $u=$_;
+            +{ project=>$u, users=>join(', ', sort map { $_->{username} } _array $project_users{$u} ) }
+        } sort keys %project_users;
+        $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar @data };
+    } catch { 
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
+    };
+    $c->forward('View::JSON');  
+}
 
 1;
