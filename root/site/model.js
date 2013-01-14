@@ -2177,7 +2177,8 @@ Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.columns = cols;
         self.viewConfig = Ext.apply( { forceFit: true }, self.viewConfig );
         var tbar = [
-           { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } 
+           { xtype:'button', text:_('Edit'), icon:'/static/images/icons/edit.png', handler: function(){ self.open_win.call(self) } } ,
+           new Baseliner.button.CSVExport({ grid: self, store: s })
         ];
         self.tbar = self.tbar ? self.tbar.push( tbar ) : tbar; 
         Baseliner.AutoGrid.superclass.initComponent.call(self);
