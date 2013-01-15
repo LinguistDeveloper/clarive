@@ -38,7 +38,7 @@ sub main {
    use Encode;
    # find receivers
    my $action = 'action.notify.scheduled_job';
-   my $not_action = 'action.notify.disabled';
+   my $not_action = ['action.notify.disabled', 'action.informepase.ju_mail'];
    my @ns;
    my @cam;
 
@@ -48,7 +48,7 @@ sub main {
       push @cam, (ns_split($_->{application}))[1];
       Baseliner->model('Permissions')->list(
          action      => [ $action ],
-         not_action  => [$not_action ],
+         not_action  => $not_action,
          ns          => "project/".cam_to_projectid((ns_split($_->{application}))[1]),
          bl          => $job->job_data->{bl}
          );
@@ -58,7 +58,7 @@ sub main {
 
       Baseliner->model('Permissions')->list(
          action      => [ $action, $rpt_action ],
-         not_action  => [ $not_action ],
+         not_action  => $not_action,
          ns          => @ns,
          bl          => $job->job_data->{bl}
          );
