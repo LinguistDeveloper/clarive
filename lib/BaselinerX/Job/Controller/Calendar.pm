@@ -458,9 +458,10 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
         my @ns;
 
         for my $ns ( _array $p->{ns} ) {
-            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $ns }, active=>'1' });
-            push @ns, $ns if $r->count;
+            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => "$ns%" }, active=>'1' })->first;
+            push @ns, $r->ns if ref $r;
         }
+
         _debug "NS with Calendar: " . join ',',@ns;
         my %tmp_hash   = map { $_ => 1 } @ns;
         @ns = keys %tmp_hash;    
