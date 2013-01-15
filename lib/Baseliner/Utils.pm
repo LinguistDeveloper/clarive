@@ -604,9 +604,7 @@ sub _parse_template_mason {
 }
 
 sub _notify_address {
-    my $host = Baseliner->config->{web_host} || Baseliner->config->{host} || lc(Sys::Hostname::hostname);
-    my $port = Baseliner->config->{web_port} || $ENV{BASELINER_PORT} || $ENV{CATALYST_PORT} || 3000;
-    return "http://$host:$port";
+    return Baseliner->model('ConfigStore')->get( 'config.comm.email' )->{baseliner_url};
 }
 
 # usage: my %opts = get_options @ARGV
