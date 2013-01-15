@@ -215,6 +215,9 @@ sub run_once {
             $job = bali_rs('Job')->find( $jobID ) if $jobID;
          } elsif ( $ds->to_ns =~ m{user/(\w+)} ) {
             $user=$1;   ## Ya esta procesado el fichero USERID
+         } else {
+             _log "No se ha procesado el fichero USERID para la clave $key. Esperamos...";
+             next; ## No se procesa el fichero hasta que tenga un usuario asignado para poder crear el pase.
          }
       }
 
