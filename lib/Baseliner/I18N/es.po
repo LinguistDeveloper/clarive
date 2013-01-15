@@ -4344,3 +4344,13 @@ msgstr "Mantenimiento"
 
 msgid "REQUEST"
 msgstr "Petición"
+
+msgid "Original distribution list"
+msgstr "Lista de distribución original"
+
+msgid "Email redirected to"
+msgstr "Correo redirigido a"
+
+msgid "Email override"
+msgstr "Redireccionamiento de correos activado"
+

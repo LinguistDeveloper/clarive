@@ -102,9 +102,15 @@ use Encode qw( decode_utf8 encode_utf8 is_utf8 );
           _array( $em->{to} ) ) . " and cc " . join( ',', _array( $em->{cc} ) );
 
         my $result;
+        my $override_message='</body>';
         my @to = _array $em->{to};
         my @cc = _array $em->{cc};
         if( @email_override ) {
+            my $override_edited=join("<LI>",@email_override);
+            my $original_edited=join("<LI>",_array $em->{to});
+
+            $override_message = '<TABLE cellpadding="0" cellspacing="0" width="100%"><TR><TH ALIGN="LEFT" COLSPAN=2 class="backGroundFilaDatos">'._loc('Email override').'</TH></TR><TD class="backGroundFilaDatos">'._loc('Email redirected to').'</TD><TD><UL><LI>'.$override_edited.'</UL></TD></TR><TR><TD class="backGroundFilaDatos">'._loc('Original distribution list').'</TD><TD><UL><LI>'.$original_edited.'</UL></TD></TR></TABLE></body>';
+
             @to=@email_override;
             @cc=();
         } 
@@ -116,11 +122,14 @@ use Encode qw( decode_utf8 encode_utf8 is_utf8 );
             my $body = $em->{body};
 
             $body = encode("iso-8859-15", $body);
-            # _log $body;
             $body =~ s{Ã\?}{Ñ}g;
             $body =~ s{Ã±}{ñ}g;
-            
+
+            $body=~s{</body>}{$override_message}ig; 
+
             utf8::downgrade($body);
+
+             #_log $body;
 
             $result = $self->send(
                 server=>$config->{server},
