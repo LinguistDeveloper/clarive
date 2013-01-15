@@ -26,7 +26,7 @@
                 
                 var gdi = form2.findField('gdi');
                 var custom_form = gdi ? 'gdi' : '';
-
+                
                 if (form2.isValid()) {
                    form2.submit({
                        params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( _cis ) },
@@ -126,6 +126,7 @@
         } else {
             rec._cis = _cis;
         }
+        rec.id_panel = cardpanel.id;
         Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
             if( ! form_is_loaded ) {
                 //form_panel.removeAll();
@@ -168,7 +169,7 @@
                 }                
             }
         } else {
-            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name, ci: params.ci }, function(rec) {
+            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name, ci: params.ci, dni: params.dni }, function(rec) {
                 load_form( rec );
             });
         }
