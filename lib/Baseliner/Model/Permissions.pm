@@ -661,6 +661,10 @@ sub list {
 
     $p{recurse} = defined $p{recurse} ? $p{recurse} : 1;
     $p{action} or $p{username} or die _loc( 'No action or username specified' );
+    my @likeAction;
+    my @excludedMail;
+    ref $p{action} eq 'ARRAY' and @likeAction=map{"$_.%"}_array $p{action};
+    ref $p{not_action} and @excludedMail = $self->list(action=>$p{not_action}, ns=>$ns, bl=>$bl);
 
     # if its root, gimme all actions period.
     return map { $_->{key} } Baseliner->model('Actions')->list
@@ -668,7 +672,7 @@ sub list {
 
     # build query
     my $query = $p{action}
-        ? { action=> [ -or => [ $p{action}, { -like => "$p{action}.%" } ] ] }
+        ? { action=> [ -or => [ $p{action}, { -like => [ @likeAction ] } ] ] }
         : { username=>$p{username} };
     
     $query->{bl} = [ -or => [ $bl, '*' ] ]
@@ -687,38 +691,24 @@ sub list {
         }
     );
 
-    my %not_roles = map { $_->{role} => 1 } Baseliner->model('Baseliner::BaliRole')->search(
-            { %$query, action=>[ -or => [ $p{not_action}, { -like => "$p{not_action}.%" } ] ] }, { join => ['bali_roleusers', 'bali_roleactions'],
-            prefetch=>[ 'bali_roleusers' ] })->hashref->all if $p{not_action};
-
-# _debug $roles->as_query();
-# _debug  %not_roles;
-
     $roles->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
     # now, foreach role
-    my @list;
+    my @mails;
     while( my $role = $roles->next ) {
         my $role_name = $role->{role};
-        # not_actions
-        next if $not_roles{$role_name};
         # if asked for, don't include certain roles
         next if $p{role_filter} and ! grep( /$role_name/i, _array($p{role_filter}) );
         # return either users or roles, depending on the query
         my $data= $p{action} ? $role->{bali_roleusers} : $role->{bali_roleactions};
         
-        push @list,
-            # map { $p{action} ? $_->{username} : $_->{action} }
+        push @mails,
             map { $p{action} ? ( $givemeusers ? $_->{username} : $role->{mailbox} ? split ",",$role->{mailbox} : $_->{username} ) : $_->{action} }
-            
-            ####
-            # Ricardo 2011/11/03 ... no hace falta quitar los ns.  Ya están filtrados en la query
-            #
-            #grep { $p{username} ? 1 : $ns eq 'any' || $ns eq '/' ? 1 : ns_match( $_->{ns}, $ns) }
-            #####
-            
-            _array( $data );
+                _array( $data );
     }
+
+    #not_action --> Quitamos direcciones que no deban recibir el mail.
+    my @list = grep { !($_ ~~ @excludedMail) } @mails;
 
     # recurse $self->list on parents
     if( $p{recurse} && $ns ne 'any' ) {
