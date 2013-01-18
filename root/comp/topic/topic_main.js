@@ -343,16 +343,33 @@
     var loading_panel = Baseliner.loading_panel();
 
     if(app && app == 'gdi'){
-        var btn_form_volver = new Ext.Button({
-                text: _('Volver'),
+        var btn_form_fin_solicitud = new Ext.Button({
+                name: 'fin_solicitud',
+                text: _('Fin solicitud'),
                 icon:'/static/images/icons/save.png',
                 cls: 'x-btn-icon-text',
                 type: 'submit',
                 hidden: false,
                 handler: function() {
-                    //alert('pasa');
-                    //alert(cardpanel.id);
-                    //var card = Ext.getCmp(cardpanel.id);
+                    //cardpanel.getLayout().setActiveItem(form_topic);
+                    btn_form_fin_solicitud.hide();
+                    btn_form_volver.show();
+                    show_confirm();
+                }
+                    
+        });
+        
+        
+        var btn_form_volver = new Ext.Button({
+                name: 'volver',
+                text: _('Volver'),
+                icon:'/static/images/icons/left.png',
+                cls: 'x-btn-icon-text',
+                type: 'submit',
+                hidden: true,
+                handler: function() {
+                    btn_form_volver.hide();
+                    btn_form_fin_solicitud.show();
                     cardpanel.getLayout().setActiveItem(form_topic);
                     
     //    var current_card = Ext.getCmp( id_current_card );
@@ -369,6 +386,7 @@
             isFormField: true,
             anchor: '100%',
             items: [
+                btn_form_fin_solicitud,
                 btn_form_volver
             ]
         });  
