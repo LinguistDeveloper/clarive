@@ -4,6 +4,7 @@
     my $swEdit = $c->stash->{swEdit};
     my $permEdit = $c->stash->{permissionEdit};
     my $app = $c->stash->{app};
+    my $admin = $c->stash->{admin};
 </%perl>
 
 (function(params){
@@ -13,8 +14,10 @@
     var permEdit = <% $permEdit ? 'true' : 'false' %>;
     var ii = "<% $ii %>";  // used by the detail page
     var app = '<% $app %>';
+    var admin = '<% $admin %>';
     
     var btn_form_ok = new Ext.Button({
+            name: 'grabar',
             text: _('Save'),
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
@@ -73,7 +76,7 @@
                                 form2.findField('title').setValue(a.result.title);
                                 //form2.findField('gdi_solicitud').setValue(a.result.title);
                                 //form2.findField('gdi_solicitud').show();
-                                form2.findField('status_new').show();
+                                //form2.findField('status_new').show();
                             }
                             
                        },
@@ -165,7 +168,8 @@
             if (!form_is_loaded){
                 if(btn_form_fin_solicitud){
                     btn_edit.hide();
-                    btn_form_fin_solicitud.show();
+                    //btn_form_fin_solicitud.show();
+                    admin ? btn_form_ok.show(): btn_form_fin_solicitud.show();
                     btn_detail.show();
                 }
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
@@ -174,7 +178,8 @@
             }else{
                 cardpanel.getLayout().setActiveItem( form_topic );
                 if(btn_form_fin_solicitud){
-                    btn_form_fin_solicitud.show();
+                    //btn_form_fin_solicitud.show();
+                    admin ? btn_form_ok.show(): btn_form_fin_solicitud.show();
                     btn_edit.hide();   
                 }
 
@@ -406,7 +411,8 @@
             btn_form_fin_solicitud.hide();
             btn_edit.show();
         }else{
-            btn_edit.hide();  
+            btn_edit.hide();
+            btn_detail.hide();
         }
         
         var tb = new Ext.Toolbar({

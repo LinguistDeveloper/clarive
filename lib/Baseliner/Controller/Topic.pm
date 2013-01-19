@@ -260,8 +260,8 @@ sub json : Local {
     $meta = $self->get_field_bodies( $meta );
     
     $ret->{topic_meta} = $meta;
-    #$ret->{topic_data} = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
     $ret->{topic_data} = $data;
+    $ret->{can_admin} = \$c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.admin' );
     $c->stash->{json} = $ret;
     
     $c->forward('View::JSON');
@@ -384,8 +384,7 @@ sub view : Local {
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
     $c->stash->{app} = $p->{app};
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>GDI: " . $p->{app};
-    
+    $c->stash->{admin} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.admin' );
     
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
@@ -408,7 +407,6 @@ sub view : Local {
             { prefetch=>'bali_job_items', page=>0, rows=>20, order_by=>{ -desc=>'me.id' } })->hashref->all;
             $c->stash->{jobs} = \@jobs;
         }
-    
     }else{
         $id_category = $p->{new_category_id};
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
