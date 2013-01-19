@@ -94,7 +94,10 @@
     });
 
     // Detail Panel
-    var detail = new Ext.Panel({ });
+    var detail = new Ext.Panel({
+        //padding: '0px'
+    });
+    
     var show_detail = function(){
         cardpanel.getLayout().setActiveItem( detail );
         if(btn_form_fin_solicitud){
