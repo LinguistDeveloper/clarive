@@ -71,8 +71,8 @@
                             if (gdi) {
                                 var objSolicitud = Ext.get('gdi_solicitud');
                                 form2.findField('title').setValue(a.result.title);
-                                form2.findField('gdi_solicitud').setValue(a.result.title);
-                                form2.findField('gdi_solicitud').show();
+                                //form2.findField('gdi_solicitud').setValue(a.result.title);
+                                //form2.findField('gdi_solicitud').show();
                                 form2.findField('status_new').show();
                             }
                             
@@ -94,6 +94,11 @@
     var detail = new Ext.Panel({ });
     var show_detail = function(){
         cardpanel.getLayout().setActiveItem( detail );
+        if(btn_form_fin_solicitud){
+            btn_form_fin_solicitud.hide();
+            btn_form_volver.hide();
+            btn_edit.show();
+        }
         btn_form_ok.hide();
         if( view_is_dirty ) {
             view_is_dirty = false;
@@ -142,7 +147,8 @@
             }
 
             // now show/hide buttons
-            btn_form_ok.show();
+            //btn_form_ok.show();
+            if(!app || app != 'gdi') { btn_form_ok.show()};
             if(params.topic_mid){
                 btn_comment.show();
                 btn_detail.show();
@@ -157,12 +163,24 @@
         cardpanel.getLayout().setActiveItem( loading_panel );
         if( params!==undefined && params.topic_mid !== undefined ) {
             if (!form_is_loaded){
+                if(btn_form_fin_solicitud){
+                    btn_edit.hide();
+                    btn_form_fin_solicitud.show();
+                    btn_detail.show();
+                }
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
                     load_form( rec );
                 });
             }else{
                 cardpanel.getLayout().setActiveItem( form_topic );
-                btn_form_ok.show();
+                if(btn_form_fin_solicitud){
+                    btn_form_fin_solicitud.show();
+                    btn_edit.hide();   
+                }
+
+                //btn_form_ok.show();
+                if(!app || app != 'gdi') { btn_form_ok.show()};
+                
                 if(params.topic_mid){
                     btn_comment.show();
                     btn_detail.show();
@@ -354,6 +372,7 @@
                     //cardpanel.getLayout().setActiveItem(form_topic);
                     btn_form_fin_solicitud.hide();
                     btn_form_volver.show();
+                    btn_form_ok.show();
                     show_confirm();
                 }
                     
@@ -369,6 +388,7 @@
                 hidden: true,
                 handler: function() {
                     btn_form_volver.hide();
+                    btn_form_ok.hide();
                     btn_form_fin_solicitud.show();
                     cardpanel.getLayout().setActiveItem(form_topic);
                     
@@ -382,12 +402,22 @@
                     
         });
         
+        if(params.topic_mid && params.topic_mid > 0){
+            btn_form_fin_solicitud.hide();
+            btn_edit.show();
+        }else{
+            btn_edit.hide();  
+        }
+        
         var tb = new Ext.Toolbar({
             isFormField: true,
             anchor: '100%',
             items: [
+                btn_detail,
+                btn_edit,
                 btn_form_fin_solicitud,
-                btn_form_volver
+                btn_form_volver,
+                btn_form_ok
             ]
         });  
 
@@ -419,19 +449,6 @@
         defaults: {border: false},
         items: [ loading_panel, detail ]
     });
-    
-  
-
-    ///cardpanel.elements += ',tbar';
-    //console.log(tb);
-    //cardpanel.getTopToolbar().add(tb);
-    //cardpanel.doLayout();
-    
-    //cardpanel.doLayout();
-    //cardpanel.setTopToolbar(tb);
-    console.log(cardpanel.getTopToolbar());
-    
-    console.log(cardpanel.getTopToolbar().items);
     
     var detail_reload = function(){
         detail.load({
