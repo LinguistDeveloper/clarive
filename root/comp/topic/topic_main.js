@@ -76,7 +76,10 @@
                                 form2.findField('title').setValue(a.result.title);
                                 //form2.findField('gdi_solicitud').setValue(a.result.title);
                                 //form2.findField('gdi_solicitud').show();
-                                //form2.findField('status_new').show();
+                                if(admin > 0){
+                                    form2.findField('status_new').show();    
+                                }
+                                
                             }
                             
                        },

@@ -464,8 +464,8 @@ sub update {
         when ( 'update' ) {
             given ( $form ){
                 when ( 'gdi' ) {
-                    my $custom_data = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid => $p->{topic_mid} });
-                    $custom_data->delete;
+                    #my $custom_data = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid => $p->{topic_mid} });
+                    #$custom_data->delete;
                 }
             }            
             event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
