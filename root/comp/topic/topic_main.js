@@ -169,7 +169,8 @@
                 if(btn_form_fin_solicitud){
                     btn_edit.hide();
                     //btn_form_fin_solicitud.show();
-                    admin ? btn_form_ok.show(): btn_form_fin_solicitud.show();
+                    //PREGUNTAR POR ESTADO
+                    admin > 0? btn_form_ok.show(): btn_form_fin_solicitud.show();
                     btn_detail.show();
                 }
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
@@ -406,6 +407,7 @@
                 }
                     
         });
+        
         
         if(params.topic_mid && params.topic_mid > 0){
             btn_form_fin_solicitud.hide();
