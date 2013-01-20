@@ -1460,4 +1460,17 @@ sub search_query {
     } _array( $json->{data} );
 }
 
+sub getAction {
+    my ( $self, $type ) = @_;
+    my $action;
+    given ($type) {
+        when ('I') { $action = 'New' }
+        when ('F') { $action = 'Ok' }
+        when ('FC') { $action = 'Fail' }
+        when ('G') {$action = 'Processing'}
+        default {$action = 'none'}
+    }
+    return $action
+}
+
 1;

@@ -24,74 +24,100 @@
             type: 'submit',
             hidden: true,
             handler: function() {
+                var save_topic = function (){
+                    if (form2.isValid()) {
+                       form2.submit({
+                           params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( _cis ) },
+                           success: function(f,a){
+                                Baseliner.message(_('Success'), a.result.msg );
+                                if (closeTab) {
+                                    var tabpanel = Ext.getCmp('main-panel');
+                                    var objtab = tabpanel.getActiveTab();                                
+                                    tabpanel.remove(objtab);
+                                }else{
+                                    
+                                    form2.findField("topic_mid").setValue(a.result.topic_mid);
+                                    form2.findField("status").setValue(a.result.topic_status);
+                
+                                    if( params._parent_grid != undefined && params._parent_grid.getStore()!=undefined ) {
+                                        params._parent_grid.getStore().reload();
+                                    }
+                                    
+                                    var store = form2.findField("status_new").getStore();
+                                    store.on("load", function() {
+                                        form2.findField("status_new").setValue( a.result.topic_status );
+                                    });
+                                    store.load({
+                                        params:{    'categoryId': form2.findField("category").getValue(),
+                                                    'statusId': form2.findField("status").getValue(),
+                                                    'statusName': form2.findField("status_new").getRawValue()
+                                                }
+                                    });
+                                    
+                                    params.topic_mid = a.result.topic_mid;
+                                    btn_comment.show();
+                                    btn_detail.show();
+                                    if(action == 'add'){
+                                        var tabpanel = Ext.getCmp('main-panel');
+                                        var objtab = tabpanel.getActiveTab();
+                                        var title = objtab.title + ' #' + a.result.topic_mid;
+                                        objtab.setTitle( title );
+                                        var info = Baseliner.panel_info( objtab );
+                                        info.params.topic_mid = a.result.topic_mid;
+                                        info.title = title;
+                                    }
+                                    view_is_dirty = true;
+                                    
+                                    if (gdi) {
+                                        var objSolicitud = Ext.get('gdi_solicitud');
+                                        form2.findField('title').setValue(a.result.title);
+                
+                                        //form2.findField('gdi_solicitud').setValue(a.result.title);
+                                        //form2.findField('gdi_solicitud').show();
+                                        //form2.findField('status_new').show();    
+                                    }
+                                }
+                           },
+                           failure: function(f,a){
+                               Ext.Msg.show({  
+                               title: _('Information'), 
+                               msg: a.result.msg , 
+                               buttons: Ext.Msg.OK, 
+                               icon: Ext.Msg.INFO
+                               });                      
+                           }
+                       });
+                    }        
+                }
                 
                 form_topic.on_submit();
                 
                 var form2 = form_topic.getForm();
                 var action = form2.getValues()['topic_mid'] >= 0 ? 'update' : 'add';
+                var custom_form = '';
+                var closeTab = false;
                 
                 var gdi = form2.findField('gdi');
-                var custom_form = gdi ? 'gdi' : '';
-                
-                if (form2.isValid()) {
-                   form2.submit({
-                       params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( _cis ) },
-                       success: function(f,a){
-                            Baseliner.message(_('Success'), a.result.msg );
-                            
-                            form2.findField("topic_mid").setValue(a.result.topic_mid);
-                            form2.findField("status").setValue(a.result.topic_status);
-
-                            if( params._parent_grid != undefined && params._parent_grid.getStore()!=undefined ) {
-                                params._parent_grid.getStore().reload();
+                if (gdi){
+                    custom_form = gdi;
+                    var id_obj_status = form2.findField("status_new").id;
+                    Baseliner.GDI.check_status(id_obj_status);
+                    if ( Baseliner.GDI.get_action_status(id_obj_status) == 'Ok' ){
+                        Ext.Msg.confirm( _('Confirmation'), '¿Desea dar por realizada la solicitud ?', 
+                        function(btn){ 
+                            if(btn == 'no') {
+                                Baseliner.GDI.change_status(id_obj_status, 'Processing');
+                                save_topic();
+                            }else{
+                                save_topic();
+                                closeTab = true;
                             }
-                            
-                            var store = form2.findField("status_new").getStore();
-                            store.on("load", function() {
-                                form2.findField("status_new").setValue( a.result.topic_status );
-                            });
-                            store.load({
-                                params:{    'categoryId': form2.findField("category").getValue(),
-                                            'statusId': form2.findField("status").getValue(),
-                                            'statusName': form2.findField("status_new").getRawValue()
-                                        }
-                            });
-                            
-                            params.topic_mid = a.result.topic_mid;
-                            btn_comment.show();
-                            btn_detail.show();
-                            if(action == 'add'){
-                                var tabpanel = Ext.getCmp('main-panel');
-                                var objtab = tabpanel.getActiveTab();
-                                var title = objtab.title + ' #' + a.result.topic_mid;
-                                objtab.setTitle( title );
-                                var info = Baseliner.panel_info( objtab );
-                                info.params.topic_mid = a.result.topic_mid;
-                                info.title = title;
-                            }
-                            view_is_dirty = true;
-                            
-                            if (gdi) {
-                                var objSolicitud = Ext.get('gdi_solicitud');
-                                form2.findField('title').setValue(a.result.title);
-                                //form2.findField('gdi_solicitud').setValue(a.result.title);
-                                //form2.findField('gdi_solicitud').show();
-                                if(admin > 0){
-                                    form2.findField('status_new').show();    
-                                }
-                                
-                            }
-                            
-                       },
-                       failure: function(f,a){
-                           Ext.Msg.show({  
-                           title: _('Information'), 
-                           msg: a.result.msg , 
-                           buttons: Ext.Msg.OK, 
-                           icon: Ext.Msg.INFO
-                           });                      
-                       }
-                   });
+                        });
+                    }else{
+                        save_topic();    
+                    }
+                }else{
+                    save_topic();
                 }
             }
     });
@@ -176,7 +202,7 @@
                     btn_edit.hide();
                     //btn_form_fin_solicitud.show();
                     //PREGUNTAR POR ESTADO
-                    admin > 0? btn_form_ok.show(): btn_form_fin_solicitud.show();
+                    admin > 0 ? btn_form_ok.show(): btn_form_fin_solicitud.show();
                     btn_detail.show();
                 }
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
@@ -186,7 +212,7 @@
                 cardpanel.getLayout().setActiveItem( form_topic );
                 if(btn_form_fin_solicitud){
                     //btn_form_fin_solicitud.show();
-                    admin ? btn_form_ok.show(): btn_form_fin_solicitud.show();
+                    admin > 0 ? btn_form_ok.show(): btn_form_fin_solicitud.show();
                     btn_edit.hide();   
                 }
 
@@ -381,13 +407,14 @@
                 type: 'submit',
                 hidden: false,
                 handler: function() {
-                    //cardpanel.getLayout().setActiveItem(form_topic);
                     btn_form_fin_solicitud.hide();
                     btn_form_volver.show();
                     btn_form_ok.show();
-                    show_confirm();
+
+                    var confirm = Baseliner.GDI.create_layout_confirm(form_topic.id)
+                    cardpanel.add(confirm);
+                    cardpanel.getLayout().setActiveItem( confirm );
                 }
-                    
         });
         
         
