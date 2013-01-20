@@ -147,6 +147,7 @@
                         {boxLabel: _('General'), inputValue: 'G', checked: true},
                         {boxLabel: _('Initial'), inputValue: 'I'},
                         {boxLabel: _('Deployable'), inputValue: 'D'},
+						{boxLabel: _('Canceled'), inputValue: 'FC'},
                         {boxLabel: _('Final'), inputValue: 'F'}
                     ]
                 },
@@ -172,7 +173,7 @@
         
         win = new Baseliner.Window({
             title: _(title),
-            width: 400,
+            width: 480,
             autoHeight: true,
             items: form_status
         });
@@ -242,7 +243,7 @@
 
     var render_status_type = function (val){
         if( val == null || val == undefined ) return '';
-        var str = val == 'G' ? _('General') : val == 'I' ? _('Initial') : val == 'D' ? _('Deployable') : _('Final');
+        var str = val == 'G' ? _('General') : val == 'I' ? _('Initial') : val == 'D' ? _('Deployable'): val == 'FC' ? _('Canceled') : _('Final');
         return str;
     }   
     

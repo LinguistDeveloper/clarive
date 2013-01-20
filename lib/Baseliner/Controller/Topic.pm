@@ -1026,6 +1026,9 @@ sub list_admin_category : Local {
                                 status      => $status->status->id,
                                 name    => $status->status->name,
                                 status_name    => $status->status->name,
+                                type => $status->status->type,
+                                bl => $status->status->bl,
+                                description => $status->status->description
                             };
             }
         }        
@@ -1046,6 +1049,9 @@ sub list_admin_category : Local {
                 status      => $_->{id_status},
                 name        => $_->{status_name},
                 status_name => $_->{status_name},
+                type        => $_->{status_type},
+                bl          => $_->{status_bl},
+                description => $_->{status_description},
             }
         } @statuses;
         

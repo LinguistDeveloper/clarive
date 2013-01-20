@@ -547,8 +547,8 @@ sub next_status_for_user {
         $where,
         {   join     => [ 'roles', 'statuses_to' ],
             distinct => 1,
-            +select => [ 'id_status_to', 'statuses_to.name', 'id_category' ],
-            +as     => [ 'id_status',    'status_name',             'id_category' ]
+            +select => [ 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category' ],
+            +as     => [ 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category' ]
         }
     )->hashref->all;
 

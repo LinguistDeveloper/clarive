@@ -4294,3 +4294,6 @@ msgstr "Tópicos abiertos por categorías"
 
 msgid "Chart pie (Topics open by category)"
 msgstr "Gráfico circular (Tópicos abiertos por categorías)"
+
+msgid "Canceled"
+msgstr "Cancelado"
