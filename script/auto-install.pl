@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/env perl 
 
 use v5.10;
 use strict;
@@ -36,9 +36,14 @@ sub install {
     my $last_dir = getcwd;
     my $app = App::cpanminus::script->new;
     my @op;
+    # patch fix this module
+    $mod = 'MooseX::Emulate::Class::Accessor::Fast::Meta::Role::Attribute' 
+        if $mod =~ /MooseX::Emulate::Class::Accessor::Fast::Meta::Role::Attribute/;
     push @op, '-l', './local-lib' if exists $opts{l};
     $app->parse_options( @op, '-n', $mod );
-    $app->doit or exit(1);
+    $app->doit or do {
+         die "Clarive - Auto-Install ERROR: could not install module: $mod";
+    };
     chdir $last_dir;
 }
 

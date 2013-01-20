@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # starts the web server
 export LIBPATH=$BASELINER_LIBPATH:$LIBPATH
 

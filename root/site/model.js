@@ -108,7 +108,7 @@ Baseliner.model.Projects = function(c) {
         displayField: 'name',
         hiddenName: 'projects',
         valueField: 'mid',
-        tpl: '<tpl for="."><div class="x-combo-list-item">{name} - {description}</div></tpl>',
+        tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {description}</span></div></tpl>',
         displayFieldTpl: tpl2,
         value: '/',
         extraItemCls: 'x-tag',
@@ -128,7 +128,7 @@ Ext.extend( Baseliner.model.Projects, Ext.ux.form.SuperBoxSelect );
 
 
 Baseliner.model.Users = function(c) {
-    var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{username} - {realname}</div></tpl>' );
+    var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}"><span id="boot" style="background: transparent"><strong>{username}</strong> {realname}</span></div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{username}</tpl>' );
     Baseliner.model.Users.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,
@@ -146,7 +146,7 @@ Baseliner.model.Users = function(c) {
         displayField: 'username',
         hiddenName: 'users',
         valueField: 'id',
-        tpl: '<tpl for="."><div class="x-combo-list-item">{username} - {realname}</div></tpl>',
+        tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{username}</strong> {realname}</span></div></tpl>',
         displayFieldTpl: tpl2,
         value: '/',
         extraItemCls: 'x-tag',
@@ -793,7 +793,7 @@ Baseliner.model.CISelect = function(c) {
     var tpl_list = new Ext.XTemplate(
         '<tpl for="."><div class="search-item">',
             //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
-        '<span id="boot"><strong>{name}</strong> ({class})</span>',
+        '<span id="boot" style="background: transparent"><strong>{name}</strong> ({class})</span>',
         '<tpl if="pretty_properties">',
             '<br />{pretty_properties}',
         '</tpl>',

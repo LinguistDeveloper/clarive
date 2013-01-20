@@ -24,7 +24,7 @@ sub usage { say "Usage: "; say join '',<DATA>; }
 keys %opts or do { usage(); exit 1 };
 
 chdir $ENV{BASELINER_HOME};
-my $base = qq{git submodule %s http://git.vasslabs.com/git/%s.git %s};
+my $base = qq{git submodule %s http://clarive.vasslabs.com/git/%s.git %s};
 while( my ($cmd, $v) = each %opts ) {
     for( $cmd ) {
         when( 'add' ) {
