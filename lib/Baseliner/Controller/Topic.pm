@@ -226,7 +226,7 @@ sub get_field_bodies {
             $field->{body} = $cache->{body};
         } else {
             _debug "************ NOOO CACHE ( $cache->{modified_on} != $modified_on )  for $file";
-            my $body = $file->slurp;
+            my $body = _mason( $field->{js} );
             $field_cache{ "$file" } = { modified_on=>$modified_on, body => $body };
             $field->{body} = $body;
         }
