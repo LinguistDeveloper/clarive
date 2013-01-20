@@ -21,7 +21,7 @@ __PACKAGE__->add_columns(
   "description",
   { data_type => "varchar2", is_nullable => 1, size => 1024 },
   "type",
-  { data_type => "char", is_nullable => 1, size => 2 },
+  { data_type => "varchar2", is_nullable => 1, size => 2 },
   "seq",
   { data_type => "number", is_nullable => 1, default_value=>1 },
   "bl",
