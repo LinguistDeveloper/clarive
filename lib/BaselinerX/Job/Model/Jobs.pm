@@ -167,12 +167,13 @@ sub cancel {
 
 sub resume {
     my ($self, %p )=@_;
+    my $status = $p{status}||'READY';
     my $id = $p{id} or _throw 'Missing job id';
     my $job = bali_rs('Job')->find( $id );
     my $silent = $p{silent}||0;
     my $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$id, same_exec=>1, exec=>'last', silent=>$silent );
     $runner->logger->warn( _loc('Job resumed by user %1', $p{username} ) ) if ! $silent;
-    $job->status('READY');
+    $job->status($status);
     $job->update;
 }
 
