@@ -663,6 +663,15 @@ msgstr "Estado del Pase"
 msgid "Job %1: %2"
 msgstr "Pase %1: %2"
 
+msgid "Step %1 finished with status %2"
+msgstr "Paso %1 finalizado con estado %2"
+
+msgid "Job %1 finished"
+msgstr "Pase %1 finalizado"
+
+msgid "Error running Job %1"
+msgstr "Error durante la ejecución del pase %1"
+
 msgid "Error sending job notification: %1"
 msgstr "Error enviando notificación de pase: %1"
 
