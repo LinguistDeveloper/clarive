@@ -37,10 +37,11 @@ sub begin : Private {
     $c->res->headers->header( 'Cache-Control' => 'no-cache');
     $c->res->headers->header( Pragma => 'no-cache');
     $c->res->headers->header( Expires => 0 );
-
-    if( ref $c->session->{user} ) {
-        $c->languages( $c->session->{user}->languages );
+    if( $c->req->path eq 'logout' ) {
+        return 1;
     }
+
+    $self->_set_user_lang($c);
 
     Baseliner->app( $c );
 
@@ -65,12 +66,29 @@ auto centralizes all auhtentication check and dispatch.
 sub auto : Private {
     my ( $self, $c ) = @_;
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
+    return 1 if $c->stash->{auth_skip};
+    return 1 if $c->req->path eq 'i18n/js';
+    return 1 if try { $c->session->{user} // 0 } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
 
+    # sessionid param?
+    if(0){
+    if( my $sessionid = delete $c->request->params->{_bali_session} ) {
+        $c->delete_session;
+        _debug $c->get_session_id( $sessionid );
+        #if( $c->get_session_id( $sessionid ) ) {   # session really exists?
+            $c->_sessionid( $sessionid );
+            $c->reset_session_expires;
+            $c->set_session_id( $sessionid );
+            $c->_load_session;
+            _debug $c->username;
+            return 1 if $c->username;
+        #}
+    }
+    }
     # auth check skip
-    return 1 if $c->stash->{auth_skip};
     return 1 if try { $c->user_exists } catch { 0 };
-    return 1 if $path eq 'i18n/js';
+    return 1 if $path eq '/logout';
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
 
     # saml?
@@ -82,6 +100,7 @@ sub auto : Private {
     if( $notify_valid_session ) {
         $c->stash->{auto_stop_processing} = 1;
         $c->stash->{json} = { success=>\0, logged_out => \1, msg => _loc("Not Logged on") };
+        $c->response->status( 401 );
         $c->forward('View::JSON');
     } elsif( $c->request->params->{fail_on_auth} ) {
         $c->response->status( 401 );
@@ -90,15 +109,28 @@ sub auto : Private {
         my $ret = $c->forward('/auth/login_basic');
         return $ret; 
     } else {
-        $c->forward('/auth/logoff');
+        #$c->forward('/auth/logoff');
         $c->stash->{after_login} = '/' . $path;
         my $qp = $c->req->query_parameters // {};
         $c->stash->{after_login_query} = join '&', map { "$_=$qp->{$_}" } keys %$qp;
         $c->response->status( 401 );
         $c->forward('/auth/logon');
-        #$c->detach('/end');
     }
     return 0;
+}
+
+sub _set_user_lang : Private {
+    my ( $self, $c ) = @_;
+    if( ref $c->session->{user} ) {
+        $c->languages( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
+    }
+    elsif( my $username = $c->username ) {
+        my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
+        $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+        if( ref $c->session->{user} ) {
+            $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+        }
+    }
 }
 
 sub serve_file : Private {
@@ -190,18 +222,7 @@ sub index:Private {
     }
 
     # set language 
-    if( $c->user ) {
-        if( $c->user ) {
-            my $username = $c->username;
-            if( $username ) {
-                my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
-                $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-                if( ref $c->session->{user} ) {
-                    $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-                }
-            }
-        }
-    }
+    $self->_set_user_lang($c);
 
     # load menus
     my @menus;
