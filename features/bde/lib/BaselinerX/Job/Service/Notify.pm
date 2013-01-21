@@ -57,9 +57,8 @@ sub main {
       my $rpt_action = $c->model('Registry')->get( $nature  )->action;
 
       Baseliner->model('Permissions')->list(
-         action      => [ $action, $rpt_action ],
+         action      => [ $rpt_action ],
          not_action  => $not_action,
-         ns          => @ns,
          bl          => $job->job_data->{bl}
          );
       }
