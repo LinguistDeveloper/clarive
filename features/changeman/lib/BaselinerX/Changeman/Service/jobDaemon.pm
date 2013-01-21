@@ -208,26 +208,44 @@ sub run_once {
       $date = parse_date('yy-mm-dd',$scm ne 'A'?$date:_now);
 
       # Buscar pase activo con los datos del pase.
+      $user=undef;
       my $ds=Baseliner->model('Baseliner::BaliRelationship')->search({type=>'changeman.id.to.job', from_ns=>$key})->first;
       if (ref $ds) {
          if ( $ds->to_ns =~ m{job/(\d+)} ) {
             $jobID=$1;  ## Ya esta procesado alguna vez y tiene pase asociado en SCM
-            $job = bali_rs('Job')->find( $jobID ) if $jobID;
+            if ( $jobID ) {
+                $job = bali_rs('Job')->find( $jobID );
+                $user=$job->username;
+            }
          } elsif ( $ds->to_ns =~ m{user/(\w+)} ) {
             $user=$1;   ## Ya esta procesado el fichero USERID
-         } else {
+         }
+      }
+
+      unless ($user) {
+         if ($scm eq 'A') {
+            $jobID="$1$2" if $file->{filename}->stringify =~ m{\.A(\d+)\.A(\d+)\.};
+            $job = bali_rs('Job')->find( $jobID );
+            $user=$job->username;
+         } elsif ( $type eq 'demote' && $bl eq 'PROD' ) {
+            my $config = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' );
+            my $chm = BaselinerX::Changeman->new( host=>$config->{host}, port=>$config->{port}, key=>$config->{key} );
+            my $xml = $chm->xml_getUser( package=> $pkg );
+
+            $user=(map {$_->{user}} _array $xml->{sites})[0];
+
+            if ( ! $user && $xml->{ReturnCode} ne '00' ) {
+               $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify, $key) ;
+               _debug $fprefix . "CLEANED WITH ERROR %1", $xml->{Message} ;
+               last; ## debe recargarse la lista de ficheros para evitar errores.
+            }
+         }
+         
+         unless ( $user )  { ## Hemos recuperado el usuario bien del job o bien de CHM
              _log "No se ha procesado el fichero USERID para la clave $key. Esperamos...";
              next; ## No se procesa el fichero hasta que tenga un usuario asignado para poder crear el pase.
          }
       }
-
-#      if ( ! defined $job && $scm eq 'A') {  ## No hay pase asociado en balirelationship, pero el pase viene de baseliner
-#         my $activeJob = Baseliner->model('Jobs')->is_in_active_job( "changeman.package/$pkg" );
-#         if (defined $activeJob ) {
-#            $job=$activeJob if $activeJob->bl eq $bl && $activeJob->status eq 'WAITING' && $activeJob->type eq $type;
-#            defined $job and $jobID=$job->id;
-#         }
-#      }
 
       if (ref $job) { ## Tengo creado el job en Baseliner, lo recupero
          $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$jobID, same_exec=>0, exec=>'last', silent=>1 );
@@ -251,7 +269,17 @@ sub run_once {
          }
 
          if (($job->step eq 'RUN' && $job->status eq 'WAITING') || $job->step =~ m{POST|END} ) {
-            $logrow  = bali_rs('Log')->find( $job_stash->{JESrow} );
+            $logrow = bali_rs('Log')->find( $job_stash->{JESrow} ) if $job_stash->{JESrow};
+            
+            unless ( $logrow ) {
+                try { ## Intentamos recuperar idlog del log, por si existe...
+                    $logrow = bali_rs('Log')->find( { more=>'jes', id_job=>$runner->jobid} ); 
+                    $job_stash->{JESrow}=$logrow->id if $logrow;
+                } catch {
+                    _log "No encuentro log de tipo jes!!";
+                };
+            }
+            
             if (! $logrow) {
                $logrow=$runner->logger->info( _loc( "Recovered spool outputs for job <b>%1</b>", $runner->{job_data}->{name} ), more=>'jes' );
                $job_stash->{JESrow}=$logrow->id;
@@ -269,7 +297,7 @@ sub run_once {
          if ( ! defined $job ) { ## No está asociado aún a ningún pase, lo creamos.
             $runner=$self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, type=>$type, user=>$user, bl=>$bl, key=>$key});
             next if ! $runner;
-            $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>PROMOTION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>", $user, $pkg, $bl, $date ) );
+            $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>PROMOTION</b> job for package <b>%2</b> at <b>%3</b>", $user, $pkg, $date ) );
          } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## jobname de fin de promote OK or KO
             if ($job->step eq 'RUN' && $job->status eq 'WAITING') {
                if ( $1 eq 'OK' ) {
@@ -289,7 +317,7 @@ sub run_once {
          if ( ! defined $job ) { ## No está asociado aún a ningún pase, lo creamos.
             $runner=$self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, type=>$type, user=>$user, bl=>$bl, key=>$key});
             next if ! $runner;
-            $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>DEMOTION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>", $user, $pkg, $bl, $date ) );
+            $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>DEMOTION</b> job for package <b>%2</b> at <b>%3</b>", $user, $pkg, $date ) );
          } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## jobname de fin de demote OK or KO
             if ($job->step eq 'RUN' && $job->status eq 'WAITING') {
                if ( $1 eq 'OK' ) {
@@ -312,7 +340,7 @@ sub run_once {
               } else {
                   _debug $fprefix . "RUNNER OK: " . $runner->jobid;
               }
-              $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>INSTALLATION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>", $user,$pkg, $bl, $date ) );
+              $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>INSTALLATION</b> job for package <b>%2</b> at <b>%3</b>", $user,$pkg, $date ) );
           } elsif ($job->step eq 'RUN' && $job->status eq 'WAITING') {
               if ( $file->{jobname} =~ m{....10..$} ) { ## DISTRIBUTED
                   _debug $fprefix . "DISTRIBUTED";
@@ -371,7 +399,7 @@ sub run_once {
           if ( ! defined $job ) {
               $runner=$self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, type=>$type, user=>$user, bl=>$bl, key=>$key});
               next if ! $runner;
-              $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>ROLLBACK</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>", $user, $pkg, $bl, $date ) );
+              $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>ROLLBACK</b> job for package <b>%2</b> at <b>%3</b>", $user, $pkg, $date ) );
           } elsif ($job->step eq 'RUN' && $job->status eq 'WAITING') {
               _debug $fprefix . "WAITING";
               if ( $file->{jobname} =~ m{SITE(..)}i ) { ## NO HAY CAMBIO
@@ -505,8 +533,18 @@ sub run_once {
 }
 
 sub clean {
-    my ($self, $c, $bx, $clean, @filenames) = @_;
+    my ($self, $c, $bx, $clean, $filename, $key) = @_;
+    my @filenames;
+    push @filenames, $filename;
+
     my $config = Baseliner->model('ConfigStore')->get( 'config.changeman.log_connection' );
+    if ( $key ) { ## Si viene informada la clave, hay que borrar todos los ficheros de esa clave.
+        my @files = BaselinerX::ChangemanUtils->spool_files( $bx, $config );
+        foreach (@files) {
+            push @filenames, _file($_->{filename}->{dir}, $_->{filename}->{file})->stringify if $_->{filename}->{file} =~ m{$key};
+        }
+    }
+
     foreach my $file (@filenames) {
         $file=_loc_ansi($file);            
         my ($RC, $RET);
@@ -532,10 +570,10 @@ my $ds=Baseliner->model('Baseliner::BaliRelationship')->search({type=>'changeman
 if (ref $ds) {
    $ds->to_ns($to_ns) unless $ds->to_ns =~ m{job/\d+};
    $ds->update();
-   _debug "RELATIONSHIP FROM ". $from_ns . " TO ". $ds->to_ns;
+   _debug "UPDATING RELATIONSHIP FROM ". $from_ns . " TO ". $ds->to_ns;
 } else {
    Baseliner->model('Baseliner::BaliRelationship')->update_or_create({type=>'changeman.id.to.job', from_ns=>$from_ns, to_ns=>$to_ns});
-   _debug "RELATIONSHIP FROM ". $from_ns . " TO ". $to_ns;
+   _debug "CREATING RELATIONSHIP FROM ". $from_ns . " TO ". $to_ns;
 }
 }
 

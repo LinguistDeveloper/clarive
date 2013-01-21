@@ -75,11 +75,11 @@ sub execute {
    foreach my $package (_array $job_stash->{contents}) {
       next if ! defined $package->{provider} || ( defined $package->{provider} && $package->{provider} ne "namespace.changeman.package" );
       my $ns = ns_get( $package->{item} );
-
       if ($package->{returncode}) {
          unless ( $package->{returncode} =~ m{ok}i ) {
             $chm->xml_cancelJob(job=>$job->{name}, items=>(ns_split($package->{item}))[1], jobName=>$job->{name}, logger=>$log) if ($job->{origin} ne 'changeman');
-            _throw _loc('Error during changeman execution');
+            Baseliner->model('Jobs')->resume(id=>$job->jobid, status=>'MUST_DIE', silent=>1) if $p->{finalize};
+            return 0;
          }
       } elsif ( $job->{origin} ne 'changeman' ) {
          my $ret=undef;
@@ -178,9 +178,10 @@ sub job_elements {
    my $job = $c->stash->{job};
    my $log = $job->logger;
    my $stash = $job->job_stash;
-   # my $stash = _load $job->job_stash->stash;
    my $bl = $job->bl;
-   # my $cfgChangeman = Baseliner->model('ConfigStore')->get('config.changeman.connection' );
+   
+   return 0 if $job->rollback;
+
    my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
    my @elems;
    my @list;
@@ -217,7 +218,7 @@ sub job_elements {
          push @list, sprintf("%-10s%-42s","ELEMENTO","TIPO");
          push @list, sprintf("%-10s%-42s","=========","==========================================");
       } else {
-         push @elems,{ name=>'---', type=>'---', path=>qq{/$application/ZOS}, fullpath=>qq{/$application/ZOS}, package=>$ns->{ns_name} };
+         push @elems,{ name=>'---', type=>'---', path=>qq{/$application/ZOS/}, fullpath=>qq{/$application/ZOS/}, package=>$ns->{ns_name} };
       }
 
       foreach ( _array $xml->{result} ) {
