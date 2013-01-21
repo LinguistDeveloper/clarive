@@ -31,6 +31,10 @@
                            params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( _cis ) },
                            success: function(f,a){
                                 Baseliner.message(_('Success'), a.result.msg );
+                                if( params._parent_grid != undefined && params._parent_grid.getStore()!=undefined ) {
+                                    params._parent_grid.getStore().reload();
+                                }
+                                    
                                 if (closeTab) {
                                     var tabpanel = Ext.getCmp('main-panel');
                                     var objtab = tabpanel.getActiveTab();                                
@@ -40,10 +44,6 @@
                                     form2.findField("topic_mid").setValue(a.result.topic_mid);
                                     form2.findField("status").setValue(a.result.topic_status);
                 
-                                    if( params._parent_grid != undefined && params._parent_grid.getStore()!=undefined ) {
-                                        params._parent_grid.getStore().reload();
-                                    }
-                                    
                                     var store = form2.findField("status_new").getStore();
                                     store.on("load", function() {
                                         form2.findField("status_new").setValue( a.result.topic_status );
