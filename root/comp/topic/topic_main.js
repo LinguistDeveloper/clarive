@@ -57,7 +57,8 @@
                                     
                                     params.topic_mid = a.result.topic_mid;
                                     btn_comment.show();
-                                    btn_detail.show();
+                                    //btn_detail.show();
+                                    Baseliner.TopicExtension.toolbar.length > 0 ? btn_detail.hide(): btn_detail.show();
                                     if(action == 'add'){
                                         var tabpanel = Ext.getCmp('main-panel');
                                         var objtab = tabpanel.getActiveTab();
@@ -106,8 +107,6 @@
             		var rowIndex = status_store.find('action','New');
                     if(rowIndex != -1){
                         var status_old = form2.findField("status").getValue();
-                        console.log(status_old);
-                        console.log(form2.findField("status_new").getValue());
                         sel = status_store.getAt(rowIndex);
                         if(sel.data.id == status_old && status_old != form2.findField("status_new").getValue()){
                             closeTab = true;
@@ -145,11 +144,15 @@
     
     var show_detail = function(){
         self.cardpanel.getLayout().setActiveItem( detail );
-        if(btn_form_fin_solicitud){
-            btn_form_fin_solicitud.hide();
-            btn_form_volver.hide();
-            btn_edit.show();
-        }
+        
+        ////*************************************************************
+        //if(btn_form_fin_solicitud){
+        //    btn_form_fin_solicitud.hide();
+        //    btn_form_volver.hide();
+        //    btn_edit.show();
+        //}
+        ////*************************************************************
+        
         btn_form_ok.hide();
         if( view_is_dirty ) {
             view_is_dirty = false;
@@ -194,16 +197,31 @@
                 self.cardpanel.add( self.form_topic );
                 self.cardpanel.getLayout().setActiveItem( self.form_topic );
                 form_is_loaded = true;
+                
+                ////////////************************************************************
+                ////////if (btn_form_fin_solicitud){
+                ////////    //var id_obj_status = self.form_topic.getForm().findField("status_new").id;
+                ////////    //if (Baseliner.GDI.get_action_status(id_obj_status) == 'New') btn_form_fin_solicitud.show();
+                ////////
+                ////////    var obj_status = self.form_topic.getForm().findField("status_new");
+                ////////    var storeStatus = obj_status.getStore();
+                ////////    storeStatus.on("load", function() {
+                ////////        alert('sdsdsdsd');
+                ////////        if (Baseliner.GDI.get_action_status(obj_status.id) == 'New') btn_form_fin_solicitud.show();
+                ////////    });                
+                ////////}
+                ////////
+                ////////////************************************************************
             }
 
             // now show/hide buttons
             btn_form_ok.show();
-            //if(!app || app != 'gdi') { btn_form_ok.show()};
+
             if(params.topic_mid){
                 btn_comment.show();
-                btn_detail.show();
+                Baseliner.TopicExtension.toolbar.length > 0 ? btn_detail.hide(): btn_detail.show();
+                //btn_detail.show();
             }else{
-                if (btn_form_fin_solicitud) btn_form_fin_solicitud.show();
                 btn_comment.hide();
                 btn_detail.hide();
             }
@@ -214,34 +232,36 @@
         self.cardpanel.getLayout().setActiveItem( loading_panel );
         if( params!==undefined && params.topic_mid !== undefined ) {
             if (!form_is_loaded){
-                if(btn_form_fin_solicitud){
-                    btn_edit.hide();
-                    btn_form_ok.show();
-                    btn_form_fin_solicitud.show();
-                    //btn_form_fin_solicitud.show();
-                    //PREGUNTAR POR ESTADO
-                    //admin > 0 ? btn_form_ok.show(): btn_form_fin_solicitud.show();
-                    btn_detail.show();
-                }
+
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
                     load_form( rec );
+                    //////*************************************************************
+                    ////alert('pasa');
+                    ////if(btn_form_fin_solicitud){
+                    ////    btn_edit.hide();
+                    ////    var id_obj_status = self.form_topic.getForm().findField("status_new").id;
+                    ////    if (Baseliner.GDI.get_action_status(id_obj_status) == 'New') btn_form_fin_solicitud.show();
+                    ////    btn_detail.show();
+                    ////}
+                    //////****************************************************************                    
                 });
             }else{
                 self.cardpanel.getLayout().setActiveItem( self.form_topic );
-                if(btn_form_fin_solicitud){
-                    btn_form_ok.show();
-                    btn_form_fin_solicitud.show();                    
-                    //btn_form_fin_solicitud.show();
-                    //admin > 0 ? btn_form_ok.show(): btn_form_fin_solicitud.show();
-                    btn_edit.hide();   
-                }
+                
+                //////*******************************************************************
+                ////if(btn_form_fin_solicitud){
+                ////    var id_obj_status = self.form_topic.getForm().findField("status_new").id;
+                ////    if (Baseliner.GDI.get_action_status(id_obj_status) == 'New') btn_form_fin_solicitud.show();
+                ////    btn_edit.hide();   
+                ////}
+                //////******************************************************************
 
-                //btn_form_ok.show();
-                //if(!app || app != 'gdi') { btn_form_ok.show()};
+                btn_form_ok.show();
                 
                 if(params.topic_mid){
-                    btn_comment.show();
-                    btn_detail.show();
+                    //btn_comment.show();
+                    Baseliner.TopicExtension.toolbar.length > 0 ? btn_detail.hide(): btn_detail.show();
+                    
                 }else{
                     btn_comment.hide();
                     btn_detail.hide();
@@ -398,6 +418,7 @@
     });
     
     var btn_edit = new Ext.Toolbar.Button({
+        name: 'edit',
         text:_('Edit'),
         icon:'/static/images/icons/edit.png',
         cls: 'x-btn-text-icon',
