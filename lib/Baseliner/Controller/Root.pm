@@ -73,6 +73,7 @@ sub auto : Private {
     if( $notify_valid_session ) {
         $c->stash->{auto_stop_processing} = 1;
         $c->stash->{json} = { success=>\0, logged_out => \1, msg => _loc("Not Logged on") };
+        $c->response->status( 401 );
         $c->forward('View::JSON');
     } elsif( $c->request->params->{fail_on_auth} ) {
         $c->response->status( 401 );

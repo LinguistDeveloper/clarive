@@ -817,10 +817,7 @@
     Baseliner.ajaxEval = function( url, params, foo ){
         if(params == undefined ) params = {};
         params['_bali_notify_valid_session'] = true;
-        var the_request = function() { Ext.Ajax.request({
-            url: url,
-            params: params,
-            success: function(xhr) {
+        var xhr_process = function(xhr){
                 var err_foo;
                 try {
                     try {
@@ -857,9 +854,16 @@
                     }
                 }
                 if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
-            },
+            };
+        var the_request = function() { Ext.Ajax.request({
+            url: url,
+            params: params,
+            success: xhr_process,
             failure: function(xhr) {
-                if( ! params._ignore_conn_errors ) {
+                // 401 status (unauthorized) usually has valid data that can be processed
+                if( xhr.status == 401 ) 
+                    xhr_process(xhr);
+                else if( ! params._ignore_conn_errors ) {
                     Baseliner.server_failure( xhr.responseText );
                 }
             }
