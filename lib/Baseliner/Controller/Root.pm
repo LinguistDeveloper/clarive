@@ -35,9 +35,7 @@ sub begin : Private {
     $c->res->headers->header( Pragma => 'no-cache');
     $c->res->headers->header( Expires => 0 );
 
-    if( ref $c->session->{user} ) {
-        $c->languages( $c->session->{user}->languages );
-    }
+    $self->_set_user_lang($c);
 
     Baseliner->app( $c );
 
@@ -88,6 +86,20 @@ sub auto : Private {
         $c->forward('/auth/logon');
     }
     return 0;
+}
+
+sub _set_user_lang : Private {
+    my ( $self, $c ) = @_;
+    if( ref $c->session->{user} ) {
+        $c->languages( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
+    }
+    elsif( my $username = $c->username ) {
+        my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
+        $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+        if( ref $c->session->{user} ) {
+            $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+        }
+    }
 }
 
 sub serve_file : Private {
@@ -179,18 +191,7 @@ sub index:Private {
     }
 
     # set language 
-    if( $c->user ) {
-        if( $c->user ) {
-            my $username = $c->username;
-            if( $username ) {
-                my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
-                $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-                if( ref $c->session->{user} ) {
-                    $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-                }
-            }
-        }
-    }
+    $self->_set_user_lang($c);
 
     # load menus
     my @menus;
