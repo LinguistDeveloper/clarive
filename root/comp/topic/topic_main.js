@@ -70,7 +70,7 @@
                                     view_is_dirty = true;
                                     
                                     if (gdi) {
-                                        var objSolicitud = Ext.get('gdi_solicitud');
+                                        //var objSolicitud = Ext.get('gdi_solicitud');
                                         form2.findField('title').setValue(a.result.title);
                 
                                         //form2.findField('gdi_solicitud').setValue(a.result.title);
@@ -101,8 +101,23 @@
                 var gdi = form2.findField('gdi');
                 if (gdi){
                     custom_form = gdi;
+                    
+                    var status_store = form2.findField("status_new").getStore();
+            		var rowIndex = status_store.find('action','New');
+                    if(rowIndex != -1){
+                        var status_old = form2.findField("status").getValue();
+                        console.log(status_old);
+                        console.log(form2.findField("status_new").getValue());
+                        sel = status_store.getAt(rowIndex);
+                        if(sel.data.id == status_old && status_old != form2.findField("status_new").getValue()){
+                            closeTab = true;
+                        }
+                        
+                    }
+                    
                     var id_obj_status = form2.findField("status_new").id;
-                    Baseliner.GDI.check_status(id_obj_status);
+                    
+                    if (Baseliner.GDI.get_action_status(id_obj_status) != 'New') Baseliner.GDI.check_status(id_obj_status);
                     if ( Baseliner.GDI.get_action_status(id_obj_status) == 'Ok' ){
                         Ext.Msg.confirm( _('Confirmation'), '¿Desea dar por realizada la solicitud ?', 
                         function(btn){ 
@@ -182,12 +197,13 @@
             }
 
             // now show/hide buttons
-            //btn_form_ok.show();
-            if(!app || app != 'gdi') { btn_form_ok.show()};
+            btn_form_ok.show();
+            //if(!app || app != 'gdi') { btn_form_ok.show()};
             if(params.topic_mid){
                 btn_comment.show();
                 btn_detail.show();
             }else{
+                if (btn_form_fin_solicitud) btn_form_fin_solicitud.show();
                 btn_comment.hide();
                 btn_detail.hide();
             }
@@ -200,9 +216,11 @@
             if (!form_is_loaded){
                 if(btn_form_fin_solicitud){
                     btn_edit.hide();
+                    btn_form_ok.show();
+                    btn_form_fin_solicitud.show();
                     //btn_form_fin_solicitud.show();
                     //PREGUNTAR POR ESTADO
-                    admin > 0 ? btn_form_ok.show(): btn_form_fin_solicitud.show();
+                    //admin > 0 ? btn_form_ok.show(): btn_form_fin_solicitud.show();
                     btn_detail.show();
                 }
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
@@ -211,13 +229,15 @@
             }else{
                 self.cardpanel.getLayout().setActiveItem( self.form_topic );
                 if(btn_form_fin_solicitud){
+                    btn_form_ok.show();
+                    btn_form_fin_solicitud.show();                    
                     //btn_form_fin_solicitud.show();
-                    admin > 0 ? btn_form_ok.show(): btn_form_fin_solicitud.show();
+                    //admin > 0 ? btn_form_ok.show(): btn_form_fin_solicitud.show();
                     btn_edit.hide();   
                 }
 
                 //btn_form_ok.show();
-                if(!app || app != 'gdi') { btn_form_ok.show()};
+                //if(!app || app != 'gdi') { btn_form_ok.show()};
                 
                 if(params.topic_mid){
                     btn_comment.show();

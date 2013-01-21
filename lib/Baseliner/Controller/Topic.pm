@@ -1044,7 +1044,7 @@ sub list_admin_category : Local {
             username       => $username,
         );
 
-                
+
         my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({id => $p->{statusId}});
         
         push @rows, { id => $p->{statusId},
