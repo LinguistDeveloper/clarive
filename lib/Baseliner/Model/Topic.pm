@@ -163,6 +163,8 @@ register 'registor.action.topic_category_fields' => {
 
 sub topics_for_user {
     my ($self, $p) = @_;
+    
+    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>Parametros: " . _dump $p; 
 
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
     $dir ||= 'desc';
@@ -322,7 +324,19 @@ sub topics_for_user {
         #$where->{'category_status_id'} = \@statuses;
         
     }else{
-        $where->{'category_status_type'} = {'!=', 'F'};
+        ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+        my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $username );        
+        
+        my %tmp;
+        map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' } 
+                        Baseliner->model('BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;
+
+        my @status_ids = keys %tmp;
+        $where->{'category_status_id'} = \@status_ids;
+        
+        #$where->{'category_status_type'} = {'!=', 'F'};
+        #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
+        $where->{'category_status_type'} = {-not_like, '%F%'}
     }
       
     if($p->{priorities}){
