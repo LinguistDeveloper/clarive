@@ -129,8 +129,8 @@ msgstr "No se puede crear el job: %1"
 msgid "Recovered spool outputs for job <b>%1</b>"
 msgstr "Recuperadas salidas de JES para el job <b>%1</b>"
 
-msgid "User <b>%1</b> creates <b>PROMOTION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
-msgstr "El usuario <b>%1</b> crea un job de <b>PROMOCIÓN</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+msgid "User <b>%1</b> creates <b>PROMOTION</b> job for package <b>%2</b> at <b>%3</b>"
+msgstr "El usuario <b>%1</b> crea un job de promoción para el paquete <b>%2</b> en la fecha <b>%3</b>"
 
 msgid "Promotion for package <b>%1</b> to <b>%2</b> finished successfully"
 msgstr "La promoción del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
@@ -138,8 +138,8 @@ msgstr "La promoción del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
 msgid "Promotion for package <b>%1</b> to <b>%2</b> finished with error"
 msgstr "La promoción del paquete <b>%1</b> a <b>%2</b> finaliza con error"
 
-msgid "User <b>%1</b> creates <b>DEMOTION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
-msgstr "El usuario <b>%1</b> crea un job de <b>DEVOLUCIÓN</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+msgid "User <b>%1</b> creates <b>DEMOTION</b> job for package <b>%2</b> at <b>%3</b>"
+msgstr "El usuario <b>%1</b> crea un job de devolución para el paquete <b>%2</b> en la fecha <b>%3</b>"
 
 msgid "Demotion for package <b>%1</b> to <b>%2</b> finished successfully"
 msgstr "La devolución del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
@@ -147,8 +147,11 @@ msgstr "La devolución del paquete <b>%1</b> a <b>%2</b> finaliza correctamente"
 msgid "Demotion for package <b>%1</b> to <b>%2</b> finished with error"
 msgstr "La devolución del paquete <b>%1</b> a <b>%2</b> finaliza con error"
 
-msgid "User <b>%1</b> creates <b>INSTALLATION</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
-msgstr "El usuario <b>%1</b> crea un job de <b>INSTALACIÓN</b> al site <b>%3</b> para el paquete <b>%2</b> en la fecha <b>%4</b>"
+msgid "User <b>%1</b> creates <b>INSTALLATION</b> job for package <b>%2</b> at <b>%3</b>"
+msgstr "El usuario <b>%1</b> crea un job de instalación para el paquete <b>%2</b> en la fecha <b>%3</b>"
+
+msgid "User <b>%1</b> creates <b>ROLLBACK</b> job for package <b>%2</b> at <b>%3</b>"
+msgstr "El usuario <b>%1</b> crea un job de marcha atrás para el paquete <b>%2</b> en la fecha <b>%3</b>"
 
 msgid "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully"
 msgstr "El paquete <b>%1</b> ha sido cambiado al estado <b>%2</b> en el site <b>%3</b> correctamente"
@@ -266,10 +269,6 @@ msgstr "FILE ALREADY PROCESSED, NO JOB FOR ROW %1 - %2"
 # features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (217)
 msgid "NO RELATIONSHIP match with job %1"
 msgstr "NO RELATIONSHIP match with job %1"
-
-# features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (334)
-msgid "User <b>%1</b> creates <b>ROLLBACK</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
-msgstr "User <b>%1</b> creates <b>ROLLBACK</b> job for package <b>%2</b> to <b>%3</b> at <b>%4</b>"
 
 # features/changeman/lib/BaselinerX/Changeman/Service/jobDaemon.pm (347)
 msgid "Package <b>%1</b> has been <b>%2</b> successfully"
