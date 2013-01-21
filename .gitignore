@@ -33,6 +33,7 @@ features/checking
 features/svnscm
 features/cvsscm
 features/jazztel
+features/bi
 inc
 t/balitest.db
 t/old

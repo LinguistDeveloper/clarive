@@ -115,9 +115,10 @@
                     }
                     
                     var id_obj_status = form2.findField("status_new").id;
-                    
-                    if (Baseliner.GDI.get_action_status(id_obj_status) != 'New') Baseliner.GDI.check_status(id_obj_status);
-                    if ( Baseliner.GDI.get_action_status(id_obj_status) == 'Ok' ){
+                    //if (Baseliner.GDI.get_action_status(id_obj_status) != 'New') Baseliner.GDI.check_status(id_obj_status);
+                    //alert(Baseliner.GDI.get_action_status(id_obj_status));
+                    //if ( Baseliner.GDI.get_action_status(id_obj_status) == 'Ok' ){
+                    if ( Baseliner.GDI.get_action_status(id_obj_status) != 'New' && Baseliner.GDI.check_status(id_obj_status) == 'Ok' ){
                         Ext.Msg.confirm( _('Confirmation'), '¿Desea dar por realizada la solicitud ?', 
                         function(btn){ 
                             if(btn == 'no') {
