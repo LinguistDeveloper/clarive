@@ -16,6 +16,7 @@ register 'config.comm.email' => {
         { id=>'frequency', name=>'Email daemon frequency', default=>10 },
         { id=>'server', name=>'Email server', default=>'smtp.example.com' },
         { id=>'from', name=>'Email default sender', default=>'user <user@mailserver>' },
+        { id=>'overwrite_from', name=>'Email default sender', default=> 0 },
         { id=>'domain', name=>'Email domain', default=>'exchange.local' },
         { id=>'max_attempts', name=>'Max attempts', default=>10 },
         { id=>'baseliner_url', name=>'Base URL to access baseliner', default=>'http://localhost:3000' },
@@ -54,7 +55,7 @@ sub group_queue {
         my $message = $queue_item->id_message;
         my $id = $message->id ;
         my $from = $message->sender;
-        $from = $config->{from} if $from eq 'internal';
+        $from = $config->{from} if $from =~ m{^internal} || $config->{overwrite_form};
         $email{ $id } ||= {};
 
         my $address = $queue_item->destination
@@ -105,6 +106,7 @@ use Encode qw( decode_utf8 encode_utf8 is_utf8 );
         my $override_message='</body>';
         my @to = _array $em->{to};
         my @cc = _array $em->{cc};
+        my $from = $config->{overwrite_from} ? $config->{from} : $em->{from};
         if( @email_override ) {
             my $override_edited=join("<LI>",@email_override);
             my $original_edited=join("<LI>",_array $em->{to});
@@ -137,7 +139,7 @@ use Encode qw( decode_utf8 encode_utf8 is_utf8 );
                 cc => join(';',@cc),
                 body => $body,
                 subject => $subject,
-                from => $em->{from},
+                from => $from, 
                 attach => [ $em->{attach} ],
             );
             # need to deactivate the message before sending it
@@ -158,7 +160,13 @@ sub resolve_address {
     my ( $self, $username ) = @_;
     my $config = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
     my $domain = $config->{domain};
-    return "$username\@$domain";
+
+    if ($username =~ m{.*<.*>$} ) {
+        my $mail=$username;
+        $mail=~s{>}{\@$domain>};
+    } else {
+        return "$username\@$domain";
+    }
 }
 
 sub send {
