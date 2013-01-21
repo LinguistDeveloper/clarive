@@ -74,24 +74,32 @@ sub job_daemon {
         my $now = _now;
 
         my @query_roll = (
-                # Immediate chain (PRE, POST or now=1 )
-                { 
-                    status => 'READY',
-                    '-or' => [ { step => 'PRE' }, { step => 'POST' }, { now=>1 } ]
-                    #step=>{ '-or' => ['PRE', 'POST'] },
-                }, 
-                # Scheduled chain (RUN and now<>0 )
-                { 
-                    schedtime => { '<' , $now }, 
-                    maxstarttime => { '>' , $now }, 
-                    status => 'READY', step=>'RUN',
-                    now => { '<>', 1 },
-                } 
+            # Immediate chain (PRE, POST or now=1 )
+            {
+                status       => 'READY',
+                '-or'        => [ { step => 'PRE' }, { step => 'POST' }, { now=>1 } ],
+            },
+            # Scheduled chain (RUN and now<>0 )
+            {
+                schedtime    => { '<' , $now },
+                maxstarttime => { '>' , $now },
+                status       => 'READY', 
+                step         => 'RUN',
+                now          => { '<>', 1 },
+            }, 
+            # Jobs killed externally
+            {
+                status => 'MUST_DIE',
+                step   => 'RUN',
+            }
         );
+
         for my $roll ( @query_roll ) {
             my @rs = $c->model('Baseliner::BaliJob')->search($roll);
             foreach my $r ( @rs ) {
-                _log _loc( "Starting job %1 for step %2", $r->name, $r->step );
+                my $signal=$r->status eq 'MUST_DIE'?'die':'no_signal'; ## Determines if job has been finished externally
+                _log _loc( "Starting job %1 for step %2 status #%3# signal %4", $r->name, $r->step, $r->status, $signal );
+
                 $r->status('RUNNING');
                 $r->update;
                 # get proc mode from job bl
@@ -109,10 +117,10 @@ sub job_daemon {
                 # launch the job proc
                 if( $mode eq 'spawn' ) {
                     _log "Spawning job (mode=$mode)";
-                    my $pid = $self->runner_spawn( runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile );
+                    my $pid = $self->runner_spawn( runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile, signal=>$signal );
                 } elsif( $mode =~ /fork|detach/i ) {
                     _log "Forking job " . $r->id . " (mode=$mode), logfile=$logfile";
-                    $self->runner_fork( runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
+                    $self->runner_fork( runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log},  signal=>$signal );
                 } else {
                     _throw _loc("Unrecognized mode '%1'", $mode );
                 }
@@ -130,7 +138,7 @@ sub job_daemon {
 
 sub runner_spawn {
     my ($self, %p ) =@_;
-    my $cmd = "bin/bali job.run --runner \"". $p{runner} ."\" --step $p{step} --jobid ". $p{jobid} . " --logfile '$p{logfile}' >>'$p{logfile}' 2>&1";
+    my $cmd = "bin/bali job.run --runner \"". $p{runner} ."\" --step $p{step} --jobid ". $p{jobid} . " --signal ".$p{signal} ." --logfile '$p{logfile}' >>'$p{logfile}' 2>&1";
     my $proc = Proc::Background->new( $cmd );
     push @{ $self->{proc_list} }, $proc;
     return $proc->pid;
@@ -172,7 +180,7 @@ sub runner_fork {
             _log "Detached with session id $sid";
         }
         # change child process name for the ps command
-        $0 = "perl script/bali.pl job.run --runner $p{runner} --step $p{step} --jobid $p{jobid} --logfile '$p{logfile}'";
+        $0 = "perl script/bali.pl job.run --runner $p{runner} --step $p{step} --jobid $p{jobid} --signal $p{signal} --logfile '$p{logfile}'";
         unless( $p{unified_log} ) {
             open (STDOUT, ">>", $p{logfile} ) or die "Can't open STDOUT: $!";
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";

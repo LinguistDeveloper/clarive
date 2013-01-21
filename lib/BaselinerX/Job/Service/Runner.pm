@@ -167,6 +167,7 @@ sub job_run {
     # redirect log $BASELINER_LOGHOME/
     my $jobid = $config->{jobid};
     $self->status('RUNNING');
+    my $lastStatus=$self->status;
     $c->stash->{job} = $self;
     $self->jobid( $jobid );
     $self->logger( new BaselinerX::Job::Log({ jobid=>$jobid }) );
@@ -192,6 +193,8 @@ sub job_run {
     my $goto_next = 0;
 
     try {
+        _throw( _loc("Error running Job %1", $jobid ) ) if( $config->{args}{signal} eq 'die' ); ## Finished externally
+
         # load job object
         my $r = $self->row;
 
@@ -228,7 +231,7 @@ sub job_run {
         $self->job_stash->{step} = $step;
 
         # send notifications  
-        Baseliner->model('Jobs')->notify( jobid=>$jobid, type=>'resumed' ) if( $step eq 'RUN' );
+#        Baseliner->model('Jobs')->notify( jobid=>$jobid, type=>'resumed' ) if( $step eq 'RUN' );
 
         #******************  start main runner  ******************
         # typically, a Chain runner, like SimpleChain, or a single service
@@ -286,6 +289,9 @@ sub job_run {
                 $r->now( 1 ); # schedule it for immediate execution
                 $r->rollback( 1 );
                 $r->step( 'PRE' );
+
+                $lastStatus='ERROR';
+
                 $r->status( $self->status('READY') );
                 $r->update;
 
@@ -298,6 +304,9 @@ sub job_run {
                   ? $self->logger->debug(_loc('There are no rollbacks in TEST environments'))
                   : $self->logger->debug(_loc('No rollback data found in the stash'));
                 $self->status('ERROR');
+
+                $lastStatus=$self->status;
+
                 $self->finish($self->status);
                 $self->freeze;
             }
@@ -305,6 +314,9 @@ sub job_run {
             # already rolling back, but failed
             $self->logger->error( _loc('Rollback failed') );
             $self->status('ERROR');
+
+            $lastStatus=$self->status;
+
             $self->finish($self->status);
             $self->freeze;
         }
@@ -318,18 +330,19 @@ sub job_run {
     $self->logger->debug(_loc("Job execution output"), data=>$runner_output );
 
     # last message on log
-    my $logprerunlevel = $self->status =~ /ERROR/ ? 'error' : 'debug';
-    my $loglevel = $self->status =~ /ERROR/ ? 'error' : 'info';
-    my $log_status = $self->status =~ /ERROR/i ? 'ERROR' : 'OK'; 
+    my $logprerunlevel = $lastStatus =~ /ERROR/ ? 'error' : 'debug';
+    my $loglevel = $lastStatus =~ /ERROR/ ? 'error' : 'info';
+    my $log_status = $lastStatus =~ /ERROR/i ? 'ERROR' : 'OK'; 
+
+    my $lit_status=$self->status eq 'ERROR'?$self->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR'):undef;
+    my $lit_status=$lastStatus eq 'RUNNING'?$self->job_data->{rollback}?_loc('FINISHED DOING ROLLBACK CORRECTLY'):_loc('FINISHED CORRECTLY'):$self->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR') unless $lit_status;
 
     # finish up step
     if( $step eq 'PRE' ) {
-        $self->logger->$logprerunlevel( _loc("Job prerun finished with status %1", _loc( $log_status ) ), milestone=>1 );
-    } elsif( $step eq 'RUN' ) {
-        $self->logger->$loglevel( _loc("Job run finished with status %1", _loc( $log_status ) ), milestone=>1);
-        $self->finish($self->status);
+        $self->logger->$logprerunlevel( _loc("Step %1 finished with status %2", $step, _loc( $lit_status ) ), milestone=>1 );
     } else {
-        $self->logger->$loglevel( _loc("Job finished with status %1", _loc( $log_status ) ), milestone=>1 );
+        $self->logger->$loglevel( _loc("Step %1 finished with status %2", $step, _loc( $lit_status ) ), milestone=>1 );
+        $self->logger->$loglevel( _loc("Job %1 finished", $jobid ), milestone=>1 ) if $step eq 'POST';
         $self->finish($self->status);
     }
 
