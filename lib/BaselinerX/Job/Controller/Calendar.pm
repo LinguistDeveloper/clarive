@@ -110,24 +110,25 @@ sub calendar_list : Path('/job/calendar_list') {
 sub calendar_update : Path( '/job/calendar_update' ) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    my $ns = join(",",_array $p->{ns});
     try {
         if( $p->{action} eq 'create' ) {
-            my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } );
+            my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $p->{ bl } } );
             if ( my $r = $r1->first ) {
-                _fail _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->name, $p->{ ns }, $p->{ bl } );
+                _fail _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->name, $ns, $p->{ bl } );
             } else {
                 my $row = $c->model('Baseliner::BaliCalendar')->create({
                         name        => $p->{ name },
                         description => $p->{ description },
                         seq         => $p->{ seq } // $DEFAULT_SEQ,
                         active      => '1',
-                        ns          => $p->{ ns },
+                        ns          => $ns,
                         bl          => $p->{ bl }
                     }
                 );
                 if ( $p->{ copyof } ) {
                     my $copyOf = int( $p->{ copyof } );
-                    $row = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } )->first;
+                    $row = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $p->{ bl } } )->first;
                     my $new_id = $row->id;
                     my $rs = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $copyOf } );
 
@@ -158,7 +159,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             $row->description( $p->{ description } );
             length $p->{ seq } and $row->seq( $p->{ seq } );
             $p->{ active } eq 'on' ?  $row->active( '1' ) : $row->active( '0' );
-            $p->{ ns } and $row->ns( $p->{ ns } );
+            $ns and $row->ns($ns);
             $p->{ bl } and $row->bl( $p->{ bl } );
             $row->update;
         }
@@ -398,8 +399,14 @@ sub build_job_window : Path('/job/build_job_window') {
             my @ns_list = _array $item->{ns}, _array $namespace->nature, $namespace->application, '/';
             foreach my $curr_ns (@ns_list){
                 _debug "NS=$curr_ns";
-                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $curr_ns }, active=>'1' });
-                push @ns, $curr_ns if $r->count;
+                if ( $curr_ns eq '/' ) {
+                    push @ns, $curr_ns;
+                    next;
+                }
+                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => "%$curr_ns%" }, active=>'1' });
+                while (my $rec=$r->next) {
+                    push @ns, $rec->ns ;
+                }
             }
         }
         _debug "NS with Calendar: " . join ',',@ns;
@@ -456,10 +463,17 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
         }
 
         my @ns;
-
         for my $ns ( _array $p->{ns} ) {
-            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => "$ns%" }, active=>'1' })->first;
-            push @ns, $r->ns if ref $r;
+            if($ns eq '/')
+            {
+                push @ns, $ns;
+                next; 
+            }
+            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => "%$ns%" }, active=>'1' });
+            while (my $rec = $r->next)
+            {
+                push @ns, $rec->ns;
+            }
         }
 
         _debug "NS with Calendar: " . join ',',@ns;
