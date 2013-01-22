@@ -78,9 +78,23 @@ sub creaPase {  ## $self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, 
    my $chmConfig = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' );
 
    try {
-
        if( defined ( my $activeJob = Baseliner->model('Jobs')->is_in_active_job( "changeman.package/$package" ) ) ) {
            _debug _loc("Package <b>%1</b> is in active job <b>%2</b>", $package,$activeJob->id) if $activeJob;
+## Si hay actividad de un paquete en un pase posterior y el pase activo no tiene ficheros pendientes, se cancela el job.
+           if ($activeJob->step eq 'RUN' || $activeJob->status eq 'WAITING') {
+               my $stash = _load $activeJob->stash;
+               my $file = ( _array $stash->{procFiles} )[0];
+               my $key=$1 if $file =~ m{CHM\.PSCM\.P\.(\w+)\..*}; 
+
+               my $config = Baseliner->model('ConfigStore')->get( 'config.changeman.log_connection' );
+               my $bx = $BaselinerX::ChangemanUtils::connection;
+               my ($RC, $RET)=$bx->execute(qq{ls $config->{logPath}/CHM.PSCM.P.$key*});
+               if ($RC) { ## No existen ficheros de esta clave => hay que cancelar el pase
+                   $activeJob->status("MUST_DIE");
+                   $activeJob->update;
+                   _log "Cancelando ".$activeJob->id." porque sigue esperando y hay actividad posterior en otro pase";
+               }
+           }
            return $runner;
            # rgo: not sure if this is needed
            #my $oldjob = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$activeJob->id, same_exec=>0, exec=>'last', silent=>1 );
@@ -234,10 +248,14 @@ sub run_once {
 
             $user=(map {$_->{user}} _array $xml->{sites})[0];
 
-            if ( ! $user && $xml->{ReturnCode} ne '00' ) {
-               $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify, $key) ;
-               _debug $fprefix . "CLEANED WITH ERROR %1", $xml->{Message} ;
-               last; ## debe recargarse la lista de ficheros para evitar errores.
+            if ( ! $user ) {
+               if ( $xml->{ReturnCode} ne '00' ) {
+                   $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify, $key) ;
+                   _debug $fprefix . "CLEANED WITH ERROR %1", $xml->{Message} ;
+                   last; ## debe recargarse la lista de ficheros para evitar errores.
+                } else {
+                   $user = 'vpchm';
+                }
             }
          }
          
