@@ -46,3 +46,6 @@
 [submodule "features/checking"]
 	path = features/checking
 	url = http://git.vasslabs.com/git/checking.git
+[submodule "features/bi"]
+	path = features/bi
+	url = http://clarive.vasslabs.com/git/bi.git
