@@ -110,8 +110,7 @@ use Encode qw( decode_utf8 encode_utf8 is_utf8 );
         if( @email_override ) {
             my $override_edited=join("<LI>",@email_override);
             my $original_edited=join("<LI>",_array $em->{to});
-
-            $override_message = '<TABLE cellpadding="0" cellspacing="0" width="100%"><TR><TH ALIGN="LEFT" COLSPAN=2 class="backGroundFilaDatos">'._loc('Email override').'</TH></TR><TD class="backGroundFilaDatos">'._loc('Email redirected to').'</TD><TD><UL><LI>'.$override_edited.'</UL></TD></TR><TR><TD class="backGroundFilaDatos">'._loc('Original distribution list').'</TD><TD><UL><LI>'.$original_edited.'</UL></TD></TR></TABLE></body>';
+            $override_message = '<TABLE cellpadding="0" cellspacing="0" width="100%"><TR><TH ALIGN="LEFT" COLSPAN=2>'._loc('Email override').'</TH></TR><TD>'._loc('Email redirected to').'</TD><TD><UL><LI>'.$override_edited.'</UL></TD></TR><TR><TD>'._loc('Original distribution list').'</TD><TD><UL><LI>'.$original_edited.'</UL></TD></TR></TABLE></body>';
 
             @to=@email_override;
             @cc=();
@@ -164,6 +163,7 @@ sub resolve_address {
     if ($username =~ m{.*<.*>$} ) {
         my $mail=$username;
         $mail=~s{>}{\@$domain>};
+        return "$mail";
     } else {
         return "$username\@$domain";
     }
