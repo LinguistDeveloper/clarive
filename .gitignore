@@ -1,3 +1,4 @@
+.gitmodules
 baseliner_local.conf
 baseliner_topic.conf
 etc/bali_cache
