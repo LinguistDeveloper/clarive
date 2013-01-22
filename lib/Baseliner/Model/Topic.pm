@@ -1444,7 +1444,7 @@ sub search_query {
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
         my $info = join(', ',@text);
-        my $desc = _strip_html( $r->{description} . ' ' . $r->{text} );
+        my $desc = _strip_html( sprintf "%s %s", $r->{description}, $r->{text} );
         if( length $desc ) {
             $desc = _utf8 $desc;  # strip html messes up utf8
             $desc =~ s/[^\w\s]//g; 

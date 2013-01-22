@@ -42,6 +42,7 @@ Ext.onReady(function(){
             search_box.setSize( 120 );
         }
     });
+    Baseliner.search_box = search_box;
     Baseliner.toggleCalendar = function(){
         var bc = Baseliner.calpanel;
         //if( bc.collapsed ) bc.toggleCollapse()
