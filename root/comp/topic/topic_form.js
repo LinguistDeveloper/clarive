@@ -4,23 +4,12 @@
     if( data == undefined ) data = {};
     var on_submit_events = [];
     
-
-    
     var form_topic = new Ext.FormPanel({
         url:'/topic/update',
-        //frame: true,
-        // style: { padding: 15  },
         bodyStyle: {
           'padding': '15px 90px 15px 90px'
         },
-            ////bodyStyle:{
-            ////    'padding': '15px 90px 15px 90px',
-            ////    'color': '#468847',
-            ////    'background-color': '#ffffbe',
-            ////    'border-color': '#d6e9c6',
-            ////    'font-weight':'bold'},         
         border: false,
-        //style: { padding: '15px' },
         defaults: { anchor:'98%'},
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
@@ -48,7 +37,7 @@
             if(fields[i].body) {
                 var comp = Baseliner.eval_response(
                     fields[i].body,
-                    {form: form_topic, topic_data: data, topic_meta: fields[i], value: '', _cis: rec._cis }
+                    {form: form_topic, topic_data: data, topic_meta: fields[i], value: '', _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin }
                 );
                 
                 if( comp.items ) {

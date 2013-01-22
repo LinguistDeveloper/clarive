@@ -3,6 +3,8 @@
     my $ii = Baseliner::Utils::_nowstamp();
     my $swEdit = $c->stash->{swEdit};
     my $permEdit = $c->stash->{permissionEdit};
+    my $app = $c->stash->{app};
+    my $admin = $c->stash->{admin};
 </%perl>
 
 (function(params){
@@ -11,7 +13,11 @@
     var swEdit = <% $swEdit ? 'true' : 'false' %>;
     var permEdit = <% $permEdit ? 'true' : 'false' %>;
     var ii = "<% $ii %>";  // used by the detail page
+    var app = '<% $app %>';
+    var admin = '<% $admin %>';
+    
     var btn_form_ok = new Ext.Button({
+            name: 'grabar',
             text: _('Save'),
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
@@ -26,7 +32,7 @@
                 
                 var gdi = form2.findField('gdi');
                 var custom_form = gdi ? 'gdi' : '';
-
+                
                 if (form2.isValid()) {
                    form2.submit({
                        params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( _cis ) },
@@ -68,9 +74,12 @@
                             if (gdi) {
                                 var objSolicitud = Ext.get('gdi_solicitud');
                                 form2.findField('title').setValue(a.result.title);
-                                form2.findField('gdi_solicitud').setValue(a.result.title);
-                                form2.findField('gdi_solicitud').show();
-                                form2.findField('status_new').show();
+                                //form2.findField('gdi_solicitud').setValue(a.result.title);
+                                //form2.findField('gdi_solicitud').show();
+                                if(admin > 0){
+                                    form2.findField('status_new').show();    
+                                }
+                                
                             }
                             
                        },
@@ -88,9 +97,17 @@
     });
 
     // Detail Panel
-    var detail = new Ext.Panel({ });
+    var detail = new Ext.Panel({
+        //padding: '0px'
+    });
+    
     var show_detail = function(){
         cardpanel.getLayout().setActiveItem( detail );
+        if(btn_form_fin_solicitud){
+            btn_form_fin_solicitud.hide();
+            btn_form_volver.hide();
+            btn_edit.show();
+        }
         btn_form_ok.hide();
         if( view_is_dirty ) {
             view_is_dirty = false;
@@ -126,6 +143,7 @@
         } else {
             rec._cis = _cis;
         }
+        rec.id_panel = cardpanel.id;
         Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
             if( ! form_is_loaded ) {
                 //form_panel.removeAll();
@@ -138,7 +156,8 @@
             }
 
             // now show/hide buttons
-            btn_form_ok.show();
+            //btn_form_ok.show();
+            if(!app || app != 'gdi') { btn_form_ok.show()};
             if(params.topic_mid){
                 btn_comment.show();
                 btn_detail.show();
@@ -153,12 +172,27 @@
         cardpanel.getLayout().setActiveItem( loading_panel );
         if( params!==undefined && params.topic_mid !== undefined ) {
             if (!form_is_loaded){
+                if(btn_form_fin_solicitud){
+                    btn_edit.hide();
+                    //btn_form_fin_solicitud.show();
+                    //PREGUNTAR POR ESTADO
+                    admin > 0? btn_form_ok.show(): btn_form_fin_solicitud.show();
+                    btn_detail.show();
+                }
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
                     load_form( rec );
                 });
             }else{
                 cardpanel.getLayout().setActiveItem( form_topic );
-                btn_form_ok.show();
+                if(btn_form_fin_solicitud){
+                    //btn_form_fin_solicitud.show();
+                    admin ? btn_form_ok.show(): btn_form_fin_solicitud.show();
+                    btn_edit.hide();   
+                }
+
+                //btn_form_ok.show();
+                if(!app || app != 'gdi') { btn_form_ok.show()};
+                
                 if(params.topic_mid){
                     btn_comment.show();
                     btn_detail.show();
@@ -168,7 +202,7 @@
                 }                
             }
         } else {
-            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name, ci: params.ci }, function(rec) {
+            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: params.new_category_id, new_category_name: params.new_category_name, ci: params.ci, dni: params.dni }, function(rec) {
                 load_form( rec );
             });
         }
@@ -336,22 +370,89 @@
         enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: 'form'
     });
         
-    var tb = new Ext.Toolbar({
-        isFormField: true,
-        items: [
-            btn_detail,
-            btn_edit,
-            '-',
-            btn_comment,
-            btn_form_ok,
-            '->',
-            btn_kanban,
-            btn_graph
-        ]
-    });
-
     var loading_panel = Baseliner.loading_panel();
 
+    if(app && app == 'gdi'){
+        var btn_form_fin_solicitud = new Ext.Button({
+                name: 'fin_solicitud',
+                text: _('Fin solicitud'),
+                icon:'/static/images/icons/save.png',
+                cls: 'x-btn-icon-text',
+                type: 'submit',
+                hidden: false,
+                handler: function() {
+                    //cardpanel.getLayout().setActiveItem(form_topic);
+                    btn_form_fin_solicitud.hide();
+                    btn_form_volver.show();
+                    btn_form_ok.show();
+                    show_confirm();
+                }
+                    
+        });
+        
+        
+        var btn_form_volver = new Ext.Button({
+                name: 'volver',
+                text: _('Volver'),
+                icon:'/static/images/icons/left.png',
+                cls: 'x-btn-icon-text',
+                type: 'submit',
+                hidden: true,
+                handler: function() {
+                    btn_form_volver.hide();
+                    btn_form_ok.hide();
+                    btn_form_fin_solicitud.show();
+                    cardpanel.getLayout().setActiveItem(form_topic);
+                    
+    //    var current_card = Ext.getCmp( id_current_card );
+    //    card.getLayout().setActiveItem(current_card);                    
+                    //card.getLayout().setActiveItem(current_card);
+                    //card.getLayout().setActiveItem(current_card);
+                    //btn_form_volver.hide();
+                    //console.log(card.getLayout().);
+                }
+                    
+        });
+        
+        
+        if(params.topic_mid && params.topic_mid > 0){
+            btn_form_fin_solicitud.hide();
+            btn_edit.show();
+        }else{
+            btn_edit.hide();
+            btn_detail.hide();
+        }
+        
+        var tb = new Ext.Toolbar({
+            isFormField: true,
+            anchor: '100%',
+            items: [
+                btn_detail,
+                btn_edit,
+                btn_form_fin_solicitud,
+                btn_form_volver,
+                btn_form_ok
+            ]
+        });  
+
+        
+
+    }else{
+        var tb = new Ext.Toolbar({
+            isFormField: true,
+            items: [
+                btn_detail,
+                btn_edit,
+                '-',
+                btn_comment,
+                btn_form_ok,
+                '->',
+                btn_kanban,
+                btn_graph
+            ]
+        });
+    }
+    
     var cardpanel = new Ext.Panel({
         layout: 'card',
         activeItem: 0,
@@ -362,7 +463,7 @@
         defaults: {border: false},
         items: [ loading_panel, detail ]
     });
-        
+    
     var detail_reload = function(){
         detail.load({
             url: '/topic/view',

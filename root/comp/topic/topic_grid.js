@@ -7,7 +7,6 @@
     var ps = 25; //page_size
     var filter_current;
     var stop_filters = false;
-	
 	var typeApplication = '<% $c->stash->{typeApplication} %>';
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
 
@@ -572,7 +571,8 @@
         header: false,
         stripeRows: true,
         autoScroll: true,
-        //stateful: true, stateId: 'topic-grid',
+        stateful: true, 
+        stateId: 'topic-grid',
         //enableHdMenu: false,
         store: store_topics,
         //enableDragDrop: true,
@@ -581,10 +581,14 @@
         deferredRender: true,
         ddGroup: 'lifecycle_dd',
         viewConfig: {forceFit: true},
+%if ( !$c->stash->{typeApplication} ){
         sm: check_sm,
+%}
         loadMask:'true',
         columns: [
+%if ( !$c->stash->{typeApplication} ){
             check_sm,
+%}
             { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name  },
             { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
             { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
@@ -600,9 +604,11 @@
         tbar:   [ 
                 search_field
 				,
+%if ( !$c->stash->{typeApplication} ){				
                 btn_add,
                 btn_edit,
                 btn_delete,
+%}				
                 //btn_labels
                 '->',
                 btn_reports,
@@ -612,6 +618,7 @@
         ],      
         bbar: ptool
     });
+	
     
 //    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 //        //init_buttons('enable');
@@ -655,7 +662,7 @@
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
         var title = _(r.get( 'category_name' )) + ' #' + r.get('topic_mid');
-        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') , title , { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
+        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title , { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
     });
     
     grid_topics.on( 'render', function(){

@@ -79,7 +79,7 @@ padding: 2px 4px 2px 7px;
 </style>
 % my @form = grep { $_->{fields} } _array( $topic_meta );
 % if (@form) {
-<div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
+<div id="boot" >
 % foreach my $field (  @form ) {
 % if ($field->{html}){
     <& $field->{html}, data=>$topic_data, meta=>$field &>
