@@ -773,7 +773,7 @@ sub get_data {
         map { $custom_data{ $_->{name} } = $_->{value} ? $_->{value} : $_->{value_clob} }
             Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( { topic_mid => $topic_mid } )->hashref->all;
         
-        push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { $_->{type} eq 'form' } _array($meta);
+        push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { defined $_->{type} && $_->{type} eq 'form' } _array($meta);
                              
 
         for (@custom_fields){
