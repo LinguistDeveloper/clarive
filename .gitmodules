@@ -1,6 +1,0 @@
-[submodule "features/clarive.core"]
-	path = features/clarive.core
-	url = http://git.vasslabs.com/git/clarive.core.git
-[submodule "features/cetelem"]
-	path = features/cetelem
-	url = http://git.vasslabs.com/git/cetelem.git
