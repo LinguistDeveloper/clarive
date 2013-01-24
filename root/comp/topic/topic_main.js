@@ -398,74 +398,13 @@
         
     var loading_panel = Baseliner.loading_panel();
 
-    if(app && app == 'gdi'){
-        var btn_form_fin_solicitud = new Ext.Button({
-                name: 'fin_solicitud',
-                text: _('Fin solicitud'),
-                icon:'/static/images/icons/save.png',
-                cls: 'x-btn-icon-text',
-                type: 'submit',
-                hidden: false,
-                handler: function() {
-                    btn_form_fin_solicitud.hide();
-                    btn_form_volver.show();
-                    btn_form_ok.show();
-
-                    var confirm = Baseliner.GDI.create_layout_confirm(form_topic.id)
-                    cardpanel.add(confirm);
-                    cardpanel.getLayout().setActiveItem( confirm );
-                }
+    var tb;
+    if( Baseliner.TopicExtension.toolbar.length > 0 ) {
+        Ext.each( Baseliner.TopicExtension.toolbar, function(etb){
+            etb(this,cardpanel);
         });
-        
-        
-        var btn_form_volver = new Ext.Button({
-                name: 'volver',
-                text: _('Volver'),
-                icon:'/static/images/icons/left.png',
-                cls: 'x-btn-icon-text',
-                type: 'submit',
-                hidden: true,
-                handler: function() {
-                    btn_form_volver.hide();
-                    btn_form_ok.hide();
-                    btn_form_fin_solicitud.show();
-                    cardpanel.getLayout().setActiveItem(form_topic);
-                    
-    //    var current_card = Ext.getCmp( id_current_card );
-    //    card.getLayout().setActiveItem(current_card);                    
-                    //card.getLayout().setActiveItem(current_card);
-                    //card.getLayout().setActiveItem(current_card);
-                    //btn_form_volver.hide();
-                    //console.log(card.getLayout().);
-                }
-                    
-        });
-        
-        
-        if(params.topic_mid && params.topic_mid > 0){
-            btn_form_fin_solicitud.hide();
-            btn_edit.show();
-        }else{
-            btn_edit.hide();
-            btn_detail.hide();
-        }
-        
-        var tb = new Ext.Toolbar({
-            isFormField: true,
-            anchor: '100%',
-            items: [
-                btn_detail,
-                btn_edit,
-                btn_form_fin_solicitud,
-                btn_form_volver,
-                btn_form_ok
-            ]
-        });  
-
-        
-
-    }else{
-        var tb = new Ext.Toolbar({
+    } else {
+        tb = new Ext.Toolbar({
             isFormField: true,
             items: [
                 btn_detail,

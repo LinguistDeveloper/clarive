@@ -206,6 +206,9 @@ Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
     }
 });
 
+Baseliner.TopicExtension = {};
+Baseliner.TopicExtension.toolbar = [];
+
 //Baseliner.store.Topics = function(c) {
 //     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
 //        root: 'data' , 
