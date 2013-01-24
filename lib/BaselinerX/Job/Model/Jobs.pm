@@ -420,9 +420,9 @@ sub notify { #TODO : send to all action+ns users, send to project-team
         my $subject;
         # $log->debug( _loc("STASH"), data=> _dump $stash);
 
-        if ($status eq 'FINISHED' && $job->rollback) {
+        if ($status =~ m{RUNNING|FINISHED} && $job->rollback) {
             $status = "FINISHED DOING ROLLBACK CORRECTLY";
-        }  elsif ($status eq 'FINISHED' && ! $job->rollback) {
+        }  elsif ($status =~ m{RUNNING|FINISHED} && ! $job->rollback) {
             $status = "FINISHED CORRECTLY";
         }  elsif ($status eq 'ERROR' && ! $job->rollback) {
             $status = "FINISHED WITH ERROR";
@@ -433,6 +433,7 @@ sub notify { #TODO : send to all action+ns users, send to project-team
         if ( scalar (_array $stash->{chain}) gt 0 ) {
             $type = 'Resumed';
             $subject = _loc('Job %1: %2', $job->name, _loc($type) );
+            return 0; # Este caso no se notifica...
         } else {
             $subject = _loc('Job %1: %2', $job->name, _loc($status) );
         }
