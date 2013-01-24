@@ -56,6 +56,11 @@ __PACKAGE__->add_columns(
   },
   "nature", { data_type => "varchar2", is_nullable => 1, size => 1024 },
   "active", { data_type => "char", is_nullable => 1, size => 1, default => '1' },  
+  "id", {
+    data_type => "NUMBER",
+    is_nullable => 0,
+    is_auto_increment => 1,
+  },     
 );
 __PACKAGE__->set_primary_key("mid");
 
