@@ -23,7 +23,7 @@ sub main {
   my $log      = $job->logger;
   my @elements = @{$job->job_stash->{elements}->{elements}};
   my @contents = @{$job->job_stash->{contents}};
-  my $username = $job->job_data->{username};
+  my $username = $job->job_data->{username}||'vpchm';
 
   my @camlist  =  map { _pathxs $_->{fullpath}, 1 } @elements;
   my %camlist=map { substr ((ns_split($_->{item}))[1], 0,3) => $_->{item} =~ m{^nature}?1:0 } @contents;
@@ -32,7 +32,7 @@ sub main {
   }
   @camlist = _unique @camlist;
 
-  $username=~s{vpchm|desconocido}{Pase lanzado desde Changeman}ig;
+  $username=~s{vpchm|desconocido|internal}{Pase lanzado desde Changeman}ig;
  
   if ( $job->job_data->{bl} ne 'DESA' ){ 
 
