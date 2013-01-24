@@ -12,8 +12,7 @@ sub run {
    my $job      = $c->stash->{job};
    my $log      = $job->logger;
 
-   my $rs = $c->model('BaliConfig')->search( { value => { '!=', undef } }, { orderby => [' bl,ns '] } ); #solo variables con valor
-
+   my $rs = $c->model('Baseliner::BaliConfig')->search( { value => { '!=', undef } }, { orderby => [' bl,ns '] } ); #solo variables con valor
    #rs_hashref($rs);
    my $count = $rs->count;
    my @config;
