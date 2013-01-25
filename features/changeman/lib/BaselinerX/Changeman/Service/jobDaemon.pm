@@ -88,8 +88,8 @@ sub creaPase {  ## $self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, 
 
                my $config = Baseliner->model('ConfigStore')->get( 'config.changeman.log_connection' );
                my $bx = $BaselinerX::ChangemanUtils::connection;
-               my ($RC, $RET)=$bx->execute(qq{ls $config->{logPath}/CHM.PSCM.P.$key*});
-               if ($RC) { ## No existen ficheros de esta clave => hay que cancelar el pase
+               my ($RC, $RET)=$bx->execute(qq{ls $config->{logPath}/CHM.PSCM.*.$key*.FIN*});
+               if ($RC) { ## No existe fichero FIN.. de esta clave => hay que cancelar el pase
                    $activeJob->status("MUST_DIE");
                    $activeJob->update;
                    _log "Cancelando ".$activeJob->id." porque sigue esperando y hay actividad posterior en otro pase";
