@@ -43,6 +43,11 @@ sub main {
           $linklistRefresh = $linklistRefresh || ( ( $_->{data}->{urgente} eq 'S' && $_->{data}->{linklist} eq 'SI' ) || 0 )
       }
 
+      my @packages;
+      foreach (@contents) {
+         push @packages, $self->message($_) unless $_->{item} =~ m{nature/};
+      }
+
       # Set data.
       my $data = {
         job_id       => $job->{jobid},
@@ -55,7 +60,7 @@ sub main {
         cam_list     => [@camlist],
         node_list    => $job->job_data->{bl} eq 'PROD'?$job->job_stash->{procSites}:[],
         nature_list  => [get_job_natures $job->{jobid}],
-        package_list => [ map { $self->message($_) } @contents ],
+        package_list => [ @packages ],
         subapps_list => [get_job_subapps $job->{jobid}],
         urgent       => $linklistRefresh?_loc("Linklist refresh forced"):$urgent?_loc("Urgent"):_loc("Normal"),
       };
@@ -92,8 +97,11 @@ sub message {
         ## $tipo
         ## $codigo
     }
+
     my $ret="<tr><td rowspan=2><li></td><td colspan=2 nowrap><b>$name</b></td></tr><tr><td nowrap><b>$tipo</b></td>";
-    $ret .= "<td nowrap width=100%>$codigo</td></tr>" if defined $codigo;
+    $ret .= "<td nowrap width=100%>$codigo</td>" if defined $codigo;
+    $ret .= "</tr>";
+
     return $ret;
 }
 1;
