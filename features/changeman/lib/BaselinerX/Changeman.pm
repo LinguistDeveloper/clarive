@@ -507,6 +507,59 @@ sub xml_getUser {
     $xml
 }
 
+=head2 getStatus
+
+Recover status for changeman job / package
+
+=cut
+sub getStatus {
+    my ($self, %args) = @_;
+    
+    print "getStatus "._dump %args;
+
+    # PACKAGE_1,p|m,PREP|FORM|PROD
+    my $package = $args{package};
+    my $job_type = $args{job_type};
+    my $to = $args{bl};
+    
+    my $cmd = 'll08 ' . join(',', $package, $job_type, $to ) ;
+
+    #_log "components: $cmd";
+    if ( defined $args{jobName} ) {
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', job=>$args{jobName}, log=>$args{logger}, frequency=>3} );
+    } else {
+        return $self->execute_cmd( {cmd=>$cmd, sem=>'CHM.JobAction', frequency=>3} );
+    }
+}
+=head2 xml_getUser
+
+Wrapper for cache to return the generated xml 
+as a Hash with the following structure:
+
+   Name: "Changeman service name"
+   ReasonCode: 00
+   ReturnCode: 00
+   Xmlserv: {}
+
+=cut
+sub xml_getStatus {
+    my ($self, %args) = @_;
+    my $xml_str = $self->getStatus( %args );
+    # _log "getStatus " . _dump $xml_str;
+    require XML::Simple;
+    my $xml = try {
+        XML::Simple::XMLin( $xml_str );
+    } catch {
+        my $err = shift;
+        _throw _loc_xml_chm( $err, 'getStatus', $xml_str, _dump(\%args)  );
+    };
+
+
+    #_log "Components: " . _dump $xml;
+
+    $xml
+}
+
 # ( xmlerr, modulename, data_received )
 sub _loc_xml_chm {
    my ( $xmlerr, $modulename, $data_received, $sent ) = @_;
