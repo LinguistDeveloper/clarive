@@ -244,10 +244,7 @@ sub _create {
     $p{maxstarttime}||=$end;
 
     ## allow the creation of jobs executed outside Baseliner, with older dates
-    my ($starttime, $maxstarttime ) = ( $now, $end );
-    ($starttime, $maxstarttime ) = $p{starttime} < $now
-        ? ( $now , $end )
-        : ($p{starttime} , $p{maxstarttime} );
+    my ($starttime, $maxstarttime ) = ( $p{starttime}, $p{maxstarttime} );
 
     $starttime =  $starttime->strftime('%Y-%m-%d %T');
     $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
