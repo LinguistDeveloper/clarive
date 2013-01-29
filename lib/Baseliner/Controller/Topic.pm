@@ -226,7 +226,7 @@ sub get_field_bodies {
             $field->{body} = $cache->{body};
         } else {
             _debug "************ NOOO CACHE ( $cache->{modified_on} != $modified_on )  for $file";
-            my $body = $file->slurp;
+            my $body = _mason( $field->{js} );
             $field_cache{ "$file" } = { modified_on=>$modified_on, body => $body };
             $field->{body} = $body;
         }
@@ -1021,11 +1021,16 @@ sub list_admin_category : Local {
         
         if($statuses->count){
             while( my $status = $statuses->next ) {
+                my $action = $c->model('Topic')->getAction($status->status->type);
                 push @rows, {
-                                id      => $status->status->id,
+                                id          => $status->status->id,
                                 status      => $status->status->id,
-                                name    => $status->status->name,
-                                status_name    => $status->status->name,
+                                name        => $status->status->name,
+                                status_name => $status->status->name,
+                                type        => $status->status->type,
+                                action      => $action,
+                                bl          => $status->status->bl,
+                                description => $status->status->description
                             };
             }
         }        
@@ -1038,14 +1043,27 @@ sub list_admin_category : Local {
             id_status_from => $p->{statusId},
             username       => $username,
         );
+
+
+        my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({id => $p->{statusId}});
         
-        push @rows, { id => $p->{statusId}, name => $p->{statusName}, status => $p->{statusId}, status_name => $p->{statusName}  };
+        push @rows, { id => $p->{statusId},
+                     name => $p->{statusName},
+                     status => $p->{statusId},
+                     status_name => $p->{statusName},
+                     action => $c->model('Topic')->getAction($rs_current_status->type)};
+        
         push @rows , map {
+            my $action = $c->model('Topic')->getAction($_->{status_type});
             +{
                 id          => $_->{id_status},
                 status      => $_->{id_status},
                 name        => $_->{status_name},
                 status_name => $_->{status_name},
+                type        => $_->{status_type},
+                action      => $action,
+                bl          => $_->{status_bl},
+                description => $_->{status_description},
             }
         } @statuses;
         

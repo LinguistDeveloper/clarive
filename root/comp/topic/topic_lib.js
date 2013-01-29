@@ -82,7 +82,8 @@ Baseliner.Topic.StoreCategoryStatus = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'name' },
                 {  name: 'type' },
                 {  name: 'bl' },
-                {  name: 'description' }
+                {  name: 'description' },
+                {  name: 'action' }
             ]
         },config);
         Baseliner.Topic.StoreCategoryStatus.superclass.constructor.call(this, config);
@@ -204,6 +205,9 @@ Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
         Baseliner.Topic.StoreUsers.superclass.constructor.call(this, config);
     }
 });
+
+Baseliner.TopicExtension = {};
+Baseliner.TopicExtension.toolbar = [];
 
 //Baseliner.store.Topics = function(c) {
 //     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
