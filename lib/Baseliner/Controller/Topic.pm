@@ -383,16 +383,16 @@ sub view : Local {
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
-    $c->stash->{app} = $p->{app};
-    $c->stash->{admin} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.admin' );
-    
+    $c->stash->{borrame} = 11;
+        
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
         my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { join=>'topics' })->first;
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
- 
+        $c->stash->{category_meta} = $category->forms;
+         
         # comments
         $self->list_posts( $c );  # get comments into stash        
         $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
@@ -409,6 +409,8 @@ sub view : Local {
         }
     }else{
         $id_category = $p->{new_category_id};
+        my $category = DB->BaliTopicCategories->find( $id_category );
+        $c->stash->{category_meta} = $category->forms;
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
         
         $c->stash->{topic_mid} = '';
