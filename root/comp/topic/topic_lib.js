@@ -276,119 +276,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.ii = Ext.id();  // used by the detail page
         
         self.btn_form_ok = new Ext.Button({
-                name: 'grabar',
-                text: _('Save'),
-                icon:'/static/images/icons/save.png',
-                cls: 'x-btn-icon-text',
-                type: 'submit',
-                hidden: true,
-                handler: function() {
-                    var save_topic = function (){
-                        if (form2.isValid()) {
-                           form2.submit({
-                               params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( _cis ) },
-                               success: function(f,a){
-                                    Baseliner.message(_('Success'), a.result.msg );
-                                    if( params._parent_grid != undefined && params._parent_grid.getStore()!=undefined ) {
-                                        params._parent_grid.getStore().reload();
-                                    }
-                                        
-                                    if (closeTab) {
-                                        var tabpanel = Ext.getCmp('main-panel');
-                                        var objtab = tabpanel.getActiveTab();                                
-                                        tabpanel.remove(objtab);
-                                    }else{
-                                        
-                                        form2.findField("topic_mid").setValue(a.result.topic_mid);
-                                        form2.findField("status").setValue(a.result.topic_status);
-                    
-                                        var store = form2.findField("status_new").getStore();
-                                        store.on("load", function() {
-                                            form2.findField("status_new").setValue( a.result.topic_status );
-                                        });
-                                        store.load({
-                                            params:{    'categoryId': form2.findField("category").getValue(),
-                                                        'statusId': form2.findField("status").getValue(),
-                                                        'statusName': form2.findField("status_new").getRawValue()
-                                                    }
-                                        });
-                                        
-                                        params.topic_mid = a.result.topic_mid;
-                                        self.btn_comment.show();
-                                        self.btn_detail.show();
-                                        
-                                        if(action == 'add'){
-                                            var tabpanel = Ext.getCmp('main-panel');
-                                            var objtab = tabpanel.getActiveTab();
-                                            var title = objtab.title + ' #' + a.result.topic_mid;
-                                            objtab.setTitle( title );
-                                            var info = Baseliner.panel_info( objtab );
-                                            info.params.topic_mid = a.result.topic_mid;
-                                            info.title = title;
-                                        }
-                                        self.view_is_dirty = true;
-                                        
-                                        if (gdi) {
-                                            form2.findField('title').setValue(a.result.title);
-                                        }
-                                    }
-                               },
-                               failure: function(f,a){
-                                   Ext.Msg.show({  
-                                   title: _('Information'), 
-                                   msg: a.result.msg , 
-                                   buttons: Ext.Msg.OK, 
-                                   icon: Ext.Msg.INFO
-                                   });                      
-                               }
-                           });
-                        }        
-                    }
-                    
-                    self.form_topic.on_submit();
-                    
-                    var form2 = self.form_topic.getForm();
-                    var action = form2.getValues()['topic_mid'] >= 0 ? 'update' : 'add';
-                    var custom_form = '';
-                    var closeTab = false;
-                    
-                    var gdi = form2.findField('gdi');
-                    if (gdi){
-                        custom_form = gdi;
-                        
-                        var status_store = form2.findField("status_new").getStore();
-                        var rowIndex = status_store.find('action','New');
-                        if(rowIndex != -1){
-                            var status_old = form2.findField("status").getValue();
-                            sel = status_store.getAt(rowIndex);
-                            if(sel.data.id == status_old && status_old != form2.findField("status_new").getValue()){
-                                closeTab = true;
-                            }
-                            
-                        }
-                        
-                        var id_obj_status = form2.findField("status_new").id;
-                        //if (Baseliner.GDI.get_action_status(id_obj_status) != 'New') Baseliner.GDI.check_status(id_obj_status);
-                        //alert(Baseliner.GDI.get_action_status(id_obj_status));
-                        //if ( Baseliner.GDI.get_action_status(id_obj_status) == 'Ok' ){
-                        if ( Baseliner.GDI.get_action_status(id_obj_status) != 'New' && Baseliner.GDI.check_status(id_obj_status) == 'Ok' ){
-                            Ext.Msg.confirm( _('Confirmation'), '¿Desea dar por realizada la solicitud ?', 
-                            function(btn){ 
-                                if(btn == 'no') {
-                                    Baseliner.GDI.change_status(id_obj_status, 'Processing');
-                                    save_topic();
-                                }else{
-                                    save_topic();
-                                    closeTab = true;
-                                }
-                            });
-                        }else{
-                            save_topic();    
-                        }
-                    }else{
-                        save_topic();
-                    }
-                }
+            name: 'grabar',
+            text: _('Save'),
+            icon:'/static/images/icons/save.png',
+            cls: 'x-btn-icon-text',
+            type: 'submit',
+            hidden: true,
+            handler: function(){ return self.save_topic() }
         });
     
         // Detail Panel
@@ -414,12 +308,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             defaults: {anchor:'80%' }
         });
     
-        var _cis = [];
+        self._cis = [];
         self.load_form = function(rec) {
             if( rec._cis ) {
-                _cis = rec._cis;
+                self._cis = rec._cis;
             } else {
-                rec._cis = _cis;
+                rec._cis = self._cis;
             }
             rec.id_panel = self.id;
             Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
@@ -727,6 +621,64 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             }
         });
         self.detail.body.setStyle('overflow', 'auto');
+    },
+    save_topic : function(){
+        var self = this;
+        self.form_topic.on_submit();
+        
+        var form2 = self.form_topic.getForm();
+        var action = form2.getValues()['topic_mid'] >= 0 ? 'update' : 'add';
+        var custom_form = '';
+
+        if (form2.isValid()) {
+            form2.submit({
+               params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) },
+               success: function(f,a){
+                    Baseliner.message(_('Success'), a.result.msg );
+                    if( self._parent_grid != undefined && self._parent_grid.getStore()!=undefined ) {
+                        self._parent_grid.getStore().reload();
+                    }
+                        
+                    form2.findField("topic_mid").setValue(a.result.topic_mid);
+                    form2.findField("status").setValue(a.result.topic_status);
+
+                    var store = form2.findField("status_new").getStore();
+                    store.on("load", function() {
+                        form2.findField("status_new").setValue( a.result.topic_status );
+                    });
+                    store.load({
+                        params:{    'categoryId': form2.findField("category").getValue(),
+                                    'statusId': form2.findField("status").getValue(),
+                                    'statusName': form2.findField("status_new").getRawValue()
+                                }
+                    });
+                    
+                    self.topic_mid = a.result.topic_mid;
+                    self.btn_comment.show();
+                    self.btn_detail.show();
+                    
+                    if(action == 'add'){
+                        var tabpanel = Ext.getCmp('main-panel');
+                        var objtab = tabpanel.getActiveTab();
+                        var title = objtab.title + ' #' + a.result.topic_mid;
+                        objtab.setTitle( title );
+                        var info = Baseliner.panel_info( objtab );
+                        info.params.topic_mid = a.result.topic_mid;
+                        info.title = title;
+                    }
+                    self.view_is_dirty = true;
+                        
+               },
+               failure: function(f,a){
+                   Ext.Msg.show({  
+                   title: _('Information'), 
+                   msg: a.result.msg , 
+                   buttons: Ext.Msg.OK, 
+                   icon: Ext.Msg.INFO
+                   });                      
+               }
+            });
+        }        
     }
 });
 
