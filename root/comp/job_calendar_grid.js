@@ -137,7 +137,15 @@
                             items: [
                                 {  xtype: 'hidden', name: 'action', value: 'create' },
                                 {  xtype: 'textfield', name: 'name', fieldLabel: _('Calendar Name'), allowBlank: false }, 
-                                {  xtype: 'textfield', name: 'seq', fieldLabel: _('Prioridad'), allowBlank: false, value: 100 }, 
+                                {  xtype: 'numberfield',
+                                    fieldLabel: _loc('Priority'),
+                                    name: 'seq',
+                                    allowNegative: false,
+                                    allowDecimals: false,
+                                    value: 100,
+                                    minValue:1,
+                                    maxValue:999
+                                },
                                 {  xtype: 'textarea', name: 'description', fieldLabel: _('Description') }, 
                                 {
                                     xtype: 'radiogroup',
