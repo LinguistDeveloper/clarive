@@ -748,15 +748,18 @@ sub get_data {
         
         my @select_fields = ('title', 'id_category', 'categories.name', 'categories.color',
                              'id_category_status', 'status.name', 'created_by', 'created_on',
-                             'id_priority','priorities.name', 'deadline_min', 'description','progress');
+                             'id_priority','priorities.name', 'deadline_min', 'description','progress', 'status.type');
         my @as_fields = ('title', 'id_category', 'name_category', 'color_category', 'id_category_status', 'name_status',
-                         'created_by', 'created_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress');
+                         'created_by', 'created_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress','type_status');
         
         my $rs = Baseliner->model('Baseliner::BaliTopic')
                 ->search({ mid => $topic_mid },{ join => ['categories','status','priorities'], select => \@select_fields, as => \@as_fields});
         my $row = $rs->first;
         
         $data = { topic_mid => $topic_mid, $row->get_columns };
+        
+
+        $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
         #$data->{deadline} = $row->deadline_min ? $row->created_on->clone->add( minutes => $row->deadline_min ):_loc('unassigned');
         $data->{deadline} = _loc('unassigned');

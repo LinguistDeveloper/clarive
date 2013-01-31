@@ -355,6 +355,32 @@ sub new_topic : Local {
         $data = Baseliner::Model::Topic->get_data( $meta, undef );
         #Cetelem
         if($p->{dni}){
+            if ($p->{mid_to_clonar}){
+                $data = Baseliner::Model::Topic->get_data( $meta, $p->{mid_to_clonar} );
+                $data->{topic_mid} = '';
+                $data->{id_category_status} = '';
+                $data->{name_status} = '';
+                $data->{type_status} = '';
+                $data->{action_status} = '';
+                $data->{created_by} = '';
+                $data->{created_on} = '';
+                $data->{gdi_perfil_usuario_nombre} = '';
+                $data->{gdi_perfil_usuario_apellidos} = '';
+                
+                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
+                                                                                        {
+                                                                                        prefetch=>['status'],
+                                                                                        }                                                                                 
+                                                                                     )->first;
+                
+                
+                my $action = $c->model('Topic')->getAction($statuses->status->type);
+                $data->{id_category_status} = $statuses->status->id;
+                $data->{name_status} = $statuses->status->name;
+                $data->{type_status} = $statuses->status->type;
+                $data->{action_status} = $action;                
+                
+            }
             $data->{gdi_perfil_dni} = $p->{dni};
             $data->{title} = $data->{gdi_perfil_dni};
         }
@@ -382,7 +408,7 @@ sub view : Local {
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
-    $c->stash->{borrame} = 11;
+    ##$c->stash->{borrame} = 11;
         
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
