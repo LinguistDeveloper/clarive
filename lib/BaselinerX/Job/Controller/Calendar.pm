@@ -403,7 +403,8 @@ sub build_job_window : Path('/job/build_job_window') {
                     push @ns, $curr_ns;
                     next;
                 }
-                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => "%$curr_ns%" }, active=>'1' });
+                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>"$curr_ns", active=>'1' });
+                $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => "%$curr_ns%" }, active=>'1' }) unless $r->count;
                 while (my $rec=$r->next) {
                     push @ns, $rec->ns ;
                 }
