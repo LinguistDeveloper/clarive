@@ -96,9 +96,9 @@ sub list : Local {
     my $p = $c->request->parameters;
     $p->{username} = $c->username;
 
-    my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
 
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     $c->forward('View::JSON');
 }
 
@@ -942,6 +942,13 @@ sub filters_list : Local {
     my @statuses;
     $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
+    ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+    my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        
+    
+    my %tmp;
+    map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' } 
+                    Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;
+
     if($row->count() gt 0){
         while( my $r = $row->next ) {
             push @statuses,
@@ -951,7 +958,7 @@ sub filters_list : Local {
                     text    => $r->name,
                     cls     => 'forum status',
                     iconCls => 'icon-no',
-                    checked => \0,
+                    checked => exists $tmp{$r->id} && (substr ($r->type, 0 , 1) ne 'F')? \1: \0,
                     leaf    => 'true',
                     uiProvider => 'Baseliner.CBTreeNodeUI'                    
                 };

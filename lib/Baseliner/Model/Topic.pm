@@ -305,6 +305,7 @@ sub topics_for_user {
         $where->{'category_id'} = \@categories;
     }
     
+    my $default_filter;
     if($p->{statuses}){
         my @statuses = _array $p->{statuses};
         my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
@@ -318,7 +319,7 @@ sub topics_for_user {
                 $where->{'category_status_id'} = \@in;
             }
         }
-        
+
         #$where->{'category_status_id'} = \@statuses;
         
     }else{
@@ -431,10 +432,10 @@ sub topics_for_user {
             assignee => [ keys %{ $assignee{$mid} || {} } ],
             report_data => {
                 projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
-            },
+            }
         };
     }
-    return $cnt, @rows;
+    return $cnt, @rows ;
 }
 
 
