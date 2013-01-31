@@ -286,7 +286,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
     
         // Detail Panel
-        self.detail = new Ext.Panel(self.detail_config);
+        self.detail = new Ext.Panel({});
         
         Baseliner.Topic.file_del = function( topic_mid, md5, id_row ) {
             Baseliner.ajaxEval( '/topic/file/delete', { md5 : md5, topic_mid: topic_mid }, function(res) {
@@ -499,7 +499,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         tb = self.create_toolbar();
 
         self.detail.on( 'render', function() {
-            self.detail_reload();
+            if (self.topic_mid > 0) self.detail_reload();
             if( self.swEdit ) {
                 if( !self.permEdit ) {
                     self.btn_edit.hide();

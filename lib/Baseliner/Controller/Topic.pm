@@ -261,7 +261,6 @@ sub json : Local {
     
     $ret->{topic_meta} = $meta;
     $ret->{topic_data} = $data;
-    $ret->{can_admin} = \$c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.admin' );
     $c->stash->{json} = $ret;
     
     $c->forward('View::JSON');
