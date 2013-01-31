@@ -7,6 +7,7 @@
 (function(params){
     var swEdit = <% $swEdit ? 'true' : 'false' %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
+    
     var category_meta = "<% $category_meta %>";
     var topic_main_class_name;
     if( category_meta ) {

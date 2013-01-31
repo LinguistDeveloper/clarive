@@ -429,15 +429,34 @@ sub view : Local {
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
-    ##$c->stash->{borrame} = 11;
         
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
-        my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { join=>'topics' })->first;
+        my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
         $c->stash->{category_meta} = $category->forms;
+        
+        if ($c->is_root){
+            $c->stash->{permissionEdit} = 0;     
+        }
+        else{
+            my $id_category_status = $category->topics->id_category_status;
+            #Miramos los estados que tiene en el workflow.
+            my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        
+            
+            my %tmp;
+            ##map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' }
+            map { $tmp{$_->{id_status_from}} = 'id' } 
+                            Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;        
+            
+            if ((substr $category->topics->status->type, 0, 1) ne "F" && exists($tmp{$id_category_status})){
+                $c->stash->{permissionEdit} = 0;    
+            }else{
+                $c->stash->{permissionEdit} = 1;
+            }
+        }
          
         # comments
         $self->list_posts( $c );  # get comments into stash        
