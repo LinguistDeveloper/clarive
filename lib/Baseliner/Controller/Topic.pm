@@ -348,25 +348,31 @@ sub new_topic : Local {
     $meta = $self->get_field_bodies( $meta );
     
     my $data;
+    
     if ($p->{ci}){
         $data = _ci($p->{ci})->{_ci};
         $data->{title} = $data->{gdi_perfil_dni};
+        if ($p->{clonar} && $p->{clonar} == -1){
+            $data = $self->init_values_topic($data);
+            my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
+                                                                                    {
+                                                                                    prefetch=>['status'],
+                                                                                    }                                                                                 
+                                                                                 )->first;
+            
+            my $action = $c->model('Topic')->getAction($statuses->status->type);
+            $data->{id_category_status} = $statuses->status->id;
+            $data->{name_status} = $statuses->status->name;
+            $data->{type_status} = $statuses->status->type;
+            $data->{action_status} = $action;              
+        }
     }else{
         $data = Baseliner::Model::Topic->get_data( $meta, undef );
         #Cetelem
         if($p->{dni}){
-            if ($p->{mid_to_clonar}){
-                $data = Baseliner::Model::Topic->get_data( $meta, $p->{mid_to_clonar} );
-                $data->{topic_mid} = '';
-                $data->{id_category_status} = '';
-                $data->{name_status} = '';
-                $data->{type_status} = '';
-                $data->{action_status} = '';
-                $data->{created_by} = '';
-                $data->{created_on} = '';
-                $data->{gdi_perfil_usuario_nombre} = '';
-                $data->{gdi_perfil_usuario_apellidos} = '';
-                
+            if ($p->{clonar}){
+                $data = Baseliner::Model::Topic->get_data( $meta, $p->{clonar} );
+                $data = $self->init_values_topic($data);
                 my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
                                                                                         {
                                                                                         prefetch=>['status'],
@@ -378,8 +384,7 @@ sub new_topic : Local {
                 $data->{id_category_status} = $statuses->status->id;
                 $data->{name_status} = $statuses->status->name;
                 $data->{type_status} = $statuses->status->type;
-                $data->{action_status} = $action;                
-                
+                $data->{action_status} = $action;                    
             }
             $data->{gdi_perfil_dni} = $p->{dni};
             $data->{title} = $data->{gdi_perfil_dni};
@@ -397,6 +402,22 @@ sub new_topic : Local {
     
     $c->stash->{json} = $ret;
     $c->forward('View::JSON');
+}
+
+sub init_values_topic : Private {
+    my ($self, $data) = @_;
+
+    $data->{topic_mid} = '';
+    $data->{id_category_status} = '';
+    $data->{name_status} = '';
+    $data->{type_status} = '';
+    $data->{action_status} = '';
+    $data->{created_by} = '';
+    $data->{created_on} = '';
+    $data->{gdi_perfil_usuario_nombre} = '';
+    $data->{gdi_perfil_usuario_apellidos} = '';
+    
+    return $data;
 }
 
 sub view : Local {
