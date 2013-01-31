@@ -32,7 +32,8 @@ sub main {
    my $now=DateTime->now;
    my $start=parse_dt( '%Y-%m-%d %H:%M',$job->{job_data}->{starttime} );
 
-   return unless $bl eq 'PROD';  ## Slo se refresca LinkList en PROD
+   return if $job->rollback;     ## No mandar correo de pase planificado en rollbacks.
+   return unless $bl eq 'PROD';  ## Solo se notifican planificaciones a PROD
 #   return unless $start->delta_ms($now)->in_units('minutes') > 10 ;
 
    use Encode;
