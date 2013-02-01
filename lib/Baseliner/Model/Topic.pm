@@ -454,7 +454,7 @@ sub update {
         when ( 'add' ) {
             given ( $form ){
                 when ( 'gdi' ) {
-                    my $numSolicitud = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ name => 'gdi_perfil_dni', value => $p->{gdi_perfil_dni} })->count;
+                    my $numSolicitud = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ name => 'gdi_perfil_dni', -or => [value => lc $p->{gdi_perfil_dni}, value => uc $p->{gdi_perfil_dni}] })->count;
                     $p->{title} = $p->{gdi_perfil_dni} . '.' . ++$numSolicitud;
                 }
             }

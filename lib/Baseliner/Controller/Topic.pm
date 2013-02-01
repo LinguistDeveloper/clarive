@@ -354,6 +354,9 @@ sub new_topic : Local {
         $data->{title} = $data->{gdi_perfil_dni};
         if ($p->{clonar} && $p->{clonar} == -1){
             $data = $self->init_values_topic($data);
+            if ($p->{dni}){
+                $data->{gdi_perfil_dni} = $p->{dni};
+            }
             my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
                                                                                     {
                                                                                     prefetch=>['status'],
