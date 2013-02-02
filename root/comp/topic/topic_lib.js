@@ -538,9 +538,16 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     show_form : function(){
         var self = this;
-        //console.log( self );
         self.getLayout().setActiveItem( self.loading_panel );
             if( self!==undefined && self.topic_mid !== undefined ) {
+                
+                var tabpanel = Ext.getCmp('main-panel');
+                var panel = tabpanel.getActiveTab();
+                var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
+                var id = panel.getId();
+                var info = Baseliner.tabInfo[id];
+                if( info!=undefined ) info.params.swEdit = 1;
+                
                 if (!self.form_is_loaded){
     
                     Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid }, function(rec) {
@@ -600,6 +607,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     show_detail : function(){
         var self = this;
         self.getLayout().setActiveItem( self.detail );
+        var tabpanel = Ext.getCmp('main-panel');
+        var panel = tabpanel.getActiveTab();
+        var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
+        var id = panel.getId();
+        var info = Baseliner.tabInfo[id];
+        if( info!=undefined ) info.params.swEdit = 0;        
         self.btn_form_ok.hide();
         if( self.view_is_dirty ) {
             self.view_is_dirty = false;

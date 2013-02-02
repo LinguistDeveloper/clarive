@@ -6,7 +6,7 @@
 </%args>
 
 (function(params){
-    var swEdit = <% $swEdit ? 'true' : 'false' %>;
+    var swEdit = <% $swEdit == 1 ? 'true' : 'false' %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
     var permComment = <% $permissionComment ? 'true' : 'false' %>;
     
