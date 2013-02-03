@@ -367,7 +367,7 @@ sub new_topic : Local {
             $data->{id_category_status} = $statuses->status->id;
             $data->{name_status} = $statuses->status->name;
             $data->{type_status} = $statuses->status->type;
-            $data->{action_status} = $action;              
+            $data->{action_status} = $action;
         }
     }else{
         $data = Baseliner::Model::Topic->get_data( $meta, undef );
@@ -393,6 +393,12 @@ sub new_topic : Local {
             $data->{title} = $data->{gdi_perfil_dni};
         }
     }
+    
+    map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' } _array $data;
+    if(exists $data->{gdi_email_usuario}) { delete($data->{gdi_email_usuario}) };
+    if(exists $data->{gdi_email_password}) { delete($data->{gdi_email_password}) };
+    if(exists $data->{gdi_cics_password}) { delete($data->{gdi_cics_password}) };
+    if(exists $data->{gdi_cics_usuarios}) { delete($data->{gdi_cics_usuarios}) };
     
     $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
     
