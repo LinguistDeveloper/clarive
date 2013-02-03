@@ -395,10 +395,10 @@ sub new_topic : Local {
     }
     
     map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' } _array $data;
-    if(exists $data->{gdi_email_usuario}) { delete($data->{gdi_email_usuario}) };
-    if(exists $data->{gdi_email_password}) { delete($data->{gdi_email_password}) };
-    if(exists $data->{gdi_cics_password}) { delete($data->{gdi_cics_password}) };
-    if(exists $data->{gdi_cics_usuarios}) { delete($data->{gdi_cics_usuarios}) };
+    #if(exists $data->{gdi_email_usuario}) { delete($data->{gdi_email_usuario}) };
+    #if(exists $data->{gdi_email_password}) { delete($data->{gdi_email_password}) };
+    #if(exists $data->{gdi_cics_password}) { delete($data->{gdi_cics_password}) };
+    #if(exists $data->{gdi_cics_usuarios}) { delete($data->{gdi_cics_usuarios}) };
     
     $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
     
