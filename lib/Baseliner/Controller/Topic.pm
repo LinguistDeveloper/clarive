@@ -394,7 +394,7 @@ sub new_topic : Local {
         }
     }
     
-    map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' } _array $data;
+    map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
     #if(exists $data->{gdi_email_usuario}) { delete($data->{gdi_email_usuario}) };
     #if(exists $data->{gdi_email_password}) { delete($data->{gdi_email_password}) };
     #if(exists $data->{gdi_cics_password}) { delete($data->{gdi_cics_password}) };
