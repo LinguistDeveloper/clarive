@@ -18,137 +18,6 @@ Baseliner::Schema::Baseliner::Result::BaliRequest
 
 __PACKAGE__->table("bali_request");
 
-=head1 ACCESSORS
-
-=head2 id
-
-  data_type: NUMBER
-  default_value: undef
-  is_auto_increment: 1
-  is_nullable: 0
-  size: 38
-
-=head2 ns
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 0
-  size: 1024
-
-=head2 bl
-
-  data_type: VARCHAR2
-  default_value: *
-  is_nullable: 1
-  size: 50
-
-=head2 requested_on
-
-  data_type: DATE
-  default_value: undef
-  is_nullable: 1
-  size: 19
-
-=head2 finished_on
-
-  data_type: DATE
-  default_value: undef
-  is_nullable: 1
-  size: 19
-
-=head2 status
-
-  data_type: VARCHAR2
-  default_value: pending
-  is_nullable: 1
-  size: 50
-
-=head2 finished_by
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 requested_by
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 action
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 id_parent
-
-  data_type: NUMBER
-  default_value: undef
-  is_nullable: 1
-  size: 38
-
-=head2 key
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 name
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 255
-
-=head2 type
-
-  data_type: VARCHAR2
-  default_value: approval
-  is_nullable: 1
-  size: 100
-
-=head2 id_wiki
-
-  data_type: NUMBER
-  default_value: undef
-  is_foreign_key: 1
-  is_nullable: 1
-  size: 126
-
-=head2 id_job
-
-  data_type: NUMBER
-  default_value: undef
-  is_foreign_key: 1
-  is_nullable: 1
-  size: 126
-
-=head2 data
-
-  data_type: CLOB
-  default_value: undef
-  is_nullable: 1
-
-=head2 callback
-
-  data_type: VARCHAR2
-  default_value: undef
-  is_nullable: 1
-  size: 1024
-
-=head2 id_message
-
-  data_type: NUMBER
-  default_value: undef
-  is_nullable: 1
-  size: 126
-
-=cut
 
 __PACKAGE__->add_columns(
   "id",
@@ -274,6 +143,13 @@ __PACKAGE__->has_many(
   "Baseliner::Schema::Baseliner::Result::BaliProjectItems",
   { "foreign.ns" => "self.ns" },
 );
+
+
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_request_idx_action', fields=>['action'] );
+   $sqlt_table->add_index(name =>'bali_request_idx_status', fields=>['status'] );
+}
 
 use Baseliner::Utils;
 use Try::Tiny;

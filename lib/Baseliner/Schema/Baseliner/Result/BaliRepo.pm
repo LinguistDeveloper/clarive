@@ -74,6 +74,11 @@ __PACKAGE__->has_many(
   { "foreign.ns" => "self.ns" },
 );
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_repo_idx_provider', fields=>['provider'] );
+}
+
 use Baseliner::Utils;
 use namespace::clean;
 

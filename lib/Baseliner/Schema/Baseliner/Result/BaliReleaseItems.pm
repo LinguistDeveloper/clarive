@@ -48,15 +48,15 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.04006 @ 2010-01-29 12:26:56
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0A2ydp40CdA9MSug/gfy7Q
-
-
-# You can replace this text with custom content, and it will be preserved on regeneration
 __PACKAGE__->belongs_to(
   "release",
   "Baseliner::Schema::Baseliner::Result::BaliRelease",
   { id => "id_rel" },
 );
+
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_release_items_idx_id_rel', fields=>['id_rel'] );
+}
 
 1;

@@ -98,4 +98,9 @@ __PACKAGE__->belongs_to(
   { mid => "id_project" },
 );
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_job_items_idx_id_job', fields=>['id_job'] );
+}
+
 1;

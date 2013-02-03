@@ -130,6 +130,11 @@ __PACKAGE__->has_one(
   { id => "id_job" },
 );
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_sem_queue_idx_host_status', fields=>['host', 'status'] );
+}
+
 use Baseliner::Utils;
 use namespace::clean;
 

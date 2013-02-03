@@ -26,4 +26,10 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("to_ns", "from_ns");
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_relationship_idx_from_id', fields=>['from_id'] );
+   $sqlt_table->add_index(name =>'bali_relationship_idx_to_id', fields=>['to_id'] );
+}
+
 1;

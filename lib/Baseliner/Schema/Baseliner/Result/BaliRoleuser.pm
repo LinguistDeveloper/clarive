@@ -90,4 +90,9 @@ __PACKAGE__->has_one(
   { "foreign.username" => "self.username" },
 );
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_roleuser_idx_id_role', fields=>['id_role'] );
+}
+
 1;
