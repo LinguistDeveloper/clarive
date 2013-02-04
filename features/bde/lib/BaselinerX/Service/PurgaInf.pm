@@ -27,6 +27,11 @@ register 'config.bde.purga_inf' => {
             label       => 'Antiguedad en Días para borrar',
             description => 'Número de días de cierre de peticion a partir del cuál se purgan formularios',
         },
+        {   id          => 'dias_peticion',
+            default     => 365*5,
+            label       => 'Antiguedad en Días para borrar',
+            description => 'Número de días de cierre de peticion a partir del cuál se purgpeticiones',
+        },
         {   id          => 'no_del',
             default     => 1,
             label       => 'No borrar filas',
@@ -41,6 +46,11 @@ register 'config.bde.purga_inf' => {
             default     => 5000,
             label       => 'Bytes mínimo HTML',
             description => 'Tamaño minimo en bytes para considerar el HTML bueno',
+        },
+        {   id          => 'save_html',
+            default     => 0,
+            label       => 'Guardar HTML?',
+            description => 'Guardar o no HTML de los borrados en la tabla inf_peticion_form',
         },
         {   id          => 'envs',
             default     => 'T,A,P',
@@ -83,7 +93,7 @@ sub run {
     # los max de infform no se borran
     my %max = map { $_->{idform}=>1 } $inf->query(q{select idform from inf_form_max fm})->hashes;
 
-    my $days = $config->{dias} // _throw ;
+    my $days = $config->{dias} // _throw 'El parametro "dias" no est� definido';
     _log sprintf "Purga de Peticiones antiguas de Inf inicio, %d dias.", $days;
     _debug $config;
 
@@ -114,54 +124,59 @@ sub run {
     _log "Envs de formulario: " . join ',', @envs;
 
     for my $idform ( sort { $a <=> $b } grep { !$config->{idform} || $config->{idform} == $_ } @borrables ) {
-        _log "Recuperando html para idform=$idform ($k/$borrables_total)";
+        _log "Recuperando html para idform=$idform ($k/$borrables_total)" if $config->{save_html};
         $k++;
         #my $serv = 'http://wassva61:52024/scm_inf';
         my $html;
         for my $e ( @envs ) {
-            my $row = Baseliner->model('Inf::InfPeticionForm')->find({ idform=>$idform, env=>$e });
-            if( $row && !$config->{force_update} ) { # update solo si se fuerza por config 
-                _log "HTML ya existe. No se actualizará la fila idform = $idform y env = $e (force_update=0)";
-            } else {
-                my $url = sprintf $config->{url}, $serv, $e, $idform;  
-                my $ua = new LWP::UserAgent;
-                $ua->cookie_jar( {} );
-                my $req = HTTP::Request->new( GET => $url );
-                $req->header( "iv-user" => "$whoami" );
-                my $res = $ua->request($req);
-                if(  $res->is_success ) {
-                    require Compress::Zlib;
-                    my $cont_orig = $res->content;
-                    my $len = length( $cont_orig );
-                    my $html_zip = Compress::Zlib::compress( $cont_orig );
-                    $len_total += $len;
-                    # verifica si el HTML es sospechoso (error login, error en la pagina, error oracle...
-                    if( defined $min_size && $len < $min_size ) {
-                        _error "ERROR: HTML recuperado sospechoso - tamaño $len < $min_size para idform=$idform y env=$e. No se borrará." ;
-                        $cont_orig =~ s{[\n|\r|\t]}{}g unless $config->{no_short_html};
-                        $cont_orig = _strip_html( $cont_orig ) unless $config->{no_strip_html};
-                        _error "HTML Sospechoso:\n" . $cont_orig;
+            if( $config->{save_html} ) {
+                my $row = Baseliner->model('Inf::InfPeticionForm')->find({ idform=>$idform, env=>$e });
+                if( $row && !$config->{force_update} ) { # update solo si se fuerza por config 
+                    _log "HTML ya existe. No se actualizará la fila idform = $idform y env = $e (force_update=0)";
+                } 
+                else {
+                    my $url = sprintf $config->{url}, $serv, $e, $idform;  
+                    my $ua = new LWP::UserAgent;
+                    $ua->cookie_jar( {} );
+                    my $req = HTTP::Request->new( GET => $url );
+                    $req->header( "iv-user" => "$whoami" );
+                    my $res = $ua->request($req);
+                    if(  $res->is_success ) {
+                        require Compress::Zlib;
+                        my $cont_orig = $res->content;
+                        my $len = length( $cont_orig );
+                        my $html_zip = Compress::Zlib::compress( $cont_orig );
+                        $len_total += $len;
+                        # verifica si el HTML es sospechoso (error login, error en la pagina, error oracle...
+                        if( defined $min_size && $len < $min_size ) {
+                            _error "ERROR: HTML recuperado sospechoso - tamaño $len < $min_size para idform=$idform y env=$e. No se borrará." ;
+                            $cont_orig =~ s{[\n|\r|\t]}{}g unless $config->{no_short_html};
+                            $cont_orig = _strip_html( $cont_orig ) unless $config->{no_strip_html};
+                            _error "HTML Sospechoso:\n" . $cont_orig;
+                            next;
+                        }
+                        # actualiza la fila
+                        if( $row ) {
+                            $row->update({ html=>$html_zip, html_size=>$len });
+                            _log "Fila idform = $idform y env = $e actualizada (force_update=1)";
+                        } else {
+                            # new
+                            Baseliner->model('Inf::InfPeticionForm')->create({ idform=>$idform, env=>$e, html=>$html_zip, html_size=>$len });
+                            _log "Fila idform = $idform y env = $e creada";
+                        }
+                    } else {
+                        _error sprintf "ERROR (code=%d) al recuperar HTML: %s" , $res->code, $res->message ;
                         next;
                     }
-                    # actualiza la fila
-                    if( $row ) {
-                        $row->update({ html=>$html_zip, html_size=>$len });
-                        _log "Fila idform = $idform y env = $e actualizada (force_update=1)";
-                    } else {
-                        # new
-                        Baseliner->model('Inf::InfPeticionForm')->create({ idform=>$idform, env=>$e, html=>$html_zip, html_size=>$len });
-                        _log "Fila idform = $idform y env = $e creada";
-                    }
-                } else {
-                    _error sprintf "ERROR (code=%d) al recuperar HTML: %s" , $res->code, $res->message ;
-                    next;
                 }
+            } else {
+                _debug "HTML get desactivado (save_html=0)";
             }
             $descargados_3{ $idform } ++;
         }
     }
 
-    my @descargados = grep { $descargados_3{ $_ } >= 3 } keys %descargados_3;
+    my @descargados = grep { $descargados_3{ $_ } >= 3 } keys %descargados_3;   # borrados en los 3 entornos? 
     _log sprintf "IDs de formulario que se borraran en INF_DATA e INF_DATA_MV: %s", join ',', @descargados;
 
     # borra las filas de inf_data e inf_data_mv que se hayan descargado con exito
@@ -172,6 +187,20 @@ sub run {
             _log "Borrando idform de inf_data_mv = $idform";
             $inf->query(q{delete from inf_data_mv where idform=?}, $idform );
         }
+        # borrando las filas de inf_peticion
+        my $pet_cnt = $inf->query(q{select count(*) from inf_peticion p where finished_on < sysdate - ?
+            and not exists ( select 1 from inf_status s where s.idpeticion = p.id )}, $config->{dias_peticion} )->flat;
+        _log _loc "Borrando %1 peticiones de INF_PETICION", $pet_cnt->[0];
+
+        $inf->query(q{delete from inf_peticion p where finished_on < sysdate - ?
+            and not exists ( select 1 from inf_status s where s.idpeticion = p.id )}, $config->{dias_peticion} );
+
+        # limpiando huerfanas
+        _log "Limpiando filas de INF_STATUS_HIST que no existan en INF_PETICION...";
+        $inf->query(q{delete from inf_status_hist h where not exists ( select 1 from inf_peticion where id = h.idpeticion ) });
+        _log "Limpiando filas de INF_PETICION_TAREA que no existan en INF_PETICION...";
+        $inf->query(q{delete from inf_peticion_tarea t where not exists ( select 1 from inf_peticion where id = t.idpeticion )});
+
     } else {
         _log "Borrado de filas desactivado (no_del=1)";
     }
