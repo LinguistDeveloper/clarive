@@ -77,7 +77,7 @@ sub run {
         my $cnt  = $inf->query(q{delete from inf_data_mv m where not exists ( select 1 from inf_data d where valor like '@#%' and d.valor = '@#'||m.id )}) ;
         _log "inf_data_mv huerfanos borrados ok (cnt=$cnt).";
     } else {
-        _log "Borrado de huerfanos desactivado (no_del=0)";
+        _log "Borrado de huerfanos desactivado (no_del=1)";
     }
 
     # los max de infform no se borran
