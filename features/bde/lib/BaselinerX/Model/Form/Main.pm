@@ -272,7 +272,7 @@ sub load_grid_inc {
              "Usr afectado nombre" AS inc_nombre_afe, "Prioridad" AS inc_prioridad,
              "Impacto" AS inc_impacto, "Analista Asignado" AS inc_analista
      FROM bde_scm_usd\@usd usd
-    WHERE (   UPPER (TRIM (cam)) IN ( $ins ) 
+    WHERE "Activa?" = 'SI' AND (   UPPER (TRIM (cam)) IN ( $ins ) 
            OR UPPER (TRIM (usd."Analista Asignado")) = UPPER ( ? )
           ) AND TRIM( "Id Incidencia" || "Descripción" ) LIKE ?
     AND TRIM (usd."Tipo incidencia") = 'APP'
