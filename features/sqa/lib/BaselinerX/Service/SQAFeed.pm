@@ -21,6 +21,7 @@ register 'service.sqa.feed' => {  config   => 'config.sqa.feed',   handler => \&
 
 sub run { # bucle de demonio aqui
     my ($self,$c, $config) = @_;
+    $SIG{CHILD} = 'IGNORE';
     _log "Starting service.sqa.feed";
     
     my $sm = Baseliner->model('SQA');
@@ -52,6 +53,7 @@ sub run_once {
             if ( $pid ) {	
                next;  #FIXME this leaves zombies behind - use POSIX::_exit() instead?
             }
+            $SIG{CHILD} = 'DEFAULT';
             $SIG{HUP} = 'DEFAULT';
             $SIG{TERM} = 'DEFAULT';
             $SIG{STOP} = 'DEFAULT';
@@ -157,7 +159,33 @@ sub new_jobs {
         close $ff;
         # convert to a data struct:
         $data = _load( $data );
-        push @jobs, $data;
+        unless ( $data ) {
+            my $mailcfg = Baseliner->model('ConfigStore')->get( 'config.comm.email', ns => 'feature/SQA' );
+            my $url = $config->{baseliner_url};
+
+            my @users = Baseliner->model('Permissions')->list( action => 'action.sqa.notify_issue');
+            my $to = [ _unique(@users) ];
+
+            Baseliner->model('Messaging')->notify(
+                to              => { users => $to },
+                subject         => _("SQA issue"),
+                sender            => $mailcfg->{from},
+                carrier         => 'email',
+                template        => 'email/analysis_error.html',
+                template_engine => 'mason',
+                vars            => {
+                    subject => "Detectado $job_file vac&iacute;o durante proceso SQA",
+                    message => "Detectado $job_file vac&iacute;o durante proceso SQA",
+                    url      => $url,
+                    to       => $to
+                }
+            );
+            # Creamos ficheros de flag para que no vuelva a ser procesado.
+            open my $ff, '>', $job_done_file or die $!;
+            close $ff;
+        } else { 
+            push @jobs, $data;
+        }
     }
     return @jobs;
 }

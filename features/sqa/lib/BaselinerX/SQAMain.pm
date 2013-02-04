@@ -84,8 +84,16 @@ register 'action.sqa.delete_analysis' => {
 	name => "Can delete an analysis row from SQA grid"
 };
 
+register 'action.sqa.delete_package' => {
+    name => "Can delete a package's analysis from SQA grid"
+};
+
 register 'action.sqa.schedule_analysis' => {
 	name => "Can create a scheduled analysis"
+};
+
+register 'action.sqa.notify_issue' => {
+        name => "Notify issue during sqa process"
 };
 
 
