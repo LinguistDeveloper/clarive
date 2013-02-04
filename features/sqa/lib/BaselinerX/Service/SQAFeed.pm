@@ -168,7 +168,7 @@ sub new_jobs {
 
             Baseliner->model('Messaging')->notify(
                 to              => { users => $to },
-                subject         => _("SQA issue"),
+                subject         => _loc ("SQA issue"),
                 sender            => $mailcfg->{from},
                 carrier         => 'email',
                 template        => 'email/analysis_error.html',
