@@ -946,7 +946,7 @@ sub filters_list : Local {
     my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        
     
     my %tmp;
-    map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' } 
+    map { $tmp{$_->{id_status_from}} = 'id'; $tmp{$_->{id_status_to}} = 'id' } 
                     Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;
 
     if($row->count() gt 0){
