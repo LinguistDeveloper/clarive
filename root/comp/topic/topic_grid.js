@@ -195,7 +195,7 @@
             ]
         });
         
-        topic_category_grid.on("rowclick", function(grid, rowIndex, e ) {
+        topic_category_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
             var title = _(r.get( 'name' ));
             Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ) } );
