@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Module::Loaded;
 
 our $_no_record = 0;
+our $scope = {};
 
 sub new {
     my $class = shift;

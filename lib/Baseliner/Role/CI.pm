@@ -14,11 +14,20 @@ coerce 'BoolCheckbox' =>
 coerce 'CI' =>
   from 'Str' => via { length $_ ? Baseliner::CI->new( $_ ) : BaselinerX::CI::Empty->new()  }, 
   from 'Num' => via { Baseliner::CI->new( $_ ) }, 
-  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::CI->new( $first ) : BaselinerX::CI::Empty->new() }; 
+  from 'ArrayRef' => via {
+        my $first = [_array( $_ )]->[0];
+        #local $Baseliner::Role::CI::scope = {};
+        defined $first
+            ? ( $Baseliner::CI::scope->{$first} // do { $Baseliner::CI::scope->{$first}=Baseliner::CI->new( $first ); } )
+            : BaselinerX::CI::Empty->new();
+    }; 
 
 coerce 'CIs' => 
   from 'Str' => via { length $_ ? [ Baseliner::CI->new( $_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
-  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
+  from 'ArrayRef[Num]' => via {
+        my $v = $_;
+        [ map { $Baseliner::CI::scope->{$_} // ( $Baseliner::CI::scope->{$_}=Baseliner::CI->new( $_ ) ) } _array( $v ) ]
+    },
   from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
 has mid      => qw(is rw isa Num);
@@ -175,7 +184,9 @@ sub table_update_or_create {
     }
 } 
 sub table_create { $_[1]->create( $_[2] ) } 
-sub table_update { $_[1]->update( $_[2] ) } 
+sub table_update { $_[1]->update( $_[2] ) }
+
+our $scope = {};
 
 sub load {
     use Baseliner::Utils;
