@@ -439,7 +439,7 @@ sub view : Local {
         $c->stash->{category_meta} = $category->forms;
         
         if ($c->is_root){
-            $c->stash->{permissionEdit} = 0;     
+            $c->stash->{permissionEdit} = 1;     
         }
         else{
             my $id_category_status = $category->topics->id_category_status;
@@ -452,9 +452,9 @@ sub view : Local {
                             Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;        
             
             if ((substr $category->topics->status->type, 0, 1) ne "F" && exists($tmp{$id_category_status})){
-                $c->stash->{permissionEdit} = 0;    
+                $c->stash->{permissionEdit} = 1;    
             }else{
-                $c->stash->{permissionEdit} = 1;
+                $c->stash->{permissionEdit} = 0;
             }
         }
          
