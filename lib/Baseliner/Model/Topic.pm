@@ -237,9 +237,14 @@ sub topics_for_user {
     
     #Filtros especificos para GDI
     if( $p->{typeApplication} && $p->{typeApplication} eq 'gdi'){
+        
         if (!$perm->is_root( $username )){
             if(!Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.GDI.admin')){
-                $where->{'created_by'} = $username;
+                my $usuario_gdi = Baseliner->model('Baseliner::BaliMaster')->search({-or => [name => uc $username, name => lc $username], collection => 'UsuarioGDI'})->hashref->first;
+                my @usuarios_n1 = map {$_->{name}} _ci( $usuario_gdi->{mid} )->parents( depth=>-1, mode=>'flat' );
+                push (@usuarios_n1, $username);
+                $where->{'created_by'} = \@usuarios_n1;
+                #$where->{'created_by'} = $username;
             }
         }
     }
@@ -373,6 +378,7 @@ sub topics_for_user {
         $args->{page} = $p->{page};
         $args->{rows} = $limit;
     }
+    
     my $rs = DB->TopicView->search(  $where, $args );                                                             
     
     if( $limit >= 0 ) {
