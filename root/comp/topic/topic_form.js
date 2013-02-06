@@ -4,11 +4,14 @@
     if( data == undefined ) data = {};
     var on_submit_events = [];
     
+    var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
+    
     var form_topic = new Ext.FormPanel({
         url:'/topic/update',
         bodyStyle: {
           'padding': '15px 90px 15px 90px'
         },
+        id: unique_id_form,
         border: false,
         defaults: { anchor:'98%'},
         items: [
