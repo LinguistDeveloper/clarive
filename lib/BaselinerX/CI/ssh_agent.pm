@@ -1,11 +1,11 @@
 package BaselinerX::CI::ssh_agent;
-use Moose;
+use Baseliner::Moose;
 use Baseliner::Utils;
 use Cwd;
 use Net::OpenSSH;
 use namespace::autoclean;
 
-has server => qw(is rw isa CI coerce 1);
+has_ci 'server';
 has port_num   => qw(is rw isa Any);
 has private_key => qw(is rw isa Any);
 

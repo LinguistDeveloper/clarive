@@ -1,5 +1,5 @@
 package BaselinerX::CI::ftp_agent;
-use Moose;
+use Baseliner::Moose;
 use Baseliner::Utils;
 
 with 'Baseliner::Role::CI::Agent';

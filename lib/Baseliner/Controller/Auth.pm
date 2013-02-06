@@ -3,7 +3,6 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller'; }
 use Try::Tiny;
-use YAML;
 use MIME::Base64;
 use Baseliner::Core::User;
 
@@ -221,6 +220,35 @@ sub saml_check : Private {
     } catch {
         _error _loc('SAML Failed auth: %1', shift);
         return 0;
+    };
+}
+
+sub login_from_session : Local {
+    my ( $self, $c ) = @_;
+    # the Root controller creates the session for this
+    _throw _loc 'Invalid session' unless $c->session_is_valid;    
+    $c->res->redirect( $c->config->{web_url} );
+}
+
+sub create_user_session : Local {
+    my ( $self, $c ) = @_;
+    try {
+        _throw _loc('create_user_session not enabled') unless $c->config->{create_user_session};
+        _throw _loc('user does not authorized: action.create_user_session') if $c->username && !$c->has_action('action.create_user_session');
+        my $username = $c->req->params->{userid} // $c->req->headers->{userid} // _throw _loc 'Missing userid';
+        my $sid = $c->create_session_id;
+        $c->_sessionid($sid);
+        $c->reset_session_expires;
+        $c->set_session_id($sid);
+        _throw _loc 'Invalid session' unless $c->session_is_valid;    
+        $c->session->{username} = $username;
+        $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
+        $c->_save_session();
+        _error $c->session;
+        $c->res->body( sprintf '%s/auth/login_from_session?sessionid=%s', $c->config->{web_url}, $c->sessionid );
+    } catch {
+        my $err = shift;
+        $c->res->body( _loc('Auth error: %1', $err ) );
     };
 }
 

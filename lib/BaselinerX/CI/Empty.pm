@@ -1,6 +1,6 @@
 # Empty CI to represent missing relationships
 package BaselinerX::CI::Empty;
-use Moose;
+use Baseliner::Moose;
 with 'Baseliner::Role::CI';
 
 sub icon {

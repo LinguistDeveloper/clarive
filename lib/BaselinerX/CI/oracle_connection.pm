@@ -1,9 +1,9 @@
 package BaselinerX::CI::oracle_connection;
-use Moose;
+use Baseliner::Moose;
 use Baseliner::Utils;
 with 'Baseliner::Role::CI::DatabaseConnection';
 
-has server => qw(is rw isa CI coerce 1);
+has_ci 'server';
 has sid => qw(is rw isa Any);
 has port => qw(is rw isa Any);
 
