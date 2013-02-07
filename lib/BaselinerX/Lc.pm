@@ -108,6 +108,7 @@ sub lc_for_project {
                       ],
             'url' => '/fileversion/tree_file_project',
             'data' => {
+                        id_directory => '',
                         'on_drop' => {
                                        'url' => '/fileversion/drop'
                                      }

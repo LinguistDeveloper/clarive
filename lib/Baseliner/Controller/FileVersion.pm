@@ -30,7 +30,7 @@ sub tree_file_project : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my (@tree, @folders, @files);
+    my (@tree, @folders);
     
     if($p->{id_directory}){
         my $query = {id_project => $p->{id_project}, id_parent => $p->{id_directory}};
@@ -40,15 +40,26 @@ sub tree_file_project : Local {
             push @tree, build_item_directory($folder, $p->{id_project});
         }
         
-        @files = $c->model('Baseliner::BaliProjectDirectoriesFiles')->
+        my @files = $c->model('Baseliner::BaliProjectDirectoriesFiles')->
                     search( {id_directory => $p->{id_directory}},{ join => ['file_directory'], 
                     select=> [qw(file_directory.mid file_directory.filename file_directory.versionid)], 
                     as=>[qw(mid filename versionid)]} )->hashref->all;        
-        
+            
         foreach my $file (@files){
             push @tree, build_item_file($file, $p->{id_directory});
         }        
         
+        my @topics = $c->model('Baseliner::BaliProjectDirectoriesFiles')->
+                    search( {id_directory => $p->{id_directory}},
+                        { prefetch => ['topic', {'topic'=>'categories'}] } )->hashref->all;        
+        
+        foreach my $topic (@topics){
+            push @tree, BaselinerX::LcController->build_topic_tree( 
+                    mid      => $topic->{topic}{mid},
+                    topic    => $topic->{topic},
+                    icon     => '',
+                );
+        }
     }
     else{
         my $query = {id_project => $p->{id_project}, id_parent => undef};
@@ -59,12 +70,13 @@ sub tree_file_project : Local {
         }
         
         my $rs_files_directories = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({'directory.id_project' => $p->{id_project}},{join =>['directory'], select=>['id_file']});
-        @files = $c->model('Baseliner::BaliProject')->find( $p->{id_project} )->files->search( {mid => { 'not in' => $rs_files_directories->as_query}},{select=> [qw(mid filename versionid)]} )->hashref->all;        
+        my @files = $c->model('Baseliner::BaliProject')->find( $p->{id_project} )->files->search( {mid => { 'not in' => $rs_files_directories->as_query}},{select=> [qw(mid filename versionid)]} )->hashref->all;        
 
         foreach my $file (@files){
             push @tree, build_item_file($file, undef);
         }
     }
+    _debug \@tree;
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }
@@ -152,6 +164,7 @@ sub build_item_directory(){
     return  {
                 text    => $folder->{name} ,
                 leaf    =>\0,
+                url     => '/fileversion/tree_file_project',
                 data    => {
                     id_directory => $folder->{id},
                     id_project => $id_project,
@@ -184,21 +197,25 @@ sub build_item_file(){
 
 sub get_menu_folder(){
     my @menu_folder;
-    my $item_new_folder = { text => _loc('New Folder'),
+    push @menu_folder, {  text => _loc('Topics'),
+                                icon => '/static/images/icons/topic_one.png',
+                                eval => {
+                                    handler => 'Baseliner.open_topic_grid_from_folder'
+                                }
+                            };    
+    push @menu_folder, { text => _loc('New Folder'),
                             icon => '/static/images/icons/folder_new.gif',
                             eval => {
                                 handler => 'new_folder'
                             }
                         };
     
-    my $item_delete_folder = {  text => _loc('Delete Folder'),
+    push @menu_folder, {  text => _loc('Delete Folder'),
                                 icon => '/static/images/icons/folder_delete.gif',
                                 eval => {
                                     handler => 'delete_folder'
                                 }
                             };    
-    push @menu_folder, $item_new_folder;
-    push @menu_folder, $item_delete_folder;
     
     return @menu_folder;
 }
@@ -256,6 +273,17 @@ sub move_topic : Local {
                                                                         });        
     }
     $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
+    $c->forward('View::JSON');
+}
+
+sub topics_for_folder : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my @topics = map { $_->{id_file} } 
+            $c->model('Baseliner::BaliProjectDirectoriesFiles')->
+                search( {id_directory => $p->{id_directory}},
+                    { prefetch => ['topic'] } )->hashref->all;        
+    $c->stash->{json} = { success=>\1, topics=>\@topics };
     $c->forward('View::JSON');
 }
 

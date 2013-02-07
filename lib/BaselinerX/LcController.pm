@@ -135,40 +135,13 @@ sub tree_topics_project : Local {
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
         push @tree,
-            {
-            text       =>  $_->{topic_project}{title},
-            calevent => {
-                mid    => $_->{from_mid},
-                color => $_->{topic_project}{categories}{color},
-                title =>  $_->{topic_project}{title},
-                allDay => \1
-            },
-            url  => '/lifecycle/tree_topic_get_files',
-            topic_name => {
-                mid             => $_->{from_mid},
-                category_color => $_->{topic_project}{categories}{color},
-                category_name  => $_->{topic_project}{categories}{name},
-                is_release     => $is_release,
-                is_changeset   => $is_changeset,
-            },
-            children => [
-                {   text => _loc('Files'),
-                    icon => '/static/images/icons/directory.png',
-                    leaf => \0,
-                    data => {
-                        id_topic     => $_->{from_mid},
-                        sw_get_files => \1
-                    },
-                }
-            ],
-            data =>{
-                topic_mid => $_->{from_mid},
-                click => $self->click_for_topic(  $_->{topic_project}{categories}{name}, $_->{from_mid} )
-            },
-            icon       => $icon,
-            leaf       => \0,
-            expandable => \1
-            };
+            $self->build_topic_tree( 
+                mid      => $_->{from_mid},
+                topic    => $_->{topic_project},
+                icon     => $icon,
+                is_release => $is_release,
+                is_changeset => $is_changeset,
+            );
     }
 
     $c->stash->{ json } = \@tree;
@@ -1024,4 +997,46 @@ sub click_for_topic {
         title => sprintf( "%s #%d", $catname, $mid ),
     };
 }
+
+sub build_topic_tree {
+    my $self = shift;
+    my %p    = @_;
+    return +{
+        text     => $p{topic}{title},
+        calevent => {
+            mid    => $p{mid},
+            color  => $p{topic}{categories}{color},
+            title  => $p{topic}{title},
+            allDay => \1
+        },
+        url        => '/lifecycle/tree_topic_get_files',
+        topic_name => {
+            mid            => $p{mid},
+            category_color => $p{topic}{categories}{color},
+            category_name  => $p{topic}{categories}{name},
+            is_release     => $p{is_release} // $p{topic}{categories}{is_release},
+            is_changeset   => $p{is_changeset} // $p{topic}{categories}{is_changeset},
+        },
+        children => [
+            {
+                text => _loc('Files'),
+                icon => '/static/images/icons/directory.png',
+                url  => '/lifecycle/tree_topic_get_files',
+                leaf => \0,
+                data => {
+                    id_topic     => $p{mid},
+                    sw_get_files => \1
+                },
+            }
+        ],
+        data => {
+            topic_mid => $p{mid},
+            click     => $self->click_for_topic( $p{topic}{categories}{name}, $p{mid} )
+        },
+        icon       => $p{icon},
+        leaf       => \0,
+        expandable => \1
+    };
+}
+
 1;

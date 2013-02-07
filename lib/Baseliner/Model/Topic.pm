@@ -175,6 +175,7 @@ sub topics_for_user {
     my $query_limit = 300;
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
+    my $topic_list = $p->{topic_list};
     
     $query and $where = query_sql_build( query=>$query, fields=>{
         map { $_ => "me.$_" } qw/
@@ -233,6 +234,10 @@ sub topics_for_user {
         #push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
         #$where->{'project_id'} =  \@user_apps;
         $where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}, { "=", undef }];
+    }
+    
+    if( $topic_list ) {
+        $where->{topic_mid} = $topic_list;
     }
     
     #Filtros especificos para GDI
