@@ -1,23 +1,24 @@
 (function(params){
     delete params['tab_index'];  // this comes from the tab data
     var ps = 30;
-
+    
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
         'type', 'pretty_properties', 'name', 'item', 'ci_form', 'active',
         'class','versionid','ts','tags','data','properties','icon','collection', 'title' ]);
-
+    
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/ci/gridtree',
        baseParams: params,
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
-    }); 
-
+    });
+    
     var search_field = new Baseliner.SearchField({
         store: store_ci,
         params: {start: 0, limit: ps },
         emptyText: _('<Enter your search string>')
     });
+    
     
     // only globals can be seen from grid
     Baseliner.ci_edit = function( gridid, ix ){
@@ -26,9 +27,11 @@
             ci_edit( g.getStore(), g.getStore().getAt(ix).data );
     };
 
+    
+    
     var ci_edit = function(store, rec){
         var data = store.baseParams;
-        var classname = data.class ;
+        var classname = data['class'] ;
         Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
             if( res.success ) {
                 var rec = res.rec;
@@ -40,7 +43,7 @@
                         has_bl: data.has_bl,
                         has_description: data.has_description,
                         bl: data.bl,
-                        class: rec.class,
+                        'class': rec['class'],
                         ci_form: rec.ci_form,
                         mid: rec.mid,
                         rec: rec,
@@ -53,14 +56,16 @@
             }
         });
     };
-
+    
+    
+            
     // only globals can be seen from grid
     Baseliner.ci_add = function( gridid, ix ){
         var g = Ext.getCmp( gridid );
         if( g!= undefined ) 
             ci_add( g.getStore().getAt(ix).data );
     };
-
+    
     var get_valid_selections = function(){
         var arr = [];
         if (check_sm.hasSelection()) {
@@ -72,10 +77,10 @@
         }
         return arr;
     };
-
+    
     var ci_add = function(){
         var data = store_ci.baseParams;
-        var classname = data.class ;
+        var classname = data['class'] ;
         var rec = {};
         if (check_sm.hasSelection()) {
            var sel = get_valid_selections();
@@ -91,7 +96,7 @@
                 has_description: data.has_description,
                 rec: rec,
                 data: data,
-                class: data.class,
+                'class': data['class'],
                 tab_icon: data.icon,
                 action: 'add'
         });
@@ -109,7 +114,7 @@
        }
        return { count: 0, data:[] };
     };
-
+    
     var ci_delete = function(){
         var checked = Baseliner.multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
@@ -124,7 +129,7 @@
             });
         }
     };
-
+    
     var ci_ping = function(){
         var checked = Baseliner.multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
@@ -137,7 +142,7 @@
             });
         }
     };
-
+    
     var ci_export = function(format, mode){
         var checked = Baseliner.multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
@@ -158,6 +163,9 @@
         }
     };
 
+
+
+    
     /*  Renderers */
     var render_tags = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( typeof value == 'object' ) {
@@ -232,15 +240,16 @@
         ret += '</table>';
         return ret;
     };
-
+    
+    
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
         sortable: false,
         checkOnly: true
     });
-
+    
     var id_auto = Ext.id();
-
+    
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
         stripeRows: true,
@@ -251,11 +260,11 @@
         //hideHeaders: true,
         store: store_ci,
         sm: check_sm,
-
+    
         //enableSort: false,
         //lines: true,
         //enableDD: true,
-
+    
         tbar: [ 
             //{ xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
             search_field,
@@ -271,7 +280,7 @@
                     { text:_('HTML'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'shallow') } },
                     { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } }
                 ]
-            },
+            }
         ],
         viewConfig: {
             //headersDisabled: true,
@@ -317,42 +326,44 @@
             emptyMsg: _('There are no rows available')
         })
     });
-
+    
     ci_grid.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
         ci_edit( grid.getStore(), grid.getStore().getAt(rowIndex).data );
     });
+    
+    //// Lifecycle tree node listener on click
+    ///*  TODO needs to setTimeout on dblclick
+    //var click_foo = function(n, ev){ 
+    //    if( ! ci_grid.isVisible() ) return;
+    //    var data = n.attributes.data;
+    //    if( data.class == undefined ) return;  // make sure this is a ci node
+    //    if( data.type != 'class' ) return;  // only classes on grid
+    //    ci_grid.setTitle(_('CI: %1', data.item ) );
+    //    store_ci.additional_params = true;
+    //    store_ci.baseParams = data;
+    //    if( search_field.hasSearch ) store_ci.baseParams.query = search_field.getRawValue();
+    //    store_ci.load(); 
+    //};
+    //Baseliner.explorer.on('click', click_foo );
+    //ci_grid.on('destroy', function(){
+    //    Baseliner.explorer.removeListener('click', click_foo );
+    //});
+    //*/
+    //
+    //store_ci.on('beforeload', function(s,obj) {
+    //    if( store_ci.additional_params ) {
+    //        //obj.params = store_ci.additional_params;
+    //        store_ci.additional_params = false;
+    //    }
+    //    else if( obj.params.anode!= undefined ) {
+    //        var row = store_ci.getById( obj.params.anode );
+    //        obj.params.mid = row.data.mid;
+    //        obj.params.item = row.data.item;
+    //        obj.params.type = row.data.type;
+    //        obj.params.class = row.data.class;
+    //    }
+    //});
 
-    // Lifecycle tree node listener on click
-    /*  TODO needs to setTimeout on dblclick
-    var click_foo = function(n, ev){ 
-        if( ! ci_grid.isVisible() ) return;
-        var data = n.attributes.data;
-        if( data.class == undefined ) return;  // make sure this is a ci node
-        if( data.type != 'class' ) return;  // only classes on grid
-        ci_grid.setTitle(_('CI: %1', data.item ) );
-        store_ci.additional_params = true;
-        store_ci.baseParams = data;
-        if( search_field.hasSearch ) store_ci.baseParams.query = search_field.getRawValue();
-        store_ci.load(); 
-    };
-    Baseliner.explorer.on('click', click_foo );
-    ci_grid.on('destroy', function(){
-        Baseliner.explorer.removeListener('click', click_foo );
-    });
-    */
 
-    store_ci.on('beforeload', function(s,obj) {
-        if( store_ci.additional_params ) {
-            //obj.params = store_ci.additional_params;
-            store_ci.additional_params = false;
-        }
-        else if( obj.params.anode!= undefined ) {
-            var row = store_ci.getById( obj.params.anode );
-            obj.params.mid = row.data.mid;
-            obj.params.item = row.data.item;
-            obj.params.type = row.data.type;
-            obj.params.class = row.data.class;
-        }
-    });
     return ci_grid;
 })
