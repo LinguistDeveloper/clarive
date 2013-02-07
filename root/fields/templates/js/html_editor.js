@@ -29,7 +29,7 @@ params:
 		{   xtype: 'panel', layout:'fit',
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			items: [ //this panel is here to make the htmleditor fit
-			new Baseliner.HtmlEditor({
+			new Baseliner.CLEditor({
 					name: meta.id_field,
 					fieldLabel: _('Description'),
 					width: '100%',
