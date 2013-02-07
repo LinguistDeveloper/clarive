@@ -28,7 +28,8 @@
 
     var ci_edit = function(store, rec){
         var data = store.baseParams;
-        var classname = data.class ;
+        //var classname = data.class ;
+        var classname = data["class"] ;
         Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
             if( res.success ) {
                 var rec = res.rec;
@@ -40,7 +41,8 @@
                         has_bl: data.has_bl,
                         has_description: data.has_description,
                         bl: data.bl,
-                        class: rec.class,
+                        //class: rec.class,
+                        "class": rec["class"],
                         ci_form: rec.ci_form,
                         mid: rec.mid,
                         rec: rec,
@@ -75,7 +77,8 @@
 
     var ci_add = function(){
         var data = store_ci.baseParams;
-        var classname = data.class ;
+        //var classname = data.class ;
+        var classname = data["class"] ;
         var rec = {};
         if (check_sm.hasSelection()) {
            var sel = get_valid_selections();
@@ -91,7 +94,8 @@
                 has_description: data.has_description,
                 rec: rec,
                 data: data,
-                class: data.class,
+                //class: data.class,
+                "class": data["class"],
                 tab_icon: data.icon,
                 action: 'add'
         });
@@ -271,7 +275,7 @@
                     { text:_('HTML'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'shallow') } },
                     { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } }
                 ]
-            },
+            }
         ],
         viewConfig: {
             //headersDisabled: true,
@@ -351,7 +355,8 @@
             obj.params.mid = row.data.mid;
             obj.params.item = row.data.item;
             obj.params.type = row.data.type;
-            obj.params.class = row.data.class;
+            //obj.params.class = row.data.class;
+            obj.params["class"] = row.data["class"];
         }
     });
     return ci_grid;
