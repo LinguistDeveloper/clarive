@@ -236,6 +236,9 @@ sub create_user_session : Local {
         _throw _loc('create_user_session not enabled') unless $c->config->{create_user_session};
         _throw _loc('user does not authorized: action.create_user_session') if $c->username && !$c->has_action('action.create_user_session');
         my $username = $c->req->params->{userid} // $c->req->headers->{userid} // _throw _loc 'Missing userid';
+        # check that username is in the database
+        my $uid = DB->BaliUser->search({ username=>$username })->first;
+        _fail _loc( 'User not found: %1', $username ) unless ref $uid;
         my $sid = $c->create_session_id;
         $c->_sessionid($sid);
         $c->reset_session_expires;
