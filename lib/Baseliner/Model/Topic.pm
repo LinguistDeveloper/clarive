@@ -964,9 +964,11 @@ sub save_data {
 
             if ($row{$field} != $old_value{$field}){
                 if($field eq 'id_category_status'){
+                    
                     my @projects = $topic->projects->hashref->all;
                     event_new 'event.topic.change_status'
-                        => { username => $data->{username}, old_status => $old_text{$field}, status => $method ? $topic->$method->name : undef }
+                        #=> { username => $data->{username}, old_status => $old_text{$field}, status => $method ? $topic->$method->name : undef }
+                        => { username => $data->{username}, old_status => $old_text{$field}, status => $method ? map {$_->{name}} DB->BaliTopicStatus->search({id => $row{$field}})->hashref->first : undef }
                         => sub {
                             # check if it's a CI update
                             my $status_new = DB->BaliTopicStatus->find( $row{id_category_status} );
