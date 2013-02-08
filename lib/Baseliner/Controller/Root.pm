@@ -171,7 +171,9 @@ sub theme : Private {
     }
     $prefs->{theme} ||= $c->config->{force_theme} || $c->config->{default_theme}; # default
     my $theme = $prefs->{theme} ? '_' . $prefs->{theme} : '';
-    my $theme_dir = $prefs->{theme} ? '/themes/' . $prefs->{theme} : '';
+    my $theme_dir = $prefs->{theme}
+        ? ( $prefs->{theme} =~ /^\// ? $prefs->{theme} : ( '/static/themes/' . $prefs->{theme} ) )
+        : '';
     $c->stash->{theme_dir} = $theme_dir;
     $c->session->{theme_dir} = $theme_dir;
 }

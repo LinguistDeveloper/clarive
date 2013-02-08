@@ -73,7 +73,7 @@ Ext.onReady(function(){
 % if( $c->config->{logo_file} ) {
             '<img src="<% $c->config->{logo_file} %>" style="border:0px;"/>',
 % } else {
-            '<img src="/static<% $c->stash->{theme_dir} %>/images/<% $c->config->{logo_filename} || 'logo.jpg' %>" style="border:0px;"/>',
+            '<img src="<% $c->stash->{theme_dir} %>/images/<% $c->config->{logo_filename} || 'logo.jpg' %>" style="border:0px;"/>',
 % }
             '-',
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
