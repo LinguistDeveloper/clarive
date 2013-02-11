@@ -180,8 +180,6 @@ sub job_elements {
    my $stash = $job->job_stash;
    my $bl = $job->bl;
    
-   return 0 if $job->rollback;
-
    my $chm = BaselinerX::Changeman->new( host=>$cfgChangeman->{host}, port=>$cfgChangeman->{port}, key=>$cfgChangeman->{key} );
    my @elems;
    my @list;

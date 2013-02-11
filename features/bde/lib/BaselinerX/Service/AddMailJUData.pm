@@ -48,7 +48,9 @@ sub main {
          push @packages, $self->message($_) unless $_->{item} =~ m{nature/};
       }
       ## Protegemos informe JU contra errores de relanzamiento
-      my @nodelist = DB->model('repository')->search(ns=>"job/".$job->{jobid})->{data};
+      my $repodata=Baseliner->model('Repository')->get(ns=>"CHM_jobdata/".$job->{jobid});
+      my @nodelist;
+      defined $repodata and @nodelist = $repodata->{procSites};
 
       # Set data.
       my $data = {
@@ -60,7 +62,7 @@ sub main {
         start_time   => $job->job_data->{starttime},
         end_time     => $job->job_data->{endtime},
         cam_list     => [@camlist],
-        node_list    => [@nodelist],
+        node_list    => [ _array @nodelist ],
         nature_list  => [get_job_natures $job->{jobid}],
         package_list => [ @packages ],
         subapps_list => [get_job_subapps $job->{jobid}],
@@ -81,7 +83,7 @@ sub main {
       my $provider = 'informepase.ju_email';
       my $cnt = $job->{jobid} . "#" . $job->job_data->{exec};
       my $ns = "$provider/$Year$Month$Day#$cnt";
-      _log "ns -> $ns";
+      _log "ns -> $ns" . _dump $data;
       $repo->set(ns => $ns, data => $data);
   }
 }

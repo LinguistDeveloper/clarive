@@ -282,16 +282,8 @@ sub run_once {
          $job_stash->{procFiles}=[_unique (@procFiles)];
          $job->stash(_dump $job_stash);
 =cut
-         my @procFiles = _load ($c->model('Repository')->get(ns=>"job/$jobID")->first->data);
-         push @procFiles, $file->{filename}->stringify;
-         $c->model('Repository')->set(ns=>"job/$jobID", data=> @procFiles );
-
-         if ($site ne 'XXXX'){
-             my @procSites = _array $job_stash->{procSites};
-             push @procSites, $site;
-             $job_stash->{procSites}=[_unique (@procSites)];
-             $job->stash(_dump $job_stash);
-         }
+         $self->UpdateRepo($jobID, 'procFiles', [$file->{filename}->stringify]);
+         $self->UpdateRepo($jobID, 'procSites', [$site]) if ($site ne 'XXXX');
 
          if (($job->step eq 'RUN' && $job->status eq 'WAITING') || $job->step =~ m{POST|END} ) {
             $logrow = bali_rs('Log')->find( $job_stash->{JESrow} ) if $job_stash->{JESrow};
@@ -601,9 +593,24 @@ if (ref $ds) {
    _debug "CREATING RELATIONSHIP FROM ". $from_ns . " TO ". $to_ns;
 }
 }
+=head UpdateRepo 
+Dado un JobID, una clave y un valor se encarga de mantener los datos referentes al job en la tabla BALI_REPO
+=cut 
+sub UpdateRepo {
+    my ($self, $jobID, $key, $value) = @_; 
+    my $data;
 
-sub updateRepo {
-my ($self ) = @_;
+    try {
+       $data=Baseliner->model('Repository')->get(ns=>"CHM_jobdata/$jobID");
+    } catch {
+       _log "Error: $_"
+    };
+
+    my @oldValue=_array $data->{$key};
+    push @oldValue, _array $value;
+    $data->{$key}=[ _unique @oldValue ];
+    Baseliner->model('Repository')->set(ns=>"CHM_jobdata/$jobID", data=> $data);
+    return $data
 }
 
 1;

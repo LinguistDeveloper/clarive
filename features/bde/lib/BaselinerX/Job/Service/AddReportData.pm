@@ -152,7 +152,13 @@ sub GenerateJobDetailReport {
   my $contents   = $job->job_stash->{contents};
   my $bl         = $job->bl;
   my $start_time = $job->job_data->{starttime};
-  my $node       = $bl eq 'PROD'?join(", ",_array $job->stash->{procSites}):"";
+
+  my $repodata=Baseliner->model('Repository')->get(ns=>"CHM_jobdata/".$job->{jobid});
+  my @nodelist;
+  defined $repodata and @nodelist = $repodata->{procSites};
+  my $node="";
+  scalar _array @nodelist and $node = $bl eq 'PROD'?join(", ", _array @nodelist):"";
+
   my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
 
   my @natures = _unique map { _loc($_->{name}) }
@@ -174,12 +180,17 @@ sub GenerateJobDetailReport {
     $_;
     };
 
-  my @data = map  { $addf->($_) } map { +{
-       package_name=>( ns_split($_->{item} ))[1],
-       cam =>( ns_split($_->{application}) )[1],
-       type=>( $_->{data}->{motivo} eq 'PRO'?'Proyecto':$_->{data}->{motivo} eq 'PET'?'Peticion':$_->{data}->{motivo} eq 'MTO'?'Mantenimiento':$_->{data}->{motivo} eq 'INC'?'<b>Incidencia    :</b>':_loc ("Deleted package") ),
-       description=>( $_->{data}->{codigo}||_loc ('Deleted package') )
-     } } @{$contents};
+  my @dato;
+  foreach (@{$contents}) {
+     next unless $_->{provider};
+     push @dato, {
+                   package_name=>( ns_split($_->{item} ))[1],
+                   cam =>( ns_split($_->{application}) )[1],
+                   type=>( $_->{data}->{motivo} eq 'PRO'?'Proyecto':$_->{data}->{motivo} eq 'PET'?'Peticion':$_->{data}->{motivo} eq 'MTO'?'Mantenimiento':$_->{data}->{motivo} eq 'INC'?'Incidencia':_loc ("Deleted package") ),
+                   description=>( ref $_->{data}->{codigo} ne 'HASH' ? $_->{data}->{codigo} : _loc ('Deleted package') )
+                 };
+  }
+  my @data = map {$addf->($_)} @dato; 
 
 _debug _dump @data;
 
