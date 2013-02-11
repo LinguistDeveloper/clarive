@@ -47,6 +47,8 @@ sub main {
       foreach (@contents) {
          push @packages, $self->message($_) unless $_->{item} =~ m{nature/};
       }
+      ## Protegemos informe JU contra errores de relanzamiento
+      my @nodelist = DB->model('repository')->search(ns=>"job/".$job->{jobid})->{data};
 
       # Set data.
       my $data = {
@@ -58,7 +60,7 @@ sub main {
         start_time   => $job->job_data->{starttime},
         end_time     => $job->job_data->{endtime},
         cam_list     => [@camlist],
-        node_list    => $job->job_data->{bl} eq 'PROD'?$job->job_stash->{procSites}:[],
+        node_list    => [@nodelist],
         nature_list  => [get_job_natures $job->{jobid}],
         package_list => [ @packages ],
         subapps_list => [get_job_subapps $job->{jobid}],

@@ -274,10 +274,17 @@ sub run_once {
          $job_stash=_load $job->stash;
          $type=$job->type;
 
+
+## Para evitar incidencias con relanzamiento, se pasa info a balirepo y se quita del stash
+=head
          my @procFiles = _array $job_stash->{procFiles};
          push @procFiles, $file->{filename}->stringify;
          $job_stash->{procFiles}=[_unique (@procFiles)];
          $job->stash(_dump $job_stash);
+=cut
+         my @procFiles = _load ($c->model('Repository')->get(ns=>"job/$jobID")->first->data);
+         push @procFiles, $file->{filename}->stringify;
+         $c->model('Repository')->set(ns=>"job/$jobID", data=> @procFiles );
 
          if ($site ne 'XXXX'){
              my @procSites = _array $job_stash->{procSites};
