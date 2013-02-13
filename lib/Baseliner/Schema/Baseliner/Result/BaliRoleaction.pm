@@ -81,10 +81,9 @@ __PACKAGE__->belongs_to(
   { id => "id_role" },
 );
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_roleaction_idx_id_role', fields=>['id_role'] );
+}
 
-# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-10-29 18:11:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:cutSh+7KzO2/fbteXcIvcA
-
-
-# You can replace this text with custom content, and it will be preserved on regeneration
 1;

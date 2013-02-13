@@ -118,10 +118,9 @@ __PACKAGE__->belongs_to(
   { id => "id_job" },
 );
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'BALI_LOG_DATA_IDX_ID_LOG', fields=>['id_log'] );
+}
 
-# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-05-21 12:59:22
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1nz7qakwYqymKkL0F7jQJA
-
-
-# You can replace this text with custom content, and it will be preserved on regeneration
 1;

@@ -100,4 +100,11 @@ sub deliver_now {
     $self->active(0);
     $self->update;
 }
+
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_message_queue_idx_active', fields=>['active','carrier'] );
+   $sqlt_table->add_index(name =>'bali_message_queue_idx_id_mess', fields=>['id_message'] );
+}
+
 1;

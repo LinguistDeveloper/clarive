@@ -232,6 +232,12 @@ __PACKAGE__->has_many(
 
 __PACKAGE__->has_master;
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_job_idx_name', fields=>['name'] );
+   $sqlt_table->add_index(name =>'bali_job_pid_status', fields=>['pid','status'] );
+}
+
 # this is the best way to avoid having more than one stash per job
 #  and still maintain ref integrity 
 use Try::Tiny;
