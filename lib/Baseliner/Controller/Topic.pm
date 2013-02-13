@@ -96,9 +96,9 @@ sub list : Local {
     my $p = $c->request->parameters;
     $p->{username} = $c->username;
 
-    my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
 
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     $c->forward('View::JSON');
 }
 
@@ -348,13 +348,47 @@ sub new_topic : Local {
     $meta = $self->get_field_bodies( $meta );
     
     my $data;
+    
     if ($p->{ci}){
         $data = _ci($p->{ci})->{_ci};
         $data->{title} = $data->{gdi_perfil_dni};
+        if ($p->{clonar} && $p->{clonar} == -1){
+            $data = $self->init_values_topic($data);
+            if ($p->{dni}){
+                $data->{gdi_perfil_dni} = $p->{dni};
+            }
+            my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
+                                                                                    {
+                                                                                    prefetch=>['status'],
+                                                                                    }                                                                                 
+                                                                                 )->first;
+            
+            my $action = $c->model('Topic')->getAction($statuses->status->type);
+            $data->{id_category_status} = $statuses->status->id;
+            $data->{name_status} = $statuses->status->name;
+            $data->{type_status} = $statuses->status->type;
+            $data->{action_status} = $action;              
+        }
     }else{
         $data = Baseliner::Model::Topic->get_data( $meta, undef );
         #Cetelem
         if($p->{dni}){
+            if ($p->{clonar}){
+                $data = Baseliner::Model::Topic->get_data( $meta, $p->{clonar} );
+                $data = $self->init_values_topic($data);
+                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
+                                                                                        {
+                                                                                        prefetch=>['status'],
+                                                                                        }                                                                                 
+                                                                                     )->first;
+                
+                
+                my $action = $c->model('Topic')->getAction($statuses->status->type);
+                $data->{id_category_status} = $statuses->status->id;
+                $data->{name_status} = $statuses->status->name;
+                $data->{type_status} = $statuses->status->type;
+                $data->{action_status} = $action;                    
+            }
             $data->{gdi_perfil_dni} = $p->{dni};
             $data->{title} = $data->{gdi_perfil_dni};
         }
@@ -373,6 +407,22 @@ sub new_topic : Local {
     $c->forward('View::JSON');
 }
 
+sub init_values_topic : Private {
+    my ($self, $data) = @_;
+
+    $data->{topic_mid} = '';
+    $data->{id_category_status} = '';
+    $data->{name_status} = '';
+    $data->{type_status} = '';
+    $data->{action_status} = '';
+    $data->{created_by} = '';
+    $data->{created_on} = '';
+    $data->{gdi_perfil_usuario_nombre} = '';
+    $data->{gdi_perfil_usuario_apellidos} = '';
+    
+    return $data;
+}
+
 sub view : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
@@ -382,15 +432,35 @@ sub view : Local {
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} = $p->{swEdit};
     $c->stash->{permissionEdit} = 0;
-    $c->stash->{borrame} = 11;
-        
+    $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
+    
     my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
-        my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { join=>'topics' })->first;
+        my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
         $c->stash->{category_meta} = $category->forms;
+        
+        if ($c->is_root){
+            $c->stash->{permissionEdit} = 1;     
+        }
+        else{
+            my $id_category_status = $category->topics->id_category_status;
+            #Miramos los estados que tiene en el workflow.
+            my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        
+            
+            my %tmp;
+            ##map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' }
+            map { $tmp{$_->{id_status_from}} = 'id' } 
+                            Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;        
+            
+            if ((substr $category->topics->status->type, 0, 1) ne "F" && exists($tmp{$id_category_status})){
+                $c->stash->{permissionEdit} = 1;    
+            }else{
+                $c->stash->{permissionEdit} = 0;
+            }
+        }
          
         # comments
         $self->list_posts( $c );  # get comments into stash        
@@ -876,6 +946,13 @@ sub filters_list : Local {
     my @statuses;
     $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
+    ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+    my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        
+    
+    my %tmp;
+    map { $tmp{$_->{id_status_from}} = 'id'; $tmp{$_->{id_status_to}} = 'id' } 
+                    Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;
+
     if($row->count() gt 0){
         while( my $r = $row->next ) {
             push @statuses,
@@ -885,7 +962,7 @@ sub filters_list : Local {
                     text    => $r->name,
                     cls     => 'forum status',
                     iconCls => 'icon-no',
-                    checked => \0,
+                    checked => exists $tmp{$r->id} && (substr ($r->type, 0 , 1) ne 'F')? \1: \0,
                     leaf    => 'true',
                     uiProvider => 'Baseliner.CBTreeNodeUI'                    
                 };

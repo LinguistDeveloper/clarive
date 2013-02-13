@@ -39,4 +39,10 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("topic_mid", "name");
 
 
+__PACKAGE__->belongs_to(
+  "topics",
+  "Baseliner::Schema::Baseliner::Result::BaliTopic",
+  { 'foreign.mid' => 'self.topic_mid' },
+);
+
 1;
