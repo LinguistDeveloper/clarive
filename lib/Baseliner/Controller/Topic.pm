@@ -260,6 +260,12 @@ sub json : Local {
     $meta = $self->get_field_bodies( $meta );
     
     $ret->{topic_meta} = $meta;
+    
+    if (exists $data->{ci_mid}){
+        my $data_ci = _ci($data->{ci_mid})->{_ci};
+        $data->{ci_parent} = $data_ci;
+    }
+    
     $ret->{topic_data} = $data;
     $c->stash->{json} = $ret;
     
@@ -394,11 +400,7 @@ sub new_topic : Local {
         }
     }
     
-    map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' } _array $data;
-    #if(exists $data->{gdi_email_usuario}) { delete($data->{gdi_email_usuario}) };
-    #if(exists $data->{gdi_email_password}) { delete($data->{gdi_email_password}) };
-    #if(exists $data->{gdi_cics_password}) { delete($data->{gdi_cics_password}) };
-    #if(exists $data->{gdi_cics_usuarios}) { delete($data->{gdi_cics_usuarios}) };
+    map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
     
     $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
     

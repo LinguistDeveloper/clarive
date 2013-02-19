@@ -3,7 +3,7 @@
     //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
     var mid = params.mid;
     var beforesubmit = [];
-    var is_active = params.rec.active || true;
+    var is_active = params.rec.active == undefined ? true : params.rec.active;
 
     var activate_save = function(){
         setTimeout( function(){

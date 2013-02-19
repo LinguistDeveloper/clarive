@@ -982,6 +982,7 @@ sub save_data {
                                         }
                                         when( 'delete' ) {
                                             my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
+                                            _ci( $ci_mid )->save( %$ci_master, data=>$ci_data );
                                             DB->BaliMaster->find( $ci_mid )->delete; 
                                             $ci->{_ci_updated} = 1;
                                         }
@@ -1013,6 +1014,7 @@ sub save_data {
         }        
     }
 
+    
     if( my $cis = $data->{_cis} ) {
         for my $ci ( _array $cis ) {
             if( length $ci->{ci_mid} && $ci->{_ci_updated} ) {
