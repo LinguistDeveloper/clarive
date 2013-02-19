@@ -1,6 +1,7 @@
 (function(d) {
     var n1 = d.node1;
     var n2 = d.node2;
+    var tree = d.tree;
     Baseliner.ajaxEval('/lifecycle/favorite_add_to_folder',
         {
             id_favorite: n1.attributes.id_favorite,
@@ -9,7 +10,7 @@
         }, function(res){
             Baseliner.message( _('Add to folder'), res.msg );
             var is = n2.isExpanded();
-            Baseliner.lifecycle.getLoader().load( n2 );
+            tree.getLoader().load( n2 );
             if( is ) n2.expand();
             n1.parentNode.removeChild( n1 );
     });

@@ -160,6 +160,10 @@ Ext.onReady(function(){
             ]
     });
 
+%   if( $show_lifecycle ) {
+        Baseliner.explorer = new Baseliner.Explorer({}),
+%   }
+
     Baseliner.main = new Ext.Panel({
         layout: 'border',
         items: [
@@ -177,7 +181,7 @@ Ext.onReady(function(){
 % } else {
             Baseliner.main_toolbar,
 %   if( $show_lifecycle ) {
-            Baseliner.lifecycle,
+            Baseliner.explorer,
 %   }
 %   if( $show_calendar ) {
             Baseliner.calpanel,

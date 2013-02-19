@@ -105,17 +105,19 @@
             { header: _('Data'), hidden: false, width: 250, dataIndex: 'data', renderer: render_mapping_long }
         ]
     });
-    var click_foo = function(n, ev){ 
-        if( ! grid.isVisible() ) return;
-        var data = n.attributes.data;
-        if( data.class == undefined ) return;
-        grid.setTitle(_('CI: %1', data.item ) );
-        store_ci.load({ params: data });
-    };
-    var ev = Baseliner.lifecycle.on('click', click_foo );
-    grid.on('destroy', function(){
-        Baseliner.lifecycle.removeListener('click', click_foo );
-    });
+    if( Baseliner.explorer ) {
+        var click_foo = function(n, ev){ 
+            if( ! grid.isVisible() ) return;
+            var data = n.attributes.data;
+            if( data.class == undefined ) return;
+            grid.setTitle(_('CI: %1', data.item ) );
+            store_ci.load({ params: data });
+        };
+        Baseliner.explorer.on('click', click_foo );
+        grid.on('destroy', function(){
+            Baseliner.explorer.removeListener('click', click_foo );
+        });
+    }
 
     //store_ci.load();
     return grid;

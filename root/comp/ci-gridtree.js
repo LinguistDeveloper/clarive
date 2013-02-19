@@ -335,9 +335,9 @@
         if( search_field.hasSearch ) store_ci.baseParams.query = search_field.getRawValue();
         store_ci.load(); 
     };
-    var ev = Baseliner.lifecycle.on('click', click_foo );
+    Baseliner.explorer.on('click', click_foo );
     ci_grid.on('destroy', function(){
-        Baseliner.lifecycle.removeListener('click', click_foo );
+        Baseliner.explorer.removeListener('click', click_foo );
     });
     */
 

@@ -649,7 +649,7 @@ Baseliner.Calendar =  function(c) {
         var el = cal_div.getEl() ;
         var id = el.id ;
         var dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyEnter: function(ddSource, ev, data) {
                 var el = ddSource.getProxy().getGhost();
@@ -1087,7 +1087,7 @@ Baseliner.model.RevisionsBoxDD = function(c) {
     revision_box.on('afterrender', function(){
         var el = revision_box.el.dom; 
         var revision_box_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;
@@ -1218,7 +1218,7 @@ Baseliner.model.RevisionsGridDD = function(c) {
         }
         var el = this.el.dom; 
         var revision_box_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;
