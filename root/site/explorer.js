@@ -73,6 +73,8 @@ Baseliner.ExplorerTree = Ext.extend( Ext.tree.TreePanel, {
             root: { nodeType: 'async', text: '/', draggable: false, id: '/' }
         }, c) );
         
+        self.addEvents( 'favorite_added' );
+        
         self.on('contextmenu', self.menu_click );
         self.on('beforenodedrop', self.drop_handler );
         self.on('dblclick', function(n, ev){     
@@ -127,6 +129,7 @@ Baseliner.ExplorerTree = Ext.extend( Ext.tree.TreePanel, {
                             menu: Ext.encode( node.attributes.menu )
                         },
                         function(res) {
+                            self.fireEvent( 'favorite_added', res );
                             Baseliner.message( _('Favorite'), res.msg );
                         }
                     );
@@ -302,8 +305,11 @@ Baseliner.ExplorerTree = Ext.extend( Ext.tree.TreePanel, {
         if( node_data2.on_drop != undefined ) {
             var on_drop = node_data2.on_drop;
             if( on_drop.url != undefined ) {
-                var id_project = n2.parentNode.attributes.data.id_project
-                Baseliner.ajaxEval( on_drop.url, { node1: n1, node2: n2, id_file: node_data1.id_file, id_project: id_project  }, function(res){
+                var p = { tree: self, node1: n1, node2: n2, id_file: node_data1.id_file  };
+                if( n2.parentNode && n2.parentNode.attributes.data ) 
+                    p.id_project = n2.parentNode.attributes.data.id_project
+                        
+                Baseliner.ajaxEval( on_drop.url, p, function(res){
                     if( res ) {
                         if( res.success ) {
                             Baseliner.message(  _('Drop'), res.msg );
@@ -395,9 +401,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         var self = this;
 
         self.$tree_projects = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' })
-        self.items = [ 
-            self.$tree_projects
-        ];
+        self.items = [ self.$tree_projects ];
+        self.$tree_projects.on('favorite_added', function() { self.$tree_favorites.refresh() } );
         
         var show_projects = function() {
             self.getLayout().setActiveItem( self.$tree_projects );
@@ -415,6 +420,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             if( !self.$tree_workspaces ) {
                 self.$tree_workspaces = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree', baseParams: { show_workspaces: true } });
                 self.add( self.$tree_workspaces );
+                self.$tree_workspaces.on('favorite_added', function() { self.$tree_favorites.refresh() } );
             }
             self.getLayout().setActiveItem( self.$tree_workspaces );
         };
@@ -423,6 +429,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             if( !self.$tree_ci ) {
                 self.$tree_ci = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree', baseParams: { show_ci: true }  });
                 self.add( self.$tree_ci );
+                self.$tree_ci.on('favorite_added', function() { self.$tree_favorites.refresh() } );
             }
             self.getLayout().setActiveItem( self.$tree_ci );
         };
