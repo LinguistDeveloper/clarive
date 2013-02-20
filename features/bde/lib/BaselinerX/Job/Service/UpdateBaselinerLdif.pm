@@ -126,8 +126,12 @@ sub init {
             # tira de cache, para reducir queries al minimo, excepto cuando hay que crear proyectos o roles
             my $role_id = $roles{$role_name}{id} // ( $roles{$role_name}{id}=BaselinerX::Model::BaliRole->new(role => $role_name)->id );
             my $project = $projects{$cam} // ( $projects{$cam} = do {
-                my $p = BaselinerX::Model::BaliProject->new(name => $cam);
-                { id=>$p->id, name=>$p->name }
+                my $p;
+                master_new "project"=>$cam=>sub{
+                   my $mid=shift;
+                   $p=DB->BaliProject->create({mid=>$mid, name => $cam});
+                };
+                { id=>$p->mid, name=>$p->name };
             } );
 
             _debug "ROLE-ID $role_name => $role_id";

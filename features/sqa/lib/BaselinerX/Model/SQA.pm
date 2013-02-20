@@ -80,19 +80,26 @@ sub update_status {    # actualiza el status de una fila en el portal
                 };
 				_log "El project *$project* ahora existe.  File creada";
 				if ( $type ne 'package' ) {
-					$subproject_row =
-					  Baseliner->model('Baseliner::BaliProject')->create(
-						{
-							name      => lc($subproject),
-							id_parent => $project_row->mid,
-							ns        => '/',
-							bl        => '*'
-						}
-					  ) if $nivel ne 'CAM';
+                    master_new project => lc($subproject) => sub {
+                        my $mid = shift;
+                        $subproject_row =
+                          Baseliner->model('Baseliner::BaliProject')->create(
+                            {
+                                mid       => $mid,
+                                name      => lc($subproject),
+                                id_parent => $project_row->mid,
+                                ns        => '/',
+                                bl        => '*'
+                            }
+                          ) if $nivel ne 'CAM';
+                    };
 					_log "Subproject $subproject creado";
 					$subprojectnature_row =
+                    master_new project => $subproject.$nature => sub {
+                        my $mid = shift;
 					  Baseliner->model('Baseliner::BaliProject')->create(
 						{
+							mid       => $mid,
 							name      => $subproject,
 							id_parent => $project_row->mid,
 							nature    => $nature,
@@ -101,6 +108,7 @@ sub update_status {    # actualiza el status de una fila en el portal
 						}
 					  ) if $nivel !~ /CAM|subapp/;
 					_log "SubprojectNature $subproject/$nature creado";
+                    };
 				}
 			}
 			else {
@@ -821,8 +829,29 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} Subaplicacio
 		);
 	}
 	else {
-		$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
-		$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de anlisis de la subaplicacin.  Consulte con el administrador de SQA' );
+		#$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
+		#$self->write_sqa_error( job_id => $job_id, html => $ret , type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de anlisis de la subaplicacin.  Consulte con el administrador de SQA' );
+		#Comentado lo anterior, se envía notificación del fallo a SCM y SQA
+        my $mailcfg = Baseliner->model('ConfigStore')->get( 'config.comm.email', ns => 'feature/SQA' );
+        my $url = $mailcfg->{baseliner_url};
+
+        my @users = Baseliner->model('Permissions')->list( action => 'action.sqa.notify_error');
+        my $to = [ _unique(@users) ];
+
+        Baseliner->model('Messaging')->notify(
+        	to              => { users => $to },
+            subject         => _loc ("SQA ERROR"),
+            sender            => $mailcfg->{from},
+            carrier         => 'email',
+            template        => 'email/analysis_error.html',
+            template_engine => 'mason',
+            vars            => {
+            	subject => "Error en el calculo del agregado",
+                message => $ret,
+                url      => $url,
+                to       => $to
+            }
+        );
 	}
 
 	#Calculamos el agregado por CAM
@@ -855,8 +884,29 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} CAM -Dentorn
 		);
 	}
 	else {
-		$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
-		$self->write_sqa_error( job_id => $job_id, html => $ret, type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de anlisis del CAM.  Consulte con el administrador de SQA' );
+		#$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
+		#$self->write_sqa_error( job_id => $job_id, html => $ret, type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de anlisis del CAM.  Consulte con el administrador de SQA' );
+		#Comentado lo anterior, se envía notificación del fallo a SCM y SQA
+        my $mailcfg = Baseliner->model('ConfigStore')->get( 'config.comm.email', ns => 'feature/SQA' );
+        my $url = $mailcfg->{baseliner_url};
+
+        my @users = Baseliner->model('Permissions')->list( action => 'action.sqa.notify_error');
+        my $to = [ _unique(@users) ];
+
+        Baseliner->model('Messaging')->notify(
+        	to              => { users => $to },
+            subject         => _loc ("SQA ERROR"),
+            sender            => $mailcfg->{from},
+            carrier         => 'email',
+            template        => 'email/analysis_error.html',
+            template_engine => 'mason',
+            vars            => {
+            	subject => "Error en el calculo del agregado",
+                message => $ret,
+                url      => $url,
+                to       => $to
+            }
+        );
 	}
 }
 
@@ -974,9 +1024,29 @@ qq{cd /D $config->{script_dir} & call ant -f $config->{script_name} $level $subn
 		$return = 1;
 	}
 	else {
-		$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
-		$self->write_sqa_error( job_id => $job_id, html => $ret, type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de an&aacute;lisis de agregado.  Consulte con el administrador de SQA' );
+		#$self->update_status( job_id => $job_id, status => 'SQA ERROR', tsend => 1 );
+		#$self->write_sqa_error( job_id => $job_id, html => $ret, type => "pre", reason => 'Ha ocurrido un error al ejecutar el script de ejecuci&oacute;n de an&aacute;lisis de agregado.  Consulte con el administrador de SQA' );
+		#Comentado lo anterior, se envía notificación del fallo a SCM y SQA
+        my $mailcfg = Baseliner->model('ConfigStore')->get( 'config.comm.email', ns => 'feature/SQA' );
+        my $url = $mailcfg->{baseliner_url};
 
+        my @users = Baseliner->model('Permissions')->list( action => 'action.sqa.notify_error');
+        my $to = [ _unique(@users) ];
+
+        Baseliner->model('Messaging')->notify(
+        	to              => { users => $to },
+            subject         => _loc ("SQA ERROR"),
+            sender            => $mailcfg->{from},
+            carrier         => 'email',
+            template        => 'email/analysis_error.html',
+            template_engine => 'mason',
+            vars            => {
+            	subject => "Error en el calculo del agregado",
+                message => $ret,
+                url      => $url,
+                to       => $to
+            }
+        );
 		$return = 0;
 	}
     ## Eric @ 20 MAR 2012
@@ -1131,18 +1201,20 @@ sub grab_results {    # recupera resultados
 			my $URL_suffix_coverage = "";
 
 			if ( $nature =~ /NET/ && $mstest ) {
+				$mstest =~ s/\"//g; #en la nueva versión del fichero .csv los caracteres vienen entre comillas, las eliminamos. REVISAR posteriores versiones si no se pintan bien los datos
 				@fichero             = split "\n", $mstest;
 				$URL_prefix          = $config->{url_mstest};
 				$URL_suffix_errors   = $config->{file_mstest_errors};
 				$URL_suffix_coverage = $config->{file_mstest_coverage};
 			}
 			elsif ( $nature =~ /J2EE/ && $junit ) {
+				$junit =~ s/\"//g; #en la nueva versión del fichero .csv los caracteres vienen entre comillas
 				@fichero             = split "\n", $junit;
 				$URL_prefix          = $config->{url_junit};
 				$URL_suffix_errors   = $config->{file_junit_errors};
 				$URL_suffix_coverage = $config->{file_junit_coverage};
 			}
-			if ( @fichero eq 2 ) {
+			if ( @fichero eq 3 ) {
 				my @cabecera = split ";", $fichero[0];
 				my @valores  = split ";", $fichero[1];
 				my %datos    = {};
