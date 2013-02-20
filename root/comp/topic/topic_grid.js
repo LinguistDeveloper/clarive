@@ -579,7 +579,7 @@
         dropable: true,
         autoSizeColumns: true,
         deferredRender: true,
-        ddGroup: 'lifecycle_dd',
+        ddGroup: 'explorer_dd',
         viewConfig: {forceFit: true},
 %if ( !$c->stash->{typeApplication} ){
         sm: check_sm,
@@ -668,7 +668,7 @@
     grid_topics.on( 'render', function(){
         var el = grid_topics.getView().el.dom.childNodes[0].childNodes[1];
         var grid_topics_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;
@@ -932,7 +932,7 @@
         rootVisible: false,
         root: tree_root,
         enableDD: true,
-        ddGroup: 'lifecycle_dd',
+        ddGroup: 'explorer_dd',
 		listeners: {
 			'checkchange': checkchange
 		}		

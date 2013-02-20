@@ -97,7 +97,7 @@ Ext.onReady(function(){
         style: 'margin-top: 20px',
         name: 'jc',
         enableDD: true, 
-        ddGroup: 'lifecycle_dd',
+        ddGroup: 'explorer_dd',
         title: _('Release Contents'),
         border: true,
         ds: ds_grid,
@@ -114,7 +114,7 @@ Ext.onReady(function(){
 
     jc_grid.on('viewready', function() {
         var drop_target = new Ext.dd.DropTarget(jc_grid.getEl(), {
-                ddGroup    : 'lifecycle_dd',
+                ddGroup    : 'explorer_dd',
                 notifyDrop : function(dd, e, data){
                     var n = dd.dragData.node;
                     var s = jc_grid.store;

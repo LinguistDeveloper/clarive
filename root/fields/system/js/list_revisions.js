@@ -88,7 +88,7 @@ params:
         //}
         var el = this.el.dom; 
         var revision_box_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;

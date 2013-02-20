@@ -67,7 +67,7 @@ params:
     pb_panel.on( 'afterrender', function(){
         var el = pb_panel.el.dom; //.childNodes[0].childNodes[1];
         var project_box_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;

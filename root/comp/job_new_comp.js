@@ -529,7 +529,7 @@
         width: 800,
         height: 150,
         enableDragDrop: true,
-        ddGroup: 'lifecycle_dd',
+        ddGroup: 'explorer_dd',
         style: 'margin-top: 20px',
         name: 'jc',
         title: _('Job Contents'),
@@ -540,7 +540,7 @@
     jc_grid.on( 'render', function(){
         var el = jc_grid.getView().el.dom.childNodes[0].childNodes[1];
         var jc_grid_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, data) {
                 var n = dd.dragData.node;
