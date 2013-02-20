@@ -184,8 +184,9 @@ sub run_once {
       my $activeJob=undef; ## Recoge el ID del pase en Baseliner si existe
       my $logrow=undef;    ## Recoge linea de log para acceso a spool
 
-      my ($key, $app, $pkg, $scm, $date, $site, $jobname, $filename)=($1, $2, sprintf("%-4s%s",$2,$3), $4, "$5-$6-$7 $8:$9", $10, $11, $_)
-          if $file->{filename}->stringify =~ m{CHM\.PSCM\.P\.(\w+)\.(\w+)\..(\d+)\.(.)(\d{2})(\d{2})(\d+)\..(\d{2})(\d{2})\d+\.(\w+)\.(\S+)};
+      my ($key, $app, $pkg, $scm, $date, $site, $jobname, $trash, $filename)=($1, $2, sprintf("%-4s%s",$2,$3), $4, "$5-$6-$7 $8:$9", $10, $11, $12, $file->{filename}->stringify )
+          if $file->{filename}->stringify =~ m{CHM\.PSCM\.P\.(\w+)\.(\w+)\..(\d+)\.(.)(\d{2})(\d{2})(\d+)\..(\d{2})(\d{2})\d+\.(\w+)\.(\S+?)(\..*)};
+
       my $pase=$date;
       $pase=tr{-:}{};
 

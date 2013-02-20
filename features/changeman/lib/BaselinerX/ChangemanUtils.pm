@@ -57,7 +57,10 @@ sub spool_files {
          map {
             # PATTERN : CHM.PSCM.P.10WPIGXAFVKV.SCTT.N000161.F120704.H134924.CINF.SCT#3061
             # PATTERN : CHM.PSCM.P.1DIHKV3G888B.SCTT.N000166.A00000.A02362.PREP.SCT#8266
-            my ($key, $app, $pkg, $scm, $date, $bl, $jobname, $filename)=($1, $2, "$2$3", $4, "$5-$6-$7 $8:$9", $10, $11, $_) if $_ =~ m{CHM\.PSCM\.P\.(\w+)\.(\w+)\..(\d+)\.(.)(\d{2})(\d{2})(\d+)\..(\d{2})(\d{2})\d+\.(\w+)\.(\S+)};
+
+            my ($key, $app, $pkg, $scm, $date, $bl, $jobname, $trash, $filename)=($1, $2, sprintf("%-4s%s",$2,$3), $4, "$5-$6-$7 $8:$9", $10, $11, $12, $_) 
+               if $_ =~ m{CHM\.PSCM\.P\.(\w+)\.(\w+)\..(\d+)\.(.)(\d{2})(\d{2})(\d+)\..(\d{2})(\d{2})\d+\.(\w+)\.(\S+?)(\..*)};
+
             if ( $app ) {
                $jobname=~s{\xD1}{#};
                my $ord=$jobname=~m{USERID$}?0:$jobname=~m{SITEOK$}?2:$jobname=~m{FINOK$}?3:1;
