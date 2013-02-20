@@ -140,7 +140,17 @@
 
 .pruebafieldset legend{ font-size: 35px; }
 
+/*  FF overwrites - FF uses 13px checkboxes */
 
+.styledCheckboxWrap, x:-moz-any-link {
+    background-size: 13px;
+}
+
+.wrapChecked, x:-moz-any-link
+{ background-position: 0px -13px;  }
+
+.wrapPartial, x:-moz-any-link
+{ background-position: 0px -24px; }
 
 /*
 .x-tree-selected {
