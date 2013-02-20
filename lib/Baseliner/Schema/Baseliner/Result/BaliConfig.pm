@@ -38,7 +38,7 @@ __PACKAGE__->add_columns(
   {
     data_type => "VARCHAR2",
     is_nullable => 1,
-    size => 1024,
+    size => 1536,
   },
   "ts",
   {
