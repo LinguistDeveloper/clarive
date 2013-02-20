@@ -127,8 +127,8 @@
 
 .styledCheckboxWrap {
     position: relative;
-    background-size: 12px;
     background: url('/static/images/icons/checkboxes.gif') no-repeat top left;
+    background-size: 12px;
     margin: 3px;
 }
 
