@@ -62,6 +62,20 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
     }
 });
 
+
+/*
+ * Baseliner.TreeMultiTextNode
+ *
+ */
+
+Baseliner.TreeMultiTextNode = Ext.extend( Ext.tree.TreeNodeUI, {
+    getDDHandles : function(){
+        var nodes = [this.iconNode, this.textNode, this.elNode];
+        Ext.each( this.textNode.childNodes, function(n){ nodes.push(n) });
+        return nodes;
+    }
+});
+
 /*
  * Baseliner.Tree
  *
@@ -211,6 +225,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                     //var tn_span = Baseliner.topic_name(tn);
 
                     n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
+                    n.ui = new Baseliner.TreeMultiTextNode( n );
 
                     /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
                         n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
