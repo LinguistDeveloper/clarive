@@ -339,13 +339,14 @@ sub related {
     return () if exists $opts{visited}{$mid};
     local $Baseliner::CI::_no_record = $opts{no_record} // 0; # make sure we include a _ci 
     $opts{visited}{ $mid } = 1;
-    $depth = 1 if $depth < 1; # otherwise we go into infinite loop
+    #$depth = 1 if $depth < 1; # otherwise we go into infinite loop
     # get my related cis
     my @cis = $self->related_cis( %opts );
     # filter before
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
-    if( --$depth ) {
+    --$depth if $depth;
+    if( $depth != 0 ) {
         my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
         if( $opts{mode} eq 'tree' ) {
             for my $ci( @cis ) {
