@@ -147,9 +147,6 @@ sub init {
       exit 1;
   };
 
-  _log \%group;
-  _log \%user_group;
-
   # Update Baseliner.
   try {
       _log "Updating Baseliner...";
