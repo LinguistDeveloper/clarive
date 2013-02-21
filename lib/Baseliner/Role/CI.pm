@@ -12,19 +12,20 @@ coerce 'BoolCheckbox' =>
   from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 
 coerce 'CI' =>
-  from 'Str' => via { length $_ ? Baseliner::CI->new( $_ ) : BaselinerX::CI::Empty->new()  }, 
-  from 'Num' => via { Baseliner::CI->new( $_ ) }, 
-  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::CI->new( $first ) : BaselinerX::CI::Empty->new() }; 
+  from 'Str' => via { length $_ ? Baseliner::LazyCI->new( mid=>$_ ) : BaselinerX::CI::Empty->new()  }, 
+  from 'Num' => via { Baseliner::LazyCI->new( $_ ) }, 
+  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::LazyCI->new( $first ) : BaselinerX::CI::Empty->new() }; 
 
 coerce 'CIs' => 
-  from 'Str' => via { length $_ ? [ Baseliner::CI->new( $_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
-  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
-  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
+  from 'Str' => via { length $_ ? [ Baseliner::LazyCI->new( $_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
+  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::LazyCI->new( $_ ) } _array( $v ) ] },
+  from 'Num' => via { [ Baseliner::LazyCI->new( $_ ) ] }; 
 
 has mid      => qw(is rw isa Num);
 #has ci_class => qw(is rw isa Maybe[Str]);
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
+require Baseliner::LazyCI;
 requires 'icon';
 #requires 'collection';
 
@@ -367,6 +368,24 @@ sub parents {
 sub children {
     my ($self, %opts)=@_;
     return $self->related( %opts, edge=>'out' );
+}
+
+our $gscope;
+sub BUILD {
+    my $self = shift;
+    my $args = shift;
+    my $scope = $gscope // ( local $gscope = {} );
+    $scope->{ $self->mid } = $self if !$self->isa('Baseliner::LazyCI'); 
+    
+    for( $self->meta->get_all_attributes ) {
+        my $attr = $_->name;
+        my $v = $self->$attr;
+        if( Scalar::Util::blessed( $v ) && $v->isa( 'Baseliner::LazyCI' ) ) {
+            my $obj = $scope->{$v->mid} // Baseliner::CI->new( $v->mid );
+            #$obj = Scalar::Util::weaken( $obj );
+            $self->$attr( $obj );
+        }
+    }
 }
 
 # from Node
