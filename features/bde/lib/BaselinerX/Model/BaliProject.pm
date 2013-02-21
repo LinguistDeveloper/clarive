@@ -85,12 +85,12 @@ sub args { {select => [qw/mid id_parent/], order_by => 'id_parent'} }
 
 sub give_relatives {
   my ($self, $mid, @ls) = @_;
-  [map $_->{mid}, grep $_->{id_parent} eq $mid, @ls];
+  [map $_->mid, grep $_->id_parent eq $mid, @ls];
 }
 
 sub level_to_level {
   my ($self, $upper_list, $bottom_list) = @_;
-  my %h = map { $_->{mid} => $self->give_relatives($_->{mid}, @{$upper_list}) }
+  my %h = map { $_->mid => $self->give_relatives($_->mid, @{$upper_list}) }
               @{$bottom_list};
   \%h;
 }

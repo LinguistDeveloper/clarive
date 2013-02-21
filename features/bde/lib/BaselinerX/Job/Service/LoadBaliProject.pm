@@ -58,7 +58,8 @@ sub run_once {
         $inf->query(q{select cam from inf_data d where d.idform in (select idform from inf_form_max) and column_name='SCM_APL_PUBLICA' and valor='Si'})->hashes;
 
         _log "Query de Harpathfullname...";
-        my $r = $c->model('Harvest::HarPathFullName')->search({ -not => { pathfullname=>{ -like => '\%\%\%\%' } }, pathfullname=>{-like=>'\%\%\%'} }, { distinct=>1, select=>'pathfullname' });
+        ## No cargamos carpetas borradas...
+        my $r = $c->model('Harvest::HarPathFullName')->search({ -not => { pathfullname=>{ -like => '\%\%\%\%' } }, pathfullname=>{-like=>'\%\%\%'}, versionstatus=> {'<>'=>'D'} }, { join=>'versionobjid', distinct=>1, select=>['me.pathfullname', 'versionobjid.versionstatus'] });
         rs_hashref( $r );
         my (%cam,%sa,%nat);
         for ( $r->all ) {

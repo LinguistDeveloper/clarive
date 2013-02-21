@@ -37,6 +37,11 @@ __PACKAGE__->belongs_to(
   { itemobjid => "itemobjid" },
 );
 
+__PACKAGE__->belongs_to(
+  "versionobjid",
+  "Baseliner::Schema::Harvest::Result::Harversions",
+  { versionobjid => "versionobjid" },
+);
 
 # Created by DBIx::Class::Schema::Loader v0.04005 @ 2009-05-12 15:09:09
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:jWeRXFwb5+RvGFBVqp/vVQ
