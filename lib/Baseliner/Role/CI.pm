@@ -176,7 +176,7 @@ sub table_update_or_create {
     }
 } 
 sub table_create { $_[1]->create( $_[2] ) } 
-sub table_update { $_[1]->update( $_[2] ) } 
+sub table_update { $_[1]->update( $_[2] ) }
 
 sub load {
     use Baseliner::Utils;
@@ -216,12 +216,12 @@ sub load {
         my $other_mid = $my_mid eq 'to_mid' ? 'from_mid' : 'to_mid';
         next unless defined $rel_type;
         $data->{ $field } = [
-            map {
-                # check for recursive CIs
-                _fail( _loc('Recursive CI. Attribute %1 has same mid as parent %2', $field, $mid) )
-                    if $mid == $_;
-                $_;
-            }
+            # map {
+            #     # check for recursive CIs
+            #     _fail( _loc('Recursive CI. Attribute %1 has same mid as parent %2', $field, $mid) )
+            #         if $mid == $_;
+            #     $_;
+            # }
             map { values %$_ }
             DB->BaliMasterRel->search( {
                 "$my_mid" => $mid,
