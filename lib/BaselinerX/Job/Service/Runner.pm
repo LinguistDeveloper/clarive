@@ -335,7 +335,7 @@ sub job_run {
     my $log_status = $lastStatus =~ /ERROR/i ? 'ERROR' : 'OK'; 
 
     my $lit_status=$self->status eq 'ERROR'?$self->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR'):undef;
-    my $lit_status=$lastStatus eq 'RUNNING'?$self->job_data->{rollback}?_loc('FINISHED DOING ROLLBACK CORRECTLY'):_loc('FINISHED CORRECTLY'):$self->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR') unless $lit_status;
+    $lit_status=$lastStatus eq 'RUNNING'?$self->job_data->{rollback}?_loc('FINISHED DOING ROLLBACK CORRECTLY'):_loc('FINISHED CORRECTLY'):$self->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR') unless $lit_status;
 
     # finish up step
     if( $step eq 'PRE' ) {
