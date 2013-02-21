@@ -13,13 +13,13 @@ coerce 'BoolCheckbox' =>
 
 coerce 'CI' =>
   from 'Str' => via { length $_ ? Baseliner::LazyCI->new( mid=>$_ ) : BaselinerX::CI::Empty->new()  }, 
-  from 'Num' => via { Baseliner::LazyCI->new( $_ ) }, 
-  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::LazyCI->new( $first ) : BaselinerX::CI::Empty->new() }; 
+  from 'Num' => via { Baseliner::LazyCI->new( mid=>$_ ) }, 
+  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::LazyCI->new( mid=>$first ) : BaselinerX::CI::Empty->new() }; 
 
 coerce 'CIs' => 
-  from 'Str' => via { length $_ ? [ Baseliner::LazyCI->new( $_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
-  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::LazyCI->new( $_ ) } _array( $v ) ] },
-  from 'Num' => via { [ Baseliner::LazyCI->new( $_ ) ] }; 
+  from 'Str' => via { length $_ ? [ Baseliner::LazyCI->new( mid=>$_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
+  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::LazyCI->new( mid=>$_ ) } _array( $v ) ] },
+  from 'Num' => via { [ Baseliner::LazyCI->new( mid=>$_ ) ] }; 
 
 has mid      => qw(is rw isa Num);
 #has ci_class => qw(is rw isa Maybe[Str]);
