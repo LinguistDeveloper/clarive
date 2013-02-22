@@ -107,7 +107,7 @@ __PACKAGE__->has_many(
 __PACKAGE__->belongs_to(
   "projects",
   "Baseliner::Schema::Baseliner::Result::BaliProject",
-  { mid => 'id_project' },
+  { mid => 'id_project' }, {join_type => 'LEFT'}
 );
 
 __PACKAGE__->has_one(
