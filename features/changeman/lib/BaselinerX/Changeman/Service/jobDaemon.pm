@@ -82,7 +82,7 @@ sub creaPase {  ## $self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, 
            _debug _loc("Package <b>%1</b> is in active job <b>%2</b>", $package,$activeJob->id) if $activeJob;
 ## Si hay actividad de un paquete en un pase posterior y el pase activo no tiene ficheros pendientes, se cancela el job.
            if ($activeJob->step eq 'RUN' || $activeJob->status eq 'WAITING') {
-               my $data=Baseliner->model('Repository')->get(ns=>"CHM_jobdata/$activeJob->id");
+               my $data=Baseliner->model('Repository')->get(ns=>"CHM_jobdata/".$activeJob->id);
                my $file = ( _array $data->{procFiles} )[0];
                my $key=$1 if $file =~ m{CHM\.PSCM\.P\.(\w+)\..*}; 
 
