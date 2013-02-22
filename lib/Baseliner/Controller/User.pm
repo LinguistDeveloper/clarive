@@ -113,7 +113,7 @@ sub infodetail : Local {
                         push @path, $projectparent->name . '/';
                         $parent = $projectparent->id_parent;
                     }
-                    while(@path){
+                    while(_unique @path){
                         $allpath .= pop (@path)
                     }
                     if($project->nature){ $nature= ' (' . $project->nature . ')';}
@@ -126,9 +126,9 @@ sub infodetail : Local {
             push @projects, $str;
         }
         
-        @projects = sort(@projects);
+        #@projects = sort(@projects);
         my @jsonprojects;
-        foreach my $project (@projects){
+        foreach my $project (sort {$a cmp $b} _unique @projects){
             my $str = { name=>$project };
             push @jsonprojects, $str;
         }
