@@ -1,5 +1,5 @@
 package BaselinerX::CI::post;
-use Moose;
+use Baseliner::Moose;
 with 'Baseliner::Role::CI::Internal';
 
 sub icon { '/static/images/icons/post.png' }

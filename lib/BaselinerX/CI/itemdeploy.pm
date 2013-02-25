@@ -1,16 +1,18 @@
 package BaselinerX::CI::itemdeploy;
-use Moose;
+use Baseliner::Moose;
 use Baseliner::Utils;
 
 with 'Baseliner::Role::CI::Mapping';
 
 has name           => qw(is rw isa Maybe[Str]);
 has bl             => qw(is rw isa Any);
-has projects       => qw(is rw isa CIs coerce 1);
 has workspace      => qw(is rw isa Maybe[Str]);
-has deployments    => qw(is rw isa CIs coerce 1);
-has scripts_multi  => qw(is rw isa CIs coerce 1);
-has scripts_single => qw(is rw isa CIs coerce 1);
+
+has_cis 'projects';
+has_cis 'deployments';
+has_cis 'scripts_multi';
+has_cis 'scripts_single';
+
 has exclude        => qw(is rw isa Any);
 has include        => qw(is rw isa Any);
 has order          => qw(is rw isa Num);

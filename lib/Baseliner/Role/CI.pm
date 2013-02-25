@@ -8,24 +8,24 @@ subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
 subtype BoolCheckbox   => as 'Bool';
 
+# deprecated, but kept for future reference
+#coerce 'CI' =>
+#  from 'Str' => via { length $_ ? Baseliner::CI->new( $_ ) : BaselinerX::CI::Empty->new()  }, 
+#  from 'Num' => via { Baseliner::CI->new( $_ ) }, 
+#  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::CI->new( $first ) : BaselinerX::CI::Empty->new() }; 
+#
+#coerce 'CIs' => 
+#  from 'Str' => via { length $_ ? [ Baseliner::CI->new( $_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
+#  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
+#  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
+
 coerce 'BoolCheckbox' =>
   from 'Str' => via { $_ eq 'on' ? 1 : 0 };
-
-coerce 'CI' =>
-  from 'Str' => via { length $_ ? Baseliner::LazyCI->new( mid=>$_ ) : BaselinerX::CI::Empty->new()  }, 
-  from 'Num' => via { Baseliner::LazyCI->new( mid=>$_ ) }, 
-  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::LazyCI->new( mid=>$first ) : BaselinerX::CI::Empty->new() }; 
-
-coerce 'CIs' => 
-  from 'Str' => via { length $_ ? [ Baseliner::LazyCI->new( mid=>$_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
-  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::LazyCI->new( mid=>$_ ) } _array( $v ) ] },
-  from 'Num' => via { [ Baseliner::LazyCI->new( mid=>$_ ) ] }; 
 
 has mid      => qw(is rw isa Num);
 #has ci_class => qw(is rw isa Maybe[Str]);
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
-require Baseliner::LazyCI;
 requires 'icon';
 #requires 'collection';
 
@@ -176,7 +176,7 @@ sub table_update_or_create {
     }
 } 
 sub table_create { $_[1]->create( $_[2] ) } 
-sub table_update { $_[1]->update( $_[2] ) }
+sub table_update { $_[1]->update( $_[2] ) } 
 
 sub load {
     use Baseliner::Utils;
@@ -216,12 +216,12 @@ sub load {
         my $other_mid = $my_mid eq 'to_mid' ? 'from_mid' : 'to_mid';
         next unless defined $rel_type;
         $data->{ $field } = [
-            # map {
-            #     # check for recursive CIs
-            #     _fail( _loc('Recursive CI. Attribute %1 has same mid as parent %2', $field, $mid) )
-            #         if $mid == $_;
-            #     $_;
-            # }
+            map {
+                # check for recursive CIs
+                _fail( _loc('Recursive CI. Attribute %1 has same mid as parent %2', $field, $mid) )
+                    if $mid == $_;
+                $_;
+            }
             map { values %$_ }
             DB->BaliMasterRel->search( {
                 "$my_mid" => $mid,
@@ -339,14 +339,13 @@ sub related {
     return () if exists $opts{visited}{$mid};
     local $Baseliner::CI::_no_record = $opts{no_record} // 0; # make sure we include a _ci 
     $opts{visited}{ $mid } = 1;
-    #$depth = 1 if $depth < 1; # otherwise we go into infinite loop
+    $depth = 1 if $depth < 1; # otherwise we go into infinite loop
     # get my related cis
     my @cis = $self->related_cis( %opts );
     # filter before
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
-    --$depth if $depth;
-    if( $depth != 0 ) {
+    if( --$depth ) {
         my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
         if( $opts{mode} eq 'tree' ) {
             for my $ci( @cis ) {
@@ -371,24 +370,6 @@ sub children {
     return $self->related( %opts, edge=>'out' );
 }
 
-our $gscope;
-sub BUILD {
-    my $self = shift;
-    my $args = shift;
-    my $scope = $gscope // ( local $gscope = {} );
-    $scope->{ $self->mid } = $self if !$self->isa('Baseliner::LazyCI'); 
-    
-    for( $self->meta->get_all_attributes ) {
-        my $attr = $_->name;
-        my $v = $self->$attr;
-        if( Scalar::Util::blessed( $v ) && $v->isa( 'Baseliner::LazyCI' ) ) {
-            my $obj = $scope->{$v->mid} // Baseliner::CI->new( $v->mid );
-            #$obj = Scalar::Util::weaken( $obj );
-            $self->$attr( $obj );
-        }
-    }
-}
-
 # from Node
 has uri      => qw(is rw isa Str);   # maybe a URI someday...
 has resource => qw(is rw isa Baseliner::CI::URI), 
@@ -398,3 +379,87 @@ has debug => qw(is rw isa Bool), default=>sub { $ENV{BASELINER_DEBUG} };
 
 1;
 
+# Attribute Trait 
+package Baseliner::AT::CI;
+use Moose::Role;
+use Moose::Util::TypeConstraints;
+use Scalar::Util; # 'looks_like_number', 'weaken';
+
+Moose::Util::meta_attribute_alias('CI');
+
+our $gscope;
+
+my $init = sub {
+    my ($val) = @_;
+    my $obj = $gscope->{$val};
+    if( defined $obj ) {
+        $_[1] = 1;
+        return $obj;
+    } else {
+        $_[1] = 0;
+        return Baseliner::CI->new( $val );
+    }
+};
+
+around initialize_instance_slot => sub {
+    my ($orig, $self) = (shift,shift);
+    my ($meta_instance, $instance, $params) = @_;
+
+    my $init_arg = $self->init_arg();
+    $gscope or local $gscope = {};
+    $gscope->{ $instance->mid // $params->{mid} } //= $instance;
+    
+    my $weaken = 0;
+    if( defined($init_arg) and exists $params->{$init_arg} ) {
+        my $val = $params->{$init_arg};
+        my $tc = $self->type_constraint;
+        # needs coersion?
+        if( ! $tc->check( $val ) ) {
+            if( $tc->is_a_type_of('ArrayRef') ) {
+                match_on_type $val => (
+                    'Undef' => sub {
+                        $params->{$init_arg} = [ EmptyCI->new ];
+                    },
+                    'Num|Str' => sub {
+                        $params->{$init_arg} = [ $init->( $val, $weaken ) ];
+                        Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
+                        $weaken = 0;
+                    },
+                    'ArrayRef[Num]' => sub {
+                        my $arr = [];
+                        my $i = 0;
+                        for( @$val ) {
+                           $arr->[ $i ] = $init->( $_, $weaken );
+                           Scalar::Util::weaken( $arr->[$i] ) if $weaken;
+                           $i++;
+                        }
+                        $params->{$init_arg} = $arr;
+                        $weaken = 0;
+                    },
+                );
+            }
+            else {
+                match_on_type $val => (
+                    'Undef' => sub {
+                        $params->{$init_arg} = EmptyCI->new;
+                    },
+                    'Num|Str' => sub {
+                        $params->{$init_arg} = $init->( $val, $weaken );
+                    },
+                    'ArrayRef[Num]' => sub {
+                        $params->{$init_arg} = $init->( $val->[0], $weaken );
+                    },
+                    'ArrayRef[CI]' => sub {
+                        $params->{$init_arg} = [ $init->( $val, $weaken ) ];
+                        Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
+                        $weaken = 0;
+                    },
+                );
+            }
+        }
+    }
+    $self->$orig( @_ );
+    $self->_weaken_value($instance) if $weaken;
+};
+
+1;

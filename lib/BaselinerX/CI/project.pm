@@ -1,5 +1,5 @@
 package BaselinerX::CI::project;
-use Moose;
+use Baseliner::Moose;
 use Baseliner::Utils;
 
 with 'Baseliner::Role::CI::Project';
@@ -7,7 +7,7 @@ with 'Baseliner::Role::CI::Project';
 sub icon { '/static/images/icons/project.png' }
 sub storage { 'BaliProject' }
 
-has repositories => qw(is rw isa CIs coerce 1);
+has_cis 'repositories';
 
 sub rel_type { { repositories=>[ from_mid => 'project_repository'] } }
 

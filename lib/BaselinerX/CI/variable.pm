@@ -1,5 +1,5 @@
 package BaselinerX::CI::variable;
-use Moose;
+use Baseliner::Moose;
 use Baseliner::Utils;
 
 with 'Baseliner::Role::CI::Variable';

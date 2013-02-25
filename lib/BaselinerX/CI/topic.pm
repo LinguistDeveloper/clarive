@@ -1,5 +1,5 @@
 package BaselinerX::CI::topic;
-use Moose;
+use Baseliner::Moose;
 with 'Baseliner::Role::CI::Topic';
 
 has title       => qw(is rw isa Any);

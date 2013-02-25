@@ -1,5 +1,5 @@
 package BaselinerX::CI::generic_server;
-use Moose;
+use Baseliner::Moose;
 with 'Baseliner::Role::CI::Server';
 
 sub error {}

@@ -1,5 +1,5 @@
 package BaselinerX::CI::iis;
-use Moose;
+use Baseliner::Moose;
 with 'Baseliner::Role::CI::ApplicationServer';
 
 sub error {}
