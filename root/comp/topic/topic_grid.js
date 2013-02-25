@@ -195,7 +195,7 @@
             ]
         });
         
-        topic_category_grid.on("rowclick", function(grid, rowIndex, e ) {
+        topic_category_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
             var title = _(r.get( 'name' ));
             Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ) } );
@@ -861,7 +861,7 @@
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir };
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication };
         // object for merging with views 
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         
