@@ -2258,7 +2258,7 @@ msgstr "No action or username specified"
 
 # lib/Baseliner/Model/Permissions.pm (275)
 msgid "Missing username"
-msgstr "Falta el nombre de usuário"
+msgstr "Falta el nombre de usuario"
 
 # lib/Baseliner/Model/Request.pm (308)
 msgid "Approval Request"

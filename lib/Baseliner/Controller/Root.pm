@@ -65,6 +65,7 @@ auto centralizes all auhtentication check and dispatch.
 =cut
 sub auto : Private {
     my ( $self, $c ) = @_;
+    my $last_msg = '';
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     return 1 if $c->stash->{auth_skip};
     return 1 if $c->req->path eq 'i18n/js';
@@ -72,20 +73,17 @@ sub auto : Private {
     my $path = $c->request->{path} || $c->request->path;
 
     # sessionid param?
-    if(0){
-    if( my $sessionid = delete $c->request->params->{_bali_session} ) {
-        $c->delete_session;
-        _debug $c->get_session_id( $sessionid );
-        #if( $c->get_session_id( $sessionid ) ) {   # session really exists?
-            $c->_sessionid( $sessionid );
-            $c->reset_session_expires;
-            $c->set_session_id( $sessionid );
-            $c->_load_session;
-            _debug $c->username;
-            return 1 if $c->username;
-        #}
-    }
-    }
+    my $sid = $c->req->params->{sessionid} // $c->req->headers->{sessionid};
+    return 1 if $sid && do {
+        $last_msg = _loc( 'invalid sessionid' );
+        #$c->delete_session('switching to session: ' . $sid);
+        $c->_sessionid($sid);
+        $c->reset_session_expires;
+        $c->set_session_id($sid);
+        $c->_tried_loading_session_data(0);
+        $c->session_is_valid;    
+    };
+    
     # auth check skip
     return 1 if try { $c->user_exists } catch { 0 };
     return 1 if $path eq '/logout';
@@ -114,6 +112,7 @@ sub auto : Private {
         my $qp = $c->req->query_parameters // {};
         $c->stash->{after_login_query} = join '&', map { "$_=$qp->{$_}" } keys %$qp;
         $c->response->status( 401 );
+        $c->stash->{last_msg} //= $last_msg;
         $c->forward('/auth/logon');
     }
     return 0;
