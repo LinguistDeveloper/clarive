@@ -1033,7 +1033,7 @@ sub build_topic_tree {
             topic_mid => $p{mid},
             click     => $self->click_for_topic( $p{topic}{categories}{name}, $p{mid} )
         },
-        icon       => $p{icon},
+        icon       => $p{icon} // '/static/images/icons/topic.png',
         leaf       => \0,
         expandable => \1
     };

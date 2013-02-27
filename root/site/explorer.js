@@ -601,116 +601,130 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
 /* ------------- Folder Functions ------------- */
 
-var new_folder = function(node){
-    var btn_cerrar = new Ext.Toolbar.Button({
-        text: _('Close'),
-        width: 50,
-        handler: function() {
-            win.close();
-        }
-    })
-    
-    var btn_grabar = new Ext.Toolbar.Button({
-        text: _('Save'),
-        width: 50,
-        handler: function(){
-            var form = form_folder.getForm();
-            var data = node.attributes.data;
+Baseliner.TextFieldWin = Ext.extend( Ext.Window, {
+    modal: true, 
+    autoHeight: true, 
+    width: 300,
+    constructor: function(c){
+        Baseliner.TextFieldWin.superclass.constructor.call(this, c);
+    },
+    initComponent: function(){
+        var self = this;
+        self.addEvents('saved','save_error');
+        Baseliner.TextFieldWin.superclass.initComponent.call(this);
+        
+        var btn_cerrar = new Ext.Toolbar.Button({
+            text: _('Close'),
+            width: 50,
+            handler: function() { self.close(); }
+        });
+        var btn_grabar = new Ext.Toolbar.Button({
+            text: _('Save'),
+            width: 50,
+            handler: function(){self.submit_form()}
+        });
+        
+        self.text_field = new Ext.form.TextField({
+            fieldLabel: self.field_label,
+            name: 'name',
+            value: self.default_text, allowBlank: false
+        });
+        
+        self.form_folder = new Ext.FormPanel({
+                                name: self.form_folder,
+                                url: self.url,
+                                frame: true,
+                                keys: [{ key: Ext.EventObject.ENTER, fn: function(){self.submit_form()} }],
+                                buttons: [btn_grabar, btn_cerrar],
+                                defaults:{anchor:'100%'},
+                                items: self.text_field
+        });
+        self.text_field.on('afterrender', function(){ 
+            setTimeout(function(){
+                self.text_field.focus(true);
+            },200);
+        });
+        
+        self.add( self.form_folder );
+    },
+    value : function(v){
+        if( v )
+            this.text_field.setValue( v );
+        return this.text_field.getValue(); 
+    },
+    submit_form : function(){
+        var self = this;
+        var form = self.form_folder.getForm();
+        var data = self.data;
 
-            if (form.isValid()) {
-                form.submit({
-                    params: { parent_id: data.id_directory, project_id: data.id_project },
-                    success: function(f,a){
-                        Baseliner.message(_('Success'), a.result.msg );
-                        if(node.isExpanded()){
-                            var data_attributes = {
-                                id_directory: a.result.directory_id,
-                                id_project: data.id_project,
-                                type: 'directory',
-                                on_drop: {
-                                    handler: 'move_item'
-                                }
-                            };
-                            var menu_new_folder = [{
-                                                        text: _('New Folder'),
-                                                        icon: '/static/images/icons/folder_new.gif',
-                                                        eval:   {
-                                                                handler: 'new_folder'
-                                                        }
-                                                    },
-                                                    {
-                                                        text: _('Delete Folder'),
-                                                        icon: '/static/images/icons/folder_delete.gif',
-                                                        eval:   {
-                                                                handler: 'delete_folder'
-                                                        }
-                                                    },                                                    
-                                                    {
-                                                        text: _('Topics'),
-                                                        icon: '/static/images/icons/topic_one.png',
-                                                        eval:   {
-                                                                handler: 'Baseliner.open_topic_grid_from_folder', //function(n){ alert(n) }
-                                                        }
-                                                    }                                                    
-                                                    ];
-                            
-                            
-                            node.appendChild({ text:a.result.folder, icon: '/static/images/icons/folder.gif', data: data_attributes, menu: menu_new_folder, leaf: false});
-                        };
-                    },
-                    failure: function(f,a){
-                    Ext.Msg.show({  
-                        title: _('Information'), 
-                        msg: a.result.msg , 
-                        buttons: Ext.Msg.OK, 
-                        icon: Ext.Msg.INFO
-                    }); 						
-                    }
-                });
-            }
+        if (form.isValid()) {
+            form.submit({
+                params: { parent_id: data.id_directory, project_id: data.id_project },
+                success: function(f,a){
+                    Baseliner.message(_('Success'), a.result.msg );
+                    self.fireEvent('saved', a.result, self);
+                    if( self.close_on_save ) 
+                        self.close();
+                },
+                failure: function(f,a){
+                    Baseliner.error( _('Error'), _(a.result.msg) );
+                    self.fireEvent('save_error', a.result, self);
+                }
+            });
         }
-    })    
-    
-    var form_folder = new Ext.FormPanel({
-						    name: form_folder,
-						    url: '/fileversion/new_folder',
-						    frame: true,
-						    buttons: [btn_grabar, btn_cerrar],
-						    defaults:{anchor:'100%'},
-						    items   : [
-									    { fieldLabel: _('Folder'), name: 'folder', xtype: 'textfield', allowBlank:false}
-								    ]
-	});
-    
-    var win = new Ext.Window({
+    }
+});
+
+Baseliner.new_folder = function(node){
+    var win = new Baseliner.TextFieldWin({
         title: _('New Folder'),
-        width: 300,
-        autoHeight: true,
-        modal: true,
-        items: form_folder
+        field_label: _('Name'),
+        url:'/fileversion/new_folder',
+        data: node.attributes.data
     });
     
-    win.show();  
-}
+    win.on('saved', function(res){
+        if(node.isExpanded()){
+            if( res.node ) 
+                node.appendChild( res.node );
+        };
+    });
+    win.show();
+};
 
-var delete_folder = function(node){
+Baseliner.rename_folder = function(node){
+    var win = new Baseliner.TextFieldWin({
+        title: _('Rename Folder'),
+        field_label: _('Name'),
+        url:'/fileversion/rename_folder',
+        close_on_save: true,
+        default_text: node.text,
+        data: node.attributes.data
+    });
+    win.on('saved', function(res){
+        node.setText( res.name );
+    });
+    win.show();
+};
+
+Baseliner.delete_folder = function(node){
     Baseliner.ajaxEval( '/fileversion/delete_folder',{ id_directory: node.attributes.data.id_directory },
         function(response) {
             if ( response.success ) {
                 Baseliner.message( _('Success'), response.msg );
-                refresh_node(node.parentNode);  // XXX now it's a method not global func
-                //node.remove();
+                node.remove();
+                //refresh_node(node.parentNode);  // XXX now it's a method not global func
             } else {
                 Baseliner.message( _('ERROR'), response.msg );
             }
         }
     
     );    
-}
+};
 
 // Main event that gets fired everytime a node is right-clicked
 //    builds the menu from node attributes and base menu
-var move_item = function(node_data1, node_data2){
+Baseliner.move_folder_item = function(node_data1, node_data2){
     if(node_data2.attributes.data.type != 'file'){
         node_data2.appendChild( node_data1 );
 
@@ -741,5 +755,23 @@ Baseliner.open_topic_grid_from_folder = function(n){
     var id_directory = n.attributes.data.id_directory;
     Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_directory: id_directory }, function(res){
         Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Topics: %1', name), { topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
+    });
+}
+
+Baseliner.open_kanban_from_folder = function(n){
+    var name = n.text;
+    var id_directory = n.attributes.data.id_directory;
+    Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_directory: id_directory }, function(res){
+        if( ! res.topics || res.topics.length < 1 ) {
+            Baseliner.message( _('Kanban'), _('Folder does not contain any topics') );
+            return;
+        }
+        var store_topics = new Baseliner.Topic.StoreList({
+            baseParams: { start: 0, topic_list: res.topics }
+        });
+        store_topics.load();
+        store_topics.on('load', function(){
+            Baseliner.kanban_from_store({ store: store_topics }); 
+        });
     });
 }

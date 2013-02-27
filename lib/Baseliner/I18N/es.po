@@ -3133,6 +3133,9 @@ msgstr "etiquetas"
 msgid "New Folder"
 msgstr "Crear Carpeta"
 
+msgid "Rename Folder"
+msgstr "Renombrar Carpeta"
+
 msgid "Assigned To Me"
 msgstr "Assignadas a Mí"
 
@@ -4131,7 +4134,13 @@ msgid "File moved"
 msgstr "Fichero movido"
 
 msgid "Folder moved"
-msgstr "Carpeta movido"
+msgstr "Carpeta movida"
+
+msgid "Folder renamed"
+msgstr "Carpeta renombrada"
+
+msgid "Folder name cannot be longer than %1 characters"
+msgstr "La longitud del nombre de carpeta no puede ser mayor que %1"
 
 msgid "Folder deleted"
 msgstr "Carpeta borrada"

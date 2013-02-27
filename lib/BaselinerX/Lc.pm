@@ -98,11 +98,11 @@ sub lc_for_project {
             'icon' => '/static/images/icons/directory.png',
             'menu' => [
                         {
-                          'icon' => '/static/images/icons/folder.gif',
+                          'icon' => '/static/images/icons/folder_new.gif',
                           'text' => 'New Folder',
                           'url' => '/fileversion/new_folder',
                            'eval' => {
-                               handler=>'new_folder',
+                               handler=>'Baseliner.new_folder',
                            },
                         }
                       ],
