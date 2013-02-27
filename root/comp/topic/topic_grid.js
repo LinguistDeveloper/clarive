@@ -250,7 +250,8 @@
         //Baseliner.xx = grid_topics.getView();
         //console.log( grid_topics.getView() );
         for( var i=0; i<cfg.length; i++ ) {
-            if( ! cfg[i].hidden && cfg[i].header != undefined )
+            console.log( cfg[i] );
+            if( ! cfg[i].hidden && ! cfg[i]._checker ) 
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
         // get the grid store data
@@ -561,6 +562,7 @@
     });
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
+        _checker: true,
         singleSelect: false,
         sortable: false,
         checkOnly: true
