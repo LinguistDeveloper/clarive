@@ -427,9 +427,13 @@ around initialize_instance_slot => sub {
                         my $arr = [];
                         my $i = 0;
                         for( @$val ) {
-                           $arr->[ $i ] = $init->( $_, $weaken );
-                           Scalar::Util::weaken( $arr->[$i] ) if $weaken;
-                           $i++;
+                            if( defined $_ && length $_ ) {
+                                $arr->[ $i ] = $init->( $_, $weaken );
+                                Scalar::Util::weaken( $arr->[$i] ) if $weaken;
+                            } else {
+                                $arr->[ $i ] = EmptyCI->new;
+                            }
+                            $i++;
                         }
                         $params->{$init_arg} = $arr;
                         $weaken = 0;
@@ -449,7 +453,11 @@ around initialize_instance_slot => sub {
                         }
                     },
                     'ArrayRef[Num]' => sub {
-                        $params->{$init_arg} = $init->( $val->[0], $weaken );
+                        if( length $val->[0] ) {
+                            $params->{$init_arg} = $init->( $val->[0], $weaken );
+                        } else {
+                            $params->{$init_arg} = EmptyCI->new;
+                        }
                     },
                     'ArrayRef[CI]' => sub {
                         $params->{$init_arg} = [ $init->( $val, $weaken ) ];
