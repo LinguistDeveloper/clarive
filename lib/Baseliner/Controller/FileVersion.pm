@@ -237,4 +237,26 @@ sub move_file : Local {
     $c->forward('View::JSON');
 }
 
+sub move_topic : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $topic_mid = $p->{from_topic_mid} || _fail _loc 'Missing %', 'from_topic_mid';
+    
+    if($p->{from_directory}){
+        my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
+                                                                               id_directory =>  $p->{from_directory},
+                                                                        })->first;
+        $rs->id_directory( $p->{to_directory} );
+        $rs->update();        
+        
+    }else{
+        my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
+                                                                            id_file => $topic_mid,
+                                                                            id_directory =>  $p->{to_directory},
+                                                                        });        
+    }
+    $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
+    $c->forward('View::JSON');
+}
+
 1;

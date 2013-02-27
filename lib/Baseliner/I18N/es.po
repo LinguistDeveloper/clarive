@@ -519,6 +519,9 @@ msgstr "Permisos de Usuario"
 msgid "Views"
 msgstr "Vistas"
 
+msgid "New View"
+msgstr "Nueva Vista"
+
 msgid "Approve"
 msgstr "Aprobar"
 

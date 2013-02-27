@@ -44,7 +44,7 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/common.js', 'js' );
     Baseliner.loadFile( '/site/tabfu.js', 'js' );
     Baseliner.loadFile( '/site/model.js', 'js' );
-    // Baseliner.loadFile( '/site/lifecycle.js', 'js' ); // doesnt work since the lifecycle is global
+    Baseliner.loadFile( '/site/explorer.js', 'js' ); 
     Baseliner.loadFile( '/site/portal/Portal.js', 'js' );
     Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );

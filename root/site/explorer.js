@@ -704,13 +704,17 @@ var delete_folder = function(node){
 // Main event that gets fired everytime a node is right-clicked
 //    builds the menu from node attributes and base menu
 var move_item = function(node_data1, node_data2){
+    console.log( node_data1 );
+    console.log( node_data2 );
     if(node_data2.attributes.data.type != 'file'){
         node_data2.appendChild( node_data1 );
 
         data_from = node_data1.attributes.data;
         data_to = node_data2.attributes.data;
-        Baseliner.ajaxEval( '/fileversion/move_' + data_from.type,{ from_file: data_from.id_file,
+        data_from_type = data_from.type || 'topic';
+        Baseliner.ajaxEval( '/fileversion/move_' + data_from_type,{ from_file: data_from.id_file,
                                                                     from_directory: data_from.id_directory,
+                                                                    from_topic_mid: data_from.topic_mid,
                                                                     to_directory: data_to.id_directory,
                                                                     project: data_to.id_project},
             function(response) {

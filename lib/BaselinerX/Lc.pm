@@ -94,13 +94,16 @@ sub lc_for_project {
             ],
           },
           {
-            'node' => 'Files',
+            'node' => 'Views',
             'icon' => '/static/images/icons/directory.png',
             'menu' => [
                         {
                           'icon' => '/static/images/icons/folder.gif',
                           'text' => 'New Folder',
-                          'url' => '/fileversion/new_folder'
+                          'url' => '/fileversion/new_folder',
+                           'eval' => {
+                               handler=>'new_folder',
+                           },
                         }
                       ],
             'url' => '/fileversion/tree_file_project',
