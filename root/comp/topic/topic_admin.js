@@ -1157,7 +1157,23 @@
 			//attr.params.id_field = attr.id_field;
 			var d = { id: id, id_field: attr.id_field, name: attr.text, params: attr.params, img: attr.icon };
 			
+			
+			console.log(d);
+			console.log(id);
+			console.log(category_fields_store);
+			
 			var r = new category_fields_store.recordType( d, id );
+		
+		
+			//Para evitar que seleccione estado compartido Solicitado	
+			//rowIndex = category_fields_store.find('id', id);
+			//if(rowIndex == -1){
+			//	alert('no existe');
+			//}
+			//else{
+			//	alert('existe');
+			//}
+			
 			category_fields_store.add( r );
 			category_fields_store.commitChanges();
 		}
@@ -1250,7 +1266,6 @@
 					
 					if (!isNaN(attr.id)){
 						if (data.origin == 'template' ){
-						
 							var filter_store = new Baseliner.JsonStore({
 								root: 'data' , 
 								remoteSort: true,
@@ -1299,6 +1314,7 @@
 														});
 									}else{
 										if (attr.meta) { //Casos especiales, como la plantilla listbox
+											alert('Caso Especial');
 											var objTemp = attr.data[combo_system_fields.getValue()];
                                             // clone
                                             objTemp = Ext.util.JSON.decode( Ext.util.JSON.encode( objTemp ) );
@@ -1320,12 +1336,21 @@
 											
 											var d = { id: id, id_field: id_field, name: id_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
 										}else{
-											attr.params.id_field = id_field;
-											attr.params.name_field = id_field;
-											attr.params.bd_field = id_field;
-											attr.params.origin = 'custom';
+											//console.log(attr);
+											//attr.params.id_field = id_field;
+											//attr.params.name_field = id_field;
+											//attr.params.bd_field = id_field;
+											//attr.params.origin = 'custom';
+											var objTemp = attr.params;
+											objTemp = Ext.util.JSON.decode( Ext.util.JSON.encode( objTemp ) );
+											//console.log(objTemp);
+											objTemp.id_field = id_field;
+											objTemp.name_field = id_field;
+											objTemp.bd_field = id_field;
+											objTemp.origin = 'custom';
+											//console.log(attr);
 											
-											var d = { id: id, id_field: id_field, name: id_field, params: attr.params, img: '/static/images/icons/icon_wand.gif' };
+											var d = { id: id, id_field: id_field, name: id_field, params: objTemp, img: '/static/images/icons/icon_wand.gif' };
 										}
 										
 										try{
