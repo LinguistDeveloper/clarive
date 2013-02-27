@@ -412,7 +412,7 @@ around initialize_instance_slot => sub {
             if( $tc->is_a_type_of('ArrayRef') ) {
                 match_on_type $val => (
                     'Undef' => sub {
-                        $params->{$init_arg} = [ EmptyCI->new ];
+                        $params->{$init_arg} = [ BaselinerX::CI::Empty->new ];
                     },
                     'Num|Str' => sub {
                         if( length $val ) {
@@ -420,7 +420,7 @@ around initialize_instance_slot => sub {
                             Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
                             $weaken = 0;
                         } else {
-                            $params->{$init_arg} = [ EmptyCI->new ];
+                            $params->{$init_arg} = [ BaselinerX::CI::Empty->new ];
                         }
                     },
                     'ArrayRef[Num]' => sub {
@@ -431,7 +431,7 @@ around initialize_instance_slot => sub {
                                 $arr->[ $i ] = $init->( $_, $weaken );
                                 Scalar::Util::weaken( $arr->[$i] ) if $weaken;
                             } else {
-                                $arr->[ $i ] = EmptyCI->new;
+                                $arr->[ $i ] = BaselinerX::CI::Empty->new;
                             }
                             $i++;
                         }
@@ -443,20 +443,20 @@ around initialize_instance_slot => sub {
             else {
                 match_on_type $val => (
                     'Undef' => sub {
-                        $params->{$init_arg} = EmptyCI->new;
+                        $params->{$init_arg} = BaselinerX::CI::Empty->new;
                     },
                     'Num|Str' => sub {
                         if( length $val ) {
                             $params->{$init_arg} = $init->( $val, $weaken );
                         } else {
-                            $params->{$init_arg} = EmptyCI->new;
+                            $params->{$init_arg} = BaselinerX::CI::Empty->new;
                         }
                     },
                     'ArrayRef[Num]' => sub {
                         if( length $val->[0] ) {
                             $params->{$init_arg} = $init->( $val->[0], $weaken );
                         } else {
-                            $params->{$init_arg} = EmptyCI->new;
+                            $params->{$init_arg} = BaselinerX::CI::Empty->new;
                         }
                     },
                     'ArrayRef[CI]' => sub {
