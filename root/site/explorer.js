@@ -644,6 +644,13 @@ var new_folder = function(node){
                                                         eval:   {
                                                                 handler: 'delete_folder'
                                                         }
+                                                    },                                                    
+                                                    {
+                                                        text: _('Topics'),
+                                                        icon: '/static/images/icons/topic_one.png',
+                                                        eval:   {
+                                                                handler: 'Baseliner.open_topic_grid_from_folder', //function(n){ alert(n) }
+                                                        }
                                                     }                                                    
                                                     ];
                             
@@ -704,8 +711,6 @@ var delete_folder = function(node){
 // Main event that gets fired everytime a node is right-clicked
 //    builds the menu from node attributes and base menu
 var move_item = function(node_data1, node_data2){
-    console.log( node_data1 );
-    console.log( node_data2 );
     if(node_data2.attributes.data.type != 'file'){
         node_data2.appendChild( node_data1 );
 
@@ -729,4 +734,12 @@ var move_item = function(node_data1, node_data2){
     }else{
         Baseliner.message( _('ERROR'), _('Error moving file') );
     }
+}
+
+Baseliner.open_topic_grid_from_folder = function(n){
+    var name = n.text;
+    var id_directory = n.attributes.data.id_directory;
+    Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_directory: id_directory }, function(res){
+        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Topics: %1', name), { topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
+    });
 }
