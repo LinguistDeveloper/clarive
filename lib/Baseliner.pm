@@ -237,6 +237,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
             keys %cl )
         {
             next if $package =~ /Baseliner$/;
+            next if $package =~ /Baseliner::Moose$/;
             my $meta = $cl{ $package };
             next if ref $meta eq 'Moose::Meta::Role';
             #eval { $package->meta->make_immutable; };
