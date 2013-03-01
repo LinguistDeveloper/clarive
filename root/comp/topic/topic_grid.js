@@ -9,12 +9,19 @@
     var stop_filters = false;
 	var typeApplication = '<% $c->stash->{typeApplication} %>';
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
+    var query_id = '<% $c->stash->{query_id} %>';
+    var base_params = { start: 0, limit: ps };  // for store_topics
+    var category_id = '<% $c->stash->{category_id} %>';
+    if( category_id ) {
+        params.id_category = category_id;
+        base_params.categories = category_id;
+    }
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
     //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList({
-        baseParams: { start: 0, limit: ps },
+        baseParams: base_params,
         listeners: {
             'beforeload': function( obj, opt ) {
                 if( opt !== undefined && opt.params !== undefined )
@@ -1079,9 +1086,14 @@
         ]
     });
     
-    var query_id = '<% $c->stash->{query_id} %>';
-    //var category_id = '<% $c->stash->{category_id} %>';
-    store_topics.load({params:{start:0 , limit: ps, topic_list: params.topic_list, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>', categories: '<% $c->stash->{category_id} %>', typeApplication: typeApplication}});
+    store_topics.load({
+        params: {
+            start:0 , limit: ps,
+            topic_list: params.topic_list,
+            query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>',
+            typeApplication: typeApplication
+        }
+    });
     //store_label.load();
     
     return panel;
