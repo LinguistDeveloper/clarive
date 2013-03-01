@@ -1322,6 +1322,33 @@ Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
     }
 });
 
+Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
+    initComponent : function(){
+        var self = this;
+        Baseliner.CLEditor.superclass.initComponent.call(this);
+        this.on('afterrender', function(){
+            var c = Ext.apply({width:"100%", height:"100%"}, this );
+            this.cleditor = $( this.el.dom ).cleditor(c)[0];
+            this.cleditor.focus();
+        });
+        if( Ext.isChrome ) {
+            setTimeout( function(){  // TODO detect when the CLEditor is loaded
+                self.cleditor.$frame[0].contentDocument.onpaste = function(e){ 
+                    var items = e.clipboardData.items;
+                    var blob = items[0].getAsFile();
+                    var reader = new FileReader();
+                    reader.onload = function(event){
+                        self.cleditor.execCommand('inserthtml',
+                            String.format('<img src="{0}" />', event.target.result) );
+                        //self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
+                    }; 
+                    reader.readAsDataURL(blob); 
+                };
+            }, 800);
+        }
+    }
+});
+
 function returnOpposite(hexcolor) {
     var r = parseInt(hexcolor.substr(0,2),16);
     var g = parseInt(hexcolor.substr(2,2),16);
