@@ -11,6 +11,7 @@
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
     var base_params = { start: 0, limit: ps };  // for store_topics
+    // this grid may be limited for a given category category id 
     var category_id = '<% $c->stash->{category_id} %>';
     if( category_id ) {
         params.id_category = category_id;
@@ -1023,51 +1024,24 @@
         }
     });
     
-    
-//    tree_filters.on('checkchange', function(node_selected, checked) {
-//		alert(1);
-    //    if( stop_filters ) return;
-    //    var swDisable = true;
-    //    var selNodes = tree_filters.getChecked();
-    //    var tot_view_defaults = 1;
-    //    Ext.each(selNodes, function(node){
-    //        var type = node.parentNode.attributes.id;
-    //        if(type == 'V'){
-    //            if(!node.attributes.default){
-    //                button_delete_view.enable();
-    //                swDisable = false;
-    //                return false;
-    //            }else{
-    //                if(selNodes.length == tot_view_defaults){
-    //                    swDisable = true;
-    //                }else{
-    //                    swDisable = false;
-    //                }
-    //            }
-    //        }else{
-    //            swDisable = true;
-    //        }
-    //    });
-    //    if (swDisable)
-    //        button_delete_view.disable();
-    //    if( checked ) {
-    //        loadfilters();
-    //    } else {
-    //        loadfilters( node_selected );
-    //    }
-    //}); 
-        
     // expand the whole tree
     tree_filters.getLoader().on( 'load', function(){
         tree_root.expandChildNodes();
 
         // draw the collapse button onclick event 
         var el_collapse = Ext.get( id_collapse );
-        if( el_collapse )
+        if( el_collapse ){
             el_collapse.dom.onclick = function(){ 
                 panel.body.dom.style.overflow = 'hidden'; // collapsing shows overflow, so we hide it
                 tree_filters.collapse();
             };
+        }
+        // select filter for current category
+        if( params.id_category ){
+            var chi = tree_filters.root.findChild('idfilter', params.id_category, true );
+            if( chi ) chi.getUI().toggleCheck(true);
+
+        }
     });
         
     var panel = new Ext.Panel({
