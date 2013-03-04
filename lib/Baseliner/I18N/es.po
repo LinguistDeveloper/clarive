@@ -150,6 +150,9 @@ msgstr "Ver Stash"
 msgid "Inbox"
 msgstr "Buzón"
 
+msgid "User not found: %1"
+msgstr "Usuario no encontrado: %1"
+
 msgid "User is not active"
 msgstr "El usuario no está activo"
 
