@@ -374,7 +374,7 @@ has debug => qw(is rw isa Bool), default=>sub { $ENV{BASELINER_DEBUG} };
 1;
 
 # Attribute Trait 
-package Baseliner::AT::CI;
+package Baseliner::Role::CI::Trait;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 use Scalar::Util; # 'looks_like_number', 'weaken';
