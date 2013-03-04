@@ -1314,7 +1314,6 @@
 														});
 									}else{
 										if (attr.meta) { //Casos especiales, como la plantilla listbox
-											alert('Caso Especial');
 											var objTemp = attr.data[combo_system_fields.getValue()];
                                             // clone
                                             objTemp = Ext.util.JSON.decode( Ext.util.JSON.encode( objTemp ) );
