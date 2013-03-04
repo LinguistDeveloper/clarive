@@ -322,7 +322,7 @@
         ci_edit( grid.getStore(), grid.getStore().getAt(rowIndex).data );
     });
 
-    // Lifecycle tree node listener on click
+    // Explorer tree node listener on click
     /*  TODO needs to setTimeout on dblclick
     var click_foo = function(n, ev){ 
         if( ! ci_grid.isVisible() ) return;
