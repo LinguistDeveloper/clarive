@@ -1158,10 +1158,6 @@
 			var d = { id: id, id_field: attr.id_field, name: attr.text, params: attr.params, img: attr.icon };
 			
 			
-			console.log(d);
-			console.log(id);
-			console.log(category_fields_store);
-			
 			var r = new category_fields_store.recordType( d, id );
 		
 		
@@ -1429,7 +1425,7 @@
 													{boxLabel: _('Multiple'), inputValue: 'M'}
 												]
 											},											
-											combo_filters,
+											combo_filters
 										]
 							});
 		
@@ -1507,7 +1503,7 @@
 							items:  [ {	columnWidth: .49, items:  tree_fields },
 									  { columnWidth: .02, items: blank_image },
 									  {	columnWidth: .49, items: category_fields_grid },
-									  { xtype: 'hidden', name: 'id_category', value: rec.data.id },
+									  { xtype: 'hidden', name: 'id_category', value: rec.data.id }
 									]  
 						}
 			]
