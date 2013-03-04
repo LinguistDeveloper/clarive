@@ -97,8 +97,8 @@
         });
     };
 
-    // Usage:   var checked = Baseliner.multi_check_data( check_sm, 'mid' );
-    Baseliner.multi_check_data = function(obj, field){
+    // Usage:   var checked = multi_check_data( check_sm, 'mid' );
+    var multi_check_data = function(obj, field){
        if (obj.hasSelection()) {
            var sel = get_valid_selections();
            var data = [];
@@ -111,7 +111,7 @@
     };
 
     var ci_delete = function(){
-        var checked = Baseliner.multi_check_data( check_sm, 'mid' );
+        var checked = multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
             Baseliner.ajaxEval( '/ci/delete', { mids: checked.data }, function(res) {
                 if( res.success ) {
@@ -126,7 +126,7 @@
     };
 
     var ci_ping = function(){
-        var checked = Baseliner.multi_check_data( check_sm, 'mid' );
+        var checked = multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
             Baseliner.ajaxEval( '/ci/ping', { mids: checked.data }, function(res) {
                 if( res.success ) {
@@ -139,7 +139,7 @@
     };
 
     var ci_export = function(format, mode){
-        var checked = Baseliner.multi_check_data( check_sm, 'mid' );
+        var checked = multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
             if( format == 'html' ) {
                 window.open('/ci/export_html?mids=' + checked.data.join('&mids=') + '&mode=' + mode );
