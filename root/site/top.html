@@ -73,10 +73,6 @@
         <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
     -->
 % if( my $theme_dir = $c->stash->{theme_dir} ) {
-%  if( $theme_dir =~ /^\// ) {
     <link rel="stylesheet" type="text/css" href="<% $theme_dir %>/style.css" />
-%  } else {
-    <link rel="stylesheet" type="text/css" href="/static<% $theme_dir %>/style.css" />
-%  }
 % }
 
