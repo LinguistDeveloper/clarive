@@ -6,11 +6,10 @@
 </%args>
 
 (function(params){
-    var swEdit = <% $swEdit == 1 ? 'true' : 'false' %>;
+    var swEdit = <% $swEdit == 1 ? 1 : 0 %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
     var permComment = <% $permissionComment ? 'true' : 'false' %>;
     
-    //alert(permComment);
     
     var category_meta = "<% $category_meta %>";
     var topic_main_class_name;
@@ -24,6 +23,7 @@
         permComment: permComment
     });
 
+    
     if( topic_main_class_name ) {
         eval("var obj = new "+topic_main_class_name+"(params)");
         return obj;

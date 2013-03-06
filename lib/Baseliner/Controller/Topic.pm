@@ -438,7 +438,7 @@ sub view : Local {
     my $id_category;
     
     $c->stash->{ii} = $p->{ii};    
-    $c->stash->{swEdit} = $p->{swEdit};
+    $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
     $c->stash->{permissionEdit} = 0;
     $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
     

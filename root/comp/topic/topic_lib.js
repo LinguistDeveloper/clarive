@@ -498,6 +498,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         tb = self.create_toolbar();
 
+    
         self.detail.on( 'render', function() {
             if (self.topic_mid > 0) self.detail_reload();
             if( self.swEdit ) {
