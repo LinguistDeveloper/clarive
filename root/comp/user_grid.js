@@ -715,8 +715,9 @@
  
     var btn_add = new Ext.Toolbar.Button({
             text: _('New'),
-            icon:'/static/images/icons/add.gif',
-            cls: 'x-btn-text-icon',
+            //icon:'/static/images/icons/add.gif',
+            //cls: 'x-btn-text',
+            iconCls: 'sprite add',
         handler: function() {
         add_edit();
     }
