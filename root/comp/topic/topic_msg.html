@@ -10,6 +10,8 @@
 <%perl>
     use Baseliner::Utils;
     my @tabactive = _array( $comments ) ? ( 1,0 ) : ( 0,1);
+    
+    _log ">>>>>>>>>>>>>>>>>Comentarios: " . _dump $comments;
 </%perl>
 <style>
 .badge-rel {
