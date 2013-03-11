@@ -430,7 +430,7 @@
                 { xtype: 'panel', style: { 'margin-top': '20px' }, layout: 'form', items: [ combo_providers ] },
                 { xtype:'checkboxgroup', name:'readonly', fieldLabel:_('Options'),
                     items:[
-                        { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') },
+                        { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
                     ]
                 }
             ]
@@ -486,7 +486,7 @@
            xtype:'panel',
            defaults:{anchor:'98%'},
            columnWidth:0.50,
-           items: [ grid_category_status, ]};      
+           items: [ grid_category_status ]};      
         
         
         var form_category = new Ext.FormPanel({
@@ -828,7 +828,7 @@
         var render_statuses_to = function (val){
             if( val == null || val == undefined ) return '';
             if( typeof val != 'object' ) return '';
-            var str = ''
+            var str = '';
             for( var i=0; i<val.length; i++ ) { str += String.format('<li>{0}</li>', val[i]); }
             return str;
         }   
@@ -1208,7 +1208,7 @@
 					submitEmptyText: false,
 					params: { 
 						fields: fields,
-						params: params,
+						params: params
 					},
 					success: function(f,a){
 						Baseliner.message(_('Success'), a.result.msg );
