@@ -53,15 +53,24 @@
         }
     });
     
-    var button_create_view = new Ext.Button({
-        icon:'/static/images/icons/add.gif',
+    //var button_create_view = new Ext.Button({
+    //    icon:'/static/images/icons/add.gif',
+    //    tooltip: _('Create view'),
+    //    cls: 'x-btn-icon',
+    //    disabled: false,
+    //    handler: function(){
+    //        add_view();
+    //    }
+    //});
+	
+    var button_create_view = new Baseliner.Grid.Buttons.Add({
+		text:'',
         tooltip: _('Create view'),
-        cls: 'x-btn-icon',
-        disabled: false,
-        handler: function(){
-            add_view();
+        disabled: false,		
+        handler: function() {
+            add_view()
         }
-    });
+    });		
     
     var button_delete_view = new Baseliner.Grid.Buttons.Delete({
         text: _(''),
@@ -150,13 +159,13 @@
                     }
                 }
             ],
-            defaults: { width: 400 },
+            defaults: { anchor: '100%' },
             items: [
                 {
                     xtype:'textfield',
                     fieldLabel: _('Name view'),
                     name: 'name',
-                    width: '100%',
+                    //width: '100%',
                     allowBlank: false
                 }
             ]
