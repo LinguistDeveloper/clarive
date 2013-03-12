@@ -180,14 +180,20 @@
         win.show();     
     };
     
-    var btn_add_status = new Ext.Toolbar.Button({
-        text: _('New'),
-        icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
-        handler: function() {
-                    add_edit_status();
-        }
-    });
+    //var btn_add_status = new Ext.Toolbar.Button({
+    //    text: _('New'),
+    //    icon:'/static/images/icons/add.gif',
+    //    cls: 'x-btn-text-icon',
+    //    handler: function() {
+    //                add_edit_status();
+    //    }
+    //});
+	
+	var btn_add_status = new Baseliner.Grid.Buttons.Add({    
+		handler: function() {
+			add_edit_status();
+		}
+	});	
     
     var btn_edit_status = new Ext.Toolbar.Button({
         text: _('Edit'),
@@ -430,7 +436,7 @@
                 { xtype: 'panel', style: { 'margin-top': '20px' }, layout: 'form', items: [ combo_providers ] },
                 { xtype:'checkboxgroup', name:'readonly', fieldLabel:_('Options'),
                     items:[
-                        { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') },
+                        { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
                     ]
                 }
             ]
@@ -486,7 +492,7 @@
            xtype:'panel',
            defaults:{anchor:'98%'},
            columnWidth:0.50,
-           items: [ grid_category_status, ]};      
+           items: [ grid_category_status ]};      
         
         
         var form_category = new Ext.FormPanel({
@@ -567,14 +573,20 @@
     };
 
 
-    var btn_add_category = new Ext.Toolbar.Button({
-        text: _('New'),
-        icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
-        handler: function() {
-                    add_edit_category();
-        }
-    });
+    //var btn_add_category = new Ext.Toolbar.Button({
+    //    text: _('New'),
+    //    icon:'/static/images/icons/add.gif',
+    //    cls: 'x-btn-text-icon',
+    //    handler: function() {
+    //                add_edit_category();
+    //    }
+    //});
+	
+	var btn_add_category = new Baseliner.Grid.Buttons.Add({    
+		handler: function() {
+			add_edit_category();
+		}
+	});		
     
     var btn_edit_category = new Ext.Toolbar.Button({
         text: _('Edit'),
@@ -828,7 +840,7 @@
         var render_statuses_to = function (val){
             if( val == null || val == undefined ) return '';
             if( typeof val != 'object' ) return '';
-            var str = ''
+            var str = '';
             for( var i=0; i<val.length; i++ ) { str += String.format('<li>{0}</li>', val[i]); }
             return str;
         }   
@@ -1208,7 +1220,7 @@
 					submitEmptyText: false,
 					params: { 
 						fields: fields,
-						params: params,
+						params: params
 					},
 					success: function(f,a){
 						Baseliner.message(_('Success'), a.result.msg );
@@ -1837,10 +1849,45 @@
     });
     
     
-    var btn_add_label = new Ext.Toolbar.Button({
-        text: _('New'),
-        icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
+//    var btn_add_label = new Ext.Toolbar.Button({
+//        text: _('New'),
+//        icon:'/static/images/icons/add.gif',
+//        cls: 'x-btn-text-icon',
+//        handler: function() {
+//            if(label_box.getValue() != ''){
+//				if ( btn_by_project.pressed ) {
+//					if (!projects_box.getValue()){
+//						Ext.Msg.show({
+//                                title: _('Information'), 
+//                                msg: _('There are not projects selected'), 
+//                                buttons: Ext.Msg.OK, 
+//                                icon: Ext.Msg.INFO
+//                            });
+//						return
+//					}       
+//				}
+//				
+//                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl, projects: projects_box.getValue()},
+//                    function(response) {
+//                        if ( response.success ) {
+//                            store_label.load();
+//                            Baseliner.message( _('Success'), response.msg );
+//                        } else {
+//                            //Baseliner.message( _('ERROR'), response.msg );
+//                            Ext.Msg.show({
+//                                title: _('Information'), 
+//                                msg: response.msg , 
+//                                buttons: Ext.Msg.OK, 
+//                                icon: Ext.Msg.INFO
+//                            });     
+//                        }
+//                    }
+//                );
+//            }
+//        }
+//    });
+	
+	var btn_add_label = new Baseliner.Grid.Buttons.Add({    
         handler: function() {
             if(label_box.getValue() != ''){
 				if ( btn_by_project.pressed ) {
@@ -1873,7 +1920,7 @@
                 );
             }
         }
-    });
+	});	
 
     var btn_edit_label = new Ext.Toolbar.Button({
         text: _('Edit'),
@@ -2446,14 +2493,20 @@
         win.show();     
     };
 
-    var btn_add_priority = new Ext.Toolbar.Button({
-        text: _('New'),
-        icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
-        handler: function() {
-                    add_edit_priority();
-        }
-    });
+    //var btn_add_priority = new Ext.Toolbar.Button({
+    //    text: _('New'),
+    //    icon:'/static/images/icons/add.gif',
+    //    cls: 'x-btn-text-icon',
+    //    handler: function() {
+    //                add_edit_priority();
+    //    }
+    //});
+	
+	var btn_add_priority = new Baseliner.Grid.Buttons.Add({    
+		handler: function() {
+			add_edit_priority()
+		}
+	});	
     
     var btn_edit_priority = new Ext.Toolbar.Button({
         text: _('Edit'),

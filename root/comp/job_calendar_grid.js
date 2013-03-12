@@ -44,6 +44,117 @@
             Baseliner.addNewTabComp('/job/calendar?id_cal=' + r.get('id') , r.get('name'), { tab_icon:'/static/images/icons/calendar_view_month.png' } );
         };
         
+        var btn_add = new Baseliner.Grid.Buttons.Add({    
+            handler: function() {
+                //Window
+                var ns_store = new Ext.data.SimpleStore({ 
+                   fields: ['value', 'name', 'type' ], 
+                   data : <% js_dumper( $c->stash->{namespaces} ) %>
+                }); 
+                var bl_store = new Ext.data.SimpleStore({ 
+                   fields: ['value', 'name'], 
+                   data : <% js_dumper( $c->stash->{baselines} ) %>
+                }); 						
+                var sm = grid.getSelectionModel();
+                var copyof = sm.hasSelection() ? sm.getSelected().get('id') : _('[Select a calendar]');
+                var new_cal = new Ext.FormPanel({
+                    url: '/job/calendar_update',
+                    frame: true,
+                    labelWidth: 150, 
+                    defaults: { width: 350 },
+                    buttons: [
+                        {  text: _('OK'),
+                            handler: function(){ 
+                                var ff = new_cal.getForm();
+                                var comboCopy = ff.findField('copyof');
+                                if(!comboCopy.disabled){
+                                    if(comboCopy.getValue().search(/^\d+$/)>=0){
+                                        ff.submit({
+                                            success: function(form, action) { 
+                                                grid.getStore().load();
+                                                win.close(); 
+                                            },
+                                            failure: function(form, action) { Ext.Msg.alert(_('Failure'), action.result.msg); }
+                                        });
+                                    }else{
+                                        Ext.Msg.alert(_('Failure'), "Si quiere realizar una copia de un calendario, debe seleccionar al menos uno de la lista.");
+                                    }
+                                }else{
+                                    ff.submit({
+                                        success: function(form, action) { 
+                                            grid.getStore().load();
+                                            win.close(); 
+                                        },
+                                        failure: function(form, action) { Ext.Msg.alert(_('Failure'), action.result.msg); }
+                                    });										
+                                }
+                            }
+                        },
+                        {  text: _('Cancel') , handler: function(){  win.close() } }
+                    ],
+                    items: [
+                        {  xtype: 'hidden', name: 'action', value: 'create' },
+                        {  xtype: 'textfield', name: 'name', fieldLabel: _('Calendar Name'), allowBlank: false }, 
+                        {  xtype: 'textarea', name: 'description', fieldLabel: _('Description') }, 
+                        {  xtype: 'textfield', name: 'seq', fieldLabel: _('Precedence'), allowBlank: false, value: 100 }, 
+                        {
+                            xtype: 'radiogroup',
+                            fieldLabel: 'Modo de creacion',
+                            items: [
+                                {boxLabel: 'Crear como nuevo', name: 'rbMode', inputValue: '1', checked: true},
+                                {boxLabel: 'Crear como copia de otro', name: 'rbMode', inputValue: '2'}
+                            ],
+                            listeners: {
+                                'change': function(rg,checked){
+                                    var flag = (checked.getGroupValue() == '1');
+                                    var ff = new_cal.getForm();
+                                    var comboCopy = ff.findField('copyof');
+                                    comboCopy.setDisabled(flag);
+                                }
+                            }
+                        },								
+                        {  xtype: 'combo', 
+                                   name: 'copyof', 
+                                   hiddenName: 'copyof',
+                                   fieldLabel: _('Copy of'), 
+                                   disabled: true,
+                                   mode: 'local', 
+                                   editable: false,
+                                   forceSelection: true,
+                                   triggerAction: 'all',
+                                   store: store,
+                                   value: copyof,
+                                   valueField: 'id',
+                                   displayField:'name', 
+                                   allowBlank: false
+                        },								
+                        {  xtype: 'combo', 
+                                   name: 'bl', 
+                                   hiddenName: 'bl',
+                                   fieldLabel: _('Baseline'),
+                                   mode: 'local', 
+                                   editable: false,
+                                   forceSelection: true,
+                                   triggerAction: 'all',
+                                   store: bl_store, 
+                                   valueField: 'value',
+                                   value: '*',
+                                   displayField:'name', 
+                                   allowBlank: false
+                        },	
+                        Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Namespace'), emptyText: _('Global') })
+                    ]
+                });
+                var win = new Ext.Window({
+                    layout: 'fit',
+                    height: 300, width: 550,
+                    title: _('Create Calendar'),
+                    items: new_cal
+                });
+                win.show();
+            }
+        });	        
+        
         // create the grid
         var grid = new Ext.grid.GridPanel({
             title: _('Job Calendars'),
@@ -94,119 +205,120 @@
                     params: {start: 0, limit: ps}
                 }),
 % if( $can_edit ) {
-                new Ext.Toolbar.Button({
-                    text: _('Add'),
-                    icon:'/static/images/icons/add.gif',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        //Window
-                        var ns_store = new Ext.data.SimpleStore({ 
-                           fields: ['value', 'name', 'type' ], 
-                           data : <% js_dumper( $c->stash->{namespaces} ) %>
-                        }); 
-                        var bl_store = new Ext.data.SimpleStore({ 
-                           fields: ['value', 'name'], 
-                           data : <% js_dumper( $c->stash->{baselines} ) %>
-                        }); 						
-                        var sm = grid.getSelectionModel();
-                        var copyof = sm.hasSelection() ? sm.getSelected().get('id') : _('[Select a calendar]');
-                        var new_cal = new Ext.FormPanel({
-                            url: '/job/calendar_update',
-                            frame: true,
-                            labelWidth: 150, 
-                            defaults: { width: 350 },
-                            buttons: [
-                                {  text: _('OK'),
-                                    handler: function(){ 
-                                        var ff = new_cal.getForm();
-                                        var comboCopy = ff.findField('copyof');
-                                        if(!comboCopy.disabled){
-                                            if(comboCopy.getValue().search(/^\d+$/)>=0){
-                                                ff.submit({
-                                                    success: function(form, action) { 
-                                                        grid.getStore().load();
-                                                        win.close(); 
-                                                    },
-                                                    failure: function(form, action) { Ext.Msg.alert(_('Failure'), action.result.msg); }
-                                                });
-                                            }else{
-                                                Ext.Msg.alert(_('Failure'), "Si quiere realizar una copia de un calendario, debe seleccionar al menos uno de la lista.");
-                                            }
-                                        }else{
-                                            ff.submit({
-                                                success: function(form, action) { 
-                                                    grid.getStore().load();
-                                                    win.close(); 
-                                                },
-                                                failure: function(form, action) { Ext.Msg.alert(_('Failure'), action.result.msg); }
-                                            });										
-                                        }
-                                    }
-                                },
-                                {  text: _('Cancel') , handler: function(){  win.close() } }
-                            ],
-                            items: [
-                                {  xtype: 'hidden', name: 'action', value: 'create' },
-                                {  xtype: 'textfield', name: 'name', fieldLabel: _('Calendar Name'), allowBlank: false }, 
-                                {  xtype: 'textarea', name: 'description', fieldLabel: _('Description') }, 
-                                {  xtype: 'textfield', name: 'seq', fieldLabel: _('Precedence'), allowBlank: false, value: 100 }, 
-                                {
-                                    xtype: 'radiogroup',
-                                    fieldLabel: 'Modo de creacion',
-                                    items: [
-                                        {boxLabel: 'Crear como nuevo', name: 'rbMode', inputValue: '1', checked: true},
-                                        {boxLabel: 'Crear como copia de otro', name: 'rbMode', inputValue: '2'}
-                                    ],
-                                    listeners: {
-                                        'change': function(rg,checked){
-                                            var flag = (checked.getGroupValue() == '1');
-                                            var ff = new_cal.getForm();
-                                            var comboCopy = ff.findField('copyof');
-                                            comboCopy.setDisabled(flag);
-                                        }
-                                    }
-                                },								
-                                {  xtype: 'combo', 
-                                           name: 'copyof', 
-                                           hiddenName: 'copyof',
-                                           fieldLabel: _('Copy of'), 
-                                           disabled: true,
-                                           mode: 'local', 
-                                           editable: false,
-                                           forceSelection: true,
-                                           triggerAction: 'all',
-                                           store: store,
-                                           value: copyof,
-                                           valueField: 'id',
-                                           displayField:'name', 
-                                           allowBlank: false
-                                },								
-                                {  xtype: 'combo', 
-                                           name: 'bl', 
-                                           hiddenName: 'bl',
-                                           fieldLabel: _('Baseline'),
-                                           mode: 'local', 
-                                           editable: false,
-                                           forceSelection: true,
-                                           triggerAction: 'all',
-                                           store: bl_store, 
-                                           valueField: 'value',
-                                           value: '*',
-                                           displayField:'name', 
-                                           allowBlank: false
-                                },	
-                                Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Namespace'), emptyText: _('Global') })
-                            ]
-                        });
-                        var win = new Ext.Window({
-                            layout: 'fit',
-                            height: 300, width: 550,
-                            title: _('Create Calendar'),
-                            items: new_cal
-                        });
-                        win.show();
-                    }
-                }),
+                btn_add,
+                //new Ext.Toolbar.Button({
+                //    text: _('Add'),
+                //    icon:'/static/images/icons/add.gif',
+                //    cls: 'x-btn-text-icon',
+                //    handler: function() {
+                //        //Window
+                //        var ns_store = new Ext.data.SimpleStore({ 
+                //           fields: ['value', 'name', 'type' ], 
+                //           data : <% js_dumper( $c->stash->{namespaces} ) %>
+                //        }); 
+                //        var bl_store = new Ext.data.SimpleStore({ 
+                //           fields: ['value', 'name'], 
+                //           data : <% js_dumper( $c->stash->{baselines} ) %>
+                //        }); 						
+                //        var sm = grid.getSelectionModel();
+                //        var copyof = sm.hasSelection() ? sm.getSelected().get('id') : _('[Select a calendar]');
+                //        var new_cal = new Ext.FormPanel({
+                //            url: '/job/calendar_update',
+                //            frame: true,
+                //            labelWidth: 150, 
+                //            defaults: { width: 350 },
+                //            buttons: [
+                //                {  text: _('OK'),
+                //                    handler: function(){ 
+                //                        var ff = new_cal.getForm();
+                //                        var comboCopy = ff.findField('copyof');
+                //                        if(!comboCopy.disabled){
+                //                            if(comboCopy.getValue().search(/^\d+$/)>=0){
+                //                                ff.submit({
+                //                                    success: function(form, action) { 
+                //                                        grid.getStore().load();
+                //                                        win.close(); 
+                //                                    },
+                //                                    failure: function(form, action) { Ext.Msg.alert(_('Failure'), action.result.msg); }
+                //                                });
+                //                            }else{
+                //                                Ext.Msg.alert(_('Failure'), "Si quiere realizar una copia de un calendario, debe seleccionar al menos uno de la lista.");
+                //                            }
+                //                        }else{
+                //                            ff.submit({
+                //                                success: function(form, action) { 
+                //                                    grid.getStore().load();
+                //                                    win.close(); 
+                //                                },
+                //                                failure: function(form, action) { Ext.Msg.alert(_('Failure'), action.result.msg); }
+                //                            });										
+                //                        }
+                //                    }
+                //                },
+                //                {  text: _('Cancel') , handler: function(){  win.close() } }
+                //            ],
+                //            items: [
+                //                {  xtype: 'hidden', name: 'action', value: 'create' },
+                //                {  xtype: 'textfield', name: 'name', fieldLabel: _('Calendar Name'), allowBlank: false }, 
+                //                {  xtype: 'textarea', name: 'description', fieldLabel: _('Description') }, 
+                //                {  xtype: 'textfield', name: 'seq', fieldLabel: _('Precedence'), allowBlank: false, value: 100 }, 
+                //                {
+                //                    xtype: 'radiogroup',
+                //                    fieldLabel: 'Modo de creacion',
+                //                    items: [
+                //                        {boxLabel: 'Crear como nuevo', name: 'rbMode', inputValue: '1', checked: true},
+                //                        {boxLabel: 'Crear como copia de otro', name: 'rbMode', inputValue: '2'}
+                //                    ],
+                //                    listeners: {
+                //                        'change': function(rg,checked){
+                //                            var flag = (checked.getGroupValue() == '1');
+                //                            var ff = new_cal.getForm();
+                //                            var comboCopy = ff.findField('copyof');
+                //                            comboCopy.setDisabled(flag);
+                //                        }
+                //                    }
+                //                },								
+                //                {  xtype: 'combo', 
+                //                           name: 'copyof', 
+                //                           hiddenName: 'copyof',
+                //                           fieldLabel: _('Copy of'), 
+                //                           disabled: true,
+                //                           mode: 'local', 
+                //                           editable: false,
+                //                           forceSelection: true,
+                //                           triggerAction: 'all',
+                //                           store: store,
+                //                           value: copyof,
+                //                           valueField: 'id',
+                //                           displayField:'name', 
+                //                           allowBlank: false
+                //                },								
+                //                {  xtype: 'combo', 
+                //                           name: 'bl', 
+                //                           hiddenName: 'bl',
+                //                           fieldLabel: _('Baseline'),
+                //                           mode: 'local', 
+                //                           editable: false,
+                //                           forceSelection: true,
+                //                           triggerAction: 'all',
+                //                           store: bl_store, 
+                //                           valueField: 'value',
+                //                           value: '*',
+                //                           displayField:'name', 
+                //                           allowBlank: false
+                //                },	
+                //                Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Namespace'), emptyText: _('Global') })
+                //            ]
+                //        });
+                //        var win = new Ext.Window({
+                //            layout: 'fit',
+                //            height: 300, width: 550,
+                //            title: _('Create Calendar'),
+                //            items: new_cal
+                //        });
+                //        win.show();
+                //    }
+                //}),
                 new Ext.Toolbar.Button({
                     text: _('Edit'),
                     icon:'/static/images/icons/edit.gif',

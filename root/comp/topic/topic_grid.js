@@ -53,15 +53,24 @@
         }
     });
     
-    var button_create_view = new Ext.Button({
-        icon:'/static/images/icons/add.gif',
+    //var button_create_view = new Ext.Button({
+    //    icon:'/static/images/icons/add.gif',
+    //    tooltip: _('Create view'),
+    //    cls: 'x-btn-icon',
+    //    disabled: false,
+    //    handler: function(){
+    //        add_view();
+    //    }
+    //});
+	
+    var button_create_view = new Baseliner.Grid.Buttons.Add({
+		text:'',
         tooltip: _('Create view'),
-        cls: 'x-btn-icon',
-        disabled: false,
-        handler: function(){
-            add_view();
+        disabled: false,		
+        handler: function() {
+            add_view()
         }
-    });
+    });		
     
     var button_delete_view = new Baseliner.Grid.Buttons.Delete({
         text: _(''),
@@ -150,13 +159,13 @@
                     }
                 }
             ],
-            defaults: { width: 400 },
+            defaults: { anchor: '100%' },
             items: [
                 {
                     xtype:'textfield',
                     fieldLabel: _('Name view'),
                     name: 'name',
-                    width: '100%',
+                    //width: '100%',
                     allowBlank: false
                 }
             ]
@@ -258,7 +267,7 @@
         //Baseliner.xx = grid_topics.getView();
         //console.log( grid_topics.getView() );
         for( var i=0; i<cfg.length; i++ ) {
-            console.log( cfg[i] );
+            //console.log( cfg[i] );
             if( ! cfg[i].hidden && ! cfg[i]._checker ) 
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
@@ -834,6 +843,7 @@
         for( var i=0; i<selNodes.length; i++ ) {
             var node = selNodes[ i ];
             type = node.parentNode.attributes.id;
+			//if (type == 'C') console.log(node);
 			var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
             switch (type){
                 //Views
@@ -948,6 +958,14 @@
 		}		
     });
 	
+	tree_filters.getLoader().on("beforeload", function(treeLoader, node) {
+		var loader = tree_filters.getLoader();
+		if(category_id){
+			loader.baseParams = {id_category: category_id};	
+		}
+		
+	});	
+	
 	var changing = false;
 	
 	function checkchange(node_selected, checked) {
@@ -1037,11 +1055,11 @@
             };
         }
         // select filter for current category
-        if( params.id_category ){
-            var chi = tree_filters.root.findChild('idfilter', params.id_category, true );
-            if( chi ) chi.getUI().toggleCheck(true);
-
-        }
+        //////if( params.id_category ){
+        //////    var chi = tree_filters.root.findChild('idfilter', params.id_category, true );
+        //////    if( chi ) chi.getUI().toggleCheck(true);
+        //////
+        //////}
     });
         
     var panel = new Ext.Panel({

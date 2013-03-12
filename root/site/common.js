@@ -938,8 +938,9 @@ Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
 	    config = Ext.apply({
 		    text: _('New'),
-		    icon:'/static/images/icons/add.gif',
-		    cls: 'x-btn-text-icon'
+		    //icon:'/static/images/icons/add.gif',
+		    //cls: 'x-btn-text-icon'
+			iconCls: 'sprite add'
 	    }, config);
 	    Baseliner.Grid.Buttons.Add.superclass.constructor.call(this, config);
     }

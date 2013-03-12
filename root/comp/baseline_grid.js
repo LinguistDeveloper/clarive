@@ -224,14 +224,20 @@
 	    win.show();
     };
     
-    var btn_add = new Ext.Toolbar.Button({
-        text: _('New'),
-        icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
+    //var btn_add = new Ext.Toolbar.Button({
+    //    text: _('New'),
+    //    icon:'/static/images/icons/add.gif',
+    //    cls: 'x-btn-text-icon',
+    //    handler: function() {
+    //        add_edit();
+    //    }
+    //});
+	
+    var btn_add = new Baseliner.Grid.Buttons.Add({
         handler: function() {
             add_edit();
-        }
-    });
+        }       
+    }); 	
     
     
     var btn_edit = new Ext.Toolbar.Button({
