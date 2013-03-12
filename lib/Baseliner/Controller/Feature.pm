@@ -153,11 +153,11 @@ sub checkout : Local {
             push @log, $git->diff({ 'name-status'=>1 }, "HEAD..$repo->{version}");
             if( $p->{checkout} ) {
                 my $rollback = '__rollback__';
-                    push @log, $git->RUN('branch', { D=>1 }, $rollback);
+                    push @log, try { $git->RUN('branch', { D=>1 }, $rollback) };
                 push @log, "\n*** Creating rollback branch...";
                     push @log, $git->RUN('checkout', { f=>1, b=>$rollback });
                 push @log, "\n*** Creating stash commit...";
-                    push @log, $git->RUN('stash', 'save', $rollback );
+                    push @log, try { $git->RUN('stash', 'save', $rollback ) };
                 push @log, "\n*** Reassigning ref $repo->{branch} to $repo->{version}...";
                     push @log, $git->RUN('branch', { f=>1 }, $repo->{branch}, $repo->{version} );
                 push @log, "\n*** Checking out $repo->{branch} ($repo->{version}) for feature $repo->{feature}...\n";
