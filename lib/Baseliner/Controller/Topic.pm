@@ -501,6 +501,7 @@ sub view : Local {
             $c->stash->{jobs} = \@jobs;
         }
     }else{
+        _log ">>>>>>>>>>>>>>>>>>>>>>>ID_CATE: " . $p->{new_category_id};
         $id_category = $p->{new_category_id};
         my $category = DB->BaliTopicCategories->find( $id_category );
         $c->stash->{category_meta} = $category->forms;
@@ -512,6 +513,7 @@ sub view : Local {
     }
     
     if( $p->{html} ) {
+        _log "sdddsdsdds";
         my $meta = Baseliner::Model::Topic->get_meta( $topic_mid, $id_category );
         my $data = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
         $meta = get_meta_permissions ($c, $meta, $data);        
