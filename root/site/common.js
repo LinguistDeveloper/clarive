@@ -1323,12 +1323,41 @@ Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
 });
 
 Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
+    fullscreen: false,
     initComponent : function(){
         var self = this;
         Baseliner.CLEditor.superclass.initComponent.call(this);
         this.on('afterrender', function(){
-            var c = Ext.apply({width:"100%", height:"100%"}, this );
-            this.cleditor = $( this.el.dom ).cleditor(c)[0];
+            $.cleditor.buttons.fullscreen = {
+                name: 'fullscreen',
+                image: '../../images/silk/arrow_inout.png',
+                tooltip: 'full screen',
+                title: "Full Screen",
+                command: "fullscreen",
+                popupName: "fullscreen",
+                getEnabled: function(){ return true },
+                buttonClick: function(){
+                    if( self.fullscreen ) {
+                        var main = self.cleditor.$main[0];
+                        $(main).css({ position:'', top:'', left:'', bottom:'', right:'' });
+                        self.$lastParent.appendChild( main );
+                        self.fullscreen = false;
+                    } else {
+                        var main = self.cleditor.$main[0];
+                        $(main).css({ position:'absolute', top:0, left:0, bottom:0, right:0, 'z-index':9999 });
+                        self.$lastParent = main.parentElement;
+                        document.body.appendChild( main );
+                        self.fullscreen = true;
+                    }
+                }
+            };
+            var c = Ext.apply({width:"100%", height:"100%", controls:
+                "bold italic underline strikethrough subscript superscript | font size " +
+                "style | color highlight removeformat | bullets numbering | outdent " +
+                "indent | alignleft center alignright justify | undo redo | " +
+                "rule image link unlink | cut copy paste pastetext | print source fullscreen"
+            }, self );
+            this.cleditor = $( self.el.dom ).cleditor(c)[0];
             this.cleditor.focus();
         });
         if( Ext.isChrome ) {
