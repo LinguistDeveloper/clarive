@@ -52,6 +52,7 @@ my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
 our $VERSION = '6.0';
+$ENV{BASELINER_PARENT_PID} = getppid();
 
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
@@ -366,7 +367,11 @@ sub username {
 
 sub has_action {
     my ($c,$action) = @_;
-    $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
+    # memoization for the same request
+    my $v = $c->stash->{ $c->username };
+    return $v if defined $v;
+    $v = $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
+    return $c->stash->{ $c->username } = $v;
 }
 
 sub is_root {

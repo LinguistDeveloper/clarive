@@ -1,8 +1,4 @@
 (function(){
-            Baseliner.list_versions = function( id, ix ){
-                alert( id + '-' + ix );
-            };
-            
    Baseliner.ProgressBar = Ext.extend( Ext.ProgressBar, {
        border: false,
        style: 'padding: 20px 20px 20px 20px',
@@ -197,7 +193,6 @@
                     pb_update();
                     repo.branch = repo.branch || 'master';
                     var data = {
-                            origin: document.location.origin, 
                             feature: repo.feature,
                             sha: repo.fetch_head,
                             branch: repo.branch  // TODO get local repo current branches
@@ -207,7 +202,7 @@
                     // request file
                     $.ajax({
                         type: 'GET',
-                        url: 'http://patch.vasslabs.com?origin=' + document.location.origin,
+                        url: 'http://patch.vasslabs.com',
                         data: data,
                         crossDomain: true,
                         success: function(res, textStatus, jqXHR) {
@@ -221,7 +216,7 @@
                                 // download file
                                 $.ajax({
                                     type: 'GET',
-                                    url: String.format('http://patch.vasslabs.com/patch/{0}?origin={1}', pull_file, document.location.origin),
+                                    url: String.format('http://patch.vasslabs.com/patch/{0}', pull_file),
                                     crossDomain: true,
                                     success: function(res, textStatus, jqXHR) {
                                         k=0;
@@ -236,9 +231,16 @@
                                                 pb.log( res.log ); 
                                                 pb.message( _('Upload and Fetch finished ok') );
                                             },
-                                            error: function(res){
-                                                pb.log( res.log ); 
-                                                pb.error( res.msg );
+                                            error: function(res, textStatus){
+                                                pb.log( _('status: %1', textStatus ) );
+                                                if( Ext.isObject(res) ) {
+                                                    pb.log( res.log ); 
+                                                    pb.error( res.msg );
+                                                } else if( res ) {
+                                                    pb.log( res );
+                                                } else {
+                                                    pb.log( _('Upload response empty.') );
+                                                }
                                                 self.store.reload();
                                             }
                                         });
@@ -247,6 +249,7 @@
                             } else {
                                 freq = 0;  // stop progress
                                 if( /Refusing to create empty bundle/.test( res.msg ) ) {
+                                    pb.log( res.msg + "\n" );
                                     pb.message( _('Nothing to do. Already up to date.') );
                                 } else {
                                     var err = [
@@ -279,17 +282,11 @@
                 });
             }
         },
-        render_version : function(v,meta,rec,ix){
-            //var el = new Ext.Component({ autoEl:{ tag:'a', on:{ click:function(){alert(1)} } } });
-            //return v;
-            var id = 1; //this.id;
-            return String.format('<a href="javascript:Baseliner.list_versions(\"{1}\",\"{2}\")">{0}</b>', v, id,ix );
-        },
         render_bold : function(v){
             return String.format('<b>{0}</b>', v );
         }
     });
-    var u = new Baseliner.Upgrade({
-    });
+    
+    var u = new Baseliner.Upgrade({ });
     return u;
 })
