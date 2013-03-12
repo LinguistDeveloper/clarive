@@ -450,10 +450,10 @@ sub view : Local {
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
         $c->stash->{category_meta} = $category->forms;
         
-        if ($c->is_root){
-            $c->stash->{permissionEdit} = 1;     
-        }
-        else{
+        #if ($c->is_root){
+        #    $c->stash->{permissionEdit} = 1;     
+        #}
+        #else{
             my $id_category_status = $category->topics->id_category_status;
             #Miramos los estados que tiene en el workflow.
             my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        
@@ -463,12 +463,28 @@ sub view : Local {
             map { $tmp{$_->{id_status_from}} = 'id' } 
                             Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;        
             
-            if ((substr $category->topics->status->type, 0, 1) ne "F" && exists($tmp{$id_category_status})){
-                $c->stash->{permissionEdit} = 1;    
-            }else{
+            if ((substr $category->topics->status->type, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
             }
-        }
+            else{
+                if ($c->is_root){
+                    $c->stash->{permissionEdit} = 1;     
+                }else{
+                    if (exists($tmp{$id_category_status})){
+                        $c->stash->{permissionEdit} = 1;
+                    }
+                    else{
+                        $c->stash->{permissionEdit} = 0;
+                    }
+                }
+            }
+            
+            #if ((substr $category->topics->status->type, 0, 1) ne "F" && exists($tmp{$id_category_status})){
+            #    $c->stash->{permissionEdit} = 1;    
+            #}else{
+            #    $c->stash->{permissionEdit} = 0;
+            #}
+        #}
          
         # comments
         $self->list_posts( $c );  # get comments into stash        
