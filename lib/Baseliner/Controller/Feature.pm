@@ -5,17 +5,72 @@ BEGIN { extends 'Catalyst::Controller' }
 use Git::Wrapper;
 use Try::Tiny;
 
-register 'action.feature.upgrade' => {
-    name => 'Upgrade features and plugins',
+register 'action.upgrade' => {
+    name => 'Upgrade features, plugins and modules',
 };
 
-register 'menu.admin.features' => {
-    action => 'action.feature.upgrade',
-    title => 'Features',
-    label => 'Features',
+register 'menu.admin.upgrade' => {
+    action => 'action.upgrade',
+    title => 'Upgrade',
+    label => 'Upgrade',
     icon  => '/static/images/icons/features/plugin.png',
     url_comp => '/comp/feature.js',
 };
+
+register 'menu.devel.cpan' => {
+    action => 'action.upgrade',
+    title => 'CPAN',
+    label => 'CPAN',
+    icon  => '/static/images/icons/features/plugin.png',
+    url_comp => '/comp/cpan.js',
+};
+
+sub restart_server : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+    if( defined $ENV{BASELINER_PARENT_PID} ) {
+        # normally, this tells a start_server process to restart children
+        kill HUP => $ENV{BASELINER_PARENT_PID};
+    } else {
+        `bali-web restart`;  # TODO this is brute force
+    }
+}
+
+sub upload_cpan : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try { 
+        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        my $dir = $c->path_to('.cpan');
+        $dir->mkpath unless -d "$dir";
+        $p->{filename} ||= 'cpan-' . _md5(rand()) . 'tar.gz';
+        $p->{filepath} = $dir->file( $p->{filename} );
+        open( my $ff, '>', $p->{filepath} )
+            or _fail _loc 'Error opening file %1: %2', $p->{filepath}, $!; 
+        binmode $ff;
+        print $ff from_base64( $p->{data} );
+        close $ff;
+        { success=>\1, msg=>'ok', filepath=>''.$p->{filepath} };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=>"$err", };
+    };
+    $c->forward('View::JSON');
+}
+
+sub upload_file_b64 : Private {
+    my ( $self, $p ) = @_;
+    my $data = $p->{data} or _fail 'Missing data';
+    # convert data
+    $data = from_base64( $data );
+    # dump to file
+    open( my $ff, '>', $p->{filepath} )
+        or _fail _loc 'Error opening file: %1', $!; 
+    binmode $ff;
+    print $ff $data;
+    close $ff;
+}
 
 sub pull : Local {
     my ( $self, $c ) = @_;
@@ -24,9 +79,8 @@ sub pull : Local {
     $c->stash->{json} = try {
         _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
         my $data = $p->{data} or _fail 'Missing data';
-        $data = from_base64( $data );
-        # dump to file
         my $id = $p->{id} // _md5( rand() ) ;
+        # dump to file
         push @log, _loc "upgrade id: %1", $id;
         my $branch = $p->{branch} // _fail _loc 'Missing branch';
         my $filename = "upgrade-$id.bundle";
@@ -35,10 +89,9 @@ sub pull : Local {
             ? $c->path_to( $filename )
             : $c->path_to( 'features', $feature->id, $filename ); 
         push @log, _loc "file: %1", $filepath;
-        open my $ff, '>', "$filepath"; 
-        binmode $ff;
-        print $ff $data;
-        close $ff;
+
+        $self->upload_file_b64({ data=>$data, id=>$id, filepath=>$filepath });
+
         # cd to .git and verify file 
         my $repohome = $p->{feature} eq 'clarive' 
             ? $c->path_to( '.git' )
@@ -123,7 +176,7 @@ sub list_repositories : Local {
             $repo->{versions} = [ 'HEAD', reverse sort $git->tag(), @heads, @patches ];
         }
         @repositories = sort { 
-            $a->{feature} eq 'clarive' ? -1 : $b->{feature} eq 'clarive' ? 1 : $a->{feature} <=> $b->{feature}
+            $a->{feature} eq 'clarive' ? -1 : $b->{feature} eq 'clarive' ? 1 : $a->{feature} cmp $b->{feature}
             } @repositories;
         { success=>\1, msg=>'ok', totalCount=>scalar@repositories, data=>\@repositories };
     } catch {
