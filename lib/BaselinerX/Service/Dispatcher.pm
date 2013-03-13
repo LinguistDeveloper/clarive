@@ -30,6 +30,11 @@ register 'service.dispatcher' => {
 
 sub run {
     my ( $self, $c, $config ) = @_;
+    my $isrunning = qx{ps uwwx|grep perl|grep "bali.pl"|grep "service.dispatcher"|grep -v grep|grep -v $$};
+    if ($isrunning) {
+        _log "Another instance of 'service.dispatcher' is running\n$isrunning";
+        return 1;
+    }
 
     #TODO if 'start' fork and go nohup .. or proc::background my self in windows
     #TODO if 'stop' go die

@@ -46,11 +46,19 @@ fi
 
 if [ "$1" == "start" ];
 then
-	    ren_log
-        echo $message
-        shift
-        exec balid service.dispatcher $*
-        exit 0
+        ret=`ps uwwx|grep perl|grep "bali.pl"|grep "service.dispatcher"|grep -v grep`
+        if [ "$ret" != "" ];
+        then
+           echo "Another instance of 'service.dispatcher' is running"
+           echo $ret
+           exit 1
+        else
+           ren_log
+           echo $message
+           shift
+           exec balid service.dispatcher $*
+           exit 0
+        fi
 fi
 
 if [ "$1" == "tail" ];
