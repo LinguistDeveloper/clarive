@@ -1630,3 +1630,371 @@ Baseliner.button.CSVExport = Ext.extend( Ext.Toolbar.Button, {
             ww.document.close();
         }
 });
+
+Baseliner.Base64 = (function() {
+    "use strict";
+
+    var _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+
+    var _utf8_encode = function (string) {
+
+        var utftext = "", c, n;
+
+        string = string.replace(/\r\n/g,"\n");
+
+        for (n = 0; n < string.length; n++) {
+
+            c = string.charCodeAt(n);
+
+            if (c < 128) {
+
+                utftext += String.fromCharCode(c);
+
+            } else if((c > 127) && (c < 2048)) {
+
+                utftext += String.fromCharCode((c >> 6) | 192);
+                utftext += String.fromCharCode((c & 63) | 128);
+
+            } else {
+
+                utftext += String.fromCharCode((c >> 12) | 224);
+                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                utftext += String.fromCharCode((c & 63) | 128);
+
+            }
+
+        }
+
+        return utftext;
+    };
+
+    var _utf8_decode = function (utftext) {
+        var string = "", i = 0, c = 0, c1 = 0, c2 = 0;
+
+        while ( i < utftext.length ) {
+
+            c = utftext.charCodeAt(i);
+
+            if (c < 128) {
+
+                string += String.fromCharCode(c);
+                i++;
+
+            } else if((c > 191) && (c < 224)) {
+
+                c1 = utftext.charCodeAt(i+1);
+                string += String.fromCharCode(((c & 31) << 6) | (c1 & 63));
+                i += 2;
+
+            } else {
+
+                c1 = utftext.charCodeAt(i+1);
+                c2 = utftext.charCodeAt(i+2);
+                string += String.fromCharCode(((c & 15) << 12) | ((c1 & 63) << 6) | (c2 & 63));
+                i += 3;
+
+            }
+
+        }
+
+        return string;
+    };
+
+    var _hexEncode = function(input) {
+        var output = '', i;
+
+        for(i = 0; i < input.length; i++) {
+            output += input.charCodeAt(i).toString(16);
+        }
+
+        return output;
+    };
+
+    var _hexDecode = function(input) {
+        var output = '', i;
+
+        if(input.length % 2 > 0) {
+            input = '0' + input;
+        }
+
+        for(i = 0; i < input.length; i = i + 2) {
+            output += String.fromCharCode(parseInt(input.charAt(i) + input.charAt(i + 1), 16));
+        }
+
+        return output;
+    };
+
+    var encode = function (input, utf8) {
+        var output = "", chr1, chr2, chr3, enc1, enc2, enc3, enc4, i = 0;
+
+        if( utf8 ) 
+            input = _utf8_encode(input);
+
+        while (i < input.length) {
+
+            chr1 = input.charCodeAt(i++);
+            chr2 = input.charCodeAt(i++);
+            chr3 = input.charCodeAt(i++);
+
+            enc1 = chr1 >> 2;
+            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+            enc4 = chr3 & 63;
+
+            if (isNaN(chr2)) {
+                enc3 = enc4 = 64;
+            } else if (isNaN(chr3)) {
+                enc4 = 64;
+            }
+
+            output += _keyStr.charAt(enc1);
+            output += _keyStr.charAt(enc2);
+            output += _keyStr.charAt(enc3);
+            output += _keyStr.charAt(enc4);
+
+        }
+
+        return output;
+    };
+
+    var decode = function (input, utf8) {
+        var output = "", chr1, chr2, chr3, enc1, enc2, enc3, enc4, i = 0;
+
+        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+
+        while (i < input.length) {
+
+            enc1 = _keyStr.indexOf(input.charAt(i++));
+            enc2 = _keyStr.indexOf(input.charAt(i++));
+            enc3 = _keyStr.indexOf(input.charAt(i++));
+            enc4 = _keyStr.indexOf(input.charAt(i++));
+
+            chr1 = (enc1 << 2) | (enc2 >> 4);
+            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+            chr3 = ((enc3 & 3) << 6) | enc4;
+
+            output += String.fromCharCode(chr1);
+
+            if (enc3 !== 64) {
+                output += String.fromCharCode(chr2);
+            }
+            if (enc4 !== 64) {
+                output += String.fromCharCode(chr3);
+            }
+
+        }
+
+        return utf8 ? _utf8_decode(output) : output;
+    };
+
+    var decodeToHex = function(input) {
+        return _hexEncode(decode(input));
+    };
+
+    var encodeFromHex = function(input) {
+        return encode(_hexDecode(input));
+    };
+
+    return {
+        'encode': encode,
+        'decode': decode,
+        'decodeToHex': decodeToHex,
+        'encodeFromHex': encodeFromHex
+    };
+}());
+
+Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
+   layout: 'card',
+   activeItem: 0,
+   constructor: function(c){
+       var store_remote = new Ext.data.SimpleStore({
+           fields: ['name', 'archive', 'abstract', 'version', 'author', 
+                    'url', 'date', 'release', 'size' ]
+       });
+       
+       this.btns = {
+           download: new Ext.Button({ text:_('Download'), handler: function(){ self.download() } }),
+           install: new Ext.Button({ text:_('Install'), hidden: true, handler: function(){ self.install() } })
+       };
+
+       var tbar = [
+           { text:_('Remote'), pressed: true,
+                icon: '/static/images/icons/cloud.png',
+               allowDepress:false, enableToggle:true, toggleGroup:'cpan_btns', handler: function(){ self.show_remote() } },
+           { text:_('Local'), pressed: false,
+                icon: '/static/images/icons/local.png',
+               allowDepress:false, enableToggle:true, toggleGroup:'cpan_btns', handler: function(){ self.show_local() } },
+           { text:_('Installed'), pressed: false,
+                icon: '/static/images/icons/perl.png',
+               allowDepress:false, enableToggle:true, toggleGroup:'cpan_btns', handler: function(){ self.show_installed() } },
+           new Baseliner.SearchField({ store: store_remote }),
+           this.btns.download,
+           this.btns.install
+       ];
+       Baseliner.CPANDownloader.superclass.constructor.call(this, Ext.apply({ tbar: tbar }, c));
+       var self = this;
+       
+       // ------- Remote CPAN
+       var sm = new Ext.grid.CheckboxSelectionModel();
+       var columns = [
+           sm,
+          { header:_('Name'), dataIndex: 'name' },
+          { header:_('Version'), width: 30, dataIndex: 'version' }, 
+          { header:_('Date'), width: 30, dataIndex: 'date' },
+          { header:_('Size'), width: 30, dataIndex: 'size' },
+          { header:_('Release'), width: 30, dataIndex: 'release' },
+          { header:_('URL'), dataIndex: 'url' }              
+       ];
+       var cm = new Ext.grid.ColumnModel({ columns: columns });
+       
+       self.store_remote = store_remote;
+       self.grid_remote = new Ext.grid.EditorGridPanel({
+           store: self.store_remote, cm: cm, selModel: sm,
+           viewConfig: { forceFit: true }
+       });
+       
+       // ------- Local CPAN
+       self.store_local = new Baseliner.JsonStore({
+           url: '/feature/local_cpan',
+           root: 'data' , 
+           remoteSort: true,
+           totalProperty: 'totalCount', 
+           id: 'id', 
+           fields: ['name', 'archive', 'abstract', 'version', 'file', 
+                    'url', 'date', 'release', 'size' ]
+       });
+       var sm2 = new Ext.grid.CheckboxSelectionModel();
+       self.grid_local = new Ext.grid.EditorGridPanel({
+           store: self.store_local, 
+           viewConfig: { forceFit: true },
+           selModel: sm2,
+           cm : new Ext.grid.ColumnModel({ columns: [
+               sm2,
+              { header:_('Name'), dataIndex: 'name' },
+              { header:_('Version'), width: 30, dataIndex: 'version' }, 
+              { header:_('Date'), width: 30, dataIndex: 'date' },
+              { header:_('Size'), width: 30, dataIndex: 'size' },
+              { header:_('File'), dataIndex: 'file' }
+           ]})
+       });
+       self.grid_installed = new Ext.grid.EditorGridPanel({
+           store: new Baseliner.JsonStore({
+               url: '/feature/installed_cpan', 
+               root: 'data' , 
+               remoteSort: true,
+               totalProperty: 'totalCount', 
+               id: 'id', 
+               fields: ['name', 'version' ]
+           }),
+           viewConfig: { forceFit: true },
+           cm : new Ext.grid.ColumnModel({ columns: [
+              { header:_('Name'), dataIndex: 'name' },
+              { header:_('Version'), width: 30, dataIndex: 'version' }
+           ]})
+       });
+       self.add( self.grid_remote );
+       self.add( self.grid_local );
+       self.add( self.grid_installed );
+       self.store_remote.reload = function(){
+           self.search_cpan(this.baseParams.query);
+       };
+       self.grid_remote.sm = sm;
+   },
+   search_cpan: function(q){
+       var self = this;
+       self.el.mask();
+       $.ajax({
+           type: 'GET',
+           url: 'http://patch.vasslabs.com/cpan_search',
+           data: { q: q },
+           crossDomain: true,
+           success: function(res, textStatus, jqXHR) {
+               var k = 0;
+               self.store_remote.removeAll();
+               
+               Baseliner.message( _('CPAN'), _('Found %1 results', res.results.length ));
+               Ext.each( res.results, function(r){
+                   var rec = new self.store_remote.recordType(r,k++);
+                   self.store_remote.add( rec );
+               });
+               self.store_remote.commitChanges();
+               self.el.unmask();
+           },
+           error: function (res, textStatus, errorThrown) {
+               Baseliner.message(_('Error'), _('CPAN Search failed.') );
+               self.el.unmask();
+           }
+       });           
+   }, 
+   download: function(){
+       var self = this;
+       var sels = self.grid_remote.sm.getSelections();
+       self.el.mask( _('Downloading...') );
+       Ext.each( sels, function(sel){
+           var url = sel.data.url;
+           //url = url.replace(/http:\/\/cpan.metacpan.org\//, '');
+           $.ajax({
+               type: 'GET',
+               //url: String.format('http://patch.vasslabs.com/cpan_download/{0}', url),
+               url: 'http://patch.vasslabs.com/cpan_get',
+               data: { url: sel.data.url },
+               crossDomain: true,
+               success: function(res, textStatus, jqXHR) {
+                   self.el.mask( _('Uploading...') );
+                   // submit to server
+                   /*
+                   var arrBuf = new ArrayBuffer(res.length);
+                    var writer = new Uint8Array(arrBuf);
+                    for (var i = 0, len = res.length; i < len; i++) {
+                        writer[i] = res.charCodeAt(i);
+                    }*/
+                   var filename = sel.data.name + '-' + sel.data.version + '.tar.gz' ;
+                   Baseliner.ajaxEval('/feature/upload_cpan',{ data: res.data, filename: filename }, function(res){
+                       self.el.unmask();
+                       if( res.success ) {
+                           Baseliner.message( _('CPAN'), _('Uploaded file %1 ok', res.filepath ) );
+                       } else {
+                           Baseliner.error( _('CPAN'), _('Error uploading file %1', res.msg ) );
+                       }
+                   });
+               },
+               error: function (res, textStatus, errorThrown) {
+                   Baseliner.message('Error', 'Search CPAN failed.');
+                   //console.log( res );
+               }
+           });
+        });
+   },
+   install: function(){
+       var self = this;
+       var sels = self.grid_remote.sm.getSelections();
+       self.el.mask( _('Installing...') );
+       Ext.each( sels, function(sel){
+           var file = sel.data.file;
+           Baseliner.ajaxEval( '/feature/install', { file: file }, function(res){
+               self.el.unmask();
+               Baseliner.message( _('Install'), res.msg );
+           });
+       });
+   },
+   show_remote : function(){
+       var self = this;
+       self.btns.download.show();
+       self.btns.install.hide();
+       self.getLayout().setActiveItem( self.grid_remote );
+   },
+   show_local : function(){
+       var self = this;
+       self.btns.download.hide();
+       self.btns.install.show();
+       self.grid_local.getStore().reload();
+       self.getLayout().setActiveItem( self.grid_local );
+   },
+   show_installed : function(){
+       var self = this;
+       self.btns.download.hide();
+       self.btns.install.hide();
+       self.grid_installed.getStore().reload();
+       self.getLayout().setActiveItem( self.grid_installed );
+   }
+});

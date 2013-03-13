@@ -5,15 +5,17 @@ BEGIN { extends 'Catalyst::Controller' }
 use Git::Wrapper;
 use Try::Tiny;
 
+our $INSTALL_DIR = '.install';
+
 register 'action.upgrade' => {
     name => 'Upgrade features, plugins and modules',
 };
 
 register 'menu.admin.upgrade' => {
     action => 'action.upgrade',
-    title => 'Upgrade',
-    label => 'Upgrade',
-    icon  => '/static/images/icons/features/plugin.png',
+    title => 'Upgrades',
+    label => 'Upgrades',
+    icon  => '/static/images/icons/upgrade.png',
     url_comp => '/comp/feature.js',
 };
 
@@ -21,7 +23,7 @@ register 'menu.devel.cpan' => {
     action => 'action.upgrade',
     title => 'CPAN',
     label => 'CPAN',
-    icon  => '/static/images/icons/features/plugin.png',
+    icon  => '/static/images/icons/perl.png',
     url_comp => '/comp/cpan.js',
 };
 
@@ -37,16 +39,83 @@ sub restart_server : Local {
     }
 }
 
+sub install : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        my $file = $p->{file};
+        my $ret = `cpanm -n '$file'`;
+        _fail $ret if $?;
+        { success => \1, msg => 'ok', ret => $ret };
+    }
+    catch {
+        my $err = shift;
+        { success => \0, msg => "$err", };
+    };
+    $c->forward('View::JSON');
+}
+
+sub installed_cpan : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        require ExtUtils::Installed;
+        my $inst = ExtUtils::Installed->new();
+        my @modules = $inst->modules();
+        my @data = map {
+            +{
+                name => $_,
+                version => '',
+            }
+        } @modules;
+        
+        { success => \1, msg => 'ok', data => \@data };
+    }
+    catch {
+        my $err = shift;
+        { success => \0, msg => "$err", };
+    };
+    $c->forward('View::JSON');
+}
+
+sub local_cpan : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        my @data;
+        my $dir = _dir( $c->path_to( $c->config->{install_dir} // $INSTALL_DIR ) );
+        $dir->mkpath unless -d $dir;
+        $dir->recurse( callback => sub {
+            my $f = shift;
+            return if -d $f;
+            push @data, {
+                id      => "$f",
+                name    => $f->basename,
+                file    => "$f",
+                version => '',
+            };
+        });
+
+        { success => \1, msg => 'ok', data => \@data };
+    }
+    catch {
+        my $err = shift;
+        { success => \0, msg => "$err", };
+    };
+    $c->forward('View::JSON');
+}
+
 sub upload_cpan : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try { 
         _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
-        my $dir = $c->path_to('.cpan');
+        my $dir = _dir( $c->path_to( $c->config->{install_dir} // $INSTALL_DIR ) );
         $dir->mkpath unless -d "$dir";
         $p->{filename} ||= 'cpan-' . _md5(rand()) . 'tar.gz';
         $p->{filepath} = $dir->file( $p->{filename} );
-        open( my $ff, '>', $p->{filepath} )
+        _debug "CPAN filepath = $p->{filepath}";
+        open( my $ff, '>', "$p->{filepath}" )
             or _fail _loc 'Error opening file %1: %2', $p->{filepath}, $!; 
         binmode $ff;
         print $ff from_base64( $p->{data} );

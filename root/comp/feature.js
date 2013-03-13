@@ -40,10 +40,10 @@
                 //layoutConfig: { activeItem: 0 },
                 activeItem: 0,
                 tbar: [ 
-                    { text: _('Upgrades'), pressed:true,allowDepress:false, enableToggle:true, toggleGroup:'upgrades-btn',
+                    { text: _('Upgrades'), pressed:true,allowDepress:false, enableToggle:true, toggleGroup:'progress-btn',
                         handler:function(){ self.card.getLayout().setActiveItem( self.pull_list ) }  },
                     '-',
-                    { text: _('Log'), allowDepress:false, enableToggle:true, toggleGroup:'upgrades-btn',
+                    { text: _('Log'), allowDepress:false, enableToggle:true, toggleGroup:'progress-btn',
                         handler:function(){ self.card.getLayout().setActiveItem( self.log ) }  }
                 ]
             });
@@ -83,11 +83,11 @@
         }
     });
    
-    Baseliner.Upgrade = Ext.extend( Ext.Panel, {
+    Baseliner.FeatureUpgrade = Ext.extend( Ext.Panel, {
         layout: 'border',
         initComponent: function(){
             var self = this;
-            Baseliner.Upgrade.superclass.initComponent.call(this);
+            Baseliner.FeatureUpgrade.superclass.initComponent.call(this);
             self.store = new Baseliner.JsonStore({
                 autoLoad: true,
                 
@@ -287,6 +287,26 @@
         }
     });
     
-    var u = new Baseliner.Upgrade({ });
-    return u;
+    var features = new Baseliner.FeatureUpgrade();
+    var cpan = new Baseliner.CPANDownloader();
+    
+    var card = new Ext.Panel({
+        layout:'card',
+        activeItem: 0,
+        tbar: [
+            { text: _('Features'),
+                icon: '/static/images/icons/features/plugin.png',
+                pressed: true, allowDepress: false, enableToggle:true, toggleGroup:'upgrades-btn',
+                handler: function(){ card.getLayout().setActiveItem( features ) }
+            },
+            { text: _('Modules'),
+                icon: '/static/images/icons/perl.png',
+                pressed: false, allowDepress: false, enableToggle:true, toggleGroup:'upgrades-btn',
+                handler: function(){ card.getLayout().setActiveItem( cpan ) }
+            }
+        ]
+    });
+    card.add( features );
+    card.add( cpan );
+    return card;
 })

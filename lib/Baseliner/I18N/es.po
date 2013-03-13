@@ -27,6 +27,12 @@ msgstr "Relación"
 msgid "Relationships"
 msgstr "Relaciones"
 
+msgid "Upgrade"
+msgstr "Actualización"
+
+msgid "Upgrades"
+msgstr "Actualizaciones"
+
 msgid "View Applied Slots"
 msgstr "Ver Ventanas Relacionadas"
 
