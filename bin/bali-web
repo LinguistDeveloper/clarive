@@ -36,11 +36,13 @@ if [ ! -e "$LOGDIR" ]; then
     exit 12
 fi
 
-LOGFILENAME=bali_web
+LOGFILENAME=bali-web
 NOW=`perl -MDateTime -le 'print DateTime->now()'`
 LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
 LOGFILE=$LOGDIR/$LOGFILENAME.log
-export PIDFILE=$LOGDIR/bali_web.pid
+export PIDFILE=$LOGDIR/bali-web.pid
+export PIDFILE2=$LOGDIR/bali-starman.pid
+export STATUSFILE=$LOGDIR/bali-web.status
 
 test_char=`echo "\c"`
 nonl='\c'
@@ -66,27 +68,32 @@ if [ "$1" = "start" ]; then
     fi
 
     # purge old logs
-    rm `find $LOGDIR/bali_web_* -mtime +30 2>/dev/null` >/dev/null 2>&1
+    rm `find $LOGDIR/bali-web_* -mtime +30 2>/dev/null` >/dev/null 2>&1
     mv "$LOGFILE" "$LOGFILEOLD" 2>/dev/null
     gzip $LOGFILEOLD 2>/dev/null
     echo "log file: $LOGFILE"
     echo "pid file: $PIDFILE"
+    echo "status file: $STATUSFILE"
 
-    cd $BASELINER_HOME
+    if [ "$BASELINER_HOME" != "" ]; then
+        cd $BASELINER_HOME
+    fi
     #nohup perl script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     # CATALYST_ENGINE=HTTP::Prefork nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     # CATALYST_ENGINE=HTTP::Prefork perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     # nohup perl $BASELINER_SERVER_PERLARGS script/baseliner_server.pl -f $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
     # BASELINER_SERVER=prefork nohup perl $BASELINER_TRACE_MODULE $BASELINER_SERVER_PERLARGS script/baseliner_server.pl $BASELINER_SERVER_ARGS $* > $LOGFILE 2>&1 &
-    export PARENTPID=$$
+    # export PARENTPID=$$
     # perl -e 'local$|=1;print "Waiting for server to start on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && ! -e "$ENV{PIDFILE}" && kill 0, $ENV{PARENTPID}){ print "."; sleep 1 }' 2>/dev/null &
-    nohup starman $@ --preload-app --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 &
+    
+    nohup start_server --status-file "$STATUSFILE" --pid-file "$PIDFILE" --port $BASELINER_SERVER:$BASELINER_PORT $BASELINER_SUPERVISOR_ARGS -- starman $@ --pid "$PIDFILE2" --preload-app $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 &
+
     #  starman --preload-app -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 
     # plackup -s Starman -D --pid "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 
     #  nohup BASELINER_SERVER=prefork bali server --pidfile "$PIDFILE" --port $BASELINER_PORT $BASELINER_SERVER_ARGS > "$LOGFILE" 2>&1 &
-    perl -e 'local$|=1;print "Waiting for server to start on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && ! -e "$ENV{PIDFILE}" ){ print "."; sleep 1 }' 2>/dev/null 
+    perl -e 'local$|=1;print "Waiting for server to start on $ENV{BASELINER_SERVER}:$ENV{BASELINER_PORT}"; $x=60; while( $x-- && ! -e "$ENV{PIDFILE2}" ){ print "."; sleep 1 }' 2>/dev/null 
     echo "done"
-    SERVER_PID=`cat "$PIDFILE"`
+    SERVER_PID=`cat "$PIDFILE2"`
     echo "Server started with pid $SERVER_PID"
     PROCS_NUM=`ps -ef|grep $SERVER_PID|grep -v grep|wc -l`
     echo "$PROCS_NUM proceses started."
@@ -95,9 +102,9 @@ elif [ "$1" = "stop" ]; then
     if [ -e $PIDFILE ]; then
         export SERVER_PID=`cat $PIDFILE`
         echo "Server pid: $SERVER_PID"
-        kill -s INT $SERVER_PID 2>/dev/null
+        kill -s TERM $SERVER_PID 2>/dev/null
         if [ $? = 0 ]; then
-                perl -MProc::Exists=pexists -e 'local$|=1;print "Waiting for server to stop on port $ENV{BASELINER_PORT}"; $x=60; while( $x-- && pexists( "$ENV{SERVER_PID}") ){ print "."; sleep 1 }' 2>/dev/null 
+                perl -MProc::Exists=pexists -e 'local$|=1;print "Waiting for server to stop on $ENV{BASELINER_SERVER}:$ENV{BASELINER_PORT}"; $x=60; while( $x-- && pexists( "$ENV{SERVER_PID}") ){ print "."; sleep 1 }' 2>/dev/null 
                 echo "stopped."
         else
                 echo "Server is not running."
@@ -112,7 +119,7 @@ elif [ "$1" = "kill" ]; then
         echo "Killing Baseliner Server with pid: $SERVER_PID"
         kill -9 $SERVER_PID 2>/dev/null
     fi
-    COUNT1=`ps uwwx | grep perl | grep "bali_web.pid" | grep -v grep | wc -l`
+    COUNT1=`ps uwwx | grep perl | grep "bali-web.pid" | grep -v grep | wc -l`
     COUNT2=`ps uwwx | grep perl | grep "bali server" | grep -v grep | wc -l`
     COUNT3=`ps uwwx | grep "starman" | grep -v grep | wc -l`
     COUNT=`perl -e '$x+=$_ for @ARGV; print $x' $COUNT1 $COUNT2 $COUNT3`
@@ -131,8 +138,14 @@ elif [ "$1" = "kill" ]; then
     fi
 elif [ "$1" = "restart" ]; then
     shift
-    bali-web stop
-    bali-web start $*
+    if [ -e $PIDFILE ]; then
+        SERVER_PID=`cat $PIDFILE`
+        echo "Restarting (HUP) Baseliner Server with pid: $SERVER_PID"
+        kill -HUP $SERVER_PID 2>/dev/null
+    else
+        bali-web stop
+        bali-web start $*
+    fi
 elif [ "$1" = "more" ]; then
     more $LOGFILE
 elif [ "$1" = "log" ]; then
