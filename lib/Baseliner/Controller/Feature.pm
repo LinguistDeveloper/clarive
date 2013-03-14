@@ -54,7 +54,7 @@ sub local_get : Local {
     my $file = $p->{file};
     _fail _loc('File does not exist: %1', $file) unless -e $file;
     my $f = _file( $file );
-    $c->res->cookie->{ $p->{id} } = { value=>1, expires=>time()+100 };
+    $c->res->cookies->{ $p->{id} } = { value=>1, expires=>time()+1000 } if $p->{id};
     $c->stash->{serve_filename} = $f->basename;
     $c->stash->{serve_body} = $f->slurp; 
     $c->forward('/serve_file');

@@ -2003,17 +2003,32 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        var sels = self.grid_local.getSelectionModel().getSelections();
        var files = []; Ext.each( sels, function(s){ files.push( s.data.file ); });
        var fd = document.all.FD || document.all.FrameDownload;
-       var req = function(file, id){ fd.src =  '/feature/local_get?file=' + + '&id=' + id };
+       fd.src =  '/feature/local_get?file=' + files[0];
+   },
+   get_multi: function(){
+       // not working
+       var self = this;
+       var sels = self.grid_local.getSelectionModel().getSelections();
+       var files = []; Ext.each( sels, function(s){ files.push( s.data.file ); });
+       var fd = document.all.FD || document.all.FrameDownload;
+       var req = function(file, id){ fd.src =  '/feature/local_get?file=' + file + '&id=' + id };
        var ix = 0;
+       var first = true;
+       var id=0;
        var check_cookie = function(){
-           if( ix==0 || Baseliner.cookie.get( id ) ) {
+               Baseliner.message( 22,  '=>' + Baseliner.cookie.get( id ) );
+           if( first || Baseliner.cookie.get( id ) ) {
                // download next?
-               if( ix!=0 && ++ix >= files.length ) return;
-               id = (new Date()).getTime() + Math.random();
+               if( ix!=0 && ix >= files.length ) return;
+               // yes
+               var f = files[ix++];
+               Baseliner.message( 11, f );
+               id = "fd_" + (new Date()).getTime() + Math.floor( Math.random() );
                Baseliner.cookie.set( id, null);  // clear cookie
-               req(files[ix], id);
+               req( f, id);
+               first = false;
            }
-           setTimeout( check_cookie, 1000);
+           setTimeout( check_cookie, 1500);
        };
        check_cookie();
    },
