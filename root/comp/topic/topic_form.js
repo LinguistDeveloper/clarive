@@ -13,7 +13,7 @@
         },
         id: unique_id_form,
         border: false,
-        defaults: { anchor:'98%'},
+        //defaults: { anchor:'98%'},
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]
