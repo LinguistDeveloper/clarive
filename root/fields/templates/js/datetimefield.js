@@ -21,7 +21,7 @@ params:
 			name: meta.id_field,
 			value: data ? eval('data.' + meta.bd_field): '',
 			//style: { 'font-size': '16px' },
-			//width: '50px',
+			width: 165,
 			//height: 30,
 			//allowBlank: false,
 			readOnly: meta ? meta.readonly : true,
