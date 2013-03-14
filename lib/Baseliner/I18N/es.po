@@ -33,6 +33,15 @@ msgstr "Actualización"
 msgid "Upgrades"
 msgstr "Actualizaciones"
 
+msgid "Module"
+msgstr "Módulo"
+
+msgid "Modules"
+msgstr "Módulos"
+
+msgid "Get"
+msgstr "Obtener"
+
 msgid "View Applied Slots"
 msgstr "Ver Ventanas Relacionadas"
 

@@ -1591,6 +1591,18 @@ Baseliner.Window = Ext.extend( Ext.Window, {
     }
 });
 
+Baseliner.LogWindow = Ext.extend( Baseliner.Window, {
+    width: 940, height: 400, layout:'fit',
+    modal: true,
+    constructor: function(c){
+        Baseliner.LogWindow.superclass.constructor.call(this, c);
+        var v = c.value;
+        if( Ext.isArray( v ) ) v=v.join("\n");
+        this.add( new Ext.form.TextArea({
+            value: v, readOnly:true, style:'font-family:Consolas, Courier New, Courier, mono' }) );
+    }
+});
+
 Baseliner.button.CSVExport = Ext.extend( Ext.Toolbar.Button, {
         text: _('CSV'),
         icon:'/static/images/download.gif',
@@ -1812,9 +1824,14 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
                     'url', 'date', 'release', 'size' ]
        });
        
+       var ic = '/static/images/icons/downloads_favicon.png';
        this.btns = {
-           download: new Ext.Button({ text:_('Download'), handler: function(){ self.download() } }),
-           install: new Ext.Button({ text:_('Install'), hidden: true, handler: function(){ self.install() } })
+           download: new Ext.Button({ text:_('Download'), icon: ic, handler: function(){ self.download() } }),
+           get: new Ext.Button({ text:_('Get'), icon: ic, hidden: true, handler: function(){ self.get() } }),
+           del: new Ext.Button({ text:_('Delete'), icon: '/static/images/icons/delete.gif', 
+               hidden: true, handler: function(){ self.del() } }),
+           install: new Ext.Button({ text:_('Install'), icon: '/static/images/icons/database_save.png',
+               hidden: true, handler: function(){ self.install() } })
        };
 
        var tbar = [
@@ -1829,6 +1846,8 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
                allowDepress:false, enableToggle:true, toggleGroup:'cpan_btns', handler: function(){ self.show_installed() } },
            new Baseliner.SearchField({ store: store_remote }),
            this.btns.download,
+           this.btns.get,
+           this.btns.del,
            this.btns.install
        ];
        Baseliner.CPANDownloader.superclass.constructor.call(this, Ext.apply({ tbar: tbar }, c));
@@ -1839,10 +1858,10 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        var columns = [
            sm,
           { header:_('Name'), dataIndex: 'name' },
+          { header:_('Release'), width: 30, dataIndex: 'release', renderer: Baseliner.render_bold },
           { header:_('Version'), width: 30, dataIndex: 'version' }, 
           { header:_('Date'), width: 30, dataIndex: 'date' },
-          { header:_('Size'), width: 30, dataIndex: 'size' },
-          { header:_('Release'), width: 30, dataIndex: 'release' },
+          { header:_('Size'), width: 30, dataIndex: 'size', renderer: Baseliner.render_bytes },
           { header:_('URL'), dataIndex: 'url' }              
        ];
        var cm = new Ext.grid.ColumnModel({ columns: columns });
@@ -1871,9 +1890,8 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
            cm : new Ext.grid.ColumnModel({ columns: [
                sm2,
               { header:_('Name'), dataIndex: 'name' },
-              { header:_('Version'), width: 30, dataIndex: 'version' }, 
               { header:_('Date'), width: 30, dataIndex: 'date' },
-              { header:_('Size'), width: 30, dataIndex: 'size' },
+              { header:_('Size'), width: 30, dataIndex: 'size', renderer: Baseliner.render_bytes },
               { header:_('File'), dataIndex: 'file' }
            ]})
        });
@@ -1898,7 +1916,6 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        self.store_remote.reload = function(){
            self.search_cpan(this.baseParams.query);
        };
-       self.grid_remote.sm = sm;
    },
    search_cpan: function(q){
        var self = this;
@@ -1910,25 +1927,28 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
            crossDomain: true,
            success: function(res, textStatus, jqXHR) {
                var k = 0;
-               self.store_remote.removeAll();
-               
-               Baseliner.message( _('CPAN'), _('Found %1 results', res.results.length ));
-               Ext.each( res.results, function(r){
-                   var rec = new self.store_remote.recordType(r,k++);
-                   self.store_remote.add( rec );
-               });
-               self.store_remote.commitChanges();
+               if( res.success ) {
+                   self.store_remote.removeAll();
+                   Baseliner.message( _('CPAN'), _('Found %1 results', res.results.length ));
+                   Ext.each( res.results, function(r){
+                       var rec = new self.store_remote.recordType(r,k++);
+                       self.store_remote.add( rec );
+                   });
+                   self.store_remote.commitChanges();
+               } else {
+                   Baseliner.error(_('Error'), res.msg );
+               }
                self.el.unmask();
            },
            error: function (res, textStatus, errorThrown) {
-               Baseliner.message(_('Error'), _('CPAN Search failed.') );
+               Baseliner.message(_('Error'), _('CPAN Search failed: %1', res) );
                self.el.unmask();
            }
        });           
    }, 
    download: function(){
        var self = this;
-       var sels = self.grid_remote.sm.getSelections();
+       var sels = self.grid_remote.getSelectionModel().getSelections();
        self.el.mask( _('Downloading...') );
        Ext.each( sels, function(sel){
            var url = sel.data.url;
@@ -1965,28 +1985,66 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
            });
         });
    },
-   install: function(){
+   del: function(){
        var self = this;
-       var sels = self.grid_remote.sm.getSelections();
+       var sels = self.grid_remote.getSelectionModel().getSelections();
+       self.el.mask( _('Deleting...') );
+       var files = [];
+       Ext.each( sels, function(s){
+           files.push( s.data.file );
+       });
+       Baseliner.ajaxEval( '/feature/local_delete', { files: Ext.util.JSON.encode( files ) }, function(res){
+           self.el.unmask();
+           Baseliner.message( _('Delete'), res.msg );
+       });
+   },
+   get: function(){
+       var self = this;
+       var sels = self.grid_local.getSelectionModel().getSelections();
+       var files = []; Ext.each( sels, function(s){ files.push( s.data.file ); });
+       var fd = document.all.FD || document.all.FrameDownload;
+       var req = function(file, id){ fd.src =  '/feature/local_get?file=' + + '&id=' + id };
+       var ix = 0;
+       var check_cookie = function(){
+           if( ix==0 || Baseliner.cookie.get( id ) ) {
+               // download next?
+               if( ix!=0 && ++ix >= files.length ) return;
+               id = (new Date()).getTime() + Math.random();
+               Baseliner.cookie.set( id, null);  // clear cookie
+               req(files[ix], id);
+           }
+           setTimeout( check_cookie, 1000);
+       };
+       check_cookie();
+   },
+   install : function(){
+       var self = this;
+       var sels = self.grid_local.getSelectionModel().getSelections();
        self.el.mask( _('Installing...') );
-       Ext.each( sels, function(sel){
-           var file = sel.data.file;
-           Baseliner.ajaxEval( '/feature/install', { file: file }, function(res){
-               self.el.unmask();
-               Baseliner.message( _('Install'), res.msg );
-           });
+       var files = [];
+       Ext.each( sels, function(s){
+           files.push( s.data.file );
+       });
+       Baseliner.ajaxEval( '/feature/install_cpan', { files: Ext.util.JSON.encode( files ) }, function(res){
+           self.el.unmask();
+           Baseliner.message( _('Install'), res.msg );
+           ( new Baseliner.LogWindow({ value: res.log }) ).show();
        });
    },
    show_remote : function(){
        var self = this;
        self.btns.download.show();
        self.btns.install.hide();
+       self.btns.del.hide();
+       self.btns.get.hide();
        self.getLayout().setActiveItem( self.grid_remote );
    },
    show_local : function(){
        var self = this;
        self.btns.download.hide();
        self.btns.install.show();
+       self.btns.del.show();
+       self.btns.get.show();
        self.grid_local.getStore().reload();
        self.getLayout().setActiveItem( self.grid_local );
    },
@@ -1994,6 +2052,8 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        var self = this;
        self.btns.download.hide();
        self.btns.install.hide();
+       self.btns.del.hide();
+       self.btns.get.hide();
        self.grid_installed.getStore().reload();
        self.getLayout().setActiveItem( self.grid_installed );
    }

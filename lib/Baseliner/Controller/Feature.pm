@@ -19,14 +19,6 @@ register 'menu.admin.upgrade' => {
     url_comp => '/comp/feature.js',
 };
 
-register 'menu.devel.cpan' => {
-    action => 'action.upgrade',
-    title => 'CPAN',
-    label => 'CPAN',
-    icon  => '/static/images/icons/perl.png',
-    url_comp => '/comp/cpan.js',
-};
-
 sub restart_server : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
@@ -39,16 +31,70 @@ sub restart_server : Local {
     }
 }
 
-sub install : Local {
+sub local_delete : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        my $file = $p->{file};
-        my $ret = `cpanm -n '$file'`;
-        _fail $ret if $?;
-        { success => \1, msg => 'ok', ret => $ret };
-    }
-    catch {
+        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        my $files = _from_json( $p->{files} );
+        ref $files or _fail 'Missing parameter files';
+        map { unlink $_ if -e $_ } @$files;
+        { success => \1, msg => 'ok', };
+    } catch {
+        my $err = shift;
+        { success => \0, msg => "$err", };
+    };
+    $c->forward('View::JSON');
+}
+
+sub local_get : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+    my $file = $p->{file};
+    _fail _loc('File does not exist: %1', $file) unless -e $file;
+    my $f = _file( $file );
+    $c->res->cookie->{ $p->{id} } = { value=>1, expires=>time()+100 };
+    $c->stash->{serve_filename} = $f->basename;
+    $c->stash->{serve_body} = $f->slurp; 
+    $c->forward('/serve_file');
+}
+
+sub install_cpan : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        my $files = _from_json( $p->{files} );
+        ref $files or _fail 'Missing parameter files';
+        my @log;
+        # load cpanm from its file
+        require App::cpanminus;  # check if it's here
+        require File::Which;  # check if it's here
+        push @log, _loc('Loading cpanm.'), $/;
+        my $cpanm_file = File::Which::which( 'cpanm' );
+        push @log, _loc('cpanm found at %1', $cpanm_file ), $/;
+        my $cpanm = _file( $cpanm_file )->slurp;
+        $cpanm = eval $cpanm;
+        # install one by one
+        map {
+            my $file = $_;
+            _debug( "Installing $file with cpanm..." );
+            push @log, "===========[ Installing $file ]=========", $/;
+            my $ret = `cpanm -n '$file' 2>&1`;  # TODO use cpanm from a module
+            
+            my $app = App::cpanminus::script->new;
+            # patch fix this module
+            $app->parse_options( '-n', $file );
+            $app->doit or do {
+                _fail _loc("Install error: could not install distribution: %1", $file);
+            };
+            push @log, $ret;
+            push @log, "===========[ $file Installed ]=========", $/;
+            _fail $ret if $?;
+        } @$files;
+        { success => \1, msg => 'ok', log=>\@log };
+    } catch {
         my $err = shift;
         { success => \0, msg => "$err", };
     };
@@ -91,8 +137,9 @@ sub local_cpan : Local {
             push @data, {
                 id      => "$f",
                 name    => $f->basename,
+                date    => ''.Class::Date->new( $f->stat->[9] ),
+                size    => $f->stat->[7],
                 file    => "$f",
-                version => '',
             };
         });
 

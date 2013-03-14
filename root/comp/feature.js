@@ -145,7 +145,7 @@
                 autoSizeColumns: true,
                 viewConfig: { forceFit: true },
                 tbar: [
-                    { icon:'/static/images/icons/features/reload.png', handler: function(){ self.store.reload() } }, '-',
+                    { icon:'/static/images/icons/refresh.gif', handler: function(){ self.store.reload() } }, '-',
                     { text:_('Download Patches'), icon:'/static/images/icons/features/database.png', handler: function(){ self.pull() } }, '-',
                     { text:_('Checkout'), icon:'/static/images/icons/features/checkout.png', handler: function(){ self.checkout(true) } }, '-',
                     { text:_('Diff Only'), icon:'/static/images/icons/features/good.png', handler: function(){ self.checkout(false) } }
