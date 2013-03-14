@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 cd $BASELINER_HOME
 
 #export LIBPATH=$BASELINER_LIBPATH:$LIBPATH
@@ -22,7 +22,8 @@ service=$2
 if [ "$1" == "stop" ];
 then
         echo "balid: stopping service $service..."
-        ps uwwx|grep perl|grep "bali.pl"|grep "$service"|grep -v grep|awk '{ print $2 }'|xargs kill
+#        ps uwwx|grep perl|grep "bali.pl"|grep "$service"|grep -v grep|awk '{ print $2 }'|xargs kill
+        ps -ef|grep perl|grep "bali.pl"|grep "$service"|grep -v grep|awk '{ print $2 }'|xargs kill
         echo "balid: killed ok."
         exit 0
 fi

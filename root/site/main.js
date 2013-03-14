@@ -25,6 +25,7 @@ Ext.onReady(function(){
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     Ext.QuickTips.init();
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+    Baseliner.VERSION = '<% $Baseliner::VERSION %>';
     Baseliner.help_menu = new Ext.menu.Menu({});
     Baseliner.help_button = new Ext.Button({
        icon: '/static/images/icons/lightbulb_off.gif',
@@ -32,13 +33,16 @@ Ext.onReady(function(){
        hidden: true,
        menu: Baseliner.help_menu
     });
-    var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
+    var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
     search_box.on('keydown', function(f, e){ search_box.setSize( 300 ); });
+    Baseliner.search_box_go = function(q) {
+        Baseliner.add_tabcomp('/comp/search_results.js', undefined,
+                { query: q || Baseliner.search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+    };
     search_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
-            Baseliner.add_tabcomp('/comp/search_results.js', undefined,
-                { query: search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+            Baseliner.search_box_go();
             search_box.setSize( 120 );
         }
     });
@@ -199,6 +203,11 @@ Ext.onReady(function(){
     });
 
     var tabpanel = Ext.getCmp('main-panel');
+    
+    tabpanel.on('tabchange', function(tp,tab){
+        window.location.hash = '!/tab:' + tab.id;   
+    });
+    
     var first_comp = tabpanel.getComponent( 0 );
     if( first_comp != undefined ) {
         if( first_comp.tab_icon ) 

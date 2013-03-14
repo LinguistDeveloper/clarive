@@ -25,8 +25,10 @@ sub restart_server : Local {
     _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
     if( defined $ENV{BASELINER_PARENT_PID} ) {
         # normally, this tells a start_server process to restart children
+        _log _loc "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}"; 
         kill HUP => $ENV{BASELINER_PARENT_PID};
     } else {
+        _log _loc "Server restart requested. Using bali-web restart";
         `bali-web restart`;  # TODO this is brute force
     }
 }
@@ -63,11 +65,11 @@ sub local_get : Local {
 sub install_cpan : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    my @log;
     $c->stash->{json} = try {
         _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
         my $files = _from_json( $p->{files} );
         ref $files or _fail 'Missing parameter files';
-        my @log;
         # load cpanm from its file
         require App::cpanminus;  # check if it's here
         require File::Which;  # check if it's here
@@ -96,7 +98,7 @@ sub install_cpan : Local {
         { success => \1, msg => 'ok', log=>\@log };
     } catch {
         my $err = shift;
-        { success => \0, msg => "$err", };
+        { success => \0, msg => "$err", log=>\@log };
     };
     $c->forward('View::JSON');
 }

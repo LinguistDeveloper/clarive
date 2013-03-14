@@ -147,7 +147,15 @@
                 tbar: [
                     { icon:'/static/images/icons/refresh.gif', handler: function(){ self.store.reload() } }, '-',
                     { text:_('Download Patches'), icon:'/static/images/icons/features/database.png', handler: function(){ self.pull() } }, '-',
-                    { text:_('Checkout'), icon:'/static/images/icons/features/checkout.png', handler: function(){ self.checkout(true) } }, '-',
+                    { text:_('Checkout'), icon:'/static/images/icons/features/checkout.png', handler: function(){ 
+                         if( self.sm.hasSelection() ) {
+                             Baseliner.confirm( _('Selected features will be overwritten. A server restart may be necessary. If any changes are found, they will be stashed and the current version saved to the __rollback__ branch. Ok?'), 
+                                    function(){
+                                      self.checkout(true)
+                                    }
+                             );
+                         }
+                    } }, '-',
                     { text:_('Diff Only'), icon:'/static/images/icons/features/good.png', handler: function(){ self.checkout(false) } }
                 ],
                 cm: self.cm
@@ -273,7 +281,9 @@
             var self = this;
             if (self.sm.hasSelection()) {
                 self.repos(checkout, function(repos){
+                    self.el.mask();
                     Baseliner.ajaxEval('/feature/checkout', { repos: Ext.util.JSON.encode( repos ), checkout: checkout ? 1 : 0}, function(res){
+                        self.el.unmask();
                         var log = res.log.join("\n");
                         var win = new Baseliner.Window({ width: 940, height: 400, layout:'fit', modal:true, items: [
                             new Ext.form.TextArea({ value: log, readOnly:true, style:'font-family:Consolas, Courier New, Courier, mono' }) ] });
@@ -303,6 +313,15 @@
                 icon: '/static/images/icons/perl.png',
                 pressed: false, allowDepress: false, enableToggle:true, toggleGroup:'upgrades-btn',
                 handler: function(){ card.getLayout().setActiveItem( cpan ) }
+            },
+            '->',
+            { text: _('Restart Server'),
+                icon: '/static/images/icons/server_restart.png',
+                handler: function(){
+                    Baseliner.confirm( _('You are about to attempt to restart the server. Are you sure?'), function(){
+                        $.ajax({ type:'POST', url: '/feature/restart_server' });
+                    });
+                }
             }
         ]
     });
