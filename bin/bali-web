@@ -40,9 +40,11 @@ LOGFILENAME=bali-web
 NOW=`perl -MDateTime -le 'print DateTime->now()'`
 LOGFILEOLD=$LOGDIR/${LOGFILENAME}_${NOW}.log
 LOGFILE=$LOGDIR/$LOGFILENAME.log
-export PIDFILE=$LOGDIR/bali-web.pid
-export PIDFILE2=$LOGDIR/bali-starman.pid
-export STATUSFILE=$LOGDIR/bali-web.status
+
+export BASELINER_ID="$BASELINER_SERVER-$BASELINER_PORT"
+export PIDFILE=$LOGDIR/bali-web-$BASELINER_ID.pid
+export PIDFILE2=$LOGDIR/bali-starman-$BASELINER_ID.pid
+export STATUSFILE=$LOGDIR/bali-web-$BASELINER_ID.status
 
 test_char=`echo "\c"`
 nonl='\c'
