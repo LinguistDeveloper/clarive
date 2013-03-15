@@ -4357,3 +4357,18 @@ msgstr "Campo de fecha"
 
 msgid "Timefield"
 msgstr "Campo de tiempo"
+
+msgid "Notifications"
+msgstr "Notificaciones"
+
+msgid "Recipients"
+msgstr "Destinatarios"
+
+msgid "Scope"
+msgstr "Ámbito"
+
+msgid "SEND"
+msgstr "ENVIAR"
+
+msgid "EXCLUDE"
+msgstr "EXCLUIR"
