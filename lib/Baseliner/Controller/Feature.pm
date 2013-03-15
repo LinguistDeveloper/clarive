@@ -251,6 +251,7 @@ sub list_repositories : Local {
         my @repositories = map { { feature=>$_->name, dir=>$_->path . '/.git' } } @features;
         unshift @repositories, { feature=>'clarive', dir=>$c->path_to('.git') . '' };
         @repositories = grep { -d $_->{dir} } @repositories;
+        
         my $remote = 'patch';
         for my $repo ( @repositories ) {
             my $git = Git::Wrapper->new( $repo->{dir} );
