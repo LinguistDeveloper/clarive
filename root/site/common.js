@@ -3,6 +3,26 @@ Baseliner.cookie = new Ext.state.CookieProvider({
         expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
 });
 
+// File loader
+Baseliner.loadFile = function(filename, filetype){
+
+    var rnd = Math.floor(Math.random()*80000);
+    filename += '?balirnd=' + rnd;
+    if (filetype=="js"){ //if filename is a external JavaScript file
+       var fileref=document.createElement('script')
+       fileref.setAttribute("type","text/javascript")
+       fileref.setAttribute("src", filename)
+    }
+    else if (filetype=="css"){ //if filename is an external CSS file
+       var fileref=document.createElement("link")
+       fileref.setAttribute("rel", "stylesheet")
+       fileref.setAttribute("type", "text/css")
+       fileref.setAttribute("href", filename)
+    }
+    if (typeof fileref!="undefined")
+       document.getElementsByTagName("head")[0].appendChild(fileref)
+};
+
 // In-edit counter - keep the window for closing if it's more than > 0
 Baseliner.is_in_edit = function(){
     var flag = false;
