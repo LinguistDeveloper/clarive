@@ -1030,7 +1030,7 @@ sub save_data {
     
     if( my $cis = $data->{_cis} ) {
         for my $ci ( _array $cis ) {
-            if( length $ci->{ci_mid} && $ci->{_ci_updated} ) {
+            if( length $ci->{ci_mid} && $ci->{ci_action} eq 'update' ) {
                 DB->BaliMasterRel->update_or_create({ rel_type=>'ci_request', from_mid=>$ci->{ci_mid}, to_mid=>$topic->mid });
             }
         }
