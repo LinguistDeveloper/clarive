@@ -840,6 +840,8 @@
         selNodes = tree_filters.getChecked();
         if( selNodes.length > 0 ) button_no_filter.show();
           else button_no_filter.hide();
+		  
+
         for( var i=0; i<selNodes.length; i++ ) {
             var node = selNodes[ i ];
             type = node.parentNode.attributes.id;
@@ -978,14 +980,18 @@
 				changing = false;
 			}
 		
+		
 			if( stop_filters ) return;
+			
 			var swDisable = true;
 			var selNodes = tree_filters.getChecked();
 			var tot_view_defaults = 1;
 			Ext.each(selNodes, function(node){
+				
 				var type = node.parentNode.attributes.id;
 				if(type == 'V'){
-					if(!eval('node.attributes.default')){   //Eval, I.E
+					//if(!eval('node.attributes.default')){   //Eval, I.E
+					if(!node.attributes['default']){   // I.E 8.0
 						button_delete_view.enable();
 						swDisable = false;
 						return false;
@@ -1003,6 +1009,7 @@
 			
 			if (swDisable)
 				button_delete_view.disable();
+				
 			if( checked ) {
 				loadfilters();
 			} else {

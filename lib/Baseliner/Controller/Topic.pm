@@ -105,6 +105,14 @@ sub list : Local {
 sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
+    
+    #my @prueba = (1,2,56787);
+    #$p->{gdi_perfil_usuario_n1} = \@prueba;
+    #
+    #if (ref $p->{gdi_perfil_usuario_n1} eq 'ARRAY'){
+    #    _log ">>>>>>>>>>>>>>>>>>>>>>>Es un array: ";
+    #    ##$p->{gdi_perfil_usuario_n1} = @{$p->{gdi_perfil_usuario_n1}}
+    #}
 
     $p->{username} = $c->username;
     
