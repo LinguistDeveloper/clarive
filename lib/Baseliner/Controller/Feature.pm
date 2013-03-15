@@ -2,7 +2,7 @@ package Baseliner::Controller::Feature;
 use Baseliner::Plug;
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller' }
-use Git::Wrapper;
+use Git::Wrapper 0.025;
 use Try::Tiny;
 
 our $INSTALL_DIR = '.install';
@@ -254,9 +254,9 @@ sub list_repositories : Local {
         my $remote = 'patch';
         for my $repo ( @repositories ) {
             my $git = Git::Wrapper->new( $repo->{dir} );
+            _debug "REPO DIR: $repo->{dir}";
             # find refs and branches available
             my @log = $git->RUN("log",{pretty=>"format:%ad %h %d", abbrev_commit=>1, date=>"short", 1=>1});
-            #_debug @log;
             if( $log[0] =~ /^(\S+)\s+(\S+)\s+\((.*)\)$/ ) {
                 $repo->{date} = $1;
                 $repo->{commit} = $2;
@@ -285,10 +285,9 @@ sub list_repositories : Local {
             $repo->{version} = ( $git->describe({ always=>1, tag=>1 }) )[0];
             # all branches
             #my @heads = map { /^.*\/(.*?)$/; $1 } $git->for_each_ref({ sort=>'-committerdate', format=>'%(refname)' }, "refs/heads" );
-            my @heads = $git->for_each_ref({ sort=>'-committerdate', format=>'%(refname)' }, "refs/heads" );
-            my @patches = $git->for_each_ref({ sort=>'-committerdate', format=>'%(refname)' }, "refs/remotes/$remote" );
+            my @heads = try { $git->for_each_ref({ sort=>'-committerdate', format=>'%(refname)' }, "refs/heads" ) } catch {};
+            my @patches = try { $git->for_each_ref({ sort=>'-committerdate', format=>'%(refname)' }, "refs/remotes/$remote" ) } catch {};
             # list of available tags:
-            #$repo->{tags} = [ 'HEAD', reverse sort $git->tag() ];
             $repo->{versions} = [ 'HEAD', reverse sort $git->tag(), @heads, @patches ];
         }
         @repositories = sort { 
