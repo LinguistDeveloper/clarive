@@ -22,8 +22,8 @@ sub list_notifications : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'me.event_key';
-    $dir ||= 'asc';
+    $sort ||= 'me.id';
+    $dir ||= 'desc';
     $start||= 0;
     $limit ||= 30;
     

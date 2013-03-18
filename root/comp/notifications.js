@@ -284,7 +284,6 @@
         var names_recipients = new Object();
 		
 		var add_edit_recipients = function (){
-
 			var store_carriers = new Baseliner.JsonStore({
 				url: '/notification/list_carriers',
 				fields: ['carrier']   
@@ -327,8 +326,8 @@
 			
 			cb_type_recipient.on('additem', function(combo, value, record) {
 				Ext.getCmp("pnl_recipient").hide();
-				col1_recipient.removeAll();
-				col2_recipient.removeAll();					
+				//col1_recipient.removeAll();
+				//col2_recipient.removeAll();					
 	
 				Baseliner.ajaxEval( '/notification/get_recipients/' + value, {}, function(res) {
 					if(res.success){
@@ -373,8 +372,19 @@
 										}
 									});
 									
-									col1_recipient.add(obj_recipient);
-									col2_recipient.add(chk_recipient);
+									//col1_recipient.add(obj_recipient);
+									//col2_recipient.add(chk_recipient);
+									
+									Ext.getCmp("pnl_recipient").add(
+										{
+											columnWidth: 0.85,
+											items: obj_recipient
+										},
+										{
+											columnWidth: 0.15,
+											labelWidth: 5,
+											items: chk_recipient
+									});
 									Ext.getCmp("pnl_recipient").show();
 									break;
 								case 'textfield':
@@ -404,10 +414,10 @@
 			
 			store_type_recipients.load();		
 		
-			var col1_recipient = new Ext.FormPanel();
-			var col2_recipient = new Ext.FormPanel({
-				defaults: {height: 30}
-			});
+			//var col1_recipient = new Ext.FormPanel();
+			//var col2_recipient = new Ext.FormPanel({
+			//	defaults: {height: 30}
+			//});
 			
 			var add_recipients = function (){
 				if (cb_carriers.getValue() != '' && cb_type_recipient.getValue() != ''){
@@ -421,11 +431,12 @@
 						ids = form_recipients.getForm().findField("obj_recipient").getValue().split(',');	
 					}
 					
+
 					Ext.each(carriers, function(carrier){
 						if(form_recipients.getForm().findField("obj_recipient") && form_recipients.getForm().findField("obj_recipient").xtype == 'textfield'){
 							is_text = true;
 						}
-
+			
 						if(ids.length == 0){
 							id = store_recipients.getCount() + 1;
 							d = { id: id, recipients: carrier, type: _(cb_type_recipient.getValue())};
@@ -434,10 +445,11 @@
 						}
 						
 						Ext.each(ids, function (id_recipient){
+							id_recipient = id_recipient.replace(/^\s+|\s+$/g, '');
 							id = store_recipients.getCount() + 1;
 							if(!id_recipient){
 								var obj_chk_all = form_recipients.getForm().findField("chk_recipients");
-								if(obj_chk_all.getValue()){
+								if(obj_chk_all && obj_chk_all.getValue()){
 									id_recipient = '*';
 									names_recipients[id_recipient] = _('All');
 								}
@@ -459,7 +471,10 @@
 			var form_recipients = new Ext.FormPanel({
 				frame: true,
 				padding: 15,
-				defaults: {height: 30, anchor: '100%'},
+				defaults: {
+					height: 40,
+					anchor: '100%'
+				},
 				items: [
 					{
 						layout:'column',
@@ -484,18 +499,19 @@
 						hidden: true,
 						defaults:{
 							layout:'form'
-						},
-						items:[
-							{
-								columnWidth: 0.85,
-								items: col1_recipient
-							},
-							{
-								columnWidth: 0.15,
-								labelWidth: 5,
-								items: col2_recipient
-							}
-						]
+						}
+						//,
+						//items:[
+						//	{
+						//		columnWidth: 0.85,
+						//		items: col1_recipient
+						//	},
+						//	{
+						//		columnWidth: 0.15,
+						//		labelWidth: 5,
+						//		items: col2_recipient
+						//	}
+						//]
 					}					
 				],
 				buttons: [
