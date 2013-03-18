@@ -22,8 +22,8 @@ sub list_notifications : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'me.id';
-    $dir ||= 'desc';
+    $sort ||= 'me.event_key';
+    $dir ||= 'asc';
     $start||= 0;
     $limit ||= 30;
     
@@ -32,8 +32,8 @@ sub list_notifications : Local {
     my $where={};
     $query and $where = query_sql_build(
         query   => $query,
-        fields  => [qw( id id_event action dest_to dest_cc dest_bcc event_scope is_active
-                        username, template_path, digest_time, digest_date, digest_freq)]
+        fields  => [qw( id event_key action data is_active username
+                    template_path digest_time digest_date digest_freq)]
     );
     
     my $rs = DB->BaliNotification->search($where, 
@@ -44,7 +44,17 @@ sub list_notifications : Local {
     
     my $pager = $rs->pager;
     $cnt = $pager->total_entries;
-    my @rows = $rs->hashref->all;
+    #my @rows = $rs->hashref->all;
+    
+    my @rows;
+    while( my $r = $rs->next ) {
+        push @rows, {
+            event_key   => $r->event_key,
+            data        => _load($r->data),
+            action      => $r->action,
+            is_active   => $r->is_active,
+        };        
+    }
     
     $c->stash->{json} = { data => \@rows, totalCount=>$cnt };
     $c->forward("View::JSON");
@@ -92,9 +102,8 @@ sub get_recipients : Local {
         given ($type) {
             when ('Users') {
                 $obj = 'combo';
-                @recipients = map {+{id => $_->{username}, name => $_->{username}, description => $_->{realname} ? $_->{realname}:''  }}
-                            Baseliner->model('Baseliner::BaliUser')->search(undef,{select=>['username','realname'], order_by=>{-asc=>['realname']}})->hashref->all;
-                
+                @recipients = map {+{id => $_->{mid}, name => $_->{username}, description => $_->{realname} ? $_->{realname}:''  }}
+                            Baseliner->model('Baseliner::BaliUser')->search(undef,{select=>['mid','username','realname'], order_by=>{-asc=>['realname']}})->hashref->all;
             }
             when ('Roles') {
                 $obj = 'combo';
@@ -104,6 +113,11 @@ sub get_recipients : Local {
             when ('Emails') {
                 $obj = 'textfield';
                 @recipients = ({id => 'Emails', name => 'Emails'});
+            }
+            when ('Actions') {
+                $obj = 'combo';
+                @recipients = map {+{id => $_, name => $_, description => ''  }}
+                            Baseliner->registry->starts_with('action.');
             }            
         }
         $c->stash->{json} = { data=> \@recipients, obj=> $obj ,success=>\1 };
@@ -125,6 +139,40 @@ sub get_scope : Local {
         $c->stash->{json} = { data => $scope, success=>\1 }; 
     }catch{
         $c->stash->{json} = { msg=> _loc('Se ha producido un error'), success=>\0 };
+    };
+    
+    $c->forward('View::JSON');
+}
+
+sub save_notification : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my %scope;
+    my $recipient;
+    my $data;
+    
+    try{
+        if($p->{event}){
+            if (Baseliner->registry->get( $p->{event} )->notify){
+                my $scope = Baseliner->registry->get( $p->{event} )->notify->{scope};
+                
+                map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? [['*',_loc('All')]]: _decode_json($p->{$_ . '_names'}) : undef } _array $scope;
+            }
+        }
+        $data->{scopes} = \%scope;
+        $data->{recipients} = _decode_json($p->{recipients});
+        
+        my $notification = Baseliner->model('Baseliner::BaliNotification')->create(
+            {
+                event_key   => $p->{event},
+                action      => $p->{action},
+                data        => _dump $data,
+            }
+        );
+        
+        $c->stash->{json} = { success => \1, msg => 'Notification added' }; 
+    }catch{
+        $c->stash->{json} = { success => \0, msg => 'Error adding notification' }; 
     };
     
     $c->forward('View::JSON');

@@ -4372,3 +4372,18 @@ msgstr "ENVIAR"
 
 msgid "EXCLUDE"
 msgstr "EXCLUIR"
+
+msgid "Notification added"
+msgstr "Notificación añadida"
+
+msgid "Error adding notification"
+msgstr "Error añadiendo notificación"
+
+msgid "Scopes"
+msgstr "Ámbitos"
+
+msgid "project"
+msgstr "Proyecto"
+
+msgid "category_status"
+msgstr "Categoría/Estado"

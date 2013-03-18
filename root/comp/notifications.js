@@ -1,8 +1,7 @@
 (function(params){
     var ps = 30;
 	
-	var fields = ['id', 'id_event', 'action','dest_to', 'dest_cc',
-				  'dest_bcc', 'event_scope', 'is_active', 'username',
+	var fields = ['id', 'event_key', 'action','data', 'is_active', 'username',
 				  'template_path', 'digest_time', 'digest_date', 'digest_freq'];
 	
 	
@@ -23,35 +22,35 @@
     });
 	
     var ptool = new Ext.PagingToolbar({
-            store: store_notifications,
-            pageSize: ps,
-            plugins:[
-                new Ext.ux.PageSizePlugin({
-                    editable: false,
-                    width: 90,
-                    data: [
-                        ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
-                        ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
-                    ],
-                    beforeText: _('Show'),
-                    afterText: _('rows/page'),
-                    value: ps,
-                    listeners: {
-                        'select':function(c,rec) {
-                            ps = rec.data.value;
-                            if( rec.data.value < 0 ) {
-                                ptool.afterTextItem.hide();
-                            } else {
-                                ptool.afterTextItem.show();
-                            }
-                        }
-                    },
-                    forceSelection: true
-                })
-            ],
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
+		store: store_notifications,
+		pageSize: ps,
+		plugins:[
+			new Ext.ux.PageSizePlugin({
+				editable: false,
+				width: 90,
+				data: [
+					['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
+					['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+				],
+				beforeText: _('Show'),
+				afterText: _('rows/page'),
+				value: ps,
+				listeners: {
+					'select':function(c,rec) {
+						ps = rec.data.value;
+						if( rec.data.value < 0 ) {
+							ptool.afterTextItem.hide();
+						} else {
+							ptool.afterTextItem.show();
+						}
+					}
+				},
+				forceSelection: true
+			})
+		],
+		displayInfo: true,
+		displayMsg: _('Rows {0} - {1} of {2}'),
+		emptyMsg: _('There are no rows available')
     });
 	
 	var store_actions = new Baseliner.JsonStore({
@@ -96,25 +95,41 @@
 			tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{key}</strong> {description}</span></div></tpl>'
 		});
 		
+		
+		var names_projects = new Object();
+		var names_categories = new Object();
+		
 		cb_events.on('additem', function(combo, value, record) {
-			col1.removeAll();
-			col2.removeAll();			
+			var panel = Ext.getCmp('pnl_projects');
+			if(panel) panel.destroy();
+			panel = Ext.getCmp('pnl_categories');
+			if(panel) panel.destroy();
+			
 			Baseliner.ajaxEval( '/notification/get_scope?key=' + value, {}, function(res) {
 				if(res.success){
 					var scopes = new Array();
 					scopes = res.data;
 					if(scopes){
+						var indice = 1;
+						var columns;
 						for (var i = 0; i < scopes.length; i++){
 							switch (scopes[i]){
 								case 'project':
 									var store_projects = new Baseliner.store.UserProjects({ id: 'id', baseParams: { include_root: true } });
 		
 									var cb_projects = new Baseliner.model.Projects({
+										id: 'project',
+										name: 'project',
+										hiddenName: 'project',
 										store: store_projects
 									});
 									
+									cb_projects.on('additem', function(combo, value, record) {
+										names_projects[value] = record.data.name;
+									});									
+									
 									var chk_projects = new Ext.form.Checkbox({
-										name:'projects',
+										name:'project',
 										boxLabel:_('All'),
 										listeners: {
 											check: function(obj, checked){
@@ -128,8 +143,25 @@
 										}
 									});
 									
-									col1.add(cb_projects);
-									col2.add(chk_projects);
+									columns = {
+										id: 'pnl_projects',
+										layout:'column',
+										defaults:{
+											layout:'form'
+										},
+										items:[
+											{
+												columnWidth: 0.85,
+												items: cb_projects
+											},
+											{
+												columnWidth: 0.15,
+												labelWidth: 5,
+												items: chk_projects
+											}
+										]
+									};
+									form_notification.insert(indice++,columns);
 									break;
 								case 'category':
 									var store_categories = new Baseliner.Topic.StoreCategory({
@@ -143,12 +175,13 @@
 									//var tpl_field = new Ext.XTemplate( '<tpl for=".">',
 									//	'<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
 									//	'</tpl>' );		
-							
+									
 									var cb_categories = new Ext.ux.form.SuperBoxSelect({
 										mode: 'local',
 										triggerAction: 'all',
 										forceSelection: true,
 										fieldLabel: _('Categories'),
+										id: 'category',
 										name: 'category',
 										hiddenName: 'category',
 										displayField : 'name',
@@ -157,9 +190,13 @@
 										tpl: tpl_list
 										//displayFieldTpl: tpl_field
 									});
-
+									
+									cb_categories.on('additem', function(combo, value, record) {
+										names_categories[value] = record.data.name;
+									});										
+									
 									var chk_categories = new Ext.form.Checkbox({
-										name:'categories',
+										name:'category',
 										boxLabel:_('All'),
 										listeners: {
 											check: function(obj, checked){
@@ -173,34 +210,44 @@
 										}
 									});
 									
-									col1.add(cb_categories);
-									col2.add(chk_categories);
-									form_notification.doLayout();
+									columns = {
+										id: 'pnl_categories',
+										layout:'column',
+										defaults:{
+											layout:'form'
+										},
+										items:[
+											{
+												columnWidth: 0.85,
+												items: cb_categories
+											},
+											{
+												columnWidth: 0.15,
+												labelWidth: 5,
+												items: chk_categories
+											}
+										]
+									};
+									form_notification.insert(indice++,columns);
 									store_categories.load();
 									break;											
 							}
+							
 						}
-						
 						form_notification.doLayout();
 					}
-					
 				}
 				else {
 					var div_msg = Ext.get("msg");
 					div_msg.createChild('<div id="msg_text" class="alert"><a class="close" data-dismiss="alert">×</a><span><b>' +  res.msg + '</b></span></div>');
 					div_msg.show();
 				}				
-				
 			})
 		});
 		
+        var names_recipients = new Object();
 		
-		var col1 = new Ext.FormPanel();
-		var col2 = new Ext.FormPanel({
-			defaults: {height: 30}
-		});
-		
-        var add_edit_recipients = function (){
+		var add_edit_recipients = function (){
 
 			var store_carriers = new Baseliner.JsonStore({
 				url: '/notification/list_carriers',
@@ -250,7 +297,7 @@
 				Baseliner.ajaxEval( '/notification/get_recipients/' + value, {}, function(res) {
 					if(res.success){
 						if(res.data.length > 0){
-							
+							var obj_recipient;
 							switch (res.obj){
 								case 'combo':
 									var store_recipients1 = new Ext.data.JsonStore({
@@ -258,17 +305,20 @@
 										data: res.data
 									});
 									
-									cb_recipient = new Ext.ux.form.SuperBoxSelect({
+									obj_recipient = new Ext.ux.form.SuperBoxSelect({
+										id:'obj_recipient',
 										mode: 'local',
 										triggerAction: 'all',
 										forceSelection: true,
 										editable: false,
-										name: 'recipients',
-										hiddenName: 'recipients',
 										displayField : 'name',
 										valueField: 'id',
 										store: store_recipients1,
 										tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><div style="font-size:16px;"><strong>{name}</strong></div>{description}</span></div></tpl>'
+									});
+									
+									obj_recipient.on('additem', function(combo, value, record) {
+										names_recipients[value] = record.data.name;
 									});
 									
 									var chk_recipient = new Ext.form.Checkbox({
@@ -277,29 +327,30 @@
 										listeners: {
 											check: function(obj, checked){
 												if(checked){
-													cb_recipient.setValue('');
-													cb_recipient.disable();
+													obj_recipient.setValue('');
+													obj_recipient.disable();
 												}else{
-													cb_recipient.enable();	
+													obj_recipient.enable();	
 												}
 											}
 										}
 									});
 									
-									col1_recipient.add(cb_recipient);
+									col1_recipient.add(obj_recipient);
 									col2_recipient.add(chk_recipient);
-									
 									Ext.getCmp("pnl_recipient").show();
 									break;
 								case 'textfield':
+									Ext.getCmp("pnl_recipient").destroy();
 									form_recipients.add(
-										{ 	name: res.data[0].name,
+										{ 	id:'obj_recipient',
 											xtype: 'textfield',
 											emptyText: 'test1@clarive.com, test2@clarive.com, ...'
 										}
 									)
 									break;
 							}
+							
 							form_recipients.doLayout();
 						}
 					}
@@ -317,6 +368,32 @@
 			var col2_recipient = new Ext.FormPanel({
 				defaults: {height: 30}
 			});
+			
+			var add_recipients = function (){
+				if (cb_carriers.getValue() != '' && cb_type_recipient.getValue() != ''){
+					var id, d, r;
+					var carriers = cb_carriers.getValue().split(',');
+					var ids = form_recipients.getForm().findField("obj_recipient").getValue().split(',');
+					var is_text = false;
+					Ext.each(carriers, function(carrier){
+						if(form_recipients.getForm().findField("obj_recipient").xtype == 'textfield'){
+							is_text = true;
+						}
+						Ext.each(ids, function (id_recipient){
+							id = store_recipients.getCount() + 1;
+							d = { id: id, recipients: carrier, type: cb_type_recipient.getValue(), items_id: id_recipient, items_name: is_text ? id_recipient : names_recipients[id_recipient] };
+							r = new store_recipients.recordType( d, id );
+							store_recipients.add( r );						
+							
+							
+						});
+					});
+
+					store_recipients.commitChanges();
+					win_recipients.close();
+				}
+				delete names_recipients;
+			};
 		
 			var form_recipients = new Ext.FormPanel({
 				frame: true,
@@ -362,7 +439,7 @@
 				],
 				buttons: [
 					{  text: _('Cancel') , handler: function(){  win_recipients.close(); } },
-					{  text: _('Accept') , handler: function(){  win_recipients.close(); } }
+					{  text: _('Accept') , handler: function(){  add_recipients(); } }
 				]
 			});
 			
@@ -380,7 +457,18 @@
 			win_recipients.show();			
 		}
 		
-		var store_recipients = new Baseliner.JsonStore();
+		var store_recipients = new Baseliner.JsonStore({
+			root: 'data' , 
+			remoteSort: true,
+			id: 'id', 
+			fields: [
+				{  	name: 'recipients',
+					name: 'type',
+					name: 'items_id',
+					name: 'items_name'
+				}
+			]														   
+		});
 
 		var btn_add_recipients = new Baseliner.Grid.Buttons.Add({
 			handler: function() {
@@ -388,17 +476,28 @@
 			}
 		});
 
-		var btn_edit_recipients = new Baseliner.Grid.Buttons.Edit({
+		var btn_delete_recipients = new Baseliner.Grid.Buttons.Delete({
 			handler: function() {
-				
+				var sm = grid_recipients.getSelectionModel();
+				if (sm.hasSelection()) {
+					var sel = sm.getSelected();
+					grid_recipients.getStore().remove(sel);
+					btn_delete_recipients.disable();
+				} else {
+					Baseliner.message( _('ERROR'), _('Select at least one row'));    
+				};				
 			}
 		});
 		
-		var btn_delete_recipients = new Baseliner.Grid.Buttons.Delete({
-			handler: function() {
-				
-			}
-		});		
+		var delete_field_row = function( id_grid, id ) {
+			var g = Ext.getCmp( id_grid );
+			var s = g.getStore();
+			s.each( function(row){
+				if( row.data.id == id ) {
+					s.remove( row );
+				}
+			});
+		};		
 		
 		var grid_recipients = new Ext.grid.GridPanel({
 			style: 'border: solid #ccc 1px',
@@ -408,25 +507,75 @@
 			hideHeaders: true,
 			viewConfig: {
 				headersDisabled: true,
-				//enableRowBody: true,
 				forceFit: true
 			},
 			tbar: [
 				btn_add_recipients,
-				btn_edit_recipients,
 				btn_delete_recipients
 			],			
 			columns: [
-				//{ header: '', width: 20, dataIndex: 'id_field', renderer: function(v,meta,rec,rowIndex){ return '<img style="float:right" src="' + rec.data.img + '" />'} },
-				{ header: _('Name'), width: 240, dataIndex: 'name'},
-				{ width: 40, dataIndex: 'id',
-						renderer: function(v,meta,rec,rowIndex){
-							return '<a href="javascript:Baseliner.delete_field_row(\''+grid_recipients.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
-						}			  
-				}
+				{ width: 50, dataIndex: 'recipients'},
+				{ width: 50, dataIndex: 'type'},
+				{ width: 200, dataIndex: 'items_name'}
 			]
 		});
 		
+		grid_recipients.on('rowclick', function(grid, rowIndex, e) {
+			btn_delete_recipients.enable();
+		});		
+		
+		var save_notification = function (){
+			var form = form_notification.getForm();
+			form.url = '/notification/save_notification';
+			
+			if (form.isValid()) {
+				var params = new Object();
+				params = {};
+				
+				if(form.findField('project') && form.findField('project').getValue() != ''){
+					var projects = form.findField('project').getValue().split(',');
+					var projects_names = new Array();
+					Ext.each(projects, function(project){
+						projects_names.push([project, names_projects[project]]);
+					});
+					
+					params.project_names = Ext.util.JSON.encode( projects_names );
+				};
+				
+				delete names_projects;
+				
+				if(form.findField('category') && form.findField('category').getValue() != ''){
+					var categories = form.findField('category').getValue().split(',');
+					var categories_names = new Array();
+					Ext.each(categories, function(category){
+						categories_names.push([category, names_categories[category]]);
+					});
+					
+					params.category_names = Ext.util.JSON.encode( categories_names );
+				};
+				
+				delete names_categories;
+				
+				var recipients = new Object();
+				store_recipients.each( function(row){
+					if (!recipients[row.data.recipients]) recipients[row.data.recipients] = {};
+					if (!recipients[row.data.recipients][row.data.type]) recipients[row.data.recipients][row.data.type] = new Array();
+					recipients[row.data.recipients][row.data.type].push([row.data.items_id, row.data.items_name]);
+				});
+				params.recipients = Ext.util.JSON.encode( recipients );
+						
+				form.submit({
+					//params: {	project_names: Ext.util.JSON.encode( projects_names ),
+					//			recipients: Ext.util.JSON.encode( recipients )
+					//		},
+					params: params,					
+					success: function(f,a){
+						
+						Baseliner.message(_('Success'), a.result.msg );
+					}
+				});
+			}
+		}
 		
 		var form_notification = new Ext.FormPanel({
 			frame: true,
@@ -455,28 +604,15 @@
 					]
 				},				
 				{
-					layout:'column',
-					defaults:{
-						layout:'form'
-					},
-					items:[
-						{
-							columnWidth: 0.85,
-							items: col1
-						},
-						{
-							columnWidth: 0.15,
-							labelWidth: 5,
-							items: col2
-						}
-					]
-				},
-				{
 					xtype: 'panel',
 					fieldLabel: _('Recipients'),
 					items: grid_recipients
 				}				
-			]
+			],
+			buttons: [
+				{  text: _('Close') , handler: function(){  win.close(); } },
+				{  text: _('Accept') , handler: function(){  save_notification(); } }
+			]			
 		});	
         
         if(rec){
@@ -498,7 +634,51 @@
         win.show();
     };
 	
-	
+    var btn_start = new Ext.Toolbar.Button({
+        text: _('Activate'),
+        icon:'/static/images/start.gif',
+        disabled: true,
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var rec = sm.getSelected();
+                var id = rec.data.id;
+                Baseliner.ajaxEval( '/notification/change_active', { id: id, action: 'start' },
+                    function(resp){
+                        Baseliner.message( _('Success'), resp.msg );
+                        store.load();
+                    }
+                );
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));   
+            };
+        }
+    });
+
+    var btn_stop = new Ext.Toolbar.Button({
+        text: _('Deactivate'),
+        icon:'/static/images/stop.gif',
+        disabled: true,
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to deactivate the chain') + ' <b>' + sel.data.name  + '</b>?', 
+                function(btn){ 
+                    if(btn=='yes') {
+                        Baseliner.ajaxEval( '/notification/change_active', { id: sel.data.id, action: 'stop' },
+                            function(resp){
+                                Baseliner.message( _('Success'), resp.msg );
+                                store.load();
+                            }
+                        );
+                    }
+                }
+            );
+        }
+    });    
+
     var btn_add = new Baseliner.Grid.Buttons.Add({
         handler: function() {
 			add_edit();
@@ -523,7 +703,61 @@
 		checkOnly: true
 	});	
     
-    var grid = new Ext.grid.GridPanel({
+    
+	var show_recipients = function(value,metadata,rec,rowIndex,colIndex,store) {
+		var items = new Array();
+        var ret = '<table>';
+		for(var carrier in value.recipients) {
+			ret += '<th>' + carrier + '</th>';
+			for(var type in value.recipients[carrier]) {
+				ret += '<tr>';
+				ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(type) + '</td>';
+				for(var i=0;i < value.recipients[carrier][type].length;i++){
+					items.push(value.recipients[carrier][type][i][1]);
+				}
+				ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + items.join(',') + '</code></td>'
+				ret += '</tr>';
+				items = [];
+			}
+		}
+		ret += '</table>';
+		return ret;
+    };
+	
+	var show_scopes = function(value,metadata,rec,rowIndex,colIndex,store) {
+		var items = new Array();
+        var ret = '<table>';
+		for(var scope in value.scopes) {
+			ret += '<tr>';
+			ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(scope) + '</td>';
+			if(value.scopes[scope]){
+				for(var i=0;i < value.scopes[scope].length;i++){
+					items.push(value.scopes[scope][i][1]);
+				}
+			}
+			ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + items.join(',') + '</code></td>'
+			ret += '</tr>';
+			items = [];
+		}
+		ret += '</table>';
+		return ret;
+    };
+	
+    var show_active = function(value,metadata,rec,rowIndex,colIndex,store) {
+    var img =
+        value == '1' ? 'drop-yes.gif' : 'close-small.gif';
+        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
+    };
+	
+    var show_action = function(value,metadata,rec,rowIndex,colIndex,store) {
+        return _(value);
+    };	
+	
+    var show_event = function(value, metadata, rec, rowIndex, colIndex, store) {
+        return "<div style='font-weight:bold; font-size: 14px;'>" + value + "</div>" ;
+    };
+	
+	var grid = new Ext.grid.GridPanel({
 		sm: check_notifications_sm,
         store: store_notifications,
         stripeRows: true,
@@ -532,17 +766,19 @@
         },
         columns:[
 			check_notifications_sm,
-            { header: _('Event'), width: 160, dataIndex: 'id_event' },
-            { header: _('Recipients'), width: 100, dataIndex: 'recipients' },
-			{ header: _('Scope'), width: 100, dataIndex: 'event_scope' },
-			{ header: _('Action'), width: 60, dataIndex: 'action' },
-			{ header: _('Digest time'), width: 60, dataIndex: 'digest_time' },
-			{ header: _('Digest date'), width: 60, dataIndex: 'digest_date' },
-			{ header: _('Digest frequency'), width: 60, dataIndex: 'digest_freq' },
-			{ header: _('Active'), width: 20, dataIndex: 'is_active' }
+            { header: _('Event'), width: 150, dataIndex: 'event_key', renderer: show_event },
+            { header: _('Recipients'), width: 200, dataIndex: 'data', renderer: show_recipients },
+			{ header: _('Scopes'), width: 200, dataIndex: 'data', renderer: show_scopes },
+			{ header: _('Action'), width: 50, dataIndex: 'action', renderer: show_action },
+			//{ header: _('Digest time'), width: 60, dataIndex: 'digest_time' },
+			//{ header: _('Digest date'), width: 60, dataIndex: 'digest_date' },
+			//{ header: _('Digest frequency'), width: 60, dataIndex: 'digest_freq' },
+			{ header: _('Active'), width: 40, dataIndex: 'is_active', renderer: show_active  }
         ],
         tbar: [ 
             search_field,
+            btn_start,
+            btn_stop,
 			btn_add,
 			btn_edit,
 			btn_delete
