@@ -992,6 +992,32 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     }
 });
 
+Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+		    text: _('Activate'),
+		    icon:'/static/images/start.gif',
+		    cls: 'x-btn-text-icon',			
+		    disabled: true
+			//iconCls: 'sprite delete'
+	    }, config);
+	    Baseliner.Grid.Buttons.Start.superclass.constructor.call(this, config);
+    }
+});
+
+Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+			text: _('Deactivate'),
+			icon:'/static/images/stop.gif',
+			disabled: true,
+			cls: 'x-btn-text-icon'
+				//iconCls: 'sprite delete'
+	    }, config);
+	    Baseliner.Grid.Buttons.Stop.superclass.constructor.call(this, config);
+    }
+});
+
 // Baseliner.gantt = function( format ) {
 //     var divTag = document.createElement("div");  
 //     divTag.setAttribute("align", "center");           
