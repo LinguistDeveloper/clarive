@@ -281,6 +281,35 @@
 			})
 		});
 		
+		var store_templates = new Baseliner.JsonStore({
+			url: '/notification/get_templates',
+			root: 'data',
+			fields: ['name','path']   
+		});
+		
+		store_templates.on('load', function(ds, records, o){
+			if(rec && rec.data){
+				cb_templates.setValue( rec.data.template_path );            
+			}
+		});		
+		
+		store_templates.load();		
+		
+		var cb_templates = new Ext.ux.form.SuperBoxSelect({
+			mode: 'local',
+			triggerAction: 'all',
+			forceSelection: true,
+			editable: false,
+			fieldLabel: _('Template'),
+			name: 'template',
+			hiddenName: 'template',
+			displayField : 'name',
+			valueField: 'path',
+			store: store_templates,
+			singleMode: true,
+			tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> </span></div></tpl>'
+		});		
+		
         var names_recipients = new Object();
 		
 		var add_edit_recipients = function (){
@@ -325,7 +354,7 @@
 			});
 			
 			cb_type_recipient.on('additem', function(combo, value, record) {
-				Ext.getCmp("pnl_recipient").hide();
+				//Ext.getCmp("pnl_recipient").hide();
 				//col1_recipient.removeAll();
 				//col2_recipient.removeAll();					
 	
@@ -685,7 +714,8 @@
 								}
 						}
 					]
-				},				
+				},
+				cb_templates,
 				{
 					xtype: 'panel',
 					fieldLabel: _('Recipients'),

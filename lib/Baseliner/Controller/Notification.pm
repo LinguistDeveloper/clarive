@@ -49,11 +49,12 @@ sub list_notifications : Local {
     my @rows;
     while( my $r = $rs->next ) {
         push @rows, {
-            id          => $r->id,
-            event_key   => $r->event_key,
-            data        => _load($r->data),
-            action      => $r->action,
-            is_active   => $r->is_active,
+            id              => $r->id,
+            event_key       => $r->event_key,
+            data            => _load($r->data),
+            action          => $r->action,
+            is_active       => $r->is_active,
+            template_path   => $r->template_path
         };        
     }
     
@@ -169,10 +170,11 @@ sub save_notification : Local {
         
         my $notification = Baseliner->model('Baseliner::BaliNotification')->update_or_create(
             {
-                id          => $p->{id},
-                event_key   => $p->{event},
-                action      => $p->{action},
-                data        => _dump $data,
+                id              => $p->{id},
+                event_key       => $p->{event},
+                action          => $p->{action},
+                data            => _dump ($data),
+                template_path   => $p->{template}
             }
         );
         
@@ -232,5 +234,24 @@ sub change_active : Local {
     
     $c->forward('View::JSON');
 }
+
+
+sub get_templates : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    
+    try{
+        my @templates_dirs = map { $_->root . '/email/*.html' } Baseliner->features->list;
+        push @templates_dirs, $c->path_to( 'root/email' ) . '/*.html';
+        my @templates = map {  map { +{name => _file($_)->{file}, path => $_ }} glob "$_"}  @templates_dirs;
+
+        $c->stash->{json} = { data => \@templates, success=>\1 }; 
+    }catch{
+        $c->stash->{json} = { data => {}, msg=> _loc('Se ha producido un error'), success=>\0 };
+    };
+    
+     $c->forward('View::JSON');
+}
+
 
 1;
