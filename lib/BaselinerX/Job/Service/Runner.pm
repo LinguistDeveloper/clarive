@@ -193,7 +193,7 @@ sub job_run {
     my $goto_next = 0;
 
     try {
-        _throw( _loc("Error running Job %1", $jobid ) ) if( $config->{args}{signal} eq 'die' ); ## Finished externally
+        _throw( _loc("Job %1 cancelled externally", $jobid ) ) if( $config->{args}{signal} eq 'die' ); ## Finished externally
 
         # load job object
         my $r = $self->row;

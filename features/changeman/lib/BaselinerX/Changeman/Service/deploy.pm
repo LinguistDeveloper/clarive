@@ -65,6 +65,11 @@ sub execute {
       }
    }
 
+   if ( $p->{siteerror} ) {
+      $job->suspend (status=>'SITEERROR', message=>_loc("Waiting for user manual action"), level=>'error');
+      return 0;
+   }
+
    if ( $job_stash->{origin} eq 'changeman' && ! $p->{finalize} ) {
       $job->suspend (status=>'WAITING', message=>_loc("Waiting for JES spool outputs"), level=>'info');
       return 0;
@@ -171,6 +176,23 @@ sub finalize {
    bali_rs('Job')->find( $runner->jobid )->stash(_dump $job_stash);
    $runner->job_stash($job_stash);
    $self->execute({config=>$config, job=>$runner, finalize=>1});
+}
+
+sub siteerror {
+   my ($self, $p) = @_;
+   my $runner     = $p->{runner};
+   my $pkg        = $p->{pkg};
+   my $rc         = $p->{rc};
+   my $config     = Baseliner->model('ConfigStore')->get( 'config.changeman.connection' );
+
+   my $job_stash=_load bali_rs('Job')->find( $runner->jobid )->stash;
+   foreach my $package (_array $job_stash->{contents}) {
+      next if $package->{item} !~ m{$pkg$};
+      $package->{returncode}=$rc;
+   }
+   bali_rs('Job')->find( $runner->jobid )->stash(_dump $job_stash);
+   $runner->job_stash($job_stash);
+   $self->execute({config=>$config, job=>$runner, siteerror=>1});
 }
 
 sub job_elements {

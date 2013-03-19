@@ -81,7 +81,7 @@ sub creaPase {  ## $self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, 
        if( defined ( my $activeJob = Baseliner->model('Jobs')->is_in_active_job( "changeman.package/$package" ) ) ) {
            _debug _loc("Package <b>%1</b> is in active job <b>%2</b>", $package,$activeJob->id) if $activeJob;
 ## Si hay actividad de un paquete en un pase posterior y el pase activo no tiene ficheros pendientes, se cancela el job.
-           if ($activeJob->step eq 'RUN' || $activeJob->status eq 'WAITING') {
+           if ($activeJob->step eq 'RUN' || $activeJob->status =~ m{WAITING|SITEERROR}) {
                my $data=Baseliner->model('Repository')->get(ns=>"CHM_jobdata/".$activeJob->id);
                my $file = ( _array $data->{procFiles} )[0];
                my $key=$1 if $file =~ m{CHM\.PSCM\.P\.(\w+)\..*}; 
@@ -186,11 +186,40 @@ sub run_once {
 
       my ($key, $app, $pkg, $scm, $date, $site, $jobname, $trash, $filename)=($1, $2, sprintf("%-4s%s",$2,$3), $4, "$5-$6-$7 $8:$9", $10, $11, $12, $file->{filename}->stringify )
           if $file->{filename}->stringify =~ m{CHM\.PSCM\.P\.(\w+)\.(\w+)\..(\d+)\.(.)(\d{2})(\d{2})(\d+)\..(\d{2})(\d{2})\d+\.(\w+)\.(\S+?)(\..*)};
-
+      my $fichero=$1 if $file->{filename}->stringify =~ m{(CHM\.PSCM\.P\..*)$trash};
       my $pase=$date;
       $pase=tr{-:}{};
 
       my $bl=$chmConfig->{stateMap}->{$site};
+
+      if( $key eq 'REVERT'){
+          if (defined ( my $activeJob = Baseliner->model('Jobs')->is_in_active_job( "changeman.package/$pkg" ) ) ) {
+              _debug _loc("Package <b>%1</b> is in active job <b>%2</b>", $pkg,$activeJob->id) if $activeJob;
+              if (!$activeJob->rollback && ( $activeJob->status eq 'SITEERROR')) {
+                  $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$activeJob->id, same_exec=>0, exec=>'last', silent=>1 );
+                  $logrow=$runner->logger->error( _loc( "Revert made for package %1 in site %2", $pkg, $site ), more=>'jes' );
+                  my $ddname="/$pkg/$site/$key";
+                  my $path="/$pkg/$site/ZZZ";
+                  my $logdata=$logrow->bali_log_datas->create({
+                      id_log=>$logrow->id,
+                      data=>'REVERT',
+                      name=>$ddname,
+                      path=>$path,
+                      type=>'jes',
+                      len=>2,
+                      id_job=>$activeJob->id
+                  });
+                  $activeJob->status("MUST_DIE");
+                  $activeJob->update;
+                  _log "Cancelando ".$activeJob->id." porque se ha recibido fichero REVERT";
+                  $self->logCHMFile({filename=>$fichero, complete_filename=>$filename, key=>$key});
+                  $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+              }
+          } else {
+              ## Si no pertenece a ningÃºn job en ejecucion lo quitamos
+              $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
+          }
+      }
 
       if ($file->{jobname} eq 'USERID') {
          if ($scm eq 'A') {
@@ -199,6 +228,7 @@ sub run_once {
             $self->updateRelationship ($key, "job/".int($pase));
          } else {
             ($RC, $RET) = $bx->execute("cat ".$file->{filename}->stringify);
+            next if $RC; ## Nos protegemos de errores de cat.
             $user = $1 if $RET =~ m{^(\w+).*};
             $user= $case eq 'uc' ? uc($user) : ( $case eq 'lc' ) ? lc($user) : $user;
 
@@ -206,6 +236,7 @@ sub run_once {
             #Baseliner->model('Baseliner::BaliRelationship')->update_or_create({type=>'changeman.id.to.job', from_ns=>$key, to_ns=>qq{user/$user}});
             $self->updateRelationship ( $key, qq{user/$user});
          }
+         my $cont=$self->logCHMFile({filename=>$fichero, complete_filename=>$filename, key=>$key});
          #push @filestoclean, $file->{filename}->stringify;
          $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
          _debug $fprefix . "CLEANED";
@@ -265,6 +296,8 @@ sub run_once {
              next; ## No se procesa el fichero hasta que tenga un usuario asignado para poder crear el pase.
          }
       }
+      ## Actualizamos usuario en log files.
+      my $cont=Baseliner->model('Baseliner::BaliChmFiles')->search({key=>$key})->update({username=>$user}) if $user;
 
       if (ref $job) { ## Tengo creado el job en Baseliner, lo recupero
          $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$jobID, same_exec=>0, exec=>'last', silent=>1 );
@@ -275,20 +308,9 @@ sub run_once {
          $job_stash=_load $job->stash;
          $type=$job->type;
 
-
-## Para evitar incidencias con relanzamiento, se pasa info a balirepo y se quita del stash
-=head
-         my @procFiles = _array $job_stash->{procFiles};
-         push @procFiles, $file->{filename}->stringify;
-         $job_stash->{procFiles}=[_unique (@procFiles)];
-         $job->stash(_dump $job_stash);
-=cut
-         $self->UpdateRepo($jobID, 'procFiles', [$file->{filename}->stringify]);
-         $self->UpdateRepo($jobID, 'procSites', [$site]) if ($site ne 'XXXX');
-
-         if (($job->step eq 'RUN' && $job->status eq 'WAITING') || $job->step =~ m{POST|END} ) {
+         if (($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) || $job->step =~ m{POST|END} ) {
             $logrow = bali_rs('Log')->find( $job_stash->{JESrow} ) if $job_stash->{JESrow};
-            
+
             unless ( $logrow ) {
                 try { ## Intentamos recuperar idlog del log, por si existe...
                     $logrow = bali_rs('Log')->find( { more=>'jes', id_job=>$runner->jobid} ); 
@@ -317,15 +339,16 @@ sub run_once {
             next if ! $runner;
             $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>PROMOTION</b> job for package <b>%2</b> at <b>%3</b>", $user, $pkg, $date ) );
          } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## jobname de fin de promote OK or KO
-            if ($job->step eq 'RUN' && $job->status eq 'WAITING') {
-               if ( $1 eq 'OK' ) {
+            my $status=$1;
+            if ($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) {
+               if ( $status eq 'OK' ) {
                   $row=$runner->logger->info( _loc( "Promotion for package <b>%1</b> to <b>%2</b> finished successfully", $pkg, $site ) );
                } else {
                   $row=$runner->logger->error( _loc( "Promotion for package <b>%1</b> to <b>%2</b> finished with error", $pkg, $site ) );
                   $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
                   _debug $fprefix . "CLEANED";
                }
-               BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
+               BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$status});
             }
          } else {
             _debug $fprefix . "JOB exists and not FIN - skipped";
@@ -337,15 +360,16 @@ sub run_once {
             next if ! $runner;
             $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>DEMOTION</b> job for package <b>%2</b> at <b>%3</b>", $user, $pkg, $date ) );
          } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## jobname de fin de demote OK or KO
-            if ($job->step eq 'RUN' && $job->status eq 'WAITING') {
-               if ( $1 eq 'OK' ) {
+            my $status=$1;
+            if ($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) {
+               if ( $status eq 'OK' ) {
                   $row=$runner->logger->info( _loc( "Demotion for package <b>%1</b> to <b>%2</b> finished successfully", $pkg, $site ) );
                } else {
                   $row=$runner->logger->error( _loc( "Demotion for package <b>%1</b> to <b>%2</b> finished with error", $pkg, $site ) );
                   $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
                   _debug $fprefix . "CLEANED";
                }
-               BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
+               BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$status});
             }
          }
       } elsif ( $type eq 'promote' and $bl eq 'PROD' ) {
@@ -359,53 +383,44 @@ sub run_once {
                   _debug $fprefix . "RUNNER OK: " . $runner->jobid;
               }
               $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>INSTALLATION</b> job for package <b>%2</b> at <b>%3</b>", $user,$pkg, $date ) );
-          } elsif ($job->step eq 'RUN' && $job->status eq 'WAITING') {
+          } elsif ($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) {
               if ( $file->{jobname} =~ m{....10..$} ) { ## DISTRIBUTED
                   _debug $fprefix . "DISTRIBUTED";
-                  unless ($job->step eq 'RUN' && $job->status eq 'WAITING') {
+                  unless ($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) {
                       _debug $fprefix . "not RUN and WAITING - skipped";
                       next;
                   }
                   $row=$runner->logger->info( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully", $pkg, 'DISTRIBUTED', $site ) );
               } elsif ( $file->{jobname} =~ m{SITE(..)}i ) { ## INSTALLED
+                  my $status=$1;
                   _debug $fprefix . "INSTALLED";
-                  unless ($job->step eq 'RUN' && $job->status eq 'WAITING') {
+                  unless ($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) {
                       _debug $fprefix . "JOB " . $job->id . " exists but not in RUN-WAITING - skipped";
                       next;
                   }
-                  if ( $1 eq 'OK' ) {
+                  if ( $status eq 'OK' ) {
                       $row=$runner->logger->info( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully", $pkg, 'INSTALLED', $site ) );
                   } else {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error", $pkg, 'INSTALLED', $site ) );
                       $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
                       _debug $fprefix . "CLEANED";
 
-                      my $chm = BaselinerX::Changeman->new( host=>$chmConfig->{host}, port=>$chmConfig->{port}, key=>$chmConfig->{key} );
-                      my $ret;
-
-                      if ($scm eq 'A') { # Comes from Baseliner
-                          $ret= $chm->xml_cancelJob(job=>$runner->name, items=>[$pkg], jobName=>$runner->name, logger=>$runner->logger ) ;
-                          if ($ret->{ReturnCode} ne '00') {
-                              $log_action = _loc( "Package %1 can not be dessassociatted from job %2", $pkg, $runner->name );
-                              $row=$runner->logger->warn( $log_action, _dump $ret );
-                          } else {
-                              $log_action = _loc( "Package %1 dessassociatted from job %2", $pkg, $runner->name );
-                              $row=$runner->logger->debug( $log_action, _dump $ret );
-                          }
-                      }
-
-                      BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
+                      BaselinerX::Changeman::Service::deploy->siteerror ({runner=>$runner, pkg=>$pkg, rc=>$status});
+                      $c->stash->{job}=$runner;
+                      BaselinerX::Job::Service::AddReportData->main($c);
+                      BaselinerX::Service::AddMailJUData->main($c);
                   }
               } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## BASELINED
+                  my $status=$1;
                   _debug $fprefix . "BASELINED";
-                  if ( $1 eq 'OK' ) {
+                  if ( $status eq 'OK' ) {
                       $row=$runner->logger->info( _loc( "Package <b>%1</b> put into <b>%2</b> state finished successfully", $pkg, 'BASELINED' ) );
                   } else {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> put into <b>%2</b> state finished with error", $pkg, 'BASELINED' ) );
                       $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
                       _debug $fprefix . "CLEANED";
                   }
-                  BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
+                  BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$status});
               } else {
                   _debug $fprefix . "no match for WAITING, INSTALLED or DISTRIBUTED ";
               }
@@ -418,51 +433,42 @@ sub run_once {
               $runner=$self->creaPase($c, $jobConfig, {package=>$pkg, date=>$date, type=>$type, user=>$user, bl=>$bl, key=>$key});
               next if ! $runner;
               $row=$runner->logger->info( _loc( "User <b>%1</b> creates <b>ROLLBACK</b> job for package <b>%2</b> at <b>%3</b>", $user, $pkg, $date ) );
-          } elsif ($job->step eq 'RUN' && $job->status eq 'WAITING') {
+          } elsif ($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) {
               _debug $fprefix . "WAITING";
               if ( $file->{jobname} =~ m{SITE(..)}i ) { ## NO HAY CAMBIO
+                  my $status=$1;
                   _debug $fprefix . "BACKEDOUT";
-                  unless ($job->step eq 'RUN' && $job->status eq 'WAITING') {
+                  unless ($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) {
                       _debug $fprefix . "JOB " . $job->id . " exists but not in RUN-WAITING - skipped";
                       next;
                   }
-                  if ( $1 eq 'OK' ) {
+                  if ( $status eq 'OK' ) {
                       $row=$runner->logger->info( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished successfully", $pkg, 'BACKED OUT', $site ) );
                   } else {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> put into <b>%2</b> state in site <b>%3</b> finished with error", $pkg, 'BACKED OUT', $site ) );
                       $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
                       _debug $fprefix . "CLEANED";
 
-                      my $chm = BaselinerX::Changeman->new( host=>$chmConfig->{host}, port=>$chmConfig->{port}, key=>$chmConfig->{key} );
-                      my $ret;
-
-                      if ($scm eq 'A') { # Comes from Baseliner
-                          $ret= $chm->xml_cancelJob(job=>$runner->name, items=>[$pkg], jobName=>$runner->name, logger=>$runner->logger ) ;
-                          if ($ret->{ReturnCode} ne '00') {
-                              $log_action = _loc( "Package %1 can not be dessassociatted from job %2", $pkg, $runner->name );
-                              $row=$runner->logger->warn( $log_action, _dump $ret );
-                          } else {
-                              $log_action = _loc( "Package %1 dessassociatted from job %2", $pkg, $runner->name );
-                              $row=$runner->logger->debug( $log_action, _dump $ret );
-                          }
-                      }
-
-                      BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
+                      BaselinerX::Changeman::Service::deploy->siteerror ({runner=>$runner, pkg=>$pkg, rc=>$status});
+                      $c->stash->{job}=$runner;
+                      BaselinerX::Job::Service::AddReportData->main($c);
+                      BaselinerX::Service::AddMailJUData->main($c);
                   }
               } elsif ( $file->{jobname} =~ m{FIN(..)}i ) {  ## BACKED OUT
+                  my $status=$1;
                   _debug $fprefix . "FIN - BACKED OUT";
-                  unless ($job->step eq 'RUN' && $job->status eq 'WAITING') {
+                  unless ($job->step eq 'RUN' && $job->status =~ m{WAITING|SITEERROR}) {
                       _debug $fprefix . "not RUN and WAITING - skipped";
                       next;
                   }
-                  if ( $1 eq 'OK' ) {
+                  if ( $status eq 'OK' ) {
                       $row=$runner->logger->info( _loc( "Package <b>%1</b> has been <b>%2</b> successfully", $pkg, 'BACKED OUT' ) );
                   } else {
                       $row=$runner->logger->error( _loc( "Package <b>%1</b> has been <b>%2</b> with error", $pkg, 'BACKED OUT' ) );
                       $self->clean ($c, $bx, $config->{clean}, $file->{filename}->stringify);
                       _debug $fprefix . "CLEANED";
                   }
-                  BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$1});
+                  BaselinerX::Changeman::Service::deploy->finalize ({runner=>$runner, pkg=>$pkg, rc=>$status});
               }
           }
       }
@@ -470,10 +476,23 @@ sub run_once {
       next unless ref $runner;
 
       $job=bali_rs('Job')->find( $runner->{job_data}->{id});
+
       unless( $logrow && ( $job->step =~ m{RUN|POST|END} || $job->status eq 'FINISHED' ) ) {
           _debug $fprefix . "step not in RUN,POST,END and logrow - skipped logging phase" . "\nLOGROW: $logrow\nSTEP: ". $job->step ."\nSTATUS:".$job->status;
           next;
       }
+
+      ## Grabamos la ocurrencia del fichero.
+      ## Si $cont>1 se tratarÃ¡ de un reinicio. Damos tratamiento especifico.
+      $cont=$self->logCHMFile({filename=>$fichero, complete_filename=>$filename, key=>$key});
+      if ( !$job->rollback && $cont gt 1 && $job->status eq 'SITEERROR' && $file->{jobname} !~ m{FIN(..)}i && $file->{jobname} !~ m{SITE(..)}i ) {
+          $logrow=$runner->logger->warn( _loc( "Restarted job %1 en site %2", $jobname, $site ) );
+          $runner->status('WAITING');
+      }
+
+      $self->UpdateRepo($jobID, 'procFiles', [$file->{filename}->stringify]);
+      $self->UpdateRepo($jobID, 'procSites', $site, $cont) if ($site ne 'XXXX');
+      $self->UpdateRepo($jobID, 'restarted', $cont) if ($cont gt 1);
 
       # logging of output
       if (( $file->{jobname} =~ m{FIN(..)|SITE(..)}i ) && $job->step !~ m{POST|END} ) {
@@ -506,8 +525,10 @@ sub run_once {
               my ($ddname, $spool)=split / ====================/, $_;
               $ddname=~s{\s*$}{};
               $ddname=~s{^\.}{};
-              $ddname="/$pkg/$site/$file->{jobname}/$ddname";
-              my $path="/$pkg/$site/$file->{jobname}";
+              my $jobname=$file->{jobname};
+              $jobname.=" ($cont)" if $cont gt 1;
+              $ddname="/$pkg/$site/$jobname/$ddname";
+              my $path="/$pkg/$site/$jobname";
               my $logdata=$logrow->bali_log_datas->create({
                       id_log=>$logrow->id,
                       data=>$spool,
@@ -581,6 +602,25 @@ sub clean {
     return;
 }
 
+sub logCHMFile {
+    my ($self, $p) = @_;
+    _log _dump $p;
+    try {
+        my $cnt=0;
+        my $jobid = $p->{jobid} || undef;
+        my $username = $p->{username} || undef;
+        Baseliner->model('Baseliner::BaliChmFiles')->create({filename=>$p->{filename}, complete_filename=>$p->{complete_filename}, key=>$p->{key}, jobid=>$jobid});
+        Baseliner->model('Baseliner::BaliChmFiles')->search({key=>$p->{key}})->update({jobid=>$jobid}) if $jobid;
+        Baseliner->model('Baseliner::BaliChmFiles')->search({key=>$p->{key}})->update({username=>$username}) if $username;
+        $cnt=Baseliner->model('Baseliner::BaliChmFiles')->search({filename=>$p->{filename}})->count;
+        return $cnt;
+    } catch {
+        _debug "Error during Changeman file log";
+        return 0;
+    };
+}
+
+
 sub updateRelationship {
 my ($self, $from_ns, $to_ns) = @_;
 
@@ -598,7 +638,7 @@ if (ref $ds) {
 Dado un JobID, una clave y un valor se encarga de mantener los datos referentes al job en la tabla BALI_REPO
 =cut 
 sub UpdateRepo {
-    my ($self, $jobID, $key, $value) = @_; 
+    my ($self, $jobID, $key, $value, $cnt) = @_;
     my $data;
 
     try {
@@ -607,9 +647,21 @@ sub UpdateRepo {
        _log "Error: $_"
     };
 
-    my @oldValue=_array $data->{$key};
-    push @oldValue, _array $value;
-    $data->{$key}=[ _unique @oldValue ];
+    if ($key eq 'restarted') {
+        my $oldValue=$data->{$key} || 0;
+        $oldValue+=1;
+        $data->{$key}=$oldValue;
+    } elsif ($key eq 'procFiles' ) {
+        my @oldValue=_array $data->{$key};
+        push @oldValue, _array $value;
+        $data->{$key}=[ _unique @oldValue ];
+    } elsif ($key eq 'procSites' ) {
+        my $oldValue=$data->{$key};
+        $oldValue->{$value}=$cnt;
+        $data->{$key}=$oldValue;
+    } else {
+       return 0;
+    }
     Baseliner->model('Repository')->set(ns=>"CHM_jobdata/$jobID", data=> $data);
     return $data
 }

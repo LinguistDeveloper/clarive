@@ -17,7 +17,7 @@ register 'service.add.mail-ju.data' => {name    => 'Add JU mail notificacion dat
 
 sub main {
   my ($self, $c, $config) = @_;
-  
+
   # Prerequisites.
   my $job      = $c->stash->{job};
   my $log      = $job->logger;
@@ -49,20 +49,27 @@ sub main {
       }
       ## Protegemos informe JU contra errores de relanzamiento
       my $repodata=Baseliner->model('Repository')->get(ns=>"CHM_jobdata/".$job->{jobid});
-      my @nodelist;
-      defined $repodata and @nodelist = $repodata->{procSites};
+      my $nodelist;
+      my @nodes;
+      my $cont;
+      defined $repodata and $nodelist = $repodata->{procSites};
+      defined $repodata and @nodes = map {my $ret=$_; $ret.=" (".$nodelist->{$_}.")" if $nodelist->{$_} gt 0; $ret} keys $nodelist;
+      defined $repodata and $cont = $repodata->{restarted};
+
+      my $estado = $job->job_data->{status} eq 'SITEERROR'?_loc('ERROR DURING SITE INSTALLATION'):$job->job_data->{status} eq 'RUNNING'?$job->job_data->{rollback}?_loc('FINISHED DOING ROLLBACK CORRECTLY'):_loc('FINISHED CORRECTLY'):$job->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR');
+      #$estado .= " (Reinicios: $cont)" if $cont gt 0;  
 
       # Set data.
       my $data = {
         job_id       => $job->{jobid},
         environment  => $job->job_data->{bl},
         job_name     => $job->job_data->{name},
-        status       => $job->job_data->{status} eq 'RUNNING'?$job->job_data->{rollback}?_loc('FINISHED DOING ROLLBACK CORRECTLY'):_loc('FINISHED CORRECTLY'):$job->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR'),
+        status       => $estado, 
         username     => $username,
         start_time   => $job->job_data->{starttime},
         end_time     => $job->job_data->{endtime},
         cam_list     => [@camlist],
-        node_list    => [ _array @nodelist ],
+        node_list    => [ _array @nodes ],
         nature_list  => [get_job_natures $job->{jobid}],
         package_list => [ @packages ],
         subapps_list => [get_job_subapps $job->{jobid}],

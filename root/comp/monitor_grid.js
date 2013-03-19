@@ -186,6 +186,7 @@
       REJECTED: false,
       APPROVAL: true,
       ERROR: true,
+      SITEERROR: true,
       EXPIRED: true,
       FINISHED: true,
       KILLED: true,
@@ -511,6 +512,7 @@
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.gif';
         else if( status=='WAITING' ) icon='waiting.png';
+        else if( status=='SITEERROR' ) {icon='server_error.png'; bold=true; }
         else { icon='log_e.gif'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
 

@@ -309,7 +309,7 @@ sub last_log_message {
 # is_active means it is ready to run, or running
 sub is_active {
     my $self = shift;
-    return $self->status =~ m/^IN-EDIT|^READY|^RUNNING|^PAUSED|^SUSPENDED|^WAITING/ ;
+    return $self->status =~ m/^IN-EDIT|^READY|^RUNNING|^PAUSED|^SUSPENDED|^WAITING|^SITEERROR/ ;
 }
 
 # returns the key column, if not exists then create it, commit and return

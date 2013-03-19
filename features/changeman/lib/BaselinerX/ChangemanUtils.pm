@@ -60,6 +60,7 @@ sub spool_files {
 
             my ($key, $app, $pkg, $scm, $date, $bl, $jobname, $trash, $filename)=($1, $2, sprintf("%-4s%s",$2,$3), $4, "$5-$6-$7 $8:$9", $10, $11, $12, $_) 
                if $_ =~ m{CHM\.PSCM\.P\.(\w+)\.(\w+)\..(\d+)\.(.)(\d{2})(\d{2})(\d+)\..(\d{2})(\d{2})\d+\.(\w+)\.(\S+?)(\..*)};
+            $key=~s{REVERT}{ZZZREVERT}g;
 
             if ( $app ) {
                $jobname=~s{\xD1}{#};

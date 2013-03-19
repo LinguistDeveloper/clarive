@@ -4363,3 +4363,25 @@ msgstr "Correo redirigido a"
 msgid "Email override"
 msgstr "Redireccionamiento de correos activado"
 
+msgid "SITEERROR"
+msgstr "Error en SITE"
+
+msgid "Restarted job %1 en site %2"
+msgstr "Reiniciado job %1 en el site %2"
+
+msgid "ERROR DURING SITE INSTALLATION"
+msgstr "Error instalando en SITE"
+
+msgid "Error during site installation"
+msgstr "Error instalando en SITE"
+
+msgid "Revert made for package %1 in site %2"
+msgstr "REVERT realizado para el paquete %1 en el site %2"
+
+msgid "Waiting for user manual action"
+msgstr "Pase suspendido a la espera de una acción manual de usuario"
+
+msgid "Job %1 cancelled externally"
+msgstr "Pase %1 cancelado externamente"
+
+

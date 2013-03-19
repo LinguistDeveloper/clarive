@@ -154,10 +154,10 @@ sub GenerateJobDetailReport {
   my $start_time = $job->job_data->{starttime};
 
   my $repodata=Baseliner->model('Repository')->get(ns=>"CHM_jobdata/".$job->{jobid});
-  my @nodelist;
-  defined $repodata and @nodelist = $repodata->{procSites};
-  my $node="";
-  scalar _array @nodelist and $node = $bl eq 'PROD'?join(", ", _array @nodelist):"";
+
+  my ($nodelist, $node); 
+  defined $repodata and $nodelist = $repodata->{procSites};
+  $node=join(", ", map {my $ret=$_; $ret.=" (".$nodelist->{$_}.")" if $nodelist->{$_} gt 0; $ret} keys $nodelist);
 
   my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
 
