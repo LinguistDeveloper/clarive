@@ -465,7 +465,7 @@
 						if(form_recipients.getForm().findField("obj_recipient") && form_recipients.getForm().findField("obj_recipient").xtype == 'textfield'){
 							is_text = true;
 						}
-			
+					
 						if(ids.length == 0){
 							id = store_recipients.getCount() + 1;
 							d = { id: id, recipients: carrier, type: _(cb_type_recipient.getValue())};
@@ -490,7 +490,7 @@
 							
 						});
 					});
-
+					
 					store_recipients.commitChanges();
 					win_recipients.close();
 				}
