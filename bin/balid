@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 cd $BASELINER_HOME
 
 #export LIBPATH=$BASELINER_LIBPATH:$LIBPATH
