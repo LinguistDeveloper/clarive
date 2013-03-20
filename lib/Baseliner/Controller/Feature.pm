@@ -63,11 +63,11 @@ sub local_get : Local {
 sub install_cpan : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    my @log;
     $c->stash->{json} = try {
         _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
         my $files = _from_json( $p->{files} );
         ref $files or _fail 'Missing parameter files';
-        my @log;
         # load cpanm from its file
         require App::cpanminus;  # check if it's here
         require File::Which;  # check if it's here
@@ -96,7 +96,7 @@ sub install_cpan : Local {
         { success => \1, msg => 'ok', log=>\@log };
     } catch {
         my $err = shift;
-        { success => \0, msg => "$err", };
+        { success => \0, msg => "$err", log=>\@log };
     };
     $c->forward('View::JSON');
 }
