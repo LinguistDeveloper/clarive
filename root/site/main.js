@@ -203,6 +203,11 @@ Ext.onReady(function(){
     });
 
     var tabpanel = Ext.getCmp('main-panel');
+    
+    tabpanel.on('tabchange', function(tp,tab){
+        window.location.hash = '!/tab:' + tab.id;   
+    });
+    
     var first_comp = tabpanel.getComponent( 0 );
     if( first_comp != undefined ) {
         if( first_comp.tab_icon ) 
