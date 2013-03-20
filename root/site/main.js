@@ -33,13 +33,16 @@ Ext.onReady(function(){
        hidden: true,
        menu: Baseliner.help_menu
     });
-    var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
+    var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
     search_box.on('keydown', function(f, e){ search_box.setSize( 300 ); });
+    Baseliner.search_box_go = function(q) {
+        Baseliner.add_tabcomp('/comp/search_results.js', undefined,
+                { query: q || Baseliner.search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+    };
     search_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
-            Baseliner.add_tabcomp('/comp/search_results.js', undefined,
-                { query: search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+            Baseliner.search_box_go();
             search_box.setSize( 120 );
         }
     });
