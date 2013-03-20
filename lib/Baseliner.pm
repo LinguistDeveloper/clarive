@@ -51,7 +51,20 @@ use Baseliner::CI;
 my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
-our $VERSION = '6.0';
+
+# determine version with a GIT DESCRIBE
+our $VERSION = do {
+    my $v = eval { 
+        require Git::Wrapper;
+        my $git = Git::Wrapper->new( $ENV{BASELINER_HOME} );
+        my $x = ( $git->describe({ always=>1, tag=>1 }) )[0];
+        $x =~ /^(.*)-(\d+)-(.*)$/ and $x="$1_$2";
+        $x;
+    };
+    $@ ?  '6.0' : $v;
+};
+
+# find my parent to enable restarts
 $ENV{BASELINER_PARENT_PID} = getppid();
 
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );

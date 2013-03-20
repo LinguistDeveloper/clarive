@@ -25,6 +25,7 @@ Ext.onReady(function(){
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     Ext.QuickTips.init();
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+    Baseliner.VERSION = '<% $Baseliner::VERSION %>';
     Baseliner.help_menu = new Ext.menu.Menu({});
     Baseliner.help_button = new Ext.Button({
        icon: '/static/images/icons/lightbulb_off.gif',
