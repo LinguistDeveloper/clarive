@@ -10,6 +10,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 register 'config.search' => {
     metadata => [
         { id=>'block_lucy', text=>'Block the use of Lucy in searches', default=>0 },
+        { id=>'provider_filter', text=>'Regex to filter provider packages', default=>'' },
         { id=>'lucy_boolop', text=>'AND or OR default', default=>'OR' },
         { id=>'max_results', text=>'Number of results to return to user', default=>10_000 },
         { id=>'max_results_provider', text=>'Limit sent to provider', default=>10_000 },
@@ -20,6 +21,11 @@ sub providers : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my @provs = packages_that_do('Baseliner::Role::Search');
+    my $config = config_get 'config.search';
+    if( my $filter = $config->{provider_filter} ) {
+        _debug "PROV FILTER=$filter";
+        @provs = grep { $_ =~ /$filter/ } @provs;
+    }
     $c->stash->{json} =
         { providers => [ map { {pkg => $_, type => $_->search_provider_type, name => $_->search_provider_name } } @provs ] };
     $c->forward('View::JSON');
