@@ -25,8 +25,10 @@ sub restart_server : Local {
     _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
     if( defined $ENV{BASELINER_PARENT_PID} ) {
         # normally, this tells a start_server process to restart children
+        _log _loc "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}"; 
         kill HUP => $ENV{BASELINER_PARENT_PID};
     } else {
+        _log _loc "Server restart requested. Using bali-web restart";
         `bali-web restart`;  # TODO this is brute force
     }
 }

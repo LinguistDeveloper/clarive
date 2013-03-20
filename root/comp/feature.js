@@ -303,6 +303,15 @@
                 icon: '/static/images/icons/perl.png',
                 pressed: false, allowDepress: false, enableToggle:true, toggleGroup:'upgrades-btn',
                 handler: function(){ card.getLayout().setActiveItem( cpan ) }
+            },
+            '->',
+            { text: _('Restart Server'),
+                icon: '/static/images/icons/server_restart.png',
+                handler: function(){
+                    Baseliner.confirm( _('You are about to attempt to restart the server. Are you sure?'), function(){
+                        $.ajax({ type:'POST', url: '/feature/restart_server' });
+                    });
+                }
             }
         ]
     });
