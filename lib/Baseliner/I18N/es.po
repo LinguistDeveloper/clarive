@@ -42,6 +42,21 @@ msgstr "Módulos"
 msgid "Get"
 msgstr "Obtener"
 
+msgid "Restart Server"
+msgstr "Reiniciar Servidor"
+
+msgid "Download Patches"
+msgstr "Descargar Parches"
+
+msgid "Diff Only"
+msgstr "Ver Diferencias"
+
+msgid "Remote"
+msgstr "Remoto"
+
+msgid "Installed"
+msgstr "Instalado"
+
 msgid "View Applied Slots"
 msgstr "Ver Ventanas Relacionadas"
 
