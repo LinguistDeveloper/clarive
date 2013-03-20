@@ -4,6 +4,7 @@ use warnings;
 use base 'Catalyst::Controller';
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Try::Tiny;
 
 register 'menu.admin.about' => { label => 'About...', url => '/about/show', title=>'About ' . Baseliner->config->{app_name} // 'Baseliner', index=>999 };
 
@@ -26,13 +27,13 @@ sub dehash {
     return $ret;
 }
 
-use Sys::Hostname;
 sub show : Local {
     my ( $self, $c ) = @_;
+    require Sys::Hostname;
     my @about = map { { name=>$_, value=>$c->config->{About}->{$_} } } keys %{ $c->config->{About} || {} };
     push @about, { name=>'Server Version', value=>$Baseliner::VERSION };
     push @about, { name=>'Perl Version', value=>$] };
-    push @about, { name=>'Hostname', value=>hostname };
+    push @about, { name=>'Hostname', value=>Sys::Hostname::hostname() };
     push @about, { name=>'Process ID', value=>$$ };
     push @about, { name=>'Server Time', value=>_now };
     push @about, { name=>'Server Exec', value=>$0 };
@@ -42,7 +43,28 @@ sub show : Local {
     push @about, { name=>'OS', value=>$^O };
     #push @about, { name=>'Library Path', value=>join '<li>',split /;|:/,$ENV{LIBPATH} || '-' };
     #$body = dehash( $c->config );
-    $c->stash->{about} = [ @about ];
+    $c->stash->{about} = \@about;
+    $c->stash->{environment_vars} = [ 
+        map {
+            +{ name=>$_, value=>$ENV{$_} }
+        }
+        grep /BASELINER/i, keys %ENV
+    ];
+    $c->stash->{licenses} = [ 
+        map {
+           { name=>$_, text=>scalar _file( $_ )->slurp };
+        }
+        grep { -e }
+        glob( 'LICENSE* features/*/LICENSE' )
+    ];
+    $c->stash->{copyright} = [ 
+        map {
+           { name=>$_, text=>scalar _file( $_ )->slurp };
+        }
+        grep { -e }
+        glob( 'COPYRIGHT* features/*/COPYRIGHT' )
+    ];
+    $c->stash->{third_party} = try { scalar $c->path_to('THIRD-PARTY-NOTICES')->slurp };
     $c->stash->{template} = '/site/about.html';
 }
 

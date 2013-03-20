@@ -58,7 +58,7 @@ our $VERSION = do {
         require Git::Wrapper;
         my $git = Git::Wrapper->new( $ENV{BASELINER_HOME} );
         my $x = ( $git->describe({ always=>1, tag=>1 }) )[0];
-        $x =~ /^(.*)-(\d+)-(.*)$/ and $x="$1_$2";
+        $x =~ /^(.*)-(\d+)-(.*)$/ and $x="$1_$2 (patch " . substr($3,1,7) . ")";
         $x;
     };
     $@ ?  '6.0' : $v;

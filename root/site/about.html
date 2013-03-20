@@ -1,13 +1,90 @@
-<div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
+<%args>
+    $about => []
+    $environment_vars => []
+    $copyright => []
+    $licenses => []
+    $third_party => ''
+</%args>
+<div id="boot" class="container_24" style="margin: 30px 10px 10px 30px">
+    <div class=    <div class="grid_24">
+        <img class="logo" src="<% $c->config->{login_logo} || '/static/images/logo_big.jpg' %>"></img>
+        <hr />
+    </div>
+    <div class=    <div class="grid_24">
+        <h1><% _loc('Info') %></h1>
+    </div>
     <div class="grid_24">
         <table class="table table-bordered">
-% for( @{ $c->stash->{about} || [] } )  {
-                    <tr><td valign='top'><b><% _loc($_->{name}) %></td><td><% _loc($_->{value}) %></td>
+% for( @$about )  {
+<tr><td valign='top'><b><% _loc($_->{name}) %></b></td><td><% _loc($_->{value}) %></td>
+            </tr>
 % }
         </table>
     </div>
-</div>
-<%filter>
-    s/;/<br>/g
-</%filter>
+% if( @$environment_vars ) {
+    <div class="grid_24">
+        <h1><% _loc('Environment') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+% for( @$environment_vars )  {
+<tr><td valign='top'><b><% _loc($_->{name}) %></b></td><td><% _loc($_->{value}) %></td>
+            </tr>
+% }
 
+        </table>
+    </div>
+% }
+
+% if( @$licenses ) {
+    <div class="grid_24">
+        <h1><% _loc('Licenses') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+% for( @$licenses )  {
+            <tr>
+                <td valign='top' style="width:30%"><b><% _loc($_->{name}) %></b></td>
+                    <td>
+                        <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $_->{text} %></textarea>
+                    </td>
+            </tr>
+% }
+
+        </table>
+    </div>
+% }
+
+% if( @$copyright ) {
+    <div class="grid_24">
+        <h1><% _loc('Copyright Notices') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+% for( @$copyright )  {
+            <tr>
+                <td valign='top' style="width:30%"><b><% _loc($_->{name}) %></b></td>
+                    <td>
+                        <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $_->{text} %></textarea>
+                    </td>
+            </tr>
+% }
+
+        </table>
+    </div>
+% }
+    
+    <div class="grid_24">
+        <h1><% _loc('Third Party Notices') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+            <tr>
+                <td>
+                    <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $third_party %></textarea>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>

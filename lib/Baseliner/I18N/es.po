@@ -51,6 +51,12 @@ msgstr "Descargar Parches"
 msgid "Diff Only"
 msgstr "Ver Diferencias"
 
+msgid "Licenses"
+msgstr "Licencias"
+
+msgid "Copyright Notices"
+msgstr "Notificaciones de Copyright"
+
 msgid "Remote"
 msgstr "Remoto"
 
