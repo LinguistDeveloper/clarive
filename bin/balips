@@ -18,7 +18,7 @@ foreach my $p ( @{$t->table} ){
           scalar(localtime($p->start)),
           $p->cmndline);
     given( $p->cmndline ) {
-        when( /starman|plackup|bali_server/ ) {
+        when( /starman|plackup|bali_server|start_server/ ) {
             push @server, $lin;
         }
         when( /perl/ && /ba.*pl/ ) {
