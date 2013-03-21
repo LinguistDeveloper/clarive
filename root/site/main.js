@@ -205,7 +205,8 @@ Ext.onReady(function(){
     var tabpanel = Ext.getCmp('main-panel');
     
     tabpanel.on('tabchange', function(tp,tab){
-        window.location.hash = '!/tab:' + tab.id;   
+        if( tab && tab.id ) 
+            window.location.hash = '!/tab:' + tab.id;   
     });
     
     var first_comp = tabpanel.getComponent( 0 );
