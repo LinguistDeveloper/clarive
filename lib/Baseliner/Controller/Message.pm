@@ -44,6 +44,7 @@ sub inbox_json : Local {
     $sort ||= 'sent';
     $dir ||='desc';
     return unless $c->user;
+    
     $c->stash->{messages} = $c->model('Messaging')->inbox(
             all      => 1,
             username => $p->{username} || $c->username || $c->user->id,
@@ -54,6 +55,8 @@ sub inbox_json : Local {
             limit    => $limit,
             query_id => $query_id || undef
     );
+    
+    $c->stash->{username} = $p->{username} || $c->username || $c->user->id;
     $c->forward('/message/json');
 }
 
@@ -98,7 +101,7 @@ sub delete : Local {
 sub inbox : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    $c->stash->{username} = $c->username;
+    $c->stash->{username} = $p->{username} || $c->username;
     $c->stash->{query_id} = $p->{query};	
      $c->stash->{template} = '/comp/message_grid.mas';
     
