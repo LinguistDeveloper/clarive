@@ -59,6 +59,9 @@ register 'event.topic.create' => {
     text => '%1 created a topic of %2',
     description => 'User created a topic',
     vars => ['username', 'category', 'ts'],
+    notify => {
+        scope => ['project', 'category', 'category_status'],
+    },
 };
 
 register 'event.topic.modify' => {

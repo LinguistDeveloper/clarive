@@ -55,6 +55,7 @@ has 'id' => ( is => 'rw', isa => 'Str', default => '' );
 has 'name' => ( is => 'rw', isa => 'Str', default => sub { shift->key } );
 has 'type' => ( is => 'rw', isa => 'Str', default => 'trigger' );
 has 'description' => ( is => 'rw', isa => 'Str', default => 'An Event' );
+has 'notify' => ( is => 'rw', isa => 'HashRef' );
 has 'text' => (
     is      => 'rw',
     isa     => 'Str',
