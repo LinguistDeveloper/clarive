@@ -157,10 +157,9 @@ sub GenerateJobDetailReport {
 
   my ($nodelist, $node); 
   defined $repodata and $nodelist = $repodata->{procSites};
-  $node=join(", ", map {my $ret=$_; $ret.=" (".$nodelist->{$_}.")" if $nodelist->{$_} gt 0; $ret} keys $nodelist);
-
+  $node=join(", ", map {my $ret=$_; $ret.=" (".($nodelist->{$_}-1).")" if $nodelist->{$_} gt 1; $ret} keys $nodelist);
   my $m = Baseliner->model('Baseliner::BaliJobDetailReport');
-
+  
   my @natures = _unique map { _loc($_->{name}) }
                 grep $_->can_i_haz_nature($elements),
                 map  { Baseliner::Core::Registry->get($_) } $c->registry->starts_with('nature');

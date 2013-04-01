@@ -53,7 +53,7 @@ sub main {
       my @nodes;
       my $cont;
       defined $repodata and $nodelist = $repodata->{procSites};
-      defined $repodata and @nodes = map {my $ret=$_; $ret.=" (".$nodelist->{$_}.")" if $nodelist->{$_} gt 0; $ret} keys $nodelist;
+      defined $repodata and @nodes = map {my $ret=$_; $ret.=" (".($nodelist->{$_}-1).")" if $nodelist->{$_} gt 1; $ret} keys $nodelist;
       defined $repodata and $cont = $repodata->{restarted};
 
       my $estado = $job->job_data->{status} eq 'SITEERROR'?_loc('ERROR DURING SITE INSTALLATION'):$job->job_data->{status} eq 'RUNNING'?$job->job_data->{rollback}?_loc('FINISHED DOING ROLLBACK CORRECTLY'):_loc('FINISHED CORRECTLY'):$job->job_data->{rollback}?_loc('FINISHED WITH ERROR DURING ROLLBACK'):_loc('FINISHED WITH ERROR');

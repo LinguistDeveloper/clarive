@@ -195,7 +195,7 @@ sub run_once {
       if( $key eq 'REVERT'){
           if (defined ( my $activeJob = Baseliner->model('Jobs')->is_in_active_job( "changeman.package/$pkg" ) ) ) {
               _debug _loc("Package <b>%1</b> is in active job <b>%2</b>", $pkg,$activeJob->id) if $activeJob;
-              if (!$activeJob->rollback && ( $activeJob->status eq 'SITEERROR')) {
+              if (!$activeJob->rollback) { ## Da igual si esta o no en SITEERROR, si recibe REVERT termina con error  && ( $activeJob->status eq 'SITEERROR')) {
                   $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$activeJob->id, same_exec=>0, exec=>'last', silent=>1 );
                   $logrow=$runner->logger->error( _loc( "Revert made for package %1 in site %2", $pkg, $site ), more=>'jes' );
                   my $ddname="/$pkg/$site/$key";
@@ -491,7 +491,7 @@ sub run_once {
       }
 
       $self->UpdateRepo($jobID, 'procFiles', [$file->{filename}->stringify]);
-      $self->UpdateRepo($jobID, 'procSites', $site, $cont) if ($site ne 'XXXX');
+      $self->UpdateRepo($jobID, 'procSites', $site, $cont) if ($file->{jobname} !~ m{FIN(..)}i && $file->{jobname} !~ m{SITE(..)}i);
       $self->UpdateRepo($jobID, 'restarted', $cont) if ($cont gt 1);
 
       # logging of output
