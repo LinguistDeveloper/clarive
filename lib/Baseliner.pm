@@ -58,7 +58,7 @@ our $VERSION = do {
         require Git::Wrapper;
         my $git = Git::Wrapper->new( $ENV{BASELINER_HOME} );
         my $x = ( $git->describe({ always=>1, tag=>1 }) )[0];
-        $x =~ /^(.*)-(\d+)-(.*)$/ and $x="$1_$2 (patch " . substr($3,1,7) . ")";
+        $x =~ /^(.*)-(\d+)-(.*)$/ and $x="$1_$2 (build " . substr($3,1,7) . ")";
         $x;
     };
     $@ ?  '6.0' : $v;
@@ -113,7 +113,7 @@ __PACKAGE__->config->{ 'Plugin::ConfigLoader' }->{ substitutions } = {
 if( $ENV{BALI_CMD} ) {
     # only load the root controller, for capturing $c
     __PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
-    require Baseliner::Cmd;
+    require Baseliner::Standalone;
 }
 
 
@@ -324,7 +324,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         #$meta->make_immutable( replace_constructor => 1 );
         #Class::C3::reinitialize();
         #return $c; 
-        #return Baseliner::Cmd->new;
+        #return Baseliner::Standalone->new;
         return $c;
         #bless {}, 'Baseliner';
 
