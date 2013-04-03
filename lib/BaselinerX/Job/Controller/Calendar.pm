@@ -110,7 +110,9 @@ sub calendar_list : Path('/job/calendar_list') {
 sub calendar_update : Path( '/job/calendar_update' ) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $ns = join(",",_array $p->{ns});
+_log "PARAMS: " . _dump $p;
+    my $ns = $p->{cam_natures};#join(",",_array $p->{ns});
+    #$ns =~ s/,$//; #quitamos "," del final que quedaría en caso de eliminar una aplicación o naturaleza
     try {
         if( $p->{action} eq 'create' ) {
             my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $ns, bl => $p->{ bl } } );
@@ -396,19 +398,43 @@ sub build_job_window : Path('/job/build_job_window') {
         # $contents = $c->model('Jobs')->container_expand( $contents );
         for my $item ( @{ $contents || [] } ) {
             my $namespace = $c->model('Namespaces')->get($item->{ns});
-            my @ns_list = _array $item->{ns}, _array $namespace->nature, $namespace->application, '/';
-            foreach my $curr_ns (@ns_list){
-                _debug "NS=$curr_ns";
-                if ( $curr_ns eq '/' ) {
-                    push @ns, $curr_ns;
-                    next;
+            my @ns_list = _array $item->{ns}, _array $namespace->nature, $namespace->application;
+
+            #agrupamos el contenido del pase para filtrar luego los calendarios
+            my @app_job = grep (/application/, @ns_list);
+            my @nat_job = grep (/nature/, @ns_list);
+
+            my $r = $c->model('Baseliner::BaliCalendar')->search({bl=>{ -in => ['*',$bl]}, active=>'1' });#todos los calendarios por entorno o generales
+            while (my $rec = $r->next)
+            {
+                my @cal = split(/(?<=]),/,$rec->ns);
+                my $aplica = 0;
+                foreach (@cal){
+                    my $app = @{ _from_json($_) }[0];
+                    my @natus = split(",", @{ _from_json($_) }[1]);
+                    if ($app~~@app_job || $app eq '/') #si coincide la aplicacion o es global miramos las naturalezas
+                    {
+                        if(scalar @nat_job >= scalar @natus){
+                            my $nat_in_cal=0;
+                            foreach my $nat(@nat_job)
+                            {          
+                                foreach (@natus) {
+                                    if($nat =~ /harvest/) { #tecnologias FICH, ORA ...
+                                        $nat_in_cal++ if ($_ =~ m/$nat/ ); 
+                                    } else { #naturalezas ZOS
+                                        $nat_in_cal++ if ($_ =~ m/^$nat$/);
+                                    }
+                                }
+                            }
+                            $aplica = 1 if $nat_in_cal == scalar @natus; #si aplican todas las naturalezas del calendario
+                        }
+                        $aplica =1 unless (scalar @natus); #si no hay naturalezas, aplica
+                    }
                 }
-                my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>"$curr_ns", active=>'1' });
-                $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => "%$curr_ns%" }, active=>'1' }) unless $r->count;
-                while (my $rec=$r->next) {
-                    push @ns, $rec->ns ;
-                }
+                push @ns, $rec->ns if $aplica;
             }
+            push @ns, '["/",""]';#global
+
         }
         _debug "NS with Calendar: " . join ',',@ns;
         my %tmp_hash   = map { $_ => 1 } @ns;
@@ -464,18 +490,43 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
         }
 
         my @ns;
-        for my $ns ( _array $p->{ns} ) {
-            if($ns eq '/')
-            {
-                push @ns, $ns;
-                next; 
+        #traduccion de los NS del pase o paquete a los NS de los Calendarios
+        _log "NS: " . _dump $p->{ns};
+
+        #agrupamos el contenido del pase para filtrar luego los calendarios
+        my @app_job = grep (/application/, _array $p->{ns});
+        my @nat_job = grep (/nature/, _array $p->{ns});
+
+        my $r = $c->model('Baseliner::BaliCalendar')->search({bl=>{ -in => ['*',$bl]}, active=>'1' });#todos los calendarios por entorno o generales
+        while (my $rec = $r->next)
+        {
+            my @cal = split(/(?<=]),/,$rec->ns);
+            my $aplica = 0;
+            foreach (@cal){
+                my $app = @{ _from_json($_) }[0];
+                my @natus = split(",", @{ _from_json($_) }[1]);
+                if ($app~~@app_job || $app eq '/') #si coincide la aplicacion o es global miramos las naturalezas
+                {
+                    if(scalar @nat_job >= scalar @natus){
+                        my $nat_in_cal=0;
+                        foreach my $nat(@nat_job)
+                        {
+                            foreach (@natus) {
+                                if($nat =~ /harvest/) { #tecnologias FICH, ORA ...
+                                    $nat_in_cal++ if ($_ =~ m/$nat/ );
+                                } else { #naturalezas ZOS
+                                    $nat_in_cal++ if ($_ =~ m/^$nat$/);
+                                }
+                            }
+                        }
+                        $aplica = 1 if $nat_in_cal == scalar @natus; #si aplican todas las naturalezas del calendario
+                    }
+                    $aplica =1 unless (scalar @natus); #si no hay naturalezas, aplica
+                }
             }
-            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => "%$ns%" }, active=>'1' });
-            while (my $rec = $r->next)
-            {
-                push @ns, $rec->ns;
-            }
+            push @ns, $rec->ns if $aplica;
         }
+        push @ns, '["/",""]';#global
 
         _debug "NS with Calendar: " . join ',',@ns;
         my %tmp_hash   = map { $_ => 1 } @ns;
@@ -611,7 +662,7 @@ sub merge_calendars {
 
     $where->{bl} = ['*'];
     push @{ $where->{bl} }, $p{bl} if $p{bl};
-    $where->{ns} = [ _unique _array ( '/', ( $p{ns} and $p{ns} ) ) ]; # [ 'xxxx.nature/yyyy', '/'  ]
+    $where->{ns} = [ _unique _array $p{ns} ]; # Ambito global ya incluido como JSON '["/",""]'
     _debug "Calendar search: " . _dump $where;
 
     

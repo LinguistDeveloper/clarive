@@ -1,46 +1,166 @@
 <%init>
+    use Baseliner::Utils;
     my $cal = $c->stash->{calendar};
+    my @cam_natures;
+    @cam_natures = split(/(?<=]),/,$cal->ns);
     my $readOnly = $c->stash->{user_action}->{'action.job.calendar.edit'}?'false':'true';
+    #separamos los namespaces en dos arrays para diferenciar en dos combos
+    my @namespaces =  $c->stash->{namespaces};
+    my (@array_app, @array_nat);
+    for(my $i=0; $i < scalar @{$namespaces[0]}; $i++){
+        push @array_app, \@{$namespaces[0][$i]} if $namespaces[0][$i][1] =~ m/Global/;
+        push @array_app, \@{$namespaces[0][$i]} if $namespaces[0][$i][0] =~ m/application/;
+        push @array_nat, \@{$namespaces[0][$i]} if $namespaces[0][$i][0] =~ m/nature/;
+    }
 </%init>
 (function(){
     var id = Ext.id();
     var id2 = 'container-' + id;
-    var ns_store = new Ext.data.SimpleStore({ 
-       fields: ['value', 'name'], 
-       data : <% js_dumper( $c->stash->{namespaces} ) %>
-    }); 
-    var bl_store = new Ext.data.SimpleStore({ 
-       fields: ['value', 'name'], 
-       data : <% js_dumper( $c->stash->{baselines} ) %>
-    }); 
+    var app_store = new Ext.data.SimpleStore({
+       fields: ['value', 'name'],
+       data : <% js_dumper( \@array_app ) %>
+    });
+    var nat_store = new Ext.data.SimpleStore({
+       fields: ['value', 'name'],
+       data : <% js_dumper( \@array_nat ) %>
+    });
 
-    var calendar_type_help = '<b>Ventanas de pase:</b><br>';    
-    calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
-    calendar_type_help += '<TR><TD class="normal" width=20 height=20>&nbsp;</TD><TD>Pase: Son ventanas en las que se pueden realizar pases.</TD></TR>';
-    calendar_type_help += '<TR><TD class="urgente" width=20 height=20>&nbsp;</TD><TD>Urgente/No pase: Son ventanas urgentes, fuera de lo habitual. Este estado sirve para sobreescribir un pase nornmal.</TD></TR>';
-    calendar_type_help += '</TABLE>';
+    var bl_store = new Ext.data.SimpleStore({
+       fields: ['value', 'name'],
+       data : <% js_dumper( $c->stash->{baselines} ) %>
+    });
+
+    var cn_field_name = 'cam_natures';
+    var cn_value = <% js_dumper( \@cam_natures) %>;
+
+    var cn_store = new Ext.data.SimpleStore({ fields:[ cn_field_name ] });
+    if( cn_value != undefined ) {
+        var push_item = function(f, v ) {
+            var rr = new Ext.data.Record.create([{
+                name: f,
+                type: 'string'
+            }]);
+            var h = {}; h[ cn_field_name ] = v;
+            // put it in the grid store
+            cn_store.insert( x, new rr( h ) );
+        };
+        try {
+            // if it's an Array or Hash
+            if( typeof( cn_value ) == 'object' ) {
+                for( var x=0; x < cn_value.length ; x++ ) {
+                    push_item( cn_field_name, cn_value[ x ] ); 
+                }
+            } else if( cn_value.length > 0 ) {  // just one element
+                push_item( cn_field_name, cn_value ); 
+            }
+        } catch(e) {}
+    }
+
+    var cn_data = new Ext.form.Hidden({ 
+            name: cn_field_name, 
+            allowBlank: false 
+    });
+    var cn_grid = new Ext.grid.EditorGridPanel({
+            name: cn_field_name + '_grid',
+            width: 400,
+            height: 200,
+            title: _('Namespace'),
+            frame: true,
+            viewConfig: {
+                scrollOffset: 2,
+                forceFit: true
+            },
+            store: cn_store,
+            cm: new Ext.grid.ColumnModel([{
+                dataIndex: cn_field_name,
+                width: 390,
+                editor: new Ext.form.TextField({
+                    allowBlank: false, 
+                    renderer: function(v) {  return "a" }
+                })
+            }]),
+            sm: (function () {
+                var rsm = new Ext.grid.RowSelectionModel({
+                    singleSelect: true
+                });
+                rsm.addListener('rowselect', function () {
+                    var __record = rsm.getSelected();
+                    return __record;
+                });
+                return rsm;
+                })(),
+            tbar: [
+                {
+                text: _('Delete'),
+                icon: '/static/images/del.gif',
+                cls: 'x-btn-text-icon',
+                disabled: <% $readOnly %>,
+                handler: function (e) {
+                    var __selectedRecord = cn_grid.getSelectionModel().getSelected();
+                    if (__selectedRecord != null) {
+                        cn_store.remove(__selectedRecord);
+                    }
+                }
+                }, 
+                '->', 'CAM - Naturalezas' 
+            ]
+    });
+
+    var combo_nat = new Ext.ux.form.SuperBoxSelect({
+        allowBlank: true,
+        id: 'natures' + id,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true,
+        triggerAction: 'all',
+        resizable: true,
+        store: nat_store,
+        mode: 'local',
+        fieldLabel: _('Natures'),
+        typeAhead: true,
+        name: 'natures',
+        displayField: 'name',
+        hiddenName: 'natures',
+        valueField: 'value',
+        extraItemCls: 'x-tag',
+        disabled: <% $readOnly %>,
+        listeners: {
+            newitem: function(bs,v, f){
+                //v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                var newObj = {
+                    value: v
+                    };
+                bs.addItem(newObj);
+                }
+            }
+    });
     
     var cal_form = new Ext.FormPanel({
                 url: '/job/calendar_update',
                 frame: true,
+                layout: 'column',
                 title: _('Calendar Info'),
                 autoHeight: true,
                 autoWidth: true,
-                defaults: { width: 300 },
+                defaults: { 
+                    xtype: 'container',
+                    layout: 'form',
+                    width: 500
+                },
                 buttons: [                  
-                    /*{  text: _('Ayuda'),
-                        handler: function(){ 
-                            Ext.Msg.show({
-                               title:'Ayuda sobre la herencia',
-                               msg: calendar_type_help,
-                               buttons: Ext.Msg.OK,
-                               animEl: 'elId'
-                            });
-                        } 
-                    },*/
 % if( $c->stash->{user_action}->{'action.job.calendar.edit'} ) {
                     {  text: _loc('Update'),
                         handler: function(){ 
+                            var arr = new Array();
+                            cn_store.each( function(r) {
+                                arr.push( r.data[ cn_field_name ] );
+                            });
+                            try {
+                                var o = Ext.util.JSON.decode(arr.toString());
+                                cn_data.setValue( arr );
+                            }catch(JSONerror){
+                                cn_data.setValue( Ext.util.JSON.encode(arr));
+                            }
                             var ff = cal_form.getForm();
                             ff.submit({
                                 success: function(form, action) { Baseliner.message("<% _loc('Calendar') %>", action.result.msg); },
@@ -51,64 +171,116 @@
 % } 
                 ],
                 items: [
-                    {  xtype: 'hidden', name: 'id_cal', value: '<% $cal->id %>' },
-                    {  xtype: 'textfield',
-                        fieldLabel: _loc('Name'),
-                        name: 'name',
-                        value: '<% $cal->name %>',
-                        disabled: <% $readOnly %>
+                    {
+                    defaults : { width: 300},
+                    items:[
+                        {  xtype: 'hidden', name: 'id_cal', value: '<% $cal->id %>' },
+                        {  xtype: 'textfield',
+                            fieldLabel: _loc('Name'),
+                            name: 'name',
+                            value: '<% $cal->name %>',
+                            disabled: <% $readOnly %>
+                        },
+                            {  xtype: 'numberfield',
+                                fieldLabel: _loc('Priority'),
+                                name: 'seq',
+                                value: '<% $cal->seq %>',
+                                allowNegative: false,
+                                allowDecimals: false,
+                                minValue:1,
+                                maxValue:999,
+                                disabled: <% $readOnly %>
+                            },
+                            {  xtype: 'checkbox',
+                                fieldLabel: _loc('Active'),
+                                name: 'active',
+                                disabled: <% $readOnly %>,
+                                checked: <% $cal->active > 0 ? "true" : "false" %>
+                            },
+                            {  xtype: 'textarea',
+                                fieldLabel: _('Description'),
+                                name: 'description',
+                                value: '<% $cal->description %>',
+                                disabled: <% $readOnly %>
+                            }
+                       ]
                     },
-                    {  xtype: 'numberfield',
-                        fieldLabel: _loc('Priority'),
-                        name: 'seq',
-                        value: '<% $cal->seq %>',
-                        allowNegative: false,
-                        allowDecimals: false,
-                        minValue:1,
-                        maxValue:999,
-                        disabled: <% $readOnly %>
+                    {
+                    defaults : { width: 300},
+                    items:[
+                        {  xtype: 'combo', 
+                            name: 'bl', 
+                            hiddenName: 'bl',
+                            fieldLabel: _('Baseline'),
+                            mode: 'local', 
+                            editable: false,
+                            forceSelection: true,
+                            triggerAction: 'all',
+                            store: bl_store, 
+                            valueField: 'value',
+                            value: '<% $cal->bl  %>',
+                            displayField:'name', 
+                            allowBlank: false,
+                            disabled: <% $readOnly %>
+                        },
+                        {
+                            xtype:'fieldset',
+                            title: _loc('Namespace'),
+                            width: 410,
+                            disabled: <% $readOnly %>,
+                            items :[
+                                {  xtype: 'combo',
+                                    name: 'ns',
+                                    id: 'ns' + id,
+                                    hiddenName: 'ns',
+                                    fieldLabel: 'CAM',
+                                    mode: 'local',
+                                    editable: false,
+                                    forceSelection: true,
+                                    triggerAction: 'all',
+                                    store: app_store,
+                                    valueField: 'value',
+                                    value: '/',
+                                    displayField:'name',
+                                    allowBlank: true,
+                                    disabled: <% $readOnly %>
+                                },                        
+                                combo_nat,
+                                { xtype:'button',
+                                    text: 'Nuevo ' + _('Namespace'),
+                                    width: 388,
+                                    disabled: <% $readOnly %>,
+                                    handler: function() {
+                                        try {
+                                            var ___record = Ext.data.Record.create([{
+                                                name: cn_field_name,
+                                                type: 'string'
+                                            }]);
+                                            var h = {};
+                                            var arr = new Array();
+                                            if( Ext.getCmp('ns' + id).getValue() != '' || Ext.getCmp('natures' + id).getValue() != ''){
+                                                arr.push( Ext.getCmp('ns' + id).getValue() );
+                                                arr.push( Ext.getCmp('natures' + id).getValue() );
+                                                h[ cn_field_name ] = Ext.util.JSON.encode( arr );
+                                                var p = new ___record( h );
+                                                cn_store.add(p);
+                                                cn_store.reload();
+                                            }
+                                        }catch(mierror){
+                                            //alert("Error detectado: " + mierror.description)
+                                        }
+                                    }  
+                                }
+                            ]
+                        }
+                        ]
                     },
-                    {  xtype: 'checkbox',
-                        fieldLabel: _loc('Active'),
-                        name: 'active',
-                        disabled: <% $readOnly %>,
-                        checked: <% $cal->active > 0 ? "true" : "false" %>
-                    },
-                    {  xtype: 'textarea',
-                        fieldLabel: _('Description'),
-                        name: 'description',
-                        value: '<% $cal->description %>',
-                        disabled: <% $readOnly %>
-                    },
-                    {  xtype: 'combo', 
-                       name: 'ns', 
-                       hiddenName: 'ns',
-                       fieldLabel: _loc('Namespace'),
-                       mode: 'local', 
-                       editable: false,
-                       forceSelection: true,
-                       triggerAction: 'all',
-                       store: ns_store, 
-                       valueField: 'value',
-                       value: '<% $cal->ns  %>',
-                       displayField:'name', 
-                       allowBlank: false,
-                       disabled: <% $readOnly %>
-                    },
-                    {  xtype: 'combo', 
-                       name: 'bl', 
-                       hiddenName: 'bl',
-                       fieldLabel: _('Baseline'),
-                       mode: 'local', 
-                       editable: false,
-                       forceSelection: true,
-                       triggerAction: 'all',
-                       store: bl_store, 
-                       valueField: 'value',
-                       value: '<% $cal->bl  %>',
-                       displayField:'name', 
-                       allowBlank: false,
-                       disabled: <% $readOnly %>
+                    {
+                        defaults : { width: 400},
+                        items:[
+                            cn_data,
+                            cn_grid    
+                        ]
                     }
                 ]
     });
@@ -228,5 +400,4 @@
         }       
     });
     return panel;
-})
-
+})         

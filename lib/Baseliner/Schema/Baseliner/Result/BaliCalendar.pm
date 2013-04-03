@@ -28,7 +28,7 @@ __PACKAGE__->add_columns(
     data_type => "varchar2",
     default_value => "/",
     is_nullable => 0,
-    size => 100,
+    size => 1024,
   },
   "bl",
   {

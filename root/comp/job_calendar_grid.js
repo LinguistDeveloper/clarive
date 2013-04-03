@@ -1,6 +1,15 @@
 <%args>
     $can_edit => 0
 </%args>
+<%init>
+    my @namespaces =  $c->stash->{namespaces};
+    my (@array_app, @array_nat);
+    for(my $i=0; $i < scalar @{$namespaces[0]}; $i++){
+        push @array_app, \@{$namespaces[0][$i]} if $namespaces[0][$i][1] =~ m/Global/;
+        push @array_app, \@{$namespaces[0][$i]} if $namespaces[0][$i][0] =~ m/application/;
+        push @array_nat, \@{$namespaces[0][$i]} if $namespaces[0][$i][0] =~ m/nature/;
+    }
+</%init>
 (function(){
     var store=new Baseliner.JsonStore({
         root: 'data' , 
@@ -89,14 +98,44 @@
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         //Window
-                        var ns_store = new Ext.data.SimpleStore({ 
-                           fields: ['value', 'name', 'type' ], 
-                           data : <% js_dumper( $c->stash->{namespaces} ) %>
-                        }); 
+                        var ns_store = new Ext.data.SimpleStore({
+                            fields: ['value', 'name'],
+                            data : <% js_dumper( \@array_app ) %>
+                        });
+                        var nat_store = new Ext.data.SimpleStore({
+                            fields: ['value', 'name'],
+                            data : <% js_dumper( \@array_nat ) %>
+                        });
                         var bl_store = new Ext.data.SimpleStore({ 
                            fields: ['value', 'name'], 
                            data : <% js_dumper( $c->stash->{baselines} ) %>
                         }); 						
+                        var combo_nat = new Ext.ux.form.SuperBoxSelect({
+                            allowBlank: true,
+                            id: 'natures',
+                            msgTarget: 'under',
+                            allowAddNewData: true,
+                            addNewDataOnBlur: true,
+                            triggerAction: 'all',
+                            resizable: true,
+                            store: nat_store,
+                            mode: 'local',
+                            fieldLabel: _('Natures'),
+                            typeAhead: true,
+                            name: 'natures',
+                            displayField: 'name',
+                            hiddenName: 'natures',
+                            valueField: 'value',
+                            extraItemCls: 'x-tag',
+                            listeners: {
+                                newitem: function(bs,v, f){
+                                    var newObj = {
+                                        value: v
+                                    };
+                                    bs.addItem(newObj);
+                                }               
+                            }   
+                        });
                         var sm = grid.getSelectionModel();
                         var copyof = sm.hasSelection() ? sm.getSelected().get('id') : _('[Select a calendar]');
                         var new_cal = new Ext.FormPanel({
@@ -106,8 +145,15 @@
                             defaults: { width: 350 },
                             buttons: [
                                 {  text: _('OK'),
-                                    handler: function(){ 
+                                    handler: function(){
                                         var ff = new_cal.getForm();
+                                        var comboCAM = ff.findField('ns');
+                                        var comboNAT = ff.findField('natures');
+                                        var cam_nature = ff.findField('cam_natures');
+                                        var arr = new Array();
+                                        arr.push( comboCAM.getValue() );
+                                        arr.push( comboNAT.getValue() );
+                                        cam_nature.setValue( Ext.util.JSON.encode( arr ));
                                         var comboCopy = ff.findField('copyof');
                                         if(!comboCopy.disabled){
                                             if(comboCopy.getValue().search(/^\d+$/)>=0){
@@ -177,9 +223,10 @@
                                            valueField: 'id',
                                            displayField:'name', 
                                            allowBlank: false
-                                },								
+                                },
+                                {  xtype: 'hidden', id: 'cam_natures', name: 'cam_natures' },								
                                 {  xtype: 'combo', 
-                                           name: 'ns', 
+                                           name: 'ns',
                                            hiddenName: 'ns',
                                            fieldLabel: _('Namespace'), 
                                            resizable: true,
@@ -193,6 +240,7 @@
                                            displayField:'name', 
                                            allowBlank: false
                                 },
+                                combo_nat,
                                 {  xtype: 'combo', 
                                            name: 'bl', 
                                            hiddenName: 'bl',
@@ -212,7 +260,7 @@
                         });
                         var win = new Ext.Window({
                             layout: 'fit',
-                            height: 300, width: 550,
+                            height: 400, width: 550,
                             title: _('Create Calendar'),
                             items: new_cal
                         });
