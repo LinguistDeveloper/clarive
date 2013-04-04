@@ -366,8 +366,9 @@ sub children {
 
 # from Node
 has uri      => qw(is rw isa Str);   # maybe a URI someday...
-has resource => qw(is rw isa Baseliner::CI::URI), 
-                handles => qr/.*/;
+has resource => qw(is rw isa Baseliner::URI), 
+                # handles => qr/.*/  # ---> problematic, injects its URI methods into all CIs (host, port, etc)
+                ;
 
 has debug => qw(is rw isa Bool), default=>sub { $ENV{BASELINER_DEBUG} };
 
