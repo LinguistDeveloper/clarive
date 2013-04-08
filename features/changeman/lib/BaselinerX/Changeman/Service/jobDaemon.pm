@@ -485,8 +485,8 @@ sub run_once {
       ## Grabamos la ocurrencia del fichero.
       ## Si $cont>1 se tratarÃ¡ de un reinicio. Damos tratamiento especifico.
       $cont=$self->logCHMFile({filename=>$fichero, complete_filename=>$filename, key=>$key});
+      $logrow=$runner->logger->warn( _loc( "Restarted job %1 en site %2", $jobname, $site ) ) if !$job->rollback && $cont gt 1 && $file->{jobname} !~ m{FIN(..)}i && $file->{jobname} !~ m{SITE(..)}i;
       if ( !$job->rollback && $cont gt 1 && $job->status eq 'SITEERROR' && $file->{jobname} !~ m{FIN(..)}i && $file->{jobname} !~ m{SITE(..)}i ) {
-          $logrow=$runner->logger->warn( _loc( "Restarted job %1 en site %2", $jobname, $site ) );
           $runner->status('WAITING');
       }
 
@@ -526,7 +526,7 @@ sub run_once {
               $ddname=~s{\s*$}{};
               $ddname=~s{^\.}{};
               my $jobname=$file->{jobname};
-              $jobname.=" ($cont)" if $cont gt 1;
+              $jobname.=" (".($cont-1).")" if $cont gt 1;
               $ddname="/$pkg/$site/$jobname/$ddname";
               my $path="/$pkg/$site/$jobname";
               my $logdata=$logrow->bali_log_datas->create({
@@ -613,6 +613,7 @@ sub logCHMFile {
         Baseliner->model('Baseliner::BaliChmFiles')->search({key=>$p->{key}})->update({jobid=>$jobid}) if $jobid;
         Baseliner->model('Baseliner::BaliChmFiles')->search({key=>$p->{key}})->update({username=>$username}) if $username;
         $cnt=Baseliner->model('Baseliner::BaliChmFiles')->search({filename=>$p->{filename}})->count;
+        _debug "Logging $cnt occurrence of " . $p->{complete_filename};
         return $cnt;
     } catch {
         _debug "Error during Changeman file log";

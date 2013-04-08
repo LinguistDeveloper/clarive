@@ -66,7 +66,7 @@ sub spool_files {
                $jobname=~s{\xD1}{#};
                my $ord=$jobname=~m{USERID$}?0:$jobname=~m{SITEOK$}?2:$jobname=~m{FINOK$}?3:1;
                +{
-                  ord=>"$key.$ord.$jobname",
+                  ord=>"$key.$bl.$trash.$ord.$jobname",
                   date=>$date,
                   mdate=> $mdates{ $filename },
                   app=>$app,
