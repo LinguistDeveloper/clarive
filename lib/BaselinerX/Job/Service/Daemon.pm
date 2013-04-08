@@ -90,7 +90,6 @@ sub job_daemon {
             # Jobs killed externally
             {
                 status => 'MUST_DIE',
-                step   => 'RUN',
             }
         );
 
