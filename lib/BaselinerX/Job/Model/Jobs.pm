@@ -173,6 +173,11 @@ sub resume {
     my $silent = $p{silent}||0;
     my $runner = BaselinerX::Job::Service::Runner->new_from_id( jobid=>$id, same_exec=>1, exec=>'last', silent=>$silent );
     $runner->logger->warn( _loc('Job resumed by user %1', $p{username} ) ) if ! $silent;
+
+    my $now = DateTime->now;
+    $now->set_time_zone(_tz);
+    my $ora_now =  $now->strftime('%Y-%m-%d %T');
+    $job->endtime( $ora_now );
     $job->status($status);
     $job->update;
 }
