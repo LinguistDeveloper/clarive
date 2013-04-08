@@ -286,6 +286,7 @@ sub job_run {
                 # prepare rollback:
                 $self->logger->info( _loc('Starting job rollback for step %1', $step) );
                 my $r = $self->row;
+                $r->endtime( _now ); 
                 $r->now( 1 ); # schedule it for immediate execution
                 $r->rollback( 1 );
                 $r->step( 'PRE' );
