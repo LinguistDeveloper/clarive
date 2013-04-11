@@ -1,9 +1,3 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
 /**
  * @class Ext.Window
  * @extends Ext.Panel
@@ -432,7 +426,7 @@ Ext.Window = Ext.extend(Ext.Panel, {
 
     // private
     updateHandles : function(){
-        if(Ext.isIE && this.resizer){
+        if(Ext.isIE9m && this.resizer){
             this.resizer.syncHandleHeight();
             this.el.repaint();
         }
@@ -1431,7 +1425,7 @@ Ext.MessageBox = function(){
             if(opt.progress === true || opt.wait === true){
                 progressBar.setSize(w-iw-fw-bw);
             }
-            if(Ext.isIE && w == bwidth){
+            if(Ext.isIE9m && w == bwidth){
                 w += 4; //Add offset when the content width is smaller than the buttons.    
             }
             msgEl.update(text || '&#160;');

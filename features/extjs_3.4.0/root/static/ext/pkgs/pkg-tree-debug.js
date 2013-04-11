@@ -1,9 +1,3 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
 /**
  * @class Ext.tree.TreePanel
  * @extends Ext.Panel
@@ -909,14 +903,6 @@ new Ext.tree.TreePanel({
      * @event beforeadd
      * @hide
      */
-    /**
-     * @event beforeremove
-     * @hide
-     */
-    /**
-     * @event remove
-     * @hide
-     */
 
 
 
@@ -1192,8 +1178,8 @@ Ext.tree.DefaultSelectionModel = Ext.extend(Ext.util.Observable, {
              * @event beforeselect
              * Fires before the selected node changes, return false to cancel the change
              * @param {DefaultSelectionModel} this
-             * @param {TreeNode} node the new selection
-             * @param {TreeNode} node the old selection
+             * @param {TreeNode} newNode the new selection
+             * @param {TreeNode} oldNode the old selection
              */
             'beforeselect'
         );
@@ -1412,7 +1398,7 @@ Ext.tree.MultiSelectionModel = Ext.extend(Ext.util.Observable, {
      * Select a node.
      * @param {TreeNode} node The node to select
      * @param {EventObject} e (optional) An event associated with the selection
-     * @param {Boolean} keepExisting True to retain existing selections
+     * @param {Boolean} keepExisting (optional) True to retain existing selections
      * @return {TreeNode} The selected node
      */
     select : function(node, e, keepExisting){
@@ -4176,7 +4162,7 @@ Ext.tree.TreeFilter.prototype = {
 new Ext.tree.TreeSorter(myTree, {
     folderSort: true,
     dir: "desc",
-    sortType: function(node) {
+    sortType: function(value, node) {
         // sort by a custom, typed attribute:
         return parseInt(node.id, 10);
     }
@@ -4207,10 +4193,10 @@ Ext.tree.TreeSorter = Ext.extend(Object, {
      */
     /**
      * @cfg {Function} sortType A custom "casting" function used to convert node values before sorting.  The function
-     * will be called with a single parameter (the {@link Ext.tree.TreeNode} being evaluated) and is expected to return
-     * the node's sort value cast to the specific data type required for sorting.  This could be used, for example, when
+     * will be called with a two parameters, the {@link #property} value for the node and the {@link Ext.tree.TreeNode} being evaluated. 
+     * It is expected to return the node's sort value cast to the specific data type required for sorting.  This could be used, for example, when
      * a node's text (or other attribute) should be sorted as a date or numeric value.  See the class description for
-     * example usage.  Note that if a sortType is specified, any {@link #property} config will be ignored.
+     * example usage.
      */
 
     Ext.apply(this, config);
@@ -4246,8 +4232,8 @@ Ext.tree.TreeSorter = Ext.extend(Object, {
         }
         var prop1 = attr1[prop],
             prop2 = attr2[prop],
-            v1 = sortType ? sortType(prop1) : (caseSensitive ? prop1 : prop1.toUpperCase()),
-            v2 = sortType ? sortType(prop2) : (caseSensitive ? prop2 : prop2.toUpperCase());
+            v1 = sortType ? sortType(prop1, n1) : (caseSensitive ? prop1 : prop1.toUpperCase()),
+            v2 = sortType ? sortType(prop2, n2) : (caseSensitive ? prop2 : prop2.toUpperCase());
             
         if(v1 < v2){
             return desc ? 1 : -1;

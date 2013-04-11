@@ -1,9 +1,3 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
 /**
  * @class Ext.data.XmlWriter
  * @extends Ext.data.DataWriter
@@ -197,7 +191,6 @@ var myReader = new Ext.data.XmlReader({
  * @cfg {String} totalProperty The DomQuery path from which to retrieve the total number of records
  * in the dataset. This is only needed if the whole dataset is not passed in one go, but is being
  * paged from the remote server.
- * @cfg {String} record The DomQuery path to the repeated element which contains record information.
  * @cfg {String} record The DomQuery path to the repeated element which contains record information.
  * @cfg {String} successProperty The DomQuery path to the success attribute used by forms.
  * @cfg {String} idPath The DomQuery path relative from the record element to the element that contains

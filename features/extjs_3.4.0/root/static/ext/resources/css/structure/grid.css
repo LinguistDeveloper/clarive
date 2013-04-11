@@ -1,9 +1,3 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
 /* Grid3 styles */
 .x-grid3 {
 	position:relative;
@@ -544,6 +538,11 @@ a.x-grid3-hd-btn:hover {
 .ext-ie6 .x-grid3 .x-editor .x-form-text, .ext-ie7 .x-grid3 .x-editor .x-form-text {
     position:relative;
     top:-1px;
+}
+
+.x-grid-editor .x-form-check-wrap {
+    text-align: center;
+    margin-top: -4px;
 }
 
 .ext-ie .x-props-grid .x-editor .x-form-text {

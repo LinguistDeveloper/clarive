@@ -1,9 +1,3 @@
-/*!
- * Ext JS Library 3.4.0
- * Copyright(c) 2006-2011 Sencha Inc.
- * licensing@sencha.com
- * http://www.sencha.com/license
- */
 /**
  * @class Ext.grid.PropertyRecord
  * A specific {@link Ext.data.Record} type that represents a name/value pair and is made to work with the
@@ -302,9 +296,6 @@ var grid = new Ext.grid.PropertyGrid({
     }
 });
 </code></pre>
-    */
-    /**
-    * @cfg {Object} source A data object to use as the data source of the grid (see {@link #setSource} for details).
     */
     /**
     * @cfg {Object} customRenderers An object containing name/value pairs of custom renderer type definitions that allow
