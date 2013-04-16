@@ -9,7 +9,9 @@ sub storage { 'BaliProject' }
 
 has_cis 'repositories';
 
-sub rel_type { { repositories=>[ from_mid => 'project_repository'] } }
+sub rel_type { 
+    { repositories=>[ from_mid => 'project_repository'] }
+}
 
 around table_update_or_create => sub {
    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
