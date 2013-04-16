@@ -105,7 +105,7 @@ sub list : Local {
 sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-
+    
     $p->{username} = $c->username;
     
     try  {    

@@ -9,7 +9,7 @@
     var form_topic = new Ext.FormPanel({
         url:'/topic/update',
         bodyStyle: {
-          'padding': '5px 90px 5px 90px'
+          'padding': '5px 50px 5px 50px'
         },
         id: unique_id_form,
         border: false,
