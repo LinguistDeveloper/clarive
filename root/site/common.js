@@ -65,6 +65,7 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/tabfu.js', 'js' );
     Baseliner.loadFile( '/site/model.js', 'js' );
     Baseliner.loadFile( '/site/explorer.js', 'js' ); 
+    Baseliner.loadFile( '/site/editors.js', 'js' ); 
     Baseliner.loadFile( '/site/portal/Portal.js', 'js' );
     Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
@@ -1322,82 +1323,6 @@ Baseliner.JitTree = function(c){
     };
 };
 Ext.extend( Baseliner.JitTree, Ext.Panel ); 
-
-Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
-    initComponent : function(){
-        var self = this;
-        Baseliner.HtmlEditor.superclass.initComponent.call(this);
-        if( Ext.isChrome ) {
-            this.on('initialize', function(ht){
-                ht.iframe.contentDocument.onpaste = function(e){ 
-                    var items = e.clipboardData.items;
-                    var blob = items[0].getAsFile();
-                    var reader = new FileReader();
-                    reader.onload = function(event){
-                        self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
-                    }; 
-                    reader.readAsDataURL(blob); 
-                };
-            }, this);
-        }
-    }
-});
-
-Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
-    fullscreen: false,
-    initComponent : function(){
-        var self = this;
-        Baseliner.CLEditor.superclass.initComponent.call(this);
-        this.on('afterrender', function(){
-            $.cleditor.buttons.fullscreen = {
-                name: 'fullscreen',
-                image: '../../images/silk/arrow_inout.png',
-                tooltip: 'full screen',
-                title: "Full Screen",
-                command: "fullscreen",
-                popupName: "fullscreen",
-                getEnabled: function(){ return true },
-                buttonClick: function(){
-                    if( self.fullscreen ) {
-                        var main = self.cleditor.$main[0];
-                        $(main).css({ position:'', top:'', left:'', bottom:'', right:'' });
-                        self.$lastParent.appendChild( main );
-                        self.fullscreen = false;
-                    } else {
-                        var main = self.cleditor.$main[0];
-                        $(main).css({ position:'absolute', top:0, left:0, bottom:0, right:0, 'z-index':9999 });
-                        self.$lastParent = main.parentElement;
-                        document.body.appendChild( main );
-                        self.fullscreen = true;
-                    }
-                }
-            };
-            var c = Ext.apply({width:"100%", height:"100%", controls:
-                "bold italic underline strikethrough subscript superscript | font size " +
-                "style | color highlight removeformat | bullets numbering | outdent " +
-                "indent | alignleft center alignright justify | undo redo | " +
-                "rule image link unlink | cut copy paste pastetext | print source fullscreen"
-            }, self );
-            this.cleditor = $( self.el.dom ).cleditor(c)[0];
-            this.cleditor.focus();
-        });
-        if( Ext.isChrome ) {
-            setTimeout( function(){  // TODO detect when the CLEditor is loaded
-                self.cleditor.$frame[0].contentDocument.onpaste = function(e){ 
-                    var items = e.clipboardData.items;
-                    var blob = items[0].getAsFile();
-                    var reader = new FileReader();
-                    reader.onload = function(event){
-                        self.cleditor.execCommand('inserthtml',
-                            String.format('<img src="{0}" />', event.target.result) );
-                        //self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
-                    }; 
-                    reader.readAsDataURL(blob); 
-                };
-            }, 800);
-        }
-    }
-});
 
 function returnOpposite(hexcolor) {
     var r = parseInt(hexcolor.substr(0,2),16);
