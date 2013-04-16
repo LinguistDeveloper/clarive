@@ -917,7 +917,7 @@ sub filters_list : Local {
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     #checked => \0,
-                    checked => $c->req->params->{id_category} eq $_->{id} ? \1: \0,
+                    checked => ( $c->req->params->{id_category} && $c->req->params->{id_category} eq $_->{id} ) ? \1: \0,
                     leaf    => 'true',
                     uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
