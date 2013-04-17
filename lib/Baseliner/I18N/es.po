@@ -4372,3 +4372,57 @@ msgstr "ENVIAR"
 
 msgid "EXCLUDE"
 msgstr "EXCLUIR"
+
+msgid "Notification added"
+msgstr "Notificación añadida"
+
+msgid "Error adding notification"
+msgstr "Error añadiendo notificación"
+
+msgid "Scopes"
+msgstr "Ámbitos"
+
+msgid "project"
+msgstr "Proyecto"
+
+msgid "category_status"
+msgstr "Categoría/Estado"
+
+msgid "Groups"
+msgstr "Grupos"
+
+msgid "Create recipient"
+msgstr "Crear destinatario"
+
+msgid "Create notification"
+msgstr "Crear notificación"
+
+msgid "Are you sure you want to deactivate the notifications selected?"
+msgstr "¿Seguro que quiere desactivar las notificaciones seleccionadas?"
+
+msgid "Are you sure you want to delete the notifications selected?"
+msgstr "¿Seguro que quiere borrar las notificaciones seleccionadas?"
+
+msgid "Notifications deleted"
+msgstr "Notificaciones borradas"
+
+msgid "Error deleting notifications"
+msgstr "Error borrando notificaciones"
+
+msgid "Notifications activated"
+msgstr "Notificaciones activadas"
+
+msgid "Notifications deactivated"
+msgstr "Notificaciones desactivadas"
+
+msgid "Error modifying the notification"
+msgstr "Error modificando la notificación"
+
+msgid "Default"
+msgstr "Por defecto"
+
+msgid "Edit notification"
+msgstr "Editar notificación"
+
+
+

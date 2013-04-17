@@ -992,6 +992,32 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     }
 });
 
+Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+		    text: _('Activate'),
+		    icon:'/static/images/start.gif',
+		    cls: 'x-btn-text-icon',			
+		    disabled: true
+			//iconCls: 'sprite delete'
+	    }, config);
+	    Baseliner.Grid.Buttons.Start.superclass.constructor.call(this, config);
+    }
+});
+
+Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
+    constructor: function(config) {
+	    config = Ext.apply({
+			text: _('Deactivate'),
+			icon:'/static/images/stop.gif',
+			disabled: true,
+			cls: 'x-btn-text-icon'
+				//iconCls: 'sprite delete'
+	    }, config);
+	    Baseliner.Grid.Buttons.Stop.superclass.constructor.call(this, config);
+    }
+});
+
 // Baseliner.gantt = function( format ) {
 //     var divTag = document.createElement("div");  
 //     divTag.setAttribute("align", "center");           
@@ -1559,8 +1585,8 @@ Ext.extend( Baseliner.JitRGraph, Ext.Panel );
 Baseliner.loading_panel = function(){
     return new Ext.Container({
         html: [ 
-            '<div id="bali-loading-mask" style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>',
-            '<div id="bali-loading" style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">',
+            '<div style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>',
+            '<div style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">',
             '<center>',
             '<img style="" src="/static/images/loading.gif" />',
             '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
