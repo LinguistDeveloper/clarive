@@ -3,7 +3,6 @@ name: Tasks
 params:
     html: '/fields/system/html/field_tasks.html'
     js: '/fields/system/js/list_tasks.js'
-    relation: 'system'
     type: 'listbox'    
     field_order: 101
     section: 'details'
@@ -193,18 +192,17 @@ params:
         refresh_field();
     });
     
-    /*
-    if( ! params ) params = {};
-    if( ! params.topic_data ) params.topic_data = {};
-	var data = eval('params.topic_data.' + meta.id_field) || [];
-
-    Ext.each( data, function(row){
-        var r = new revision_store.recordType( row, row.mid );
-        revision_store.add( r );
-        revision_store.commitChanges();
-        refresh_field();
-    });
-    */
+    console.log( data );
+    var grid_data = data[ meta.id_field ];
+    grid_data = Ext.util.JSON.decode( grid_data );
+    if( Ext.isArray( grid_data ) ) {
+        Ext.each( grid_data, function(row){
+            var r = new store_tasks.recordType( row, row.id );
+            store_tasks.add( r );
+            store_tasks.commitChanges();
+            refresh_field();
+        });
+    }
 	
 	return [
 		{
