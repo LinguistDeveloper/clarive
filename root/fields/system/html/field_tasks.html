@@ -3,3 +3,24 @@
     $data
 </%args>
 
+% use Baseliner::Utils;
+
+
+% if( $data->{$meta->{id_field}} ) {
+    <ul class="nav nav-list">
+        <li class="nav-header">
+            <% _loc($meta->{name_field}) %>
+        </li>
+    </ul>
+    
+    <ul class="" style="margin-left: 20px">
+% foreach my $task ( _array(  _decode_json ($data->{$meta->{id_field}}) ) ) {
+        <li style="margin: 6px 0px 6px 0px;">
+            <span class="label" onclick="javascript:Baseliner.show_topic(<% $task->{id_task} %>, '<% $task->{task} %>')" 
+            style="padding:2px 8px 2px 8px;cursor:pointer;background: <% $task->{color} %>"><% $task->{task} %></span>
+            &nbsp;&nbsp;<b><% $task->{status} %></b>&nbsp;&nbsp;
+
+        </li>
+% }
+    </ul>
+% }
