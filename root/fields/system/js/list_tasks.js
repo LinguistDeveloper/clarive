@@ -5,8 +5,6 @@ params:
     js: '/fields/system/js/list_tasks.js'
     relation: 'system'
     type: 'listbox'    
-    get_method: 'get_topics'    
-    set_method: 'set_topics'
     field_order: 101
     section: 'details'
     filter: 'none'
@@ -48,6 +46,7 @@ params:
 				});
 				
 				store_tasks.commitChanges();
+                refresh_field();
 				win_tasks.close();
 			}
 			delete names_topics;
@@ -113,10 +112,19 @@ params:
 				name: 'id_task',
 				name: 'task',
 				name: 'color',
-				name: 'status'
+				name: 'status',
+				name: 'observation'
 			}
 		]														   
 	});
+    var field = new Ext.form.TextField({ hidden: true, name: meta.id_field });
+    var refresh_field = function(){
+        var data = [];
+        store_tasks.each( function(task){
+            data.push( task.data );
+        });
+        field.setValue( Ext.util.JSON.encode( data ) );
+    };
 	
     var show_task = function(value, metadata, rec, rowIndex, colIndex, store) {
         var color = rec && rec.data ? rec.data.color : '';
@@ -136,7 +144,7 @@ params:
 		
 		
     var status = new Ext.data.SimpleStore({ fields:['status', 'name'] ,data: [['OK',_('OK')], ['PED',_('PENDIENTE')], ['ERR','ERROR']] });
-
+    
 	var grid_tasks = new Ext.grid.EditorGridPanel({
 		style: 'border: solid #ccc 1px',
 		store: store_tasks,
@@ -152,17 +160,18 @@ params:
 			btn_delete_tasks
 		],			
 		columns: [
-			{ width: 50, dataIndex: 'task', renderer: show_task},
+			{ width: 80, dataIndex: 'task', renderer: show_task},
 			{ width: 200, dataIndex: 'description' },
 			{
 				dataIndex: 'status',
 				renderer: show_status,
 				width: 50,
 				editor: new Ext.form.ComboBox({
-					value: true, hiddenName:'status',
-					typeAhead: true, valueField: 'status', displayField:'name', mode: 'local', store: status,
+					//value: true, //hiddenName:'status',
+					typeAhead: true, valueField: 'status', 
+                    displayField: 'name', 
+                    mode: 'local', store: status,
 					forceSelection: true, triggerAction: 'all',
-					editable: false, css: '' , width: 350, lazyRender:true,
 					listClass: 'x-combo-list-small'
 				})
 			},
@@ -170,7 +179,7 @@ params:
 				dataIndex: 'observation',
 				width: 100,
 				editor: new Ext.form.TextArea({
-					name: 'observation',
+					//name: 'observation',
 					height: 130,
 					enableKeyEvents: true,
 					//fieldLabel: _('Description'),
@@ -179,6 +188,23 @@ params:
 			}			
 		]
 	});	
+    
+    grid_tasks.on('afteredit', function(){
+        refresh_field();
+    });
+    
+    /*
+    if( ! params ) params = {};
+    if( ! params.topic_data ) params.topic_data = {};
+	var data = eval('params.topic_data.' + meta.id_field) || [];
+
+    Ext.each( data, function(row){
+        var r = new revision_store.recordType( row, row.mid );
+        revision_store.add( r );
+        revision_store.commitChanges();
+        refresh_field();
+    });
+    */
 	
 	return [
 		{
@@ -191,6 +217,7 @@ params:
 		  autoEl: {cn: '<br>'},
 		  hidden: meta ? (meta.hidden ? meta.hidden : false): true		  
 		},			
-		grid_tasks
+		grid_tasks,
+        field
     ]
 })
