@@ -78,6 +78,12 @@
 			fields: ['key']   
 		});
 		
+		store_events.on('load', function(ds, records, o){
+			if(rec && rec.data){
+				cb_events.setValue( rec.data.event_key );            
+			}
+		});		
+		
 		store_events.load();
 		
 		var cb_events = new Ext.ux.form.SuperBoxSelect({
@@ -116,6 +122,21 @@
 							switch (scopes[i]){
 								case 'project':
 									var store_projects = new Baseliner.store.UserProjects({ id: 'id', baseParams: { include_root: true } });
+									
+									store_projects.on('load', function(ds, records, o){
+										if(rec && rec.data){
+											var ids_project = new Array();
+											
+											if(rec.data.data.scopes.project.length == 1 && rec.data.data.scopes.project[0][0] == '*'){
+												chk_projects.setValue(true);
+											}else{
+												for(i=0; i < rec.data.data.scopes.project.length;i++){
+													ids_project.push(rec.data.data.scopes.project[i][0]);
+												}
+												cb_projects.setValue( ids_project );            
+											}
+										}
+									});										
 		
 									var cb_projects = new Baseliner.model.Projects({
 										id: 'project',
@@ -167,6 +188,21 @@
 									var store_categories = new Baseliner.Topic.StoreCategory({
 										fields: ['id', 'name', 'color' ] 	
 									});
+									
+									store_categories.on('load', function(ds, records, o){
+										if(rec && rec.data){
+											var ids_category = new Array();
+											
+											if(rec.data.data.scopes.category.length == 1 && rec.data.data.scopes.category[0][0] == '*'){
+												chk_categories.setValue(true);
+											}else{
+												for(i=0; i < rec.data.data.scopes.category.length;i++){
+													ids_category.push(rec.data.data.scopes.category[i][0]);
+												}
+												cb_categories.setValue( ids_category );            
+											}
+										}
+									});									
 									
 									var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
 										'<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: #FFFFFF;background:{color}">{name}</span> </span>',
@@ -245,10 +281,38 @@
 			})
 		});
 		
+		var store_templates = new Baseliner.JsonStore({
+			url: '/notification/get_templates',
+			root: 'data',
+			fields: ['name','path']   
+		});
+		
+		store_templates.on('load', function(ds, records, o){
+			if(rec && rec.data){
+				cb_templates.setValue( rec.data.template_path );            
+			}
+		});		
+		
+		store_templates.load();		
+		
+		var cb_templates = new Ext.ux.form.SuperBoxSelect({
+			mode: 'local',
+			triggerAction: 'all',
+			forceSelection: true,
+			editable: false,
+			fieldLabel: _('Template'),
+			name: 'template',
+			hiddenName: 'template',
+			displayField : 'name',
+			valueField: 'path',
+			store: store_templates,
+			singleMode: true,
+			tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> </span></div></tpl>'
+		});		
+		
         var names_recipients = new Object();
 		
 		var add_edit_recipients = function (){
-
 			var store_carriers = new Baseliner.JsonStore({
 				url: '/notification/list_carriers',
 				fields: ['carrier']   
@@ -286,13 +350,13 @@
 				valueField: 'type_recipient',
 				store: store_type_recipients,
 				singleMode: true,
-				tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{type_recipient}</strong> {description}</span></div></tpl>'
+				tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{[_(values.type_recipient)]}</strong> {description}</span></div></tpl>'
 			});
 			
 			cb_type_recipient.on('additem', function(combo, value, record) {
-				Ext.getCmp("pnl_recipient").hide();
-				col1_recipient.removeAll();
-				col2_recipient.removeAll();					
+				//Ext.getCmp("pnl_recipient").hide();
+				//col1_recipient.removeAll();
+				//col2_recipient.removeAll();					
 	
 				Baseliner.ajaxEval( '/notification/get_recipients/' + value, {}, function(res) {
 					if(res.success){
@@ -322,6 +386,7 @@
 									});
 									
 									var chk_recipient = new Ext.form.Checkbox({
+										//id: 'chk_recipients',
 										name:'chk_recipients',
 										boxLabel:_('All'),
 										listeners: {
@@ -336,8 +401,19 @@
 										}
 									});
 									
-									col1_recipient.add(obj_recipient);
-									col2_recipient.add(chk_recipient);
+									//col1_recipient.add(obj_recipient);
+									//col2_recipient.add(chk_recipient);
+									
+									Ext.getCmp("pnl_recipient").add(
+										{
+											columnWidth: 0.85,
+											items: obj_recipient
+										},
+										{
+											columnWidth: 0.15,
+											labelWidth: 5,
+											items: chk_recipient
+									});
 									Ext.getCmp("pnl_recipient").show();
 									break;
 								case 'textfield':
@@ -348,6 +424,9 @@
 											emptyText: 'test1@clarive.com, test2@clarive.com, ...'
 										}
 									)
+									break;
+								case 'none':
+									Ext.getCmp("pnl_recipient").destroy();
 									break;
 							}
 							
@@ -364,31 +443,54 @@
 			
 			store_type_recipients.load();		
 		
-			var col1_recipient = new Ext.FormPanel();
-			var col2_recipient = new Ext.FormPanel({
-				defaults: {height: 30}
-			});
+			//var col1_recipient = new Ext.FormPanel();
+			//var col2_recipient = new Ext.FormPanel({
+			//	defaults: {height: 30}
+			//});
 			
 			var add_recipients = function (){
 				if (cb_carriers.getValue() != '' && cb_type_recipient.getValue() != ''){
 					var id, d, r;
 					var carriers = cb_carriers.getValue().split(',');
-					var ids = form_recipients.getForm().findField("obj_recipient").getValue().split(',');
+					
+					var ids = [];
 					var is_text = false;
+					
+					if(form_recipients.getForm().findField("obj_recipient")){
+						ids = form_recipients.getForm().findField("obj_recipient").getValue().split(',');	
+					}
+					
+
 					Ext.each(carriers, function(carrier){
-						if(form_recipients.getForm().findField("obj_recipient").xtype == 'textfield'){
+						if(form_recipients.getForm().findField("obj_recipient") && form_recipients.getForm().findField("obj_recipient").xtype == 'textfield'){
 							is_text = true;
 						}
-						Ext.each(ids, function (id_recipient){
+					
+						if(ids.length == 0){
 							id = store_recipients.getCount() + 1;
-							d = { id: id, recipients: carrier, type: cb_type_recipient.getValue(), items_id: id_recipient, items_name: is_text ? id_recipient : names_recipients[id_recipient] };
+							d = { id: id, recipients: carrier, type: _(cb_type_recipient.getValue())};
+							r = new store_recipients.recordType( d, id );
+							store_recipients.add( r );								
+						}
+						
+						Ext.each(ids, function (id_recipient){
+							id_recipient = id_recipient.replace(/^\s+|\s+$/g, '');
+							id = store_recipients.getCount() + 1;
+							if(!id_recipient){
+								var obj_chk_all = form_recipients.getForm().findField("chk_recipients");
+								if(obj_chk_all && obj_chk_all.getValue()){
+									id_recipient = '*';
+									names_recipients[id_recipient] = _('All');
+								}
+							}
+							d = { id: id, recipients: carrier, type: _(cb_type_recipient.getValue()), items_id: id_recipient, items_name: is_text ? id_recipient : names_recipients[id_recipient] };
 							r = new store_recipients.recordType( d, id );
 							store_recipients.add( r );						
 							
 							
 						});
 					});
-
+					
 					store_recipients.commitChanges();
 					win_recipients.close();
 				}
@@ -398,7 +500,10 @@
 			var form_recipients = new Ext.FormPanel({
 				frame: true,
 				padding: 15,
-				defaults: {height: 30, anchor: '100%'},
+				defaults: {
+					height: 40,
+					anchor: '100%'
+				},
 				items: [
 					{
 						layout:'column',
@@ -423,18 +528,19 @@
 						hidden: true,
 						defaults:{
 							layout:'form'
-						},
-						items:[
-							{
-								columnWidth: 0.85,
-								items: col1_recipient
-							},
-							{
-								columnWidth: 0.15,
-								labelWidth: 5,
-								items: col2_recipient
-							}
-						]
+						}
+						//,
+						//items:[
+						//	{
+						//		columnWidth: 0.85,
+						//		items: col1_recipient
+						//	},
+						//	{
+						//		columnWidth: 0.15,
+						//		labelWidth: 5,
+						//		items: col2_recipient
+						//	}
+						//]
 					}					
 				],
 				buttons: [
@@ -443,7 +549,7 @@
 				]
 			});
 			
-			title = _('Create Recipients');
+			title = _('Create recipient');
 			
 			win_recipients = new Ext.Window({
 				title: _(title),
@@ -531,7 +637,11 @@
 			if (form.isValid()) {
 				var params = new Object();
 				params = {};
-				
+
+				if(rec && rec.data){
+					params.id = rec.data.id;
+				};
+								
 				if(form.findField('project') && form.findField('project').getValue() != ''){
 					var projects = form.findField('project').getValue().split(',');
 					var projects_names = new Array();
@@ -572,6 +682,7 @@
 					success: function(f,a){
 						
 						Baseliner.message(_('Success'), a.result.msg );
+						store_notifications.reload();
 					}
 				});
 			}
@@ -598,11 +709,13 @@
 								{
 									xtype: 'radiogroup',
 									cls: 'x-check-group-alt',
+									name: 'rd_actions',
 									items: actions
 								}
 						}
 					]
-				},				
+				},
+				cb_templates,
 				{
 					xtype: 'panel',
 					fieldLabel: _('Recipients'),
@@ -617,8 +730,30 @@
         
         if(rec){
             var ff = form_notification.getForm();
-            ff.loadRecord( rec );
-            //username = rec.get('username');
+            ff.loadRecord( rec.data );
+			ff.findField('rd_actions').setValue(rec.data.action);
+
+			for (carrier in rec.data.data.recipients){
+				for (type in rec.data.data.recipients[carrier]){
+					
+					if(rec.data.data.recipients[carrier][type].length > 0){
+						for(i=0; i < rec.data.data.recipients[carrier][type].length;i++ ){
+							id = store_recipients.getCount() + 1;
+							d = { id: id, recipients: carrier, type: _(type), items_id: rec.data.data.recipients[carrier][type][i][0], items_name: rec.data.data.recipients[carrier][type][i][1]};
+							r = new store_recipients.recordType( d, id );
+							store_recipients.add( r );							
+						}
+						
+					}else{
+						id = store_recipients.getCount() + 1;
+						d = { id: id, recipients: carrier, type: _(type)};
+						r = new store_recipients.recordType( d, id );
+						store_recipients.add( r );						
+					}
+				}
+			}
+			store_recipients.commitChanges();
+			
             title = 'Edit notification';
         }
 		
@@ -634,43 +769,28 @@
         win.show();
     };
 	
-    var btn_start = new Ext.Toolbar.Button({
-        text: _('Activate'),
-        icon:'/static/images/start.gif',
-        disabled: true,
-        cls: 'x-btn-text-icon',
+    var btn_start = new Baseliner.Grid.Buttons.Start({
         handler: function() {
-            var sm = grid.getSelectionModel();
-            if (sm.hasSelection()) {
-                var rec = sm.getSelected();
-                var id = rec.data.id;
-                Baseliner.ajaxEval( '/notification/change_active', { id: id, action: 'start' },
-                    function(resp){
-                        Baseliner.message( _('Success'), resp.msg );
-                        store.load();
-                    }
-                );
-            } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));   
-            };
+            var notifications_checked = getNotifications();
+			Baseliner.ajaxEval( '/notification/change_active', { ids_notification: notifications_checked, action: 'active' },
+				function(resp){
+					Baseliner.message( resp.success ? _('Success') : _('ERROR'), _(resp.msg) );
+					store_notifications.load();
+				}
+			);
         }
     });
 
-    var btn_stop = new Ext.Toolbar.Button({
-        text: _('Deactivate'),
-        icon:'/static/images/stop.gif',
-        disabled: true,
-        cls: 'x-btn-text-icon',
+    var btn_stop = new Baseliner.Grid.Buttons.Stop({
         handler: function() {
-            var sm = grid.getSelectionModel();
-            var sel = sm.getSelected();
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to deactivate the chain') + ' <b>' + sel.data.name  + '</b>?', 
+			var notifications_checked = getNotifications();
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to deactivate the notifications selected?'), 
                 function(btn){ 
                     if(btn=='yes') {
-                        Baseliner.ajaxEval( '/notification/change_active', { id: sel.data.id, action: 'stop' },
+                        Baseliner.ajaxEval( '/notification/change_active', { ids_notification: notifications_checked, action: 'deactive' },
                             function(resp){
-                                Baseliner.message( _('Success'), resp.msg );
-                                store.load();
+                                Baseliner.message( resp.success ? _('Success') : _('ERROR'), _(resp.msg) );
+                                store_notifications.load();
                             }
                         );
                     }
@@ -687,13 +807,36 @@
 	
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
         handler: function() {
-
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                add_edit(sel);
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));    
+            };
         }       
     });
 	
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
         handler: function() {
-
+            var notifications_checked = getNotifications();
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the notifications selected?'), 
+            function(btn){ 
+                if(btn=='yes') {
+                    Baseliner.ajaxEval( '/notification/remove_notifications',{ ids_notification: notifications_checked },
+                        function(response) {
+                            if ( response.success ) {
+                                Baseliner.message( _('Success'), response.msg );
+                                init_buttons('disable');
+                                store_notifications.load();
+                            } else {
+                                Baseliner.message( _('ERROR'), response.msg );
+                            }
+                        }
+                    
+                    );
+                }
+            } );
         }       
     });  	
 	
@@ -713,9 +856,13 @@
 				ret += '<tr>';
 				ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(type) + '</td>';
 				for(var i=0;i < value.recipients[carrier][type].length;i++){
-					items.push(value.recipients[carrier][type][i][1]);
+					if(value.recipients[carrier][type][i][1]){
+						items.push(value.recipients[carrier][type][i][1]);	
+					}
 				}
-				ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + items.join(',') + '</code></td>'
+				if(items.length > 0){
+					ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + items.join(',') + '</code></td>'
+				}
 				ret += '</tr>';
 				items = [];
 			}
@@ -757,6 +904,21 @@
         return "<div style='font-weight:bold; font-size: 14px;'>" + value + "</div>" ;
     };
 	
+    var init_buttons = function(action) {
+        eval('btn_start.' + action + '()');       
+        eval('btn_stop.' + action + '()');
+		eval('btn_edit.' + action + '()');
+		eval('btn_delete.' + action + '()');
+    }
+	
+    function getNotifications(){
+        var notifications_checked = new Array();
+        check_notifications_sm.each(function(rec){
+            notifications_checked.push(rec.get('id'));
+        });
+        return notifications_checked;
+    }  	
+	
 	var grid = new Ext.grid.GridPanel({
 		sm: check_notifications_sm,
         store: store_notifications,
@@ -785,5 +947,38 @@
         ],
 		bbar: ptool
     });
+	
+    grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+        if(columnIndex == 0){
+            var notifications_checked = getNotifications();
+            if (notifications_checked.length == 1){
+                init_buttons('enable');
+            }else{
+                if(notifications_checked.length == 0){
+					init_buttons('disable');
+                }else{
+                    btn_start.enable();
+					btn_stop.enable();
+					btn_edit.disable();
+					btn_delete.enable();
+                }
+            }           
+        }
+    });
+    
+    grid.on('headerclick', function(grid, columnIndex, e) {
+        if(columnIndex == 0){
+            var notifications_checked = getNotifications();
+            if(notifications_checked.length == 0){
+                init_buttons('disable');
+            }else{
+				btn_start.enable();
+				btn_stop.enable();
+				btn_edit.disable();
+				btn_delete.enable();
+            }
+        }
+    });
+	
     return grid;
 })

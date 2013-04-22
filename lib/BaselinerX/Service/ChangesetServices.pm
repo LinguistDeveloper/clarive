@@ -77,6 +77,17 @@ sub checkout {
     }
 
     # Svn Checkouts End
+
+    # Plastic Checkouts
+    my $plastic_checkouts = $stash->{plastic_checkouts};
+
+    for ( keys %{$plastic_checkouts} ) {
+        my $repo = Baseliner::CI->new( $_ );
+        $repo->job( $job );
+        $repo->checkout( repo => $repo, rev => $plastic_checkouts->{$_}->{rev}, prj => $plastic_checkouts->{$_}->{prj}, branch => $plastic_checkouts->{$_}->{branch} );
+    }
+
+    # Plastic Checkouts End
 } ## end sub checkout
 
 sub job_elements {
@@ -151,9 +162,9 @@ sub job_elements {
         my $git_checkouts;
 
         for ( @revisions ) {
-            $log->debug(_loc("<b>GIT Revisions:</B> Treating revision"), data => _dump $_);
             my $rev  = Baseliner::CI->new( $_->{to_mid} );
             next if ref $rev ne 'BaselinerX::CI::GitRevision';
+            $log->debug(_loc("<b>GIT Revisions:</B> Treating revision"), data => _dump $_);
             my $repo = $rev->{repo};
             push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev;
             my $topic     = Baseliner->model( 'Baseliner::BaliTopic' )->find( $_->{from_mid} );
@@ -199,9 +210,9 @@ sub job_elements {
         my $branch;
 
         for ( @revisions ) {
-            $log->debug(_loc("<b>SVN Revisions:</B> Treating revision"), data => _dump $_);
             my $rev  = Baseliner::CI->new( $_->{to_mid} );
             next if ref $rev ne 'BaselinerX::CI::SvnRevision';
+            $log->debug(_loc("<b>SVN Revisions:</B> Treating revision"), data => _dump $_);
             $branch = $rev->{branch};
             $log->debug(_loc("<b>SVN Revisions:</B> Branch of revision $rev->{sha} ... $branch"), data => _dump $rev);
             my $repo = $rev->{repo};
@@ -240,9 +251,9 @@ sub job_elements {
         my $branch;
 
         for ( @revisions ) {
-            $log->debug(_loc("<b>CVS Revisions:</B> Treating revision"), data => _dump $_);
             my $rev  = Baseliner::CI->new( $_->{to_mid} );
             next if ref $rev ne 'BaselinerX::CI::CvsRevision';
+            $log->debug(_loc("<b>CVS Revisions:</B> Treating revision"), data => _dump $_);
             $branch = $rev->{branch};
             $log->debug(_loc("<b>CVS Revisions:</B> Branch of revision $rev->{sha} ... $branch"), data => _dump $rev);
             my $repo = $rev->{repo};
@@ -271,6 +282,59 @@ sub job_elements {
     } ## end if ( @revisions )
 
     #CVS revisions fin
+
+    #Plastic revisions
+    my @revisions =
+        $c->model( 'Baseliner::BaliMasterRel' )
+        ->search( {from_mid => \@changesets, rel_type => 'topic_revision'} )->hashref->all;
+
+    if ( @revisions ) {
+
+        my $revisions_shas;
+        my $plastic_checkouts;
+        my $branch;
+
+        for ( @revisions ) {
+            my $rev  = Baseliner::CI->new( $_->{to_mid} );
+            next if ref $rev ne 'BaselinerX::CI::PlasticRevision';
+            $log->debug(_loc("<b>PLASTIC Revisions:</B> Treating revision"), data => _dump $_);
+            $branch = $rev->{branch};
+            my $repo = $rev->{repo};
+            push @{$revisions_shas->{$repo->{mid}}->{shas}}, $rev;
+            my $topic     = Baseliner->model( 'Baseliner::BaliTopic' )->find( $_->{from_mid} );
+            try {
+                my $projectid = $topic->projects->search()->first->id;
+                my $prj       = Baseliner::Model::Projects->get_project_name( id => $projectid );
+                $revisions_shas->{$repo->{mid}}->{prj} = $prj;
+                $plastic_checkouts->{$repo->{mid}}->{prj}  = $prj;
+                $plastic_checkouts->{$repo->{mid}}->{branch}  = $branch;
+            } catch {
+                $log->warn( _loc( 'No project found for revision *%1*', $rev->name ) );
+            };
+        } ## end for ( @revisions )
+
+        for ( keys %{$revisions_shas} ) {
+            $log->debug(_loc("<b>PLASTIC Revisions:</B> Processing revision $_"));
+            my $repo = Baseliner::CI->new( $_ );
+            $log->debug("JOB", data => $job);
+            $repo->job( $job );
+
+            $log->debug( "Detecting last commit", data => $revisions_shas );
+            my $last_commit =
+                $repo->get_last_commit( commits => $revisions_shas->{$_}->{shas} );
+            $log->debug( "Detected last commit", data => $last_commit );
+            $log->debug( "Generating plastic list of elements" );
+            #TODO: Comprobar si tengo last_commit
+            my @plastic_elements =
+                $repo->list_elements( rev => $last_commit, prj => $revisions_shas->{$_}->{prj} );
+            $log->debug( "Generated git list of elements", data => _dump @plastic_elements );
+            push @elems, @plastic_elements;
+            $plastic_checkouts->{$_}->{rev} = $last_commit;
+        } ## end for ( keys %{$revisions_shas...})
+        $job->job_stash->{plastic_checkouts} = $plastic_checkouts;
+    } ## end if ( @revisions )
+
+    #End of Plastic Revisions
 
     my $e = $job->job_stash->{elements} || BaselinerX::Job::Elements->new;
     $e->push_elements( @elems );
@@ -357,6 +421,13 @@ sub update_baselines {
         $repo->update_baselines( repo => $repo, branch => $svn_checkouts->{$_}->{branch}, rev => $svn_checkouts->{$_}->{rev} );
     }
 
+    my $plastic_checkouts = $stash->{plastic_checkouts};
+
+    for ( keys %{$plastic_checkouts} ) {
+        my $repo = Baseliner::CI->new( $_ );
+        $repo->job( $job );
+        $repo->update_baselines( rev => $plastic_checkouts->{$_}->{rev} );
+    }
     # Svn Update Baselines
 } ## end sub update_baselines
 
