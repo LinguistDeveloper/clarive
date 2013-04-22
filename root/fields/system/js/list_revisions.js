@@ -12,9 +12,9 @@ params:
 ---
 */
 (function(params){
-	var data = params.topic_data;
-	var meta = params.topic_meta;
-	
+    var data = params.topic_data;
+    var meta = params.topic_meta;
+    
     var revision_store = new Ext.data.SimpleStore({
         fields: ['mid','name','id']
     });
@@ -25,7 +25,7 @@ params:
         height: 120,
         fieldLabel: _(meta.name_field),
         hideHeaders: true,
-		disabled: meta ? meta.readonly : true,
+        disabled: meta ? meta.readonly : true,
         viewConfig: {
             headersDisabled: true,
             enableRowBody: true,
@@ -37,7 +37,7 @@ params:
           { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.gif" />'} },
           { header: _('Name'), width: 240, dataIndex: 'name',
               renderer: function(v,metadata,rec){
-                  return Baseliner.render_wrap( String.format('<a href="javascript:Baseliner.show_revision({1})"><span id="boot"><h5>{0}</h5></span></a>', v, rec.data.mid ) );
+                  return Baseliner.render_wrap( String.format('<a href="javascript:Baseliner.show_revision({1})"><span id="boot"><h6>{0}</h6></span></a>', v, rec.data.mid ) );
               }
           },
           { width: 20, dataIndex: 'mid',
@@ -62,7 +62,7 @@ params:
     // Load data
     if( ! params ) params = {};
     if( ! params.topic_data ) params.topic_data = {};
-	var data = eval('params.topic_data.' + meta.id_field) || [];
+    var data = eval('params.topic_data.' + meta.id_field) || [];
 
     Ext.each( data, function(row){
         var r = new revision_store.recordType( row, row.mid );
@@ -126,7 +126,7 @@ params:
              }
         });
     }); 
-	return [
+    return [
         revision_grid, field
         //revision_box
     ]
