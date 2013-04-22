@@ -389,8 +389,11 @@ sub store : Local {
     my $action = delete $p->{action};
     my $where = {};
 
-    if($p->{mid}){
-        my @rel_items = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid => $p->{mid}, rel_type =>$p->{rel_type} })->hashref->all;
+    if ( $p->{mid} ) {
+        my @rel_items =
+            map { $_->{to_mid} }
+            Baseliner->model('Baseliner::BaliMasterRel')->search( { from_mid => $p->{mid}, rel_type => $p->{rel_type} } )
+            ->hashref->all;
         $where->{mid} = \@rel_items;
     }
 

@@ -61,7 +61,7 @@ sub save {
     } else {
         %p = @_;
     }
-    my ($mid,$name,$data,$bl,$active) = @{\%p}{qw/mid name data bl active/};
+    my ($mid,$name,$data,$bl,$active,$versionid) = @{\%p}{qw/mid name data bl active versionid/};
     $mid = $self->mid if !defined $mid && ref $self;
     my $collection = $self->collection;
     my $ret = $mid;
@@ -75,6 +75,7 @@ sub save {
             $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
             $row->name( $name ) if defined $name;
             $row->active( $active ) if defined $active;
+            $row->versionid( $versionid ) if defined $versionid;
             $row->update;
             if( $row ) {
                 $self->save_data( $row, $data );
@@ -87,7 +88,8 @@ sub save {
             ######## new
             #_debug "****************** CI NEW: $collection";
             my $row = Baseliner->model('Baseliner::BaliMaster')->create({
-                collection => $collection, name=> $name, active => $active // 1,
+                collection => $collection, name=> $name, 
+                active => $active // 1, versionid=>$versionid // 1
             });
             my $mid = $row->mid;
             $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 

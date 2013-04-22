@@ -795,7 +795,7 @@ sub get_data {
         
         foreach my $key  (keys %method_fields){
             my $method = $method_fields{ $key };
-            $data->{ $key } =  $self->$method( $topic_mid, $key );
+            $data->{ $key } =  $self->$method( $topic_mid, $key, $meta );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
