@@ -885,6 +885,9 @@ Baseliner.ci_box = function(c) {
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
 	var autoload = c.autoLoad != undefined ? c.autoLoad : true;
     var store = new Baseliner.store.CI({ baseParams: bp, autoLoad: autoload });
+    store.on('load', function(){
+        ci_box.setValue( value );
+    });
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
         singleMode: true, 
