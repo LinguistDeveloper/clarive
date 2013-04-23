@@ -1515,6 +1515,9 @@ msgstr "Rollback fallido"
 msgid "PENDING"
 msgstr "Pendiente"
 
+msgid "SUPERSEDED"
+msgstr "Sobreseído"
+
 # Job email types
 msgid "started"
 msgstr "iniciado"
