@@ -1303,7 +1303,8 @@
 									var id = category_fields_store.getCount() + 1;
 									
 									var form = form_template_field.getForm();
-									var id_field = form.findField("name_field").getValue();
+									var name_field = form.findField("name_field").getValue();
+                                    var id_field = Baseliner.name_to_id( name_field );
 									
 									var recordIndex = category_fields_store.findBy(
 										function(record, id){
@@ -1328,7 +1329,7 @@
 
 											if (objTemp.type != 'form'){ 
 												objTemp.id_field = id_field;
-												objTemp.name_field = id_field;
+												objTemp.name_field = name_field;
 												objTemp.bd_field = id_field;
 												objTemp.origin = 'custom';
 											}
@@ -1341,23 +1342,23 @@
 												 objTemp.single_mode = (value ==  'M') ? false : true ;
 											}
 											
-											var d = { id: id, id_field: id_field, name: id_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
+											var d = { id: id, id_field: id_field, name: name_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
 										}else{
 											//console.log(attr);
 											//attr.params.id_field = id_field;
-											//attr.params.name_field = id_field;
+											//attr.params.name_field = name_field;
 											//attr.params.bd_field = id_field;
 											//attr.params.origin = 'custom';
 											var objTemp = attr.params;
 											objTemp = Ext.util.JSON.decode( Ext.util.JSON.encode( objTemp ) );
 											//console.log(objTemp);
 											objTemp.id_field = id_field;
-											objTemp.name_field = id_field;
+											objTemp.name_field = name_field;
 											objTemp.bd_field = id_field;
 											objTemp.origin = 'custom';
 											//console.log(attr);
 											
-											var d = { id: id, id_field: id_field, name: id_field, params: objTemp, img: '/static/images/icons/icon_wand.gif' };
+											var d = { id: id, id_field: id_field, name: name_field, params: objTemp, img: '/static/images/icons/icon_wand.gif' };
 										}
 										
 										try{
