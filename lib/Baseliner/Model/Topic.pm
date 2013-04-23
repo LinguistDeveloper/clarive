@@ -78,9 +78,41 @@ register 'event.topic.modify_field' => {
     vars => ['username', 'field', 'old_value', 'new_value', 'text_new', 'ts',],
     filter=>sub{
         my ($txt, @vars)=@_;
+       
+        # TODO the idea here is to present the user with a diff in the activity log
+        #require String::Diff;
+        #($vars[2], $vars[3]) = String::Diff::diff(
+        #    $brk->($vars[2]), $brk->($vars[3]),
+        #    remove_open => '<del>',
+        #    remove_close => '</del>',
+        #    append_open => '<ins>',
+        #    append_close => '</ins>',
+        #    #escape       => sub { encode_entities($_[0]) },
+        #);
+
         my $text_new = $vars[4];
         if( $text_new ) {
             $txt = $text_new;
+        }
+        else {
+            #$txt = '';
+            require Algorithm::Diff::XS;
+            my $brk = sub { [ $_[0] =~ m{(\w+)}gs ] };
+            my $d =Algorithm::Diff::XS::sdiff( $brk->($vars[2]), $brk->($vars[3]), );
+            my @diff;
+            my @bef;
+            my @aft;
+            for my $ix ( 0..$#{ $d } ) {
+                my ($st,$bef,$aft) = @{ $d->[$ix] };
+                unless( $st eq 'u' ) {
+                    push @bef, "<code>$bef</code>" if length $bef;
+                    push @aft, "<code>$aft</code>" if length $aft;
+                }
+            }
+            if( @bef || @aft ) {
+                $vars[2] = @bef ? join( ' ', @bef ) : '<code>-</code>';
+                $vars[3] = @aft ? join( ' ', @aft ) : '<code>-</code>';
+            }
         }
         return ($txt, @vars);
     }      
@@ -397,7 +429,7 @@ sub topics_for_user {
     }
     rs_hashref( $rs );
     my @mids = map { $_->{topic_mid} } $rs->all;
-    my $rs_sub = $rs->search(undef, { select=>'topic_mid', distinct=>1});
+    my $rs_sub = $rs->search(undef, { select=>'topic_mid' });
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
@@ -587,17 +619,127 @@ sub get_system_fields {
     my $pathHTML = '/fields/system/html/';
     my $pathJS = '/fields/system/js/';
     my @system_fields = (
-            { id_field => 'title', params => {name_field => 'Title', bd_field => 'title', origin => 'system', html => $pathHTML . 'field_title.html', js => '/fields/templates/js/textfield.js', field_order => -1, section => 'head', field_order_html => 1 }},
-            { id_field => 'category', params => {name_field => 'Category', bd_field => 'id_category', origin => 'system',  js => $pathJS . 'field_category.js', field_order => -2, section => 'body', relation => 'categories' }},
-            { id_field => 'status_new', params => {name_field => 'Status', bd_field => 'id_category_status', display_field => 'name_status', origin => 'system', html => '/fields/templates/html/row_body.html', js => $pathJS . 'field_status.js', field_order => -3, section => 'body', relation => 'status' }},
-            { id_field => 'created_by', params => {name_field => 'Created By', bd_field => 'created_by', origin => 'default'}},
-            { id_field => 'created_on', params => {name_field => 'Created On', bd_field => 'created_on', origin => 'default'}},
-            { id_field => 'labels', params => {name_field => 'Labels', bd_field => 'labels', origin => 'default', relation=>'system', get_method=>'get_labels', field_order_html => 1 }},
-            { id_field => 'priority', params => {name_field => 'Priority', bd_field => 'id_priority', set_method => 'set_priority', origin => 'system', html => $pathHTML . 'field_priority.html', js => $pathJS . 'field_priority.js', field_order => -6, section => 'body', relation => 'priorities' }},
-            { id_field => 'description', params => {name_field => 'Description', bd_field => 'description', origin => 'system', html => '/fields/templates/html/dbl_row_body.html', js => '/fields/templates/js/html_editor.js', field_order => -7, section => 'head', field_order_html => 2 }},
-            { id_field => 'progress', params => {name_field => 'Progress', bd_field => 'progress', origin => 'system', html => '/fields/templates/html/progress_bar.html', js => '/fields/templates/js/progress_bar.js', field_order => -8, section => 'body' }},
-            { id_field => 'include_into', params => {name_field => 'Include into', bd_field => 'include_into', origin => 'default', html => $pathHTML . 'field_include_into.html', field_order => 0, section => 'details' }},
-            { id_field => 'dates', params => { name_field => 'dates',  origin => 'default', relation => 'system', get_method => 'get_dates', html => $pathHTML . 'field_scheduling.html', field_order => 9999, section => 'details' }},
+        {
+            id_field => 'title',
+            params   => {
+                name_field       => 'Title',
+                bd_field         => 'title',
+                origin           => 'system',
+                html             => $pathHTML . 'field_title.html',
+                js               => '/fields/templates/js/textfield.js',
+                field_order      => -1,
+                section          => 'head',
+                field_order_html => 1
+            }
+        },
+        {
+            id_field => 'category',
+            params   => {
+                name_field  => 'Category',
+                bd_field    => 'id_category',
+                origin      => 'system',
+                js          => $pathJS . 'field_category.js',
+                field_order => -2,
+                section     => 'body',
+                relation    => 'categories'
+            }
+        },
+        {
+            id_field => 'status_new',
+            params   => {
+                name_field    => 'Status',
+                bd_field      => 'id_category_status',
+                display_field => 'name_status',
+                origin        => 'system',
+                html          => '/fields/templates/html/row_body.html',
+                js            => $pathJS . 'field_status.js',
+                field_order   => -3,
+                section       => 'body',
+                relation      => 'status',
+                framed        => 1,
+            }
+        },
+        {
+            id_field => 'created_by',
+            params   => { name_field => 'Created By', bd_field => 'created_by', origin => 'default' }
+        },
+        {
+            id_field => 'created_on',
+            params   => { name_field => 'Created On', bd_field => 'created_on', origin => 'default' }
+        },
+        {
+            id_field => 'labels',
+            params   => {
+                name_field       => 'Labels',
+                bd_field         => 'labels',
+                origin           => 'default',
+                relation         => 'system',
+                get_method       => 'get_labels',
+                field_order_html => 1
+            }
+        },
+        {
+            id_field => 'priority',
+            params   => {
+                name_field  => 'Priority',
+                bd_field    => 'id_priority',
+                set_method  => 'set_priority',
+                origin      => 'system',
+                html        => $pathHTML . 'field_priority.html',
+                js          => $pathJS . 'field_priority.js',
+                field_order => -6,
+                section     => 'body',
+                relation    => 'priorities'
+            }
+        },
+        {
+            id_field => 'description',
+            params   => {
+                name_field       => 'Description',
+                bd_field         => 'description',
+                origin           => 'system',
+                html             => '/fields/templates/html/dbl_row_body.html',
+                js               => '/fields/templates/js/html_editor.js',
+                field_order      => -7,
+                section          => 'head',
+                field_order_html => 2
+            }
+        },
+        {
+            id_field => 'progress',
+            params   => {
+                name_field  => 'Progress',
+                bd_field    => 'progress',
+                origin      => 'system',
+                html        => '/fields/templates/html/progress_bar.html',
+                js          => '/fields/templates/js/progress_bar.js',
+                field_order => -8,
+                section     => 'body'
+            }
+        },
+        {
+            id_field => 'include_into',
+            params   => {
+                name_field  => 'Include into',
+                bd_field    => 'include_into',
+                origin      => 'default',
+                html        => $pathHTML . 'field_include_into.html',
+                field_order => 0,
+                section     => 'details'
+            }
+        },
+        {
+            id_field => 'dates',
+            params   => {
+                name_field  => 'dates',
+                origin      => 'default',
+                relation    => 'system',
+                get_method  => 'get_dates',
+                html        => $pathHTML . 'field_scheduling.html',
+                field_order => 9999,
+                section     => 'details'
+            }
+        },
     );
     return \@system_fields
 }
@@ -859,6 +1001,20 @@ sub get_revisions {
     return @revisions ? \@revisions : [];    
 }
 
+sub get_cis {
+    my ($self, $topic_mid, $id_field, $meta ) = @_;
+    my $field_meta = [ grep { $_->{id_field} eq $id_field } _array( $meta ) ]->[0];
+    my $where = { from_mid => $topic_mid };
+    $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
+    my @cis = map { $_->{mid} } Baseliner->model('Baseliner::BaliMasterRel')->search(     
+        $where,
+        #{ prefetch => ['master_to'], +select => [ 'master_to.name', 'master_to.mid' ], +as => [qw/name mid/] } )
+        { select =>[ 'to_mid' ], as=>[ 'mid' ] },
+        )->hashref->all;
+    
+    return @cis ? \@cis : [];    
+}
+
 sub get_dates {
     my ($self, $topic_mid ) = @_;
     my @dates = Baseliner->model('Baseliner::BaliMasterCal')->search({ mid=> $topic_mid })->hashref->all;
@@ -908,7 +1064,9 @@ sub save_data {
             $description{ $_->{column} } = $_ -> {name}; ##Contemplar otro parametro mas descriptivo
             $relation{ $_->{column} } = $_ -> {relation};
             if ($_->{method}){
-                my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data )' );
+                #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
+                my $meth = $_->{method};
+                my $extra_fields = $self->$meth( $data->{ $_->{name} }, $data, $meta );
                 foreach my $column (keys $extra_fields ){
                      $row{ $column } = $extra_fields->{$column};
                 }
@@ -1041,9 +1199,11 @@ sub save_data {
      
     my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
     
-    foreach my $key  (keys %rel_fields){
-        if($rel_fields{$key}){
-            eval( '$self->' . $rel_fields{$key} . '( $topic, $data->{$key}, $data->{username}, $key )' );    
+    foreach my $id_field  (keys %rel_fields){
+        if($rel_fields{$id_field}){
+            my $meth = $rel_fields{$id_field};
+            $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta );
+            #eval( '$self->' . $rel_fields{$id_field} . '( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta )' );    
         }
     } 
      
@@ -1217,6 +1377,58 @@ sub set_topics {
         }
     }
     
+}
+
+sub set_cis {
+    my ($self, $rs_topic, $cis, $user, $id_field, $meta ) = @_;
+    
+    my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
+    
+    my $rel_type = $field_meta->{rel_type} or _fail 'Missing rel_type';
+   
+    # related topics
+    my @new_cis = _array( $cis ) ;
+    my @old_cis =
+        map { $_->{to_mid} }
+        Baseliner->model('Baseliner::BaliMasterRel')->search( { from_mid => $rs_topic->mid, rel_type => $rel_type } )
+        ->hashref->all;
+
+    if ( array_diff(@new_cis, @old_cis) ) {
+        if( @new_cis ) {
+            @new_cis  = split /,/, $new_cis[0] if $new_cis[0] =~ /,/ ;
+            my @rs_cis = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@new_cis});
+            $rs_topic->set_cis( \@rs_cis, { rel_type=> $rel_type });
+            
+            my $cis2 = join(',', map { Baseliner::CI->new($_->mid)->load->{name}} @rs_cis);
+    
+            event_new 'event.topic.modify_field' => { 
+              username   => $user,
+              field         => _loc( $field_meta->{field_msg} // 'attached cis' ),
+              old_value     => '',
+              new_value     => $cis2,
+              text_new      => ( $field_meta->{modify_text_new} // '%1 modified topic: %2 ( %4 )' ),
+            } => sub {
+                  { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } => sub {
+                  _throw _loc( 'Error modifying Topic: %1', shift() );
+            };             
+            
+        } else {
+            event_new 'event.topic.modify_field' => { 
+                username   => $user,
+                field      => '',
+                old_value      => '',
+                new_value  => '',
+                text_new      => ( $field_meta->{modify_text_new} // '%1 deleted all cis' ),
+            } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };
+            $rs_topic->set_cis( undef, { rel_type=>$rel_type });
+            #$rs_topic->cis->delete;
+        }
+    }
 }
 
 sub set_revisions {
