@@ -496,8 +496,16 @@ $('a').click(function(event) {
         if( comp!=undefined && comp.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, comp.tab_icon );
         if( params.active==undefined ) params.active=true;
         if( params.active ) tabpanel.setActiveTab(comp);
-        if( title == undefined || title=='' ) { title = comp.title; }
-            else { tab.setTitle( title ) }
+        if( title == undefined || title=='' ) { 
+            title = comp.title; 
+            if( title == undefined || title == '' ) { // probably a slow load and deferred title
+                tabpanel.changeTabIcon( tab, "/static/images/loading-fast.gif" );
+                title = '&nbsp;';
+            }
+            tab.setTitle( title ) 
+        } else { 
+            tab.setTitle( title ) 
+        }
         return tab.getId();
     };
 
