@@ -198,7 +198,8 @@ sub load {
     # setup the base data from master row
     my $data = { $row->get_columns };
     if( $storage eq 'yaml' ) {
-        $data = { %$data, %{ _load( $row->yaml ) || {} } };
+        my $y = _load( $row->yaml );
+        $data = { %$data, %{ ref $y ? $y : {} } };
     }
     elsif( $storage eq 'fields' ) {
        # TODO a vertical table to store fields 
