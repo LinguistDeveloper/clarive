@@ -224,6 +224,7 @@
                 cardpanel.setTitle( _('CI: %1' , rec.name ) );
                 cardpanel.ownerCt.changeTabIcon( cardpanel, rec.icon );
                 cardpanel.body.setStyle({ overflow: 'hidden' });
+                cardpanel.doLayout(); // otherwise, no tbar
             });
         } else {
             // someone sent me full row data (DEPRECATED)
