@@ -193,10 +193,14 @@ sub tree_objects {
     );
     $where->{collection} = $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
+    
+    if( $p{mids} ) {
+        $p{mids} = [ grep { defined } split /,+/, $p{mids} ];
+        $where->{mid} = $p{mids};
+    }
 
     my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
-    my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my @tree = map {
         my $data = _load( $_->{yaml} );
         my $ci_form = $self->form_for_collection( $_->{collection} );
@@ -252,7 +256,6 @@ sub tree_object_depend {
         $where, { %$join, order_by=>{ -asc=>['mid'] }, rows=>$p{limit}, page=>$page }
     );
     my $total = $rs->pager->total_entries;
-    #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my $cnt = $p{parent} * 10;
     my @tree = map {
         my $class = 'BaselinerX::CI::' . $_->{$rel_type}{collection};
@@ -387,6 +390,7 @@ sub store : Local {
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
+    my $mids = delete $p->{mids};
     my $where = {};
 
     if ( $p->{mid} ) {
@@ -402,7 +406,7 @@ sub store : Local {
 
     if( my $class = $p->{class} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where );
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids );
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -413,7 +417,7 @@ sub store : Local {
             push @roles, $r;
         }
         for my $class(  packages_that_do( @roles ) ) {
-            my ($t, @rows) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
+            my ($t, @rows) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, mids=>$mids );
             push @data, @rows; 
             $total += $t;
         }
@@ -564,7 +568,11 @@ sub load : Local {
     my $mid = $p->{mid};
     try {
         my $obj = Baseliner::CI->new( $mid );
+        my $class = ref $obj;
         my $rec = $obj->load;
+        $rec->{has_bl} = $obj->has_bl;
+        $rec->{has_description} = $obj->has_description;
+        $rec->{classname} = $rec->{class} = $class;
         $rec->{icon} = $obj->icon;
         $rec->{active} = $rec->{active} ? \1 : \0;
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };

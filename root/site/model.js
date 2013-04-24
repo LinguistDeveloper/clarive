@@ -783,7 +783,7 @@ Baseliner.store.CI = function(c) {
         remoteSort: true,
         autoLoad: true,
         totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','collection','class','description', 'properties', 'pretty_properties','data'] 
+        fields: ['mid','item', 'name','collection','class', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon'] 
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
@@ -832,7 +832,9 @@ Baseliner.model.CICombo = function(c) {
     var resultTpl = new Ext.XTemplate(
         '<tpl for="."><div class="search-item">',
             //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
-        '<span id="boot"><strong>{name}</strong> ({class})</span>',
+        '<span id="boot" style="background: transparent">',
+        '<table><tr><td><img src="{icon}" />&nbsp;</td><td><strong>{name}</strong> ({class})</td></tr></table>',
+        '</span>',
         '<tpl if="pretty_properties">',
             '<br />{pretty_properties}',
         '</tpl>',

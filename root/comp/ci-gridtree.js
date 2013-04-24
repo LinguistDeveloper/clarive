@@ -28,12 +28,13 @@
 
     var ci_edit = function(store, rec){
         var data = store.baseParams;
+        Baseliner.add_tabcomp( '/comp/ci-editor.js', null, { load: true, mid: rec.mid, action:'edit', bl: data.bl } );
+        /* DEPRECATED:
         //var classname = data.class ;
         var classname = data["class"] ;
         Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
             if( res.success ) {
                 var rec = res.rec;
-                Baseliner.add_tabcomp( '/comp/ci-editor.js', _('CI %1' , rec.name ), 
                     {
                         _parent_grid: ci_grid.id,
                         collection: rec.collection,
@@ -54,6 +55,7 @@
                 Ext.Msg.alert( _('Error'), _(res.msg) );
             }
         });
+        */
     };
 
     // only globals can be seen from grid

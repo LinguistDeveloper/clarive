@@ -206,6 +206,10 @@ Baseliner.message = function(title, msg, config){
     */
 };
 
+Baseliner.warning = function(title, msg, config){
+    Baseliner.message( title, msg, { image: '/static/images/warnmsg.png' } );
+};
+
 Baseliner.message_gray = function(title, format){
     Baseliner.messageRaw({ title: title, pause: 2 }, format );
 };
@@ -1144,6 +1148,10 @@ Baseliner.show_revision = function( mid ) {
             }
         }
     });
+};
+
+Baseliner.show_ci = function( mid ) {
+    Baseliner.add_tabcomp( '/comp/ci-editor.js', null, { load: true, mid: mid } );
 };
 
 Baseliner.JitTree = function(c){

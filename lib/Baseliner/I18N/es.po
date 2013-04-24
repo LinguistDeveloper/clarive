@@ -534,6 +534,9 @@ msgstr "Elementos de Configuración"
 msgid "Config Matrix"
 msgstr "Matriz de Configuración"
 
+msgid "Row already exists: %1"
+msgstr "El registro ya existe: %1"
+
 msgid "Field already in the form: "
 msgstr "Campo ya está en formulario: "
 
@@ -3725,7 +3728,7 @@ msgstr "Ninguna fila seleccionada"
 
 # root/comp/ci-grid.js (78)
 msgid "CI: %1"
-msgstr "IC: %1"
+msgstr "CI: %1"
 
 # root/comp/ci-grid.js (97)
 msgid "Item"
@@ -3745,11 +3748,11 @@ msgstr "Propiedades"
 
 # root/comp/ci-gridtree.js (97)
 msgid "CI"
-msgstr "IC"
+msgstr "CI"
 
 # root/comp/ci-gridtree.js (174)
 msgid "CI Class: %1"
-msgstr "Clase IC: %1"
+msgstr "Clase CI: %1"
 
 # root/comp/ci-gridtree.js (210)
 msgid "Class"
