@@ -37,7 +37,6 @@ sub BUILD {
     unless( -d $logdir ) {
         require File::Path;
         File::Path::make_path( $logdir );
-        die "ERROR: could not create log directory '$logdir': $!";
         die "ERROR: could not access log directory '$logdir'"
             unless -d $logdir;
     }
