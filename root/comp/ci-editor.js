@@ -116,7 +116,7 @@
         ]);
         var fieldset = new Ext.form.FieldSet({
             defaults: { 
-               anchor: '90%',
+               //anchor: '90%',
                msgTarget: 'under'
             },
             hidden: true,

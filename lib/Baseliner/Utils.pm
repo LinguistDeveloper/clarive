@@ -227,9 +227,10 @@ sub _unique {
 sub _load {
     my @args = @_;
     return try {
-        utf8::encode( $_[0] ) if utf8::valid( $_[0] );  # TODO consider using _to_utf8 - a decode may be needed before
+        utf8::encode( $args[0] ) if utf8::valid( $args[0] );  # TODO consider using _to_utf8 - a decode may be needed before
         YAML::XS::Load( @args )
     } catch { 
+        _error( "_load error: " . shift() );
         require YAML::Syck;
         YAML::Syck::Load( @args );
     };
@@ -238,8 +239,9 @@ sub _load {
 sub _dump {
     my @args = @_;
     return try { 
-        YAML::XS::Dump( @args )
+        YAML::XS::Dump( @args );
     } catch { 
+        _error( "_dump error: " . shift() );
         require YAML::Syck;
         YAML::Syck::Dump( @args );
     };

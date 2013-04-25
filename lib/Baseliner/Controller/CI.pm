@@ -68,6 +68,7 @@ sub dispatch {
             parent => $p->{anode},
             start  => $p->{start},
             limit  => $p->{limit},
+            pretty => $p->{pretty},
             query  => $p->{query}
         );
     } elsif ( $p->{type} eq 'object' ) {
@@ -79,6 +80,7 @@ sub dispatch {
             start      => $p->{start},
             limit      => $p->{limit},
             query      => $p->{query},
+            pretty     => $p->{pretty},
             collection => $p->{collection}
         );
     } elsif ( $p->{type} eq 'depend_to' ) {
@@ -88,6 +90,7 @@ sub dispatch {
             start      => $p->{start},
             limit      => $p->{limit},
             query      => $p->{query},
+            pretty     => $p->{pretty},
             collection => $p->{collection}
         );
     } elsif ( $p->{type} eq 'ci_request' ) {
@@ -97,6 +100,7 @@ sub dispatch {
             start      => $p->{start},
             limit      => $p->{limit},
             query      => $p->{query},
+            pretty     => $p->{pretty},
             collection => $p->{collection}
         );
     }
@@ -414,7 +418,7 @@ sub store : Local {
 
     if( my $class = $p->{class} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids );
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} );
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -425,7 +429,7 @@ sub store : Local {
             push @roles, $r;
         }
         for my $class(  packages_that_do( @roles ) ) {
-            my ($t, @rows) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, mids=>$mids );
+            my ($t, @rows) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, mids=>$mids, pretty=>$p->{pretty});
             push @data, @rows; 
             $total += $t;
         }
