@@ -200,9 +200,12 @@ sub tree_objects {
 
     my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
+    my %forms;
     my @tree = map {
         my $data = _load( $_->{yaml} );
-        my $ci_form = $self->form_for_collection( $_->{collection} );
+        my $ci_form = $forms{ $_->{collection} } 
+            // $forms{ $_->{collection} } = $self->form_for_collection( $_->{collection} );
+        
         # list properties: field: value, field: value ...
         my $pretty = join(', ',map {
             my $d = $data->{$_};
