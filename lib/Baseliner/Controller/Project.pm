@@ -534,7 +534,7 @@ sub user_projects : Local {
         $_->{description} //= $_->{name} // '';
         $_ } $rs->all;
     # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
-    _debug \@rows;
+    # _debug \@rows;
     $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
     $c->forward('View::JSON');
 }
