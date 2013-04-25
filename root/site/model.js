@@ -885,10 +885,11 @@ Baseliner.ci_box = function(c) {
     if( cl !=undefined ) bp['class'] = cl;
     else bp.role = role;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
-	var autoload = c.autoLoad != undefined ? c.autoLoad : true;
-    var store = new Baseliner.store.CI({ baseParams: bp, autoLoad: autoload });
+    var autoload = c.autoLoad != undefined ? c.autoLoad : true;
+    var store = new Baseliner.store.CI({ baseParams: bp });
     store.on('load', function(){
-        ci_box.setValue( value );
+        if( c.force_set_value )
+           ci_box.setValue( value );
     });
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
@@ -898,17 +899,13 @@ Baseliner.ci_box = function(c) {
         hiddenName: 'ci', 
         allowBlank: true
     }, c )); 
-    //ci_box._setValue = ci_box.setValue; // save original
-    //ci_box.setValue = function(value) {
-    //    if( value != undefined )  {
-    //        store.on('load',function(){
-    //            ci_box._setValue( value ) ;  // call original
-    //        });
-    //    }
-    //};
-    //if( value ) {
-    //    ci_box.setValue( value );
-    //}
+    if( autoload ) {
+        if( value != undefined && value.length > 0 )  {
+            store.load({ params: { mids: value } }); 
+        } else {
+            store.load();
+        }
+    }
     return ci_box;
 };
 
