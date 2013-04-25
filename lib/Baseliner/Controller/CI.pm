@@ -204,7 +204,7 @@ sub tree_objects {
     my @tree = map {
         my $data = _load( $_->{yaml} );
         my $ci_form = $forms{ $_->{collection} } 
-            // $forms{ $_->{collection} } = $self->form_for_collection( $_->{collection} );
+            // ( $forms{ $_->{collection} } = $self->form_for_collection( $_->{collection} ) );
         
         # list properties: field: value, field: value ...
         my $pretty = join(', ',map {
