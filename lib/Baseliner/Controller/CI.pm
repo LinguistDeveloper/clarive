@@ -207,11 +207,13 @@ sub tree_objects {
             // ( $forms{ $_->{collection} } = $self->form_for_collection( $_->{collection} ) );
         
         # list properties: field: value, field: value ...
-        my $pretty = join(', ',map {
-            my $d = $data->{$_};
-            $d = '**' x length($d) if $_ =~ /password/;
-            "$_: $d"
-        } grep { length $data->{$_} } keys %$data );
+        my $pretty = $p{pretty} 
+            ?  do { join(', ',map {
+                my $d = $data->{$_};
+                $d = '**' x length($d) if $_ =~ /password/;
+                "$_: $d"
+                } grep { length $data->{$_} } keys %$data ) }
+            : '';
         my $noname = $_->{collection}.':'.$_->{mid};
         +{
             _id               => $_->{mid},
