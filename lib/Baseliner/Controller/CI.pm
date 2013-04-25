@@ -200,7 +200,7 @@ sub tree_objects {
 
     my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
-    my %forms;
+    my (%forms, %icons);  # caches
     my @tree = map {
         my $data = _load( $_->{yaml} );
         my $ci_form = $forms{ $_->{collection} } 
@@ -225,7 +225,7 @@ sub tree_objects {
             ci_form           => $ci_form,
             type              => 'object',
             class             => $class,
-            icon              => $class->icon,
+            icon              => ( $icons{ $class } // ( $icons{$class} = $class->icon ) ),
             ts                => $_->{ts},
             bl                => $_->{bl},
             description       => $data->{description},
