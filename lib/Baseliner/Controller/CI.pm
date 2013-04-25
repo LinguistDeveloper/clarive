@@ -195,7 +195,6 @@ sub tree_objects {
     $where = { %$where, %{ $p{where} } } if $p{where};
     
     if( $p{mids} ) {
-        $p{mids} = [ grep { defined } split /,+/, $p{mids} ];
         $where->{mid} = $p{mids};
     }
 
@@ -390,7 +389,6 @@ sub store : Local {
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
-    my $mids = delete $p->{mids};
     my $where = {};
 
     if ( $p->{mid} ) {
@@ -400,7 +398,12 @@ sub store : Local {
             ->hashref->all;
         $where->{mid} = \@rel_items;
     }
-
+    
+    my $mids = delete $p->{mids};
+    if( length $mids ) {
+        $mids = [ grep { defined } split /,+/, $mids ] unless ref $mids eq 'ARRAY';
+    }
+    
     my @data;
     my $total = 0; 
 
@@ -421,6 +424,15 @@ sub store : Local {
             push @data, @rows; 
             $total += $t;
         }
+    }
+    
+    if( ref $mids ) { 
+        # return data ordered like the mids
+        my @data_ordered;
+        my %h = map { $_->{mid} => $_ } @data;
+        push @data_ordered, delete $h{ $_ } for @$mids;
+        push @data_ordered, values %h; # the rest of them at the bottom
+        @data = @data_ordered; 
     }
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
