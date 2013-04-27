@@ -219,8 +219,6 @@ Ext.onReady(function(){
     }
 
 % if( $show_portal eq '1' ) {
-    //viewport.on('show', function(){
-    //Baseliner.addNewTabComp('/site/portal/portal.mas', _('Portal') );
 %   for my $portlet ( _array $c->stash->{portlets} ) {
 %       if( my $pcomp = $portlet->url_comp ) {
             Baseliner.portalAddCompUrl({ title: _('<% $portlet->title %>'),
@@ -235,7 +233,6 @@ Ext.onReady(function(){
     //  ----- disabled for now ---- Baseliner.startRunner();
 
     // Check open tab
-    // setTimeout(function(){
     var getParams = document.URL.split("?");
     var tab_params = {};
     if( getParams!=undefined && getParams[1] !=undefined ) {
@@ -282,7 +279,13 @@ Ext.onReady(function(){
 setTimeout(function(){
     Ext.get('bali-loading').remove();
     Ext.get('bali-loading-mask').fadeOut({
-        remove:true
+        remove:true,
+        callback: function(){
+            /* var bw = $('#bali-browser-warn').show();
+            var bw = $('#bali-browser-warn-mid').show();
+            $("#bali-browser-version").html('4.5');
+            */
+        }
     });
 }, 2050);
 

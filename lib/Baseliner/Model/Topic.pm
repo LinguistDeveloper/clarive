@@ -787,7 +787,7 @@ sub get_update_system_fields {
         my @ret;
         for my $f ( map { _file($_) } grep { -f } glob "$_" ) { 
             my $d = $f->slurp;
-            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
+            my $yaml = Util->_load_yaml_from_comment( $d );
            
             my $metadata;
             if(length $yaml ) {

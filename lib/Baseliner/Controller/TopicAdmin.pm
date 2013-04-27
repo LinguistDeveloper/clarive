@@ -580,8 +580,8 @@ sub list_tree_fields : Local {
         my @ret;
         for my $f ( map { _file($_) } grep { -f } glob "$_" ) { 
             my $d = $f->slurp;
-            my ( $yaml ) = $d =~ /^\/\*(.*)\n---.?\n(.*)$/gs;
-           
+            my $yaml = Util->_load_yaml_from_comment( $d );
+            
             my $metadata;
             if(length $yaml ) {
                 $metadata =  _load( $yaml );    

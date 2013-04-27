@@ -233,7 +233,9 @@ sub _load {
         utf8::encode( $args[0] ) if utf8::valid( $args[0] );  # TODO consider using _to_utf8 - a decode may be needed before
         YAML::XS::Load( @args )
     } catch { 
-        _error( "_load error: " . shift() );
+        my $err = shift;
+        _error( "_load error: " . $err );
+        _fail( $err ) if $Baseliner::Utils::YAML_LOAD_FAIL; 
         require YAML::Syck;
         YAML::Syck::Load( @args );
     };
