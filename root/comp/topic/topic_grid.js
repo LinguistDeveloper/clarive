@@ -10,7 +10,7 @@
 	var typeApplication = '<% $c->stash->{typeApplication} %>';
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
-    var base_params = { start: 0, limit: ps };  // for store_topics
+    var base_params = { start: 0, limit: ps, typeApplication: typeApplication };  // for store_topics
     // this grid may be limited for a given category category id 
     var category_id = '<% $c->stash->{category_id} %>';
     if( category_id ) {
