@@ -1,5 +1,5 @@
 package Clarive::Cmd::web;
-use Moo;
+use Mouse;
 extends 'Clarive::Cmd';
 use v5.10;
 
@@ -7,8 +7,6 @@ our $CAPTION = 'Start/Stop web server';
 
 has f          => qw(is rw default) => sub { 0 };
 has r          => qw(is rw default) => sub { 0 };
-has signal     => qw(is rw default) => sub { 'TERM' };
-has wait       => qw(is ro default) => sub { 30 };
 has env        => qw(is ro default) => sub { $ENV{CLARIVE_ENV} // 'local' };
 has host       => qw(is ro);
 has listen     => qw(is ro default) => sub { [] };
@@ -20,7 +18,6 @@ has engine     => qw(is ro default) => sub { 'Starman' };
 has restarter  => qw(is rw default) => sub { 0 };
 has trace      => qw(is rw default) => sub { 0 };
 
-has pid_file      => qw(is rw);
 has pid_web_file  => qw(is rw);
 has log_file      => qw(is rw lazy 1 default), sub { $_[0]->tmp_dir . '/' . $_[0]->instance_name . '.log' };
 has log_keep      => qw(is rw default) => sub { 10 };
@@ -33,22 +30,13 @@ with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
 sub BUILD {
     my $self = shift;
 
-    my $logdir = $ENV{BASELINER_LOGHOME} || join('/', $self->tmp_dir, 'log' );
-    unless( -d $logdir ) {
-        require File::Path;
-        File::Path::make_path( $logdir );
-        die "ERROR: could not access log directory '$logdir'"
-            unless -d $logdir;
-    }
+    # log file (only created by daemonize/nohup, but used by tail)
+    $self->setup_log_dir();
     
     $self->instance_name( $self->id . '-' . $self->port );
-    my $pid_name = $self->tmp_dir . '/' . $self->instance_name ;
-    $self->pid_file( $pid_name . '.pid' );
-    $self->pid_web_file( $pid_name . '-web.pid' );
     
-    # log file (only created by daemonize/nohup, but used by tail)
-    
-    
+    $self->setup_pid_file();
+    $self->pid_web_file( $self->pid_name . '-web.pid' );
     #
     # restarter ? 
     #
@@ -76,35 +64,11 @@ sub setup_vars {
         $ENV{LIBPATH} = join ':', $ENV{BASELINER_LIBPATH}, $ENV{LIBPATH};
     }
     
-    $self->setup_pid_file();
-
     if( $self->daemon ) {
-        say 'logfile: ' . $self->log_file;
+        say 'log_file: ' . $self->log_file;
         $self->_log_zip( $self->log_file ); 
         $self->_cleanup_logs( $self->log_file ); 
     }
-    
-=pod
-
-    export LIBPATH=$BASELINER_LIBPATH:$LIBPATH
-
-    if [ ! -e "$LOGDIR" ]; then
-        echo "Log directory does not exist or not accesible: $LOGDIR"
-        exit 12
-    fi
-
-    export BASELINER_ID="$BASELINER_SERVER-$BASELINER_PORT"
-    export STATUSFILE=$LOGDIR/bali-web-$BASELINER_ID.status
-=cut
-
-}
-
-sub _write_pid {
-    my ($self, $pid) = @_;
-    # write pid to pidfile
-    open(my $pf, '>', $self->pid_file ) or die "Could not open pidfile: $!";
-        print $pf $pid // $$;
-        close $pf; 
 }
 
 sub run {
@@ -114,8 +78,9 @@ sub run {
 sub run_start {
     my ($self, %opts)=@_; 
     
+    $self->check_pid_exists();
+
     require Plack::Runner;
-    require Proc::Exists;
     my $runner = Plack::Runner->new( default_middleware => 0 );
     
     # prepare plackup options (Plack::Runner)
@@ -207,149 +172,19 @@ sub run_start {
         #$self->_write_pid();
         #$proc->();
     }
-
-=pod 
-
-_loader: !!perl/hash:Plack::Loader::Restarter
-  watch:
-    - lib
-access_log: ~
-app: ~
-argv: []
-daemonize: ~
-default_middleware: 1
-env: ~
-eval: ~
-help: ~
-includes: []
-loader: Restarter
-modules: []
-options:
-  - t
-  - 1
-  - host
-  - 9
-  - port
-  - 3000
-  - listen
-  -
-    - 9:3000
-  - socket
-  - ~
-path: ~
-server: HTTP::Server::Simple
-version: ~
-
-=cut
-
 }
 
-sub run_stop {
-    my ($self,%opts) = @_;
-    
-    require Proc::Exists;
-    my $pid = $self->_find_pid;
-    
-    if( Proc::Exists::pexists( $pid ) ) {
-        say "Shutting down server with process $pid...";
-        $self->_kill( $self->signal, $pid, $opts{no_wait_kill} );
-
-        # in case server is nested within a server_starter
-        if( -e $self->pid_file . '2' ) {
-            my $pid2 = $self->_find_pid( 2 );
-            $self->_kill( $self->signal, $pid2, $opts{no_wait_kill} );
-        }
-    } else {
-        say "Server was not up (process $pid not found). Nothing to do.";
-    }
-    unlink $self->pid_file unless $opts{keep_pidfile};
-}
-
-sub run_restart {
-    my ($self,%opts) = @_;
-    require Proc::Exists;
-    my $pid = $self->_find_pid;
-    $self->_kill( 'HUP', $pid, 1 );
-    say "Restart in progress.";
-}
-
-sub run_log {
-    my ($self,%opts) = @_;
-    say "logfile: " . $self->log_file;
-    open( my $log,'<', $self->log_file ) or die sprintf "ERROR: could not open log file %s: %s", $self->log_file, $!;
-    while( <$log> ) {
-        print $_;
-    }
-    close $log;
-    exit 0;
-}
-
-sub run_tail {
-    my ($self,%opts) = @_;
-    require File::Tail;
-    say "logfile: " . $self->log_file;
-    my $file = File::Tail->new(
-        name        => $self->log_file,
-        tail        => $opts{tail} // 500,
-        interval    => $opts{interval} // .5,
-        maxinterval => $opts{maxinterval} // 1,
-    );
-    while (defined( my $line=$file->read)) {
-        print "$line";
-    }
-}
-
-sub _kill {
-    my ($self, $sig, $pid, $no_wait_kill ) = @_;
-    die "ERROR: could not find process $pid\n" unless Proc::Exists::pexists( $pid );
-    kill $sig => $pid;
-    unless( $no_wait_kill ) {
-        my $cnt = 0;
-        print "Waiting for server to stop";
-        while( Proc::Exists::pexists( $pid ) && $cnt++ < $self->wait ) {
-            print '.';
-            sleep 1;
-        }
-        print "\r" . ( ' ' x ( 26 + $cnt ) ) . "\r";
-        if( Proc::Exists::pexists( $pid ) ) {
-            if( $self->f() ) {
-                $self->f( 0 );
-                warn "Could not stop server. Sending KILL signal\n";
-                $self->_kill( 9 => $pid, $no_wait_kill );
-            } 
-            die "ERROR: could not stop server with process $pid.\n";
-        } else {
-            say "Server stopped.";
-        }
-    } else {
-        say "Signal $sig sent to server $pid."; 
-    }
-}
-
-sub _find_pid {
-    my ($self, $cnt )  = @_;
-    my $pidfile = $self->pid_file . ($cnt ? $cnt : '' );
-    my $clean_pid = sub { $_[0] =~ /^([0-9]+)/ ? $1 : $_[0] };
-    if( defined $self->opts->{pid} ) {
-        return $clean_pid->( $self->opts->{pid} );
-    } elsif( -e $pidfile ) {
-        open(my $pf, '<', $pidfile ) or die "Could not open pidfile: $!";
-        my $pid = join '',<$pf>;
-        close $pf;
-        return $clean_pid->( $pid );
-    } else {
-        die sprintf "pid file not found: %s\n", $pidfile;
-    }
-}
-
-sub _exit {
-    my ($self,$rc) = @_;
-    
-    unlink $self->pid_file;
+before '_exit' => sub {
+    my $self = shift;
     unlink $self->pid_web_file;
-    
-    exit $rc;
+};
+
+sub error_pid_is_running {
+    my ($self, $pid)=@_;
+    say sprintf "ERROR: Server is already running on port %s with pid %s", $self->port, $pid;
 }
+
+# deprecated ? 
 
 sub _install_server_starter { 
     no strict;

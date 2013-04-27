@@ -1,10 +1,17 @@
 package Clarive::Role::Daemon;
+use Mouse::Role;
+use Proc::Exists;
 use v5.10;
-use Moo::Role;
 
-requires 'pid_file';
+has pid_name => qw(is rw isa Str);
+has pid_file => qw(is rw isa Str);
+has signal     => qw(is rw default) => sub { 'TERM' };  # standard kill signal
+has wait       => qw(is ro default) => sub { 30 };  # seconds to wait for shutdown before killing
+
 requires 'log_file';
 requires 'log_keep';
+
+with 'Clarive::Role::TempDir';
 
 sub nohup {
     my ($self, $proc ) = @_;
@@ -21,6 +28,7 @@ sub nohup {
     local $SIG{HUP} = 'IGNORE';
     my $pid = fork;
     if ($pid) { 
+        $self->_write_pid( $pid );
         return $pid
     } # parent
     else { # child
@@ -65,19 +73,147 @@ sub _log_zip {
 
 sub setup_pid_file {
     my ($self)=@_;
+   
+    $self->pid_name( $self->tmp_dir . '/' . $self->instance_name );
+    $self->pid_file( $self->pid_name . '.pid' );
+    say 'pid_file: ' . $self->pid_file;
+}
+
+sub error_pid_is_running {
+    my ($self, $pid)=@_;
+    say sprintf "ERROR: Server is already running with pid %s", $pid;
+}
+
+sub check_pid_exists {
+    my ($self)=@_;
+
     if( -e $self->pid_file ) {
-        open(my $pf, '<', $self->pid_file ) or die "Could not open pidfile: $!";
-        my $pid = join '',<$pf>;
-        require Proc::Exists;
+        my $pid = $self->_find_pid;
         if( Proc::Exists::pexists( $pid ) ) {
-            say sprintf "Error: Server is already running on port %s. PID: %s", $self->port, $pid;
+            $self->error_pid_is_running( $pid );
             exit 1;
         } else {
+            # should not be there
             unlink $self->pid_file;
         }
     } 
+}
+
+sub run_stop {
+    my ($self,%opts) = @_;
     
-    say 'pidfile: ' . $self->pid_file;
+    my $pid = $self->_find_pid;
+    
+    if( Proc::Exists::pexists( $pid ) ) {
+        say "Shutting down server with process $pid...";
+        $self->_kill( $self->signal, $pid, $opts{no_wait_kill} );
+    } else {
+        say "Server was not up (process $pid not found). Nothing to do.";
+    }
+    unlink $self->pid_file unless $opts{keep_pidfile};
+}
+
+sub run_tail {
+    my ($self,%opts) = @_;
+    require File::Tail;
+    say "logfile: " . $self->log_file;
+    my $file = File::Tail->new(
+        name        => $self->log_file,
+        tail        => $opts{tail} // 500,
+        interval    => $opts{interval} // .5,
+        maxinterval => $opts{maxinterval} // 1,
+    );
+    while (defined( my $line=$file->read)) {
+        print "$line";
+    }
+}
+
+sub run_log {
+    my ($self,%opts) = @_;
+    say "logfile: " . $self->log_file;
+    open( my $log,'<', $self->log_file ) or die sprintf "ERROR: could not open log file %s: %s", $self->log_file, $!;
+    while( <$log> ) {
+        print $_;
+    }
+    close $log;
+    exit 0;
+}
+
+sub setup_log_dir {
+    my ($self) = @_;
+
+    my $logdir = $ENV{BASELINER_LOGHOME} || join('/', $self->tmp_dir, 'log' );
+    unless( -d $logdir ) {
+        require File::Path;
+        File::Path::make_path( $logdir );
+        die "ERROR: could not access log directory '$logdir'"
+            unless -d $logdir;
+    }
+    return $logdir;
+}
+
+sub _write_pid {
+    my ($self, $pid) = @_;
+    # write pid to pidfile
+    open(my $pf, '>', $self->pid_file ) or die "Could not open pidfile: $!";
+        print $pf $pid // $$;
+    close $pf; 
+}
+
+sub _find_pid {
+    my ($self, $cnt )  = @_;
+    my $pidfile = $self->pid_file . ($cnt ? $cnt : '' );
+    my $clean_pid = sub { $_[0] =~ /^([0-9]+)/ ? $1 : $_[0] };
+    if( defined $self->opts->{pid} ) {
+        return $clean_pid->( $self->opts->{pid} );
+    } elsif( -e $pidfile ) {
+        open(my $pf, '<', $pidfile ) or die "Could not open pidfile: $!";
+        my $pid = join '',<$pf>;
+        close $pf;
+        return $clean_pid->( $pid );
+    } else {
+        die sprintf "pid file not found: %s\n", $pidfile;
+    }
+}
+
+sub run_restart {
+    my ($self,%opts) = @_;
+    my $pid = $self->_find_pid;
+    $self->_kill( 'HUP', $pid, 1 );
+    say "Restart in progress.";
+}
+
+sub _kill {
+    my ($self, $sig, $pid, $no_wait_kill ) = @_;
+    die "ERROR: could not find process $pid\n" unless Proc::Exists::pexists( $pid );
+    kill $sig => $pid;
+    unless( $no_wait_kill ) {
+        my $cnt = 0;
+        print "Waiting for server to stop";
+        while( Proc::Exists::pexists( $pid ) && $cnt++ < $self->wait ) {
+            print '.';
+            sleep 1;
+        }
+        print "\r" . ( ' ' x ( 26 + $cnt ) ) . "\r";
+        if( Proc::Exists::pexists( $pid ) ) {
+            if( $self->f() ) {
+                $self->f( 0 );
+                warn "Could not stop server. Sending KILL signal\n";
+                $self->_kill( 9 => $pid, $no_wait_kill );
+            } 
+            die "ERROR: could not stop server with process $pid.\n";
+        } else {
+            say "Server stopped.";
+        }
+    } else {
+        say "Signal $sig sent to server $pid."; 
+    }
+}
+
+sub _exit {
+    my ($self,$rc) = @_;
+    unlink $self->pid_file;
+    exit $rc;
 }
 
 1;

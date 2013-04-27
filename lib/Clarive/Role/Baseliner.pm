@@ -1,6 +1,6 @@
 package Clarive::Role::Baseliner;
 use v5.10;
-use Moo::Role;
+use Mouse::Role;
 
 sub setup_baseliner {
     my ($self)=@_;
@@ -30,13 +30,13 @@ sub setup_baseliner {
 
 sub bali_service {
     my ($self,$service_name,%opts) = @_;
-    require Baseliner::Cmd;
     require Baseliner; 
-    my $c = Baseliner::Cmd->new;
+    require Baseliner::Standalone;
+    my $c = Baseliner::Standalone->new;
     Baseliner->app( $c );
     $opts{ arg_list } = { map { $_ => () } keys %opts }; # so that we can differentiate between defaults and user-fed data
     $opts{ args } = \%opts;
-    my $logger = $c->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
+    my $logger = Baseliner->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
     exit ref $logger ? $logger->rc : $logger;
 }
 

@@ -1052,7 +1052,7 @@ sub parse_vars_raw {
         return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw );
     } else {
         # string
-        return $data unless $data =~ m/\$\{.+\}/;
+        return $data unless $data && $data =~ m/\$\{.+\}/;
         my $str = "$data";
         for my $k ( keys %$vars ) {
             my $v = $vars->{$k};

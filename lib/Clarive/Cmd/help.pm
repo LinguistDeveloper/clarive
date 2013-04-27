@@ -1,5 +1,5 @@
 package Clarive::Cmd::help;
-use Moo;
+use Mouse;
 use Path::Class;
 use v5.10;
 
