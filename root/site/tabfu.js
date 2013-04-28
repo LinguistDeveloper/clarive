@@ -1203,11 +1203,13 @@ $('a').click(function(event) {
                 '</div>'].join('');
     }
     
-    Baseliner.showLoadingMask = function (cmp, msg){
-        Baseliner._defaultLoadingMask = new Ext.LoadMask(cmp ,{
-            removeMask: true, msg : msg 
-        });
-        Baseliner._defaultLoadingMask.show();
+    Baseliner.showLoadingMask = function (el, msg){
+        Baseliner._defaultLoadingMask = el.mask( msg || _('Loading'), 'x-mask-loading' ).setHeight( 99999 );
+        //Baseliner._defaultLoadingMask = new Ext.LoadMask(cmp ,{
+        //    removeMask: true, msg : msg
+        //});
+        //Baseliner._defaultLoadingMask.show();
+        return Baseliner._defaultLoadingMask;
     };
     Baseliner.showLoadingMaskFade = function (cmp, msg){
         Baseliner.showLoadingMask(cmp, msg);
@@ -1215,7 +1217,7 @@ $('a').click(function(event) {
     
     Baseliner.hideLoadingMask = function (){
         if(Baseliner._defaultLoadingMask != undefined){
-            Baseliner._defaultLoadingMask.hide();
+            Baseliner._defaultLoadingMask.unmask();
         }
     };
     
