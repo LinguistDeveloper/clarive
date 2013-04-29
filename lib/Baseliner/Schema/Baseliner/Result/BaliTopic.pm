@@ -70,7 +70,9 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 255 },
   "expr_deadline",
   { data_type => "varchar2", is_nullable => 1, size => 255 },
-  "progress", { data_type => "number", is_nullable => 1, default_value=>0 },  
+  "progress", { data_type => "number", is_nullable => 1, default_value=>0 },
+  "active",
+  { data_type => "char", is_nullable => 0, size => 1, default_value => 1 },    
 );
 
 
