@@ -6,6 +6,7 @@
     $topic_meta
     $topic_data
     $jobs => 0
+    $HTMLbuttons => 0
 </%args>
 <%perl>
     use Baseliner::Utils;
@@ -82,7 +83,7 @@ padding: 2px 4px 2px 7px;
 <div id="boot" >
 % foreach my $field (  @form ) {
 % if ($field->{html}){
-    <& $field->{html}, data=>$topic_data, meta=>$field &>
+    <& $field->{html}, data=>$topic_data, meta=>$field, html_buttons=>$HTMLbuttons &>
 %}
 % }
 % }else {

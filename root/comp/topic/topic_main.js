@@ -3,12 +3,14 @@
     $permissionEdit
     $category_meta
     $permissionComment
+    $HTMLbuttons => 0
 </%args>
 
 (function(params){
     var swEdit = <% $swEdit == 1 ? 1 : 0 %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
     var permComment = <% $permissionComment ? 'true' : 'false' %>;
+    var html_buttons = <% $HTMLbuttons == 1 ? 1 : 0 %>;
     
     
     var category_meta = "<% $category_meta %>";
@@ -20,7 +22,8 @@
     Ext.apply( params, {
         swEdit: swEdit,
         permEdit: permEdit,
-        permComment: permComment
+        permComment: permComment,
+        html_buttons: html_buttons
     });
 
     
