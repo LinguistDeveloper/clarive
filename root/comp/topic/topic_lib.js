@@ -310,6 +310,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     
         self._cis = [];
         self.load_form = function(rec) {
+            rec.html_buttons = self.html_buttons;
             if( rec._cis ) {
                 self._cis = rec._cis;
             } else {

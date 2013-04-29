@@ -41,8 +41,7 @@ html: /dashlets/lastjobs.html
                 }
                 //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
                 if( status == 'APPROVAL' ) { // add a link to the approval main
-                    //value = '<a href="javascript:Baseliner.addNewTabComp(' + '"/request/main", '<% _loc("Approvals") %>, value ); 
-                    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status ); 
+                    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", _(status), _(status) ); 
                 }
                 
                 
