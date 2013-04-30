@@ -2054,3 +2054,351 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        self.getLayout().setActiveItem( self.grid_installed );
    }
 });
+
+Baseliner.RowSelectionModel = Ext.extend( Ext.grid.RowSelectionModel, {
+    handleMouseDown : function(g, rowIndex, e){
+        if(e.button !== 0 || this.isLocked()){
+            return;
+        }
+        var view = this.grid.getView();
+        if(e.shiftKey && !this.singleSelect && this.last !== false){
+            var last = this.last;
+            this.selectRange(last, rowIndex, e.ctrlKey);
+            this.last = last; // reset the last
+            view.focusRow(rowIndex);
+        }else{
+            var isSelected = this.isSelected(rowIndex);
+            if(e.ctrlKey && isSelected){
+                this.deselectRow(rowIndex);
+            }else if(!isSelected || this.getCount() > 1){
+                this.selectRow(rowIndex, e.ctrlKey || e.shiftKey);
+                view.focusRow(rowIndex);
+            }
+        }
+    }
+});
+
+Baseliner.RowDragger = Ext.extend(Ext.util.Observable, {
+    //expandOnEnter : true,
+    //expandOnDblClick : true,
+    header : '',
+    width : 20,
+    sortable : false,
+    //fixed : true,
+    //hideable: false,
+    menuDisabled : true,
+    dataIndex : '',
+    id : 'dragger',
+    //lazyRender : true,
+    //enableCaching : true,
+    constructor: function(config){
+        Ext.apply(this, config);
+        this.addEvents({
+            dragging: true
+        });
+
+        Baseliner.RowDragger.superclass.constructor.call(this);
+    },
+
+    getRowClass : function(record, rowIndex, p, ds){
+        return 'x-grid3-row-expanded';
+        p.cols = p.cols-1;
+        var content = this.bodyContent[record.id];
+        if(!content && !this.lazyRender){
+            content = this.getBodyContent(record, rowIndex);
+        }
+        if(content){
+            p.body = content;
+        }
+        return this.state[record.id] ? 'x-grid3-row-expanded' : 'x-grid3-row-collapsed';
+    },
+
+    init : function(grid){
+        this.grid = grid;
+        var view = grid.getView();
+        //view.getRowClass = this.getRowClass.createDelegate(this);
+        //view.enableRowBody = true;
+        //grid.on('render', this.onRender, this);
+        //grid.on('destroy', this.onDestroy, this);
+    },
+
+    onRender: function() {
+        var grid = this.grid;
+        var mainBody = grid.getView().mainBody;
+    },
+    renderer : function(v, p, record){
+        //p.cellAttr = 'rowspan="2"';
+        //return '<div class="x-grid3-row-expander">&#160;</div>';
+        //return '<div class="x-grid3-row-expander"><img src="/static/images/icons/handle.png" />&#160;</div>';
+        return '<img src="/static/images/icons/handle.png" />';
+    }
+});
+
+Baseliner.render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
+    var mid = rec.data.mid;
+    return String.format('<a href="javascript:Baseliner.show_ci({0})">{1}</a>', mid, value );
+};
+
+Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
+    height: 220,
+    hideHeaders: false,
+    disabled: false,
+    enableDragDrop: true, // enable drag and drop of grid rows
+    constructor: function(c){
+        //var dragger = new Baseliner.RowDragger({});
+
+        var cols = [
+          //dragger,
+          { width: 40, dataIndex: 'icon', renderer: Baseliner.render_icon },
+          { width: 40, dataIndex: 'mid', header: _('ID') },
+          { header: _('Name'), width: 240, dataIndex: 'name', 
+              renderer: Baseliner.render_ci },
+          { header: _('Class'), width: 120, dataIndex: 'class' },
+          { header: _('Collection'), width: 120, dataIndex: 'collection' },
+          { header: _('Properties'), width: 240, dataIndex: 'pretty_properties' },
+          { header: _('Version'), width: 80, dataIndex: 'versionid' }
+        ];
+        var store = new Ext.data.SimpleStore({
+            fields: ['mid','name','versionid', 'icon', 'bl', 'item', 'pretty_properties', 'class', 'collection' ],
+            data: [ ]
+        });
+        Baseliner.CIGrid.superclass.constructor.call( this, Ext.apply({
+            store: store,
+            viewConfig: {
+                headersDisabled: true,
+                enableRowBody: true,
+                forceFit: true
+            },
+            columns: cols
+        },c) );
+    },
+    initComponent: function(){
+        var self = this;
+        self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
+        self.ci_store = new Baseliner.store.CI({ 
+            baseParams: Ext.apply({}, self.ci )
+        });
+        self.ci_box = new Baseliner.model.CICombo({
+            store: self.ci_store, 
+            width: 300,
+            height: 80,
+            singleMode: true, 
+            fieldLabel: _('CI'),
+            name: 'ci',
+            hiddenName: 'ci', 
+            allowBlank: true
+        }); 
+        self.ci_box.on('select', function(combo,rec,ix) {
+            self.add_to_grid( rec.data );
+        });
+        self.ddGroup = 'bali-grid-data-' + self.id;
+        var btn_delete = new Baseliner.Grid.Buttons.Delete({
+            handler: function() {
+                var sm = self.getSelectionModel();
+                if (sm.hasSelection()) {
+                    Ext.each( sm.getSelections(), function( sel ){
+                        self.getStore().remove( sel );
+                    });
+                    btn_delete.disable();
+                    self.refresh_field();
+                } else {
+                    Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                };                
+            }
+        });
+        self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
+        self.tbar = new Ext.Toolbar({ items:[ self.ci_box, btn_delete, self.field ] });
+        /* self.on('rowdblclick', function(grid, rowIndex, e) {
+            var mid = self.store.getAt( rowIndex ).data.mid;
+            Baseliner.add_tabcomp( '/comp/ci-editor.js', null, { load: true, mid: mid } );
+        }); */
+        self.on('rowclick', function(grid, rowIndex, e) {
+            btn_delete.enable();
+        });		
+        
+        //self.ci_store.on('load', function(){ });
+        
+        if( self.value ) {
+            Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci, { mids: self.value }), function(res){
+                Ext.each( res.data, function(r){
+                    self.add_to_grid( r );
+                });
+            });
+        }
+    
+        Baseliner.CIGrid.superclass.initComponent.call( this );
+        
+        self.on('afterrender', function(){
+            var ddrow = new Ext.dd.DropTarget(self.container, {
+                ddGroup : self.ddGroup,
+                copy: false,
+                notifyDrop : function(dd, e, data){
+                    var ds = self.store;
+                    var sm = self.getSelectionModel();
+                    var rows = sm.getSelections();
+                    if(dd.getDragData(e)) {
+                        var cindex=dd.getDragData(e).rowIndex;
+                        if(typeof(cindex) != "undefined") {
+                            for(i = 0; i <  rows.length; i++) {
+                                ds.remove(ds.getById(rows[i].id));
+                            }
+                            ds.insert(cindex,data.selections);
+                            sm.clearSelections();
+                        }
+                        self.refresh_field();
+                    }
+                }
+            }); 
+            //store.load();
+        });
+    },
+    refresh_field: function(){
+        var self = this;
+        var mids = [];
+        self.store.each(function(row){
+            mids.push( row.data.mid ); 
+        });
+        self.field.setValue( mids.join(',') );
+    },
+    add_to_grid: function(rec){
+        var self = this;
+        var f = self.store.find( 'mid', rec.mid );
+        if( f != -1 ) {
+            Baseliner.warning( _('Warning'), _('Row already exists: %1', rec.name + '(' + rec.mid + ')' ) );
+            return;
+        }
+        var r = new self.store.recordType( rec );
+        self.store.add( r );
+        self.store.commitChanges();
+        self.refresh_field();
+    }
+});
+
+Baseliner.CheckColumn = Ext.extend(Ext.grid.Column, {
+    processEvent : function(name, e, grid, rowIndex, colIndex){
+        if (name == 'mousedown') {
+            var record = grid.store.getAt(rowIndex);
+            record.set(this.dataIndex, !record.data[this.dataIndex]);
+            return false; // Cancel row selection.
+        } else {
+            return Ext.grid.ActionColumn.superclass.processEvent.apply(this, arguments);
+        }
+    },
+
+    renderer : function(v, p, record){
+        p.css += ' x-grid3-check-col-td'; 
+        return String.format('<div class="x-grid3-check-col{0}">&#160;</div>', v ? '-on' : '');
+    },
+    init: Ext.emptyFn
+});
+
+Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
+    height: 220,
+    hideHeaders : true,
+    stripeRows : true,
+    initComponent: function(){
+        var self = this;
+        
+        // load checkboxes if value is set
+        self.$updating = false;
+        if( self.value != undefined && self.store ) {
+            self.store.on('load', function(){
+                self.setValue( self.value );
+            });
+        } else {
+            self.value = [];
+        }
+    
+        // setup form field
+        self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
+        self.ps = 100;
+        self.tbar = self.tbar || new Ext.Toolbar({});
+        self.search = new Baseliner.SearchField({
+				    store: self.store, params: {start: 0, limit: self.ps}
+			    });
+        self.tbar.insert( 0, self.search );
+        self.tbar.add( self.field );
+        
+        self.viewConfig = Ext.apply({
+            headersDisabled: true,
+            enableRowBody: true,
+            forceFit: true
+        }, self.viewConfig );
+        self.sm = new Ext.grid.CheckboxSelectionModel({
+            singleSelect: false,
+            sortable: false,
+            checkOnly: true
+        });
+        self.sm.on('selectionchange', function(grid,ix){
+            self.refresh_field();
+        });
+        
+        var columns = [ self.sm ];
+        Ext.each( self.columns, function(col){
+            columns.push( col );
+        });
+        self.columns = columns;
+        Baseliner.CheckBoxField.superclass.initComponent.call( this );
+    },
+    getValue : function(){
+        return self.field.getValue();
+    },
+    setValue : function(v){
+        var self = this;
+        var arr;
+        if( Ext.isArray( v ) ) {
+            arr = v;
+        } else {
+            v = '' + v;
+            arr = v.split(',');
+        }
+        var recs = [];
+        Ext.each( arr, function(id){
+            // check each one
+            var r = self.getStore().getById( id );
+            alert( r );
+            recs.push( r );
+        });
+        self.$updating = true;
+        self.getSelectionModel().selectRecords( recs );
+        self.$updating = false;
+        self.value = arr;
+        self.refresh_field();
+        return self.field.getValue();
+    },
+    refresh_field: function(){
+        var self = this;
+        if( self.$updating ) return;
+        var ids = [];
+        self.getSelectionModel().each( function(r){
+            ids.push( r.data.id ); 
+        });
+        var value = ids.join(',');
+        self.field.setValue( value );
+        //self.fireEvent('change', this, ids, value);
+    }
+});
+
+Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
+    height: 220,
+    hideHeaders: false,
+    disabled: false,
+    initComponent: function(){
+        var self = this;
+        self.store = new Baseliner.store.CI({ 
+            baseParams: Ext.apply({ pretty: true }, self.ci )
+        });
+        
+        self.columns = [
+          { width: 40, dataIndex: 'icon', renderer: Baseliner.render_icon },
+          { width: 40, dataIndex: 'mid', header: _('ID') },
+          { header: _('Name'), width: 240, dataIndex: 'name', renderer: Baseliner.render_ci },
+          { header: _('Class'), width: 120, dataIndex: 'class' },
+          //{ header: _('Collection'), width: 120, dataIndex: 'collection' },
+          { header: _('Properties'), width: 240, dataIndex: 'pretty_properties' },
+          { header: _('Version'), width: 80, dataIndex: 'versionid' }
+        ];
+        Baseliner.CICheckBox.superclass.initComponent.call( this );
+    }
+});
+
