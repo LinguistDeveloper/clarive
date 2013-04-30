@@ -53,16 +53,18 @@ extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
 
 # determine version with a GIT DESCRIBE
-our $VERSION = do {
+our $FULL_VERSION = do {
     my $v = eval { 
         require Git::Wrapper;
         my $git = Git::Wrapper->new( $ENV{BASELINER_HOME} );
         my $x = ( $git->describe({ always=>1, tag=>1 }) )[0];
-        $x =~ /^(.*)-(\d+)-(.*)$/ and $x="$1_$2 (build " . substr($3,1,7) . ")";
+        $x =~ /^(.*)-(\d+)-(.*)$/ and $x=["$1_$2", substr($3,1,7) ];
         $x;
     };
-    $@ ?  '6.0' : $v;
+    $@ ?  ['6.0','??'] : $v;
 };
+our $VERSION = $FULL_VERSION->[0];
+our $VERSION_SHA = $FULL_VERSION->[1];
 
 # find my parent to enable restarts
 $ENV{BASELINER_PARENT_PID} = getppid();
@@ -194,6 +196,8 @@ __PACKAGE__->setup();
 $SIG{INT} = \&signal_interrupt;
 $SIG{KILL} = \&signal_interrupt;
 
+our $VERSION_STRING = "v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . " (sha $Baseliner::VERSION_SHA)";
+
 # check if DB connected, retry
 if( my $retry = Baseliner->config->{db_retry} ) {
     use Try::Tiny;
@@ -247,7 +251,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         my %cl=Class::MOP::get_all_metaclasses;
 
         for my $package (
-            grep !/(Baseliner|Baseliner::Moose|Baseliner::Role::.*|Baseliner::View::.*|BaselinerX::CI::.*)$/, 
+            grep !/(Baseliner|Baseliner::Cmd|Baseliner::Moose|Baseliner::Role::.*|Baseliner::View::.*|BaselinerX::CI::.*)$/, 
             grep /^Baseliner/, 
             keys %cl )
         {
@@ -267,7 +271,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR "Baseliner v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . ". Startup time: " . tv_interval($t0) . "s.\n";
+    print STDERR "Baseliner $Baseliner::VERSION_STRING. Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
         print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
