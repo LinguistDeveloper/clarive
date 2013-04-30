@@ -180,7 +180,8 @@ sub save_notification : Local {
         
         $c->stash->{json} = { success => \1, msg => 'Notification added' }; 
     }catch{
-        $c->stash->{json} = { success => \0, msg => 'Error adding notification' }; 
+        $c->stash->{json} = { success => \0, msg => 'Error adding notification: ' }; 
+        _error shift;
     };
     
     $c->forward('View::JSON');

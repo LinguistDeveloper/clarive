@@ -646,30 +646,39 @@
     
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
         if(columnIndex == 0){
-            var topics_checked = getTopics();
-            if (topics_checked.length == 1){
-                var sw_edit;
-                check_sm.each(function(rec){
-                    sw_edit = (rec.get('sw_edit'));
-                });
-                if(sw_edit){
-                    init_buttons('enable'); 
-                }else{
-                    btn_delete.enable();
-                    btn_edit.disable();
-                }               
-                //init_buttons('enable');
-            }else{
-                if(topics_checked.length == 0){
-                    init_buttons('disable');
-                }else{
-                    btn_delete.enable();
-                    btn_edit.disable();
-                }
-            }
+            topicsSelected();
         }
     });
     
+    grid_topics.on('headerclick', function(grid, columnIndex, e) {
+        if(columnIndex == 0){
+            topicsSelected();
+        }
+    });
+
+    function topicsSelected(){
+        var topics_checked = getTopics();
+        if (topics_checked.length == 1){
+            var sw_edit;
+            check_sm.each(function(rec){
+                sw_edit = (rec.get('sw_edit'));
+            });
+            if(sw_edit){
+                init_buttons('enable'); 
+            }else{
+                btn_delete.enable();
+                btn_edit.disable();
+            }               
+            //init_buttons('enable');
+        }else{
+            if(topics_checked.length == 0){
+                init_buttons('disable');
+            }else{
+                btn_delete.enable();
+                btn_edit.disable();
+            }
+        }
+    }
     function getTopics(){
         var topics_checked = new Array();
         check_sm.each(function(rec){
