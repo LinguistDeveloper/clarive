@@ -1,6 +1,6 @@
 package Baseliner::Controller::Dashboard;
 use Baseliner::Plug;
-use Baseliner::Utils;
+use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
 use Baseliner::Core::DBI;
 use Try::Tiny;
@@ -123,46 +123,45 @@ sub list_dashlets : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    
-    my @dash_dirs = 
-    map {
+    my @dash_dirs = map {
         _dir( $_->root, 'dashlets' )->stringify  
     } Baseliner->features->list;
     push @dash_dirs, $c->path_to( 'root/dashlets' ) . "";
     @dash_dirs = grep { -d } @dash_dirs;
     my @dashlets = map {
         my @ret;
-        for my $f ( grep { -f } _dir( $_ )->children ) { 
-        my $d = $f->slurp;
-        my ( $yaml, $html ) = $d =~ /^<!--(.*)\n---.?\n(.*)$/gs;
-       
-        my $metadata;
-        if(length $yaml && length $html ) {
-            $metadata =  _load( $yaml );    
-        } else {
-            $metadata = {};
-            $html = $d; 
+        my $dashlet_dir = $_;
+        for my $f ( grep { -f } _dir($dashlet_dir)->children ) {
+            my $d    = $f->slurp;
+            my $yaml = _load_yaml_from_comment( $d );
+
+            my $metadata = try {
+                _load($yaml);
+            }
+            catch {
+                my $err = shift;
+                _error( _loc( 'Could not load metadata for dashlet %1: %2', $f, $err ) );
+                {};
+            };
+            my @rows = map { +{ field => $_, value => $metadata->{$_} } } keys %{ $metadata || {} };
+            push @ret,
+                {
+                file     => "$f",
+                yaml     => $yaml,
+                metadata => $metadata,
+                rows     => \@rows,
+                };
         }
-        my @rows = map {
-            +{  field=>$_, value => $metadata->{$_} } 
-        } keys %{ $metadata || {} };
-        push @ret, {
-            file => "$f",
-            html => $html,
-            yaml => $yaml,
-            metadata => $metadata,
-            rows => \@rows,
-        };
-        }
-       @ret;
+        @ret;
     } @dash_dirs;
     #@dashlets;
     
     my @rows;
+    my $cnt = 1;
     for my $dash ( @dashlets ) {
         push @rows,
           {
-            id			=> $dash->{metadata}->{html} . '#' . $dash->{metadata}->{url},
+            id			=> $dash->{metadata}->{html} . '#' . ( $dash->{metadata}->{url} // $cnt++ ),
             name		=> $dash->{metadata}->{name},
             description	=> $dash->{metadata}->{description},
             config		=> $dash->{metadata}->{config}

@@ -13,7 +13,7 @@ Some utilities shared by different Baseliner modules and plugins.
 =cut 
 
 use Exporter::Tidy default => [
-    qw/
+    qw(
     _loc
     _loc_raw
     _cut
@@ -107,7 +107,10 @@ use Exporter::Tidy default => [
     _ci
     _any
     _package_is_loaded
-/];
+)],
+other => [qw(
+    _load_yaml_from_comment
+)];
 
 # setup I18n
 our $i18n_path;
@@ -1210,6 +1213,23 @@ sub _package_is_loaded {
     $cl =~ s/::/\//g;
     $cl = $cl . '.pm';
     exists $INC{ $cl };
+}
+
+sub _load_yaml_from_comment {
+    my ($y) = $_[0] =~ m{(?:--+|/\*)(.*?)(?:--+|\*/)}gs;
+    return $y;
+}
+
+{
+    package Util;
+    our $AUTOLOAD;
+    sub AUTOLOAD {
+        my $self = shift;
+        my $name = $AUTOLOAD;
+        my @a = reverse(split(/::/, $name));
+        my $method = 'Baseliner::Utils::' . $a[0];
+        goto &$method;
+    }
 }
 
 1;

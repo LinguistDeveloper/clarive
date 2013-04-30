@@ -4,7 +4,7 @@ description: List of topics
 config: config.dashlet.topics
 url: /dashboard/list_topics
 html: /dashlets/topics.html
----
+
 -->
 <%perl>
     use Baseliner::Utils;
@@ -12,21 +12,24 @@ html: /dashlets/topics.html
 </%perl>
 
     <div>
-        <h2>Tópicos</h2>
+        <h2><% 'Incidencias' %></h2>
         <table class="table table-bordered table-condensed dashboard">
             <thead>
                 <tr>
                     <th colspan="3">Título</th>
-                    <th>Comentarios</th>            
+                    <th><% _loc('Status') %></th>            
                     <th>Creada</th>
                 </tr>
             </thead>
             <tbody>
 %foreach my $topic (_array @topics){
-% my $numcomment = $topic->{numcomment} ? $topic->{numcomment}:'&nbsp';
+% my $numcomment = $topic->{numcomment} ? " ($topic->{numcomment})" : '';
                 <tr>
-                    <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{topic_mid}%>', _('Topics'));"><% substr($topic->{title},0,30) . ( length( $topic->{title} ) > 30 and '...' ) %></a></b></td>
-                    <td><%$numcomment%></td>
+                    <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{topic_mid}%>', _('Topics'));">
+                        <!-- span class="label"><% "$topic->{category_name} #$topic->{topic_mid}" %></span> -->
+                        <% substr($topic->{title},0,30) . ( length( $topic->{title} ) > 30 and '...' ) %>
+                      </a></b></td>
+                    <td><span class="bali-topic-status"><% $topic->{category_status_name} .  $numcomment%></span></td>
                     <td><%$topic->{created_on}%></td>
                 </tr>
 %}
