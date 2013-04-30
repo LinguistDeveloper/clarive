@@ -363,6 +363,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         // if id_com is undefined, then its add, otherwise it's an edit
         Baseliner.Topic.comment_edit = function(topic_mid, id_com) {
             var win_comment;    
+            //var comment_field = new Baseliner.MultiEditor({
             var comment_field = new Baseliner.HtmlEditor({
                 listeners: { 'initialize': function(){ comment_field.focus() } }
             });
@@ -434,6 +435,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             win_comment = new Ext.Window({
                 title: _('Add Comment'),
                 layout: 'fit',
+                height: 450,
                 width: 700,
                 closeAction: 'close',
                 maximizable: true,
@@ -629,7 +631,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             scripts: true,
             callback: function(x){ 
                 // loading HTML has finished
-                //   careful: errors here block will break js in baseliner
+                //   careful: errors here will break js in baseliner
                 if( ! self.swEdit ) {
                     var layout = self.getLayout().setActiveItem( self.detail );
                 }
@@ -696,4 +698,3 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }        
     }
 });
-
