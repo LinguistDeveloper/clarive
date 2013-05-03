@@ -142,7 +142,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             }
         }
 
-        if( $p->{action} eq 'create' ) {
+        if( $p->{action} eq 'create' || $p->{newAction} eq 'create')  {
             @msgs = ( 'created', 'creating' );
             $p->{ns} = '/' unless length $p->{ns};
             my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } );
