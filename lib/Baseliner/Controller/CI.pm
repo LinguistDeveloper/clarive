@@ -126,7 +126,7 @@ sub tree_roles {
         my $role = $_->{role};
         my $name = $_->{name};
         if ( Baseliner->model( 'Permissions' )
-            ->user_has_any_action( username => $user, action => 'action.ci.admin.%' . $name ) )
+            ->user_has_any_action( username => $user, action => 'action.ci.admin.' . $name . '.%') )
         {
             _log 'Encontrado '. 'action.admin.ci.' . $name;
             $role = 'Generic' if $name eq '';

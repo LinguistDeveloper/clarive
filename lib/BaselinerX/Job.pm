@@ -45,7 +45,7 @@ register 'config.job' => {
 register 'action.job.create' => { name=>'Create New Jobs' };
 register 'action.job.view_monitor' => { name=>'View job monitor' };
 
-register 'menu.job' => { label => 'Jobs', index=>110, action => 'action.job.%'};
+register 'menu.job' => { label => 'Jobs', index=>110, actions => ['action.job.%','action.calendar.%']};
 
 register 'menu.job.create' => { label => 'Create a new Job', url_comp=>'/job/create', title=>'New Job',
     icon=>'/static/images/icons/job.png', actions=>['action.job.create'] };

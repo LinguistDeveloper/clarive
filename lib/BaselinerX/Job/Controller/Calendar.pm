@@ -14,11 +14,11 @@ register 'menu.job.calendar' => {
     label    => _loc('Job Slots'),
     url_comp => '/job/calendar_grid',
     title    => _loc('Job Slots'),
-    actions  => ['action.job.calendar.%'],
+    actions  => ['action.calendar.%'],
     icon     => '/static/images/chromium/history_favicon.png'
 };
-register 'action.job.calendar.view' => { name => 'View Job Calendar' };
-register 'action.job.calendar.edit' => { name => 'Edit Job Calendar' };
+register 'action.calendar.view' => { name => 'View Job Calendar' };
+register 'action.calendar.edit' => { name => 'Edit Job Calendar' };
 
 register 'config.job.calendar' => {
     metadata=> [
