@@ -1349,7 +1349,7 @@ sub set_topics {
     if ( array_diff(@new_topics, @old_topics) ) {
         if( @new_topics ) {
             if(@old_topics){
-                my $rs_old_topics = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => \@old_topics});
+                my $rs_old_topics = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, to_mid => \@old_topics});
                 $rs_old_topics->delete();
             }
             
@@ -1385,7 +1385,7 @@ sub set_topics {
             };
 
             #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
-            my $rs_old_topics = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => \@old_topics});
+            my $rs_old_topics = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, to_mid => \@old_topics});
             $rs_old_topics->delete();            
         }
     }
