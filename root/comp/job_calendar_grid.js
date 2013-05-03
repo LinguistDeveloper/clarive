@@ -146,8 +146,8 @@
                     ]
                 });
                 var win = new Ext.Window({
-                    layout: 'fit',
-                    height: 300, width: 550,
+                    autoHeight: true,
+                    width: 550,
                     title: _('Create Calendar'),
                     items: new_cal
                 });
