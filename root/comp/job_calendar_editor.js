@@ -17,6 +17,8 @@
     calendar_type_help += '<TR><TD class="urgente" width=20 height=20>&nbsp;</TD><TD>Urgente/No pase: Son ventanas urgentes, fuera de lo habitual. Este estado sirve para sobreescribir un pase nornmal.</TD></TR>';
     calendar_type_help += '</TABLE>';
     
+    var cal_ns = '<% $cal->{ns} %>';
+    
     var cal_form = new Ext.FormPanel({
                 url: '/job/calendar_update',
                 frame: true,
@@ -86,7 +88,7 @@
                                 value: '<% $cal->{description} %>'
                             } ] },
                         { layout: 'form', columnWidth: 0.5, items: [
-                            Baseliner.ci_box({ name:'ns', role:['Infrastructure','Project'] , fieldLabel:_('Namespace'), value: '<% $cal->{ns} %>', emptyText: _('Global')  }),
+                            Baseliner.ci_box({ name:'ns', role:['Infrastructure','Project'] , fieldLabel:_('Namespace'), value: cal_ns , emptyText: _('Global'), force_set_value: cal_ns && cal_ns != '' ? true: false  }),
                             {  xtype: 'combo', 
                                        name: 'bl', 
                                        hiddenName: 'bl',
