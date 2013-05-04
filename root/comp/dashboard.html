@@ -4,7 +4,7 @@
     my $dashboardlets = $c->stash->{dashboardlets};
 </%perl>
 
-<div id="boot" style="margin:0 auto 0 auto; width:85%;">
+<div id="boot" style="margin:0 auto 0 auto; width:90%;">
     
 % if($dashboards){
 % if(scalar @{$dashboards} > 0){
@@ -21,10 +21,10 @@
     </div>
 %}
 %}
-    <div class="container_24" style="padding-top:10px;padding-left:10px;">
+    
 
 %if($c->stash->{is_columns}){
-
+<div class="container_24" style="padding-top:10px;padding-left:10px;">
         <div class="grid_10" style="margin-bottom: 5px;">
 % if($dashboardlets){        
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
@@ -43,12 +43,13 @@
 % }}            
         </div>
 %}
-
+</div>
 %}else{
 
         
 % if($dashboardlets){        
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
+<div class="container_22" style="padding-top:10px;padding-left:10px;">
     <div class="grid_22" style="margin-bottom: 5px;">
     <& $dash->{html} &>
     </div>
@@ -57,5 +58,5 @@
 %}
 
 %}
-    </div>
+    
 </div>
