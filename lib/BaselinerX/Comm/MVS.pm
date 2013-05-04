@@ -110,7 +110,7 @@ sub submit {
         close JF;
         $self->reopen;
         $self->{jes}->submit($jobfile) || confess _loc("Could not submit job '%1': %2", $jobname, $!);
-        unlink $jobfile;
+        #unlink $jobfile;
             
         my $msg = $self->{jes}->message;
         my $JobNumber = $self->_jobnumber($msg);
