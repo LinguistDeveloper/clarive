@@ -10,13 +10,13 @@ BEGIN {  extends 'Catalyst::Controller' }
 register 'menu.admin.notifications' => {
     label    => 'Notifications',
     title    => _loc ('Notifications'),
-    action   => 'action.notification.admin',
+    action   => 'action.admin.notification',
     url_comp => '/comp/notifications.js',
     icon     => '/static/images/log_w.gif',
     tab_icon => '/static/images/log_w.gif'
 };
 
-register 'action.notification.admin' => { name=>'Admin Notifications' };
+register 'action.admin.notification' => { name  => _loc ('Admin Notifications') };
 
 sub list_notifications : Local {
     my ($self,$c)=@_;
