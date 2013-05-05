@@ -655,6 +655,7 @@ sub get_system_fields {
                 html          => '/fields/templates/html/row_body.html',
                 field_order      => -8,
                 section          => 'body',
+                allowBlank       => \1
             }
         },
         {
