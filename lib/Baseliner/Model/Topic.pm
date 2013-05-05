@@ -415,7 +415,7 @@ sub topics_for_user {
     
     #Filtro cuando viene por la parte del lifecycle.
     if($p->{id_project}){
-        my @topics_project = map {$_->{from_mid}} DB->BaliMasterRel->search({ to_mid=>$p->{id_project}, collection =>'bali_topic' }, {join => ['master_from']})->hashref->all;
+        my @topics_project = map {$_->{from_mid}} DB->BaliMasterRel->search({ to_mid=>$p->{id_project}, rel_type =>'topic_project' })->hashref->all;
         $where->{topic_mid} = \@topics_project;
     }    
     
