@@ -4442,5 +4442,9 @@ msgstr "Por defecto"
 msgid "Edit notification"
 msgstr "Editar notificación"
 
+msgid "Save role"
+msgstr "Guardar role"
 
+msgid "Role saved successfully"
+msgstr "Role guardado correctamente"
 

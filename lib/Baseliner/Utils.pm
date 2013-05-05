@@ -1218,8 +1218,12 @@ sub _package_is_loaded {
 }
 
 sub _load_yaml_from_comment {
-    my ($y,$rest) = $_[0] =~ m{^(?:--+|/\*)(.*?)(?:--+|\*/)}gs;
+    my ($y,$rest) = $_[0] =~ m{^(?:<!--+|/\*)(.*?)(?:-->+|\*/)}gs;
     return $y;
+}
+
+sub _prueba {
+    return "HHHHHHH";
 }
 
 {

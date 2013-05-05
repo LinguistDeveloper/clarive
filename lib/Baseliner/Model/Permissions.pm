@@ -242,6 +242,25 @@ sub user_has_action {
     },$username, $p{action}, @bl);
 }
 
+sub user_has_any_action {
+    my ($self, %p ) = @_;
+    _check_parameters( \%p, qw/username action/ ); 
+    my $username = $p{username};
+    my $action = $p{action};
+    push my @bl, _array $p{bl}, '*';
+    
+    return 1 if $self->is_root( $username );
+
+    return Baseliner->model('Baseliner')->dbi->value(qq{
+        select count(*)
+        from bali_roleuser ru, bali_roleaction ra
+        where ru.USERNAME = ?
+          and ru.ID_ROLE = ra.ID_ROLE
+          and ra.ACTION like ?
+          and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
+    },$username, $p{action}, @bl);
+}
+
 # sub user_has_action {
     # my ($self, %p ) = @_;
     # _check_parameters( \%p, qw/username action/ ); 

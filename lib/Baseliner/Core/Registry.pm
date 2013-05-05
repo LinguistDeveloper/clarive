@@ -229,6 +229,7 @@ sub search_for_node {
     my $key_prefix = delete $query{key} || '';
     my $q_depth = delete $query{depth};
     my $allowed_actions = delete $query{allowed_actions};
+    my $username = delete $query{username};
     my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
     $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
@@ -243,24 +244,35 @@ sub search_for_node {
         my $node_instance = $node->instance;
 
         # skip nodes that the user has no access to
-        if( ref $allowed_actions ) {
-            my %node_actions;
-            if( ref $node->all_actions ) {
-                %node_actions =  %{ $node->all_actions };  # found in cache
-            } else {
-                %node_actions = 
-                        map { $_ => 1 }
-                        map { # create list of all possible parent actions
-                            my @act = split /\./, $_;
-                            map { 
-                               join('.',@act[0..$_])
-                            } ( 2 .. $#act );
-                        } _array( $node_instance->action, $node_instance->actions );
-                    ;
-                $node->all_actions( \%node_actions ); # caching
+        my $has_permission = 0;
+        if ( !$username  || (!$node_instance->actions && !$node_instance->action)) {
+            $has_permission = 1;
+        } else {        
+            for ( _array( $node_instance->action, $node_instance->actions ) ) {
+                $has_permission = 1 if Baseliner->model("Permissions")->user_has_any_action( action => $_, username => $username)
             }
-            next if %node_actions && ! _any( sub{ $_ }, @node_actions{ _array($allowed_actions) } );
         }
+        next if !$has_permission;
+        # if( ref $allowed_actions ) {
+        #     my %node_actions;
+        #     if( ref $node->all_actions ) {
+        #         %node_actions =  %{ $node->all_actions };  # found in cache
+        #     } else {
+        #         %node_actions = 
+        #                 map { $_ => 1 }
+        #                 map { # create list of all possible parent actions
+        #                     my @act = split /\./, $_;
+        #                     map { 
+        #                        join('.',@act[0..$_])
+        #                     } ( 2 .. $#act );
+        #                 } _array( $node_instance->action, $node_instance->actions );
+        #             ;
+        #         $node->all_actions( \%node_actions ); # caching
+        #     }
+        #     next if %node_actions && ! _any( sub{ $_ }, @node_actions{ _array($allowed_actions) } );
+        #     _dump %node_actions;
+        # }
+
 
         # query for attribute existence
         next if( $has_attribute && !defined $node->{$has_attribute} );

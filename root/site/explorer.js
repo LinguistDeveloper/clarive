@@ -1,4 +1,7 @@
-Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_action( action=>'action.lc.ic_editor', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action=>'action.ci.admin.%', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_job = <% $c->model('Permissions')->user_has_any_action( action=>'action.job.%', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
+
 
 Baseliner.tree_topic_style = [
     '<span unselectable="on" style="font-size:0px;',
@@ -441,11 +444,13 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
     initComponent: function(){
         var self = this;
 
-        self.$tree_projects = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' })
-        self.items = [ self.$tree_projects ];
-        self.$tree_projects.on('favorite_added', function() { self.$tree_favorites.refresh() } );
         
         var show_projects = function() {
+            if( !self.$tree_projects ) {
+                self.$tree_projects = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' })
+                self.$tree_projects.on('favorite_added', function() { if( self.$tree_favorites ) self.$tree_favorites.refresh() });
+                self.add( self.$tree_projects );
+            }
             self.getLayout().setActiveItem( self.$tree_projects );
         };
 
@@ -480,9 +485,10 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/project.png',
             handler: show_projects,
             tooltip: _('Projects'),
-            pressed: true,
+            pressed: false,
             toggleGroup: 'explorer-card',
             allowDepress: false,
+            hidden: ! Baseliner.user_can_job,
             enableToggle: true
         });
 
@@ -491,7 +497,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/star-gray.png',
             tooltip: _('Favorites'),
             handler: show_favorites,
-            pressed: false,
+            pressed: true,
             allowDepress: false,
             toggleGroup: 'explorer-card',
             enableToggle: true
@@ -505,7 +511,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             toggleGroup: 'explorer-card',
             pressed: false,
             allowDepress: false,
-            enableToggle: true
+            enableToggle: true,
+            hidden: ! Baseliner.user_can_workspace,
         });
 
         var button_ci = new Ext.Button({
@@ -557,9 +564,12 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             //icon: '/static/images/icons/config.gif',
             tooltip: _('Config'),
             menu: [
-                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder },
-                { text: _('Add Workspace'), handler: add_workspace }
+                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder }
             ]
+            // menu: [
+            //     { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder },
+            //     { text: _('Add Workspace'), handler: add_workspace }
+            // ]
         });
 
         self.tbar = new Ext.Toolbar({
@@ -592,6 +602,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         });
 
         Baseliner.Explorer.superclass.initComponent.call(this);
+        self.on('afterrender', function(){ show_favorites() });
     },
     current_tree : function(){
         return this.getLayout().activeItem;

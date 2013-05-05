@@ -1,7 +1,6 @@
 package Clarive::Role::Baseliner;
 use v5.10;
 use Mouse::Role;
-use Baseliner::Utils;
 
 has nls_lang   => qw(is ro default) => sub { 'AMERICAN_AMERICA.UTF8' };
 

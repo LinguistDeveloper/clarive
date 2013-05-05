@@ -731,11 +731,11 @@ sub file : Local {
 sub tree : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
-    if( $p->{favorites} eq 'true' ) {
+    if( $p->{favorites} && $p->{favorites} eq 'true' ) {
         $c->forward( 'tree_favorites' );
-    } elsif( $p->{show_workspaces} eq 'true' ) {
+    } elsif( $p->{show_workspaces} && $p->{show_workspaces} eq 'true' ) {
         $c->forward( 'tree_workspaces' );
-    } elsif( $p->{show_ci} eq 'true' ) {
+    } elsif( $p->{show_ci} && $p->{show_ci} eq 'true' ) {
         $c->forward( '/ci/list' );
     } else {
         $c->forward( 'tree_all' );
