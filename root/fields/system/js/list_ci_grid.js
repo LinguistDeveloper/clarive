@@ -10,7 +10,6 @@ params:
     set_method: 'set_cis'
     field_order: 100
     section: 'details'
-    single_mode: 'false'    
 ---
 */
 (function(params){

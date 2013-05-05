@@ -162,7 +162,7 @@
 
         if(rec){
             var ff = form_status.getForm();
-            console.log( rec );
+            //console.log( rec );
             ff.loadRecord( rec );
             ff.findField('bind_releases').setValue(rec.data.bind_releases);
             ff.findField('ci_update').setValue(rec.data.ci_update);
@@ -1141,7 +1141,7 @@
             s.each( function(row){
                 if( row.data.id == id ) {
                     var data = row.data.params;
-                    console.log(data);
+                    //console.log(data);
                     var parent_id;
                     switch (data.origin){
                         case 'system':  parent_id = 'S';
@@ -1412,6 +1412,7 @@
                                 if (attr.data[combo_system_fields.getValue()].single_mode != undefined){
                                     var form = form_template_field.getForm();
                                     form.findField("valuesgroup").show();
+                                    form_template_field.doLayout();
                                 }else{
                                     var form = form_template_field.getForm();
                                     form.findField("valuesgroup").hide();
@@ -1442,7 +1443,7 @@
                                             combo_filters
                                         ]
                             });
-        
+                            
                             var winCustomField = new Baseliner.Window({
                                 modal: true,
                                 width: 500,
