@@ -13,20 +13,21 @@ params:
 	var data = params.topic_data;
 	var ff = params.form.getForm();
 	
-	var reader = new Ext.data.JsonReader({
-		totalProperty: 'total',
-		successProperty: 'success',
-		idProperty: 'id',
-		//root: 'data',
-		messageProperty: 'message'  // <-- New "messageProperty" meta-data
-	}, [
+	var fields = [
 		{name: 'id'},
 		{name: 'descripcion'},
 		{name: 'manual'},
 		{name: 'sct'},
 		{name: 'rs_esperado'},
 		{name: 'sda_obtenida'}
-	]);
+	];
+	
+	var reader = new Ext.data.JsonReader({
+		totalProperty: 'total',
+		successProperty: 'success',
+		idProperty: 'id',
+		fields: fields
+	});
 	
 	var records = data ? data[ meta.bd_field ] : '[]';
 	
@@ -35,7 +36,6 @@ params:
 		data:  records ? Ext.util.JSON.decode(records) : []
 	});
 
-	var title = 'prueba';
 	
     var groupRow = [
 		{colspan: 2},
@@ -53,10 +53,9 @@ params:
           {dataIndex: 'manual', header: 'Manual', editor: new Ext.form.TextField({})},
           {dataIndex: 'sct', header: 'SCT', editor: new Ext.form.TextField({})},
           {dataIndex: 'rs_esperado', header: 'Resultado Esperado', editor: new Ext.form.TextField({})},
-          {dataIndex: 'sda_obtenida', header: 'Salida Obtenida', editor: new Ext.form.TextField({})},
+		  {dataIndex: 'sda_obtenida', hidden: meta.typeForm == 'EJC' ? false : true ,header: 'Salida Obtenida', editor: new Ext.form.TextField({})}
     ];
-     	
-	
+     
     var button_add = new Baseliner.Grid.Buttons.Add({
 		text:'',
         tooltip: _('Create'),
@@ -68,7 +67,8 @@ params:
 				sct : '',
 				rs_esperado : '',
 				sda_obtenida : ''
-			});
+			});				
+
 			editor.stopEditing();
 			grid.store.insert(0, u);
 			editor.startEditing(0,0);
@@ -96,8 +96,6 @@ params:
 				var rows = [];
 				obj.grid.store.each( function(rec) {
 					var d = rec.data;
-					//var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid )
-					//d.topic_name = topic_name;
 					rows.push( d ); 
 				});				
 				ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
