@@ -572,7 +572,8 @@
                         }
                     },
                     forceSelection: true
-                })
+                }),
+				new Ext.ux.ProgressBarPager()
             ],
             displayInfo: true,
             displayMsg: _('Rows {0} - {1} of {2}'),
