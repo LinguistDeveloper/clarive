@@ -433,7 +433,7 @@ sub list_roles {
             role => $role,
             name => name_transform( $role ),
         }
-    } grep /^Baseliner::Role::CI::/, keys %cl;
+    } grep /^Baseliner::Role::CI/, keys %cl;
 }
 
 # used by Baseliner.store.CI

@@ -253,14 +253,15 @@ sub topics_for_user {
             ['topic_mid', 'category_status_seq', 'category_status_name' ],
             ['topic_mid', 'category_status_seq', 'category_status_name' ]
         );
-    } elsif ( $sort ) {
+    } else {
+        $sort //= '';
         # sort fixups 
         $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
         $sort eq 'topic_mid' and $sort = '';
         
         ($select,$order_by, $as, $group_by) = $sort
         ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
-        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' }, { "-$dir" => "me.topic_mid" } ], ['topic_mid'], ['topic_mid'] );
+        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' } ], ['topic_mid'], ['topic_mid'] );
     }
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
@@ -435,9 +436,7 @@ sub topics_for_user {
     if( $limit >= 0 ) {
         my $pager = $rs->pager;
         $cnt = $pager->total_entries;
-    } else {
-        $cnt = $rs->count;
-    }
+    } 
     rs_hashref( $rs );
     my @mids = map { $_->{topic_mid} } $rs->all;
     my $rs_sub = $rs->search(undef, { select=>'topic_mid' });
@@ -494,6 +493,7 @@ sub topics_for_user {
             }
         };
     }
+    $cnt //= scalar @rows;
     return $cnt, @rows ;
 }
 
