@@ -10,7 +10,8 @@
 	var typeApplication = '<% $c->stash->{typeApplication} %>';
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
-    var base_params = { start: 0, limit: ps, typeApplication: typeApplication };  // for store_topics
+	var id_project = '<% $c->stash->{id_project} %>';
+    var base_params = { start: 0, limit: ps, typeApplication: typeApplication, id_project: id_project ? id_project : undefined };  // for store_topics
     // this grid may be limited for a given category category id 
     var category_id = '<% $c->stash->{category_id} %>';
     if( category_id ) {
@@ -893,7 +894,7 @@
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list };
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined  };
         // object for merging with views 
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         
@@ -1099,7 +1100,8 @@
         params: {
             start:0 , limit: ps,
             topic_list: params.topic_list,
-            query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>',
+            //query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>',
+			query_id: '<% $c->stash->{query_id} %>', 
             typeApplication: typeApplication
         }
     });
