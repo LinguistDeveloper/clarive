@@ -66,8 +66,8 @@ function pieClick(event, pos, obj)
 {
 	if (!obj)
                 return;
-	var title_open_category = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + obj.series.label + '</span></div>';			
-    Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _(title_open_category));
+	var title_category = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + obj.series.label + '</span></div>';			
+    Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _(title_category));
 }
 
 </script>
