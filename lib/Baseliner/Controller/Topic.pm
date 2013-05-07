@@ -87,7 +87,9 @@ sub grid : Local {
     $c->stash->{id_project} = $p->{id_project};
     $c->stash->{project} = $p->{project}; 
     $c->stash->{query_id} = $p->{query};
-    $c->stash->{category_id} = $p->{category_id};
+    if ($c->stash->{category_id} != $p->{category_id}) {
+        $c->stash->{category_id} = $p->{category_id};
+    }
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
 
@@ -912,11 +914,15 @@ sub filters_list : Local {
     # Filter: Categories ########################################################################################################
         
     my @categories;
-    
+    my $category_id = $c->req->params->{category_id};
     #$row = $c->model('Baseliner::BaliTopicCategories')->search();
-    my @categories_permissions  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+    my @categories_permissions  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+    if($category_id){
+        @categories_permissions = grep { $_->{id} == $category_id } @categories_permissions;
+    }
+
     
-    if(@categories_permissions && $#categories_permissions gt 0){
+    if(@categories_permissions && scalar @categories_permissions gt 1){
         for( @categories_permissions ) {
             push @categories,
                 {
@@ -927,7 +933,7 @@ sub filters_list : Local {
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     #checked => \0,
-                    checked => ( $c->req->params->{id_category} && $c->req->params->{id_category} eq $_->{id} ) ? \1: \0,
+                    checked => ( $category_id && $category_id eq $_->{id} ) ? \1: \0,
                     leaf    => 'true',
                     uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
@@ -979,7 +985,17 @@ sub filters_list : Local {
     
     # Filter: Status #############################################################################################################
     my @statuses;
-    $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
+    
+    my $where = undef;
+    my $arg = {order_by=>'seq'};
+    
+    if($category_id){
+        $arg->{join} = ['categories_status'];
+        $where->{'categories_status.id_category'} = $category_id;
+    }
+    $row = $c->model('Baseliner::BaliTopicStatus')->search($where,$arg);
+    
+    #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
     ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
     my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        

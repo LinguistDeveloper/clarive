@@ -12,10 +12,10 @@
     var query_id = '<% $c->stash->{query_id} %>';
 	var id_project = '<% $c->stash->{id_project} %>';
     var base_params = { start: 0, limit: ps, typeApplication: typeApplication, id_project: id_project ? id_project : undefined };  // for store_topics
-    // this grid may be limited for a given category category id 
+    // this grid may be limited for a given category category id
     var category_id = '<% $c->stash->{category_id} %>';
     if( category_id ) {
-        params.id_category = category_id;
+        //params.category_id = category_id;
         base_params.categories = category_id;
     }
 
@@ -895,7 +895,7 @@
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined  };
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined  };
         // object for merging with views 
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         
@@ -975,7 +975,7 @@
 	tree_filters.getLoader().on("beforeload", function(treeLoader, node) {
 		var loader = tree_filters.getLoader();
 		if(category_id){
-			loader.baseParams = {id_category: category_id};	
+			loader.baseParams = {category_id: category_id};	
 		}
 		
 	});	
