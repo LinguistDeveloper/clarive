@@ -883,6 +883,7 @@ Baseliner.ci_box = function(c) {
     var role = c.role; delete c.role;
     var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
+	if (c.no_yaml != undefined) bp.no_yaml = c.no_yaml;
     if( cl !=undefined ) bp['class'] = cl;
     else bp.role = role;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;

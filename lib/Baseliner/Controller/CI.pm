@@ -450,7 +450,10 @@ sub store : Local {
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
-    my $no_yaml = $p->{no_yaml} // 1;
+    my $no_yaml = exists $p->{no_yaml} ? $p->{no_yaml} : 1;
+    
+    _log ">>>>>>>>>>>>>" . $no_yaml;
+
     my $where = {};
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
