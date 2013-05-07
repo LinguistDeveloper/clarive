@@ -148,5 +148,15 @@
 <div id='run-panel'></div>
 <div id='main-div'></div>
 
-<!-- Preloading some images used in grids -->
-<!-- & preload_images.html & -->
+<div id="bali-browser-warn" style="display: none; position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>
+<div id="bali-browser-warn-mid" style="display: none; position:absolute; left:35%; top:40%; padding:2px; z-index:20001; height:auto;">
+  <center>
+      <div id="boot" role="dialog">
+          <h2><% _loc('Browser Warning') %></h2>
+          <p><% _loc("This browser is not supported by %1", $c->config->{name} ) %>
+          <div id="bali-browser-ver"></div>
+          </p>
+      </div>
+  </center>
+</div>
+
