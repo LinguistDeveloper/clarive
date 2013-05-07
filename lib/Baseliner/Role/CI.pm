@@ -185,7 +185,8 @@ sub load {
     my ( $self, $mid ) = @_;
     $mid ||= $self->mid;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
-    my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
+    my $row = $Baseliner::CI::mid_scope->{ $mid } // 
+        ( $Baseliner::CI::mid_scope->{ $mid } = Baseliner->model('Baseliner::BaliMaster')->find( $mid ) );
     _fail _loc( "Master row not found for mid %1", $mid ) unless ref $row;
     # find class, so that we are subclassed correctly
     my $class = "BaselinerX::CI::" . $row->collection;
@@ -212,22 +213,37 @@ sub load {
     }
     # look for relationships
     my $rel_types = $self->rel_type;
+    my %field_rel_mids;
     for my $field ( keys %$rel_types ) {
-        my $prev_value = $data->{$field};  # save in case there is no relationship, useful for changed cis
+        #my $prev_value = $data->{$field};  # save in case there is no relationship, useful for changed cis
         my $rel_type = $rel_types->{ $field };
         my $my_mid = $rel_type->[0];
         my $other_mid = $my_mid eq 'to_mid' ? 'from_mid' : 'to_mid';
         next unless defined $rel_type;
-        $data->{ $field } = [
-            map { values %$_ }
-            DB->BaliMasterRel->search( {
-                "$my_mid" => $mid,
-                rel_type       => "$rel_type->[1]" },
-                { select=> $other_mid } )->hashref->all
-        ];
-        # use old value unless there's a master_rel object 
-        $data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
+        $field_rel_mids{ "$rel_type->[1]" } = { field=>$field, my_mid => $my_mid, other_mid => $other_mid, };
+        #$data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
     }
+    # get rel data
+    if( my @fields = keys %field_rel_mids ) {
+        my $rel_type_data = 
+            $Baseliner::CI::mid_scope->{ "rels_$mid" } //
+            ( $Baseliner::CI::mid_scope->{ "rels_$mid" } =  
+                [ DB->BaliMasterRel->search( 
+                    { -or=>[ to_mid=>$mid, from_mid=>$mid ], rel_type => \@fields },
+                    { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all ]
+            );
+            
+        for my $row ( @$rel_type_data ) {
+            my $f = $field_rel_mids{ $row->{rel_type} }; 
+            next unless $f;
+            next if $row->{ $f->{my_mid} } ne $mid;
+            my $other_mid = $row->{ $f->{other_mid} };
+            next unless $other_mid;
+            my $prev_value = $data->{ $f->{field} };
+            push @{ $data->{ $f->{field} } }, $other_mid;
+        }
+    }
+    
     #_log $data;
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form;
@@ -265,7 +281,7 @@ sub related_cis {
         my $rel_mid = $rel_edge eq 'child'
             ? $_->{to_mid}
             : $_->{from_mid}; 
-        my $ci = _ci( $rel_mid );
+        my $ci = Baseliner::CI->new( $rel_mid );
         # adhoc ci data with relationship info
         $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid, depth=>$opts{depth_original}-$opts{depth}, path=>$opts{path} };
         $ci;
@@ -336,13 +352,13 @@ sub related {
     return () if exists $opts{visited}{$mid};
     local $Baseliner::CI::_no_record = $opts{no_record} // 0; # make sure we include a _ci 
     $opts{visited}{ $mid } = 1;
-    $depth = 1 if $depth < 1; # otherwise we go into infinite loop
+    #$depth = 1 if $depth < 1; # otherwise we go into infinite loop
     # get my related cis
     my @cis = $self->related_cis( %opts );
     # filter before
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
-    if( --$depth ) {
+    if( $depth<0 || ( $depth > 0 && --$depth ) ) {
         my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
         if( $opts{mode} eq 'tree' ) {
             for my $ci( @cis ) {
@@ -359,11 +375,13 @@ sub related {
 
 sub parents {
     my ($self, %opts)=@_;
+    local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
     return $self->related( %opts, edge=>'in' );
 }
 
 sub children {
     my ($self, %opts)=@_;
+    local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
     return $self->related( %opts, edge=>'out' );
 }
 

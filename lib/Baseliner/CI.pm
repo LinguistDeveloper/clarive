@@ -5,6 +5,7 @@ use Module::Loaded;
 
 our $_no_record = 0;
 our $scope = {};
+our $mid_scope;
 
 sub new {
     my $class = shift;
@@ -14,6 +15,7 @@ sub new {
     } elsif( @_ == 1 && ref $_[0] eq 'HASH' ) {
         %args = %{ $_[0] };
     } elsif( @_ == 1 && is_number( $_[0] ) ) {   # mid! a CI!
+        local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
         my $rec = Baseliner::Role::CI->load( $_[0] );
         my $ci_class = $rec->{ci_class}; 
         # instantiate
