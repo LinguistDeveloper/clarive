@@ -66,7 +66,8 @@ function pieClick(event, pos, obj)
 {
 	if (!obj)
                 return;
-    Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _('Topics'));
+	var title = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + obj.series.label + '</span></div>';
+    Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _(title));
 }
 
 </script>
