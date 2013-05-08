@@ -1,5 +1,5 @@
 package Clarive::App;
-use Moo;
+use Mouse;
 
 
 1;
