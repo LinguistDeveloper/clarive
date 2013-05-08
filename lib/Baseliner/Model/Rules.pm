@@ -143,7 +143,7 @@ sub build_tree {
 
 sub dsl_build {
     my ($self,$stmts)=@_;
-    _debug $stmts;
+    #_debug $stmts;
     my @dsl = (
         #'my $stash = {};',
         #'my $ret;',
