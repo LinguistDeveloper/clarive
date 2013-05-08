@@ -159,7 +159,7 @@ sub dsl_build {
         my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
         delete $attr->{loader} ; # node cruft
         delete $attr->{events} ; # node cruft
-        _debug $attr;
+        #_debug $attr;
         my $name = $attr->{text};
         push @dsl, sprintf '# statement: %s', $name; 
         my $key = $attr->{key};
@@ -194,7 +194,7 @@ sub dsl_run {
         _debug "LAUNCH KEY = $key";
         #my $ret = Baseliner->launch( $key, data=>$data );  # comes with a dummy job
         my $ret = Baseliner->registry->get( $key )->run( Baseliner->app, $data ); 
-        _debug $ret;
+        #_debug $ret;
         my $return_data = $ret->data // {};
         $return_data = ref $return_data eq 'HASH' ? $return_data : {} ;
         return merge_data( $data, $return_data );
