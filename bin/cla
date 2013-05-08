@@ -47,7 +47,11 @@ if( !$cmd || exists $cla_opts{h} ) {
     $cmd = 'help';
 }
 
-if( my @cmds = split '-', $cmd  ) {
+if( $cmd =~ /\./ ) {
+    $cmd_pkg = 'bali';   
+    $opts{service_name} = $cmd;
+}
+elsif( my @cmds = split '-', $cmd  ) {
     $cmd_pkg = join '::', @cmds;
     if( @cmds > 1 ) {
         $altcmd = $cmds[0];
@@ -112,7 +116,7 @@ sub config_load {
     my (%p) = @_;
     my %ret ;
     
-    for my $file ( '.cla', $p{config} ) {   # most important last
+    for my $file ( 'clarive.yml', $p{config} ) {   # most important last
         next unless $file;
         if( -e $file ) {
             require YAML::XS;

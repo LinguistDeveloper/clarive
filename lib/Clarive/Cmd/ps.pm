@@ -1,5 +1,5 @@
 package Clarive::Cmd::ps;
-use Moo;
+use Mouse;
 extends 'Clarive::Cmd';
 use v5.10;
 use strict;
@@ -7,6 +7,8 @@ use Proc::ProcessTable;
 use Path::Class;
 
 our $CAPTION = 'list server processes';
+
+with 'Clarive::Role::TempDir';
 
 sub run {
     my ($self, %opts) = @_;

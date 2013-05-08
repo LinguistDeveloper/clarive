@@ -107,10 +107,14 @@ sub dispatcher {
 
     my $frequency = $config->{frequency};
 
-    $SIG{HUP}  = sub { $self->stop_all( $c, @args ) };
-    $SIG{TERM} = sub { $self->stop_all( $c, @args ) };
-    $SIG{STOP} = sub { $self->stop_all( $c, @args ) };
-    $SIG{USR1} = sub { $self->restart_all( $c, @args ) };
+    my %sigs = map {
+        $_ => $SIG{$_} 
+    } qw(HUP TERM STOP USR1);
+    
+    $SIG{HUP}  = sub { $self->stop_all( $c, @args ); $sigs{HUP} and $sigs{HUP}->() };
+    $SIG{TERM} = sub { $self->stop_all( $c, @args ); $sigs{TERM} and $sigs{TERM}->() };
+    $SIG{STOP} = sub { $self->stop_all( $c, @args ); $sigs{STOP} and $sigs{STOP}->() };
+    $SIG{USR1} = sub { $self->restart_all( $c, @args ); $sigs{USR1} and $sigs{USR1}->() };
 
     # reaps child process to avoid zombies
     $SIG{CHLD} = 'IGNORE';
