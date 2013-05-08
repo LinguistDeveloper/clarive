@@ -1,5 +1,6 @@
 package Baseliner::Role::CI;
 use Moose::Role;
+use v5.10;
 
 use Moose::Util::TypeConstraints;
 require Baseliner::CI;
@@ -184,9 +185,10 @@ sub load {
     use Baseliner::Utils;
     my ( $self, $mid ) = @_;
     $mid ||= $self->mid;
+    my $cached = $Baseliner::CI::mid_scope->{ $mid };
+    return $cached if $cached;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
-    my $row = $Baseliner::CI::mid_scope->{ $mid } // 
-        ( $Baseliner::CI::mid_scope->{ $mid } = Baseliner->model('Baseliner::BaliMaster')->find( $mid ) );
+    my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
     _fail _loc( "Master row not found for mid %1", $mid ) unless ref $row;
     # find class, so that we are subclassed correctly
     my $class = "BaselinerX::CI::" . $row->collection;
@@ -225,15 +227,11 @@ sub load {
     }
     # get rel data
     if( my @fields = keys %field_rel_mids ) {
-        my $rel_type_data = 
-            $Baseliner::CI::mid_scope->{ "rels_$mid" } //
-            ( $Baseliner::CI::mid_scope->{ "rels_$mid" } =  
-                [ DB->BaliMasterRel->search( 
+        my @rel_type_data = DB->BaliMasterRel->search( 
                     { -or=>[ to_mid=>$mid, from_mid=>$mid ], rel_type => \@fields },
-                    { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all ]
-            );
-            
-        for my $row ( @$rel_type_data ) {
+                    { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all;
+                
+        for my $row ( @rel_type_data ) {
             my $f = $field_rel_mids{ $row->{rel_type} }; 
             next unless $f;
             next if $row->{ $f->{my_mid} } ne $mid;
@@ -248,7 +246,7 @@ sub load {
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form;
     $data->{ci_class} //= $class;
-    return $data;
+    return $Baseliner::CI::mid_scope->{ "$mid" } = $data;
 }
 
 sub ci_form {
@@ -303,6 +301,17 @@ sub _filter_cis {
             }
         } @cis;
     }
+    if( $opts{isa} || $opts{isa_any} || $opts{isa_all} ) {
+        @cis = grep { 
+            my @isa = map { "BaselinerX::CI::$_" } _array( $opts{isa}, $opts{isa_all}, $opts{isa_any} );
+            my $ci = $_;
+            if( exists $opts{isa_all} ) {
+                List::MoreUtils::all( sub { $ci->isa( $_ ) }, @isa );
+            } else {
+                _any( sub { $ci->isa( $_ ) }, @isa );
+            }
+        } @cis;
+    }
     return @cis;
 }
 
@@ -352,13 +361,13 @@ sub related {
     return () if exists $opts{visited}{$mid};
     local $Baseliner::CI::_no_record = $opts{no_record} // 0; # make sure we include a _ci 
     $opts{visited}{ $mid } = 1;
-    #$depth = 1 if $depth < 1; # otherwise we go into infinite loop
+    
     # get my related cis
     my @cis = $self->related_cis( %opts );
     # filter before
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
-    if( $depth<0 || ( $depth > 0 && --$depth ) ) {
+    if( $depth<0 || ( $depth>0 && --$depth ) ) {
         my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
         if( $opts{mode} eq 'tree' ) {
             for my $ci( @cis ) {
