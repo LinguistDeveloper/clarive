@@ -1,22 +1,18 @@
 package Clarive::Cmd;
 use Mouse;
 
-has app => qw(is ro required 1), handles=>['lang', 'env', 'home', 'debug'];
+has app => qw(is ro required 1), 
+            handles=>[qw/
+                lang 
+                env 
+                home 
+                debug 
+                verbose 
+                args 
+                argv
+            /];
 
+# command opts have the app opts + especific command opts from config
 has opts   => qw(is ro isa HashRef required 1);
-
-sub BUILD {
-    my $self = shift;
-    
-    # LANG to UTF-8
-    $ENV{LANG} = $self->lang;
-
-    # debug ? 
-    #
-    
-    if( defined $self->opts->{d} || $ENV{BASELINER_DEBUG} ) {
-        $self->debug(1);
-    }
-}
 
 1;

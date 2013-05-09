@@ -34,6 +34,7 @@ sub setup_baseliner {
     $ENV{NLS_LANG} = $self->nls_lang;
     $ENV{BASELINER_LOGHOME} = $self->tmp_dir;
     $ENV{BASELINER_PERL_OPTS} = ''; # XXX 
+    $ENV{BASELINER_DEBUG} = $self->debug; 
 }
 
 sub bali_service {

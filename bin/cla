@@ -17,12 +17,9 @@ use Getopt::Mini 0.02 later=>1;
 select(STDERR); $|=1;
 select(STDOUT); $|=1;
 
-# load and mangle config
-my %config = config_load();  # cmd=>$cmd, cla_opts=>\%cla_opts, opts=>\%opts );
+my ($cmd, @pre_opts, );
 
-my ($cmd, $cmd_pkg, @pre_opts, $altcmd, $altrun );
-
-# capture cla options
+# capture cla options from before the command
 while( @ARGV ) {
     my $arg = shift @ARGV;
     if( $arg =~ /^-/ ) {
@@ -47,84 +44,11 @@ if( !$cmd || exists $cla_opts{h} ) {
     $cmd = 'help';
 }
 
-if( $cmd =~ /\./ ) {
-    $cmd_pkg = 'bali';   
-    $opts{service_name} = $cmd;
-}
-elsif( my @cmds = split '-', $cmd  ) {
-    $cmd_pkg = join '::', @cmds;
-    if( @cmds > 1 ) {
-        $altcmd = $cmds[0];
-        $altrun = join '_', @cmds[1..$#cmds];
-    }
-}
-
-if( $cla_opts{v} ) {
-    require YAML::XS;
-    print 'OPTS: ' . YAML::Dump( \%opts ) . "\n";
-}
-
-my $cmd_package = "Clarive::Cmd::$cmd_pkg";
-my $runsub = 'run';
-
-# create config object
-require Clarive::Config;
-my $config = Clarive::Config->new( \%config );
-%opts = ( %{ $config{$cmd} }, %opts ) if ref $config{$cmd};  # merge cmd config
-
-# create app
+# create app 
 require Clarive::App;
-my $app = Clarive::App->new( config=>$config, %opts );
-
-# load package
-my $second = 0;
-while( 1 ) {
-    eval "require $cmd_package";
-    if( $@ ) {
-        if( $@ =~ /^Can't locate Clarive\/Cmd\// ) {
-            if( $altcmd && !$second) {
-                $cmd_package = "Clarive::Cmd::$altcmd";
-                $runsub = "run_$altrun";
-                $second = 1;
-                next;
-            } else {
-                die "ERROR: command not found: $cmd (${cmd_package}::${runsub})\n";
-            }
-        } else {
-            die "ERROR: loading command $cmd (${cmd_package}::${runsub}):\n$@\n";
-        }
-    }
-    last;
-}
-
-# check if method is available
-if( ! $cmd_package->can( $runsub ) ) {
-    die "ERROR: command $cmd not available (${cmd_package}::${runsub})\n";
-}
+my $app = Clarive::App->new( %opts );
 
 # run command
-if( $cmd_package->can('new') ) {
-    my $instance = $cmd_package->new( app=>$app, opts=>\%opts, %opts );
-    $instance->$runsub( argv=>\@ARGV, %opts );
-} else {
-    $cmd_package->$runsub( app=>$app, argv=>\@ARGV, opts=>\%opts );
-}
+$app->do_cmd( cmd=>$cmd );
 
 exit 0;
-
-sub config_load {
-    my (%p) = @_;
-    my %ret ;
-    
-    for my $file ( 'clarive.yml', $p{config} ) {   # most important last
-        next unless $file;
-        if( -e $file ) {
-            require YAML::XS;
-            open my $fcfg, '<', $file or die "Error opening config file '$file':$!";
-            my $data = YAML::XS::Load( join '', <$fcfg> );
-            close $fcfg;
-            %ret = ( %ret, %$data ) if ref $data;
-        }
-    }
-    return %ret;
-}

@@ -1,0 +1,47 @@
+#==================================================================
+#
+# CLARIVE - .profile
+#    configure the environment for using Clarive and surrounding
+#    tools and libraries.
+#
+# CLARIVE | Software - Copyright(c) 2010-2013 VASS Software Labs
+#
+#==================================================================
+export VASSHOME=/clarive      # root installation directory
+export VASSEXT=$VASSHOME/ext   # home of external libraries and programs
+export PERLHOME=$VASSHOME/perl
+export ORACLE_HOME=$VASSHOME/instantclient_10_2
+export VIMHOME=$VASSHOME/ext
+
+export PATH=/usr/sfw/bin:/usr/ccs/bin:/usr/sbin:$PATH
+export PATH=$VASSHOME/perl/bin:$PATH
+export PATH=$VASSHOME/ext/curl/bin:$PATH
+export PATH=$VASSHOME/ext/bin:$PATH
+export PATH=$VASSHOME/bin:$PATH
+
+export PERL_LOCAL_LIB=$VASSHOME/local-lib
+export PERL5LIB=$PERL_LOCAL_LIB/lib/perl5
+export PERL_CPANM_OPT="--local-lib $PERL_LOCAL_LIB"
+export PATH=$PERL_LOCAL_LIB/bin:$PATH
+
+export CLARIVE_HOME=$VASSHOME/clarive
+export PATH=$BASELINER_HOME/bin:$PATH
+
+export LD_LIBRARY_PATH=$VASSEXT/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$ORACLE_HOME:$ORACLE_HOME/lib32:$LD_LIBRARY_PATH
+export PATH=$ORACLE_HOME:$ORACLE_HOME/bin:$PATH
+
+export BALI_ENV=[[clarive environment name]]
+export BASELINER_DEBUG=1
+export BASELINER_HOME=$VASSHOME/clarive
+export LANG=en_US.UTF-8
+export BASELINER_LANG=en_US.UTF-8
+export TZ=CET+1
+
+# optional utility configuration
+alias ll='ls -lart'
+alias gits='git status'
+set -o vi
+export PS1='\[\e]0;\W\a\]\[\e[1;34m\u@\h\e[m \e[0;32m\w$ \[\e[m\]'
+export TERM=dtterm  # for vim coloring
+
