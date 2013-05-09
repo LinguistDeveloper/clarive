@@ -25,17 +25,16 @@ export PERL_CPANM_OPT="--local-lib $PERL_LOCAL_LIB"
 export PATH=$PERL_LOCAL_LIB/bin:$PATH
 
 export CLARIVE_HOME=$VASSHOME/clarive
-export PATH=$BASELINER_HOME/bin:$PATH
+export PATH=$CLARIVE_HOME/bin:$PATH
 
 export LD_LIBRARY_PATH=$VASSEXT/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$ORACLE_HOME:$ORACLE_HOME/lib32:$LD_LIBRARY_PATH
 export PATH=$ORACLE_HOME:$ORACLE_HOME/bin:$PATH
 
-export BALI_ENV=[[clarive environment name]]
-export BASELINER_DEBUG=1
-export BASELINER_HOME=$VASSHOME/clarive
+export CLARIVE_ENV=[[clarive environment name]]
+export CLARIVE_DEBUG=1
 export LANG=en_US.UTF-8
-export BASELINER_LANG=en_US.UTF-8
+export CLARIVE_LANG=en_US.UTF-8
 export TZ=CET+1
 
 # optional utility configuration

@@ -4,6 +4,13 @@ extends 'Clarive::Cmd';
 use v5.10;
 use Path::Class;
 
+sub run {
+    my ($self, %opts)=@_;
+    say "Clarive installation procedure.";
+    $self->run_conf( %opts ) if $self->_ask_me( msg=>'Do you want to install a custom config file for your environment? (highly recommended)', yn=>1 );
+    $self->run_profile( %opts ) if $self->_ask_me( msg=>'Do you want to install a clarive-profile file?', yn=>1 );
+}
+
 sub run_conf {
     my ($self, %opts)=@_;
     my $f = file( $opts{template} // $self->home, 'config', 'baseliner.conf.template' );
@@ -19,9 +26,17 @@ sub run_profile {
     my ($self, %opts)=@_;
     my $f = file( $opts{template} // $self->home, 'config', 'clarive-profile.template' );
     -e $f or die "ERROR: template file not found: $f";
-    my $dest_file = file( $self->home, '..', $f->basename );
+    my $dest_dir = dir( $self->home, '..' )->resolve;
+    my $dest_file = file( $dest_dir, $f->basename );
     $dest_file =~ s{\.template}{}g;
     $self->install_from_template( $f, $dest_file );
+    say "
+To load this file into your evnironment at startup, try putting the following 
+line in your .profile or .bashrc:
+
+        source $dest_dir/clarive-profile
+
+    ";
 }
 
 sub install_from_template {
@@ -86,8 +101,9 @@ sub _ask_me {
     while( defined( my $key = Term::ReadKey::ReadKey(-1) ) ) {}
 
     if( $p{yn} ) {
-        print $p{msg} . "\n";
-        print "*** Are you sure [y/N/q]: ";
+        print $p{msg};
+        print " [y/N/q]: ";
+        #print "*** Are you sure? [y/N/q]: ";
         unless( (my $yn = <STDIN>) =~ /^y/i ) {
             exit 1 if $yn =~ /q/i; # quit
             return 0;
