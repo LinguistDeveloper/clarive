@@ -2,6 +2,8 @@ package Clarive::Role::Baseliner;
 use v5.10;
 use Mouse::Role;
 
+has nls_lang   => qw(is ro default) => sub { 'AMERICAN_AMERICA.UTF8' };
+
 sub setup_baseliner {
     my ($self)=@_;
     
@@ -25,6 +27,10 @@ sub setup_baseliner {
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} ||= $self->env;
     $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} ||= $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
 
+    $ENV{BASELINER_LANG} = $self->lang;
+    $ENV{BASELINER_NLS_LANG} = $self->nls_lang;
+    $ENV{NLS_LANG} = $self->nls_lang;
+    $ENV{BASELINER_LOGHOME} = $self->tmp_dir;
     $ENV{BASELINER_PERL_OPTS} = ''; # XXX 
 }
 
@@ -38,6 +44,24 @@ sub bali_service {
     $opts{ args } = \%opts;
     my $logger = Baseliner->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
     exit ref $logger ? $logger->rc : $logger;
+}
+
+sub bali_conf_file {
+    my ($self) = @_;
+    return sprintf '%s/baseliner_%s.conf', $self->home, $self->env;
+}
+
+sub bali_utils {
+    require Baseliner::Utils;
+    return 'Util';
+}
+
+sub bali_config {
+    my ($self) = @_;
+    # load config 
+    require Config::General;
+    my $cfg      = Config::General->new( $self->bali_conf_file );
+    my $config = { $cfg->getall };
 }
 
 1;

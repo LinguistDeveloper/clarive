@@ -5,15 +5,11 @@ use v5.10;
 
 our $CAPTION = 'Start/Stop dispatcher';
 
-has env        => qw(is ro default) => sub { 'local' };
+has id            => qw(is ro default) => sub { 'cla-disp' };
 has host       => qw(is ro default), sub { 'localhost' };
 has daemon     => qw(is ro);
 has restarter  => qw(is rw default) => sub { 0 };
 has trace      => qw(is rw default) => sub { 0 };
-
-has log_file      => qw(is rw lazy 1 default), sub { $_[0]->tmp_dir . '/' . $_[0]->instance_name . '.log' };
-has log_keep      => qw(is rw default) => sub { 10 };
-has id            => qw(is ro default) => sub { 'cla-disp' };
 has instance_name => qw(is rw);
 
 with 'Clarive::Role::Daemon';
@@ -22,7 +18,7 @@ with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
 sub BUILD {
     my $self = shift;
     $self->setup_log_dir();
-    $self->instance_name( $self->id );
+    $self->instance_name( $self->id . '-' . $self->env );
     $self->setup_pid_file();
     $self->setup_baseliner();
 }
@@ -41,6 +37,14 @@ sub run_start {
         $self->_write_pid();
         $self->bali_service( 'service.dispatcher', %opts ); 
     }
+}
+
+sub run_reload {
+    my ($self,%opts) = @_;
+    $self->run_stop(%opts);
+    say "Reload in progress: dispatcher will be stopped and reloaded again.";
+    my $orig_opts = $self->load_opts;
+    $self->run_start( %$orig_opts );
 }
 
 1;

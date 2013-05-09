@@ -7,7 +7,6 @@ our $CAPTION = 'Start/Stop web server';
 
 has f          => qw(is rw default) => sub { 0 };
 has r          => qw(is rw default) => sub { 0 };
-has env        => qw(is ro default) => sub { $ENV{CLARIVE_ENV} // 'local' };
 has host       => qw(is ro);
 has listen     => qw(is ro default) => sub { [] };
 has workers    => qw(is ro);
@@ -19,8 +18,6 @@ has restarter  => qw(is rw default) => sub { 0 };
 has trace      => qw(is rw default) => sub { 0 };
 
 has pid_web_file  => qw(is rw);
-has log_file      => qw(is rw lazy 1 default), sub { $_[0]->tmp_dir . '/' . $_[0]->instance_name . '.log' };
-has log_keep      => qw(is rw default) => sub { 10 };
 has instance_name => qw(is rw);
 has id            => qw(is ro default) => sub { 'cla-web' };
 

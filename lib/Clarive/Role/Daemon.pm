@@ -3,13 +3,18 @@ use Mouse::Role;
 use Proc::Exists;
 use v5.10;
 
+requires 'instance_name'; 
+
 has pid_name => qw(is rw isa Str);
 has pid_file => qw(is rw isa Str);
+has opts_file => qw(is rw isa Str lazy 1 default), sub {
+    my ($self)=@_;
+    $self->tmp_dir . '/' . $self->instance_name . '.yml';
+};
 has signal     => qw(is rw default) => sub { 'TERM' };  # standard kill signal
 has wait       => qw(is ro default) => sub { 30 };  # seconds to wait for shutdown before killing
-
-requires 'log_file';
-requires 'log_keep';
+has log_file      => qw(is rw lazy 1 default), sub { $_[0]->tmp_dir . '/' . $_[0]->instance_name . '.log' };
+has log_keep      => qw(is rw default) => sub { 10 };
 
 with 'Clarive::Role::TempDir';
 
@@ -29,6 +34,7 @@ sub nohup {
     my $pid = fork;
     if ($pid) { 
         $self->_write_pid( $pid );
+        $self->save_opts();
         return $pid
     } # parent
     else { # child
@@ -157,6 +163,14 @@ sub _write_pid {
     # write pid to pidfile
     open(my $pf, '>', $self->pid_file ) or die "Could not open pidfile: $!";
         print $pf $pid // $$;
+    close $pf; 
+}
+
+sub save_opts {
+    my ($self, $pid) = @_;
+    # write opts to pidfile
+    open(my $pf, '>', $self->opts_file ) or die "Could not open opts file: $!";
+        print $pf $self->app->yaml( $self->opts ); 
     close $pf; 
 }
 
