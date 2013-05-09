@@ -3,6 +3,8 @@ use Mouse;
 extends 'Clarive::Cmd';
 use v5.10;
 
+our $CAPTION = 'report our version';
+
 sub run {
     my ($self)=@_;
     my $v = $self->get_version_string;
