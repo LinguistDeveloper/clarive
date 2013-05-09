@@ -40,8 +40,14 @@ if( @pre_opts ) {
 my %opts = Getopt::Mini::getopt( hungry_flags=>1, define=>1 );
 my $argv = delete $opts{_argv};
 
-if( !$cmd || exists $cla_opts{h} ) {
-    $cmd = 'help';
+if( !$cmd ) {
+    if( exists $cla_opts{version} ) {
+        $cmd = 'version';
+    }
+    elsif( exists $cla_opts{h} ) {
+        $cmd = 'help';
+    }
+    else { $cmd='help' }
 }
 
 # create app 
