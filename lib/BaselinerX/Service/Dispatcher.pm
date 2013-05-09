@@ -97,8 +97,9 @@ sub restart_all {
     }
 
     # bye!
-    _log "Goodbye!";
-    exit 0;
+    #_log "Goodbye!";
+    _log "Restarting...";
+    #exit 0;
 }
 
 sub dispatcher {
@@ -111,7 +112,7 @@ sub dispatcher {
         $_ => $SIG{$_} 
     } qw(HUP TERM STOP USR1);
     
-    $SIG{HUP}  = sub { $self->stop_all( $c, @args ); $sigs{HUP} and $sigs{HUP}->() };
+    $SIG{HUP}  = sub { $self->restart_all( $c, @args ); $sigs{HUP} and $sigs{HUP}->() };
     $SIG{TERM} = sub { $self->stop_all( $c, @args ); $sigs{TERM} and $sigs{TERM}->() };
     $SIG{STOP} = sub { $self->stop_all( $c, @args ); $sigs{STOP} and $sigs{STOP}->() };
     $SIG{USR1} = sub { $self->restart_all( $c, @args ); $sigs{USR1} and $sigs{USR1}->() };
