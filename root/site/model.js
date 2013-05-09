@@ -1264,20 +1264,35 @@ Flot plotting
 
 */
 Baseliner.flot = {};
-Baseliner.flot.Base = function(c) {
-    if( c==undefined ) c={};
-    var data = c.data;
-    delete c.data;
-    var w = c.width == undefined ? 200 : c.width;
-    var h = c.height == undefined ? 200 : c.height;
-    Baseliner.flot.Base.superclass.constructor.call(this,
-        Ext.apply({ style:{width: w, height: h, background:'white'} }, c)
-    );
-    this.on('afterrender',function(){
-        $.plot( $(this.el.dom ), data, c.plotConfig );
-    });
-};
-Ext.extend( Baseliner.flot.Base, Ext.Container ); 
+Baseliner.flot.Base = Ext.extend( Ext.Container, {
+    redrawing: 0,
+    constructor : function(c){
+        if( c==undefined ) c={};
+        var data = c.data;
+        delete c.data;
+        var w = c.width == undefined ? 200 : c.width;
+        var h = c.height == undefined ? 200 : c.height;
+        Baseliner.flot.Base.superclass.constructor.call(this,
+            Ext.apply({ style:{width: w, height: h, background:'white'} }, c)
+        );
+        var self = this;
+        self.on('resize', function(){
+            if( self.redrawing ) return;
+            if( !self.plot ) return;
+            var placeholder = self.plot.getPlaceholder();
+            // somebody might have hidden us and we can't plot
+            // when we don't have the dimensions
+            if (placeholder.width() == 0 || placeholder.height() == 0)
+                return;
+            ++self.redrawing;
+            $.plot(placeholder, self.plot.getData(), self.plot.getOptions());
+            --self.redrawing;
+        });
+        self.on('afterrender',function(){
+            self.plot = $.plot( $(self.el.dom ), data, c.plotConfig );
+        });
+    }
+});
 
 Baseliner.flot.Donut = function(c) {
     if( c==undefined ) c={};
