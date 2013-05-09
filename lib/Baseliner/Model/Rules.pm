@@ -135,7 +135,7 @@ sub build_tree {
         }
         delete $n->{loader};  
         delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
-        _log $n;
+        #_log $n;
         push @tree, $n;
     }
     return @tree;
