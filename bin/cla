@@ -74,7 +74,7 @@ my $config = Clarive::Config->new( \%config );
 
 # create app
 require Clarive::App;
-my $app = Clarive::App->new( config=>$config );
+my $app = Clarive::App->new( config=>$config, %opts );
 
 # load package
 my $second = 0;
