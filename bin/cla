@@ -5,14 +5,15 @@ use warnings;
 use FindBin qw($Bin);
 BEGIN {
     if( ! $ENV{CLARIVE_HOME} ) {
-        our $HOME = $Bin . '/..';
-        chdir $HOME;
+        our $script_home = $Bin . '/..';
+        chdir $script_home;
         require Cwd;
-        $HOME = Cwd::realpath( $HOME );  # clean up the home path 
-        $ENV{CLARIVE_HOME} //= $ENV{BASELINER_HOME} // $HOME;
+        $script_home = Cwd::realpath( $script_home );  # clean up the script_home path 
+        $ENV{CLARIVE_HOME} //= $script_home;
     }
 }
 use lib "$ENV{CLARIVE_HOME}/lib";
+use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
 use Getopt::Mini 0.02 later=>1;
 select(STDERR); $|=1;
 select(STDOUT); $|=1;
