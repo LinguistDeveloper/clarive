@@ -26,6 +26,7 @@ my $llib = './local-lib';
 my $app = App::cpanminus::script->new;
 
 cpanm( '-n', 'local::lib' ) and die "error"; 
+cpanm( '-n', 'App::Ack' ) and die "error"; 
 cpanm( '-n', 'App::cpanminus' ) and die "error";
 cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error";
 
@@ -33,6 +34,7 @@ require Capture::Tiny;
 
 my @modules = $opts{-m} // grep !/^#/, grep { defined && length } split /\r?\n+/, $modules;
 @modules = grep { length } map { s/^\s+//g; s/\s+$//g; $_ } @modules;
+@modules = grep { eval("require $_"); $@ } @modules;
 
 if( ! exists $opts{-w} ) {
     cpanm_bin( @modules ); 
@@ -118,19 +120,72 @@ sub cpanm_capture {
 
 __DATA__
 
-Try::Tiny
-Getopt::Mini
-Mouse
-Array::Utils
-YAML
-YAML::XS
-JSON
-JSON::XS
-Path::Class
-Class::Date
-DBI
-Proc::Exists
+Algorithm::C3
+Algorithm::Diff::XS
+Any::Moose
+AnyEvent
+AnyEvent::Run
 App::Ack
+Archive::Tar
+Archive::Zip
+Array::Utils
+CGI
+CGI::Carp
+CGI::Fast
+CGI::Util
+Cache::FastMmap
+Calendar::Slots
+Capture::Tiny
+Carp::Always
+Carp::REPL
+Carp::Tidy
+Catalyst::Action::RenderView
+Catalyst::Authentication::Store::LDAP
+Catalyst::Component::ACCEPT_CONTEXT
+Catalyst::Controller::POD
+Catalyst::Controller::WrapCGI
+Catalyst::Devel
+Catalyst::Model::DBIC::Schema
+Catalyst::Plugin::Authentication
+Catalyst::Plugin::Authorization::Roles
+Catalyst::Plugin::Cache
+Catalyst::Plugin::Cache::FastMmap
+Catalyst::Plugin::ConfigLoader
+Catalyst::Plugin::I18N
+Catalyst::Plugin::Session
+Catalyst::Plugin::Session::State::Cookie
+Catalyst::Plugin::Session::State:Cookie
+Catalyst::Plugin::Session::Store::Cache
+Catalyst::Plugin::Session::Store::DBI
+Catalyst::Plugin::Session::Store::DBIC
+Catalyst::Plugin::Session::Store::File
+Catalyst::Plugin::Singleton
+Catalyst::Plugin::StackTrace
+Catalyst::Plugin::Static::Simple
+Catalyst::Plugin::Unicode
+Catalyst::Plugin::Unicode::Encoding
+Catalyst::Runtime
+Catalyst::View::JSON
+Catalyst::View::Mason
+Catalyst::View::TT
+CatalystX::Features
+Class::C3::XS
+Class::Date
+Compress::Raw::Zlib
+Compress::Zlib
+Config::General
+Config::INI::Writer
+Config::JFDI
+Convert::EBCDIC
+Crypt::Blowfish::Mod
+DBD::Oracle
+DBI
+DBIx::Class
+DBIx::Class::Helper::ResultSet
+DBIx::Class::Schema::Loader
+DBIx::Class::TimeStamp
+DBIx::Simple
+Data::Page
 Data::Random
 Date::Calc
 DateTime
@@ -141,65 +196,92 @@ DateTime::Format::Strptime
 DateTime::Locale
 DateTime::TimeZone
 Digest::MD5
-Config::General
-AnyEvent
-AnyEvent::Run
-Calendar::Slots
-Capture::Tiny
-
-
+EV
+Encode
+Encode::Detect
+Encode::Guess
+Exporter::Tidy
+File::Slurp
+File::Tail
+Filesys::Virtual::SSH
+GD
+Getopt::Mini
+Git::Wrapper
+Graph
+HTML::Mason
+IO::All
+IO::Compress::Gzip
+Image::Identicon
+JSON
+JSON::XS
+JavaScript::Dumper
 LWP::UserAgent
+List::MoreUtils
+Locale::Maketext::Simple
+Lucy
+Lucy::Simple
 MIME::Base64
 MIME::Lite
+MIME::Types
 MRO::Compat
 MVS::JESFTP
-
-Moose
-DBIx::Class
+Module::Loaded
 Mojolicious
-Plack
-Starman
-Twiggy
-EV
-
+Moose
 Moose::Autobox
 Moose::Exporter
 Moose::Role
 MooseX::AttributeHelpers
 MooseX::ClassAttribute
+MooseX::MethodAttributes
+Mouse
+Net::Daemon
+Net::OpenSSH
+Net::SCP
+Net::SSH
+Net::Telnet
+Package::Alias
+PadWalker
+Path::Class
+Perl::Tidy
+Plack
+Pod::Simple::HTML
+Proc::Background
+Proc::Exists
+SQL::Abstract
+SQL::Translator
+SQL::Translator::Diff
+SQL::Translator::Parser::Oracle
+Scalar::Util
+Starman
+String::CRC32
+String::ShellQuote
+Switch
+Term::ANSIColor
+Term::ReadKey
+Text::CSV_XS
+Text::Markdown
+Text::Template
+Text::Textile
+Text::Unaccent::PurePerl
+Try::Tiny
+Twiggy
+XML::Smart
+YAML
+YAML::Syck
+YAML::XS
+namespace::autoclean
+namespace::clean
 
-DBIx::Class::Schema::Loader
-DBIx::Class::TimeStamp
+# deprecated:
 
-Catalyst::Devel
-Catalyst::Runtime
-Catalyst::Action::RenderView
-Catalyst::Authentication::Store::LDAP
-Catalyst::Controller::POD
-Catalyst::Controller::SOAP::RPC
-Catalyst::Engine::HTTP::Prefork
-Catalyst::Model::DBIC::Schema
-Catalyst::Plugin::Authentication
-Catalyst::Plugin::Cache
-Catalyst::Plugin::Cache::FastMmap
-Catalyst::Plugin::CommandLine
-Catalyst::Plugin::ConfigLoader
-Catalyst::Plugin::Email
-Catalyst::Plugin::I18N
-#Catalyst::Plugin::Server::XMLRPC
-Catalyst::Plugin::Session
-Catalyst::Plugin::Session::State::Cookie
-Catalyst::Plugin::Session::Store::DBIC
-Catalyst::Plugin::Session::Store::DBI
-Catalyst::Plugin::Session::Store::File
-Catalyst::Plugin::Singleton
-Catalyst::Plugin::StackTrace
-Catalyst::Plugin::Static::Simple
-Catalyst::Plugin::Unicode
-Catalyst::View::JSON
-Catalyst::View::Mason
-Catalyst::View::TT
-CatalystX::Features
+Getopt::Lucid
+IO::CaptureOutput
+
+# Catalyst::Controller::SOAP::RPC
+# Catalyst::Plugin::CommandLine
+# Catalyst::Plugin::Email
+# Catalyst::Plugin::Server::XMLRPC
 
 @@@
 
