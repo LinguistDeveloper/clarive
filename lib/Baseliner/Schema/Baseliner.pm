@@ -55,7 +55,7 @@ my $filter_to_generic =  sub {
                 $col->default_value( \"current_timestamp" );
             }
             # quote - unquote
-            if( $type =~ /^(num|int)/i && ! ref $def && length $def ) {
+            if( defined $type && $type =~ /^(num|int)/i && ! ref $def && defined $def && length $def ) {
                 # unquotify numbers
                 $def =~ s{^['"]}{};
                 $def =~ s{['"]$}{};
@@ -469,10 +469,10 @@ sub _filter_diff {
             if( ref $def eq 'SCALAR' ) {
                 $col->default_value( uc $$def );
             }
-            elsif( $def =~ /sysdate$/i ) {
+            elsif( defined $def && $def =~ /sysdate$/i ) {
                 $col->default_value( 'SYSDATE' );
             }
-            elsif( $def =~ /^([0-9]+)\s+$/ ) {
+            elsif( defined $def && $def =~ /^([0-9]+)\s+$/ ) {
                 $col->default_value( $1 );
             }
             #if( $col->default_value =~ /^'(.*)'$/ ) {

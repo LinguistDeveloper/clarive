@@ -775,7 +775,7 @@ sub get_update_system_fields {
             my $field = Baseliner->model('Baseliner::BaliTopicFieldsCategory')->search({id_category => $id_category, id_field => $_->{id_field}})->first;
             if ($field){
                 my $tmp_params = _load $field->params_field;
-                for my $attr (keys $_->{params}){
+                for my $attr (keys %{ $_->{params} || {} }){
                     next unless $attr ne 'field_order';
                     $tmp_params->{$attr} = $_->{params}->{$attr};
                     $field->params_field( _dump $tmp_params );
@@ -826,7 +826,7 @@ sub get_update_system_fields {
                 																					id_field => $select_field->{id_field}})->first;
                 if ($update_field){
                     my $tmp_params = _load $update_field->params_field;
-                    for my $attr (keys $template->{metadata}->{params}){
+                    for my $attr (keys %{ $template->{metadata}->{params} || {} } ){
                         next unless $attr ne 'field_order' && $attr ne 'bd_field' && $attr ne 'id_field' && $attr ne 'name_field' && $attr ne 'origin';
                         $tmp_params->{$attr} = $template->{metadata}->{params}->{$attr};
 
@@ -848,7 +848,7 @@ sub get_update_system_fields {
                 																					id_field => $select_field->{id_field}})->first;
                 if ($update_field){
                     my $tmp_params = _load $update_field->params_field;
-                    for my $attr (keys $system_listbox->{metadata}->{params}){
+                    for my $attr (keys %{ $system_listbox->{metadata}->{params} || {} } ){
                         next unless $attr ne 'field_order' && $attr ne 'bd_field' && $attr ne 'id_field' 
                         && $attr ne 'name_field' && $attr ne 'origin' && $attr ne 'singleMode' && $attr ne 'filter' ;
                         $tmp_params->{$attr} = $system_listbox->{metadata}->{params}->{$attr};
@@ -1074,7 +1074,7 @@ sub save_data {
                 #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
                 my $meth = $_->{method};
                 my $extra_fields = $self->$meth( $data->{ $_->{name} }, $data, $meta );
-                foreach my $column (keys $extra_fields ){
+                foreach my $column (keys %{ $extra_fields || {} } ){
                      $row{ $column } = $extra_fields->{$column};
                 }
             }
