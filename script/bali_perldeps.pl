@@ -52,7 +52,9 @@ my %mods;
 # scan files
 
 for my $dir (  @dirs ) {
-    dir( $home, $dir )->recurse( callback=>sub {
+    my $hd = dir( $home, $dir );
+    next unless -e $hd;
+    $hd->recurse( callback=>sub {
         my $f = shift;
         return if $f->is_dir;
         return if $f !~ /\.(pm|pl)$/i;
