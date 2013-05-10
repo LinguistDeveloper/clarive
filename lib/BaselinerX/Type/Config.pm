@@ -442,7 +442,7 @@ sub individual_keys {
 sub getopt {
     my $self=shift;
     my $defaults = shift;
-    use Getopt::Lucid qw( :all );
+    require Getopt::Lucid;
     my %to_lucid = ( 'bool'=> 'switch', 'num'=> 'counter') ; ## map config meta to Lucid types
     my @opts;
     no warnings;

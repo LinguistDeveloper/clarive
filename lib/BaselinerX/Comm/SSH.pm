@@ -21,14 +21,14 @@ my ($RM,$RPORT,$RUSR,$RPWD,$FS) = ();
 
 #register 'comm.ssh' => {  };
  
-use Filesys::Virtual::SSH;
-use Net::SCP qw(scp iscp);
 require File::Path; 
 
 sub open {
     my $class = shift @_;
     my $maq = shift @_; 
 
+    require Net::SCP;
+    require Filesys::Virtual::SSH;
     my $harax;
     $harax->{PARAMS} = { @_ };
     $harax->{WIN}=1 if $harax->{PARAMS}{OS} =~ m/win/i;
