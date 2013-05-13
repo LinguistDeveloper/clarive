@@ -185,7 +185,8 @@ sub load {
     use Baseliner::Utils;
     my ( $self, $mid ) = @_;
     $mid ||= $self->mid;
-    my $cached = $Baseliner::CI::mid_scope->{ $mid };
+    my $cached = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
+    #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope ) );
     return $cached if $cached;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
@@ -246,7 +247,8 @@ sub load {
     $data->{mid} //= $mid;
     $data->{ci_form} //= $self->ci_form;
     $data->{ci_class} //= $class;
-    return $Baseliner::CI::mid_scope->{ "$mid" } = $data;
+    $Baseliner::CI::mid_scope->{ "$mid" } = $data if $Baseliner::CI::mid_scope;
+    return $data;
 }
 
 sub ci_form {
@@ -264,7 +266,7 @@ sub related_cis {
     my $mid = $self->mid;
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
-    my $scoped = $Baseliner::CI::mid_scope->{ $scope_key };
+    my $scoped = $Baseliner::CI::mid_scope->{ $scope_key } if $Baseliner::CI::mid_scope;
     return @$scoped if $scoped;
     my $where = {};
     my $edge = $opts{edge} // '';
@@ -289,7 +291,7 @@ sub related_cis {
         $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid, depth=>$opts{depth_original}-$opts{depth}, path=>$opts{path} };
         $ci;
     } @data;
-    $Baseliner::CI::mid_scope->{ $scope_key } = \@ret;
+    $Baseliner::CI::mid_scope->{ $scope_key } = \@ret if $Baseliner::CI::mid_scope;
     return @ret;
 }
 
