@@ -120,7 +120,7 @@ __PACKAGE__->belongs_to(
 
 sub sqlt_deploy_hook {
    my ($self, $sqlt_table) = @_;
-   $sqlt_table->add_index(name =>'BALI_LOG_DATA_IDX_ID_LOG', fields=>['id_log'] );
+   $sqlt_table->add_index(name =>'bali_log_data_idx_id_log', fields=>['id', 'id_log'] );
 }
 
 1;
