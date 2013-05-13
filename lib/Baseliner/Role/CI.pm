@@ -262,6 +262,10 @@ sub storage_pk { 'mid' }  # primary key (mid) column for foreing table
 sub related_cis {
     my ($self, %opts )=@_;
     my $mid = $self->mid;
+    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
+    my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
+    my $scoped = $Baseliner::CI::mid_scope->{ $scope_key };
+    return @$scoped if $scoped;
     my $where = {};
     my $edge = $opts{edge} // '';
     if( $edge ) {
@@ -272,7 +276,8 @@ sub related_cis {
         $where->{'-or'} = [ from_mid=>$mid, to_mid=>$mid ];
     }
     $where->{rel_type} = { -like=>$opts{rel_type} } if defined $opts{rel_type};
-    return map {
+    my @data = DB->BaliMasterRel->search( $where, { } )->hashref->all;
+    my @ret = map {
         my $rel_edge = $_->{from_mid} == $mid
             ? 'child'
             : 'parent';
@@ -283,7 +288,9 @@ sub related_cis {
         # adhoc ci data with relationship info
         $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid, depth=>$opts{depth_original}-$opts{depth}, path=>$opts{path} };
         $ci;
-    } DB->BaliMasterRel->search( $where, { } )->hashref->all;
+    } @data;
+    $Baseliner::CI::mid_scope->{ $scope_key } = \@ret;
+    return @ret;
 }
 
 sub _filter_cis {
