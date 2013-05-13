@@ -15,7 +15,7 @@ Uses DBI introspection methods to determine schema details.
 =cut
 
 use strict;
-use warnings;
+no warnings 'uninitialized';
 use DBI;
 use SQL::Translator::Schema::Constants;
 use SQL::Translator::Schema::Table;

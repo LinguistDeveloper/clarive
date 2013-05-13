@@ -499,7 +499,7 @@ sub alter_field {
 
     # Fix ORA-01442
     if ($to_field->is_nullable && !$from_field->is_nullable) {
-        warn 'Cannot remove NOT NULL from table field';
+        warn "Cannot remove NOT NULL from table field: $to_field (". $to_field->table->name .")\n";
         return '';
     } elsif (!$from_field->is_nullable && !$to_field->is_nullable) {
         @$field_defs = map { s/ NOT NULL//; $_} @$field_defs;
