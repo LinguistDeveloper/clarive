@@ -469,7 +469,7 @@ sub list_categories_admin : Local {
                 },
                 {
                     join=>['statuses_from'],
-                    distinct=>1,
+                    #distinct=>1,
                     order_by => { -asc => ['statuses_from.seq'] },
                 }
             );

@@ -28,7 +28,8 @@
 
     
     if( topic_main_class_name ) {
-        eval("var obj = new "+topic_main_class_name+"(params)");
+        eval( "var class_name = " + topic_main_class_name + ";" );
+        var obj = new class_name(params);
         return obj;
     } else {
         return new Baseliner.TopicMain(params);
