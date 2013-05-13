@@ -7,6 +7,7 @@ has lang    => qw(is ro required 1);
 has debug   => qw(is rw default 0);
 has verbose => qw(is rw default 0);
 has trace   => qw(is ro default 0);
+has carp_always   => qw(is ro default 0);
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
@@ -24,7 +25,7 @@ around 'BUILDARGS' => sub {
     my %args = ref $_[0] ? %{ $_[0] } : @_;
     
     # home and env need to be setup first
-    $args{env}  //= $ENV{CLA_ENV} // $ENV{CLARIVE_ENV} // 'local';
+    $args{env}  //= $ENV{CLA_ENV} // $ENV{CLARIVE_ENV};  # local removed, env IS REQUIRED
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
     
     require Clarive::Config;
@@ -58,6 +59,10 @@ sub BUILD {
     # debug ? 
     if( defined $self->opts->{d} || $ENV{CLARIVE_DEBUG} ) {
         $self->debug(1);
+    }
+    # carp_always ? 
+    if( $self->carp_always ) {
+        require Carp::Always;
     }
 
     $Clarive::app = $self;  
