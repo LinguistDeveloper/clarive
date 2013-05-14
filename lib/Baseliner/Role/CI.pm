@@ -67,6 +67,7 @@ sub save {
     my $collection = $self->collection;
     my $ret = $mid;
 
+    Baseliner->cache_clear;
     # transaction bound, in case there are foreign tables
     Baseliner->model('Baseliner')->txn_do(sub{
         if( length $mid ) { 
@@ -185,8 +186,12 @@ sub load {
     use Baseliner::Utils;
     my ( $self, $mid ) = @_;
     $mid ||= $self->mid;
+    # in scope ? 
     my $cached = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope ) );
+    return $cached if $cached;
+    # in cache ?
+    $cached = Baseliner->cache_get($mid);
     return $cached if $cached;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
@@ -248,6 +253,7 @@ sub load {
     $data->{ci_form} //= $self->ci_form;
     $data->{ci_class} //= $class;
     $Baseliner::CI::mid_scope->{ "$mid" } = $data if $Baseliner::CI::mid_scope;
+    Baseliner->cache_set($mid, $data);
     return $data;
 }
 
@@ -264,10 +270,16 @@ sub storage_pk { 'mid' }  # primary key (mid) column for foreing table
 sub related_cis {
     my ($self, %opts )=@_;
     my $mid = $self->mid;
+    # in scope ? 
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
     my $scoped = $Baseliner::CI::mid_scope->{ $scope_key } if $Baseliner::CI::mid_scope;
     return @$scoped if $scoped;
+    # in cache ?
+    my $cache_key = Storable::freeze(\%opts);
+    if( my $cached = Baseliner->cache_get( "$mid-$cache_key" ) ) {
+        return $cached;
+    }
     my $where = {};
     my $edge = $opts{edge} // '';
     if( $edge ) {
@@ -292,6 +304,7 @@ sub related_cis {
         $ci;
     } @data;
     $Baseliner::CI::mid_scope->{ $scope_key } = \@ret if $Baseliner::CI::mid_scope;
+    Baseliner->cache_set( "$mid-$cache_key", \@ret );
     return @ret;
 }
 
@@ -361,6 +374,11 @@ Options:
 sub related {
     my ($self, %opts)=@_;
     my $mid = $self->mid;
+    # in cache ? 
+    my $cache_key = "$mid-" . Storable::freeze( \%opts );
+    if( my $cached = Baseliner->cache_get( $cache_key ) ) {
+        return @$cached if ref $cached eq 'ARRAY';
+    }
     my $depth = $opts{depth} // 1;
     $opts{depth_original} //= $depth;
     $opts{mode} //= 'flat';
@@ -388,6 +406,7 @@ sub related {
     }
     # filter
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
+    Baseliner->cache_set( $cache_key, \@cis );
     return @cis;
 }
 
