@@ -44,6 +44,12 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("mid");
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+   $sqlt_table->add_index(name =>'bali_master_idx_name', fields=>['name'] );
+   $sqlt_table->add_index(name =>'bali_master_idx_collection', fields=>['collection'] );
+}
+
 1;
 
 
