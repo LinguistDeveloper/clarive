@@ -28,15 +28,15 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
     package Baseliner::Core::RegistryNode;
     use Moose;
 
-    has 'key'=> (is=>'rw', isa=>'Str', required=>1 );
-    has 'id'=> (is=>'rw', isa=>'Str', required=>1 );
-    has 'module' => (is=>'rw', isa=>'Str', required=>1 );
-    has 'version' => (is=>'rw', isa=>'Str', default=>'1.0');
-    has 'init_rc' => (is=>'rw', isa=>'Int', default=> 5 );
-    has 'param' => (is=>'rw', isa=>'HashRef', default=>sub{{}} );
-    has 'instance'=> (is=>'rw', isa=>'Object' );
-    has 'actions' => (is=>'rw', isa=>'ArrayRef' );
-    
+    has key     => ( is => 'rw', isa => 'Str',     required => 1 );
+    has id      => ( is => 'rw', isa => 'Str',     required => 1 );
+    has module  => ( is => 'rw', isa => 'Str',     required => 1 );
+    has version => ( is => 'rw', isa => 'Str',     default  => '1.0' );
+    has init_rc => ( is => 'rw', isa => 'Int',     default  => 5 );
+    has param   => ( is => 'rw', isa => 'HashRef', default  => sub { {} } );
+    has instance => ( is => 'rw', isa => 'Object' );
+    has actions  => ( is => 'rw', isa => 'ArrayRef' );  # TODO deprecated
+    has all_actions  => ( is => 'rw', isa => 'HashRef' );   # my actions, parent actions, etc. (cache)
 }	
 
 sub _registrar {
@@ -205,6 +205,12 @@ sub is_enabled {
 
 Search for registered objs with matching attributes
 
+Returns: nodes (not instances)
+
+Options:
+    
+    allowed_actions => [qw//]   # filters nodes with allowed actions only
+
 Configuration:
 
     <registry>
@@ -226,51 +232,66 @@ sub search_for_node {
     my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
     $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
-    my @allowed;
-    foreach my $action ( _array $allowed_actions ) {
-        if( blessed $action ) {
-            #FIXME ???
-            #push @allowed, $action->
-            #warn "--------------ACTION=" . _dump $action;
-        }
-    }
-
     # loop thru services
-    $q_depth||= 99; 
+    $q_depth //= 99; 
     OUTER: for my $key ( $self->starts_with( $key_prefix ) ) {
         my $depth = ( my @ss = split /\./,$key ) -1 ;
-        next if( $depth gt $q_depth );
+        next if( $depth > $q_depth );
         next if $check_enabled && exists $disabled_keys->{ $key };
 
+        my $node = $self->registrar->{$key};
+        my $node_instance = $node->instance;
+
         # skip nodes that the user has no access to
-        next if( $allowed_actions
-            && ref $self->registrar->{$key}->actions
-            && !grep { my $a=$_; grep /^$a/,@{$allowed_actions||[]} } @{ $self->registrar->{$key}->actions || []} );
+        if( ref $allowed_actions ) {
+            my %node_actions;
+            if( ref $node->all_actions ) {
+                %node_actions =  %{ $node->all_actions };  # found in cache
+            } else {
+                %node_actions = 
+                        map { $_ => 1 }
+                        map { # create list of all possible parent actions
+                            my @act = split /\./, $_;
+                            map { 
+                               join('.',@act[0..$_])
+                            } ( 2 .. $#act );
+                        } _array( $node_instance->action, $node_instance->actions );
+                    ;
+                $node->all_actions( \%node_actions ); # caching
+            }
+            next if %node_actions && ! _any( sub{ $_ }, @node_actions{ _array($allowed_actions) } );
+        }
 
         # query for attribute existence
-        next if( $has_attribute && !defined $self->registrar->{$key}->{$has_attribute} );
+        next if( $has_attribute && !defined $node->{$has_attribute} );
 
         # query for attribute value
         foreach my $attr( keys %query ) {
             my $val = $query{$attr};	
             if( defined $val ) {
-                if( defined $self->registrar->{$key}->{$attr} ) {
-                    next OUTER unless( $self->registrar->{$key}->{$attr} eq $val);
+                if( defined $node->{$attr} ) {
+                    next OUTER unless( $node->{$attr} eq $val);
                 }
-                elsif( defined $self->registrar->{$key}->{param}->{$attr} ) {
-                    #warn "..........CHECK: $val, $key, $attr = " .  $self->registrar->{$key}->{param}->{$attr};
-                    next OUTER unless( $self->registrar->{$key}->{param}->{$attr} eq $val);
+                elsif( defined $node->{param}->{$attr} ) {
+                    #warn "..........CHECK: $val, $key, $attr = " .  $node->{param}->{$attr};
+                    next OUTER unless( $node->{param}->{$attr} eq $val);
                 }
                 else {
                     next OUTER;
                 }
             }
         }
-        push(@found,$self->registrar->{$key});
+        push @found, $node;
     }
     return wantarray ? @found : $found[0];
 }
 
+=head2 search_for
+
+Searches for nodes with C<search_for_node>, but returns
+instances of the node object instead.
+
+=cut
 sub search_for {
     my $self=shift;
     my @found_nodes = $self->search_for_node( @_ );

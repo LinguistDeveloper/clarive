@@ -80,5 +80,6 @@ sub hash_unique_on {
     }
     return wantarray ? %ret : \%ret;
 }
+
 1;
 

@@ -460,7 +460,7 @@ sub list_categories_admin : Local {
                                                                         
     if($rows){
         while( my $rec = $rows->next ) {
-            
+
             my @statuses_to;
             my $statuses_to = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
                 {   id_category    => $p->{categoryId},
