@@ -4,11 +4,12 @@ params:
     js: '/fields/system/js/list_ci.js'
     relation: 'system'
     type: 'listbox'
-    get_method: 'get_topics'    
-    set_method: 'set_topics'
+    get_method: 'get_cis'    
+    set_method: 'set_cis'
     field_order: 100
     section: 'details'
-    single_mode: 'false'    
+    single_mode: false
+    ci_role: 'Server'
 ---
 */
 (function(params){

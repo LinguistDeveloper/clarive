@@ -550,10 +550,9 @@
 				    emptyMsg: _('There are no rows available')
 		    }),        
 		    tbar: [ _('Search') + ': ', ' ',
-			    new Ext.app.SearchField({
+			    new Baseliner.SearchField({
 				    store: store,
-				    params: {start: 0, limit: ps},
-				    emptyText: _('<Enter your search string>')
+				    params: {start: 0, limit: ps}
 			    }),
 			    btn_add,
 			    btn_edit,

@@ -1,6 +1,7 @@
 ﻿package BaselinerX::Job::Service::SimpleChain;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 use Carp;
 use Try::Tiny;
 use utf8;

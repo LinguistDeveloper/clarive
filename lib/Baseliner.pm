@@ -16,7 +16,7 @@ use Catalyst::Runtime 5.80;
 our @modules;
 BEGIN {
 
-    use CatalystX::Features 0.23;
+    use CatalystX::Features 0.24;
 
     if( $ENV{BALI_PLUGINS} ) {
         @modules = split /,/, $ENV{BALI_PLUGINS};
@@ -48,6 +48,7 @@ BEGIN {
 use Catalyst @modules;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
+use Try::Tiny;
 my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
@@ -200,7 +201,6 @@ our $VERSION_STRING = "v" . ( Baseliner->config->{About}->{version} // $Baseline
 
 # check if DB connected, retry
 if( my $retry = Baseliner->config->{db_retry} ) {
-    use Try::Tiny;
     my $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
     if( ! $connected ) {
         my $freq = Baseliner->config->{db_retry_frequency} // 30;
@@ -355,7 +355,6 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         return \%data;
     }
 
-use Try::Tiny;
 sub decrypt {
     my $c = shift;
     require Crypt::Blowfish::Mod;

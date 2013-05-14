@@ -11,13 +11,14 @@
         panel_prev.removeAll();
         panel_prev.setTitle( query );
     }
-    var panel = panel_prev ? panel_prev
-        : new Ext.Panel({
+    //var panel = panel_prev ? panel_prev
+        //: new Ext.Panel({
+    var panel = new Ext.Panel({
         title: query, 
         layout:'column',
         id: 'search-' + Ext.id(),
         overflow:'auto', 
-        style:{ margin: '5' } });
+        style:{ margin: 45, padding: 30 } });
     
     var toptpl = '<div id="boot"><h6>{0}</h6><h7>{1}</h7></div>';
     Baseliner.ajaxEval( '/search/providers', {}, function(res) {
@@ -26,7 +27,7 @@
             var provider = provs[ i ];
             var prov_wait = new Ext.Container({
                 html: String.format( toptpl, _(provider.name), _('searching...') ),
-                style: 'border-bottom: 1px solid #ddd; margin: 0 0 15 0'
+                style: 'border-bottom: 1px solid #ddd; margin: 0 0 15 10'
                 
             });
             var prov_panel = new Ext.Container({ columnWidth: 1/provs.length, style:{ margin:'0 70 0 7' } });
@@ -54,11 +55,11 @@
                             + r.title
                             + '</h4>'
                             + '</div>';
-                        block +=  '<p style="color:#aaa;margin: 6 0 0 0">' + r.info + '</p>';
+                        block +=  '<p style="color:#aaa;margin: 6 0 0 100">' + r.info + '</p>';
                         block +=  '<p>' + ( r.excerpt ? r.excerpt : r.text ) + '</p>'
                             + '</div></div>'
                             ;
-                        var hit_panel = new Ext.Container({ html: block, style:'padding-right:20px; cursor:pointer; border: 1px solid #fff;' });
+                        var hit_panel = new Ext.Container({ html: block, style:'padding-right:20px; cursor:pointer; border: 1px solid #fff;', name: 'search-result' });
                         hit_panel.url = r.url;
                         hit_panel.type = r.type;
                         hit_panel.on('afterrender', function(){
