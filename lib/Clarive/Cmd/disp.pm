@@ -12,6 +12,7 @@ has restarter  => qw(is rw default) => sub { 0 };
 has trace      => qw(is rw default) => sub { 0 };
 has instance_name => qw(is rw);
 
+with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
 

@@ -21,6 +21,7 @@ has pid_web_file  => qw(is rw);
 has instance_name => qw(is rw);
 has id            => qw(is ro default) => sub { 'cla-web' };
 
+with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
 
