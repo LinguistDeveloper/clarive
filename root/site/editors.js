@@ -122,6 +122,7 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
         var run = function(){
             self.run();
         };
+        self.addEvents(['aftereditor']);
         self.keys = Ext.apply({
             "Cmd-E": run, 
             "Cmd-Enter": run, 
@@ -160,8 +161,14 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
             self.editor.setOption('theme', self.getTheme() );
             var hlLine = self.editor.setLineClass(0, "activeline");
             self.focus();
+            self.fireEvent('aftereditor', self );
             // self.editor.setSize( '100%', fcode.getEl().getHeight() );
         });
+    },
+    getValue : function(){
+        return this.editor 
+            ? this.editor.getValue() 
+            : Baseliner.CodeMirror.superclass.getValue.call(this);
     },
     run : function(){
         alert('undefined run()');
@@ -176,6 +183,14 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
     focus : function(){
         if( this.editor ) 
             this.editor.focus();
+    },
+    editor_focus: function(){ this.editor.focus() },
+    // cross compatibility with Ace:
+    setTheme: function(theme) {   
+        this.editor.setOption('theme', theme );
+    },
+    setMode: function(mode){
+        this.editor.setOption('mode', { name: mode });
     }
 });
 
@@ -184,7 +199,7 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
  * Ace-based File Viewer ExtJS component
  *
  */
-
+if( ! Ext.isIE ) {
 Baseliner.Ace = {};
 Baseliner.Ace.Range = ace.require("./range").Range;
 Baseliner.Ace.Renderer = ace.require("ace/virtual_renderer").VirtualRenderer;
@@ -527,9 +542,13 @@ Baseliner.AceEditor = Ext.extend( Ext.BoxComponent, {
     editor_focus: function(){ this.editor.focus() }
 });
 
+}
+
 Baseliner.Editor = Ext.extend( Baseliner.CLEditor, {});
 
-Baseliner.CodeEditor = Ext.isIE ? Ext.extend(Baseliner.CodeMirror,{}) : Ext.extend( Baseliner.AceEditor, {});
+Baseliner.CodeEditor = Ext.isIE 
+    ? Ext.extend(Baseliner.CodeMirror,{}) 
+    : Ext.extend( Baseliner.AceEditor, {});
 
 Baseliner.MultiEditor = Ext.extend( Ext.Panel, {
     layout:'card',

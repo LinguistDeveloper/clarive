@@ -56,8 +56,6 @@ params:
         form.doLayout();
     });
 	
-	return [
-		custom_form_container
-    ]
+	return [ custom_form_container ]
 })
 
