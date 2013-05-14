@@ -24,6 +24,10 @@ sub BUILD {
     $self->setup_baseliner();
 }
 
+sub run {
+    goto &__PACKAGE__::run_start;
+}
+
 sub run_start {
     my ($self,%opts) = @_;
     $self->check_pid_exists();
@@ -49,3 +53,11 @@ sub run_reload {
 }
 
 1;
+
+=head1 Clarive Dispatcher
+
+Common options:
+
+    --daemon        forks and starts the server
+
+=cut
