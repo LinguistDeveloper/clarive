@@ -6,8 +6,8 @@ params:
     html: '/fields/templates/html/row_body.html'
     js: '/fields/templates/js/textfield.js'
     field_order: 1
+    allowBlank: 0
     section: 'body'
----
 */
 
 (function(params){
@@ -23,7 +23,7 @@ params:
 			style: { 'font-size': '16px' },
 			width: '100%',
 			height: 30,
-			allowBlank: false,
+			allowBlank: meta ? !!meta.allowBlank : false,
 			readOnly: meta ? meta.readonly : true,
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true
 		}
