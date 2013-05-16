@@ -21,6 +21,7 @@ has pid_web_file  => qw(is rw);
 has instance_name => qw(is rw);
 has id            => qw(is ro default) => sub { 'cla-web' };
 
+with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
 
@@ -218,3 +219,25 @@ sub _install_server_starter {
 }
 
 1;
+
+=head1 Clarive Web-Server
+
+Common options:
+
+    --env <environment>
+    --host <host>           hostname or ip address
+    --port <portnum>        web port
+    --listen                full protocol+host+port, ie: http://*:8080
+    --daemon                fork and start server
+    --pid_file <file>       where to save the pid
+    --log_file <file>       where to write the log to
+    --log_keep <file>       days to keep log file
+    --engine [Standalone|Twiggy|Starman|Starlet]
+
+=head1 web- subcommands:
+
+=head2 start
+
+Starts the server
+
+=cut

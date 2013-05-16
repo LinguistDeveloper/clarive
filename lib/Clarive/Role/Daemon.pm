@@ -123,6 +123,7 @@ sub run_tail {
     my ($self,%opts) = @_;
     require File::Tail;
     say "logfile: " . $self->log_file;
+    die sprintf "ERROR: file does not exist: %s\n", $self->log_file unless -e $self->log_file;
     my $file = File::Tail->new(
         name        => $self->log_file,
         tail        => $opts{tail} // 500,
@@ -231,3 +232,22 @@ sub _exit {
 }
 
 1;
+__END__
+
+=head2 stop
+
+stops the server.
+
+=head2 restart
+
+restarts the server.
+
+=head2 log 
+
+prints the logfile to screen.
+
+=head2 tail
+
+follows the server log file.
+
+=cut
