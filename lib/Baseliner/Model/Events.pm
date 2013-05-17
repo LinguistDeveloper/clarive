@@ -29,30 +29,38 @@ register 'service.event.run_once' => {
 
 sub run_once {
     my ($self, $c, $data ) = @_;
+    my $rules = Baseliner->model('Rules')->new;
+    $rules->tidy_up( 0 );  # turn off perl_tidy
     my $rs = DB->BaliEvent->search({ event_status => 'new' }, { order_by =>{ -asc => 'id' } });
     while( my $ev = $rs->next ) {
+        my $event_status = '??';
+        _debug _loc 'Running event %1 (id %2)', $ev->event_key, $ev->id;
         try {
             my $stash = $ev->event_data ? _load( $ev->event_data ) : {};
             # run rules for this event
-            my $ret = Baseliner->model('Rules')->run_rules( event=>$ev->event_key, when=>'post-offline', stash=>$stash, onerror=>1 );
+            my $ret = $rules->run_rules( event=>$ev->event_key, when=>'post-offline', stash=>$stash, onerror=>1 );
             my $rc=0;
             # save log
             for my $rule ( _array( $ret->{rule_log} ) ) {
                 my $rulerow = DB->BaliEventRules->create({
                     id_event=> $ev->id, id_rule=> $rule->{id}, stash_data=> _dump( $rule->{ret} ), return_code=>$rule->{rc}, 
                 });
-                $rc += $rule->{rc};
+                $rc += $rule->{rc} if $rule->{rc};
                 $rulerow->dsl( $rule->{dsl} );
                 $rulerow->update;
                 $rulerow->log_output( $rule->{output} );
                 $rulerow->update;
             }
-            $ev->update({ event_status=>( $rc ? 'ko' : 'ok' ) });
+            $event_status= $rc ? 'ko' : 'ok';
+            $ev->update({ event_status=>$event_status });
         } catch {
             my $err = shift;
-            # TODO global error or a rule by rule 
-            $ev->update({ event_status=>'ko' });
+            # TODO global error or a rule by rule (errors go into rule, but event needs a global) 
+            _error _loc 'event %1 failed (id=%2): %3', $ev->event_key, $ev->id, $err;
+            $event_status = 'ko';
+            $ev->update({ event_status=>$event_status });
         };
+        _debug _loc 'Finished event %1 (id %2), status: %3', $ev->event_key, $ev->id, $event_status;
     }
 }
 
