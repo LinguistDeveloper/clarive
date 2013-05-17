@@ -71,7 +71,7 @@ sub run_once {
             my $err = shift;
             # TODO global error or a rule by rule (errors go into rule, but event needs a global) 
             _error _loc 'event %1 failed (id=%2): %3', $ev->event_key, $ev->id, $err;
-            if( $err =~ /^alarm/ ) {
+            if( $err =~ m/^alarm/s ) {
                 alarm 0;
                 $event_status = 'timeout';
             } else {
