@@ -5,7 +5,6 @@ use v5.10;
 
 our $CAPTION = 'Start/Stop web server';
 
-has f          => qw(is rw default) => sub { 0 };
 has r          => qw(is rw default) => sub { 0 };
 has host       => qw(is ro);
 has listen     => qw(is ro default) => sub { [] };

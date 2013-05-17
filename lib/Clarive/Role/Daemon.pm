@@ -5,6 +5,7 @@ use v5.10;
 
 requires 'instance_name'; 
 
+has f          => qw(is rw default) => sub { 0 };
 has pid_name => qw(is rw isa Str);
 has pid_file => qw(is rw isa Str);
 has opts_file => qw(is rw isa Str lazy 1 default), sub {
