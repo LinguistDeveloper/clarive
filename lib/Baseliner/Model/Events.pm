@@ -31,8 +31,8 @@ sub run_once {
     my ($self, $c, $data ) = @_;
     my $rs = DB->BaliEvent->search({ event_status => 'new' }, { order_by =>{ -asc => 'id' } });
     while( my $ev = $rs->next ) {
-        my $stash = $ev->event_data ? _load( $ev->event_data ) : {};
         try {
+            my $stash = $ev->event_data ? _load( $ev->event_data ) : {};
             # run rules for this event
             my $ret = Baseliner->model('Rules')->run_rules( event=>$ev->event_key, when=>'post-offline', stash=>$stash, onerror=>1 );
             my $rc=0;
