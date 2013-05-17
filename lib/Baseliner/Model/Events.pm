@@ -41,7 +41,7 @@ sub run_once {
                 my $rulerow = DB->BaliEventRules->create({
                     id_event=> $ev->id, id_rule=> $rule->{id}, stash_data=> _dump( $rule->{ret} ), return_code=>$rule->{rc}, 
                 });
-                $rc += $rule->{rc};
+                $rc += $rule->{rc} // 0;
                 $rulerow->dsl( $rule->{dsl} );
                 $rulerow->update;
                 $rulerow->log_output( $rule->{output} );
