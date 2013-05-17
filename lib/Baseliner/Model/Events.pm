@@ -24,7 +24,7 @@ register 'service.event.daemon' => {
         _log _loc "Event daemon starting with frequency %1, timeout %2", $config->{frequency}, $config->{timeout};
         for( 1..1000 ) {
             $self->run_once( $c, $config );
-            sleep( );
+            sleep( $config->{frequency} );
         } 
         # purge old events
         my $dt = _dt->subtract( days => ( $config->{purge_days} || 30 ) );
