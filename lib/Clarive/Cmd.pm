@@ -8,6 +8,7 @@ has app => qw(is ro required 1),
                 env 
                 home 
                 debug 
+                trace
                 verbose 
                 args 
                 argv

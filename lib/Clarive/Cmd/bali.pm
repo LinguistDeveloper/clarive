@@ -11,6 +11,7 @@ our $CAPTION = 'run Baseliner services';
 
 sub run {
     my ($self,%opts)=@_;
+    $self->setup_baseliner;
     $self->bali_service( $self->service_name, %opts ); 
 }
 
