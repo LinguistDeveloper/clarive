@@ -36,7 +36,7 @@ params:
         hiddenName: meta.id_field,
         store: topic_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.single_mode
+		singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
     });
 	
     topic_box_store.on('load',function(){
