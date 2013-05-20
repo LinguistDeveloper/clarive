@@ -1264,7 +1264,8 @@
         
         category_fields_grid.on( 'afterrender', function(){
             var el = this.el.dom; 
-            var fields_box_dt = new Ext.dd.DropTarget(el, {
+            var fields_box_dt = new Baseliner.DropTarget(el, {
+                comp: this,
                 ddGroup: 'tree_fields_dd',
                 copy: true,
                 notifyDrop: function(dd, e, id) {
@@ -1471,7 +1472,8 @@
         });
         
         category_fields_grid.on('viewready', function() {
-            var ddrow = new Ext.dd.DropTarget(category_fields_grid.getView().mainBody, {  
+            var ddrow = new Baseliner.DropTarget(category_fields_grid.getView().mainBody, {  
+                comp: category_fields_grid,
                 ddGroup : 'mygrid-dd',  
                 notifyDrop : function(dd, e, data){  
                     var sm = category_fields_grid.getSelectionModel();  

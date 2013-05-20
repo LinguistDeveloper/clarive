@@ -233,7 +233,8 @@
 
     grid_role.on('afterrender', function(){
         ////////// Setup the Drop Target - now that the window is shown
-        var secondGridDropTarget = new Ext.dd.DropTarget(grid_role.getView().scroller.dom, {
+        var secondGridDropTarget = new Baseliner.DropTarget(grid_role.getView().scroller.dom, {
+                comp: grid_role,
                 ddGroup    : 'secondGridDDGroup',
                 notifyDrop : function(dd, e, data){
                         var n = dd.dragData.node;

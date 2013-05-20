@@ -66,8 +66,9 @@
      
           
         grid_baseline.on('afterrender', function(grid, rowIndex, columnIndex, e) {
-            var ddrow = new Ext.dd.DropTarget(grid_baseline.getView().mainBody, {  
+            var ddrow = new Baseliner.DropTarget(grid_baseline.getView().mainBody, {  
                ddGroup : 'mygrid-dd',  
+               comp: grid_baseline,
                notifyDrop : function(dd, e, data){  
                    var sm = grid_baseline.getSelectionModel();  
                    var rows = sm.getSelections();  

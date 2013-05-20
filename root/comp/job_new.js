@@ -494,7 +494,8 @@
     // Drag and drop support
     jc_grid.on( 'render', function(){
         var el = jc_grid.getView().el.dom.childNodes[0].childNodes[1];
-        var jc_grid_dt = new Ext.dd.DropTarget(el, {
+        var jc_grid_dt = new Baseliner.DropTarget(el, {
+            comp: jc_grid,
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, data) {

@@ -139,6 +139,19 @@ $('a').click(function(event) {
         }
     });
 
+    Baseliner.DropTarget = Ext.extend(Ext.dd.DropTarget, {
+        constructor : function(el, config){
+            Baseliner.DropTarget.superclass.constructor.call(this, el, config);        
+            
+            if( this.comp ) {
+                this.comp.on( 'beforedestroy', function(){
+                    this.destroy();
+                }, this);    
+            }
+        },
+    });    
+
+
 
     Baseliner.openWindowPage = function(params) {
     };

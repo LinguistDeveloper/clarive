@@ -154,7 +154,8 @@
                              params: { ns: ns, bl: bl }
                     });
                     ////////// Setup the Drop Target - now that the window is shown
-                    var panelDropTarget = new Ext.dd.DropTarget( ns_form.getEl() , {
+                    var panelDropTarget = new Baseliner.DropTarget( ns_form.getEl() , {
+                            comp: ns_form,
                             ddGroup    : 'secondGridDDGroup',
                             notifyDrop : function(dd, e, data){
                                     var node = dd.dragData.node;

@@ -648,7 +648,8 @@ Baseliner.Calendar =  function(c) {
         var y = date.getFullYear();
         var el = cal_div.getEl() ;
         var id = el.id ;
-        var dt = new Ext.dd.DropTarget(el, {
+        var dt = new Baseliner.DropTarget(el, {
+            comp: cal_div,
             ddGroup: 'explorer_dd',
             copy: true,
             notifyEnter: function(ddSource, ev, data) {
@@ -1088,7 +1089,8 @@ Baseliner.model.RevisionsBoxDD = function(c) {
 
     revision_box.on('afterrender', function(){
         var el = revision_box.el.dom; 
-        var revision_box_dt = new Ext.dd.DropTarget(el, {
+        var revision_box_dt = new Baseliner.DropTarget(el, {
+            comp: revision_box,
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
@@ -1219,7 +1221,8 @@ Baseliner.model.RevisionsGridDD = function(c) {
             // TODO no loader from mids yet 
         }
         var el = this.el.dom; 
-        var revision_box_dt = new Ext.dd.DropTarget(el, {
+        var revision_box_dt = new Baseliner.DropTarget(el, {
+            comp: this,
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
