@@ -524,6 +524,11 @@
                 var job_type = main_form.getForm().getValues()['job_type'];
                 var cnt = jc_store.getCount();  // auto set ?
                 var bl = combo_baseline.getValue();
+                if( ! ( data.promotable || data.demotable ) ) {
+                    Ext.Msg.alert( _('Error'),
+                        _("Cannot promote/demote this entity type" ) );
+                    return true; 
+                }
                 var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
                 if( cnt == 0 || bl_item == undefined ) {
                     var bl_hash = ( job_type == 'promote' ) ? data.promotable : data.demotable;
