@@ -246,7 +246,7 @@
                         url: '/job/check_date',
                         params: { bl: bl, job_date: job_date, job_contents: json_res },
                         success: function(xhr) {
-                            Baseliner.hideLoadingMask();
+                            Baseliner.hideLoadingMask( main_form.getEl() );
                             var expr = xhr.responseText.replace(/\"/g, "");
                             var _raw = eval( "("+xhr.responseText+")" );
                             var error = (!_raw.success);
@@ -269,7 +269,7 @@
                                 }
                             },
                         failure: function(xhr) {
-                            Baseliner.hideLoadingMask();
+                            Baseliner.hideLoadingMask( main_form.getEl() );
                             Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Form Error", msg: "Se ha producido un error de timeout."});
                             //Baseliner.errorWin( 'Logout Error', xhr.responseText );
                             }
@@ -286,7 +286,7 @@
                                 }
                             },
                         failure: function(xhr) {
-                            Baseliner.hideLoadingMask();
+                            Baseliner.hideLoadingMask( main_form.getEl() );
                             Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Form Error", msg: "Se ha producido un error de timeout."});
                             //Baseliner.errorWin( 'Logout Error', xhr.responseText );
                             }
@@ -489,7 +489,7 @@
         job_time.setDisabled(false);
         time_spinner.setDisabled(false);
         selectNearestTimeRange(xhr.data.items);
-        Baseliner.hideLoadingMask();
+        Baseliner.hideLoadingMask( main_form.getEl() );
         });
 
     function _setOutWindow(chk,val){

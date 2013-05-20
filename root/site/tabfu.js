@@ -1228,9 +1228,11 @@ $('a').click(function(event) {
         Baseliner.showLoadingMask(cmp, msg);
     };
     
-    Baseliner.hideLoadingMask = function (){
+    Baseliner.hideLoadingMask = function ( cmp ){
         if(Baseliner._defaultLoadingMask != undefined){
-            Baseliner._defaultLoadingMask.unmask();
+            cmp.unmask();
+
+            // Baseliner._defaultLoadingMask.el.unmask();
         }
     };
     
