@@ -1224,7 +1224,8 @@ $('a').click(function(event) {
     Baseliner.hideLoadingMaskFade = function (cmp){
         if(Baseliner._defaultLoadingMask != undefined){
             cmp.fadeIn();
-            Baseliner._defaultLoadingMask.hide();
+            cmp.unmask();
+            // Baseliner._defaultLoadingMask.hide();
             //Baseliner._defaultLoadingMask.getEl().fadeOut();
         }
     };
