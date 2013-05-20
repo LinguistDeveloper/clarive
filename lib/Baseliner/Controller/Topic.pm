@@ -1457,7 +1457,7 @@ sub kanban_status : Local {
 
         my $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->search(
           { id_category=>{ -in => $rs1->as_query } },
-          { +select=>['status.id', 'status.name'], +as=>[qw/id name/], 
+          { +select=>['status.id', 'status.name', 'status.seq'], +as=>[qw/id name seq/], 
             join=>['status'], order_by=>'status.seq', distinct=>1 }
         );
         my @statuses = $rs->hashref->all;
