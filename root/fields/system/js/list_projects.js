@@ -35,7 +35,7 @@ params:
         hiddenName: meta.id_field,			
         store: project_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.single_mode
+		singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
     });
 	
     project_box_store.on('load',function(){
