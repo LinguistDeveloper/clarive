@@ -368,6 +368,9 @@ msgstr "Por favor, confirme que quiere borrar el análisis de "
 msgid "Delete analysis"
 msgstr "Borrar análisis"
 
+msgid "Delete package analysis"
+msgstr "Borrar análisis de paquete"
+
 msgid "User manual"
 msgstr "Manual de usuario"
 
