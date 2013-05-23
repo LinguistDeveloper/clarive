@@ -50,6 +50,7 @@ sub grid : Local {
         $c->stash->{action_sqa_subprojectnature} = exists $user_actions{ 'action.sqa.subprojectnature' } ;
         $c->stash->{action_sqa_packages} = exists $user_actions{ 'action.sqa.packages' } ;
         $c->stash->{action_delete_analysis} = exists $user_actions{ 'action.sqa.delete_analysis' } ;
+        $c->stash->{action_delete_package} = exists $user_actions{ 'action.sqa.delete_package' } ; 
         $c->stash->{action_schedule_analysis} = exists $user_actions{ 'action.sqa.schedule_analysis' } ;
 
         $config = $c->model( 'ConfigStore' )->get( 'config.sqa', bl => 'TEST', ns => '/' );
@@ -1127,6 +1128,11 @@ sub get_row_permissions : Local {
             $permissions->{request_analysis}      = \0;
             $permissions->{request_recalc}        = \0;
             $permissions->{delete_analysis}       = \0;
+            $permissions->{delete_package}       = $c->model( 'Permissions' )->user_has_action(
+                action   => 'action.sqa.delete_package',
+                username => $c->username,
+                ns => 'project/'.$project_id
+            );
             $permissions->{edit_config}   = \0;
             $permissions->{remove_config} = \0;
             $permissions->{edit_global}   = \0;
@@ -1156,7 +1162,11 @@ sub get_row_permissions : Local {
                 username => $c->username,
                 ns => 'project/'.$project_id
             );
-            
+            $permissions->{delete_package}       = $c->model( 'Permissions' )->user_has_action(
+                action   => 'action.sqa.delete_package',
+                username => $c->username,
+                ns => 'project/'.$project_id
+            );
             $permissions->{edit_config}   = \0;
         }
         $c->stash->{json} = {msg => 'ok', success => \1, permissions => $permissions};
@@ -1182,6 +1192,28 @@ sub delete_analysis : Local {
            id     => $job_id
      	);
 		
+        $c->stash->{json} = {msg => 'ok', success => \1};
+    } catch {
+        $err = shift;
+        $c->stash->{json} = {msg => _loc( "Error running sqa commands: %1", $err ), success => \0};
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub delete_package : Local {
+    my ( $self, $c ) = @_;
+    my $user       = $c->username;
+    my $p          = $c->request->params;
+    my $job_id = $p->{id};
+    my $err;
+ 
+    try {
+        _log "TENGO QUE BORRAR EL ID $job_id";
+
+        BaselinerX::Model::SQA->delete (
+            id     => $job_id
+        );
+                    
         $c->stash->{json} = {msg => 'ok', success => \1};
     } catch {
         $err = shift;
