@@ -84,7 +84,7 @@ sub run {
     # borrado de mv huerfanos
     unless( $config->{no_del} ) {
         _log "Borrando inf_data_mv huerfanos...";
-        my $cnt  = $inf->query(q{delete from inf_data_mv m where not exists ( select 1 from inf_data d where valor like '@#%' and d.valor = '@#'||m.id )}) ;
+        my $cnt  = $inf->query(q{delete from inf_data_mv m where (not exists ( select 1 from inf_data d where valor like '@#%' and d.valor = '@#'||m.id )) and (not exists (select 1 from inf_hashdata h where valor like '@#%' and h.valor = '@#'||m.id))}) ;
         _log "inf_data_mv huerfanos borrados ok (cnt=$cnt).";
     } else {
         _log "Borrado de huerfanos desactivado (no_del=1)";
@@ -93,8 +93,8 @@ sub run {
     # los max de infform no se borran
     my %max = map { $_->{idform}=>1 } $inf->query(q{select idform from inf_form_max fm})->hashes;
 
-    my $days = $config->{dias} // _throw 'El parametro "dias" no est� definido';
-    _log sprintf "Purga de Peticiones antiguas de Inf inicio, %d dias.", $days;
+    my $days = $config->{dias} // _throw 'El parametro "dias" no está definido';
+    _log sprintf "Purga de datos de Formularios antiguos de Inf inicio, %d dias.", $days;
     _debug $config;
 
     # si el idform todavia es actual, no se borra tampoco
@@ -184,11 +184,40 @@ sub run {
         for my $idform ( @descargados ) {
             _log "Borrando idform de inf_data = $idform";
             $inf->query(q{delete from inf_data where idform=?}, $idform );
+            _log "Borrando idform de inf_hashdata = $idform";
+            $inf->query(q{delete from inf_hashdata where idform=?}, $idform );
             _log "Borrando idform de inf_data_mv = $idform";
             $inf->query(q{delete from inf_data_mv where idform=?}, $idform );
+            _log "Borrando idform de inf_form = $idform";
+            $inf->query(q{delete from inf_form where idform=?}, $idform );
         }
+
+        # borrando los campos (inf_status_hist) de las peticiones que se borrarán
+        my $pet_cnt = $inf->query(q{select count(*) from inf_status_hist where idpeticion in (
+    									select id from inf_peticion p
+    									where finished_on < sysdate - ?
+            									and not exists (select 1 from inf_status s where s.idpeticion = p.id) )}, $config->{dias_peticion} )->flat;
+        _log _loc "Borrando %1 campos de INF_STATUS_HIST", $pet_cnt->[0];
+
+        $inf->query(q{delete from inf_status_hist where idpeticion in (
+    									select id from inf_peticion p
+    									where finished_on < sysdate - ?
+            									and not exists ( select 1 from inf_status s where s.idpeticion = p.id) )}, $config->{dias_peticion} );
+
+        # borrando las tareas (inf_peticion_tarea) de las peticiones que se borrarán
+        $pet_cnt = $inf->query(q{select count(*) from inf_peticion_tarea where idpeticion in (
+    									select id from inf_peticion p
+    									where finished_on < sysdate - ?
+            									and not exists (select 1 from inf_status s where s.idpeticion = p.id) )}, $config->{dias_peticion} )->flat;
+        _log _loc "Borrando %1 tareas de INF_PETICION_TAREA", $pet_cnt->[0];
+
+        $inf->query(q{delete from inf_peticion_tarea where idpeticion in (
+    									select id from inf_peticion p
+    									where finished_on < sysdate - ?
+            									and not exists (select 1 from inf_status s where s.idpeticion = p.id) )}, $config->{dias_peticion} );
+
         # borrando las filas de inf_peticion
-        my $pet_cnt = $inf->query(q{select count(*) from inf_peticion p where finished_on < sysdate - ?
+        $pet_cnt = $inf->query(q{select count(*) from inf_peticion p where finished_on < sysdate - ?
             and not exists ( select 1 from inf_status s where s.idpeticion = p.id )}, $config->{dias_peticion} )->flat;
         _log _loc "Borrando %1 peticiones de INF_PETICION", $pet_cnt->[0];
 

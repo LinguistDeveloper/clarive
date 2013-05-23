@@ -38,7 +38,7 @@ sub set_ticket {
   _debug "server: ". $server . "\nUser: ". $user;
   _log "getting token for user $user to do $service to $server";
 
-  my $agent_port = 58765;                                       # TODO
+  my $agent_port = config_get('config.harax')->{'port'};
   my $key        = config_get('config.harax')->{$agent_port};
   my $host       = 'expsv066';
 

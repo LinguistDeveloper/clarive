@@ -8,7 +8,7 @@
     <a href="<% $c->config->{bde_scm_web} %>/scmdist/index2.jsp" id="home">SCM</a>
 </li>
 <li>
-  <a href="#">Distribuidor</a>
+  <a href="<% $c->config->{bde_scm_web} %>/scmdist/monitor.jsp">Distribuidor</a>
   <ul>
       <li>
         <a href="<% $c->config->{bde_scm_web} %>/scmdist/monitor.jsp" id="home">Ver Monitor</a>
@@ -16,15 +16,17 @@
       <li>
         <a href="<% $c->config->{bde_scm_web} %>/scmdist/pase.jsp" id="home">Nuevo Pase</a>
       </li>
+      <li><a href="/raw/job/calendar_list" >Calendarios de Pase</a></li>
   </ul>
 </li>
-<li><a href="#">Changeman</a>
+<li><a href="/tab/job/monitor">Changeman</a>
   <ul>
       <li><a href="/tab/job/monitor">Ver Monitor</a></li>
       <li><a href="/tab/job/create">Nuevo Pase</a></li>
+      <li><a href="/raw/job/calendar_list" >Calendarios de Pase</a></li>
   </ul>
 </li>
-<li><a href="#">Formulario Infraestructura</a>
+<li><a href="<% $c->config->{bde_scm_web} %>/scm_inf/inf/infTareasRPT.jsp">Formulario Infraestructura</a>
   <ul>
       <li>
         <a href="<% $c->config->{bde_scm_web} %>/scm_inf/inf/infTareasRPT.jsp" id="home">Peticiones de Infraestructura</a>
@@ -35,7 +37,11 @@
   </ul>
 </li>
 <li>
-    <a href="<% $c->config->{bde_scm_web} %>/tab/sqa/grid">SCM-SQA</a>
+    <a href="/tab/sqa/grid">SCM-SQA</a>
+    <ul>
+      <li><a href="/tab/sqa/grid">Acceder al Portal SQA</a></li>
+      <li><a href="<% $c->config->{bde_scm_web} %>/sqamain/reglas/">Ver Reglas utilizadas para el An&#225lisis</a></li>
+    </ul>
 </li>
 <li>
     <a href="<% $c->config->{bde_scm_web} %>/scm_inf/inf/infReport.jsp">Informes</a>

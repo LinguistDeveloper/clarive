@@ -155,6 +155,10 @@ register 'config.biztalk.store' => {
 
 register 'config.harax' => {
     metadata => [
+    	{
+    		id      => 'port',
+    		default => 48999
+    	},
         {   id      => 58765,
             default => 'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE='
         },
@@ -163,6 +167,9 @@ register 'config.harax' => {
         },
         {   id      => 49164,
             default => 'SmsuSVVqa0lVNzY1NHJKaC4rODc4N2Rmai4uMTklZGtqc2ExMTo5OCwsMUBqaHJ1KGhqaEh0MmpFcWF4eng='
+        },
+        {   id      => 48999,
+            default => 'Si5JVWprYWRsYWooKCUzMi4rODdmai4uMTklZCQpM2RmbrfnZWG3anNhMTE6OTgsMUBqaHUoaGhIdDJqRXE='
         }
     ]
 };

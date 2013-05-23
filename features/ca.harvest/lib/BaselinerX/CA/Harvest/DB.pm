@@ -688,24 +688,34 @@ sub packagenames_pathfullnames {
 1;
 
 sub n_files_inside_subapl {
-  my ($self, $project, $subapl) = @_;
+  my ($self, $project) = @_;
   $project = uc $project;
-  $subapl  = uc $subapl;
+  #$subapl  = uc $subapl;
   my $query = qq{
-    SELECT COUNT (versionobjid)
-      FROM harversions
-     WHERE versionstatus = 'N'
-       AND itemobjid IN (
-              SELECT DISTINCT itemobjid
-                         FROM haritems
-                        WHERE itemtype = 1
-                          AND parentobjid IN (
-                                 SELECT DISTINCT itemobjid
-                                            FROM harpathfullname
-                                           WHERE pathfullnameupper LIKE
-                                                           '\\$project\\%\\$subapl%\\%'))
+    SELECT DISTINCT pa2.pathfullname
+        FROM harpathfullname pa2, harversions v6, haritems hit
+        WHERE v6.pathversionid = pa2.versionobjid
+            AND hit.parentobjid = pa2.itemobjid
+            AND hit.itemobjid = v6.itemobjid
+            AND v6.versionstatus = 'N'
+            AND pathfullname LIKE '\\$project\\%\\%\\%'
   };
-  $self->db->value($query);
+
+#  my $query = qq{
+#    SELECT COUNT (versionobjid)
+#      FROM harversions
+#     WHERE versionstatus = 'N'
+#       AND itemobjid IN (
+#              SELECT DISTINCT itemobjid
+ #                        FROM haritems
+  #                      WHERE itemtype = 1
+   #                       AND parentobjid IN (
+    #                             SELECT DISTINCT itemobjid
+     #                                       FROM harpathfullname
+      #                                     WHERE pathfullnameupper LIKE
+       #                                                    '\\$project\\%\\$subapl%\\%'))
+ # };
+  $self->db->array($query);
 }
 
 *subapl_in_harvest_p = \&n_files_inside_subapl;

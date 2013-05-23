@@ -100,7 +100,7 @@ sub send_mail {
             }
         );
         
-        Baseliner->model( 'Repository' )->delete( ns => $ns );
+#        Baseliner->model( 'Repository' )->delete( ns => $ns );
 	}
 }
 
