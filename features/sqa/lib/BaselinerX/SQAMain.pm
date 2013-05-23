@@ -96,6 +96,10 @@ register 'action.sqa.notify_issue' => {
         name => "Notify issue during sqa process"
 };
 
+register 'action.sqa.notify_error' => {
+        name => "Notify error during sqa analysis"
+};
+
 
 ##Configuración del daemon
 register 'config.sqa.feed' => {
