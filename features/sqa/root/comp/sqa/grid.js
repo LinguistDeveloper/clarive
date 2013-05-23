@@ -19,7 +19,8 @@
 	$action_sqa_subprojectnature
 	$action_sqa_packages
 	$action_delete_analysis
-	$action_schedule_analysis
+	$action_delete_package
+    $action_schedule_analysis
 	$global_run_sqa_test
 	$global_run_sqa_ante
 	$global_run_sqa_prod
@@ -394,6 +395,34 @@
 	};
 % }
 
+% if ( $action_delete_package ) {
+    var button_delete_package = new Ext.Toolbar.Button({
+        text: _('Delete package analysis'),
+        icon:'/static/images/silk/table_delete.png',
+        cls: 'x-btn-text-icon',
+        hidden: true,
+        handler: function () {
+            delete_package()
+        }
+    });
+    var delete_package = function() {
+        var sm = grid.getSelectionModel();
+        var selected = sm.getSelected();
+        
+        if (confirm(_("Plase, confirm that you want to delete the package analysis of ") + selected.data.project )) {
+             Baseliner.ajaxEval( '/sqa/delete_package',
+                { id: selected.data.id },
+                function(response) {
+                    Baseliner.message( _('SUCCESS'), _('Package analysis deleted') );
+                    store.load({params:{type: gridType, limit: ps }});
+                    myMask.hide();
+                }
+             );
+         };
+         hide_all_buttons();
+    };
+% }
+
 % if ( $action_new_analysis ) {	
     var button_new_analysis = new Ext.Toolbar.Button({
 		text: _('New analysis'),
@@ -638,6 +667,9 @@
 % if ( $action_delete_analysis ) {
 					button_delete_analysis,
 %}
+% if ( $action_delete_package ) {
+                    button_delete_package,
+%}
 % if ( $action_new_analysis ) {	
 					button_new_analysis,
 %}
@@ -759,7 +791,14 @@
 						}
 %}
 					} else if ( gridType == 'PKG' ) {
-					} else {
+% if ( $action_delete_package) {
+                        if ( response.permissions.delete_package == 0 ) {
+                            button_delete_package.hide();
+                        } else {
+                            button_delete_package.show();
+                        }
+%}
+                    } else {
 						//Baseliner.message( _('HELLO'), _('The value is %1', response.permissions.button_request_recalc ) );
 % if ( $action_new_analysis ) {
 						
@@ -1472,6 +1511,9 @@
     var hide_all_buttons = function () {
 % if ( $action_delete_analysis ) {
 			button_delete_analysis.hide();
+%}
+% if ( $action_delete_package ) {
+            button_delete_package.hide();
 %}
 % if ( $action_new_analysis ) {
 			button_new_analysis.hide();
