@@ -27,6 +27,42 @@ msgstr "Relación"
 msgid "Relationships"
 msgstr "Relaciones"
 
+msgid "Upgrade"
+msgstr "Actualización"
+
+msgid "Upgrades"
+msgstr "Actualizaciones"
+
+msgid "Module"
+msgstr "Módulo"
+
+msgid "Modules"
+msgstr "Módulos"
+
+msgid "Get"
+msgstr "Obtener"
+
+msgid "Restart Server"
+msgstr "Reiniciar Servidor"
+
+msgid "Download Patches"
+msgstr "Descargar Parches"
+
+msgid "Diff Only"
+msgstr "Ver Diferencias"
+
+msgid "Licenses"
+msgstr "Licencias"
+
+msgid "Copyright Notices"
+msgstr "Notificaciones de Copyright"
+
+msgid "Remote"
+msgstr "Remoto"
+
+msgid "Installed"
+msgstr "Instalado"
+
 msgid "View Applied Slots"
 msgstr "Ver Ventanas Relacionadas"
 
@@ -149,6 +185,9 @@ msgstr "Ver Stash"
 
 msgid "Inbox"
 msgstr "Buzón"
+
+msgid "User not found: %1"
+msgstr "Usuario no encontrado: %1"
 
 msgid "User is not active"
 msgstr "El usuario no está activo"
@@ -495,6 +534,9 @@ msgstr "Elementos de Configuración"
 msgid "Config Matrix"
 msgstr "Matriz de Configuración"
 
+msgid "Row already exists: %1"
+msgstr "El registro ya existe: %1"
+
 msgid "Field already in the form: "
 msgstr "Campo ya está en formulario: "
 
@@ -518,6 +560,9 @@ msgstr "Permisos de Usuario"
 
 msgid "Views"
 msgstr "Vistas"
+
+msgid "New View"
+msgstr "Nueva Vista"
 
 msgid "Approve"
 msgstr "Aprobar"
@@ -1479,6 +1524,12 @@ msgstr "Rollback OK"
 msgid "Rollback Failed"
 msgstr "Rollback fallido"
 
+msgid "PENDING"
+msgstr "Pendiente"
+
+msgid "SUPERSEDED"
+msgstr "Sobreseído"
+
 # Job email types
 msgid "started"
 msgstr "iniciado"
@@ -2024,6 +2075,9 @@ msgstr "Elemento en Release"
 msgid "Output: %1"
 msgstr "Salida: %1"
 
+msgid "Precedence"
+msgstr "Precedencia"
+
 msgid "Table"
 msgstr "Tabla"
 
@@ -2264,7 +2318,7 @@ msgstr "No action or username specified"
 
 # lib/Baseliner/Model/Permissions.pm (275)
 msgid "Missing username"
-msgstr "Falta el nombre de usuário"
+msgstr "Falta el nombre de usuario"
 
 # lib/Baseliner/Model/Request.pm (308)
 msgid "Approval Request"
@@ -3082,11 +3136,11 @@ msgstr "Comentar"
 msgid "Activity"
 msgstr "Actividad"
 
-msgid "%1 posted a comment on %2: %3"
-msgstr "%1 publicó un comentario el %2: %3"
+msgid "%1 posted a comment: %3"
+msgstr "%1 publicó un comentario: %3"
 
-msgid "%1 deleted a comment on %2: %3"
-msgstr "%1 borró un comentario el %2: %3"
+msgid "%1 deleted a comment: %3"
+msgstr "%1 borró un comentario: %3"
 
 msgid "Depends On"
 msgstr "Dependo De"
@@ -3135,6 +3189,9 @@ msgstr "etiquetas"
 
 msgid "New Folder"
 msgstr "Crear Carpeta"
+
+msgid "Rename Folder"
+msgstr "Renombrar Carpeta"
 
 msgid "Assigned To Me"
 msgstr "Assignadas a Mí"
@@ -3680,7 +3737,7 @@ msgstr "Ninguna fila seleccionada"
 
 # root/comp/ci-grid.js (78)
 msgid "CI: %1"
-msgstr "IC: %1"
+msgstr "CI: %1"
 
 # root/comp/ci-grid.js (97)
 msgid "Item"
@@ -3700,11 +3757,11 @@ msgstr "Propiedades"
 
 # root/comp/ci-gridtree.js (97)
 msgid "CI"
-msgstr "IC"
+msgstr "CI"
 
 # root/comp/ci-gridtree.js (174)
 msgid "CI Class: %1"
-msgstr "Clase IC: %1"
+msgstr "Clase CI: %1"
 
 # root/comp/ci-gridtree.js (210)
 msgid "Class"
@@ -4134,7 +4191,13 @@ msgid "File moved"
 msgstr "Fichero movido"
 
 msgid "Folder moved"
-msgstr "Carpeta movido"
+msgstr "Carpeta movida"
+
+msgid "Folder renamed"
+msgstr "Carpeta renombrada"
+
+msgid "Folder name cannot be longer than %1 characters"
+msgstr "La longitud del nombre de carpeta no puede ser mayor que %1"
 
 msgid "Folder deleted"
 msgstr "Carpeta borrada"
