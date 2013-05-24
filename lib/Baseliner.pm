@@ -1,5 +1,4 @@
 package Baseliner;
-
 use Moose;
 
 #use Catalyst::Runtime 5.80;
@@ -16,7 +15,7 @@ use Catalyst::Runtime 5.80;
 our @modules;
 BEGIN {
 
-    use CatalystX::Features 0.23;
+    use CatalystX::Features 0.24;
 
     if( $ENV{BALI_PLUGINS} ) {
         @modules = split /,/, $ENV{BALI_PLUGINS};
@@ -48,15 +47,31 @@ BEGIN {
 use Catalyst @modules;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
+use Try::Tiny;
 my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
-our $VERSION = '5.1.5';
-our $LICENSE = 'GPLv3';
+
+# determine version with a GIT DESCRIBE
+our $FULL_VERSION = do {
+    my $v = eval { 
+        require Git::Wrapper;
+        my $git = Git::Wrapper->new( $ENV{BASELINER_HOME} );
+        my $x = ( $git->describe({ always=>1, tag=>1 }) )[0];
+        $x=~ /^(.*)-(\d+)-(.*)$/ ? $x=["$1_$2", substr($3,1,7) ] : ['?','?','?'];
+    };
+    $@ ?  ['6.0','??'] : $v;
+};
+our $VERSION = $FULL_VERSION->[0];
+our $VERSION_SHA = $FULL_VERSION->[1];
+
+# find my parent to enable restarts
+$ENV{BASELINER_PARENT_PID} = getppid();
 
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
+
 
 __PACKAGE__->config(
     'Plugin::Session' => {
@@ -99,7 +114,7 @@ __PACKAGE__->config->{ 'Plugin::ConfigLoader' }->{ substitutions } = {
 if( $ENV{BALI_CMD} ) {
     # only load the root controller, for capturing $c
     __PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
-    require Baseliner::Cmd;
+    require Baseliner::Standalone;
 }
 
 
@@ -180,9 +195,10 @@ __PACKAGE__->setup();
 $SIG{INT} = \&signal_interrupt;
 $SIG{KILL} = \&signal_interrupt;
 
+our $VERSION_STRING = "v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . " (sha $Baseliner::VERSION_SHA)";
+
 # check if DB connected, retry
 if( my $retry = Baseliner->config->{db_retry} ) {
-    use Try::Tiny;
     my $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
     if( ! $connected ) {
         my $freq = Baseliner->config->{db_retry_frequency} // 30;
@@ -215,6 +231,13 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs   
 }
 
+around 'debug' => sub {
+    my $orig = shift;
+    my $c = shift;
+
+    $c->$orig( @_ ) unless $Baseliner::DebugForceOff;
+};
+
     
     # Inversion of Control
     if( $ENV{BALI_FAST} ) {
@@ -233,13 +256,12 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         my %cl=Class::MOP::get_all_metaclasses;
 
         for my $package (
-            grep !/Baseliner$/, grep !/Baseliner::View/, grep /^Baseliner/,
+            grep !/(Baseliner|Baseliner::Cmd|Baseliner::Moose|Baseliner::Role::.*|Baseliner::View::.*|BaselinerX::CI::.*)$/, 
+            grep /^Baseliner/, 
             keys %cl )
         {
-            next if $package =~ /Baseliner$/;
             my $meta = $cl{ $package };
             next if ref $meta eq 'Moose::Meta::Role';
-            #eval { $package->meta->make_immutable; };
             $meta->make_immutable unless $meta->is_immutable;   # slow loadup... ~1s
         }
 
@@ -254,7 +276,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR "Baseliner v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . ". Startup time: " . tv_interval($t0) . "s.\n";
+    print STDERR "Baseliner $Baseliner::VERSION_STRING. Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
         print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
@@ -311,7 +333,7 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         #$meta->make_immutable( replace_constructor => 1 );
         #Class::C3::reinitialize();
         #return $c; 
-        #return Baseliner::Cmd->new;
+        #return Baseliner::Standalone->new;
         return $c;
         #bless {}, 'Baseliner';
 
@@ -338,11 +360,9 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
         return \%data;
     }
 
-use Try::Tiny;
 sub decrypt {
     my $c = shift;
     require Crypt::Blowfish::Mod;
-
     my $key = $c->config->{decrypt_key} // $c->config->{dec_key};
     die "Error: missing 'decrypt_key' config parameter" unless length $key;
 
@@ -361,19 +381,34 @@ sub username {
     Baseliner::Utils::_debug "No user user";
     $user = try { return $c->user->id
     } catch {
-        Baseliner::Utils::_error "No user id.";
+        Baseliner::Utils::_debug "No user id.";
         return undef;   
     } and return $user;
 }
 
 sub has_action {
     my ($c,$action) = @_;
-    $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
+    # memoization for the same request
+    my $v = $c->stash->{ $c->username };
+    return $v if defined $v;
+    $v = $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
+    return $c->stash->{ $c->username } = $v;
 }
 
 sub is_root {
     my $c = shift;
     Baseliner->model('Permissions')->is_root( $c->username );
+}
+
+sub loghome {
+    my $c = shift;
+    my $loghome = $ENV{BASELINER_LOGHOME} // Baseliner->path_to( 'logs' );
+    _mkpath $loghome unless -d $loghome;
+    if( @_ ) {
+        return ''. Baseliner::Utils::_file( $loghome, @_ );
+    } else {
+        return "$loghome";
+    }
 }
 
 # Utils
@@ -451,26 +486,21 @@ if( Baseliner->debug ) {
         my $c = shift;
 
         my @vars = $c->$orig( @_ );
-        if( exists $c->req->params->{password} ) {
-            my @ret;
-            for my $d ( @vars ) {
-                my ($type,$obj)=@$d;
-                if( $type eq 'Request' ){
-                    if( defined $obj->{_log}{_body} && $obj->{_log}{_body} =~ m{(\| password\s+\|\s+)(\S+?)(\s+)\|}s ) {
-                       my $p = $2;
-                       warn "==============> $p";
-                       my $np = '*' x length($p) ;
-                       $obj->{_log}{_body} =~ s{$p}{$np}gsm if length $p;
-                    }
-                    push @ret, $d;
-                } else {
-                    push @ret, $d;
+        my @ret;
+        for my $d ( @vars ) {
+            my ($type,$obj)=@$d;
+            if( $type eq 'Request' ){
+                if( defined $obj->{_log}{_body} && $obj->{_log}{_body} =~ m{(password\s+\|\s+)(.+?)(\s+)}s ) {
+                   my $p = $2;
+                   my $np = '*' x length($p) ;
+                   $obj->{_log}{_body} =~ s{$p}{$np}gsm;
                 }
+                push @ret, $d;
+            } else {
+                push @ret, $d;
             }
-            return @ret;
-        } else {
-            return @vars;
         }
+        return @ret;
     };
 }
 

@@ -10,6 +10,63 @@ http://baseliner.org/license
 Ext.ns('Baseliner.store');
 Ext.ns('Baseliner.model');
 
+Baseliner.store.Topics = function(c) {
+     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty:"totalCount", 
+        baseParams: {},
+        id: 'mid', 
+        url: '/topic/related',
+        fields: ['mid','name', 'title','description','color'] 
+     }, c));
+};
+Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
+
+Baseliner.model.Topics = function(c) {
+    //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
+    var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+        '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+        '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+    var tpl_field = new Ext.XTemplate( '<tpl for=".">',
+        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+        '</tpl>' );
+    Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        //emptyText: _('Enter or select topics'),
+        triggerAction: 'all',
+        resizable: true,
+        mode: 'local',
+        fieldLabel: _('Topics'),
+        typeAhead: true,
+            name: 'topics',
+            displayField: 'title',
+            hiddenName: 'topics',
+            valueField: 'mid',
+        tpl: tpl_list,
+        displayFieldTpl: tpl_field,
+        value: '/',
+        extraItemCls: 'x-tag'
+        /*
+        ,listeners: {
+            newitem: function(bs,v, f){
+                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                var newObj = {
+                    mid: v,
+                    title: v
+                };
+                bs.addItem(newObj);
+            }
+        }
+        */
+    }, c));
+};
+Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
+
 Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
@@ -43,15 +100,15 @@ Baseliner.model.Projects = function(c) {
         //emptyText: _('Enter or select the category tags'),
         triggerAction: 'all',
         resizable: true,
-        store: new Baseliner.store.AllProjects({}),
-        mode: 'remote',
+        //store: new Baseliner.store.UserProjects({}),
+        mode: 'local',
         fieldLabel: _('Projects'),
         typeAhead: true,
         name: 'projects',
         displayField: 'name',
         hiddenName: 'projects',
         valueField: 'mid',
-        tpl: '<tpl for="."><div class="x-combo-list-item">{name} - {description}</div></tpl>',
+        tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {description}</span></div></tpl>',
         displayFieldTpl: tpl2,
         value: '/',
         extraItemCls: 'x-tag',
@@ -71,7 +128,7 @@ Ext.extend( Baseliner.model.Projects, Ext.ux.form.SuperBoxSelect );
 
 
 Baseliner.model.Users = function(c) {
-    var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{username} - {realname}</div></tpl>' );
+    var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}"><span id="boot" style="background: transparent"><strong>{username}</strong> {realname}</span></div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{username}</tpl>' );
     Baseliner.model.Users.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,
@@ -89,7 +146,7 @@ Baseliner.model.Users = function(c) {
         displayField: 'username',
         hiddenName: 'users',
         valueField: 'id',
-        tpl: '<tpl for="."><div class="x-combo-list-item">{username} - {realname}</div></tpl>',
+        tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{username}</strong> {realname}</span></div></tpl>',
         displayFieldTpl: tpl2,
         value: '/',
         extraItemCls: 'x-tag',
@@ -107,11 +164,11 @@ Baseliner.model.Users = function(c) {
 };
 Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 
-        Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
-            Ext.applyIf(this.options, {
-            submitEmptyText:false
-            });
-        });
+        //Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+        //    Ext.applyIf(this.options, {
+        //    submitEmptyText:false
+        //    });
+        //});
 Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
@@ -148,20 +205,59 @@ Baseliner.model.Revisions = function(c) {
 };
 Ext.extend( Baseliner.model.Revisions, Ext.ux.form.SuperBoxSelect );
 
+Baseliner.UserAndRoleBox = function(c) {
+    var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
+    var tpl2 = new Ext.XTemplate( '<tpl for="."><b>{[_loc(values.type)]}</b>: {name}</tpl>' );
+    var store = new Baseliner.JsonStore({
+        root: 'data' , remoteSort: true, autoLoad: true,
+        id: 'id', 
+        totalProperty: 'totalCount', 
+        //baseParams: c.request || {},
+        url: '/message/to_and_cc',
+        fields: ['id','ns','name','long', 'type'] 
+    });
+    if( ! c.hiddenName && c.name ) {
+        c.hiddenName = c.name;
+    }
+    Baseliner.UserAndRoleBox.superclass.constructor.call(this, Ext.apply({
+        name: 'to_and_cc',
+        hiddenName: 'to_and_cc',
+        displayField: 'name',
+        valueField: 'ns',
+        store: store,
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        emptyText: _('select users or roles'),
+        triggerAction: 'all',
+        resizable: true,
+        mode: 'remote',
+        fieldLabel: _('To'),
+        typeAhead: true,
+        tpl: '<tpl for="."><div class="x-combo-list-item"><b>{[_loc(values.type)]}</b>: {name} - {long}</div></tpl>',
+        displayFieldTpl: tpl2,
+        value: '',
+        extraItemCls: 'x-tag'
+    }, c));
+};
+Ext.extend( Baseliner.UserAndRoleBox, Ext.ux.form.SuperBoxSelect );
+
+
 function returnOpposite(hexcolor) {
     var r = parseInt(hexcolor.substr(0,2),16);
     var g = parseInt(hexcolor.substr(2,2),16);
     var b = parseInt(hexcolor.substr(4,2),16);
     var yiq = ((r*299)+(g*587)+(b*114))/1000;
-    return (yiq >= 128) ? '000000' : 'FFFFFF';
+    return (yiq >= 128) ? '#000000' : '#FFFFFF';
 }
     
 Baseliner.model.Labels = function(c) {
     var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-        '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: #{[returnOpposite(values.color)]};background: #{color}">{name}</span></span>',
+        '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: {[returnOpposite(values.color.substr(1))]};background: {color}">{name}</span></span>',
         '</div></tpl>');
     var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: #{[returnOpposite(values.color)]};background: #{color}">{name}</span></span>',
+        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: {[returnOpposite(values.color.substr(1))]};background: {color}">{name}</span></span>',
         '</tpl>');
     
     Baseliner.model.Projects.superclass.constructor.call(this, Ext.apply({
@@ -552,8 +648,9 @@ Baseliner.Calendar =  function(c) {
         var y = date.getFullYear();
         var el = cal_div.getEl() ;
         var id = el.id ;
-        var dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+        var dt = new Baseliner.DropTarget(el, {
+            comp: cal_div,
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyEnter: function(ddSource, ev, data) {
                 var el = ddSource.getProxy().getGhost();
@@ -687,7 +784,7 @@ Baseliner.store.CI = function(c) {
         remoteSort: true,
         autoLoad: true,
         totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','collection','class','description', 'properties', 'pretty_properties'] 
+        fields: ['mid','item', 'name','collection','class', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon'] 
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
@@ -697,7 +794,7 @@ Baseliner.model.CISelect = function(c) {
     var tpl_list = new Ext.XTemplate(
         '<tpl for="."><div class="search-item">',
             //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
-        '<span id="boot"><strong>{name}</strong> ({class})</span>',
+        '<span id="boot" style="background: transparent"><strong>{name}</strong> ({class})</span>',
         '<tpl if="pretty_properties">',
             '<br />{pretty_properties}',
         '</tpl>',
@@ -705,7 +802,7 @@ Baseliner.model.CISelect = function(c) {
     );
     var tpl_field = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     Baseliner.model.CISelect.superclass.constructor.call(this, Ext.apply({
-        allowBlank: false,
+        allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
         addNewDataOnBlur: true, 
@@ -736,7 +833,9 @@ Baseliner.model.CICombo = function(c) {
     var resultTpl = new Ext.XTemplate(
         '<tpl for="."><div class="search-item">',
             //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
-        '<span id="boot"><strong>{name}</strong> ({class})</span>',
+        '<span id="boot" style="background: transparent">',
+        '<table><tr><td><img src="{icon}" />&nbsp;</td><td><strong>{name}</strong> ({class})</td></tr></table>',
+        '</span>',
         '<tpl if="pretty_properties">',
             '<br />{pretty_properties}',
         '</tpl>',
@@ -787,23 +886,27 @@ Baseliner.ci_box = function(c) {
     if( cl !=undefined ) bp['class'] = cl;
     else bp.role = role;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
+    var autoload = c.autoLoad != undefined ? c.autoLoad : true;
     var store = new Baseliner.store.CI({ baseParams: bp });
+    store.on('load', function(){
+        if( c.force_set_value )
+           ci_box.setValue( value );
+    });
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
         singleMode: true, 
         fieldLabel: _('CI'),
         name: 'ci',
         hiddenName: 'ci', 
-        allowBlank: false
+        allowBlank: true
     }, c )); 
-    ci_box._setValue = ci_box.setValue; // save original
-    ci_box.setValue = function(value) {
-        if( value != undefined )  {
-            store.on('load',function(){
-                ci_box._setValue( value ) ;  // call original
-            });
+    if( autoload ) {
+        if( value != undefined && value.length > 0 )  {
+            store.load({ params: { mids: value } }); 
+        } else {
+            store.load();
         }
-    };
+    }
     return ci_box;
 };
 
@@ -986,8 +1089,9 @@ Baseliner.model.RevisionsBoxDD = function(c) {
 
     revision_box.on('afterrender', function(){
         var el = revision_box.el.dom; 
-        var revision_box_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+        var revision_box_dt = new Baseliner.DropTarget(el, {
+            comp: revision_box,
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;
@@ -1117,8 +1221,9 @@ Baseliner.model.RevisionsGridDD = function(c) {
             // TODO no loader from mids yet 
         }
         var el = this.el.dom; 
-        var revision_box_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+        var revision_box_dt = new Baseliner.DropTarget(el, {
+            comp: this,
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;
@@ -1162,20 +1267,35 @@ Flot plotting
 
 */
 Baseliner.flot = {};
-Baseliner.flot.Base = function(c) {
-    if( c==undefined ) c={};
-    var data = c.data;
-    delete c.data;
-    var w = c.width == undefined ? 200 : c.width;
-    var h = c.height == undefined ? 200 : c.height;
-    Baseliner.flot.Base.superclass.constructor.call(this,
-        Ext.apply({ style:{width: w, height: h, background:'white'} }, c)
-    );
-    this.on('afterrender',function(){
-        $.plot(	$(this.el.dom ), data, c.plotConfig );
-    });
-};
-Ext.extend( Baseliner.flot.Base, Ext.Container ); 
+Baseliner.flot.Base = Ext.extend( Ext.Container, {
+    redrawing: 0,
+    constructor : function(c){
+        if( c==undefined ) c={};
+        var data = c.data;
+        delete c.data;
+        var w = c.width == undefined ? 200 : c.width;
+        var h = c.height == undefined ? 200 : c.height;
+        Baseliner.flot.Base.superclass.constructor.call(this,
+            Ext.apply({ style:{width: w, height: h, background:'white'} }, c)
+        );
+        var self = this;
+        self.on('resize', function(){
+            if( self.redrawing ) return;
+            if( !self.plot ) return;
+            var placeholder = self.plot.getPlaceholder();
+            // somebody might have hidden us and we can't plot
+            // when we don't have the dimensions
+            if (placeholder.width() == 0 || placeholder.height() == 0)
+                return;
+            ++self.redrawing;
+            $.plot(placeholder, self.plot.getData(), self.plot.getOptions());
+            --self.redrawing;
+        });
+        self.on('afterrender',function(){
+            self.plot = $.plot( $(self.el.dom ), data, c.plotConfig );
+        });
+    }
+});
 
 Baseliner.flot.Donut = function(c) {
     if( c==undefined ) c={};
@@ -1308,24 +1428,24 @@ Baseliner.KanbanColumn = Ext.extend(Ext.Panel, {
 });
 Ext.reg('kanbancolumn', Baseliner.KanbanColumn);
 
-Baseliner.kanban = function( args ){
-    var store_topics = args.store;
-    var topics = [];
+Baseliner.kanban = function(c){
+    var store_topics = c.store;
+    c.background = c.background || "#555 url('/static/images/bg/cork.jpg')";
     var statuses_hash = {};
-    store_topics.each( function(rec) {
-        topics.push( rec.data.topic_mid );
-    });
     var status_btn = new Ext.Button({ text:_('Statuses'), menu:[] });
     var tab_btn = new Ext.Button({ 
-        icon:'/static/images/icons/tab.png', iconCls:'x-btn-icon', handler: function(){
-        kanban.in_tab = true;
-        var id = Baseliner.addNewTabItem( kanban, 'Kanban', { tab_icon: '/static/images/icons/kanban.png' } );
-        Baseliner.viewport.remove( kanban, false );
-        Baseliner.main.getEl().show();
-        Baseliner.viewport.getLayout().setActiveItem( 0 );
-    }});
+        icon:'/static/images/icons/tab.png', iconCls:'x-btn-icon',
+        handler: function(){
+            kanban.in_tab = true;
+            var id = Baseliner.addNewTabItem( kanban, 'Kanban', { tab_icon: '/static/images/icons/kanban.png' } );
+            Baseliner.viewport.remove( kanban, false );
+            Baseliner.main.getEl().show();
+            Baseliner.viewport.getLayout().setActiveItem( 0 );
+            if( c.on_tab ) c.on_tab();
+        }
+    });
 
-    var kanban =  new Ext.ux.Portal({
+    kanban =  new Ext.ux.Portal({
         margins:'5 5 5 0',
         height: 400, width: 800,
         status_btn: status_btn,
@@ -1346,7 +1466,7 @@ Baseliner.kanban = function( args ){
         ],
         bodyCfg: { 
             style: {
-             'background': "#555 url('/static/images/bg/cork.jpg')", 
+             'background': c.background, 
              'background-repeat': 'repeat'
             }
         },
@@ -1358,11 +1478,14 @@ Baseliner.kanban = function( args ){
                 var portlet = e.panel;
                 var mid =  portlet.mid;
                 var id_status_current = portlet.initialConfig.id_status;
-                var wk = kanban.workflow[ mid ];
                 var dests = {};
-                for( var i=0; i<wk.length; i++ ) {
-                    if( wk[i].id_status_from == id_status_current ) {
-                        dests[ wk[i].id_status_to ] = true;
+                // reconfigure workflow
+                var wk = kanban.workflow[ mid ];
+                if( wk ) {
+                    for( var i=0; i<wk.length; i++ ) {
+                        if( wk[i].id_status_from == id_status_current ) {
+                            dests[ wk[i].id_status_to ] = true;
+                        }
                     }
                 }
                 // mask columns
@@ -1428,169 +1551,216 @@ Baseliner.kanban = function( args ){
         });
     };
 
+    kanban.load_workflow = function(topics){
+        Baseliner.ajaxEval( '/topic/kanban_status', { topics: topics }, function(res){
+            if( res.success ) {
+                //console.log( res.workflow );
+                var statuses = res.statuses;
+                var workflow = res.workflow;
+                var col_num = statuses.length;
+                var col_width = 1 / col_num;
+                var btns = [];
+                kanban.workflow = workflow;
 
-    Baseliner.ajaxEval( '/topic/kanban_status', { topics: topics }, function(res){
-        if( res.success ) {
-            //console.log( res.workflow );
-            var statuses = res.statuses;
-            var workflow = res.workflow;
-            kanban.workflow = workflow;
-            var col_num = statuses.length;
-            var col_width = 1 / col_num;
-            var btns = [];
-
-            var add_column = function( id_status, name ) {
-               var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + name + '</span>';
-               // create columns
-               var col_obj = new Baseliner.KanbanColumn({
-                  xtype: 'kanbancolumn',
-                  title: status_title,
-                  columnWidth: col_width,
-                  id_status: id_status
-               });
-               kanban.add( col_obj );
-            };
-            for( var i=0; i<col_num; i++ ) {
-                add_column( statuses[i].id, statuses[i].name );
-                statuses_hash[ statuses[i].name ] = i;  // store colnum for status
-            }
-
-            for( var k=0; k< statuses.length; k++ ) {
-                status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler: check_column });
-            }
-            // method to reconfigure all columnwidths
-            kanban.reconfigure_columns = function(){
-                var cols = kanban.items.items;
-                var col_num = 0;
-                for( var i = 0; i<cols.length; i++ ) {
-                    if( ! cols[i].hidden ) col_num++;
+                var add_column = function( id_status, name ) {
+                   var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + name + '</span>';
+                   // create columns
+                   var col_obj = new Baseliner.KanbanColumn({
+                      xtype: 'kanbancolumn',
+                      title: status_title,
+                      columnWidth: col_width,
+                      id_status: id_status
+                   });
+                   kanban.add( col_obj );
+                };
+                for( var i=0; i<col_num; i++ ) {
+                    add_column( statuses[i].id, statuses[i].name );
+                    statuses_hash[ statuses[i].name ] = i;  // store colnum for status
                 }
-                var col_width = 1/col_num;
-                for( var i = 0; i<cols.length; i++ ) {
-                    cols[i].columnWidth = col_width;
-                };
-                kanban.doLayout();
-            };
-            kanban.load_from_store = function( store, id_status ){
-                store.each( function(rec) {
-                    if( id_status != undefined && rec.data.category_status_id != id_status ) return;
-                    var t = String.format('{0} #{1}', rec.data.category_name, rec.data.topic_mid );
-                    var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + rec.data.topic_mid + '</span></div>';
-                    var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, rec.data.title);
-                    //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
-                    var col = statuses_hash[ rec.data.category_status_name ];
-                    var comp = new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true, mid: rec.data.topic_mid });
-                    comp.on('afterrender', function(){ 
-                        this.ownerCt.body.on('dblclick',function(){ 
-                            var mid = rec.data.topic_mid;
-                            var title = rec.data.topic_name;
-                            var params = { topic_mid: mid, title: title };
-                            if( kanban.in_tab ) {
-                                Baseliner.add_tabcomp( '/topic/view?topic_mid=' + mid, title, params );
-                            } else {
-                                Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
-                                    var win = new Ext.Window({
-                                        layout: 'fit', 
-                                        modal: true,
-                                        autoScroll: true,
-                                        style: { overflow: 'hide' },
-                                        border: false,
-                                        title: title,
-                                        height: 600, width: 800, 
-                                        maximizable: true,
-                                        items: topic_panel
-                                    });
-                                    //topic_panel.on('afterrender', function(){ topic_panel.header.hide() } );
-                                    topic_panel.title = undefined;
-                                    win.show();
-                                });
-                            }
-                        });
-                    });
-                    add_portlet({ 
-                      title: t,
-                      comp: comp, 
-                      mid: rec.data.topic_mid,
-                      id_status: rec.data.category_status_id,
-                      portlet_type: 'comp',
-                      col: col,
-                      url_portlet: 'http://xxxx', url_max: 'http://xxxx'
-                    });
-                });
-            };
-            // add portlet to column
-            var add_portlet = function( params ) {
-                    var col = params.col || 0;
-                    var comp = params.comp;
-                    comp.height = comp.height || 350;
-                    var title = comp.title || params.title || 'Portlet';
-                    //comp.collapsible = true;
-                    var cols = kanban.items.items;
-                    var column_obj = kanban.findById( cols[col].id );
-                    var portlet = {
-                        //collapsible: true,
-                        title: title,
-                        height: 50,
-                        mid: params.mid,
-                        id_status: params.id_status,
-                        //headerCfg: { style: 'background: #d44' },
-                        portlet_type: params.portlet_type,
-                        header: false,
-                        footer: false,
-                        footerCfg: { hide: true },
-                        //url_portlet: params.url_portlet,
-                        url_max: params.url_max,
-                        //tools: Baseliner.portalTools,  // tools are visible when header: true
-                        //collapsed: true,
-                        autoHeight: true,
-                        items: comp
-                    };
-                    var portlet_obj = column_obj.add( portlet );
-                    return portlet_obj;
-                    //column_obj.doLayout();
-            };
 
-            kanban.on('afterrender', function(cmp){
-                kanban.load_from_store( store_topics );
-                kanban.doLayout();
-                
-                // show/hide tools for the column 
-                var cols = kanban.findByType( 'kanbancolumn' );
-                for( var i = 0; i<cols.length; i++ ) {
-                    cols[i].header.on( 'mouseover', function(ev,obj){
-                        var col_obj = Ext.getCmp( obj.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
-                        if( col_obj != undefined ) {
-                            var t = col_obj.getTool('close');
-                            var w = col_obj.el.dom.offsetWidth;
-                            t.setStyle('display','block');
-                            t.setStyle('position','absolute');
-                            t.setStyle('margin-left', w-30 );
-                        }
-                    });
-                    cols[i].header.on( 'mouseout', function(ev,obj){
-                        var col_obj = Ext.getCmp( obj.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
-                        if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
-                        if( col_obj != undefined ) col_obj.getTool('close').hide();
-                    });
-                };
+                for( var k=0; k< statuses.length; k++ ) {
+                    status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler: check_column });
+                }
+
+                kanban.render_me();
+                if( c.on_ready ) c.on_ready();
+            } else {
+                Ext.Msg.alert( _('Error'), res.msg );
+            }
+        });
+    };
+
+    // add portlet to column
+    kanban.add_portlet = function( params ) {
+        var col = params.col || 0;
+        var comp = params.comp;
+        comp.height = comp.height || 350;
+        var title = comp.title || params.title || 'Portlet';
+        //comp.collapsible = true;
+        var cols = kanban.items.items;
+        var column_obj = kanban.findById( cols[col].id );
+        var portlet = {
+            //collapsible: true,
+            title: title,
+            height: 50,
+            mid: params.mid,
+            id_status: params.id_status,
+            //headerCfg: { style: 'background: #d44' },
+            portlet_type: params.portlet_type,
+            header: false,
+            footer: false,
+            footerCfg: { hide: true },
+            //url_portlet: params.url_portlet,
+            url_max: params.url_max,
+            //tools: Baseliner.portalTools,  // tools are visible when header: true
+            //collapsed: true,
+            autoHeight: true,
+            items: comp
+        };
+        var portlet_obj = column_obj.add( portlet );
+        return portlet_obj;
+        //column_obj.doLayout();
+    };
+
+    // method to reconfigure all columnwidths
+    kanban.reconfigure_columns = function(){
+        var cols = kanban.items.items;
+        var col_num = 0;
+        for( var i = 0; i<cols.length; i++ ) {
+            if( ! cols[i].hidden ) col_num++;
+        }
+        var col_width = 1/col_num;
+        for( var i = 0; i<cols.length; i++ ) {
+            cols[i].columnWidth = col_width;
+        };
+        kanban.doLayout();
+    };
+
+    kanban.load_topics = function( store, id_status ){
+        store.each( function(rec) {
+            if( id_status != undefined && rec.data.category_status_id != id_status ) return;
+            var t = String.format('{0} #{1}', rec.data.category_name, rec.data.topic_mid );
+            var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + rec.data.topic_mid + '</span></div>';
+            var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, rec.data.title);
+            //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
+            var col = statuses_hash[ rec.data.category_status_name ];
+            var comp = new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true, mid: rec.data.topic_mid });
+            comp.on('afterrender', function(){ 
+                this.ownerCt.body.on('dblclick',function(){ 
+                    var mid = rec.data.topic_mid;
+                    var title = rec.data.topic_name;
+                    var params = { topic_mid: mid, title: title };
+                    if( kanban.in_tab ) {
+                        Baseliner.add_tabcomp( '/topic/view?topic_mid=' + mid, title, params );
+                    } else {
+                        Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
+                            var win = new Ext.Window({
+                                layout: 'fit', 
+                                modal: true,
+                                autoScroll: true,
+                                style: { overflow: 'hide' },
+                                border: false,
+                                title: title,
+                                height: 600, width: 800, 
+                                maximizable: true,
+                                items: topic_panel
+                            });
+                            //topic_panel.on('afterrender', function(){ topic_panel.header.hide() } );
+                            topic_panel.title = undefined;
+                            win.show();
+                        });
+                    }
+                });
             });
+            kanban.add_portlet({ 
+              title: t,
+              comp: comp, 
+              mid: rec.data.topic_mid,
+              id_status: rec.data.category_status_id,
+              portlet_type: 'comp',
+              col: col,
+              url_portlet: 'http://xxxx', url_max: 'http://xxxx'
+            });
+        });
+    };
+
+    kanban.render_me = function(){
+        kanban.load_topics( store_topics );
+        kanban.doLayout();
+        
+        // show/hide tools for the column 
+        var cols = kanban.findByType( 'kanbancolumn' );
+        for( var i = 0; i<cols.length; i++ ) {
+            cols[i].header.on( 'mouseover', function(ev,obj){
+                var col_obj = Ext.getCmp( obj.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
+                if( col_obj != undefined ) {
+                    var t = col_obj.getTool('close');
+                    var w = col_obj.el.dom.offsetWidth;
+                    t.setStyle('display','block');
+                    t.setStyle('position','absolute');
+                    t.setStyle('margin-left', w-30 );
+                }
+            });
+            cols[i].header.on( 'mouseout', function(ev,obj){
+                var col_obj = Ext.getCmp( obj.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.id );
+                if( col_obj == undefined ) col_obj = Ext.getCmp( obj.parentNode.parentNode.parentNode.id );
+                if( col_obj != undefined ) col_obj.getTool('close').hide();
+            });
+        };
+    }
+
+    kanban.on('afterrender', function(cmp){
+        var topics = [];
+        // load data
+        if( ! store_topics ) {
+            if( Ext.isArray( c.topics ) && c.topics.length > 0 ) {
+                // create my own store
+                store_topics = new Baseliner.Topic.StoreList({
+                    baseParams: { start: 0, limit: 10, query_id: c.topics }   // query_id
+                });
+                store_topics.on('load', function(){
+                    store_topics.each( function(rec) {
+                        topics.push( rec.data.topic_mid );
+                    });
+                    kanban.load_workflow( topics );
+                });
+                store_topics.load();
+            } else {
+                // no topics to show
+            }
+        }
+        else {
+            store_topics.each( function(rec) {
+                topics.push( rec.data.topic_mid );
+            });
+            kanban.load_workflow( topics );
+        }
+    });
+
+    return kanban;
+};
+
+Baseliner.kanban_from_store = function( args ){
+    var kanban = Baseliner.kanban({
+        store: args.store,
+        on_ready: function(){
             //Baseliner.viewport.add( kanban );
             /* Baseliner.main.getEl().fadeOut({ duration: .2, easing: 'easeOut', remove: false, callback: function() {
                     Baseliner.viewport.add( kanban );
                     Baseliner.viewport.getLayout().setActiveItem( 1 );
                 }
             }); */
-            Baseliner.viewport.add( kanban );
-            Baseliner.viewport.getLayout().setActiveItem( 1 );
-        } else {
-            Ext.Msg.alert( _('Error'), res.msg );
+
+            // Baseliner.viewport.doLayout() ???
         }
     });
+    Baseliner.viewport.add( kanban );
+    Baseliner.viewport.getLayout().setActiveItem( kanban );
 };
 
 /*

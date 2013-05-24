@@ -7,20 +7,26 @@
     $show_menu => $c->config->{site}{show_menu} // 1
     $show_lifecycle => $c->config->{site}{show_lifecycle} // 1
     $show_js_reload => 0
+    $show_tabs => $c->config->{site}{show_tabs} // 1
     $banner => $c->config->{site}{banner}
 </%args>
+
 <%perl>
     if( $c->stash->{site_raw} ) {
+        $show_tabs = 0;
         $show_portal = 0;
         $show_menu  = 0;
         $show_main  = 0;
     }
+    $show_lifecycle and $show_lifecycle = $c->stash->{'can_lifecycle'};
+    $show_menu and $show_menu = $c->stash->{'can_menu'};
 </%perl>
 
 Ext.onReady(function(){
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     Ext.QuickTips.init();
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+    Baseliner.VERSION = '<% $Baseliner::VERSION %>';
     Baseliner.help_menu = new Ext.menu.Menu({});
     Baseliner.help_button = new Ext.Button({
        icon: '/static/images/icons/lightbulb_off.gif',
@@ -28,16 +34,20 @@ Ext.onReady(function(){
        hidden: true,
        menu: Baseliner.help_menu
     });
-    var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
+    var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
     search_box.on('keydown', function(f, e){ search_box.setSize( 300 ); });
+    Baseliner.search_box_go = function(q) {
+        Baseliner.add_tabcomp('/comp/search_results.js', undefined,
+                { query: q || Baseliner.search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+    };
     search_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
-            Baseliner.add_tabcomp('/comp/search_results.js', undefined,
-                { query: search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+            Baseliner.search_box_go();
             search_box.setSize( 120 );
         }
     });
+    Baseliner.search_box = search_box;
     Baseliner.toggleCalendar = function(){
         var bc = Baseliner.calpanel;
         //if( bc.collapsed ) bc.toggleCollapse()
@@ -60,13 +70,16 @@ Ext.onReady(function(){
         tab.setTitle( '&nbsp;' );
     };
     Baseliner.help_button.on('click', Baseliner.help_off );
-    var tb = new Ext.Toolbar({
+    Baseliner.main_toolbar = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
-        //height: 26,
-        height: <% $c->config->{toolbar_height} // 26 %>,
+        height: <% $c->config->{toolbar_height} // 28 %>,
         items: [
-            '<img src="/static<% $c->stash->{theme_dir} %>/images/<% $c->config->{logo_filename} || 'logo.jpg' %>" style="border:0px;"/>',
+% if( $c->config->{logo_file} ) {
+            '<img src="<% $c->config->{logo_file} %>" style="border:0px;"/>',
+% } else {
+            '<img src="<% $c->stash->{theme_dir} %>/images/<% $c->config->{logo_filename} || 'logo.jpg' %>" style="border:0px;"/>',
+% }
             '-',
 % if( $show_menu && scalar @{ $c->stash->{menus} || [] } ) {  print join ',',@{ $c->stash->{menus} }; } else { print '{ }' }
             ,
@@ -92,20 +105,21 @@ Ext.onReady(function(){
                          { text=>_loc('Inbox'),
                              handler=>\'function(){ Baseliner.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.gif" } ); }',
                              icon   =>'/static/images/icons/envelope.gif' },
-                         # FIXME { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
+                         # XXX  { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
+                         { text=>_loc('Preferences'), icon=>'/user/avatar/image.png', handler=>\'function(){ Baseliner.change_avatar(); }' },
                          { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
                     ];
                     if( $c->config->{authentication}->{default_realm} eq 'none' ) { 
                         $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
                     }
                     $c->stash->{can_surrogate} and $menu->push( { text=>_loc('Surrogate...'), handler=> \'function(){ Baseliner.surrogate();}', index=>80, icon=>'/static/images/icons/users.gif' } );
-                    print js_dumper { text=>$c->username , menu=> [
-            sort {
-                $a->{index}||=0;
-                $b->{index}||=0;
-                $a->{index} <=> $b->{index}
-            } _array($menu) ] };
+                    print js_dumper { xtype=>'button', text=>'<b>'.$c->username.'</b>' , menu=> [
+                        sort {
+                            $a->{index}||=0;
+                            $b->{index}||=0;
+                            $a->{index} <=> $b->{index}
+                        } _array($menu) ] };
                 }else{
                     print js_dumper { text=>_loc('Login'), handler=>\'function(){ Baseliner.login(); }' };
                 }
@@ -151,10 +165,14 @@ Ext.onReady(function(){
             ]
     });
 
+%   if( $show_lifecycle ) {
+        Baseliner.explorer = new Baseliner.Explorer({}),
+%   }
+
     Baseliner.main = new Ext.Panel({
         layout: 'border',
         items: [
-% if( $c->stash->{site_raw} ) {
+% if( ! $show_tabs ) {
             new Ext.TabPanel({ 
                 region: 'center',
                 id:'main-panel',
@@ -166,9 +184,9 @@ Ext.onReady(function(){
                 activeTab: 0
             })
 % } else {
-            tb,
+            Baseliner.main_toolbar,
 %   if( $show_lifecycle ) {
-            Baseliner.lifecycle,
+            Baseliner.explorer,
 %   }
 %   if( $show_calendar ) {
             Baseliner.calpanel,
@@ -201,12 +219,18 @@ Ext.onReady(function(){
         layout: 'card',
         activeItem: 0,
         id: 'main-view',
-        //renderTo: Ext.getBody(),
         renderTo: 'main-div',
         items: [ Baseliner.main ]
     });
 
     var tabpanel = Ext.getCmp('main-panel');
+    
+    if( false ) // disabled for now
+        tabpanel.on('tabchange', function(tp,tab){
+            if( tab && tab.id ) 
+                window.location.hash = '!/tab:' + tab.id;   
+        });
+    
     var first_comp = tabpanel.getComponent( 0 );
     if( first_comp != undefined ) {
         if( first_comp.tab_icon ) 
@@ -216,8 +240,6 @@ Ext.onReady(function(){
     }
 
 % if( $show_portal eq '1' ) {
-    //viewport.on('show', function(){
-    //Baseliner.addNewTabComp('/site/portal/portal.mas', _('Portal') );
 %   for my $portlet ( _array $c->stash->{portlets} ) {
 %       if( my $pcomp = $portlet->url_comp ) {
             Baseliner.portalAddCompUrl({ title: _('<% $portlet->title %>'),
@@ -232,7 +254,6 @@ Ext.onReady(function(){
     //  ----- disabled for now ---- Baseliner.startRunner();
 
     // Check open tab
-    // setTimeout(function(){
     var getParams = document.URL.split("?");
     var tab_params = {};
     if( getParams!=undefined && getParams[1] !=undefined ) {
@@ -254,7 +275,7 @@ Ext.onReady(function(){
     Ext.Msg.alert('<% $tab->{title} %>', '<% $tab->{message} %>');
 % }
 
-% if( $c->stash->{site_raw} ) {
+% if( ! $show_tabs ) {
     var tabpanel = Ext.getCmp('main-panel');
     tabpanel.header.setVisibilityMode(Ext.Element.DISPLAY);
     tabpanel.header.hide();
@@ -279,10 +300,17 @@ Ext.onReady(function(){
 setTimeout(function(){
     Ext.get('bali-loading').remove();
     Ext.get('bali-loading-mask').fadeOut({
-	    remove:true
+        remove:true,
+        callback: function(){
+            /* var bw = $('#bali-browser-warn').show();
+            var bw = $('#bali-browser-warn-mid').show();
+            $("#bali-browser-version").html('4.5');
+            */
+        }
     });
 }, 2050);
 
 if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
     window.onbeforeunload=  function(){ if( Baseliner.is_in_edit() ) return '' };
 }
+

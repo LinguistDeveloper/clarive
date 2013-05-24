@@ -1,15 +1,12 @@
 (function(params){
     var ps = 30;
-    var rule_store = new Baseliner.JsonStore({
-        root: 'data' , 
-        remoteSort: true,
-        totalProperty:"totalCount", 
-        url: '/rule/list',
-        baseParams: Ext.apply({ start:0, limit: ps}, params),
-        fields: [ 'mid','_id','_parent','_is_leaf','type', 'item','class','versionid','ts','tags','data','properties','icon','collection']
+    var rules_store = new Baseliner.JsonStore({
+        url: '/rule/grid', root: 'data',
+        id: 'id', totalProperty: 'totalCount', 
+        fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'rule_active', 'event_name', 'id' ]
     });
     var search_field = new Baseliner.SearchField({
-        store: rule_store,
+        store: rules_store,
         width: 140,
         params: {start: 0, limit: ps },
         emptyText: _('<search>')
@@ -18,7 +15,29 @@
     var rule_del = function(){
         var sm = rules_grid.getSelectionModel();
         if( sm.hasSelection() ) {
-            Baseliner.ajaxEval( '/rule/delete', { id_rule: sm.getSelected().data.id }, function(res){
+            Baseliner.confirm( _('Delete rule %1?', sm.getSelected().data.rule_name ), function(){
+                var id_rule = sm.getSelected().data.id;
+                Baseliner.ajaxEval( '/rule/delete', { id_rule: id_rule }, function(res){
+                    if( res.success ) {
+                        rules_store.reload();
+                        Baseliner.message( _('Rule'), res.msg );
+                        // remove tab if any
+                        var tab_arr = tabpanel.find( 'id_rule', id_rule );
+                        if( tab_arr.length > 0 ) {
+                            tabpanel.remove( tab_arr[0] );
+                        }
+                    } else {
+                        Baseliner.error( _('Error'), res.msg );
+                    }
+                });
+            });
+        }
+    };
+    var rule_activate = function(){
+        var sm = rules_grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            var activate = sm.getSelected().data.rule_active > 0 ? 0 : 1;
+            Baseliner.ajaxEval( '/rule/activate', { id_rule: sm.getSelected().data.id, activate: activate }, function(res){
                 if( res.success ) {
                     rules_store.reload();
                     Baseliner.message( _('Rule'), res.msg );
@@ -33,25 +52,29 @@
         if( sm.hasSelection() ) {
             Baseliner.ajaxEval( '/rule/get', { id_rule: sm.getSelected().data.id }, function(res){
                 if( res.success ) {
-                    rule_add( res.rec );
+                    rule_editor( res.rec );
                 } else {
                     Baseliner.error( _('Error'), res.msg );
                 }
             });
         }
     };
-    var rule_add = function(rec){
+    var rule_add = function(){
+        rule_editor({});
+    };
+    var rule_editor = function(rec){
         Baseliner.ajaxEval( '/comp/rule_new.js', { rec: rec }, function(comp){
             if( comp ) {
-                var win = new Ext.Window({
+                var win = new Baseliner.Window({
                     title: _('Edit Rule'),
                     width: 900,
                     items: [ comp ]
                 });
-                win.show();
-                win.on('close', function(){
-                    rule_store.reload();
+                comp.on('destroy', function(){
+                    win.close()
+                    rules_store.reload();
                 });
+                win.show();
             }
         });
     };
@@ -65,12 +88,9 @@
         tree.root.expand();
     };
 
-    var rules_store = new Baseliner.JsonStore({
-        url: '/rule/grid', root: 'data',
-        id: 'id', totalProperty: 'totalCount', 
-        fields: [ 'rule_name', 'rule_type', 'id' ]
-    });
     var render_rule = function( v,metadata,rec ) {
+        if( rec.data.rule_active == 0 ) 
+            v = String.format('<span style="text-decoration: line-through">{0}</span>', v );
         return String.format(
             '<div style="float:left"><img src="{0}" /></div>&nbsp;'
             + '<b>{2}: {1}</b>',
@@ -88,7 +108,7 @@
             forceFit: true,
             getRowClass : function(rec, index, p, store){
                 //p.body = String.format( '<div style="margin: 0 0 0 32;"><table><tr>'
-                p.body = String.format( '<div style="margin: 0 0 0 32;">{0}</div>', 'when an event of type "New Topic" fires' );
+                p.body = String.format( '<div style="margin: 0 0 0 32;">{0}</div>', _('%1 for event "%2"', _(rec.data.rule_when), rec.data.rule_event ) );
                 return ' x-grid3-row-expanded';
             }
         },
@@ -104,6 +124,7 @@
             { xtype:'button', icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
             { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
+            { xtype:'button', icon: '/static/images/icons/activate.png', cls: 'x-btn-icon', handler: rule_activate },
             { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon' }
         ]
     });
@@ -115,7 +136,7 @@
             if( tab_arr.length > 0 ) {
                 tabpanel.setActiveTab( tab_arr[0] );
             } else {
-                rule_flow_show( rec.data.id, rec.data.rule_name );
+                rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event );
             }
         }
     });
@@ -160,28 +181,50 @@
         }
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
-                var show_win = function(items) {
-        var win = new Ext.Window({
-            title: _('Edit'),
-                        items: items,
-            width: 500,
-            height: 400
-        });
-        win.show();
-    };
+                var show_win = function(item, opts) {
+                    var win = new Baseliner.Window(Ext.apply({
+                        layout: 'fit',
+                        title: _('Edit'),
+                        items: item
+                    }, opts));
+                    item.on('destroy', function(){
+                        //console.log( item.data );
+                        if( item.data ) node.attributes.data = item.data; 
+                        win.close();
+                    });
+                    win.show();
+                };
                 if( res.form ) {
-                    Baseliner.ajaxEval( res.form, {}, function(comp){
-                        show_win( comp );
+                    Baseliner.ajaxEval( res.form, { data: node.attributes.data }, function(comp){
+                        var params = {};
+                        var save_form = function(){
+                            form.data = form.getForm().getValues();
+                            form.destroy();
+                        };
+                        var form = new Ext.FormPanel({ 
+                            frame: false, forceFit: true, defaults: { msgTarget: 'under' },
+                            width: 800,
+                            height: 500,
+                            bodyStyle: { padding: '4px', "background-color": '#eee' },
+                            tbar: [
+                                { xtype:'button', text:_('Save'), handler: save_form },
+                                { xtype:'button', text:_('Cancel'), handler: function(){ form.destroy() } }
+                            ],
+                            items: comp
+                        });
+                        show_win( form );
                     });
                 } else {
-                    var comp = new Baseliner.DataViewer({ data: res.config });
+                    var node_data = Ext.apply( res.config, node.attributes.data );
+                    var comp = new Baseliner.DataEditor({ data: node_data });
+                    show_win( comp, { width: 800, height: 400 } );
                 }
             } else {
                 Baseliner.error( _('Error'), res.msg );
             }
         });
     };
-    var rule_flow_show = function( id_rule, name ) {
+    var rule_flow_show = function( id_rule, name, event_name, rule_event ) {
         var drop_handler = function(e) {
             var n1 = e.source.dragData.node;
             var n2 = e.target;
@@ -204,13 +247,60 @@
             //requestMethod:'GET',
             //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
         });
-        var rule_save = function(){
+        var rule_save = function(opt){
             var root = rule_tree.root;
             var stmts = encode_tree( root );
             var json = Ext.util.JSON.encode( stmts );
             Baseliner.ajaxEval( '/rule/stmts_save', { id_rule: id_rule, stmts: json }, function(res) {
                 if( res.success ) {
                     Baseliner.message( _('Rule'), res.msg );
+                    if( opt.callback ) {
+                        opt.callback( res );
+                    }
+                } else {
+                    Baseliner.error( _('Error saving rule'), res.msg );
+                }
+            });
+        };
+        var rule_load = function(){
+            rule_tree_loader.load( rule_tree.root );
+            rule_tree.root.expand();
+        };
+        var rule_dsl = function(){
+            var root = rule_tree.root;
+            //rule_save({ callback: function(res) { } });
+            var stmts = encode_tree( root );
+            var json = Ext.util.JSON.encode( stmts );
+            Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, stmts: json, event_key: rule_event }, function(res) {
+                if( res.success ) {
+                    var editor;
+                    var idtxt = Ext.id();
+                    var data_txt = new Ext.form.TextArea({ region:'west', width: 140, value: res.event_data_yaml });
+                    var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
+                    var dsl_cons = new Ext.form.TextArea({ style:'color: #191; background-color:#000;' });
+                    var dsl_run = function(){
+                        Baseliner.ajaxEval( '/rule/dsl_try', { data: data_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
+                            dsl_cons.setValue( res.msg ); 
+                        });
+                    };
+                    var win = new Baseliner.Window({
+                       layout: 'border', width: 800, height: 600, maximizable: true,
+                       tbar: [ { text:_('Run'), icon:'/static/images/icons/run.png', handler: dsl_run } ],
+                       items: [
+                           data_txt,
+                           { region:'center', xtype:'panel', height: 400, items:dsl_txt  },
+                           { xtype:'panel', items:dsl_cons, region:'south', split: true, height:200, layout:'fit' }
+                       ]
+                    });
+                    dsl_txt.on('afterrender', function(){
+                        editor = CodeMirror.fromTextArea( dsl_txt.getEl().dom , Ext.apply({
+                               lineNumbers: true,
+                               tabMode: "indent", smartIndent: true,
+                               matchBrackets: true
+                            }, Baseliner.editor_defaults )
+                        );
+                    });
+                    win.show();
                 } else {
                     Baseliner.error( _('Error saving rule'), res.msg );
                 }
@@ -250,9 +340,11 @@
             },
             rootVisible: true,
             tbar: [ 
-                { xtype:'button', text: _('Save'), handler: rule_save }
+                { xtype:'button', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save },
+                { xtype:'button', text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load },
+                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: rule_dsl }
             ],
-            root: { text: _('Start'), draggable: false, id: 'root', expanded: true },
+            root: { text: _('Start: %1', event_name), draggable: false, id: 'root', expanded: true },
         });
         var tab = tabpanel.add( rule_tree ); 
         tabpanel.setActiveTab( tab );
@@ -280,8 +372,23 @@
         region: 'center',
         items: []
     });
+    var palette_fake_store = {  // the SearchField needs a store, but the tree doesnt have one
+        baseParams: {},
+        reload: function(config){
+            var lo = palette.getLoader();
+            lo.baseParams = palette_fake_store.baseParams;
+            lo.load( palette.root );
+        }
+    };
+    var search_palette = new Baseliner.SearchField({
+        store: palette_fake_store,
+        width: 220,
+        params: {start: 0, limit: ps },
+        emptyText: _('<search>')
+    });
     var palette = new Ext.tree.TreePanel({
         region: 'east',
+        title: _('Palette'),
         width: 250,
         autoScroll: true,
         split: true,
@@ -290,6 +397,7 @@
         enableDrag: true,
         collapsible: true,
         resizable: true,
+        tbar: [search_palette],
         dataUrl: '/rule/palette',
         rootVisible: false,
         useArrows: true,

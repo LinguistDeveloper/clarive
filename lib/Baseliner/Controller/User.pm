@@ -49,24 +49,24 @@ sub actions : Local {
 }
 
 sub info : Local {
-    my ($self, $c, $username) = @_;
+    my ( $self, $c, $username ) = @_;
     $c->stash->{swAsistentePermisos} = 0;
 
-    if($username eq ''){
-    $username = $c->username;
-    $c->stash->{swAsistentePermisos} = 1;
+    if ( $username eq '' ) {
+        $username = $c->username;
+        $c->stash->{swAsistentePermisos} = 1;
     }
-    
-    my $u = $c->model('Users')->get( $username );
-    if( ref $u ) {
-    my $user_data = $u->{data} || {};
-    $c->stash->{username}  = $username;
-    $c->stash->{realname}  = $u->{realname};
-    $c->stash->{alias} = $u->{alias};
-    $c->stash->{email}  = $u->{email};
-    $c->stash->{phone}  = $u->{phone};	
-    
-    # Data from LDAP, or other user data providers:
+
+    my $u = $c->model('Users')->get($username);
+    if ( ref $u ) {
+        my $user_data = $u->{data} || {};
+        $c->stash->{username} = $username;
+        $c->stash->{realname} = $u->{realname};
+        $c->stash->{alias}    = $u->{alias};
+        $c->stash->{email}    = $u->{email};
+        $c->stash->{phone}    = $u->{phone};
+
+        # Data from LDAP, or other user data providers:
         $c->stash->{$_} ||= $user_data->{$_} for keys %$user_data;
     }
     $c->stash->{template} = '/comp/user_info.mas';
@@ -143,6 +143,34 @@ sub infodetail : Local {
                 };
     }
     $c->stash->{json} = { data=>\@rows};		
+    $c->forward('View::JSON');    
+}
+
+sub user_data : Local {
+    my ($self, $c) = @_;
+    try {
+        my $user = DB->BaliUser->search({ username => $c->username })->first;
+        _fail _loc('User not found: %1', $c->username ) unless $user;
+        $c->stash->{json} = { data=>{ $user->get_columns }, msg=>'ok', success=>\1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 };
+    };
+    $c->forward('View::JSON');    
+}
+
+sub gen_api_key : Local {
+    my ($self, $c) = @_;
+    try {
+        my $user = DB->BaliUser->search({ username => $c->username })->first;
+        _fail _loc('User not found: %1', $c->username ) unless $user;
+        my $new_key = _md5 $c->username . ( int ( rand( 32 * 32 ) % time ) ) ;
+        $user->update({ api_key => $new_key });
+        $c->stash->{json} = { api_key=>$new_key, msg=>'ok', success=>\1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 };
+    };
     $c->forward('View::JSON');    
 }
 
@@ -337,14 +365,14 @@ sub tratar_proyectos{
         my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
         my $dbh = $db->dbh;
         my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
-    $sth->bind_param( 1, $user_name );
-    $sth->execute();
-    @roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
+        $sth->bind_param( 1, $user_name );
+        $sth->execute();
+        @roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
     }
     else{
-    foreach $role (_array $roles_checked){
-        push @roles_checked, $role;
-    }
+        foreach $role (_array $roles_checked){
+            push @roles_checked, $role;
+        }
     }
 
     foreach $role ( @roles_checked ){
@@ -396,14 +424,14 @@ sub tratar_proyectos_padres(){
     my $sth;
     
     if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-    $sth = $dbh->prepare("SELECT MID FROM BALI_PROJECT START WITH MID = ? AND ACTIVE = 1 CONNECT BY PRIOR MID = ID_PARENT AND ACTIVE = 1");
+        $sth = $dbh->prepare("SELECT MID FROM BALI_PROJECT START WITH MID = ? AND ACTIVE = 1 CONNECT BY PRIOR MID = ID_PARENT AND ACTIVE = 1");
     }
     else{
-    ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
-    $sth = $dbh->prepare("WITH N(MID) AS (SELECT MID FROM BALI_PROJECT WHERE MID = ? AND ACTIVE = 1
-                        UNION ALL
-                        SELECT NPLUS1.MID FROM BALI_PROJECT AS NPLUS1, N WHERE N.MID = NPLUS1.ID_PARENT AND ACTIVE = 1)
-                        SELECT N.MID FROM N ");
+        ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
+        $sth = $dbh->prepare("WITH N(MID) AS (SELECT MID FROM BALI_PROJECT WHERE MID = ? AND ACTIVE = 1
+                            UNION ALL
+                            SELECT NPLUS1.MID FROM BALI_PROJECT AS NPLUS1, N WHERE N.MID = NPLUS1.ID_PARENT AND ACTIVE = 1)
+                            SELECT N.MID FROM N ");
     }
     
     given ($accion) {
@@ -806,8 +834,12 @@ sub change_pass : Local {
 }
 
 sub avatar : Local {
-    my ( $self, $c, $username ) = @_;
+    my ( $self, $c, $username, $dummy_filename ) = @_;
     my ($file, $body, $filename, $extension);
+    if( ! $dummy_filename ) {
+        $dummy_filename = $username;
+        $username = $c->username; 
+    }
     $filename = "$username.png";
     try {
         $file = _dir( $c->path_to( "/root/identicon" ) );
@@ -840,6 +872,43 @@ sub avatar : Local {
     $c->res->content_type('image/png');
 }
 
+sub avatar_refresh : Local {
+    my ( $self, $c ) = @_;
+    my $p      = $c->req->params;
+    try {
+        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        unlink $avatar or _fail $!;
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Avatar refreshed' ) } ;            
+    } catch {
+        my $err = shift;
+        _error "Error refreshing avatar: " . $err;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub avatar_upload : Local {
+    my ( $self, $c ) = @_;
+    my $p      = $c->req->params;
+    my $filename = $p->{qqfile};
+    my ($extension) =  $filename =~ /\.(\S+)$/;
+    $extension //= '';
+    my $f =  _file( $c->req->body );
+    _log "Uploading avatar " . $filename;
+    try {
+        require File::Copy;
+        my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        _debug "Avatar file=$avatar";
+        File::Copy::copy( "$f", "$avatar" ); 
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Changed user avatar' ) } ;            
+    } catch {
+        my $err = shift;
+        _error "Error uploading avatar: " . $err;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+    $c->forward( 'View::JSON' );
+}
+
 sub identicon {
     my ($self, $c, $username)=@_;
     my $user = $c->model('Baseliner::BaliUser')->search({ username=>$username })->first;
@@ -848,7 +917,7 @@ sub identicon {
             require Image::Identicon;
             my $salt = '1234';
             my $identicon = Image::Identicon->new({ salt=>$salt });
-            my $image = $identicon->render({ code=> int(rand(999999999999999)), size=>32 });
+            my $image = $identicon->render({ code=> int(rand( 2 ** 32)), size=>32 });
             return $image->{image}->png;
     };
     if( ref $user ) {
@@ -868,6 +937,46 @@ sub identicon {
         _debug "User not found, avatar generated anyway";
         return $generate->();
     }
+}
+
+sub duplicate : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        my $r = $c->model('Baseliner::BaliUser')->find({ mid => $p->{id_user} });
+        if( $r ){
+            my $user;
+            my $new_user;
+            my $user_mid = master_new 'user' => 'Duplicate of ' . $r->username => sub {
+                my $mid = shift;
+                $new_user = $r->username . '-' . $mid;
+                $user = Baseliner->model('Baseliner::BaliUser')->create(
+                    {
+                        mid			=> $mid,
+                        username    => $new_user,
+                    }
+                );
+            };
+            
+            my @rs_roles =  $c->model('Baseliner::BaliRoleUser')->search({ username => $r->username })->hashref->all;
+            for (@rs_roles){
+                Baseliner->model('Baseliner::BaliRoleUser')->create(
+                    {
+                        username    => $new_user,
+                        id_role     => $_->{id_role},
+                        ns          => $_->{ns},
+                        id_project  => $_->{id_project},
+                    }
+                );
+            }
+        }
+        $c->stash->{json} = { success => \1, msg => _loc("User duplicated") };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error duplicating user') };
+    };
+
+    $c->forward('View::JSON');  
 }
 
 1;

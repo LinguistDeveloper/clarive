@@ -1,32 +1,90 @@
-<head>
-<link href="/static/metal/metal.css" rel="stylesheet" type="text/css" />
-<!-- Fixes the "margin: x auto" bug -->
-<script src="/static/metal/IEMarginFix.js" type="text/javascript"></script>
-</head>
-<body id="metal-div_main">
-<div id="metal-div_main"> 
-<div id="metal-container">
-    <div style="height: 15px"></div>
-    <div id="metal-content_top"></div>
-    <div id="metal-content_bg" >
-        <div id="metal-content">
-            <div id="metal-content_text">
-                <h1><% _loc('About Baseliner') %></h1>
-                <div style="height: 15px"></div>
-                <table border="0" cellpadding="4" width='80%'>
-% for( @{ $c->stash->{about} || [] } )  {
-                    <tr><td valign='top'><b><% _loc($_->{name}) %></td><td><% _loc($_->{value}) %></td>
-                    <tr><td colspan=2>&nbsp;</td>
-% }
-                </table>
-            </div>
-        </div>
+<%args>
+    $about => []
+    $environment_vars => []
+    $copyright => []
+    $licenses => []
+    $third_party => ''
+</%args>
+<div id="boot" class="container_24" style="margin: 30px 10px 10px 30px">
+    <div class=    <div class="grid_24">
+        <img class="logo" src="<% $c->config->{login_logo} || '/static/images/logo_big.jpg' %>"></img>
+        <hr />
     </div>
-    <div id="metal-content_bottom"></div>
-</div>
-</div>
-</body>
-<%filter>
-    s/;/<br>/g
-</%filter>
+    <div class=    <div class="grid_24">
+        <h1><% _loc('Info') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+% for( @$about )  {
+<tr><td valign='top'><b><% _loc($_->{name}) %></b></td><td><% _loc($_->{value}) %></td>
+            </tr>
+% }
+        </table>
+    </div>
+% if( @$environment_vars ) {
+    <div class="grid_24">
+        <h1><% _loc('Environment') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+% for( @$environment_vars )  {
+<tr><td valign='top'><b><% _loc($_->{name}) %></b></td><td><% _loc($_->{value}) %></td>
+            </tr>
+% }
 
+        </table>
+    </div>
+% }
+
+% if( @$licenses ) {
+    <div class="grid_24">
+        <h1><% _loc('Licenses') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+% for( @$licenses )  {
+            <tr>
+                <td valign='top' style="width:30%"><b><% _loc($_->{name}) %></b></td>
+                    <td>
+                        <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $_->{text} %></textarea>
+                    </td>
+            </tr>
+% }
+
+        </table>
+    </div>
+% }
+
+% if( @$copyright ) {
+    <div class="grid_24">
+        <h1><% _loc('Copyright Notices') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+% for( @$copyright )  {
+            <tr>
+                <td valign='top' style="width:30%"><b><% _loc($_->{name}) %></b></td>
+                    <td>
+                        <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $_->{text} %></textarea>
+                    </td>
+            </tr>
+% }
+
+        </table>
+    </div>
+% }
+    
+    <div class="grid_24">
+        <h1><% _loc('Third Party Notices') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+            <tr>
+                <td>
+                    <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $third_party %></textarea>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>

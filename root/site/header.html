@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8">
 <%perl>
     my $lang = $c->language;
 </%perl>
@@ -13,6 +14,7 @@
     <script type="text/javascript" src="/comp/topic/topic_lib.js"></script>
     <script type="text/javascript" src="/site/panelresizer.js"></script>
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
+    <!-- script type="text/javascript" src="/static/pdfjs/pdf.min.js"></script -->
 
     <!-- DatePickerPlus - Ext -->
     <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus.js"></script> 
@@ -26,9 +28,24 @@
     <script src="/static/flot/jquery.flot.js"></script>
     <script src="/static/flot/jquery.flot.pie.js"></script>
     <script src="/static/flot/jquery.flot.orderBars.js"></script>
-    <script src="/static/flot/jquery.flot.resize.js"></script>
+    <!-- errors with latest jquery script src="/static/flot/jquery.flot.resize.js"></script -->
     <script src="/static/flot/flot.js"></script>
 
+    <!-- The JIT -->
+    <script src="/static/jit/jit.js"></script>
+
+    <!-- JSGantt -->
+    <!--
+    <link rel="stylesheet" type="text/css" href="/static/jsgantt.css" />
+    <script language="javascript" src="/static/jsgantt.js"></script>
+    -->
+
+    <!-- CLEditor -->
+    <link rel="stylesheet" href="/static/cleditor/jquery.cleditor.css">
+    <script type="text/javascript" src="/static/cleditor/jquery.cleditor.min.js"></script>
+    
+    <!-- Ace -->
+    <script type="text/javascript" src="/static/ace/ace.js"></script>
 
     <!-- CodeMirror -->
     <link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
@@ -66,7 +83,11 @@
         }
     </style>
 
-    <script type="text/javascript" src="/site/lifecycle.js"></script>
+    <!-- Editors: Ace, CLEditor, etc. -->
+    <script type="text/javascript" src="/site/editors.js"></script>
+
+    <!--  -->
+    <script type="text/javascript" src="/site/explorer.js"></script>
 
     <!-- Portal Stuff -->
     <script type="text/javascript" src="/site/portal/Portal.js"></script>
@@ -88,31 +109,20 @@
     <!-- model depends on superbox -->
     <script type="text/javascript" src="/site/model.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="/site/960-Grid-System/code/css/960_24_col.css" />
-    <!-- Twitter Bootstrap
-    <link rel="stylesheet/less" type="text/css" href="/site/bootstrap.less" />
-    <script type="text/javascript" src="/site/less.js"></script>
-    -->
-    <!--<link rel="stylesheet/less" type="text/css" href="/site/960-Grid-System/code/css/reset.css" />-->
-    <!--<link rel="stylesheet/less" type="text/css" href="/site/960-Grid-System/code/css/text.css" />-->
-    <!-- link rel="stylesheet" type="text/css" href="/site/960-Grid-System/code/css/demo.css" / -->
-    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
-    <link rel="stylesheet" type="text/css" href="/site/boot.css" /> 
-    <!-- #reset namespace
-    <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
-    -->
-    
     <!-- Cal -->
     <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.css' />
     <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.print.css' media='print' />
     <script type='text/javascript' src='/static/fullcalendar/fullcalendar.min.js'></script>
 
-    <!-- TreeGrid -->
-    <link rel="stylesheet" type="text/css" href="/static/gridtree/css/treegrid.css" />
-    <script type="text/javascript" src="/static/gridtree/treegrid.js"></script>
+    <!-- Treegrid -->
+    <link rel='stylesheet' type='text/css' href='/static/gridtree/css/treegrid.css' />
+    <script type='text/javascript' src='/static/gridtree/treegrid.js'></script>
     
     <!-- final css override -->
     <link rel="stylesheet" type="text/css" href="/static/final.css" />
+    <link rel="stylesheet" type="text/css" href="/static/sprites.css" />
+    
+    <script type='text/javascript' src='/static/latinise.js'></script>
 
     <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
@@ -138,5 +148,15 @@
 <div id='run-panel'></div>
 <div id='main-div'></div>
 
-<!-- Preloading some images used in grids -->
-<!-- & preload_images.html & -->
+<div id="bali-browser-warn" style="display: none; position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>
+<div id="bali-browser-warn-mid" style="display: none; position:absolute; left:35%; top:40%; padding:2px; z-index:20001; height:auto;">
+  <center>
+      <div id="boot" role="dialog">
+          <h2><% _loc('Browser Warning') %></h2>
+          <p><% _loc("This browser is not supported by %1", $c->config->{name} ) %>
+          <div id="bali-browser-ver"></div>
+          </p>
+      </div>
+  </center>
+</div>
+

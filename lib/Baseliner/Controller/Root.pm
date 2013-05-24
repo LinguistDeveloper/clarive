@@ -1,8 +1,11 @@
 package Baseliner::Controller::Root;
-use strict;
-use warnings;
-use base 'Catalyst::Controller';
+use Baseliner::Plug;
+BEGIN { extends 'Catalyst::Controller'; };
 use Baseliner::Utils;
+
+
+register 'action.home.show_lifecycle' => { name => 'User can access the lifecycle panel' };
+register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 
 use Try::Tiny;
 
@@ -34,6 +37,9 @@ sub begin : Private {
     $c->res->headers->header( 'Cache-Control' => 'no-cache');
     $c->res->headers->header( Pragma => 'no-cache');
     $c->res->headers->header( Expires => 0 );
+    if( $c->req->path eq 'logout' ) {
+        return 1;
+    }
 
     $self->_set_user_lang($c);
 
@@ -52,21 +58,41 @@ sub begin : Private {
     #};
 }
 
+=head2 auto
+
+auto centralizes all auhtentication check and dispatch. 
+
+=cut
 sub auto : Private {
     my ( $self, $c ) = @_;
+    my $last_msg = '';
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     return 1 if $c->stash->{auth_skip};
     return 1 if $c->req->path eq 'i18n/js';
-    #_debug "SESSION USER OBJ: " . $c->session->{user};
-    _debug "USER_EXISTS: " . $c->user_exists;
-    #_debug "SESSION: " . _dump( $c->session ); 
     return 1 if try { $c->session->{user} // 0 } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
+
+    # sessionid param?
+    my $sid = $c->req->params->{sessionid} // $c->req->headers->{sessionid};
+    return 1 if $sid && do {
+        $last_msg = _loc( 'invalid sessionid' );
+        #$c->delete_session('switching to session: ' . $sid);
+        $c->_sessionid($sid);
+        $c->reset_session_expires;
+        $c->set_session_id($sid);
+        $c->_tried_loading_session_data(0);
+        $c->session_is_valid;    
+    };
+    
+    # auth check skip
+    return 1 if try { $c->user_exists } catch { 0 };
+    return 1 if $path eq '/logout';
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
+    return 1 if $path =~ /\.(css)$/;
+
     # saml?
-    if( $c->config->{saml_auth} eq 'on' ) {
+    if( exists $c->config->{saml_auth} && $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
-	$c->change_session_expires( 1_000_000_000 );
         return 1 if $saml_username;
     }
     # reject request
@@ -78,12 +104,16 @@ sub auto : Private {
     } elsif( $c->request->params->{fail_on_auth} ) {
         $c->response->status( 401 );
         $c->response->body("Unauthorized");
+    } elsif( $c->stash->{auth_basic} ) {
+        my $ret = $c->forward('/auth/login_basic');
+        return $ret; 
     } else {
         #$c->forward('/auth/logoff');
         $c->stash->{after_login} = '/' . $path;
         my $qp = $c->req->query_parameters // {};
         $c->stash->{after_login_query} = join '&', map { "$_=$qp->{$_}" } keys %$qp;
         $c->response->status( 401 );
+        $c->stash->{last_msg} //= $last_msg;
         $c->forward('/auth/logon');
     }
     return 0;
@@ -142,7 +172,9 @@ sub theme : Private {
     }
     $prefs->{theme} ||= $c->config->{force_theme} || $c->config->{default_theme}; # default
     my $theme = $prefs->{theme} ? '_' . $prefs->{theme} : '';
-    my $theme_dir = $prefs->{theme} ? '/themes/' . $prefs->{theme} : '';
+    my $theme_dir = $prefs->{theme}
+        ? ( $prefs->{theme} =~ /^\// ? $prefs->{theme} : ( '/static/themes/' . $prefs->{theme} ) )
+        : '';
     $c->stash->{theme_dir} = $theme_dir;
     $c->session->{theme_dir} = $theme_dir;
 }
@@ -199,10 +231,10 @@ sub index:Private {
     $c->forward('/user/can_surrogate');
     if( $c->username ) {
         my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
-        $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>[ @actions ]);
+        $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions );
         $c->stash->{portlets} = [
             grep { $_->active }
-            $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>[ @actions ])
+            $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>\@actions )
         ];
         my @features_list = Baseliner->features->list;
         # header_include hooks
@@ -216,6 +248,8 @@ sub index:Private {
     $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
 
     $c->stash->{show_js_reload} = $ENV{BASELINER_DEBUG} && $c->has_action('action.admin.develop');
+    $c->stash->{can_lifecycle} = $c->has_action('action.home.show_lifecycle');
+    $c->stash->{can_menu} = $c->has_action('action.home.show_menu');
 
     $c->stash->{template} = '/site/index.html';
 }

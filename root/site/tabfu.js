@@ -4,8 +4,52 @@
 
 */
 
-    Baseliner.tabpanel = function() { return Ext.getCmp('main-panel') };
+// Routing
+Baseliner.route_regex = /^#!\/(\w+)\:(.*)$/;
+Baseliner.route = function (path) {
+    var match = Baseliner.route_regex.exec( path );
+    if( ! match || ! Ext.isArray(match) || match.length < 2 ) return;
+    var action = match[1];
+    var route  = match[2];
+    switch( action ) {
+        case 'tab': 
+            if( Ext.getCmp( route ) ) {
+                Baseliner.tabpanel().setActiveTab( route );
+            } else {
+                // not good, messes up history: Baseliner.route_clean();
+            }
+            break;
+   }
+}
+Baseliner.route_clean = function () {
+    window.location.hash = '';
+}
 
+$(window).bind('hashchange', function(e)
+{
+    Baseliner.route(window.location.hash);
+});
+$('a').click(function(event) {
+    event.preventDefault();
+    $(this).attr('href', '/#!/'+$(this).attr('href'));
+});
+
+
+/* if (false && typeof history.pushState !== 'undefined') 
+{
+    $(window).bind('popstate', function(e)
+    {
+        Baseliner.route(window.location.pathname);
+    });
+    $('a').click(function(event) {
+        event.preventDefault();
+        history.pushState({},'',this.href);
+    });
+} else {
+}
+*/
+
+    Baseliner.tabpanel = function() { return Ext.getCmp('main-panel') };
     Baseliner.eventKey = function(key) {
         var f = Baseliner.keyMap[ key ];
         if( f!=undefined ) {
@@ -37,21 +81,24 @@
 
     // Generates a pop-in message
     // User stuff
-    Baseliner.user_actions = function() {
+    Baseliner.user_actions = function( params ) {
         Ext.Ajax.request({
-            url: '/user/actions',
+            //url: '/user/actions',
+            url: '/user/info',
+            params: params,
             success: function(xhr) {
                 try {
                     var comp = eval(xhr.responseText);
                     var win = new Ext.Window({
-                        layout: 'fit', 
+                        //layout: 'fit', 
                         autoScroll: true,
-                        maximizable: true,
                         title: "<% _loc('User Actions') %>",
-                        height: 400, width: 700, 
+                        //height: 400,
+            autoHeight: true,
+            width: 730, 
                         items: [ { 
-                                xtype: 'panel', 
-                                layout: 'fit', 
+                                //xtype: 'panel', 
+                                //layout: 'fit', 
                                 items: comp
                         }]
                     });
@@ -92,6 +139,19 @@
         }
     });
 
+    Baseliner.DropTarget = Ext.extend(Ext.dd.DropTarget, {
+        constructor : function(el, config){
+            Baseliner.DropTarget.superclass.constructor.call(this, el, config);        
+            
+            if( this.comp ) {
+                this.comp.on( 'beforedestroy', function(){
+                    this.destroy();
+                }, this);    
+            }
+        },
+    });    
+
+
 
     Baseliner.openWindowPage = function(params) {
     };
@@ -102,8 +162,26 @@
     // open a window given a username link
     Baseliner.render_user_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value==undefined || value=='null' || value=='' ) return '';
-        var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
-        return String.format("<a href='{0}'>{1}</a>", script, value );
+        
+        if (rec && rec.data){
+            if (rec.data.active == undefined){
+                var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
+                return String.format("<a href='{0}'>{1}</a>", script, value );
+            }
+            else{
+                if (rec.data.active > 0){
+                    var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
+                    return String.format("<a href='{0}'>{1}</a>", script, value );                    
+                }
+                else{
+                    return String.format('<span style="text-decoration: line-through">{0}</span>',value);
+                }
+            }
+        }
+        else{
+            var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
+            return String.format("<a href='{0}'>{1}</a>", script, value );  
+        }
     };
 
     Baseliner.render_active  = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -431,8 +509,16 @@
         if( comp!=undefined && comp.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, comp.tab_icon );
         if( params.active==undefined ) params.active=true;
         if( params.active ) tabpanel.setActiveTab(comp);
-        if( title == undefined || title=='' ) { title = comp.title; }
-            else { tab.setTitle( title ) }
+        if( title == undefined || title=='' ) { 
+            title = comp.title; 
+            if( title == undefined || title == '' ) { // probably a slow load and deferred title
+                tabpanel.changeTabIcon( tab, "/static/images/loading-fast.gif" );
+                title = '&nbsp;';
+            }
+            tab.setTitle( title ) 
+        } else { 
+            tab.setTitle( title ) 
+        }
         return tab.getId();
     };
 
@@ -633,25 +719,6 @@
         Ext.get('run-panel').load({ url: url, scripts:true }); 
     };
 
-    Baseliner.loadFile = function(filename, filetype){
-
-        var rnd = Math.floor(Math.random()*80000);
-        filename += '?balirnd=' + rnd;
-        if (filetype=="js"){ //if filename is a external JavaScript file
-           var fileref=document.createElement('script')
-           fileref.setAttribute("type","text/javascript")
-           fileref.setAttribute("src", filename)
-        }
-        else if (filetype=="css"){ //if filename is an external CSS file
-           var fileref=document.createElement("link")
-           fileref.setAttribute("rel", "stylesheet")
-           fileref.setAttribute("type", "text/css")
-           fileref.setAttribute("href", filename)
-        }
-        if (typeof fileref!="undefined")
-           document.getElementsByTagName("head")[0].appendChild(fileref)
-    };
-
     // used by the url_eval menu option
     Baseliner.evalUrl = function(url) {
         Ext.Ajax.request({
@@ -669,12 +736,13 @@
 
     Baseliner.addNewIframe = function(url,title,params) {
         var tabpanel = Baseliner.tabpanel();
+        var idif = Ext.id();
         var tab = tabpanel.add({ 
                     xtype: 'panel', 
                     layout: 'fit', 
                     autoScroll: false,
                     style: { overflow: 'hidden' },
-                    html: '<iframe style="margin: -2px" border=0 width="100%" height="100%" src="' + url + '"></iframe>',
+                    html: '<iframe id="'+idif+'" style="margin: -2px" border=0 width="100%" height="100%" src="' + url + '"></iframe>',
                     title: title
         }); 
         Ext.getCmp('main-panel').setActiveTab(tab); 
@@ -813,35 +881,42 @@
         return json;
     };
 
+    Baseliner.eval_response = function( text, params ) {
+        var comp = eval( text );
+        if( typeof( comp ) == 'function' ) {
+            comp = comp(params);
+        } else if( typeof(comp) == 'undefined' ) { //IE7
+            eval( "comp=(" + text + ")" );
+            comp = comp(params);
+        }
+        return comp;
+    };
     //grabs any eval stuff and feeds it to foo(comp)
-    Baseliner.ajaxEval = function( url, params, foo ){
+    Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
         params['_bali_notify_valid_session'] = true;
-        var xhr_process = function(xhr){
+        var the_request = function() { Ext.Ajax.request({
+            url: url,
+            params: params,
+            success: function(xhr) {
                 var err_foo;
                 try {
                     try {
-                        var comp = eval(xhr.responseText);
-                        if( typeof( comp ) == 'function' ) {
-                            comp = comp(params);
-                        } else if( typeof(comp) == 'undefined' ) { //IE7
-                            eval( "comp=(" + xhr.responseText + ")" );
-                            comp = comp(params);
-                        }
-                        try { foo(comp); } catch(ef1) { err_foo = ef1 }
+                        var comp = Baseliner.eval_response( xhr.responseText, params );
+                        try { foo(comp, scope); } catch(ef1) { err_foo = ef1 }
                     } catch(e1) {
                         try {
                             var comp = eval("("+xhr.responseText+")"); //json data structs need this
                             if( comp.logged_out ) {
-                                Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo)} });
+                                Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
                             } else {
-                                try { foo(comp); } catch(ef1) { err_foo = ef1 }
+                                try { foo(comp,scope); } catch(ef1) { err_foo = ef1 }
                             }
                         } catch(e2) { throw e1; }
                     }
                 } catch(err) {
                     if( xhr.responseText.indexOf('dhandler') > -1 ) {
-                        Ext.Msg.alert( _("Page not found: %1", url ) + '<br>' + xhr.responseText );
+                        Baseliner.error( _('Error'), _("Page not found: %1", url ) + '<br>' + xhr.responseText );
                     } else {
                        Baseliner.error_parse( err, xhr );
                        if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) {
@@ -854,16 +929,9 @@
                     }
                 }
                 if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
-            };
-        var the_request = function() { Ext.Ajax.request({
-            url: url,
-            params: params,
-            success: xhr_process,
+            },
             failure: function(xhr) {
-                // 401 status (unauthorized) usually has valid data that can be processed
-                if( xhr.status == 401 ) 
-                    xhr_process(xhr);
-                else if( ! params._ignore_conn_errors ) {
+                if( ! params._ignore_conn_errors ) {
                     Baseliner.server_failure( xhr.responseText );
                 }
             }
@@ -1148,26 +1216,31 @@
                 '</div>'].join('');
     }
     
-    Baseliner.showLoadingMask = function (cmp, msg){
-        Baseliner._defaultLoadingMask = new Ext.LoadMask(cmp ,{
-            removeMask: true, msg : msg 
-        });
-        Baseliner._defaultLoadingMask.show();
+    Baseliner.showLoadingMask = function (el, msg){
+        Baseliner._defaultLoadingMask = el.mask( msg || _('Loading'), 'x-mask-loading' ).setHeight( 99999 );
+        //Baseliner._defaultLoadingMask = new Ext.LoadMask(cmp ,{
+        //    removeMask: true, msg : msg
+        //});
+        //Baseliner._defaultLoadingMask.show();
+        return Baseliner._defaultLoadingMask;
     };
     Baseliner.showLoadingMaskFade = function (cmp, msg){
         Baseliner.showLoadingMask(cmp, msg);
     };
     
-    Baseliner.hideLoadingMask = function (){
+    Baseliner.hideLoadingMask = function ( cmp ){
         if(Baseliner._defaultLoadingMask != undefined){
-            Baseliner._defaultLoadingMask.hide();
+            cmp.unmask();
+
+            // Baseliner._defaultLoadingMask.el.unmask();
         }
     };
     
     Baseliner.hideLoadingMaskFade = function (cmp){
         if(Baseliner._defaultLoadingMask != undefined){
             cmp.fadeIn();
-            Baseliner._defaultLoadingMask.hide();
+            cmp.unmask();
+            // Baseliner._defaultLoadingMask.hide();
             //Baseliner._defaultLoadingMask.getEl().fadeOut();
         }
     };

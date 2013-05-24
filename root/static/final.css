@@ -53,3 +53,113 @@
   overflow: auto;
 }
 
+/* ------------------ Baseliner Bootstrap Overrides -----------------*/
+
+#boot {
+  margin: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  color: #333333;
+  background-color: #ffffff;
+}
+
+#boot .dashboard {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 11px;  
+}
+
+.x-tree-node div.forum-ct{
+    background:#eee url(/static/images/icons/cmp-bg.gif) repeat-x;
+    margin-top:1px;
+    border-top:1px solid #ddd;
+    border-bottom:1px solid #ccc;
+    padding-top:2px;
+    padding-bottom:1px;
+}
+.forum-ct .x-tree-node-icon {
+    display:none;
+}
+.forum-ct a span {
+    font-weight:bold;
+    color:#222;
+}
+.forum {
+    border:1px solid #fff;
+}
+
+.forum.default {
+    font-style: italic;
+}
+
+.forum.status a span {
+  text-transform:uppercase;
+  font-family:Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-size: xx-small;
+  font-weight:bolder;
+  color:#555;
+}
+
+.forum .x-tree-ec-icon {
+    display:none;
+}
+.icon-forum {
+    background-image:url(/static/images/icons/track.gif) !important;
+}
+
+.icon-no {
+    background-image:url('') !important;
+}
+
+.priority a span {
+    font-weight:bold;
+    color:green;
+}
+
+
+.styledCheckbox {
+    height: 13px;
+    width: 13px;
+    filter: alpha(opacity=0.0);
+    opacity: 0.0;
+    outline: 0;
+}
+
+.styledCheckboxWrap {
+    position: relative;
+    background: url('/static/images/icons/checkboxes.gif') no-repeat top left;
+    background-size: 12px;
+    margin: 3px;
+}
+
+.wrapChecked{ background-position: 0px -12px; }
+
+.wrapPartial{ background-position: 0px -24px; }
+
+.pruebafieldset fieldset { border: 4px solid ; }
+
+.pruebafieldset legend{ font-size: 35px; }
+
+/*  FF overwrites - FF uses 13px checkboxes */
+
+.styledCheckboxWrap, x:-moz-any-link {
+    background-size: 13px;
+}
+
+.wrapChecked, x:-moz-any-link
+{ background-position: 0px -13px;  }
+
+.wrapPartial, x:-moz-any-link
+{ background-position: 0px -26px; }
+
+/*
+.x-tree-selected {
+    border:1px dotted #a3bae9;
+    background:#DFE8F6;
+}
+.x-tree-node .x-tree-selected a span{
+    background:transparent;
+    color:#15428b;
+    font-weight:bold;
+}
+*/

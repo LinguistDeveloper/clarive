@@ -3,7 +3,6 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller'; }
 use Try::Tiny;
-use YAML;
 use MIME::Base64;
 use Baseliner::Core::User;
 
@@ -35,20 +34,23 @@ sub login_from_url : Local {
     }
 }
 
-sub login_local : Local {
-    my ( $self, $c, $login, $password ) = @_;
+sub login_basic : Local {
+    my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $auth = try { 
-        $c->authenticate({ id=>$c->stash->{login}, password=> Digest::MD5::md5_hex( $c->stash->{password} ) }, 'local');
-    } catch {
-        $c->log->error( "**** LOGIN ERROR: " . shift() );
-    }; # realm may not exist
-    if( ref $auth ) {
-        $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-        $c->session->{username} = $c->stash->{login};
-        $c->stash->{json} = { success => \1, msg => _loc("OK") };
+    my ($login,$password) =  $c->req->headers->authorization_basic;
+    if( length $login ) {
+        _debug "LOGIN BASIC=$login";
+        $c->stash->{login} = $login; 
+        $c->stash->{password} = $password; 
+        $c->forward('authenticate');
+        _debug "LOGIN USER=" . $c->user;
+        return 1; # don't stop chain on auto, let the caller decide based on $c->username
     } else {
-        $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
+        _debug 'Notifying WWW-Authenticate = Basic';
+        $c->response->headers->push_header( 'WWW-Authenticate' => 'Basic realm="clarive"' );
+        $c->response->body( _loc('Authentication required') );
+        $c->response->status( 401 );
+        return 0;  # stops chain, sends auth required
     }
 }
 
@@ -70,48 +72,98 @@ sub surrogate : Local {
     $c->forward('View::JSON');	
 }
 
+=head2 authenticate
+
+Private action to authenticate a user. 
+
+Returns:
+
+    $c->stash->{auth_message} - with the last error message
+
+=cut
+sub authenticate : Private {
+    my ( $self, $c ) = @_;
+    my $login    = $c->stash->{login} // _throw _loc('Missing login');
+    my $password = $c->stash->{password};
+
+    my $auth; 
+    _debug "AUTH START=$login";
+
+    if( $login =~ /^local\/(.*)$/i ) {
+        $login = $1;
+        my $local_store = try { $c->config->{authentication}{realms}{local}{store}{users}{ $login } } catch { +{} };
+        _debug $c->config->{authentication}{realms}{local};
+        _debug $local_store; 
+        if( exists $local_store->{api_key} && $password eq $local_store->{ api_key } ) {
+            _debug "Login with API_KEY";
+            $auth = $c->authenticate({ id=>$login }, 'none');
+        } else {
+            $auth = try {
+                $c->authenticate({ id=>$login, password=>$c->model('Users')->encrypt_password( $login, $password ) }, 'local');
+            } catch {
+                $c->log->error( "**** LOGIN ERROR: " . shift() );
+            }; # realm may not exist
+        }
+    } else {
+        # default realm authentication:
+        $auth = $c->authenticate({ id=>$login, password=> $password });
+        
+        if ( lc( $c->config->{authentication}->{default_realm} ) eq 'none' ) {
+            # BaliUser (internal) auth when realm is 'none'
+            my $row = $c->model('Baseliner::BaliUser')->search( { username => $login } )->first;
+            if ($row) {
+                if ( ! $row->active ) {
+                    $c->stash->{auth_message} = _loc( 'User is not active');
+                    $auth = undef;
+                }
+                if ( $c->model('Users')->encrypt_password( $login, $password ) ne $row->password 
+                    && $row->api_key ne $password )
+                {
+                    $auth = undef;
+                }
+            } else {
+                $auth = undef;
+            }
+        }
+    }
+    # Create the authenticated user session
+    if( ref $auth ) {
+        _debug "AUTH OK: $login";
+        $c->session->{username} = $login;
+        $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+        return 1;
+    } else {
+        _error "AUTH KO: $login";
+        $c->logout;  # destroy $c->user
+        $c->stash->{auth_message} = _loc("Invalid User or Password");
+        return 0;
+    }
+}
+
 sub login : Global {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $login= $p->{login};
-    my $password = $p->{password};
-    my $case = $c->config->{user_case};
+    my $login= $c->stash->{login} // $p->{login};
+    my $password = $c->stash->{password} // $p->{password};
+    # configure user login case
+    my $case = $c->config->{user_case} // '';
     $login= $case eq 'uc' ? uc($login)
      : ( $case eq 'lc' ) ? lc($login) : $login;
      
-    $c->log->info( "LOGIN: " . $p->{login} );
-    #_log "PW   : " . $p->{password}; #TODO only for testing!
+    $c->log->info( "LOGIN: " . $login );
+    #_log "PW   : " . $password; #XXX only for testing!
+    my $msg;
 
     if( $login ) {
-        if( $login =~ /^local\/(.*)$/i ) {
-            $c->stash->{login} = $1;
-            $c->stash->{password} = $password;
-            $c->forward('/auth/login_local');
+        # go to the main authentication worker
+        $c->stash->{login} = $login; 
+        $c->stash->{password} = $password; 
+        $c->forward('authenticate');
+        $msg = $c->stash->{auth_message};
+        if( length $c->username ) {
+            $c->stash->{json} = { success => \1, msg => $msg // _loc("OK") };
         } else {
-            my $auth = $c->authenticate({ id=>$login, password=> $password });
-            
-            if(lc($c->config->{authentication}->{default_realm}) eq 'none'){
-                my $user_key; # (Public key + Username al revés)
-                $user_key = $c->config->{decrypt_key}.reverse ($login);
-                #Validamos contra BaliUser si el realm es none
-                my $row = $c->model('Baseliner::BaliUser')->search({username => $login, active => 1})->first;
-                if($row){
-                if( $c->model('Users')->encriptar_password( $password, $user_key ) ne $row->password ){
-                    $auth = undef;
-                }
-                }
-                else{
-                $auth = undef;
-                }
-            }
-            
-            if( ref $auth ) {
-                $c->stash->{json} = { success => \1, msg => _loc("OK") };
-                $c->session->{username} = $login;
-                $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-            } else {
-                $c->stash->{json} = { success => \0, msg => _loc("Invalid User or Password") };
-            }
+            $c->stash->{json} = { success => \0, msg => $msg // _loc("Invalid User or Password") };
         }
     } else {
         # invalid form input
@@ -162,13 +214,45 @@ sub saml_check : Private {
         $username or die 'SAML username not found';
         $username = $username->{content} if ref $username eq 'HASH';
         _log _loc('SAML starting session for username: %1', $username);
-        $c->authenticate({ id=>$username }, 'ldap_no_pw');
         $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
         $c->session->{username} = $username;
         return $username;
     } catch {
         _error _loc('SAML Failed auth: %1', shift);
         return 0;
+    };
+}
+
+sub login_from_session : Local {
+    my ( $self, $c ) = @_;
+    # the Root controller creates the session for this
+    _throw _loc 'Invalid session' unless $c->session_is_valid;    
+    $c->res->redirect( $c->config->{web_url} );
+}
+
+sub create_user_session : Local {
+    my ( $self, $c ) = @_;
+    try {
+        _fail _loc('S0003: create_user_session not enabled') unless $c->config->{create_user_session};
+        _fail _loc('S0001: User %1 not authorized: action.create_user_session', $c->username)
+            if $c->username && !$c->has_action('action.create_user_session');
+        my $username = $c->req->params->{userid} // $c->req->headers->{userid} // _throw _loc 'Missing userid';
+        # check that username is in the database
+        my $uid = DB->BaliUser->search({ username=>$username })->first;
+        _fail _loc( 'S0002: User not found: %1', $username ) unless ref $uid;
+        my $sid = $c->create_session_id;
+        $c->_sessionid($sid);
+        $c->reset_session_expires;
+        $c->set_session_id($sid);
+        _throw _loc 'Invalid session' unless $c->session_is_valid;    
+        $c->session->{username} = $username;
+        $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
+        $c->_save_session();
+        _error $c->session;
+        $c->res->body( sprintf '%s/auth/login_from_session?sessionid=%s', $c->config->{web_url}, $c->sessionid );
+    } catch {
+        my $err = shift;
+        $c->res->body( _loc('Auth error: %1', $err ) );
     };
 }
 
