@@ -1,0 +1,279 @@
+.sprite { background: url('/static/images/icons/sprites.png') no-repeat ;  } 
+.sprite.add { background-position: 0px 0px !important; } 
+.sprite.add_new_form_16 { background-position: 0px -26px !important;  } 
+.sprite.application { background-position: 0px -52px !important;  } 
+.sprite.advanced { background-position: 0px -78px !important;  } 
+.sprite.application_delete { background-position: 0px -104px !important;  } 
+.sprite.application_double { background-position: 0px -130px !important;  } 
+.sprite.all { background-position: 0px -156px !important;  } 
+.sprite.application_edit { background-position: 0px -182px !important;  } 
+.sprite.application_go { background-position: 0px -208px !important;  } 
+.sprite.application_add { background-position: 0px -234px !important;  } 
+.sprite.application_double { background-position: 0px -260px !important;  } 
+.sprite.arrow_down { background-position: 0px -286px !important;  } 
+.sprite.arrow_left { background-position: 0px -312px !important;  } 
+.sprite.arrow_inout { background-position: 0px -338px !important;  } 
+.sprite.arrow_redo { background-position: 0px -364px !important;  } 
+.sprite.arrow_left { background-position: 0px -390px !important;  } 
+.sprite.arrow_left_black { background-position: 0px -416px !important; width: 16px; height: 14px ;} 
+.sprite.arrow_refresh { background-position: 0px -440px !important;  } 
+.sprite.arrow_refresh { background-position: 0px -466px !important;  } 
+.sprite.arrow_right { background-position: 0px -492px !important;  } 
+.sprite.arrow_right { background-position: 0px -518px !important;  } 
+.sprite.arrow-down { background-position: 0px -544px !important;  } 
+.sprite.arrow_right_black { background-position: 0px -570px !important; width: 16px; height: 14px ;} 
+.sprite.asterisk_orange { background-position: 0px -594px !important;  } 
+.sprite.baseline { background-position: 0px -620px !important;  } 
+.sprite.asterisk_orange { background-position: 0px -646px !important;  } 
+.sprite.book { background-position: 0px -672px !important;  } 
+.sprite.arrow_undo { background-position: 0px -698px !important;  } 
+.sprite.calendar { background-position: 0px -724px !important;  } 
+.sprite.arrow-up { background-position: 0px -750px !important;  } 
+.sprite.calendar { background-position: 0px -776px !important;  } 
+.sprite.calendar_delete { background-position: 0px -802px !important;  } 
+.sprite.calendar_add { background-position: 0px -828px !important;  } 
+.sprite.calendar_link { background-position: 0px -854px !important;  } 
+.sprite.calendar_view_day { background-position: 0px -880px !important;  } 
+.sprite.calendar_edit { background-position: 0px -906px !important;  } 
+.sprite.cancel { background-position: 0px -932px !important;  } 
+.sprite.calendar_view_week { background-position: 0px -958px !important;  } 
+.sprite.calendar_view_month { background-position: 0px -984px !important;  } 
+.sprite.cerrar { background-position: 0px -1010px !important;  } 
+.sprite.catalog { background-position: 0px -1036px !important;  } 
+.sprite.chain { background-position: 0px -1062px !important;  } 
+.sprite.changeset { background-position: 0px -1088px !important;  } 
+.sprite.changeset_lc { background-position: 0px -1114px !important; width: 16px; height: 18px ;} 
+.sprite.checkbox { background-position: 0px -1142px !important;  } 
+.sprite.checkboxes { background-position: 0px -1168px !important; width: 13px; height: 39px ;} 
+.sprite.checkmark { background-position: 0px -1217px !important; width: 30px; height: 30px ;} 
+.sprite.clear { background-position: 0px -1257px !important;  } 
+.sprite.clear { background-position: 0px -1283px !important;  } 
+.sprite.clear-all { background-position: 0px -1309px !important;  } 
+.sprite.close { background-position: 0px -1335px !important;  } 
+.sprite.chain { background-position: 0px -1361px !important;  } 
+.sprite.chain { background-position: 0px -1387px !important;  } 
+.sprite.cmp-bg { background-position: 0px -1413px !important; width: 1px; height: 23px ;} 
+.sprite.codefield-trigger { background-position: 0px -1446px !important; width: 102px; height: 24px ;} 
+.sprite.cog_edit { background-position: 0px -1480px !important;  } 
+.sprite.cog_go { background-position: 0px -1506px !important;  } 
+.sprite.collapseall { background-position: 0px -1532px !important;  } 
+.sprite.comment_blue { background-position: 0px -1558px !important;  } 
+.sprite.color_swatch { background-position: 0px -1584px !important;  } 
+.sprite.comment_new { background-position: 0px -1610px !important;  } 
+.sprite.config { background-position: 0px -1636px !important;  } 
+.sprite.console { background-position: 0px -1662px !important;  } 
+.sprite.control { background-position: 0px -1688px !important;  } 
+.sprite.connect { background-position: 0px -1714px !important;  } 
+.sprite.control_equalizer { background-position: 0px -1740px !important;  } 
+.sprite.control_equalizer { background-position: 0px -1766px !important;  } 
+.sprite.commit { background-position: 0px -1792px !important;  } 
+.sprite.csv { background-position: 0px -1818px !important;  } 
+.sprite.cut { background-position: 0px -1844px !important;  } 
+.sprite.dashboard { background-position: 0px -1870px !important;  } 
+.sprite.database_save { background-position: 0px -1896px !important;  } 
+.sprite.copy { background-position: 0px -1922px !important;  } 
+.sprite.database_refresh { background-position: 0px -1948px !important;  } 
+.sprite.delete { background-position: 0px -1974px !important;  } 
+.sprite.delete2 { background-position: 0px -2000px !important;  } 
+.sprite.delete3 { background-position: 0px -2026px !important;  } 
+.sprite.detach { background-position: 0px -2052px !important;  } 
+.sprite.detail { background-position: 0px -2078px !important;  } 
+.sprite.door_out { background-position: 0px -2104px !important;  } 
+.sprite.downloads_favicon { background-position: 0px -2130px !important;  } 
+.sprite.drive { background-position: 0px -2156px !important;  } 
+.sprite.directory { background-position: 0px -2182px !important;  } 
+.sprite.down { background-position: 0px -2208px !important;  } 
+.sprite.drive_disk { background-position: 0px -2234px !important;  } 
+.sprite.drive_edit { background-position: 0px -2260px !important;  } 
+.sprite.drive_add { background-position: 0px -2286px !important;  } 
+.sprite.drive_go { background-position: 0px -2312px !important;  } 
+.sprite.drive_go { background-position: 0px -2338px !important;  } 
+.sprite.eclipse { background-position: 0px -2364px !important;  } 
+.sprite.edit { background-position: 0px -2390px !important;  } 
+.sprite.edit1 { background-position: 0px -2416px !important; width: 16px; height: 14px ;} 
+.sprite.drop-yes { background-position: 0px -2440px !important;  } 
+.sprite.drive_delete { background-position: 0px -2466px !important;  } 
+.sprite.element_new_after { background-position: 0px -2492px !important;  } 
+.sprite.element_next { background-position: 0px -2518px !important;  } 
+.sprite.element_previous { background-position: 0px -2544px !important;  } 
+.sprite.element_copy { background-position: 0px -2570px !important;  } 
+.sprite.element_new_before { background-position: 0px -2596px !important;  } 
+.sprite.empty { background-position: 0px -2622px !important;  } 
+.sprite.error { background-position: 0px -2648px !important;  } 
+.sprite.envelope { background-position: 0px -2674px !important;  } 
+.sprite.element_new { background-position: 0px -2700px !important;  } 
+.sprite.expandall { background-position: 0px -2726px !important;  } 
+.sprite.favorite { background-position: 0px -2752px !important; width: 19px; height: 19px ;} 
+.sprite.favicon { background-position: 0px -2781px !important;  } 
+.sprite.event { background-position: 0px -2807px !important;  } 
+.sprite.favorites { background-position: 0px -2833px !important;  } 
+.sprite.folder { background-position: 0px -2859px !important;  } 
+.sprite.folder_add { background-position: 0px -2885px !important;  } 
+.sprite.fin_solicitud { background-position: 0px -2911px !important; width: 18px; height: 16px ;} 
+.sprite.file { background-position: 0px -2937px !important;  } 
+.sprite.folder_delete { background-position: 0px -2963px !important;  } 
+.sprite.files { background-position: 0px -2989px !important;  } 
+.sprite.folder_explore { background-position: 0px -3015px !important;  } 
+.sprite.folder_magnify { background-position: 0px -3041px !important;  } 
+.sprite.folder_new { background-position: 0px -3067px !important;  } 
+.sprite.folder_heart { background-position: 0px -3093px !important;  } 
+.sprite.help { background-position: 0px -3119px !important;  } 
+.sprite.home { background-position: 0px -3145px !important;  } 
+.sprite.html { background-position: 0px -3171px !important;  } 
+.sprite.hourglass { background-position: 0px -3197px !important;  } 
+.sprite.html { background-position: 0px -3223px !important;  } 
+.sprite.folder_edit { background-position: 0px -3249px !important;  } 
+.sprite.if { background-position: 0px -3275px !important;  } 
+.sprite.icon_wand { background-position: 0px -3301px !important;  } 
+.sprite.go-light { background-position: 0px -3327px !important; width: 30px; height: 30px ;} 
+.sprite.item_rename { background-position: 0px -3367px !important;  } 
+.sprite.job { background-position: 0px -3393px !important;  } 
+.sprite.javascript { background-position: 0px -3419px !important;  } 
+.sprite.inactive { background-position: 0px -3445px !important; width: 8px; height: 10px ;} 
+.sprite.job { background-position: 0px -3465px !important;  } 
+.sprite.kanban { background-position: 0px -3491px !important;  } 
+.sprite.kanban { background-position: 0px -3517px !important;  } 
+.sprite.key_delete { background-position: 0px -3543px !important;  } 
+.sprite.keyboard { background-position: 0px -3569px !important;  } 
+.sprite.js-reload { background-position: 0px -3595px !important;  } 
+.sprite.json { background-position: 0px -3621px !important;  } 
+.sprite.keyboard_add { background-position: 0px -3647px !important;  } 
+.sprite.layout_edit { background-position: 0px -3673px !important;  } 
+.sprite.key_add { background-position: 0px -3699px !important;  } 
+.sprite.leave { background-position: 0px -3725px !important;  } 
+.sprite.left { background-position: 0px -3751px !important;  } 
+.sprite.leaf { background-position: 0px -3777px !important;  } 
+.sprite.lightbulb { background-position: 0px -3803px !important;  } 
+.sprite.lightbulb_off { background-position: 0px -3829px !important;  } 
+.sprite.lightbulb { background-position: 0px -3855px !important;  } 
+.sprite.link { background-position: 0px -3881px !important;  } 
+.sprite.loading { background-position: 0px -3907px !important; width: 20px; height: 19px ;} 
+.sprite.loading-balls { background-position: 0px -3936px !important; width: 41px; height: 9px ;} 
+.sprite.let { background-position: 0px -3955px !important;  } 
+.sprite.log_16 { background-position: 0px -3981px !important;  } 
+.sprite.lock_small { background-position: 0px -4007px !important; width: 24px; height: 21px ;} 
+.sprite.manual_deploy { background-position: 0px -4038px !important;  } 
+.sprite.lightbulb_off { background-position: 0px -4064px !important;  } 
+.sprite.manual_deploy { background-position: 0px -4090px !important;  } 
+.sprite.loop { background-position: 0px -4116px !important;  } 
+.sprite.milestone { background-position: 0px -4142px !important;  } 
+.sprite.move { background-position: 0px -4168px !important;  } 
+.sprite.package_add { background-position: 0px -4194px !important;  } 
+.sprite.package_green { background-position: 0px -4220px !important;  } 
+.sprite.new { background-position: 0px -4246px !important; width: 15px; height: 15px ;} 
+.sprite.package2 { background-position: 0px -4271px !important; width: 16px; height: 18px ;} 
+.sprite.package3 { background-position: 0px -4299px !important; width: 16px; height: 18px ;} 
+.sprite.moredata { background-position: 0px -4327px !important; width: 18px; height: 15px ;} 
+.sprite.nature { background-position: 0px -4352px !important;  } 
+.sprite.package-white { background-position: 0px -4378px !important;  } 
+.sprite.page { background-position: 0px -4404px !important;  } 
+.sprite.page_up { background-position: 0px -4430px !important;  } 
+.sprite.paste { background-position: 0px -4456px !important;  } 
+.sprite.pencil { background-position: 0px -4482px !important;  } 
+.sprite.page_refresh { background-position: 0px -4508px !important;  } 
+.sprite.perl { background-position: 0px -4534px !important;  } 
+.sprite.post { background-position: 0px -4560px !important;  } 
+.sprite.paperclip { background-position: 0px -4586px !important;  } 
+.sprite.page_copy { background-position: 0px -4612px !important;  } 
+.sprite.play { background-position: 0px -4638px !important;  } 
+.sprite.post { background-position: 0px -4664px !important;  } 
+.sprite.project { background-position: 0px -4690px !important;  } 
+.sprite.project_small { background-position: 0px -4716px !important; width: 16px; height: 18px ;} 
+.sprite.project_small_child { background-position: 0px -4744px !important;  } 
+.sprite.project { background-position: 0px -4770px !important;  } 
+.sprite.project2 { background-position: 0px -4796px !important;  } 
+.sprite.project3 { background-position: 0px -4822px !important;  } 
+.sprite.public { background-position: 0px -4848px !important;  } 
+.sprite.refresh { background-position: 0px -4874px !important;  } 
+.sprite.refresh-grey { background-position: 0px -4900px !important;  } 
+.sprite.properties { background-position: 0px -4926px !important;  } 
+.sprite.release { background-position: 0px -4952px !important;  } 
+.sprite.release { background-position: 0px -4978px !important;  } 
+.sprite.release-lc { background-position: 0px -5004px !important; width: 16px; height: 18px ;} 
+.sprite.release-white { background-position: 0px -5032px !important;  } 
+.sprite.reload { background-position: 0px -5058px !important;  } 
+.sprite.release-dark { background-position: 0px -5084px !important; width: 16px; height: 18px ;} 
+.sprite.remove { background-position: 0px -5112px !important;  } 
+.sprite.project_small { background-position: 0px -5138px !important; width: 16px; height: 18px ;} 
+.sprite.rename { background-position: 0px -5166px !important;  } 
+.sprite.rename { background-position: 0px -5192px !important;  } 
+.sprite.rename2 { background-position: 0px -5218px !important;  } 
+.sprite.report_dist { background-position: 0px -5244px !important;  } 
+.sprite.repo { background-position: 0px -5270px !important;  } 
+.sprite.reports { background-position: 0px -5296px !important;  } 
+.sprite.report_magnify { background-position: 0px -5322px !important;  } 
+.sprite.restart { background-position: 0px -5348px !important;  } 
+.sprite.revision { background-position: 0px -5374px !important;  } 
+.sprite.restart { background-position: 0px -5400px !important;  } 
+.sprite.revision_del { background-position: 0px -5426px !important;  } 
+.sprite.revision_create { background-position: 0px -5452px !important;  } 
+.sprite.revision_rename { background-position: 0px -5478px !important;  } 
+.sprite.right-arrow { background-position: 0px -5504px !important;  } 
+.sprite.run { background-position: 0px -5530px !important;  } 
+.sprite.release_lc { background-position: 0px -5556px !important; width: 16px; height: 18px ;} 
+.sprite.rule { background-position: 0px -5584px !important;  } 
+.sprite.save { background-position: 0px -5610px !important; width: 16px; height: 13px ;} 
+.sprite.script_edit { background-position: 0px -5633px !important;  } 
+.sprite.small_loading { background-position: 0px -5659px !important;  } 
+.sprite.sql { background-position: 0px -5685px !important;  } 
+.sprite.star { background-position: 0px -5711px !important; width: 19px; height: 19px ;} 
+.sprite.small_loading_static { background-position: 0px -5740px !important;  } 
+.sprite.star-gray { background-position: 0px -5766px !important; width: 19px; height: 19px ;} 
+.sprite.star-white { background-position: 0px -5795px !important; width: 19px; height: 19px ;} 
+.sprite.stash { background-position: 0px -5824px !important;  } 
+.sprite.step_post { background-position: 0px -5850px !important;  } 
+.sprite.step_run { background-position: 0px -5876px !important;  } 
+.sprite.step_pre { background-position: 0px -5902px !important;  } 
+.sprite.stop { background-position: 0px -5928px !important;  } 
+.sprite.sum { background-position: 0px -5954px !important;  } 
+.sprite.sql { background-position: 0px -5980px !important;  } 
+.sprite.table { background-position: 0px -6006px !important;  } 
+.sprite.table_edit { background-position: 0px -6032px !important;  } 
+.sprite.tag { background-position: 0px -6058px !important;  } 
+.sprite.tag_blocked { background-position: 0px -6084px !important;  } 
+.sprite.tag_merged { background-position: 0px -6110px !important;  } 
+.sprite.tag_blue_edit { background-position: 0px -6136px !important;  } 
+.sprite.tag_pending { background-position: 0px -6162px !important;  } 
+.sprite.tag_trunk { background-position: 0px -6188px !important;  } 
+.sprite.tasks { background-position: 0px -6214px !important;  } 
+.sprite.television { background-position: 0px -6240px !important;  } 
+.sprite.television { background-position: 0px -6266px !important;  } 
+.sprite.tidy { background-position: 0px -6292px !important;  } 
+.sprite.time { background-position: 0px -6318px !important;  } 
+.sprite.topic { background-position: 0px -6344px !important;  } 
+.sprite.time { background-position: 0px -6370px !important;  } 
+.sprite.search { background-position: 0px -6396px !important;  } 
+.sprite.tab { background-position: 0px -6422px !important;  } 
+.sprite.topic_one { background-position: 0px -6448px !important;  } 
+.sprite.topic_one_lc { background-position: 0px -6474px !important; width: 16px; height: 18px ;} 
+.sprite.traffic_lights { background-position: 0px -6502px !important;  } 
+.sprite.traffic_lights_green { background-position: 0px -6528px !important;  } 
+.sprite.traffic_lights_red { background-position: 0px -6554px !important;  } 
+.sprite.traffic_lights_yellow { background-position: 0px -6580px !important;  } 
+.sprite.update { background-position: 0px -6606px !important;  } 
+.sprite.updown_ { background-position: 0px -6632px !important; } 
+.sprite.topic_lc { background-position: 0px -6660px !important; } 
+.sprite.track { background-position: 0px -6688px !important;  } 
+.sprite.user { background-position: 0px -6714px !important;  } 
+.sprite.topic-one-white { background-position: 0px -6740px !important;  } 
+.sprite.user_add { background-position: 0px -6766px !important;  } 
+.sprite.user_green { background-position: 0px -6792px !important;  } 
+.sprite.user_suit { background-position: 0px -6818px !important;  } 
+.sprite.users { background-position: 0px -6844px !important;  } 
+.sprite.watch { background-position: 0px -6870px !important;  } 
+.sprite.window_min { background-position: 0px -6896px !important;  } 
+.sprite.workflow { background-position: 0px -6922px !important;  } 
+.sprite.user { background-position: 0px -6948px !important; } 
+.sprite.user_female { background-position: 0px -6990px !important;  } 
+.sprite.workspace { background-position: 0px -7016px !important;  } 
+.sprite.write { background-position: 0px -7042px !important;  } 
+.sprite.workspaces { background-position: 0px -7068px !important;  } 
+.sprite.yaml { background-position: 0px -7094px !important;  } 
+.sprite.action_go { background-position: 0px -7120px !important;  } 
+.sprite.action_save { background-position: 0px -7146px !important;  } 
+.sprite.activate { background-position: 0px -7172px !important;  } 
+.sprite.active { background-position: 0px -7198px !important; } 
+.sprite.add { background-position: 0px -7218px !important;} 
+.sprite.user_delete { background-position: 0px -7244px !important;  } 
+.sprite.wrench { background-position: 0px -7270px !important;  } 
+.sprite.yaml { background-position: 0px -7296px !important;  } 

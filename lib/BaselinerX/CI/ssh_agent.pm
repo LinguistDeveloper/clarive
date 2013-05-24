@@ -1,11 +1,11 @@
 package BaselinerX::CI::ssh_agent;
-use Moose;
+use Baseliner::Moose;
 use Baseliner::Utils;
 use Cwd;
 use Net::OpenSSH;
 use namespace::autoclean;
 
-has server => qw(is rw isa CI coerce 1);
+has_ci 'server';
 has port_num   => qw(is rw isa Any);
 has private_key => qw(is rw isa Any);
 
@@ -25,10 +25,16 @@ has ssh     => (
     },
     handles => [ qw/error/ ],
 );
-has _method => qw(is ro default scp);  # for replacing scp with rsync on inheritance
+has _method => qw(is ro isa Any default scp);  # for replacing scp with rsync on inheritance
 
 #with 'Baseliner::Role::Node::Filesys';
 with 'Baseliner::Role::CI::Agent';
+
+sub rel_type {
+    {
+        server    => [ from_mid => 'ssh_agent_server' ],
+    };
+}
 
 sub rc {
     my $self = shift;
@@ -116,6 +122,10 @@ sub put_dir {
     my ($self, %p) = @_;
     my $local = delete $p{local} || $self->local || _throw "Missing local";
     my $remote = delete $p{remote} || $self->home || _throw "Missing remote";
+    if( ! (-e $local) && ($local !~ /.*\*$/) ) {
+        $self->ret( _loc('File skipped: %1', $local ) );
+        return {};
+    }
     length $p{add_path} and $remote = _dir( $remote, $p{add_path} );
     delete $p{add_path};
     $p{recursive} //= 1;
@@ -133,7 +143,7 @@ sub put_dir {
         if $local !~ /\*/ && ! -e $local;  # don't check if contains asterisks
 
     # run 
-    _log "URI=" . $self->uri . ", L=$local, R=$remote";
+    _log "URI=" . $self->_build_uri . ", L=$local, R=$remote";
     my $ret = $self->ssh->$method( \%p, $local, $remote ); 
 
     my $out = _slurp $p{stdout_file};
@@ -150,9 +160,21 @@ sub execute {
     my @cmd = map { "$_" } @_ ; # stringify possible Path::Class
     $p{stdout_file} = _tmp_file;  # send output to tmp file
 
-    my $ret = $self->ssh->system( \%p, @cmd );
-    my $rc = $?;
+    my $ret; 
+    my $rc; 
+    my $timeout = length $self->{timeout} ? $self->{timeout} : 60;
 
+    use Try::Tiny;
+    try {
+        local $SIG{ALRM} = sub { die "alarm\n" };
+        alarm $timeout; 
+        $ret = $self->ssh->system( \%p, @cmd );
+        $rc = $?;
+        alarm 0;
+    } catch {
+        alarm 0;
+        _fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ); 
+    };
     my $out = _slurp $p{stdout_file};
     unlink $p{stdout_file};
     $self->ret( $out );
@@ -167,7 +189,12 @@ sub _build_uri {
         my ($conn) = $uri =~ m{//(.*?)(/.*)?$};
         return $conn if $conn;
     } else {
-        return $self->server->hostname; 
+        if( $self->{user} ) {
+            return sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
+        } 
+        else {
+            return $self->server->hostname; 
+        }
     }
     _throw _loc "Could not create connection from uri %1", $self->uri;
 }

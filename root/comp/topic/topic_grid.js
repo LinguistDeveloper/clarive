@@ -3,16 +3,26 @@
     my $id = _nowstamp;
 </%perl>
 
-(function(){
+(function(params){
     var ps = 25; //page_size
     var filter_current;
     var stop_filters = false;
+	var typeApplication = '<% $c->stash->{typeApplication} %>';
+	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
+    var query_id = '<% $c->stash->{query_id} %>';
+    var base_params = { start: 0, limit: ps, typeApplication: typeApplication };  // for store_topics
+    // this grid may be limited for a given category category id 
+    var category_id = '<% $c->stash->{category_id} %>';
+    if( category_id ) {
+        params.id_category = category_id;
+        base_params.categories = category_id;
+    }
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
-    var store_label = new Baseliner.Topic.StoreLabel();
+    //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList({
-        baseParams: { start: 0, limit: ps },
+        baseParams: base_params,
         listeners: {
             'beforeload': function( obj, opt ) {
                 if( opt !== undefined && opt.params !== undefined )
@@ -43,15 +53,24 @@
         }
     });
     
-    var button_create_view = new Ext.Button({
-        icon:'/static/images/icons/add.gif',
+    //var button_create_view = new Ext.Button({
+    //    icon:'/static/images/icons/add.gif',
+    //    tooltip: _('Create view'),
+    //    cls: 'x-btn-icon',
+    //    disabled: false,
+    //    handler: function(){
+    //        add_view();
+    //    }
+    //});
+	
+    var button_create_view = new Baseliner.Grid.Buttons.Add({
+		text:'',
         tooltip: _('Create view'),
-        cls: 'x-btn-icon',
-        disabled: false,
-        handler: function(){
-            add_view();
+        disabled: false,		
+        handler: function() {
+            add_view()
         }
-    });
+    });		
     
     var button_delete_view = new Baseliner.Grid.Buttons.Delete({
         text: _(''),
@@ -69,18 +88,18 @@
                             if(type !== 'V'){
                                 return false;
                             }else{
-                                if(!node.attributes.default){
+                                if(!eval('node.attributes.default')){  //se pone eval, al parecer hay conflicto con I.E, palabra reservada default
                                     views_delete.push(node.attributes.idfilter);
                                     node.remove();
                                 }
                             }
                         });
-
+                        
                         Baseliner.ajaxEval( '/topic/view_filter?action=delete',{ ids_view: views_delete },
                             function(response) {
                                 if ( response.success ) {
                                     Baseliner.message( _('Success'), response.msg );
-                                    //tree_filters.getLoader().load(tree_root);
+                                    tree_filters.getLoader().load(tree_root);
                                     loadfilters();
                                     button_delete_view.disable();
                                 } else {
@@ -118,7 +137,7 @@
                                     var ff;
                                     ff = form_view.getForm();
                                     var name = ff.findField("name").getValue();
-                                    parent_node.appendChild({id:a.result.data.id, idfilter: a.result.data.idfilter, text:name, filter:  Ext.util.JSON.encode( filter_current ), default: false, cls: 'forum', iconCls: 'icon-no', checked: false, leaf: true});
+                                    parent_node.appendChild({id:a.result.data.id, idfilter: a.result.data.idfilter, text:name, filter:  Ext.util.JSON.encode( filter_current ), 'default': false, cls: 'forum', iconCls: 'icon-no', checked: false, leaf: true});
                                     win.close();
                                 },
                                 failure: function(f,a){
@@ -140,13 +159,13 @@
                     }
                 }
             ],
-            defaults: { width: 400 },
+            defaults: { anchor: '100%' },
             items: [
                 {
                     xtype:'textfield',
                     fieldLabel: _('Name view'),
                     name: 'name',
-                    width: '100%',
+                    //width: '100%',
                     allowBlank: false
                 }
             ]
@@ -163,6 +182,7 @@
     
     var btn_add = new Baseliner.Grid.Buttons.Add({
         handler: function() {
+            store_category.load({params:{action: 'create'}});
             add_topic();
         }       
     });
@@ -170,62 +190,46 @@
     var add_topic = function() {
         var win;
         
-        var combo_category = new Ext.form.ComboBox({
-            mode: 'local',
-            editable: false,
-            autoSelect: true,
-            selectOnFocus: true,
-            forceSelection: true,
-            emptyText: _('select a category'),
-            triggerAction: 'all',
-            fieldLabel: _('Category'),
-            name: 'category',
-            hiddenName: 'category',
-            displayField: 'name',
-            valueField: 'id',
-            store: store_category,
-            tpl: '<tpl for="."><div id="boot" class="x-combo-list-item"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></div></tpl>', 
-            allowBlank: false
-        });
-
-        var combo_select = function() {
-            var title = combo_category.getRawValue();
-            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: combo_category.getValue(), new_category_name: combo_category.getRawValue() } );
-            win.close();
+        var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
+            var color = rec.data.color;
+            var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+            return ret;
         };
-        combo_category.on('select', combo_select );
-
-        var title = 'Create topic';
+        
+        var topic_category_grid = new Ext.grid.GridPanel({
+            store: store_category,
+            height: 200,
+            hideHeaders: true,
+            viewConfig: {
+                headersDisabled: true,
+                enableRowBody: true,
+                forceFit: true
+            },
+            columns: [
+              { header: _('Name'), width: 200, dataIndex: 'name', renderer: render_category },
+              { header: _('Description'), width: 450, dataIndex: 'description' }
+        
+            ]
+        });
+        
+        topic_category_grid.on("rowdblclick", function(grid, rowIndex, e ) {
+            var r = grid.getStore().getAt(rowIndex);
+            var title = _(r.get( 'name' ));
+            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ) } );
+            win.close();
+        });     
+        
+        var cat_title = _('Select a category');
         
         var form_topic = new Ext.FormPanel({
             frame: true,
-            buttons: [
-                {
-                text: _('Accept'),
-                type: 'submit',
-                handler: function() {
-                    var form = form_topic.getForm();
-                    if (form.isValid()) { combo_select() }
-                }
-                },
-                {
-                text: _('Close'),
-                handler: function(){ 
-                        win.close();
-                    }
-                }
-            ],
-            defaults: { width: 400 },
             items: [
-                combo_category
+                topic_category_grid
             ]
         });
 
-        store_category.load();
-        store_category.on( 'load', function(){ combo_category.setValue( store_category.getAt(0).id );  });
-        
         win = new Ext.Window({
-            title: _(title),
+            title: cat_title,
             width: 550,
             autoHeight: true,
             closeAction: 'close',
@@ -263,7 +267,8 @@
         //Baseliner.xx = grid_topics.getView();
         //console.log( grid_topics.getView() );
         for( var i=0; i<cfg.length; i++ ) {
-            if( ! cfg[i].hidden )
+            //console.log( cfg[i] );
+            if( ! cfg[i].hidden && ! cfg[i]._checker ) 
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
         // get the grid store data
@@ -294,6 +299,14 @@
         }
     };
 
+    var btn_html_desc = {
+        icon: '/static/images/icons/html.png',
+        text: _('Basic HTML Report (Description)'),
+        handler: function() {
+            form_report_submit({ url: '/topic/report_html?show_desc=1' });
+        }
+    };
+
     var btn_yaml = {
         icon: '/static/images/icons/yaml.png',
         text: _('YAML'),
@@ -313,10 +326,11 @@
     var btn_reports = new Ext.Button({
         icon: '/static/images/icons/reports.png',
         iconCls: 'x-btn-icon',
-        menu: [ btn_html, btn_csv, btn_yaml ]
+        menu: [ btn_html, btn_html_desc, btn_csv, btn_yaml ]
     });
     
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
+        disabled: true,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
@@ -332,6 +346,7 @@
     });
     
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
+        disabled: true,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
@@ -384,7 +399,7 @@
         pressed: false,
         handler: function(){
             // kanban fullscreen 
-            Baseliner.kanban({ store: store_topics });
+            Baseliner.kanban_from_store({ store: store_topics });
         }
     }); 
     
@@ -420,7 +435,7 @@
         if(btn_mini.pressed){
             return tag_color_html + "<div style='font-weight:bold; font-size: 12px; "+strike+"' >" + value + "</div>";          
         }else{
-            return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>by " + rec.data.created_by + "</font ></div>";                        
+            return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>" + _('by %1', rec.data.created_by) + "</font ></div>";                        
         }
         
     };
@@ -490,7 +505,7 @@
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
         var size = btn_mini.pressed ? '8' : '8';
         var ret = String.format(
-            '<b><span style="font-size: {0}px; text-transform:uppercase;font-family:Helvetica Neue,Verdana,Helvetica,Arial,sans-serif;color:#555">{1}</span></b>',
+            '<b><span class="bali-topic-status" style="font-size: {0}px;">{1}</span></b>',
             size, value );
            //+ '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background:#ddd;color:#222;font-weight:normal;text-transform:lowercase;text-shadow:none;"><small>' + value + '</small></span></div>'
         return ret;
@@ -564,6 +579,7 @@
     });
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
+        _checker: true,
         singleSelect: false,
         sortable: false,
         checkOnly: true
@@ -574,19 +590,25 @@
         header: false,
         stripeRows: true,
         autoScroll: true,
+        stateful: true, 
+        stateId: 'topic-grid',
         //enableHdMenu: false,
         store: store_topics,
         //enableDragDrop: true,
         dropable: true,
         autoSizeColumns: true,
         deferredRender: true,
-        ddGroup: 'lifecycle_dd',
+        ddGroup: 'explorer_dd',
         viewConfig: {forceFit: true},
+%if ( !$c->stash->{typeApplication} ){
         sm: check_sm,
+%}
         loadMask:'true',
         columns: [
+%if ( !$c->stash->{typeApplication} ){
             check_sm,
-            { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 80, sortable: true, renderer: render_topic_name  },
+%}
+            { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name  },
             { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
             { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
@@ -599,10 +621,13 @@
             { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
         ],
         tbar:   [ 
-                search_field,
+                search_field
+				,
+%if ( !$c->stash->{typeApplication} ){				
                 btn_add,
                 btn_edit,
                 btn_delete,
+%}				
                 //btn_labels
                 '->',
                 btn_reports,
@@ -612,21 +637,67 @@
         ],      
         bbar: ptool
     });
+	
     
-    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-        init_buttons('enable');
+//    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
+//        //init_buttons('enable');
+//      alert('pasa');
+//    });
+    
+    grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+        if(columnIndex == 0){
+            topicsSelected();
+        }
     });
+    
+    grid_topics.on('headerclick', function(grid, columnIndex, e) {
+        if(columnIndex == 0){
+            topicsSelected();
+        }
+    });
+
+    function topicsSelected(){
+        var topics_checked = getTopics();
+        if (topics_checked.length == 1){
+            var sw_edit;
+            check_sm.each(function(rec){
+                sw_edit = (rec.get('sw_edit'));
+            });
+            if(sw_edit){
+                init_buttons('enable'); 
+            }else{
+                btn_delete.enable();
+                btn_edit.disable();
+            }               
+            //init_buttons('enable');
+        }else{
+            if(topics_checked.length == 0){
+                init_buttons('disable');
+            }else{
+                btn_delete.enable();
+                btn_edit.disable();
+            }
+        }
+    }
+    function getTopics(){
+        var topics_checked = new Array();
+        check_sm.each(function(rec){
+            topics_checked.push(rec.get('topic_mid'));
+        });
+        return topics_checked
+    }   
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
         var title = _(r.get( 'category_name' )) + ' #' + r.get('topic_mid');
-        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') , title , { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
+        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title , { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
     });
     
     grid_topics.on( 'render', function(){
         var el = grid_topics.getView().el.dom.childNodes[0].childNodes[1];
-        var grid_topics_dt = new Ext.dd.DropTarget(el, {
-            ddGroup: 'lifecycle_dd',
+        var grid_topics_dt = new Baseliner.DropTarget(el, {
+            comp: grid_topics,
+            ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;
@@ -779,9 +850,13 @@
         selNodes = tree_filters.getChecked();
         if( selNodes.length > 0 ) button_no_filter.show();
           else button_no_filter.hide();
+		  
+
         for( var i=0; i<selNodes.length; i++ ) {
             var node = selNodes[ i ];
             type = node.parentNode.attributes.id;
+			//if (type == 'C') console.log(node);
+			var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
             switch (type){
                 //Views
                 case 'V':   
@@ -792,16 +867,20 @@
                             selected_views = Baseliner.merge(selected_views, d );
                             break;
                 //Labels
-                case 'L':   labels_checked.push(node.attributes.idfilter);
+                case 'L':	labels_checked.push(node_value);
+							//labels_checked.push(node.attributes.idfilter);
                             break;
                 //Statuses
-                case 'S':   statuses_checked.push(node.attributes.idfilter);
+                case 'S':   statuses_checked.push(node_value);
+							//statuses_checked.push(node.attributes.idfilter);
                             break;
                 //Categories
-                case 'C':   categories_checked.push(node.attributes.idfilter);
+                case 'C':	categories_checked.push(node_value);
+							//categories_checked.push(node.attributes.idfilter);
                             break;
                 //Priorities
-                case 'P':   priorities_checked.push(node.attributes.idfilter);
+                case 'P':	priorities_checked.push(node_value);
+							//priorities_checked.push(node.attributes.idfilter);
                             break;
             }
         }
@@ -814,7 +893,7 @@
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir };
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list };
         // object for merging with views 
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         
@@ -869,14 +948,14 @@
     var tree_filters = new Ext.tree.TreePanel({
                         region : 'east',
                         header: false,
-                        width: 180,
+                        width: 210,
                         split: true,
                         collapsible: true,
         tbar: [
             button_no_filter, '->', button_create_view, button_delete_view,
             '<div class="x-tool x-tool-expand-west" style="margin:-2px -4px 0px 0px" id="'+id_collapse+'"></div>'
         ],
-        dataUrl: "topic/filters_list",
+        dataUrl: "/topic/filters_list" + parse_typeApplication,
         split: true,
         colapsible: true,
         useArrows: true,
@@ -885,8 +964,69 @@
         rootVisible: false,
         root: tree_root,
         enableDD: true,
-        ddGroup: 'lifecycle_dd'
+        ddGroup: 'explorer_dd',
+		listeners: {
+			'checkchange': checkchange
+		}		
     });
+	
+	tree_filters.getLoader().on("beforeload", function(treeLoader, node) {
+		var loader = tree_filters.getLoader();
+		if(category_id){
+			loader.baseParams = {id_category: category_id};	
+		}
+		
+	});	
+	
+	var changing = false;
+	
+	function checkchange(node_selected, checked) {
+		var type = node_selected.parentNode.attributes.id;
+		if (!changing || type == 'V' ) {
+			if (type != 'V') {
+				changing = true;
+				var c3 = node_selected.attributes.checked3;
+				node_selected.getUI().toggleCheck( c3 );
+				changing = false;
+			}
+		
+		
+			if( stop_filters ) return;
+			
+			var swDisable = true;
+			var selNodes = tree_filters.getChecked();
+			var tot_view_defaults = 1;
+			Ext.each(selNodes, function(node){
+				
+				var type = node.parentNode.attributes.id;
+				if(type == 'V'){
+					//if(!eval('node.attributes.default')){   //Eval, I.E
+					if(!node.attributes['default']){   // I.E 8.0
+						button_delete_view.enable();
+						swDisable = false;
+						return false;
+					}else{
+						if(selNodes.length == tot_view_defaults){
+							swDisable = true;
+						}else{
+							swDisable = false;
+						}
+					}
+				}else{
+					swDisable = true;
+				}
+			});
+			
+			if (swDisable)
+				button_delete_view.disable();
+				
+			if( checked ) {
+				loadfilters();
+			} else {
+				loadfilters( node_selected );
+			}
+		}
+	}	
 
     tree_filters.on('beforechildrenrendered', function(node){
         /* Changing node text
@@ -897,6 +1037,7 @@
         */
         if(node.attributes.id == 'C' || node.attributes.id == 'L'){
             node.eachChild(function(n) {
+				//console.log(n.getUI());
                 var color = n.attributes.color;
                 if( ! color ) color = '#999';
                 var style = document.createElement('style');
@@ -918,50 +1059,24 @@
         }
     });
     
-    
-    tree_filters.on('checkchange', function(node_selected, checked) {
-        if( stop_filters ) return;
-        var swDisable = true;
-        var selNodes = tree_filters.getChecked();
-        var tot_view_defaults = 1;
-        Ext.each(selNodes, function(node){
-            var type = node.parentNode.attributes.id;
-            if(type == 'V'){
-                if(!node.attributes.default){
-                    button_delete_view.enable();
-                    swDisable = false;
-                    return false;
-                }else{
-                    if(selNodes.length == tot_view_defaults){
-                        swDisable = true;
-                    }else{
-                        swDisable = false;
-                    }
-                }
-            }else{
-                swDisable = true;
-            }
-        });
-        if (swDisable)
-            button_delete_view.disable();
-        if( checked ) {
-            loadfilters();
-        } else {
-            loadfilters( node_selected );
-        }
-    }); 
-        
     // expand the whole tree
     tree_filters.getLoader().on( 'load', function(){
         tree_root.expandChildNodes();
 
         // draw the collapse button onclick event 
         var el_collapse = Ext.get( id_collapse );
-        if( el_collapse )
+        if( el_collapse ){
             el_collapse.dom.onclick = function(){ 
                 panel.body.dom.style.overflow = 'hidden'; // collapsing shows overflow, so we hide it
                 tree_filters.collapse();
             };
+        }
+        // select filter for current category
+        //////if( params.id_category ){
+        //////    var chi = tree_filters.root.findChild('idfilter', params.id_category, true );
+        //////    if( chi ) chi.getUI().toggleCheck(true);
+        //////
+        //////}
     });
         
     var panel = new Ext.Panel({
@@ -980,10 +1095,15 @@
         ]
     });
     
-    var query_id = '<% $c->stash->{query_id} %>';
-    //var category_id = '<% $c->stash->{category_id} %>';
-    store_topics.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>', categories: '<% $c->stash->{category_id} %>'}});
-    store_label.load();
+    store_topics.load({
+        params: {
+            start:0 , limit: ps,
+            topic_list: params.topic_list,
+            query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>',
+            typeApplication: typeApplication
+        }
+    });
+    //store_label.load();
     
     return panel;
 })

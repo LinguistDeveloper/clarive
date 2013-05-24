@@ -4,12 +4,12 @@
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
         'type', 'pretty_properties', 'name', 'item', 'ci_form', 'active',
-        'class','versionid','ts','tags','data','properties','icon','collection']);
+        'class','versionid','ts','tags','data','properties','icon','collection', 'title' ]);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/ci/gridtree',
-       baseParams: params,
+       baseParams: Ext.apply( { pretty: true }, params ),
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
     }); 
 
@@ -28,18 +28,22 @@
 
     var ci_edit = function(store, rec){
         var data = store.baseParams;
-        var classname = data.class ;
+        Baseliner.add_tabcomp( '/comp/ci-editor.js', null, { load: true, mid: rec.mid, action:'edit', bl: data.bl } );
+        /* DEPRECATED:
+        //var classname = data.class ;
+        var classname = data["class"] ;
         Baseliner.ajaxEval( '/ci/load', { mid: rec.mid }, function(res) {
             if( res.success ) {
                 var rec = res.rec;
-                Baseliner.add_tabcomp( '/comp/ci-editor.js', _('CI %1' , rec.name ), 
                     {
                         _parent_grid: ci_grid.id,
                         collection: rec.collection,
                         item: rec.collection,
                         has_bl: data.has_bl,
+                        has_description: data.has_description,
                         bl: data.bl,
-                        class: rec.class,
+                        //class: rec.class,
+                        "class": rec["class"],
                         ci_form: rec.ci_form,
                         mid: rec.mid,
                         rec: rec,
@@ -51,6 +55,7 @@
                 Ext.Msg.alert( _('Error'), _(res.msg) );
             }
         });
+        */
     };
 
     // only globals can be seen from grid
@@ -60,12 +65,25 @@
             ci_add( g.getStore().getAt(ix).data );
     };
 
+    var get_valid_selections = function(){
+        var arr = [];
+        if (check_sm.hasSelection()) {
+           Ext.each( check_sm.getSelections(), function(r){
+              if( r.data.type == 'object' ) {
+                arr.push( r );
+              }
+           });
+        }
+        return arr;
+    };
+
     var ci_add = function(){
         var data = store_ci.baseParams;
-        var classname = data.class ;
+        //var classname = data.class ;
+        var classname = data["class"] ;
         var rec = {};
         if (check_sm.hasSelection()) {
-           var sel = check_sm.getSelections();
+           var sel = get_valid_selections();
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
         } 
@@ -75,18 +93,20 @@
                 item: data.collection,
                 collection: data.collection,
                 has_bl: data.has_bl,
+                has_description: data.has_description,
                 rec: rec,
                 data: data,
-                class: data.class,
+                //class: data.class,
+                "class": data["class"],
                 tab_icon: data.icon,
                 action: 'add'
         });
     };
 
-    // Usage:   var checked = Baseliner.multi_check_data( check_sm, 'mid' );
-    Baseliner.multi_check_data = function(obj, field){
+    // Usage:   var checked = multi_check_data( check_sm, 'mid' );
+    var multi_check_data = function(obj, field){
        if (obj.hasSelection()) {
-           var sel = obj.getSelections();
+           var sel = get_valid_selections();
            var data = [];
            for( var i=0; i<sel.length; i++ ) {
                data.push( sel[i].data[field] );
@@ -97,7 +117,7 @@
     };
 
     var ci_delete = function(){
-        var checked = Baseliner.multi_check_data( check_sm, 'mid' );
+        var checked = multi_check_data( check_sm, 'mid' );
         if ( checked.count > 0 ) {
             Baseliner.ajaxEval( '/ci/delete', { mids: checked.data }, function(res) {
                 if( res.success ) {
@@ -108,6 +128,39 @@
                     Ext.Msg.alert( _('CI'), res.msg );
                 }
             });
+        }
+    };
+
+    var ci_ping = function(){
+        var checked = multi_check_data( check_sm, 'mid' );
+        if ( checked.count > 0 ) {
+            Baseliner.ajaxEval( '/ci/ping', { mids: checked.data }, function(res) {
+                if( res.success ) {
+                    alert(res.msg);
+                } else {
+                    Ext.Msg.alert( _('CI'), res.msg );
+                }
+            });
+        }
+    };
+
+    var ci_export = function(format, mode){
+        var checked = multi_check_data( check_sm, 'mid' );
+        if ( checked.count > 0 ) {
+            if( format == 'html' ) {
+                window.open('/ci/export_html?mids=' + checked.data.join('&mids=') + '&mode=' + mode );
+            } else {
+                Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format }, function(res) {
+                    if( res.success ) {
+                        var win = new Ext.Window({ height: 400, width: 800, items: { xtype:'textarea', value: res.data }, layout:'fit', maximizable: true });       
+                        win.show();
+                    } else {
+                        Baseliner.error( _('CI'), res.msg );
+                    }
+                });
+            }
+        } else {
+            Baseliner.message( _('Error'), _('Select rows first') );
         }
     };
 
@@ -125,6 +178,19 @@
         if( rec.data.type == 'class' ) {
             // we create objects
             value = String.format('<a href="javascript:Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
+        } 
+        else if( rec.data.type == 'topic' ) {
+            var d = rec.data.data;
+            return Baseliner.topic_name({
+                mid: rec.data.mid, 
+                mini: false,
+                size: '11',
+                category_name: d.name,
+                category_color:  d.color,
+                category_icon: d.icon,
+                is_changeset: d.is_changeset,
+                is_release: d.is_release
+            }) + ' ' + rec.data.title;
         }
         var ed = String.format('Baseliner.ci_edit(\'{0}\',{1})', ci_grid.id, rowIndex, value );
         var ret = '<table><tr><td width="1">';
@@ -202,13 +268,36 @@
             { xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },
+            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon', 
+                menu:[
+                    { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },
+                    { text:_('JSON'), icon: '/static/images/icons/json.png', handler:function(){ ci_export('json') } },
+                    { text:_('HTML'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'shallow') } },
+                    { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } }
+                ]
+            }
         ],
         viewConfig: {
             //headersDisabled: true,
             enableRowBody: true,
             scrollOffset: 2,
             forceFit: true
+            /*,
+            getRowClass: function(record, index, p, store){
+                var css='';
+                p.body='';
+                var title = record.data.title;
+                if( title && title.length > 0  ) {
+                    p.body +='<div style="color: #333; font-weight: normal; padding-left: 100px; margin: 0 0 5 150;">';
+                    //p.body += '<img style="vertical-align:middle" src="/static/images/icons/post.gif">';
+                    p.body += '&nbsp;' + title + '</div>';
+                    css += ' x-grid3-row-expanded '; 
+                }
+                //css += index % 2 > 0 ? ' level-row info-odd ' : ' level-row info-even ' ;
+                return css;
+            } */
         },
         master_column_id : id_auto,
         autoExpandColumn: id_auto,
@@ -239,7 +328,7 @@
         ci_edit( grid.getStore(), grid.getStore().getAt(rowIndex).data );
     });
 
-    // Lifecycle tree node listener on click
+    // Explorer tree node listener on click
     /*  TODO needs to setTimeout on dblclick
     var click_foo = function(n, ev){ 
         if( ! ci_grid.isVisible() ) return;
@@ -252,9 +341,9 @@
         if( search_field.hasSearch ) store_ci.baseParams.query = search_field.getRawValue();
         store_ci.load(); 
     };
-    var ev = Baseliner.lifecycle.on('click', click_foo );
+    Baseliner.explorer.on('click', click_foo );
     ci_grid.on('destroy', function(){
-        Baseliner.lifecycle.removeListener('click', click_foo );
+        Baseliner.explorer.removeListener('click', click_foo );
     });
     */
 
@@ -268,7 +357,8 @@
             obj.params.mid = row.data.mid;
             obj.params.item = row.data.item;
             obj.params.type = row.data.type;
-            obj.params.class = row.data.class;
+            //obj.params.class = row.data.class;
+            obj.params["class"] = row.data["class"];
         }
     });
     return ci_grid;

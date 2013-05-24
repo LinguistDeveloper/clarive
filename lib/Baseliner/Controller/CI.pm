@@ -68,6 +68,7 @@ sub dispatch {
             parent => $p->{anode},
             start  => $p->{start},
             limit  => $p->{limit},
+            pretty => $p->{pretty},
             query  => $p->{query}
         );
     } elsif ( $p->{type} eq 'object' ) {
@@ -79,6 +80,7 @@ sub dispatch {
             start      => $p->{start},
             limit      => $p->{limit},
             query      => $p->{query},
+            pretty     => $p->{pretty},
             collection => $p->{collection}
         );
     } elsif ( $p->{type} eq 'depend_to' ) {
@@ -88,6 +90,17 @@ sub dispatch {
             start      => $p->{start},
             limit      => $p->{limit},
             query      => $p->{query},
+            pretty     => $p->{pretty},
+            collection => $p->{collection}
+        );
+    } elsif ( $p->{type} eq 'ci_request' ) {
+        ( $total, @tree ) = $self->tree_ci_request(
+            mid        => $p->{mid},
+            parent     => $p->{anode},
+            start      => $p->{start},
+            limit      => $p->{limit},
+            query      => $p->{query},
+            pretty     => $p->{pretty},
             collection => $p->{collection}
         );
     }
@@ -147,6 +160,7 @@ sub tree_classes {
             class      => $_,
             icon       => $_->icon,
             has_bl     => $_->has_bl,
+            has_description     => $_->has_description,
             versionid    => '',
             ts         => '-',
             properties => '',
@@ -162,12 +176,19 @@ sub form_for_collection {
     return $component_exists ? $ci_form : '';
 }
 
+# adjacency flat tree
 sub tree_objects {
     my ($self, %p)=@_;
     my $class = $p{class};
     my $collection = $p{collection} // $class->collection;
-    my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
-    my $where;
+    my $opts = { order_by=>{ -asc=>['mid'] } };
+    my $page;
+    if( length $p{start} && length $p{limit} ) {
+        $page =  to_pages( start=>$p{start}, limit=>$p{limit} );
+        $opts->{rows} = $p{limit};
+        $opts->{page} = $page;
+    }
+    my $where = {};
     $p{query} and $where = query_sql_build(
            query  => $p{query},
            fields => {
@@ -175,21 +196,28 @@ sub tree_objects {
             }
     );
     $where->{collection} = $collection;
+    $where = { %$where, %{ $p{where} } } if $p{where};
+    
+    if( $p{mids} ) {
+        $where->{mid} = $p{mids};
+    }
 
-    my $rs = Baseliner->model('Baseliner::BaliMaster')->search(
-        $where, { order_by=>{ -asc=>['mid'] }, rows=>$p{limit}, page=>$page }
-    );
-    my $total = $rs->pager->total_entries;
-    my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
+    my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
+    my $total = defined $page ? $rs->pager->total_entries : $rs->count;
+    my (%forms, %icons);  # caches
     my @tree = map {
         my $data = _load( $_->{yaml} );
-        my $ci_form = $self->form_for_collection( $_->{collection} );
+        my $ci_form = $forms{ $_->{collection} } 
+            // ( $forms{ $_->{collection} } = $self->form_for_collection( $_->{collection} ) );
+        
         # list properties: field: value, field: value ...
-        my $pretty = join(', ',map {
-            my $d = $data->{$_};
-            $d = '**' x length($d) if $_ =~ /password/;
-            "$_: $d"
-        } grep { length $data->{$_} } keys %$data );
+        my $pretty = $p{pretty} 
+            ?  do { join(', ',map {
+                my $d = $data->{$_};
+                $d = '**' x length($d) if $_ =~ /password/;
+                "$_: $d"
+                } grep { length $data->{$_} } keys %$data ) }
+            : '';
         my $noname = $_->{collection}.':'.$_->{mid};
         +{
             _id               => $_->{mid},
@@ -201,9 +229,10 @@ sub tree_objects {
             ci_form           => $ci_form,
             type              => 'object',
             class             => $class,
-            icon              => $class->icon,
+            icon              => ( $icons{ $class } // ( $icons{$class} = $class->icon ) ),
             ts                => $_->{ts},
             bl                => $_->{bl},
+            description       => $data->{description},
             active            => ( $_->{active} eq 1 ? \1 : \0 ),
             data              => $data,
             properties        => $_->{yaml},
@@ -235,10 +264,9 @@ sub tree_object_depend {
         $where, { %$join, order_by=>{ -asc=>['mid'] }, rows=>$p{limit}, page=>$page }
     );
     my $total = $rs->pager->total_entries;
-    #my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my $cnt = $p{parent} * 10;
     my @tree = map {
-        my $class = "BaselinerX::CI::$p{collection}";
+        my $class = 'BaselinerX::CI::' . $_->{$rel_type}{collection};
         my $data = _load( $_->{yaml} );
         my $bl = [ split /,/, $_->{bl} ];
         +{
@@ -246,7 +274,7 @@ sub tree_object_depend {
             _parent    => $p{parent} || undef,
             _is_leaf   => \0,
             mid        => $_->{$rel_type}{mid},
-            item       => ( $_->{name} // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
+            item       => ( $_->{$rel_type}{name} // $data->{name} // $_->{$rel_type}{collection} ).':'.$_->{$rel_type}{mid}, # // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
             type       => 'object',
             class      => $class,
             bl         => $bl,
@@ -258,6 +286,41 @@ sub tree_object_depend {
             versionid    => $_->{versionid},
             }
     } $rs->hashref->all;
+    _debug \@tree;
+    ( $total, @tree );
+}
+
+sub tree_ci_request {
+    my ($self, %p)=@_;
+    my $class = $p{class};
+    my $where = {};
+    my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
+    my @rs = DB->BaliTopic->search(
+        { from_mid=>$p{mid}, rel_type=>'ci_request' },
+        { prefetch=>['parents','status','categories'] },
+    )->hashref->all;
+    my $total = @rs;
+    my $cnt = $p{parent} * 10;
+    my @tree = map {
+        +{
+            _id        => ++$cnt,
+            _parent    => $p{parent} || undef,
+            _is_leaf   => \1,
+            mid        => $_->{mid},
+            item       => $_->{categories}{name} . ' #' . $_->{mid},
+            title      => $_->{title},
+            type       => 'topic',
+            class      => 'BaselinerX::CI::topic',
+            bl         => $p{bl},
+            collection => $_->{status}{name}, 
+            icon       => '/static/images/icons/topic_one.png',
+            ts         => $_->{master_to}{ts},
+            data       => { %{ $_->{categories} } }, 
+            properties => '',
+            versionid    => '',
+        }
+    } @rs;
+    _debug \@tree;
     ( $total, @tree );
 }
 
@@ -275,7 +338,7 @@ sub tree_object_info {
             item     => _loc('Depends On'), 
             type     => 'depend_from',
             class    => '-',
-            icon     => '/static/images/ci/in.png',
+            icon     => '/static/images/ci/out.png',
             ts       => '-',
             versionid  => '',
         },
@@ -287,7 +350,19 @@ sub tree_object_info {
             item     => _loc('Depend On Me'), 
             type     => 'depend_to',
             class    => '-',
-            icon     => '/static/images/ci/out.png',
+            icon     => '/static/images/ci/in.png',
+            ts       => '-',
+            versionid  => '',
+        },
+        {
+            _id      => $cnt++,
+            _parent  => $p{parent} || undef,
+            _is_leaf => \0,
+            mid      => $mid,
+            item     => _loc('Requests'), 
+            type     => 'ci_request',
+            class    => '-',
+            icon     => '/static/images/icons/topic.png',
             ts       => '-',
             versionid  => '',
         },
@@ -323,24 +398,52 @@ sub store : Local {
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
+    my $where = {};
+    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
+    if ( $p->{mid} ) {
+        my @rel_items =
+            map { $_->{to_mid} }
+            Baseliner->model('Baseliner::BaliMasterRel')->search( { from_mid => $p->{mid}, rel_type => $p->{rel_type} } )
+            ->hashref->all;
+        $where->{mid} = \@rel_items;
+    }
+    
+    my $mids = delete $p->{mids};
+    if( length $mids ) {
+        $mids = [ grep { defined } split /,+/, $mids ] unless ref $mids eq 'ARRAY';
+    }
+    
     my @data;
     my $total = 0; 
 
     if( my $class = $p->{class} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} );
     }
     elsif( my $role = $p->{role} ) {
-        $role = "Baseliner::Role::CI::$role" if $role !~ /^Baseliner/;
-        for my $class(  packages_that_do( $role ) ) {
-            my ($t, @rows) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query} );
+        my @roles;
+        for my $r ( _array $role ) {
+            if( $r !~ /^Baseliner/ ) {
+                $r = $r eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
+            }
+            push @roles, $r;
+        }
+        for my $class(  packages_that_do( @roles ) ) {
+            my ($t, @rows) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, mids=>$mids, pretty=>$p->{pretty});
             push @data, @rows; 
             $total += $t;
         }
     }
-
-    _debug _dump \@data;
+    
+    if( ref $mids ) { 
+        # return data ordered like the mids
+        my @data_ordered;
+        my %h = map { $_->{mid} => $_ } @data;
+        push @data_ordered, delete $h{ $_ } for @$mids;
+        push @data_ordered, values %h; # the rest of them at the bottom
+        @data = @data_ordered; 
+    }
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
     $c->forward('View::JSON');
@@ -442,6 +545,10 @@ Create or update a CI.
 sub update : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
+    # cleanup
+    for my $k ( keys %$p ) {
+        delete $p->{$k} if $k =~ /^ext-comp-/
+    }
     # don't store in yaml
     my $name = delete $p->{name};
     my $bl = delete $p->{bl};
@@ -481,9 +588,15 @@ sub load : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
     my $mid = $p->{mid};
+    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     try {
         my $obj = Baseliner::CI->new( $mid );
+        my $class = ref $obj;
         my $rec = $obj->load;
+        $rec->{has_bl} = $obj->has_bl;
+        $rec->{has_description} = $obj->has_description;
+        $rec->{classname} = $rec->{class} = $class;
+        $rec->{icon} = $obj->icon;
         $rec->{active} = $rec->{active} ? \1 : \0;
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
     } catch {
@@ -507,6 +620,118 @@ sub delete : Local {
         $c->stash->{json} = { success=>\0, msg=>_loc('Error deleting CIs: %1', $err) };
     };
     $c->forward('View::JSON');
+}
+
+sub export : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $mids = delete $p->{mids};
+    my $format = $p->{format} || 'yaml';
+
+    try {
+        my @cis = map { _ci( $_ ) } _array $mids;
+        my $data;
+        if( $format eq 'yaml' ) {
+            $data = _dump( \@cis );
+        }
+        elsif( $format eq 'json' ) {
+            $data = _encode_json( [ map { _damn( $_ ) } @cis ] );
+        }
+        else {
+            _fail _loc "Unknown export format: %1", $format;
+        }
+        $c->stash->{json} = { success=>\1, msg=>_loc('CIs exported ok' ), data=>$data };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg=>_loc('Error exporting CIs: %1', $err) };
+    };
+    $c->forward('View::JSON');
+}
+
+sub export_html : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $mids = delete $p->{mids};
+    my $format = $p->{format} || 'yaml';
+
+    my @cis = map { _ci( $_ ) } _array $mids;
+    $c->stash->{cis} = \@cis;
+    $c->stash->{template} = '/comp/ci-data.html';
+}
+
+sub url : Local {
+    my ($self, $c) = @_;
+    my $mid = $c->req->params->{mid};
+    $c->stash->{json} = try {
+        my $ci = Baseliner::CI->new( $mid );
+        { success=>\1, url=>$ci->url, title=>$ci->load->{name} };
+    } catch {
+        { success=>\0, msg=>shift() };
+    };
+    $c->forward('View::JSON');
+}
+
+sub json_tree : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $mid = delete $p->{mid};
+    my $direction = delete $p->{direction} || 'related';
+    my $k = 1;
+    $c->stash->{json} = try {
+        my $ci = _ci( $mid );
+        my @rels = $ci->$direction( depth=>2, mode=>'tree', %$p );
+        my $recurse;
+        $recurse = sub {
+            my $chi = shift;
+            $k++;
+            +{
+                id       => $k . '-' . $chi->{mid},
+                name     => $chi->{name},
+                data => {
+                    '$type' => 'icon',
+                    icon     => $chi->{_ci}{ci_icon},
+                },
+                #data     => { '$type' => 'arrow' },
+                children => [ map { $recurse->($_) } _array( $chi->{ci_rel} ) ]
+            }
+        };
+        my @data = map { $recurse->( $_ ) } @rels; 
+        my $d = {
+            id => $mid, 
+            name => $ci->name, 
+            data => {
+                icon => $ci->icon
+            },
+            children => \@data,
+        };
+        _debug $d;
+        { success=>\1, data=>$d };
+    } catch {
+        { success=>\0, msg=>shift() };
+    };
+    $c->forward('View::JSON');
+}
+
+sub ping : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my @mids = _array delete $p->{mids};
+    try {
+        my $msg;
+        for my $mid ( @mids ) {
+            my $ci = _ci( $mid );
+            if ( $ci->does( 'Baseliner::Role::CI::Infrastructure' ) ) {
+                my ( $status, $out ) = $ci->ping;
+                $msg .= "\nCI: ".$ci->name . "\nStatus: " . $status . "\nOutput:\n" . $out . "\n----------------------------------------------";
+            }
+        } ## end for $mid ( @mids )
+        $c->stash->{json} = {success => \1, msg => $msg};
+    } ## end try
+    catch {
+        $c->stash->{json} = {success => \0, msg => shift()};
+    };
+    $c->forward('View::JSON');
+
 }
 
 1;

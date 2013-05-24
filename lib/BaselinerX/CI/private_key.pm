@@ -1,5 +1,5 @@
 package BaselinerX::CI::private_key;
-use Moose;
+use Baseliner::Moose;
 
 has script => qw(is rw isa Any);
 

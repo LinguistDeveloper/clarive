@@ -1,10 +1,16 @@
 package BaselinerX::CI::ssh_script;
-use Moose;
+use Baseliner::Moose;
 
-has server => qw(is rw isa CI coerce 1); # ssh_agent
+has_ci server => handles=>['output','rc']; # ssh_agent
 has script => qw(is rw isa Any);
 
 with 'Baseliner::Role::CI::Script';
+
+sub rel_type {
+    {
+        server    => [ from_mid => 'ssh_script_server' ],
+    };
+}
 
 sub run {
     my ($self) = @_;
@@ -16,6 +22,7 @@ sub run {
 sub args { @{ shift->arg } }
 
 sub error {}
-sub rc {}
+
+sub ping {'OK'};
 
 1;

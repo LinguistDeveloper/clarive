@@ -1,8 +1,22 @@
 package BaselinerX::CI::generic_server;
-use Moose;
+use Baseliner::Moose;
 with 'Baseliner::Role::CI::Server';
 
 sub error {}
 sub rc {}
+sub ping {
+	my ( $self ) = @_;
+
+	my $return = 'KO';
+
+	my $server = $self->hostname;
+	my $out = `ping -c 1 "$server"`;
+	my $rc = $? >> 8;
+	if ( $rc == 0 ) {
+		$return = 'OK';
+	}
+	return ( $return, $out );
+
+};
 
 1;

@@ -1,5 +1,5 @@
 package BaselinerX::CI::biztalk;
-use Moose;
+use Baseliner::Moose;
 with 'Baseliner::Role::CI::ApplicationServer';
 
 sub error {}

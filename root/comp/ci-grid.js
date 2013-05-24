@@ -82,7 +82,7 @@
             { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Etiquetar', icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: 'Exportar', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' },
+            { xtype:'button', text: 'Exportar', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon' }
         ],
         bbar: new Ext.PagingToolbar({
             store: store_ci,
@@ -105,17 +105,19 @@
             { header: _('Data'), hidden: false, width: 250, dataIndex: 'data', renderer: render_mapping_long }
         ]
     });
-    var click_foo = function(n, ev){ 
-        if( ! grid.isVisible() ) return;
-        var data = n.attributes.data;
-        if( data.class == undefined ) return;
-        grid.setTitle(_('CI: %1', data.item ) );
-        store_ci.load({ params: data });
-    };
-    var ev = Baseliner.lifecycle.on('click', click_foo );
-    grid.on('destroy', function(){
-        Baseliner.lifecycle.removeListener('click', click_foo );
-    });
+    if( Baseliner.explorer ) {
+        var click_foo = function(n, ev){ 
+            if( ! grid.isVisible() ) return;
+            var data = n.attributes.data;
+            if( data.class == undefined ) return;
+            grid.setTitle(_('CI: %1', data.item ) );
+            store_ci.load({ params: data });
+        };
+        Baseliner.explorer.on('click', click_foo );
+        grid.on('destroy', function(){
+            Baseliner.explorer.removeListener('click', click_foo );
+        });
+    }
 
     //store_ci.load();
     return grid;

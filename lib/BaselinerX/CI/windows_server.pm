@@ -1,8 +1,9 @@
 package BaselinerX::CI::windows_server;
-use Moose;
+use Baseliner::Moose;
 with 'Baseliner::Role::CI::Server';
 
 sub error {}
 sub rc {}
+sub ping {'OK'};
 
 1;

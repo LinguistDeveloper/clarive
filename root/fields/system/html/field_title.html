@@ -1,0 +1,34 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+%use Date::Parse;
+%use DateTime;
+
+%#my $date = $data->{created_on};
+%#my $epoch = str2time( $date );
+%#my $datetime = DateTime->from_epoch(epoch => $epoch);
+
+    <tr>
+        <td style="vertical-align: middle">
+            <span class="label" style="background: <% $data->{color_category} %>"><% $data->{name_category} %> #<% $data->{topic_mid} %></span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan='2'>
+            <h3><% eval('$data->{' . $meta->{bd_field} . '}') %></h3>
+        </td>    
+    </tr>
+    <tr >
+        <td style="padding: 5 0 10 0; color: #999">
+            <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
+            <% $data->{created_by}%>, <small><%$data->{created_on}%></small>    
+% my $id = Baseliner::Utils::_nowstamp();
+% if( _array( $data->{labels} ) ) {        
+% foreach my $label ( _array( $data->{labels} ) ) {
+        <span class='label' style='font-size: 9px;padding:1px 4px 1px 4px;margin-right:4px;color:white;background-color:<% $label->{color} %>'><% $label->{name} %></span>
+% }
+% }
+        </td>
+    </tr>

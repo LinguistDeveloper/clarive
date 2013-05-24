@@ -1,97 +1,241 @@
 (function(params){
-    if( params.rec == undefined ) params.rec = {};            // master row record
-    if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
-    var mid = params.mid;
-    var btn_form_ok = new Ext.Button({
-        text: _('Accept'),
-        icon:'/static/images/icons/save.png',
-        cls: 'x-btn-icon-text',
-        type: 'submit',
-        handler: function() {
-            var form2 = form.getForm();
-            if ( form2.isValid() ) {
-               form2.submit({
-                   params: {action: params.action, mid: params.mid, collection:params.collection },
-                   success: function(f,a){
-                        Baseliner.message(_('Success'), a.result.msg );
-                        form.destroy();
-                   },
-                   failure: function(f,a){
-                       Ext.Msg.alert( _('Error'), a.result.msg );
-                   }
-               });
+    var load_form = function(params){
+        if( params.rec == undefined ) params.rec = {};            // master row record
+        //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
+        var mid = params.mid;
+        var beforesubmit = [];
+        var is_active = params.rec.active == undefined ? true : params.rec.active;
+
+        var activate_save = function(){
+            setTimeout( function(){
+                btn_form_save.enable();
+            }, 1000);
+        };
+        var submit_form = function( close_form ){
+                var form2 = form.getForm();
+                if ( form2.isValid() ) {
+                   var flag = true;
+                   Ext.each( beforesubmit, function( cb ){
+                      var ret = cb( form2 );
+                      if( !ret ) flag = false;
+                   });
+                   form2.submit({
+                       params: {action: params.action, mid: params.mid, collection:params.collection },
+                       success: function(f,a){
+                            mid = params.mid = a.result.mid;
+                            params.action = 'edit';
+                            set_txt();
+                            Baseliner.message(_('Success: %1', mid), a.result.msg );
+                            if( close_form ) form.destroy();
+                            activate_save();
+                       },
+                       failure: function(f,a){
+                           activate_save();
+                           Ext.Msg.alert( _('Error'), a.result.msg );
+                       }
+                   });
+                }
+                else {
+                    btn_form_save.enable();
+                }
+        };
+
+        var calendar;
+        var show_calendar = function(){
+            if( btn_form_calendar.pressed ) {
+                if( ! calendar ) {
+                    var cal = { id_cal: -1, bl: params.rec.bl || '*', ns: mid, name: params.rec.name };
+                    Baseliner.ajaxEval( '/job/calendar', cal, function(comp){
+                        calendar = comp;
+                        cardpanel.add( calendar );
+                        cardpanel.getLayout().setActiveItem( calendar );
+                    });
+                } else {
+                    cardpanel.getLayout().setActiveItem( calendar );
+                }
+            } else {
+                cardpanel.getLayout().setActiveItem( 0 );
             }
         }
-    });
-
-    var tb = new Ext.Toolbar({
-        items: [
-            btn_form_ok
-            //btn_form_reset
-        ]
-    });
-    var fieldset = new Ext.form.FieldSet({
-        defaults: { 
-           anchor: '70%',
-           msgTarget: 'under',
-           allowBlank: false
-        },
-        hidden: true,
-        style: { 'margin-top':'30px' },
-        title: _(params.collection),
-        collapsible: true,
-        autoHeight : true
-    });
-    var txt = (params.action == 'add' ? 'New: %1' : 'Edit: %1' );
-    var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'] });
-    var form = new Ext.FormPanel({
-        url:'/ci/update',
-        tbar: tb,
-        defaults: {
-           allowBlank: false,
-           anchor: '70%' 
-        },
-        bodyStyle:'padding: 10px 0px 0px 15px',
-        items: [
-            { xtype: 'container', html:_( txt, params.data.item), style:{'font-size': '20px', 'margin-bottom':'20px'} },
-            { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name },
-            { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: params.rec.active, allowBlank: true },
-            ( params.has_bl > 0 ? bl_combo : [] ),
-            //Baseliner.combo_baseline({ value: params.bl || '*' }),
-            //{ xtype: 'hidden', name:'collection', value: params.collection },
-            //{ xtype: 'hidden', name:'mid' , value: params.rec.mid },
-            fieldset
-        ]
-    });
-    form.on( 'afterrender', function(){
-        params.rec.collection = params.collection;
-        bl_combo.getStore().on( 'load', function(){
-            bl_combo.setValue( params.rec.bl );
-        });
-        if( params.ci_form ) {
-            Baseliner.ajaxEval( params.ci_form, params, function(res){
-                if( res != undefined ) {
-                    fieldset.show();
-                    fieldset.add( res );
-                    fieldset.doLayout();
-                    //form.getForm().loadRecord( params.rec );
-                    form.getForm().setValues( params.rec );
+        
+        var data_panel;
+        var show_data = function(){
+            if( btn_data.pressed ) {
+                if( ! data_panel ) {
+                    var save_foo = function(de, de_data){
+                        form.getForm().setValues( de_data ); 
+                    };
+                    data_panel = new Baseliner.DataEditor({ data: params.rec, hide_cancel: true, save_only: true, on_save: save_foo });
+                    cardpanel.add( data_panel );
+                    cardpanel.getLayout().setActiveItem( data_panel );
+                } else {
+                    cardpanel.getLayout().setActiveItem( data_panel );
                 }
+            } else {
+                cardpanel.getLayout().setActiveItem( 0 );
+            }
+        };
+        
+        var btn_form_ok = new Ext.Button({
+            text: _('Close'),
+            icon:'/static/images/icons/left.png',
+            cls: 'x-btn-icon-text',
+            type: 'submit',
+            handler: function() { cardpanel.destroy() }
+        });
+
+        var btn_form_save = new Ext.Button({
+            text: _('Save'),
+            icon:'/static/images/icons/save.png',
+            cls: 'x-btn-icon-text',
+            type: 'submit',
+            handler: function() { 
+                btn_form_save.disable();
+                submit_form( false )
+            }
+        });
+
+        var btn_data = new Ext.Button({
+            text: _('Data'),
+            icon:'/static/images/icons/detail.png',
+            cls: 'x-btn-icon-text',
+            enableToggle: true, pressed: false, toggleGroup: 'ci-editor-panel',
+            handler: show_data
+        });
+
+        var btn_form_calendar = new Ext.Button({
+            text: _('Calendar'),
+            icon:'/static/images/icons/calendar.png',
+            cls: 'x-btn-icon-text',
+            enableToggle: true, pressed: false, toggleGroup: 'ci-editor-panel',
+            handler: show_calendar
+        });
+
+        cardpanel.getTopToolbar().add([
+            btn_form_ok, btn_form_save, '-', btn_form_calendar, btn_data //btn_form_reset
+        ]);
+        var fieldset = new Ext.form.FieldSet({
+            defaults: { 
+               //anchor: '90%',
+               msgTarget: 'under'
+            },
+            hidden: true,
+            style: { 'margin-top':'30px' },
+            title: _(params.collection),
+            collapsible: true,
+            autoHeight : true
+        });
+        var set_txt = function(){
+            var txt = (params.action == 'add' ? 'New: %1' : 'Edit: %1 (%2)' );
+            txt_cont.update( _( txt, params.item, params.mid ) );
+        };
+        var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
+        var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'] });
+        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 };
+        var form = new Ext.FormPanel({
+            url:'/ci/update',
+            defaults: {
+               allowBlank: false,
+               anchor: '90%' 
+            },
+            autoScroll: true,
+            bodyStyle:'padding: 10px 0px 0px 15px',
+            items: [
+                txt_cont,
+                { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, height: 30,
+                    style:'font-size: 18px;' },
+                { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
+                ( params.has_bl > 0 ? bl_combo : [] ),
+                ( params.has_description > 0 ? desc : [] ),
+                fieldset
+            ]
+        });
+        txt_cont.on('afterrender', function(){
+            set_txt();
+        });
+        form.on( 'afterrender', function(){
+            params.rec.collection = params.collection;
+            params.form = form;
+            bl_combo.getStore().on( 'load', function(){
+                bl_combo.setValue( params.rec.bl );
+            });
+            if( params.ci_form ) {
+                Baseliner.ajaxEval( params.ci_form, params, function(res){
+                    if( res != undefined ) {
+                        var fields;
+                        if( Ext.isObject( res ) ) {
+                            fields = res.fields;
+                            if( res.beforesubmit ) beforesubmit.push( res.beforesubmit );
+                        } else {
+                            fields = res;
+                        }
+                        fieldset.show();
+                        fieldset.add( fields );
+                        fieldset.doLayout();
+                        //form.getForm().loadRecord( params.rec );
+                        form.getForm().setValues( params.rec );
+                    }
+                });
+            } else {
+                //form.getForm().loadRecord( params.rec );
+            }
+        });
+        form.on('destroy', function(){
+            // reload parent grid
+            var grid_id = params._parent_grid;
+            if( ! grid_id ) return;
+            var grid = Ext.getCmp( grid_id );
+            if( grid ) {
+                var sm = grid.getSelectionModel();
+                if( sm ) sm.clearSelections();
+                var s = grid.getStore();
+                if( s ) s.reload();
+            }
+        });
+        return form;
+    };
+    var cardpanel = new Ext.Panel({
+       layout: 'card',
+       autoScroll: true,
+       tbar: []
+    });
+    cardpanel.on('afterrender', function(){
+        if( params.load ) {
+            Baseliner.ajaxEval( '/ci/load', { mid: params.mid }, function(res) {
+                var rec = res.rec;
+                var c = Ext.apply({
+                        collection: rec.collection,
+                        item: rec.collection,
+                        has_bl: rec.has_bl,
+                        has_description: rec.has_description,
+                        bl: rec.bl,
+                        "class": rec["class"],  // deprecated for classname
+                        classname: rec.classname,
+                        ci_form: rec.ci_form,
+                        mid: rec.mid,
+                        rec: rec,
+                        tab_icon: rec.icon,
+                        action: 'edit'
+                }, params );
+                var f = load_form( c );
+                //f.on('afterrender', function(){ f.body.setStyle({ overflow: 'hidden' }); });
+                cardpanel.add( f );
+                cardpanel.getLayout().setActiveItem( f );
+                cardpanel.setTitle( _('CI: %1' , rec.name ) );
+                cardpanel.ownerCt.changeTabIcon( cardpanel, rec.icon );
+                cardpanel.body.setStyle({ overflow: 'hidden' });
+                cardpanel.doLayout(); // otherwise, no tbar
             });
         } else {
-            //form.getForm().loadRecord( params.rec );
+            // someone sent me full row data (DEPRECATED)
+            var f = load_form( params );
+            cardpanel.add( f );
+            cardpanel.getLayout().setActiveItem( f );
+            cardpanel.setTitle( _('CI: %1' , params.name ) );
+            cardpanel.doLayout();
         }
     });
-    form.on('destroy', function(){
-        // reload parent grid
-        var g = params._parent_grid;
-        if( g != undefined ) {
-            var sm = g.getSelectionModel();
-            if( sm != undefined ) sm.clearSelections();
-            var s = g.getStore();
-            if( s!=undefined ) s.reload();
-        }
-    });
-    return form;
+    return cardpanel;
 })
+
 
