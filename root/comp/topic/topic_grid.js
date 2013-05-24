@@ -695,7 +695,8 @@
     
     grid_topics.on( 'render', function(){
         var el = grid_topics.getView().el.dom.childNodes[0].childNodes[1];
-        var grid_topics_dt = new Ext.dd.DropTarget(el, {
+        var grid_topics_dt = new Baseliner.DropTarget(el, {
+            comp: grid_topics,
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {

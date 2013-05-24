@@ -4,6 +4,8 @@ use Mouse::Role;
 
 has nls_lang   => qw(is ro default) => sub { 'AMERICAN_AMERICA.UTF8' };
 
+with 'Clarive::Role::TempDir';
+
 sub setup_baseliner {
     my ($self)=@_;
     

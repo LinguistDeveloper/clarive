@@ -1218,8 +1218,8 @@ sub _package_is_loaded {
 }
 
 sub _load_yaml_from_comment {
-    my ($y,$rest) = $_[0] =~ m{(?:--+|/\*)(.*?)(?:--+|\*/)}gs;
-    return length($rest) ? $y : '';
+    my ($y,$rest) = $_[0] =~ m{^(?:--+|/\*)(.*?)(?:--+|\*/)}gs;
+    return $y;
 }
 
 {

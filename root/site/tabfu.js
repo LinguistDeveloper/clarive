@@ -139,6 +139,19 @@ $('a').click(function(event) {
         }
     });
 
+    Baseliner.DropTarget = Ext.extend(Ext.dd.DropTarget, {
+        constructor : function(el, config){
+            Baseliner.DropTarget.superclass.constructor.call(this, el, config);        
+            
+            if( this.comp ) {
+                this.comp.on( 'beforedestroy', function(){
+                    this.destroy();
+                }, this);    
+            }
+        },
+    });    
+
+
 
     Baseliner.openWindowPage = function(params) {
     };
@@ -1215,16 +1228,19 @@ $('a').click(function(event) {
         Baseliner.showLoadingMask(cmp, msg);
     };
     
-    Baseliner.hideLoadingMask = function (){
+    Baseliner.hideLoadingMask = function ( cmp ){
         if(Baseliner._defaultLoadingMask != undefined){
-            Baseliner._defaultLoadingMask.unmask();
+            cmp.unmask();
+
+            // Baseliner._defaultLoadingMask.el.unmask();
         }
     };
     
     Baseliner.hideLoadingMaskFade = function (cmp){
         if(Baseliner._defaultLoadingMask != undefined){
             cmp.fadeIn();
-            Baseliner._defaultLoadingMask.hide();
+            cmp.unmask();
+            // Baseliner._defaultLoadingMask.hide();
             //Baseliner._defaultLoadingMask.getEl().fadeOut();
         }
     };

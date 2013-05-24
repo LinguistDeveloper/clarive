@@ -276,7 +276,8 @@
             combo_time.hide();
             button_submit.disable();
         }
-        Baseliner.hideLoadingMask();
+
+        Baseliner.hideLoadingMask( main_form.getEl() );
     });
 
     var calendar_reload = function( str_date ) {
@@ -314,7 +315,7 @@
                             });
                             rel_cals = res.cals ? res.cals : [];
                         } else {
-                            Baseliner.hideLoadingMask();
+                            Baseliner.hideLoadingMask( main_form.getEl() );
                             combo_time.disable();
                             Ext.Msg.alert( _('Error'), _('Error generating calendar windows: %1', res.msg ) );
                         }
@@ -494,7 +495,8 @@
     // Drag and drop support
     jc_grid.on( 'render', function(){
         var el = jc_grid.getView().el.dom.childNodes[0].childNodes[1];
-        var jc_grid_dt = new Ext.dd.DropTarget(el, {
+        var jc_grid_dt = new Baseliner.DropTarget(el, {
+            comp: jc_grid,
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, data) {
@@ -523,6 +525,11 @@
                 var job_type = main_form.getForm().getValues()['job_type'];
                 var cnt = jc_store.getCount();  // auto set ?
                 var bl = combo_baseline.getValue();
+                if( ! ( data.promotable || data.demotable ) ) {
+                    Ext.Msg.alert( _('Error'),
+                        _("Cannot promote/demote this entity type" ) );
+                    return true; 
+                }
                 var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
                 if( cnt == 0 || bl_item == undefined ) {
                     var bl_hash = ( job_type == 'promote' ) ? data.promotable : data.demotable;

@@ -205,8 +205,9 @@
 
     grid.on('afterrender', function(){
         // not working yet: make the grid a drop target
-        var panelDropTarget = new Ext.dd.DropTarget( grid.getEl() , {
+        var panelDropTarget = new Baseliner.DropTarget( grid.getEl() , {
             ddGroup    : 'chainDD',
+            comp: grid,
             notifyDrop : function(dd, e, data){
                     var node = dd.dragData.node;
                     var node_attr = node.attributes.attributes; // sent by the server

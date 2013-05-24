@@ -36,7 +36,7 @@ Ext.ux.Portal = Ext.extend(Ext.Panel, {
 
 Ext.reg('portal', Ext.ux.Portal);
 
-Ext.ux.Portal.DropZone = Ext.extend(Ext.dd.DropTarget, {
+Ext.ux.Portal.DropZone = Ext.extend(Baseliner.DropTarget, {
     
     constructor : function(portal, cfg){
         this.portal = portal;

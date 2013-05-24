@@ -294,7 +294,8 @@
     tbar: [el_searchfield, el_text, toolbar_details, toolbar_switch, toolbar_delete, '->']
   });
   
-          var ddrow = new Ext.dd.DropTarget(grid.getView().mainBody, {  
+          var ddrow = new Baseliner.DropTarget(grid.getView().mainBody, {  
+            comp: grid,
             ddGroup : 'mygrid-dd',  
             notifyDrop : function(){  
               return true;
