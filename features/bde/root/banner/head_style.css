@@ -1,0 +1,9 @@
+
+.header {border: none; border-spacing: 0px; border: 0px; width: 100%; margin:0;}
+
+.banner td {height: 54px; padding: 0;}
+.head_left{ 
+	width: 100%;
+	background:url('img/fondocab_base.gif') no-repeat; 
+}
+.head_right {width: 100%;}
