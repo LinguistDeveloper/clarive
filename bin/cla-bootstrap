@@ -270,8 +270,19 @@ XML::Smart
 YAML
 YAML::Syck
 YAML::XS
+V
 namespace::autoclean
 namespace::clean
+
+# from old dispatcher 
+
+Class::Load
+Error
+forks
+Getopt::Compact
+
+# deprecated from Baseliner
+Perl6::Form
 
 # deprecated:
 
