@@ -32,6 +32,21 @@ All root / urls are installed here.
 
 =cut
 
+=head2 begin
+
+/begin gets called every time, by every controller
+EXCEPT when the controller has its own /begin, in 
+which case would be wise to forward to this root
+begin with:
+
+    sub begin {
+        # your controller begin stuff
+        #
+        
+        $c->forward('/begin');
+    }
+
+=cut 
 sub begin : Private {
     my ( $self, $c ) = @_;
     $c->res->headers->header( 'Cache-Control' => 'no-cache');
@@ -41,21 +56,11 @@ sub begin : Private {
         return 1;
     }
 
-    $self->_set_user_lang($c);
-
     Baseliner->app( $c );
 
     _db_setup;  # make sure LongReadLen is set after forking
 
     $c->forward('/theme');
-
-    #my $logged_on = defined $c->username;
-    # catch invalid user object sessions
-    #try {
-        #die unless $c->session->{user} || $c->stash->{auth_skip};
-    ##} catch {
-        #my $path = $c->request->{path} || $c->request->path;
-    #};
 }
 
 =head2 auto
@@ -65,6 +70,12 @@ auto centralizes all auhtentication check and dispatch.
 =cut
 sub auto : Private {
     my ( $self, $c ) = @_;
+    
+    Baseliner->app( $c );
+    
+    # set language 
+    $self->_set_user_lang($c);
+
     my $last_msg = '';
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
     return 1 if $c->stash->{auth_skip};
@@ -120,16 +131,16 @@ sub auto : Private {
 
 sub _set_user_lang : Private {
     my ( $self, $c ) = @_;
+    my $langs;
     if( ref $c->session->{user} ) {
-        $c->languages( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
+         $langs = $c->session->{user}->languages // [ $c->config->{default_lang} ];
     }
     elsif( my $username = $c->username ) {
         my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
-        $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-        if( ref $c->session->{user} ) {
-            $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
-        }
+        $langs = [ $prefs->{language} || $c->config->{default_lang} ];
     }
+    $c->languages( $langs );
+    return $langs;
 }
 
 sub serve_file : Private {
@@ -221,9 +232,6 @@ sub index:Private {
     if( $p->{tab_page}  ) {
         push @{ $c->stash->{tab_list} }, { url=>$p->{tab_page}, title=>$p->{tab_page}, type=>'page', params=>$p };
     }
-
-    # set language 
-    $self->_set_user_lang($c);
 
     # load menus
     my @menus;
