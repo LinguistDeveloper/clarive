@@ -1563,7 +1563,7 @@ Baseliner.kanban = function(c){
                 kanban.workflow = workflow;
 
                 var add_column = function( id_status, name ) {
-                   var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + name + '</span>';
+                   var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + _(name) + '</span>';
                    // create columns
                    var col_obj = new Baseliner.KanbanColumn({
                       xtype: 'kanbancolumn',
@@ -1601,7 +1601,7 @@ Baseliner.kanban = function(c){
         var column_obj = kanban.findById( cols[col].id );
         var portlet = {
             //collapsible: true,
-            title: title,
+            title: _( title ),
             height: 50,
             mid: params.mid,
             id_status: params.id_status,
@@ -1641,7 +1641,7 @@ Baseliner.kanban = function(c){
             if( id_status != undefined && rec.data.category_status_id != id_status ) return;
             var t = String.format('{0} #{1}', rec.data.category_name, rec.data.topic_mid );
             var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + rec.data.topic_mid + '</span></div>';
-            var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, rec.data.title);
+            var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, _( rec.data.title ) );
             //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
             var col = statuses_hash[ rec.data.category_status_name ];
             var comp = new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true, mid: rec.data.topic_mid });
@@ -1649,9 +1649,9 @@ Baseliner.kanban = function(c){
                 this.ownerCt.body.on('dblclick',function(){ 
                     var mid = rec.data.topic_mid;
                     var title = rec.data.topic_name;
-                    var params = { topic_mid: mid, title: title };
+                    var params = { topic_mid: mid, title: _( title ) };
                     if( kanban.in_tab ) {
-                        Baseliner.add_tabcomp( '/topic/view?topic_mid=' + mid, title, params );
+                        Baseliner.add_tabcomp( '/topic/view?topic_mid=' + mid, _(title), params );
                     } else {
                         Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
                             var win = new Ext.Window({
@@ -1660,7 +1660,7 @@ Baseliner.kanban = function(c){
                                 autoScroll: true,
                                 style: { overflow: 'hide' },
                                 border: false,
-                                title: title,
+                                title: _(title),
                                 height: 600, width: 800, 
                                 maximizable: true,
                                 items: topic_panel
@@ -1673,7 +1673,7 @@ Baseliner.kanban = function(c){
                 });
             });
             kanban.add_portlet({ 
-              title: t,
+              title: _(t),
               comp: comp, 
               mid: rec.data.topic_mid,
               id_status: rec.data.category_status_id,
