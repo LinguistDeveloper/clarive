@@ -26,7 +26,7 @@ sub load_baselines : Private {
     my @bl_list = Baseliner::Core::Baseline->baselines();
     return $c->stash->{baselines} = [ [ '*', 'Global' ] ] unless @bl_list > 0;
     foreach my $n ( @bl_list ) {
-        my $arr = [ $n->{bl}, $n->{name} ];
+        my $arr = [ $n->{bl}, _loc($n->{name}) ];
         push @bl_arr, $arr;
     }
     $c->stash->{baselines} = \@bl_arr;
@@ -38,7 +38,7 @@ sub load_baselines_no_root : Private {
     my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
     return $c->stash->{baselines} = [ [ '*', 'Global' ] ] unless @bl_list > 0;
     foreach my $n ( @bl_list ) {
-        my $arr = [ $n->{bl}, $n->{name} ];
+        my $arr = [ $n->{bl}, _loc($n->{name}) ];
         push @bl_arr, $arr;
     }
     $c->stash->{baselines} = \@bl_arr;
@@ -53,7 +53,7 @@ sub load_baselines_for_action : Private {
     my $is_root = $c->model('Permissions')->is_root( $c->username );
     foreach my $n ( @bl_list ) {
         next unless $is_root or $c->model('Permissions')->user_has_action( username=>$c->username, action=>$action, bl=>$n->{bl} );
-        my $arr = [ $n->{bl}, $n->{name} ];
+        my $arr = [ $n->{bl}, _loc($n->{name}) ];
         push @bl_arr, $arr;
     }
     $c->stash->{baselines} = \@bl_arr;
@@ -76,13 +76,13 @@ sub json : Local {
     my @bl_list =
     map {
         my $bl = $_->{bl} eq '*' ? $common : $_->{bl};
-        +{  name        => $_->{name},
-            description => $_->{description} || $_->{name},
+        +{  name        => _loc($_->{name}),
+            description => $_->{description} || _loc($_->{name}),
             id          => $_->{bl},
             bl          => $_->{bl},
             active      => 1,
-            bl_name=>sprintf( ( defined $_->{name} ? "%s (%s)" : "%s" ),$bl, $_->{name} ),
-            name_bl=>( defined $_->{name} ? sprintf("%s (%s)" ,$_->{name}, $bl ) : $bl )  
+            bl_name=>sprintf( ( defined $_->{name} ? "%s (%s)" : "%s" ),$bl, _loc($_->{name}) ),
+            name_bl=>( defined $_->{name} ? sprintf("%s (%s)" , _loc($_->{name}), $bl ) : $bl )  
          }
     } Baseliner::Core::Baseline->baselines();
     @bl_list = grep { $_->{bl} ne '*' } @bl_list if $p->{no_common};
@@ -127,8 +127,8 @@ sub list : Local {
           {
             id          => $r->id,
             bl 		    => $r->bl,
-            name	    => $r->name,
-            description	=> $r->description,
+            name	    => _loc($r->name),
+            description	=> _loc($r->description),
           };
     }        
         

@@ -150,7 +150,7 @@ sub lc_for_project {
 
     # States-Statuses with bl and type = D (Deployable)
     push @states, map {
-        +{  node   => "$_->{name} [$_->{bl}]",
+        +{  node   => sprintf("%s [%s]",_loc($_->{name}), $_->{bl}),
             type   => 'state',
             active => 1,
             data => { id_status => $_->{id}, },
