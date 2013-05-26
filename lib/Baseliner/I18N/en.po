@@ -152,3 +152,5 @@ msgstr "High"
 msgid "Crítica"
 msgstr "Critical"
 
+msgid "Común"
+msgstr "Common"
