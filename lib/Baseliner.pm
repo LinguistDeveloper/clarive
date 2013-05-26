@@ -58,8 +58,7 @@ our $FULL_VERSION = do {
         require Git::Wrapper;
         my $git = Git::Wrapper->new( $ENV{BASELINER_HOME} );
         my $x = ( $git->describe({ always=>1, tag=>1 }) )[0];
-        $x =~ /^(.*)-(\d+)-(.*)$/ and $x=["$1_$2", substr($3,1,7) ];
-        $x;
+        $x=~ /^(.*)-(\d+)-(.*)$/ ? $x=["$1_$2", substr($3,1,7) ] : ['?','?','?'];
     };
     $@ ?  ['6.0','??'] : $v;
 };
@@ -313,24 +312,11 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     our $global_app;
     sub app {
         Baseliner->instance and return __PACKAGE__->instance;
-        my $class = shift;
-        my $c = shift;
+        my ($class, $c ) = @_;
         return $global_app = $c if ref $c;
         return $global_app if ref $global_app;
 
-        #my $c;
-        #my $meta = Class::MOP::get_metaclass_by_name('Baseliner');
-        #$meta->make_mutable;
-        #$meta->add_after_method_modifier( "dispatch", sub {
-            #$c = shift;
-        #});
-        #$meta->make_immutable( replace_constructor => 1 );
-        #Class::C3::reinitialize();
-        #return $c; 
-        #return Baseliner::Standalone->new;
-        return $c;
-        #bless {}, 'Baseliner';
-
+        return bless {} => 'Baseliner';  # so it won't break $c->{...} calls
     }
 
     #TODO move this to a model
