@@ -922,7 +922,7 @@ sub filters_list : Local {
                 {
                     id  => $i++,
                     idfilter      => $_->{id},
-                    text    => $_->{name},
+                    text    => _loc($_->{name}),
                     color   => $_->{color},
                     cls     => 'forum',
                     iconCls => 'icon-no',
@@ -956,7 +956,7 @@ sub filters_list : Local {
                 push @labels, {
                     id          => $i++,
                     idfilter    => $_->{id},
-                    text        => $_->{name},
+                    text        => _loc($_->{name}),
                     color       => $_->{color},
                     cls         => 'forum label',
                     iconCls     => 'icon-no',
@@ -994,7 +994,7 @@ sub filters_list : Local {
                 {
                     id  => $i++,
                     idfilter      => $r->id,
-                    text    => $r->name,
+                    text    => _loc($r->name),
                     cls     => 'forum status',
                     iconCls => 'icon-no',
                     checked => exists $tmp{$r->id} && (substr ($r->type, 0 , 1) ne 'F')? \1: \0,
@@ -1025,7 +1025,7 @@ sub filters_list : Local {
                 {
                     id  => $i++,
                     idfilter      => $r->id,
-                    text    => $r->name,
+                    text    => _loc($r->name),
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     checked => \0,
