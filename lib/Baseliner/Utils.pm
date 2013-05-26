@@ -277,6 +277,7 @@ sub _loc {
             _loc_decoded(@args);
         };
     } else {
+        loc_lang( Baseliner->config->{default_lang} );
         return loc( @args );
     }
 }

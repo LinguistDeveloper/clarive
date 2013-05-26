@@ -13,7 +13,7 @@ html: /dashlets/lastjobs.html
 </%perl>
 
     <div>
-        <h2>Pases</h2>
+        <h2><% _loc("Jobs") %></h2>
         <script language="javascript">
             function render_level ( obj, td_id ) {
                 var icon;
@@ -59,10 +59,10 @@ html: /dashlets/lastjobs.html
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
-                        <th>Pase</th>
-                        <th>Estado</th>
-                        <th>Inicio</th>
-                        <th>Fin</th>
+                        <th><% _loc("Job") %></th>
+                        <th><% _loc("Status") %></th>
+                        <th><% _loc("Start") %></th>
+                        <th><% _loc("End") %></th>
                     </tr>
                 </thead>
                     <tbody>
