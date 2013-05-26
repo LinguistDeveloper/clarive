@@ -12,7 +12,7 @@ my $date = $c->stash->{date};
 my $title = 'Editar ventana';
 $title = 'Editar ventana para el ' . $date if($date);
 
-my $loc = DateTime::Locale->load("es_ES"); 
+my $loc = DateTime::Locale->load( $c->language );
 my $day_wide = $loc->day_format_wide;
 my $from_to_1 = _loc("From %1 to %2", $day_wide->[0], $day_wide->[4]);
 my $from_to_2 = _loc("From %1 to %2", $day_wide->[0], $day_wide->[6]);
@@ -25,7 +25,7 @@ my @ven_fin;
 
 # ven_dia
 foreach my $dd ( 0..6 ) {
-    my $day_name = capitalize( $day_wide->[ $dd ] );
+    my $day_name = capitalize( $day_wide->[ $dd ] ).99;
     push @ven_dia, [ $dd , $day_name  ];
 }
 

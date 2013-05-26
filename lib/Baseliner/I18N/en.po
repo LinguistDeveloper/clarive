@@ -88,3 +88,69 @@ msgstr "Test plan"
 
 msgid "Cambio BD"
 msgstr "DB change"
+
+msgid "Defecto"
+msgstr "Defect"
+
+msgid "Suspendido"
+msgstr "Suspended"
+
+msgid "Repetido"
+msgstr "Repeated"
+
+msgid "Aprobado"
+msgstr "Approved"
+
+msgid "Cerrado"
+msgstr "Closed"
+
+msgid "Entregado"
+msgstr "Delivered"
+
+msgid "Integración"
+msgstr "Integration"
+
+msgid "Análisis"
+msgstr "Analysis"
+
+msgid "Preproducción"
+msgstr "Preproduction"
+
+msgid "Producción"
+msgstr "Production"
+
+msgid "Desarrollo"
+msgstr "Development"
+
+msgid "Estudio"
+msgstr "Study"
+
+msgid "En Curso"
+msgstr "Running"
+
+msgid "Finalizado"
+msgstr "Finished"
+
+msgid "Desestimado"
+msgstr "Dismissed"
+
+msgid "Nuevo"
+msgstr "New"
+
+msgid "Rechazado"
+msgstr "Rejected"
+
+msgid "Solicitado"
+msgstr "Requested"
+
+msgid "Realizado"
+msgstr "Done"
+
+msgid "Alta"
+msgstr "High"
+
+msgid "Crítica"
+msgstr "Critical"
+
+msgid "Común"
+msgstr "Common"
