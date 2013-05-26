@@ -5,14 +5,14 @@ use Baseliner::Sugar;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
 
-register 'action.ci.admin' => { name => 'Admin CIs' };
-register 'menu.tools.ci' => {
-    label    => 'CI Viewer',
-    url_comp => '/comp/ci-viewer-tree.js',
-    title    => 'CI Viewer',
-    icon     => '/static/images/ci/ci.png',
-    actions  => ['action.ci.admin']
-};
+# register 'action.ci.admin' => { name => 'Admin CIs' };
+# register 'menu.tools.ci' => {
+#     label    => 'CI Viewer',
+#     url_comp => '/comp/ci-viewer-tree.js',
+#     title    => 'CI Viewer',
+#     icon     => '/static/images/ci/ci.png',
+#     actions  => ['action.ci.admin']
+# };
 
 # gridtree - the adjacency list treegrid
 sub gridtree : Local {
