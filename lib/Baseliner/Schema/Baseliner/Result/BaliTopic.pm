@@ -70,7 +70,9 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 255 },
   "expr_deadline",
   { data_type => "varchar2", is_nullable => 1, size => 255 },
-  "progress", { data_type => "number", is_nullable => 1, default_value=>0 },  
+  "progress", { data_type => "number", is_nullable => 1, default_value=>0 },
+  "active",
+  { data_type => "char", is_nullable => 0, size => 1, default_value => 1 },    
 );
 
 
@@ -113,6 +115,7 @@ __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid
 __PACKAGE__->master_setup( 'projects', ['topic','mid'] => ['project', 'BaliProject','mid'] );
 __PACKAGE__->master_setup( 'topics', ['topic','mid'] => ['topic', 'BaliTopic','mid'] );  # topic_topic
 __PACKAGE__->master_setup( 'revisions' => ['topic','mid'] => ['revision', 'BaliMaster','mid'] );  # topic_revision
+__PACKAGE__->master_setup( 'cis' => ['topic','mid'] => ['ci', 'BaliMaster','mid'] );  # topic_ci
 
 sub badge_name {
     my ($self) =@_;

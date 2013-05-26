@@ -87,7 +87,8 @@ params:
             // TODO no loader from mids yet 
         //}
         var el = this.el.dom; 
-        var revision_box_dt = new Ext.dd.DropTarget(el, {
+        var revision_box_dt = new Baseliner.DropTarget(el, {
+            comp: this,
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {

@@ -12,11 +12,11 @@ with 'Clarive::Role::TempDir';
 
 sub run {
     my ($self, %opts) = @_;
-    my $FORMAT = "%-6s %-6s %-8s %-24s %s";
+    my $FORMAT = "%-6s %-6s %-6s %-6s %-8s %-24s %s";
     my $t = new Proc::ProcessTable;
     my %disp;
     my %server;
-    my $top = sprintf($FORMAT, "PID", "PPID", "STAT", "START", "COMMAND");
+    my $top = sprintf($FORMAT, "PID", "PPID", "CPU", "MEM", "STAT", "START", "COMMAND");
     $opts{v} and say "TMPDIR = " . $self->tmp_dir;
     my @pids = map {
         my $pid = file( $_ )->slurp;
@@ -29,6 +29,8 @@ sub run {
         my $lin = sprintf($FORMAT,
               $p->pid,
               $p->ppid,
+              $p->pctcpu . '%',
+              $p->pctmem . '%',
               #$p->ttydev,
               $p->state,
               scalar(localtime($p->start)),

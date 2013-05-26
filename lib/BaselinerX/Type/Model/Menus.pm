@@ -6,6 +6,7 @@ use Baseliner::Utils;
 sub menus {
     my ( $self, %p ) = @_;
     my @menus;
+    # foreach allowed menu
     foreach (
         sort { $a->index <=> $b->index }
         Baseliner->model('Registry')->search_for(

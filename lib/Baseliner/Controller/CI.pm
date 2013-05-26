@@ -399,6 +399,7 @@ sub store : Local {
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
     my $where = {};
+    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
     if ( $p->{mid} ) {
         my @rel_items =
@@ -587,6 +588,7 @@ sub load : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
     my $mid = $p->{mid};
+    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     try {
         my $obj = Baseliner::CI->new( $mid );
         my $class = ref $obj;

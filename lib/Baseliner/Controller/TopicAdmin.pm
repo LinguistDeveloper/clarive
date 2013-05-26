@@ -460,7 +460,7 @@ sub list_categories_admin : Local {
                                                                         
     if($rows){
         while( my $rec = $rows->next ) {
-            
+
             my @statuses_to;
             my $statuses_to = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
                 {   id_category    => $p->{categoryId},
@@ -469,7 +469,7 @@ sub list_categories_admin : Local {
                 },
                 {
                     join=>['statuses_from'],
-                    distinct=>1,
+                    #distinct=>1,
                     order_by => { -asc => ['statuses_from.seq'] },
                 }
             );
@@ -577,16 +577,37 @@ sub list_tree_fields : Local {
     #@template_dirs = grep { -d } @template_dirs;
     
     my @tmp_templates = map {
+        my $glob = $_;
         my @ret;
-        for my $f ( map { _file($_) } grep { -f } glob "$_" ) { 
+        for my $rel_file ( grep { -f } glob "$glob" ) { 
+            my $f = _file( $rel_file );
             my $d = $f->slurp;
             my $yaml = Util->_load_yaml_from_comment( $d );
+            my $id_form = $f->basename; 
             
             my $metadata;
+            my $metadata_base = {
+                name => $id_form, 
+                params => {
+                    origin => 'template',
+                    js => $rel_file,
+                    type => 'form',
+                    #section => 'body',
+                }
+            };
             if(length $yaml ) {
-                $metadata =  _load( $yaml );    
+                _debug( "OK metadata for $f" );
+                $metadata = try { _load( $yaml ) } catch { 
+                    _error( "KO load yaml metadata for $f" );
+                    $metadata_base;
+                };    
+                if( ref $metadata ne 'HASH' ) {
+                    _error( "KO load yaml metadata not HASH for $f" );
+                    $metadata = $metadata_base;
+                }
             } else {
-                $metadata = {};
+                _error( "KO metadata for $f" );
+                $metadata = $metadata_base;
             }
             my @rows = map {
                 +{  field=>$_, value => $metadata->{$_} } 
@@ -604,7 +625,7 @@ sub list_tree_fields : Local {
 
     my @templates;
     for my $template (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
-                        grep {$_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
+                        grep { $_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
         if( $template->{metadata}->{name} ){
             $template->{metadata}->{params}->{name_field} = $template->{metadata}->{name};
             push @templates,

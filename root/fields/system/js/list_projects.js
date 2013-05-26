@@ -35,7 +35,7 @@ params:
         hiddenName: meta.id_field,			
         store: project_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.single_mode
+		singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
     });
 	
     project_box_store.on('load',function(){
@@ -66,7 +66,8 @@ params:
 	
     pb_panel.on( 'afterrender', function(){
         var el = pb_panel.el.dom; //.childNodes[0].childNodes[1];
-        var project_box_dt = new Ext.dd.DropTarget(el, {
+        var project_box_dt = new Baseliner.DropTarget(el, {
+            comp: pb_panel,
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, id) {

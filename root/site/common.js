@@ -2229,7 +2229,8 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         Baseliner.CIGrid.superclass.initComponent.call( this );
         
         self.on('afterrender', function(){
-            var ddrow = new Ext.dd.DropTarget(self.container, {
+            var ddrow = new Baseliner.DropTarget(self.container, {
+                comp: self,
                 ddGroup : self.ddGroup,
                 copy: false,
                 notifyDrop : function(dd, e, data){

@@ -217,7 +217,10 @@ sub get_field_bodies {
         next unless defined $field->{js};
         my $file = Baseliner->path_to( 'root', $field->{js} );
         _debug "field file: $file";
-        next if !ref $file || $file->is_dir;
+        if( !ref $file || $file->is_dir ) {
+            _error "********ERROR: field file is not valid: $file ($field->{js})";
+            next; 
+        }
         _fail _loc("Template not found: %1 (%2)", $field->{js}, $file ) unless -e $file;
         # CACHE check - consider using Mason -- has its own cache
         my $modified_on = $file->stat->mtime;
@@ -1454,7 +1457,7 @@ sub kanban_status : Local {
 
         my $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->search(
           { id_category=>{ -in => $rs1->as_query } },
-          { +select=>['status.id', 'status.name'], +as=>[qw/id name/], 
+          { +select=>['status.id', 'status.name', 'status.seq'], +as=>[qw/id name seq/], 
             join=>['status'], order_by=>'status.seq', distinct=>1 }
         );
         my @statuses = $rs->hashref->all;
