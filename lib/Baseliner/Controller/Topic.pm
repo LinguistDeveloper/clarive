@@ -886,7 +886,7 @@ sub filters_list : Local {
             push @views, {
                 id  => $i++,
                 idfilter      => $r->id,
-                text    => $r->name,
+                text    => _loc($r->name),
                 filter  => $r->filter_json,
                 default    => \0,
                 cls     => 'forum',

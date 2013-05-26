@@ -43,3 +43,48 @@ msgstr "Finished"
 
 msgid "All-f"
 msgstr "All"
+
+msgid "Baselines"
+msgstr "Baselines"
+
+msgid "Nature"
+msgstr "Nature"
+
+msgid "Cambio"
+msgstr "Change"
+
+msgid "Incidencia"
+msgstr "Issue"
+
+msgid "Requerimiento"
+msgstr "Requirement"
+
+msgid "Solicitud"
+msgstr "Request"
+
+msgid "Release"
+msgstr "Release"
+
+msgid "Tarea"
+msgstr "Task"
+
+msgid "Solicitud IT"
+msgstr "IT request"
+
+msgid "Entrega"
+msgstr "Sprint"
+
+msgid "Caso de Prueba"
+msgstr "Test case"
+
+msgid "Funcionalidad"
+msgstr "Functionality"
+
+msgid "Petición Especial"
+msgstr "Special request"
+
+msgid "Plan de Pruebas"
+msgstr "Test plan"
+
+msgid "Cambio BD"
+msgstr "DB change"
