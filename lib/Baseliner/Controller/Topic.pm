@@ -20,7 +20,7 @@ register 'registor.menu.topics' => {
        my @cats = DB->BaliTopicCategories->search(undef,{ select=>[qw/name id color/] })->hashref->all;
        my $seq = 10;
        my %menu_view = map {
-           my $name = $_->{name};
+           my $name = _loc( $_->{name} );
            my $id = _name_to_id( $name );
            my $data = $_;
            "menu.topic.$id" => {
@@ -35,7 +35,7 @@ register 'registor.menu.topics' => {
        } sort { lc $a->{name} cmp lc $b->{name} } @cats;
 
        my %menu_create = map {
-           my $name = $_->{name};
+           my $name = _loc( $_->{name} );
            my $id = _name_to_id( $name );
            my $data = $_;
            "menu.topic.create.$id" => {
