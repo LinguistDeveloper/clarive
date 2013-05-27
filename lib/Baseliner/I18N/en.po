@@ -157,3 +157,48 @@ msgstr "Common"
 
 msgid "noun:Run"
 msgstr "Run"
+
+msgid "Incidencias"
+msgstr "Issues"
+
+msgid "Revisiones"
+msgstr "Revisions"
+
+msgid "Proyectos"
+msgstr "Projects"
+
+msgid "Ficheros"
+msgstr "Files"
+
+msgid "Tareas"
+msgstr "Tasks"
+
+msgid "Requerimientos"
+msgstr "Requirements"
+
+msgid "Defectos"
+msgstr "Defects"
+
+msgid "Bugs"
+msgstr "Bugs"
+
+msgid "Casos de Prueba"
+msgstr "Test cases"
+
+msgid "Funcionalidades"
+msgstr "Functionalities"
+
+msgid "Documentos"
+msgstr "Documents"
+
+msgid "Planes_de_pruebas"
+msgstr "Test plans"
+
+msgid "Solicitudes"
+msgstr "Requests"
+
+msgid "Tópicos"
+msgstr "Topics"
+
+msgid "Topics"
+msgstr "Topics"
