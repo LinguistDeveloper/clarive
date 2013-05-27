@@ -154,3 +154,6 @@ msgstr "Critical"
 
 msgid "Común"
 msgstr "Common"
+
+msgid "noun:Run"
+msgstr "Run"
