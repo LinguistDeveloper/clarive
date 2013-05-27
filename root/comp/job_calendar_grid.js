@@ -199,7 +199,7 @@
                                 displayMsg: 'Rows {0} - {1} de {2}',
                                 emptyMsg: "No hay registros disponibles"
                         }),        
-            tbar: [ 'Buscar: ', ' ',
+            tbar: [ '_('Search'): ', ' ',
                 new Baseliner.SearchField({
                     store: store,
                     params: {start: 0, limit: ps}
