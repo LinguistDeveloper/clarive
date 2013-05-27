@@ -435,7 +435,7 @@
         }
     };
     var toolbar = new Ext.Toolbar({
-        items: [ '_('Search'): ', ' ',
+        items: [ _('Search')+': ', ' ',
             new Ext.app.SearchField({
                 store: store,
                 params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
