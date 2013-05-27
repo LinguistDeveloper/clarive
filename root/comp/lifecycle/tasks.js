@@ -43,7 +43,7 @@
 							    displayMsg: _('Rows {0} - {1} of {2}'),
 							    emptyMsg: "No hay registros disponibles"
 					    }),        
-		    tbar: [ 'Buscar: ', ' ',
+		    tbar: [ _('Search')+': ', ' ',
 			    new Ext.app.SearchField({
 				    store: store,
 				    params: {start: 0, limit: ps},
