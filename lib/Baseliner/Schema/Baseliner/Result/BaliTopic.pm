@@ -125,7 +125,7 @@ sub badge_name {
         $title =~ s{^(\w+\s+\w+)\s+.*$}{$1};
         return $title;
     } else {
-        return sprintf '%s #%s', $cat->name, $self->mid;
+        return sprintf '%s #%s', _loc($cat->name), $self->mid;
     }
 }
 
