@@ -5,7 +5,7 @@
 
 (function(){
     var store_status = new Baseliner.Topic.StoreStatus();
-    var store_category = new Baseliner.Topic.StoreCategory();
+    var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
     
     var store_roles = new Baseliner.JsonStore({
         root: 'data' , 
@@ -1793,7 +1793,7 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
-            { header: _('Category'), dataIndex: 'name', width:50, sortable: false, renderer: render_category },
+            { header: 'Category', dataIndex: 'name', width:50, sortable: false, renderer: render_category },
             { header: _('Description'), dataIndex: 'description', sortable: false },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_category_type }
         ],

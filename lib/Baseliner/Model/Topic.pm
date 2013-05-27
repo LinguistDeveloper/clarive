@@ -477,6 +477,8 @@ sub topics_for_user {
             title  => sprintf("%s #%d - %s", $data->{category_name}, $mid, $data->{title}),
             allDay => \1
         };
+        $data->{category_status_name} = _loc($data->{category_status_name});
+        $data->{category_name} = _loc($data->{category_name});
         push @rows, {
             %$data,
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
@@ -594,7 +596,7 @@ sub update {
 sub append_category {
     my ($self, @topics ) =@_;
     return map {
-        $_->{name} = $_->{categories}->{name} ? $_->{categories}->{name} . ' #' . $_->{mid}: $_->{name} . ' #' . $_->{mid} ;
+        $_->{name} = $_->{categories}->{name} ? _loc($_->{categories}->{name}) . ' #' . $_->{mid}: _loc($_->{name}) . ' #' . $_->{mid} ;
         $_->{color} = $_->{categories}->{color} ? $_->{categories}->{color} : $_->{color};
         $_
     } @topics;

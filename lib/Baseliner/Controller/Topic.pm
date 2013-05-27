@@ -200,7 +200,7 @@ sub related : Local {
     my @topics = map {
         $_->{name} = $_->{categories}{is_release} eq '1' 
             ?  $_->{title}
-            :  $_->{categories}->{name} . ' #' . $_->{mid};
+            :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{categories}->{color};
         $_
     } $rs_topic->all;
@@ -692,7 +692,7 @@ sub list_category : Local {
                 push @rows,
                 {   id            => $category->{id},
                     category      => $category->{id},
-                    name          => _loc($category->{name}),
+                    name          => $p->{swnotranslate} ? $category->{name}: _loc($category->{name}),
                     color         => $category->{color},
                     type          => $type,
                     forms         => $forms,
