@@ -5,13 +5,14 @@ use v5.10;
 
 our $CAPTION = 'Start/Stop dispatcher';
 
-has id            => qw(is ro default) => sub { 'cla-disp' };
+has id         => qw(is ro default) => sub { 'cla-disp' };
 has host       => qw(is ro default), sub { 'localhost' };
 has daemon     => qw(is ro);
 has restarter  => qw(is rw default) => sub { 0 };
 has trace      => qw(is rw default) => sub { 0 };
 has instance_name => qw(is rw);
 
+with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
 
@@ -21,6 +22,10 @@ sub BUILD {
     $self->instance_name( $self->id . '-' . $self->env );
     $self->setup_pid_file();
     $self->setup_baseliner();
+}
+
+sub run {
+    goto &Clarive::Cmd::disp::run_start;
 }
 
 sub run_start {
@@ -48,3 +53,11 @@ sub run_reload {
 }
 
 1;
+
+=head1 Clarive Dispatcher
+
+Common options:
+
+    --daemon        forks and starts the server
+
+=cut

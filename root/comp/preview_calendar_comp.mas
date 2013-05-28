@@ -4,9 +4,10 @@
     my $ns = $c->session->{preview_ns}; 
     my $bl = $c->session->{preview_bl};
 </%init>
-(function(){	
+(function(){
+    var _datePickerCmp;	
     function showLoading(){
-        var _datePickerCmp = Ext.getCmp('container-<% $id %>').getEl();//Ext.getCmp('_mCalendar<% $id %>').getEl();
+        _datePickerCmp = Ext.getCmp('container-<% $id %>').getEl();//Ext.getCmp('_mCalendar<% $id %>').getEl();
         if(_datePickerCmp!=undefined) Baseliner.showLoadingMask(_datePickerCmp,"Calculando fechas...");
     }
     
@@ -21,7 +22,7 @@
                         params: { date:dateToString(_CurrentDate), ns:'<%$ns%>',bl:'<%$bl%>' },
                         success: function(xhr) {
                             _isOnRequest = false;
-                            Baseliner.hideLoadingMask();
+                            Baseliner.hideLoadingMask( _datePickerCmp );
                             var _raw = eval( "("+xhr.responseText+")" );
                             var dates = eval("[" + _raw.data + "]");	
                             var dateEvents = new Array(dates.length);
@@ -38,7 +39,7 @@
                         },
                         failure: function(xhr) {
                             _isOnRequest = false;
-                            Baseliner.hideLoadingMask();
+                            Baseliner.hideLoadingMask( _datePickerCmp );
                             alert('ko');
                            //Baseliner.errorWin( 'Logout Error', xhr.responseText );
                         }

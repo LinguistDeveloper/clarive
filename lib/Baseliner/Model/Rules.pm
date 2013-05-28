@@ -7,6 +7,8 @@ use v5.10;
 
 with 'Baseliner::Role::Service';
 
+has tidy_up => qw(is rw isa Bool default 1);
+
 register 'statement.if.var' => {
     text => 'IF var THEN',
     type => 'if',
@@ -142,7 +144,7 @@ sub build_tree {
 }
 
 sub dsl_build {
-    my ($self,$stmts)=@_;
+    my ($self,$stmts )=@_;
     #_debug $stmts;
     my @dsl = (
         #'my $stash = {};',
@@ -176,9 +178,13 @@ sub dsl_build {
     #push @dsl, sprintf '$stash;';
 
     my $dsl = join "\n", @dsl;
-    my $tidied = '';
-    Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
-    return $tidied;
+    if( $self->tidy_up ) {
+        my $tidied = '';
+        Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
+        return $tidied;
+    } else {
+        return $dsl;
+    }
 }
 
 sub dsl_run {

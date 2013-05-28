@@ -220,6 +220,7 @@ List::MoreUtils
 Locale::Maketext::Simple
 Lucy
 Lucy::Simple
+Math::Base36
 MIME::Base64
 MIME::Lite
 MIME::Types
@@ -264,14 +265,26 @@ Text::Markdown
 Text::Template
 Text::Textile
 Text::Unaccent::PurePerl
+Time::Interval
 Try::Tiny
 Twiggy
 XML::Smart
 YAML
 YAML::Syck
 YAML::XS
+V
 namespace::autoclean
 namespace::clean
+
+# from old dispatcher 
+
+Class::Load
+Error
+forks
+Getopt::Compact
+
+# deprecated from Baseliner
+Perl6::Form
 
 # deprecated:
 

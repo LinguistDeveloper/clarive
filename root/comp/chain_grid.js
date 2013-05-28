@@ -745,7 +745,8 @@
                     }
                 }
                 if(tab.id == 'tab_sequence'){
-                    var ddrow = new Ext.dd.DropTarget(grid_sequence.getView().mainBody, {  
+                    var ddrow = new Baseliner.DropTarget(grid_sequence.getView().mainBody, {  
+                        comp: grid_sequence,
                         ddGroup : 'mygrid-dd',  
                         notifyDrop : function(dd, e, data){  
                             var sm = grid_sequence.getSelectionModel();  

@@ -113,7 +113,7 @@ sub infodetail : Local {
                         push @path, $projectparent->name . '/';
                         $parent = $projectparent->id_parent;
                     }
-                    while(@path){
+                    while(_unique @path){
                         $allpath .= pop (@path)
                     }
                     if($project->nature){ $nature= ' (' . $project->nature . ')';}

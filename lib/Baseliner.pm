@@ -1,5 +1,4 @@
 package Baseliner;
-
 use Moose;
 
 #use Catalyst::Runtime 5.80;
@@ -245,6 +244,13 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     #$dbh->{LongReadLen} = __PACKAGE__->config->{LongReadLen} || 100000000; #64 * 1024;
     #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs   
 }
+
+around 'debug' => sub {
+    my $orig = shift;
+    my $c = shift;
+
+    $c->$orig( @_ ) unless $Baseliner::DebugForceOff;
+};
 
     
     # Inversion of Control

@@ -6,7 +6,7 @@ use MIME::Lite;
 use Net::SMTP;
 use Try::Tiny;
 use Compress::Zlib;
-use Encode;
+use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 
 with 'Baseliner::Role::Service';
 
@@ -14,6 +14,8 @@ register 'config.comm.email' => {
     name => 'Email configuration',
     metadata => [
         { id=>'frequency', name=>'Email daemon frequency', default=>10 },
+        { id=>'timeout', name=>'Email daemon process_queue timeout', default=>30 },
+        { id=>'max_message_size', name=>'Max message size in bytes', default=>(1024 * 1024) },
         { id=>'server', name=>'Email server', default=>'smtp.example.com' },
         { id=>'from', name=>'Email default sender', default=>'user <user@mailserver>' },
         { id=>'domain', name=>'Email domain', default=>'exchange.local' },
@@ -39,6 +41,7 @@ sub daemon {
     my ( $self, $c, $config ) = @_;
 
     my $frequency = $config->{frequency};
+    _log _loc "Email daemon started with frequency %1, timeout %2, max_message_size %3", @{ $config }{ qw/frequency timeout max_message_size/ };
     for( 1..1000 ) {
         $self->process_queue( $c, $config );
         sleep $frequency;
@@ -49,29 +52,48 @@ sub daemon {
 # groups the email queue around the same message
 sub group_queue {
     my ( $self, $config ) = @_;
-    my $rs_queue = Baseliner->model('Baseliner::BaliMessageQueue')->search({ carrier=>'email', active=>1 });
+    my $rs_queue = Baseliner->model('Baseliner::BaliMessageQueue')->search({ carrier=>'email', 'me.active'=>1 }, { join=>'id_message' });
     my %email;
     while( my $queue_item = $rs_queue->next ) {
-        my $message = $queue_item->id_message;
-        my $id = $message->id ;
-        my $from = $message->sender;
-        $from = $config->{from} if $from eq 'internal';
-        $email{ $id } ||= {};
+        try {
+            local $SIG{ALRM} = sub { die "alarm\n" };
+            alarm $config->{timeout} if $config->{timeout};  # 0 turns off timeout
+            my $message = $queue_item->id_message;
+            my $id = $message->id ;
+            my $from = $message->sender;
+            my $msgsiz = length( $message->body ) // 0;
+            my $body;
+            if( $msgsiz > $config->{max_message_size} ) {
+                _log _loc "Trimming email message body, size exceeded ( %1 > %2 )", $msgsiz, $config->{max_message_size};
+                $body = substr( $message->body, 0, $config->{max_message_size} ); 
+            } else {
+                $body = $message->body;
+            }
+            $from = $config->{from} if $from eq 'internal';
+            $email{ $id } ||= {};
 
-        my $address = $queue_item->destination
-            || $self->resolve_address( $queue_item->username );
+            my $address = $queue_item->destination
+                || $self->resolve_address( $queue_item->username );
 
-        my $tocc = $queue_item->carrier_param || 'to';
-        push @{ $email{ $id }{ $tocc } }, $address; 
-        push @{ $email{ $id }{ id_list } }, $queue_item->id;
+            my $tocc = $queue_item->carrier_param || 'to';
+            push @{ $email{ $id }{ $tocc } }, $address; 
+            push @{ $email{ $id }{ id_list } }, $queue_item->id;
 
-        $email{ $id }->{from} ||= $from; # from should be always from the same address
-        $email{ $id }->{subject} ||= $message->subject;
-        $email{ $id }->{body} ||= $message->body;
-        $email{ $id }->{attach} ||= {
-            data         => $message->attach,
-            content_type => $message->attach_content_type,
-            filename     => $message->attach_filename
+            $email{ $id }->{from} ||= $from; # from should be always from the same address
+            $email{ $id }->{subject} ||= $message->subject;
+            $email{ $id }->{body} ||= $body;
+            $email{ $id }->{attach} ||= {
+                data         => $message->attach,
+                content_type => $message->attach_content_type,
+                filename     => $message->attach_filename
+            };
+            alarm 0;
+        } catch {
+            # error fetching message from queue, mark as inactive
+            my $err = shift;    
+            alarm 0;
+            _error _loc "MessageQueue item id %1 could not be prepared: %2", $queue_item->id, $err; 
+            $queue_item->update({ active => 0 });
         };
     }
     return %email;
@@ -79,7 +101,6 @@ sub group_queue {
     
 # send pending emails
 sub process_queue {
-use Encode qw( decode_utf8 encode_utf8 is_utf8 );
     my ( $self, $c, $config ) = @_;
     
     my %email = $self->group_queue($config); 

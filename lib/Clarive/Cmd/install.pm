@@ -4,8 +4,11 @@ extends 'Clarive::Cmd';
 use v5.10;
 use Path::Class;
 
+with 'Clarive::Role::EnvRequired';
+
 sub run {
     my ($self, %opts)=@_;
+    
     say "Clarive installation procedure.";
     $self->run_conf( %opts ) if $self->_ask_me( msg=>'Do you want to install a custom config file for your environment? (highly recommended)', yn=>1 );
     $self->run_profile( %opts ) if $self->_ask_me( msg=>'Do you want to install a clarive-profile file?', yn=>1 );
@@ -118,3 +121,30 @@ sub _ask_me {
 }
 
 1;
+
+=head1 Clarive Installer
+
+Tools for installing clarive in your server.
+
+=head2 install-conf
+
+Installs the conf file.
+
+    cla install-conf --env <env>
+
+=head2 install-profile
+
+Install a UNIX profile.
+
+    cla install-conf --env <env>
+
+=head2 install
+
+Runs all install commands. Roughly equivalent to:
+
+    cla install-conf
+    cla install-profile
+
+=cut
+
+

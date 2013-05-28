@@ -113,7 +113,8 @@ Ext.onReady(function(){
     });
 
     jc_grid.on('viewready', function() {
-        var drop_target = new Ext.dd.DropTarget(jc_grid.getEl(), {
+        var drop_target = new Baseliner.DropTarget(jc_grid.getEl(), {
+                comp: jc_grid,
                 ddGroup    : 'explorer_dd',
                 notifyDrop : function(dd, e, data){
                     var n = dd.dragData.node;

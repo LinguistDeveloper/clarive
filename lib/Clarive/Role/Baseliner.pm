@@ -1,8 +1,11 @@
 package Clarive::Role::Baseliner;
 use v5.10;
 use Mouse::Role;
+use Baseliner::Utils;
 
 has nls_lang   => qw(is ro default) => sub { 'AMERICAN_AMERICA.UTF8' };
+
+with 'Clarive::Role::TempDir';
 
 sub setup_baseliner {
     my ($self)=@_;
@@ -46,7 +49,9 @@ sub bali_service {
     $opts{ arg_list } = { map { $_ => () } keys %opts }; # so that we can differentiate between defaults and user-fed data
     $opts{ args } = \%opts;
     my $logger = Baseliner->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
-    exit ref $logger ? $logger->rc : $logger;
+    #_log _dump $logger;
+    # exit ref $logger ? $logger->rc : $logger;
+    exit $logger->rc;
 }
 
 sub bali_conf_file {
