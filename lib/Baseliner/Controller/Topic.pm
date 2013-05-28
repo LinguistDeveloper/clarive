@@ -20,9 +20,10 @@ register 'registor.menu.topics' => {
        my @cats = DB->BaliTopicCategories->search(undef,{ select=>[qw/name id color/] })->hashref->all;
        my $seq = 10;
        my %menu_view = map {
+           my $data = $_;
            my $name = _loc( $_->{name} );
            my $id = _name_to_id( $name );
-           my $data = $_;
+           $data->{color} //= 'transparent';
            "menu.topic.$id" => {
                 label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
                 title    => qq[<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:$data->{color}">$name</span></div>],
@@ -35,9 +36,10 @@ register 'registor.menu.topics' => {
        } sort { lc $a->{name} cmp lc $b->{name} } @cats;
 
        my %menu_create = map {
+           my $data = $_;
            my $name = _loc( $_->{name} );
            my $id = _name_to_id( $name );
-           my $data = $_;
+           $data->{color} //= 'transparent';
            "menu.topic.create.$id" => {
                 label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
                 title    => _loc ('New: %1', $name),
