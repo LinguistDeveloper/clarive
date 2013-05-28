@@ -220,6 +220,7 @@ List::MoreUtils
 Locale::Maketext::Simple
 Lucy
 Lucy::Simple
+Math::Base36
 MIME::Base64
 MIME::Lite
 MIME::Types
@@ -264,6 +265,7 @@ Text::Markdown
 Text::Template
 Text::Textile
 Text::Unaccent::PurePerl
+Time::Interval
 Try::Tiny
 Twiggy
 XML::Smart
