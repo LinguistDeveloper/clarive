@@ -174,7 +174,7 @@ sub topic_contents : Local {
             topic_name => {
                 mid             => $_->{topic_topic2}{mid},
                 category_color  => $_->{topic_topic2}{categories}{color},
-                category_name   => $_->{topic_topic2}{categories}{name},
+                category_name   => _loc($_->{topic_topic2}{categories}{name}),
                 is_release      => $is_release,
                 is_changeset    => $is_changeset,
             },
@@ -251,7 +251,7 @@ sub tree_project : Local {
                 project    => $project,
                 id_project => $id_project,
                 bl         => $node->{bl},
-                state_name => $node->{name} // $node->{node},
+                state_name => _loc($node->{name} // $node->{node}),
                 %{ $node->{data} || {} }
             },
             leaf       => \0,
@@ -262,13 +262,13 @@ sub tree_project : Local {
     # get sub projects TODO make this recurse over the previous controller (or into a model)
     my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project, active=>1 });
     while( my $r = $rs_prj->next ) {
-        my $name = $r->nature ? sprintf("%s (%s)", $r->name, $r->nature) : $r->name;
+        my $name = $r->nature ? sprintf("%s (%s)", _loc($r->name), $r->nature) : _loc($r->name);
         push @tree, {
             text       => $name,
             url        => '/lifecycle/tree_project',
             data       => {
                 id_project => $r->mid,
-                project    => $r->name,
+                project    => _loc($r->name),
             },
             icon       => '/static/images/icons/project.png',
             leaf       => \0,
@@ -457,7 +457,7 @@ sub changeset : Local {
                 topic_name => {
                     mid             => $td->{mid},
                     category_color  => $topic->categories->color,
-                    category_name   => $topic->categories->name,
+                    category_name   => _loc($topic->categories->name),
                     is_release      => $topic->categories->is_release,
                     is_changeset    => $topic->categories->is_changeset,
                 },
@@ -467,10 +467,10 @@ sub changeset : Local {
                     name         => $td->{title},
                     promotable   => $promotable,
                     demotable    => $demotable,
-                    state_name   => $state_name,
+                    state_name   => _loc($state_name),
                     topic_mid    => $td->{mid},
                     topic_status => $td->{id_category_status},
-                    click        => $self->click_for_topic(  $topic->categories->name, $td->{mid} )
+                    click        => $self->click_for_topic(  _loc($topic->categories->name), $td->{mid} )
                 },
             };
             # push @tree, $node if ! @rels;
@@ -499,11 +499,11 @@ sub changeset : Local {
                         name         => $rel->{title},
                         promotable   => $promotable,
                         demotable    => $demotable,
-                        state_name   => $state_name,
+                        state_name   => _loc($state_name),
                         state_id     => $p->{id_status},
                         topic_mid    => $rel->{mid},
                         topic_status => $rel->{id_category_status},
-                        click        => $self->click_for_topic(  $rel->{categories}{name}, $rel->{mid} )
+                        click        => $self->click_for_topic(  _loc($rel->{categories}{name}), $rel->{mid} )
                     },
                 };
                 push @tree, $node;
@@ -540,7 +540,7 @@ sub promotes_and_demotes {
                 job_type => 'promote',
                 bl_to => $status->{statuses_to}{bl},
                 status_to => $status->{statuses_to}{id},
-                status_to_name => $status->{statuses_to}{name},
+                status_to_name => _loc($status->{statuses_to}{name}),
             },
             id_status_from => $id_status_from_lc,
             icon => '/static/images/silk/arrow_down.gif'
@@ -568,7 +568,7 @@ sub promotes_and_demotes {
                 job_type => 'demote',
                 bl_to => $status->{statuses_from}{bl},
                 status_to => $status->{statuses_to}{id},
-                status_to_name => $status->{statuses_to}{name},
+                status_to_name => _loc($status->{statuses_to}{name}),
             },
             id_status_from => $id_status_from_lc,
             icon => '/static/images/silk/arrow_up.gif'
@@ -994,7 +994,7 @@ sub click_for_topic {
         url   => sprintf('/topic/view?topic_mid='.$mid),
         type  => 'comp',
         icon  => '/static/images/icons/topic.png',
-        title => sprintf( "%s #%d", $catname, $mid ),
+        title => sprintf( "%s #%d", _loc($catname), $mid ),
     };
 }
 
@@ -1013,7 +1013,7 @@ sub build_topic_tree {
         topic_name => {
             mid            => $p{mid},
             category_color => $p{topic}{categories}{color},
-            category_name  => $p{topic}{categories}{name},
+            category_name  => _loc($p{topic}{categories}{name}),
             is_release     => $p{is_release} // $p{topic}{categories}{is_release},
             is_changeset   => $p{is_changeset} // $p{topic}{categories}{is_changeset},
         },

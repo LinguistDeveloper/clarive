@@ -17,8 +17,8 @@
     <!-- script type="text/javascript" src="/static/pdfjs/pdf.min.js"></script -->
 
     <!-- DatePickerPlus - Ext -->
-    <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus.js"></script> 
-% if( length $lang && $lang ne 'en' ) {
+    <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus-min.js"></script> 
+% if( length $lang && $lang =~ /en|es/ ) {
     <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus-lang-<% $lang %>.js"></script> 
 % }
     <link rel="stylesheet" href="/static/datepickerplus/datepickerplus.css" type="text/css" />

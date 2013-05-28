@@ -43,3 +43,162 @@ msgstr "Finished"
 
 msgid "All-f"
 msgstr "All"
+
+msgid "Baselines"
+msgstr "Baselines"
+
+msgid "Nature"
+msgstr "Nature"
+
+msgid "Cambio"
+msgstr "Change"
+
+msgid "Incidencia"
+msgstr "Issue"
+
+msgid "Requerimiento"
+msgstr "Requirement"
+
+msgid "Solicitud"
+msgstr "Request"
+
+msgid "Release"
+msgstr "Release"
+
+msgid "Tarea"
+msgstr "Task"
+
+msgid "Solicitud IT"
+msgstr "IT request"
+
+msgid "Entrega"
+msgstr "Sprint"
+
+msgid "Caso de Prueba"
+msgstr "Test case"
+
+msgid "Funcionalidad"
+msgstr "Functionality"
+
+msgid "Petición Especial"
+msgstr "Special request"
+
+msgid "Plan de Pruebas"
+msgstr "Test plan"
+
+msgid "Cambio BD"
+msgstr "DB change"
+
+msgid "Defecto"
+msgstr "Defect"
+
+msgid "Suspendido"
+msgstr "Suspended"
+
+msgid "Repetido"
+msgstr "Repeated"
+
+msgid "Aprobado"
+msgstr "Approved"
+
+msgid "Cerrado"
+msgstr "Closed"
+
+msgid "Entregado"
+msgstr "Delivered"
+
+msgid "Integración"
+msgstr "Integration"
+
+msgid "Análisis"
+msgstr "Analysis"
+
+msgid "Preproducción"
+msgstr "Preproduction"
+
+msgid "Producción"
+msgstr "Production"
+
+msgid "Desarrollo"
+msgstr "Development"
+
+msgid "Estudio"
+msgstr "Study"
+
+msgid "En Curso"
+msgstr "Running"
+
+msgid "Finalizado"
+msgstr "Finished"
+
+msgid "Desestimado"
+msgstr "Dismissed"
+
+msgid "Nuevo"
+msgstr "New"
+
+msgid "Rechazado"
+msgstr "Rejected"
+
+msgid "Solicitado"
+msgstr "Requested"
+
+msgid "Realizado"
+msgstr "Done"
+
+msgid "Alta"
+msgstr "High"
+
+msgid "Crítica"
+msgstr "Critical"
+
+msgid "Común"
+msgstr "Common"
+
+msgid "noun:Run"
+msgstr "Run"
+
+msgid "Incidencias"
+msgstr "Issues"
+
+msgid "Revisiones"
+msgstr "Revisions"
+
+msgid "Proyectos"
+msgstr "Projects"
+
+msgid "Ficheros"
+msgstr "Files"
+
+msgid "Tareas"
+msgstr "Tasks"
+
+msgid "Requerimientos"
+msgstr "Requirements"
+
+msgid "Defectos"
+msgstr "Defects"
+
+msgid "Bugs"
+msgstr "Bugs"
+
+msgid "Casos de Prueba"
+msgstr "Test cases"
+
+msgid "Funcionalidades"
+msgstr "Functionalities"
+
+msgid "Documentos"
+msgstr "Documents"
+
+msgid "Planes_de_pruebas"
+msgstr "Test plans"
+
+msgid "Solicitudes"
+msgstr "Requests"
+
+msgid "Tópicos"
+msgstr "Topics"
+
+msgid "Topics"
+msgstr "Topics"

@@ -19,7 +19,7 @@ var data = new Array();
 var category_id = new Array();
 
 %foreach my $topic (_array @topics_by_category){
-    data.push({ label: "<%$topic->{category}%>", category_id: "<%$topic->{category_id}%>", color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
+    data.push({ label: "<% _loc($topic->{category}) %>", category_id: "<%$topic->{category_id}%>", color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
     category_id["<%$topic->{category}%>"] = <%$topic->{category_id}%>;
 %}
 
