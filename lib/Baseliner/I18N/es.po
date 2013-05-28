@@ -4433,5 +4433,13 @@ msgstr "Por defecto"
 msgid "Edit notification"
 msgstr "Editar notificación"
 
+msgid "full log"
+msgstr "log completo"
+
+msgid "noun:Run"
+msgstr "Ejecución"
+
+msgid "Summary"
+msgstr "Resumen"
 
 
