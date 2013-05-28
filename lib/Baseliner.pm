@@ -35,7 +35,9 @@ BEGIN {
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
             Unicode::Encoding
-            Session     Session::Store::DBI    Session::State::Cookie
+            Session     
+            Session::Store::DBI    
+            Session::State::Cookie
             Singleton           
             +CatalystX::Features::Plugin::I18N
             +CatalystX::Features::Plugin::Static::Simple/;
@@ -71,7 +73,6 @@ $ENV{BASELINER_PARENT_PID} = getppid();
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
-
 
 __PACKAGE__->config(
     'Plugin::Session' => {
