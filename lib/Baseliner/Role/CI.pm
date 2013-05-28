@@ -403,6 +403,91 @@ sub children {
     return $self->related( %opts, edge=>'out' );
 }
 
+sub searcher {
+    my ($self, %p ) = @_;
+    my $coll = $self->collection;
+    my @fields = _unique _array('mid', $p{fields});
+    my $schema = [
+        map {
+            +{ name=>$_, sortable=>1 } 
+        } @fields 
+    ];
+    require Baseliner::Lucy;
+    my $string_tokenizer = Lucy::Analysis::RegexTokenizer->new( pattern => '\w');
+    my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$string_tokenizer]);
+
+    my $searcher = Baseliner::Lucy->new(
+            index_path => Lucy::Store::RAMFolder->new, # in-memory files "$dir",
+            language   => 'es', 
+            analyser   => $analyzer, 
+            resultclass => 'LucyX::Simple::Result::Hash',
+            entries_per_page => 10,
+            schema     => $schema,
+            highlighter => 'Baseliner::Lucy::Highlighter',
+            search_fields => ['gdi_perfil_dni', 'id'],
+            search_boolop => 'AND',
+        );
+    my @cis = map {
+       my $h = _load( delete $_->{yaml} );
+       my $d = { %$_, %$h };
+       +{ map { $_ => $d->{$_} } @fields  };
+    } DB->BaliMaster->search({ collection=>$coll })->hashref->all;
+
+    my $sort_spec;
+    if( $p{sort} ) {
+        $sort_spec = Lucy::Search::SortSpec->new(
+                rules => [
+                    map { 
+                        my ($field,$dir) = /^(\S+) (\S+)$/ ? ($1,$2) : ($_,'ASC');
+                        Lucy::Search::SortRule->new( field =>$field, reverse=>( $dir =~ /asc/i ? 0 : 1 )  ) 
+                    } _array($p{sort})
+                ],
+        );
+    }
+        
+    my $query;
+    if( ref $p{query} ) {
+        while( my ($k,$v) = each %{ $p{query} } ) {
+            $query = Lucy::Search::TermQuery->new(
+                field => $k,
+                term  => $v,
+            );
+        }
+    } else {
+        $query = $p{query};
+    }
+
+    map { $searcher->create($_) } @cis;
+    $searcher->commit;
+    my ( $results, $pager ) = try {
+       $searcher->search( $query, 1, $sort_spec );
+    } catch {
+      _debug shift(); # usually a "no results" exception
+      ([],undef);
+    };
+}
+
+sub build_table {
+    my ($self, %p) = @_;
+    my $coll = $self->collection;
+    my @cols = @{ $p{cols} || [] } ||  
+        grep { $_ ne 'mid' } map { $_->name } $self->meta->get_all_attributes;
+    require DBIx::Simple;
+    my $db = DBIx::Simple->connect('dbi:SQLite::memory:'); 
+    my $cols_str = join ',', map { "$_ text" } @cols;
+    eval { $db->query("create table $coll ( mid number, $cols_str, unique (mid ) )") };
+    if( $p{cis} ) {
+        my $k = @cols;
+        my $pos_str = join ',', map { '?' } 1..$k;
+        my $s = $db->dbh->prepare("insert into $coll values ($k)" );
+        for my $ci ( _array( $p{cis} ) ) {
+            my @values = map { $ci->{$_} // '' } @cols;
+            $s->execute( @values );
+        }
+    }
+    return $db;
+}
+
 # from Node
 has uri      => qw(is rw isa Str);   # maybe a URI someday...
 has resource => qw(is rw isa Baseliner::URI), 
