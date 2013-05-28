@@ -8,6 +8,7 @@
     $show_lifecycle => $c->config->{site}{show_lifecycle} // 1
     $show_js_reload => 0
     $show_tabs => $c->config->{site}{show_tabs} // 1
+    $banner => $c->config->{site}{banner}
 </%args>
 
 <%perl>
@@ -194,6 +195,26 @@ Ext.onReady(function(){
 % } # site_raw
         ]
     });
+
+%   if( $banner ) {
+        var banner = <% Baseliner::Utils::encode_json( $banner ) %>;
+        var height = parseInt( banner.height );
+        var banner_panel = new Ext.Panel({ region:'north', 
+            style: { height: height + 'px', 'z-index': 1000, position: 'absolute', background: 'transparent' }, //'height: 80px; z-index: 10000; position: absolute; background: transparent', 
+            bodyStyle: 'z-index: 10000; position: absolute; background: transparent;', 
+            bodyCfg: { height: '1000px' },
+            autoLoad:{ url: banner.url, scripts: true } });
+        var banner_bottom = Ext.apply( Baseliner.main.initialConfig, { region: 'center', style: { top: height } } );
+        Baseliner.main = new Ext.Panel({
+            layout: 'border',
+            items: [ banner_panel, new Ext.Panel(banner_bottom) ]
+        });
+        //banner = new Ext.Component({ });
+        //banner.on( 'afterrender', function(){ 
+       // banner.update({ url: "$banner", scripts: true });
+        //});
+%   } 
+
     Baseliner.viewport = new Ext.Viewport({
         layout: 'card',
         activeItem: 0,
