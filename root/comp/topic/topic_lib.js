@@ -503,14 +503,18 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
     
         self.detail.on( 'render', function() {
-            if (self.topic_mid > 0) self.detail_reload();
+            if (self.topic_mid > 0 && !self.activarEdit) {
+                self.detail_reload();
+            }
+
             if( self.swEdit ) {
                 if( !self.permEdit ) {
                     self.btn_edit.hide();
                 } else {
                     self.btn_edit.toggle(true);
                     self.btn_detail.toggle(false);
-                    self.show_form();        
+                    self.show_form();
+                    if (self.activarEdit) self.view_is_dirty = true;
                 }
             }
         });
