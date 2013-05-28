@@ -5,7 +5,7 @@ use v5.10;
 
 our $CAPTION = 'Start/Stop dispatcher';
 
-has id            => qw(is ro default) => sub { 'cla-disp' };
+has id         => qw(is ro default) => sub { 'cla-disp' };
 has host       => qw(is ro default), sub { 'localhost' };
 has daemon     => qw(is ro);
 has restarter  => qw(is rw default) => sub { 0 };
@@ -25,7 +25,7 @@ sub BUILD {
 }
 
 sub run {
-    goto &__PACKAGE__::run_start;
+    goto &Clarive::Cmd::disp::run_start;
 }
 
 sub run_start {
