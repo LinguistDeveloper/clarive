@@ -708,6 +708,15 @@ msgstr "Estado del Pase"
 msgid "Job %1: %2"
 msgstr "Pase %1: %2"
 
+msgid "Step %1 finished with status %2"
+msgstr "Paso %1 finalizado con estado %2"
+
+msgid "Job %1 finished"
+msgstr "Pase %1 finalizado"
+
+msgid "Error running Job %1"
+msgstr "Error durante la ejecución del pase %1"
+
 msgid "Error sending job notification: %1"
 msgstr "Error enviando notificación de pase: %1"
 
@@ -2417,7 +2426,7 @@ msgstr "PID"
 
 # root/comp/scheduler_grid.js (171)
 msgid "Frequency"
-msgstr "Frequencia"
+msgstr "Frecuencia"
 
 # root/comp/scheduler_grid.js (173)
 msgid "Workdays"
@@ -3554,7 +3563,7 @@ msgid "Are you sure you want to deploy/rollback %1 to baseline %2?"
 msgstr "¿Quiere mover %1 al entorno de %2?"
 
 msgid "Are you sure you want to delete the role %1?"
-msgstr "¿Seguro que quieres borrar el rol %1?"
+msgstr "¿Seguro que quiere borrar el rol %1?"
 
 msgid "Update Baselines"
 msgstr "Actualiza Líneas Bases"
