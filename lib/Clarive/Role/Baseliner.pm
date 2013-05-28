@@ -42,6 +42,7 @@ sub setup_baseliner {
 
 sub bali_service {
     my ($self,$service_name,%opts) = @_;
+    $ENV{BALI_CMD} = 1;
     require Baseliner; 
     require Baseliner::Standalone;
     my $c = Baseliner::Standalone->new;
