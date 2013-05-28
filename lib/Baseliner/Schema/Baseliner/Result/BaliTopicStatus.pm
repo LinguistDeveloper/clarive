@@ -21,12 +21,19 @@ __PACKAGE__->add_columns(
   "description",
   { data_type => "varchar2", is_nullable => 1, size => 1024 },
   "type",
-  { data_type => "char", is_nullable => 1, size => 1 },
+  { data_type => "varchar2", is_nullable => 1, size => 2 },
   "seq",
   { data_type => "number", is_nullable => 1, default_value=>1 },
   "bl",
   { data_type => "varchar2", is_nullable => 0, size => 1024, default_value=>'*' },
-
+  "bind_releases",
+  { data_type => "char", is_nullable => 0, size => 1, default_value=>'0' },
+  "frozen",
+  { data_type => "char", is_nullable => 0, size => 1, default_value=>'0' },
+  "readonly",
+  { data_type => "char", is_nullable => 0, size => 1, default_value=>'0' },
+  "ci_update",
+  { data_type => "char", is_nullable => 0, size => 1, default_value=>'0' },
 );
 __PACKAGE__->set_primary_key("id");
 

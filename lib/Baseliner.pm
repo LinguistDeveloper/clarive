@@ -117,6 +117,25 @@ if( $ENV{BALI_CMD} ) {
     require Baseliner::Standalone;
 }
 
+our $ccache = eval {
+    require CHI;
+    CHI->new(
+    #driver     => 'FastMmap', root_dir   => '/tmp', cache_size => '20m'
+    #driver =>'Memory'
+    #driver => 'RawMemory', datastore => {}, max_size => 1000,
+    #driver => 'BerkeleyDB', root_dir => '/tmp/bdb',
+    #driver => 'SharedMem', size => 1_000_000, shmkey=>93894384,
+    driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0
+    );
+}; 
+if( $@ ) {
+   { package Nop; sub AUTOLOAD{ } };
+   $ccache = bless {} => 'Nop';
+}
+sub cache_set { $ccache->set( $_[1], $_[2] ) }
+sub cache_get { $ccache->get( $_[1] ) }
+sub cache_clear { $ccache->clear }
+
 
 #__PACKAGE__->config->{authentication}{dbic} = {
 #    user_class     => 'Bali::BaliUser',
@@ -319,24 +338,11 @@ around 'debug' => sub {
     our $global_app;
     sub app {
         Baseliner->instance and return __PACKAGE__->instance;
-        my $class = shift;
-        my $c = shift;
+        my ($class, $c ) = @_;
         return $global_app = $c if ref $c;
         return $global_app if ref $global_app;
 
-        #my $c;
-        #my $meta = Class::MOP::get_metaclass_by_name('Baseliner');
-        #$meta->make_mutable;
-        #$meta->add_after_method_modifier( "dispatch", sub {
-            #$c = shift;
-        #});
-        #$meta->make_immutable( replace_constructor => 1 );
-        #Class::C3::reinitialize();
-        #return $c; 
-        #return Baseliner::Standalone->new;
-        return $c;
-        #bless {}, 'Baseliner';
-
+        return bless {} => 'Baseliner';  # so it won't break $c->{...} calls
     }
 
     #TODO move this to a model

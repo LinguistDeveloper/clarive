@@ -153,7 +153,6 @@ use Try::Tiny;
 use MIME::Lite;
 use Class::MOP;
 use Sys::Hostname;
-use PadWalker qw(peek_my peek_our peek_sub closed_over);
 use Text::Unaccent::PurePerl qw/unac_string/;
 use Path::Class;
 use Term::ANSIColor;
@@ -258,26 +257,13 @@ sub _loc {
     return unless $_[0];
     #return loc( @_ );
     my @args = @_;
-    my $context={};
-    for my $level (2..3) {## try to get $c with PadWalker
-        $context = try { peek_my($level); } catch { last }; 
-        last if ref $context->{'$c'};
-        #last if( $context->{'$c'} && ref ${ $context->{'$c'} } );
-    }
-    if( ref $context->{'$c'} ) {
-        my $c = ${ $context->{'$c'} };
-        return try {
-            return _loc_decoded(@args) if $ENV{BALI_CMD};
-            return _loc_decoded(@args) unless defined $c->request;
-            if( ref $c->session->{user} ) {
-                $c->languages( $c->session->{user}->languages );
-            }
-            $c->localize( @args );
-        } catch {
-            _loc_decoded(@args);
-        };
-    } else {
+    my $c = try { Baseliner->app };
+    if( $ENV{BALI_CMD} || !ref($c) ) {
+        my $default_lang = try { Baseliner->config->{default_lang} } catch { 'en' } ;
+        loc_lang( $default_lang );
         return loc( @args );
+    } else {
+        return $c->localize( @args );
     }
 }
 

@@ -1,7 +1,7 @@
 package BaselinerX::Type::Namespace;
 use Baseliner::Plug;
 use Baseliner::Utils;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 use Baseliner::Core::Namespace;
 

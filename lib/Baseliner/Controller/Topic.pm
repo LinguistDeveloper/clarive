@@ -20,7 +20,7 @@ register 'registor.menu.topics' => {
        my @cats = DB->BaliTopicCategories->search(undef,{ select=>[qw/name id color/] })->hashref->all;
        my $seq = 10;
        my %menu_view = map {
-           my $name = $_->{name};
+           my $name = _loc( $_->{name} );
            my $id = _name_to_id( $name );
            my $data = $_;
            "menu.topic.$id" => {
@@ -35,7 +35,7 @@ register 'registor.menu.topics' => {
        } sort { lc $a->{name} cmp lc $b->{name} } @cats;
 
        my %menu_create = map {
-           my $name = $_->{name};
+           my $name = _loc( $_->{name} );
            my $id = _name_to_id( $name );
            my $data = $_;
            "menu.topic.create.$id" => {
@@ -200,7 +200,7 @@ sub related : Local {
     my @topics = map {
         $_->{name} = $_->{categories}{is_release} eq '1' 
             ?  $_->{title}
-            :  $_->{categories}->{name} . ' #' . $_->{mid};
+            :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{categories}->{color};
         $_
     } $rs_topic->all;
@@ -466,12 +466,10 @@ sub view : Local {
         #else{
             my $id_category_status = $category->topics->id_category_status;
             #Miramos los estados que tiene en el workflow.
-            my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        
-            
             my %tmp;
             ##map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' }
             map { $tmp{$_->{id_status_from}} = 'id' } 
-                            Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;        
+                Baseliner->model('Topic')->user_workflow( $c->username );
             
             if ((substr $category->topics->status->type, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
@@ -692,11 +690,11 @@ sub list_category : Local {
                 push @rows,
                 {   id            => $category->{id},
                     category      => $category->{id},
-                    name          => $category->{name},
+                    name          => $p->{swnotranslate} ? $category->{name}: _loc($category->{name}),
                     color         => $category->{color},
                     type          => $type,
                     forms         => $forms,
-                    category_name => $category->{name},
+                    category_name => _loc($category->{name}),
                     is_release    => $category->{is_release},
                     is_changeset  => $category->{is_changeset},
                     description   => $category->{description},
@@ -889,7 +887,7 @@ sub filters_list : Local {
             push @views, {
                 id  => $i++,
                 idfilter      => $r->id,
-                text    => $r->name,
+                text    => _loc($r->name),
                 filter  => $r->filter_json,
                 default    => \0,
                 cls     => 'forum',
@@ -922,7 +920,7 @@ sub filters_list : Local {
                 {
                     id  => $i++,
                     idfilter      => $_->{id},
-                    text    => $_->{name},
+                    text    => _loc($_->{name}),
                     color   => $_->{color},
                     cls     => 'forum',
                     iconCls => 'icon-no',
@@ -956,7 +954,7 @@ sub filters_list : Local {
                 push @labels, {
                     id          => $i++,
                     idfilter    => $_->{id},
-                    text        => $_->{name},
+                    text        => _loc($_->{name}),
                     color       => $_->{color},
                     cls         => 'forum label',
                     iconCls     => 'icon-no',
@@ -982,11 +980,9 @@ sub filters_list : Local {
     $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
     ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
-    my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $c->username );        
-    
     my %tmp;
     map { $tmp{$_->{id_status_from}} = 'id'; $tmp{$_->{id_status_to}} = 'id' } 
-                    Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;
+                Baseliner->model('Topic')->user_workflow( $c->username );
 
     if($row->count() gt 0){
         while( my $r = $row->next ) {
@@ -994,7 +990,7 @@ sub filters_list : Local {
                 {
                     id  => $i++,
                     idfilter      => $r->id,
-                    text    => $r->name,
+                    text    => _loc($r->name),
                     cls     => 'forum status',
                     iconCls => 'icon-no',
                     checked => exists $tmp{$r->id} && (substr ($r->type, 0 , 1) ne 'F')? \1: \0,
@@ -1025,7 +1021,7 @@ sub filters_list : Local {
                 {
                     id  => $i++,
                     idfilter      => $r->id,
-                    text    => $r->name,
+                    text    => _loc($r->name),
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     checked => \0,

@@ -9,9 +9,14 @@ register 'config.lc' => {
     ]
 };
 
+register 'action.lc.ic_editor' => {
+    name => "Can open the IC editor"
+};
+
 has 'lc' => (
     is      => 'rw',
     isa     => 'Any',
+    lazy    => 1,
     default => sub {
         # loads the lc.yaml file on initialization
         my $feature = Baseliner->features->find( file => __FILE__ );
@@ -51,10 +56,87 @@ has 'state_data' => qw(is rw isa HashRef lazy 1),
 
 sub lc_for_project {
     my ($self, $id_prj) = @_;
-    my $lc = $self->lc;
-    _log "LC==========> $lc , " . ref $lc;
-    my $nodes = $lc->{nodes};
-    #my $states = $lc->{lifecycle}->{default}->{states};
+    #my $lc = $self->lc;
+    #_log "LC==========> $lc , " . ref $lc;
+    #my $nodes = $lc->{nodes}; $ch ||= {
+    my $nodes = [
+          {
+            'node' => 'Topics',
+            'icon' => '/static/images/icons/topic.png',
+            'url' => '/lifecycle/tree_topics_project',
+            'data' => {
+                        'click' => {
+                                     'icon' => '/static/images/icons/topic.png',
+                                     'url' => '/topic/grid',
+                                     'title' => 'Topics',
+                                     'type' => 'comp'
+                                   }
+                      },
+            'type' => 'component',
+          },
+          {
+            'node' => 'Releases',
+            'icon' => '/static/images/icons/release.gif',
+            'url' => '/lifecycle/tree_project_releases',
+            'type' => 'component',
+          },
+          {
+            'node' => 'Jobs',
+            'icon' => '/static/images/icons/job.png',
+            'url' => '/lifecycle/tree_project_jobs',
+            'type' => 'component',
+            'menu' => [
+                {
+                  icon => '/static/images/icons/job.png',
+                  text => _loc('Open...'),
+                  comp => { url => '/job/monitor' },
+                }
+            ],
+          },
+          {
+            'node' => 'Views',
+            'icon' => '/static/images/icons/directory.png',
+            'menu' => [
+                        {
+                          'icon' => '/static/images/icons/folder_new.gif',
+                          'text' => 'New Folder',
+                          'url' => '/fileversion/new_folder',
+                           'eval' => {
+                               handler=>'Baseliner.new_folder',
+                           },
+                        }
+                      ],
+            'url' => '/fileversion/tree_file_project',
+            'data' => {
+                        id_directory => '',
+                        'on_drop' => {
+                                       'url' => '/fileversion/drop'
+                                     }
+                      },
+            'type' => 'component',
+          },
+    ];
+    
+
+    my @repos =
+        map { values %$_ }
+        DB->BaliMasterRel->search( {from_mid => $id_prj, rel_type => 'project_repository'},
+        {select => 'to_mid'} )->hashref->all;
+
+    for my $id_repo ( @repos ) {
+        my $repo = Baseliner::CI->new( $id_repo );
+        push @$nodes, {
+          node => _loc("Branches").": ".$repo->name,
+          type => 'changeset',
+          url => '/lifecycle/branches',
+          active => 1,
+          icon => '/static/images/icons/lc/branches_obj.gif',
+          data => {
+            id_repo => $id_repo  
+          }
+          
+        }
+    }
 
     # General bag for starting the deployment workflow
     my @states = (
@@ -68,7 +150,7 @@ sub lc_for_project {
 
     # States-Statuses with bl and type = D (Deployable)
     push @states, map {
-        +{  node   => "$_->{name} [$_->{bl}]",
+        +{  node   => sprintf("%s [%s]",_loc($_->{name}), $_->{bl}),
             type   => 'state',
             active => 1,
             data => { id_status => $_->{id}, },

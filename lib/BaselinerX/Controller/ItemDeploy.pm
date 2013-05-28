@@ -25,7 +25,6 @@ sub submit : Local {
     $p->{active} = $p->{active} =~ /on|true/ ? 1 : 0;
     $p->{no_paths} = $p->{no_paths} =~ /on|true/ ? 1 : 0;
     $p->{path_deploy} = $p->{path_deploy} =~ /on|true/ ? 1 : 0;
-    _log _dump $p;
     $c->stash->{json} = try {
         my $ns = delete $p->{id} || $p->{ns}; 
         # check if regex compiles ok

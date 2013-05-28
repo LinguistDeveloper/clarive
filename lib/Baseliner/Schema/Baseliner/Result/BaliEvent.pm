@@ -51,5 +51,11 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+__PACKAGE__->has_many(
+  "rules",
+  "Baseliner::Schema::Baseliner::Result::BaliEventRules",
+  { "foreign.id_event" => "self.id" },
+);
+
 1;
 

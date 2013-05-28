@@ -1,6 +1,7 @@
 package BaselinerX::Type::Service::Config;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use v5.10;
 
 with 'Baseliner::Role::Service';
 
@@ -36,10 +37,29 @@ sub run {
         #  value: C:\Aps\SCM\cliente\tar.exe
 
         my $d = $c->model('ConfigStore')->search;
-        for( @{ $d->{data} } ) {
-            print "$_->{composed}\t\t= $_->{value}\n";
-            print "\t$_->{config_label}, $_->{ts}, $_->{config_module}, $_->{config_default}\n\n"
-               if exists $p->{v};
+        my $to_hash = sub { 
+            my $format = shift // '%s [%s, %s]';
+            +{ map {
+                my $k=sprintf( $format, $_->{key}, $_->{bl}, $_->{ns}); $k => $_ }
+                _array( $d->{data} )
+             }
+        };
+        given( $p->{format} ) {
+            when( 'yaml' ) {
+                print _dump( $to_hash->()  );
+            }
+            when( 'apache' ) {
+                require Config::General;
+                my $conf = Config::General->new();
+                print $conf->save_string( $to_hash->('%s_%s_%s') );
+            }
+            default {
+                for( _array( $d->{data} ) ) {
+                    print "$_->{composed} = $_->{value}\n";
+                    print "\t$_->{config_label}, $_->{ts}, $_->{config_module}, $_->{config_default}\n\n"
+                       if exists $p->{v};
+                }
+            }
         }
     } elsif( defined $p->{reset} ) {
         my $data = $c->model('ConfigStore')->delete( key=>$p->{key}, ns=>$p->{ns}, bl=>$p->{bl} );

@@ -1,4 +1,5 @@
 (function(params){
+    var rule_id = params.rec.id || '';
     var check_sm_events = new Ext.grid.CheckboxSelectionModel({
         singleSelect: true,
         sortable: false,
@@ -12,6 +13,15 @@
         url: '/rule/event_list',
         baseParams: Ext.apply({}, params),
         fields: [ 'type', 'name', 'description', 'key' ],
+    });
+    store_events.on('load',function(){
+        var row = 0;
+        store_events.each( function(r){
+            if( r.data.key == params.rec.rule_event ) {
+                check_sm_events.selectRow( row );
+            }
+            row++;
+        });
     });
     var grid_events = new Ext.grid.GridPanel({
         sm: check_sm_events,
@@ -27,31 +37,52 @@
             { header: _('Description'), width: 100, dataIndex: 'description', renderer: Baseliner.render_wrap }
         ]
     });
+    var combo_type = new Ext.form.ComboBox({ 
+               fieldLabel:_('Type'), 
+               name: 'rule_type', 
+               hiddenName: 'rule_type', 
+               valueField: 'rule_type', 
+               value: params.rec.rule_type || 'event',
+               displayField: 'rule_type_name',
+               typeAhead: false, minChars: 1, mode: 'local', 
+               store: [
+                  [ 'event', _('Event') ],
+                  [ 'loop', _('Loop') ]
+               ],
+               editable: false, forceSelection: true, triggerAction: 'all',
+               allowBlank: false
+    });
+    combo_type.on('select', function(){
+        var v = combo_type.getValue();
+        store_events.load({ params: { event_type: v } });
+    });
+    // PAGE 1
     var form_events = new Ext.FormPanel({
-        defaults: {
-            anchor: '90%'
-        },
+        defaults: { anchor: '90%' },
         border: false,
         items: [
             { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', value: params.rec.rule_name },
+            combo_type,
             { border:false, html:'<span id="boot"><p><h4>'+_('Select the Event') + ':</h4></p>' },
             grid_events
         ]
     });
+
+    // PAGE 2
     var form_when = new Ext.FormPanel({
         border: false,
         items: [
+            { xtype:'hidden', name:'rule_id', value: rule_id }, 
             {
                 xtype: 'radiogroup',
-                id: 'eventtypegroup',
                 anchor: '50%',
                 fieldLabel: _('Event Type'),
                 defaults: {xtype: "radio",name: "rule_when"},
                 value: params.rec.rule_when,
                 items: [
-                    {boxLabel: _('Pre'), inputValue: 'pre', checked: true},
-                    {boxLabel: _('Continuous'), inputValue: 'pre', checked: true},
-                    {boxLabel: _('Post'), inputValue: 'post'}
+                    {boxLabel: _('Pre Online'), inputValue: 'pre-online', checked: false },
+                    {boxLabel: _('Post Online'), inputValue: 'post-online', checked: false },
+                    {boxLabel: _('Post Offline'), inputValue: 'post-offline', checked: true }
                 ]
             }
         ]
@@ -63,10 +94,26 @@
         done_handler: function(){
             var d = form_events.getForm().getValues();
             d = Ext.apply( d, form_when.getForm().getValues() );
+            if( check_sm_events.hasSelection() ) {
+                var rec = check_sm_events.getSelected();
+                d.rule_event = rec.data.key;
+            } else {
+                Baseliner.error( _('Rule'), _('No events selected') );
+                return;
+            }
+            if( d.rule_name.length < 1 ) {
+                Baseliner.error( _('Rule'), _('Missing rule name') );
+                return;
+            }
             Baseliner.ajaxEval('/rule/save', d, function(res){
-                Baseliner.message(_('Rule'), _('Regla guardada con éxito') );
+                if( res.success ) {
+                    Baseliner.message(_('Rule'), _('Regla guardada con éxito') );
+                    card.destroy();
+                } else {
+                    Baseliner.error(_('Rule'), res.msg );
+                }
             });
-            card.ownerCt.close();
+            //card.ownerCt.close();
         },
         items: [
             form_events, form_when
@@ -74,301 +121,3 @@
     });
     return card;
 })
-/*
-        var store_events =new Ext.data.SimpleStore({
-            fields: [ 'ev_type', 'ev_id', 'ev_desc'],
-            data:[ 
-                [ 'trigger', 'event.topic.new', 'Nuevo Tópico' ],
-                [ 'trigger', 'event.topic.edit_field', 'Campo de Tópico Modificado' ],
-                [ 'trigger', 'event.topic.change', 'Estado de Tópico Modificado' ],
-                [ 'trigger', 'event.topic.file.add', 'Fichero Adjuntado a Tópico' ],
-                [ 'trigger', 'event.topic.file.del', 'Fichero Quitado del Tópico' ],
-                [ 'trigger', 'event.topic.topic.add', 'Tópico Añadido a Tópico' ],
-                [ 'trigger', 'event.topic.topic.del', 'Tópico Quitado del Tópico' ],
-                [ 'continuous', 'event.topic.date', 'Fecha Planificada Superada' ],
-                [ 'continuous', 'event.topic.hours', 'Horas Estimadas Superadas' ],
-                [ 'continuous', 'event.topic.low', 'Tópico Sin Actividad Prolongada' ],
-                [ 'trigger', 'event.project.new', 'Proyecto Creado' ],
-                [ 'trigger', 'event.project.deleted', 'Proyecto Borrado' ],
-                [ 'trigger', 'event.user.new', 'Usuario Creado' ],
-                [ 'trigger', 'event.user.deleted', 'Usuario Borrado' ],
-                [ 'trigger', 'event.user.login', 'Login de Usuario' ],
-                [ 'trigger', 'event.user.logout', 'Logout de Usuario' ],
-                [ 'trigger', 'event.job.new', 'Pase Creado' ],
-                [ 'trigger', 'event.job.done', 'Pase Finalizado' ],
-                [ 'trigger', 'event.job.topic.demote', 'Marcha Atrás de Cambio Completada' ],
-                [ 'trigger', 'event.job.topic.promote', 'Despliegue de Cambio Completada' ],
-                [ 'trigger', 'event.sem.up', 'Semáforo Levantado' ],
-                [ 'trigger', 'event.sem.down', 'Semáforo Bajado' ],
-                [ 'trigger', 'event.ci.new', 'Nuevo CI' ],
-                [ 'trigger', 'event.ci.edit', 'CI Modificado' ],
-                [ 'trigger', 'event.ci.deleted', 'CI Borrado' ],
-            ]
-        });
-        var grid_events = new Ext.grid.GridPanel({
-            sm: check_sm_events,
-            store: store_events,
-            border: false,
-            height: 280,
-            viewConfig: { forceFit: true },
-            columns:[
-                check_sm_events,
-                { header: _('Description'), width: 100, dataIndex: 'ev_desc', renderer:function(v){ return '<b>'+v+'</b>'} },
-                { header: _('Event Type'), width: 60, dataIndex: 'ev_type' },
-                { header: _('Event'), width: 100, dataIndex: 'ev_id' }
-            ]
-        });
-        var form_events = new Ext.FormPanel({
-            defaults: {
-                anchor: '90%'
-            },
-            border: false,
-            items: [
-                { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name' },
-                { border:false, html:'<span id="boot"><p><h4>'+_('Select the Event') + ':</h4></p>' },
-                grid_events
-            ]
-        });
-        var store_status =new Ext.data.SimpleStore({
-            fields: ['status'],
-            data:[ 
-                [ 'Cerrado' ],
-                [ 'Integración' ],
-                [ 'Preproducción' ],
-                [ 'Producción' ],
-                [ 'Desarrollo' ],
-                [ 'Nuevo' ],
-                [ 'Desestimado' ],
-                [ 'Elaboración de requerimientos' ],
-                [ 'Recepción de requerimientos' ],
-                [ 'Validación' ],
-                [ 'Parametrización' ],
-                [ 'Validar parche de datos' ],
-                [ 'UAT Parche de datos' ],
-                [ 'Chequeo parche de datos' ],
-                [ 'Aceptado' ]
-            ]
-        });
-        var combo_status = new Ext.form.ComboBox({
-            store: store_status,
-                displayField: 'status',
-                valueField: 'status',
-                hiddenName: 'status',
-                name: 'status',
-            editable: false,
-            mode: 'local',
-            forceSelection: true,
-            triggerAction: 'all', 
-            fieldLabel: _('Estado del Tópico'),
-            emptyText: _('seleccione estados...'),
-            autoLoad: true
-        });
-        var store_cat =new Ext.data.SimpleStore({
-            fields: ['cat'],
-            data:[ 
-                [ 'Nueva codificación' ],
-                [ 'Parametrización no estándar' ],
-                [ 'Desarrollo' ],
-                [ 'Nuevo colectivo' ],
-                [ 'Apertura/Restricción C4T' ],
-                [ 'Versión base' ],
-                [ 'Versión de datos' ],
-                [ 'Nuevo código cuenta canal' ],
-                [ 'Nuevo código canal' ],
-                [ 'Activación/Desactivación básica' ],
-                [ 'Conjunto completo de promociones' ],
-                [ 'Comunicaciones en factura' ],
-                [ 'Actualizaciones country codes/tarifas' ],
-                [ 'Pequeños cambios en portal web' ],
-                [ 'Parche de datos' ],
-                [ 'Entrega independiente' ],
-                [ 'Bug' ]
-            ]
-        });
-        var combo_cat = new Ext.form.ComboBox({
-            store: store_cat,
-                displayField: 'cat',
-                valueField: 'cat',
-                hiddenName: 'cat',
-                name: 'cat',
-            editable: false,
-            mode: 'local',
-            forceSelection: true,
-            triggerAction: 'all', 
-            fieldLabel: _('Categoría'),
-            emptyText: _('seleccione categoría...'),
-            autoLoad: true
-        });
-
-        var form1 = new Ext.FormPanel({
-            border: false,
-            defaults: { anchor:'80%' },
-            items: [
-                { border:false, html:'<span id="boot"><p><h4>'+_('Configuración') + ':</h4></p>' },
-//                { xtype: 'textfield', name:'tt', fieldLabel:_('Tiempo de inactividad (D)'), anchor:'50%' },
-                combo_cat,
-                combo_status
-            ]
-        });
-        var form_when = new Ext.FormPanel({
-            border: false,
-            items: [
-                {
-                    xtype: 'radiogroup',
-                    id: 'eventtypegroup',
-                    anchor: '50%',
-                    fieldLabel: _('Event Type'),
-                    defaults: {xtype: "radio",name: "rule_when"},
-                    items: [
-                        {boxLabel: _('Pre'), inputValue: 'pre', checked: true},
-                        {boxLabel: _('Continuous'), inputValue: 'pre', checked: true},
-                        {boxLabel: _('Post'), inputValue: 'post'}
-                    ]
-                }
-            ]
-        });
-        var check_sm_actions = new Ext.grid.CheckboxSelectionModel({
-            singleSelect: false,
-            sortable: false,
-            checkOnly: true
-        });
-        var store_actions = new Baseliner.JsonStore({
-            root: 'data' , 
-            remoteSort: true,
-            autoLoad: true,
-            totalProperty:"totalCount", 
-            url: '/rule/actions',
-            fields: [ 'text','attributes' ]
-        });
-
-       var render_desc = function(v) {
-          return v.name;
-       }
-       var render_key = function(v) {
-          return v.key;
-       }
-        var grid_actions = new Ext.grid.GridPanel({
-            sm: check_sm_actions,
-            store: store_actions,
-            border: false,
-            height: 280,
-            viewConfig: { forceFit: true },
-            columns:[
-                check_sm_actions,
-                { header: _('Name'), width: 100, dataIndex: 'text', renderer:function(v){ return '<b>'+v+'</b>'} },
-                { header: _('Description'), width: 60, dataIndex: 'attributes', renderer: render_desc },
-                { header: _('Key'), width: 100, dataIndex: 'attributes', renderer: render_key }
-            ]
-        })
-        
-        var form_actions = new Ext.FormPanel({
-            border: false,
-            items: [
-                { border:false, html:'<span id="boot"><p><h4>'+_('Select the Action') + ':</h4></p>' },
-                grid_actions
-            ]
-        });
-        var first = 0;
-        var last = 4;
-        var navHandler = function(direction){
-            ac += direction;
-            if( direction < 0 ) {
-                bdone.hide();
-                bnext.show();
-            }
-            if( ac == first ) {
-                bback.disable();
-            }
-            if( ac > first ) bback.enable();
-            if( ac == last ) {
-                bdone.show();
-                bnext.hide();
-            }
-            card.getLayout().setActiveItem( ac ); 
-        };
-        var bback = new Ext.Button({
-                    text: _('Back'),
-                    handler: navHandler.createDelegate(this, [-1]),
-                    disabled: true
-                });
-        var bnext = new Ext.Button({
-                    text: _('Next'),
-                    handler: navHandler.createDelegate(this, [1])
-                });
-        var bdone = new Ext.Button({
-                    text: _('Done'),
-                    hidden: true,
-                    handler: function(){
-                        var f = form_events.getForm();
-                        var d = f.getValues();
-                        Baseliner.ajaxEval('/rule/save', d, function(res){
-                            Baseliner.message(_('Rule'), _('Regla guardada con éxito') );
-                        });
-                        win.close();
-                    }
-                });
-
-        // Custom form
-        var user_store_to = new Baseliner.Topic.StoreUsers({
-            autoLoad: true,
-            baseParams: {}
-        });
-        var user_to = new Baseliner.model.Users({ 
-            store: user_store_to,
-            name: 'to',
-            fieldLabel:_('To')
-        });
-        var user_cc = new Baseliner.model.Users({ 
-            store: user_store_to,
-            name: 'to',
-            fieldLabel:_('CC')
-        });
-        var user_bcc = new Baseliner.model.Users({ 
-            store: user_store_to,
-            name: 'to',
-            fieldLabel:_('BCC')
-        });
-        //user_box_store.on('load',function(){ user_box.setValue( rec.users) ;            });
-
-        var form2 = new Ext.FormPanel({
-            autoScroll: true,
-            defaults: {
-                anchor: '80%'
-            },
-            items: [
-                { xtype:'textfield', name:'subject', fieldLabel:_('Subject') },
-                { xtype:'checkbox', name:'na', boxLabel:_('Notificar al Asignado') },
-                { xtype:'checkbox', name:'na', boxLabel:_('Notificar al que la ha creado') },
-                { xtype:'textfield', name:'nr', fieldLabel:_('Notificar a Roles)'), anchor:'80%' },
-                user_to,
-                user_cc,
-                user_bcc,
-                {
-                        xtype:'htmleditor',
-                        name:'body',
-                        fieldLabel: _('Body'),
-                        width: '100%',
-                        height: 200
-                }
-        ]
-        });
-        var card = new Ext.Panel({
-            //title: 'Example Wizard',
-            layout:'card',
-            height: 450,
-            activeItem: 0, // make sure the active item is set on the container config!
-            bodyStyle: 'padding:15px',
-            defaults: {
-                border: false
-            },
-            // just an example of one possible navigation scheme, using buttons
-            bbar: [
-                '->', 
-                bback, bnext,bdone
-            ],
-            items: [
-                form_events, form_when, form_actions, form1, form2
-            ]
-        });
-        
-*/

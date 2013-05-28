@@ -2,7 +2,7 @@ package BaselinerX::Type::Portlet;
 use Baseliner::Plug;
 use Baseliner::Utils;
 
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'portlet' => __PACKAGE__;
 

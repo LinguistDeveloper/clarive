@@ -16,7 +16,7 @@ use v5.10;
 use Moose;
 use namespace::autoclean;
 
-given( $ENV{BASELINER_SERVER} ) {
+given( $ENV{BASELINER_SERVER_ENGINE} ) {
     when( 'prefork' ) {
         extends 'CatalystX::Script::Server::Starman';
     }

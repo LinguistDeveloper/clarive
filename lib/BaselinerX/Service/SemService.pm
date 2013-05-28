@@ -83,7 +83,6 @@ sub run_daemon {
     my $iterations = $config->{iterations} || 100;
 
     _log "Sem daemon started";
-    #for ( 1 .. $iterations ) {
     my $iteration=0;
     my $pending=0;
 

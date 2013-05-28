@@ -5,14 +5,14 @@ use Baseliner::Sugar;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
 
-register 'action.ci.admin' => { name => 'Admin CIs' };
-register 'menu.tools.ci' => {
-    label    => 'CI Viewer',
-    url_comp => '/comp/ci-viewer-tree.js',
-    title    => 'CI Viewer',
-    icon     => '/static/images/ci/ci.png',
-    actions  => ['action.ci.admin']
-};
+# register 'action.ci.admin' => { name => 'Admin CIs' };
+# register 'menu.tools.ci' => {
+#     label    => 'CI Viewer',
+#     url_comp => '/comp/ci-viewer-tree.js',
+#     title    => 'CI Viewer',
+#     icon     => '/static/images/ci/ci.png',
+#     actions  => ['action.ci.admin']
+# };
 
 # gridtree - the adjacency list treegrid
 sub gridtree : Local {
@@ -395,6 +395,14 @@ sub list_roles {
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    
+    # in cache ?
+    my $cache_key = Storable::freeze($p);
+    if( my $cc = $c->cache_get( $cache_key ) ) {
+        $c->stash->{json} = $cc;
+        return $c->forward('View::JSON');
+    }
+    
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
@@ -446,6 +454,7 @@ sub store : Local {
     }
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
+    $c->cache_set( $cache_key, $c->stash->{json} ); 
     $c->forward('View::JSON');
 }
 
@@ -587,6 +596,11 @@ Load a CI row.
 sub load : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
+    my $cache_key = Storable::freeze($p);
+    if( my $cc = $c->cache_get( $cache_key ) ) {
+        $c->stash->{json} = $cc;
+        return $c->forward('View::JSON');
+    }
     my $mid = $p->{mid};
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     try {
@@ -603,6 +617,7 @@ sub load : Local {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg=>_loc('CI load error: %1', $err ) };
     };
+    $c->cache_set( $cache_key, $c->stash->{json} );
     $c->forward('View::JSON');
 }
 
@@ -612,6 +627,7 @@ sub delete : Local {
     my $mids = delete $p->{mids};
 
     try {
+        $c->cache_clear();
         my $cnt = $c->model('Baseliner::BaliMaster')->search( { mid=>$mids })->delete;
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
         #$c->stash->{json} = { success=>\1, msg=>_loc('CI does not exist' ) };

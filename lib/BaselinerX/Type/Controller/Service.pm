@@ -48,6 +48,7 @@ sub rest : Local {
     #close STDERR;
     #open(STDOUT, ">>", $tf) or die "Can't open STDOUT: $!";
     #open(STDERR, ">>", $tf) or die "Can't open STDERR: $!";
+    my $verbose = exists $p->{v};
     
     #$output= capture_merged {
     use IO::CaptureOutput;
@@ -55,7 +56,9 @@ sub rest : Local {
     require Baseliner::Core::Logger::Quiet;
     my $logger = Baseliner::Core::Logger::Quiet->new;
         try {
-        Baseliner->model('Services')->launch(
+            local $ENV{BASELINER_DEBUG} = $verbose; 
+            local $Baseliner::DebugForceOff = $verbose; 
+            Baseliner->model('Services')->launch(
                     $p->{service},
                     logger       => $logger,
                     quiet        => 1,
@@ -64,7 +67,7 @@ sub rest : Local {
             $c->stash->{json} = { msg=>$logger->msg, rc=>$logger->rc };
         } catch {
             my $err = shift;
-        $c->stash->{json} = { msg=>$logger->msg . "\n$err", rc=>255 };
+            $c->stash->{json} = { msg=>$logger->msg . "\n$err", rc=>255 };
         };
     }, \$output, \$output );
     #};

@@ -2,7 +2,7 @@ package BaselinerX::Type::Dashboard;
 use Baseliner::Plug;
 use Baseliner::Utils;
 
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'dashboard' => __PACKAGE__;
 

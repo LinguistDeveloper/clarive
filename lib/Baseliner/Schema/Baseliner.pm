@@ -35,6 +35,7 @@ sub _stop {
 sub _warn { print STDERR "*********** WARN: " . (_loc @_ ) . "\n"; }
 
 my $filter_to_generic =  sub {
+    no warnings;
     my $s = shift;
     print STDERR "\n";
     # replace default (Oracle) for generic internal representation
@@ -47,7 +48,7 @@ my $filter_to_generic =  sub {
             my $type = $col->data_type;
             my $def = $col->default_value;
             # fix types
-            if( $type =~ /numeric/i ) {
+            if( defined $type && $type =~ /numeric/i ) {
                 $col->data_type( 'number' );
                 $type = 'number';
             }
@@ -55,7 +56,7 @@ my $filter_to_generic =  sub {
                 $col->default_value( \"current_timestamp" );
             }
             # quote - unquote
-            if( $type =~ /^(num|int)/i && ! ref $def && length $def ) {
+            if( defined $type && $type =~ /^(num|int)/i && ! ref $def && defined $def && length $def ) {
                 # unquotify numbers
                 $def =~ s{^['"]}{};
                 $def =~ s{['"]$}{};
@@ -192,43 +193,54 @@ sub deploy_schema {
 
         # calculate diff
         $obj  = $obj->compute_differences; # here: $obj->table_diff_hash has keys as tablenames
-        my $diff = $obj->produce_diff_sql;
-        $diff =~ s{"}{}gs;
+        my @diff = $obj->produce_diff_sql;
+        @diff = map{ s{"}{}gs; $_ } @diff;
 
         # grep ? 
         if( defined $p{'grep'} ) {
-            my @lines = split/\n/, $diff;
             my $re = $p{'grep'};
             for my $r ( _array $re ) {
-                @lines = grep /$r/i, @lines;
+                @diff = grep /$r/si, @diff; 
             }
-            $diff = join "\n", @lines;
         }
         # execute ALL?
-        print "\n\n$diff", "\n";
+        print "\n\n" . join( "", @diff ) . "\n";
         if( _ask_me("Execute ALL diff?") ) {
-            $dbh->do( $diff );
-        }
-
-        # execute ADDS?
-        my @adds = grep / ADD \(/, split /\n/, $diff;
-        if( @adds > 0 ) {
-            print '=' x 100 , " ADD: \n";
-            print join "\n", '', @adds, '';
-            if( _ask_me("\nExecute ADDs?") ) {
-                $dbh->do( $_ ) for map { s/\;(\s*)?\n?$//; $_ } @adds;
+            if( _ask_me("ALL at ONCE?") ) {
+                $dbh->do( join '', @diff );
+            } else {
+                # step by step
+                for( map { s/\;(\s*)?\n?$//; $_ } @diff ) {
+                    next if /^--/ or /^BEGIN/ or /^COMMIT/;
+                    if( _ask_me( $_ ) ) { 
+                        $dbh->do( $_ );
+                    }
+                }
             }
         }
 
-        # execute MODIFYs?
-        my @modifies = join "\n", grep / MODIFY/, split /\n/, $diff;
-        if( @modifies > 0 ) {
-            print '=' x 100 , " MODIFY: \n";
-            print join "\n", '', @modifies, '';
-            if( _ask_me("\nExecute MODIFYs?") ) {
-                $dbh->do( $_ ) for map { s/\;(\s*)?\n?$//; $_ } @modifies;
+        my $exec_specific = sub {
+            my ($type, $re) = @_; 
+            my @filtered = grep { length } grep /$re/, @diff;
+            if( @filtered > 0 ) {
+                print "\n", '=' x 70 , "| ${type}s: \n";
+                print join '', @filtered, "\n";
+                if( _ask_me("\nExecute only ${type}s") ) {
+                    # do, but without the semicolon
+                    $dbh->do( $_ ) for map { s/\;(\s*)?\n?$//; $_ } @filtered;
+                }
             }
-        }
+        };
+        #        $dbh->do( $_ ) for map { s/\;(\s*)?\n?$//; $_ } @modifies;
+        
+        $exec_specific->( @$_ ) for (
+             ['ADD', qr/ ADD \(/i],
+             ['CREATE', qr/^CREATE/i],
+             ['DROP TABLE', qr/^DROP TABLE/],
+             ['ALTER DROP', qr/ALTER.*DROP/],
+             ['ALTER ADD', qr/ALTER.*ADD/],
+             ['MODIFY', qr/ MODIFY/i],
+        );
 
         return 0;
     } elsif( $p{diff} eq '2schema' ) {
@@ -467,10 +479,10 @@ sub _filter_diff {
             if( ref $def eq 'SCALAR' ) {
                 $col->default_value( uc $$def );
             }
-            elsif( $def =~ /sysdate$/i ) {
+            elsif( defined $def && $def =~ /sysdate$/i ) {
                 $col->default_value( 'SYSDATE' );
             }
-            elsif( $def =~ /^([0-9]+)\s+$/ ) {
+            elsif( defined $def && $def =~ /^([0-9]+)\s+$/ ) {
                 $col->default_value( $1 );
             }
             #if( $col->default_value =~ /^'(.*)'$/ ) {
@@ -491,6 +503,11 @@ sub _filter_diff {
 
 sub _ask_me {
     my $self = shift if ref $_[0];
+
+    require Term::ReadKey;
+    # flush keystrokes
+    while( defined( my $key = Term::ReadKey::ReadKey(-1) ) ) {}
+        
     print shift() . "\n";
     print "*** Are you sure [y/N/q]: ";
     unless( (my $yn = <STDIN>) =~ /^y/i ) {

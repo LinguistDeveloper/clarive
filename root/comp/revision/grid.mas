@@ -318,7 +318,7 @@
                 onconfirm: function(){ Baseliner.showLoadingMask( grid.getEl() , _('Deleting...') ); }
             },
             function(res) {
-                Baseliner.hideLoadingMask();
+                Baseliner.hideLoadingMask( grid.getEl() );
                 if( res.success ) {
                     Baseliner.message( _('Delete'), _('Deleted revision %1', rec.data.item ) );
                     store.remove( rec );
@@ -435,7 +435,7 @@
         }
     };
     var toolbar = new Ext.Toolbar({
-        items: [ 'Buscar: ', ' ',
+        items: [ _('Search')+': ', ' ',
             new Ext.app.SearchField({
                 store: store,
                 params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
@@ -519,7 +519,7 @@
         if( rec.data.can_rename ) button_rename.enable();
             else button_rename.disable();
     });
-    store.load({params:{start: 0, limit: ps }, callback: function() {  Baseliner.hideLoadingMask(); } });
+    store.load({params:{start: 0, limit: ps }, callback: function() {  Baseliner.hideLoadingMask( grid.getEl() ); } });
 
     return grid;
 })();

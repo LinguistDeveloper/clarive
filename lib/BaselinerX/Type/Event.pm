@@ -47,7 +47,7 @@ You may define filters to change data before translation:
 package BaselinerX::Type::Event;
 use Baseliner::Plug;
 use Baseliner::Utils;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'event' => __PACKAGE__;
 
@@ -55,6 +55,7 @@ has 'id' => ( is => 'rw', isa => 'Str', default => '' );
 has 'name' => ( is => 'rw', isa => 'Str', default => sub { shift->key } );
 has 'type' => ( is => 'rw', isa => 'Str', default => 'trigger' );
 has 'description' => ( is => 'rw', isa => 'Str', default => 'An Event' );
+has 'notify' => ( is => 'rw', isa => 'HashRef' );
 has 'text' => (
     is      => 'rw',
     isa     => 'Str',
@@ -66,6 +67,7 @@ has 'text' => (
 );
 has 'vars' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] }, lazy => 1 );
 has 'filter' => ( is => 'rw', isa => 'CodeRef' );
+has level => ( is=>'rw', isa => 'Num', default=>0 );
 
 sub event_text {
     my ($self, $data ) = @_;
@@ -87,9 +89,15 @@ sub _hooks {
     }
     return ();
 }
-
 sub before_hooks { $_[0]->_hooks( 'before' ) }
 sub after_hooks { $_[0]->_hooks( 'after' ) }
+
+sub run_rules {
+    my ($self, $when, $stash) = @_;
+    return Baseliner->model('Rules')->run_rules( event=>$self->key, when=>$when, stash=>$stash );
+}
+sub rules_pre_online { $_[0]->run_rules( 'pre-online', $_[1] ) }
+sub rules_post_online { $_[0]->run_rules( 'post-online', $_[1] ) }
 
 1;
 

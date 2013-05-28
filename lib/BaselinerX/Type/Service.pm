@@ -3,7 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
 
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'service' => __PACKAGE__;
 sub service_noun { 'service' };
@@ -13,8 +13,10 @@ has 'name' => ( is=> 'rw', isa=> 'Str' );
 has 'desc' => ( is=> 'rw', isa=> 'Str' );
 has 'handler' => ( is=> 'rw', isa=> 'CodeRef' );
 has 'config' => ( is=> 'rw', isa=> 'Str' );
+has 'form' => ( is=> 'rw', isa=> 'Str', default=>'' );
 has 'logger_class' => ( is=> 'rw', isa=> 'Str', default=>'Baseliner::Core::Logger::Base' );  # class
 has 'logger' => ( is=> 'rw', isa=> 'Any' );
+has 'data' => ( is=> 'rw', isa=> 'HashRef' );
 
 has 'frequency' => ( is=> 'rw', isa=> 'Int' );  # frequency value in seconds
 has 'frequency_key' => ( is=> 'rw', isa=> 'Str' );  # frequency config key
@@ -66,7 +68,7 @@ sub dispatch {
         ## the command line is an overwrite of the usual stash system
         $config_data = $config->getopt;
         #$config_data->{argv} = \@argv_noservice;
-        print "===Config $self->{config}===\n",_dump($config_data),"\n";
+        _log "===Config $self->{config}===\n",_dump($config_data),"\n";
     } 
     elsif( $p{'-ns'} ) {
         $config_data = $config->load_from_ns($p{'-ns'} );
@@ -86,6 +88,8 @@ Run module services subs ( service->code or sub module::service ). $self is an i
 sub run {
     my $self= shift;  # 
     my $c = shift;
+    my @args = @_;
+
     my $service = $self->id;
     my $key = $self->key;
     my $version = $self->registry_node->version;
@@ -119,7 +123,7 @@ sub run {
     $logger->verbose( exists($args->{v}) || exists($args->{debug}) );
     delete $args->{v};  # assume I'm the only one using this
 
-    print "\n=== running $service_noun: $key | $version | $service | $module ===\n" 
+    _log "\n=== running $service_noun: $key | $version | $service | $module ===\n" 
         unless $self->quiet;
 
     # instanciate the service
@@ -135,7 +139,6 @@ sub run {
     # try to set the job for the service (a Baseliner::Role::Service attribute)
     try { $c->stash->{job} and $instance->job( $c->stash->{job} ); } catch {};
 
-    my @args = @_;
     my $rc = try {
         ref $handler eq 'CODE' and return $handler->( $instance, $c, @args );
         $handler && $module and return $module->$handler( $instance, $c, @args );
@@ -144,7 +147,10 @@ sub run {
         _fail shift();
     };
     _debug "RC1=$rc";
-    $rc = 0 unless is_number $rc; # the service may return anything...
+    if( ! is_number( $rc ) ) { # the service may return anything...
+        $instance->log->data( $rc );
+        $rc = 0;
+    }
     _debug "RC2=$rc";
     $instance->log->rc( $rc );
     return $instance->log;

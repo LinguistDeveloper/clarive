@@ -66,8 +66,9 @@
      
           
         grid_baseline.on('afterrender', function(grid, rowIndex, columnIndex, e) {
-            var ddrow = new Ext.dd.DropTarget(grid_baseline.getView().mainBody, {  
+            var ddrow = new Baseliner.DropTarget(grid_baseline.getView().mainBody, {  
                ddGroup : 'mygrid-dd',  
+               comp: grid_baseline,
                notifyDrop : function(dd, e, data){  
                    var sm = grid_baseline.getSelectionModel();  
                    var rows = sm.getSelections();  
@@ -130,7 +131,7 @@
         };
  
         var btn_cerrar = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/door_out.png',
+            icon:'/static/images/icons/leave.png',
             cls: 'x-btn-text-icon',
             text: _('Close'),
 		    handler: function() {
@@ -224,14 +225,20 @@
 	    win.show();
     };
     
-    var btn_add = new Ext.Toolbar.Button({
-        text: _('New'),
-        icon:'/static/images/icons/add.gif',
-        cls: 'x-btn-text-icon',
+    //var btn_add = new Ext.Toolbar.Button({
+    //    text: _('New'),
+    //    icon:'/static/images/icons/add.gif',
+    //    cls: 'x-btn-text-icon',
+    //    handler: function() {
+    //        add_edit();
+    //    }
+    //});
+	
+    var btn_add = new Baseliner.Grid.Buttons.Add({
         handler: function() {
             add_edit();
-        }
-    });
+        }       
+    }); 	
     
     
     var btn_edit = new Ext.Toolbar.Button({

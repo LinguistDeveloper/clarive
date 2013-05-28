@@ -224,7 +224,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                     //tn.mini = true;
                     //var tn_span = Baseliner.topic_name(tn);
 
-                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
+                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, _(tn.category_name), tn.mid, n.text ) );
                     n.ui = new Baseliner.TreeMultiTextNode( n );
 
                     /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',

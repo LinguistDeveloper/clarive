@@ -98,7 +98,7 @@ if ( ! defined $res ) {
         print STDERR $res->{msg};
     }
     else {
-        print $res->{msg};
+        print $res->{msg} if 0;
     }
     exit $res->{rc};
 }

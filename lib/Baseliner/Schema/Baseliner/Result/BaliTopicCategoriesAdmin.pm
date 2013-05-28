@@ -32,18 +32,35 @@ __PACKAGE__->belongs_to(
   "roles",
   "Baseliner::Schema::Baseliner::Result::BaliRole",
   { id => "id_role" },
+  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 
 __PACKAGE__->belongs_to(
   "statuses_from",
   "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
   { id => "id_status_from" },
+  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 
 __PACKAGE__->belongs_to(
   "statuses_to",
   "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
   { id => "id_status_to" },
+  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
+);
+
+__PACKAGE__->belongs_to(
+  "category_statuses_from",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus",
+  { id_status => "id_status_from", id_category => "id_category" },
+  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
+);
+
+__PACKAGE__->belongs_to(
+  "category_statuses_to",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus",
+  { id_status => "id_status_to", id_category => "id_category" },
+  { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 
 __PACKAGE__->belongs_to(

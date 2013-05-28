@@ -1,6 +1,6 @@
 package BaselinerX::Type::Form;
 use Baseliner::Plug;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'form' => __PACKAGE__;
 

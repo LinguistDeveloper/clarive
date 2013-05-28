@@ -186,7 +186,7 @@
                 first_load = false;
             }
         });
-        store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask(); } }); 
+        store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask( grid.getEl() ); } }); 
         */
 
     return grid;

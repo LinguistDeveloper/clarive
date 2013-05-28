@@ -263,13 +263,6 @@ Baseliner.columnWrap = function (val){
 
 Baseliner.render_wrap = Baseliner.columnWrap;
 
-// open a window given a username link
-Baseliner.render_user_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
-    if( value==undefined || value=='null' || value=='' ) return '';
-    var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
-    return String.format("<a href='{0}'>{1}</a>", script, value );
-};
-
 Baseliner.render_active  = function(value,metadata,rec,rowIndex,colIndex,store) {
     if( value==undefined || value=='null' || value=='' || value==0 || value=='0' ) return _('No');
     return _('Yes');
@@ -385,7 +378,7 @@ Baseliner.topic_name = function(args) {
             mid = '#' + mid;
         else
             mid = '';
-        var cat_name = args.category_name; //Cambiarlo en un futuro por un contador de categorias
+        var cat_name = _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
         if( cat_name )
             cat_name = cat_name + ' ';
         else
@@ -1512,8 +1505,8 @@ Ext.extend( Baseliner.JitRGraph, Ext.Panel );
 Baseliner.loading_panel = function(){
     return new Ext.Container({
         html: [ 
-            '<div id="bali-loading-mask" style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>',
-            '<div id="bali-loading" style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">',
+            '<div style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>',
+            '<div style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">',
             '<center>',
             '<img style="" src="/static/images/loading.gif" />',
             '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',

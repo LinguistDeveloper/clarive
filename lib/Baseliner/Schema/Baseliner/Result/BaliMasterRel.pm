@@ -18,9 +18,9 @@ use base 'DBIx::Class::Core';
 __PACKAGE__->table("bali_master_rel");
 __PACKAGE__->add_columns(
   "from_mid",
-  { data_type => "number", default_value => undef, is_nullable => 1 },
+  { data_type => "number", default_value => undef, is_nullable => 0 },
   "to_mid",
-  { data_type => "number", default_value => undef, is_nullable => 1 },
+  { data_type => "number", default_value => undef, is_nullable => 0 },
   "rel_type",
   {
     data_type => "VARCHAR2",
@@ -28,11 +28,24 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
     size => 255,
   },
+  "rel_field", 
+  {
+    data_type => "VARCHAR2",
+    default_value => '',
+    is_nullable => 1,
+    size => 255,
+  },
 );
 __PACKAGE__->set_primary_key("from_mid", "to_mid", "rel_type");
 
 __PACKAGE__->belongs_to("master_from", "Baseliner::Schema::Baseliner::Result::BaliMaster", { 'foreign.mid' => 'self.from_mid' });
 __PACKAGE__->belongs_to("master_to", "Baseliner::Schema::Baseliner::Result::BaliMaster", { 'foreign.mid' => 'self.to_mid' });
+
+# joining with itself
+__PACKAGE__->has_many("to_children", __PACKAGE__, { 'foreign.from_mid' => 'self.to_mid' });
+__PACKAGE__->has_many("from_children", __PACKAGE__, { 'foreign.from_mid' => 'self.from_mid' });
+__PACKAGE__->has_many("from_parents", __PACKAGE__, { 'foreign.to_mid' => 'self.from_mid' });
+__PACKAGE__->has_many("to_parents", __PACKAGE__, { 'foreign.to_mid' => 'self.to_mid' });
 
 1;
 

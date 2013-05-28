@@ -4,7 +4,7 @@ description: List of emails
 config: config.dashlet.emails
 url: /dashboard/list_emails
 html: /dashlets/emails.html
----
+
 -->
 <%perl>
     use Baseliner::Utils;
@@ -12,13 +12,13 @@ html: /dashlets/emails.html
 </%perl>
 
     <div>
-        <h2>Mensajes </h2>
+        <h2><% _loc("Messages") %></h2>
         <table class="table table-bordered table-condensed dashboard">
             <thead>
                 <tr>
-                    <th colspan="3">Asunto</th>
-                    <th>De</th>
-                    <th>Enviado</th>
+                    <th colspan="3"><% _loc("Subject") %></th>
+                    <th><% _loc("From") %></th>
+                    <th><% _loc("Sent") %></th>
                 </tr>
             </thead>
             <tbody>

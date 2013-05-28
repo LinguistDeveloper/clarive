@@ -4,7 +4,7 @@ description: List of last jobs
 config: config.dashlet.lastjobs
 url: /dashboard/list_lastjobs
 html: /dashlets/lastjobs.html
----
+
 -->
 <%perl>
     use Baseliner::Utils;
@@ -13,7 +13,7 @@ html: /dashlets/lastjobs.html
 </%perl>
 
     <div>
-        <h2>Pases</h2>
+        <h2><% _loc("Jobs") %></h2>
         <script language="javascript">
             function render_level ( obj, td_id ) {
                 var icon;
@@ -41,8 +41,7 @@ html: /dashlets/lastjobs.html
                 }
                 //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
                 if( status == 'APPROVAL' ) { // add a link to the approval main
-                    //value = '<a href="javascript:Baseliner.addNewTabComp(' + '"/request/main", '<% _loc("Approvals") %>, value ); 
-                    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status ); 
+                    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", _(status), _(status) ); 
                 }
                 
                 
@@ -60,10 +59,10 @@ html: /dashlets/lastjobs.html
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
-                        <th>Pase</th>
-                        <th>Estado</th>
-                        <th>Inicio</th>
-                        <th>Fin</th>
+                        <th><% _loc("Job") %></th>
+                        <th><% _loc("Status") %></th>
+                        <th><% _loc("Start") %></th>
+                        <th><% _loc("End") %></th>
                     </tr>
                 </thead>
                     <tbody>

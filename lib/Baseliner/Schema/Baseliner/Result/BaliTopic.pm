@@ -70,7 +70,9 @@ __PACKAGE__->add_columns(
   { data_type => "varchar2", is_nullable => 1, size => 255 },
   "expr_deadline",
   { data_type => "varchar2", is_nullable => 1, size => 255 },
-  "progress", { data_type => "number", is_nullable => 1, default_value=>0 },  
+  "progress", { data_type => "number", is_nullable => 1, default_value=>0 },
+  "active",
+  { data_type => "char", is_nullable => 0, size => 1, default_value => 1 },    
 );
 
 
@@ -91,13 +93,20 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->belongs_to(
   "priorities",
   "Baseliner::Schema::Baseliner::Result::BaliTopicPriority",
-  { id => "id_priority" },
+  { "foreign.id" => "self.id_priority" },
+  { join_type => 'left' },
 );
 
-__PACKAGE__->has_many(
+__PACKAGE__->belongs_to(
   "workflow",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesAdmin",
   { 'foreign.id_category' => 'self.id_category' },
+);
+
+__PACKAGE__->has_many(
+  "images",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicImage",
+  { "topic_mid" => "mid" },
 );
 
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
@@ -106,6 +115,7 @@ __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid
 __PACKAGE__->master_setup( 'projects', ['topic','mid'] => ['project', 'BaliProject','mid'] );
 __PACKAGE__->master_setup( 'topics', ['topic','mid'] => ['topic', 'BaliTopic','mid'] );  # topic_topic
 __PACKAGE__->master_setup( 'revisions' => ['topic','mid'] => ['revision', 'BaliMaster','mid'] );  # topic_revision
+__PACKAGE__->master_setup( 'cis' => ['topic','mid'] => ['ci', 'BaliMaster','mid'] );  # topic_ci
 
 sub badge_name {
     my ($self) =@_;
@@ -115,7 +125,7 @@ sub badge_name {
         $title =~ s{^(\w+\s+\w+)\s+.*$}{$1};
         return $title;
     } else {
-        return sprintf '%s #%s', $cat->name, $self->mid;
+        return sprintf '%s #%s', _loc($cat->name), $self->mid;
     }
 }
 
@@ -134,6 +144,16 @@ sub my_releases {
         },
         { prefetch => [ {topic_topic=>'categories'}, 'topic_topic2' ] }
     )
+}
+
+sub release_topics {  
+    my ($self) = @_;
+    DB->BaliTopic->search({
+       'categories.is_release' => 1,
+       'children.to_mid' => $self->mid,
+    },{ 
+        join=>['categories',  { 'master' => 'children' } ], 
+    })
 }
 
 sub is_in_release {

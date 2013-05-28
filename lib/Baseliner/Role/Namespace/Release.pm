@@ -10,8 +10,8 @@ with 'Baseliner::Role::Container';
 requires 'created_on';
 requires 'created_by';
 
-has 'icon_on'  => ( is=>'rw', isa=>'Str', default=> '/static/images/scm/release.gif' ); 
-has 'icon_off' => ( is=>'rw', isa=>'Str', default=> '/static/images/scm/release_off.gif' );
+has 'icon_on'  => ( is=>'rw', isa=>'Str', default=> '/static/images/icons/release.gif' ); 
+has 'icon_off' => ( is=>'rw', isa=>'Str', default=> '/static/images/icons/release_off.gif' );
 
 =head1 DESCRIPTION
 

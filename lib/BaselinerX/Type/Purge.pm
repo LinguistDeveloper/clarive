@@ -1,7 +1,7 @@
 package BaselinerX::Type::Purge;
 use Baseliner::Plug;
 use Baseliner::Utils;
-with 'Baseliner::Core::Registrable';
+with 'Baseliner::Role::Registrable';
 
 register_class 'purge' => __PACKAGE__;
 
