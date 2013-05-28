@@ -26,7 +26,6 @@ sub setup_baseliner {
     }
     
     # ENV
-    exists $ENV{BALI_ENV} and $ENV{BASELINER_CONFIG_LOCAL_SUFFIX}=$ENV{BALI_ENV};
     $ENV{BALI_ENV} ||= $self->env;
     $ENV{BASELINER_ENV} ||= $ENV{BALI_ENV};
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} ||= $ENV{BASELINER_ENV};
@@ -47,7 +46,7 @@ sub bali_service {
     require Baseliner::Standalone;
     my $c = Baseliner::Standalone->new;
     Baseliner->app( $c );
-    $opts{ arg_list } = { map { $_ => () } keys %opts }; # so that we can differentiate between defaults and user-fed data
+    $opts{ arg_list } = { map { $_ => 1 } keys %opts }; # so that we can differentiate between defaults and user-fed data
     $opts{ args } = \%opts;
     my $logger = Baseliner->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
     #_log _dump $logger;
