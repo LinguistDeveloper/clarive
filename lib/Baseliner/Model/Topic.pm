@@ -382,11 +382,9 @@ sub topics_for_user {
         
     }else{
         ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
-        my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $username );        
-        
         my %tmp;
-        map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' } 
-                        Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;
+        map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
+            $self->user_workflow( $username );
 
         my @status_ids = keys %tmp;
         $where->{'category_status_id'} = \@status_ids;
@@ -1732,6 +1730,14 @@ sub getAction {
         default {$action = 'none'}
     }
     return $action
+}
+
+sub user_workflow {
+    my ( $self, $username ) = @_;
+    my @rows = Baseliner->model('Permissions')->is_root( $username ) 
+        ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from'], distinct=>1 })->hashref->all
+        : DB->BaliTopicCategoriesAdmin->search({username => $username}, { join=>'user_role' })->hashref->all;
+    return @rows;
 }
 
 1;
