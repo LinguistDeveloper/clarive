@@ -232,6 +232,13 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs   
 }
 
+around 'debug' => sub {
+    my $orig = shift;
+    my $c = shift;
+
+    $c->$orig( @_ ) unless $Baseliner::DebugForceOff;
+};
+
     
     # Inversion of Control
     if( $ENV{BALI_FAST} ) {
