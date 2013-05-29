@@ -83,15 +83,22 @@ sub run_daemon {
     my $iterations = $config->{iterations} || 100;
 
     _log "Sem daemon started";
-    for ( 1 .. $iterations ) {
+    my $iteration=0;
+    my $pending=0;
+
+    do {
         try {
-            $self->run_once( $c, $config );            
+            $self->run_once( $c, $config );
         } catch {
             my $err = shift;
             _debug "ERROR: $err";
         };
-        sleep $freq; 
-    }
+        sleep $freq;
+        $iteration++; 
+        $pending = Baseliner->model('Baseliner::BaliSemQueue')->search( { status => 'waiting', active => 1 } )->count;
+
+    } while ( ( $iteration <=  $iterations ) || $pending gt 0 );
+    _debug _now." $$ SEM ITERATION FINISHED " . $iteration . ' le ' . $iterations . ' or ' . $pending . " gt 0\n";
     _log "Sem daemon finished";
 }
 
