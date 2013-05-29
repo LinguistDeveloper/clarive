@@ -763,16 +763,16 @@ sub get_conf_fields : Local {
                                 bd_field    => { read_only => \0 },
                                 field_order => { read_only => \0 },
                                 filter      => { read_only => \0 },
-                                get_method  => { read_only => \1 },
-                                set_method  => { read_only => \1 },
+                                get_method  => { read_only => \0 },
+                                set_method  => { read_only => \0 },
                                 html        => { read_only => \0 },
                                 js          => { read_only => \0 },
                                 id_field    => { read_only => \0 },
-                                relation    => { read_only => \1 },
+                                relation    => { read_only => \0 },
                                 section     => { value     => [ 'head', 'body', 'details' ] },
                                 single_mode => { value     => [ \1, \0 ] },
-                                type        => { read_only => \1 },
-                                origin      => { read_only => \1 }
+                                type        => { read_only => \0 },
+                                origin      => { read_only => \0 }
                                 },
                         }
     }

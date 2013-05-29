@@ -57,6 +57,7 @@ sub _registrar {
 # the 'register' command
 sub add {
     my ($self, $pkg, $key, $param)=@_;
+    return if $ENV{BALI_CMD} && $key =~ /^(menu|registor.menu)/;
     my $reg = $self->registrar;
     $param //= {};
     if( ref $param eq 'HASH' ) {

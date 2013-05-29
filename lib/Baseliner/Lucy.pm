@@ -219,7 +219,7 @@ sub search{
     Exception::Simple->throw('no query string') if ! length $query_string;
     $page ||= 1;
 
-    my $query = $self->_query_parser->parse( $query_string );
+    my $query = ref $query_string ? $query_string : $self->_query_parser->parse( $query_string );
 
     my $search_options = {
         'query' => $query,
