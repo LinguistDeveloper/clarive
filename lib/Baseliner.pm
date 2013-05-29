@@ -118,15 +118,21 @@ if( $ENV{BALI_CMD} ) {
     require Baseliner::Standalone;
 }
 
-use CHI;
-our $ccache = CHI->new(
+our $ccache = eval {
+    require CHI;
+    CHI->new(
     #driver     => 'FastMmap', root_dir   => '/tmp', cache_size => '20m'
     #driver =>'Memory'
     #driver => 'RawMemory', datastore => {}, max_size => 1000,
     #driver => 'BerkeleyDB', root_dir => '/tmp/bdb',
     #driver => 'SharedMem', size => 1_000_000, shmkey=>93894384,
     driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0
-);
+    );
+}; 
+if( $@ ) {
+   { package Nop; sub AUTOLOAD{ } };
+   $ccache = bless {} => 'Nop';
+}
 sub cache_set { $ccache->set( $_[1], $_[2] ) }
 sub cache_get { $ccache->get( $_[1] ) }
 sub cache_clear { $ccache->clear }
