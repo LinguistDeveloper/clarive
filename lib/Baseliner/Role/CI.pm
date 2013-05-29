@@ -487,7 +487,7 @@ sub searcher {
     };
 }
 
-sub build_table {
+sub mem_table {
     my ($self, %p) = @_;
     my $coll = $self->collection;
     my @cols = grep { $_ ne 'mid' } (
