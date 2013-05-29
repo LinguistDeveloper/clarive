@@ -284,7 +284,7 @@ sub job_elements {
     #CVS revisions fin
 
     #Plastic revisions
-    my @revisions =
+    @revisions =
         $c->model( 'Baseliner::BaliMasterRel' )
         ->search( {from_mid => \@changesets, rel_type => 'topic_revision'} )->hashref->all;
 

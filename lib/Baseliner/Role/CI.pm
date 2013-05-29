@@ -24,6 +24,7 @@ coerce 'BoolCheckbox' =>
   from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 
 has mid      => qw(is rw isa Num);
+has active   => qw(is rw isa Bool);
 #has ci_class => qw(is rw isa Maybe[Str]);
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
@@ -67,6 +68,7 @@ sub save {
     my $collection = $self->collection;
     my $ret = $mid;
 
+    Baseliner->cache_clear;
     # transaction bound, in case there are foreign tables
     Baseliner->model('Baseliner')->txn_do(sub{
         if( length $mid ) { 
@@ -185,8 +187,12 @@ sub load {
     use Baseliner::Utils;
     my ( $self, $mid ) = @_;
     $mid ||= $self->mid;
+    # in scope ? 
     my $cached = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope ) );
+    return $cached if $cached;
+    # in cache ?
+    $cached = Baseliner->cache_get($mid);
     return $cached if $cached;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
@@ -248,6 +254,7 @@ sub load {
     $data->{ci_form} //= $self->ci_form;
     $data->{ci_class} //= $class;
     $Baseliner::CI::mid_scope->{ "$mid" } = $data if $Baseliner::CI::mid_scope;
+    Baseliner->cache_set($mid, $data);
     return $data;
 }
 
@@ -264,10 +271,16 @@ sub storage_pk { 'mid' }  # primary key (mid) column for foreing table
 sub related_cis {
     my ($self, %opts )=@_;
     my $mid = $self->mid;
+    # in scope ? 
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
     my $scoped = $Baseliner::CI::mid_scope->{ $scope_key } if $Baseliner::CI::mid_scope;
     return @$scoped if $scoped;
+    # in cache ?
+    my $cache_key = Storable::freeze(\%opts);
+    if( my $cached = Baseliner->cache_get( "$mid-$cache_key" ) ) {
+        return $cached;
+    }
     my $where = {};
     my $edge = $opts{edge} // '';
     if( $edge ) {
@@ -292,6 +305,7 @@ sub related_cis {
         $ci;
     } @data;
     $Baseliner::CI::mid_scope->{ $scope_key } = \@ret if $Baseliner::CI::mid_scope;
+    Baseliner->cache_set( "$mid-$cache_key", \@ret );
     return @ret;
 }
 
@@ -361,6 +375,11 @@ Options:
 sub related {
     my ($self, %opts)=@_;
     my $mid = $self->mid;
+    # in cache ? 
+    my $cache_key = "$mid-" . Storable::freeze( \%opts );
+    if( my $cached = Baseliner->cache_get( $cache_key ) ) {
+        return @$cached if ref $cached eq 'ARRAY';
+    }
     my $depth = $opts{depth} // 1;
     $opts{depth_original} //= $depth;
     $opts{mode} //= 'flat';
@@ -388,6 +407,7 @@ sub related {
     }
     # filter
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
+    Baseliner->cache_set( $cache_key, \@cis );
     return @cis;
 }
 
@@ -401,6 +421,117 @@ sub children {
     my ($self, %opts)=@_;
     local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
     return $self->related( %opts, edge=>'out' );
+}
+
+sub searcher {
+    my ($self, %p ) = @_;
+    my $coll = $self->collection;
+    my @fields = _unique _array('mid', $p{fields});
+    my $schema = [
+        map {
+            +{ name=>$_, sortable=>1 } 
+        } @fields 
+    ];
+    require Baseliner::Lucy;
+    my $string_tokenizer = Lucy::Analysis::RegexTokenizer->new( pattern => '\w');
+    my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$string_tokenizer]);
+
+    my $searcher = Baseliner::Lucy->new(
+            index_path => Lucy::Store::RAMFolder->new, # in-memory files "$dir",
+            language   => 'es', 
+            analyser   => $analyzer, 
+            resultclass => 'LucyX::Simple::Result::Hash',
+            entries_per_page => 10,
+            schema     => $schema,
+            highlighter => 'Baseliner::Lucy::Highlighter',
+            search_fields => ['gdi_perfil_dni', 'id'],
+            search_boolop => 'AND',
+        );
+    my @cis = map {
+       my $h = _load( delete $_->{yaml} );
+       my $d = { %$_, %$h };
+       +{ map { $_ => $d->{$_} } @fields  };
+    } DB->BaliMaster->search({ collection=>$coll })->hashref->all;
+
+    my $sort_spec;
+    if( $p{sort} ) {
+        $sort_spec = Lucy::Search::SortSpec->new(
+                rules => [
+                    map { 
+                        my ($field,$dir) = /^(\S+) (\S+)$/ ? ($1,$2) : ($_,'ASC');
+                        Lucy::Search::SortRule->new( field =>$field, reverse=>( $dir =~ /asc/i ? 0 : 1 )  ) 
+                    } _array($p{sort})
+                ],
+        );
+    }
+        
+    my $query;
+    if( ref $p{query} ) {
+        while( my ($k,$v) = each %{ $p{query} } ) {
+            $query = Lucy::Search::TermQuery->new(
+                field => $k,
+                term  => $v,
+            );
+        }
+    } else {
+        $query = $p{query};
+    }
+
+    map { $searcher->create($_) } @cis;
+    $searcher->commit;
+    my ( $results, $pager ) = try {
+       $searcher->search( $query, 1, $sort_spec );
+    } catch {
+      _debug shift(); # usually a "no results" exception
+      ([],undef);
+    };
+}
+
+sub mem_table {
+    my ($self, %p) = @_;
+    my $coll = $self->collection;
+    my @cols = grep { $_ ne 'mid' } (
+        @{ $p{cols} || [] } 
+        ||  
+        ( map { $_->name } $self->meta->get_all_attributes )
+    );
+    require DBIx::Simple;
+    my $db = $p{db} // DBIx::Simple->connect('dbi:SQLite::memory:'); 
+    my $cols_str = join ',', map { "$_ text" } @cols;
+    eval { $db->query("create table $coll ( mid number, $cols_str, unique (mid ) )") };
+    push @cols, 'mid';
+    @cols = _unique @cols;
+    if( ref $p{cis} eq 'ARRAY' ) {
+        $self->mem_load( db=>$db, cis=>$p{cis}, cols=>\@cols  );
+    }
+    elsif( exists $p{mid} ) {
+        $self->mem_load( db=>$db, cis=>[ map { _ci( $_ ) } _array($p{mid}) ], cols=>\@cols  );
+    }
+    else {   # full collection, from yaml
+        #my @mids = map { $_->{mid} } DB->BaliMaster->search({ collection=>$coll }, { select=>'mid' })->hashref->all;
+        #$self->mem_load( db=>$db, cis=>[ map { _ci( $_ ) } @mids ], cols=>\@cols  );
+        my @cis = map {
+            my $h = _load( delete $_->{yaml} ) // {};
+            +{ %$_, %$h };
+        } DB->BaliMaster->search( { collection => $coll, %{ $p{where} || {} } }, $p{from} )->hashref->all;
+        $self->mem_load( db => $db, cis =>\@cis, cols => \@cols );
+    }
+    return $db;
+}
+
+sub mem_load {
+    my ($self,%p) = @_;
+    my $coll = $self->collection;
+    my @cols = @{ $p{cols} };
+    my $db = $p{db};
+    my $k = @cols;
+    my $pos_str = join ',', map { '?' } 1..$k;
+    my $cols_str_ins = join ',', @cols;
+    my $s = $db->dbh->prepare("insert into $coll ($cols_str_ins) values ($pos_str)" );
+    for my $ci ( @{ $p{cis} } ) {
+        my @values = map { $ci->{$_} // '' } @cols;
+        $s->execute( @values );
+    }
 }
 
 # from Node

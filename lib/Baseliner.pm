@@ -35,7 +35,9 @@ BEGIN {
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
             Unicode::Encoding
-            Session     Session::Store::DBI    Session::State::Cookie
+            Session     
+            Session::Store::DBI    
+            Session::State::Cookie
             Singleton           
             +CatalystX::Features::Plugin::I18N
             +CatalystX::Features::Plugin::Static::Simple/;
@@ -71,7 +73,6 @@ $ENV{BASELINER_PARENT_PID} = getppid();
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
-
 
 __PACKAGE__->config(
     'Plugin::Session' => {
@@ -116,6 +117,25 @@ if( $ENV{BALI_CMD} ) {
     __PACKAGE__->config->{ setup_components }->{except} = qr/Controller(?!\:\:Root)|View/;
     require Baseliner::Standalone;
 }
+
+our $ccache = eval {
+    require CHI;
+    CHI->new(
+    #driver     => 'FastMmap', root_dir   => '/tmp', cache_size => '20m'
+    #driver =>'Memory'
+    #driver => 'RawMemory', datastore => {}, max_size => 1000,
+    #driver => 'BerkeleyDB', root_dir => '/tmp/bdb',
+    #driver => 'SharedMem', size => 1_000_000, shmkey=>93894384,
+    driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0
+    );
+}; 
+if( $@ ) {
+   { package Nop; sub AUTOLOAD{ } };
+   $ccache = bless {} => 'Nop';
+}
+sub cache_set { $ccache->set( $_[1], $_[2] ) }
+sub cache_get { $ccache->get( $_[1] ) }
+sub cache_clear { $ccache->clear }
 
 
 #__PACKAGE__->config->{authentication}{dbic} = {
@@ -230,6 +250,13 @@ if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
     #$dbh->{LongReadLen} = __PACKAGE__->config->{LongReadLen} || 100000000; #64 * 1024;
     #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs   
 }
+
+around 'debug' => sub {
+    my $orig = shift;
+    my $c = shift;
+
+    $c->$orig( @_ ) unless $Baseliner::DebugForceOff;
+};
 
     
     # Inversion of Control

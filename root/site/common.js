@@ -263,19 +263,6 @@ Baseliner.columnWrap = function (val){
 
 Baseliner.render_wrap = Baseliner.columnWrap;
 
-// open a window given a username link
-//Baseliner.render_user_field  = function(value,metadata,rec,rowIndex,colIndex,store) {
-//    if( value==undefined || value=='null' || value=='' ) return '';
-//	
-//	//if (rec.data.active > 0){
-//	//	    var script = String.format('javascript:Baseliner.showAjaxComp("/user/info/{0}")', value);
-//	//	    return String.format("<a href='{0}'>{1}</a>", script, value );
-//	//}
-//	//else{
-//	//	return String.format('<span style="text-decoration: line-through">{0}</span>',value);
-//	//}
-//};
-
 Baseliner.render_active  = function(value,metadata,rec,rowIndex,colIndex,store) {
     if( value==undefined || value=='null' || value=='' || value==0 || value=='0' ) return _('No');
     return _('Yes');
@@ -2218,7 +2205,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         
         //self.ci_store.on('load', function(){ });
         
-        if( self.value ) {
+        if( Ext.isArray( self.value ) ) {
             Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci, { mids: self.value }), function(res){
                 Ext.each( res.data, function(r){
                     self.add_to_grid( r );

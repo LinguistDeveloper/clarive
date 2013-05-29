@@ -15,7 +15,7 @@ if( $@ ) {
     die $@;
 }
 
-{
+if(0) {
     package Clarive::MM;
     use strict;
     use Mojo::Base 'Mojolicious';
@@ -38,7 +38,7 @@ if( $@ ) {
 }
 
 builder {
-    mount '/ws' => $Clarive::MM::app->start;
+    #mount '/ws' => $Clarive::MM::app->start;
     #mount '/' => sub { [ 0, ["Content-Type","text/html"], ["Hello=$PP"] ]; };
     mount '/' => Baseliner->psgi_app;
 };

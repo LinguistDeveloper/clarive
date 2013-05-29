@@ -25,7 +25,7 @@ my @ven_fin;
 
 # ven_dia
 foreach my $dd ( 0..6 ) {
-    my $day_name = capitalize( $day_wide->[ $dd ] ).99;
+    my $day_name = capitalize( $day_wide->[ $dd ] );
     push @ven_dia, [ $dd , $day_name  ];
 }
 

@@ -1500,7 +1500,7 @@
             });
             
         
-            var w = new Baseliner.Window({ layout:'fit',width:400, height:400, items: tree });
+            var w = new Baseliner.Window({ layout:'fit',width:600, height:450, items: tree });
             w.show();
             tree.on('destroy', function(){
                //console.log( tree.data );

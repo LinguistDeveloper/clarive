@@ -524,7 +524,7 @@ sub promotes_and_demotes {
         { id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'promote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
             distinct => 1,
-            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id/],
+            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_to.seq/],
             order_by => { -asc => 'statuses_to.seq' }
         }
     )->hashref->all;
@@ -552,7 +552,7 @@ sub promotes_and_demotes {
         { id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'demote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
             distinct => 1,
-            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl/],
+            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl statuses_to.seq/],
             order_by => { -asc => 'statuses_to.seq' }
         }
     )->hashref->all;
@@ -731,11 +731,11 @@ sub file : Local {
 sub tree : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
-    if( $p->{favorites} eq 'true' ) {
+    if( $p->{favorites} && $p->{favorites} eq 'true' ) {
         $c->forward( 'tree_favorites' );
-    } elsif( $p->{show_workspaces} eq 'true' ) {
+    } elsif( $p->{show_workspaces} && $p->{show_workspaces} eq 'true' ) {
         $c->forward( 'tree_workspaces' );
-    } elsif( $p->{show_ci} eq 'true' ) {
+    } elsif( $p->{show_ci} && $p->{show_ci} eq 'true' ) {
         $c->forward( '/ci/list' );
     } else {
         $c->forward( 'tree_all' );

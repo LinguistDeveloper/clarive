@@ -257,17 +257,13 @@ sub _loc {
     return unless $_[0];
     #return loc( @_ );
     my @args = @_;
-    if ( $ENV{BALI_CMD} ) {
-            loc_lang( Baseliner->config->{default_lang} );
-            return loc( @args );        
-    }
-    if( ref Baseliner->app ) {
-        my $c = Baseliner->app;
-        $c->localize( @args );
-    } else {
-        _error( "no app for localize" );
-        loc_lang( Baseliner->config->{default_lang} );
+    my $c = try { Baseliner->app };
+    if( $ENV{BALI_CMD} || !ref($c) ) {
+        my $default_lang = try { Baseliner->config->{default_lang} } catch { 'en' } ;
+        loc_lang( $default_lang );
         return loc( @args );
+    } else {
+        return $c->localize( @args );
     }
 }
 

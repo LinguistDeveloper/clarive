@@ -281,13 +281,19 @@ sub topics_for_user {
         if (!$perm->is_root( $username )){
             if(!Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.GDI.admin')){
                 my $usuario_gdi = Baseliner->model('Baseliner::BaliMaster')->search({-or => [name => uc $username, name => lc $username], collection => 'UsuarioGDI'})->hashref->first;
-                #my @usuarios_n1 = map {$_->{name}} _ci( $usuario_gdi->{mid} )->parents( depth=>-1, mode=>'flat' );
-                my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-                my $sSQL;
-                $sSQL  = 'SELECT MID,  A.NAME AS DNI FROM ';
-                $sSQL .= '(SELECT ROWNUM AS FILA, LEVEL AS NIVEL, FROM_MID FROM BALI_MASTER_REL A START WITH TO_MID = ? CONNECT BY PRIOR FROM_MID = TO_MID AND FROM_MID <> TO_MID) B ';
-                $sSQL .= 'LEFT JOIN BALI_MASTER A ON A.MID = B.FROM_MID';
-                @usuarios_n1 = map {$_->{dni}} $db->array_hash( $sSQL, $usuario_gdi->{mid} );            
+                if( my $cached = Baseliner->cache_get( $usuario_gdi->{mid} ) ) {
+                    @usuarios_n1 = @$cached;
+                     
+                } else {
+                    #my @usuarios_n1 = map {$_->{name}} _ci( $usuario_gdi->{mid} )->parents( depth=>-1, mode=>'flat' );
+                    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+                    my $sSQL;
+                    $sSQL  = 'SELECT MID,  A.NAME AS DNI FROM ';
+                    $sSQL .= '(SELECT ROWNUM AS FILA, LEVEL AS NIVEL, FROM_MID FROM BALI_MASTER_REL A START WITH TO_MID = ? CONNECT BY PRIOR FROM_MID = TO_MID AND FROM_MID <> TO_MID) B ';
+                    $sSQL .= 'LEFT JOIN BALI_MASTER A ON A.MID = B.FROM_MID';
+                    @usuarios_n1 = map {$_->{dni}} $db->array_hash( $sSQL, $usuario_gdi->{mid} );            
+                    Baseliner->cache_set( $usuario_gdi->{mid}, \@usuarios_n1 );
+                }
                 
                 push (@usuarios_n1, $username);                
                 $where->{'created_by'} = \@usuarios_n1;
@@ -376,11 +382,9 @@ sub topics_for_user {
         
     }else{
         ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
-        my @roles = map {$_->{id_role}} Baseliner->model('Permissions')->user_grants( $username );        
-        
         my %tmp;
-        map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' } 
-                        Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_role => \@roles})->hashref->all;
+        map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
+            $self->user_workflow( $username );
 
         my @status_ids = keys %tmp;
         $where->{'category_status_id'} = \@status_ids;
@@ -1726,6 +1730,14 @@ sub getAction {
         default {$action = 'none'}
     }
     return $action
+}
+
+sub user_workflow {
+    my ( $self, $username ) = @_;
+    my @rows = Baseliner->model('Permissions')->is_root( $username ) 
+        ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from'], distinct=>1 })->hashref->all
+        : DB->BaliTopicCategoriesAdmin->search({username => $username}, { join=>'user_role' })->hashref->all;
+    return @rows;
 }
 
 1;
