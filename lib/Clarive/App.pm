@@ -9,6 +9,7 @@ has debug   => qw(is rw default 0);
 has verbose => qw(is rw default 0);
 has trace   => qw(is ro default 0);
 has carp_always   => qw(is ro default 0);
+has dbic_trace => qw(is rw default 0); 
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
@@ -64,6 +65,11 @@ sub BUILD {
     # carp_always ? 
     if( $self->carp_always ) {
         require Carp::Always;
+    }
+
+    # dbic trace
+    if( $self->dbic_trace ) {
+        $ENV{DBIC_TRACE} = 1;
     }
 
     $Clarive::app = $self;  
