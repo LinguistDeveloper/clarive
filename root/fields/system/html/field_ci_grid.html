@@ -3,12 +3,6 @@
     $data
 </%args>
 
-    <ul class="nav nav-list">
-        <li class="nav-header">
-        <pre>
-            <% _dump($data) %>
-        </li>
-    </ul>
 % if( _array( $data->{$meta->{id_field}} ) ) {
     <ul class="nav nav-list">
         <li class="nav-header">
