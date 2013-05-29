@@ -28,6 +28,8 @@ register 'service.dispatcher' => {
     handler => \&run,
 };
 
+has failed_services => qw(is rw isa HashRef), default=>sub{ +{} };
+
 sub run {
     my ( $self, $c, $config ) = @_;
 
@@ -145,10 +147,15 @@ sub dispatcher {
             }
             elsif ( $daemon->active ) {
                 next if $daemon->pid > 0 && pexists( $daemon->pid );
+                next if exists $self->failed_services->{ $daemon->service };  # ignore failing services
                 _debug "Starting daemon " . $daemon->service;
 
-                my $reg = Baseliner->model('Registry')->get( $daemon->service )
-                  if $daemon->service;
+                my $reg = try {
+                    Baseliner->model('Registry')->get( $daemon->service ) if $daemon->service
+                } catch {
+                    _error( _loc("Could not start service %1. Service ignored.", $daemon->service ) );
+                    $self->failed_services->{ $daemon->service } = ();
+                };
 
                 # bring it back up
                 my $params = {};
