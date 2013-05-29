@@ -24,6 +24,7 @@ coerce 'BoolCheckbox' =>
   from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 
 has mid      => qw(is rw isa Num);
+has active   => qw(is rw isa Bool);
 #has ci_class => qw(is rw isa Maybe[Str]);
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
@@ -489,22 +490,48 @@ sub searcher {
 sub build_table {
     my ($self, %p) = @_;
     my $coll = $self->collection;
-    my @cols = @{ $p{cols} || [] } ||  
-        grep { $_ ne 'mid' } map { $_->name } $self->meta->get_all_attributes;
+    my @cols = grep { $_ ne 'mid' } (
+        @{ $p{cols} || [] } 
+        ||  
+        ( map { $_->name } $self->meta->get_all_attributes )
+    );
     require DBIx::Simple;
-    my $db = DBIx::Simple->connect('dbi:SQLite::memory:'); 
+    my $db = $p{db} // DBIx::Simple->connect('dbi:SQLite::memory:'); 
     my $cols_str = join ',', map { "$_ text" } @cols;
     eval { $db->query("create table $coll ( mid number, $cols_str, unique (mid ) )") };
-    if( $p{cis} ) {
-        my $k = @cols;
-        my $pos_str = join ',', map { '?' } 1..$k;
-        my $s = $db->dbh->prepare("insert into $coll values ($k)" );
-        for my $ci ( _array( $p{cis} ) ) {
-            my @values = map { $ci->{$_} // '' } @cols;
-            $s->execute( @values );
-        }
+    push @cols, 'mid';
+    @cols = _unique @cols;
+    if( ref $p{cis} eq 'ARRAY' ) {
+        $self->mem_load( db=>$db, cis=>$p{cis}, cols=>\@cols  );
+    }
+    elsif( exists $p{mid} ) {
+        $self->mem_load( db=>$db, cis=>[ map { _ci( $_ ) } _array($p{mid}) ], cols=>\@cols  );
+    }
+    else {   # full collection, from yaml
+        #my @mids = map { $_->{mid} } DB->BaliMaster->search({ collection=>$coll }, { select=>'mid' })->hashref->all;
+        #$self->mem_load( db=>$db, cis=>[ map { _ci( $_ ) } @mids ], cols=>\@cols  );
+        my @cis = map {
+            my $h = _load( delete $_->{yaml} ) // {};
+            +{ %$_, %$h };
+        } DB->BaliMaster->search( { collection => $coll, %{ $p{where} || {} } }, $p{from} )->hashref->all;
+        $self->mem_load( db => $db, cis =>\@cis, cols => \@cols );
     }
     return $db;
+}
+
+sub mem_load {
+    my ($self,%p) = @_;
+    my $coll = $self->collection;
+    my @cols = @{ $p{cols} };
+    my $db = $p{db};
+    my $k = @cols;
+    my $pos_str = join ',', map { '?' } 1..$k;
+    my $cols_str_ins = join ',', @cols;
+    my $s = $db->dbh->prepare("insert into $coll ($cols_str_ins) values ($pos_str)" );
+    for my $ci ( @{ $p{cis} } ) {
+        my @values = map { $ci->{$_} // '' } @cols;
+        $s->execute( @values );
+    }
 }
 
 # from Node
