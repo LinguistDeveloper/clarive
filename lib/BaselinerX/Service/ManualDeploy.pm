@@ -169,6 +169,9 @@ sub send_requests {
         my $reason = _loc('Manual deploy action: %1', $name);
         my $subject = _loc('Requesting manual deploy for job %1, baseline %2: %3', $job->name , $bl, '<b>' . $reason . '</b>');
         $log->info( $subject );
+        my @users = Baseliner->model('Permissions')->list(action => $action, ns => '/', bl => '*');
+        my $to = [ _unique(@users) ];
+
         try {
             Baseliner->model('Request')->request(
                 name            => _loc( "Manual Deploy for %1", $job->name ),
@@ -183,7 +186,9 @@ sub send_requests {
                 id_job          => $job->jobid,
                 vars            => {
                     jobname  => $job->name,
+                    to       => $to,
                     url_log  => $url_log,
+                    url      => _notify_address(),
                     reason   => $reason,
                     comments => _textile( $desc ),
                     subject  => $subject,
