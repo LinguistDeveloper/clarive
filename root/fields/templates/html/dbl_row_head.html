@@ -7,7 +7,7 @@
         <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
     </tr>
     <tr>
-        <td colspan="2"><% $data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;' %></td>
+        <td colspan="2"><% _loc($data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;' )%></td>
     </tr>
 % }     
 

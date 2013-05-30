@@ -9,6 +9,7 @@ Baseliner::Schema::Baseliner::Result::BaliTopic
 
 use strict;
 use warnings;
+use Baseliner::Utils;
 
 use base 'DBIx::Class::Core';
 __PACKAGE__->load_components("InflateColumn::DateTime");

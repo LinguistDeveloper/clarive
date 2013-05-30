@@ -589,9 +589,12 @@ sub cs_menu {
         eval => {
             url            => '/comp/lifecycle/deploy.js',
             title          => 'Deploy',
-            bl_to          => $bl_state,
-            status_to      => '',                            # id?
-            status_to_name => $state_name,                            # name?
+            # bl_to          => $bl_state,
+            # status_to      => '',                            # id?
+            # status_to_name => $state_name,                            # name?
+            bl_to          => 'IT',
+            status_to      => 22,                            # id?
+            status_to_name => _loc('Integracion'),                            # name?
             job_type       => 'static'
         },
         icon => '/static/images/silk/arrow_right.gif'
