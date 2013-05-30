@@ -42,7 +42,7 @@ sub populate_from_ldap {
     }
 }
 
-sub encriptar_password{
+sub encrypt_password {
     my ($self, $string, $key) = @_;
     my $b = Crypt::Blowfish::Mod->new( $key );
     return Digest::MD5::md5_hex($b->encrypt($string));    
