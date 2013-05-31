@@ -1394,53 +1394,45 @@ sub set_topics {
 
 sub set_cis {
     my ($self, $rs_topic, $cis, $user, $id_field, $meta ) = @_;
-    
+
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
-    
+
     my $rel_type = $field_meta->{rel_type} or _fail 'Missing rel_type';
-   
+
     # related topics
     my @new_cis = _array( $cis ) ;
+    @new_cis  = split /,/, $new_cis[0] if $new_cis[0] =~ /,/ ;
     my @old_cis =
         map { $_->{to_mid} }
-        Baseliner->model('Baseliner::BaliMasterRel')->search( { from_mid => $rs_topic->mid, rel_type => $rel_type } )
+    Baseliner->model('Baseliner::BaliMasterRel')->search( { from_mid => $rs_topic->mid, rel_type => $rel_type } )
         ->hashref->all;
 
-    if ( array_diff(@new_cis, @old_cis) ) {
-        if( @new_cis ) {
-            @new_cis  = split /,/, $new_cis[0] if $new_cis[0] =~ /,/ ;
-            my @rs_cis = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@new_cis});
-            $rs_topic->set_cis( \@rs_cis, { rel_type=> $rel_type });
-            
-            my $cis2 = join(',', map { Baseliner::CI->new($_->mid)->load->{name}} @rs_cis);
-    
-            event_new 'event.topic.modify_field' => { 
-              username   => $user,
-              field         => _loc( $field_meta->{field_msg} // 'attached cis' ),
-              old_value     => '',
-              new_value     => $cis2,
-              text_new      => ( $field_meta->{modify_text_new} // '%1 modified topic: %2 ( %4 )' ),
-            } => sub {
-                  { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } => sub {
-                  _throw _loc( 'Error modifying Topic: %1', shift() );
-            };             
-            
-        } else {
-            event_new 'event.topic.modify_field' => { 
-                username   => $user,
-                field      => '',
-                old_value      => '',
-                new_value  => '',
-                text_new      => ( $field_meta->{modify_text_new} // '%1 deleted all cis' ),
-            } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };
-            $rs_topic->set_cis( undef, { rel_type=>$rel_type });
-            #$rs_topic->cis->delete;
+    my @del_cis = array_minus( @old_cis, @new_cis );
+    my @add_cis = array_minus( @new_cis, @old_cis );
+
+    if( @add_cis || @del_cis ) {
+        my ($del_cis, $add_cis) = ( '', '' );
+        if( @del_cis ) {
+            Baseliner->model('Baseliner::BaliMasterRel')->search( { from_mid => $rs_topic->mid, to_mid=>\@del_cis, rel_type => $rel_type } )
+                ->delete;
+            $del_cis = join(',', map { Baseliner::CI->new($_)->load->{name} . '[-]' } @del_cis );
         }
+        if( @add_cis ) {
+            Baseliner->model('Baseliner::BaliMasterRel')->create({ from_mid => $rs_topic->mid, to_mid=>$_, rel_type => $rel_type } )
+                for @add_cis;
+            $add_cis = join(',', map { Baseliner::CI->new($_)->load->{name} . '[+]' } @add_cis );
+        }
+        event_new 'event.topic.modify_field' => {
+            username  => $user,
+            field     => _loc( $field_meta->{field_msg} // $field_meta->{name_field} // _loc('attached cis') ),
+            old_value => $del_cis,
+            new_value => join(',', grep { length } $add_cis, $del_cis ),
+            text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
+        } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }    # to the event
+        } => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };
     }
 }
 
