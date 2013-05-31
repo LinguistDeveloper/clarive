@@ -572,10 +572,10 @@ around initialize_instance_slot => sub {
 
     my $init_arg = $self->init_arg();
     $gscope or local $gscope = {};
-    $gscope->{ $instance->mid // $params->{mid} } //= $instance;
-    
+    my $mid = $instance->mid // $params->{mid};
     my $weaken = 0;
-    if( defined($init_arg) and exists $params->{$init_arg} ) {
+    if( defined($mid) && defined($init_arg) and exists $params->{$init_arg} ) {
+        $gscope->{ $mid } //= $instance;
         my $val = $params->{$init_arg};
         my $tc = $self->type_constraint;
         # needs coersion?

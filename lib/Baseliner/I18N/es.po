@@ -4238,6 +4238,9 @@ msgstr "%1 borró todos los tópicos adjuntos de "
 msgid "%1 modified topic: %2 ( %4 )"
 msgstr "%1 modificó el tópico: %2 ( %4 )"
 
+msgid "%1 modified topic (%2): %4"
+msgstr "%1 modificó el tópico: %2 ( %4 )"
+
 msgid "attached topics"
 msgstr "tópicos adjuntos"
 
