@@ -511,23 +511,32 @@ sub user_projects : Local {
     my @rows;
     my $username = $c->username;
     my $perm = $c->model('Permissions');
-    #if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-        #$where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
-        # username can view jobs where the user has access to view the jobcontents corresponding app
-        # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
-    #}
-    @rows =  $perm->user_namespaces( $username ); # user apps
-    @rows = grep { $_ ne '/' } @rows unless $c->is_root || $p->{include_root};
-    @rows = grep { $_ =~ $query } @rows if $query;
-    my $rs = $c->model('Baseliner::BaliProject')->search({ ns=>\@rows });
-    rs_hashref($rs);
-    @rows = map { 
+    #@rows =  $perm->user_namespaces( $username ); # user apps
+
+    my $where = {};
+    #$where->{username} = $c->username unless $c->is_root;
+    #my $rs_ns = Baseliner->model('Baseliner::BaliRoleuser')->search( $where, { select=>'ns', distinct=>1 } )->as_query;
+    #@rows = grep { $_ ne '/' } @rows unless $c->is_root || $p->{include_root};
+    #@rows = grep { $_ =~ $query } @rows if $query;
+
+    # my $rs = $c->model('Baseliner::BaliProject')->search({ -or=>[ ns=>{ -in=>$rs_ns }, ns=>'/' ] })->hashref;
+    
+    #$where->{id} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}] 
+        #unless $c->is_root;
+    if( $c->is_root || $p->{include_root} ) {
+        #push @{ $where->{id} }, { "=", undef };
+    }
+    my $rs = $c->model('Baseliner::BaliProject')->search($where, { join=>'roleuser', distinct=>1, select=>[qw(mid name ns nature active)] })->hashref;
+    my @ret;
+    for( $rs->all ) {
+        next if $query && $_->{ns} !~ $query;
         $_->{data}=_load($_->{data});
-        $_->{ns} = 'project/' . $_->{mid};
+        #$_->{ns} = 'project/' . $_->{mid};
         $_->{description} //= $_->{name} // '';
-        $_ } $rs->all;
-    # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
-    $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };		
+        push @ret, $_;
+    }
+
+    $c->stash->{json} = { data => \@ret, totalCount=>scalar(@ret) };		
     $c->forward('View::JSON');
 }
 
