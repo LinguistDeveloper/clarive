@@ -148,6 +148,7 @@ sub job_elements {
     # Releases?
     my @chi = DB->BaliMasterRel->search({ from_mid=>\@changesets, rel_type=>'topic_topic' })->hashref->all;
     if( @chi ) {
+        ###TODO: Buscar SOLO los tópicos que estén en el estado de origen
         push @changesets, map { $_->{to_mid} } @chi;
     }
     $log->debug( _loc("Searching for revisions for mids: %1", join(',',@changesets ) ) );
@@ -284,7 +285,7 @@ sub job_elements {
     #CVS revisions fin
 
     #Plastic revisions
-    my @revisions =
+    @revisions =
         $c->model( 'Baseliner::BaliMasterRel' )
         ->search( {from_mid => \@changesets, rel_type => 'topic_revision'} )->hashref->all;
 
@@ -385,6 +386,10 @@ sub update_baselines {
         }
     } ## end for my $item ( _array $stash...)
     # XXX - quitar try-catch
+    my @chi = DB->BaliMasterRel->search({ from_mid=>\@changesets, rel_type=>'topic_topic' })->hashref->all;
+    if( @chi ) {
+        push @changesets, map { $_->{to_mid} } @chi;
+    }
     try {
         my $rs_changesets = DB->BaliTopic->search( {mid => \@changesets}, { prefetch => 'status'} );
 
