@@ -23,6 +23,9 @@ around table_update_or_create => sub {
     $data->{title} = delete $data->{name};
     $data->{created_by} = 'internal';
     delete $data->{active};
+    delete $data->{moniker};
+    delete $data->{data};
+    delete $data->{ns};
     $self->$orig( $rs, $mid, $data, @rest );
 };
 
