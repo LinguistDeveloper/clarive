@@ -2,6 +2,8 @@ package Baseliner::Role::Parser;
 use Moose::Role;
 requires 'parse';
 
+has modules => qw(is rw isa HashRef), default=>sub{{}};
+
 =head1 Baseliner::Parser::Perl
 
 A Parser should filter extensions and then search content...?
@@ -14,34 +16,39 @@ with 'Baseliner::Role::Parser';
 sub parse {
     my($self,%p)=@_;
     $p{items}->each( sub {
-       return if $_->is_dir;
-       return unless $_->path =~ /(pm|pl)$/;
-       my $ext = $_->extension;
-       if( my $s = $_->slurp ) {
-          my $module = $ext eq 'pm' 
-             ? do {
-             my $found;
-             for my $lin ( split /\n/, $s ) {
-                 if( $lin =~ /^\s*package\s+([\w|:]+)/g ) {
-                    $found = $1;
-                    last;
+        my $item = $_;
+        return if $item->is_dir;
+        return unless $item->path =~ /(pm|pl)$/;
+        my $ext = $item->extension;
+        if( my $s = $item->slurp ) {
+            my $module = $ext eq 'pm' 
+               ? do {
+                 my $found;
+                 for my $lin ( split /\n/, $s ) {
+                     if( $lin =~ /^\s*package\s+([\w|:]+)/g ) {
+                        $found = $1;
+                        last;
+                     }
                  }
-             }
-             $found // $_->basename;
-          }
-          : $_->name;
-          for my $use ( $s =~ /use\s+([\w|:]+)/gm ) { 
-              next if $use ~~ [qw(base lib strict vars warnings threads)];
-              next if $use =~ /^v[0-9]/;
-              $_->{dependencies}{ $module }{ $use } = 1;
-          }
-          for my $req ( $s =~ /require\s+([\w|:]+)/gm ) { 
-              $req =~ s/'"//g;
-              $_->{dependencies}{ $module }{ $req } = 1;
-          }
-       } else {
-          _error( _loc('Could not scan file %1', $_->path) );
-       }
+                 $found // $item->basename;
+               }
+               : $item->name;
+            $item->{module} = $module;
+            $item->moniker( $module );
+            my %deps;
+            for my $use ( $s =~ /use\s+([\w|:]+)/gm ) { 
+                next if $use ~~ [qw(base lib strict vars warnings threads)];
+                next if $use =~ /^v[0-9]/;
+                $deps{ $use } = 1;
+            }
+            for my $req ( $s =~ /require\s+([\w|:]+)/gm ) { 
+                $req =~ s/'"//g;
+                $deps{ $req } = 1;
+            }
+            $item->module_dependencies( [ keys %deps ] );
+        } else {
+            _error( _loc('Could not scan file %1', $item->path) );
+        }
     });
 }
 
@@ -61,8 +68,10 @@ use Baseliner::Moose;
 has repos     => qw(is rw isa ArrayRef[Baseliner::Role::CI::Repository]);
 has parsers   => qw(is rw isa ArrayRef[Baseliner::Role::Parser]);
 
-has dependencies => qw(is rw isa HashRef);
+has ignore_dirs  => qw(is rw isa Bool default 1);
 has items => qw(is rw isa ArrayRef[Baseliner::Role::CI::Item]), default=>sub{[]};
+
+has tag_relationship => qw(is rw isa Str default topic_item);
 
 sub scan {
     my ($self, %p)=@_;
@@ -72,13 +81,39 @@ sub scan {
             $parser->parse( items=>$repo->items );
         }
         $repo->items->each( sub {
-            $self->tagger( item=>$_ );
-            push @items, $_;
+            my $it = $_;
+            return if $self->ignore_dirs && $it->is_dir;
+            $self->tagger( item=>$it );
+            push @items, $it;
             $_->done_slurping;
         });
-        #$self->dependencies( \%deps );
     }
     $self->items( \@items );
+}
+
+sub commit {
+    my ($self,%p) = @_;
+    # save items
+    for my $it ( Util->_array( $self->items ) ) {
+        $it->save;
+    }
+    # commit relationships
+    my $cache = {}; # create a global cache for this
+    for my $it ( Util->_array( $self->items ) ) {
+        $it->save_relationships( cache=>$cache );
+    }
+    # update master and master_rel
+    # import tags
+    my $tag_relationship = $self->tag_relationship;
+    for my $it ( Util->_array( $self->items ) ) {
+        for my $tag ( Util->_array( $it->{tags} ) ) {
+            next unless length $tag;
+            my @targets = DB->BaliMaster->search({ moniker=>$tag }, { select=>'mid' })->hashref->all;
+            for my $mid ( map { $_->{mid} } @targets ) {
+                DB->BaliMasterRel->find_or_create({ to_mid=>$it->mid, from_mid=>$mid, rel_type=>$tag_relationship });
+            }
+        }
+    }
 }
 
 sub tagger {
@@ -88,8 +123,10 @@ sub tagger {
     my $body = $_->slurp;
     return unless defined $body;
     for my $tag ( $body =~ /#tag:(\w+)/gm ) { 
+        $tags{ $tag }=1;
         $item->{tags}{ $tag } = 1;
     }
+    return keys %tags;
 }
 
 1;

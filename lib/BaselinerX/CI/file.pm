@@ -16,20 +16,19 @@ has _lines => qw(is rw isa ArrayRef lazy 1), default=>sub{
     \@lines;
 };
 
-sub _lines2 {
-    my ($self)=@_;
-    my @lines = Util->_file( $self->path )->slurp ;
-    \@lines;
-};
+sub ci_form { '/ci/item.js' }
 
 sub slurp {
     my ($self)=@_;
     return unless ! $self->is_dir;
-    return wantarray ? @{ $self->_lines2 } : join( '', @{ $self->_lines2 } );
+    return wantarray ? @{ $self->_lines } 
+        : $self->{_body} // ( $self->{_body}= join( '', @{ $self->_lines } ) );  # join '' is expensive, so we cache
 }
 
 sub done_slurping {
-    $_[0]->_lines([]);
+    my $self = shift;
+    delete $self->{_body};
+    $self->_lines([]);
 }
 
 
