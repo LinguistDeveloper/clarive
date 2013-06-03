@@ -27,6 +27,11 @@ around 'BUILDARGS' => sub {
     
     # home and env need to be setup first
     $args{env}  //= $ENV{CLA_ENV} // $ENV{CLARIVE_ENV}; # // 'local';
+
+    #Force legacy ENVs to $args{env}
+    $ENV{BASELINER_ENV} = $args{env};
+    $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
+    
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
     
     require Clarive::Config;
