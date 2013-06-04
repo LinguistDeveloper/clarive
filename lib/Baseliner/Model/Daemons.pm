@@ -3,6 +3,8 @@ use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 
+register 'action.admin.daemon' => { name => 'Administer daemons'};
+
 sub list {
     my ( $self, %p ) = @_;
     

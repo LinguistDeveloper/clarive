@@ -50,7 +50,7 @@ sub BUILD {
     }
 }
 
-register 'menu.admin.service' => { label=>'Services', title=>'Services' }; 
+register 'menu.admin.service' => { label=>'Services', title=>'Services', action => 'menu.admin.service.%' }; 
 
 sub dispatch {
     my ($self, %p )=@_;

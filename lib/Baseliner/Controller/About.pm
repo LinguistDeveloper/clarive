@@ -6,7 +6,8 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
 
-register 'menu.admin.about' => { label => 'About...', url => '/about/show', title=>'About ' . Baseliner->config->{app_name} // 'Baseliner', index=>999 };
+register 'menu.help' => { label => 'Help', index=>999 };
+register 'menu.help.about' => { label => 'About...', url => '/about/show', title=>'About ' . Baseliner->config->{app_name} // 'Baseliner', index=>999 };
 
 sub dehash {
     my $v = shift;

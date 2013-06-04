@@ -1,4 +1,4 @@
-Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_action( action=>'action.lc.ic_editor', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action=>'action.ci.admin', username=>$c->username ) ? 'true' : 'false' %>;
 
 Baseliner.tree_topic_style = [
     '<span unselectable="on" style="font-size:0px;',

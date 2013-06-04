@@ -18,6 +18,7 @@ register 'menu.tools.ci' => {
 sub gridtree : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+
     my ($total, @tree ) = $self->dispatch( $p );
     $c->stash->{json} = { total=>$total, totalCount=>$total, data=>\@tree, success=>\1 };
     $c->forward('View::JSON');
@@ -27,6 +28,7 @@ sub gridtree : Local {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    $p->{user} = $c->username;
     my ($total, @tree ) = $self->dispatch( $p );
 
     @tree = sort { lc $a->{text} cmp lc $b->{text} } map {
@@ -55,13 +57,15 @@ sub dispatch {
     my ($self, $p) = @_;
     my $parent = $p->{anode};
     my $mid = $p->{mid};
+    my $c = $p->{c};
     my $total;
     my @tree;
 
+    _log "Buscando ".$p->{type}." ".$p->{class};
     if ( !length $p->{anode} && !$p->{type} ) {
-        @tree = $self->tree_roles;
+        @tree = $self->tree_roles( user => $p->{user} );
     } elsif ( $p->{type} eq 'role' ) {
-        @tree = $self->tree_classes( role => $p->{class}, parent => $p->{anode} );
+        @tree = $self->tree_classes( role => $p->{class}, parent => $p->{anode}, user => $p->{user}, role_name => $p->{item} );
     } elsif ( $p->{type} eq 'class' ) {
         ( $total, @tree ) = $self->tree_objects(
             class  => $p->{class},
@@ -69,7 +73,7 @@ sub dispatch {
             start  => $p->{start},
             limit  => $p->{limit},
             pretty => $p->{pretty},
-            query  => $p->{query}
+            query  => $p->{query},
         );
     } elsif ( $p->{type} eq 'object' ) {
         @tree = $self->tree_object_info( mid => $p->{mid}, parent => $p->{anode} );
@@ -111,62 +115,84 @@ sub dispatch {
 }
 
 sub tree_roles {
-    my ($self)=@_;
+    my ( $self, %p ) = @_;
+
     #my $last1 = '2011-11-04 10:49:22';
-           #+{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
-    my $cnt = 1;
-    my @tree = map {
+    #+{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
+    my $cnt  = 1;
+    my $user = $p{user};
+    my @tree;
+    map {
         my $role = $_->{role};
         my $name = $_->{name};
-        $role = 'Generic' if $name eq ''; 
-        +{  
-            _id => $cnt++,
-            _parent  => undef,
-            _is_leaf     => \0,
-            type => 'role', 
-            mid => $cnt,
-            item     => $name,
-            class    => $role,
-            icon     => '/static/images/ci/class.gif',
-            versionid  => 1,
-            ts       => '-',
-            tags     => [],
-            properties => undef,
+        _log 'Buscando ' . 'action.admin.ci.' . $name;
+        if ( Baseliner->model( 'Permissions' )
+            ->user_has_any_action( username => $user, action => 'action.ci.admin.%' . $name ) )
+        {
+            _log 'Encontrado '. 'action.admin.ci.' . $name;
+            $role = 'Generic' if $name eq '';
+            push @tree, {
+                _id        => $cnt++,
+                _parent    => undef,
+                _is_leaf   => \0,
+                type       => 'role',
+                mid        => $cnt,
+                item       => $name,
+                class      => $role,
+                icon       => '/static/images/ci/class.gif',
+                versionid  => 1,
+                ts         => '-',
+                tags       => [],
+                properties => undef,
 
-            #children => [], #\@chi
-            }
+                #children => [], #\@chi
+            };
+        } ## end if ( Baseliner->model(...))
     } $self->list_roles;
+    _log _dump @tree;
     return @tree;
-}
+
+} ## end sub tree_roles
 
 sub tree_classes {
-    my ($self, %p)=@_;
+    my ( $self, %p ) = @_;
     my $role = $p{role};
+    my $user = $p{user};
     my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
-    my @tree = map {
-        my $item = $_;
+    my @tree;
+    _log '%%%%%%% Estoy en tree_classes:\n'._dump %p;
+    map {
+        my $item       = $_;
         my $collection = $_->collection;
         my $ci_form = $self->form_for_collection( $collection );
         $item =~ s/^BaselinerX::CI:://g;
-        $cnt++;
-        +{  _id        => ++$cnt,
-            _parent  => $p{parent} || undef,
-            _is_leaf   => \0,
-            type       => 'class',
-            #mid        => $cnt,
-            item       => $item,
-            collection => $collection,
-            ci_form  => $ci_form,
-            class      => $_,
-            icon       => $_->icon,
-            has_bl     => $_->has_bl,
-            has_description     => $_->has_description,
-            versionid    => '',
-            ts         => '-',
-            properties => '',
-        }
+        _log '%%%%%%%%%%% Buscando '.'action.ci.admin.' . $item;
+        if ( Baseliner->model( 'Permissions' )
+            ->user_has_action( username => $user, action => 'action.ci.admin.' .$p{role_name}.'.'. $item ) )
+        {
+
+            $cnt++;
+            push @tree, {
+                _id      => ++$cnt,
+                _parent  => $p{parent} || undef,
+                _is_leaf => \0,
+                type     => 'class',
+
+                #mid        => $cnt,
+                item            => $item,
+                collection      => $collection,
+                ci_form         => $ci_form,
+                class           => $_,
+                icon            => $_->icon,
+                has_bl          => $_->has_bl,
+                has_description => $_->has_description,
+                versionid       => '',
+                ts              => '-',
+                properties      => '',
+            };
+        } 
     } packages_that_do( $role );
-    return @tree; 
+    return @tree;
 }
 
 sub form_for_collection {
@@ -386,7 +412,7 @@ sub list_roles {
             role => $role,
             name => name_transform( $role ),
         }
-    } grep /^Baseliner::Role::CI/, keys %cl;
+    } grep /^Baseliner::Role::CI::/, keys %cl;
 }
 
 # used by Baseliner.store.CI
