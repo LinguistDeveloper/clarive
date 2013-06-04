@@ -229,6 +229,9 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
 
                     /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
                         n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
+                } else {
+                    // translate nodes
+                    n.setText( _( n.text ) );
                 }
             });
         });
@@ -441,11 +444,16 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
     initComponent: function(){
         var self = this;
 
-        self.$tree_projects = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' })
-        self.items = [ self.$tree_projects ];
-        self.$tree_projects.on('favorite_added', function() { self.$tree_favorites.refresh() } );
+        //self.items = []; // self.$tree_projects ];
         
         var show_projects = function() {
+            if( !self.$tree_projects ) {
+                self.$tree_projects = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' })
+                self.$tree_projects.on('favorite_added', function() { 
+                    if( self.$tree_favorites ) self.$tree_favorites.refresh() 
+                });
+                self.add( self.$tree_projects );
+            }
             self.getLayout().setActiveItem( self.$tree_projects );
         };
 
@@ -480,7 +488,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/project.png',
             handler: show_projects,
             tooltip: _('Projects'),
-            pressed: true,
+            pressed: false,
             toggleGroup: 'explorer-card',
             allowDepress: false,
             enableToggle: true
@@ -491,7 +499,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/star-gray.png',
             tooltip: _('Favorites'),
             handler: show_favorites,
-            pressed: false,
+            pressed: true,
             allowDepress: false,
             toggleGroup: 'explorer-card',
             enableToggle: true
@@ -590,8 +598,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 })
             ]
         });
-
+        
         Baseliner.Explorer.superclass.initComponent.call(this);
+        self.on('afterrender', function(){ show_favorites() });
     },
     current_tree : function(){
         return this.getLayout().activeItem;

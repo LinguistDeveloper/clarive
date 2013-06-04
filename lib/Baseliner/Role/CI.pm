@@ -24,19 +24,35 @@ coerce 'BoolCheckbox' =>
   from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 
 has mid      => qw(is rw isa Num);
-#has ci_class => qw(is rw isa Maybe[Str]);
+has active   => qw(is rw isa Bool);
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
 requires 'icon';
-#requires 'collection';
 
 has name    => qw(is rw isa Maybe[Str]);
+has ns      => qw(is rw isa Maybe[Str]);
+has moniker  => qw(is rw isa Maybe[Str] lazy 1), 
+    default=>sub{   
+        my $self = shift; 
+        if( ref $self ) {
+            my $nid = Util->_name_to_id( $self->name );
+            return $nid;
+        }
+    };  # a short name for this
 has job     => qw(is rw isa Baseliner::Role::JobRunner),
-    lazy    => 1,
-    default => sub {
-        require Baseliner::Core::JobRunner;
-        Baseliner::Core::JobRunner->new;
-    };
+        lazy    => 1, default => sub {
+            require Baseliner::Core::JobRunner;
+            Baseliner::Core::JobRunner->new;
+        };
+
+sub storage { 'yaml' }   # ie. yaml, fields, BaliUser, BaliProject
+sub storage_pk { 'mid' }  # primary key (mid) column for foreing table
+
+# from Node (deprected)
+# has uri      => qw(is rw isa Str);   # maybe a URI someday...
+# has resource => qw(is rw isa Baseliner::URI), 
+# handles => qr/.*/  # ---> problematic, injects its URI methods into all CIs (host, port, etc)
+# has debug => qw(is rw isa Bool), default=>sub { $ENV{BASELINER_DEBUG} };
 
 # methods 
 sub has_bl { 1 } 
@@ -52,6 +68,13 @@ sub collection {
     return $collection;
 }
 
+sub serialize {
+    my ($self)=@_;
+    return () if !ref $self;
+    # XXX consider calling known attribute methods instead
+    map { $_ => $self->{$_} } grep !/^_/, keys %{$self}, 
+}
+
 sub save {
     use Baseliner::Utils;
     use Baseliner::Sugar;
@@ -62,53 +85,87 @@ sub save {
     } else {
         %p = @_;
     }
-    my ($mid,$name,$data,$bl,$active,$versionid) = @{\%p}{qw/mid name data bl active versionid/};
-    $mid = $self->mid if !defined $mid && ref $self;
+    # merge self with current values, ignore underscore
+    my %serialized = $self->serialize;
+    %p = ( %serialized, %p );
+    my ($mid,$name,$data,$bl,$active,$versionid,$ns,$moniker) = @{\%p}{qw/mid name data bl active versionid ns moniker/};
+
     my $collection = $self->collection;
-    my $ret = $mid;
+
+    if( delete $p{merged} && defined $data ) {  # used by $self->update( ... )
+        $data = { %serialized, %$data };
+    } else {
+        # if no data=> supplied, save myself
+        $data = \%serialized if !defined $data;
+    }
+
+    my $exists = ! ! length $mid;
+    # try to get mid from ns
+    if( !$exists && defined $ns ) {  
+        my $ns_row = DB->BaliMaster->search({ collection=>$collection, ns=>$ns }, {select=>'mid' })->first;
+        if( $ns_row ) {
+            $mid = $ns_row->mid;
+            $exists = 1;
+        }
+    }
 
     Baseliner->cache_clear;
     # transaction bound, in case there are foreign tables
     Baseliner->model('Baseliner')->txn_do(sub{
-        if( length $mid ) { 
-            ######## update
-            #_debug "****************** CI UPDATE: $mid";
+        if( $exists ) { 
+            ######## UPDATE CI
             my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
-            $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
-            $row->name( $name ) if defined $name;
-            $row->active( $active ) if defined $active;
-            $row->versionid( $versionid ) if defined $versionid;
-            $row->update;
             if( $row ) {
+                $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
+                $row->name( $name ) if defined $name;
+                $row->active( $active ) if defined $active;
+                $row->versionid( $versionid ) if defined $versionid;
+                $row->moniker( $moniker ) if defined $moniker;
+                $row->ns( $ns ) if defined $ns;
+                $row->update;  # save bali_master data
                 $self->save_data( $row, $data );
-                ##_log _dump { $row->get_columns };
             }
             else {
                 _fail _loc "Could not find master row for mid %1", $mid;
             }
-        } else {  
-            ######## new
-            #_debug "****************** CI NEW: $collection";
-            my $row = Baseliner->model('Baseliner::BaliMaster')->create({
-                collection => $collection, name=> $name, 
-                active => $active // 1, versionid=>$versionid // 1
-            });
-            my $mid = $row->mid;
+            if( ref $self ) {
+                $self->mid( $mid );
+            }
+        } else {
+            ######## NEW CI
+            my $row = Baseliner->model('Baseliner::BaliMaster')->create(
+                {
+                    collection => $collection,
+                    name       => $name,
+                    ns         => $ns,
+                    moniker    => $moniker,
+                    active     => $active // 1,
+                    versionid  => $versionid // 1
+                }
+            );
+            $mid = $row->mid;
             $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
+            $self->mid( $row->mid ) if ref $self;
+            # name, just in case
             if( defined $name ) {
                 $row->name( $name );
             } else {
                 $row->name( "${collection}:${mid}" );
             }
+            # moniker
+            if( ! defined $moniker ) {
+                $row->moniker( $self->moniker );
+            }
+            # now save the rest of the ci data
             $self->save_data( $row, $data );
-            $ret = $row->mid;
         }
     });
-    return $ret;  # mid
+    return $mid; 
 }
 
 sub update {
     my ( $self, %p ) = @_;
+    $self->save( data=>\%p, merged=>1 );
 }
 
 # save data to table or yaml
@@ -161,8 +218,6 @@ sub save_data {
         my $rel_type_name = $rel->{rel_type}->[1];
         DB->BaliMasterRel->search({ $my_rel, $master_row->mid, rel_type=>$rel_type_name })->delete;
         for my $other_mid ( _array $rel->{value} ) {
-            #_debug ">>>>>>>> SAVING REL $rel_type_name - FROM $my_rel => $other_rel ( $other_mid )";
-            #_debug { $my_rel, $master_row->mid, $other_rel, $other_mid, rel_type=>$rel_type_name };
             DB->BaliMasterRel->create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name })
         }
     }
@@ -263,9 +318,6 @@ sub ci_form {
     my $fullpath = Baseliner->path_to( 'root', $component );
     return -e $fullpath  ? $component : '';
 }
-
-sub storage { 'yaml' }   # ie. yaml, fields, BaliUser, BaliProject
-sub storage_pk { 'mid' }  # primary key (mid) column for foreing table
 
 sub related_cis {
     my ($self, %opts )=@_;
@@ -422,13 +474,116 @@ sub children {
     return $self->related( %opts, edge=>'out' );
 }
 
-# from Node
-has uri      => qw(is rw isa Str);   # maybe a URI someday...
-has resource => qw(is rw isa Baseliner::URI), 
-                # handles => qr/.*/  # ---> problematic, injects its URI methods into all CIs (host, port, etc)
-                ;
+sub searcher {
+    my ($self, %p ) = @_;
+    my $coll = $self->collection;
+    my @fields = _unique _array('mid', $p{fields});
+    my $schema = [
+        map {
+            +{ name=>$_, sortable=>1 } 
+        } @fields 
+    ];
+    require Baseliner::Lucy;
+    my $string_tokenizer = Lucy::Analysis::RegexTokenizer->new( pattern => '\w');
+    my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$string_tokenizer]);
 
-has debug => qw(is rw isa Bool), default=>sub { $ENV{BASELINER_DEBUG} };
+    my $searcher = Baseliner::Lucy->new(
+            index_path => Lucy::Store::RAMFolder->new, # in-memory files "$dir",
+            language   => 'es', 
+            analyser   => $analyzer, 
+            resultclass => 'LucyX::Simple::Result::Hash',
+            entries_per_page => 10,
+            schema     => $schema,
+            highlighter => 'Baseliner::Lucy::Highlighter',
+            search_fields => ['gdi_perfil_dni', 'id'],
+            search_boolop => 'AND',
+        );
+    my @cis = map {
+       my $h = _load( delete $_->{yaml} );
+       my $d = { %$_, %$h };
+       +{ map { $_ => $d->{$_} } @fields  };
+    } DB->BaliMaster->search({ collection=>$coll })->hashref->all;
+
+    my $sort_spec;
+    if( $p{sort} ) {
+        $sort_spec = Lucy::Search::SortSpec->new(
+                rules => [
+                    map { 
+                        my ($field,$dir) = /^(\S+) (\S+)$/ ? ($1,$2) : ($_,'ASC');
+                        Lucy::Search::SortRule->new( field =>$field, reverse=>( $dir =~ /asc/i ? 0 : 1 )  ) 
+                    } _array($p{sort})
+                ],
+        );
+    }
+        
+    my $query;
+    if( ref $p{query} ) {
+        while( my ($k,$v) = each %{ $p{query} } ) {
+            $query = Lucy::Search::TermQuery->new(
+                field => $k,
+                term  => $v,
+            );
+        }
+    } else {
+        $query = $p{query};
+    }
+
+    map { $searcher->create($_) } @cis;
+    $searcher->commit;
+    my ( $results, $pager ) = try {
+       $searcher->search( $query, 1, $sort_spec );
+    } catch {
+      _debug shift(); # usually a "no results" exception
+      ([],undef);
+    };
+}
+
+sub mem_table {
+    my ($self, %p) = @_;
+    my $coll = $self->collection;
+    my @cols = grep { $_ ne 'mid' } (
+        @{ $p{cols} || [] } 
+        ||  
+        ( map { $_->name } $self->meta->get_all_attributes )
+    );
+    require DBIx::Simple;
+    my $db = $p{db} // DBIx::Simple->connect('dbi:SQLite::memory:'); 
+    my $cols_str = join ',', map { "$_ text" } @cols;
+    eval { $db->query("create table $coll ( mid number, $cols_str, unique (mid ) )") };
+    push @cols, 'mid';
+    @cols = _unique @cols;
+    if( ref $p{cis} eq 'ARRAY' ) {
+        $self->mem_load( db=>$db, cis=>$p{cis}, cols=>\@cols  );
+    }
+    elsif( exists $p{mid} ) {
+        $self->mem_load( db=>$db, cis=>[ map { _ci( $_ ) } _array($p{mid}) ], cols=>\@cols  );
+    }
+    else {   # full collection, from yaml
+        #my @mids = map { $_->{mid} } DB->BaliMaster->search({ collection=>$coll }, { select=>'mid' })->hashref->all;
+        #$self->mem_load( db=>$db, cis=>[ map { _ci( $_ ) } @mids ], cols=>\@cols  );
+        my @cis = map {
+            my $h = _load( delete $_->{yaml} ) // {};
+            +{ %$_, %$h };
+        } DB->BaliMaster->search( { collection => $coll, %{ $p{where} || {} } }, $p{from} )->hashref->all;
+        $self->mem_load( db => $db, cis =>\@cis, cols => \@cols );
+    }
+    return $db;
+}
+
+sub mem_load {
+    my ($self,%p) = @_;
+    my $coll = $self->collection;
+    my @cols = @{ $p{cols} };
+    my $db = $p{db};
+    my $k = @cols;
+    my $pos_str = join ',', map { '?' } 1..$k;
+    my $cols_str_ins = join ',', @cols;
+    my $s = $db->dbh->prepare("insert into $coll ($cols_str_ins) values ($pos_str)" );
+    for my $ci ( @{ $p{cis} } ) {
+        my @values = map { $ci->{$_} // '' } @cols;
+        $s->execute( @values );
+    }
+}
 
 1;
 
@@ -460,10 +615,10 @@ around initialize_instance_slot => sub {
 
     my $init_arg = $self->init_arg();
     $gscope or local $gscope = {};
-    $gscope->{ $instance->mid // $params->{mid} } //= $instance;
-    
+    my $mid = $instance->mid // $params->{mid};
     my $weaken = 0;
-    if( defined($init_arg) and exists $params->{$init_arg} ) {
+    if( defined($mid) && defined($init_arg) and exists $params->{$init_arg} ) {
+        $gscope->{ $mid } //= $instance;
         my $val = $params->{$init_arg};
         my $tc = $self->type_constraint;
         # needs coersion?

@@ -2205,7 +2205,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         
         //self.ci_store.on('load', function(){ });
         
-        if( self.value ) {
+        if( Ext.isArray( self.value ) ) {
             Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci, { mids: self.value }), function(res){
                 Ext.each( res.data, function(r){
                     self.add_to_grid( r );

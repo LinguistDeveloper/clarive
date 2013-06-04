@@ -14,44 +14,44 @@
 <div id="boot">
     <div class="container_24" style="padding-top:12px;padding-left:10px;">
         <div class="grid_24">
-            <h2>Job: <%$namejob%> (<a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>', _('Log details <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"> log completo </a>)</h2>
+            <h2>Job: <%$namejob%> (<a href="javascript:Baseliner.add_tabcomp('/job/log/list?id_job=<%$idjob%>', _('<%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"> <% _loc('full log') %> </a>)</h2>
         </div>
 
         <div class="grid_11">
             <!--######INICIO TABLA RESUMEN ###################################################################################-->
-            <h3>Resumen</h3>
+            <h3><% _loc( 'Summary' ) %></h3>
             <table class="table table-bordered table-condensed dashboard">
                 <tbody>
                     <tr>
-                        <td>Entorno</td>
+                        <td><% _loc( 'Environment') %></td>
                         <td><%$resumen->{bl}%></td>
                     </tr>
                     <tr>
-                        <td>Estado</td>
+                        <td><% _loc( 'Status') %></td>
                         <td id="<% $status_id %>"></td>
                     </tr>
                     <tr>
-                        <td>Tipo</td>
+                        <td><% _loc( 'Type') %></td>
                         <td><%_loc($resumen->{type})%></td>
                     </tr>
                     <tr>
-                        <td>Inicio</td>
+                        <td><% _loc( 'Start') %></td>
                         <td><%$resumen->{starttime}?$resumen->{starttime}->dmy.' '.$resumen->{starttime}->hms:''%></td>
                     </tr>
                     <tr>
-                        <td>Fin</td>
+                        <td><% _loc( 'End') %></td>
                         <td><%$resumen->{endtime}?$resumen->{endtime}->dmy.' '.$resumen->{endtime}->hms:''%></td>
                     </tr>
                     <tr>
-                        <td>Tiempo de Ejecución</td>
+                        <td><% _loc( 'Running Time') %></td>
                         <td><%$resumen->{execution_time}?sprintf("%s",$resumen->{execution_time} < 60? ($resumen->{execution_time}->sec . ' seg.') : ($resumen->{execution_time}->min) . ' min.'):''%></td>
                     </tr>
                     <tr>
-                        <td>Último paso</td>
+                        <td><% _loc( 'Last Step' ) %></td>
                         <td><%$resumen->{last_step}%></td>
                     </tr>
                     <tr>
-                        <td>Usuario</td>
+                        <td><% _loc('User') %></td>
                         <td><%$resumen->{owner}%></td>
                     </tr>
                 </tbody>    
@@ -63,13 +63,13 @@
         
         <div class="grid_12">
             <!--######INICIO TABLA EJECUCION ##################################################################################-->
-            <h3>Ejecución</h3>
+            <h3><% _loc( 'Run') %></h3>
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
                         <th>&nbsp;</th>
-                        <th>Servicio</th>
-                        <th>Estado</th>
+                        <th><% _loc( 'Service') %></th>
+                        <th><% _loc( 'Status') %></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -107,7 +107,7 @@
         
         <div class="grid_11">
             <!--######INICIO TABLA CONTENIDO ###################################################################################-->
-            <h3>Contenido</h3>
+            <h3><% _loc( 'Contents') %></h3>
             <table class="table table-bordered table-condensed dashboard">
                 <tbody>
 <%perl>
@@ -119,7 +119,7 @@
         }
 </%perl>
                     <tr>     
-                        <td rowspan="<%$tot_aplicaciones%>">Aplicaciones</td>
+                        <td rowspan="<%$tot_aplicaciones%>"><b><% _loc( 'Projects') %></b></td>
 %       my $first = 1;                            
 %       for my $aplicacion (@aplicaciones){
 %                   if ( $first ) {    
@@ -141,7 +141,7 @@
                     if ( $first ) {
 </%perl>                        
                     <tr>
-                        <td rowspan="<%$tot_paquetes%>">Paquetes (<% $aplicacion %>)</td>
+                        <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %>(<% $aplicacion %>)</b></td>
 <%perl>
                         $first = 0;
                     }
@@ -154,8 +154,8 @@
         }
 </%perl>                        
                     <tr>
-                        <td>Elementos del pase</td>
-                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );">Ver elementos&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
+                        <td><b><% _loc( 'Job Items') %></b></td>
+                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% _loc("Items") %>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
                     </tr>
 <%perl>
     my $tot_tecnologias;
@@ -163,7 +163,7 @@
     $tot_tecnologias = scalar @tecnologias;
 </%perl> 
                     <tr>
-                        <td rowspan="<%$tot_tecnologias%>">Técnologias</td>
+                        <td rowspan="<%$tot_tecnologias%>"><b><% _loc( 'Natures') %></b></td>
 %   for my $tecnologia ( @tecnologias ){
                         <td>
                             <%$tecnologia%><br>
@@ -176,7 +176,7 @@
     $tot_topicos = scalar @topicos;
 </%perl>                        
                     <tr>
-                        <td rowspan="<%$tot_topicos%>">Tópicos</td>
+                        <td rowspan="<%$tot_topicos%>"><b><% _loc( 'Topics') %></b></td>
 %   if (@topicos){
 %       for my $topico ( @topicos){
                         <td><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topico->{id}%>', _('Topics'));"><% $topico->{title} %></a></b></td>
@@ -196,7 +196,7 @@
     
         <div class="grid_12">
             <!--######INICIO TABLA SALIDA ###################################################################################-->
-            <h3>Salida</h3>
+            <h3><% _loc( 'Output') %></h3>
             <script language="javascript">
                 var onemeg = 1024 * 1024;
                 function file(obj, td_id) {
@@ -247,7 +247,7 @@
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
-                        <th colspan="2">Ficheros generados</th>
+                        <th colspan="2"><% _loc( 'Artifacts') %></th>
                     </tr>
                 </thead>                
                 <tbody>

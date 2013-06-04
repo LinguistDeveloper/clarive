@@ -109,7 +109,7 @@ sub update : Local {
     $p->{username} = $c->username;
     
     try  {    
-        my ($msg, $topic_mid, $status, $title) = Baseliner::Model::Topic->update( $p );
+        my ($msg, $topic_mid, $status, $title) = $c->model('Topic')->update( $p );
         $c->stash->{json} = {
             success      => \1,
             msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
@@ -256,8 +256,8 @@ sub json : Local {
         
     my $ret = {};
     
-    my $meta = Baseliner::Model::Topic->get_meta( $topic_mid );
-    my $data = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
+    my $meta = $c->model('Topic')->get_meta( $topic_mid );
+    my $data = $c->model('Topic')->get_data( $meta, $topic_mid );
 
     $meta = get_meta_permissions ($c, $meta, $data);
     
@@ -354,7 +354,7 @@ sub new_topic : Local {
                                                                                         }                                                                                 
                                                                                      )->first; 
     my $name_status = $rs_status->status->name;
-    my $meta = Baseliner::Model::Topic->get_meta( undef, $id_category );
+    my $meta = $c->model('Topic')->get_meta( undef, $id_category );
     $meta = $self->get_field_bodies( $meta );
     
     my $data;
@@ -380,11 +380,11 @@ sub new_topic : Local {
             $data->{action_status} = $action;
         }
     }else{
-        $data = Baseliner::Model::Topic->get_data( $meta, undef );
+        $data = $c->model('Topic')->get_data( $meta, undef );
         #Cetelem
         if($p->{dni}){
             if ($p->{clonar}){
-                $data = Baseliner::Model::Topic->get_data( $meta, $p->{clonar} );
+                $data = $c->model('Topic')->get_data( $meta, $p->{clonar} );
                 $data = $self->init_values_topic($data);
                 my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
                                                                                         {
@@ -452,7 +452,7 @@ sub view : Local {
         $c->stash->{HTMLbuttons} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
     }
     
-    my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit' );
+    my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit' );
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
@@ -520,8 +520,8 @@ sub view : Local {
     }
     
     if( $p->{html} ) {
-        my $meta = Baseliner::Model::Topic->get_meta( $topic_mid, $id_category );
-        my $data = Baseliner::Model::Topic->get_data( $meta, $topic_mid );
+        my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
+        my $data = $c->model('Topic')->get_data( $meta, $topic_mid );
         $meta = get_meta_permissions ($c, $meta, $data);        
 
         $c->stash->{topic_meta} = $meta;
@@ -660,9 +660,9 @@ sub list_category : Local {
         
         my @categories;
         if( $p->{action} && $p->{action} eq 'create' ){
-            @categories  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => $p->{action} );
+            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action} );
         } else {
-            @categories  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
         }
         
         if(@categories){
@@ -912,7 +912,7 @@ sub filters_list : Local {
     my @categories;
     
     #$row = $c->model('Baseliner::BaliTopicCategories')->search();
-    my @categories_permissions  = Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+    my @categories_permissions  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
     
     if(@categories_permissions && $#categories_permissions gt 0){
         for( @categories_permissions ) {

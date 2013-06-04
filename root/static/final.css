@@ -46,6 +46,14 @@
     color:#555;
 }
 
+.bali-moniker {
+    background-color: #f0f9f2;
+    border:2px #d4d4d4 solid;
+    padding: 3px;
+    font-family: Consolas, Courier New, monotype;
+    text-align:center; 
+}
+
 .CodeMirror {
   height: 100%;
 }

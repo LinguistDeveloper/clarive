@@ -12,7 +12,7 @@ my $date = $c->stash->{date};
 my $title = 'Editar ventana';
 $title = 'Editar ventana para el ' . $date if($date);
 
-my $loc = DateTime::Locale->load("es_ES"); 
+my $loc = DateTime::Locale->load( $c->language );
 my $day_wide = $loc->day_format_wide;
 my $from_to_1 = _loc("From %1 to %2", $day_wide->[0], $day_wide->[4]);
 my $from_to_2 = _loc("From %1 to %2", $day_wide->[0], $day_wide->[6]);
@@ -226,7 +226,7 @@ for(my $hh=0; $hh<=24; $hh++) {
     });
     var win = new Ext.Window({
         layout: 'fit',
-        height: 230, width: 600,
+        height: 230, width: 650,
         title: '<% $title %>',
         items: fpanel
     });

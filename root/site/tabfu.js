@@ -931,6 +931,13 @@ $('a').click(function(event) {
                 if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
             },
             failure: function(xhr) {
+                try {
+                    eval("var res=(" + xhr.responseText + ")");
+                    if( res.logged_out ) {
+                        Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
+                        return;
+                    }
+                } catch(e){};
                 if( ! params._ignore_conn_errors ) {
                     Baseliner.server_failure( xhr.responseText );
                 }

@@ -183,7 +183,7 @@ sub tree_objects {
     my $collection = $p{collection} // $class->collection;
     my $opts = { order_by=>{ -asc=>['mid'] } };
     my $page;
-    if( length $p{start} && length $p{limit} ) {
+    if( length $p{start} && length $p{limit} && $p{limit}>-1 ) {
         $page =  to_pages( start=>$p{start}, limit=>$p{limit} );
         $opts->{rows} = $p{limit};
         $opts->{page} = $page;
@@ -206,9 +206,10 @@ sub tree_objects {
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my (%forms, %icons);  # caches
     my @tree = map {
-        my $data = _load( $_->{yaml} );
-        my $ci_form = $forms{ $_->{collection} } 
-            // ( $forms{ $_->{collection} } = $self->form_for_collection( $_->{collection} ) );
+        my $row = $_;
+        my $data = _load( $row->{yaml} );
+        my $ci_form = $forms{ $row->{collection} } 
+            // ( $forms{ $row->{collection} } = $self->form_for_collection( $row->{collection} ) );
         
         # list properties: field: value, field: value ...
         my $pretty = $p{pretty} 
@@ -218,26 +219,28 @@ sub tree_objects {
                 "$_: $d"
                 } grep { length $data->{$_} } keys %$data ) }
             : '';
-        my $noname = $_->{collection}.':'.$_->{mid};
+        my $noname = $row->{collection}.':'.$row->{mid};
         +{
-            _id               => $_->{mid},
+            _id               => $row->{mid},
             _parent           => $p{parent} || undef,
             _is_leaf          => \0,
-            mid               => $_->{mid},
-            name              => ( $_->{name} // $noname ),
-            item              => ( $_->{name} // $data->{name} // $noname ),
+            mid               => $row->{mid},
+            name              => ( $row->{name} // $noname ),
+            item              => ( $row->{name} // $data->{name} // $noname ),
             ci_form           => $ci_form,
             type              => 'object',
             class             => $class,
+            collection        => $row->{collection},
+            moniker           => $row->{moniker},
             icon              => ( $icons{ $class } // ( $icons{$class} = $class->icon ) ),
-            ts                => $_->{ts},
-            bl                => $_->{bl},
+            ts                => $row->{ts},
+            bl                => $row->{bl},
             description       => $data->{description},
-            active            => ( $_->{active} eq 1 ? \1 : \0 ),
+            active            => ( $row->{active} eq 1 ? \1 : \0 ),
             data              => $data,
-            properties        => $_->{yaml},
+            properties        => $row->{yaml},
             pretty_properties => $pretty,
-            versionid         => $_->{versionid},
+            versionid         => $row->{versionid},
         }
     } $rs->hashref->all;
     ( $total, @tree );
@@ -274,11 +277,11 @@ sub tree_object_depend {
             _parent    => $p{parent} || undef,
             _is_leaf   => \0,
             mid        => $_->{$rel_type}{mid},
-            item       => ( $_->{$rel_type}{name} // $data->{name} // $_->{$rel_type}{collection} ).':'.$_->{$rel_type}{mid}, # // $data->{name} // $_->{$rel_type}{collection} . ":" . $_->{$rel_type}{mid} ),
+            item       => ( $_->{$rel_type}{name} // $data->{name} // $_->{$rel_type}{collection} ),
             type       => 'object',
             class      => $class,
             bl         => $bl,
-            collection => $_->{$rel_type}{collection},
+            collection => $_->{rel_type},
             icon       => $class->icon,
             ts         => $_->{$rel_type}{ts},
             data       => $data,
@@ -417,9 +420,14 @@ sub store : Local {
         $where->{mid} = \@rel_items;
     }
     
-    my $mids = delete $p->{mids};
-    if( length $mids ) {
-        $mids = [ grep { defined } split /,+/, $mids ] unless ref $mids eq 'ARRAY';
+    my $mids;
+    if( exists $p->{mids} ) {
+        $mids = delete $p->{mids};
+        if( length $mids ) {
+            $mids = [ grep { defined } split /,+/, $mids ] unless ref $mids eq 'ARRAY';
+        } else {  # no value sent, but key exists
+            $mids = [];  # otherwise, it will return all cis
+        }
     }
     
     my @data;
@@ -570,10 +578,10 @@ sub update : Local {
 
     try {
         if( $action eq 'add' ) {
-            $mid = $class->save( name=>$name, bl=>$bl, active=>$active, data=> $p ); 
+            $mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
-            $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, data => $p ); 
+            $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
         }
         else {
             _fail _loc("Undefined action");
@@ -582,6 +590,7 @@ sub update : Local {
         $c->stash->{json}{mid} = $mid;
     } catch {
         my $err = shift;
+        _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
     };
 
@@ -615,6 +624,7 @@ sub load : Local {
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
     } catch {
         my $err = shift;
+        _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('CI load error: %1', $err ) };
     };
     $c->cache_set( $cache_key, $c->stash->{json} );
@@ -633,6 +643,7 @@ sub delete : Local {
         #$c->stash->{json} = { success=>\1, msg=>_loc('CI does not exist' ) };
     } catch {
         my $err = shift;
+        _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('Error deleting CIs: %1', $err) };
     };
     $c->forward('View::JSON');
@@ -659,6 +670,7 @@ sub export : Local {
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs exported ok' ), data=>$data };
     } catch {
         my $err = shift;
+        _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('Error exporting CIs: %1', $err) };
     };
     $c->forward('View::JSON');
@@ -682,7 +694,9 @@ sub url : Local {
         my $ci = Baseliner::CI->new( $mid );
         { success=>\1, url=>$ci->url, title=>$ci->load->{name} };
     } catch {
-        { success=>\0, msg=>shift() };
+        my $err = shift;
+        _error( $err );
+        { success=>\0, msg=>$err };
     };
     $c->forward('View::JSON');
 }
@@ -723,7 +737,9 @@ sub json_tree : Local {
         _debug $d;
         { success=>\1, data=>$d };
     } catch {
-        { success=>\0, msg=>shift() };
+        my $err = shift;
+        _error( $err );
+        { success=>\0, msg=>$err };
     };
     $c->forward('View::JSON');
 }
@@ -744,7 +760,9 @@ sub ping : Local {
         $c->stash->{json} = {success => \1, msg => $msg};
     } ## end try
     catch {
-        $c->stash->{json} = {success => \0, msg => shift()};
+        my $err = shift;
+        _error( $err );
+        $c->stash->{json} = {success => \0, msg => $err};
     };
     $c->forward('View::JSON');
 
