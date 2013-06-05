@@ -2161,9 +2161,11 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     },
     initComponent: function(){
         var self = this;
+        if( self.ci == undefined ) self.ci = {};
+        if( self.ci_grid == undefined ) self.ci_grid = {};
         self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
         self.ci_store = new Baseliner.store.CI({ 
-            baseParams: Ext.apply({}, self.ci )
+            baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store' }, self.ci )
         });
         self.ci_box = new Baseliner.model.CICombo({
             store: self.ci_store, 
@@ -2206,8 +2208,17 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         //self.ci_store.on('load', function(){ });
         
         if( Ext.isArray( self.value ) ) {
-            Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci, { mids: self.value }), function(res){
+            Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci_grid, { mids: self.value , _whoami: 'CIGrid_mids' }), function(res){
                 Ext.each( res.data, function(r){
+                    if( ! r ) return;
+                    self.add_to_grid( r );
+                });
+            });
+        }
+        else if( self.from_mid || self.to_mid ) {
+            Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci_grid, { from_mid: self.from_mid, to_mid: self.to_mid,  _whoami: 'CIGrid_from_mid' }), function(res){
+                Ext.each( res.data, function(r){
+                    if( ! r ) return;
                     self.add_to_grid( r );
                 });
             });

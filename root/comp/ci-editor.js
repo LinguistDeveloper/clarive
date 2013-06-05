@@ -75,6 +75,38 @@
                 cardpanel.getLayout().setActiveItem( 0 );
             }
         };
+
+        Baseliner.CIDepends = Ext.extend( Ext.Panel, {
+            layout: 'fit', 
+            initComponent: function(){
+                //this.layoutConfig = { columns:2, rows:2 };
+                Baseliner.CIDepends.superclass.initComponent.call(this);
+                /*
+                this.ci_grid = new Ext.GridPanel({ 
+                    title: _('CIs'), region:'west', split: true,
+                    store: new Baseliner.CIStore({}), 
+                    columns: [
+                    ]
+                });
+                */
+                var to_mid = new Baseliner.CIGrid({ ci: { role:'CI' }, from_mid: mid });
+                this.add( to_mid );
+            }
+        });
+        var depend_panel;
+        var show_depends = function(){
+            if( btn_depends.pressed ) {
+                if( ! depend_panel ) {
+                    depend_panel = new Baseliner.CIDepends({ data: params.rec });
+                    cardpanel.add( depend_panel );
+                    cardpanel.getLayout().setActiveItem( depend_panel );
+                } else {
+                    cardpanel.getLayout().setActiveItem( depend_panel );
+                }
+            } else {
+                cardpanel.getLayout().setActiveItem( 0 );
+            }
+        };
         
         var btn_form_ok = new Ext.Button({
             text: _('Close'),
@@ -103,6 +135,14 @@
             handler: show_data
         });
 
+        var btn_depends = new Ext.Button({
+            text: _('Dependencies'),
+            icon:'/static/images/expand.gif',
+            cls: 'x-btn-icon-text',
+            enableToggle: true, pressed: false, toggleGroup: 'ci-editor-panel',
+            handler: show_depends
+        });
+
         var btn_form_calendar = new Ext.Button({
             text: _('Calendar'),
             icon:'/static/images/icons/calendar.png',
@@ -112,7 +152,7 @@
         });
 
         cardpanel.getTopToolbar().add([
-            btn_form_ok, btn_form_save, '-', btn_form_calendar, btn_data //btn_form_reset
+            btn_form_ok, btn_form_save, '-', btn_depends, btn_form_calendar, btn_data //btn_form_reset
         ]);
         var fieldset = new Ext.form.FieldSet({
             defaults: { 
