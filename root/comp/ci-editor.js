@@ -75,6 +75,38 @@
                 cardpanel.getLayout().setActiveItem( 0 );
             }
         };
+
+        Baseliner.CIDepends = Ext.extend( Ext.Panel, {
+            layout: 'fit', 
+            initComponent: function(){
+                //this.layoutConfig = { columns:2, rows:2 };
+                Baseliner.CIDepends.superclass.initComponent.call(this);
+                /*
+                this.ci_grid = new Ext.GridPanel({ 
+                    title: _('CIs'), region:'west', split: true,
+                    store: new Baseliner.CIStore({}), 
+                    columns: [
+                    ]
+                });
+                */
+                var to_mid = new Baseliner.CIGrid({ ci: { role:'CI' }, from_mid: mid });
+                this.add( to_mid );
+            }
+        });
+        var depend_panel;
+        var show_depends = function(){
+            if( btn_depends.pressed ) {
+                if( ! depend_panel ) {
+                    depend_panel = new Baseliner.CIDepends({ data: params.rec });
+                    cardpanel.add( depend_panel );
+                    cardpanel.getLayout().setActiveItem( depend_panel );
+                } else {
+                    cardpanel.getLayout().setActiveItem( depend_panel );
+                }
+            } else {
+                cardpanel.getLayout().setActiveItem( 0 );
+            }
+        };
         
         var btn_form_ok = new Ext.Button({
             text: _('Close'),
@@ -103,6 +135,14 @@
             handler: show_data
         });
 
+        var btn_depends = new Ext.Button({
+            text: _('Dependencies'),
+            icon:'/static/images/expand.gif',
+            cls: 'x-btn-icon-text',
+            enableToggle: true, pressed: false, toggleGroup: 'ci-editor-panel',
+            handler: show_depends
+        });
+
         var btn_form_calendar = new Ext.Button({
             text: _('Calendar'),
             icon:'/static/images/icons/calendar.png',
@@ -112,7 +152,7 @@
         });
 
         cardpanel.getTopToolbar().add([
-            btn_form_ok, btn_form_save, '-', btn_form_calendar, btn_data //btn_form_reset
+            btn_form_ok, btn_form_save, '-', btn_depends, btn_form_calendar, btn_data //btn_form_reset
         ]);
         var fieldset = new Ext.form.FieldSet({
             defaults: { 
@@ -130,7 +170,7 @@
             txt_cont.update( _( txt, params.item, params.mid ) );
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
-        var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'] });
+        var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'], colspan: 1 });
         var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 };
         var form = new Ext.FormPanel({
             url:'/ci/update',
@@ -142,11 +182,17 @@
             bodyStyle:'padding: 10px 0px 0px 15px',
             items: [
                 txt_cont,
-                { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, height: 30,
-                    style:'font-size: 18px;' },
-                { xtype: 'checkbox', fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
-                ( params.has_bl > 0 ? bl_combo : [] ),
-                ( params.has_description > 0 ? desc : [] ),
+                { layout:'column', border: false, defaults:{ border: false}, items:[
+                    { layout:'form', columnWidth : .65, defaults: { anchor: '96%' }, items:[
+                        { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, height: 30, style:'font-size: 18px;' },
+                        ( params.has_description > 0 ? desc : [] )
+                    ]},
+                    { layout:'form', columnWidth : .35, defaults: { anchor: '100%' }, items:[
+                        { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: params.rec.moniker, allowBlank: true },
+                        ( params.has_bl > 0 ? bl_combo : [] )
+                    ]}
+                ]},
                 fieldset
             ]
         });
@@ -203,6 +249,11 @@
         if( params.load ) {
             Baseliner.ajaxEval( '/ci/load', { mid: params.mid }, function(res) {
                 var rec = res.rec;
+                if( ! res.success ) {
+                    Baseliner.error( _('CI'), _('CI with id %1 missing or invalid', params.mid ) );
+                    cardpanel.destroy();
+                    return;
+                }
                 var c = Ext.apply({
                         collection: rec.collection,
                         item: rec.collection,
