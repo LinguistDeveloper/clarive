@@ -1112,9 +1112,10 @@ sub save_data {
         } grep { $_->{type} eq 'form' } _array($meta);
     
     my $topic;
+    my $moniker = delete $row{moniker};
     
     if (!$topic_mid){
-        my $rstopic = master_new 'topic' => $data->{title} => sub {
+        my $rstopic = master_new 'topic' => { name=>$data->{title}, moniker=>$moniker } => sub {
             $topic_mid = shift;
 
             #Defaults
@@ -1131,7 +1132,6 @@ sub save_data {
         }        
         
     }else{
-        #$topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
         $topic = DB->BaliTopic->find( $topic_mid, { prefetch =>['categories','status','priorities'] } );
 
         for my $field (keys %row){
@@ -1141,6 +1141,7 @@ sub save_data {
         }
         
         $topic->update( \%row );
+        _ci( $topic_mid )->save( moniker=>$moniker, name=>$row{title} );
 
         for my $field (keys %row){
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
