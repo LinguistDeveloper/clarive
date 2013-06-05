@@ -249,7 +249,7 @@ sub update : Local {
                             mid			=> $mid,
                             username    => $p->{username},
                             realname  	=> $p->{realname},
-                            password	=> $c->model('Users')->encriptar_password( $p->{pass}, $user_key ),
+                            password	=> $c->model('Users')->encrypt_password( $p->{pass}, $user_key ),
                             alias	=> $p->{alias},
                             email	=> $p->{email},
                             phone	=> $p->{phone}
@@ -272,7 +272,7 @@ sub update : Local {
             my $user = $c->model('Baseliner::BaliUser')->find( {username=>$p->{username } } );
             $user->realname( $p->{realname} );
             if($p->{pass} ne ''){
-            $user->password( $c->model('Users')->encriptar_password( $p->{pass}, $user_key ));
+            $user->password( $c->model('Users')->encrypt_password( $p->{pass}, $user_key ));
             }
             $user->alias( $p->{alias} );
             $user->email( $p->{email} );
@@ -814,9 +814,9 @@ sub change_pass : Local {
     my $row = $c->model('Baseliner::BaliUser')->search({username => $username, active => 1})->first;
     
     if($row){
-    if( $c->model('Users')->encriptar_password( $p->{oldpass}, $user_key ) eq $row->password ){
+    if( $c->model('Users')->encrypt_password( $p->{oldpass}, $user_key ) eq $row->password ){
         if($p->{newpass}){
-        $row->password( $c->model('Users')->encriptar_password( $p->{newpass}, $user_key));
+        $row->password( $c->model('Users')->encrypt_password( $p->{newpass}, $user_key));
         $row->update();
         $c->stash->{json} = { msg=>_loc('Password changed'), success=>\1 };
         }else{
