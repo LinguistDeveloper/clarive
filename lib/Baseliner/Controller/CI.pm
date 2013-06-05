@@ -125,7 +125,6 @@ sub tree_roles {
     map {
         my $role = $_->{role};
         my $name = $_->{name};
-        _log 'Buscando ' . 'action.admin.ci.' . $name;
         if ( Baseliner->model( 'Permissions' )
             ->user_has_any_action( username => $user, action => 'action.ci.admin.%' . $name ) )
         {
@@ -160,13 +159,11 @@ sub tree_classes {
     my $user = $p{user};
     my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my @tree;
-    _log '%%%%%%% Estoy en tree_classes:\n'._dump %p;
     map {
         my $item       = $_;
         my $collection = $_->collection;
         my $ci_form = $self->form_for_collection( $collection );
         $item =~ s/^BaselinerX::CI:://g;
-        _log '%%%%%%%%%%% Buscando '.'action.ci.admin.' . $item;
         if ( Baseliner->model( 'Permissions' )
             ->user_has_action( username => $user, action => 'action.ci.admin.' .$p{role_name}.'.'. $item ) )
         {

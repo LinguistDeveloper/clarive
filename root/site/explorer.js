@@ -1,4 +1,5 @@
-Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action=>'action.ci.admin', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action=>'action.ci.admin.%', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_job = <% $c->model('Permissions')->user_has_any_action( action=>'action.job.%', username=>$c->username ) ? 'true' : 'false' %>;
 
 Baseliner.tree_topic_style = [
     '<span unselectable="on" style="font-size:0px;',
@@ -483,6 +484,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: true,
             toggleGroup: 'explorer-card',
             allowDepress: false,
+            hidden: ! Baseliner.user_can_job,
             enableToggle: true
         });
 

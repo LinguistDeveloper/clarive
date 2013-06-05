@@ -232,7 +232,6 @@ sub search_for_node {
     my $username = delete $query{username};
     my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
     $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
-    _log '&&&&&&&&&&&&&&&&&& '.$username;
 
     # loop thru services
     $q_depth //= 99; 
