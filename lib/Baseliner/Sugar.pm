@@ -136,18 +136,36 @@ sub event_new {
         $code = $data;
         $data = {};
     }
+    my @rule_log;
     $data ||= {};
     my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
     my $event_create = sub {
-        my $ed = shift;
-        Baseliner->model('Baseliner::BaliEvent')
-            ->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
+        my ($ed,@rules) = @_;
+        my $ev_row = DB->BaliEvent->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
+        for my $rule (@rules) {
+            _debug $rule;
+            my $rrow = DB->BaliEventRules->create(
+                {
+                    id_event   => $ev_row->id,
+                    id_rule    => $rule->{id},
+                    stash_data => _dump( $rule->{ret} ),
+                    #dsl        => "DSL: $rule->{dsl}",
+                }
+            );
+            $rrow->dsl( $rule->{dsl} );
+            $rrow->update;
+            $rrow->log_output( $rule->{output} );
+            $rrow->update;
+        }
     };
     return try {
         if( ref $code eq 'CODE' ) {
             require Baseliner::Core::Event;
             my $obj = Baseliner::Core::Event->new( data => $data );
-            # PRE
+            # PRE rules
+            my $rules_pre = $ev->rules_pre_online( $data );
+            push @rule_log, map { $_->{when} => 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
+            # PRE hooks
             for my $hk ( $ev->before_hooks ) {
                 my $hk_data = $hk->( $obj );
                 $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
@@ -159,17 +177,28 @@ sub event_new {
             if( !length $data->{mid} ) {
                 _debug 'event_new is missing mid parameter' ;
                 #_throw 'event_new is missing mid parameter' ;
+            } else {
+                try {
+                    my $ci = _ci( $data->{mid} );
+                    my $ci_data = $ci->load;
+                    $data = { %$ci_data, ci=>$ci, %$data };
+                } catch {
+                    _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
+                };
             }
-            # POST
+            # POST hooks
             $obj->data( $data );
             for my $hk ( $ev->after_hooks ) {
                 my $hk_data = $hk->( $obj );
                 $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
                 $obj->data( $data );
             }
+            # POST rules
+            my $rules_post = $ev->rules_post_online( $data );
+            push @rule_log, map { $_->{when} => 'post-online'; $_ } _array( $rules_post->{rule_log} );
         }
         # create the event on table
-        $event_create->( $data ) if defined $data->{mid};
+        $event_create->( $data, @rule_log ) if defined $data->{mid};
         return $data; 
     } catch {  # no event if fails
         my $err = shift;
@@ -195,17 +224,23 @@ sub events_by_key {
 }
 
 sub events_by_mid {
-    my ($mid, $args ) = @_;
-    my $evs_rs = Baseliner->model('Baseliner::BaliEvent')->search({ mid=>$mid }, { order_by=>{ '-desc' => 'ts' } });
-    rs_hashref( $evs_rs );
-    my @evs = $evs_rs->all;
+    my ($mid, %p ) = @_;
+    my $min_level = $p{min_level} // 0;
+    my @evs = DB->BaliEvent->search({ mid=>$mid }, { order_by=>{ '-desc' => 'ts' } })->hashref->all;
     return [] unless @evs;
-    return [ map { 
+    return [
+      grep {
+         $_->{ev_level} == 0 || $_->{level} >= $min_level;
+      }
+      map { 
         # merge 2 hashes
-        my $d = { %$_ , %{ _load( $_->{event_data} ) } };
+        my $event_data = _load( _to_utf8( $_->{event_data} ) );
+        delete $event_data->{ts};
+        my $d = { %$_ , %$event_data };
         try {
             my $ev = Baseliner->model('Registry')->get( $d->{event_key} ); # this throws an exception if key not found
             $d->{text} = $ev->event_text( $d );
+            $d->{ev_level} = $ev->level;
         };  
         $d; 
     } @evs ];
