@@ -3,8 +3,8 @@ use Baseliner::Moose;
 
 with 'Baseliner::Role::CI::Repository';
 
-has root_path => qw(is rw isa Str required 1); # base path for relative dirs
-has start_path => qw(is rw isa Str), default=>sub { $_[0]->root_path };  # where we start searching from
+has root_dir   => qw(is rw isa Str required 1); # base path for relative dirs
+has start_path => qw(is rw isa Str), default=>sub { '.' };  # where we start searching from
 
 sub collection { 'filesys_repo' }
 sub icon       { '/static/images/icons/gitrepository.gif' }
@@ -20,12 +20,12 @@ has items => qw(is rw isa Baseliner::Role::CI::Group lazy 1), default=>sub{
 
 sub load_items {
     my ( $self, %p ) = @_;
-    my $d = Util->_dir( $self->start_path );
+    my $d = Util->_dir( $self->root_dir, $self->start_path );
     my @items;
     $d->recurse(
         callback => sub {
             my $f = shift;
-            my $relative = $f->relative( $self->root_path );
+            my $relative = $f->relative( $self->root_dir );
             push @items,
                 BaselinerX::CI::file->new(
                     ns     => "$relative",

@@ -122,7 +122,7 @@ sub tagger {
     my %tags;
     my $body = $_->slurp;
     return unless defined $body;
-    for my $tag ( $body =~ /#tag:(\w+)/gm ) { 
+    for my $tag ( $body =~ /#:(\w+):/gm ) { 
         $tags{ $tag }=1;
         $item->{tags}{ $tag } = 1;
     }
