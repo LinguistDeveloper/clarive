@@ -461,17 +461,18 @@ $('a').click(function(event) {
             ]
         });
         win = new Ext.Window({ layout: 'fit', 
-            id: 'login-win',
-            autoScroll: true, title: "<% _loc('Login') %>",
+            autoScroll: true, title: _('Login'),
             height: 150, width: 300, 
             items: [ login_form ]
             });
+        win.on('afterrender', function(){
+            var map = new Ext.KeyMap( win.id , [{
+                key : [10, 13],
+                scope : win,
+                fn : function() { Baseliner.doLoginForm(login_form, params, cb ) }
+            }]); 
+        });
         win.show();
-        var map = new Ext.KeyMap("login-win", [{
-            key : [10, 13],
-            scope : win,
-            fn : function() { Baseliner.doLoginForm(login_form, params, cb ) }
-        }]); 
         var last_login = Baseliner.cookie.get( 'last_login'); 
         if( last_login!=undefined && last_login.length > 0 )  {
             login_form.getForm().findField('login').setValue( last_login );
@@ -721,12 +722,7 @@ $('a').click(function(event) {
 
     // used by the url_eval menu option
     Baseliner.evalUrl = function(url) {
-        Ext.Ajax.request({
-            url: url,
-            success: function(r) {
-                eval( r.responseText );
-            }
-        });
+        Baseliner.ajaxEval( url, {}, function(){} ); 
     };
 
     Baseliner.addNewBrowserWindow = function(url,title) {
@@ -880,66 +876,106 @@ $('a').click(function(event) {
         catch(e1) { try { json=eval("("+res+")") } catch(e2) {} }
         return json;
     };
+    Baseliner.error_win_textarea_style = 'font: 12px Consolas,Courier New,monotype';
 
-    Baseliner.eval_response = function( text, params ) {
-        var comp = eval( text );
-        if( typeof( comp ) == 'function' ) {
-            comp = comp(params);
-        } else if( typeof(comp) == 'undefined' ) { //IE7
-            eval( "comp=(" + text + ")" );
-            comp = comp(params);
+    Baseliner.error_win = function(url,params,xhr,e){
+        var eo = { name: e }; // build my own error object
+        try { eo.name = e.name } catch(e2){}
+        try { eo.msg = e.message } catch(e2){}
+        try { eo.stack = e.stack } catch(e2){}
+        try { eo.code = e.number } catch(e2){}
+        try { eo.file = e.fileName } catch(e2){}
+        try { eo.line = e.lineNumber } catch(e2){}
+        if( eo.line == undefined && eo.stack !=undefined ) {
+            var mat = eo.stack.match(/<anonymous>:([0-9]+:[0-9]+)/);
+            if( Ext.isArray( mat ) ) eo.line = mat[1]
+                else eo.line = mat;
         }
-        return comp;
+        var emsg = String.format('name: {0}\nmessage: {1}\nline: {2}\ncode: {3}\nfile: {4}\nstack: {5}', eo.name, eo.msg, eo.line, eo.code, eo.file, eo.stack );
+        var win = new Baseliner.Window({
+            title: String.format('<span id="boot"><span class="badge" style="background:red">{0}</span></span>', _('Error') ),
+            height: 300, width: 480, 
+            layout:'border', 
+            items:[
+                { xtype:'textarea', border:false, region:'center', layout:'fit', frame:false,
+                    readOnly: true,
+                      style: { font: '13px Verdana,Consolas,Helvetica,Verdana,sans-serif', 'background':'#eee', 'background-image':'none' } ,
+                      value: ""+e },
+                { xtype:'tabpanel', height: 160, region:'south', split:true, activeTab:0, margins: '2 0 0 0', collapsible: true,
+                  collapsed: !Baseliner.DEBUG,  items: [
+                      { xtype:'textarea', title: _('Response'), value: xhr.responseText, style: Baseliner.error_win_textarea_style },
+                      { xtype:'panel', title: _('Code'), items: new Baseliner.CodeMirror({ value: xhr.responseText }) },
+                      { xtype:'textarea', title: _('Error'), value: emsg, style: Baseliner.error_win_textarea_style },
+                      { xtype:'textarea', title: _('Params'), value: Ext.encode( params ), style: Baseliner.error_win_textarea_style },
+                      { xtype:'textarea', title: _('XHR'), value: Ext.encode( xhr ), style: Baseliner.error_win_textarea_style },
+                      { xtype:'textarea', title: _('URL'), value: url, style: Baseliner.error_win_textarea_style }
+                  ]} 
+             ]
+        });
+        win.show();
     };
-    //grabs any eval stuff and feeds it to foo(comp)
+
+    Baseliner.eval_response = function( text, params, url ) {
+        var comp;
+        if( Ext.isObject( Baseliner.eval_cache ) && Baseliner.eval_cache[url] !=undefined ) {
+            var comp = Baseliner.eval_cache[url];
+            if( Ext.isFunction(comp) ) return comp(params);
+        }
+        try { eval("comp = " + text ) } catch(e) {} // this is for (function(){})(); with semicolon, etc.
+        if( comp == undefined ) 
+            eval("comp = ( " + text + " )");  // json, pure js, closures (function(){ })
+        if( Ext.isFunction( comp ) ) {
+            var ret = comp(params);
+            if( Ext.isObject( Baseliner.eval_cache ) ) Baseliner.eval_cache[url]=comp;
+            return ret;
+        } else {
+           return comp;
+        }
+    };
+
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
+        if( params.login_count == undefined ) params.login_count = 0;
         params['_bali_notify_valid_session'] = true;
+        var login_and_go = function(url,params,foo,scope){
+              Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
+        };
+    
         var the_request = function() { Ext.Ajax.request({
             url: url,
             params: params,
-            success: function(xhr) {
-                var err_foo;
-                try {
-                    try {
-                        var comp = Baseliner.eval_response( xhr.responseText, params );
-                        try { foo(comp, scope); } catch(ef1) { err_foo = ef1 }
-                    } catch(e1) {
-                        try {
-                            var comp = eval("("+xhr.responseText+")"); //json data structs need this
-                            if( comp.logged_out ) {
-                                Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
-                            } else {
-                                try { foo(comp,scope); } catch(ef1) { err_foo = ef1 }
-                            }
-                        } catch(e2) { throw e1; }
-                    }
-                } catch(err) {
-                    if( xhr.responseText.indexOf('dhandler') > -1 ) {
-                        Baseliner.error( _('Error'), _("Page not found: %1", url ) + '<br>' + xhr.responseText );
+            callback: function(opts,success,xhr) {
+                if( !success ) {
+                    var msg;
+                    if( xhr.status==404 ) {
+                        msg = _("Not found: %1", url );
                     } else {
-                       Baseliner.error_parse( err, xhr );
-                       if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) {
-                            // console.log( err );
-                            // console.log( xhr );
-                       }
-                       if( Baseliner.DEBUG ) {
-                            Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging
-                       }
+                        msg = xhr.responseText || _('Unknown error');
+                    }
+                    Baseliner.error_win(url,params,xhr, msg);
+                    return;
+                }
+                try {
+                    // this is for js components that return a component
+                    var comp = Baseliner.eval_response( xhr.responseText, params, url );
+                    // detect logout
+                    if( Ext.isObject( comp ) && comp.logged_out ) {
+                        if( params.login_count >= 2 ) {  // 2 attempts to authorize, then abort
+                            Baseliner.error_win(url,params,xhr, _('Login not available') );       
+                        } else {
+                            params.login_count++;
+                            login_and_go(url,params,foo,scope);
+                        }
+                    }
+                    else if( Ext.isFunction( foo ) ) {
+                        foo( comp, scope );
                     }
                 }
-                if( err_foo != undefined ) throw err_foo;  //TODO consider catching this differently
-            },
-            failure: function(xhr) {
-                try {
-                    eval("var res=(" + xhr.responseText + ")");
-                    if( res.logged_out ) {
-                        Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
-                        return;
-                    }
-                } catch(e){};
-                if( ! params._ignore_conn_errors ) {
-                    Baseliner.server_failure( xhr.responseText );
+                catch(e){
+                    Baseliner.error_win(url,params,xhr,e);
+                    if( Baseliner.DEBUG ) 
+                        Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging
+                    //if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) { console.log( xhr ) }
                 }
             }
         });
