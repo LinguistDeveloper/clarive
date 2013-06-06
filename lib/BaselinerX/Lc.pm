@@ -143,7 +143,8 @@ sub lc_for_project {
         {   node   => _loc('(Stage)'),
             type   => 'state',
             active => 1,
-            bl     => 'new',
+            bl     => 'IT',
+            bl_to  => 'IT',
             icon   => '/static/images/icons/lc/history.gif'
         }
     );

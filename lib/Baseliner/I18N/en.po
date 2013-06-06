@@ -110,6 +110,9 @@ msgstr "Delivered"
 msgid "Integración"
 msgstr "Integration"
 
+msgid "Integracion"
+msgstr "Integration"
+
 msgid "Análisis"
 msgstr "Analysis"
 
@@ -209,3 +212,20 @@ msgstr "Run"
 msgid "operaciones"
 msgstr "operations"
 
+msgid "Repositorios"
+msgstr "Repositories"
+
+msgid "Planes de pruebas"
+msgstr "Test plans"
+
+msgid "Seguimiento de proyecto"
+msgstr "Project tracking"
+
+msgid "Funcional"
+msgstr "Functional"
+
+msgid "Organico"
+msgstr "Organic"
+
+msgid "Topicos"
+msgstr "Topics"

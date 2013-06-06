@@ -73,7 +73,7 @@ sub check_scheduled {
 sub job_name {
     my $self = shift;
     my $p = shift;
-    my $prefix = $p->{type} eq 'promote' ? 'N' : 'B';
+    my $prefix = $p->{type} eq 'promote' || $p->{type} eq 'static' ? 'N' : 'B';
     return sprintf( $p->{mask}, $prefix, $p->{bl} eq '*' ? 'ALL' : $p->{bl} , $p->{id} );
 }
 

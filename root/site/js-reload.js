@@ -9,4 +9,6 @@ This is great loading, since it errors to the console.log with better line error
 
 */
 
-Baseliner.js_reload();
+(function(){
+    Baseliner.js_reload();
+})

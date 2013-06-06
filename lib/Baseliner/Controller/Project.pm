@@ -527,7 +527,7 @@ sub user_projects : Local {
 	
     my $rs = $c->model('Baseliner::BaliProject')->search({ mid => \@rows });
     rs_hashref($rs);
-    _debug [ $rs->all ];
+    #_debug [ $rs->all ];
     @rows = map { 
         $_->{data}=_load($_->{data});
         $_->{ns} = 'project/' . $_->{mid};

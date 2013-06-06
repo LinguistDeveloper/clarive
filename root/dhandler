@@ -7,9 +7,9 @@
 %  my $req = $m->make_subrequest( comp => '/site/main.mas');
 %   $req->exec;	
 % } else {
-%#  $c->res->status(404);
+%  $c->res->status(404);
  
- Page not found by dhandler
+% print _loc('Page not found: %1', $c->req->path );
 
 % }
 <%filter>

@@ -3,8 +3,10 @@
     var ps = 30;
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
-        'type', 'pretty_properties', 'name', 'item', 'ci_form', 'active',
-        'class','versionid','ts','tags','data','properties','icon','collection', 'title' ]);
+        'type', 'pretty_properties', 
+        'name', 'item', 'ci_form', 'active', 'moniker',
+        'class',
+        'classname', 'versionid','ts','tags','data','properties','icon','collection', 'title' ]);
 
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
@@ -173,6 +175,9 @@
             return Baseliner.render_tags( value, metadata, rec );
         }
     };
+    var render_moniker = function(value,metadata,rec,rowIndex,colIndex,store) {
+        return value ? String.format('<div class="bali-moniker">{0}</div>', value ) : '';
+    };
     var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
         var active = rec.data.active;
         if( rec.data.type == 'class' ) {
@@ -246,6 +251,38 @@
     });
 
     var id_auto = Ext.id();
+    
+    var bbar = new Ext.ux.maximgb.tg.PagingToolbar({
+            store: store_ci,
+            pageSize: ps,
+            plugins:[
+                new Ext.ux.PageSizePlugin({
+                    editable: false,
+                    width: 90,
+                    data: [
+                        ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
+                        ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+                    ],
+                    beforeText: _('Show'),
+                    afterText: _('rows/page'),
+                    value: ps,
+                    listeners: {
+                        'select':function(c,rec) {
+                            ps = rec.data.value;
+                            if( rec.data.value < 0 ) {
+                                bbar.afterTextItem.hide();
+                            } else {
+                                bbar.afterTextItem.show();
+                            }
+                        }
+                    },
+                    forceSelection: true
+                })
+            ],
+            displayInfo: true,
+            displayMsg: _('Rows {0} - {1} of {2}'),
+            emptyMsg: _('There are no rows available')
+        });
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
@@ -306,8 +343,9 @@
             { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
             { id: id_auto, header: _('Item'), dataIndex: 'item', width: 300, renderer: render_item },
             { id:'mid', header: _('ID'), width: 65, dataIndex: 'mid' },
-            { header: _('Collection'), width: 160, dataIndex: 'collection' },
-            { header: _('Class'), hidden: true, width: 160, dataIndex: 'class' },
+            { header: _('Collection'), width: 50, dataIndex: 'collection' },
+            { header: _('Moniker'), width: 160, dataIndex: 'moniker', renderer: render_moniker },
+            { header: _('Class'), hidden: true, width: 160, dataIndex: 'classname' },
             { header: _('Baseline'), width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl },
             { header: _('Version'), width: 50, dataIndex: 'versionid' },
             { header: _('Timestamp'), width: 100, dataIndex: 'ts' },
@@ -315,13 +353,7 @@
             { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties },
             { header: _('Data'), hidden: false, width: 250, dataIndex: 'pretty_properties', renderer: render_datadiv }
         ],
-        bbar: new Ext.ux.maximgb.tg.PagingToolbar({
-            store: store_ci,
-            pageSize: ps,
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
-        })
+        bbar: bbar
     });
 
     ci_grid.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {

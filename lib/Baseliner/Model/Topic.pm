@@ -313,7 +313,7 @@ sub topics_for_user {
         if ($rs_user) {
             my @topic_mids
                 = map { $_->{from_mid} }
-                Baseliner->model('Baseliner::BaliMasterRel')
+                DB->BaliMasterRel
                 ->search( { to_mid => $rs_user->mid, rel_type => 'topic_users' }, { select => [qw(from_mid)] } )
                 ->hashref->all;
             if (@topic_mids) {
@@ -646,6 +646,18 @@ sub get_system_fields {
             }
         },
         {
+            id_field => 'moniker',
+            params   => {
+                name_field       => 'Moniker',
+                bd_field         => 'moniker',
+                origin           => 'system',
+                js               => '/fields/templates/js/textfield.js',
+                html          => '/fields/templates/html/row_body.html',
+                field_order      => -8,
+                section          => 'body',
+            }
+        },
+        {
             id_field => 'category',
             params   => {
                 name_field  => 'Category',
@@ -918,12 +930,12 @@ sub get_data {
         
         my @select_fields = ('title', 'id_category', 'categories.name', 'categories.color',
                              'id_category_status', 'status.name', 'created_by', 'created_on',
-                             'id_priority','priorities.name', 'deadline_min', 'description','progress', 'status.type');
+                             'id_priority','priorities.name', 'deadline_min', 'description','progress', 'status.type', 'master.moniker' );
         my @as_fields = ('title', 'id_category', 'name_category', 'color_category', 'id_category_status', 'name_status',
-                         'created_by', 'created_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress','type_status');
+                         'created_by', 'created_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress','type_status', 'moniker' );
         
         my $rs = Baseliner->model('Baseliner::BaliTopic')
-                ->search({ mid => $topic_mid },{ join => ['categories','status','priorities'], select => \@select_fields, as => \@as_fields});
+                ->search({ mid => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
         my $row = $rs->first;
         
         $data = { topic_mid => $topic_mid, $row->get_columns };
@@ -941,7 +953,7 @@ sub get_data {
         my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
         my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
 
-        my @rels = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$topic_mid })->hashref->all;
+        my @rels = DB->BaliMasterRel->search({ from_mid=>$topic_mid })->hashref->all;
         for my $rel ( @rels ) {
             next unless $rel->{rel_field};
             next unless exists $rel_fields{ $rel->{rel_field} };
@@ -1008,7 +1020,7 @@ sub get_labels {
 
 sub get_revisions {
     my ($self, $topic_mid ) = @_;
-    my @revisions = Baseliner->model('Baseliner::BaliMasterRel')->search( { rel_type => 'topic_revision', from_mid => $topic_mid },
+    my @revisions = DB->BaliMasterRel->search( { rel_type => 'topic_revision', from_mid => $topic_mid },
         { prefetch => ['master_to'], +select => [ 'master_to.name', 'master_to.mid' ], +as => [qw/name mid/] } )
         ->hashref->all;
     return @revisions ? \@revisions : [];    
@@ -1019,7 +1031,7 @@ sub get_cis {
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array( $meta ) ]->[0];
     my $where = { from_mid => $topic_mid };
     $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
-    my @cis = map { $_->{mid} } Baseliner->model('Baseliner::BaliMasterRel')->search(     
+    my @cis = map { $_->{mid} } DB->BaliMasterRel->search(     
         $where,
         #{ prefetch => ['master_to'], +select => [ 'master_to.name', 'master_to.mid' ], +as => [qw/name mid/] } )
         { select =>[ 'to_mid' ], as=>[ 'mid' ] },
@@ -1100,9 +1112,10 @@ sub save_data {
         } grep { $_->{type} eq 'form' } _array($meta);
     
     my $topic;
+    my $moniker = delete $row{moniker};
     
     if (!$topic_mid){
-        my $rstopic = master_new 'topic' => $data->{title} => sub {
+        my $rstopic = master_new 'topic' => { name=>$data->{title}, moniker=>$moniker } => sub {
             $topic_mid = shift;
 
             #Defaults
@@ -1119,7 +1132,6 @@ sub save_data {
         }        
         
     }else{
-        #$topic = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
         $topic = DB->BaliTopic->find( $topic_mid, { prefetch =>['categories','status','priorities'] } );
 
         for my $field (keys %row){
@@ -1129,6 +1141,7 @@ sub save_data {
         }
         
         $topic->update( \%row );
+        _ci( $topic_mid )->save( moniker=>$moniker, name=>$row{title} );
 
         for my $field (keys %row){
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
@@ -1343,18 +1356,18 @@ sub set_topics {
     
     # related topics
     my @new_topics = _array( $topics ) ;
-    my @old_topics = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
+    my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
     
     # check if arrays contain same members
     if ( array_diff(@new_topics, @old_topics) ) {
         if( @new_topics ) {
             if(@old_topics){
-                my $rs_old_topics = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => \@old_topics});
+                my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, to_mid => \@old_topics});
                 $rs_old_topics->delete();
             }
             
             for (@new_topics){
-                Baseliner->model('Baseliner::BaliMasterRel')->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field });
+                DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field });
             }
             
             my $topics = join(',', @new_topics);
@@ -1385,7 +1398,7 @@ sub set_topics {
             };
 
             #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
-            my $rs_old_topics = Baseliner->model('Baseliner::BaliMasterRel')->search({to_mid => \@old_topics});
+            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, to_mid => \@old_topics});
             $rs_old_topics->delete();            
         }
     }
@@ -1394,53 +1407,45 @@ sub set_topics {
 
 sub set_cis {
     my ($self, $rs_topic, $cis, $user, $id_field, $meta ) = @_;
-    
+
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
-    
+
     my $rel_type = $field_meta->{rel_type} or _fail 'Missing rel_type';
-   
+
     # related topics
     my @new_cis = _array( $cis ) ;
+    @new_cis  = split /,/, $new_cis[0] if $new_cis[0] =~ /,/ ;
     my @old_cis =
         map { $_->{to_mid} }
-        Baseliner->model('Baseliner::BaliMasterRel')->search( { from_mid => $rs_topic->mid, rel_type => $rel_type } )
+    DB->BaliMasterRel->search( { from_mid => $rs_topic->mid, rel_type => $rel_type } )
         ->hashref->all;
 
-    if ( array_diff(@new_cis, @old_cis) ) {
-        if( @new_cis ) {
-            @new_cis  = split /,/, $new_cis[0] if $new_cis[0] =~ /,/ ;
-            my @rs_cis = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@new_cis});
-            $rs_topic->set_cis( \@rs_cis, { rel_type=> $rel_type });
-            
-            my $cis2 = join(',', map { Baseliner::CI->new($_->mid)->load->{name}} @rs_cis);
-    
-            event_new 'event.topic.modify_field' => { 
-              username   => $user,
-              field         => _loc( $field_meta->{field_msg} // 'attached cis' ),
-              old_value     => '',
-              new_value     => $cis2,
-              text_new      => ( $field_meta->{modify_text_new} // '%1 modified topic: %2 ( %4 )' ),
-            } => sub {
-                  { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } => sub {
-                  _throw _loc( 'Error modifying Topic: %1', shift() );
-            };             
-            
-        } else {
-            event_new 'event.topic.modify_field' => { 
-                username   => $user,
-                field      => '',
-                old_value      => '',
-                new_value  => '',
-                text_new      => ( $field_meta->{modify_text_new} // '%1 deleted all cis' ),
-            } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };
-            $rs_topic->set_cis( undef, { rel_type=>$rel_type });
-            #$rs_topic->cis->delete;
+    my @del_cis = array_minus( @old_cis, @new_cis );
+    my @add_cis = array_minus( @new_cis, @old_cis );
+
+    if( @add_cis || @del_cis ) {
+        my ($del_cis, $add_cis) = ( '', '' );
+        if( @del_cis ) {
+            DB->BaliMasterRel->search( { from_mid => $rs_topic->mid, to_mid=>\@del_cis, rel_type => $rel_type } )
+                ->delete;
+            $del_cis = join(',', map { Baseliner::CI->new($_)->load->{name} . '[-]' } @del_cis );
         }
+        if( @add_cis ) {
+            DB->BaliMasterRel->create({ from_mid => $rs_topic->mid, to_mid=>$_, rel_type => $rel_type } )
+                for @add_cis;
+            $add_cis = join(',', map { Baseliner::CI->new($_)->load->{name} . '[+]' } @add_cis );
+        }
+        event_new 'event.topic.modify_field' => {
+            username  => $user,
+            field     => _loc( $field_meta->{field_msg} // $field_meta->{name_field} // _loc('attached cis') ),
+            old_value => $del_cis,
+            new_value => join(',', grep { length } $add_cis, $del_cis ),
+            text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
+        } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }    # to the event
+        } => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };
     }
 }
 
@@ -1449,7 +1454,7 @@ sub set_revisions {
     
     # related topics
     my @new_revisions = _array( $revisions ) ;
-    my @old_revisions = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision'})->hashref->all;    
+    my @old_revisions = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision'})->hashref->all;    
    
     if ( array_diff(@new_revisions, @old_revisions) ) {
         if( @new_revisions ) {
@@ -1507,7 +1512,7 @@ sub set_release {
     # check if arrays contain same members
     if ( array_diff(@new_release, @old_release) ) {
         if($release_row){
-            my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
+            my $rs = DB->BaliMasterRel->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
         }
         # release
         if( @new_release ) {
@@ -1529,7 +1534,7 @@ sub set_release {
             };
             
         }else{
-            my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
+            my $rs = DB->BaliMasterRel->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => '',
                                                 old_value      => $release_row->title,
@@ -1550,11 +1555,11 @@ sub set_projects {
     my $topic_mid = $rs_topic->mid;
     
     my @new_projects = _array( $projects ) ;
-    my @old_projects = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
+    my @old_projects = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
-        my $del_projects = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
+        my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
         # projects
         if (@new_projects){
             my @name_projects;
@@ -1599,11 +1604,11 @@ sub set_users{
     my $topic_mid = $rs_topic->mid;
     
     my @new_users = _array( $users ) ;
-    my @old_users = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->hashref->all;
+    my @old_users = map {$_->{to_mid}} DB->BaliMasterRel->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->hashref->all;
 
     # check if arrays contain same members
     if ( array_diff(@new_users, @old_users) ) {
-        my $del_users =  Baseliner->model('Baseliner::BaliMasterRel')->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
+        my $del_users =  DB->BaliMasterRel->search( {from_mid => $topic_mid, rel_type => 'topic_users'})->delete;
         # users
         if (@new_users){
             my @name_users;

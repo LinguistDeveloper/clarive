@@ -58,7 +58,7 @@
                 var sm = grid.getSelectionModel();
                 var copyof = sm.hasSelection() ? sm.getSelected().get('id') : _('[Select a calendar]');
                 var new_cal = new Ext.FormPanel({
-                    url: '/job/calendar_update',
+                    url: '/job/calendar_update?newAction=create',
                     frame: true,
                     labelWidth: 150, 
                     defaults: { width: 350 },
@@ -146,8 +146,8 @@
                     ]
                 });
                 var win = new Ext.Window({
-                    layout: 'fit',
-                    height: 300, width: 550,
+                    autoHeight: true,
+                    width: 550,
                     title: _('Create Calendar'),
                     items: new_cal
                 });
