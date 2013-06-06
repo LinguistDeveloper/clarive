@@ -76,7 +76,7 @@
         beforesubmit: on_submit,
         fields: [
            Baseliner.ci_box({ name:'repositories', fieldLabel:_('Repositories'), allowBlank: true,
-               role:'Repository', value: params.rec.repository, singleMode: false }),
+               role:'Repository', value: params.rec.repositories, singleMode: false, force_set_value: params.rec.repositories ? true: false }),
            de,
            variables_field 
         ]
