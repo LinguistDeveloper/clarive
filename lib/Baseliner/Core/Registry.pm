@@ -243,7 +243,6 @@ sub search_for_node {
         my $node = $self->registrar->{$key};
         my $node_instance = $node->instance;
 
-        _log _dump $node_instance;
         # skip nodes that the user has no access to
         my $has_permission = 0;
         if ( !$username  || (!$node_instance->actions && !$node_instance->action)) {

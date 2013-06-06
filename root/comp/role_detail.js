@@ -18,13 +18,15 @@
                             if( grid ) {
                                 grid.getStore().load();
                             }
-                            role_panel.destroy(); 
+                            Baseliner.message(_("Save role"), _("Role saved successfully"));
+                            //role_panel.destroy(); 
                         },
-                        failure: function(form, action) { Ext.Msg.alert("<% _loc('Failure') %>", action.result.msg); }
+                        failure: function(form, action) { Baseliner.message( _("Save role")), _("Failure") + ":" + action.result.msg; }
                     });
                 }
             },
-            {  text: _('Cancel') , handler: function(){  role_panel.destroy() } }
+            {  text: _('Cancel') , handler: function(){  role_panel.destroy() } },
+            {  text: _('Close') , handler: function(){  role_panel.destroy() } }
         ],
         items: [
             {  xtype: 'hidden', name: 'id', value: -1 }, 
