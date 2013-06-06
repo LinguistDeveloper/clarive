@@ -259,7 +259,8 @@ sub _loc {
     my @args = @_;
     my $c = try { Baseliner->app };
     if( $ENV{BALI_CMD} || !ref($c) ) {
-        my $default_lang = try { Baseliner->config->{default_lang} } catch { 'en' } ;
+        my $default_lang = try { Baseliner->config->{default_lang} } catch { undef } ;
+        $default_lang //= 'en';
         loc_lang( $default_lang );
         return loc( @args );
     } else {
