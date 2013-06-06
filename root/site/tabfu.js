@@ -941,13 +941,27 @@ $('a').click(function(event) {
               Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
         };
     
+        var login_or_error = function(){
+            if( params.login_count >= 2 ) {  // 2 attempts to authorize, then abort
+                Baseliner.error_win(url,params,xhr, _('Login not available') );       
+            } else {
+                params.login_count++;
+                login_and_go(url,params,foo,scope);
+            }
+        }
+    
         var the_request = function() { Ext.Ajax.request({
             url: url,
             params: params,
             callback: function(opts,success,xhr) {
                 if( !success ) {
                     var msg;
-                    if( xhr.status==404 ) {
+                    if( xhr.status==401 ) {
+                        var comp = Baseliner.eval_response( xhr.responseText, params, url );
+                        if( Ext.isObject( comp ) && comp.logged_out ) {
+                            login_or_error();
+                        }
+                    } else if( xhr.status==404 ) {
                         msg = _("Not found: %1", url );
                     } else {
                         msg = xhr.responseText || _('Unknown error');
@@ -960,12 +974,7 @@ $('a').click(function(event) {
                     var comp = Baseliner.eval_response( xhr.responseText, params, url );
                     // detect logout
                     if( Ext.isObject( comp ) && comp.logged_out ) {
-                        if( params.login_count >= 2 ) {  // 2 attempts to authorize, then abort
-                            Baseliner.error_win(url,params,xhr, _('Login not available') );       
-                        } else {
-                            params.login_count++;
-                            login_and_go(url,params,foo,scope);
-                        }
+                        login_or_error();
                     }
                     else if( Ext.isFunction( foo ) ) {
                         foo( comp, scope );
