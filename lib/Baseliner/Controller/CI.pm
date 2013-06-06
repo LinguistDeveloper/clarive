@@ -257,7 +257,6 @@ sub tree_objects {
             versionid         => $row->{versionid},
         }
     } $rs->hashref->all;
-
     ( $total, @tree );
 }
 
@@ -606,6 +605,7 @@ sub update : Local {
         $c->stash->{json}{mid} = $mid;
     } catch {
         my $err = shift;
+        _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
     };
 
