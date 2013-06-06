@@ -3,14 +3,16 @@
     $data
 </%args>
 % my $d = $data->{ $meta->{id_field} };
+% my @rows = _array( $data->{$meta->{id_field}} );
     <tr>
         <th><h5 style="border-bottom: 1px solid #bbb; margin-top: 15px"><% _loc($meta->{name_field}) %>:</h5></th>
     </tr>
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
+% if( @rows ) { 
           <table class="table table-bordered" style="margin-top: 10px; width: 400px">
               <tbody>
-% foreach my $ci ( map { _ci($_) } _array( $data->{$meta->{id_field}} ) ) {
+% foreach my $ci ( map { _ci($_) } @rows ) {
 <tr>
     <td width=32><img src="<% $ci->icon %>" /></td>
     <td><% $ci->name %></td>
@@ -21,7 +23,7 @@
           </table>
       </td>
     </tr>
-    
+% } # if 
 <%doc>
 % if( _array( $data->{$meta->{id_field}} ) ) {
     <ul class="nav nav-list">
