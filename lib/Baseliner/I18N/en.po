@@ -205,3 +205,7 @@ msgstr "Topics"
 
 msgid "noun:Run"
 msgstr "Run"
+
+msgid "operaciones"
+msgstr "operations"
+
