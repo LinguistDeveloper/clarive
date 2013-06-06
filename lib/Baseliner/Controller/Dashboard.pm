@@ -613,7 +613,7 @@ sub list_baseline : Private {
         my @entornos = split ",", $states;
 
         foreach my $entorno ( @entornos ) {
-            my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl );
+            my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl ) = ( 0, 0, 0, 0, 0);
             @temps = grep { ( $_->{bl} ) =~ $entorno } @jobs;
             foreach my $temp ( @temps ) {
                 $bl = $temp->{bl};
