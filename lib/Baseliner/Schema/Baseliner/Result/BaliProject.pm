@@ -72,6 +72,12 @@ __PACKAGE__->belongs_to(
   { mid => "id_parent" },
 );
 
+__PACKAGE__->belongs_to(
+  "roleuser",
+  "Baseliner::Schema::Baseliner::Result::BaliRoleuser",
+  { id_project => "mid" },
+);
+
 __PACKAGE__->master_setup( 'files', ['project','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 __PACKAGE__->master_setup( 'repositories', ['project','mid'] => ['repository','BaliMaster', 'mid'] => );
 
