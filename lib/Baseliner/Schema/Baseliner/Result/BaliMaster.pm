@@ -40,6 +40,8 @@ __PACKAGE__->add_columns(
   "ns",
   { data_type => "varchar2", default_value=>'', size => 2048, is_nullable=>1 },
   "active", { data_type => "char", size => 1, default_value=>'1' },
+  "moniker",
+  { data_type => "varchar2", is_nullable => 1, size => 255},  
 );
 
 __PACKAGE__->set_primary_key("mid");
