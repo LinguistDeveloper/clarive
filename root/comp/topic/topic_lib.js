@@ -208,63 +208,6 @@ Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
     }
 });
 
-//Baseliner.store.Topics = function(c) {
-//     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
-//        root: 'data' , 
-//        remoteSort: true,
-//        autoLoad: true,
-//        totalProperty:"totalCount", 
-//        baseParams: {},
-//        id: 'mid', 
-//        url: '/topic/related',
-//        fields: ['mid','name', 'title','description','color'] 
-//     }, c));
-//};
-//Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
-
-//Baseliner.model.Topics = function(c) {
-//    //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
-//    var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-//        '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
-//        '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
-//    var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-//        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
-//        '</tpl>' );
-//    Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
-//        allowBlank: true,
-//        msgTarget: 'under',
-//        allowAddNewData: true,
-//        addNewDataOnBlur: true, 
-//        //emptyText: _('Enter or select topics'),
-//        triggerAction: 'all',
-//        resizable: true,
-//        mode: 'local',
-//        fieldLabel: _('Topics'),
-//        typeAhead: true,
-//            name: 'topics',
-//            displayField: 'title',
-//            hiddenName: 'topics',
-//            valueField: 'mid',
-//        tpl: tpl_list,
-//        displayFieldTpl: tpl_field,
-//        value: '/',
-//        extraItemCls: 'x-tag'
-//        /*
-//        ,listeners: {
-//            newitem: function(bs,v, f){
-//                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
-//                var newObj = {
-//                    mid: v,
-//                    title: v
-//                };
-//                bs.addItem(newObj);
-//            }
-//        }
-//        */
-//    }, c));
-//};
-//Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
-
 Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     initComponent: function(c){
         var self = this;
@@ -286,7 +229,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
     
         // Detail Panel
-        self.detail = new Ext.Panel({});
+        self.detail = new Ext.Panel({ 
+            layout:'fit'
+        });
         
         Baseliner.Topic.file_del = function( topic_mid, md5, id_row ) {
             Baseliner.ajaxEval( '/topic/file/delete', { md5 : md5, topic_mid: topic_mid }, function(res) {
@@ -304,47 +249,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var form_panel = new Ext.Panel({
             layout:'form',
             //autoHeight: true
-            style: { padding: '15px' },
+            //style: { padding: '15px' },
+            //style: { 'padding-left': '15px' },
             defaults: {anchor:'80%' }
         });
     
         self._cis = [];
-        self.load_form = function(rec) {
-            rec.html_buttons = self.html_buttons;
-            if( rec._cis ) {
-                self._cis = rec._cis;
-            } else {
-                rec._cis = self._cis;
-            }
-            rec.id_panel = self.id;
-            Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
-                if( ! self.form_is_loaded ) {
-                    //form_panel.removeAll();
-                    self.form_topic = comp;
-                    ////form_panel.add( comp );
-                    //form_panel.doLayout();
-                    self.add( self.form_topic );
-                    self.getLayout().setActiveItem( self.form_topic );
-                    self.form_is_loaded = true;
-                }
-    
-                // now show/hide buttons
-                self.btn_form_ok.show();
-    
-                if(params.topic_mid){
-                    self.btn_comment.show();
-                    //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
-                    self.btn_detail.show();
-                }else{
-                    self.btn_comment.hide();
-                    self.btn_detail.hide();
-                }
-            });            
-        };
-    
-        
-    
-
         var rg;
         var show_graph = function(){
             if( rg ) { rg.destroy(); rg=null }
@@ -471,7 +381,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_detail = new Ext.Toolbar.Button({
             icon:'/static/images/icons/detail.png',
             cls: 'x-btn-icon',
-            enableToggle: true, pressed: true, allowDepress: false, handler: function(){ self.show_detail() }, toggleGroup: 'form'
+            enableToggle: true, pressed: true, allowDepress: false, 
+            handler: function(){ self.show_detail() }, 
+            toggleGroup: 'form'
         });
         
         self.btn_edit = new Ext.Toolbar.Button({
@@ -479,13 +391,17 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             text:_('Edit'),
             icon:'/static/images/icons/edit.png',
             cls: 'x-btn-text-icon',
-            enableToggle: true, handler: function(){ return self.show_form() }, allowDepress: false, toggleGroup: 'form'
+            enableToggle: true, 
+            handler: function(){ return self.show_form() }, 
+            allowDepress: false, toggleGroup: 'form'
         });
             
         self.btn_kanban = new Ext.Toolbar.Button({
             icon:'/static/images/icons/kanban.png',
             cls: 'x-btn-icon',
-            enableToggle: true, handler: function(){self.show_kanban() }, allowDepress: false, toggleGroup: 'form'
+            enableToggle: true, 
+            handler: function(){ self.show_kanban() }, 
+            allowDepress: false, toggleGroup: 'form'
         });
             
         self.btn_graph = new Ext.Toolbar.Button({
@@ -501,7 +417,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         tb = self.create_toolbar();
 
-    
         self.detail.on( 'render', function() {
             if (self.topic_mid > 0 && !self.activarEdit) {
                 self.detail_reload();
@@ -523,10 +438,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_edit.hide();
         }
         
-        //Baseliner.ajaxEval( '/topic/json', { topic_mid: params.topic_mid }, function(rec) {
-        //    self.load_form( rec );
-        //});
-        
         self.tab_icon = '/static/images/icons/topic_one.png';
         if( ! params.title ) {
             self.setTitle("#" + params.topic_mid) 
@@ -537,12 +448,43 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             activeItem: 0,
             title: params.title,
             tbar: tb,
+            autoScroll: true,
             //frame: true,
-            padding: '15px 15px 15px 15px',
-            defaults: {border: false},
-            items: [ self.loading_panel, self.detail ]
+            padding: '15px 2px 15px 15px',
+            defaults: { border: false },
+            items: [ self.detail ]
         });
         Baseliner.TopicMain.superclass.initComponent.call(this);
+    },
+    load_form : function(rec) {
+        var self = this;
+        rec.html_buttons = self.html_buttons;
+        if( rec._cis ) {
+            self._cis = rec._cis;
+        } else {
+            rec._cis = self._cis;
+        }
+        rec.id_panel = self.id;
+        Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
+            if( ! self.form_is_loaded ) {
+                self.form_topic = comp;
+                self.add( self.form_topic );
+                self.getLayout().setActiveItem( self.form_topic );
+                self.form_is_loaded = true;
+            }
+
+            // now show/hide buttons
+            self.btn_form_ok.show();
+
+            if(params.topic_mid){
+                self.btn_comment.show();
+                //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
+                self.btn_detail.show();
+            }else{
+                self.btn_comment.hide();
+                self.btn_detail.hide();
+            }
+        });            
     },
     show_form : function(){
         var self = this;
@@ -632,16 +574,20 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.detail.load({
             url: '/topic/view',
             params: { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id },
-            scripts: true,
+            scripts: true, //   careful: errors here will break js in baseliner
             callback: function(x){ 
                 // loading HTML has finished
-                //   careful: errors here will break js in baseliner
                 if( ! self.swEdit ) {
                     var layout = self.getLayout().setActiveItem( self.detail );
                 }
+                //self.detail.body.setStyle('overflow', 'none');
+                self.detail.body.parent().setStyle('width', null);
+                self.detail.body.parent().parent().setStyle('width', null);
+                self.detail.body.setStyle('width', null);
+                self.detail.body.setStyle('height', null);
+                //self.body.setStyle('overflow', 'auto');
             }
         });
-        self.detail.body.setStyle('overflow', 'auto');
     },
     save_topic : function(){
         var self = this;

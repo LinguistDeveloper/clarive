@@ -23,6 +23,10 @@
     color: #fff;
 }
 
+.bali-form-table .x-table-layout { 
+    width: 100%;
+}
+
 /* -- put gritter close on the right
     
 .gritter-close {

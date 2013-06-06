@@ -6,14 +6,30 @@
     
     var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
     
+    var form_columns = 4;   // TODO get this from 
+    
+    var form_table = new Ext.Panel({ 
+        layout:'table',
+        border: true,
+        cls: 'bali-form-table',
+        //width:'100%',
+        //defaults: { frame:true },
+        layoutConfig: { columns: form_columns }
+    });
+    
     var form_topic = new Ext.FormPanel({
+        layout:'table',
+        layoutConfig: { columns: form_columns },
         url:'/topic/update',
+        cls: 'bali-form-table',
         bodyStyle: {
+          border: '2px solid',
           'padding': '5px 50px 5px 50px'
         },
         id: unique_id_form,
-        border: false,
+        border: true,
         //defaults: { anchor:'98%'},
+        //defaults: { width: 200 },
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]
@@ -37,17 +53,30 @@
         var fields = rec.topic_meta;
 
         for( var i = 0; i < fields.length; i++ ) {
-            if(fields[i].body) {
+            var field = fields[i];
+            
+            if( field.body) {
                 var comp = Baseliner.eval_response(
-                    fields[i].body,
-                    {form: form_topic, topic_data: data, topic_meta: fields[i], value: '', _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin, html_buttons: rec.html_buttons }
+                     field.body,
+                    {form: form_topic, topic_data: data, topic_meta:  field, value: '', _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin, html_buttons: rec.html_buttons }
                 );
                 
+                if( comp.xtype == 'hidden' ) {
+                        form_topic.add( comp );
+                } else {
+                    //if( field.width != undefined ) comp.setWidth( field.width );
+                    //if( field.height != undefined ) comp.setHeight( field.height );
+                    var colspan =  field.colspan || form_columns;
+                    var p = new Ext.Panel({ layout:'form', border: false, colspan: colspan });
                 if( comp.items ) {
                     if( comp.on_submit ) on_submit_events.push( comp.on_submit );
-                    form_topic.add (comp.items );
+                        p.add( comp.items ); 
+                        form_topic.add ( p );
                 } else {
-                    form_topic.add (comp );
+                        p.add( comp ); 
+                        form_topic.add ( p );
+                        //p.on('afterrender', function(){ p.doLayout() });
+                    }
                 }
             }
         }  // for fields
