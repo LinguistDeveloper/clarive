@@ -11,8 +11,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
-register 'action.topics.admin' => { name=>'Admin topics' };
-register "action.topics.view" => { name=>"View topics menu" };
+register 'action.admin.topics' => { name=>'Admin topics' };
 
 register 'registor.menu.topics' => {
     generator => sub {
