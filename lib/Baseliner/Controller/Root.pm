@@ -37,12 +37,9 @@ sub begin : Private {
     $c->res->headers->header( 'Cache-Control' => 'no-cache');
     $c->res->headers->header( Pragma => 'no-cache');
     $c->res->headers->header( Expires => 0 );
-    if( $c->req->path eq 'logout' ) {
-        return 1;
-    }
-
+    
     $self->_set_user_lang($c);
-
+    
     Baseliner->app( $c );
 
     _db_setup;  # make sure LongReadLen is set after forking
@@ -67,10 +64,18 @@ sub auto : Private {
     my ( $self, $c ) = @_;
     my $last_msg = '';
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
-    return 1 if $c->stash->{auth_skip};
-    return 1 if $c->req->path eq 'i18n/js';
-    return 1 if try { $c->session->{user} // 0 } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
+
+    return 1 if $c->stash->{auth_skip};
+    return 1 if $path eq 'i18n/js';
+    return 1 if try { $c->session->{user} // 0 } catch { 0 };
+    
+    # auth check skip
+    return 1 if try { $c->user_exists } catch { 0 };
+    return 1 if $path eq 'logout';
+    return 1 if $path eq 'logoff';
+    return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
+    return 1 if $path =~ /\.(css)$/;
 
     # sessionid param?
     my $sid = $c->req->params->{sessionid} // $c->req->headers->{sessionid};
@@ -84,12 +89,6 @@ sub auto : Private {
         $c->session_is_valid;    
     };
     
-    # auth check skip
-    return 1 if try { $c->user_exists } catch { 0 };
-    return 1 if $path eq '/logout';
-    return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
-    return 1 if $path =~ /\.(css)$/;
-
     # saml?
     if( exists $c->config->{saml_auth} && $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
@@ -121,6 +120,7 @@ sub auto : Private {
 
 sub _set_user_lang : Private {
     my ( $self, $c ) = @_;
+    
     if( ref $c->session->{user} ) {
         $c->languages( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
     }
@@ -130,6 +130,9 @@ sub _set_user_lang : Private {
         if( ref $c->session->{user} ) {
             $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
         }
+    }
+    else {
+        $c->languages([ $c->config->{default_lang} ]); 
     }
 }
 

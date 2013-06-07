@@ -244,7 +244,7 @@ Baseliner.now = function() {
 
 Baseliner.logout = function() {
     Ext.Ajax.request({
-        url: '/logout',
+        url: '/logoff',
         success: function(xhr) {
             document.location.href='/';
         },
