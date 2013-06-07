@@ -89,10 +89,10 @@ padding: 2px 4px 2px 7px;
 %}
 % }
 % }else {
-<div id="boot" class="container_24" style="margin: 10px 10px 10px 10px">
-    <div class="grid_24">
-        <div class="grid_13">
-            <table>
+<div id="boot" style="margin: 10px 10px 10px 10px">
+<div class="row">
+        <div class="span7">
+            <table style="width: 100%">
                 <tbody>
 % foreach my $field ( sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} eq 'head' } _array( $topic_meta ) ) {
 % if ($field->{html}){
@@ -102,8 +102,7 @@ padding: 2px 4px 2px 7px;
                 </tbody>
             </table>
         </div>
-        <div class="grid_1">&nbsp;</div>
-        <div class="grid_10">
+        <div class="span5">
             <table class="table table-bordered table-condensed">
                 <tbody>
 % foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'body' } _array( $topic_meta ) ) {
@@ -126,9 +125,8 @@ padding: 2px 4px 2px 7px;
             
             
         </div>
-    </div>
-            
 %}
+</div>
     <div class="clear"></div>
     <br><br>
     <ul class="nav nav-tabs">

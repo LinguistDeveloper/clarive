@@ -56,11 +56,6 @@ __PACKAGE__->add_columns(
   },
   "nature", { data_type => "varchar2", is_nullable => 1, size => 1024 },
   "active", { data_type => "char", is_nullable => 1, size => 1, default => '1' },  
-  "id", {
-    data_type => "NUMBER",
-    is_nullable => 0,
-    is_auto_increment => 1,
-  },     
 );
 __PACKAGE__->set_primary_key("mid");
 
@@ -84,7 +79,36 @@ __PACKAGE__->belongs_to(
 );
 
 __PACKAGE__->master_setup( 'files', ['project','mid'] => ['file_version', 'BaliFileVersion','mid'] );
+__PACKAGE__->master_setup( 'repositories', ['project','mid'] => ['repository','BaliMaster', 'mid'] => );
 
 sub id { $_[0]->mid; }   # for backwards compatibility
+
+sub releases {
+    my ($self ) = @_;
+
+    my $rel_chi = DB->BaliTopic->search({
+       'categories.is_release' => 1,
+    },{ 
+       join=>['categories'], select=>['me.mid'],
+    })->as_query;
+
+    DB->BaliTopic->search(
+            { 'me.mid'=>{-in=>$rel_chi }, 'to_children.to_mid' => $self->mid },
+            { join=>[{ 'master' => { 'children' => 'to_children' } }] }
+    );
+}
+
+sub jobs {
+    my ($self ) = @_;
+    # TODO only picks up jobs that have finished, not cancelled due to services needed?
+    DB->BaliJob->search({
+    	id_project => $self->mid,
+    },{
+        select => ['name','id','status','rollback'],
+        distinct => 1,
+        join => 'bali_job_items', rows => 20, 
+        order_by => { -desc => 'starttime' }
+    });
+}
 
 1;

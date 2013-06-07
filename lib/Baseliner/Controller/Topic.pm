@@ -20,9 +20,10 @@ register 'registor.menu.topics' => {
        my @cats = DB->BaliTopicCategories->search(undef,{ select=>[qw/name id color/] })->hashref->all;
        my $seq = 10;
        my %menu_view = map {
+           my $data = $_;
            my $name = _loc( $_->{name} );
            my $id = _name_to_id( $name );
-           my $data = $_;
+           $data->{color} //= 'transparent';
            "menu.topic.$id" => {
                 label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
                 title    => qq[<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:$data->{color}">$name</span></div>],
@@ -35,9 +36,10 @@ register 'registor.menu.topics' => {
        } sort { lc $a->{name} cmp lc $b->{name} } @cats;
 
        my %menu_create = map {
+           my $data = $_;
            my $name = _loc( $_->{name} );
            my $id = _name_to_id( $name );
-           my $data = $_;
+           $data->{color} //= 'transparent';
            "menu.topic.create.$id" => {
                 label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
                 title    => _loc ('New: %1', $name),
@@ -1134,8 +1136,8 @@ sub list_admin_category : Local {
                 push @rows, {
                                 id          => $status->status->id,
                                 status      => $status->status->id,
-                                name        => $status->status->name,
-                                status_name => $status->status->name,
+                                name        => _loc($status->status->name),
+                                status_name => _loc($status->status->name),
                                 type        => $status->status->type,
                                 action      => $action,
                                 bl          => $status->status->bl,
@@ -1157,9 +1159,9 @@ sub list_admin_category : Local {
         my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({id => $p->{statusId}});
         
         push @rows, { id => $p->{statusId},
-                     name => $p->{statusName},
+                     name => _loc($p->{statusName}),
                      status => $p->{statusId},
-                     status_name => $p->{statusName},
+                     status_name => _loc($p->{statusName}),
                      action => $c->model('Topic')->getAction($rs_current_status->type)};
         
         push @rows , map {
@@ -1167,8 +1169,8 @@ sub list_admin_category : Local {
             +{
                 id          => $_->{id_status},
                 status      => $_->{id_status},
-                name        => $_->{status_name},
-                status_name => $_->{status_name},
+                name        => _loc($_->{status_name}),
+                status_name => _loc($_->{status_name}),
                 type        => $_->{status_type},
                 action      => $action,
                 bl          => $_->{status_bl},

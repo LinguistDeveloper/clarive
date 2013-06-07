@@ -162,7 +162,7 @@
 
         if(rec){
             var ff = form_status.getForm();
-            console.log( rec );
+            //console.log( rec );
             ff.loadRecord( rec );
             ff.findField('bind_releases').setValue(rec.data.bind_releases);
             ff.findField('ci_update').setValue(rec.data.ci_update);
@@ -1141,7 +1141,7 @@
             s.each( function(row){
                 if( row.data.id == id ) {
                     var data = row.data.params;
-                    console.log(data);
+                    //console.log(data);
                     var parent_id;
                     switch (data.origin){
                         case 'system':  parent_id = 'S';
