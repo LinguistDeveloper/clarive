@@ -417,6 +417,17 @@ sub loghome {
     }
 }
 
+=head2 full_logout
+
+logout is not enough, needs to delete session
+
+=cut
+sub full_logout {
+    my $c = shift;
+    $c->delete_session;
+    $c->logout;
+}
+
 # Utils
 sub uri_for_static {
     my ( $self, $asset ) = @_;

@@ -18,10 +18,7 @@ we get into a /logout loop
 =cut
 sub logout : Global {
     my ( $self, $c ) = @_;
-
-    $c->delete_session;
-    $c->logout;
-    _error( 'redirect........' );
+    $c->full_logout;
     $c->res->redirect( $c->req->params->{redirect} || $c->uri_for('/') );
 }
 
@@ -32,8 +29,7 @@ JSON based logoff, used by the logout menu option
 =cut
 sub logoff : Global {
     my ( $self, $c ) = @_;
-    $c->delete_session; # logout is not enough, needs to delete session
-    $c->logout;
+    $c->full_logout;
     $c->stash->{json} = { success=>\1 };
     $c->forward('View::JSON');
 }
