@@ -1,5 +1,7 @@
 Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action=>'action.ci.admin.%', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_job = <% $c->model('Permissions')->user_has_any_action( action=>'action.job.%', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
+
 
 Baseliner.tree_topic_style = [
     '<span unselectable="on" style="font-size:0px;',
@@ -509,7 +511,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             toggleGroup: 'explorer-card',
             pressed: false,
             allowDepress: false,
-            enableToggle: true
+            enableToggle: true,
+            hidden: ! Baseliner.user_can_workspace,
         });
 
         var button_ci = new Ext.Button({
@@ -561,9 +564,12 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             //icon: '/static/images/icons/config.gif',
             tooltip: _('Config'),
             menu: [
-                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder },
-                { text: _('Add Workspace'), handler: add_workspace }
+                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder }
             ]
+            // menu: [
+            //     { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder },
+            //     { text: _('Add Workspace'), handler: add_workspace }
+            // ]
         });
 
         self.tbar = new Ext.Toolbar({
