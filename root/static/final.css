@@ -27,6 +27,10 @@
     width: 100%;
 }
 
+.bali-form-table .x-table-layout-cell {
+    width: 1%;   /* this should help anchor:100% work, but doesn't...?? */
+}
+
 /* -- put gritter close on the right
     
 .gritter-close {

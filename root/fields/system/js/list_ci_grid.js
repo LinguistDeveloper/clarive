@@ -23,6 +23,7 @@ params:
     var cis = new Baseliner.CIGrid({ title:_( meta.name_field ), ci: ci_meta,
         title: null,
         labelAlign: 'top', 
+        height: meta.height,
         fieldLabel: meta.name_field,
         value: value , name: meta.id_field });
 	return [

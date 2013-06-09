@@ -1,0 +1,38 @@
+/*
+name: Textfield
+params:
+    origin: 'template'
+    type: 'textfield'
+    html: '/fields/templates/html/row_body.html'
+    js: '/fields/templates/js/textfield.js'
+    field_order: 1
+    allowBlank: 0
+    section: 'body'
+*/
+
+(function(params){
+    var meta = params.topic_meta;
+    var data = params.topic_data;
+    
+    return [
+        {
+            xtype:'textfield',
+            fieldLabel: _(meta.name_field),
+            name: meta.id_field,
+            value: data ? data[ meta.bd_field ] : '', 
+            style: { 'font-size': '16px', float: 'left' },
+            width: meta.width || '97%',
+            //anchor: meta.anchor || '100%',
+            height: meta.height || 30,
+            allowBlank: meta ? !!meta.allowBlank : false,
+            readOnly: meta ? meta.readonly : true,
+            listeners: {
+                'resize': function(a,b,v,d,e){
+                    //this.el.setWidth( Math.floor( this.ownerCt.el.getWidth() / 2 ) );
+                    //this.el.setWidth( Math.floor( this.ownerCt.ownerCt.el.getWidth() / 2 ) - 125 );
+                }
+            },
+            hidden: meta ? (meta.hidden ? meta.hidden : false): true
+        }
+    ]
+})

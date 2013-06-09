@@ -1,0 +1,12 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+% if( !$meta->{hidden} ) {
+    <tr>
+      <th><% _loc($meta->{name_field}) %>:</th>
+      <td 
+          style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" ><% _loc($data->{$meta->{display_field}}  || $data->{$meta->{bd_field}}) %></td>
+    </tr>
+% }

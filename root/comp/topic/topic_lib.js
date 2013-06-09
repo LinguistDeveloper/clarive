@@ -286,7 +286,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
     
         // Detail Panel
-        self.detail = new Ext.Panel({});
+        self.detail = new Ext.Panel({ 
+            layout:'fit'
+        });
         
         Baseliner.Topic.file_del = function( topic_mid, md5, id_row ) {
             Baseliner.ajaxEval( '/topic/file/delete', { md5 : md5, topic_mid: topic_mid }, function(res) {
@@ -299,14 +301,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }
             });
         };
-    
-        // Form Panel
-        var form_panel = new Ext.Panel({
-            layout:'form',
-            //autoHeight: true
-            style: { padding: '15px' },
-            defaults: {anchor:'80%' }
-        });
     
         self._cis = [];
         self.load_form = function(rec) {
@@ -537,6 +531,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             activeItem: 0,
             title: params.title,
             tbar: tb,
+            autoScroll: true,
             //frame: true,
             padding: '15px 15px 15px 15px',
             defaults: {border: false},
@@ -639,6 +634,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 if( ! self.swEdit ) {
                     var layout = self.getLayout().setActiveItem( self.detail );
                 }
+                self.detail.body.parent().setStyle('width', null);
+                self.detail.body.parent().parent().setStyle('width', null);
+                self.detail.body.setStyle('width', null);
+                self.detail.body.setStyle('height', null);
             }
         });
         self.detail.body.setStyle('overflow', 'auto');

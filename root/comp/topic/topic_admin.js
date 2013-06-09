@@ -1412,6 +1412,7 @@
                                 if (attr.data[combo_system_fields.getValue()].single_mode != undefined){
                                     var form = form_template_field.getForm();
                                     form.findField("valuesgroup").show();
+                                    form_template_field.doLayout();
                                 }else{
                                     var form = form_template_field.getForm();
                                     form.findField("valuesgroup").hide();

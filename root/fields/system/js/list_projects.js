@@ -60,6 +60,7 @@ params:
     var pb_panel = new Ext.Panel({
         layout: 'form',
         enableDragDrop: true,
+        anchor: meta.anchor || '100%',
         border: false,
         items: [ project_box ]
     });
