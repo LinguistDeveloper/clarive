@@ -42,7 +42,7 @@ sub ext_menu {
     my @children;
     my $top_level = delete $p{top_level};
     for( sort { $a->index <=> $b->index } $self->get_children(%p) ) {
-        my $submenu = $_->ext_menu;
+        my $submenu = $_->ext_menu(%p);
         push @children, $submenu;
     }
     return undef if $top_level && scalar(@children) == 0;

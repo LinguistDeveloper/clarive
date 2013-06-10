@@ -4454,4 +4454,9 @@ msgstr "Ejecución"
 msgid "Summary"
 msgstr "Resumen"
 
+msgid "Save role"
+msgstr "Guardar role"
+
+msgid "Role saved successfully"
+msgstr "Role guardado correctamente"
 

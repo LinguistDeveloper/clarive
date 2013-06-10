@@ -245,7 +245,7 @@ sub topics_for_user {
     });
 
     my ($select,$order_by, $as, $group_by);
-    if( $sort eq 'category_status_name' ) {
+    if( $sort && $sort eq 'category_status_name' ) {
         $sort = 'category_status_seq'; # status orderby sequence
         ($select, $order_by, $as, $group_by) = (
             [{ distinct=>'me.topic_mid'} , 'category_status_seq', 'category_status_name' ],
@@ -253,7 +253,7 @@ sub topics_for_user {
             ['topic_mid', 'category_status_seq', 'category_status_name' ],
             ['topic_mid', 'category_status_seq', 'category_status_name' ]
         );
-    } else {
+    } elsif ( $sort ) {
         # sort fixups 
         $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
         $sort eq 'topic_mid' and $sort = '';

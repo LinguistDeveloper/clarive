@@ -613,7 +613,7 @@ sub list_baseline : Private {
         my @entornos = split ",", $states;
 
         foreach my $entorno ( @entornos ) {
-            my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl );
+            my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl ) = ( 0, 0, 0, 0, 0);
             @temps = grep { ( $_->{bl} ) =~ $entorno } @jobs;
             foreach my $temp ( @temps ) {
                 $bl = $temp->{bl};
@@ -1002,7 +1002,7 @@ sub topics_by_category: Local{
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_by_category, @datas);
     
-    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
+    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ACTIVE = 1 AND TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
     
     @topics_by_category = $db->array_hash( $SQL );
 
@@ -1028,7 +1028,7 @@ sub topics_open_by_category: Local{
     
     $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP
                     INNER JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID AND TYPE <> 'F'
-                    INNER JOIN BALI_TOPIC_CATEGORIES C ON TP.ID_CATEGORY = C.ID  WHERE TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
+                    INNER JOIN BALI_TOPIC_CATEGORIES C ON TP.ID_CATEGORY = C.ID  WHERE TP.ACTIVE = 1 AND TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
     
     @topics_open_by_category = $db->array_hash( $SQL );
 
