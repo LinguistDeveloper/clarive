@@ -245,15 +245,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             });
         };
     
-        // Form Panel
-        var form_panel = new Ext.Panel({
-            layout:'form',
-            //autoHeight: true
-            //style: { padding: '15px' },
-            //style: { 'padding-left': '15px' },
-            defaults: {anchor:'80%' }
-        });
-    
         self._cis = [];
         var rg;
         var show_graph = function(){
@@ -450,9 +441,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             tbar: tb,
             autoScroll: true,
             //frame: true,
-            padding: '15px 2px 15px 15px',
+            padding: '15px 15px 15px 15px',
             defaults: { border: false },
-            items: [ self.detail ]
+            items: [ self.loading_panel, self.detail ]
         });
         Baseliner.TopicMain.superclass.initComponent.call(this);
     },
@@ -476,7 +467,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             // now show/hide buttons
             self.btn_form_ok.show();
 
-            if(params.topic_mid){
+            if(self.topic_mid){
                 self.btn_comment.show();
                 //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
                 self.btn_detail.show();
@@ -574,20 +565,20 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.detail.load({
             url: '/topic/view',
             params: { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id },
-            scripts: true, //   careful: errors here will break js in baseliner
+            scripts: true,
             callback: function(x){ 
                 // loading HTML has finished
+                //   careful: errors here will break js in baseliner
                 if( ! self.swEdit ) {
                     var layout = self.getLayout().setActiveItem( self.detail );
                 }
-                //self.detail.body.setStyle('overflow', 'none');
                 self.detail.body.parent().setStyle('width', null);
                 self.detail.body.parent().parent().setStyle('width', null);
                 self.detail.body.setStyle('width', null);
                 self.detail.body.setStyle('height', null);
-                //self.body.setStyle('overflow', 'auto');
             }
         });
+        self.detail.body.setStyle('overflow', 'auto');
     },
     save_topic : function(){
         var self = this;

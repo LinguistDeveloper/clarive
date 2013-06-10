@@ -6,30 +6,20 @@
     
     var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
     
-    var form_columns = 4;   // TODO get this from 
-    
-    var form_table = new Ext.Panel({ 
-        layout:'table',
-        border: true,
-        cls: 'bali-form-table',
-        //width:'100%',
-        //defaults: { frame:true },
-        layoutConfig: { columns: form_columns }
-    });
+    var form_columns = 12;   // TODO get this from config
     
     var form_topic = new Ext.FormPanel({
-        layout:'table',
-        layoutConfig: { columns: form_columns },
+        layout:'column',
+        //layout:'table',
+        //layoutConfig: { columns: form_columns },
+        //cls: 'bali-form-table',
         url:'/topic/update',
-        cls: 'bali-form-table',
+        autoHeight: true,
+        overflow: 'hidden',
         bodyStyle: {
-          border: '2px solid',
-          'padding': '5px 50px 5px 50px'
+          'padding': '5px 50px 5px 10px'
         },
         id: unique_id_form,
-        border: true,
-        //defaults: { anchor:'98%'},
-        //defaults: { width: 200 },
         items: [
             { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
         ]
@@ -44,8 +34,8 @@
    
     // if we have an id, then async load the form
     form_topic.on('afterrender', function(){
-        form_topic.body.setStyle('overflow', 'auto');
-
+        //form_topic.body.setStyle('overflow', 'auto');
+        form_topic.ownerCt.doLayout();  // so we get a scrollbar from the parent, XXX consider putting this in parent
     });
 
     ///*****************************************************************************************************************************
@@ -67,7 +57,8 @@
                     //if( field.width != undefined ) comp.setWidth( field.width );
                     //if( field.height != undefined ) comp.setHeight( field.height );
                     var colspan =  field.colspan || form_columns;
-                    var p = new Ext.Panel({ layout:'form', border: false, colspan: colspan });
+                    var cw = field.colWidth || ( colspan / form_columns );
+                    var p = new Ext.Panel({ layout:'form', bodyStyle:'padding-right: 10px', border: false, columnWidth: cw });
                 if( comp.items ) {
                     if( comp.on_submit ) on_submit_events.push( comp.on_submit );
                         p.add( comp.items ); 
@@ -75,7 +66,6 @@
                 } else {
                         p.add( comp ); 
                         form_topic.add ( p );
-                        //p.on('afterrender', function(){ p.doLayout() });
                     }
                 }
             }
@@ -132,8 +122,8 @@
                 });                    
                 obj_store_category_priority.load({params:{'active':1, 'category_id': id_category}});
             }
+            form_topic.doLayout();
         });
-        form_topic.doLayout();
     } // if rec.meta
     ///******************************************************************************************************************************
             
