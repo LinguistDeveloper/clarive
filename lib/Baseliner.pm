@@ -124,12 +124,11 @@ our $ccache = eval {
     #driver     => 'FastMmap', root_dir   => '/tmp', cache_size => '20m'
     #driver =>'Memory'
     #driver => 'RawMemory', datastore => {}, max_size => 1000,
-    #driver => 'BerkeleyDB', root_dir => '/tmp/bdb',
     #driver => 'SharedMem', size => 1_000_000, shmkey=>93894384,
     driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0
     );
 }; 
-if( $@ ) {
+if( !Baseliner->config->{cache} || $@ ) {
    { package Nop; sub AUTOLOAD{ } };
    $ccache = bless {} => 'Nop';
 }
@@ -416,6 +415,17 @@ sub loghome {
     } else {
         return "$loghome";
     }
+}
+
+=head2 full_logout
+
+logout is not enough, needs to delete session
+
+=cut
+sub full_logout {
+    my $c = shift;
+    $c->delete_session;
+    $c->logout;
 }
 
 # Utils
