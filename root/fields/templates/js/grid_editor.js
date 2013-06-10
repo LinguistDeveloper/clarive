@@ -28,11 +28,11 @@ params:
 		{name: 'sda_obtenida'}
 	]);
 	
-	var records = data ? eval('data.' + meta.bd_field): [];
+	var records = data ? data[ meta.bd_field ] : '[]';
 	
 	var store = new Ext.data.Store({
 		reader: reader,
-		data:  Ext.util.JSON.decode (records)
+		data:  records ? Ext.util.JSON.decode(records) : []
 	});
 
 	var title = 'prueba';
