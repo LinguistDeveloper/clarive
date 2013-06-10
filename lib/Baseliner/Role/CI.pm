@@ -90,8 +90,6 @@ sub save {
     %p = ( %serialized, %p );
     my ($mid,$name,$data,$bl,$active,$versionid,$ns,$moniker) = @{\%p}{qw/mid name data bl active versionid ns moniker/};
 
-    _error( $moniker );
-
     my $collection = $self->collection;
 
     if( delete $p{merged} && defined $data ) {  # used by $self->update( ... )
@@ -586,6 +584,21 @@ sub mem_load {
         $s->execute( @values );
     }
 }
+
+sub service_list {
+    my ($self)=@_;
+    my @services;
+    for my $reg_node ( _array( Baseliner::Core::Registry->module_index->{ ref($self) || $self } ) ) {
+        push @services,
+            {
+            name => $reg_node->instance->name,
+            key  => $reg_node->key,
+            icon => $reg_node->instance->icon,
+            };
+    }
+    return @services;
+}
+
 
 1;
 

@@ -9,13 +9,19 @@ use Baseliner::Utils;
 
 Moose::Exporter->setup_import_methods();
 
-class_has 'registrar' =>
+class_has registrar =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
     );
 
-class_has 'classes' =>
+class_has classes =>
+    ( is      => 'rw',
+      isa     => 'HashRef',
+      default => sub { {} },
+    );
+
+class_has module_index =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
@@ -65,12 +71,13 @@ sub add {
         $param->{short_name} = $key; 
         $param->{short_name} =~ s{^.*\.(.+?)$}{$1}g if( $key =~ /\./ );
         $param->{id}= $param->{id} || $param->{short_name};
-        $param->{module}=$pkg unless($param->{module});
+        $param->{module} //=$pkg;
     
         my $node = Baseliner::Core::RegistryNode->new( $param );
         $node->param( $param );
         $node->param->{registry_node} = $node;
         $reg->{$key} = $node;
+        push @{ $self->module_index->{ $param->{module} } }, $node;
     } else {
         #TODO register 'a.b.c' => 'BaselinerX::Service::MyService'
         die "Error registering '$pkg->$key': not a hashref. Not supported yet.";

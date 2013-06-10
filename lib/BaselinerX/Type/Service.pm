@@ -37,6 +37,8 @@ has 'alias' => (
     }
 );
 
+has icon => (is=>'rw', isa=>'Str', default=>'/static/images/icons/service.png');
+
 sub BUILD {
     my ($self, $params) = @_;
     ## handler should always point to some code
