@@ -16,8 +16,8 @@ has 'id' => ( is=>'rw', isa=>'Int', default=>0 );
 # return code
 has 'rc' => ( is=>'rw', isa=>'Int' );
 
-# concatenated messages
-has 'data' => ( is=>'rw', isa=>'Any', default=>sub{{}} );
+# callback for every message
+has cb => ( is=>'rw', isa=>'CodeRef', default => sub { sub{} } );
 
 # concatenated messages
 has 'msg' => ( is=>'rw', isa=>'Any', default=>'' );
