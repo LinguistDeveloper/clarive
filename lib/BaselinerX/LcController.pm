@@ -237,7 +237,7 @@ sub tree_project : Local {
 
     # load project lifecycle configuration
     require BaselinerX::Lc;
-    my $lc = BaselinerX::Lc->new->lc_for_project( $id_project );
+    my $lc = BaselinerX::Lc->new->lc_for_project( $id_project, $project );
     for my $node ( @$lc ) {
         next if exists $node->{active} && ! $node->{active};
         my $type = $node->{type};

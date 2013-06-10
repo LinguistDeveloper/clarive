@@ -55,7 +55,7 @@ has 'state_data' => qw(is rw isa HashRef lazy 1),
     };
 
 sub lc_for_project {
-    my ($self, $id_prj) = @_;
+    my ($self, $id_prj, $name_prj) = @_;
     #my $lc = $self->lc;
     #_log "LC==========> $lc , " . ref $lc;
     #my $nodes = $lc->{nodes}; $ch ||= {
@@ -68,7 +68,7 @@ sub lc_for_project {
                         'click' => {
                                      'icon' => '/static/images/icons/topic.png',
                                      'url' => '/topic/grid',
-                                     'title' => 'Topics',
+                                     'title' => $name_prj,
                                      'type' => 'comp'
                                    }
                       },
