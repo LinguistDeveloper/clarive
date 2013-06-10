@@ -793,5 +793,22 @@ sub ping : Local {
 
 }
 
+sub services : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $class = $p->{class} || _fail( _loc('Missing parameter class') );
+    $c->stash->{json} = try {
+        my @services = $class->services;
+        {success => \1, data=>\@services};
+    } ## end try
+    catch {
+        my $err = shift;
+        _error( $err );
+        {success => \0, msg => $err};
+    };
+    $c->forward('View::JSON');
+
+}
+
 1;
 
