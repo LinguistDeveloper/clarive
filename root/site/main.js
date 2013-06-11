@@ -1,7 +1,7 @@
 <%args>
     $show_main => $c->config->{site}{show_main} // 0
     $show_search => $c->config->{site}{show_search} // 1
-    $show_calendar => $c->config->{site}{show_calendar} // 1
+    $show_calendar => $c->config->{site}{show_calendar} // 0
     $show_portal => $c->config->{site}{show_portal} // 0
     $show_dashboard => $c->config->{site}{show_dashboard} // 1
     $show_menu => $c->config->{site}{show_menu} // 1
