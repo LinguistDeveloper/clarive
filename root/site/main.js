@@ -2,6 +2,7 @@
     $show_main => $c->config->{site}{show_main} // 0
     $show_search => $c->config->{site}{show_search} // 1
     $show_calendar => $c->config->{site}{show_calendar} // 0
+    $show_detach => $c->config->{site}{show_detach} // 0
     $show_portal => $c->config->{site}{show_portal} // 0
     $show_dashboard => $c->config->{site}{show_dashboard} // 1
     $show_menu => $c->config->{site}{show_menu} // 1
@@ -93,7 +94,10 @@ Ext.onReady(function(){
 % if( $show_calendar ) {
             '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />',
 % }
+
+% if( $show_detach ) {
             '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
+% }
             '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />',
             '-', 
             <%perl>
