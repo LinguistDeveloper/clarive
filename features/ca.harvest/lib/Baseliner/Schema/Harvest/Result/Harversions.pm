@@ -125,6 +125,12 @@ __PACKAGE__->belongs_to(
   { itemobjid => "itemobjid" },
 );
 
+__PACKAGE__->belongs_to(
+  "versiondata",
+  "Baseliner::Schema::Harvest::Result::Harversiondata",
+  { versiondataobjid => "versiondataobjid" },
+);
+
 
 # Created by DBIx::Class::Schema::Loader v0.04005 @ 2009-05-12 15:09:10
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:j7MfQp/GJoVf1xamLKphqg
