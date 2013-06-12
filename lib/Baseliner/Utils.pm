@@ -1252,6 +1252,25 @@ sub _package_is_loaded {
     exists $INC{ $cl };
 }
 
+sub _reload_dir {
+    my ($dir, $pattern) = @_;
+    my $d = _dir( Baseliner->path_to( $dir ) );
+    _fail( _loc('%1 is not a dir', $d) ) unless $d->is_dir && -e $d;
+    my $re = $pattern ? qr/$pattern/i : qr/\.pl|\.pm$/i;
+    my @reloaded;
+    $d->recurse( callback=>sub{
+        my $f = shift;
+        return if $f->is_dir || $f !~ $re;
+        local $SIG{__WARN__} = sub{};
+        push @reloaded, "$f";
+        do "$f";
+        if( $@ ) {
+            _fail( _loc('Error while reloading %1: %2', $f, $@ ) );
+        }
+    });
+    return @reloaded; 
+}
+
 sub _load_yaml_from_comment {
     my ($y,$rest) = $_[0] =~ m{^(?:--+|/\*)(.*?)(?:--+|\*/)}gs;
     return $y;
