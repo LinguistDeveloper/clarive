@@ -893,7 +893,7 @@ $('a').click(function(event) {
         }
         var emsg = String.format('name: {0}\nmessage: {1}\nline: {2}\ncode: {3}\nfile: {4}\nstack: {5}', eo.name, eo.msg, eo.line, eo.code, eo.file, eo.stack );
         var win = new Baseliner.Window({
-            title: String.format('<span id="boot"><span class="badge" style="background:red">{0}</span></span>', _('Error') ),
+            title: String.format('<span id="boot" style="background:transparent"><span class="label" style="background:red">{0}</span></span>', _('Error') ),
             height: 300, width: 480, 
             layout:'border', 
             items:[
