@@ -9,13 +9,19 @@ use Baseliner::Utils;
 
 Moose::Exporter->setup_import_methods();
 
-class_has 'registrar' =>
+class_has registrar =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
     );
 
-class_has 'classes' =>
+class_has classes =>
+    ( is      => 'rw',
+      isa     => 'HashRef',
+      default => sub { {} },
+    );
+
+class_has module_index =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
@@ -65,12 +71,13 @@ sub add {
         $param->{short_name} = $key; 
         $param->{short_name} =~ s{^.*\.(.+?)$}{$1}g if( $key =~ /\./ );
         $param->{id}= $param->{id} || $param->{short_name};
-        $param->{module}=$pkg unless($param->{module});
+        $param->{module} //=$pkg;
     
         my $node = Baseliner::Core::RegistryNode->new( $param );
         $node->param( $param );
         $node->param->{registry_node} = $node;
         $reg->{$key} = $node;
+        push @{ $self->module_index->{ $param->{module} } }, $node;
     } else {
         #TODO register 'a.b.c' => 'BaselinerX::Service::MyService'
         die "Error registering '$pkg->$key': not a hashref. Not supported yet.";
@@ -216,6 +223,12 @@ sub is_enabled {
 
 Search for registered objs with matching attributes
 
+Returns: nodes (not instances)
+
+Options:
+    
+    allowed_actions => [qw//]   # filters nodes with allowed actions only
+
 Configuration:
 
     <registry>
@@ -234,6 +247,7 @@ sub search_for_node {
     my $key_prefix = delete $query{key} || '';
     my $q_depth = delete $query{depth};
     my $allowed_actions = delete $query{allowed_actions};
+    my $username = delete $query{username};
     my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
     $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
@@ -282,17 +296,52 @@ sub search_for_node {
     return wantarray ? @found : $found[0];
 }
 
+=head2 search_for
+
+Searches for nodes with C<search_for_node>, but returns
+instances of the node object instead.
+
+=cut
 sub search_for {
     my $self=shift;
     my @found_nodes = $self->search_for_node( @_ );
     return map { $_->instance } @found_nodes;
 }
 
+sub registor_keys {
+    my ($self, $key_prefix )=@_;
+
+    my @registor_data;
+    my @dynamic_keys;
+    ($key_prefix) = split /\./, $key_prefix; # look for registor like 'registor.menu', 'registor.action', ...
+    return () unless $key_prefix; 
+    for my $key ( grep /^registor\.$key_prefix\./, keys %{ $self->registrar || {} } ) {
+        my $registor = $self->get( $key );
+        push @registor_data, { registor=>$registor, data=>$registor->generator->($key_prefix) };
+    }
+    my $flag = 0;
+    for my $regs ( @registor_data ) {
+        my $data = $regs->{data};
+        my $registor = $regs->{registor};
+        next unless ref $data eq 'HASH'; 
+        for my $key ( keys %$data ) {
+            next if exists $self->registrar->{$key} && ! $data->{$key}->{_overwrite};
+            #  register( $key, $data->{$key} );
+            Baseliner::Core::Registry->add( $registor->module, $key, $data->{$key} );
+            push @dynamic_keys, $key;
+            $flag = 1 unless $flag;
+        }
+    }
+    $self->initialize if $flag;
+    return @dynamic_keys;
+}
+
 sub starts_with {
     my ($self, $key_prefix )=@_;
     my @keys;
+    my @dynamic = $self->registor_keys( $key_prefix );
     for my $key ( keys %{ $self->registrar || {} } ) {
-        push @keys, $key if( !defined $key_prefix || $key =~ /^$key_prefix/ );
+        push @keys, $key if index( $key, $key_prefix ) == 0;
     }
     return @keys;
 }
