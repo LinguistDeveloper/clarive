@@ -604,6 +604,122 @@ Baseliner.combo_project = function(params) {
     return combo;
 };
 
+Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
+    anchor: '100%',
+    height: 200,
+    frame: true,
+    clicksToEdit: 1,
+    name: 'array_field', 
+    hideHeaders: true,
+    initComponent: function(){
+        var self = this;
+        self.store = new Ext.data.SimpleStore({ fields:[ self.name ] });
+        self.store.on('beforeaction', function(){ self.write_to_field()  });
+        self.store.on('create', function(){ self.write_to_field()  });
+        self.store.on('remove', function(){ self.write_to_field()  });
+        self.store.on('update', function(){ self.write_to_field() } );
+        if( self.description == undefined ) self.description = '';
+        self.fieldset = new Ext.Container({ hidden: false });
+        self.fdata_factory = function(arr) {
+            var fields = [];
+            Ext.each( arr, function(v) {
+                fields.push( new Ext.form.Hidden({ hidden: false, name: self.name, value: v, allowBlank: 1 }) );
+            });
+            return fields;
+        };
+        if( self.value != undefined ) {
+            try {
+                // if it's an Array or Hash
+                if( Ext.isArray( self.value ) ) {
+                    for( var x=0; x < self.value.length ; x++ ) {
+                        self.push_item( self.name, self.value[ x ] ); 
+                    }
+                    // save 
+                    self.fieldset.add( self.fdata_factory( self.value ) );
+                } else if( self.value.length > 0 ) {  // just one element
+                    self.push_item( self.name, self.value ); 
+                    self.fieldset.add( self.fdata_factory([ self.value ]) );
+                }
+            } catch(e) {}
+        }
+        
+        self.viewConfig = {
+            scrollOffset: 2,
+            forceFit: true
+        };
+        self.cm = new Ext.grid.ColumnModel([{
+            dataIndex: self.name,
+            width: '100%',
+            editor: new Ext.form.TextField({
+                allowBlank: false, 
+                renderer: function(v) {  return "a" }
+            })
+        }]);
+        self.sm = (function () {
+            var rsm = new Ext.grid.RowSelectionModel({
+                singleSelect: true
+            });
+            rsm.addListener('rowselect', function () {
+                var __record = rsm.getSelected();
+                return __record;
+            });
+            return rsm;
+        })();
+        self.tbar = [{
+                text: _('Add'),
+                icon: '/static/images/drop-add.gif',
+                cls: 'x-btn-text-icon',
+                handler: function () {
+                    var ___record = Ext.data.Record.create([{
+                        name: self.name,
+                        type: 'string'
+                    }]);
+                    var h = {};
+                    h[ self.name ] = _( self.default_value );
+                    var p = new ___record( h );
+                    //fgrid.stopEditing();
+                    self.store.add(p);
+                    //fgrid.startEditing(0, 0);
+                }
+            }, {
+                text: _('Delete'),
+                icon: '/static/images/del.gif',
+                cls: 'x-btn-text-icon',
+                handler: function (e) {
+                    var __selectedRecord = self.getSelectionModel().getSelected();
+                    if (__selectedRecord != null) {
+                        self.store.remove(__selectedRecord);
+                    }
+                }
+            }, self.fieldset, '->', self.description ];
+        Baseliner.ArrayGrid.superclass.initComponent.call(
+            Ext.apply(this,{ 
+            }
+        ));
+    },
+    push_item : function(f, v ) {
+        var self = this;
+        var rr = new Ext.data.Record.create([{
+            name: f,
+            type: 'string'
+        }]);
+        var h = {}; 
+        h[ self.name ] = v;
+        // put it in the grid store
+        self.store.insert( x, new rr( h ) );
+    },
+    write_to_field : function () {
+        var self = this;
+        var arr = new Array();
+        self.store.each( function(r) {
+            arr.push( r.data[ self.name ] );
+        });
+        self.fieldset.removeAll();
+        self.fieldset.add( self.fdata_factory( arr ) );
+        self.fieldset.doLayout();
+    }
+});
+
 Baseliner.array_field = function( args ) {
     var field_name = args.name;
     var title = args.title;
@@ -1502,15 +1618,18 @@ Baseliner.JitRGraph = function(c){
 };
 Ext.extend( Baseliner.JitRGraph, Ext.Panel ); 
 
-Baseliner.loading_panel = function(){
+Baseliner.loading_panel = function(msg){
+    if( ! msg ) 
+        msg = _('Loading');
     return new Ext.Container({
+        margin: 70,
         html: [ 
             '<div style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>',
             '<div style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">',
             '<center>',
             '<img style="" src="/static/images/loading.gif" />',
             '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
-            _('Loading'),
+            msg,
             '</div>',
             '</center>',
             '</div>' ].join('')
@@ -2065,6 +2184,29 @@ Baseliner.RowSelectionModel = Ext.extend( Ext.grid.RowSelectionModel, {
     }
 });
 
+Baseliner.CheckboxSelectionModel = Ext.extend( Ext.grid.CheckboxSelectionModel, {
+    handleMouseDown : function(g, rowIndex, e){
+        if(e.button !== 0 || this.isLocked()){
+            return;
+        }
+        var view = this.grid.getView();
+        if(e.shiftKey && !this.singleSelect && this.last !== false){
+            var last = this.last;
+            this.selectRange(last, rowIndex, e.ctrlKey);
+            this.last = last; // reset the last
+            view.focusRow(rowIndex);
+        }else{
+            var isSelected = this.isSelected(rowIndex);
+            if(e.ctrlKey && isSelected){
+                this.deselectRow(rowIndex);
+            }else if(!isSelected || this.getCount() > 1){
+                this.selectRow(rowIndex, e.ctrlKey || e.shiftKey);
+                view.focusRow(rowIndex);
+            }
+        }
+    }
+});
+
 Baseliner.RowDragger = Ext.extend(Ext.util.Observable, {
     //expandOnEnter : true,
     //expandOnDblClick : true,
@@ -2133,9 +2275,11 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     enableDragDrop: true, // enable drag and drop of grid rows
     constructor: function(c){
         //var dragger = new Baseliner.RowDragger({});
+        self.sm = new Baseliner.CheckboxSelectionModel({singleSelect:false});
 
         var cols = [
           //dragger,
+          self.sm,
           { width: 40, dataIndex: 'icon', renderer: Baseliner.render_icon },
           { width: 40, dataIndex: 'mid', header: _('ID') },
           { header: _('Name'), width: 240, dataIndex: 'name', 
@@ -2163,7 +2307,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         if( self.ci == undefined ) self.ci = {};
         if( self.ci_grid == undefined ) self.ci_grid = {};
-        self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
+        //self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
         self.ci_store = new Baseliner.store.CI({ 
             baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store' }, self.ci )
         });
@@ -2208,7 +2352,9 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         //self.ci_store.on('load', function(){ });
         
         if( Ext.isArray( self.value ) ) {
-            Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci_grid, { mids: self.value , _whoami: 'CIGrid_mids' }), function(res){
+            var p = { mids: self.value , _whoami: 'CIGrid_mids' };
+            if( self.ci.role ) p.role = self.ci.role;
+            Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci_grid, p ), function(res){
                 Ext.each( res.data, function(r){
                     if( ! r ) return;
                     self.add_to_grid( r );
@@ -2401,3 +2547,17 @@ Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
     }
 });
 
+Baseliner.run_service = function(params, service){
+    var mask = { xtype:'panel', items: Baseliner.loading_panel() };
+    var win = new Baseliner.Window({ width: 800, height: 400, layout:'fit', items:[ mask ] });
+    win.show();
+    Baseliner.ajaxEval( '/ci/service_run', Ext.apply( {}, service, params ), function(res){
+        win.removeAll();
+        if( !res.success ) {
+            win.add({ xtype:'textarea', value: res.msg });
+        } else {
+            win.add({ xtype:'textarea', value: res.ret });
+        }
+        win.doLayout();
+    });
+}
