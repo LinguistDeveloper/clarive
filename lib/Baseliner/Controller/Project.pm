@@ -523,10 +523,13 @@ sub user_projects : Local {
     
     #$where->{id} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}] 
         #unless $c->is_root;
+    my $from = { distinct=>1, select=>[qw(mid name ns nature active)]  };
     if( $c->is_root || $p->{include_root} ) {
         #push @{ $where->{id} }, { "=", undef };
+    } else {
+        $from->{join} = 'roleuser';
     }
-    my $rs = $c->model('Baseliner::BaliProject')->search($where, { join=>'roleuser', distinct=>1, select=>[qw(mid name ns nature active)] })->hashref;
+    my $rs = $c->model('Baseliner::BaliProject')->search($where, $from)->hashref;
     my @ret;
     for( $rs->all ) {
         next if $query && $_->{ns} !~ $query;
