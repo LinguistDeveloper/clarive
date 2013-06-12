@@ -110,6 +110,7 @@ use Exporter::Tidy default => [
 )],
 other => [qw(
     _load_yaml_from_comment
+    hash_shallow
 )];
 
 # setup I18n
@@ -984,6 +985,56 @@ sub hash_flatten {
     }
     return wantarray ? %flat : \%flat;
 }
+
+=head2 hash_shallow
+
+Turns a deeply nested hash into a very flat one:
+
+    my $h = {};
+    hash_shallow( { ss=>{ aa=>[11,{ bb=>22 }] }, dd=>{ rr=>{ xx=>[99], ff=>98 } }, rr=>13 }, $h );
+    _dump( $h );
+
+Turns into:
+
+    aa:
+    - 11
+    bb: 22
+    ff: 98
+    rr: 13
+    xx:
+    - 99
+
+=cut
+sub hash_shallow {
+    my ($h, $ret ) = @_;
+    $ret //= {};
+    my $r = ref $h;
+    if( $r eq 'HASH' ) {
+        while( my($k,$v) = each %$h ) {
+           my $vv = hash_shallow( $v, $ret );
+           next unless defined $vv;
+           if( exists $ret->{$k} ) {
+               $ret->{$k} = [ $ret->{$k} ] unless ref $ret->{$k} eq 'ARRAY';
+               push( @{ $ret->{$k} }, $vv );
+           } else {
+               $ret->{$k} = $vv;
+           }
+        }
+        return undef;
+    }
+    elsif( $r eq 'ARRAY' ) {
+        my @res;
+        for( @$h ) {
+            push @res => hash_shallow( $_, $ret );        
+        }
+        return [ grep { defined } @res ];
+    }
+    elsif( defined $h ){
+        return $h ;
+    }
+    return undef;
+}
+
 
 =head2 parse_vars
 
