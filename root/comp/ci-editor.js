@@ -1,4 +1,11 @@
 (function(params){
+    var menu_services = new Ext.Button({
+        text: _('Services'),
+        icon:'/static/images/icons/service.png',
+        cls: 'x-btn-icon-text',
+        menu: { items:[] }
+    });
+        
     var load_form = function(params){
         if( params.rec == undefined ) params.rec = {};            // master row record
         //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
@@ -152,17 +159,23 @@
         });
 
         cardpanel.getTopToolbar().add([
-            btn_form_ok, btn_form_save, '-', btn_depends, btn_form_calendar, btn_data //btn_form_reset
+            btn_form_ok, btn_form_save, '-', btn_depends, btn_form_calendar, btn_data, menu_services //btn_form_reset
         ]);
         var fieldset = new Ext.form.FieldSet({
             defaults: { 
-               //anchor: '90%',
                msgTarget: 'under'
             },
             hidden: true,
-            style: { 'margin-top':'30px' },
-            title: _(params.collection),
-            collapsible: true,
+            margin: 0,
+            padding: 10,
+            style: { 
+                margin: '30px 0px 0px -20px'
+                //'border-top' : '#eee 1px solid', 
+                //'border-left' : '#f5f0f0 6px solid' },
+                },
+            //title: _(params.collection),
+            collapsible: false,
+            border: false,
             autoHeight : true
         });
         var set_txt = function(){
@@ -171,7 +184,7 @@
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
         var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'], colspan: 1 });
-        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 };
+        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 80 };
         var form = new Ext.FormPanel({
             url:'/ci/update',
             defaults: {
@@ -190,6 +203,7 @@
                     { layout:'form', columnWidth : .35, defaults: { anchor: '100%' }, items:[
                         { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
                         { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: params.rec.moniker, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', value: params.rec.versionid, allowBlank: true },
                         ( params.has_bl > 0 ? bl_combo : [] )
                     ]}
                 ]},
@@ -268,6 +282,11 @@
                         tab_icon: rec.icon,
                         action: 'edit'
                 }, params );
+                Ext.each( rec.services, function(service) {
+                    menu_services.menu.add({ text: service.name, key: service.key, icon: service.icon, handler:function(){
+                        Baseliner.run_service( { mid: rec.mid, classname: rec.classname }, service );
+                    }});
+                });
                 var f = load_form( c );
                 //f.on('afterrender', function(){ f.body.setStyle({ overflow: 'hidden' }); });
                 cardpanel.add( f );
