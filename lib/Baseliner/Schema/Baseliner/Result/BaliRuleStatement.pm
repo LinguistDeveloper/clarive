@@ -24,7 +24,7 @@ __PACKAGE__->add_columns(
   "id_parent", { data_type => "number", is_nullable => 1 },
   "id_rule", { data_type => "number", is_nullable => 0 },
   "stmt_text", { data_type => "varchar2", size=>2048, is_nullable => 0 },
-  "stmt_data", { data_type => "clob", is_nullable => 1 },
+  "stmt_attr", { data_type => "clob", is_nullable => 1 },
 );
 
 __PACKAGE__->set_primary_key("id");
