@@ -188,9 +188,14 @@ sub tree_objects {
                 my $coll= $_->collection;
                 $class_coll{ $coll } = $_ ; # for later decoding it from a table
                 $coll } @$class ] };
-        } else {
+        } 
+        elsif( $class ) {
             $collection = $class->collection;
             %class_coll = ( $collection => $class );  # for later decoding it from a table
+        }
+        else {
+            # probably just mids, no class or collection
+            #  consider creating a %class_coll of all classes
         }
     }
     my $opts = { order_by=>{ -asc=>['mid'] } };
@@ -208,7 +213,7 @@ sub tree_objects {
                name => 'name',
             }
     );
-    $where->{collection} = $collection;
+    $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     
     if( $p{mids} ) {
@@ -217,6 +222,7 @@ sub tree_objects {
 
     my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
+    my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
     my (%forms, %icons);  # caches
     my @tree = map {
         my $row = $_;
@@ -246,7 +252,7 @@ sub tree_objects {
             class             => $row_class, 
             collection        => $row->{collection},
             moniker           => $row->{moniker},
-            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class->icon ) ),
+            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? $row_class->icon : $generic_icon ) ),
             ts                => $row->{ts},
             bl                => $row->{bl},
             description       => $data->{description} // '',
@@ -415,10 +421,10 @@ sub store : Local {
     
     # in cache ?
     my $cache_key = Storable::freeze($p);
-    if( my $cc = $c->cache_get( $cache_key ) ) {
-        $c->stash->{json} = $cc;
-        return $c->forward('View::JSON');
-    }
+    #  if( my $cc = $c->cache_get( $cache_key ) ) {   # not good during testing mode
+    #      $c->stash->{json} = $cc;
+    #      return $c->forward('View::JSON');
+    #  }
     
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
@@ -433,7 +439,6 @@ sub store : Local {
         $w->{to_mid}   = $p->{to_mid} if $p->{to_mid};
         $w->{rel_type} = $p->{rel_type}  if defined $p->{rel_type};
         my $rel_query = Baseliner->model('Baseliner::BaliMasterRel')->search( $w , { select=>'to_mid' } )->as_query;
-        _error( $rel_query );
         $where->{mid} = { -in=>$rel_query };
     }
     
@@ -465,6 +470,10 @@ sub store : Local {
         }
         my $classes = [ packages_that_do( @roles ) ];
         ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>1);
+    }
+    else {
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
+        #_fail( 'No class or role supplied' );
     }
     
     if( ref $mids ) { 
