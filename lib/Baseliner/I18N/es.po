@@ -15,6 +15,9 @@ msgstr "Refrescar"
 msgid "Job Slots"
 msgstr "Ventanas de Pase"
 
+msgid "grammar"
+msgstr "gramática"
+
 msgid "Repositories"
 msgstr "Repositorios"
 
