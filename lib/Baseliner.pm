@@ -35,7 +35,9 @@ BEGIN {
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
             Unicode::Encoding
-            Session     Session::Store::DBI    Session::State::Cookie
+            Session     
+            Session::Store::DBI    
+            Session::State::Cookie
             Singleton           
             +CatalystX::Features::Plugin::I18N
             +CatalystX::Features::Plugin::Static::Simple/;
@@ -71,7 +73,6 @@ $ENV{BASELINER_PARENT_PID} = getppid();
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
-
 
 __PACKAGE__->config(
     'Plugin::Session' => {
@@ -120,15 +121,14 @@ if( $ENV{BALI_CMD} ) {
 our $ccache = eval {
     require CHI;
     CHI->new(
-    #driver     => 'FastMmap', root_dir   => '/tmp', cache_size => '20m'
-    #driver =>'Memory'
-    #driver => 'RawMemory', datastore => {}, max_size => 1000,
-    #driver => 'BerkeleyDB', root_dir => '/tmp/bdb',
-    #driver => 'SharedMem', size => 1_000_000, shmkey=>93894384,
-    driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0
+        #driver => 'FastMmap', root_dir   => '/tmp', cache_size => '20m'
+        #driver =>'Memory'
+        #driver => 'RawMemory', datastore => {}, max_size => 1000,
+        #driver => 'SharedMem', size => 1_000_000, shmkey=>93894384,
+        driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0
     );
 }; 
-if( $@ ) {
+if( !Baseliner->config->{cache} || $@ ) {
    { package Nop; sub AUTOLOAD{ } };
    $ccache = bless {} => 'Nop';
 }
