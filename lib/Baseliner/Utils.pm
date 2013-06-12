@@ -1272,7 +1272,7 @@ sub _reload_dir {
 }
 
 sub _load_yaml_from_comment {
-    my ($y,$rest) = $_[0] =~ m{^(?:--+|/\*)(.*?)(?:--+|\*/)}gs;
+    my ($y,$rest) = $_[0] =~ m{^(?:<!--+|/\*)(.*?)(?:---|-->+|\*/)}gs;
     return $y;
 }
 
