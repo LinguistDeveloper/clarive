@@ -245,7 +245,7 @@ sub topics_for_user {
     });
 
     my ($select,$order_by, $as, $group_by);
-    if( $sort eq 'category_status_name' ) {
+    if( $sort && $sort eq 'category_status_name' ) {
         $sort = 'category_status_seq'; # status orderby sequence
         ($select, $order_by, $as, $group_by) = (
             [{ distinct=>'me.topic_mid'} , 'category_status_seq', 'category_status_name' ],
@@ -254,13 +254,14 @@ sub topics_for_user {
             ['topic_mid', 'category_status_seq', 'category_status_name' ]
         );
     } else {
+        $sort //= '';
         # sort fixups 
         $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
         $sort eq 'topic_mid' and $sort = '';
         
         ($select,$order_by, $as, $group_by) = $sort
         ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
-        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' }, { "-$dir" => "me.topic_mid" } ], ['topic_mid'], ['topic_mid'] );
+        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' } ], ['topic_mid'], ['topic_mid'] );
     }
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
