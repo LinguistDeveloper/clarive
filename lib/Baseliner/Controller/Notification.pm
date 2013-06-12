@@ -18,7 +18,6 @@ register 'menu.admin.notifications' => {
     tab_icon => '/static/images/log_w.gif'
 };
 
-
 sub list_notifications : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;

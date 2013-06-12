@@ -4448,3 +4448,8 @@ msgstr "Guardar role"
 msgid "Role saved successfully"
 msgstr "Role guardado correctamente"
 
+msgid "Administration manual"
+msgstr "Manual de administración"
+
+msgid "User manual"
+msgstr "Manual de usuario"
