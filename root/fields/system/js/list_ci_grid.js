@@ -10,6 +10,7 @@ params:
     set_method: 'set_cis'
     field_order: 100
     section: 'details'
+    ci_role: 'ci'
 ---
 */
 (function(params){
@@ -23,7 +24,7 @@ params:
     var cis = new Baseliner.CIGrid({ title:_( meta.name_field ), ci: ci_meta,
         title: null,
         labelAlign: 'top', 
-        height: meta.height,
+        height: meta.height || 200,
         fieldLabel: meta.name_field,
         value: value , name: meta.id_field });
 	return [

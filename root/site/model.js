@@ -27,10 +27,13 @@ Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
 Baseliner.model.Topics = function(c) {
     //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
     var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-        '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+        '<span id="boot" style="width:200px"><span class="badge" ', 
+        ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
+        ' >{name}</span></span>',
         '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
     var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
+        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;"',
+        ' onclick="javascript:Baseliner.show_topic({mid}, \'{name}\');">{name}</span></span>',
         '</tpl>' );
     Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,

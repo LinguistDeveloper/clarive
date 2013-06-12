@@ -9,11 +9,12 @@
     var form_columns = 12;   // TODO get this from config
     
     var form_topic = new Ext.FormPanel({
-        layout:'table',
-        layoutConfig: { columns: form_columns },
+        layout:'column',
+        //layout:'table',
+        //layoutConfig: { columns: form_columns },
+        //cls: 'bali-form-table',
         url:'/topic/update',
         autoHeight: true,
-        cls: 'bali-form-table',
         overflow: 'hidden',
         bodyStyle: {
           'padding': '5px 50px 5px 10px'
@@ -56,7 +57,8 @@
                     //if( field.width != undefined ) comp.setWidth( field.width );
                     //if( field.height != undefined ) comp.setHeight( field.height );
                     var colspan =  field.colspan || form_columns;
-                    var p = new Ext.Panel({ layout:'form', bodyStyle:'padding-right: 0px', border: false, colspan: colspan });
+                    var cw = field.colWidth || ( colspan / form_columns );
+                    var p = new Ext.Panel({ layout:'form', bodyStyle:'padding-right: 10px', border: false, columnWidth: cw });
                     if( comp.items ) {
                         if( comp.on_submit ) on_submit_events.push( comp.on_submit );
                         p.add( comp.items ); 

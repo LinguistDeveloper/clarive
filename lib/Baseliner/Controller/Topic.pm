@@ -86,8 +86,8 @@ sub grid : Local {
     
     #Parametro para casos especiales como la aplicacion GDI
     $c->stash->{typeApplication} = $typeApplication;
-    
     $c->stash->{id_project} = $p->{id_project}; 
+    $c->stash->{project} = $p->{project}; 
     $c->stash->{query_id} = $p->{query};
     $c->stash->{category_id} = $p->{category_id};
     $c->stash->{template} = '/comp/topic/topic_grid.js';

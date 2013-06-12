@@ -1769,7 +1769,7 @@
     });     
     
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
-        singleSelect: false,
+        singleSelect: true,
         sortable: false,
         checkOnly: true
     });
