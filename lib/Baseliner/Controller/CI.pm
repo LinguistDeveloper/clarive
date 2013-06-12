@@ -636,6 +636,7 @@ sub load : Local {
         $rec->{classname} = $rec->{class} = $class;
         $rec->{icon} = $obj->icon;
         $rec->{active} = $rec->{active} ? \1 : \0;
+        $rec->{services} = [ $obj->service_list ];
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 loaded ok', $mid ), rec=>$rec };
     } catch {
         my $err = shift;
@@ -778,6 +779,44 @@ sub ping : Local {
         my $err = shift;
         _error( $err );
         $c->stash->{json} = {success => \0, msg => $err};
+    };
+    $c->forward('View::JSON');
+
+}
+
+sub services : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $class = $p->{classname} || _fail( _loc('Missing parameter classname') );
+    $c->stash->{json} = try {
+        my @services = $class->services;
+        {success => \1, data=>\@services};
+    } ## end try
+    catch {
+        my $err = shift;
+        _error( $err );
+        {success => \0, msg => $err};
+    };
+    $c->forward('View::JSON');
+}
+
+sub service_run : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $class = $p->{classname} || _fail( _loc('Missing parameter classname') );
+    $c->stash->{json} = try {
+        my $service = $c->registry->get( $p->{key} );
+        require Baseliner::Core::Logger::Quiet;
+        my $logger = Baseliner::Core::Logger::Quiet->new;
+        my $ci = _ci( $p->{mid} );
+        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger );
+        _error( $ret );
+        {success => \1, ret=>$logger->data, msg=>$logger->msg };
+    } ## end try
+    catch {
+        my $err = shift;
+        _error( $err );
+        {success => \0, msg => $err};
     };
     $c->forward('View::JSON');
 

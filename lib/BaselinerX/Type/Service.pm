@@ -37,6 +37,8 @@ has 'alias' => (
     }
 );
 
+has icon => (is=>'rw', isa=>'Str', default=>'/static/images/icons/service.png');
+
 sub BUILD {
     my ($self, $params) = @_;
     ## handler should always point to some code
@@ -127,10 +129,14 @@ sub run {
         unless $self->quiet;
 
     # instanciate the service
-    my $instance = $module->new( log=>$logger );
-
+    # insert into object if available
+    my $instance = $args->{obj} 
+        ? do { $args->{obj}->log( $logger ); $args->{obj} }
+        : $module->new( log=>$logger );
+    my $inst_ref = ref($instance) || $instance;
+    
     # check the service implements role
-    _throw qq{Service '$key' doesn't implement Baseliner::Role::Service. Please, put:
+    _throw qq{Service '$key' ($inst_ref) doesn't implement Baseliner::Role::Service. Please, put:
 
         with 'Baseliner::Role::Service'; 
         
@@ -148,7 +154,8 @@ sub run {
     };
     _debug "RC1=$rc";
     if( ! is_number( $rc ) ) { # the service may return anything...
-        $instance->log->data( $rc );
+        #ref($rc) eq 'HASH' ? $instance->log->data( $rc ) : $instance->log->data({ rc=>$rc });
+        $instance->log->data( $rc );   # data is Any for now..
         $rc = 0;
     }
     _debug "RC2=$rc";

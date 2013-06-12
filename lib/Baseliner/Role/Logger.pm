@@ -16,6 +16,9 @@ has 'id' => ( is=>'rw', isa=>'Int', default=>0 );
 # return code
 has 'rc' => ( is=>'rw', isa=>'Int' );
 
+# callback for every message
+has cb => ( is=>'rw', isa=>'CodeRef', default => sub { sub{} } );
+
 # concatenated messages
 has 'msg' => ( is=>'rw', isa=>'Any', default=>'' );
 
@@ -48,6 +51,8 @@ requires 'info';
 requires 'warn';
 requires 'debug';
 requires 'error';
+
+has data => (is=>'rw', isa=>'Any' );   # XXX should be a HASHREF, per BaselinerX::Type::Service (lin ~153) 
 
 #requires 'last_message';
 

@@ -28,9 +28,11 @@ has active   => qw(is rw isa Bool);
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
 requires 'icon';
+#sub icon { '/static/images/icons/ci.png' }
 
-has name    => qw(is rw isa Maybe[Str]);
-has ns      => qw(is rw isa Maybe[Str]);
+has name      => qw(is rw isa Maybe[Str]);
+has ns        => qw(is rw isa Maybe[Str]);
+has versionid => qw(is rw isa Maybe[Str]);
 has moniker  => qw(is rw isa Maybe[Str] lazy 1), 
     default=>sub{   
         my $self = shift; 
@@ -180,10 +182,13 @@ sub save_data {
         my $attr = $meta->get_attribute( $field );
         next unless $attr;
         my $type = $attr->type_constraint->name;
-        if( $type eq 'CI' || $type eq 'CIs') {
-            my $rel_type = $self->rel_type->{ $field };
+        if( $type eq 'CI' || $type eq 'CIs' || $type =~ /^Baseliner::Role::CI/ ) {
+            my $rel_type = $self->rel_type->{ $field } or _fail _loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self );
             next unless $rel_type;
-            push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>delete($data->{$field}) };
+            my $v = delete($data->{$field});  # consider a split on ,  
+            $v = [ split /,/, $v ] unless ref $v;
+            push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>$v }; 
+            #_error( \@master_rel );
             #_fail( "$field is $type - $rel_type" );
         }
     }
@@ -218,7 +223,8 @@ sub save_data {
         my $rel_type_name = $rel->{rel_type}->[1];
         DB->BaliMasterRel->search({ $my_rel, $master_row->mid, rel_type=>$rel_type_name })->delete;
         for my $other_mid ( _array $rel->{value} ) {
-            DB->BaliMasterRel->create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name })
+            $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
+            DB->BaliMasterRel->find_or_create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name })
         }
     }
     return $master_row->mid;
@@ -585,6 +591,23 @@ sub mem_load {
     }
 }
 
+sub service_list {
+    my ($self)=@_;
+    my @services;
+    for my $reg_node ( _array( Baseliner::Core::Registry->module_index->{ ref($self) || $self } ) ) {
+        my $instance = $reg_node->instance;
+        next unless ref $instance;
+        push @services,
+            {
+            name => $instance->name,
+            key  => $reg_node->key,
+            icon => $instance->icon,
+            };
+    }
+    return @services;
+}
+
+
 1;
 
 # Attribute Trait 
@@ -652,6 +675,7 @@ around initialize_instance_slot => sub {
                         $params->{$init_arg} = $arr;
                         $weaken = 0;
                     },
+                    # => sub { _fail 'not found...' } 
                 );
             }
             else {

@@ -54,6 +54,9 @@ sub launch {
         _log _loc "Service logfile '%1'", $data->{logfile};
         $c->stash->{logfile} = $data->{logfile};
     }
+    
+    # maybe we have an object that should be the main instance
+    $config_data->{obj} = $p{obj} if ref $p{obj};
 
     #
     # ******************** RUN *****************

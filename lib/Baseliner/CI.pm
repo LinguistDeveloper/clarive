@@ -39,9 +39,13 @@ sub new {
     }
     if( $args{uri} && ! exists $args{resource} ) {
         require Baseliner::URI;
+        _error( \%args );
         $args{resource} = Baseliner::URI->new( $args{uri} );
     }
-    ref $args{resource} or _throw "Missing or invalid ci";
+    ref $args{resource} or do {
+        _error( \%args );
+        _throw "Missing or invalid ci";
+    };
     # merge resource params ?k=v&... into args
     %args = ( 
         %args,
