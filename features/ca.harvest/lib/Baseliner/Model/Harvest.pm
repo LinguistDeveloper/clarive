@@ -12,6 +12,12 @@ __PACKAGE__->config(
     ],
 );
 
+sub dbis {
+    my ($self)=@_;
+    require DBIx::Simple;
+    return DBIx::Simple->connect( $self->storage->dbh );
+}
+
 =head1 NAME
 
 Baseliner::Model::Harvest - Catalyst DBIC Schema Model
