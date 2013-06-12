@@ -7,6 +7,8 @@ sub icon { '/static/images/icons/page.png' }
 has name       => qw(is rw isa Maybe[Str]);    # basename
 has dir        => qw(is rw isa Str default /);  # my parent
 has path       => qw(is rw isa Str default /);  # fullpath
+has size       => qw(is rw isa Num default -1);  
+has mask       => qw(is rw isa Num default 777);  
 has is_dir     => qw(is rw isa Maybe[Bool]);
 has basename   => qw(is rw isa Str lazy 1), default => sub {
     my ($self)=@_;
@@ -18,6 +20,8 @@ has extension  => qw(is rw isa Str lazy 1), default => sub {
 };
 has module_dependencies => qw(is rw isa ArrayRef), default=>sub{[]};
 has item_relationship => qw(is rw isa Str default item_item); # rel_type
+
+has variables => qw(is rw isa HashRef), default=>sub{ +{} };
 
 sub save_relationships {
     my($self, %p)=@_;

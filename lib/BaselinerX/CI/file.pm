@@ -31,6 +31,11 @@ sub done_slurping {
     $self->_lines([]);
 }
 
+sub source {
+    my($self)=@_;
+    return scalar $self->slurp;
+}
+
 
 1;
 
