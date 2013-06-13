@@ -173,26 +173,26 @@
                     ////////////////////////////////////////////////////////////////////
                     if (form.getValues()['id'] > 0) {
                            form.submit({
-                           params: { action: action,
-                                 type: 'roles_projects',
-                                 projects_checked: projects_checked,
-                                 projects_parents_checked: projects_parents_checked,
-                                 roles_checked: roles_checked
-                           },
-                           success: function(f,a){
-                               Baseliner.message(_('Success'), a.result.msg );
-                               store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-                               form.findField("id").setValue(a.result.user_id);
-                               form.findField("username").getEl().dom.setAttribute('readOnly', true);
-                           },
-                           failure: function(f,a){
-                               Ext.Msg.show({  
-                               title: _('Information'), 
-                               msg: a.result.msg , 
-                               buttons: Ext.Msg.OK, 
-                               icon: Ext.Msg.INFO
-                               });                      
-                           }
+                               params: { action: action,
+                                     type: 'roles_projects',
+                                     projects_checked: projects_checked,
+                                     projects_parents_checked: projects_parents_checked,
+                                     roles_checked: roles_checked
+                               },
+                               success: function(f,a){
+                                   Baseliner.message(_('Success'), a.result.msg );
+                                   store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
+                                   form.findField("id").setValue(a.result.user_id);
+                                   form.findField("username").getEl().dom.setAttribute('readOnly', true);
+                               },
+                               failure: function(f,a){
+                                   Ext.Msg.show({  
+                                   title: _('Information'), 
+                                   msg: a.result.msg , 
+                                   buttons: Ext.Msg.OK, 
+                                   icon: Ext.Msg.INFO
+                                   });                      
+                               }
                            });
                     }
                     else{
@@ -236,7 +236,6 @@
                 });
 
                 ////////////////////////////////////////////////////////////////////
-                if (form.getValues()['id'] > 0) {
                     if (form.getValues()['id'] > 0) {
                            form.submit({
                            params: { action: action,
@@ -268,7 +267,6 @@
                             icon: Ext.Msg.INFO
                         });                         
                     }
-                }
                 //////////////////////////////////////////////////////////////////////////
 
             }
@@ -486,7 +484,7 @@
         var render_rol_field  = function(value,metadata,rec_grid,rowIndex,colIndex,store) {
             if( value==undefined || value=='null' || value=='' ) return '';
             //var script = String.format('javascript:Baseliner.showAjaxComp("/user/infoactions/{0}?id_role={1}&username={2}")', value, rec_grid.data.id_role, rec.data.username );
-            var script = String.format('javascript:Baseliner.user_actions({ username: \"{0}\", id_role: \"{1}\"})', rec.data.username, rec_grid.data.id_role );
+            var script = String.format('javascript:Baseliner.user_actions({ username: \"{0}\", id_role: \"{1}\"})', rec_grid.data.username, rec_grid.data.id_role );
             return String.format("<a href='{0}'>{1}</a>", script, value );
         };
         
@@ -500,7 +498,7 @@
                 forceFit: true
             },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: true,
             columns: [
                 { header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },   
                 { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
