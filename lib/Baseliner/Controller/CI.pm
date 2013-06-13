@@ -61,7 +61,6 @@ sub dispatch {
     my $total;
     my @tree;
 
-    _log "Buscando ".$p->{type}." ".$p->{class};
     if ( !length $p->{anode} && !$p->{type} ) {
         @tree = $self->tree_roles( user => $p->{user} );
     } elsif ( $p->{type} eq 'role' ) {
@@ -128,7 +127,6 @@ sub tree_roles {
         if ( Baseliner->model( 'Permissions' )
             ->user_has_any_action( username => $user, action => 'action.ci.admin.' . $name . '.%') )
         {
-            _log 'Encontrado '. 'action.admin.ci.' . $name;
             $role = 'Generic' if $name eq '';
             push @tree, {
                 _id        => $cnt++,
@@ -148,7 +146,6 @@ sub tree_roles {
             };
         } ## end if ( Baseliner->model(...))
     } $self->list_roles;
-    _log _dump @tree;
     return @tree;
 
 } ## end sub tree_roles
@@ -482,7 +479,7 @@ sub store : Local {
 
     if( my $class = $p->{class} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=> 1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -504,6 +501,7 @@ sub store : Local {
         # return data ordered like the mids
         my @data_ordered;
         my %h = map { $_->{mid} => $_ } @data;
+
         push @data_ordered, delete $h{ $_ } for @$mids;
         push @data_ordered, values %h; # the rest of them at the bottom
         @data = @data_ordered; 
@@ -518,38 +516,46 @@ sub store : Local {
 
 sub ci_create_or_update {
     my %p = @_;
-    return $p{mid} if length $p{mid};
     my $ns = $p{ns} || delete $p{data}{ns};
+    my $class = $p{class};
+
+    _fail _loc( 'Missing class for %1', $p{name} ) if !$class;
+    
     # check if it's an update, in case of foreign ci
-    if( $ns ) {
-        my $row = Baseliner->model('Baseliner::BaliMaster')->search({ ns=>$ns })->first;
-        if( ref $row ) {  # it's an update
-            if( ref $p{data} ) {
-                $p{yaml} = _dump( delete $p{data} );
-                $row->yaml( $p{yaml} );
-                $row->update;
-            }
-            #$row->name( $name ) if defined $name;
-            #$row->collection( $p{collection} ) if defined $p{collection};
-            #$row->yaml( _dump( $p{data} ) );
-            return $row->mid;
-        }
-    }
-    # new
-    # find collection
-    my $collection = $p{collection};
-    my $name = $p{name};
-    if( !$collection && exists $p{class} ) {
-        my $class = "BaselinerX::CI::$p{class}";
-        $collection = $class->collection;
-        _fail _loc( 'Missing collection for class %1', $class ) unless $collection;
+
+    # my $master_row = master_new $collection => $name => $p{data};
+    # $master_row->ns( $ns ) if $p{ns};
+    # $master_row->update;
+    # return $master_row->mid;
+    if ( length $p{mid} ) {
+        _ci( $p{mid} )->save( data => $p{data} );
+        return $p{mid};
     } else {
-        _fail _loc( 'Missing collection for %1', $name ) unless $collection;
-    }
-    my $master_row = master_new $collection => $name => $p{data};
-    $master_row->ns( $ns ) if $p{ns};
-    $master_row->update;
-    return $master_row->mid;
+        my $name = $p{name};
+        my $mid; 
+        $class = "BaselinerX::CI::$p{class}";
+
+        my @same_name_cis = DB->BaliMaster->search( {name => $name, collection => $p{collection} // $class->collection } )->hashref->all;
+
+        if ( scalar @same_name_cis > 1 ) {
+            for ( @same_name_cis ) {
+                if ( _ci( $_->{mid} )->{ci_class} eq $class ) {
+                    $mid = $_->{mid};
+                    last;
+                }
+            }
+        } elsif ( scalar @same_name_cis == 1 ) {
+            $mid = $same_name_cis[ 0 ]->{mid};
+        }
+
+
+        if ( !$mid ) {
+            return $class->save( name => $name, data => $p{data} );
+        } else {
+            _ci( $mid )->save( data => $p{data} );
+            return $mid;
+        }
+    } ## end else [ if ( length $p{mid} ) ]
 };
 
 =head2 sync
@@ -576,7 +582,6 @@ sub sync : Local {
         while( my ($k,$v) = each %$data ) {
             if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
-                    _log( _dump( $ci ) );
                     push @ci_pre_mid, ci_create_or_update( %$ci ) ;
                 }
             }
@@ -588,6 +593,7 @@ sub sync : Local {
                 $ci_data{ $k } = $v;
             }
         }
+
 
         $mid = ci_create_or_update( name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
