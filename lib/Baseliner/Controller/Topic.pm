@@ -997,6 +997,17 @@ sub filters_list : Local {
     
     #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
+    my $where = undef;
+    my $arg = {order_by=>'seq'};
+    
+    if($category_id){
+        $arg->{join} = ['categories_status'];
+        $where->{'categories_status.id_category'} = $category_id;
+    }
+    $row = $c->model('Baseliner::BaliTopicStatus')->search($where,$arg);
+    
+    #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
+    
     ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
     my %tmp;
     map { $tmp{$_->{id_status_from}} = 'id'; $tmp{$_->{id_status_to}} = 'id' } 
