@@ -144,17 +144,17 @@ sub tree_classes {
     my $role = $p{role};
     my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
     my @tree = map {
-        my $item = $_;
+        my $package = $_;
         my $collection = $_->collection;
-        my $ci_form = $self->form_for_collection( $collection );
-        $item =~ s/^BaselinerX::CI:://g;
+        my $ci_form = $self->form_for_ci( $package, $collection );
+        $package =~ s/^BaselinerX::CI:://g;
         $cnt++;
         +{  _id        => ++$cnt,
             _parent  => $p{parent} || undef,
             _is_leaf   => \0,
             type       => 'class',
             #mid        => $cnt,
-            item       => $item,
+            item       => $package,
             collection => $collection,
             ci_form  => $ci_form,
             class      => $_,
@@ -169,9 +169,11 @@ sub tree_classes {
     return @tree; 
 }
 
-sub form_for_collection {
-    my ($self, $collection )=@_;
-    my $ci_form = sprintf "/ci/%s.js", $collection;
+sub form_for_ci {
+    my ($self, $class, $collection )=@_;
+    my $ci_form = $class && $class->can('form') 
+        ? $class->form 
+        : sprintf( "/ci/%s.js", $collection );
     my $component_exists = -e Baseliner->path_to( 'root', $ci_form );
     return $component_exists ? $ci_form : '';
 }
@@ -227,8 +229,10 @@ sub tree_objects {
     my @tree = map {
         my $row = $_;
         my $data = $p{no_yaml} ? {} : _load( $row->{yaml} );
+        my $row_class = $class_coll{ $row->{collection} };
+        # the form may be in cache, otherwise ask the class for a sub form {} formname, otherwise use the collection name
         my $ci_form = $forms{ $row->{collection} } 
-            // ( $forms{ $row->{collection} } = $self->form_for_collection( $row->{collection} ) );
+            // ( $forms{ $row->{collection} } = $self->form_for_ci( $row_class, $row->{collection} ) );
         
         # list properties: field: value, field: value ...
         my $pretty = $p{pretty} && !$p{no_yaml}
@@ -238,7 +242,6 @@ sub tree_objects {
                 "$_: $d"
                 } grep { length $data->{$_} } keys %$data ) }
             : '';
-        my $row_class = $class_coll{ $row->{collection} };
         my $noname = $row->{collection}.':'.$row->{mid};
         +{
             _id               => $row->{mid},

@@ -320,7 +320,7 @@ sub load {
 
 sub ci_form {
     my ($self) = @_;
-    my $component = sprintf "/ci/%s.js", $self->collection;
+    my $component = $self->can('form') ? $self->form : sprintf( "/ci/%s.js", $self->collection );
     my $fullpath = Baseliner->path_to( 'root', $component );
     return -e $fullpath  ? $component : '';
 }

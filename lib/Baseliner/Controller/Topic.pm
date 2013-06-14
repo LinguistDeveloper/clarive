@@ -196,7 +196,6 @@ sub related : Local {
         
         }        
     }
-    
     my $rs_topic = $c->model('Baseliner::BaliTopic')->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
     rs_hashref( $rs_topic );
     my @topics = map {
@@ -443,6 +442,8 @@ sub view : Local {
     my $topic_mid = $p->{topic_mid} || $p->{action};
     my $id_category;
     
+    try {
+    
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
     $c->stash->{permissionEdit} = 0;
@@ -459,6 +460,7 @@ sub view : Local {
     if($topic_mid || $c->stash->{topic_mid} ){
  
         my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
+        _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
         $c->stash->{category_meta} = $category->forms;
         
@@ -533,6 +535,10 @@ sub view : Local {
     } else {
         $c->stash->{template} = '/comp/topic/topic_main.js';
     }
+    } catch {
+        $c->stash->{json} = { success=>\0, msg=>"". shift() };
+        $c->forward('View::JSON');
+    };
 }
 
 

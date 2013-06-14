@@ -12,7 +12,6 @@
     var permComment = <% $permissionComment ? 'true' : 'false' %>;
     var html_buttons = <% $HTMLbuttons == 1 ? 1 : 0 %>;
     
-    
     var category_meta = "<% $category_meta %>";
     var topic_main_class_name;
     if( category_meta ) {

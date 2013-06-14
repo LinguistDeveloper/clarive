@@ -22,6 +22,7 @@ features/nature.tp
 features/nature.ssrs
 features/gbp
 features/#
+root/identicon/*
 inc
 t/balitest.db
 t/old

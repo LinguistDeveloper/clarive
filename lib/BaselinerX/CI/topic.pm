@@ -32,6 +32,7 @@ around table_update_or_create => sub {
     $data->{title} //= $name; 
     $data->{created_by} = 'internal';
     delete $data->{active};
+    delete $data->{versionid};
     delete $data->{moniker};
     delete $data->{data};
     delete $data->{ns};

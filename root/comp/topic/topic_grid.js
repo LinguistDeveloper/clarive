@@ -434,9 +434,15 @@
             }
         }
         if(btn_mini.pressed){
-            return tag_color_html + "<div style='font-weight:bold; font-size: 12px; "+strike+"' >" + value + "</div>";          
+            return tag_color_html 
+                + String.format("<span style='font-weight:bold; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}</span>", 
+                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id ); 
         }else{
-            return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>" + _('by %1', rec.data.created_by) + "</font ></div>";                        
+            return tag_color_html + 
+                String.format( "<span style='font-weight:bold; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
+                        + "<br><div style='margin-top: 5px'>{1}<font color='808080'></br>{2}</font ></div>", 
+                        value, date_created_on, _('by %1',rec.data.created_by), 
+                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id );                        
         }
         
     };
@@ -691,8 +697,7 @@
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
-        var title = _(r.get( 'category_name' )) + ' #' + r.get('topic_mid');
-        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title , { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
+        Baseliner.show_topic_from_row( r, grid_topics );
     });
     
     grid_topics.on( 'render', function(){
