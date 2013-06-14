@@ -1,0 +1,47 @@
+<%args>
+    $meta
+    $data
+</%args>
+% if( !$meta->{hidden} ) {
+    <tr>
+        <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
+    </tr>
+% }     
+<%perl>
+    my $json = $data->{$meta->{bd_field}} ;
+    $json = Util->_unac( $json );
+    if( !$meta->{hidden} && length $json ) {
+        my $d = Util->_from_json( $json ); 
+        my @rows = Util->_array( $d );
+        my @head = keys %{ $rows[0] || {} };
+</%perl>
+
+    <tr>
+      <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
+% if( @rows ) { 
+          <table class="table table-bordered" style="margin-top: 10px; width: 100%">
+              <thead>
+                <tr>
+% foreach my $h ( @head ) {
+                <th><% _loc( $h ) %></th>
+% }
+                </tr>
+              </thead>
+              <tbody>
+% foreach my $row ( @rows ) {
+                <tr>
+% foreach my $h ( @head ) {
+                    <td style="font-size: <% $meta->{td_font_size} // 12 %>px"><% $row->{$h} %></td>
+% }
+                </tr>
+% }
+              </tbody>
+          </table>
+      </td>
+    </tr>
+% } # if 
+% } else { # if json
+    <tr>
+        <td colspan="2"><% _loc( 'None' ) %></td>
+    </tr>
+% }
