@@ -6,6 +6,12 @@ msgstr ""
 msgid "To Open"
 msgstr "Abrir"
 
+msgid "None"
+msgstr "No hay"
+
+msgid "Pattern"
+msgstr "Patrón"
+
 msgid "Progress"
 msgstr "Avance"
 
