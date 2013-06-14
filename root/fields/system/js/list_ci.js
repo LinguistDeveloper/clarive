@@ -16,41 +16,16 @@ params:
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
-    /*
-	var topics = new Array();
-	
-	if(data && eval('data.' + meta.bd_field)){
-		var eval_topics = eval('data.' + meta.bd_field);
-		for(i=0; i<eval_topics.length;i++){
-			topics.push(eval_topics[i].mid);
-		}
-	}else{
-		topics = [];
-	}
-	
-    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0, filter: meta.filter ? meta.filter : ''} });
-	
-    var topic_box = new Baseliner.model.Topics({
-		fieldLabel: _(meta.name_field),
-		name: meta.name_field,
-        hiddenName: meta.id_field,
-        store: topic_box_store,
-		disabled: meta ? meta.readonly : true,
-		singleMode: meta.single_mode
-    });
-	
-    topic_box_store.on('load',function(){
-        topic_box.setValue( topics ) ;            
-    });
-    */
+    var ci = {};
+    if( meta.ci_role ) ci['role'] = meta.ci_role;
+    else if( meta.ci_class ) ci['class'] = meta.ci_class;
 	
 	return [
-       Baseliner.ci_box({
+       Baseliner.ci_box(Ext.apply({
            fieldLabel: _(meta.name_field),
            name: meta.name_field,
-           singleMode: meta.single_mode,
-           role: 'Server'
-       })
+           singleMode: meta.single_mode
+       }, ci) )
     ]
 })
 

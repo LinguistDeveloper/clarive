@@ -19,14 +19,19 @@ params:
     
     var ci_meta = {};
     if( meta.ci_role ) ci_meta['role'] = meta.ci_role;
+    if( meta.ci_class ) ci_meta['class'] = meta.ci_class;
     
     var value = data[ meta.id_field ];
-    var cis = new Baseliner.CIGrid({ title:_( meta.name_field ), ci: ci_meta,
+    var cis = new Baseliner.CIGrid({ 
+        ci: ci_meta,
         title: null,
-        labelAlign: 'top', 
+        //labelAlign: 'top', 
+        style: 'margin-top: 20px', 
         height: meta.height || 200,
         fieldLabel: meta.name_field,
-        value: value , name: meta.id_field });
+        value: value , 
+        name: meta.id_field 
+    });
 	return [
         cis
     ]

@@ -2,10 +2,11 @@
 name: Grid Editor
 params:
     origin: 'template'
-    html: ''
     js: '/fields/templates/js/grid_editor.js'
+    html: '/fields/templates/html/grid_editor.html'
     field_order: 100
-    section: 'details'
+    field_order_html: 1000
+    section: 'head'
 ---
 */
 (function(params){
@@ -47,14 +48,39 @@ params:
         rows: [groupRow]
     });
     
-    var columns = [
+    var default_columns = [
 		  {dataIndex: 'id', hidden: true},
-          {dataIndex: 'descripcion', header: 'Descripción', editor: new Ext.form.TextField({})},
-          {dataIndex: 'manual', header: 'Manual', editor: new Ext.form.TextField({})},
-          {dataIndex: 'sct', header: 'SCT', editor: new Ext.form.TextField({})},
-          {dataIndex: 'rs_esperado', header: 'Resultado Esperado', editor: new Ext.form.TextField({})},
+          {dataIndex: 'descripcion', header: 'Descripción', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'manual', header: 'Manual', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'sct', header: 'SCT', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'rs_esperado', header: 'Resultado Esperado', editor: new Ext.form.TextArea({})},
 		  {dataIndex: 'sda_obtenida', hidden: meta.typeForm == 'EJC' ? false : true ,header: 'Salida Obtenida', editor: new Ext.form.TextField({})}
     ];
+    var cols_templates = {
+		  id: {dataIndex: 'id', hidden: true},
+          textarea: {dataIndex: 'descripcion', header: 'Descripción', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'manual', header: 'Manual', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'sct', header: 'SCT', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'rs_esperado', header: 'Resultado Esperado', editor: new Ext.form.TextArea({})},
+		  {dataIndex: 'sda_obtenida', hidden: meta.typeForm == 'EJC' ? false : true ,header: 'Salida Obtenida', editor: new Ext.form.TextField({})}
+    };
+    if( meta.columns != undefined ) {
+        var cc = Ext.isArray( meta.columns ) ? meta.columns : meta.columns.split(';');
+        Ext.each( meta.columns, function(colt){
+            if( Ext.isObject( colt ) ) {
+                cols.push( colt );
+            } else {
+                var ct = cols_templates[ colt ];
+                if( ct ) cols.push( ct );
+            }
+        });
+    } else {
+        Ext.each( cols_keys, function(colt){
+            var ct = cols_templates[ colt ];
+            if( ct ) cols.push( ct );
+        });
+    }
+    delete c['columns'];
      	
     var button_add = new Baseliner.Grid.Buttons.Add({
 		text:'',
@@ -79,6 +105,19 @@ params:
         text: _(''),
         tooltip: _('Delete'),
         cls: 'x-btn-icon',	
+        disabled: false,		
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            Ext.each( sm.getSelections(), function(r) {
+                grid.store.remove( r );
+            });
+        }
+    });
+	
+    var button_delete_all = new Ext.Button({
+        text: _(''),
+        tooltip: _('Delete All'),
+        icon: '/static/images/icons/delete.png',
         disabled: false,		
         handler: function() {
             //add_step()
@@ -119,8 +158,6 @@ params:
 			'-'
 		]		
     });
-
-	
 	
 	return [
 		{ xtype: 'hidden', name: meta.id_field },

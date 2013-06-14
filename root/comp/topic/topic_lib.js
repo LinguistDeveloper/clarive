@@ -7,6 +7,31 @@ Baseliner.Topic.rt = Ext.data.Record.create([
 
 Baseliner.topic_category_class = {};
 
+Baseliner.show_topic = function(topic_mid, title, params) {
+    Baseliner.add_tabcomp('/topic/view', title , Ext.apply({ topic_mid: topic_mid, title: title }, params) );
+};
+
+
+Baseliner.topic_title = function( mid, category, color) {
+    var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
+    return color 
+        ? String.format( '<span id="boot" style="background:transparent"><span class="label" style="background-color:{1}">{2} #{0}</span></span>', mid, color, uppers )
+        : String.format( '<span id="boot" style="background:transparent"><span class="label" style="background-color:{2}">{0} #{1}</span></span>', uppers, mid, color )
+        ;
+}
+
+Baseliner.show_topic_colored = function(mid, category, color, grid_id) {
+    var title = Baseliner.topic_title( mid, _(category), color );
+    Baseliner.show_topic( mid, title, { topic_mid: mid, title: title, _parent_grid: grid_id } );
+    //Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title ,  );
+}
+
+Baseliner.show_topic_from_row = function(r, grid) {
+    var title = Baseliner.topic_title( r.get('topic_mid'), _(r.get( 'category_name' )), r.get('category_color') );
+    Baseliner.show_topic( r.data.topic_mid, title, { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
+    //Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title ,  );
+}
+
 Baseliner.Topic.StoreProject = Ext.extend(Ext.data.Store, {
     constructor: function(config) {
         config = Ext.apply({
@@ -257,10 +282,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             });
         };
     
-        Baseliner.show_topic = function(topic_mid, title) {
-            Baseliner.add_tabcomp('/topic/view', title , { topic_mid: topic_mid, title: title } );
-        };
-    
         // if id_com is undefined, then its add, otherwise it's an edit
         Baseliner.Topic.comment_edit = function(topic_mid, id_com) {
             var win_comment;    
@@ -429,9 +450,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_edit.hide();
         }
         
-        self.tab_icon = '/static/images/icons/topic_one.png';
+        //self.tab_icon = '/static/images/icons/topic_one.png';
         if( ! params.title ) {
-            self.setTitle("#" + params.topic_mid) 
+            self.setTitle( Baseliner.topic_title( params.topic_mid, params.category, params.category_color ) ) 
         }
           
         Ext.apply(this, {
@@ -593,7 +614,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) },
                success: function(f,a){
                     Baseliner.message(_('Success'), a.result.msg );
-                    if( self._parent_grid != undefined && self._parent_grid.getStore()!=undefined ) {
+                    if( self._parent_grid != undefined && ! Ext.isObject( self._parent_grid ) ) {
+                        self._parent_grid = Ext.getCmp( self._parent_grid ); 
+                    }
+                    if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore()!=undefined ) {
                         self._parent_grid.getStore().reload();
                     }
                         

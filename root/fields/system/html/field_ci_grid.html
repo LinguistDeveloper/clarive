@@ -10,20 +10,26 @@
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
 % if( @rows ) { 
-          <table class="table table-bordered" style="margin-top: 10px; width: 400px">
+          <table class="table table-bordered" style="margin-top: 10px; width: 100%">
               <tbody>
 % foreach my $ci ( map { _ci($_) } @rows ) {
 <tr>
     <td width=32><img src="<% $ci->icon %>" /></td>
     <td><% $ci->name %></td>
-    <td><% $ci->collection %></td>
+    <td width="1">v<% $ci->versionid %></td>
+    <td width="1"><% $ci->collection %></td>
 </tr>
 % }
               </tbody>
           </table>
       </td>
     </tr>
-% } # if 
+% } else { # if 
+    <tr>
+        <td colspan="2"><% _loc( 'None' ) %></td>
+    </tr>
+% }
+
 <%doc>
 % if( _array( $data->{$meta->{id_field}} ) ) {
     <ul class="nav nav-list">

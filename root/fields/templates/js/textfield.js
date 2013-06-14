@@ -19,7 +19,7 @@ params:
             xtype:'textfield',
             fieldLabel: _(meta.name_field),
             name: meta.id_field,
-            value: data ? data[ meta.bd_field ] : '', 
+            value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ), 
             style: { 'font-size': '16px', float: 'left' },
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
