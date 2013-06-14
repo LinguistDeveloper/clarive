@@ -2275,20 +2275,42 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     enableDragDrop: true, // enable drag and drop of grid rows
     constructor: function(c){
         //var dragger = new Baseliner.RowDragger({});
-        self.sm = new Baseliner.CheckboxSelectionModel({singleSelect:false});
+        self.sm = new Baseliner.CheckboxSelectionModel({
+            checkOnly: true,
+            singleSelect:false
+        });
+        //self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
 
         var cols = [
-          //dragger,
-          self.sm,
-          { width: 40, dataIndex: 'icon', renderer: Baseliner.render_icon },
-          { width: 40, dataIndex: 'mid', header: _('ID') },
-          { header: _('Name'), width: 240, dataIndex: 'name', 
-              renderer: Baseliner.render_ci },
-          { header: _('Class'), width: 120, dataIndex: 'class' },
-          { header: _('Collection'), width: 120, dataIndex: 'collection' },
-          { header: _('Properties'), width: 240, dataIndex: 'pretty_properties' },
-          { header: _('Version'), width: 80, dataIndex: 'versionid' }
+            //dragger,
+            self.sm
         ];
+        var cols_keys = ['icon', 'mid', 'name', 'versionid', 'collection', 'properties' ];
+        var cols_templates = {
+          icon : { width: 40, dataIndex: 'icon', renderer: Baseliner.render_icon },
+          mid: { width: 40, dataIndex: 'mid', header: _('ID') },
+          name: { header: _('Name'), width: 240, dataIndex: 'name', renderer: Baseliner.render_ci },
+          'class': { header: _('Class'), width: 120, dataIndex: 'class' },
+          collection: { header: _('Collection'), width: 120, dataIndex: 'collection' },
+          properties: { header: _('Properties'), width: 240, dataIndex: 'pretty_properties' },
+          versionid: { header: _('Version'), width: 80, dataIndex: 'versionid' }
+        };
+        if( Ext.isArray( c.columns ) ) {
+            Ext.each( c.columns, function(colt){
+                if( Ext.isObject( colt ) ) {
+                    cols.push( colt );
+                } else {
+                    var ct = cols_templates[ colt ];
+                    if( ct ) cols.push( ct );
+                }
+            });
+        } else {
+            Ext.each( cols_keys, function(colt){
+                var ct = cols_templates[ colt ];
+                if( ct ) cols.push( ct );
+            });
+        }
+        delete c['columns'];
         var store = new Ext.data.SimpleStore({
             fields: ['mid','name','versionid', 'icon', 'bl', 'item', 'pretty_properties', 'class', 'collection' ],
             data: [ ]
@@ -2307,7 +2329,6 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         if( self.ci == undefined ) self.ci = {};
         if( self.ci_grid == undefined ) self.ci_grid = {};
-        //self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
         self.ci_store = new Baseliner.store.CI({ 
             baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store' }, self.ci )
         });

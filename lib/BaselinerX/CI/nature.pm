@@ -58,6 +58,7 @@ sub scan {
             push @nature_items, $item ; 
         }
     }
+    # keep track of my items
     $self->items( \@nature_items );
 }
 

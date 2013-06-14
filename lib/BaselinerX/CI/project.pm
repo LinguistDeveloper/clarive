@@ -13,6 +13,10 @@ sub rel_type {
     { repositories=>[ from_mid => 'project_repository'] }
 }
 
+service 'scan' => 'Run Scanner' => sub {
+    return 'Project scanner disabled';   
+};
+
 around table_update_or_create => sub {
    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
  

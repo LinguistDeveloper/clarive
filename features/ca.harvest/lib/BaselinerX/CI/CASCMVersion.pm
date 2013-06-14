@@ -16,6 +16,8 @@ service 'view_source' => 'View Source' => sub {
     $self->source;
 };
 
+sub form { '/ci/item.js' }
+
 sub source {
     my ($self) = @_;
     my $db = Baseliner::Core::DBI->new( model=>'Harvest' );

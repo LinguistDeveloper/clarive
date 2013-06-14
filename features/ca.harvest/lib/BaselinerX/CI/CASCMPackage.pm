@@ -48,6 +48,7 @@ sub items {
         my $r = $_;
         my $vp = $r->{path};
         $vp =~ s{\\}{/}g;
+        my $basename = $r->{itemname} =~ /^(.*)\.\w+$/ ? $1 : $r->{itemname};
         my $path = "$vp/$r->{itemname}";
         BaselinerX::CI::CASCMVersion->new(
             name             => $r->{itemname},
@@ -61,6 +62,7 @@ sub items {
             versionobjid     => $r->{currversion},
             versiondataobjid => $r->{versiondataobjid},
             versionid        => $r->{mappedversion},
+            moniker          => $basename, 
             compressed       => $r->{compressed} eq 'Y',
             ns               => 'harversion/' . $r->{currversion}
         );
