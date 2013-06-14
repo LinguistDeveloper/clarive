@@ -90,8 +90,10 @@ padding: 2px 4px 2px 7px;
 % }
 % }else {
 <div id="boot" style="margin: 10px 10px 10px 10px">
-<div class="row">
-        <div class="span7">
+        <table width="100%">
+        <tr>
+        <td width="70%">
+        <!-- div class="span7" style="xwidth: 60%" -->
             <table style="width: 100%">
                 <tbody>
 % foreach my $field ( sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} eq 'head' } _array( $topic_meta ) ) {
@@ -101,9 +103,11 @@ padding: 2px 4px 2px 7px;
 % }
                 </tbody>
             </table>
-        </div>
-        <div class="span5">
-            <table class="table table-bordered table-condensed">
+        <!-- /div -->
+        </td>
+        <td width="30%" style="padding-left: 30px">
+        <!-- div class="xspan5" style="float: right; margin-right: 30px" -->
+            <table style="width: 100%" class="table table-bordered table-condensed">
                 <tbody>
 % foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'body' } _array( $topic_meta ) ) {
 % if ($field->{html}){
@@ -112,7 +116,7 @@ padding: 2px 4px 2px 7px;
 % }
 
                     <tr>
-                        <td colspan=2>
+                        <td colspan=2 style="white-space: nowrap">
 % foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'details' } _array( $topic_meta ) ) {
 % if ($field->{html}){
     <& $field->{html}, data=>$topic_data, meta=>$field &>
@@ -124,10 +128,12 @@ padding: 2px 4px 2px 7px;
             </table>
             
             
-        </div>
+        <!-- /div -->
+        </td>
+        </tr>
+        </table>
 %}
-</div>
-    <div class="clear"></div>
+<div class="clear"></div>
     <br><br>
     <ul class="nav nav-tabs">
         <li <% $tabactive[0] and 'class="active"' %>>
