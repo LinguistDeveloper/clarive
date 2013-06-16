@@ -1624,8 +1624,8 @@ Baseliner.loading_panel = function(msg){
     return new Ext.Container({
         margin: 70,
         html: [ 
-            '<div style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>',
-            '<div style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">',
+            '<div style="position:absolute; left:0; top:0; width:100%; height:100%; background-color:white;"></div>',
+            '<div style="position:absolute; left:45%; top:40%; padding:2px; height:auto;">',
             '<center>',
             '<img style="" src="/static/images/loading.gif" />',
             '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
@@ -2582,3 +2582,117 @@ Baseliner.run_service = function(params, service){
         win.doLayout();
     });
 }
+
+// Simple JavaScript Templating
+// John Resig - http://ejohn.org/ - MIT Licensed
+Baseliner.tmpl_cache = {};
+
+Baseliner.tmpl = function tmpl(str, data){
+// Figure out if we're getting a template, or if we need to
+// load the template - and be sure to cache the result.
+var fn = !/\W/.test(str) ?
+  Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
+    tmpl(document.getElementById(str).innerHTML) :
+ 
+  // Generate a reusable function that will serve as a template
+  // generator (and which will be cached).
+  new Function("obj",
+    "var p=[],print=function(){p.push.apply(p,arguments);};" +
+   
+    // Introduce the data as local variables using with(){}
+    "with(obj){p.push('" +
+   
+    // Convert the template into pure JavaScript
+    str
+      .replace(/[\r\t\n]/g, " ")
+      .split("[%").join("\t")
+      .replace(/((^|%])[^\t]*)'/g, "$1\r")
+      .replace(/\t=(.*?)%]/g, "',$1,'")
+      .split("\t").join("');")
+      .split("%]").join("p.push('")
+      .split("\r").join("\\'")
+  + "');}return p.join('');");
+
+// Provide some basic currying to the user
+return data ? fn( data ) : fn;
+};
+
+Baseliner.Pills = Ext.extend(Ext.form.Field, {
+    //shouldLayout: true,
+    initComponent : function(){
+        Baseliner.Pills.superclass.initComponent.apply(this, arguments);
+    },
+    defaultAutoCreate : {tag: 'div', id: 'boot', 'class':'', style:'margin-top: 0px; height: 30px;' },
+    onRender : function(){
+        Baseliner.Pills.superclass.onRender.apply(this, arguments);
+        this.list = [];
+        var self = this;
+        self.anchors = [];
+        if( this.options != undefined  ) {
+            var opts = Ext.isArray( this.options ) ? this.options : this.options.split(';');
+            Ext.each(opts, function(opt){
+                var vv = opt.split(',');
+                var v = vv[0];
+                var bg = vv[1] ;
+                var li = document.createElement('li');
+                li.className = self.value == v ? 'active' : '';
+                li.style['marginTop'] = '0px';
+                var anchor = document.createElement('a');
+                if( bg && self.value == v ) anchor.style['backgroundColor'] = bg;
+                anchor.href = '#'; 
+                anchor.onclick = function(){ 
+                    for( var i=0; i<self.list.length; i++) {
+                        self.list[i].className = '';
+                    }
+                    for( var i=0; i<self.anchors.length; i++) {
+                        self.anchors[i].style['backgroundColor'] = '';
+                    }
+                    li.className = 'active'; 
+                    if( bg ) anchor.style['backgroundColor'] = bg;
+                    self.value = v;
+                    self.$field.value = v;
+                    return false;
+                }
+                anchor.innerHTML = v;
+                li.appendChild( anchor );
+                self.list.push( li );
+                self.anchors.push( anchor );
+            });
+        }
+        
+        // the main navbar
+        var ul = document.createElement('ul');
+        ul.className = "nav nav-pills";
+        for( var i=0; i<self.list.length; i++) ul.appendChild( self.list[i] );
+        this.el.dom.appendChild( ul );
+        
+        // the hidden field
+        self.$field = document.createElement('input');
+        self.$field.type = 'hidden';
+        self.$field.value = self.value;
+        self.$field.name = self.name;
+        this.el.dom.appendChild( self.$field );
+    },
+    // private
+    redraw : function(){ 
+    },
+    initEvents : function(){
+        this.originalValue = this.getValue();
+    },
+    // These are all private overrides
+    getValue: function(){
+        return this.value;
+    },
+    setValue: function( v ){
+        this.value = v;
+        this.redraw();
+    },
+    setSize : Ext.emptyFn,
+    setWidth : Ext.emptyFn,
+    setHeight : Ext.emptyFn,
+    setPosition : Ext.emptyFn,
+    setPagePosition : Ext.emptyFn,
+    markInvalid : Ext.emptyFn,
+    clearInvalid : Ext.emptyFn
+});
+
