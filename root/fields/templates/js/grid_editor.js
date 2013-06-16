@@ -14,15 +14,80 @@ params:
 	var data = params.topic_data;
 	var ff = params.form.getForm();
 	
-	var fields = [
-		{name: 'id'},
-		{name: 'descripcion'},
-		{name: 'manual'},
-		{name: 'sct'},
-		{name: 'rs_esperado'},
-		{name: 'sda_obtenida'}
-	];
 	
+    /*
+    var groupRow = [
+		{colspan: 2},
+        {header: 'Datos Entrada', colspan: 2, align: 'center'},
+		{colspan: 2}
+    ];
+
+    var group = new Ext.ux.grid.ColumnHeaderGroup({
+        rows: [groupRow]
+    });
+    */
+    
+    var render_checkbox = function(v){
+        return v 
+            ? '<img src="/static/images/icons/checkbox.png">'
+            : '<img src="/static/images/icons/delete.gif">';
+    }
+    
+    var cols, fields;
+    var cols_templates = {
+          id : function(){ return {width: 10 } },
+          index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
+          htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default:'' } },
+          textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default:'' } },
+          checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default:false, renderer: render_checkbox } },
+          textarea  : function(){ return { editor: new Ext.form.TextArea({}), default:'', renderer: Baseliner.render_wrap } }
+    };
+    if( meta.columns != undefined ) {
+        cols=[]; fields=[];
+        var cc = Ext.isArray( meta.columns ) ? meta.columns : meta.columns.split(';');
+        Ext.each( cc, function(col){
+            var ct;
+            if( Ext.isObject( col ) ) {
+                ct = col;
+            } else {
+                var col_s = col.split(',');
+                if( col_s[0] == undefined ) return;
+                ct = cols_templates[ col_s[1] ] || cols_templates['textarea'];
+                ct = ct();
+                ct.header = col_s[0];
+                if( col_s[2] != undefined ) ct.width = col_s[2];
+                ct.sortable = true;
+                if( col_s[3] ) ct.default = col_s[3];
+                ct.dataIndex = Baseliner.name_to_id( col_s[0] );
+            }
+            cols.push( ct );
+            fields.push( ct.dataIndex );
+        });
+    } else {
+        cols = [
+		  {dataIndex: 'id', hidden: true},
+          {dataIndex: 'descripcion', header: 'Descripción', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'manual', header: 'Manual', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'sct', header: 'SCT', editor: new Ext.form.TextArea({})},
+          {dataIndex: 'rs_esperado', header: 'Resultado Esperado', editor: new Ext.form.TextArea({})},
+		  {dataIndex: 'sda_obtenida', hidden: meta.typeForm == 'EJC' ? false : true ,header: 'Salida Obtenida', editor: new Ext.form.TextField({})}
+        ];
+        fields = [
+            {name: 'id'},
+            {name: 'descripcion'},
+            {name: 'manual'},
+            {name: 'sct'},
+            {name: 'rs_esperado'},
+            {name: 'sda_obtenida'}
+        ];
+    }
+    
+    // default record for adding
+    var rec_default = {};
+    Ext.each( cols, function(col){
+        rec_default[ col.dataIndex ] = col.default || '';
+    });
+    
 	var reader = new Ext.data.JsonReader({
 		totalProperty: 'total',
 		successProperty: 'success',
@@ -36,65 +101,13 @@ params:
 		reader: reader,
 		data:  records ? Ext.util.JSON.decode(records) : []
 	});
-
-	
-    var groupRow = [
-		{colspan: 2},
-        {header: 'Datos Entrada', colspan: 2, align: 'center'},
-		{colspan: 2}
-    ];
-
-    var group = new Ext.ux.grid.ColumnHeaderGroup({
-        rows: [groupRow]
-    });
-    
-    var default_columns = [
-		  {dataIndex: 'id', hidden: true},
-          {dataIndex: 'descripcion', header: 'Descripción', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'manual', header: 'Manual', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'sct', header: 'SCT', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'rs_esperado', header: 'Resultado Esperado', editor: new Ext.form.TextArea({})},
-		  {dataIndex: 'sda_obtenida', hidden: meta.typeForm == 'EJC' ? false : true ,header: 'Salida Obtenida', editor: new Ext.form.TextField({})}
-    ];
-    var cols_templates = {
-		  id: {dataIndex: 'id', hidden: true},
-          textarea: {dataIndex: 'descripcion', header: 'Descripción', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'manual', header: 'Manual', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'sct', header: 'SCT', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'rs_esperado', header: 'Resultado Esperado', editor: new Ext.form.TextArea({})},
-		  {dataIndex: 'sda_obtenida', hidden: meta.typeForm == 'EJC' ? false : true ,header: 'Salida Obtenida', editor: new Ext.form.TextField({})}
-    };
-    if( meta.columns != undefined ) {
-        var cc = Ext.isArray( meta.columns ) ? meta.columns : meta.columns.split(';');
-        Ext.each( meta.columns, function(colt){
-            if( Ext.isObject( colt ) ) {
-                cols.push( colt );
-            } else {
-                var ct = cols_templates[ colt ];
-                if( ct ) cols.push( ct );
-            }
-        });
-    } else {
-        Ext.each( cols_keys, function(colt){
-            var ct = cols_templates[ colt ];
-            if( ct ) cols.push( ct );
-        });
-    }
-    delete c['columns'];
      	
     var button_add = new Baseliner.Grid.Buttons.Add({
 		text:'',
         tooltip: _('Create'),
         disabled: false,		
         handler: function() {
-			var u = new grid.store.recordType({
-				descripcion : '',
-				manual: '',
-				sct : '',
-				rs_esperado : '',
-				sda_obtenida : ''
-			});
-
+			var u = new grid.store.recordType(rec_default);
 			editor.stopEditing();
 			grid.store.insert(0, u);
 			editor.startEditing(0,0);
@@ -111,16 +124,6 @@ params:
             Ext.each( sm.getSelections(), function(r) {
                 grid.store.remove( r );
             });
-        }
-    });
-	
-    var button_delete_all = new Ext.Button({
-        text: _(''),
-        tooltip: _('Delete All'),
-        icon: '/static/images/icons/delete.png',
-        disabled: false,		
-        handler: function() {
-            //add_step()
         }
     });
 	
@@ -146,11 +149,11 @@ params:
         width: '100%',
         height: 300,
 		store: store,
-        columns: columns,
+        columns: cols,
         viewConfig: {
             forceFit: true
         },
-        plugins: [group, editor],
+        plugins: [ editor],
         tbar: [
 			button_add,
 			'-',
