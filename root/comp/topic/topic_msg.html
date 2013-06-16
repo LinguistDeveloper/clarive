@@ -81,6 +81,8 @@ padding: 2px 4px 2px 7px;
 
 </style>
 % my @form = grep { $_->{fields} } _array( $topic_meta );
+% my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'details' } _array( $topic_meta );
+% my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'body' } _array( $topic_meta ) ;
 % if (@form) {
 <div id="boot" >
 % foreach my $field (  @form ) {
@@ -105,34 +107,40 @@ padding: 2px 4px 2px 7px;
             </table>
         <!-- /div -->
         </td>
+
+<!-- ******** right box ********** -->
         <td width="30%" style="padding-left: 30px">
-        <!-- div class="xspan5" style="float: right; margin-right: 30px" -->
             <table style="width: 100%" class="table table-bordered table-condensed">
                 <tbody>
-% foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'body' } _array( $topic_meta ) ) {
+% foreach my $field ( @body ) {
 % if ($field->{html}){
     <& $field->{html}, data=>$topic_data, meta=>$field &>
 %}    
 % }
 
+% if( @details ) {
+%    my $did = int rand 999999;
                     <tr>
-                        <td colspan=2 style="white-space: nowrap">
-% foreach my $field ( sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'details' } _array( $topic_meta ) ) {
+                        <td colspan=2 id="<% $did %>" style="white-space: nowrap; display: none">
+% foreach my $field ( @details ) {
 % if ($field->{html}){
     <& $field->{html}, data=>$topic_data, meta=>$field &>
 %}
 % }                                 
                         </td>
                     </tr>
+        <script>
+            var dtd = Ext.fly( '<% $did %>' );
+            if( dtd.dom.innerHTML.trim().length > 0 ) dtd.show();
+        </script>
+% }
                 </tbody>
             </table>
-            
-            
-        <!-- /div -->
         </td>
         </tr>
         </table>
 %}
+
 <div class="clear"></div>
     <br><br>
     <ul class="nav nav-tabs">
