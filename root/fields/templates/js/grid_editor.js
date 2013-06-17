@@ -14,7 +14,6 @@ params:
 	var data = params.topic_data;
 	var ff = params.form.getForm();
 	
-	
     /*
     var groupRow = [
 		{colspan: 2},
@@ -32,6 +31,9 @@ params:
             ? '<img src="/static/images/icons/checkbox.png">'
             : '<img src="/static/images/icons/delete.gif">';
     }
+    
+    var sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
+    //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
     
     var cols, fields;
     var cols_templates = {
@@ -65,20 +67,10 @@ params:
         });
     } else {
         cols = [
-		  {dataIndex: 'id', hidden: true},
-          {dataIndex: 'descripcion', header: 'Descripción', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'manual', header: 'Manual', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'sct', header: 'SCT', editor: new Ext.form.TextArea({})},
-          {dataIndex: 'rs_esperado', header: 'Resultado Esperado', editor: new Ext.form.TextArea({})},
-		  {dataIndex: 'sda_obtenida', hidden: meta.typeForm == 'EJC' ? false : true ,header: 'Salida Obtenida', editor: new Ext.form.TextField({})}
+          {dataIndex: 'description', header: _('Description'), width: 100, editor: new Ext.form.TextArea({}) }
         ];
         fields = [
-            {name: 'id'},
-            {name: 'descripcion'},
-            {name: 'manual'},
-            {name: 'sct'},
-            {name: 'rs_esperado'},
-            {name: 'sda_obtenida'}
+            {name: 'description'}
         ];
     }
     
@@ -105,13 +97,13 @@ params:
     var button_add = new Baseliner.Grid.Buttons.Add({
 		text:'',
         tooltip: _('Create'),
-        disabled: false,		
+        disabled: false,
         handler: function() {
 			var u = new grid.store.recordType(rec_default);
 			editor.stopEditing();
 			grid.store.insert(0, u);
 			editor.startEditing(0,0);
-			}
+        }
     });
 	
     var button_delete = new Baseliner.Grid.Buttons.Delete({
@@ -127,11 +119,11 @@ params:
         }
     });
 	
-	
     // use RowEditor for editing
     var editor = new Ext.ux.grid.RowEditor({
         clicksToMoveEditor: 1,
         autoCancel: false,
+        enableDragDrop: true, 
 		listeners: {
 			afteredit: function(obj,row){
 				obj.grid.store.commitChanges();
@@ -146,22 +138,49 @@ params:
     });	
 	
     var grid = new Ext.grid.GridPanel({
-        width: '100%',
-        height: 300,
+        width: meta.width || '100%',
+        height: meta.height || 300,
 		store: store,
         columns: cols,
+        sm: sm,
+        enableDragDrop: true, 
         viewConfig: {
-            forceFit: true
+            forceFit: meta.forceFit || true
         },
         plugins: [ editor],
         tbar: [
 			button_add,
 			'-',
 			button_delete,
-			'-'
-		]		
+		]
     });
-	
+    var self = grid;
+ 
+    grid.on( 'afterrender', function(){
+        self.ddGroup = 'bali-grid-html-' + self.id;
+        var ddrow = new Baseliner.DropTarget(self.container, {
+            comp: self,
+            ddGroup : self.ddGroup,
+            copy: false,
+            notifyDrop : function(dd, e, data){
+                var ds = self.store;
+                var sm = self.getSelectionModel();
+                var rows = sm.getSelections();
+                if(dd.getDragData(e)) {
+                    var cindex=dd.getDragData(e).rowIndex;
+                    if(typeof(cindex) != "undefined") {
+                        for(i = 0; i <  rows.length; i++) {
+                            ds.remove(ds.getById(rows[i].id));
+                        }
+                        ds.insert(cindex,data.selections);
+                        sm.clearSelections();
+                    }
+                    self.refresh_field();
+                }
+            }
+        }); 
+    });
+    
 	return [
 		{ xtype: 'hidden', name: meta.id_field },
 		{
