@@ -1031,4 +1031,62 @@ sub update_system : Local {
     $c->forward('View::JSON');  
 }
 
+sub export : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        my $id = $p->{id_category} or _fail( _loc('Missing parameter id') );
+        # TODO prefetch states and workflow
+        my $topic = DB->BaliTopicCategories->search({ id=> $id }, { prefetch=>['fields'] })->hashref->first;
+        _fail _loc('Category not found for id %1', $id) unless $topic;
+        my $yaml = _dump( $topic );
+        utf8::decode( $yaml );
+        $c->stash->{json} = { success => \1, yaml=>$yaml };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub import : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        my $yaml = $p->{yaml} or _fail _loc('Missing parameter yaml');
+        my $data = _load( $yaml );
+        delete $data->{id};
+        my $fields = delete $data->{fields};
+        my $topic_cat = DB->BaliTopicCategories->search({ name=>$data->{name} })->first;
+        my $is_new = !$topic_cat;
+        if( $is_new ) {
+            $topic_cat = DB->BaliTopicCategories->create( $data );
+        } else {
+            $topic_cat->update( $data );
+        }
+       
+        # fields
+        for my $field ( _array( $fields ) ) {
+            delete $field->{id_category};
+            my $frow = $topic_cat->fields->search({ id_field=>$field->{id_field} })->first;
+            if( $frow ) {
+                $frow->update( $field );
+            } else {
+                $topic_cat->fields->create( $field );
+            }
+        }
+        
+        # TODO states
+        # TODO workflow
+        $c->stash->{json} = { success => \1, msg=>$is_new 
+            ? _loc('Topic category created with id %1 and name %2:', $topic_cat->id, $topic_cat->name) 
+            : _loc('Topic category %1 updated', $topic_cat->name) 
+        };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };
+    };
+    $c->forward('View::JSON');  
+}
+
 1;

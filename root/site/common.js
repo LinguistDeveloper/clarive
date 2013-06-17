@@ -2696,3 +2696,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     clearInvalid : Ext.emptyFn
 });
 
+Baseliner.MonoTextArea = Ext.extend( Ext.form.TextArea, {
+    style: 'font-family: Consolas, Courier New, monotype'
+});
+    

@@ -583,6 +583,7 @@
     //});
     
     var btn_add_category = new Baseliner.Grid.Buttons.Add({    
+        text: null,
         handler: function() {
             add_edit_category();
         }
@@ -633,7 +634,6 @@
     });     
 
     var btn_delete_category = new Ext.Toolbar.Button({
-        text: _('Delete'),
         icon:'/static/images/icons/delete.gif',
         cls: 'x-btn-text-icon',
         disabled: true,
@@ -963,7 +963,7 @@
             url:'/topicadmin/update_category_admin',
             buttons: [
                     {
-                        text: _('Add'),
+                        //text: _('Add'),
                         type: 'submit',
                         cls: 'btn-text-icon',
                         icon: '/static/images/icons/down.png',
@@ -1006,8 +1006,9 @@
                             }
                         }
                     },
+                    '-',
                     {
-                        text: _('Delete'),
+                        //text: _('Delete'),
                         cls: 'btn-text-icon',
                         icon: '/static/images/icons/remove.png',
                         handler: function() {
@@ -1040,6 +1041,7 @@
                             }
                         }
                     },
+                    '-',
                     {
                     text: _('Close'),
                     handler: function(){ 
@@ -1768,6 +1770,32 @@
         }
     });     
     
+    var btn_tools_category = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/wrench.png',
+        cls: 'x-btn-text-icon',
+        disabled: false,
+        menu: [
+            { text: _('Import'), 
+                icon: '/static/images/icons/import.png',
+                handler: function(){
+                    category_import();
+                 }
+            },
+            { text: _('Export'), 
+                icon: '/static/images/icons/export.png',
+                handler: function(){ 
+                    var sm = grid_categories.getSelectionModel();
+                    if (sm.hasSelection()) {
+                        var sel = sm.getSelected();
+                        category_export(sel);
+                    } else {
+                        Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                    };          
+                 }
+            }
+        ]
+    });     
+    
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: true,
         sortable: false,
@@ -1802,15 +1830,18 @@
         deferredRender:true,    
         tbar: [ 
                 btn_add_category,
+                '-',
+                btn_delete_category,
+                '-',
                 btn_edit_category,
                 btn_duplicate_category,
-                btn_delete_category,
                 '->',
                 btn_update_fields,
                 btn_edit_fields,
                 //btn_form_category,
                 btn_admin_category,
-                btn_admin_priority
+                btn_admin_priority,
+                btn_tools_category
         ]       
     }); 
     
@@ -2709,6 +2740,47 @@
         }
         ]
     });
+    
+    var category_export = function(sel){
+        Baseliner.ajaxEval('/topicadmin/export', { id_category: sel.data.id }, function(res){
+            if( !res.success ) {
+                Baseliner.error( _('Export'), res.msg );
+                return;
+            }
+            var data_paste = new Baseliner.MonoTextArea({ value: res.yaml });
+            var win = new Baseliner.Window({
+                title: _('Export'),
+                width: 800, height: 400, layout:'fit',
+                items: data_paste
+            });
+            win.show();
+        });
+    };
+    
+    var category_import = function(){
+        var data_paste = new Baseliner.MonoTextArea({ });
+        var win = new Baseliner.Window({
+            title: _('Import'),
+            width: 800, height: 400, layout:'fit',
+            items: data_paste,
+            tbar:[
+                { text:_('Import'), 
+                    icon: '/static/images/icons/import.png',
+                    handler: function(){
+                        Baseliner.ajaxEval('/topicadmin/import', { yaml: data_paste.getValue() }, function(res){
+                            if( !res.success ) {
+                                Baseliner.error( _('Import'), res.msg );
+                                return;
+                            } else {
+                                Baseliner.message(_('Import'), res.msg );
+                            }
+                        });
+                    }
+                }
+            ]
+        });
+        win.show();
+    };
 
     store_status.load();
     store_category.load();
