@@ -7,7 +7,7 @@
     var outputs = new Baseliner.DataEditor({ title:_('Build') });
     var deploy = new Baseliner.DataEditor({ title:_('Deploy') });
     
-    var include =    new Baseliner.ArrayGrid({ 
+    var include = new Baseliner.ArrayGrid({ 
         title:_('Include'), 
         name: 'include', 
         flex:1,
@@ -15,7 +15,7 @@
         description:_('Element pattern regex to include'), 
         default_value:'\\.*$' }); 
     
-    var exclude =    new Baseliner.ArrayGrid({ 
+    var exclude = new Baseliner.ArrayGrid({ 
         title:_('Exclude'), 
         name: 'exclude', 
         flex:1,
