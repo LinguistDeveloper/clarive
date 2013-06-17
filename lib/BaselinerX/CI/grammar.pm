@@ -9,7 +9,7 @@ sub has_bl { 0 }
 has grammar          => qw(is rw isa Str);
 has regex_options    => qw(is rw isa Str default xmsi);
 has timeout          => qw(is rw isa Num default 10);
-has module_fallback => qw(is rw isa Str);
+has path_capture     => qw(is rw isa Str);
 
 service 'parse' => 'Parse a file' => \&parse;
 
@@ -41,7 +41,7 @@ sub parse {
             # determine module name 
             if( ! defined $module ) {
                 $module = $item->basename;
-                if( my $fb = $self->module_fallback ) {
+                if( my $fb = $self->path_capture ) {
                     $module = $+{module} if $item->path =~ qr/$fb/ && length $+{module};
                 } else {
                     $module = $item->moniker // $item->basename;
