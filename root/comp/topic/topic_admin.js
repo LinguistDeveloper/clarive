@@ -1811,7 +1811,7 @@
     var grid_categories = new Ext.grid.GridPanel({
         title : _('Categories'),
         sm: check_categories_sm,
-        height: 350,
+        height: 400,
         header: true,
         stripeRows: true,
         autoScroll: true,
