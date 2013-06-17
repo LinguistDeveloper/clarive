@@ -4469,3 +4469,15 @@ msgstr "Manual de administración"
 
 msgid "User manual"
 msgstr "Manual de usuario"
+
+msgid "baseline"
+msgstr "Entorno"
+
+msgid "Notification added"
+msgstr "Notificación añadida"
+
+msgid "Error adding notification: "
+msgstr "Error añadiendo notificación"
+ 
+
+

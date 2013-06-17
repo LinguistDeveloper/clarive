@@ -102,8 +102,11 @@
 		});
 		
 		
-		var names_projects = new Object();
-		var names_categories = new Object();
+		var names_projects = {};
+		var names_categories = {};
+		var names_categories_status = {};
+		var names_priorities = {};
+		var names_baselines = {};
 		
 		cb_events.on('additem', function(combo, value, record) {
 			var panel = Ext.getCmp('pnl_projects');
@@ -127,13 +130,15 @@
 										if(rec && rec.data){
 											var ids_project = new Array();
 											
-											if(rec.data.data.scopes.project.length == 1 && rec.data.data.scopes.project[0][0] == '*'){
+											if(rec.data.data.scopes.project && rec.data.data.scopes.project.length == 1 && rec.data.data.scopes.project[0][0] == '*'){
 												chk_projects.setValue(true);
 											}else{
-												for(i=0; i < rec.data.data.scopes.project.length;i++){
-													ids_project.push(rec.data.data.scopes.project[i][0]);
+												if(rec.data.data.scopes.project){
+													for(i=0; i < rec.data.data.scopes.project.length;i++){
+														ids_project.push(rec.data.data.scopes.project[i][0]);
+													}
+													cb_projects.setValue( ids_project );
 												}
-												cb_projects.setValue( ids_project );            
 											}
 										}
 									});										
@@ -193,13 +198,15 @@
 										if(rec && rec.data){
 											var ids_category = new Array();
 											
-											if(rec.data.data.scopes.category.length == 1 && rec.data.data.scopes.category[0][0] == '*'){
+											if( rec.data.data.scopes.category && rec.data.data.scopes.category.length == 1 && rec.data.data.scopes.category[0][0] == '*'){
 												chk_categories.setValue(true);
 											}else{
-												for(i=0; i < rec.data.data.scopes.category.length;i++){
-													ids_category.push(rec.data.data.scopes.category[i][0]);
+												if(rec.data.data.scopes.category){												
+													for(i=0; i < rec.data.data.scopes.category.length;i++){
+														ids_category.push(rec.data.data.scopes.category[i][0]);
+													}
+													cb_categories.setValue( ids_category );
 												}
-												cb_categories.setValue( ids_category );            
 											}
 										}
 									});									
@@ -207,10 +214,6 @@
 									var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
 										'<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;color: #FFFFFF;background:{color}">{name}</span> </span>',
 										'</div></tpl>' );
-									
-									//var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-									//	'<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
-									//	'</tpl>' );		
 									
 									var cb_categories = new Ext.ux.form.SuperBoxSelect({
 										mode: 'local',
@@ -224,7 +227,6 @@
 										valueField: 'id',
 										store: store_categories,
 										tpl: tpl_list
-										//displayFieldTpl: tpl_field
 									});
 									
 									cb_categories.on('additem', function(combo, value, record) {
@@ -266,7 +268,243 @@
 									};
 									form_notification.insert(indice++,columns);
 									store_categories.load();
-									break;											
+									break;
+								case 'category_status':
+									var store_category_status = new Baseliner.Topic.StoreStatus({
+										fields: ['id', 'name', 'description'] 	
+									});
+									
+									store_category_status.on('load', function(ds, records, o){
+										if(rec && rec.data){
+											var ids_category_status = new Array();
+											
+											if(rec.data.data.scopes.category_status && rec.data.data.scopes.category_status.length == 1 && rec.data.data.scopes.category_status[0][0] == '*'){
+												chk_category_status.setValue(true);
+											}else{
+												if(rec.data.data.scopes.category_status){
+													for(i=0; i < rec.data.data.scopes.category_status.length;i++){
+														ids_category_status.push(rec.data.data.scopes.category_status[i][0]);
+													}
+													cb_category_status.setValue( ids_category_status ); 													
+												}
+											}
+										}
+									});										
+		
+									var cb_category_status = new Ext.ux.form.SuperBoxSelect({
+										mode: 'local',
+										triggerAction: 'all',
+										forceSelection: true,
+										fieldLabel: _('Status'),
+										id: 'category_status',
+										name: 'category_status',
+										hiddenName: 'category_status',
+										displayField : 'name',
+										valueField: 'id',
+										store: store_category_status,
+										tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {[values.description || ""]}</span></div></tpl>'
+										//displayFieldTpl: tpl_field
+									});
+									
+									cb_category_status.on('additem', function(combo, value, record) {
+										names_categories_status[value] = record.data.name;
+									});									
+									
+									var chk_category_status = new Ext.form.Checkbox({
+										name:'category_status',
+										boxLabel:_('All'),
+										listeners: {
+											check: function(obj, checked){
+												if(checked){
+													cb_category_status.setValue('');
+													cb_category_status.disable();
+												}else{
+													cb_category_status.enable();	
+												}
+											}
+										}
+									});
+									
+									columns = {
+										id: 'pnl_category_status',
+										layout:'column',
+										defaults:{
+											layout:'form'
+										},
+										items:[
+											{
+												columnWidth: 0.85,
+												items: cb_category_status
+											},
+											{
+												columnWidth: 0.15,
+												labelWidth: 5,
+												items: chk_category_status
+											}
+										]
+									};
+									form_notification.insert(indice++,columns);
+									store_category_status.load();
+									break;
+								case 'priority':
+									var store_priority = new Baseliner.Topic.StorePriority({
+										fields: ['id', 'name'] 	
+									});
+									
+									store_priority.on('load', function(ds, records, o){
+										if(rec && rec.data){
+											var ids_priority = new Array();
+											
+											if(rec.data.data.scopes.priority && rec.data.data.scopes.priority.length == 1 && rec.data.data.scopes.priority[0][0] == '*'){
+												chk_priority.setValue(true);
+											}else{
+												if(rec.data.data.scopes.priority){
+													for(i=0; i < rec.data.data.scopes.priority.length;i++){
+														ids_priority.push(rec.data.data.scopes.priority[i][0]);
+													}
+													cb_priority.setValue( ids_priority );            
+												}
+											}
+										}
+									});										
+									
+									var cb_priority = new Ext.ux.form.SuperBoxSelect({
+										mode: 'local',
+										triggerAction: 'all',
+										forceSelection: true,
+										fieldLabel: _('Priority'),
+										id: 'priority',
+										name: 'priority',
+										hiddenName: 'priority',
+										displayField : 'name',
+										valueField: 'id',
+										store: store_priority,
+										tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> </span></div></tpl>'
+										//displayFieldTpl: tpl_field
+									});
+									
+									cb_priority.on('additem', function(combo, value, record) {
+										names_priorities[value] = record.data.name;
+									});									
+									
+									var chk_priority = new Ext.form.Checkbox({
+										name:'priority',
+										boxLabel:_('All'),
+										listeners: {
+											check: function(obj, checked){
+												if(checked){
+													cb_priority.setValue('');
+													cb_priority_status.disable();
+												}else{
+													cb_priority_status.enable();	
+												}
+											}
+										}
+									});
+									
+									columns = {
+										id: 'pnl_priority',
+										layout:'column',
+										defaults:{
+											layout:'form'
+										},
+										items:[
+											{
+												columnWidth: 0.85,
+												items: cb_priority
+											},
+											{
+												columnWidth: 0.15,
+												labelWidth: 5,
+												items: chk_priority
+											}
+										]
+									};
+									form_notification.insert(indice++,columns);
+									store_priority.load();
+									break;
+								case 'baseline':
+									var store_baseline = new Baseliner.JsonStore({
+										root: 'data' , 
+										remoteSort: true,
+										totalProperty:"totalCount", 
+										id: 'id', 
+										url: '/baseline/list',
+										fields: ['id', 'name', 'description'] 
+									});
+									
+									store_baseline.on('load', function(ds, records, o){
+										if(rec && rec.data){
+											var ids_baseline = new Array();
+											
+											if(rec.data.data.scopes.baseline && rec.data.data.scopes.baseline.length == 1 && rec.data.data.scopes.baseline[0][0] == '*'){
+												chk_baseline.setValue(true);
+											}else{
+												if(rec.data.data.scopes.baseline){
+													for(i=0; i < rec.data.data.scopes.baseline.length;i++){
+														ids_baseline.push(rec.data.data.scopes.baseline[i][0]);
+													}
+													cb_baseline.setValue( ids_baseline );   													
+												}
+											}
+										}
+									});										
+		
+									var cb_baseline = new Ext.ux.form.SuperBoxSelect({
+										mode: 'local',
+										triggerAction: 'all',
+										forceSelection: true,
+										fieldLabel: _('Baseline'),
+										id: 'baseline',
+										name: 'baseline',
+										hiddenName: 'baseline',
+										displayField : 'name',
+										valueField: 'id',
+										store: store_baseline,
+										tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {[values.description || ""]}</span></div></tpl>'
+										//displayFieldTpl: tpl_field
+									});
+									
+									cb_baseline.on('additem', function(combo, value, record) {
+										names_baselines[value] = record.data.name;
+									});									
+									
+									var chk_baseline = new Ext.form.Checkbox({
+										name:'baseline',
+										boxLabel:_('All'),
+										listeners: {
+											check: function(obj, checked){
+												if(checked){
+													cb_baseline.setValue('');
+													cb_baseline.disable();
+												}else{
+													cb_baseline.enable();	
+												}
+											}
+										}
+									});
+									
+									columns = {
+										id: 'pnl_baseline',
+										layout:'column',
+										defaults:{
+											layout:'form'
+										},
+										items:[
+											{
+												columnWidth: 0.85,
+												items: cb_baseline
+											},
+											{
+												columnWidth: 0.15,
+												labelWidth: 5,
+												items: chk_baseline
+											}
+										]
+									};
+									form_notification.insert(indice++,columns);
+									store_baseline.load();
+									break;
 							}
 							
 						}
@@ -665,6 +903,42 @@
 				};
 				
 				delete names_categories;
+				
+				if(form.findField('category_status') && form.findField('category_status').getValue() != ''){
+					var category_status = form.findField('category_status').getValue().split(',');
+					var category_status_names = new Array();
+					Ext.each(category_status, function(status){
+						category_status_names.push([status, names_categories_status[status]]);
+					});
+					
+					params.category_status_names = Ext.util.JSON.encode( category_status_names );
+				};
+				
+				delete names_categories_status;
+				
+				if(form.findField('priority') && form.findField('priority').getValue() != ''){
+					var priority = form.findField('priority').getValue().split(',');
+					var priority_names = new Array();
+					Ext.each(priority, function(pr){
+						priority_names.push([pr, names_priorities[pr]]);
+					});
+					
+					params.priority_names = Ext.util.JSON.encode( priority_names );
+				};
+				
+				delete names_priority;	
+
+				if(form.findField('baseline') && form.findField('baseline').getValue() != ''){
+					var baseline = form.findField('baseline').getValue().split(',');
+					var baseline_names = new Array();
+					Ext.each(baseline, function(bl){
+						baseline_names.push([bl, names_baselines[bl]]);
+					});
+					
+					params.baseline_names = Ext.util.JSON.encode( baseline_names );
+				};
+				
+				delete names_baselines;
 				
 				var recipients = new Object();
 				store_recipients.each( function(row){

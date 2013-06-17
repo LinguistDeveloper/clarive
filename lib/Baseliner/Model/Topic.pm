@@ -60,7 +60,7 @@ register 'event.topic.create' => {
     description => 'User created a topic',
     vars => ['username', 'category', 'ts'],
     notify => {
-        scope => ['project', 'category', 'category_status'],
+        scope => ['project', 'category', 'category_status', 'priority','baseline'],
     },
 };
 
