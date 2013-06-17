@@ -632,12 +632,12 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
                 // if it's an Array or Hash
                 if( Ext.isArray( self.value ) ) {
                     for( var x=0; x < self.value.length ; x++ ) {
-                        self.push_item( self.name, self.value[ x ] ); 
+                        self.push_item( x, self.name, self.value[ x ] ); 
                     }
                     // save 
                     self.fieldset.add( self.fdata_factory( self.value ) );
                 } else if( self.value.length > 0 ) {  // just one element
-                    self.push_item( self.name, self.value ); 
+                    self.push_item( 0, self.name, self.value ); 
                     self.fieldset.add( self.fdata_factory([ self.value ]) );
                 }
             } catch(e) {}
@@ -692,12 +692,9 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
                     }
                 }
             }, self.fieldset, '->', self.description ];
-        Baseliner.ArrayGrid.superclass.initComponent.call(
-            Ext.apply(this,{ 
-            }
-        ));
+        Baseliner.ArrayGrid.superclass.initComponent.call( this );
     },
-    push_item : function(f, v ) {
+    push_item : function( i, f, v ) {
         var self = this;
         var rr = new Ext.data.Record.create([{
             name: f,
@@ -706,7 +703,8 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         var h = {}; 
         h[ self.name ] = v;
         // put it in the grid store
-        self.store.insert( x, new rr( h ) );
+        self.store.insert( i, new rr( h ) );
+        self.store.commitChanges();
     },
     write_to_field : function () {
         var self = this;
@@ -2362,15 +2360,9 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
         self.tbar = new Ext.Toolbar({ items:[ self.ci_box, btn_delete, self.field ] });
-        /* self.on('rowdblclick', function(grid, rowIndex, e) {
-            var mid = self.store.getAt( rowIndex ).data.mid;
-            Baseliner.add_tabcomp( '/comp/ci-editor.js', null, { load: true, mid: mid } );
-        }); */
         self.on('rowclick', function(grid, rowIndex, e) {
             btn_delete.enable();
         });		
-        
-        //self.ci_store.on('load', function(){ });
         
         if( Ext.isArray( self.value ) ) {
             var p = { mids: self.value , _whoami: 'CIGrid_mids' };
@@ -2415,7 +2407,6 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
                     }
                 }
             }); 
-            //store.load();
         });
     },
     refresh_field: function(){
@@ -2588,33 +2579,33 @@ Baseliner.run_service = function(params, service){
 Baseliner.tmpl_cache = {};
 
 Baseliner.tmpl = function tmpl(str, data){
-// Figure out if we're getting a template, or if we need to
-// load the template - and be sure to cache the result.
-var fn = !/\W/.test(str) ?
-  Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
-    tmpl(document.getElementById(str).innerHTML) :
- 
-  // Generate a reusable function that will serve as a template
-  // generator (and which will be cached).
-  new Function("obj",
-    "var p=[],print=function(){p.push.apply(p,arguments);};" +
-   
-    // Introduce the data as local variables using with(){}
-    "with(obj){p.push('" +
-   
-    // Convert the template into pure JavaScript
-    str
-      .replace(/[\r\t\n]/g, " ")
-      .split("[%").join("\t")
-      .replace(/((^|%])[^\t]*)'/g, "$1\r")
-      .replace(/\t=(.*?)%]/g, "',$1,'")
-      .split("\t").join("');")
-      .split("%]").join("p.push('")
-      .split("\r").join("\\'")
-  + "');}return p.join('');");
+    // Figure out if we're getting a template, or if we need to
+    // load the template - and be sure to cache the result.
+    var fn = !/\W/.test(str) ?
+      Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
+        tmpl(document.getElementById(str).innerHTML) :
+     
+      // Generate a reusable function that will serve as a template
+      // generator (and which will be cached).
+      new Function("obj",
+        "var p=[],print=function(){p.push.apply(p,arguments);};" +
+       
+        // Introduce the data as local variables using with(){}
+        "with(obj){p.push('" +
+       
+        // Convert the template into pure JavaScript
+        str
+          .replace(/[\r\t\n]/g, " ")
+          .split("[%").join("\t")
+          .replace(/((^|%])[^\t]*)'/g, "$1\r")
+          .replace(/\t=(.*?)%]/g, "',$1,'")
+          .split("\t").join("');")
+          .split("%]").join("p.push('")
+          .split("\r").join("\\'")
+      + "');}return p.join('');");
 
-// Provide some basic currying to the user
-return data ? fn( data ) : fn;
+    // Provide some basic currying to the user
+    return data ? fn( data ) : fn;
 };
 
 Baseliner.Pills = Ext.extend(Ext.form.Field, {
@@ -2628,7 +2619,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
         this.list = [];
         var self = this;
         self.anchors = [];
-        if( this.options != undefined  ) {
+        if( this.options != undefined ) {
             var opts = Ext.isArray( this.options ) ? this.options : this.options.split(';');
             Ext.each(opts, function(opt){
                 var vv = opt.split(',');
