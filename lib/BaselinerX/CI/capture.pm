@@ -1,14 +1,16 @@
-package BaselinerX::CI::tagger;
+package BaselinerX::CI::capture;
 use Baseliner::Moose;
 
 with 'Baseliner::Role::CI::Parser';
 
-sub collection { 'tagger' }
+sub collection { 'capture' }
 sub has_bl { 0 }
 
 has regex          => qw(is rw isa Str);
 has regex_options    => qw(is rw isa Str default xmsi);
 has timeout          => qw(is rw isa Num default 10);
+
+#service 'parse' => 'Parse a file' => \&parse;
 
 sub parse {
     my ($self,$item) = @_; 
@@ -50,5 +52,4 @@ sub parse {
 }
 
 1;
-
 
