@@ -78,6 +78,7 @@ register 'registor.menu.topics' => {
              } if %menu_create;
        return $menus;
     }
+    #prueba
 };
 
 sub grid : Local {
