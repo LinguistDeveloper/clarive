@@ -6,6 +6,12 @@ msgstr ""
 msgid "To Open"
 msgstr "Abrir"
 
+msgid "Notification"
+msgstr "Notificación"
+
+msgid "Notifications"
+msgstr "Notificaciones"
+
 msgid "None"
 msgstr "No hay"
 
