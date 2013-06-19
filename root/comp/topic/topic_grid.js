@@ -529,7 +529,7 @@
                 '<div class="bar" style="width: '+value+'%">',
                 '</div>',
             '</div>',
-            '</span>',
+            '</span>'
         ].join('');
         return ret;
     };

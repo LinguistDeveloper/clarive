@@ -18,6 +18,12 @@ msgstr "No hay"
 msgid "Pattern"
 msgstr "Patrón"
 
+msgid "This comment does not exist anymore"
+msgstr "El comentario ha sido borrado"
+
+msgid "The topic category %1 does not have any initial status assigned. Contact your administrator."
+msgstr "La categoría %1 no tiene un estado inicial asignado. Contacte al administrador."
+
 msgid "Progress"
 msgstr "Avance"
 
@@ -3382,8 +3388,8 @@ msgstr "Error modificando estado: %1"
 msgid "Statuses deleted"
 msgstr "Estados borrados"
 
-msgid "Error deleting Statuses"
-msgstr "Error borrando estados"
+msgid "Error deleting Statuses: %1"
+msgstr "Error borrando estados: %1"
 
 msgid "Are you sure you want to delete the statuses selected?"
 msgstr "¿Seguro que quiere borrar los estados seleccionados?"
