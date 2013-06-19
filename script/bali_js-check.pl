@@ -8,12 +8,21 @@ die "Error: $dir does not exist\n" unless -e $dir;
 
 my $cnt = 0;
 
+sub comment {
+    my $s = $_[0];
+    $s =~ s/,//g;
+    return uc( $s );
+}
+
 dir($dir)->recurse(callback=>sub{
     my $f=shift;
     return unless $f =~ /(\.js|\.mas)$/i;
     #say $f->basename;
     my $d = $f->slurp;
     
+    $d =~ s{/\*(.*?)\*/}{"/*".comment($1)."*/"}esg;  # no comments
+    $d =~ s{//([^\n]*)\n}{"//".comment($1)."\n"}esg;  # no comments
+
     # match each file pos with file line
     my @lines;
     my $i = 0;
@@ -28,7 +37,7 @@ dir($dir)->recurse(callback=>sub{
             map { $_->[0] } grep { $pos >= $_->[1] } reverse @lines
         ]->[0];
     };
-
+    
     while ( $d =~ /(\n.*\n)?(,\s*\n*[\]\}])/gsm ) {
         my $err = $2;
         my $lin = $find_line->( $+[2] );
@@ -41,6 +50,13 @@ dir($dir)->recurse(callback=>sub{
         my $lin = $find_line->( $+[1] );
         say "*** IE keyword default in $f (line $lin): $err";
     }
+    
+    while ( $d =~ /( \n [^\n]* console.log )/xgsm ) {
+        my $err = $1;
+        my $lin = $find_line->( $+[1] );
+        say "*** IE console.log in $f (line $lin): $err";
+    }
+
     # jslint ?
     #system qw/jsl -process /, $f;
 
