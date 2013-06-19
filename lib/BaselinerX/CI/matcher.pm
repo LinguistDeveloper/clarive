@@ -6,10 +6,18 @@ with 'Baseliner::Role::CI::Parser';
 sub collection { 'matcher' }
 sub has_bl { 0 }
 
-has regex          => qw(is rw isa Str);
-has regex_options    => qw(is rw isa Str default xmsi);
-has timeout          => qw(is rw isa Num default 10);
-has_cis => 'cis';
+has regex               => qw(is rw isa Str);
+has regex_options       => qw(is rw isa Str default xmsi);
+has timeout             => qw(is rw isa Num default 10);
+has_cis 'cis';
+has_cis 'topics';
+
+sub rel_type {
+    {
+    topics  => [from_mid => 'parser_topic'],
+    cis     => [from_mid => 'parser_ci'],
+    }
+}
 
 sub parse {
     my ($self,$item) = @_; 
