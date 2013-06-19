@@ -794,11 +794,19 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     },
     render_topic_name: function(value,metadata,rec,rowIndex,colIndex,store){
         var d = rec.data;
+        var category_name;
+
+        if(!d.categories){
+            var category = d.name.split('#');
+            category_name = category[0];
+        }else{
+            category_name = d.categories.name;
+        }
         return Baseliner.topic_name({
             mid: d.mid, 
             mini: true,
             size: true ? '9' : '11',
-            category_name: d.categories.name,
+            category_name: category_name,
             category_color:  d.color//,
             //category_icon: d.category_icon,
             //is_changeset: d.is_changeset,
