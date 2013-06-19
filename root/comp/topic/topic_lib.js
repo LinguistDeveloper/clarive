@@ -702,20 +702,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         self.combo_store = new Baseliner.store.Topics({});
         if( self.topic_grid == undefined ) self.topic_grid = {};
-        //self.combo_store.on("load", function() {
-        //    if (self.value){
-        //        Ext.each( self.value, function( v ){
-        //            var f = self.combo_store.find( 'mid', v);
-        //            if( f != -1 ) {
-        //                sel = self.combo_store.getAt(f);
-        //                if(sel){
-        //                    self.add_to_grid(sel.data);
-        //                }
-        //            }                    
-        //        });
-        //        self.value = undefined;
-        //    }
-        //});        
+  
         self.combo = new Baseliner.TopicCombo({
             store: self.combo_store, 
             width: 600,
@@ -764,7 +751,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         self.columns = [
             self.sm,
             { header:_('ID'), dataIndex:'mid', hidden: true },
-            { header:_('Name'), dataIndex:'name' },
+            { header:_('Name'), dataIndex:'name', renderer: self.render_topic_name },
             { header:_('Title'), dataIndex:'title' }
         ];
         
@@ -777,7 +764,12 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                 });
             });
         }        
-        
+        self.on("rowdblclick", function(grid, rowIndex, e ) {
+            var r = grid.getStore().getAt(rowIndex);
+            var title = Baseliner.topic_title( r.get('mid'), _(r.get( 'categories' ).name), r.get('color') );
+            Baseliner.show_topic( r.get('mid'), title, { topic_mid: r.get('mid'), title: title, _parent_grid: undefined } );
+            
+        });        
         Baseliner.TopicGrid.superclass.initComponent.call( this );
     },
     refresh_field: function(){
@@ -799,6 +791,19 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         self.store.add( r );
         self.store.commitChanges();
         self.refresh_field();
-    }
+    },
+    render_topic_name: function(value,metadata,rec,rowIndex,colIndex,store){
+        var d = rec.data;
+        return Baseliner.topic_name({
+            mid: d.mid, 
+            mini: true,
+            size: true ? '9' : '11',
+            category_name: d.categories.name,
+            category_color:  d.color//,
+            //category_icon: d.category_icon,
+            //is_changeset: d.is_changeset,
+            //is_release: d.is_release
+        });
+    }    
 });
 

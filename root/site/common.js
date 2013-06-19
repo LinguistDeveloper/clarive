@@ -390,7 +390,7 @@ Baseliner.topic_name = function(args) {
         if( mid )
             mid = '#' + mid;
         else
-            mid = '';
+		    mid = '';
         var cat_name = _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
         if( cat_name )
             cat_name = cat_name + ' ';
@@ -427,11 +427,15 @@ Baseliner.topic_name = function(args) {
         }
         var style = String.format( style_str, color, icon, top, bot, img, size );
         //if( color == undefined ) color = '#777';
+
         var ret = args.mini 
             ? String.format('<span id="boot" style="background: transparent"><span class="{0}" style="{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="font-weight:bolder;font-size:11px">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid )
-            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
+            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, parse_mid );
         return ret;
 };
+
+
+//return String.format('<a href="javascript:Baseliner.show_ci({3})">{2}</a>', mid, value );
 
 // from /root/static/images/icons/mime/*
 var extensions_available = {
