@@ -20,6 +20,7 @@ Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
 
 Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
     fullscreen: false,
+    autofocus: false,
     initComponent : function(){
         Baseliner.CLEditor.superclass.initComponent.call(this);
         var self = this;
@@ -62,9 +63,10 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
             this.cleditor = $( self.el.dom ).cleditor(c)[0];
             self.on('resize', function(){
                 self.cleditor.refresh();
-                self.cleditor.focus();
+                if( this.autofocus ) self.cleditor.focus();
             });
-            this.cleditor.focus();
+            if( this.autofocus ) 
+                this.cleditor.focus();
         });
         if( Ext.isChrome ) {
             setTimeout( function(){  // TODO detect when the CLEditor is loaded
