@@ -275,7 +275,7 @@
             combo_time.hide();
             button_submit.disable();
         }
-        Baseliner.hideLoadingMask();
+        Baseliner.hideLoadingMask( main_form.getEl() );
     });
 
     var calendar_reload = function( str_date ) {
@@ -299,7 +299,7 @@
                         if( res.success ) {
                             store_time.loadData( res.data ); // async
                         } else {
-                            Baseliner.hideLoadingMask();
+                            Baseliner.hideLoadingMask( main_form.getEl() );
                             combo_time.disable();
                             Ext.Msg.alert( _('Error'), _('Error generating calendar windows: %1', res.msg ) );
                         }
