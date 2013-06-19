@@ -1287,8 +1287,10 @@ $('a').click(function(event) {
     
     Baseliner.hideLoadingMask = function ( cmp ){
         if(Baseliner._defaultLoadingMask != undefined){
-            if( cmp ) cmp.unmask();
-            if( Ext.isObject( Baseliner._defaultLoadingMask ) ) { 
+            if( Ext.isObject( cmp ) ) {
+                cmp.unmask();
+            }
+            else if( Ext.isObject( Baseliner._defaultLoadingMask ) ) { 
                  try { Baseliner._defaultLoadingMask.el.unmask(); } catch(e){} // not sure there is el or not
                  try { Baseliner._defaultLoadingMask.unmask(); } catch(e){} // not sure there is el or not
                  try { Baseliner._defaultLoadingMask.hide(); } catch(e){} // not sure there is el or not
