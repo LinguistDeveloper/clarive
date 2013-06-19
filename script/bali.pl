@@ -60,6 +60,7 @@ BEGIN {
 
 if( !@ARGV ) {
     require Baseliner;
+    require Baseliner::Cmd;
     my $c = Baseliner::Cmd->new;
 
     my $version = $c->config->{About}->{version};
@@ -100,6 +101,7 @@ elsif( $service_name =~ /^shut|shutdown$/i ) {
 
 print "Starting $service_name...\n";
 require Baseliner;
+require Baseliner::Cmd;
 my $c = Baseliner::Cmd->new;
 Baseliner->app( $c );
 use Baseliner::Utils;
