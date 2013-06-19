@@ -935,8 +935,10 @@ $('a').click(function(event) {
 
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
+
         if( params._login_count == undefined ) params._login_count = 0;
         params['_bali_notify_valid_session'] = true;
+        
         var login_and_go = function(url,params,foo,scope){
               Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
         };

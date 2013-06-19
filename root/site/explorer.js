@@ -43,7 +43,7 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
         var self = this;
         self.id = Ext.id();
         
-        this.on("beforeload", function(loader, node) {
+        self.on("beforeload", function(loader, node) {
             // save params
             self.$baseParams = Ext.apply( {}, self.baseParams );
             self.$dataUrl = self.dataUrl;
@@ -52,10 +52,20 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
                 self.dataUrl = node.attributes.url;
             }
             // apply node params to this params
-            self.baseParams = Ext.apply( {}, node.attributes.data, self.baseParams );
+            self.baseParams = Ext.apply( { '_bali_notify_valid_session': true }, node.attributes.data, self.baseParams );
         });
-        this.on("load", function(loader, node) {
+        self.on("load", function(loader, node) {
             // reset params back
+            self.baseParams = self.$baseParams;  
+            self.dataUrl = self.$dataUrl;  
+        });
+        self.on("loadexception", function(loader, node, res) {
+            var obj = Ext.decode( res.responseText );
+            if( res.status == 401 || ( Ext.isObject( obj ) && obj.logged_out ) ) {
+                Baseliner.login({ no_reload: 1, on_login: function(){ 
+                    loader.load( node );
+                }});
+            }
             self.baseParams = self.$baseParams;  
             self.dataUrl = self.$dataUrl;  
         });
