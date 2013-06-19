@@ -679,23 +679,24 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     lazyRender: false,
     pageSize: 20,
     triggerAction: 'all',
-    xxxitemSelector: 'div.search-item',
+    itemSelector: 'div.search-item',
     initComponent: function(){
+        var self = this;
         self.listeners = {
             beforequery: function(qe){
                 delete qe.combo.lastQuery;
             }
         };
-        self.xxtpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">{name} {title}</div></tpl>');
-        self.xtpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">',
+        //self.xxtpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">{name} {title}</div></tpl>');
+        self.tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">',
             '<span id="boot" style="width:200px"><span class="badge" ', 
             ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
             ' >{name}</span></span>',
             '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
-        self.xdisplayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
-            '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;"',
-            ' onclick="javascript:Baseliner.show_topic({mid}, \'{name}\');">{name}</span></span>',
-            '</tpl>' );
+        //self.xdisplayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
+        //    '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;"',
+        //    ' onclick="javascript:Baseliner.show_topic({mid}, \'{name}\');">{name}</span></span>',
+        //    '</tpl>' );
         Baseliner.TopicCombo.superclass.initComponent.call(this);
     }
 });
@@ -705,9 +706,24 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     initComponent: function(){
         var self = this;
         self.combo_store = new Baseliner.store.Topics({});
+        if( self.topic_grid == undefined ) self.topic_grid = {};
+        //self.combo_store.on("load", function() {
+        //    if (self.value){
+        //        Ext.each( self.value, function( v ){
+        //            var f = self.combo_store.find( 'mid', v);
+        //            if( f != -1 ) {
+        //                sel = self.combo_store.getAt(f);
+        //                if(sel){
+        //                    self.add_to_grid(sel.data);
+        //                }
+        //            }                    
+        //        });
+        //        self.value = undefined;
+        //    }
+        //});        
         self.combo = new Baseliner.TopicCombo({
             store: self.combo_store, 
-            width: 300,
+            width: 600,
             height: 80,
             singleMode: true, 
             fieldLabel: _('Topic'),
@@ -756,6 +772,17 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             { header:_('Name'), dataIndex:'name' },
             { header:_('Title'), dataIndex:'title' }
         ];
+        
+        if( Ext.isArray( self.value ) ) {
+            var p = { mids: self.value };
+            Baseliner.ajaxEval( '/topic/related', Ext.apply(self.topic_grid, p ), function(res){
+                Ext.each( res.data, function(r){
+                    if( ! r ) return;
+                    self.add_to_grid( r );
+                });
+            });
+        }        
+        
         Baseliner.TopicGrid.superclass.initComponent.call( this );
     },
     refresh_field: function(){

@@ -132,6 +132,10 @@ sub related : Local {
     my $mid = $p->{mid};
     my $show_release = $p->{show_release} // '0';
     my $where = {};
+    if ($p->{mids}){
+         my @mids = _array $p->{mids};
+         $where->{mid} = \@mids;
+    }
     $where->{mid} = { '<>' => $mid } if length $mid;
     $where->{'categories.is_release'} = $show_release;
     
