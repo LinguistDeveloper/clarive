@@ -530,7 +530,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }
             } else {
                 Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: self.new_category_id, new_category_name: self.new_category_name, ci: self.ci, dni: self.dni, clonar: self.clonar}, function(rec) {
-                    self.load_form( rec );
+                    if( rec.success ) {
+                        self.load_form( rec );
+                    } else {
+                        Baseliner.error( _('Error'), rec.msg );
+                        self.destroy();
+                    }
                 });
             }
               

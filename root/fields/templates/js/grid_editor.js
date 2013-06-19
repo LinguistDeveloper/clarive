@@ -39,10 +39,10 @@ params:
     var cols_templates = {
           id : function(){ return {width: 10 } },
           index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
-          htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default:'' } },
-          textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default:'' } },
-          checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default:false, renderer: render_checkbox } },
-          textarea  : function(){ return { editor: new Ext.form.TextArea({}), default:'', renderer: Baseliner.render_wrap } }
+          htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
+          textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
+          checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value:false, renderer: render_checkbox } },
+          textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
     };
     if( meta.columns != undefined ) {
         cols=[]; fields=[];
@@ -59,7 +59,7 @@ params:
                 ct.header = col_s[0];
                 if( col_s[2] != undefined ) ct.width = col_s[2];
                 ct.sortable = true;
-                if( col_s[3] ) ct.default = col_s[3];
+                if( col_s[3] ) ct.default_value = col_s[3];
                 ct.dataIndex = Baseliner.name_to_id( col_s[0] );
             }
             cols.push( ct );
@@ -77,7 +77,7 @@ params:
     // default record for adding
     var rec_default = {};
     Ext.each( cols, function(col){
-        rec_default[ col.dataIndex ] = col.default || '';
+        rec_default[ col.dataIndex ] = col.default_value || '';
     });
     
 	var reader = new Ext.data.JsonReader({
@@ -151,7 +151,7 @@ params:
         tbar: [
 			button_add,
 			'-',
-			button_delete,
+			button_delete
 		]
     });
     var self = grid;
