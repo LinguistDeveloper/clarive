@@ -344,7 +344,7 @@
                 { xtype:'button', text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load },
                 { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: rule_dsl }
             ],
-            root: { text: _('Start: %1', event_name), draggable: false, id: 'root', expanded: true },
+            root: { text: _('Start: %1', event_name), draggable: false, id: 'root', expanded: true }
         });
         var tab = tabpanel.add( rule_tree ); 
         tabpanel.setActiveTab( tab );
@@ -361,11 +361,11 @@
         enableDD: true,
         dataUrl: '/rule/tree',
         listeners: {
-            beforenodedrop: { fn: drop_handler },
+            beforenodedrop: { fn: drop_handler }
         },
         rootVisible: true,
         useArrows: true,
-        root: { nodeType: 'async', text: 'Reglas', draggable: false, id: 'root', expanded: true },
+        root: { nodeType: 'async', text: 'Reglas', draggable: false, id: 'root', expanded: true }
     });
     */
     var tabpanel = new Ext.TabPanel({

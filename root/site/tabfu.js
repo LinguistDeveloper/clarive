@@ -148,7 +148,7 @@ $('a').click(function(event) {
                     this.destroy();
                 }, this);    
             }
-        },
+        }
     });    
 
 

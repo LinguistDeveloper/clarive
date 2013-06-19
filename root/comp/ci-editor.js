@@ -171,7 +171,7 @@
             style: { 
                 margin: '30px 0px 0px -20px'
                 //'border-top' : '#eee 1px solid', 
-                //'border-left' : '#f5f0f0 6px solid' },
+                //'border-left' : '#f5f0f0 6px solid' }
                 },
             //title: _(params.collection),
             collapsible: false,

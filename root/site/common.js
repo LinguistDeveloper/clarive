@@ -83,7 +83,7 @@ Baseliner.alert = function(title, format){
         title: title,
         msg: s,
         icon: Ext.Msg.WARNING
-        //buttons: Ext.Msg.OK,
+        //buttons: Ext.Msg.OK
     });
 };
 

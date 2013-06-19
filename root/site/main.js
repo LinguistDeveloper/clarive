@@ -18,7 +18,7 @@
         $show_menu  = 0;
         $show_main  = 0;
     }
-    $show_lifecycle and $show_lifecycle = $c->stash->{'can_lifecycle'};
+    $show_lifecycle = $c->stash->{'can_lifecycle'};
     $show_menu and $show_menu = $c->stash->{'can_menu'};
 </%perl>
 
@@ -108,7 +108,7 @@ Ext.onReady(function(){
                          { text=>_loc('Permissions'), handler=>\'function(){ Baseliner.user_actions(); }' },
                          # XXX  { text=>_loc('Preferences'), handler=>\'function(){ Baseliner.preferences(); }' },
                          { text=>_loc('Preferences'), icon=>'/user/avatar/image.png', handler=>\'function(){ Baseliner.change_avatar(); }' },
-                         { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' },
+                         { text=>_loc('Logout') , handler=>\'function(){ Baseliner.logout(); }', index=>99, icon=>'/static/images/logout.gif' }
                     ];
                     if( $c->config->{authentication}->{default_realm} eq 'none' ) { 
                         $menu->push( { text=>_loc('Change password'), handler=>\'function(){ Baseliner.change_password(); }' });
