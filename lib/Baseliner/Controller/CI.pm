@@ -125,7 +125,7 @@ sub tree_roles {
         my $role = $_->{role};
         my $name = $_->{name};
         if ( Baseliner->model( 'Permissions' )
-            ->user_has_any_action( username => $user, action => 'action.ci.admin.' . $name . '.%') )
+            ->user_has_any_action( username => $user, action => 'action.ci.%.' . $name . '.%') )
         {
             $role = 'Generic' if $name eq '';
             push @tree, {
@@ -162,7 +162,7 @@ sub tree_classes {
         my $ci_form = $self->form_for_ci( $item, $collection );
         $item =~ s/^BaselinerX::CI:://g;
         if ( Baseliner->model( 'Permissions' )
-            ->user_has_action( username => $user, action => 'action.ci.admin.' .$p{role_name}.'.'. $item ) )
+            ->user_has_action( username => $user, action => 'action.ci.%.' .$p{role_name}.'.'. $item ) )
         {
 
             $cnt++;
