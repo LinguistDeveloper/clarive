@@ -7,6 +7,8 @@ BEGIN { extends 'Catalyst::Controller' };
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
+register 'action.project.see_lc' => { name => 'User can access the project lifecycle' };
+
 sub tree_topic_get_files : Local {
     my ($self,$c) = @_;
     my @tree;
@@ -237,7 +239,7 @@ sub tree_project : Local {
 
     # load project lifecycle configuration
     require BaselinerX::Lc;
-    my $lc = BaselinerX::Lc->new->lc_for_project( $id_project, $project );
+    my $lc = BaselinerX::Lc->new->lc_for_project( $id_project, $project, $c->username );
     for my $node ( @$lc ) {
         next if exists $node->{active} && ! $node->{active};
         my $type = $node->{type};

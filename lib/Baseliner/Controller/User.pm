@@ -466,7 +466,8 @@ sub tratar_proyectos_padres(){
                                                        {
                                                     username => $user_name,
                                                     id_role => $role,
-                                                    ns => 'project/' . $row[0]
+                                                    ns => 'project/' . $row[0],
+                                                    id_project => $row[0]
                                                        },
                                                        { key => 'primary' });
                                 $role_user->update();

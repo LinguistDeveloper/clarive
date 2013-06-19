@@ -51,7 +51,7 @@ has 'state_data' => qw(is rw isa HashRef lazy 1),
     };
 
 sub lc_for_project {
-    my ($self, $id_prj, $name_prj) = @_;
+    my ($self, $id_prj, $name_prj, $username) = @_;
     #my $lc = $self->lc;
     #_log "LC==========> $lc , " . ref $lc;
     #my $nodes = $lc->{nodes}; $ch ||= {
@@ -135,29 +135,33 @@ sub lc_for_project {
     }
 
     # General bag for starting the deployment workflow
-    my @states = (
-        {   node   => _loc('(Stage)'),
-            type   => 'state',
-            active => 1,
-            bl     => 'IT',
-            bl_to  => 'IT',
-            icon   => '/static/images/icons/lc/history.gif'
-        }
-    );
-
-    # States-Statuses with bl and type = D (Deployable)
-    push @states, map {
-        +{  node   => sprintf("%s [%s]",_loc($_->{name}), $_->{bl}),
-            type   => 'state',
-            active => 1,
-            data => { id_status => $_->{id}, },
-            bl     => $_->{bl},
-            bl_to  => $_->{bl},                               # XXX
-            icon   => '/static/images/icons/lc/history.gif'
+    # Show states only if user has action for that project
+    
+    my @states;
+    my $projects_with_lc = Baseliner->model('Permissions')->user_projects_with_action( username => $username, action => 'action.project.see_lc');
+    if ( $projects_with_lc && $id_prj ~~ _array $projects_with_lc ) {   
+        @states = (
+            {   node   => _loc('(Stage)'),
+                type   => 'state',
+                active => 1,
+                bl     => 'new',
+                icon   => '/static/images/icons/lc/history.gif'
             }
-        } Baseliner->model('Baseliner::BaliTopicStatus')
-        ->search( { bl => { '<>' => '*' }, type=>'D'  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
-            
+        );
+
+        # States-Statuses with bl and type = D (Deployable)
+        push @states, map {
+            +{  node   => "$_->{name} [$_->{bl}]",
+                type   => 'state',
+                active => 1,
+                data => { id_status => $_->{id}, },
+                bl     => $_->{bl},
+                bl_to  => $_->{bl},                               # XXX
+                icon   => '/static/images/icons/lc/history.gif'
+                }
+            } Baseliner->model('Baseliner::BaliTopicStatus')
+            ->search( { bl => { '<>' => '*' }, type=>'D'  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+    }     
 
     no strict;
     [ @$nodes, @states ];
