@@ -1,4 +1,3 @@
-
 package BaselinerX::Type::Menu;
 use Baseliner::Plug;
 use Baseliner::Utils;

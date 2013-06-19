@@ -228,7 +228,7 @@ sub user_address_for_action {
      $ret=$address{$_} unless $_ eq '/';
   }
 
-  $ret // $address{'/'};
+  return defined $ret ? $ret : $address{"/"};
 }
 
 =head2 user_baselines_for_action username=>Str, action=>Str
@@ -270,6 +270,25 @@ sub user_has_action {
         where ru.USERNAME = ?
           and ru.ID_ROLE = ra.ID_ROLE
           and ra.ACTION = ?
+          and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
+    },$username, $p{action}, @bl);
+}
+
+sub user_has_any_action {
+    my ($self, %p ) = @_;
+    _check_parameters( \%p, qw/username action/ ); 
+    my $username = $p{username};
+    my $action = $p{action};
+    push my @bl, _array $p{bl}, '*';
+    
+    return 1 if $self->is_root( $username );
+
+    return Baseliner->model('Baseliner')->dbi->value(qq{
+        select count(*)
+        from bali_roleuser ru, bali_roleaction ra
+        where ru.USERNAME = ?
+          and ru.ID_ROLE = ra.ID_ROLE
+          and ra.ACTION like ?
           and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
     },$username, $p{action}, @bl);
 }
@@ -339,12 +358,24 @@ sub user_projects {
 
 sub user_projects_query {
     my ( $self, %p ) = @_;
-    _throw 'Missing username' unless exists $p{ username };
-    Baseliner->model( 'Baseliner::BaliRoleuser' )
-        ->search( { username => $p{username} },
-        { distinct=>1, select => [ 'id' ] } )->as_query ;
-}
+    _throw 'Missing username' unless exists $p{username};
 
+    if ( $self->is_root( $p{username} ) ) {
+        DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
+    } else {
+        my @rs = Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => $p{username}},
+            {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->hashref->all;
+        if ( @rs ) {
+            if ( !$rs[ 0 ]->{id} ) {
+                DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
+            } else {
+                Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => $p{username}},
+                    {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->as_query;
+            }
+
+        } ## end if ( @rs )
+    } ## end else [ if ( $self->is_root( $p...))]
+} ## end sub user_projects_query
 =head2 user_projects_ids( username=>Str )
 
 Returns an array of project ids for the projects the user has access to.

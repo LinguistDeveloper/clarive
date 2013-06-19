@@ -9,7 +9,9 @@ use v5.10;
 
 BEGIN { extends 'Catalyst::Controller' }
 
-register 'menu.admin.daemon' => { label => 'Daemons', url_comp=>'/daemon/grid', title=>'Daemons', icon=>'/static/images/daemon.gif' };
+register 'action.admin.daemon' => { name => 'Administer daemons'};
+
+register 'menu.admin.daemon' => { label => 'Daemons', url_comp=>'/daemon/grid', title=>'Daemons', icon=>'/static/images/daemon.gif', action => 'action.admin.daemon'};
 
 sub grid : Local {
     my ( $self, $c ) = @_;

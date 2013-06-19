@@ -27,6 +27,7 @@ sub gridtree : Local {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    $p->{user} = $c->username;
     my ($total, @tree ) = $self->dispatch( $p );
 
     @tree = sort { lc $a->{text} cmp lc $b->{text} } map {
@@ -55,13 +56,14 @@ sub dispatch {
     my ($self, $p) = @_;
     my $parent = $p->{anode};
     my $mid = $p->{mid};
+    my $c = $p->{c};
     my $total;
     my @tree;
 
     if ( !length $p->{anode} && !$p->{type} ) {
-        @tree = $self->tree_roles;
+        @tree = $self->tree_roles( user => $p->{user} );
     } elsif ( $p->{type} eq 'role' ) {
-        @tree = $self->tree_classes( role => $p->{class}, parent => $p->{anode} );
+        @tree = $self->tree_classes( role => $p->{class}, parent => $p->{anode}, user => $p->{user}, role_name => $p->{item} );
     } elsif ( $p->{type} eq 'class' ) {
         ( $total, @tree ) = $self->tree_objects(
             class  => $p->{class},
@@ -111,30 +113,37 @@ sub dispatch {
 }
 
 sub tree_roles {
-    my ($self)=@_;
+    my ( $self, %p ) = @_;
+
     #my $last1 = '2011-11-04 10:49:22';
-           #+{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
-    my $cnt = 1;
-    my @tree = map {
+    #+{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
+    my $cnt  = 1;
+    my $user = $p{user};
+    my @tree;
+    map {
         my $role = $_->{role};
         my $name = $_->{name};
-        $role = 'Generic' if $name eq ''; 
-        +{  
-            _id => $cnt++,
-            _parent  => undef,
-            _is_leaf     => \0,
-            type => 'role', 
-            mid => $cnt,
-            item     => $name,
-            class    => $role,
-            icon     => '/static/images/ci/class.gif',
-            versionid  => 1,
-            ts       => '-',
-            tags     => [],
-            properties => undef,
+        if ( Baseliner->model( 'Permissions' )
+            ->user_has_any_action( username => $user, action => 'action.ci.admin.' . $name . '.%') )
+        {
+            $role = 'Generic' if $name eq '';
+            push @tree, {
+                _id        => $cnt++,
+                _parent    => undef,
+                _is_leaf   => \0,
+                type       => 'role',
+                mid        => $cnt,
+                item       => $name,
+                class      => $role,
+                icon       => '/static/images/ci/class.gif',
+                versionid  => 1,
+                ts         => '-',
+                tags       => [],
+                properties => undef,
 
-            #children => [], #\@chi
-            }
+                #children => [], #\@chi
+            };
+        } ## end if ( Baseliner->model(...))
     } $self->list_roles;
     return @tree;
 }
@@ -142,29 +151,38 @@ sub tree_roles {
 sub tree_classes {
     my ($self, %p)=@_;
     my $role = $p{role};
+    my $user = $p{user};
     my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
-    my @tree = map {
-        my $package = $_;
+    my @tree;
+    map {
+        my $item       = $_;
         my $collection = $_->collection;
-        my $ci_form = $self->form_for_ci( $package, $collection );
-        $package =~ s/^BaselinerX::CI:://g;
-        $cnt++;
-        +{  _id        => ++$cnt,
-            _parent  => $p{parent} || undef,
-            _is_leaf   => \0,
-            type       => 'class',
-            #mid        => $cnt,
-            item       => $package,
-            collection => $collection,
-            ci_form  => $ci_form,
-            class      => $_,
-            icon       => $_->icon,
-            has_bl     => $_->has_bl,
-            has_description     => $_->has_description,
-            versionid    => '',
-            ts         => '-',
-            properties => '',
-        }
+        my $ci_form = $self->form_for_ci( $item, $collection );
+        $item =~ s/^BaselinerX::CI:://g;
+        if ( Baseliner->model( 'Permissions' )
+            ->user_has_action( username => $user, action => 'action.ci.admin.' .$p{role_name}.'.'. $item ) )
+        {
+
+            $cnt++;
+            push @tree, {
+                _id      => ++$cnt,
+                _parent  => $p{parent} || undef,
+                _is_leaf => \0,
+                type     => 'class',
+
+                #mid        => $cnt,
+                item            => $item,
+                collection      => $collection,
+                ci_form         => $ci_form,
+                class           => $_,
+                icon            => $_->icon,
+                has_bl          => $_->has_bl,
+                has_description => $_->has_description,
+                versionid       => '',
+                ts              => '-',
+                properties      => '',
+            };
+        } 
     } packages_that_do( $role );
     return @tree; 
 }
@@ -499,36 +517,45 @@ sub ci_create_or_update {
     my %p = @_;
     return $p{mid} if length $p{mid};
     my $ns = $p{ns} || delete $p{data}{ns};
+    my $class = $p{class};
+
+    _fail _loc( 'Missing class for %1', $p{name} ) if !$class;
+    
     # check if it's an update, in case of foreign ci
-    if( $ns ) {
-        my $row = Baseliner->model('Baseliner::BaliMaster')->search({ ns=>$ns })->first;
-        if( ref $row ) {  # it's an update
-            if( ref $p{data} ) {
-                $p{yaml} = _dump( delete $p{data} );
-                $row->yaml( $p{yaml} );
-                $row->update;
-            }
-            #$row->name( $name ) if defined $name;
-            #$row->collection( $p{collection} ) if defined $p{collection};
-            #$row->yaml( _dump( $p{data} ) );
-            return $row->mid;
-        }
-    }
-    # new
-    # find collection
-    my $collection = $p{collection};
-    my $name = $p{name};
-    if( !$collection && exists $p{class} ) {
-        my $class = "BaselinerX::CI::$p{class}";
-        $collection = $class->collection;
-        _fail _loc( 'Missing collection for class %1', $class ) unless $collection;
+
+    # my $master_row = master_new $collection => $name => $p{data};
+    # $master_row->ns( $ns ) if $p{ns};
+    # $master_row->update;
+    # return $master_row->mid;
+    if ( length $p{mid} ) {
+        _ci( $p{mid} )->save( data => $p{data} );
+        return $p{mid};
     } else {
-        _fail _loc( 'Missing collection for %1', $name ) unless $collection;
-    }
-    my $master_row = master_new $collection => $name => $p{data};
-    $master_row->ns( $ns ) if $p{ns};
-    $master_row->update;
-    return $master_row->mid;
+        my $name = $p{name};
+        my $mid; 
+        $class = "BaselinerX::CI::$p{class}";
+
+        my @same_name_cis = DB->BaliMaster->search( {name => $name, collection => $p{collection} // $class->collection } )->hashref->all;
+
+        if ( scalar @same_name_cis > 1 ) {
+            for ( @same_name_cis ) {
+                if ( _ci( $_->{mid} )->{ci_class} eq $class ) {
+                    $mid = $_->{mid};
+                    last;
+                }
+            }
+        } elsif ( scalar @same_name_cis == 1 ) {
+            $mid = $same_name_cis[ 0 ]->{mid};
+        }
+
+
+        if ( !$mid ) {
+            return $class->save( name => $name, data => $p{data} );
+        } else {
+            _ci( $mid )->save( data => $p{data} );
+            return $mid;
+        }
+    } ## end else [ if ( length $p{mid} ) ]
 };
 
 =head2 sync

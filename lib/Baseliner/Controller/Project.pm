@@ -9,8 +9,10 @@ use JSON::XS;
 use namespace::clean;
 use v5.10;
 
+register 'action.admin.project' => { name => 'Administer projects'};
+
 register 'menu.admin.project' => {
-    label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.role'],
+    label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.project'],
     title=>'Projects', index=>80,
     icon=>'/static/images/icons/project.png' };
 

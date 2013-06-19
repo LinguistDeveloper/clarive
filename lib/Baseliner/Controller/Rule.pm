@@ -9,16 +9,17 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
+register 'action.admin.rules' => { name=>'Admin Rules' };
+
 register 'menu.admin.rule' => {
     label    => 'Rules',
     title    => _loc ('Rules'),
-    action   => 'action.rule.admin',
+    action   => 'action.admin.rules',
     url_comp => '/comp/rules.js',
     icon     => '/static/images/icons/rule.png',
     tab_icon => '/static/images/icons/rule.png'
 };
 
-register 'action.rule.admin' => { name=>'Admin Rules' };
 
 sub list : Local {
     my ($self, $c) = @_;
