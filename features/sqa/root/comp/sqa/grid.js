@@ -1044,7 +1044,7 @@
 			triggerAction: 'all'
 		});
 		
-		var store_projects_new = new Ext.data.JsonStore({ 
+		var store_projects_new = new Baseliner.JsonStore({ 
 			root: 'data' ,
 			remoteSort: true,
 			totalProperty: 'totalCount',
@@ -1080,7 +1080,7 @@
 			store_subprojects.load();
 		});
 		
-		var store_subprojects = new Ext.data.JsonStore({ 
+		var store_subprojects = new Baseliner.JsonStore({ 
 			root: 'data' ,
 			remoteSort: true,
 			totalProperty: 'totalCount',
@@ -1119,7 +1119,7 @@
 		});
 
 
-		var store_nature = new Ext.data.JsonStore({
+		var store_nature = new Baseliner.JsonStore({
 			root: 'data' ,
 			remoteSort: true,
 			totalProperty: 'totalCount',
@@ -1235,7 +1235,7 @@
 	
 	var projects_check = function( schedule ) {
 
-			var store_projects = new Ext.data.JsonStore({ 
+			var store_projects = new Baseliner.JsonStore({ 
 				root: 'data' ,
 				remoteSort: true,
 				totalProperty: 'totalCount',

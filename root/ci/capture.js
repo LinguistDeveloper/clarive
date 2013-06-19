@@ -5,11 +5,8 @@
         { xtype:'textarea', fieldLabel:_('Regex'), name:'regex', 
             height: 400,
             value: params.rec.regex, anchor:'100%', 
-            style:'background-color: #000, color: #eee; font: 11px Consolas, Courier New, monotype' 
+            style:'background-color: #000; color: #eee; font: 11px Consolas, Courier New, monotype' 
         }
-        //{ xtype:'panel', fieldLabel: _('Grammar'), height: 500, items: new Baseliner.CodeMirror({
-               //height: 500, value: params.rec.grammar, name:'grammar', editor: { onChange:function(){ alert(1) } } }) 
-        //}
     ]
 })
 

@@ -1,7 +1,7 @@
 (function(params){
     if( ! params.rec ) params.rec = {};
     var data = params.rec;
-    
+	
     var store = new Ext.data.ArrayStore({
         fields: [ 'parse_type' ],
         data : [ ['Path'], ['Source'] ]
@@ -23,25 +23,27 @@
         selectOnFocus: true
     });  
     
-    var topic_box_store = new Baseliner.store.Topics({ 
-        baseParams: { mid: data ? data.mids : '', show_release: 0, filter:'' } });
-    var topic_box = new Baseliner.model.Topics({
-		fieldLabel: _('Topics'),
-		name: 'tag_topic',
-        hiddenName: 'tag_topic',
-        store: topic_box_store,
-		disabled: false,
-		singleMode: false
-    });
-    topic_box_store.on('load',function(){
-        topic_box.setValue( data.tag_topic ) ;            
-    });
+//    var topic_box_store = new Baseliner.store.Topics({ 
+//        baseParams: { mid: data ? data.mids : '', show_release: 0, filter:'' } });
+//    var topic_box = new Baseliner.model.Topics({
+//		fieldLabel: _('Topics'),
+//		name: 'tag_topic',
+//        hiddenName: 'tag_topic',
+//        store: topic_box_store,
+//		disabled: false,
+//		singleMode: false
+//    });
+//    topic_box_store.on('load',function(){
+//        topic_box.setValue( data.tag_topic ) ;            
+//    });
     
     var cis = new Baseliner.CIGrid({
         fieldLabel: _('CIs'),
         name: 'cis',
         anchor: '100%',
-        value: params.rec.cis
+        value: params.rec.cis //,
+		//ci_role: ['Parser','Internal'] //Filtro roles
+		//ci_class: 'user' //Filtro class solo admite un valor
     });
 	
     return [
@@ -54,7 +56,7 @@
         { xtype:'textarea', fieldLabel:_('Pattern'), name:'regex', 
             height: 100,
             value: params.rec.regex, anchor:'100%', 
-            style:'background-color: #000, color: #eee; font: 11px Consolas, Courier New, monotype' 
+            style:'color: #eee; font: 11px Consolas, Courier New, monotype' 
         }
     ]
 })

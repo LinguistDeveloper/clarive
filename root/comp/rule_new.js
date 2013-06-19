@@ -12,7 +12,7 @@
         totalProperty:"totalCount", 
         url: '/rule/event_list',
         baseParams: Ext.apply({}, params),
-        fields: [ 'type', 'name', 'description', 'key' ],
+        fields: [ 'type', 'name', 'description', 'key' ]
     });
     store_events.on('load',function(){
         var row = 0;

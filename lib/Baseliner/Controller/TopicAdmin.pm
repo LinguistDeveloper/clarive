@@ -240,7 +240,7 @@ sub update_status : Local {
                 $c->stash->{json} = { success => \1, msg=>_loc('Statuses deleted') };
             }
             catch{
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Statuses') };
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Statuses: %1', shift()) };
             }
         }
     }

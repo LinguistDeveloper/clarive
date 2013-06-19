@@ -969,6 +969,7 @@ sub get_data {
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
         my %custom_data = {};
+        # get data from value_clob if value is not available. 
         map { $custom_data{ $_->{name} } = $_->{value} ? $_->{value} : $_->{value_clob} }
             Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( { topic_mid => $topic_mid } )->hashref->all;
         
@@ -1247,8 +1248,10 @@ sub save_data {
             if ($_->{data}){ ##Cuando el tipo de dato es CLOB
                 
             	$record->{value_clob} = $data->{ $_ -> {name}};
+            	$record->{value} = ''; # cleanup old data, so that we read from clob 
             }else{
             	$record->{value} = $data->{ $_ -> {name}};
+            	$record->{value_clob} = ''; # cleanup old data so we read from value
             }
             
             if(!$row){
@@ -1263,12 +1266,14 @@ sub save_data {
                         $modified = 1;    
                     }
                     $row->value_clob($data->{$_->{name}});
+                    $row->value(''); # cleanup old data in case of change data: 1
                 }else{
                     if ($row->value ne $data->{$_->{name}}){
                         $modified = 1;
                         $old_value = $row->value;
                     }
                     $row->value($data->{$_->{name}});
+                    $row->value_clob('');   # cleanup old data in case of change data: 1
                 }
                 $row->update;
                 

@@ -83,12 +83,13 @@ Baseliner.alert = function(title, format){
         title: title,
         msg: s,
         icon: Ext.Msg.WARNING
-        //buttons: Ext.Msg.OK,
+        //buttons: Ext.Msg.OK
     });
 };
 
 Baseliner.error = function(title, format){
     var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
+    s = Baseliner.error_msg( s );
     Ext.Msg.show({
         title: title,
         msg: s,
@@ -193,9 +194,21 @@ Baseliner.change_avatar = function() {
 
 $.extend($.gritter.options, { position: 'bottom-right' } );
 
+Baseliner.error_msg = function( msg ){
+    if( ! Baseliner.DEBUG ) {
+        var ix = msg.indexOf( 'Stack:' );
+        if( ix > -1 ) {
+            msg = msg.substring(0,ix);
+        }
+        // XXX consider logging the stack somewhere else (button or tab details)
+    }
+    return msg;
+}
+
 Baseliner.message = function(title, msg, config){
     if( ! config ) config = {};
     
+    msg = Baseliner.error_msg( msg );
     var id = $.gritter.add( Ext.apply({
         title: title, text: msg, fade: true, 'class': 'baseliner-message',
         time: 2200,
@@ -377,7 +390,7 @@ Baseliner.topic_name = function(args) {
         if( mid )
             mid = '#' + mid;
         else
-            mid = '';
+		    mid = '';
         var cat_name = _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
         if( cat_name )
             cat_name = cat_name + ' ';
@@ -414,11 +427,15 @@ Baseliner.topic_name = function(args) {
         }
         var style = String.format( style_str, color, icon, top, bot, img, size );
         //if( color == undefined ) color = '#777';
+
         var ret = args.mini 
             ? String.format('<span id="boot" style="background: transparent"><span class="{0}" style="{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="font-weight:bolder;font-size:11px">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid )
-            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
+            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, parse_mid );
         return ret;
 };
+
+
+//return String.format('<a href="javascript:Baseliner.show_ci({3})">{2}</a>', mid, value );
 
 // from /root/static/images/icons/mime/*
 var extensions_available = {
@@ -2326,6 +2343,8 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     initComponent: function(){
         var self = this;
         if( self.ci == undefined ) self.ci = {};
+		if( self.ci_role) self.ci.role = self.ci_role;
+		if( self.ci_class) self.ci['class'] = self.ci_class;
         if( self.ci_grid == undefined ) self.ci_grid = {};
         self.ci_store = new Baseliner.store.CI({ 
             baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store' }, self.ci )
