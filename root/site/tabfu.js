@@ -935,8 +935,10 @@ $('a').click(function(event) {
 
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
+
         if( params._login_count == undefined ) params._login_count = 0;
         params['_bali_notify_valid_session'] = true;
+        
         var login_and_go = function(url,params,foo,scope){
               Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
         };
@@ -1278,21 +1280,31 @@ $('a').click(function(event) {
         return Baseliner._defaultLoadingMask;
     };
     Baseliner.showLoadingMaskFade = function (cmp, msg){
-        Baseliner.showLoadingMask(cmp, msg);
+        if( cmp ) {
+            Baseliner.showLoadingMask(cmp, msg);
+        }
     };
     
     Baseliner.hideLoadingMask = function ( cmp ){
         if(Baseliner._defaultLoadingMask != undefined){
-            cmp.unmask();
-
+            if( Ext.isObject( cmp ) ) {
+                cmp.unmask();
+            }
+            else if( Ext.isObject( Baseliner._defaultLoadingMask ) ) { 
+                 try { Baseliner._defaultLoadingMask.el.unmask(); } catch(e){} // not sure there is el or not
+                 try { Baseliner._defaultLoadingMask.unmask(); } catch(e){} // not sure there is el or not
+                 try { Baseliner._defaultLoadingMask.hide(); } catch(e){} // not sure there is el or not
+            }
             // Baseliner._defaultLoadingMask.el.unmask();
         }
     };
     
     Baseliner.hideLoadingMaskFade = function (cmp){
         if(Baseliner._defaultLoadingMask != undefined){
-            cmp.fadeIn();
-            cmp.unmask();
+            if( cmp ) {
+                cmp.fadeIn();
+                cmp.unmask();
+            } 
             // Baseliner._defaultLoadingMask.hide();
             //Baseliner._defaultLoadingMask.getEl().fadeOut();
         }
