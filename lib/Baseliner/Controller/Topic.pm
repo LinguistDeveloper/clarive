@@ -580,6 +580,7 @@ sub comment : Local {
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
                     my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
+                    _fail( _loc("Topic with id %1 not found (deleted?)", $topic_mid ) ) unless $topic;
                     $topic->add_to_posts( $post, { rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
@@ -593,6 +594,7 @@ sub comment : Local {
                 #});
             } else {
                 my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
+                _fail( _loc("This comment does not exist anymore") ) unless $post;
                 $post->text( $text );
                 $post->content_type( $content_type );
                 # TODO modified_on ?
@@ -611,6 +613,7 @@ sub comment : Local {
             my $id_com = $p->{id_com};
             _throw( _loc( 'Missing id' ) ) unless defined $id_com;
             my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
+            _fail( _loc("This comment does not exist anymore") ) unless $post;
             my $text = $post->text;
             # find my parents to notify via events
             my @mids = map { $_->from_mid } $post->parents->all; 
@@ -627,15 +630,16 @@ sub comment : Local {
     } elsif( $action eq 'view' )  {
         try {
             my $id_com = $p->{id_com};
-            my $topic = $c->model('Baseliner::BaliPost')->find($id_com);
+            my $post = $c->model('Baseliner::BaliPost')->find($id_com);
+            _fail( _loc("This comment does not exist anymore") ) unless $post;
             # check if youre the owner
-            _fail _loc( "You're not the owner (%1) of the comment.", $topic->created_by ) 
-                if $topic->created_by ne $c->username;
+            _fail _loc( "You're not the owner (%1) of the comment.", $post->created_by ) 
+                if $post->created_by ne $c->username;
             $c->stash->{json} = {
                 failure=>\0,
-                text       => $topic->text,
-                created_by => $topic->created_by,
-                created_on => $topic->created_on->dmy . ' ' . $topic->created_on->hms
+                text       => $post->text,
+                created_by => $post->created_by,
+                created_on => $post->created_on->dmy . ' ' . $post->created_on->hms
             };
         } catch {
             $c->stash->{json} = { msg => _loc('Error viewing comment: %1', shift() ), failure => \1 }

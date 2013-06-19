@@ -18,6 +18,9 @@ msgstr "No hay"
 msgid "Pattern"
 msgstr "Patrón"
 
+msgid "This comment does not exist anymore"
+msgstr "El comentario ha sido borrado"
+
 msgid "The topic category %1 does not have any initial status assigned. Contact your administrator."
 msgstr "La categoría %1 no tiene un estado inicial asignado. Contacte al administrador."
 
