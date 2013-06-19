@@ -2339,6 +2339,8 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     initComponent: function(){
         var self = this;
         if( self.ci == undefined ) self.ci = {};
+		if( self.ci_role) self.ci.role = self.ci_role;
+		if( self.ci_class) self.ci['class'] = self.ci_class;
         if( self.ci_grid == undefined ) self.ci_grid = {};
         self.ci_store = new Baseliner.store.CI({ 
             baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store' }, self.ci )

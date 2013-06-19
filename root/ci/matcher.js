@@ -41,7 +41,9 @@
         fieldLabel: _('CIs'),
         name: 'cis',
         anchor: '100%',
-        value: params.rec.cis
+        value: params.rec.cis //,
+		//ci_role: ['Parser','Internal'] //Filtro roles
+		//ci_class: 'user' //Filtro class solo admite un valor
     });
 	
     return [
