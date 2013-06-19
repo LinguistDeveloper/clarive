@@ -56,7 +56,7 @@
         { xtype:'textarea', fieldLabel:_('Pattern'), name:'regex', 
             height: 100,
             value: params.rec.regex, anchor:'100%', 
-            style:'background-color: #000, color: #eee; font: 11px Consolas, Courier New, monotype' 
+            style:'color: #eee; font: 11px Consolas, Courier New, monotype' 
         }
     ]
 })
