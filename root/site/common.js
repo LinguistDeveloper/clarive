@@ -430,7 +430,7 @@ Baseliner.topic_name = function(args) {
 
         var ret = args.mini 
             ? String.format('<span id="boot" style="background: transparent"><span class="{0}" style="{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="font-weight:bolder;font-size:11px">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid )
-            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, parse_mid );
+            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
         return ret;
 };
 

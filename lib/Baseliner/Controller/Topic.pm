@@ -11,8 +11,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
-register 'action.topics.admin' => { name=>'Admin topics' };
-register "action.topics.view" => { name=>"View topics menu" };
+register 'action.admin.topics' => { name=>'Admin topics' };
 
 register 'registor.menu.topics' => {
     generator => sub {
@@ -56,13 +55,13 @@ register 'registor.menu.topics' => {
             'menu.topic' => {
                     label => _loc('Topics'),
                     title    => _loc('Topics'),
-                    actions  => ['action.topics.view'],
+                    actions  => ['action.topics.%'],
             },
             'menu.topic.topics' => {
                     index => 1,
                     label => _loc('All'),
                     title    => _loc ('Topics'),
-                    actions  => ['action.topics.view'],
+                    actions  => ['action.topics.%.view'],
                     url_comp => '/topic/grid',
                     icon     => '/static/images/icons/topic.png',
                     tab_icon => '/static/images/icons/topic.png'
@@ -75,6 +74,7 @@ register 'registor.menu.topics' => {
                     label    => _loc('Create'),
                     icon     => '/static/images/icons/add.gif',
                     index => 2,
+                    actions  => ['action.topics.%.create'],
              } if %menu_create;
        return $menus;
     }

@@ -7,16 +7,17 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
+register 'action.admin.event' => { name=>'Admin Events' };
+
 register 'menu.admin.events' => {
     label    => 'Events',
     title    => _loc ('Events'),
-    action   => 'action.event.admin',
+    action   => 'action.admin.event',
     url_comp => '/comp/events.js',
     icon     => '/static/images/icons/event.png',
     tab_icon => '/static/images/icons/event.png'
 };
 
-register 'action.event.admin' => { name=>'Admin Events' };
 
 sub list : Local {
     my ($self,$c)=@_;

@@ -7,12 +7,12 @@ use Try::Tiny;
 
 our $INSTALL_DIR = '.install';
 
-register 'action.upgrade' => {
+register 'action.admin.upgrade' => {
     name => 'Upgrade features, plugins and modules',
 };
 
 register 'menu.admin.upgrade' => {
-    action => 'action.upgrade',
+    action => 'action.admin.upgrade',
     title => 'Upgrades',
     label => 'Upgrades',
     icon  => '/static/images/icons/upgrade.png',
@@ -22,7 +22,7 @@ register 'menu.admin.upgrade' => {
 sub restart_server : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+    _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
     if( defined $ENV{BASELINER_PARENT_PID} ) {
         # normally, this tells a start_server process to restart children
         _log _loc "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}"; 
@@ -37,7 +37,7 @@ sub local_delete : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $files = _from_json( $p->{files} );
         ref $files or _fail 'Missing parameter files';
         map { unlink $_ if -e $_ } @$files;
@@ -52,7 +52,7 @@ sub local_delete : Local {
 sub local_get : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+    _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
     my $file = $p->{file};
     _fail _loc('File does not exist: %1', $file) unless -e $file;
     my $f = _file( $file );
@@ -67,7 +67,7 @@ sub install_cpan : Local {
     my $p = $c->req->params;
     my @log;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $files = _from_json( $p->{files} );
         ref $files or _fail 'Missing parameter files';
         # load cpanm from its file
@@ -158,7 +158,7 @@ sub upload_cpan : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try { 
-        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $dir = _dir( $c->path_to( $c->config->{install_dir} // $INSTALL_DIR ) );
         $dir->mkpath unless -d "$dir";
         $p->{filename} ||= 'cpan-' . _md5(rand()) . 'tar.gz';
@@ -195,7 +195,7 @@ sub pull : Local {
     my $p = $c->req->params;
     my @log;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $data = $p->{data} or _fail 'Missing data';
         my $id = $p->{id} // _md5( rand() ) ;
         # dump to file
@@ -248,7 +248,7 @@ sub list_repositories : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my @features =  $c->features->list;
         my @repositories = map { { feature=>$_->name, dir=>$_->path . '/.git' } } @features;
         unshift @repositories, { feature=>'clarive', dir=>$c->path_to('.git') . '' };
@@ -308,7 +308,7 @@ sub checkout : Local {
     my $p = $c->req->params;
     my @log;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.upgrade');
+        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $repos = _from_json( $p->{repos} );
         my %repositories = $self->repositories( $c );
         for my $repo ( _array $repos ) {

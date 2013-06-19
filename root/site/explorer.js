@@ -1,4 +1,7 @@
-Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_action( action=>'action.lc.ic_editor', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action => 'action.ci.%', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_job = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
+
 
 Baseliner.tree_topic_style = [
     '<span unselectable="on" style="font-size:0px;',
@@ -234,14 +237,11 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                     //tn.mini = true;
                     //var tn_span = Baseliner.topic_name(tn);
 
-                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, _(tn.category_name), tn.mid, n.text ) );
+                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
                     n.ui = new Baseliner.TreeMultiTextNode( n );
 
                     /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
                         n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
-                } else {
-                    // translate nodes
-                    n.setText( _( n.text ) );
                 }
             });
         });
@@ -454,14 +454,11 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
     initComponent: function(){
         var self = this;
 
-        //self.items = []; // self.$tree_projects ];
         
         var show_projects = function() {
             if( !self.$tree_projects ) {
                 self.$tree_projects = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' })
-                self.$tree_projects.on('favorite_added', function() { 
-                    if( self.$tree_favorites ) self.$tree_favorites.refresh() 
-                });
+                self.$tree_projects.on('favorite_added', function() { if( self.$tree_favorites ) self.$tree_favorites.refresh() });
                 self.add( self.$tree_projects );
             }
             self.getLayout().setActiveItem( self.$tree_projects );
@@ -501,6 +498,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: false,
             toggleGroup: 'explorer-card',
             allowDepress: false,
+            hidden: ! Baseliner.user_can_job,
             enableToggle: true
         });
 
@@ -523,7 +521,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             toggleGroup: 'explorer-card',
             pressed: false,
             allowDepress: false,
-            enableToggle: true
+            enableToggle: true,
+            hidden: ! Baseliner.user_can_workspace,
         });
 
         var button_ci = new Ext.Button({
@@ -575,9 +574,12 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             //icon: '/static/images/icons/config.gif',
             tooltip: _('Config'),
             menu: [
-                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder },
-                { text: _('Add Workspace'), handler: add_workspace }
+                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder }
             ]
+            // menu: [
+            //     { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder },
+            //     { text: _('Add Workspace'), handler: add_workspace }
+            // ]
         });
 
         self.tbar = new Ext.Toolbar({
@@ -608,7 +610,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 })
             ]
         });
-        
+
         Baseliner.Explorer.superclass.initComponent.call(this);
         self.on('afterrender', function(){ show_favorites() });
     },

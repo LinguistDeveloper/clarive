@@ -7,36 +7,58 @@ use IO::CaptureOutput;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Try::Tiny;
 
-BEGIN {  extends 'Catalyst::Controller' }
+BEGIN { extends 'Catalyst::Controller' }
 
-register 'action.admin.develop' =>  { name=>'Baseliner Developer' };
+register 'action.development.repl'          => {name => 'Baseliner REPL'};
+register 'action.development.ext_api'       => {name => 'ExtJS API Reference'};
+register 'action.development.ext_examples'  => {name => 'ExtJS Examples'};
+register 'action.development.gui_designer', => {name => 'GUI Designer'};
+register 'action.development.baliref',      => {name => 'Baseliner Reference'};
+register 'action.development.js_reload',    => {name => 'JS Reload'};
 
-register 'menu.development' => { label => 'Development', action=>'action.admin.develop' };
+register 'menu.development' => {
+    label  => 'Development',
+    action => 'action.development.%',
+    index  => 30
+};
 register 'menu.development.repl' => {
     label    => 'REPL',
     url_comp => '/repl/main',
     title    => 'REPL',
-    action   => 'action.admin.develop',
+    action   => 'action.development.repl',
     icon     => '/static/images/icons/console.png',
 };
-register 'menu.development.ext_api' =>
-    { label => 'ExtJS API', url_iframe => '/static/ext/docs/index.html', title => 'ExtJS API', action => 'action.admin.develop' };
+register 'menu.development.ext_api' => {
+    label      => 'ExtJS API',
+    url_iframe => '/static/ext/docs/index.html',
+    title      => 'ExtJS API',
+    action     => 'action.development.ext_api'
+};
 register 'menu.development.ext_examples' => {
     label      => 'ExtJS Examples',
     url_iframe => '/static/ext/examples/index.html',
     title      => 'ExtJS Examples',
-    action     => 'action.admin.develop'
+    action     => 'action.development.ext_examples'
 };
-register 'menu.development.gui_designer' =>
-    { label => 'GUI Designer', url_iframe => '/static/gui/index.html', title => 'GUI Designer', action => 'action.admin.develop' };
-register 'menu.development.baliref' =>
-    { label => 'Baseliner Reference', url_browser_window => '/pod', title => 'Baseliner Reference', index => 999 };
+register 'menu.development.gui_designer' => {
+    label      => 'GUI Designer',
+    url_iframe => '/static/gui/index.html',
+    title      => 'GUI Designer',
+    action     => 'action.development.gui_designer',
+};
+register 'menu.development.baliref' => {
+    label              => 'Baseliner Reference',
+    url_browser_window => '/pod',
+    title              => 'Baseliner Reference',
+    index              => 999,
+    action => 'action.development.baliref',
+};
 
 register 'menu.development.js_reload' => {
     label    => 'JS Reload',
     url_eval => '/site/js-reload.js',
     title    => 'JS Reload',
-    action   => 'action.admin.develop',
+    action   => 'action.development.js_reload',
     icon     => '/static/images/icons/js-reload.png',
 };
 

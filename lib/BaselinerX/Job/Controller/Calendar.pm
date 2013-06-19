@@ -14,7 +14,7 @@ register 'menu.job.calendar' => {
     label    => _loc('Job Calendars'),
     url_comp => '/job/calendar_list',
     title    => _loc('Job Calendars'),
-    actions  => ['action.job.calendar.view'],
+    actions  => ['action.job.calendar.%'],
     icon     => '/static/images/chromium/history_favicon.png'
 };
 register 'action.job.calendar.view' => { name => 'View Job Calendar' };

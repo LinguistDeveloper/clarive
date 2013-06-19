@@ -261,37 +261,66 @@ sub search_for_node {
     }
 
     # loop thru services
-    $q_depth||= 99; 
+    $q_depth //= 99; 
     OUTER: for my $key ( $self->starts_with( $key_prefix ) ) {
         my $depth = ( my @ss = split /\./,$key ) -1 ;
-        next if( $depth gt $q_depth );
+        next if( $depth > $q_depth );
         next if $check_enabled && exists $disabled_keys->{ $key };
 
+        my $node = $self->registrar->{$key};
+        my $node_instance = $node->instance;
+
         # skip nodes that the user has no access to
-        next if( $allowed_actions
-            && ref $self->registrar->{$key}->actions
-            && !grep { my $a=$_; grep /^$a/,@{$allowed_actions||[]} } @{ $self->registrar->{$key}->actions || []} );
+        my $has_permission = 0;
+        if ( !$username  || (!$node_instance->actions && !$node_instance->action)) {
+            $has_permission = 1;
+        } else {        
+            for ( _array( $node_instance->action, $node_instance->actions ) ) {
+                $has_permission = 1 if Baseliner->model("Permissions")->user_has_any_action( action => $_, username => $username)
+            }
+        }
+        next if !$has_permission;
+        # if( ref $allowed_actions ) {
+        #     my %node_actions;
+        #     if( ref $node->all_actions ) {
+        #         %node_actions =  %{ $node->all_actions };  # found in cache
+        #     } else {
+        #         %node_actions = 
+        #                 map { $_ => 1 }
+        #                 map { # create list of all possible parent actions
+        #                     my @act = split /\./, $_;
+        #                     map { 
+        #                        join('.',@act[0..$_])
+        #                     } ( 2 .. $#act );
+        #                 } _array( $node_instance->action, $node_instance->actions );
+        #             ;
+        #         $node->all_actions( \%node_actions ); # caching
+        #     }
+        #     next if %node_actions && ! _any( sub{ $_ }, @node_actions{ _array($allowed_actions) } );
+        #     _dump %node_actions;
+        # }
+
 
         # query for attribute existence
-        next if( $has_attribute && !defined $self->registrar->{$key}->{$has_attribute} );
+        next if( $has_attribute && !defined $node->{$has_attribute} );
 
         # query for attribute value
         foreach my $attr( keys %query ) {
             my $val = $query{$attr};	
             if( defined $val ) {
-                if( defined $self->registrar->{$key}->{$attr} ) {
-                    next OUTER unless( $self->registrar->{$key}->{$attr} eq $val);
+                if( defined $node->{$attr} ) {
+                    next OUTER unless( $node->{$attr} eq $val);
                 }
-                elsif( defined $self->registrar->{$key}->{param}->{$attr} ) {
-                    #warn "..........CHECK: $val, $key, $attr = " .  $self->registrar->{$key}->{param}->{$attr};
-                    next OUTER unless( $self->registrar->{$key}->{param}->{$attr} eq $val);
+                elsif( defined $node->{param}->{$attr} ) {
+                    #warn "..........CHECK: $val, $key, $attr = " .  $node->{param}->{$attr};
+                    next OUTER unless( $node->{param}->{$attr} eq $val);
                 }
                 else {
                     next OUTER;
                 }
             }
         }
-        push(@found,$self->registrar->{$key});
+        push @found, $node;
     }
     return wantarray ? @found : $found[0];
 }

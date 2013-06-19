@@ -18,10 +18,10 @@ Main Sempahore controller for the admin user interface.
 
 BEGIN { extends 'Catalyst::Controller' }
 
-register 'action.sem.admin' => { label => 'Semaphore Administration' };
+register 'action.admin.semaphore' => { name => 'Semaphore Administration' };
 register 'menu.admin.semaphore' => {
     label => 'Semaphores', url_comp=>'/semaphore/grid', title=>'Semaphores', icon=>'/static/images/semaphore.gif',
-    action=>'action.sem.admin'
+    action=>'action.admin.semaphore'
 };
 
 sub grid : Local {
