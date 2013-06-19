@@ -891,6 +891,21 @@ $('a').click(function(event) {
             if( Ext.isArray( mat ) ) eo.line = mat[1]
                 else eo.line = mat;
         }
+        var e_params, e_xhr;
+        if( params!=undefined && !Ext.isIE ) {
+            if( Ext.isFunction( JSON.stringify ) ) {
+                try { e_params = JSON.stringify(params); } catch(e){ e_params='[could not encode]' }
+            } else {
+                try { e_params = Ext.encode(params); } catch(e){ e_params='[could not encode]' }
+            }
+        }
+        if( xhr !=undefined && !Ext.isIE ) {
+            if( Ext.isFunction( JSON.stringify ) ) {
+                try { e_xhr = JSON.stringify(xhr); } catch(e){ e_xhr='[could not encode]' }
+            } else {
+                try { e_xhr = Ext.encode(xhr); } catch(e){ e_xhr='[could not encode]' }
+            }
+        }
         var emsg = String.format('name: {0}\nmessage: {1}\nline: {2}\ncode: {3}\nfile: {4}\nstack: {5}', eo.name, eo.msg, eo.line, eo.code, eo.file, eo.stack );
         var win = new Baseliner.Window({
             title: String.format('<span id="boot" style="background:transparent"><span class="label" style="background:red">{0}</span></span>', _('Error') ),
@@ -906,8 +921,8 @@ $('a').click(function(event) {
                       { xtype:'textarea', title: _('Response'), value: xhr.responseText, style: Baseliner.error_win_textarea_style },
                       { xtype:'panel', title: _('Code'), items: new Baseliner.CodeMirror({ value: xhr.responseText }) },
                       { xtype:'textarea', title: _('Error'), value: emsg, style: Baseliner.error_win_textarea_style },
-                      { xtype:'textarea', title: _('Params'), value: Ext.encode( params ), style: Baseliner.error_win_textarea_style },
-                      { xtype:'textarea', title: _('XHR'), value: Ext.encode( xhr ), style: Baseliner.error_win_textarea_style },
+                      { xtype:'textarea', title: _('Params'), value: e_params, style: Baseliner.error_win_textarea_style },
+                      { xtype:'textarea', title: _('XHR'), value: e_xhr, style: Baseliner.error_win_textarea_style },
                       { xtype:'textarea', title: _('URL'), value: url, style: Baseliner.error_win_textarea_style }
                   ]} 
              ]
@@ -917,13 +932,15 @@ $('a').click(function(event) {
 
     Baseliner.eval_response = function( text, params, url ) {
         var comp;
+        // search cache, if exists
         if( Ext.isObject( Baseliner.eval_cache ) && Baseliner.eval_cache[url] !=undefined ) {
             var comp = Baseliner.eval_cache[url];
             if( Ext.isFunction(comp) ) return comp(params);
         }
+        // eval
         try { eval("comp = " + text ) } catch(e) {} // this is for (function(){})(); with semicolon, etc.
-        if( comp == undefined ) 
-            eval("comp = ( " + text + " )");  // json, pure js, closures (function(){ })
+        if( comp == undefined ) eval("comp = ( " + text + " )");  // json, pure js, closures (function(){ })
+        
         if( Ext.isFunction( comp ) ) {
             var ret = comp(params);
             if( Ext.isObject( Baseliner.eval_cache ) ) Baseliner.eval_cache[url]=comp;
@@ -981,6 +998,9 @@ $('a').click(function(event) {
                     }
                     else if( Ext.isFunction( foo ) ) {
                         foo( comp, scope );
+                    }
+                    else {
+                        Baseliner.error_win(url,params,xhr,e);
                     }
                 }
                 catch(e){
