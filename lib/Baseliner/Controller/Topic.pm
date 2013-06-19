@@ -347,73 +347,80 @@ sub new_topic : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     
-    my $id_category = $p->{new_category_id};
-    my $name_category = $p->{new_category_name};
-    my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
-                                                                                        {
-                                                                                        prefetch=>['status'],
-                                                                                        }                                                                                 
-                                                                                     )->first; 
-    my $name_status = $rs_status->status->name;
-    my $meta = $c->model('Topic')->get_meta( undef, $id_category );
-    $meta = $self->get_field_bodies( $meta );
-    
-    my $data;
-    
-    if ($p->{ci}){
-        $data = _ci($p->{ci})->{_ci};
-        $data->{title} = $data->{gdi_perfil_dni};
-        if ($p->{clonar} && $p->{clonar} == -1){
-            $data = $self->init_values_topic($data);
-            if ($p->{dni}){
-                $data->{gdi_perfil_dni} = $p->{dni};
-            }
-            my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
-                                                                                    {
-                                                                                    prefetch=>['status'],
-                                                                                    }                                                                                 
-                                                                                 )->first;
-            
-            my $action = $c->model('Topic')->getAction($statuses->status->type);
-            $data->{id_category_status} = $statuses->status->id;
-            $data->{name_status} = $statuses->status->name;
-            $data->{type_status} = $statuses->status->type;
-            $data->{action_status} = $action;
-        }
-    }else{
-        $data = $c->model('Topic')->get_data( $meta, undef );
-        #Cetelem
-        if($p->{dni}){
-            if ($p->{clonar}){
-                $data = $c->model('Topic')->get_data( $meta, $p->{clonar} );
+    my $ret = try {
+        my $id_category = $p->{new_category_id};
+        my $name_category = $p->{new_category_name};
+        my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
+                                                                                            {
+                                                                                            prefetch=>['status'],
+                                                                                            }                                                                                 
+                                                                                         )->first; 
+        _fail( _loc('The topic category %1 does not have any initial status assigned. Contact your administrator.', $name_category) ) 
+            unless $rs_status;
+        my $name_status = $rs_status->status->name;
+        my $meta = $c->model('Topic')->get_meta( undef, $id_category );
+        $meta = $self->get_field_bodies( $meta );
+        
+        my $data;
+        
+        if ($p->{ci}){
+            $data = _ci($p->{ci})->{_ci};
+            $data->{title} = $data->{gdi_perfil_dni};
+            if ($p->{clonar} && $p->{clonar} == -1){
                 $data = $self->init_values_topic($data);
-                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
+                if ($p->{dni}){
+                    $data->{gdi_perfil_dni} = $p->{dni};
+                }
+                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
                                                                                         {
                                                                                         prefetch=>['status'],
                                                                                         }                                                                                 
                                                                                      )->first;
                 
-                
                 my $action = $c->model('Topic')->getAction($statuses->status->type);
                 $data->{id_category_status} = $statuses->status->id;
                 $data->{name_status} = $statuses->status->name;
                 $data->{type_status} = $statuses->status->type;
-                $data->{action_status} = $action;                    
+                $data->{action_status} = $action;
             }
-            $data->{gdi_perfil_dni} = $p->{dni};
-            $data->{title} = $data->{gdi_perfil_dni};
+        }else{
+            $data = $c->model('Topic')->get_data( $meta, undef );
+            #Cetelem
+            if($p->{dni}){
+                if ($p->{clonar}){
+                    $data = $c->model('Topic')->get_data( $meta, $p->{clonar} );
+                    $data = $self->init_values_topic($data);
+                    my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
+                                                                                            {
+                                                                                            prefetch=>['status'],
+                                                                                            }                                                                                 
+                                                                                         )->first;
+                    
+                    
+                    my $action = $c->model('Topic')->getAction($statuses->status->type);
+                    $data->{id_category_status} = $statuses->status->id;
+                    $data->{name_status} = $statuses->status->name;
+                    $data->{type_status} = $statuses->status->type;
+                    $data->{action_status} = $action;                    
+                }
+                $data->{gdi_perfil_dni} = $p->{dni};
+                $data->{title} = $data->{gdi_perfil_dni};
+            }
         }
-    }
-    
-    map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
-    
-    $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
-    
-    my $ret = {
-        new_category_id     => $id_category,
-        new_category_name   => $name_category,
-        topic_meta          => $meta,
-        topic_data          => $data,
+        
+        map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
+        
+        $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
+        
+        {
+            success => \1,
+            new_category_id     => $id_category,
+            new_category_name   => $name_category,
+            topic_meta          => $meta,
+            topic_data          => $data,
+        };
+    } catch {
+        { success=>\0, msg=>"".shift() } 
     };
     
     $c->stash->{json} = $ret;
