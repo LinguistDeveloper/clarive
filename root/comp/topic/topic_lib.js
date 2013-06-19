@@ -202,7 +202,7 @@ Baseliner.Topic.StorePriority = Ext.extend( Baseliner.JsonStore, {
 Baseliner.Topic.comment_delete = function(id_com, id_div ) {
     Baseliner.ajaxEval( '/topic/comment/delete', { id_com: id_com }, function(res) {
         if( res.failure ) {
-            Ext.Msg.alert( _('Error'), res.msg );
+            Baseliner.message( _('Error'), res.msg );
         } else {
             // no need to report anything
             // delete div if any
@@ -265,7 +265,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     Ext.fly( id_row ).remove();
                 }
                 else {
-                    Ext.Msg.alert( _('Error'), res.msg );
+                    Baseliner.message( _('Error'), res.msg );
                 }
             });
         };
@@ -310,12 +310,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                win_comment.close();
                                self.detail_reload();
                            } else {
-                                Ext.Msg.show({ 
-                                    title: _('Information'),
-                                    msg: res.msg , 
-                                    buttons: Ext.Msg.OK, 
-                                    icon: Ext.Msg.INFO
-                                });                         
+                               Baseliner.message( _('Error'), res.msg );
                             }
                          }
                     );
@@ -657,12 +652,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         
                },
                failure: function(f,a){
-                   Ext.Msg.show({  
-                   title: _('Information'), 
-                   msg: a.result.msg , 
-                   buttons: Ext.Msg.OK, 
-                   icon: Ext.Msg.INFO
-                   });                      
+                   Baseliner.message( _('Error'), a.result.msg );
                }
             });
         }        

@@ -89,6 +89,7 @@ Baseliner.alert = function(title, format){
 
 Baseliner.error = function(title, format){
     var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
+    s = Baseliner.error_msg( s );
     Ext.Msg.show({
         title: title,
         msg: s,
@@ -193,9 +194,21 @@ Baseliner.change_avatar = function() {
 
 $.extend($.gritter.options, { position: 'bottom-right' } );
 
+Baseliner.error_msg = function( msg ){
+    if( ! Baseliner.DEBUG ) {
+        var ix = msg.indexOf( 'Stack:' );
+        if( ix > -1 ) {
+            msg = msg.substring(0,ix);
+        }
+        // XXX consider logging the stack somewhere else (button or tab details)
+    }
+    return msg;
+}
+
 Baseliner.message = function(title, msg, config){
     if( ! config ) config = {};
     
+    msg = Baseliner.error_msg( msg );
     var id = $.gritter.add( Ext.apply({
         title: title, text: msg, fade: true, 'class': 'baseliner-message',
         time: 2200,
