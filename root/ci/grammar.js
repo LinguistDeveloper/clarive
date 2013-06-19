@@ -8,7 +8,7 @@
         { xtype:'textarea', fieldLabel:_('Grammar'), name:'grammar', 
             height: 400,
             value: params.rec.grammar, anchor:'100%', 
-            style:'color: #eee; font: 11px Consolas, Courier New, monotype' 
+            style:'font: 11px Consolas, Courier New, monotype' 
         }
         //{ xtype:'panel', fieldLabel: _('Grammar'), height: 500, items: new Baseliner.CodeMirror({
                //height: 500, value: params.rec.grammar, name:'grammar', editor: { onChange:function(){ alert(1) } } }) 
