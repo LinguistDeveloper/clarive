@@ -121,16 +121,18 @@ params:
             Ext.each( sm.getSelections(), function(r) {
 				var index =store.indexOf(r);
                 grid.store.remove( r );
+				var rows = Ext.util.JSON.decode( ff.findField( meta.id_field ).getValue());
 				rows.splice(index, 1);
+				ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
 				grid.store.commitChanges();
 				grid.getView().refresh();
             });
 		
-			ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
+			
         }
     });
 	
-	var rows = records ? Ext.util.JSON.decode(records) : [];
+	
     // use RowEditor for editing
 	
     var editor = new Ext.ux.grid.RowEditor({
@@ -139,10 +141,9 @@ params:
         enableDragDrop: true, 
 		listeners: {
 			afteredit: function(roweditor, changes, record, rowIndex){
-				console.dir(changes);
-				console.dir(record);
 				roweditor.grid.store.commitChanges();
 				delete record.data.id;
+				var rows = Ext.util.JSON.decode( ff.findField( meta.id_field ).getValue());
 				rows[rowIndex] = record.data;
 				ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
 			}
@@ -155,7 +156,8 @@ params:
 		store: store,
         columns: cols,
         sm: sm,
-        enableDragDrop: true, 
+        enableDragDrop: true,
+		ddGroup : 'grid_editor_' + Ext.id(), 
         viewConfig: {
             forceFit: meta.forceFit || true
         },
@@ -169,7 +171,7 @@ params:
     var self = grid;
  
     grid.on( 'afterrender', function(){
-        self.ddGroup = 'bali-grid-html-' + self.id;
+        //self.ddGroup = 'bali-grid-html-' + self.id;
         var ddrow = new Baseliner.DropTarget(self.container, {
             comp: self,
             ddGroup : self.ddGroup,
@@ -177,24 +179,32 @@ params:
             notifyDrop : function(dd, e, data){
                 var ds = self.store;
                 var sm = self.getSelectionModel();
-                var rows = sm.getSelections();
+                var rows_grid = sm.getSelections();
                 if(dd.getDragData(e)) {
+					var rows = Ext.util.JSON.decode( ff.findField( meta.id_field ).getValue());
                     var cindex=dd.getDragData(e).rowIndex;
                     if(typeof(cindex) != "undefined") {
-                        for(i = 0; i <  rows.length; i++) {
-                            ds.remove(ds.getById(rows[i].id));
+                        for(i = 0; i <  rows_grid.length; i++) {
+							var index = ds.indexOf(ds.getById(rows_grid[i].id));
+                            ds.remove(ds.getById(rows_grid[i].id));
+							delete rows[index];
+							ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
+							rows = Ext.util.JSON.decode( ff.findField( meta.id_field ).getValue());
+							rows.splice(cindex, 0, rows_grid[i].data);
+							ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));	
                         }
                         ds.insert(cindex,data.selections);
                         sm.clearSelections();
                     }
-                    self.refresh_field();
+					ds.commitChanges();
+					self.getView().refresh();	
                 }
             }
         }); 
     });
-    
+	
 	return [
-		{ xtype: 'hidden', name: meta.id_field },
+		{ xtype: 'hidden', name: meta.id_field, value: records },
 		{
 		  xtype: 'box',
 		  autoEl: {cn: '<br>' + _(meta.name_field) + ':'},
