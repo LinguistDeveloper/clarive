@@ -1,9 +1,6 @@
 use utf8;
 package Baseliner::Schema::Baseliner::Result::BaliProjectDirectoriesFiles;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
-
 =head1 NAME
 
 Baseliner::Schema::Baseliner::Result::BaliProjectDirectories
@@ -70,16 +67,6 @@ __PACKAGE__->add_columns(
   },  
 );
 
-=head1 PRIMARY KEY
-
-=over 4
-
-=item * L</id>
-
-=back
-
-=cut
-
 __PACKAGE__->set_primary_key("id_directory", "id_file");
 
 __PACKAGE__->belongs_to(
@@ -91,6 +78,12 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->belongs_to(
   "file_directory",
   "Baseliner::Schema::Baseliner::Result::BaliFileVersion",
+  { mid => "id_file" },
+);
+
+__PACKAGE__->belongs_to(
+  "topic",
+  "Baseliner::Schema::Baseliner::Result::BaliTopic",
   { mid => "id_file" },
 );
 
