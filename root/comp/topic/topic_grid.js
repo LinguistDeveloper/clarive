@@ -4,7 +4,9 @@
 </%perl>
 
 (function(params){
-    var ps = 25; //page_size
+    var ps_maxi = 25; //page_size for !mini mode
+    var ps_mini = 50; //page_size for mini mode
+    var ps = ps_maxi; // current page_size
     var filter_current;
     var stop_filters = false;
 	var typeApplication = '<% $c->stash->{typeApplication} %>';
@@ -389,7 +391,20 @@
         cls: 'x-btn-text-icon',
         enableToggle: true, pressed: false, allowDepress: true,
         handler: function() {
-            store_topics.reload();
+            if( btn_mini.pressed && ptool.pageSize == ps_maxi ) {
+                ptool.pageSize =  ps_mini;
+                store_topics.baseParams.limit = ps_mini;
+                ps = ps_mini;
+                ps_plugin.setValue( ps_mini );
+            }
+            else if( !btn_mini.pressed && ptool.pageSize == ps_mini ) {
+                ptool.pageSize =  ps_maxi;
+                store_topics.baseParams.limit = ps_maxi;
+                ps = ps_maxi;
+                ps_plugin.setValue( ps_maxi );
+            }
+            //store_topics.reload();
+            ptool.doRefresh();
         }       
     }); 
     
@@ -553,32 +568,34 @@
         params: {start: 0 },
         emptyText: _('<Enter your search string>')
     });
+
+    var ps_plugin = new Ext.ux.PageSizePlugin({
+        editable: false,
+        width: 90,
+        data: [
+            ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
+            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+        ],
+        beforeText: _('Show'),
+        afterText: _('rows/page'),
+        value: ps,
+        listeners: {
+            'select':function(c,rec) {
+                ps = rec.data.value;
+                if( rec.data.value < 0 ) {
+                    ptool.afterTextItem.hide();
+                } else {
+                    ptool.afterTextItem.show();
+                }
+            }
+        },
+        forceSelection: true
+    });
     var ptool = new Ext.PagingToolbar({
             store: store_topics,
             pageSize: ps,
             plugins:[
-                new Ext.ux.PageSizePlugin({
-                    editable: false,
-                    width: 90,
-                    data: [
-                        ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
-                        ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
-                    ],
-                    beforeText: _('Show'),
-                    afterText: _('rows/page'),
-                    value: ps,
-                    listeners: {
-                        'select':function(c,rec) {
-                            ps = rec.data.value;
-                            if( rec.data.value < 0 ) {
-                                ptool.afterTextItem.hide();
-                            } else {
-                                ptool.afterTextItem.show();
-                            }
-                        }
-                    },
-                    forceSelection: true
-                }),
+                ps_plugin,
 				new Ext.ux.ProgressBarPager()
             ],
             displayInfo: true,
