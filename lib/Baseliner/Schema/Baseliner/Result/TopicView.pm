@@ -43,8 +43,10 @@ __PACKAGE__->result_source_instance->view_definition(q{
             F.FILENAME AS FILE_NAME,
             PS.TEXT AS TEXT,
             NUM_FILE,
-            U.USERNAME ASSIGNEE
+            U.USERNAME ASSIGNEE,
+            MA.MONIKER
             FROM  BALI_TOPIC T
+                    LEFT JOIN BALI_MASTER MA ON T.MID = MA.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON ID_CATEGORY = C.ID
                     LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
                     LEFT JOIN BALI_LABEL L ON L.ID = TL.ID_LABEL
@@ -107,6 +109,7 @@ __PACKAGE__->add_columns(
         progress
         num_file
         assignee
+        moniker
     )
 );
 

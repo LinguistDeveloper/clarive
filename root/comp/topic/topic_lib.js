@@ -155,6 +155,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'expr_deadline' },
                 {  name: 'num_file' },
                 {  name: 'assignee' },
+                {  name: 'moniker' },
                 {  name: 'sw_edit'}
             ]
         },config);

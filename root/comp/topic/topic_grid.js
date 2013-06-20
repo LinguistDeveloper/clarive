@@ -641,6 +641,7 @@
             { header: '', report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_comment },         
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
+            { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
             { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
             { header: _('Created On'), hidden: true, sortable: true, dataIndex: 'created_on'},
             { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
