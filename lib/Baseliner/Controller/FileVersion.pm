@@ -30,17 +30,17 @@ sub tree_file_project : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my (@tree, @folders, @files);
+    my (@tree, @folders);
     
     if($p->{id_directory}){
         my $query = {id_project => $p->{id_project}, id_parent => $p->{id_directory}};
         @folders = get_folders($query);
         
         foreach my $folder (@folders){
-            push @tree, build_item_directory($folder, $p->{id_project});
+            push @tree, $self->build_item_directory($folder, $p->{id_project});
         }
         
-        @files = $c->model('Baseliner::BaliProjectDirectoriesFiles')->
+        my @files = $c->model('Baseliner::BaliProjectDirectoriesFiles')->
                     search( {id_directory => $p->{id_directory}},{ join => ['file_directory'], 
                     select=> [qw(file_directory.mid file_directory.filename file_directory.versionid)], 
                     as=>[qw(mid filename versionid)]} )->hashref->all;        
@@ -49,17 +49,28 @@ sub tree_file_project : Local {
             push @tree, build_item_file($file, $p->{id_directory});
         }        
         
+        my @topics = $c->model('Baseliner::BaliProjectDirectoriesFiles')->
+                    search( {id_directory => $p->{id_directory}},
+                        { prefetch => ['topic', {'topic'=>'categories'}] } )->hashref->all;        
+        
+        foreach my $topic (@topics){
+            push @tree, BaselinerX::LcController->build_topic_tree( 
+                    mid      => $topic->{topic}{mid},
+                    topic    => $topic->{topic},
+                    icon     => '',
+                );
+        }
     }
     else{
         my $query = {id_project => $p->{id_project}, id_parent => undef};
         @folders = get_folders($query);
         
         foreach my $folder (@folders){
-            push @tree, build_item_directory($folder, $p->{id_project});
+            push @tree, $self->build_item_directory($folder, $p->{id_project});
         }
         
         my $rs_files_directories = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({'directory.id_project' => $p->{id_project}},{join =>['directory'], select=>['id_file']});
-        @files = $c->model('Baseliner::BaliProject')->find( $p->{id_project} )->files->search( {mid => { 'not in' => $rs_files_directories->as_query}},{select=> [qw(mid filename versionid)]} )->hashref->all;        
+        my @files = $c->model('Baseliner::BaliProject')->find( $p->{id_project} )->files->search( {mid => { 'not in' => $rs_files_directories->as_query}},{select=> [qw(mid filename versionid)]} )->hashref->all;        
 
         foreach my $file (@files){
             push @tree, build_item_file($file, undef);
@@ -69,6 +80,10 @@ sub tree_file_project : Local {
     $c->forward('View::JSON');
 }
 
+sub folder_length {
+    length $_[1] > 255 and _fail _loc 'Folder name cannot be longer than %1 characters', 255; 
+}
+
 sub new_folder : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
@@ -76,22 +91,28 @@ sub new_folder : Local {
     my $action = 'add';
     my $project_id = $p->{project_id};
     my $parent_id = $p->{parent_id};
-    my $folder_name = $p->{folder};
+    my $folder_name = $p->{name};
     
     given ($action) {
-        
         when ('add') {
             try{
-                my $directory = $c->model('Baseliner::BaliProjectDirectories')->create({
+                $self->folder_length( $folder_name );
+                my $directory = $c->model('Baseliner::BaliProjectDirectories')->create(
+                    {
                                                                                     id_project => $project_id,
                                                                                     id_parent =>  $parent_id,
                                                                                     name =>  $folder_name,
-                                                                                });
-                $c->stash->{json} = { msg=>_loc('Folder added'), success=>\1, folder => $folder_name, directory_id => $directory->id};
             }
-            catch{
-                $c->stash->{json} = { msg=>_loc('Error adding folder: %1', shift()), failure=>\1 }
+                );
+                $c->stash->{json} = {
+                    msg     => _loc('Folder added'),
+                    success => \1,
+                    node    => $self->build_item_directory({ id => $directory->id, name => $folder_name }, $project_id)
+                };
             }                   
+            catch {
+                $c->stash->{json} = { msg => _loc( 'Error adding folder: %1', shift() ), failure => \1 };
+            };
         }
     }
 
@@ -137,27 +158,27 @@ sub delete_folder : Local {
     $c->forward('View::JSON');
 }
 
-sub get_folders(){
+sub get_folders {
     my $query = shift;
     my @folders = Baseliner->model('Baseliner::BaliProjectDirectories')->search( $query )->hashref->all;
     
     return @folders;
 }
 
-sub build_item_directory(){
-    my $folder = shift;
-    my $id_project = shift;
-    my @menu_folder = get_menu_folder();
+sub build_item_directory {
+    my ($self, $folder, $id_project) = @_;
+    my @menu_folder = $self->get_menu_folder();
  
     return  {
                 text    => $folder->{name} ,
                 leaf    =>\0,
+        url  => '/fileversion/tree_file_project',
                 data    => {
                     id_directory => $folder->{id},
                     id_project => $id_project,
                     type => 'directory',
                     on_drop => {
-                        handler => 'move_item'
+                handler => 'Baseliner.move_folder_item'
                     }
                 },
                 menu    => \@menu_folder,
@@ -169,38 +190,81 @@ sub build_item_file(){
     my $id_directory = shift;
  
     return  {
-                text    => $file->{filename} . '(v' . $file->{versionid} . ')',
+                text    => $file->{filename} . ' <span style="color:#999">(v' . $file->{versionid} . ')</span>',
                 leaf    =>\1,
                 data    => {
                     id_file => $file->{mid},
                     id_directory => $id_directory,
                     type => 'file',
                     on_drop => {
-                        handler => 'move_item'
+                        handler => 'Baseliner.move_folder_item'
                     }                   
                 },   
             };
 }
 
-sub get_menu_folder(){
+=head2 get_menu_folder 
+
+Right click menu on a folder.
+
+=cut
+sub get_menu_folder {
+    my $self = shift;
     my @menu_folder;
-    my $item_new_folder = { text => _loc('New Folder'),
+    push @menu_folder, {  text => _loc('Topics'),
+                                icon => '/static/images/icons/topic.png',
+                                eval => {
+                                    handler => 'Baseliner.open_topic_grid_from_folder'
+                                }
+                            };    
+    push @menu_folder, {  text => _loc('Kanban'),
+                                icon => '/static/images/icons/kanban.png',
+                                eval => {
+                                    handler => 'Baseliner.open_kanban_from_folder'
+                                }
+                            };    
+    push @menu_folder, { text => _loc('New Folder'),
                             icon => '/static/images/icons/folder_new.gif',
                             eval => {
-                                handler => 'new_folder'
+                                handler => 'Baseliner.new_folder'
+                            }
+                        };
+    push @menu_folder, { text => _loc('Rename Folder'),
+                            icon => '/static/images/icons/folder_edit.png',
+                            eval => {
+                                handler => 'Baseliner.rename_folder'
                             }
                         };
     
-    my $item_delete_folder = {  text => _loc('Delete Folder'),
+    push @menu_folder, {  text => _loc('Delete Folder'),
                                 icon => '/static/images/icons/folder_delete.gif',
                                 eval => {
-                                    handler => 'delete_folder'
+                                    handler => 'Baseliner.delete_folder'
                                 }
                             };    
-    push @menu_folder, $item_new_folder;
-    push @menu_folder, $item_delete_folder;
     
     return @menu_folder;
+}
+
+sub rename_folder : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    try {
+        my $id = $p->{parent_id} // _fail _loc('Missing parent_id');
+        my $name = $p->{name} ;
+        $self->folder_length( $name );
+        length $name or _fail _loc('Invalid name');
+        
+        my $row = $c->model('Baseliner::BaliProjectDirectories')->search({id => $id})->first;
+        if( $row ){
+            $row->update({ name => $name });    
+        }
+        $c->stash->{json} = { success=>\1, msg=>_loc('Folder renamed'), name=>$name };
+    } catch {
+        $c->stash->{json} = { success=>\0, msg=>shift };
+    };
+    
+    $c->forward('View::JSON');
 }
 
 sub move_directory : Local {
@@ -234,6 +298,39 @@ sub move_file : Local {
                                                                         });        
     }
     $c->stash->{json} = { success=>\1, msg=>_loc('File moved') };
+    $c->forward('View::JSON');
+}
+
+sub move_topic : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $topic_mid = $p->{from_topic_mid} || _fail _loc 'Missing %', 'from_topic_mid';
+    
+    if($p->{from_directory}){
+        my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
+                                                                               id_directory =>  $p->{from_directory},
+                                                                        })->first;
+        $rs->id_directory( $p->{to_directory} );
+        $rs->update();        
+        
+    }else{
+        my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
+                                                                            id_file => $topic_mid,
+                                                                            id_directory =>  $p->{to_directory},
+                                                                        });        
+    }
+    $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
+    $c->forward('View::JSON');
+}
+
+sub topics_for_folder : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my @topics = map { $_->{id_file} } 
+            $c->model('Baseliner::BaliProjectDirectoriesFiles')->
+                search( {id_directory => $p->{id_directory}},
+                    { prefetch => ['topic'] } )->hashref->all;        
+    $c->stash->{json} = { success=>\1, topics=>\@topics };
     $c->forward('View::JSON');
 }
 
