@@ -35,6 +35,7 @@ params:
     var sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
     //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
     
+	
     var cols, fields;
     var cols_templates = {
           id : function(){ return {width: 10 } },
@@ -79,7 +80,7 @@ params:
     Ext.each( cols, function(col){
         rec_default[ col.dataIndex ] = col.default_value || '';
     });
-    
+	
 	var reader = new Ext.data.JsonReader({
 		totalProperty: 'total',
 		successProperty: 'success',
@@ -100,11 +101,15 @@ params:
         disabled: false,
         handler: function() {
 			var u = new grid.store.recordType(rec_default);
+			var index = grid.store.getCount();
 			editor.stopEditing();
-			grid.store.insert(0, u);
-			editor.startEditing(0,0);
+			grid.store.insert(index, u);
+			grid.getSelectionModel().selectRow(index);			
+			editor.startEditing(index);
         }
     });
+	
+	
 	
     var button_delete = new Baseliner.Grid.Buttons.Delete({
         text: _(''),
@@ -115,23 +120,30 @@ params:
             var sm = grid.getSelectionModel();
             Ext.each( sm.getSelections(), function(r) {
                 grid.store.remove( r );
+				grid.getView().refresh();
             });
+			var rows = [];
+			grid.store.each( function(rec) {
+				var d = rec.data;
+				rows.push( d ); 
+			});				
+			ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));			
         }
     });
 	
+	var rows = records ? Ext.util.JSON.decode(records) : [];
     // use RowEditor for editing
     var editor = new Ext.ux.grid.RowEditor({
         clicksToMoveEditor: 1,
         autoCancel: false,
         enableDragDrop: true, 
 		listeners: {
-			afteredit: function(obj,row){
-				obj.grid.store.commitChanges();
-				var rows = [];
-				obj.grid.store.each( function(rec) {
-					var d = rec.data;
-					rows.push( d ); 
-				});				
+			afteredit: function(roweditor, changes, record, rowIndex){
+
+				changes.id = grid.store.getCount();
+				roweditor.grid.store.commitChanges();
+				rows.push( changes ); 
+			
 				ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
 			}
 		}		
