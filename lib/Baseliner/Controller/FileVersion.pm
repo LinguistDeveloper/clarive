@@ -50,8 +50,10 @@ sub tree_file_project : Local {
         }        
         
         # get topics XXX consider using CI groups for folders and master_rel for topics
+        my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+
         my @topics = $c->model('Baseliner::BaliProjectDirectoriesFiles')->
-                    search( {id_directory => $p->{id_directory}},
+                    search( {id_directory => $p->{id_directory}, 'categories.id' => \@categories },
                         { prefetch => ['topic', {'topic'=>'categories'}] } )->hashref->all;        
         
         my $remove_item = {   

@@ -126,8 +126,9 @@ sub tree_topics_project : Local {
 
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
-    my @topics = $c->model('Baseliner::BaliMasterRel')->search(
-        { to_mid => $id_project },
+    my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+    my @topics = DB->BaliMasterRel->search(
+        { to_mid => $id_project, 'categories.id' => \@categories },
         { prefetch => {'topic_project'=>'categories'} }
     )->hashref->all;
     for( @topics ) {

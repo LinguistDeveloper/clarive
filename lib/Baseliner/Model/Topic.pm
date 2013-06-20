@@ -1677,13 +1677,27 @@ sub get_categories_permissions{
     my $username = delete $param{username};
     my $type = delete $param{type};
     
+    my $re_action;
+
+    if ( $type eq 'view') {
+        $re_action = qr/^action\.topics\.(.*?)\.(view|edit|create)$/;
+    } elsif ($type eq 'edit') {
+        $re_action = qr/^action\.topics\.(.*?)\.(edit|create)$/;
+    } else {
+        $re_action = qr/^action\.topics\.(.*?)\.(create)$/;
+    }
+
     my @permission_categories;
     my @categories  = Baseliner->model('Baseliner::BaliTopicCategories')->search()->hashref->all;
-    push @permission_categories,    grep { Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.topics.' . $_ . '.' . $type) } 
-                                    map { lc $_->{name} } @categories;
+
+    push @permission_categories, _unique map { 
+        $_ =~ $re_action;
+        $1;
+    } Baseliner->model('Permissions')->user_actions_list( username => $username, action => $re_action);
     
-    my %permission_categories = map { $_ => 1} @permission_categories;
-    @categories = grep { $permission_categories{lc $_->{name}}} @categories;
+    my %granted_categories = map { $_ => 1 } @permission_categories;
+    @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
+
     return @categories;
 }
 
