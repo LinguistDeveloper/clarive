@@ -237,6 +237,7 @@ sub topics_for_user {
         label_color
         project_id
         project_name
+        moniker
         file_name
         description
         text
