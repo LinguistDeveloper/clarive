@@ -213,7 +213,16 @@
                     ]}
                 ]},
                 fieldset
-            ]
+            ],
+            listeners: {
+                'afterrender':function(){
+                    if ( !save ) {
+                        var mask = this.el.mask();
+                        mask.setStyle( 'opacity', 0);
+                        mask.setStyle( 'height', 5000 );
+                    }
+                }
+            }
         });
         txt_cont.on('afterrender', function(){
             set_txt();
