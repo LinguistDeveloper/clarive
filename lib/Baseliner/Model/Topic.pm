@@ -999,10 +999,8 @@ sub get_release {
 }
 
 sub get_projects {
-    my ($self, $topic_mid ) = @_;
-    my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
-    my @projects = $topic->projects->search(undef,{select=>['mid','name']})->hashref->all;
-
+    my ($self, $topic_mid, $id_field ) = @_;
+    my @projects = Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { select=>['mid','name'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
     return @projects ? \@projects : [];
 }
 
@@ -1559,22 +1557,22 @@ sub set_release {
 }
 
 sub set_projects {
-    my ($self, $rs_topic, $projects, $user ) = @_;
+    my ($self, $rs_topic, $projects, $user, $id_field ) = @_;
     my $topic_mid = $rs_topic->mid;
     
     my @new_projects = _array( $projects ) ;
-    my @old_projects = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
+    my @old_projects = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
-        my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
+        my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project', rel_field => $id_field})->delete;
         # projects
         if (@new_projects){
             my @name_projects;
             my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@new_projects});
             while( my $project = $rs_projects->next){
                 push @name_projects,  $project->name;
-                $rs_topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+                $rs_topic->add_to_projects( $project, { rel_type=>'topic_project', rel_field => $id_field } );
             }
             
             my $projects = join(',', @name_projects);

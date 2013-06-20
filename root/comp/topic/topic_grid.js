@@ -766,8 +766,9 @@
                     var mid = data.topic_mid;
                     // TODO create topic node using the original data from attributes
                       // inject into loader? Loader.newNode or something?
-                    var text = '<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK';
-                    text = data.topic_name;
+                    var text = String.format('<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #{1};background-color: transparent;color:#{1};border-radius:0px"></span><b>{0}</b>{2}', data.topic_name, data.category_color, '' );
+                    d.innerHTML = text;
+                    //text = data.topic_name;
                     var node = {
                             contains: Ext.emptyFn,
                             text: text,
