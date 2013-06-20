@@ -1,3 +1,6 @@
+<%args>
+    $save
+</%args>
 (function(params){
     var menu_services = new Ext.Button({
         text: _('Services'),
@@ -9,6 +12,7 @@
     var load_form = function(params){
         if( params.rec == undefined ) params.rec = {};            // master row record
         //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
+        var save = <% $save %>;
         var mid = params.mid;
         var beforesubmit = [];
         var is_active = params.rec.active == undefined ? true : params.rec.active;
@@ -128,6 +132,7 @@
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
             type: 'submit',
+            hidden: !save,
             handler: function() { 
                 btn_form_save.disable();
                 submit_form( false )

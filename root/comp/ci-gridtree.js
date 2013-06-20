@@ -30,7 +30,7 @@
 
     var ci_edit = function(store, rec){
         var data = store.baseParams;
-        Baseliner.add_tabcomp( '/comp/ci-editor.js', null, { load: true, mid: rec.mid, action:'edit', bl: data.bl } );
+        Baseliner.add_tabcomp( '/ci/edit', null, { load: true, mid: rec.mid, action:'edit', bl: data.bl } );
         /* DEPRECATED:
         //var classname = data.class ;
         var classname = data["class"] ;

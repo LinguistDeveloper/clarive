@@ -161,8 +161,9 @@ sub tree_classes {
         my $collection = $_->collection;
         my $ci_form = $self->form_for_ci( $item, $collection );
         $item =~ s/^BaselinerX::CI:://g;
-        if ( Baseliner->model( 'Permissions' )
-            ->user_has_action( username => $user, action => 'action.ci.%.' .$p{role_name}.'.'. $item ) )
+        my $has_permission = Baseliner->model( 'Permissions' )
+            ->user_has_any_action( username => $user, action => 'action.ci.%.' .$p{role_name}.'.'. $item );
+        if ( $has_permission )
         {
 
             $cnt++;
@@ -867,6 +868,17 @@ sub service_run : Local {
     };
     $c->forward('View::JSON');
 
+}
+
+sub edit : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+
+    my $ci = _ci($p->{mid});
+
+    my $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $ci->{_ci}->{collection}, username => $c->username );
+    $c->stash->{save} = $has_permission ? 'true' : 'false';
+    $c->stash->{template} = '/comp/ci-editor.js';
 }
 
 1;
