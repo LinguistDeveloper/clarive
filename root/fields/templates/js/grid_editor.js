@@ -88,7 +88,7 @@ params:
 		fields: fields
 	});
 	
-	var records = data ? data[ meta.bd_field ] : '[]';
+	var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
 	
 	var store = new Ext.data.Store({
 		reader: reader,
@@ -202,7 +202,6 @@ params:
             }
         }); 
     });
-	
 	return [
 		{ xtype: 'hidden', name: meta.id_field, value: records },
 		{
