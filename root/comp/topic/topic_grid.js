@@ -610,12 +610,29 @@
         checkOnly: true
     });
 
+    var dragger = {     
+        header : '',
+        id : 'dragger',
+        menuDisabled : true,
+        fixed : true,
+        hideable: false,
+        dataIndex: '', 
+        width: 7, 
+        sortable: false,
+        renderer: function(v,m,rec){
+            var div = document.createElement('div');
+            div.innerHTML = 'abc';
+            m.tdCls = m.tdCls + ' dragger-target';
+            return ''; //'<div>aaa</div>';
+        }
+    };
+
     var grid_topics = new Ext.grid.GridPanel({
         title: _('Topics'),
         header: false,
         stripeRows: true,
         autoScroll: true,
-        stateful: true, 
+        stateful: !Baseliner.DEBUG,
         stateId: 'topic-grid',
         //enableHdMenu: false,
         store: store_topics,
@@ -630,6 +647,7 @@
 %}
         loadMask:'true',
         columns: [
+            dragger,
 %if ( !$c->stash->{typeApplication} ){
             check_sm,
 %}
@@ -679,6 +697,107 @@
     grid_topics.on('headerclick', function(grid, columnIndex, e) {
         if(columnIndex == 0){
             topicsSelected();
+        }
+    });
+
+/*
+    node: Ext.tree.AsyncTreeNode
+    allowChildren: true
+    attributes: Object
+    attributes: 
+        calevent: Object
+        children: Array[1]
+        data:
+            click: Object
+            topic_mid: "67183"
+        expandable: true
+        icon: "/static/images/icons/topic.png"
+        iconCls: "no-icon"
+        id: "xnode-2696"
+        leaf: false
+        loader: Baseliner.TreeLoader.Ext.extend.constructor
+        text: "<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK"
+        topic_name: 
+            category_color: "#20bcff"
+            category_name: "Funcionalidad"
+            is_changeset: "0"
+            is_release: "0"
+            mid: "67183"
+        url: "/lifecycle/tree_topic_get_files"
+    childNodes: Array[0]
+    childrenRendered: false
+    disabled: false
+    draggable: true
+    events: Object
+    expanded: false
+    firstChild: null
+    hidden: false
+    id: "xnode-2696"
+    isTarget: true
+    lastChild: null
+    leaf: false
+    listeners: undefined
+    loaded: false
+    loading: false
+    nextSibling: null
+    ownerTree: sb
+    parentNode: Ext.tree.AsyncTreeNode
+    previousSibling: Ext.tree.AsyncTreeNode
+    rendered: true
+    text: "<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK"
+    ui: sb
+*/
+
+
+    grid_topics.store.on('xxload', function() {
+        for( var ix=0; ix < grid_topics.store.getCount(); ix++ ) {
+            var rec = grid_topics.store.getAt( ix );
+            var data = rec.data;
+            var cell = grid_topics.view.getCell( ix, 0 );
+            var el = Ext.fly( cell );
+            el.setStyle( 'background-color', '#ddd' );
+            new Ext.dd.DragZone( el, {
+                ddGroup: 'explorer_dd',
+                getDragData: function(e){
+                    var sourceEl = e.getTarget();
+                    var d = sourceEl.cloneNode(true);
+                    d.id = Ext.id();
+                    var mid = data.topic_mid;
+                    // TODO create topic node using the original data from attributes
+                      // inject into loader? Loader.newNode or something?
+                    var node = {
+                            contains: Ext.emptyFn,
+                            text: text,
+                            leaf: false,
+                            parentNode: Ext.emptyFn,
+                            attributes: {
+                                text: text,
+                                icon: "/static/images/icons/topic.png",
+                                iconCls: "no-icon",
+                                leaf: false,
+                                data: {
+                                    topic_mid: mid
+                                },
+                                topic_name: {
+                                    category_color: "#20bcff",
+                                    category_name: "Funcionalidad",
+                                    is_changeset: "0",
+                                    is_release: "0",
+                                    mid: mid
+                                }
+                            }
+                        };
+                    var text = '<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK';
+                    return {
+                        ddel: d,
+                        sourceEl: sourceEl,
+                        repairXY: Ext.fly(sourceEl).getXY(),
+                        node: node,
+                        sourceStore: null,
+                        draggedRecord: { }
+                    };
+                }
+            });
         }
     });
 
