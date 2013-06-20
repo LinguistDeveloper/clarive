@@ -749,45 +749,47 @@
 */
 
 
-    grid_topics.store.on('xxload', function() {
+    grid_topics.store.on('load', function() {
         for( var ix=0; ix < grid_topics.store.getCount(); ix++ ) {
-            var rec = grid_topics.store.getAt( ix );
-            var data = rec.data;
+            //var rec = grid_topics.store.getAt( ix );
             var cell = grid_topics.view.getCell( ix, 0 );
             var el = Ext.fly( cell );
             el.setStyle( 'background-color', '#ddd' );
             new Ext.dd.DragZone( el, {
                 ddGroup: 'explorer_dd',
+                index: ix,
                 getDragData: function(e){
                     var sourceEl = e.getTarget();
+                    var data = grid_topics.store.getAt( this.index ).data;
                     var d = sourceEl.cloneNode(true);
                     d.id = Ext.id();
                     var mid = data.topic_mid;
                     // TODO create topic node using the original data from attributes
                       // inject into loader? Loader.newNode or something?
+                    var text = '<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK';
+                    text = data.topic_name;
                     var node = {
                             contains: Ext.emptyFn,
                             text: text,
-                            leaf: false,
+                            leaf: true,
                             parentNode: Ext.emptyFn,
                             attributes: {
                                 text: text,
                                 icon: "/static/images/icons/topic.png",
                                 iconCls: "no-icon",
-                                leaf: false,
+                                leaf: true,
                                 data: {
                                     topic_mid: mid
                                 },
                                 topic_name: {
-                                    category_color: "#20bcff",
-                                    category_name: "Funcionalidad",
-                                    is_changeset: "0",
-                                    is_release: "0",
+                                    category_color: data.category_color,
+                                    category_name: data.category_name,
+                                    is_changeset: data.is_changeset,
+                                    is_release: data.is_release,
                                     mid: mid
                                 }
                             }
                         };
-                    var text = '<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK';
                     return {
                         ddel: d,
                         sourceEl: sourceEl,
