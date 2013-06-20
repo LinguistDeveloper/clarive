@@ -119,31 +119,31 @@ params:
         handler: function() {
             var sm = grid.getSelectionModel();
             Ext.each( sm.getSelections(), function(r) {
+				var index =store.indexOf(r);
                 grid.store.remove( r );
+				rows.splice(index, 1);
+				grid.store.commitChanges();
 				grid.getView().refresh();
             });
-			var rows = [];
-			grid.store.each( function(rec) {
-				var d = rec.data;
-				rows.push( d ); 
-			});				
-			ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));			
+		
+			ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
         }
     });
 	
 	var rows = records ? Ext.util.JSON.decode(records) : [];
     // use RowEditor for editing
+	
     var editor = new Ext.ux.grid.RowEditor({
         clicksToMoveEditor: 1,
         autoCancel: false,
         enableDragDrop: true, 
 		listeners: {
 			afteredit: function(roweditor, changes, record, rowIndex){
-
-				changes.id = grid.store.getCount();
+				console.dir(changes);
+				console.dir(record);
 				roweditor.grid.store.commitChanges();
-				rows.push( changes ); 
-			
+				delete record.data.id;
+				rows[rowIndex] = record.data;
 				ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
 			}
 		}		
