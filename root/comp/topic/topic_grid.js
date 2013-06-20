@@ -623,7 +623,7 @@
             var div = document.createElement('div');
             div.innerHTML = 'abc';
             m.tdCls = m.tdCls + ' dragger-target';
-            return ''; //'<div>aaa</div>';
+            return ' '; //'<div>aaa</div>';
         }
     };
 

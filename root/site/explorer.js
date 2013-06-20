@@ -522,7 +522,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: false,
             allowDepress: false,
             enableToggle: true,
-            hidden: ! Baseliner.user_can_workspace,
+            hidden: ! Baseliner.user_can_workspace
         });
 
         var button_ci = new Ext.Button({
@@ -744,7 +744,6 @@ Baseliner.delete_folder = function(node){
 };
 
 Baseliner.remove_folder_item = function(node_data1, node_data2){
-    console.log( node_data1 );
     if(node_data1.attributes.data.topic_mid ) {
         Baseliner.ajaxEval( '/fileversion/remove_topic',{ topic_mid: node_data1.attributes.data.topic_mid,
                                                           id_directory: node_data1.attributes.id_directory },
