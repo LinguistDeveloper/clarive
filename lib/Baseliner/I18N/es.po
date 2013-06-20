@@ -36,6 +36,9 @@ msgstr "Ventanas de Pase"
 msgid "grammar"
 msgstr "gramática"
 
+msgid "Remove from folder"
+msgstr "Quitar de carpeta"
+
 msgid "Repositories"
 msgstr "Repositorios"
 

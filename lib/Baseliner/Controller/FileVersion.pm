@@ -46,19 +46,35 @@ sub tree_file_project : Local {
                     as=>[qw(mid filename versionid)]} )->hashref->all;        
         
         foreach my $file (@files){
-            push @tree, build_item_file($file, $p->{id_directory});
+            push @tree, $self->build_item_file($file, $p->{id_directory});
         }        
         
+        # get topics XXX consider using CI groups for folders and master_rel for topics
         my @topics = $c->model('Baseliner::BaliProjectDirectoriesFiles')->
                     search( {id_directory => $p->{id_directory}},
                         { prefetch => ['topic', {'topic'=>'categories'}] } )->hashref->all;        
         
+        my $remove_item = {   
+            text => _loc('Remove from folder'),
+            icon => '/static/images/icons/folder_delete.png',
+            eval => {
+                handler => 'Baseliner.remove_folder_item'
+            }
+        };
         foreach my $topic (@topics){
-            push @tree, BaselinerX::LcController->build_topic_tree( 
+            my @topic_tree = BaselinerX::LcController->build_topic_tree( 
                     mid      => $topic->{topic}{mid},
                     topic    => $topic->{topic},
-                    icon     => '',
+                    icon     => ''
                 );
+
+            push @tree, map { 
+                my $i = $_;
+                $i->{menu} ||= [];
+                push @{ $i->{menu} } => $remove_item;
+                $i->{id_directory} = $p->{id_directory};
+                $i;
+            } @topic_tree;
         }
     }
     else{
@@ -73,7 +89,7 @@ sub tree_file_project : Local {
         my @files = $c->model('Baseliner::BaliProject')->find( $p->{id_project} )->files->search( {mid => { 'not in' => $rs_files_directories->as_query}},{select=> [qw(mid filename versionid)]} )->hashref->all;        
 
         foreach my $file (@files){
-            push @tree, build_item_file($file, undef);
+            push @tree, $self->build_item_file($file, undef);
         }
     }
     $c->stash->{json} = \@tree;
@@ -172,22 +188,21 @@ sub build_item_directory {
     return  {
                 text    => $folder->{name} ,
                 leaf    =>\0,
-        url  => '/fileversion/tree_file_project',
+                url     => '/fileversion/tree_file_project',
                 data    => {
                     id_directory => $folder->{id},
                     id_project => $id_project,
                     type => 'directory',
                     on_drop => {
-                handler => 'Baseliner.move_folder_item'
+                        handler => 'Baseliner.move_folder_item'
                     }
                 },
                 menu    => \@menu_folder,
             };
 }
 
-sub build_item_file(){
-    my $file = shift;
-    my $id_directory = shift;
+sub build_item_file{
+    my ($self,$file,$id_directory) = @_;
  
     return  {
                 text    => $file->{filename} . ' <span style="color:#999">(v' . $file->{versionid} . ')</span>',
@@ -304,7 +319,7 @@ sub move_file : Local {
 sub move_topic : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $topic_mid = $p->{from_topic_mid} || _fail _loc 'Missing %', 'from_topic_mid';
+    my $topic_mid = $p->{from_topic_mid} || _fail _loc 'Missing %1', 'from_topic_mid';
     
     if($p->{from_directory}){
         my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
@@ -318,6 +333,21 @@ sub move_topic : Local {
                                                                             id_file => $topic_mid,
                                                                             id_directory =>  $p->{to_directory},
                                                                         });        
+    }
+    $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
+    $c->forward('View::JSON');
+}
+
+sub remove_topic : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $topic_mid = $p->{topic_mid} || _fail _loc 'Missing %1', 'topic_mid';
+    
+    if($p->{id_directory}){
+        my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
+                                                                           id_directory =>  $p->{id_directory},
+                                                                    })->first;
+        $rs->delete if $rs;
     }
     $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
     $c->forward('View::JSON');

@@ -743,6 +743,27 @@ Baseliner.delete_folder = function(node){
     );    
 };
 
+Baseliner.remove_folder_item = function(node_data1, node_data2){
+    console.log( node_data1 );
+    if(node_data1.attributes.data.topic_mid ) {
+        Baseliner.ajaxEval( '/fileversion/remove_topic',{ topic_mid: node_data1.attributes.data.topic_mid,
+                                                          id_directory: node_data1.attributes.id_directory },
+            function(response) {
+                if ( response.success ) {
+                    //var explorer = node_data1.ownerTree;
+                    //explorer.refresh_node( node_data1.parentNode );
+                    node_data1.remove();
+                    Baseliner.message( _('Success'), response.msg );
+                } else {
+                    Baseliner.message( _('ERROR'), response.msg );
+                }
+            }
+        );
+    }else{
+        Baseliner.message( _('ERROR'), _('Error moving file') );
+    }
+}
+
 // Main event that gets fired everytime a node is right-clicked
 //    builds the menu from node attributes and base menu
 Baseliner.move_folder_item = function(node_data1, node_data2){
