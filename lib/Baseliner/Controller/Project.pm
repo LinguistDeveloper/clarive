@@ -527,7 +527,7 @@ sub user_projects : Local {
         username => $username
     );
     
-    my @rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $query } })->hashref->all;
+    my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $query } });
     rs_hashref($rs);
     #_debug [ $rs->all ];
     my @rows = map { 
