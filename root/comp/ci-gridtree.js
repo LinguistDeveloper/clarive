@@ -1,5 +1,10 @@
+<%args>
+    $save
+</%args>
+
 (function(params){
     delete params['tab_index'];  // this comes from the tab data
+    var save = <% $save %>;
     var ps = 30;
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
@@ -89,7 +94,7 @@
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
         } 
-        Baseliner.add_tabcomp( '/comp/ci-editor.js', _('New: %1' , params.item ), {
+        Baseliner.add_tabcomp( '/ci/edit', _('New: %1' , params.item ), {
                 _parent_grid: ci_grid.id,
                 ci_form: data.ci_form,
                 item: data.collection,
@@ -288,6 +293,17 @@
             displayMsg: _('Rows {0} - {1} of {2}'),
             emptyMsg: _('There are no rows available')
         });
+//{ xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
+    var btn_create = new Baseliner.Grid.Buttons.Add({
+        handler: ci_add,
+        hidden: !save
+    })
+
+//{ xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
+    var btn_delete = new Baseliner.Grid.Buttons.Delete({
+        handler: ci_delete,
+        hidden: !save
+    })
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
@@ -307,8 +323,8 @@
         tbar: [ 
             //{ xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
             search_field,
-            { xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
-            { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
+            btn_create,
+            btn_delete,
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },

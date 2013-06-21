@@ -40,7 +40,7 @@ sub list : Local {
         $n->{url} = '/ci/list';
         $n->{data} = $_;
         $n->{data}{click} = {
-            url  => '/comp/ci-gridtree.js',
+            url  => '/ci/grid',
             type => 'comp',
             icon => $_->{icon}
         };
@@ -60,6 +60,7 @@ sub dispatch {
     my $total;
     my @tree;
 
+    _log "FFFFFFFFFFFFFFFFFF"._dump $p;
     if ( !length $p->{anode} && !$p->{type} ) {
         @tree = $self->tree_roles( user => $p->{user} );
     } elsif ( $p->{type} eq 'role' ) {
@@ -875,9 +876,15 @@ sub edit : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
 
-    my $ci = _ci($p->{mid});
 
-    my $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $ci->{_ci}->{collection}, username => $c->username );
+    my $has_permission;
+    if ( $p->{mid} ) {
+        my $ci = _ci($p->{mid});
+        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $ci->{_ci}->{collection}, username => $c->username );
+    } else {
+        $has_permission = 1;
+    }
+
     $c->stash->{save} = $has_permission ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-editor.js';
 }
@@ -913,5 +920,20 @@ sub import_one_ci {
         _fail _loc 'No class name defined for ci %1 (%2)', $d->{name}, $mid;
     }
 }
+sub grid : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+
+    my $has_permission;
+    if ( $p->{collection} ) {
+        $has_permission = Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin.'. $p->{collection}, username => $c->username );
+    } else {
+        $has_permission = 0;
+    }
+
+    $c->stash->{save} = $has_permission ? 'true' : 'false';
+    $c->stash->{template} = '/comp/ci-gridtree.js';
+}
+
 1;
 

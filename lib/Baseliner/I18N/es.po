@@ -882,8 +882,8 @@ msgstr "Creado"
 msgid "Modified On"
 msgstr "Modificado"
 
-msgid "Created By"
-msgstr "Creado Por"
+msgid "Created by"
+msgstr "Creado por"
 
 msgid "Assignee"
 msgstr "Asignado A"
