@@ -1689,6 +1689,10 @@ sub get_categories_permissions{
     my @permission_categories;
     my @categories  = Baseliner->model('Baseliner::BaliTopicCategories')->search()->hashref->all;
 
+    if ( Baseliner->model('Permissions')->is_root( $username) ) {
+        return @categories;
+    }
+    
     push @permission_categories, _unique map { 
         $_ =~ $re_action;
         $1;
