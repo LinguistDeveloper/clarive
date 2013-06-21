@@ -773,7 +773,7 @@ Baseliner.move_folder_item = function(node_data1, node_data2){
         data_to = node_data2.attributes.data;
         data_from_type = data_from.type || 'topic';
         Baseliner.ajaxEval( '/fileversion/move_' + data_from_type,{ from_file: data_from.id_file,
-                                                                    from_directory: data_from.id_directory,
+                                                                    from_directory: node_data1.attributes.id_directory || data_from.id_directory,
                                                                     from_topic_mid: data_from.topic_mid,
                                                                     to_directory: data_to.id_directory,
                                                                     project: data_to.id_project},
@@ -784,8 +784,8 @@ Baseliner.move_folder_item = function(node_data1, node_data2){
                     Baseliner.message( _('ERROR'), response.msg );
                 }
             }
-        
-        );    
+
+        );
     }else{
         Baseliner.message( _('ERROR'), _('Error moving file') );
     }
