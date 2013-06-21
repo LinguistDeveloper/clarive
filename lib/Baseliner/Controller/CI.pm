@@ -428,9 +428,10 @@ sub list_roles {
     sub name_transform {
         my $name = shift;
         ($name) = $name =~ /^.*::CI::(.*)$/;
-        $name =~ s{::}{}g;
-        $name =~ s{([a-z])([A-Z])}{$1_$2}g; 
-        lc $name || 'ci';
+        $name =~ s{::}{}g if $name;
+        $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name; 
+        my $return = $name || 'ci';
+        return lc $return;
     }
     my %cl=Class::MOP::get_all_metaclasses;
     map {

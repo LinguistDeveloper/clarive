@@ -279,19 +279,51 @@ sub user_has_any_action {
     _check_parameters( \%p, qw/username action/ ); 
     my $username = $p{username};
     my $action = $p{action};
-    push my @bl, _array $p{bl}, '*';
+    my $bl = $p{bl} // '*';
     
     return 1 if $self->is_root( $username );
 
-    return Baseliner->model('Baseliner')->dbi->value(qq{
-        select count(*)
-        from bali_roleuser ru, bali_roleaction ra
-        where ru.USERNAME = ?
-          and ru.ID_ROLE = ra.ID_ROLE
-          and ra.ACTION like ?
-          and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
-    },$username, $p{action}, @bl);
+    my @actions = $self->user_actions_list( username => $username, bl => $bl, action => $action );
+    return scalar @actions;
 }
+
+sub user_actions_list {
+    my ( $self, %p ) = @_;
+    _check_parameters( \%p, qw/username/ );
+    my $username = $p{username};
+    my $action   = $p{action} // qr/.*/;
+    my $regexp_action;
+
+    if ( !ref $action ) {
+        $action =~ s/\./\\\./g;
+        $action =~ s/%/\.\*/g;
+        $regexp_action = qr/$action/;
+    } elsif ( ref $action eq 'Regexp' ) {
+        $regexp_action = $action;
+    } else {
+        return ();
+    }
+    push my @bl, _array $p{bl}, '*';
+
+    my @actions;
+    if ( $self->is_root( $username ) ) {
+        @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
+    } else {
+        @actions = map { $_->{action} } DB->BaliRoleuser->search(
+            {
+                'me.username'    => $username,
+                'actions.bl'     => \@bl
+            },
+            {
+                distinct => 1,
+                join     => [ 'actions' ],
+                select   => [ 'actions.action' ],
+                as       => [ 'action' ]
+            }
+        )->hashref->all;
+    } ## end else [ if ( $self->is_root( $username...))]
+    return grep { $_ =~ $regexp_action } @actions;
+} ## end sub user_actions_list
 
 # sub user_has_action {
     # my ($self, %p ) = @_;
@@ -347,14 +379,17 @@ ie, if the user has ANY role in them.
 =cut
 sub user_projects {
     my ( $self, %p ) = @_;
-    _throw 'Missing username' unless exists $p{ username };
-    _array( Baseliner->model( 'Baseliner::BaliRoleuser' )
-        ->search( { username => $p{username} }, { select => [ 'ns' ] } ) ~~ sub {
-        my $rs = shift;
-        rs_hashref( $rs );
-        [ grep { length } _unique map { $_->{ ns } } $rs->all ];
-    } );
-}
+    _throw 'Missing username' unless exists $p{username};
+    #### TODO: return all projects if root
+    _array(
+        Baseliner->model( 'Baseliner::BaliRoleuser' )
+            ->search( {username => $p{username}}, {select => [ 'ns' ]} ) ~~ sub {
+            my $rs = shift;
+            rs_hashref( $rs );
+            [ grep { length } _unique map { $_->{ns} } $rs->all ];
+        }
+    );
+} ## end sub user_projects
 
 sub user_projects_query {
     my ( $self, %p ) = @_;

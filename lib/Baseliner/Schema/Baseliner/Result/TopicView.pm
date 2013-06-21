@@ -16,6 +16,8 @@ __PACKAGE__->result_source_instance->view_definition(q{
             TITLE,
             T.CREATED_ON,
             T.CREATED_BY,
+            T.MODIFIED_ON,
+            T.MODIFIED_BY,
             T.DESCRIPTION,
             STATUS, 
             NUMCOMMENT,
@@ -81,6 +83,8 @@ __PACKAGE__->add_columns(
         title
         created_on
         created_by
+        modified_on
+        modified_by
         description
         status
         numcomment

@@ -262,7 +262,7 @@ sub topics_for_user {
         
         ($select,$order_by, $as, $group_by) = $sort
         ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
-        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' } ], ['topic_mid'], ['topic_mid'] );
+        : ([{ distinct=>'me.topic_mid'},'modified_on'], [{ "-$dir" => 'modified_on' } ], ['topic_mid','modified_on'], ['topic_mid','modified_on'] );
     }
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
@@ -999,10 +999,8 @@ sub get_release {
 }
 
 sub get_projects {
-    my ($self, $topic_mid ) = @_;
-    my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
-    my @projects = $topic->projects->search(undef,{select=>['mid','name']})->hashref->all;
-
+    my ($self, $topic_mid, $id_field ) = @_;
+    my @projects = Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { select=>['mid','name'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
     return @projects ? \@projects : [];
 }
 
@@ -1125,6 +1123,7 @@ sub save_data {
             #Defaults
             $row{ mid } = $topic_mid;
             $row{ created_by } = $data->{username};
+            $row{ modified_by } = $data->{username};
             
             $topic = DB->BaliTopic->create( \%row );
 
@@ -1143,7 +1142,7 @@ sub save_data {
             my $method = $relation{ $field };
             $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,
         }
-        
+        $topic->modified_by( $data->{username} );
         $topic->update( \%row );
         _ci( $topic_mid )->save( moniker=>$moniker, name=>$row{title} );
 
@@ -1559,22 +1558,22 @@ sub set_release {
 }
 
 sub set_projects {
-    my ($self, $rs_topic, $projects, $user ) = @_;
+    my ($self, $rs_topic, $projects, $user, $id_field ) = @_;
     my $topic_mid = $rs_topic->mid;
     
     my @new_projects = _array( $projects ) ;
-    my @old_projects = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
+    my @old_projects = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
-        my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
+        my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project', rel_field => $id_field})->delete;
         # projects
         if (@new_projects){
             my @name_projects;
             my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@new_projects});
             while( my $project = $rs_projects->next){
                 push @name_projects,  $project->name;
-                $rs_topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+                $rs_topic->add_to_projects( $project, { rel_type=>'topic_project', rel_field => $id_field } );
             }
             
             my $projects = join(',', @name_projects);
@@ -1677,13 +1676,27 @@ sub get_categories_permissions{
     my $username = delete $param{username};
     my $type = delete $param{type};
     
+    my $re_action;
+
+    if ( $type eq 'view') {
+        $re_action = qr/^action\.topics\.(.*?)\.(view|edit|create)$/;
+    } elsif ($type eq 'edit') {
+        $re_action = qr/^action\.topics\.(.*?)\.(edit|create)$/;
+    } else {
+        $re_action = qr/^action\.topics\.(.*?)\.(create)$/;
+    }
+
     my @permission_categories;
     my @categories  = Baseliner->model('Baseliner::BaliTopicCategories')->search()->hashref->all;
-    push @permission_categories,    grep { Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.topics.' . $_ . '.' . $type) } 
-                                    map { lc $_->{name} } @categories;
+
+    push @permission_categories, _unique map { 
+        $_ =~ $re_action;
+        $1;
+    } Baseliner->model('Permissions')->user_actions_list( username => $username, action => $re_action);
     
-    my %permission_categories = map { $_ => 1} @permission_categories;
-    @categories = grep { $permission_categories{lc $_->{name}}} @categories;
+    my %granted_categories = map { $_ => 1 } @permission_categories;
+    @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
+
     return @categories;
 }
 
