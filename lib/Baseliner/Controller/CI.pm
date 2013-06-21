@@ -40,7 +40,7 @@ sub list : Local {
         $n->{url} = '/ci/list';
         $n->{data} = $_;
         $n->{data}{click} = {
-            url  => '/comp/ci-gridtree.js',
+            url  => '/ci/grid',
             type => 'comp',
             icon => $_->{icon}
         };
@@ -60,6 +60,7 @@ sub dispatch {
     my $total;
     my @tree;
 
+    _log "FFFFFFFFFFFFFFFFFF"._dump $p;
     if ( !length $p->{anode} && !$p->{type} ) {
         @tree = $self->tree_roles( user => $p->{user} );
     } elsif ( $p->{type} eq 'role' ) {
@@ -886,6 +887,21 @@ sub edit : Local {
 
     $c->stash->{save} = $has_permission ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-editor.js';
+}
+
+sub grid : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+
+    my $has_permission;
+    if ( $p->{collection} ) {
+        $has_permission = Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin.'. $p->{collection}, username => $c->username );
+    } else {
+        $has_permission = 0;
+    }
+
+    $c->stash->{save} = $has_permission ? 'true' : 'false';
+    $c->stash->{template} = '/comp/ci-gridtree.js';
 }
 
 1;
