@@ -325,7 +325,7 @@
             search_field,
             btn_create,
             btn_delete,
-            { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
+            //{ xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/export.png', cls: 'x-btn-text-icon', 
