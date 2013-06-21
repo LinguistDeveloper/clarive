@@ -471,7 +471,7 @@ Baseliner.store_exception_handler = function( proxy, type, action, opts, res, ar
     // type = response
     try {
         var r = Ext.util.JSON.decode( res.responseText );
-        if( r.logged_out ) {
+        if( res.status == 401 || r.logged_out ) {
             Baseliner.login({ no_reload: 1, scope: store, on_login: function(s){ s.reload() } });
         } 
         else if( r.msg ) {
@@ -490,9 +490,10 @@ Baseliner.store_exception_params = function( store, opts ) {
 }
 
 Baseliner.JsonStore = Ext.extend( Ext.data.JsonStore, {
-    listeners: {
-        exception: Baseliner.store_exception_handler,
-        beforeload: Baseliner.store_exception_params 
+    constructor: function(c){
+        Baseliner.JsonStore.superclass.constructor.call(this,c);
+        this.on('exception', Baseliner.store_exception_handler );
+        this.on('beforeload', Baseliner.store_exception_params );
     }
 });
 

@@ -322,21 +322,27 @@ sub move_topic : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my $topic_mid = $p->{from_topic_mid} || _fail _loc 'Missing %1', 'from_topic_mid';
+
+    try {
     
-    if($p->{from_directory}){
-        my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
-                                                                               id_directory =>  $p->{from_directory},
-                                                                        })->first;
-        $rs->id_directory( $p->{to_directory} );
-        $rs->update();        
-        
-    }else{
-        my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
-                                                                            id_file => $topic_mid,
-                                                                            id_directory =>  $p->{to_directory},
-                                                                        });        
-    }
-    $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
+        if($p->{from_directory}){
+            my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
+                                                                                   id_directory =>  $p->{from_directory},
+                                                                            })->first;
+            _fail(_loc('Source topic #%1 does not exist or is not in this folder anymore', $topic_mid )) unless $rs;
+            $rs->id_directory( $p->{to_directory} );
+            $rs->update();        
+            
+        }else{
+            my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
+                                                                                id_file => $topic_mid,
+                                                                                id_directory =>  $p->{to_directory},
+                                                                            });        
+        }
+        $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
+    } catch {
+        $c->stash->{json} = { success=>\0, msg=>shift() };
+    };
     $c->forward('View::JSON');
 }
 
