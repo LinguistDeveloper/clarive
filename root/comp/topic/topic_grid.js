@@ -433,11 +433,13 @@
 
     var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
         var tag_color_html;
-        var date_created_on;
+        //var date_created_on;
+		var date_modified_on;
         tag_color_html = '';
-        date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
+        //date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
+		date_modified_on =  rec.data.modified_on.dateFormat('M j, Y, g:i a');
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
-        
+
         if(rec.data.labels){
             for(i=0;i<rec.data.labels.length;i++){
                 var label = rec.data.labels[i].split(';');
@@ -456,7 +458,8 @@
             return tag_color_html + 
                 String.format( "<span style='font-weight:bold; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
                         + "<br><div style='margin-top: 5px'>{1}<font color='808080'></br>{2}</font ></div>", 
-                        value, date_created_on, _('by %1',rec.data.created_by), 
+                        //value, date_created_on, _('by %1',rec.data.created_by),
+						value, date_modified_on, _('by %1',rec.data.modified_by), 
                         rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id );                        
         }
         
