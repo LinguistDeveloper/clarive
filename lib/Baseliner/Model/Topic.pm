@@ -262,7 +262,7 @@ sub topics_for_user {
         
         ($select,$order_by, $as, $group_by) = $sort
         ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
-        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' } ], ['topic_mid'], ['topic_mid'] );
+        : ([{ distinct=>'me.topic_mid'},'modified_on'], [{ "-$dir" => 'modified_on' } ], ['topic_mid','modified_on'], ['topic_mid','modified_on'] );
     }
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
@@ -1123,6 +1123,7 @@ sub save_data {
             #Defaults
             $row{ mid } = $topic_mid;
             $row{ created_by } = $data->{username};
+            $row{ modified_by } = $data->{username};
             
             $topic = DB->BaliTopic->create( \%row );
 
@@ -1141,7 +1142,7 @@ sub save_data {
             my $method = $relation{ $field };
             $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,
         }
-        
+        $topic->modified_by( $data->{username} );
         $topic->update( \%row );
         _ci( $topic_mid )->save( moniker=>$moniker, name=>$row{title} );
 

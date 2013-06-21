@@ -128,8 +128,8 @@ sub tree_topics_project : Local {
     my $id_project = $c->req->params->{id_project} ;
     my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
     my @topics = DB->BaliMasterRel->search(
-        { to_mid => $id_project, 'categories.id' => \@categories },
-        { prefetch => {'topic_project'=>'categories'} }
+        { to_mid => $id_project, 'categories.id' => \@categories, rownum => {'<=',30} },
+        { prefetch => {'topic_project'=>'categories'}, order_by => { -desc => 'modified_on'} }
     )->hashref->all;
     for( @topics ) {
         my $is_release = $_->{topic_project}{categories}{is_release};
