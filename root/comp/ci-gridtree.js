@@ -290,15 +290,18 @@
         });
 //{ xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
     var btn_create = new Baseliner.Grid.Buttons.Add({
+        disabled: true,
         handler: ci_add,
         hidden: !save
     })
 
 //{ xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
+        disabled: true,
         handler: ci_delete,
         hidden: !save
     })
+
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
@@ -376,6 +379,18 @@
         ci_edit( grid.getStore(), grid.getStore().getAt(rowIndex).data );
     });
 
+    ci_grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+        if ( save ) {        
+            if ( check_sm.hasSelection() ) {
+                btn_delete.enable();
+                btn_create.enable();
+            } else {
+                btn_delete.disable();
+                btn_create.disable();
+
+            }
+        }
+    });
     // Explorer tree node listener on click
     /*  TODO needs to setTimeout on dblclick
     var click_foo = function(n, ev){ 
