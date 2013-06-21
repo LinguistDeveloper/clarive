@@ -19,7 +19,9 @@
 
         var activate_save = function(){
             setTimeout( function(){
-                btn_form_save.enable();
+                if ( save ){
+                    btn_form_save.enable();
+                }
             }, 1000);
         };
         var submit_form = function( close_form ){
@@ -47,7 +49,9 @@
                    });
                 }
                 else {
-                    btn_form_save.enable();
+                    if (!save) {
+                        btn_form_save.enable();
+                    }
                 }
         };
 
@@ -134,7 +138,9 @@
             type: 'submit',
             hidden: !save,
             handler: function() { 
-                btn_form_save.disable();
+                if ( save ) {
+                    btn_form_save.disable();
+                }
                 submit_form( false )
             }
         });
