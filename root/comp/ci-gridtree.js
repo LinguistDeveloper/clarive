@@ -159,7 +159,7 @@
             } else {
                 Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format }, function(res) {
                     if( res.success ) {
-                        var win = new Ext.Window({ height: 400, width: 800, items: { xtype:'textarea', value: res.data }, layout:'fit', maximizable: true });       
+                        var win = new Ext.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.data }), layout:'fit', maximizable: true });       
                         win.show();
                     } else {
                         Baseliner.error( _('CI'), res.msg );
@@ -169,6 +169,11 @@
         } else {
             Baseliner.message( _('Error'), _('Select rows first') );
         }
+    };
+    
+
+    var ci_import = function(format, mode){
+        new Baseliner.ImportWindow({ url:'/ci/import' }).show();
     };
 
     /*  Renderers */
@@ -326,13 +331,16 @@
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },
-            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon', 
+            { xtype:'button', text: _('Export'), icon: '/static/images/icons/export.png', cls: 'x-btn-text-icon', 
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },
                     { text:_('JSON'), icon: '/static/images/icons/json.png', handler:function(){ ci_export('json') } },
                     { text:_('HTML'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'shallow') } },
                     { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } }
                 ]
+            },
+            { xtype:'button', text: _('Import YAML'), icon: '/static/images/icons/import.png', cls: 'x-btn-text-icon', 
+                handler:function(){ ci_import('yaml') }
             }
         ],
         viewConfig: {

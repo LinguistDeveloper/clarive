@@ -18,6 +18,7 @@ BEGIN { extends 'Catalyst::Controller' }
 sub gridtree : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    $p->{user} = $c->username;
     my ($total, @tree ) = $self->dispatch( $p );
     $c->stash->{json} = { total=>$total, totalCount=>$total, data=>\@tree, success=>\1 };
     $c->forward('View::JSON');
@@ -50,7 +51,6 @@ sub list : Local {
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }
-
 
 sub dispatch {
     my ($self, $p) = @_;
@@ -887,6 +887,42 @@ sub edit : Local {
 
     $c->stash->{save} = $has_permission ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-editor.js';
+}
+
+sub import : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $yaml = $p->{yaml};
+    $c->stash->{json} = try {
+        my $d = _load( $yaml );
+        my @mids;
+        if( ref $d eq 'ARRAY' ) {
+            push @mids, $self->import_one_ci( $_ ) for @$d;
+        } else {
+            push @mids, $self->import_one_ci( $d );
+        }
+        {success => \1, msg=>_loc('CIs created: %1', join',',@mids), mids=>\@mids };
+    } 
+    catch {
+        my $err = shift;
+        _error( $err );
+        {success => \0, msg => $err};
+    };
+    $c->forward('View::JSON');
+}
+
+sub import_one_ci {
+    my ($self,$d) = @_;
+    my $mid = delete $d->{mid};
+    if( my $cn = ref $d ) {
+        if( my $row = DB->BaliMaster->search({ name=>$d->{name}, collection=>$d->collection })->first ) {
+            my $now = Class::Date->now() ;
+            $d->{name} = $d->{name} . ' (' . $now . ')';
+        }
+        return $d->save; 
+    } else {
+        _fail _loc 'No class name defined for ci %1 (%2)', $d->{name}, $mid;
+    }
 }
 
 sub grid : Local {

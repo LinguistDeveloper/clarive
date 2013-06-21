@@ -1706,6 +1706,33 @@ Baseliner.LogWindow = Ext.extend( Baseliner.Window, {
     }
 });
 
+Baseliner.ImportWindow = Ext.extend( Baseliner.Window, {
+    title: _('Import'),
+    width: 800, height: 400, layout:'fit',
+    url: '',
+    initComponent : function(){
+        var self = this;
+        self.data_paste = new Baseliner.MonoTextArea({});
+        self.items = self.data_paste;
+        self.tbar = [
+            { text: self.title, 
+                icon: '/static/images/icons/import.png',
+                handler: function(){
+                    Baseliner.ajaxEval( self.url, { yaml: self.data_paste.getValue() }, function(res){
+                        if( !res.success ) {
+                            Baseliner.error( self.title, res.msg );
+                            return;
+                        } else {
+                            Baseliner.message(self.title, res.msg );
+                        }
+                    });
+                }
+            }
+        ]
+        Baseliner.ImportWindow.superclass.initComponent.call(this);
+    }
+});
+
 Baseliner.button.CSVExport = Ext.extend( Ext.Toolbar.Button, {
         text: _('CSV'),
         icon:'/static/images/download.gif',
