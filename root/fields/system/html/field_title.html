@@ -23,6 +23,8 @@
     <tr >
         <td style="padding: 5 0 10 0; color: #999">
             <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
+            <% $data->{created_by}%>, <small><%$data->{created_on}%></small> &nbsp; | &nbsp;            
+            <% _loc('Created by')%> <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
             <% $data->{created_by}%>, <small><%$data->{created_on}%></small>    
 % my $id = Baseliner::Utils::_nowstamp();
 % if( _array( $data->{labels} ) ) {        
