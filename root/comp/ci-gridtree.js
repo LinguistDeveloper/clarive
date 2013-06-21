@@ -89,7 +89,7 @@
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
         } 
-        Baseliner.add_tabcomp( '/comp/ci-editor.js', _('New: %1' , params.item ), {
+        Baseliner.add_tabcomp( '/ci/edit', _('New: %1' , params.item ), {
                 _parent_grid: ci_grid.id,
                 ci_form: data.ci_form,
                 item: data.collection,

@@ -1270,7 +1270,7 @@ Baseliner.show_revision = function( mid ) {
 };
 
 Baseliner.show_ci = function( mid ) {
-    Baseliner.add_tabcomp( '/comp/ci-editor.js', null, { load: true, mid: mid } );
+    Baseliner.add_tabcomp( '/ci/edit', null, { load: true, mid: mid } );
 };
 
 Baseliner.JitTree = function(c){
