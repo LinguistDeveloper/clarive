@@ -26,7 +26,8 @@
 </%perl>
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
-% if( @rows ) { 
+     
+% if( @rows && scalar @rows > 0 ) {
           <table class="table table-bordered" style="margin-top: 10px; width: 100%">
               <thead>
                 <tr>
@@ -38,7 +39,7 @@
               <tbody>
 % foreach my $row ( @rows ) {
                 <tr>
-% foreach my $h ( @head ) {
+% foreach my $h ( @head  ) {
 %    my $val = $row->{ $$h{key} };
                         <td style="font-size: <% $meta->{td_font_size} // 12 %>px"><% 
                             $$h{type} eq 'checkbox' 
@@ -56,8 +57,8 @@
       </td>
     </tr>
 % } # if 
-% } else { # if json
+% else { 
     <tr>
         <td colspan="2"><% _loc( 'None' ) %></td>
     </tr>
-% }
+% }}# if json
