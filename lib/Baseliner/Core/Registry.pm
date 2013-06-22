@@ -272,7 +272,7 @@ sub search_for_node {
 
         # skip nodes that the user has no access to
         my $has_permission = 0;
-        if ( !$username  || (!$node_instance->actions && !$node_instance->action)) {
+        if ( !$username  || (!$node_instance->actions && !$node_instance->action) || $key_prefix eq 'action.') {
             $has_permission = 1;
         } else {        
             for ( _array( $node_instance->action, $node_instance->actions ) ) {
