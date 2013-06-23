@@ -521,6 +521,32 @@ sub store : Local {
     $c->forward('View::JSON');
 }
 
+# used by CIGrid to get dependents
+#   
+
+sub children : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my @chi = _ci( $p->{mid} // $p->{from_mid} )->children;
+    my @data = map {
+        my $d = $_;
+        my $edge = delete $_->{_edge};
+        my $ci = delete $_->{_ci};
+        +{
+            mid        =>$d->mid,
+            rel_type   =>$edge->{rel_type},
+            icon       =>$d->icon,
+            class      => ref $d,
+            collection => $d->collection,
+            depth      => $edge->{depth},
+            name       => $d->name,
+            versionid  => $d->versionid,
+        }
+    } @chi;
+    $c->stash->{json} = { data=>\@data, totalCount=>scalar @data };
+    $c->forward('View::JSON');
+}
+
 ## adds/updates foreign CIs
 
 sub ci_create_or_update {
@@ -649,6 +675,14 @@ sub update : Local {
         }
         else {
             _fail _loc("Undefined action");
+        }
+        if( my $chi = $p->{children} ) {
+            my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ]; 
+            DB->BaliMasterRel->search({ from_mid=>$mid })->delete;
+            for my $to_mid ( _array( $cis ) ) {
+                my $rel_type = $collection . '_' . _ci( $to_mid )->collection;   # XXX consider sending the rel_type from js 
+                DB->BaliMasterRel->create({ from_mid=>$mid, to_mid=>$to_mid, rel_type=>$rel_type });
+            }
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;

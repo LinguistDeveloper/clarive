@@ -259,6 +259,18 @@
         sortable: false,
         checkOnly: true
     });
+    check_sm.on('selectionchange', function(){
+        if ( can_save ) {        
+            if ( check_sm.hasSelection() ) {
+                btn_delete.enable();
+                btn_create.enable();
+            } else {
+                btn_delete.disable();
+                btn_create.disable();
+
+            }
+        }
+    });
 
     var id_auto = Ext.id();
     
@@ -388,16 +400,6 @@
     });
 
     ci_grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        if ( save ) {        
-            if ( check_sm.hasSelection() ) {
-                btn_delete.enable();
-                btn_create.enable();
-            } else {
-                btn_delete.disable();
-                btn_create.disable();
-
-            }
-        }
     });
     // Explorer tree node listener on click
     /*  TODO needs to setTimeout on dblclick
