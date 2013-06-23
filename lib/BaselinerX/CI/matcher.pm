@@ -9,6 +9,7 @@ sub has_bl { 0 }
 has regex               => qw(is rw isa Str);
 has regex_options       => qw(is rw isa Str default xmsi);
 has timeout             => qw(is rw isa Num default 10);
+has parse_type          => qw(is rw isa Str default Path);
 has_cis 'cis';
 has_cis 'topics';
 
@@ -19,6 +20,7 @@ sub rel_type {
     }
 }
 
+use Baseliner::Utils;
 sub parse {
     my ($self,$item) = @_; 
     my $file = $item->path; 
@@ -40,14 +42,17 @@ sub parse {
     # TODO allow for more options, to run just %+ (run once) and %- (keep last)
     my %tree;
     my @found;
-    while( $source =~ /$regex/g ) {
-        my $lin = [ map { $_->{lin} } grep { ( $_->{from} <= $-[0] ) && ( $+[0] <= $_->{to} ) } @newline ]->[0];
-        push @found => { %+, line=>$lin } if %+;
-        while( my($k,$v) = each %+ ) {
-            $tree{ $k } = [] unless exists $tree{$k}; 
-            push @{ $tree{ $k } }, $v;
+    my $path_mode = $self->parse_type =~ /Path/i;
+    if( ( $path_mode && $i->path =~ /$regex/ ) 
+        || ( !$path_mode !~ /Path/i && $source =~ /$regex/ ) ) {
+        $item->save;
+        for my $topic ( _array $self->topics ) {
+            DB->BaliMasterRel->create({ from_mid=>$topic->mid, to_mid=>$item->mid, rel_type=>'topic_item' });
         }
     }
+
+    _log \%tree ;
+    
     if( %tree ) {
         $item->{parse_tree} ||= [];
         push @{ $item->{parse_tree} } => @found;
