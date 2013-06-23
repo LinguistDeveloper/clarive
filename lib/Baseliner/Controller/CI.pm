@@ -108,7 +108,6 @@ sub dispatch {
         );
     }
     
-    #_debug _dump( \@tree );
     $total = scalar( @tree ) unless defined $total;
     return ($total,@tree);
 }
@@ -336,7 +335,6 @@ sub tree_object_depend {
             versionid    => $_->{versionid},
             }
     } $rs->hashref->all;
-    _debug \@tree;
     ( $total, @tree );
 }
 
@@ -370,7 +368,6 @@ sub tree_ci_request {
             versionid    => '',
         }
     } @rs;
-    _debug \@tree;
     ( $total, @tree );
 }
 
@@ -495,7 +492,7 @@ sub store : Local {
         my @roles;
         for my $r ( _array $role ) {
             if( $r !~ /^Baseliner/ ) {
-                $r = $r eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
+                $r = uc($r) eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
             }
             push @roles, $r;
         }
@@ -506,6 +503,8 @@ sub store : Local {
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
         #_fail( 'No class or role supplied' );
     }
+
+    _log \@data if $mids;
     
     if( ref $mids ) { 
         # return data ordered like the mids
@@ -833,7 +832,6 @@ sub json_tree : Local {
             },
             children => \@data,
         };
-        _debug $d;
         { success=>\1, data=>$d };
     } catch {
         my $err = shift;
