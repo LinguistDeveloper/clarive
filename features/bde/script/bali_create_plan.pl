@@ -1,5 +1,6 @@
 use v5.10;
 use strict;
+use udpcommon;
 
 my ($username,$project, $state, $view,  @packages) = @ARGV;
 my %view_to_bl = ( DESA=>'TEST' );
@@ -30,7 +31,7 @@ $ua->env_proxy;
 my %parameters = (
     packages => \@packages, project => $project, username => $username, state => $state, view => $view
 );
-my $url = URI->new("http://maki:5000/bde_scan/run");
+my $url = URI->new( 'http://localhost:'.$ENV{BASELINER_PORT}.'/bde_scan/run' );
 $url->query_form(%parameters);
 my $response = $ua->get($url);
 if ($response->is_success) {

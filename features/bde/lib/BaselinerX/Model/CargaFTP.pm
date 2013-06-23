@@ -115,6 +115,7 @@ sub set_grupos_inf_rpt {
     return \%users;
 }
 
+#:int_asi:
 sub establecer_conexion_ftp {
     my ( $self ) = @_;
     my %est_con_ftp_args = %{@_};
