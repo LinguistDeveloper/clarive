@@ -24,30 +24,43 @@ use Baseliner::Utils;
 sub parse {
     my ($self,$item) = @_; 
     my $file = $item->path; 
-    my $source = $item->source; 
     my $tmout = $self->timeout;
     my $regex = $self->regex; 
     $regex = eval "qr/$regex/". $self->regex_options;
     Util->_fail( 'Missing regex' ) unless $regex;
 
-    # index line numbers
-    my @newline;
-    my $i=0;
-    my $last=0;
-    while( $source =~ /(\r?\n)/g ) {
-        push @newline => { from=>$last, to=>$-[0], lin=>++$i };
-        $last = $+[0];
-    }
+    _debug ( _loc "Matcher scanning file %1...", $file );
     
     # TODO allow for more options, to run just %+ (run once) and %- (keep last)
     my %tree;
     my @found;
     my $path_mode = $self->parse_type =~ /Path/i;
-    if( ( $path_mode && $i->path =~ /$regex/ ) 
-        || ( !$path_mode !~ /Path/i && $source =~ /$regex/ ) ) {
+    my $has_match = 0;
+    if( $path_mode ) {
+        $has_match = $file =~ /$regex/;
+    } 
+    else {
+        my $source = $item->source; 
+        # index line numbers
+        my @newline;
+        my $i=0;
+        my $last=0;
+        while( $source =~ /(\r?\n)/g ) {
+            push @newline => { from=>$last, to=>$-[0], lin=>++$i };
+            $last = $+[0];
+        }
+        $has_match = $source =~ /$regex/;
+    }
+
+    _debug _loc "%1 has match? %2", $file, $has_match;
+    if( $has_match ) {
         $item->save;
         for my $topic ( _array $self->topics ) {
             DB->BaliMasterRel->create({ from_mid=>$topic->mid, to_mid=>$item->mid, rel_type=>'topic_item' });
+        }
+        for my $ci ( _array $self->cis ) {
+            my $coll = $ci->collection || 'ci';
+            DB->BaliMasterRel->create({ from_mid=>$ci->mid, to_mid=>$item->mid, rel_type=> $coll . '_item' });
         }
     }
 
