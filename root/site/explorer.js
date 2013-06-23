@@ -68,7 +68,12 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
                 Baseliner.login({ no_reload: 1, on_login: function(){ 
                     loader.load( node );
                 }});
+            } else if( res.status == 0 ) {
+                alert( _('Server not available') );  // an alert does not ask for images from the server
+            } else {
+                alert( _('Unknown error') ); 
             }
+
             self.baseParams = self.$baseParams;  
             self.dataUrl = self.$dataUrl;  
         });

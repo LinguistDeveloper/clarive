@@ -480,6 +480,9 @@ Baseliner.store_exception_handler = function( proxy, type, action, opts, res, ar
             //Baseliner.error( _('Server Error'), r.msg );
             new Baseliner.ErrorWindow({ title: _('Server Error'), msg: r.msg  }).show();
         }
+        else if( res.status == 0 ) {
+            alert( _('Server not available') );  // an alert does not ask for images from the server
+        }
     } catch(e) {
         Ext.Msg.alert( _('Server Error'), _('Error getting response from server. Code: %1. Status: %2', res.status, res.statusText ) );
         //if( console != undefined ) console.log( res );
