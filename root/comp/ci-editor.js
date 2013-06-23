@@ -248,7 +248,8 @@
         var beforedestroy = function(){
             bl_combo.originalValue = bl_combo.getValue();  // XXX multibox reports isDirty always
             if( children.getValue() == '' ) children.originalValue = children.getValue();  // XXX always dirty
-            if( !destroying && form.getForm().isDirty() ) {
+            // deactivated save protection for now
+            if( false && !destroying && form.getForm().isDirty() ) {
                 Baseliner.confirm( _('You are about to lose your changes. Save now?'), function(){
                     submit_form( false );
                     destroying = true;
