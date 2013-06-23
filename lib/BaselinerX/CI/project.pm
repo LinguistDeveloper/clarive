@@ -20,6 +20,7 @@ service 'scan' => 'Run Scanner' => sub {
 around table_update_or_create => sub {
    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
  
+   delete $data->{versionid};
    my $temp_data; 
    if( $data->{data} ) {
       # json to yaml

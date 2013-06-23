@@ -60,7 +60,6 @@ sub dispatch {
     my $total;
     my @tree;
 
-    _log "FFFFFFFFFFFFFFFFFF"._dump $p;
     if ( !length $p->{anode} && !$p->{type} ) {
         @tree = $self->tree_roles( user => $p->{user} );
     } elsif ( $p->{type} eq 'role' ) {
@@ -639,7 +638,7 @@ sub update : Local {
     $p->{active} = $active = $active eq 'on' ? 1 : 0;
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
-    my $class = "BaselinerX::CI::$collection";
+    my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
 
     try {
         if( $action eq 'add' ) {
@@ -861,7 +860,7 @@ sub service_run : Local {
         my $ci = _ci( $p->{mid} );
         my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger );
         _error( $ret );
-        {success => \1, ret=>$logger->data, msg=>$logger->msg };
+        {success => \1, ret=>_dump($logger->data), msg=>$logger->msg };
     } ## end try
     catch {
         my $err = shift;

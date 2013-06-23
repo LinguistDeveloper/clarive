@@ -7,7 +7,7 @@ has root_dir   => qw(is rw isa Str required 1); # base path for relative dirs
 has start_path => qw(is rw isa Str), default=>sub { '.' };  # where we start searching from
 
 sub collection { 'filesys_repo' }
-sub icon       { '/static/images/icons/gitrepository.gif' }
+sub icon       { '/static/images/icons/drive.png' }
 
 sub checkout { }
 sub list_elements { }

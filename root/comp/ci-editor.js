@@ -12,16 +12,14 @@
     var load_form = function(params){
         if( params.rec == undefined ) params.rec = {};            // master row record
         //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
-        var save = <% $save %>;
+        var can_save = <% $save %>;
         var mid = params.mid;
         var beforesubmit = [];
         var is_active = params.rec.active == undefined ? true : params.rec.active;
 
         var activate_save = function(){
             setTimeout( function(){
-                if ( save ){
-                    btn_form_save.enable();
-                }
+                btn_form_save.enable();
             }, 1000);
         };
         var submit_form = function( close_form ){
@@ -49,9 +47,7 @@
                    });
                 }
                 else {
-                    if (!save) {
-                        btn_form_save.enable();
-                    }
+                    btn_form_save.enable();
                 }
         };
 
@@ -136,11 +132,9 @@
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
             type: 'submit',
-            hidden: !save,
+            hidden: !can_save,
             handler: function() { 
-                if ( save ) {
-                    btn_form_save.disable();
-                }
+                btn_form_save.disable();
                 submit_form( false )
             }
         });
@@ -222,7 +216,7 @@
             ],
             listeners: {
                 'afterrender':function(){
-                    if ( !save ) {
+                    if( !can_save ) {
                         var mask = this.el.mask();
                         mask.setStyle( 'opacity', 0);
                         mask.setStyle( 'height', 5000 );

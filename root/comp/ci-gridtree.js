@@ -4,7 +4,7 @@
 
 (function(params){
     delete params['tab_index'];  // this comes from the tab data
-    var save = <% $save %>;
+    var can_save = <% $save %>;
     var ps = 30;
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
@@ -211,7 +211,7 @@
         var ret = '<table><tr><td width="1">';
         ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
         //ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'text-decoration: line-through;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
-        ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'color: #444;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        ret += '</td><td><b><a href="#" onclick="'+ed+'; return false" style="'+(active?'':'color: #444;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -295,16 +295,16 @@
         });
 //{ xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
     var btn_create = new Baseliner.Grid.Buttons.Add({
-        disabled: true,
+        disabled: false,
         handler: ci_add,
-        hidden: !save
+        hidden: !can_save
     })
 
 //{ xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
         disabled: true,
         handler: ci_delete,
-        hidden: !save
+        hidden: !can_save
     })
 
 
