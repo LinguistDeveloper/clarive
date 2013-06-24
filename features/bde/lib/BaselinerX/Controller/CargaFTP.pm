@@ -5,6 +5,7 @@ use v5.10;
 use Catalyst::Log;
 use Data::Dumper;
 BEGIN { extends 'Catalyst::Controller' }
+#:int_asi:
 
 #register 'menu.admin.cargaldif' => {
 #    label => 'Carga usuarios',

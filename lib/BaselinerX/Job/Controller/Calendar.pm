@@ -8,6 +8,8 @@ use Calendar::Slots 0.15;
 use DateTime;
 use Try::Tiny;
 
+#:tip_venya:
+
 our $DEFAULT_SEQ = 100;
 
 register 'menu.job.calendar' => {

@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use Try::Tiny;
 use Class::Date qw/date now/;
+#:int_asi:
 
 with 'Baseliner::Role::Service';
 

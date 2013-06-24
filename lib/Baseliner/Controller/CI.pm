@@ -60,7 +60,6 @@ sub dispatch {
     my $total;
     my @tree;
 
-    _log "FFFFFFFFFFFFFFFFFF"._dump $p;
     if ( !length $p->{anode} && !$p->{type} ) {
         @tree = $self->tree_roles( user => $p->{user} );
     } elsif ( $p->{type} eq 'role' ) {
@@ -109,7 +108,6 @@ sub dispatch {
         );
     }
     
-    #_debug _dump( \@tree );
     $total = scalar( @tree ) unless defined $total;
     return ($total,@tree);
 }
@@ -337,7 +335,6 @@ sub tree_object_depend {
             versionid    => $_->{versionid},
             }
     } $rs->hashref->all;
-    _debug \@tree;
     ( $total, @tree );
 }
 
@@ -371,7 +368,6 @@ sub tree_ci_request {
             versionid    => '',
         }
     } @rs;
-    _debug \@tree;
     ( $total, @tree );
 }
 
@@ -496,7 +492,7 @@ sub store : Local {
         my @roles;
         for my $r ( _array $role ) {
             if( $r !~ /^Baseliner/ ) {
-                $r = $r eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
+                $r = uc($r) eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
             }
             push @roles, $r;
         }
@@ -507,6 +503,8 @@ sub store : Local {
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
         #_fail( 'No class or role supplied' );
     }
+
+    _log \@data if $mids;
     
     if( ref $mids ) { 
         # return data ordered like the mids
@@ -519,6 +517,32 @@ sub store : Local {
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
     $c->cache_set( $cache_key, $c->stash->{json} ); 
+    $c->forward('View::JSON');
+}
+
+# used by CIGrid to get dependents
+#   
+
+sub children : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my @chi = _ci( $p->{mid} // $p->{from_mid} )->children;
+    my @data = map {
+        my $d = $_;
+        my $edge = delete $_->{_edge};
+        my $ci = delete $_->{_ci};
+        +{
+            mid        =>$d->mid,
+            rel_type   =>$edge->{rel_type},
+            icon       =>$d->icon,
+            class      => ref $d,
+            collection => $d->collection,
+            depth      => $edge->{depth},
+            name       => $d->name,
+            versionid  => $d->versionid,
+        }
+    } @chi;
+    $c->stash->{json} = { data=>\@data, totalCount=>scalar @data };
     $c->forward('View::JSON');
 }
 
@@ -639,7 +663,7 @@ sub update : Local {
     $p->{active} = $active = $active eq 'on' ? 1 : 0;
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
-    my $class = "BaselinerX::CI::$collection";
+    my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
 
     try {
         if( $action eq 'add' ) {
@@ -650,6 +674,14 @@ sub update : Local {
         }
         else {
             _fail _loc("Undefined action");
+        }
+        if( my $chi = $p->{children} ) {
+            my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ]; 
+            DB->BaliMasterRel->search({ from_mid=>$mid })->delete;
+            for my $to_mid ( _array( $cis ) ) {
+                my $rel_type = $collection . '_' . _ci( $to_mid )->collection;   # XXX consider sending the rel_type from js 
+                DB->BaliMasterRel->create({ from_mid=>$mid, to_mid=>$to_mid, rel_type=>$rel_type });
+            }
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;
@@ -800,7 +832,6 @@ sub json_tree : Local {
             },
             children => \@data,
         };
-        _debug $d;
         { success=>\1, data=>$d };
     } catch {
         my $err = shift;
@@ -861,7 +892,7 @@ sub service_run : Local {
         my $ci = _ci( $p->{mid} );
         my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger );
         _error( $ret );
-        {success => \1, ret=>$logger->data, msg=>$logger->msg };
+        {success => \1, ret=>_dump($logger->data), msg=>$logger->msg };
     } ## end try
     catch {
         my $err = shift;

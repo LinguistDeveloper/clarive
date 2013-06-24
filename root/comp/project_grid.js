@@ -24,11 +24,13 @@
 		    id: '_id',
 		    root: 'data',
 		    totalProperty: 'total',
-		    successProperty: 'success'
+		    successProperty: 'success',
 		    }, 
 		    record
 	    ),
 	    listeners: {
+            exception: Baseliner.store_exception_handler,
+            beforeload: Baseliner.store_exception_params,
 		    'load': function(){
 			    init_buttons('disable');
 		    }

@@ -12,6 +12,7 @@ use Try::Tiny;
 
 ### NOTA: Si no se quiere tocar nada, comentar todas las líneas en las que
 ### aparezca el comentario COTTON.
+#:tip_purg:
 
 with 'Baseliner::Role::Service';
 
