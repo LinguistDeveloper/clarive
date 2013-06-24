@@ -111,6 +111,12 @@ sub save {
         }
     }
 
+    # cleanup 
+    if( $self->does( 'Baseliner::Role::Service' ) ) {
+        delete $data->{log};
+        delete $data->{job};
+    }
+
     Baseliner->cache_clear;
     # transaction bound, in case there are foreign tables
     Baseliner->model('Baseliner')->txn_do(sub{

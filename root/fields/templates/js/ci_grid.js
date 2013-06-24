@@ -1,22 +1,22 @@
 /*
 name: CI Grid
 params:
-    html: '/fields/system/html/field_ci_grid.html'
-    js: '/fields/system/js/list_ci_grid.js'
-    relation: 'system'
-    rel_type: topic_ci
-    type: 'listbox'
+    origin: 'template'
+    js: '/fields/templates/js/ci_grid.js'
+    html: '/fields/templates/html/ci_grid.html'
     get_method: 'get_cis'    
     set_method: 'set_cis'
+    section: 'head'
     field_order: 100
-    section: 'details'
+    field_order_html: 100
+    rel_type: topic_ci
     ci_role: 'ci'
 ---
 */
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
-    
+
     var ci_meta = {};
     if( meta.ci_role ) ci_meta['role'] = meta.ci_role;
     if( meta.ci_class ) ci_meta['class'] = meta.ci_class;
@@ -36,4 +36,5 @@ params:
         cis
     ]
 })
+
 

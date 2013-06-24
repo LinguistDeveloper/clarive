@@ -26,8 +26,8 @@ sub parse {
     my $file = $item->path; 
     my $tmout = $self->timeout;
     my $regex = $self->regex; 
-    $regex = eval "qr/$regex/". $self->regex_options;
-    Util->_fail( 'Missing regex' ) unless $regex;
+    $regex = eval 'qr{' . $regex . '}'. $self->regex_options;
+    Util->_fail( 'Missing or invalid regex: %1', $@ ) unless $regex;
 
     _debug ( _loc "Matcher scanning file %1...", $file );
     

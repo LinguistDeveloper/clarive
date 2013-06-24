@@ -664,7 +664,7 @@ sub update : Local {
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
-
+    my $chi = delete $p->{children};
     try {
         if( $action eq 'add' ) {
             $mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
@@ -675,7 +675,7 @@ sub update : Local {
         else {
             _fail _loc("Undefined action");
         }
-        if( my $chi = $p->{children} ) {
+        if( $chi ) {
             my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ]; 
             DB->BaliMasterRel->search({ from_mid=>$mid })->delete;
             for my $to_mid ( _array( $cis ) ) {
@@ -961,8 +961,9 @@ sub grid : Local {
     my $p = $c->req->params;
 
     my $has_permission;
+   
     if ( $p->{collection} ) {
-        $has_permission = Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin.'. $p->{collection}, username => $c->username );
+        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $p->{collection}, username => $c->username );
     } else {
         $has_permission = 0;
     }

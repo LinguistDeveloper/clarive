@@ -1154,10 +1154,12 @@
                                         break;
                     }                   
                     var parent_node = tree_fields.getNodeById(parent_id);
-                    if(!parent_node.expanded){
-                        parent_node.expand();   
-                    }                   
-                    parent_node.appendChild({id:row.data.id, id_field: row.data.id_field, text: row.data.name, params:  row.data.params, icon: row.data.img, leaf: true});
+                    if(parent_node!=undefined) {
+                        if( !parent_node.expanded){
+                            parent_node.expand();   
+                        }                   
+                        parent_node.appendChild({id:row.data.id, id_field: row.data.id_field, text: row.data.name, params:  row.data.params, icon: row.data.img, leaf: true});
+                    }
                     s.remove( row );
                 }
             });

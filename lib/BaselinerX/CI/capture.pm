@@ -18,7 +18,7 @@ sub parse {
     my $source = $item->source; 
     my $tmout = $self->timeout;
     my $regex = $self->regex; 
-    $regex = eval "qr/$regex/". $self->regex_options;
+    $regex = eval 'qr/' . $regex . '/'. $self->regex_options;
     Util->_fail( 'Missing regex' ) unless $regex;
 
     # index line numbers
@@ -41,6 +41,8 @@ sub parse {
             push @{ $tree{ $k } }, $v;
         }
     }
+    Util->_debug( Util->_loc("CAPTURE for item %1 with regex %2", $item->path, $regex ) );
+    Util->_debug( \@found );
     if( %tree ) {
         $item->{parse_tree} ||= [];
         push @{ $item->{parse_tree} } => @found;

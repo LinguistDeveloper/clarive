@@ -116,7 +116,8 @@ sub scan {
             } elsif( $top_ver{$it->path}->versionid < $it->versionid ) {
                 $top_ver{ $it->path } = $it;
             }
-            
+
+# $it->tree_resolve
             # nature associations
             # parse_tree 
             for my $t ( _array( $it->{parse_tree} ) ) {

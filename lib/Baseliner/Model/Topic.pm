@@ -985,13 +985,12 @@ sub get_data {
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
-        my %custom_data = {};
+        my %custom_data = ();
         # get data from value_clob if value is not available. 
         map { $custom_data{ $_->{name} } = $_->{value} ? $_->{value} : $_->{value_clob} }
             Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( { topic_mid => $topic_mid } )->hashref->all;
         
         push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { defined $_->{type} && $_->{type} eq 'form' } _array($meta);
-                             
 
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};

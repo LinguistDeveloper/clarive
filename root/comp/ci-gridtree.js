@@ -263,10 +263,10 @@
         if ( can_save ) {        
             if ( check_sm.hasSelection() ) {
                 btn_delete.enable();
-                btn_create.enable();
+                //btn_create.enable();
             } else {
                 btn_delete.disable();
-                btn_create.disable();
+                //btn_create.disable();
 
             }
         }
@@ -307,7 +307,7 @@
         });
 //{ xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
     var btn_create = new Baseliner.Grid.Buttons.Add({
-        disabled: false,
+        //disabled: false,
         handler: ci_add,
         hidden: !can_save
     })
