@@ -20,8 +20,11 @@ service 'scan' => 'Run Scanner' => sub {
 around table_update_or_create => sub {
    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
  
-   delete $data->{versionid};
+   _log _dump $orig;
+   _log _dump $data;
+
    my $temp_data; 
+   delete $data->{versionid};
    if( $data->{data} ) {
       # json to yaml
       $temp_data = _dump( _decode_json( $data->{data} ) );
@@ -30,9 +33,9 @@ around table_update_or_create => sub {
    
    my $row_mid = $self->$orig( $rs, $mid, $data, @rest );
    $mid //= $row_mid;  # necessary when creating
-
    my $row = DB->BaliProject->find( $mid );
    $row->ns('project/' . $mid );
+
    $row->data($temp_data);
    $row->update;
    $row_mid;

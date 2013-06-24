@@ -511,10 +511,11 @@ returns the user project json
 sub user_projects : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'name';
-    $dir ||= 'asc';
-    $limit ||= 100;
+    my $level = $p->{level};
+    #my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    #$sort ||= 'name';
+    #$dir ||= 'asc';
+    #$limit ||= 100;
     #$query and $query = qr/$query/i;
     #my @rows;
     my $username = $c->username;
@@ -533,16 +534,30 @@ sub user_projects : Local {
         username => $username
     );
     
-    my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $query } });
+    #my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $query } });
+    my $rs = DB->BaliProjectTree->search({ id => { -in => $query } });
     rs_hashref($rs);
-    #_debug [ $rs->all ];
-    my @rows = map { 
+    _debug [ $rs->all ];
+    my @rows = map {
+        my ($name, $sp_name, $spn_name);
+        my $project_name = $_->{project_name};
+        $name = $project_name; 
+        $sp_name = $_->{sp_name};
+        if($sp_name){
+            $name .= '/' . $sp_name;
+            $spn_name = $_->{nature};
+            if($spn_name){
+                $spn_name =  $spn_name;
+                $name .= '/' . $spn_name;
+            }
+        }
+        
         $_->{data}=_load($_->{data});
         $_->{ns} = 'project/' . $_->{mid};
-        $_->{description} //= $_->{name} // '';
-        $_ } $rs->all;
+        $_->{name} = $name;
+        $_} $rs->all;
     # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
-    # _debug \@rows;
+    _debug \@rows;
     $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };      
     $c->forward('View::JSON');
 }

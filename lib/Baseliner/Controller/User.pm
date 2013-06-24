@@ -82,65 +82,47 @@ sub infodetail : Local {
     $dir ||= 'asc';
 
     my @rows;
+
     my $roles = $c->model('Baseliner::BaliRole')->search(
-        { 'bali_roleusers.username' => $username },
-        {   select   => [qw/id role description/],
-            join     => ['bali_roleusers'],
-            group_by => [qw/id role description/],
-            order_by => $sort ? { "-$dir" => "$sort" } : undef
-        }
-    );
-    rs_hashref($roles);
-    
-    while( my $r = $roles->next ) {
-        my $rs_userprojects = $c->model('Baseliner::BaliRoleUser')->search( { username => $username ,  id_role => $r->{id}} );
-        rs_hashref($rs_userprojects);
-        my @projects;
-        while( my $rs = $rs_userprojects->next ) {
-            my ($ns, $prjid) = split "/", $rs->{ns};
-            my $str;
-            my $parent;
-            my $allpath;
-            my $nature;
-            if($prjid){
-                my @path;
-                my $project = $c->model('Baseliner::BaliProject')->find($prjid);
-                if($project){
-                    push @path, $project->name;
-                    $parent = $project->id_parent;
-                    while($parent){
-                        my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
-                        push @path, $projectparent->name . '/';
-                        $parent = $projectparent->id_parent;
-                    }
-                    while(_unique @path){
-                        $allpath .= pop (@path)
-                    }
-                    if($project->nature){ $nature= ' (' . $project->nature . ')';}
-                    $str = $allpath . $nature;
-                }
+            { 'bali_roleusers.username' => $username },
+            {   select   => [qw/id role description/],
+                prefetch     => [{ 'bali_roleusers' => 'projects' }],
+                group_by => [qw/id role description/],
+                order_by => $sort ? { "-$dir" => "$sort" } : undef
             }
-            else{
-                $str = '';
-            }
-            push @projects, $str;
-        }
+        );
+
+    my %sas;
+    map { push @{ $sas{$_->{id_parent}} } => $_ } DB->BaliProject->search({ id_parent => { '!=' => undef }, nature => undef })->hashref->all;
+    my %nats;
+    map { push @{ $nats{$_->{id_parent}} } => $_ } DB->BaliProject->search({ id_parent => { '!=' => undef }, nature => { '!=' => undef } })->hashref->all;
+
+    for my $r( $roles->hashref->all ){
+        my %user_projects = map {
+            $_->{mid} => $_
+        } map { $_->{projects} } _array( $r->{bali_roleusers} );
         
-        #@projects = sort(@projects);
-        my @jsonprojects;
-        foreach my $project (sort {$a cmp $b} _unique @projects){
-            my $str = { name=>$project };
-            push @jsonprojects, $str;
-        }
-        my $projects_txt = \@jsonprojects;
-    
+        my %project_paths = map { $_ => 1 } grep {defined} map { 
+            my $p = $_;
+            my $sa = $sas{ $p->{mid} }; 
+            my @nat;
+            for my $s ( _array($sa) ) {
+               push @nat, map { $_->{parent_name} = $s->{name}; $_ } _array $nats{$s->{mid}};
+            }
+           
+            ( $p->{name}, 
+               (map { $p->{name}.'/'.$_->{name} } _array($sa) ),
+               (map { $p->{name}.'/'.$_->{parent_name}.'/'.$_->{name}.' ('.$_->{nature}.')' } @nat),
+             );
+        } values %user_projects;
+
         push @rows,
-                {
-                  id_role		=> $r->{id},
-                  role		=> $r->{role},
-                  description	=> $r->{description},
-                  projects		=> $projects_txt
-                };
+        {
+            id_role       => $r->{id},
+            role          => $r->{role},
+            description   => $r->{description},
+            projects      => %project_paths ? [ map{ +{ name=>$_ } } sort keys %project_paths  ] : [{name=>''}],
+        };
     }
     $c->stash->{json} = { data=>\@rows};		
     $c->forward('View::JSON');    

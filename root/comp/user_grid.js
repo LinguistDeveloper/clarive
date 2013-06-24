@@ -693,7 +693,7 @@
             username_readonly = true;
         }
 
-        win = new Ext.Window({
+        win = new Baseliner.Window({
             title: _(title),
             autoHeight: true,
             width: 730,

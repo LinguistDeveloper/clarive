@@ -63,15 +63,19 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
             self.dataUrl = self.$dataUrl;  
         });
         self.on("loadexception", function(loader, node, res) {
-            var obj = Ext.decode( res.responseText );
-            if( res.status == 401 || ( Ext.isObject( obj ) && obj.logged_out ) ) {
+            var obj = Ext.util.JSON.decode( res.responseText );
+            if( ! Ext.isObject(obj) ) obj={};
+            if( res.status == 401 || obj.logged_out ) {
                 Baseliner.login({ no_reload: 1, on_login: function(){ 
                     loader.load( node );
                 }});
+            } else if( ! obj.success )  {
+                Baseliner.error( _('Error'), res.responseText );
             } else if( res.status == 0 ) {
                 alert( _('Server not available') );  // an alert does not ask for images from the server
             } else {
-                alert( _('Unknown error') ); 
+                // may be a programming error in the js side (treeloader event?), no message to show
+                Baseliner.error( _('Unknown Error'), _('Contact your administrator') );
             }
 
             self.baseParams = self.$baseParams;  
@@ -86,10 +90,34 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
  *
  */
 
+Baseliner.class_name = function(v){
+    if( typeof(v) == 'object' && v.constructor!=undefined ) {
+        var results = (/function (.{1,})\(/).exec( v.constructor.toString() );
+        if(results && results.length>1) {
+            return results[1];
+        } else {
+            results = (/\[object (.{1,})\]/).exec( v.constructor.toString() );
+            return (results && results.length>1) ? results[1] : '';
+        }
+    } else {
+        return typeof v ;
+    }
+
+};
 Baseliner.TreeMultiTextNode = Ext.extend( Ext.tree.TreeNodeUI, {
     getDDHandles : function(){
         var nodes = [this.iconNode, this.textNode, this.elNode];
-        Ext.each( this.textNode.childNodes, function(n){ nodes.push(n) });
+        if( this.textNode == undefined || this.textNode.childNodes == undefined ) 
+             return nodes;
+        var nodelist = this.textNode.childNodes;
+        //var imax = ( Ext.isIE71 || Ext.isIE81 ) ? 2 : nodelist.length;
+        for( var i=0; i < nodelist.length; i++) {
+            var cn = Baseliner.class_name( nodelist[i] );
+            if( ! ( cn=='Text' && Ext.isIE ) ) 
+                nodes.push( nodelist[i] );
+        }
+        //this.textNode.childNodes.each(function(){ alert(1) });
+        //Ext.each( this.textNode.childNodes, function(n){ nodes.push(n) });
         return nodes;
     }
 });
@@ -234,19 +262,11 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
 
                     if( !tn.category_color ) 
                         tn.category_color = '#999';
-                    //tn.style = 'font-size:10px';
-                    //tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
-                    //tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
                     var span = String.format( Baseliner.tree_topic_style, tn.category_color );
 
-                    //tn.mini = true;
-                    //var tn_span = Baseliner.topic_name(tn);
-
                     n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
-                    n.ui = new Baseliner.TreeMultiTextNode( n );
+                    n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
 
-                    /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
-                        n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
                 }
             });
         });
