@@ -250,7 +250,7 @@
         
     });
 
-    var win = new Ext.Window({
+    var win = new Baseliner.Window({
         title: username,
         autoHeight: true,
         width: 730,
