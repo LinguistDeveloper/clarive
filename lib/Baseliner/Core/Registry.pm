@@ -15,6 +15,12 @@ class_has registrar =>
       default => sub { {} },
     );
 
+class_has registors =>
+    ( is      => 'rw',
+      isa     => 'HashRef',
+      default => sub { {} },
+    );
+
 class_has classes =>
     ( is      => 'rw',
       isa     => 'HashRef',
@@ -345,8 +351,12 @@ sub registor_keys {
     ($key_prefix) = split /\./, $key_prefix; # look for registor like 'registor.menu', 'registor.action', ...
     return () unless $key_prefix; 
     for my $key ( grep /^registor\.$key_prefix\./, keys %{ $self->registrar || {} } ) {
-        my $registor = $self->get( $key );
-        push @registor_data, { registor=>$registor, data=>$registor->generator->($key_prefix) };
+        if ( ! $self->registors->{$key}) {
+            $self->registors->{$key} = 1;
+            my $registor = $self->get( $key );
+            push @registor_data,
+                {registor => $registor, data => $registor->generator->( $key_prefix )};
+        }
     }
     my $flag = 0;
     for my $regs ( @registor_data ) {
