@@ -1580,8 +1580,8 @@ sub set_projects {
     my @new_projects = _array( $projects ) ;
 
     #my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
-    my @old_projects =  Baseliner->model('Baseliner::BaliTopic')->find(  33652 )->
-                projects->search( {rel_field => 'Proyectos'}, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
+    my @old_projects =  Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
+                projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
 
     
     # check if arrays contain same members
