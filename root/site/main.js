@@ -18,7 +18,7 @@
         $show_menu  = 0;
         $show_main  = 0;
     }
-    $show_lifecycle = $c->stash->{'can_lifecycle'};
+    $show_lifecycle = $show_lifecycle && $c->stash->{'can_lifecycle'};
     $show_menu and $show_menu = $c->stash->{'can_menu'};
 </%perl>
 
