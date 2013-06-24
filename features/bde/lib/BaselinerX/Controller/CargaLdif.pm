@@ -9,6 +9,7 @@ use Data::Dumper;
 use Net::FTP;
 use Try::Tiny;
 use utf8;
+#:int_asi:
 BEGIN { extends 'Catalyst::Controller' }
  
 sub init : Path {

@@ -1,0 +1,17 @@
+<%args>
+    $meta
+    $data
+</%args>
+<%perl>
+    require Text::Markdown;
+    my $val = $data->{$meta->{display_field}} || $data->{$meta->{bd_field}};
+    $val = Text::Markdown::markdown( $val );
+</%perl>
+% if( !$meta->{hidden} ) {
+    <tr>
+        <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
+    </tr>
+    <tr>
+        <td colspan="2"><% $val %></td>
+    </tr>
+% }     

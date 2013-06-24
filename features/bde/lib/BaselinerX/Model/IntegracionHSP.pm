@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use Try::Tiny;
 use 5.010;
 BEGIN { extends 'Catalyst::Model' }
+#:int_hsp:
 
 sub read_harvest_proyects {
     my $self   = shift;

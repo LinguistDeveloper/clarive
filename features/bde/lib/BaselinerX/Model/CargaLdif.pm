@@ -6,6 +6,7 @@ use Baseliner::Utils;
 use Baseliner::Plug;
 use Try::Tiny;
 use utf8;
+#:int_asi:
 BEGIN { extends 'Catalyst::Model' }
 
 sub db { BaselinerX::CA::Harvest::DB->new }

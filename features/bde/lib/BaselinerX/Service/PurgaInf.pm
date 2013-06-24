@@ -13,6 +13,8 @@ use Baseliner::Sugar;
 use BaselinerX::BdeUtils;
 use Try::Tiny;
 
+#:tip_purg:
+
 with 'Baseliner::Role::Service';
 
 register 'config.bde.purga_inf' => {

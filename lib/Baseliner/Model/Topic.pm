@@ -948,7 +948,7 @@ sub get_data {
                          'created_by', 'created_on', 'modified_by', 'modified_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress','type_status', 'moniker' );
         
         my $rs = Baseliner->model('Baseliner::BaliTopic')
-                ->search({ mid => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
+                ->search({ 'me.mid' => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
         my $row = $rs->first;
         
         $data = { topic_mid => $topic_mid, $row->get_columns };

@@ -6,6 +6,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use BaselinerX::BdeUtils;
 use Try::Tiny;
+#:int_asi:
 
 with 'Baseliner::Role::Service';
 

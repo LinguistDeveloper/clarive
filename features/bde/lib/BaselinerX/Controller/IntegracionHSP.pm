@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use Try::Tiny;
 use 5.010;
 BEGIN { extends 'Catalyst::Controller' }
+#:int_hsp:
 
 sub main : Path {
     my ( $self, $c ) = @_;
