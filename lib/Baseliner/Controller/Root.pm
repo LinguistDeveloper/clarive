@@ -218,6 +218,7 @@ sub tab : LocalRegex( '^tab/(.*)$' ) {
 
 sub index:Private {
     my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
 
     if( $p->{tab}  ) {
@@ -231,30 +232,32 @@ sub index:Private {
     $self->_set_user_lang($c);
 
     # load menus
-    my @menus;
-    $c->forward('/user/can_surrogate');
-    if( $c->username ) {
-        my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
-        $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions, username => $c->username );
-        $c->stash->{portlets} = [
-            grep { $_->active }
-            $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>\@actions, username => $c->username )
-        ];
-        my @features_list = Baseliner->features->list;
-        # header_include hooks
-        $c->stash->{header_include} = [
-            map { { name=>$_, content=>_slurp $_ } }
-            _unique
-            grep { -e $_ } map { "" . Path::Class::dir( $_->path, 'root', 'include', 'head.html') }
-                    @features_list 
-        ];
+    if ( ! $c->stash->{ reload_all } ) {
+        $c->stash->{ reload_all } = 1;
+        my @menus;
+        $c->forward('/user/can_surrogate');
+        if( $c->username ) {
+            my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
+            $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions, username => $c->username );
+            $c->stash->{portlets} = [
+                grep { $_->active }
+                $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>\@actions, username => $c->username )
+            ];
+            my @features_list = Baseliner->features->list;
+            # header_include hooks
+            $c->stash->{header_include} = [
+                map { { name=>$_, content=>_slurp $_ } }
+                _unique
+                grep { -e $_ } map { "" . Path::Class::dir( $_->path, 'root', 'include', 'head.html') }
+                        @features_list 
+            ];
+        }
+        $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
+
+        $c->stash->{show_js_reload} = $ENV{BASELINER_DEBUG} && $c->has_action('action.admin.develop');
+        $c->stash->{can_lifecycle} = $c->has_action('action.home.show_lifecycle');
+        $c->stash->{can_menu} = $c->has_action('action.home.show_menu');
     }
-    $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
-
-    $c->stash->{show_js_reload} = $ENV{BASELINER_DEBUG} && $c->has_action('action.admin.develop');
-    $c->stash->{can_lifecycle} = $c->has_action('action.home.show_lifecycle');
-    $c->stash->{can_menu} = $c->has_action('action.home.show_menu');
-
     $c->stash->{template} = '/site/index.html';
 }
 

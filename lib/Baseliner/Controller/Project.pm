@@ -537,7 +537,7 @@ sub user_projects : Local {
     #my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $query } });
     my $rs = DB->BaliProjectTree->search({ id => { -in => $query } });
     rs_hashref($rs);
-    _debug [ $rs->all ];
+    #_debug [ $rs->all ];
     my @rows = map {
         my ($name, $sp_name, $spn_name);
         my $project_name = $_->{project_name};
@@ -557,7 +557,7 @@ sub user_projects : Local {
         $_->{name} = $name;
         $_} $rs->all;
     # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
-    _debug \@rows;
+    #_debug \@rows;
     $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };      
     $c->forward('View::JSON');
 }
