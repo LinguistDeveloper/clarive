@@ -7,7 +7,7 @@ has id_category => qw(is rw isa Any);
 has name        => qw(is rw isa Any);
 has category    => qw(is rw isa Any);
 
-has_ci 'projects';
+#has_ci 'projects';
 sub rel_type {
     { 
         projects => [ from_mid => 'topic_project' ] ,
@@ -30,7 +30,7 @@ around table_update_or_create => sub {
     my ( $orig, $self, $rs, $mid, $data, @rest ) = @_;
     my $name = delete $data->{name};
     $data->{title} //= $name; 
-    #$data->{created_by} //= 'internal';
+    $data->{created_by} //= 'internal';
     delete $data->{active};
     delete $data->{versionid};
     delete $data->{moniker};
