@@ -1,0 +1,246 @@
+Clarive | Baseliner uses third-party libraries or other resources that may
+be distributed under licenses different than the Clarive software.
+
+In the event that we accidentally failed to list a required notice,
+please bring it to our attention through any of the ways detailed here : 
+
+           support@vasslabs.com
+
+The attached notices are provided for information only.
+
+
+License Notice for Twitter Bootstrap CSS
+--------------------------------------------
+
+    http://twitter.github.com/bootstrap/index.html
+
+    Twitter Bootstrap Software License - Version 1.0 - August 17th, 2003
+
+    Designed and built with all the love in the world by @mdo and @fat.
+    Code licensed under Apache License v2.0, documentation under CC BY 3.0.
+    Glyphicons Free licensed under CC BY 3.0.
+
+License Notice for JQuery
+------------------------------------
+
+    https://jquery.org/license/
+
+    Copyright 2013 jQuery Foundation and other contributors
+    http://jquery.com/
+
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to
+    the following conditions:
+
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+    LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+    OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+    WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License Notice for Silk Icons
+---------------------------------
+
+    http://www.famfamfam.com/lab/icons/silk/
+
+    Version: 1.3 
+
+    This work is licensed under a Creative Commons Attribution 2.5 License.
+    This means you may use it for any purpose, and make any changes you like.
+    All I ask is that you include a link back to this page in your credits
+    (although a giant link on every page of your website really isn't needed, contact me to discuss specifics).
+
+    The icons can also be used under Creative Commons Attribution 3.0 License (Hi Debian folks!)
+    with the following requirements:
+    As an author, I would appreciate a reference to my authorship of the Silk icon set
+    contents within a readme file or equivalent documentation for the software
+    which includes the set or a subset of the icons contained within.
+
+
+License Notice for ExtJS 
+---------------------------------
+
+    Ext JS - JavaScript Library
+    Copyright (c) 2006-2011, Sencha Inc.
+    All rights reserved.
+    licensing@sencha.com
+
+    http://www.sencha.com/license
+
+    Open Source License
+    ------------------------------------------------------------------------------------------
+    Ext JS is licensed under the terms of the Open Source GPL 3.0 license. 
+
+    http://www.gnu.org/licenses/gpl.html
+
+    There are several FLOSS exceptions available for use with this release for
+    open source applications that are distributed under a license other than the GPL.
+
+    * Open Source License Exception for Applications
+
+      http://www.sencha.com/products/floss-exception.php
+
+    * Open Source License Exception for Development
+
+      http://www.sencha.com/products/ux-exception.php
+
+
+    Commercial License
+    ------------------------------------------------------------------------------------------
+    This is the appropriate option if you are creating proprietary applications and you are 
+    not prepared to distribute and share the source code of your application under the 
+    GPL v3 license. Please visit http://www.sencha.com/license for more details.
+
+
+    OEM / Reseller License
+    ------------------------------------------------------------------------------------------
+    For more details, please visit: http://www.sencha.com/license.
+
+    --
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+    AND NONINFRINGEMENT OF THIRD-PARTY INTELLECTUAL PROPERTY RIGHTS.  See the GNU
+    General Public License for more details.
+
+
+License Notice for Flot
+---------------------------------
+
+    http://github.com/flot/flot
+
+    Flot is a Javascript plotting library for jQuery.
+    Read more at the website: http://www.flotcharts.org/
+
+    Copyright (c) 2007-2013 IOLA and Ole Laursen
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the "Software"), to deal in the Software without
+    restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following
+    conditions:
+
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+
+License Notice for File Uploader
+------------------------------------
+
+    File uploader component is licensed under GNU GPL 2 or later and GNU LGPL 2 or later.
+    © 2010 Andrew Valums
+
+    This distribution also includes:
+
+        server/OctetStreamReader.java    
+        Dual Licensed under the MIT and GPL v.2        
+        
+        jQuery JavaScript Library
+        http://jquery.com/    
+        Copyright 2010, John Resig
+        Dual licensed under the MIT or GPL Version 2 licenses.
+        http://jquery.org/license
+        
+        Sizzle.js - CSS selector engine used by jQuery
+        http://sizzlejs.com/
+        Copyright 2010, The Dojo Foundation
+        Released under the MIT, BSD, and GPL Licenses.
+            
+        QUnit - A JavaScript Unit Testing Framework
+        http://docs.jquery.com/QUnit
+        Copyright (c) 2009 John Resig, Jörn Zaefferer
+        Dual licensed under the MIT (MIT-LICENSE.txt)
+        and GPL (GPL-LICENSE.txt) licenses.
+
+
+License Notice for Fullcalendar
+---------------------------------
+
+    http://arshaw.com/fullcalendar/
+    
+    Copyright (c) 2009 Adam Shaw
+
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to
+    the following conditions:
+
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+    LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+    OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+    WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License Notice for GridTree
+-----------------------------------
+
+    Copyright (c) 2009, Maxim G. Bazhenov
+
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without modification, 
+    are permitted provided that the following conditions are met:
+
+     Redistributions of source code must retain the above copyright notice, this 
+     list of conditions and the following disclaimer.
+
+     Redistributions in binary form must reproduce the above copyright notice, this 
+     list of conditions and the following disclaimer in the documentation and/or 
+     other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE 
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License Notice for CLEditor
+--------------------------------------
+
+    CLEditor WYSIWYG HTML Editor v1.3.0
+    http://premiumsoftware.net/cleditor
+
+    Copyright 2010, Chris Landowski, Premium Software, LLC
+    Dual licensed under the MIT or GPL Version 2 licenses.
+    
+License Notice for CKEditor
+--------------------------------------
+
+    http://ckeditor.com/about/license
+    
+    © 2003 - 2013 CKSource - Frederico Knabben. All rights reserved
+    

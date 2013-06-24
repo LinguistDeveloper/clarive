@@ -324,17 +324,26 @@ sub move_topic : Local {
     my $topic_mid = $p->{from_topic_mid} || _fail _loc 'Missing %1', 'from_topic_mid';
 
     try {
-    
         if($p->{from_directory}){
-            my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
+            my $old_row = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
                                                                                    id_directory =>  $p->{from_directory},
                                                                             })->first;
-            _fail(_loc('Source topic #%1 does not exist or is not in this folder anymore', $topic_mid )) unless $rs;
-            $rs->id_directory( $p->{to_directory} );
-            $rs->update();        
+
+            _fail(_loc('Source topic #%1 does not exist or is not in this folder anymore', $topic_mid )) unless $old_row;
+
+            my $new_row = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
+                                                                                   id_directory =>  $p->{to_directory},
+                                                                            })->first;
+            if( $new_row ) {
+                # if already in dest dir, silenty delete old row
+                $old_row->delete;
+            } else {
+                $old_row->id_directory( $p->{to_directory} );
+                $old_row->update();        
+            }
             
         }else{
-            my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
+            my $row = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
                                                                                 id_file => $topic_mid,
                                                                                 id_directory =>  $p->{to_directory},
                                                                             });        
