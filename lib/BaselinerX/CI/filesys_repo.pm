@@ -31,30 +31,6 @@ service load => 'Load files as items' => sub {
     return $itset;
 };
 
-sub method_scan {
-    my($self,$stash)=@_;
-
-    # get natures
-    my @natures;
-    for my $natclass ( Util->packages_that_do( 'Baseliner::Role::CI::Nature' ) ) {
-        my $coll = $natclass->collection;
-        DB->BaliMaster->search({ collection=>$coll })->each( sub {
-            my ($row)=@_;
-            Util->_log( $row->mid );
-            push @natures, Util->_ci( $row->mid );
-        });
-    }
-    my $its = $self->load_items;
-    my @items = @{ $its->children };
-
-    for my $nat ( @natures ) {
-        # should return/update nature accepted items
-        $nat->scan( items=>\@items );   
-    }
-    $_->save for @items;
-    return @items;
-}
-
 sub load_items {
     my ( $self, %p ) = @_;
     my $d = Util->_dir( $self->root_dir, $self->start_path );

@@ -11,6 +11,13 @@ has versionobjid     => qw(is rw isa Num required 1);
 has versiondataobjid => qw(is rw isa Num required 1);
 has compressed       => qw(is rw isa Bool default 1);
 
+service scan => 'Scan' => sub {
+    my ($self,$c,$p) =@_;
+    my $ret = $self->scan( $p );
+    $self->tree_resolve;
+    $ret;
+};
+
 service 'view_source' => 'View Source' => sub {
     my ($self) = @_;
     $self->source;

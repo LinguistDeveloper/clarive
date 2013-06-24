@@ -24,11 +24,64 @@ sub list_elements { }
 sub repository { }
 sub update_baselines { }
 
+service scan => 'Scan Items' => sub {
+    my ($self,$c,$p) =@_;
+    my @items = $self->method_scan( $p );
+    for ( @items ) {
+        $_->tree_resolve;
+    }
+    \@items;
+};
+
+
+service load_items => 'Load Items' => sub {
+    my ($self,$c,$p) =@_;
+    my $its = $self->load_items();
+    for( @{ $its->children } ) {
+        $_->save;
+    }
+    return $its;
+};
+
 service load_packages => 'Load Packages' => sub {
     my ($self,$c,$p) =@_;
     $self->load_revisions();
     return "ok scan: " . Util->_dump( $self );
 };
+
+sub load_items {
+    my ( $self, %p ) = @_;
+    my $db = BaselinerX::CA::Harvest::DB->new;
+    my @versions = $db->view_items( 
+        environmentname=>$self->project_name, 
+        viewname=>( $p{viewname} // $self->viewname ), 
+        viewpath=>( $p{viewpath} // $self->viewpath ) );
+    my @items = map {
+        my $r = $_;
+        my $vp = $r->{pathfullname};
+        $vp =~ s{\\}{/}g;
+        my $basename = $r->{itemname} =~ /^(.*)\.\w+$/ ? $1 : $r->{itemname};
+        my $path = "$vp/$r->{itemname}";
+        BaselinerX::CI::CASCMVersion->new(
+            name             => $r->{itemname},
+            basename         => $r->{itemname},
+            size             => $r->{datasize} // 0,  # XXX missing in the previous query due to speed
+            dir              => $vp,
+            path             => $path,
+            is_dir           => $r->{itemtype} != 1,
+            itemobjid        => $r->{itemobjid},
+            viewpath         => $vp,
+            versionobjid     => $r->{versionobjid},
+            versiondataobjid => $r->{versiondataobjid},
+            versionid        => $r->{mappedversion},
+            moniker          => $basename, 
+            compressed       => defined $r->{compressed} ? ( $r->{compressed} eq 'Y' ) : 1,  # XXX missing in the previous query due to speed
+            ns               => 'harversion/' . $r->{versionobjid}
+        );
+    } @versions;
+    BaselinerX::CI::itemset->new( children => \@items );
+}
+
 
 sub load_revisions {
     my ($self,%p) = @_;
@@ -60,10 +113,5 @@ sub load_revisions {
     }
     @pkgs;
 }
-
-service scan => 'Scan files' => sub {
-    my ($self,$c,$p) =@_;
-    return "ok scan: " . Util->_dump( $self );
-};
 
 1;

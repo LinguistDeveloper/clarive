@@ -685,8 +685,6 @@ sub packagenames_pathfullnames {
     $self->db->array($query, join(', ', @packagenames)); 
 }
 
-1;
-
 sub n_files_inside_subapl {
   my ($self, $project) = @_;
   $project = uc $project;
@@ -719,5 +717,90 @@ sub n_files_inside_subapl {
 }
 
 *subapl_in_harvest_p = \&n_files_inside_subapl;
+
+sub state_items {
+    my ($self, %p) = @_;
+    my $env = $p{environmentname} or _fail( 'Missing environmentname' );
+    my $state = $p{statename} or _fail( 'Missing statename' );
+    my $vp = $p{viewpath} // '/';
+    $vp =~ s{//*}{\\}g;
+    $vp =~ s{\\$}{}g;
+    my $vp2 = "$vp\\%";
+    _debug( "state_items=$env,$state,$vp2,$vp" );
+    my $sql = q{SELECT v.versionobjid,v.versiondataobjid,trim(v.mappedversion) mappedversion,trim(REPLACE(pa.pathfullname,'\\','/')) pathfullname,
+                    trim(n.itemname) itemname, v.itemtype, v.itemobjid
+                    FROM
+                        HARSTATE s,
+                        HARVERSIONS v,
+                        HARVERSIONS vp,
+                        HARITEMNAME n,
+                        HARENVIRONMENT e,
+                        HARVERSIONINVIEW vv,
+                        HARPATHFULLNAME pa
+                    WHERE TRIM(s.statename) LIKE ?
+                    AND TRIM(e.environmentname) LIKE ?
+                    AND s.envobjid=e.envobjid
+                    AND s.viewobjid=vv.viewobjid
+                    AND v.versiondataobjid = d.versiondataobjid
+                    AND v.itemnameid    = n.nameobjid
+                    AND v.pathversionid = vp.versionobjid
+                    AND vp.itemobjid    = pa.itemobjid
+                    AND vp.versionobjid = pa.versionobjid
+                    AND vv.versionobjid=v.versionobjid
+                    AND v.versionobjid=(SELECT MAX(v2.versionobjid) FROM HARVERSIONS v2,HARVERSIONINVIEW vv2
+                                               WHERE v2.itemobjid=v.itemobjid AND v2.versionobjid=vv2.versionobjid
+                                               AND vv2.viewobjid=s.viewobjid AND v2.inbranch=0 AND v2.versionstatus<>'R'
+                                        )
+                    AND v.itemtype<>0
+                    AND v.inbranch=0
+                    AND v.versionstatus='N'
+                    AND (pa.pathfullname LIKE ? OR pa.pathfullname = ?)
+                    AND pa.versionobjid = vp.versionobjid
+                    ORDER BY pa.pathfullname};
+
+    $self->db->array_hash($sql, $state, $env, $vp2, $vp);
+}
+
+sub view_items {
+    my ($self, %p) = @_;
+    my $env = $p{environmentname} or _fail( 'Missing environmentname' );
+    my $view = $p{viewname} or _fail( 'Missing viewname' );
+    my $vp = $p{viewpath} // '/';
+    $vp =~ s{//*}{\\}g;
+    $vp =~ s{\\$}{}g;
+    my $vp2 = "$vp\\%";
+    _debug( "view_items=$env,$view,$vp2,$vp" );
+    my $sql = q{SELECT v.versionobjid,v.versiondataobjid,trim(v.mappedversion) mappedversion,trim(REPLACE(pa.pathfullname,'\\','/')) pathfullname,
+                    trim(n.itemname) itemname, v.itemtype, v.itemobjid
+                    FROM
+                        HARVIEW w,
+                        HARVERSIONS v,
+                        HARVERSIONS vp,
+                        HARITEMNAME n,
+                        HARENVIRONMENT e,
+                        HARVERSIONINVIEW vv,
+                        HARPATHFULLNAME pa
+                    WHERE TRIM(w.viewname) LIKE ?
+                    AND TRIM(e.environmentname) LIKE ?
+                    AND w.envobjid=e.envobjid
+                    AND w.viewobjid=vv.viewobjid
+                    AND v.itemnameid    = n.nameobjid
+                    AND v.pathversionid = vp.versionobjid
+                    AND vp.itemobjid    = pa.itemobjid
+                    AND vp.versionobjid = pa.versionobjid
+                    AND vv.versionobjid=v.versionobjid
+                    AND v.versionobjid=(SELECT MAX(v2.versionobjid) FROM HARVERSIONS v2,HARVERSIONINVIEW vv2
+                                               WHERE v2.itemobjid=v.itemobjid AND v2.versionobjid=vv2.versionobjid
+                                               AND vv2.viewobjid=w.viewobjid AND v2.inbranch=0 AND v2.versionstatus<>'R'
+                                        )
+                    AND v.itemtype<>0
+                    AND v.inbranch=0
+                    AND v.versionstatus='N'
+                    AND (pa.pathfullname LIKE ? OR pa.pathfullname = ?)
+                    AND pa.versionobjid = vp.versionobjid
+                    ORDER BY pa.pathfullname};
+
+    $self->db->array_hash($sql, $view, $env, $vp2, $vp);
+}
 
 1;
