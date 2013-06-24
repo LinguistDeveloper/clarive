@@ -537,7 +537,7 @@ sub user_projects : Local {
     #my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $query } });
     my $rs = DB->BaliProjectTree->search({ id => { -in => $query } });
     rs_hashref($rs);
-    #_debug [ $rs->all ];
+    _debug [ $rs->all ];
     my @rows = map {
         my ($name, $sp_name, $spn_name);
         my $project_name = $_->{project_name};
@@ -545,6 +545,7 @@ sub user_projects : Local {
         $sp_name = $_->{sp_name};
         if($sp_name){
             $name .= '/' . $sp_name;
+            $spn_name = $_->{nature};
             if($spn_name){
                 $spn_name =  $spn_name;
                 $name .= '/' . $spn_name;

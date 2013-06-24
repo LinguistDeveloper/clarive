@@ -7,7 +7,7 @@ has id_category => qw(is rw isa Any);
 has name        => qw(is rw isa Any);
 has category    => qw(is rw isa Any);
 
-has_ci 'projects';
+#has_ci 'projects';
 sub rel_type {
     { 
         projects => [ from_mid => 'topic_project' ] ,
