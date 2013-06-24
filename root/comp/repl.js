@@ -438,7 +438,12 @@ To do:
                     win.show();
             */
         }
-        else {
+        else if( lang=='css' ) {
+            var style = document.createElement('style');
+            style.innerHTML = editor.getValue();
+            style.type = 'text/css';
+            document.getElementsByTagName('head')[0].appendChild(style);
+        } else {
             submit({ sql: 'array', dump: dump, show: show });
             //submit({ sql: 'array', dump: 'json', show:'table' });
             //submit({ sql: 'hash', dump: 'yaml' });
@@ -497,6 +502,7 @@ To do:
                 items: [
                     { text:'Perl', lang:'perl', checked: true, syntax:'perl', group:'repl-lang', checkHandler: change_lang },
                     { text:'JavaScript', lang:'javascript', syntax:'javascript', checked: true, group:'repl-lang', checkHandler: change_lang  },
+                    { text:'CSS', lang:'css', syntax:'css', checked: true, group:'repl-lang', checkHandler: change_lang  },
                     { text:'SQL', lang:'sql', syntax:'plsql', checked: true, group:'repl-lang', checkHandler: change_lang }
                 ]
     });

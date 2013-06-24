@@ -5,6 +5,7 @@ use 5.010;
 use Baseliner::Plug;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
+#:int_cau:
 
 sub index : Path {
     my ( $self, $c ) = @_;

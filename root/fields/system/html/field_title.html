@@ -22,9 +22,9 @@
     </tr>
     <tr >
         <td style="padding: 5 0 10 0; color: #999">
-            <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
+            <img  width=16 src="/user/avatar/<% $data->{modified_by} %>/image.png" />
             <% $data->{modified_by}%>, <small><%$data->{modified_on}%></small> &nbsp; | &nbsp;            
-            <% _loc('Created by')%> <img  width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
+            <% lc _loc('Created')%>: <img  width=16 src="/user/avatar/<% $data->{created_by} %>/image.png" />
             <% $data->{created_by}%>, <small><%$data->{created_on}%></small>    
 % my $id = Baseliner::Utils::_nowstamp();
 % if( _array( $data->{labels} ) ) {        

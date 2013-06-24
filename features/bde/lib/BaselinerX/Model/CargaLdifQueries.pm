@@ -3,6 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::DBI;
 use v5.10;
+#:int_asi:
 BEGIN { extends 'Catalyst::Model' }
 
 sub insert_new_users_to_public {

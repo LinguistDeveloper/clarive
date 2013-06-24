@@ -5,6 +5,7 @@ use 5.010;
 use BaselinerX::Comm::Balix;
 use Baseliner::Plug;
 BEGIN { extends 'Catalyst::Model' }
+#:int_cau:
 
 sub _harvest_incidents {
     my $self   = shift;

@@ -12,7 +12,7 @@
     var load_form = function(params){
         if( params.rec == undefined ) params.rec = {};            // master row record
         //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
-        var save = <% $save %>;
+        var can_save = <% $save %>;
         var mid = params.mid;
         var beforesubmit = [];
         var is_active = params.rec.active == undefined ? true : params.rec.active;
@@ -37,7 +37,7 @@
                             params.action = 'edit';
                             set_txt();
                             Baseliner.message(_('Success: %1', mid), a.result.msg );
-                            if( close_form ) form.destroy();
+                            if( close_form ) cardpanel.destroy();
                             activate_save();
                        },
                        failure: function(f,a){
@@ -87,28 +87,16 @@
             }
         };
 
-        Baseliner.CIDepends = Ext.extend( Ext.Panel, {
-            layout: 'fit', 
-            initComponent: function(){
-                //this.layoutConfig = { columns:2, rows:2 };
-                Baseliner.CIDepends.superclass.initComponent.call(this);
-                /*
-                this.ci_grid = new Ext.GridPanel({ 
-                    title: _('CIs'), region:'west', split: true,
-                    store: new Baseliner.CIStore({}), 
-                    columns: [
-                    ]
-                });
-                */
-                var to_mid = new Baseliner.CIGrid({ ci: { role:'CI' }, from_mid: mid });
-                this.add( to_mid );
-            }
-        });
         var depend_panel;
         var show_depends = function(){
             if( btn_depends.pressed ) {
                 if( ! depend_panel ) {
-                    depend_panel = new Baseliner.CIDepends({ data: params.rec });
+                    //depend_panel = new Baseliner.CIDepends({ data: params.rec });
+                    depend_panel = new Baseliner.CIGrid({ ci: { role:'CI' }, 
+                        from_mid: params.mid, 
+                        collection: params.collection,
+                        field: children,
+                        columns: ['mid','name','version','collection','rel_type'] });
                     cardpanel.add( depend_panel );
                     cardpanel.getLayout().setActiveItem( depend_panel );
                 } else {
@@ -132,7 +120,7 @@
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
             type: 'submit',
-            hidden: !save,
+            hidden: !can_save,
             handler: function() { 
                 btn_form_save.disable();
                 submit_form( false )
@@ -188,7 +176,8 @@
             txt_cont.update( _( txt, params.item, params.mid ) );
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
-        var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'], colspan: 1 });
+        var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1 });
+        var children = new Ext.form.Hidden({ name: 'children', value: params.rec.children });
         var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 80 };
         var form = new Ext.FormPanel({
             url:'/ci/update',
@@ -200,6 +189,7 @@
             bodyStyle:'padding: 10px 0px 0px 15px',
             items: [
                 txt_cont,
+                children,
                 { layout:'column', border: false, defaults:{ border: false}, items:[
                     { layout:'form', columnWidth : .65, defaults: { anchor: '96%' }, items:[
                         { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, height: 30, style:'font-size: 18px;' },
@@ -216,7 +206,7 @@
             ],
             listeners: {
                 'afterrender':function(){
-                    if ( !save ) {
+                    if( !can_save ) {
                         var mask = this.el.mask();
                         mask.setStyle( 'opacity', 0);
                         mask.setStyle( 'height', 5000 );
@@ -254,7 +244,26 @@
                 //form.getForm().loadRecord( params.rec );
             }
         });
-        form.on('destroy', function(){
+        var destroying=false;
+        var beforedestroy = function(){
+            bl_combo.originalValue = bl_combo.getValue();  // XXX multibox reports isDirty always
+            if( children.getValue() == '' ) children.originalValue = children.getValue();  // XXX always dirty
+            // deactivated save protection for now
+            if( false && !destroying && form.getForm().isDirty() ) {
+                Baseliner.confirm( _('You are about to lose your changes. Save now?'), function(){
+                    submit_form( false );
+                    destroying = true;
+                    //cardpanel.destroy();
+                }, function(){
+                    destroying = true;
+                    //cardpanel.destroy();
+                });
+                return false;
+            }
+        }
+        //cardpanel.on('beforedestroy', function(){ return beforedestroy() });
+        form.on('beforedestroy', function(){ return beforedestroy(); });
+        cardpanel.on('destroy', function(){
             // reload parent grid
             var grid_id = params._parent_grid;
             if( ! grid_id ) return;
@@ -296,11 +305,16 @@
                         tab_icon: rec.icon,
                         action: 'edit'
                 }, params );
-                Ext.each( rec.services, function(service) {
-                    menu_services.menu.add({ text: service.name, key: service.key, icon: service.icon, handler:function(){
-                        Baseliner.run_service( { mid: rec.mid, classname: rec.classname }, service );
-                    }});
-                });
+                if( rec.services == undefined || rec.services.length < 1 ) {
+                    menu_services.disable();
+                    menu_services.setText( _('No Services') );
+                } else {
+                    Ext.each( rec.services, function(service) {
+                        menu_services.menu.add({ text: service.name, key: service.key, icon: service.icon, handler:function(){
+                            Baseliner.run_service( { mid: rec.mid, classname: rec.classname }, service );
+                        }});
+                    });
+                }
                 var f = load_form( c );
                 //f.on('afterrender', function(){ f.body.setStyle({ overflow: 'hidden' }); });
                 cardpanel.add( f );
