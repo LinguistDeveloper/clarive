@@ -1573,11 +1573,16 @@ sub set_projects {
     my $topic_mid = $rs_topic->mid;
     
     my @new_projects = _array( $projects ) ;
-    my @old_projects = map {$_->{to_mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
+
+    #my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
+    my @old_projects =  Baseliner->model('Baseliner::BaliTopic')->find(  33652 )->
+                projects->search( {rel_field => 'Proyectos'}, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
+
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
         my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project', rel_field => $id_field})->delete;
+        
         # projects
         if (@new_projects){
             my @name_projects;
