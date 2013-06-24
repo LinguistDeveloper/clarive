@@ -242,6 +242,8 @@ sub topics_for_user {
         description
         text
         progress
+        modified_on
+        modified_by        
         /
     });
 
@@ -696,6 +698,14 @@ sub get_system_fields {
             params   => { name_field => 'Created On', bd_field => 'created_on', origin => 'default' }
         },
         {
+            id_field => 'modified_by',
+            params   => { name_field => 'Modified By', bd_field => 'modified_by', origin => 'default' }
+        },
+        {
+            id_field => 'modified_on',
+            params   => { name_field => 'Modified On', bd_field => 'modified_on', origin => 'default' }
+        },        
+        {
             id_field => 'labels',
             params   => {
                 name_field       => 'Labels',
@@ -932,13 +942,13 @@ sub get_data {
         #my $rs = Baseliner->model('Baseliner::BaliTopic')->search({ mid => $topic_mid },{ select=>\@std_fields });
         
         my @select_fields = ('title', 'id_category', 'categories.name', 'categories.color',
-                             'id_category_status', 'status.name', 'created_by', 'created_on',
+                             'id_category_status', 'status.name', 'created_by', 'created_on', 'modified_by', 'modified_on',
                              'id_priority','priorities.name', 'deadline_min', 'description','progress', 'status.type', 'master.moniker' );
         my @as_fields = ('title', 'id_category', 'name_category', 'color_category', 'id_category_status', 'name_status',
-                         'created_by', 'created_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress','type_status', 'moniker' );
+                         'created_by', 'created_on', 'modified_by', 'modified_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress','type_status', 'moniker' );
         
         my $rs = Baseliner->model('Baseliner::BaliTopic')
-                ->search({ mid => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
+                ->search({ 'me.mid' => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
         my $row = $rs->first;
         
         $data = { topic_mid => $topic_mid, $row->get_columns };
@@ -946,6 +956,7 @@ sub get_data {
 
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
+        $data->{modified_on} = $row->modified_on->dmy . ' ' . $row->modified_on->hms;
         #$data->{deadline} = $row->deadline_min ? $row->created_on->clone->add( minutes => $row->deadline_min ):_loc('unassigned');
         $data->{deadline} = _loc('unassigned');
         
@@ -1729,7 +1740,7 @@ sub search_query {
             map { $r->{$_} }
             qw/created_on category_name projects 
                 assignee file_name category_status_name created_by 
-                labels /;
+                labels modified_on modified_by/;
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
         my $info = join(', ',@text);

@@ -156,7 +156,9 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'num_file' },
                 {  name: 'assignee' },
                 {  name: 'moniker' },
-                {  name: 'sw_edit'}
+                {  name: 'sw_edit'},
+                {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
+                {  name: 'modified_by' },                
             ]
         },config);
         Baseliner.Topic.StoreList.superclass.constructor.call(this, config);

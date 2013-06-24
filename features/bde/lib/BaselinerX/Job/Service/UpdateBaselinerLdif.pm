@@ -9,6 +9,7 @@ use Baseliner::Sugar;
 use Class::Date qw/date now/;
 use Try::Tiny;
 use utf8;
+#:int_asi:
 
 with 'Baseliner::Role::Service';
 

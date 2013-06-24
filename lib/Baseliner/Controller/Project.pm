@@ -205,50 +205,56 @@ sub ObtenerNodosPrincipalesPrimerNivel(){
     my $dbh = $db->dbh;
     my $SQL;
     if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-    $SQL = 'SELECT * FROM (SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
-                   FROM BALI_PROJECT B
-                   WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
-                     AND B.MID NOT IN (SELECT DISTINCT A.ID_PARENT
-                              FROM BALI_PROJECT A
-                              WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
-                   UNION ALL
-                   SELECT E.MID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION, E.ID_PARENT
-                   FROM BALI_PROJECT E
-                   WHERE E.MID IN (SELECT DISTINCT D.MID 
-                          FROM BALI_PROJECT D,  
-                          BALI_PROJECT C
-                          WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
-                            D.MID = C.ID_PARENT)) RESULT, 
-            (SELECT FILA, NIVEL, F.MID, F.NAME, A.NAME AS NAME_PARENT FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, MID, ID_PARENT, NAME FROM BALI_PROJECT A START WITH ID_PARENT IS NULL CONNECT BY PRIOR MID = ID_PARENT) F LEFT JOIN BALI_PROJECT A ON A.MID = F.ID_PARENT) RESULT1
-             WHERE RESULT.MID = RESULT1.MID
-        ORDER BY FILA ASC';
+        $SQL = q{SELECT * FROM (SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+                       FROM BALI_PROJECT B
+                       WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
+                         AND B.MID NOT IN (SELECT DISTINCT A.ID_PARENT
+                                  FROM BALI_PROJECT A
+                                  WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+                       UNION ALL
+                       SELECT E.MID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION, E.ID_PARENT
+                       FROM BALI_PROJECT E
+                       WHERE E.MID IN (SELECT DISTINCT D.MID 
+                              FROM BALI_PROJECT D,  
+                              BALI_PROJECT C
+                              WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
+                                D.MID = C.ID_PARENT)) RESULT, 
+                (SELECT FILA, NIVEL, F.MID, F.NAME, A.NAME AS NAME_PARENT FROM (SELECT ROWNUM AS FILA, LEVEL AS NIVEL, MID, ID_PARENT, NAME FROM BALI_PROJECT A START WITH ID_PARENT IS NULL CONNECT BY PRIOR MID = ID_PARENT) F LEFT JOIN BALI_PROJECT A ON A.MID = F.ID_PARENT) RESULT1
+                 WHERE RESULT.MID = RESULT1.MID
+            ORDER BY FILA ASC};
     }
-    else{
-    ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
-    $SQL = 'WITH N(LEVEL, MID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
-        (SELECT 1 AS LEVEL, MID, ID_PARENT, NAME, DESCRIPTION, NATURE
-        FROM BALI_PROJECT
-        WHERE ID_PARENT IS NULL AND ACTIVE = 1
-        UNION ALL
-        SELECT LEVEL + 1, NPLUS1.MID, NPLUS1.ID_PARENT, NPLUS1.NAME, NPLUS1.DESCRIPTION, NPLUS1.NATURE
-        FROM BALI_PROJECT AS NPLUS1, N
-        WHERE N.MID = NPLUS1.ID_PARENT AND NPLUS1.ACTIVE = 1)
-        SELECT W.LEAF, ROW_NUMBER() OVER(ORDER BY N.MID ASC) AS FILA, LEVEL AS NIVEL, N.MID, N.NAME, Z.NAME AS NAME_PARENT,
-            N.DESCRIPTION, N.NATURE FROM N LEFT JOIN BALI_PROJECT Z ON Z.MID = N.ID_PARENT,
-        (SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
-                   FROM BALI_PROJECT B
-                   WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
-                     AND B.MID NOT IN (SELECT DISTINCT A.ID_PARENT
-                              FROM BALI_PROJECT A
-                              WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
-                   UNION ALL
-                   SELECT E.MID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION, E.ID_PARENT
-                   FROM BALI_PROJECT E
-                   WHERE E.MID IN (SELECT DISTINCT D.MID 
-                          FROM BALI_PROJECT D,  
-                          BALI_PROJECT C
-                          WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
-                            D.MID = C.ID_PARENT)) W WHERE N.MID = W.MID ORDER BY FILA ASC ';
+    elsif( $dbh->{Driver}->{Name} eq 'SQLite' ) {
+        $SQL = q{SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+                       FROM BALI_PROJECT B
+                       WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
+            ORDER BY MID ASC};
+
+    } else{
+        ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER #######################################################################
+        $SQL = q{WITH N(LEVEL, MID, ID_PARENT, NAME, DESCRIPTION, NATURE) AS
+            (SELECT 1 AS LEVEL, MID, ID_PARENT, NAME, DESCRIPTION, NATURE
+            FROM BALI_PROJECT
+            WHERE ID_PARENT IS NULL AND ACTIVE = 1
+            UNION ALL
+            SELECT LEVEL + 1, NPLUS1.MID, NPLUS1.ID_PARENT, NPLUS1.NAME, NPLUS1.DESCRIPTION, NPLUS1.NATURE
+            FROM BALI_PROJECT AS NPLUS1, N
+            WHERE N.MID = NPLUS1.ID_PARENT AND NPLUS1.ACTIVE = 1)
+            SELECT W.LEAF, ROW_NUMBER() OVER(ORDER BY N.MID ASC) AS FILA, LEVEL AS NIVEL, N.MID, N.NAME, Z.NAME AS NAME_PARENT,
+                N.DESCRIPTION, N.NATURE FROM N LEFT JOIN BALI_PROJECT Z ON Z.MID = N.ID_PARENT,
+            (SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION, B.ID_PARENT
+                       FROM BALI_PROJECT B
+                       WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
+                         AND B.MID NOT IN (SELECT DISTINCT A.ID_PARENT
+                                  FROM BALI_PROJECT A
+                                  WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
+                       UNION ALL
+                       SELECT E.MID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION, E.ID_PARENT
+                       FROM BALI_PROJECT E
+                       WHERE E.MID IN (SELECT DISTINCT D.MID 
+                              FROM BALI_PROJECT D,  
+                              BALI_PROJECT C
+                              WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
+                                D.MID = C.ID_PARENT)) W WHERE N.MID = W.MID ORDER BY FILA ASC };
     }
 
     my @datas = $db->array_hash( $SQL );
@@ -505,43 +511,53 @@ returns the user project json
 sub user_projects : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'name';
-    $dir ||= 'asc';
-    $limit ||= 100;
-    $query and $query = qr/$query/i;
-    my @rows;
+    my $level = $p->{level};
+    #my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    #$sort ||= 'name';
+    #$dir ||= 'asc';
+    #$limit ||= 100;
+    #$query and $query = qr/$query/i;
+    #my @rows;
     my $username = $c->username;
-    my $perm = $c->model('Permissions');
+    #my $perm = $c->model('Permissions');
+    #if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
+        #$where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
+        # username can view jobs where the user has access to view the jobcontents corresponding app
+        # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
+    #}
     #@rows =  $perm->user_namespaces( $username ); # user apps
-
-    my $where = {};
-    #$where->{username} = $c->username unless $c->is_root;
-    #my $rs_ns = Baseliner->model('Baseliner::BaliRoleuser')->search( $where, { select=>'ns', distinct=>1 } )->as_query;
     #@rows = grep { $_ ne '/' } @rows unless $c->is_root || $p->{include_root};
+    #_error \@rows;
     #@rows = grep { $_ =~ $query } @rows if $query;
-
-    # my $rs = $c->model('Baseliner::BaliProject')->search({ -or=>[ ns=>{ -in=>$rs_ns }, ns=>'/' ] })->hashref;
+   
+    my $query = $c->model( 'Permissions' )->user_projects_query(
+        username => $username
+    );
     
-    #$where->{id} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}] 
-        #unless $c->is_root;
-    my $from = { distinct=>1, select=>[qw(mid name ns nature active)]  };
-    if( $c->is_root || $p->{include_root} ) {
-        #push @{ $where->{id} }, { "=", undef };
-    } else {
-        $from->{join} = 'roleuser';
-    }
-    my $rs = $c->model('Baseliner::BaliProject')->search($where, $from)->hashref;
-    my @ret;
-    for( $rs->all ) {
-        next if $query && $_->{ns} !~ $query;
+    #my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $query } });
+    my $rs = DB->BaliProjectTree->search({ id => { -in => $query } });
+    rs_hashref($rs);
+    #_debug [ $rs->all ];
+    my @rows = map {
+        my ($name, $sp_name, $spn_name);
+        my $project_name = $_->{project_name};
+        $name = $project_name; 
+        $sp_name = $_->{sp_name};
+        if($sp_name){
+            $name .= '/' . $sp_name;
+            if($spn_name){
+                $spn_name =  $spn_name;
+                $name .= '/' . $spn_name;
+            }
+        }
+        
         $_->{data}=_load($_->{data});
-        #$_->{ns} = 'project/' . $_->{mid};
-        $_->{description} //= $_->{name} // '';
-        push @ret, $_;
-    }
-
-    $c->stash->{json} = { data => \@ret, totalCount=>scalar(@ret) };		
+        $_->{ns} = 'project/' . $_->{mid};
+        $_->{name} = $name;
+        $_} $rs->all;
+    # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
+    _debug \@rows;
+    $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };      
     $c->forward('View::JSON');
 }
 

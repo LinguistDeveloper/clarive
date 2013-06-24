@@ -18,6 +18,10 @@ has _lines => qw(is rw isa ArrayRef lazy 1), default=>sub{
 
 sub ci_form { '/ci/item.js' }
 
+service 'view_source' => 'View Source' => sub {
+    my ($self) = @_;
+    $self->source;
+};
 sub slurp {
     my ($self)=@_;
     return unless ! $self->is_dir;

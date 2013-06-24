@@ -918,6 +918,7 @@ sub notify_error {
 Notifies a custom error for all the users that can be notified about ldif errors.
 
 =cut
+#:int_asi:
 sub notify_ldif_error {
   my ($error_msg) = @_;
   my @users    = users_with_permission 'action.bde.receive.ldif_errors';

@@ -6,7 +6,7 @@
     $show_dashboard => $c->config->{site}{show_dashboard} // 1
     $show_menu => $c->config->{site}{show_menu} // 1
     $show_lifecycle => $c->config->{site}{show_lifecycle} // 1
-    $show_js_reload => 0
+    $show_js_reload => $c->config->{site}{show_js_reload} // 0
     $show_tabs => $c->config->{site}{show_tabs} // 1
     $banner => $c->config->{site}{banner}
 </%args>
@@ -18,7 +18,7 @@
         $show_menu  = 0;
         $show_main  = 0;
     }
-    $show_lifecycle = $c->stash->{'can_lifecycle'};
+    $show_lifecycle = $show_lifecycle && $c->stash->{'can_lifecycle'};
     $show_menu and $show_menu = $c->stash->{'can_menu'};
 </%perl>
 
@@ -88,7 +88,7 @@ Ext.onReady(function(){
             search_box,
 % }
             Baseliner.help_button,
-% if( $show_js_reload ) {
+% if( $show_js_reload && $c->debug ) {
             '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload()" onmouseover="this.style.cursor=\'pointer\'" />',
 % }
 % if( $show_calendar ) {

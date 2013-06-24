@@ -1,5 +1,10 @@
+<%args>
+    $save
+</%args>
+
 (function(params){
     delete params['tab_index'];  // this comes from the tab data
+    var can_save = <% $save %>;
     var ps = 30;
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
@@ -154,7 +159,7 @@
             } else {
                 Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format }, function(res) {
                     if( res.success ) {
-                        var win = new Ext.Window({ height: 400, width: 800, items: { xtype:'textarea', value: res.data }, layout:'fit', maximizable: true });       
+                        var win = new Ext.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.data }), layout:'fit', maximizable: true });       
                         win.show();
                     } else {
                         Baseliner.error( _('CI'), res.msg );
@@ -164,6 +169,11 @@
         } else {
             Baseliner.message( _('Error'), _('Select rows first') );
         }
+    };
+    
+
+    var ci_import = function(format, mode){
+        new Baseliner.ImportWindow({ url:'/ci/import' }).show();
     };
 
     /*  Renderers */
@@ -201,7 +211,7 @@
         var ret = '<table><tr><td width="1">';
         ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
         //ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'text-decoration: line-through;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
-        ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'color: #444;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        ret += '</td><td><b><a href="#" onclick="'+ed+'; return false" style="'+(active?'':'color: #444;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -249,6 +259,18 @@
         sortable: false,
         checkOnly: true
     });
+    check_sm.on('selectionchange', function(){
+        if ( can_save ) {        
+            if ( check_sm.hasSelection() ) {
+                btn_delete.enable();
+                btn_create.enable();
+            } else {
+                btn_delete.disable();
+                btn_create.disable();
+
+            }
+        }
+    });
 
     var id_auto = Ext.id();
     
@@ -283,6 +305,20 @@
             displayMsg: _('Rows {0} - {1} of {2}'),
             emptyMsg: _('There are no rows available')
         });
+//{ xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
+    var btn_create = new Baseliner.Grid.Buttons.Add({
+        disabled: false,
+        handler: ci_add,
+        hidden: !can_save
+    })
+
+//{ xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
+    var btn_delete = new Baseliner.Grid.Buttons.Delete({
+        disabled: true,
+        handler: ci_delete,
+        hidden: !can_save
+    })
+
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
@@ -302,18 +338,21 @@
         tbar: [ 
             //{ xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
             search_field,
-            { xtype:'button', text: _('Create'), icon: '/static/images/icons/add.gif', cls: 'x-btn-text-icon', handler: ci_add },
-            { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', handler: ci_delete },
-            { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
+            btn_create,
+            btn_delete,
+            //{ xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },
-            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-text-icon', 
+            { xtype:'button', text: _('Export'), icon: '/static/images/icons/export.png', cls: 'x-btn-text-icon', 
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },
                     { text:_('JSON'), icon: '/static/images/icons/json.png', handler:function(){ ci_export('json') } },
                     { text:_('HTML'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'shallow') } },
                     { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } }
                 ]
+            },
+            { xtype:'button', text: _('Import YAML'), icon: '/static/images/icons/import.png', cls: 'x-btn-text-icon', 
+                handler:function(){ ci_import('yaml') }
             }
         ],
         viewConfig: {
@@ -360,6 +399,8 @@
         ci_edit( grid.getStore(), grid.getStore().getAt(rowIndex).data );
     });
 
+    ci_grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+    });
     // Explorer tree node listener on click
     /*  TODO needs to setTimeout on dblclick
     var click_foo = function(n, ev){ 

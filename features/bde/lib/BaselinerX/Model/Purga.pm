@@ -7,6 +7,7 @@ use v5.10;
 use strict;
 use warnings;
 use Try::Tiny;
+#:tip_purg:
 BEGIN { extends 'Catalyst::Model' }
 
 sub purga_consola {

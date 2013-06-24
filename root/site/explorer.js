@@ -71,10 +71,13 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
                 }});
             } else if( ! obj.success )  {
                 Baseliner.error( _('Error'), res.responseText );
+            } else if( res.status == 0 ) {
+                alert( _('Server not available') );  // an alert does not ask for images from the server
             } else {
                 // may be a programming error in the js side (treeloader event?), no message to show
                 Baseliner.error( _('Unknown Error'), _('Contact your administrator') );
             }
+
             self.baseParams = self.$baseParams;  
             self.dataUrl = self.$dataUrl;  
         });
