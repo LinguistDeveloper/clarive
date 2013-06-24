@@ -239,6 +239,7 @@ Ext.onReady(function(){
             tabpanel.changeTabIcon( first_comp, icon_home );
     }
 
+
 % if( $show_portal eq '1' ) {
 %   for my $portlet ( _array $c->stash->{portlets} ) {
 %       if( my $pcomp = $portlet->url_comp ) {
@@ -280,7 +281,9 @@ Ext.onReady(function(){
     tabpanel.header.setVisibilityMode(Ext.Element.DISPLAY);
     tabpanel.header.hide();
 % }
-       
+% if( $show_tabs && $show_lifecycle ) {
+     Baseliner.explorer.collapse();
+% }     
     // global key captures
     /* 
     window.history.forward(1);
