@@ -155,6 +155,10 @@ register 'registor.action.topic_category_fields' => {
             my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
             my @statuses = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')
                 ->search({id_category => $category->{id}}, {join=>'status', 'select'=>'status.name', 'as'=>'name'})->hashref->all;
+            my $msg_edit = _loc('Can not edit the field');
+            my $msg_view = _loc('Can not view the field');
+            my $msg_in_category = _loc('in the category');
+            my $msg_for_status = _loc('for the status');                
             for my $field (_array $meta){
                 if ($field->{fields}) {
                 	my @fields_form = _array $field->{fields};
@@ -163,27 +167,28 @@ register 'registor.action.topic_category_fields' => {
                         for my $status (@statuses){
                             my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
                                     . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.write';
-                            my $description = _loc('Can not edit the field') . ' ' . lc $field_form->{id_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                            my $description = $msg_edit . ' ' . lc $field_form->{id_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                             
                             $actions_category_fields{$id_action} = { name => $id_action, description => $description };
                             
                             $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
                                     . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.read';
-                            $description = _loc('Can not view the field') . ' ' . lc $field_form->{id_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                            $description = $msg_view . ' ' . lc $field_form->{id_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                             
                             $actions_category_fields{$id_action} = { name => $id_action, description => $description };
                         }                    
                     }
                 }
                 else{
+
                     for my $status (@statuses){
                         my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.write';
-                        my $description = _loc('Can not edit the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                        my $description = $msg_edit . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                         
                         $actions_category_fields{$id_action} = { name => $id_action, description => $description };
                         
                         $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
-                        $description = _loc('Can not view the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                        $description = $msg_view . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                         
                         $actions_category_fields{$id_action} = { name => $id_action, description => $description };
                     }
