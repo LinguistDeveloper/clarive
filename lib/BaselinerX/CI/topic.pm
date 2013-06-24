@@ -30,7 +30,7 @@ around table_update_or_create => sub {
     my ( $orig, $self, $rs, $mid, $data, @rest ) = @_;
     my $name = delete $data->{name};
     $data->{title} //= $name; 
-    $data->{created_by} = 'internal';
+    $data->{created_by} //= 'internal';
     delete $data->{active};
     delete $data->{versionid};
     delete $data->{moniker};
