@@ -564,6 +564,7 @@ $('a').click(function(event) {
                     var id = tab.getId();
                     Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params };
                     if( params.callback != undefined ) params.callback();
+                    try { Baseliner.explorer.collapse(); } catch(e) {}
                 } else {
                     Ext.getCmp('main-panel').remove( newpanel );
                     if( res.status == 401 ) {
@@ -801,6 +802,7 @@ $('a').click(function(event) {
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
             var id = Baseliner.addNewTabItem( comp, ptitle, params );
             Baseliner.tabInfo[id] = { url: comp_url, title: ptitle, params: params, type: 'comp' };
+            try { Baseliner.explorer.collapse(); } catch(e) {}
         });
     };
 
