@@ -961,8 +961,9 @@ sub grid : Local {
     my $p = $c->req->params;
 
     my $has_permission;
+   
     if ( $p->{collection} ) {
-        $has_permission = Baseliner->model('Permissions')->user_has_action( action => 'action.ci.admin.'. $p->{collection}, username => $c->username );
+        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $p->{collection}, username => $c->username );
     } else {
         $has_permission = 0;
     }
