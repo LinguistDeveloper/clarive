@@ -9,6 +9,7 @@ sub has_description { 0 }
 
 around table_update_or_create => sub {
     my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
+    delete $data->{versionid};
     $data->{username} = delete $data->{name};
     $self->$orig( $rs, $mid, $data, @rest );
 };
