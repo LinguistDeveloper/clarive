@@ -260,7 +260,8 @@ Ext.onReady(function(){
         tab_params = Ext.urlDecode(getParams[1]);
     }
 
-% foreach my $tab ( @{ $c->stash->{tab_list} || [] } ) {
+% my @tab_list = @{ $c->stash->{tab_list} || [] };
+% foreach my $tab ( @tab_list ) {
     // This is used by /tab and /raw in raw_mode
 %    if( $tab->{type} eq 'page' ) {
         Baseliner.addNewTab('<% $tab->{url} %>', undefined, tab_params );
