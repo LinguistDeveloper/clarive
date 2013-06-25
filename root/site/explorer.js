@@ -515,11 +515,15 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             self.getLayout().setActiveItem( self.$tree_ci );
         };
 
-        var toggle_stick = function() {
-            if( self.fixed == 0 ) {
-                self.fixed = 1;
-            } else {
-                self.fixed = 0;
+        var toggle_stick = function( button, e) {
+            if ( button_stick.enableToggle ) {
+                if( self.fixed == 0 ) {
+                    self.fixed = 1;
+                    button_collapse.hide();
+                } else {
+                    self.fixed = 0;
+                    button_collapse.show();
+                }
             }
         };
 
@@ -615,6 +619,18 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             // ]
         });
 
+        var button_collapse = new Ext.Component({
+            cls: 'x-tool x-tool-expand-east', 
+            style: 'margin: -2px 0px 0px 0px',
+            //hidden; true,
+            listeners: {
+                'afterrender': function(d){
+                    d.el.on('click', function(){
+                        self.collapse();
+                    });
+                }
+            }
+        });
 
         var button_stick = new Ext.Button({
             cls: 'x-btn-icon',
@@ -625,6 +641,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             allowDepress: true,
             enableToggle: true
         });
+
 
         self.tbar = new Ext.Toolbar({
             items: [
@@ -641,24 +658,17 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_ci,
                 '->',
                 button_menu,
-                new Ext.Component({
-                    cls: 'x-tool x-tool-expand-east', 
-                    style: 'margin: -2px 0px 0px 0px',
-                    listeners: {
-                        'afterrender': function(d){
-                            d.el.on('click', function(){
-                                self.collapse();
-                            });
-                        }
-                    }
-                }),
+                button_collapse,
                 ' ',
                 button_stick
             ]
         });
 
+
         Baseliner.Explorer.superclass.initComponent.call(this);
-        self.on('afterrender', function(){ show_favorites() });
+        self.on('afterrender', function(){ show_favorites(); button_collapse.hide(); });
+        self.on('beforeexpand', function() { button_stick.show();})
+        self.on('beforecollapse', function() { button_stick.hide();})
     },
     current_tree : function(){
         return this.getLayout().activeItem;
