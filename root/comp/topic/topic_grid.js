@@ -1056,27 +1056,31 @@
         // now merge baseparams (query, limit and start) over the resulting filters
         var filter_final = Baseliner.merge( merge_filters, base_params );
         // query and unselected
-        if( unselected_node != undefined ) {
-            var unselected_type = unselected_node.parentNode.attributes.id;
-            var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
-            if( unselected_type == 'V' ) {
-                if( bp.query == unselected_filter.query ) {
-                    filter_final.query = '';
-                } else {
-                    filter_final.query = bp.query.replace( unselected_filter.query, '' );
+		
+		
+        //if( unselected_node != undefined ) {
+        //    var unselected_type = unselected_node.parentNode.attributes.id;
+        //    var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
+        //    if( unselected_type == 'V' ) {
+        //        if( bp.query == unselected_filter.query ) {
+        //            filter_final.query = '';
+        //        } else {
+        //            filter_final.query = bp.query.replace( unselected_filter.query, '' );
+					filter_final.query = bp.query;
                     filter_final.query = filter_final.query.replace( /^ +/, '' );
                     filter_final.query = filter_final.query.replace( / +$/, '' );
-                }
-            }
-        }
-        else if( selected_views.query != undefined  && bp.query != undefined ) {
-            //filter_final.query = bp.query + ' ' + selected_views.query;
-        }
+        //        }
+        //    }
+        //}
+        //else if( selected_views.query != undefined  && bp.query != undefined ) {
+        //    //filter_final.query = bp.query + ' ' + selected_views.query;
+        //}
 
         //alert('curr ' + Ext.util.JSON.encode(filter_final));
         //if( base_params.query !== filter_final.query ) {
             //delete filter_final['query'];    
         //}
+		//console.dir(filter_final);
         store_topics.baseParams = filter_final;
         search_field.setValue( filter_final.query );
         store_topics.load();
