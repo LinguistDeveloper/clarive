@@ -162,7 +162,6 @@
 
         if(rec){
             var ff = form_status.getForm();
-            //console.log( rec );
             ff.loadRecord( rec );
             ff.findField('bind_releases').setValue(rec.data.bind_releases);
             ff.findField('ci_update').setValue(rec.data.ci_update);
@@ -385,25 +384,43 @@
             fieldLabel: _('Description'),
             emptyText: _('A brief description of the category')
         });     
-        
+        var category_name_field = new Ext.form.TextField({ 
+            name:'name', fieldLabel:_('Category'),
+            allowBlank:false, emptyText:_('Name of category'),
+            regex: /^[^\.]+$/,
+            regexText: _('Character dot not allowed')
+        });
         //   Color settings 
         var category_color = new Ext.form.Hidden({ name:'category_color' });
         category_color.setValue(rec ? rec.data.color : '');
+        var color = rec ? rec.data.color : '';
 
         var color_pick = new Ext.ColorPalette({ 
-            value: rec ? rec.data.color : '',
-            listeners: {
-                select: function(cp, color){
-                   category_color.setRawValue( '#' + color.toLowerCase() ); 
-                }
-            },
+            value: color, 
             colors: [
-                'FF43B8', '30BED0', 'A01515', 'A83030', '003366', '000080', '333399', '333333',
+                '8E44AD', '30BED0', 'A01515', 'A83030', '003366', '000080', '333399', '333333',
                 '800000', 'FF6600', '808000', '008000', '008080', '0000FF', '666699', '808080',
                 'FF0000', 'FF9900', '99CC00', '339966', '33CCCC', '3366FF', '800080', '969696',
-                'FF00FF', 'FFCC00', 'FFFF00', '00ACFF', '20BCFF', '00CCFF', '993366', 'C0C0C0',
-                'FF99CC', 'DDAA55', 'BBBB77', '88CC88', 'CCFFFF', '99CCFF', 'CC99FF', '11B411'
+                'FF00FF', 'FFCC00', 'F1C40F', '00ACFF', '20BCFF', '00CCFF', '993366', 'C0C0C0',
+                'FF99CC', 'DDAA55', 'BBBB77', '88CC88', 'D35400', '99CCFF', 'CC99FF', '11B411',
+                '1ABC9C', '16A085', '2ECC71', '27AE60', '3498DB', '2980B9', 'E74C3C', 'C0392B'
             ]
+        });
+        color_pick.on('select', function(pal,color){
+            var cl = '#' + color.toLowerCase();
+            category_color.setRawValue( cl ); 
+            color_button.setText( color_btn_gen(cl) );
+        });
+        
+        var color_btn_gen = function(color){
+            return String.format('<div id="boot" style="margin-top: -3px; background: transparent"><span class="label" style="background: {0}">{1}</span></div>', 
+                color, category_name_field.getValue() || ( rec ? rec.data.name : _('Sample') ) );
+        };
+        var color_button = new Ext.Button({ 
+            text: color_btn_gen( color ), 
+            fieldLabel: _('Pick a Color'),
+            height: 30,
+            menu: { items: [color_pick] }
         });
         
         // Main Edit for Categories
@@ -415,11 +432,7 @@
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
                 category_color,
-                { xtype:'textfield', name:'name', fieldLabel:_('Category'),
-                  allowBlank:false, emptyText:_('Name of category'),
-                  regex: /^[^\.]+$/,
-                  regexText: _('Character dot not allowed')
-                },
+                category_name_field,
                 ta,
                 {
                     xtype: 'radiogroup',
@@ -431,8 +444,8 @@
                         {boxLabel: _('Changeset'), inputValue: 'C'},
                         {boxLabel: _('Release'), inputValue: 'R'}
                     ]
-                }
-                ,{ xtype:'button', text:'Select Color', menu:{ items: color_pick } },
+                },
+                color_button,
                 { xtype: 'panel', style: { 'margin-top': '20px' }, layout: 'form', items: [ combo_providers ] },
                 { xtype:'checkboxgroup', name:'readonly', fieldLabel:_('Options'),
                     items:[
@@ -1053,7 +1066,7 @@
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
                 { xtype: 'container', style: { padding: '10px' },
-                        html: String.format( '<span id="boot"><span class="badge" style="background-color: {0}">{1}</span></span>',
+                        html: String.format( '<span id="boot"><span class="label" style="background-color: {0}">{1}</span></span>',
                                                                 rec.data.color, rec.data.name ) },
                 {
                     // column layout with 2 columns
@@ -1143,7 +1156,6 @@
             s.each( function(row){
                 if( row.data.id == id ) {
                     var data = row.data.params;
-                    //console.log(data);
                     var parent_id;
                     switch (data.origin){
                         case 'system':  parent_id = 'S';
@@ -1283,7 +1295,6 @@
                                 root: 'data' , 
                                 remoteSort: true,
                                 totalProperty:"totalCount", 
-                                id: 'id', 
                                 url: '/topicadmin/list_filters',
                                 fields: [
                                     {  name: 'name' },
@@ -1350,19 +1361,16 @@
                                             
                                             var d = { id: id, id_field: id_field, name: name_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
                                         }else{
-                                            //console.log(attr);
                                             //attr.params.id_field = id_field;
                                             //attr.params.name_field = name_field;
                                             //attr.params.bd_field = id_field;
                                             //attr.params.origin = 'custom';
                                             var objTemp = attr.params;
                                             objTemp = Ext.util.JSON.decode( Ext.util.JSON.encode( objTemp ) );
-                                            //console.log(objTemp);
                                             objTemp.id_field = id_field;
                                             objTemp.name_field = name_field;
                                             objTemp.bd_field = id_field;
                                             objTemp.origin = 'custom';
-                                            //console.log(attr);
                                             
                                             var d = { id: id, id_field: id_field, name: name_field, params: objTemp, img: '/static/images/icons/icon_wand.gif' };
                                         }
@@ -1499,8 +1507,6 @@
         
         category_fields_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var sel = grid.getStore().getAt(rowIndex);
-            //console.log(sel.data.params);
-            //console.log(sel.data.meta);
             var tree = new Baseliner.DataEditor({
                 data: sel.data.params,
                 metadata: sel.data.meta
@@ -1510,7 +1516,6 @@
             var w = new Baseliner.Window({ layout:'fit',width:600, height:450, items: tree });
             w.show();
             tree.on('destroy', function(){
-               //console.log( tree.data );
                sel.data.params = tree.data;
                w.close();
             });
@@ -1808,7 +1813,7 @@
     
     var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
         var color = rec.data.color;
-        var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+        var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
         return ret;
     };
 
@@ -2008,7 +2013,7 @@
 
     var color_lbl = '000000';
     var color_label = new Ext.form.TextField({
-        id:'color_label_<%$id%>',
+        //id:'color_label_<%$id%>',
         width: 25,
         readOnly: true,
         style:'background:#' + color_lbl
@@ -2016,7 +2021,8 @@
     
     var colorMenu = new Ext.menu.ColorMenu({
         handler: function(cm, color) {
-            eval("Ext.get('color_label_<%$id%>').setStyle('background','#" + color + "')");
+            color_label.el.setStyle('background','#' + color );
+            //eval("Ext.get('color_label_<%$id%>').setStyle('background','#" + color + "')");
             color_lbl = color ;
         }
     });
@@ -2143,7 +2149,6 @@
                     }
                 });             
                 
-                //console.log( projects_checked );
                 projects_box.setValue( projects_checked );
                 w.close();
             });         

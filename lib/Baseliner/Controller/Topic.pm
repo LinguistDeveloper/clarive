@@ -134,6 +134,18 @@ sub related : Local {
     my $mid = $p->{mid};
     my $show_release = $p->{show_release} // '0';
     my $where = {};
+    my $query = $p->{query};
+    length($query) and $where = query_sql_build( query=>$query, fields=>{
+        map { $_ => "me.$_" } qw/
+        mid 
+        title
+        created_on
+        created_by
+        modified_on
+        modified_by        
+        /
+    });
+
     if ($p->{mids}){
          my @mids = _array $p->{mids};
          $where->{mid} = \@mids;
@@ -202,8 +214,7 @@ sub related : Local {
         
         }        
     }
-    my $rs_topic = $c->model('Baseliner::BaliTopic')->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
-    rs_hashref( $rs_topic );
+    my $rs_topic = DB->BaliTopic->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] })->hashref;
     my @topics = map {
         $_->{name} = $_->{categories}{is_release} eq '1' 
             ?  $_->{title}

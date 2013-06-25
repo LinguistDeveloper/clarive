@@ -2322,6 +2322,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     hideHeaders: false,
     disabled: false,
     enableDragDrop: true, // enable drag and drop of grid rows
+    readOnly: false,
     constructor: function(c){
         //var dragger = new Baseliner.RowDragger({});
         self.sm = new Baseliner.CheckboxSelectionModel({
@@ -2417,7 +2418,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
             tbar_items.push( self.field );
         }
-        self.tbar = new Ext.Toolbar({ items: tbar_items });
+        self.tbar = new Ext.Toolbar({ hidden: self.readOnly, items: tbar_items });
         self.on('rowclick', function(grid, rowIndex, e) {
             btn_delete.enable();
         });		
