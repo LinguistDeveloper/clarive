@@ -50,4 +50,11 @@ __PACKAGE__->belongs_to(
   { "id_status_from" => 'id' },
 );
 
+__PACKAGE__->has_many(
+  "categories_status",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus",
+  { 'foreign.id_status' => "self.id" },
+ 
+);
+
 1;

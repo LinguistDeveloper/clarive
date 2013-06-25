@@ -24,7 +24,7 @@
 		    id: '_id',
 		    root: 'data',
 		    totalProperty: 'total',
-		    successProperty: 'success',
+		    successProperty: 'success'
 		    }, 
 		    record
 	    ),

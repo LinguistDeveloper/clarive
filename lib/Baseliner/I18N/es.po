@@ -36,6 +36,12 @@ msgstr "Ventanas de Pase"
 msgid "grammar"
 msgstr "gramática"
 
+msgid "Moniker"
+msgstr "Nemónico"
+
+msgid "moniker"
+msgstr "nemónico"
+
 msgid "Remove from folder"
 msgstr "Quitar de carpeta"
 

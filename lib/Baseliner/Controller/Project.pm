@@ -512,7 +512,18 @@ sub user_projects : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my $level = $p->{level};
-    #my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    my $where;
+    length($query) and $where = query_sql_build( query=>$query, fields=>{
+        map { $_ => "me.$_" } qw/
+        mid 
+        project_name
+        sp_name
+        spn_name
+        tree_level
+        nature
+        /
+    });
     #$sort ||= 'name';
     #$dir ||= 'asc';
     #$limit ||= 100;
@@ -530,13 +541,30 @@ sub user_projects : Local {
     #_error \@rows;
     #@rows = grep { $_ =~ $query } @rows if $query;
    
-    my $query = $c->model( 'Permissions' )->user_projects_query(
+    my $user_prjs = $c->model( 'Permissions' )->user_projects_query(
         username => $username
     );
+    #my $where = $c->is_root ? {} : { id => { -in => $user_prjs } };
+    $where->{id} = { -in => $user_prjs };
+    my $from = {};
+    my $pager;
+    if( $limit ) {
+        $from->{page} //= to_pages( start=>$start // 0, limit=>$limit );
+    }
+
+    if( $p->{tree_level} ) {
+        my @levels = map { split /,/ } _array( $p->{tree_level} );
+        $where->{tree_level} = { -in => \@levels } if @levels;
+    }
+
+    if( $p->{root_mid} ) {
+        $where->{root_mid} = $p->{root_mid};
+    }
     
-    #my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $query } });
-    my $rs = DB->BaliProjectTree->search({ id => { -in => $query } });
+    #my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $user_prjs } });
+    my $rs = DB->BaliProjectTree->search($where, $from);
     rs_hashref($rs);
+    $pager = $rs->pager if $p->{limit};
     #_debug [ $rs->all ];
     my @rows = map {
         my ($name, $sp_name, $spn_name);
@@ -558,7 +586,8 @@ sub user_projects : Local {
         $_} $rs->all;
     # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
     #_debug \@rows;
-    $c->stash->{json} = { data => \@rows, totalCount=>scalar(@rows) };      
+    $cnt = $pager ? $pager->total_entries : scalar @rows;
+    $c->stash->{json} = { data => \@rows, totalCount=>$cnt };      
     $c->forward('View::JSON');
 }
 

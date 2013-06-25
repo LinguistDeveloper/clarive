@@ -8,6 +8,12 @@
     
     var form_columns = 12;   // TODO get this from config
     
+    Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+        Ext.applyIf(this.options, {
+            submitEmptyText:false
+        });
+    });
+
     var form_topic = new Ext.FormPanel({
         layout:'column',
         //layout:'table',

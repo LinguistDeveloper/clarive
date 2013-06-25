@@ -31,15 +31,17 @@ params:
     var topic_box;
     var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0, filter: meta.filter ? meta.filter : ''} });
     if( meta.list_type == 'grid' ) {
-
+        // Grid
         topic_box = new Baseliner.TopicGrid({ 
             fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
+            columns: meta.columns,
             name: meta.id_field, 
             value: data[ meta.id_field ]
         });
 
     } else {
+        // Superbox
         topic_box = new Baseliner.model.Topics({
             fieldLabel: _(meta.name_field),
             name: meta.name_field,

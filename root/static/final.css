@@ -85,6 +85,34 @@
   font-size: 11px;  
 }
 
+
+/* -------------------------- Fieldlet HTML -----------------------------*/
+#boot .fieldlet-html li {
+    list-style-type: square;
+    margin-left: 15px;
+}
+
+#boot .fieldlet-html h1 {
+    font-size: 20px;
+}
+
+#boot .fieldlet-html h2 {
+    font-size: 17px;
+}
+
+#boot .fieldlet-html h3 {
+    font-size: 15px;
+}
+
+#boot .fieldlet-html h4 {
+    font-size: 14px;
+}
+
+#boot .fieldlet-html h5 {
+    font-size: 13px;
+}
+
+
 .x-tree-node div.forum-ct{
     background:#eee url(/static/images/icons/cmp-bg.gif) repeat-x;
     margin-top:1px;

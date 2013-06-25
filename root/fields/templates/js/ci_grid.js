@@ -2,6 +2,7 @@
 name: CI Grid
 params:
     origin: 'template'
+    relation: 'system'
     js: '/fields/templates/js/ci_grid.js'
     html: '/fields/templates/html/ci_grid.html'
     get_method: 'get_cis'    
@@ -25,7 +26,9 @@ params:
     var cis = new Baseliner.CIGrid({ 
         ci: ci_meta,
         title: null,
+        columns: meta.columns || [],
         //labelAlign: 'top', 
+        readOnly: ( meta.readOnly == 'true' ? true : false ),
         style: 'margin-top: 20px', 
         height: meta.height || 200,
         fieldLabel: meta.name_field,
