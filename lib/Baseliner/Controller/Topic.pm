@@ -216,6 +216,13 @@ sub related : Local {
     }
     my $rs_topic = DB->BaliTopic->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] })->hashref;
     my @topics = map {
+        if( $p->{with_data} ) {
+            my $meta = $c->model('Topic')->get_meta( $_->{mid} );
+            $_->{data} = $c->model('Topic')->get_data( $meta, $_->{mid} );
+            $_->{description} = $_->{data}{description};
+            $_->{status} = $_->{data}{name_status};
+        }
+
         $_->{name} = $_->{categories}{is_release} eq '1' 
             ?  $_->{title}
             :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};

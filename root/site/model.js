@@ -32,8 +32,8 @@ Baseliner.model.Topics = function(c) {
         ' >{name}</span></span>',
         '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
     var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;"',
-        ' onclick="javascript:Baseliner.show_topic({mid}, \'{name}\');">{name}</span></span>',
+        '<span id="boot" style="background:transparent; margin-right: 8px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;margin-right: 8px"',
+        ' onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{name}</span>{title}</span>',
         '</tpl>' );
     Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,
@@ -167,11 +167,12 @@ Baseliner.model.Users = function(c) {
 };
 Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 
-        //Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
-        //    Ext.applyIf(this.options, {
-        //    submitEmptyText:false
-        //    });
-        //});
+Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+    Ext.applyIf(this.options, {
+    submitEmptyText:false
+    });
+});
+
 Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );

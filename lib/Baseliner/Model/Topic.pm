@@ -1069,6 +1069,14 @@ sub get_topics{
     rs_hashref ( $rs_rel_topic );
     my @topics = $rs_rel_topic->all;
     @topics = Baseliner->model('Topic')->append_category( @topics );
+    @topics = map {
+        my $meta = $self->get_meta( $_->{mid} );
+        my $data = $self->get_data( $meta, $_->{mid} );
+        $_->{description} = $data->{description};
+        $_->{status} = $data->{name_status};
+        $_->{data} = $data;
+        $_
+    } @topics;
     return @topics ? \@topics : [];    
 }
 
