@@ -58,7 +58,7 @@ params:
             var self = this;
             self.tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {description}</span></div></tpl>' );
             self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
-            Baseliner.model.PagingProjects.superclass.initComponent.call(this);
+            Baseliner.PagingProjects.superclass.initComponent.call(this);
         }
     });
 
