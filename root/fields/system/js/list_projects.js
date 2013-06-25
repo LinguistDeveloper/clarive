@@ -68,7 +68,7 @@ params:
         name: meta.id_field,
         hiddenName: meta.id_field,          
         emptyText: _( meta.emptyText ),
-        allowBlank: meta.allowBlank == 'false' || !meta.allowBlank ? false : true,          
+        allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
         store: project_box_store,
         disabled: meta ? meta.readonly : true,
         singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
