@@ -817,6 +817,8 @@ $('a').click(function(event) {
         Baseliner.ajaxEval( comp_url, params, function(comp) {
             var id = Baseliner.addNewTabItem( comp, ptitle, params );
             Baseliner.tabInfo[id] = { url: comp_url, title: ptitle, params: params, type: 'comp' };
+            try { Baseliner.explorer.collapse(); } catch(e) {}
+
         });
     };
 
