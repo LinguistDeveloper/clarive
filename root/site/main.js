@@ -166,7 +166,7 @@ Ext.onReady(function(){
     });
 
 %   if( $show_lifecycle ) {
-        Baseliner.explorer = new Baseliner.Explorer({}),
+        Baseliner.explorer = new Baseliner.Explorer({ fixed: 0}),
 %   }
 
     Baseliner.main = new Ext.Panel({

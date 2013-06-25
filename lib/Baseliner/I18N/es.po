@@ -4474,4 +4474,5 @@ msgstr "Pase suspendido a la espera de una acción manual de usuario"
 msgid "Job %1 cancelled externally"
 msgstr "Pase %1 cancelado externamente"
 
-
+msgid "Fix explorer"
+msgstr "Fijar explorador"

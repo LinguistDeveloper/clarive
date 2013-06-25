@@ -515,6 +515,15 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             self.getLayout().setActiveItem( self.$tree_ci );
         };
 
+        var toggle_stick = function() {
+            if( self.fixed == 0 ) {
+                self.fixed = 1;
+            } else {
+                self.fixed = 0;
+                self.collapse();
+            }
+        };
+
         var button_projects = new Ext.Button({
             cls: 'x-btn-icon',
             icon: '/static/images/icons/project.png',
@@ -607,6 +616,17 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             // ]
         });
 
+
+        var button_stick = new Ext.Button({
+            cls: 'x-btn-icon',
+            icon: '/static/images/pin_icon.png',
+            handler: toggle_stick,
+            tooltip: _('Fix explorer'),
+            pressed: false,
+            allowDepress: true,
+            enableToggle: true
+        });
+
         self.tbar = new Ext.Toolbar({
             items: [
                 {   xtype:'button', 
@@ -632,7 +652,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                             });
                         }
                     }
-                })
+                }),
+                ' ',
+                button_stick
             ]
         });
 
