@@ -1377,7 +1377,7 @@ sub set_topics {
     my @all_topics = ();
     
     # related topics
-    my @new_topics = _array( $topics ) ;
+    my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
     
     # check if arrays contain same members
