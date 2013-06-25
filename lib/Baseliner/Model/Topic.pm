@@ -389,7 +389,7 @@ sub topics_for_user {
 
         #$where->{'category_status_id'} = \@statuses;
         
-    }elsif(0) {
+    }else {
         ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
         my %tmp;
         map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
@@ -403,7 +403,7 @@ sub topics_for_user {
         $where->{'category_status_type'} = {-not_like, '%F%'}
     }
       
-    if(0 && $p->{priorities}){
+    if( $p->{priorities}){
         my @priorities = _array $p->{priorities};
         my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
         my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
