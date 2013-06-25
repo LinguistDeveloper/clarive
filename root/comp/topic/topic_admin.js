@@ -1119,7 +1119,7 @@
     
     var edit_fields = function(rec) {
         var win;
-        var title = _('Edit fields');
+        var title = render_category( rec.data.name, {}, rec);
 
         var treeRoot = new Ext.tree.AsyncTreeNode({
             expanded: true,

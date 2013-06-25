@@ -26,6 +26,7 @@ params:
     var cis = new Baseliner.CIGrid({ 
         ci: ci_meta,
         title: null,
+        columns: meta.columns || [],
         //labelAlign: 'top', 
         readOnly: ( meta.readOnly == 'true' ? true : false ),
         style: 'margin-top: 20px', 

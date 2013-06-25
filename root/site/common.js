@@ -2346,8 +2346,9 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
           properties: { header: _('Properties'), width: 240, dataIndex: 'pretty_properties' },
           versionid: { header: _('Version'), width: 80, dataIndex: 'versionid' }
         };
-        if( Ext.isArray( c.columns ) ) {
-            Ext.each( c.columns, function(colt){
+        var col_prefs = Ext.isArray( c.columns ) ? c.columns : Ext.isString(c.columns) ? c.columns.split(';') : [];
+        if( col_prefs.length > 0 ) {
+            Ext.each( col_prefs, function(colt){
                 if( Ext.isObject( colt ) ) {
                     cols.push( colt );
                 } else {
