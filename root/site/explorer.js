@@ -520,7 +520,6 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 self.fixed = 1;
             } else {
                 self.fixed = 0;
-                self.collapse();
             }
         };
 
@@ -622,7 +621,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/pin_icon.png',
             handler: toggle_stick,
             tooltip: _('Fix explorer'),
-            pressed: false,
+            pressed: true,
             allowDepress: true,
             enableToggle: true
         });

@@ -166,7 +166,7 @@ Ext.onReady(function(){
     });
 
 %   if( $show_lifecycle ) {
-        Baseliner.explorer = new Baseliner.Explorer({ fixed: 0}),
+        Baseliner.explorer = new Baseliner.Explorer({ fixed: 1 }),
 %   }
 
     Baseliner.main = new Ext.Panel({
@@ -281,10 +281,7 @@ Ext.onReady(function(){
     var tabpanel = Ext.getCmp('main-panel');
     tabpanel.header.setVisibilityMode(Ext.Element.DISPLAY);
     tabpanel.header.hide();
-% }
-% if( $show_tabs && $show_lifecycle ) {
-     Baseliner.explorer.collapse();
-% }     
+% }    
     // global key captures
     /* 
     window.history.forward(1);
