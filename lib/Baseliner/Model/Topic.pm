@@ -389,7 +389,7 @@ sub topics_for_user {
 
         #$where->{'category_status_id'} = \@statuses;
         
-    }elsif(0) {
+    }else {
         ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
         my %tmp;
         map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
