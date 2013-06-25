@@ -980,8 +980,8 @@ sub get_data {
         }
         
         foreach my $key  (keys %method_fields){
-            my $method = $method_fields{ $key };
-            $data->{ $key } =  $self->$method( $topic_mid, $key, $meta );
+            my $method_get = $method_fields{ $key };
+            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
@@ -1107,8 +1107,8 @@ sub save_data {
             $relation{ $_->{column} } = $_ -> {relation};
             if ($_->{method}){
                 #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
-                my $meth = $_->{method};
-                my $extra_fields = $self->$meth( $data->{ $_->{name} }, $data, $meta );
+                my $method_set = $_->{method};
+                my $extra_fields = $self->$method_set( $data->{ $_->{name} }, $data, $meta );
                 foreach my $column (keys %{ $extra_fields || {} } ){
                      $row{ $column } = $extra_fields->{$column};
                 }
