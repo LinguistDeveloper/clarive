@@ -703,7 +703,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     height: 200,
     initComponent: function(){
         var self = this;
-        self.combo_store = new Baseliner.store.Topics({});
+        self.combo_store = self.combo_store || new Baseliner.store.Topics({});
         if( self.topic_grid == undefined ) self.topic_grid = {};
   
         self.combo = new Baseliner.TopicCombo({
@@ -759,13 +759,25 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         ];
         
         if( Ext.isArray( self.value ) ) {
-            var p = { mids: self.value };
-            Baseliner.ajaxEval( '/topic/related', Ext.apply(self.topic_grid, p ), function(res){
-                Ext.each( res.data, function(r){
-                    if( ! r ) return;
+            // self.value may be an array of full records or just mids, try to detect it 
+            var mids = [];
+            Ext.each( self.value, function(r){
+                if( Ext.isObject( r ) ) {
                     self.add_to_grid( r );
-                });
+                } else {
+                    mids.push( r );
+                }
             });
+
+            if( mids.length > 0 ) {
+                var p = { mids: mids };
+                Baseliner.ajaxEval( '/topic/related', Ext.apply(self.topic_grid, p ), function(res){
+                    Ext.each( res.data, function(r){
+                        if( ! r ) return;
+                        self.add_to_grid( r );
+                    });
+                });
+            }
         }        
         self.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);

@@ -1344,7 +1344,8 @@
                                             }
                                             if ( objTemp.single_mode != undefined){
                                                 var value = form.findField("valuesgroup").getValue().getGroupValue();
-                                                 objTemp.single_mode = (value ==  'M') ? false : true ;
+                                                 objTemp.single_mode = ( value == 'S' || value ==  'single') ? true : false ;
+                                                 objTemp.list_type = value=='S' ? 'single' : value=='M' ? 'multiple' : value=='G' ? 'grid' : value;
                                             }
                                             
                                             var d = { id: id, id_field: id_field, name: name_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
@@ -1440,8 +1441,9 @@
                                                 hidden: true,
                                                 defaults: {xtype: "radio",name: "type"},
                                                 items: [
-                                                    {boxLabel: _('Single'), inputValue: 'S', checked: true},
-                                                    {boxLabel: _('Multiple'), inputValue: 'M'}
+                                                    {boxLabel: _('Single'), inputValue: 'single', checked: true},
+                                                    {boxLabel: _('Multiple'), inputValue: 'multiple'},
+                                                    {boxLabel: _('Grid'), inputValue: 'grid'}
                                                 ]
                                             },                                          
                                             combo_filters
