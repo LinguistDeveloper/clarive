@@ -1066,8 +1066,8 @@
         //        } else {
         //            filter_final.query = bp.query.replace( unselected_filter.query, '' );
 					filter_final.query = bp.query;
-                    filter_final.query = filter_final.query.replace( /^ +/, '' );
-                    filter_final.query = filter_final.query.replace( / +$/, '' );
+                    //filter_final.query = filter_final.query.replace( /^ +/, '' );
+                    //filter_final.query = filter_final.query.replace( / +$/, '' );
         //        }
         //    }
         //}
