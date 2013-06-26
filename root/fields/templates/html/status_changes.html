@@ -1,0 +1,39 @@
+<%args>
+    $meta
+    $data
+</%args>
+<%perl>
+    my @status_changes;
+    use Try::Tiny;
+    DB->BaliEvent->search({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} },
+    { order_by=>{ -asc=>'ts' } })->hashref->each( sub {
+            try {
+            my $ed = _load( $_->{event_data} );
+            push @status_changes, { old_status=>$ed->{old_status}, status=>$ed->{status}, username=>$_->{username}, when=>Class::Date->new( $ed->{ts} ) };
+            } catch {};
+    });
+
+</%perl>
+% if( !$meta->{hidden} && @status_changes ) {
+    <ul class="nav nav-list">
+        <li class="nav-header">
+            <% _loc( $meta->{id_field} )  %>
+        </li>
+    </ul>
+    <ul class="" style="margin-left: 20px">
+      <table class="table table-bordered table-condensed">
+      <tbody>
+% for my $ch ( @status_changes ) {
+         <tr>
+             <td style="font-size: 12px"><% $ch->{when}  %></td>
+             <td><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $ch->{username} %>/image.png" /><% $ch->{username}  %></td>
+             <td class="status-html" style="font-size: 10px; font-weight: bold"><% $ch->{old_status}  %></td>
+             <td><img src="/static/images/icons/right-arrow.png"></td>
+             <td class="status-html" style="font-size: 10px; font-weight: bold"><% $ch->{status}  %></td>
+         </tr>
+% }
+      </tbody>
+      </table>
+    </ul>
+% }
+

@@ -277,7 +277,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var rg;
         var show_graph = function(){
             if( rg ) { rg.destroy(); rg=null }
-            Baseliner.ajaxEval( '/ci/json_tree', { mid: params.topic_mid, does_any:['Project', 'Infrastructure','Topic'], direction:'children', depth:4 }, function(res){
+            //Baseliner.ajaxEval( '/ci/json_tree', { mid: params.topic_mid, does_any:['Project', 'Infrastructure','Topic'], direction:'children', depth:4 }, function(res){
+            Baseliner.ajaxEval( '/ci/json_tree', { mid: params.topic_mid, direction:'related', depth:2 }, function(res){
                 if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
                 rg = new Baseliner.JitRGraph({ json: res.data });
                 self.add( rg );

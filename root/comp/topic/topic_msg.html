@@ -100,6 +100,7 @@ padding: 2px 4px 2px 7px;
                 <tbody>
 % foreach my $field ( sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} eq 'head' } _array( $topic_meta ) ) {
 % if ($field->{html}){
+    <!-- <% $field->{html} %> -->
     <& $field->{html}, data=>$topic_data, meta=>$field &>
 %}
 % }
@@ -114,6 +115,7 @@ padding: 2px 4px 2px 7px;
                 <tbody>
 % foreach my $field ( @body ) {
 % if ($field->{html}){
+    <!-- <% $field->{html} %> -->
     <& $field->{html}, data=>$topic_data, meta=>$field &>
 %}    
 % }
@@ -124,6 +126,7 @@ padding: 2px 4px 2px 7px;
                         <td colspan=2 id="<% $did %>" style="white-space: nowrap; display: none">
 % foreach my $field ( @details ) {
 % if ($field->{html}){
+    <!-- <% $field->{html} %> -->
     <& $field->{html}, data=>$topic_data, meta=>$field &>
 %}
 % }                                 

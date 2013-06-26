@@ -86,7 +86,6 @@ use Exporter::Tidy default => [
     _pathxs
     _uacc
     _markup
-    _markdown
     zip_files
     hash_flatten
     parse_vars
@@ -110,6 +109,7 @@ use Exporter::Tidy default => [
 )],
 other => [qw(
     _load_yaml_from_comment
+    _markdown
     hash_shallow
 )];
 
@@ -879,7 +879,7 @@ sub _pathxs {
 
 sub _markdown {
     require Text::Markdown;
-    my $txt = Text::Markdown::markdown( shift );
+    my $txt = Text::Markdown::markdown( @_ );
     $txt =~ s{^\<p\>}{};
     $txt =~ s{\</p\>\n?$}{};
     $txt ;

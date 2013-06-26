@@ -7,6 +7,8 @@ with 'Baseliner::Role::Service';
 has itemobjid        => qw(is rw isa Num required 1);
 has versionobjid     => qw(is rw isa Num required 1);
 has viewpath         => qw(is rw isa Str required 1);
+has packageobjid     => qw(is rw isa Num required 0);
+has packagename      => qw(is rw isa Str required 0);
 has versionobjid     => qw(is rw isa Num required 1);
 has versiondataobjid => qw(is rw isa Num required 1);
 has compressed       => qw(is rw isa Bool default 1);
@@ -23,6 +25,7 @@ service 'view_source' => 'View Source' => sub {
     $self->source;
 };
 
+#sub form { ['/ci/item.js'] }
 sub form { '/ci/item.js' }
 
 sub source {

@@ -805,6 +805,7 @@ sub json_tree : Local {
     my $mids = delete $p->{mid} || delete $p->{mids};
     my $direction = delete $p->{direction} || 'related';
     my $k = 1;
+    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     $c->stash->{json} = try {
         my @all;
         for my $mid ( _array( $mids ) ) { 
@@ -825,7 +826,7 @@ sub json_tree : Local {
                     children => [ map { $recurse->($_) } _array( $chi->{ci_rel} ) ]
                 }
             };
-            my @data = map { $recurse->( $_ ) } @rels; 
+            my @data = map { $recurse->( $_ ) } @rels;
             my $d = {
                 id => $mid, 
                 name => $ci->name, 

@@ -1037,7 +1037,12 @@ sub export : Local {
     try{
         my $id = $p->{id_category} or _fail( _loc('Missing parameter id') );
         # TODO prefetch states and workflow
-        my $topic = DB->BaliTopicCategories->search({ id=> $id }, { prefetch=>['fields'] })->hashref->first;
+        my $status = DB->BaliTopicStatus->search()->hashref->hash_unique_on('id');
+        my $topic = DB->BaliTopicCategories->search({ id=> $id }, { prefetch=>['fields', 'statuses'] })->hashref->first;
+        my $ss = delete $topic->{statuses};
+        for my $st ( @$ss ) {
+            push @{ $topic->{statuses} }, $status->{$st->{id_status} }; #{ name=>'rrr' };
+        }
         _fail _loc('Category not found for id %1', $id) unless $topic;
         my $yaml = _dump( $topic );
         utf8::decode( $yaml );

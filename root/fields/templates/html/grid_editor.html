@@ -8,8 +8,6 @@
     </tr>
 % }     
 <%perl>
-    require Text::Markdown;
-
     my $json = $data->{$meta->{bd_field}} ;
     $json = Encode::encode('UTF-8', $json);
     #my $json_utf8 = Encode::encode('UTF-8', $json);
@@ -48,7 +46,7 @@
                             ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/delete.gif">' : '<img src="/static/images/icons/checkbox.png">')
                             : $$h{type} eq 'index' 
                                 ? ++$ix
-                                : Text::Markdown::markdown($val, { tab_width=>2 })
+                                : Util->_markdown($val, { tab_width=>2 })
                         %></td>
 % }
                 </tr>

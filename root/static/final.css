@@ -112,6 +112,13 @@
     font-size: 13px;
 }
 
+.status-html {
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: bold; 
+      background-color: #eee; 
+      text-align: center
+}
 
 .x-tree-node div.forum-ct{
     background:#eee url(/static/images/icons/cmp-bg.gif) repeat-x;

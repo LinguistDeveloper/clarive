@@ -127,7 +127,7 @@ sub save {
                 $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
                 $row->name( $name ) if defined $name;
                 $row->active( $active ) if defined $active;
-                $row->versionid( $versionid ) if defined $versionid;
+                $row->versionid( $versionid ) if defined $versionid && length $versionid;
                 $row->moniker( $moniker ) if defined $moniker;
                 $row->ns( $ns ) if defined $ns;
                 $row->update;  # save bali_master data

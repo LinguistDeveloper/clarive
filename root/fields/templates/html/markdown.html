@@ -3,9 +3,8 @@
     $data
 </%args>
 <%perl>
-    require Text::Markdown;
     my $val = $data->{$meta->{display_field}} || $data->{$meta->{bd_field}};
-    $val = Text::Markdown::markdown( $val );
+    $val = Util->_markdown( $val );
 </%perl>
 % if( !$meta->{hidden} ) {
     <tr>
