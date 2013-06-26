@@ -26,12 +26,16 @@
     });
 
     
+    var topic_main;
     if( topic_main_class_name ) {
         eval( "var class_name = " + topic_main_class_name + ";" );
         var obj = new class_name(params);
-        return obj;
+        topic_main = obj;
     } else {
-        return new Baseliner.TopicMain(params);
+        topic_main = new Baseliner.TopicMain(params);
     }
 
+    Baseliner.edit_check( topic_main, true );  // block window closing from the beginning
+
+    return topic_main;
 })

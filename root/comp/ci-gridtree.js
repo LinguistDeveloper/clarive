@@ -31,7 +31,7 @@
         Ext.each( check_sm.getSelections(), function(r){
             mids.push( r.data.mid );
         });
-        Baseliner.ajaxEval( '/ci/json_tree', { mid: mids, direction:'related', depth:4 }, function(res){
+        Baseliner.ajaxEval( '/ci/json_tree', { mid: mids, direction:'related', depth:2 }, function(res){
             if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
             var rg = new Baseliner.JitRGraph({ json: res.data });
             var graph_win = new Baseliner.Window({ layout:'fit', width: 800, height: 600, items: rg });

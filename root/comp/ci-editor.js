@@ -224,21 +224,23 @@
                 bl_combo.setValue( params.rec.bl );
             });
             if( params.ci_form ) {
-                Baseliner.ajaxEval( params.ci_form, params, function(res){
-                    if( res != undefined ) {
-                        var fields;
-                        if( Ext.isObject( res ) ) {
-                            fields = res.fields;
-                            if( res.beforesubmit ) beforesubmit.push( res.beforesubmit );
-                        } else {
-                            fields = res;
+                Ext.each( params.ci_form, function(form_url){
+                    Baseliner.ajaxEval( form_url, params, function(res){
+                        if( res != undefined ) {
+                            var fields;
+                            if( Ext.isObject( res ) ) {
+                                fields = res.fields;
+                                if( res.beforesubmit ) beforesubmit.push( res.beforesubmit );
+                            } else {
+                                fields = res;
+                            }
+                            fieldset.show();
+                            fieldset.add( fields );
+                            fieldset.doLayout();
+                            //form.getForm().loadRecord( params.rec );
+                            form.getForm().setValues( params.rec );
                         }
-                        fieldset.show();
-                        fieldset.add( fields );
-                        fieldset.doLayout();
-                        //form.getForm().loadRecord( params.rec );
-                        form.getForm().setValues( params.rec );
-                    }
+                    });
                 });
             } else {
                 //form.getForm().loadRecord( params.rec );
@@ -333,6 +335,7 @@
             cardpanel.doLayout();
         }
     });
+    Baseliner.edit_check( cardpanel, true );  // block window closing from the beginning
     return cardpanel;
 })
 

@@ -15,6 +15,102 @@ params:
 	var data = params.topic_data;
 	var ff = params.form.getForm();
 	
+Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
+    fullscreen: false,
+    autofocus: false,
+    initComponent : function(){
+        Baseliner.CLEditorField.superclass.initComponent.call(this);
+        var self = this;
+        this.on('afterrender', function(){
+            $.cleditor.buttons.fullscreen = {
+                name: 'fullscreen',
+                image: '../../images/icons/fullscreen-24.png',
+                tooltip: 'full screen',
+                title: "Full Screen",
+                command: "fullscreen",
+                popupName: "fullscreen",
+                getEnabled: function(){ return true },
+                buttonClick: function(){
+                    if( self.fullscreen ) {
+                        // minimize
+                        var main = self.editor_dom();
+                        $(main).css({ position:'', top:'', left:'', bottom:'', right:'', height: self.last_height, width: self.last_width });
+                        self.$lastParent.appendChild( main );
+                        self.cleditor.refresh();
+                        self.cleditor.focus();
+                        self.fullscreen = false;
+                    } else {
+                        // max
+                        var main = self.editor_dom();
+                        self.last_width = main.style.width;
+                        self.last_height = main.style.height;
+                        var w = $(document).width();
+                        var h = $(document).height();
+                        $(main).css({ position:'absolute', top:0, height: h, width: w, left:0, bottom:0, right:0, 'z-index':99999 });
+                        self.$lastParent = main.parentElement;
+                        document.body.appendChild( main );
+                        //main.style.width = document.body.width;
+                        //main.style.height = document.body.height;
+                        self.cleditor.refresh();
+                        self.cleditor.focus();
+                        self.fullscreen = true;
+                    }
+                }
+            };
+            var c = Ext.apply({width:"100%", height:"100%", controls:
+                "fullscreen bold italic underline strikethrough subscript superscript | font size " +
+                "style | color highlight removeformat | bullets numbering | outdent " +
+                "indent | alignleft center alignright justify | undo redo | " +
+                "rule image link unlink | cut copy paste pastetext | print source fullscreen"
+            }, self );
+            this.cleditor = $( self.el.dom ).cleditor(c)[0];
+            self.on('resize', function(){
+                self.cleditor.refresh();
+                if( this.autofocus ) self.cleditor.focus();
+            });
+            if( this.autofocus ) 
+                this.cleditor.focus();
+        });
+        if( Ext.isChrome ) {
+            var foo_load = function(i){
+                if( i < 0 ) return;
+                setTimeout( function(){  // TODO detect when the CLEditor is loaded
+                    if( !self.cleditor ) 
+                        foo_load( i-- );
+                    else
+                        self.cleditor.$frame[0].contentDocument.onpaste = function(e){ 
+                            var items = e.clipboardData.items;
+                            var blob = items[0].getAsFile();
+                            var reader = new FileReader();
+                            reader.onload = function(event){
+                                self.cleditor.execCommand('inserthtml',
+                                    String.format('<img src="{0}" />', event.target.result) );
+                                //self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
+                            }; 
+                            reader.readAsDataURL(blob); 
+                        };
+                }, 500);
+            };
+            foo_load(5);
+        }
+    },
+    editor_dom : function(){
+        return this.cleditor ? this.cleditor.$main[0] : null;
+    },
+    show : function(){
+        Baseliner.CLEditorField.superclass.show.apply(this, arguments);
+        var dom = this.editor_dom() ;
+        if( dom ) $( dom ).show(); 
+    },
+    hide : function(){
+        Baseliner.CLEditorField.superclass.hide.apply(this, arguments);
+        var dom = this.editor_dom() ;
+        if( dom ) $( dom ).hide();
+    },
+    focus : function(){
+        this.cleditor.focus();  // focus con cleditor instead of textarea
+    }
+});
     /*
     var groupRow = [
 		{colspan: 2},
@@ -42,6 +138,7 @@ params:
           id : function(){ return {width: 10 } },
           index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
           htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
+          cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
           textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
           checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value:false, renderer: render_checkbox } },
           textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }

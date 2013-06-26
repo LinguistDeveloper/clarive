@@ -2426,9 +2426,12 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         self.on('rowclick', function(grid, rowIndex, e) {
             btn_delete.enable();
         });		
+
+        var val = self.value;
+        if( Ext.num(val) != undefined ) val=[val];
         
-        if( Ext.isArray( self.value ) ) {
-            var p = { mids: self.value , _whoami: 'CIGrid_mids' };
+        if( Ext.isArray(val) ) {
+            var p = { mids: val, _whoami: 'CIGrid_mids' };
             if( self.ci.role ) p.role = self.ci.role;
             Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci_grid, p ), function(res){
                 Ext.each( res.data, function(r){
