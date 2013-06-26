@@ -1,0 +1,130 @@
+x guardar funcionliadad, falla el moniker
+- chequear que user_projects controller funciona a varios niveles (id_parent...)  
+	--- combo de proyectos, donde los haya
+- parser: J2EE, PLSQL, DDL, .NET
+x crear repo para CASCM, cargar items de repo
+- enlazar funcionalidades sin que estén marcadas en el código
+
+- SQA NO hay proyectos Harvest para la aplicación selecccionada
+
+----------------------
+- change and save data in ci-editor.js data view
+- allow methods in ci-editor, like "open file" in Item
+
+- module dependencies needs to search on a closed scope... 
+   - use "ns"? ns=>'SCT/udp/netDist.pm' 
+   - or do a join with master_rel for items of a given project?
+   
+- 
+------------------------------
+
+gitci -ref dbfdb1d0d07 -b expsv066 -usr infroox -en SCM_QA -st Desarrollo -p 'SCM.N-002365 BAS-EVO QA SGP'
+
+Last ci:
+- c1fcc1cb91d5d
+
+gitci -ref f54a460 -b expsv066 -usr infroox -en SCM_QA -st Desarrollo -p 'SCM.N-002374 BAS-EVO QA SGP-2'  -vp '/SCM/'
+Sat.1305
+
+--------------------------
+
+ack -l '#:\w{3}_\w+:' | wc -l
+
+
+-------------------------
+
+:tip_not:  
+FICHEROS/UNIX/vass/baseliner/features/bde/root/email
+FICHEROS/UNIX/vass/baseliner/features/changeman/root/email
+FICHEROS/UNIX/Plantillas/
+FICHEROS/UNIX/vass/baseliner/features/sqa/root/email
+
+:tip_venya:
+FICHEROS/UNIX/vass/baseliner/root/comp/*_calendar*
+FICHEROS/UNIX/vass/baseliner/lib/BaselinerX/Job
+
+:nat_rs:
+?? .NET/Despliegue RS/*
+
+:tip_inf:
+RS/*
+J2EE/scmdist/WebContent/espacio/*
+
+:int_chm:
+
+:int_sqa:
+
+:tip_mntfrm:
+J2EE/scm_inf_WEB/WebContent/inf/trg
+
+:tip_pet:
+J2EE/scm_inf_WEB/WebContent/inf/infTareasRPT
+ORACLE/Fase2/Functions/Inf_Flow
+ORACLE/Fase2/Procedures/Inf_Flow
+ORACLE/Fase2/Trigger/Inf_Status
+
+---------------------
+hci -b prusv063 -usr infroox -en SCM -st Desarrollo -p 'SCM.N-000005 carga QA' -vp /SCM -cp /home/apst/scm/servidor/vass/SCM -s '*' -ur
+------------------------
+
+pasos:
+
+1) cross merge de 2 paquetes de SCM a SCM_QA
+2) mergear en el tronco los cambios
+3) crear paquete de etiquetado
+4) crear workspace de etiquetado en /home/apst/scm/servidor/tags/... con todo SCM...
+5) etiquetar en rama
+6) subir etiquetado mediante checkin a prusv061/SCT
+
+
+---------------------------------
+
+
+cpanm -n Array::Utils
+cpanm -n CatalystX::Features
+
+cpanm -n ep.tar.gz
+cpanm -n Git::Wrapper
+
+cpanm -n HTML::Strip    # puede que este
+
+cpanm -n DBIx::Class
+Successfully installed DBIx-Class-0.08250 (upgraded from 0.08198)
+
+cpanm -n DBIx::Class::Helper::ResultSet::SetOperations
+
+cpanm -n  DBIx::Class::TimeStamp
+cpanm -n Text::Markdown
+
+----------------------------------------
+
+* arreglar fecha en status_change.html (event ts) -- usar 1 day ago, 1 week ago, ( y la fecha en pequeño)
+* añadir evento creado en el historial
+
+** combo correcto o incorrecto en la salida del caso.
+- fechas de cambio de estado en topic_msg
+
+* al crear caso de prueba, el estado se pierde
+* caso de prueba - al añadir dependencia, se añade la funcionalidad y el item  (Ext.Action??)
+- ver funcionalidades asociadas a casos en el grid
+- Ci graph related, eliminar duplicados
+- ci graph botones de hijos, padres y depth
+- cambiar el titulo del topico desde dentro de topic_main.js
+
+- CASCMRepository: viewpath array --> viewpaths
+
+- editor button for GridEditor (grid_editor.js), open a form full screen, recreate the fields. 
+
+-- abir más de un formulario en el ci-editor con sub form { [] }
+- Topic comment - permitir Markdown field first
+- CI export and import a la derecha del todo, bajo icono de tools
+- origin=custom fieldlet problem
+- slow project and subapl load
+- topic_grid - no subproject seen - should only show the main project
+- graph visualizer access from cigridtree
+- Scan and Ping on CI Grid - fuera!
+- Services on CI Grid - run for each CI? Or run for all at once?
+- Services Wizard type of thing - with return data: {  [ format=>'text', data=>$d ], [], [] }
+-- templates and system -- arreglar la separacion!!
+
+
