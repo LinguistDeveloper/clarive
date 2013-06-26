@@ -12,7 +12,7 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 
 __PACKAGE__->result_source_instance->view_definition(q{
     select spn.mid as id, p.name AS project_name, sp.name as sp_name, spn.name as spn_name, spn.nature as nature, 'NAT' as tree_level,
-           spn.data as data, spn.mid 
+           spn.data as data, spn.mid, p.mid root_mid
     from bali_project spn, bali_project sp, bali_project p
     where spn.nature is not null and  
           spn.id_parent = sp.mid and 
@@ -21,7 +21,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
     UNION ALL
      
     select sp.mid as id, p.name AS project_name, sp.name as sp_name, NULL as spn_name, NULL as nature, 'SUB'  as tree_level,
-           sp.data as data, sp.mid 
+           sp.data as data, sp.mid, p.mid root_mid
     from bali_project sp, bali_project p
     where sp.nature is null and
           sp.id_parent is not null and  
@@ -30,13 +30,13 @@ __PACKAGE__->result_source_instance->view_definition(q{
     UNION ALL
      
     select p.mid as id, p.name AS project_name, NULL as sp_name, NULL as spn_name, NULL as nature, 'CAM' as tree_level,
-           p.data as data, p.mid 
+           p.data as data, p.mid, p.mid root_mid
     from bali_project p
     where p.id_parent is null
 });
 
 __PACKAGE__->add_columns(
-    'id','project_name', 'sp_name', 'spn_name', 'nature','tree_level', 'data', 'mid'
+    'id','project_name', 'sp_name', 'spn_name', 'nature','tree_level', 'data', 'mid', 'root_mid'
 );
 
 1;

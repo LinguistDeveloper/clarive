@@ -30,9 +30,9 @@ __PACKAGE__->add_columns(
   "created_on",
   {
     data_type     => "datetime",
-    default_value => \"current_timestamp",
     is_nullable   => 0,
-    original      => { data_type => "date", default_value => \"sysdate" },
+    set_on_create => 1,
+    timezone => _tz,
   },
   "created_by",
   { data_type => "varchar2", is_nullable => 0, size => 255 },

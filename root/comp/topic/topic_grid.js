@@ -13,7 +13,7 @@
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
 	var id_project = '<% $c->stash->{id_project} %>';
-    var base_params = { start: 0, limit: ps, typeApplication: typeApplication, id_project: id_project ? id_project : undefined };  // for store_topics
+    var base_params = { start: 0, limit: ps, typeApplication: typeApplication, id_project: id_project ? id_project : undefined, topic_list: params.topic_list ? params.topic_list : undefined };  // for store_topics
     // this grid may be limited for a given category category id 
     var category_id = '<% $c->stash->{category_id} %>';
     if( category_id ) {
@@ -1043,8 +1043,7 @@
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined  };
-        // object for merging with views 
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined  };        // object for merging with views 
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         
         //alert('selected_views ' + Ext.util.JSON.encode(selected_views));
@@ -1056,27 +1055,31 @@
         // now merge baseparams (query, limit and start) over the resulting filters
         var filter_final = Baseliner.merge( merge_filters, base_params );
         // query and unselected
-        if( unselected_node != undefined ) {
-            var unselected_type = unselected_node.parentNode.attributes.id;
-            var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
-            if( unselected_type == 'V' ) {
-                if( bp.query == unselected_filter.query ) {
-                    filter_final.query = '';
-                } else {
-                    filter_final.query = bp.query.replace( unselected_filter.query, '' );
+		
+		
+        //if( unselected_node != undefined ) {
+        //    var unselected_type = unselected_node.parentNode.attributes.id;
+        //    var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
+        //    if( unselected_type == 'V' ) {
+        //        if( bp.query == unselected_filter.query ) {
+        //            filter_final.query = '';
+        //        } else {
+        //            filter_final.query = bp.query.replace( unselected_filter.query, '' );
+					filter_final.query = bp.query;
                     filter_final.query = filter_final.query.replace( /^ +/, '' );
                     filter_final.query = filter_final.query.replace( / +$/, '' );
-                }
-            }
-        }
-        else if( selected_views.query != undefined  && bp.query != undefined ) {
-            //filter_final.query = bp.query + ' ' + selected_views.query;
-        }
+        //        }
+        //    }
+        //}
+        //else if( selected_views.query != undefined  && bp.query != undefined ) {
+        //    //filter_final.query = bp.query + ' ' + selected_views.query;
+        //}
 
         //alert('curr ' + Ext.util.JSON.encode(filter_final));
         //if( base_params.query !== filter_final.query ) {
             //delete filter_final['query'];    
         //}
+		//console.dir(filter_final);
         store_topics.baseParams = filter_final;
         search_field.setValue( filter_final.query );
         store_topics.load();
@@ -1123,7 +1126,7 @@
 	tree_filters.getLoader().on("beforeload", function(treeLoader, node) {
 		var loader = tree_filters.getLoader();
 		if(category_id){
-			loader.baseParams = {id_category: category_id};	
+			loader.baseParams = {category_id: category_id};	
 		}
 		
 	});	

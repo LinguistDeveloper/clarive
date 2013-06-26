@@ -389,7 +389,7 @@ sub topics_for_user {
 
         #$where->{'category_status_id'} = \@statuses;
         
-    }elsif(0) {
+    }else {
         ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
         my %tmp;
         map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
@@ -403,7 +403,7 @@ sub topics_for_user {
         $where->{'category_status_type'} = {-not_like, '%F%'}
     }
       
-    if(0 && $p->{priorities}){
+    if( $p->{priorities}){
         my @priorities = _array $p->{priorities};
         my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
         my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
@@ -980,8 +980,8 @@ sub get_data {
         }
         
         foreach my $key  (keys %method_fields){
-            my $method = $method_fields{ $key };
-            $data->{ $key } =  $self->$method( $topic_mid, $key, $meta );
+            my $method_get = $method_fields{ $key };
+            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
@@ -1069,6 +1069,14 @@ sub get_topics{
     rs_hashref ( $rs_rel_topic );
     my @topics = $rs_rel_topic->all;
     @topics = Baseliner->model('Topic')->append_category( @topics );
+    @topics = map {
+        my $meta = $self->get_meta( $_->{mid} );
+        my $data = $self->get_data( $meta, $_->{mid} );
+        $_->{description} = $data->{description};
+        $_->{status} = $data->{name_status};
+        $_->{data} = $data;
+        $_
+    } @topics;
     return @topics ? \@topics : [];    
 }
 
@@ -1107,8 +1115,8 @@ sub save_data {
             $relation{ $_->{column} } = $_ -> {relation};
             if ($_->{method}){
                 #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
-                my $meth = $_->{method};
-                my $extra_fields = $self->$meth( $data->{ $_->{name} }, $data, $meta );
+                my $method_set = $_->{method};
+                my $extra_fields = $self->$method_set( $data->{ $_->{name} }, $data, $meta );
                 foreach my $column (keys %{ $extra_fields || {} } ){
                      $row{ $column } = $extra_fields->{$column};
                 }
@@ -1377,7 +1385,7 @@ sub set_topics {
     my @all_topics = ();
     
     # related topics
-    my @new_topics = _array( $topics ) ;
+    my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
     
     # check if arrays contain same members

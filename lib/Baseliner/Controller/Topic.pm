@@ -86,10 +86,12 @@ sub grid : Local {
     
     #Parametro para casos especiales como la aplicacion GDI
     $c->stash->{typeApplication} = $typeApplication;
-    $c->stash->{id_project} = $p->{id_project}; 
+    $c->stash->{id_project} = $p->{id_project};
     $c->stash->{project} = $p->{project}; 
     $c->stash->{query_id} = $p->{query};
-    $c->stash->{category_id} = $p->{category_id};
+    if ($p->{category_id} && $c->stash->{category_id} != $p->{category_id}) {
+        $c->stash->{category_id} = $p->{category_id};
+    }
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
 
@@ -132,6 +134,18 @@ sub related : Local {
     my $mid = $p->{mid};
     my $show_release = $p->{show_release} // '0';
     my $where = {};
+    my $query = $p->{query};
+    length($query) and $where = query_sql_build( query=>$query, fields=>{
+        map { $_ => "me.$_" } qw/
+        mid 
+        title
+        created_on
+        created_by
+        modified_on
+        modified_by        
+        /
+    });
+
     if ($p->{mids}){
          my @mids = _array $p->{mids};
          $where->{mid} = \@mids;
@@ -200,9 +214,15 @@ sub related : Local {
         
         }        
     }
-    my $rs_topic = $c->model('Baseliner::BaliTopic')->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
-    rs_hashref( $rs_topic );
+    my $rs_topic = DB->BaliTopic->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] })->hashref;
     my @topics = map {
+        if( $p->{with_data} ) {
+            my $meta = $c->model('Topic')->get_meta( $_->{mid} );
+            $_->{data} = $c->model('Topic')->get_data( $meta, $_->{mid} );
+            $_->{description} = $_->{data}{description};
+            $_->{status} = $_->{data}{name_status};
+        }
+
         $_->{name} = $_->{categories}{is_release} eq '1' 
             ?  $_->{title}
             :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
@@ -933,11 +953,15 @@ sub filters_list : Local {
     # Filter: Categories ########################################################################################################
         
     my @categories;
-    
+    my $category_id = $c->req->params->{category_id};
     #$row = $c->model('Baseliner::BaliTopicCategories')->search();
     my @categories_permissions  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+    if($category_id){
+        @categories_permissions = grep { $_->{id} == $category_id } @categories_permissions;
+    }
+
     
-    if(@categories_permissions && $#categories_permissions gt 0){
+    if(@categories_permissions && scalar @categories_permissions gt 1){
         for( @categories_permissions ) {
             push @categories,
                 {
@@ -948,7 +972,7 @@ sub filters_list : Local {
                     cls     => 'forum',
                     iconCls => 'icon-no',
                     #checked => \0,
-                    checked => ( $c->req->params->{id_category} && $c->req->params->{id_category} eq $_->{id} ) ? \1: \0,
+                    checked => ( $category_id && $category_id eq $_->{id} ) ? \1: \0,
                     leaf    => 'true',
                     uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
@@ -1000,7 +1024,17 @@ sub filters_list : Local {
     
     # Filter: Status #############################################################################################################
     my @statuses;
-    $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
+    
+    my $where = undef;
+    my $arg = {order_by=>'seq'};
+    
+    if($category_id){
+        $arg->{join} = ['categories_status'];
+        $where->{'categories_status.id_category'} = $category_id;
+    }
+    $row = $c->model('Baseliner::BaliTopicStatus')->search($where,$arg);
+    
+    #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
     ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
     my %tmp;
