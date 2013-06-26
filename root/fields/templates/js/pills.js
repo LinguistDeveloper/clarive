@@ -18,7 +18,7 @@ params:
     var value = data[ meta.bd_field ] || meta.default_value ;
     var options = meta[ 'options' ];
     
-    var buts = new Baseliner.Pills({
+    var pills = new Baseliner.Pills({
         fieldLabel: _(meta.name_field),
         name: meta.id_field,
         anchor: meta.anchor || '100%',
@@ -27,7 +27,7 @@ params:
         value: value
     });
     return [
-        buts
+        pills
     ]
 })
 
