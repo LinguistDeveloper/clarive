@@ -802,37 +802,49 @@ sub url : Local {
 sub json_tree : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my $mid = delete $p->{mid};
+    my $mids = delete $p->{mid} || delete $p->{mids};
     my $direction = delete $p->{direction} || 'related';
     my $k = 1;
     $c->stash->{json} = try {
-        my $ci = _ci( $mid );
-        my @rels = $ci->$direction( depth=>2, mode=>'tree', %$p );
-        my $recurse;
-        $recurse = sub {
-            my $chi = shift;
-            $k++;
-            +{
-                id       => $k . '-' . $chi->{mid},
-                name     => $chi->{name},
+        my @all;
+        for my $mid ( _array( $mids ) ) { 
+            my $ci = _ci( $mid );
+            my @rels = $ci->$direction( depth=>2, mode=>'tree', %$p );
+            my $recurse;
+            $recurse = sub {
+                my $chi = shift;
+                $k++;
+                +{
+                    id       => $k . '-' . $chi->{mid},
+                    name     => $chi->{name},
+                    data => {
+                        '$type' => 'icon',
+                        icon     => $chi->{_ci}{ci_icon},
+                    },
+                    #data     => { '$type' => 'arrow' },
+                    children => [ map { $recurse->($_) } _array( $chi->{ci_rel} ) ]
+                }
+            };
+            my @data = map { $recurse->( $_ ) } @rels; 
+            my $d = {
+                id => $mid, 
+                name => $ci->name, 
                 data => {
-                    '$type' => 'icon',
-                    icon     => $chi->{_ci}{ci_icon},
+                    icon => $ci->icon
                 },
-                #data     => { '$type' => 'arrow' },
-                children => [ map { $recurse->($_) } _array( $chi->{ci_rel} ) ]
-            }
-        };
-        my @data = map { $recurse->( $_ ) } @rels; 
-        my $d = {
-            id => $mid, 
-            name => $ci->name, 
-            data => {
-                icon => $ci->icon
-            },
-            children => \@data,
-        };
-        { success=>\1, data=>$d };
+                children => \@data,
+            };
+            push @all, $d;
+        }
+        my $ret = @all == 1 
+            ? $all[0]
+            : {
+                id=>99999,
+                name=>'search', 
+                data => { icon=>'/static/images/icons/ci.png' },
+                children => \@all
+            };
+        { success=>\1, data=>$ret };
     } catch {
         my $err = shift;
         _error( $err );

@@ -1505,17 +1505,19 @@ Baseliner.JitRGraph = function(c){
         bodyCfg: { style:{ 'background-color':'#fff' } }
     }, c ) );
 
+    /*
     self.on( 'afterrender', function(cont){
         setTimeout( function(){
             do_tree( self.body );
         }, 500);
     });
+    */
 
-    self._resize = self.resize;
-    self.resize = function(args){
-        if( self._resize ) self._resize( args ); 
+    self.on( 'resize', function(panel,w,h,rw,rh){
+        //if( self._resize ) self._resize( args ); 
+        self.body.update('');
         do_tree( self.body ); 
-    };
+    });
 
     self.images = {}; // indexed by mid
 
@@ -1637,7 +1639,6 @@ Baseliner.JitRGraph = function(c){
           modes:['polar'],
           duration: 500
         });
-
     }
 };
 Ext.extend( Baseliner.JitRGraph, Ext.Panel ); 

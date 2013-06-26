@@ -26,6 +26,18 @@
         emptyText: _('<Enter your search string>')
     });
     
+    var show_graph = function(){
+        var mids = [];
+        Ext.each( check_sm.getSelections(), function(r){
+            mids.push( r.data.mid );
+        });
+        Baseliner.ajaxEval( '/ci/json_tree', { mid: mids, direction:'related', depth:4 }, function(res){
+            if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
+            var rg = new Baseliner.JitRGraph({ json: res.data });
+            var graph_win = new Baseliner.Window({ layout:'fit', width: 800, height: 600, items: rg });
+            graph_win.show();
+        });
+    };
     // only globals can be seen from grid
     Baseliner.ci_edit = function( gridid, ix ){
         var g = Ext.getCmp( gridid );
@@ -341,8 +353,8 @@
             btn_create,
             btn_delete,
             //{ xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.gif', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },
+            //{ xtype:'button', text: _('Scan'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon' },
+            //{ xtype:'button', text: _('Ping'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', handler: ci_ping },
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/export.png', cls: 'x-btn-text-icon', 
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },
@@ -353,7 +365,9 @@
             },
             { xtype:'button', text: _('Import YAML'), icon: '/static/images/icons/import.png', cls: 'x-btn-text-icon', 
                 handler:function(){ ci_import('yaml') }
-            }
+            },
+            '->',
+            { icon:'/static/images/ci/ci-grey.png', cls: 'x-btn-icon', handler: show_graph }
         ],
         viewConfig: {
             //headersDisabled: true,
