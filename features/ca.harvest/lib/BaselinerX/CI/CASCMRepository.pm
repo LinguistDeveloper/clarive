@@ -40,6 +40,12 @@ service load_items => 'Load Items' => sub {
     for( @{ $its->children } ) {
         $_->save;
     }
+    # relate to packages
+    for my $v ( @{ $its->children } ) {
+        if( my $pkg = DB->BaliMaster->search({ ns=>'harpackage/'.$v->packageobjid })->first ) {
+            DB->BaliMasterRel->find_or_create({ from_mid=>$pkg->mid, to_mid=>$v->mid, rel_type=>'revision_item' });
+        }
+    }
     return $its;
 };
 
@@ -73,12 +79,15 @@ sub load_items {
             viewpath         => $vp,
             versionobjid     => $r->{versionobjid},
             versiondataobjid => $r->{versiondataobjid},
+            packageobjid     => $r->{packageobjid},
+            packagename      => $r->{packagename},
             versionid        => $r->{mappedversion},
             moniker          => $basename, 
             compressed       => defined $r->{compressed} ? ( $r->{compressed} eq 'Y' ) : 1,  # XXX missing in the previous query due to speed
             ns               => 'harversion/' . $r->{versionobjid}
         );
     } @versions;
+
     BaselinerX::CI::itemset->new( children => \@items );
 }
 
@@ -104,7 +113,7 @@ sub load_revisions {
         my $ns = "harpackage/$pkg->{packageobjid}";
         my $row = DB->BaliMaster->search({ ns=>$ns })->first;
         if( !$row ) {
-            my $ci = BaselinerX::CI::CASCMPackage->new( ns=>$ns, name=>$pkg->{packagename} );
+            my $ci = BaselinerX::CI::CASCMPackage->new( ns=>$ns, name=>$pkg->{packagename}, packageobjid=>$pkg->{packageobjid} );
             $ci->save( data=>$pkg );
         } else {
             $pkg->{mid} = $row->mid;

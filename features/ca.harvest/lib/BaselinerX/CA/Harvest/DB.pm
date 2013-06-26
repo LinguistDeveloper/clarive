@@ -771,7 +771,7 @@ sub view_items {
     my $vp2 = "$vp\\%";
     _debug( "view_items=$env,$view,$vp2,$vp" );
     my $sql = q{SELECT v.versionobjid,v.versiondataobjid,trim(v.mappedversion) mappedversion,trim(REPLACE(pa.pathfullname,'\\','/')) pathfullname,
-                    trim(n.itemname) itemname, v.itemtype, v.itemobjid
+                    trim(n.itemname) itemname, v.itemtype, v.itemobjid, v.packageobjid, p.packagename
                     FROM
                         HARVIEW w,
                         HARVERSIONS v,
@@ -779,12 +779,14 @@ sub view_items {
                         HARITEMNAME n,
                         HARENVIRONMENT e,
                         HARVERSIONINVIEW vv,
+                        HARPACKAGE p,
                         HARPATHFULLNAME pa
                     WHERE TRIM(w.viewname) LIKE ?
                     AND TRIM(e.environmentname) LIKE ?
                     AND w.envobjid=e.envobjid
                     AND w.viewobjid=vv.viewobjid
                     AND v.itemnameid    = n.nameobjid
+                    AND v.packageobjid    = p.packageobjid
                     AND v.pathversionid = vp.versionobjid
                     AND vp.itemobjid    = pa.itemobjid
                     AND vp.versionobjid = pa.versionobjid
