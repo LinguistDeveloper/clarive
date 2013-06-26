@@ -13,7 +13,7 @@
         flex:1,
         value: params.rec.include,
         description:_('Element pattern regex to include'), 
-        default_value:'\\.*$' }); 
+        default_value:'\\.ext$' }); 
     
     var exclude = new Baseliner.ArrayGrid({ 
         title:_('Exclude'), 
@@ -21,7 +21,7 @@
         flex:1,
         value: params.rec.exclude,
         description:_('Element pattern regex to exclude'), 
-        default_value:'\\.*$' }); 
+        default_value:'\\.ext$' }); 
 
     var tabs = new Ext.TabPanel({
         activeTab: 0,
