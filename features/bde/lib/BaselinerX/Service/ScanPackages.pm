@@ -48,15 +48,30 @@ sub run : Local {
 sub scan {
     my ($self, %p)=@_;
     use Baseliner::Utils;
+
+    # XXX automatic or from config
+    my $rel_field = 'casos_de_prueba';
+    my $categories = {
+        f => 2,
+        pp => 29,
+        cp => 28,
+        ecp => 26,
+    };
+    my $statuses = {
+        f => 5, # Disponible
+        pp => 8,  # No iniciado 
+        cp => 5,  # Disponible   # para seleccionar, no crear
+        ecp => 8,  # No Iniciado
+    };
+
+    # bl
+    my $bl = $p{bl} // 'ANTE';
     
     my $username = $p{username} || 'baseliner';
     
     # get project
     my $cam = substr($p{cam},0,3);
     _fail( 'falta el parámetro cam' ) unless $cam;
-    
-    # bl
-    my $bl = $p{bl} // 'ANTE';
     
     my $prj_mid = DB->BaliMaster->search({ name=>$cam }, { order_by=>'mid' })->first;
     _fail( "Proyecto $cam no encontrado" ) unless $prj_mid;
@@ -144,22 +159,11 @@ sub scan {
             }
         }
         
-        _log( \@natures );
+        #_log( \@natures );
         $_->save for @natures;  # commit new items
         
     }
     
-    my $categories = {
-        pp => 5,
-        cp => 122,
-        ecp => 123,
-    };
-    
-    my $statuses = {
-        pp => 1, 
-        cp => 83,  # para seleccionar, no crear
-        ecp => 83,
-    };
     
     # crear plan de pruebas
     my ($msg, $pp_topic_mid, $status, $pp_title) = Baseliner->model('Topic')->update({
@@ -176,32 +180,39 @@ sub scan {
     _log( "-----> Creado plan de pruebas " . $pp_topic_mid . " - " . $pp_title );
     
     # asociar casos para las funcs afectadas
-    _log( \@funcs );
+    _log( "Funcionalidades detectadas---------->" . _dump(\@funcs) );
+
     my %casos;
     DB->BaliMaster->search({ mid=>\@funcs, 'parents.rel_type'=>'topic_topic' },
         { prefetch=>'parents' })->hashref->each(sub{
-        my $func = shift;
-        _log "Funcionalidad: " . $func->{name}; 
-        _log $func;
-        # detectar casos de prueba en estado OK (no definición)
-        DB->BaliMasterRel->search(
-            { from_mid=>$func->{mid}, rel_type=>'topic_topic', id_category=>122, id_category_status=>83 },
-            { prefetch=>'topic_topic' }
-        )->hashref->each(sub{
-            my $cp = shift;
-            $casos{ $cp->{topic_topic}{mid} } = $cp->{topic_topic};
-        });
+            my $func = shift;
+            _log "Funcionalidad: " . $func->{name}; 
+            _log $func;
+            # detectar casos de prueba en estado OK (no definición)
+            #  OJO: XXX from_mid o to_mid --> la funcionalidad?
+            _debug( "-------------> $func->{mid}, id_category=>$categories->{cp}, id_category_status=>$statuses->{cp}" );
+            DB->BaliMasterRel->search(
+                { to_mid=>$func->{mid}, rel_type=>'topic_topic', id_category=>$categories->{cp}, id_category_status=>$statuses->{cp} },
+                { prefetch=>'topic_topic' }
+            )->hashref->each(sub{
+                my $cp = shift;
+                $casos{ $cp->{topic_topic}{mid} } = $cp->{topic_topic};
+            });
     });
+
+    _fail( 'No se han detectado casos de prueba relacionados para estos paquetes' ) unless %casos;
+
+    _log( "Casos detectados: " . join',', map { "#$_ " . $casos{$_}{title} } keys %casos );
     
     for my $caso_mid ( keys %casos ) {
-        my $caso_data = $casos{ $caso_mid };
+        #my $caso_data = $casos{ $caso_mid };
         # copiar Caso de Prueba a Ejecución
         my $meta = Baseliner->model('Topic')->get_meta( $caso_mid, $categories->{cp} );
         my $data = Baseliner->model('Topic')->get_data( $meta, $caso_mid );
         my ( $msg, $ecp_topic_mid, $status, $title ) = Baseliner->model('Topic')->update(
             {
                 action         => 'add',
-                title          => sprintf( 'PP %s - Ejecución %s', $pp_topic_mid, $caso_data->{title} ),
+                title          => sprintf( 'PP %s - Ejecución %s', $pp_topic_mid, $data->{title} ),
                 description    => '',
                 caso_de_prueba => $caso_mid,
                 category       => $categories->{ecp},
@@ -216,15 +227,17 @@ sub scan {
         );
 
         # asociar ejecución a plan
-        DB->BaliMasterRel->find_or_create({ from_mid=>$pp_topic_mid, to_mid=>$ecp_topic_mid, rel_type=>'topic_topic' });
+        DB->BaliMasterRel->find_or_create({ from_mid=>$pp_topic_mid, to_mid=>$ecp_topic_mid, rel_type=>'topic_topic', rel_field=>$rel_field });
     }
         
+    _log( 'Asociando paquetes al plan...' );
     # asociar paquetes al plan
     while( my($name, $rev) = each %pkg_valid ) {
         DB->BaliMasterRel->find_or_create({ from_mid=>$pp_topic_mid, to_mid=>$rev->mid, rel_type=>'topic_revision' });
         # TODO agregado
     }
     
+    _log( 'Asociando versiones al plan...' );
     # asociar versiones al plan
     for my $it ( values %top_ver ) {
         DB->BaliMasterRel->find_or_create({ from_mid=>$pp_topic_mid, to_mid=>$it->mid, rel_type=>'topic_item' });

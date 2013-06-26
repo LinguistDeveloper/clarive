@@ -1,0 +1,350 @@
+---
+color: '#20bcff'
+description: Funcionalidad de requerimiento
+fields:
+- id_category: '2'
+  id_field: moniker
+  params_field: '---
+
+    allowBlank: ''1''
+
+    bd_field: moniker
+
+    colspan: ''6''
+
+    field_order: 2
+
+    html: /fields/templates/html/row_body.html
+
+    id_field: moniker
+
+    js: /fields/templates/js/textfield.js
+
+    name_field: Nemónico
+
+    origin: system
+
+    section: body
+
+'
+- id_category: '2'
+  id_field: status_new
+  params_field: '---
+
+    bd_field: id_category_status
+
+    display_field: name_status
+
+    field_order: 3
+
+    framed: ''1''
+
+    html: /fields/templates/html/row_body.html
+
+    id_field: status_new
+
+    js: /fields/system/js/field_status.js
+
+    name_field: Status
+
+    origin: system
+
+    relation: status
+
+    section: body
+
+'
+- id_category: '2'
+  id_field: Proyectos
+  params_field: '---
+
+    bd_field: Proyectos
+
+    field_order: 4
+
+    get_method: get_projects
+
+    html: /fields/system/html/field_projects.html
+
+    id_field: Proyectos
+
+    js: /fields/system/js/list_projects.js
+
+    name_field: Proyectos
+
+    origin: custom
+
+    relation: system
+
+    section: details
+
+    set_method: set_projects
+
+    single_mode: ''false''
+
+    type: listbox
+
+'
+- id_category: '2'
+  id_field: subaplicacion
+  params_field: '---
+
+    bd_field: subaplicacion
+
+    field_order: 5
+
+    get_method: get_projects
+
+    html: /fields/system/html/field_projects.html
+
+    id_field: subaplicacion
+
+    js: /fields/system/js/list_projects.js
+
+    name_field: Subaplicación
+
+    origin: custom
+
+    relation: system
+
+    section: details
+
+    set_method: set_projects
+
+    single_mode: !!perl/scalar:JSON::XS::Boolean 0
+
+    type: listbox
+
+'
+- id_category: '2'
+  id_field: items
+  params_field: '---
+
+    bd_field: items
+
+    ci_role: Item
+
+    field_order: 6
+
+    field_order_html: ''100''
+
+    get_method: get_cis
+
+    html: /fields/templates/html/ci_grid.html
+
+    id_field: items
+
+    js: /fields/templates/js/ci_grid.js
+
+    name_field: Items
+
+    origin: template
+
+    rel_type: topic_item
+
+    section: head
+
+    set_method: set_cis
+
+'
+- id_category: '2'
+  id_field: description
+  params_field: '---
+
+    bd_field: description
+
+    field_order: 7
+
+    field_order_html: ''2''
+
+    html: /fields/templates/html/dbl_row_body.html
+
+    id_field: description
+
+    js: /fields/templates/js/html_editor.js
+
+    name_field: Description
+
+    origin: system
+
+    section: head
+
+'
+- id_category: '2'
+  id_field: category
+  params_field: "---\nbd_field: id_category\nfield_order: -2\nhidden: !!perl/ref\n
+    \ =: 1\nid_field: category\njs: /fields/system/js/field_category.js\nname_field:
+    Category\norigin: system\nrelation: categories\nsection: body\n"
+- id_category: '2'
+  id_field: created_by
+  params_field: '---
+
+    bd_field: created_by
+
+    id_field: created_by
+
+    name_field: Created By
+
+    origin: default
+
+'
+- id_category: '2'
+  id_field: created_on
+  params_field: '---
+
+    bd_field: created_on
+
+    id_field: created_on
+
+    name_field: Created On
+
+    origin: default
+
+'
+- id_category: '2'
+  id_field: modified_by
+  params_field: '---
+
+    bd_field: modified_by
+
+    id_field: modified_by
+
+    name_field: Modified By
+
+    origin: default
+
+'
+- id_category: '2'
+  id_field: modified_on
+  params_field: '---
+
+    bd_field: modified_on
+
+    id_field: modified_on
+
+    name_field: Modified On
+
+    origin: default
+
+'
+- id_category: '2'
+  id_field: labels
+  params_field: '---
+
+    bd_field: labels
+
+    field_order_html: 1
+
+    get_method: get_labels
+
+    id_field: labels
+
+    name_field: Labels
+
+    origin: default
+
+    relation: system
+
+'
+- id_category: '2'
+  id_field: priority
+  params_field: "---\nbd_field: id_priority\nfield_order: -6\nhidden: !!perl/ref\n
+    \ =: 1\nhtml: /fields/system/html/field_priority.html\nid_field: priority\njs:
+    /fields/system/js/field_priority.js\nname_field: Priority\norigin: system\nrelation:
+    priorities\nsection: body\nset_method: set_priority\n"
+- id_category: '2'
+  id_field: progress
+  params_field: "---\nbd_field: progress\nfield_order: -8\nhidden: !!perl/ref\n  =:
+    1\nhtml: /fields/templates/html/progress_bar.html\nid_field: progress\njs: /fields/templates/js/progress_bar.js\nname_field:
+    Progress\norigin: system\nsection: body\n"
+- id_category: '2'
+  id_field: title
+  params_field: '---
+
+    bd_field: title
+
+    colspan: ''6''
+
+    field_order: 1
+
+    field_order_html: ''1''
+
+    html: /fields/system/html/field_title.html
+
+    id_field: title
+
+    js: /fields/templates/js/textfield.js
+
+    name_field: Title
+
+    origin: system
+
+    section: head
+
+'
+- id_category: '2'
+  id_field: include_into
+  params_field: '---
+
+    bd_field: include_into
+
+    field_order: 0
+
+    html: /fields/system/html/field_include_into.html
+
+    id_field: include_into
+
+    name_field: Include into
+
+    origin: default
+
+    section: details
+
+'
+- id_category: '2'
+  id_field: dates
+  params_field: '---
+
+    field_order: 9999
+
+    get_method: get_dates
+
+    html: /fields/system/html/field_scheduling.html
+
+    id_field: dates
+
+    name_field: dates
+
+    origin: default
+
+    relation: system
+
+    section: details
+
+'
+forms: ~
+id: '2'
+is_changeset: '0'
+is_release: '0'
+name: Funcionalidad
+statuses:
+- bind_releases: '0'
+  bl: '*'
+  ci_update: '0'
+  description: ~
+  frozen: '0'
+  id: '4'
+  name: Definición
+  readonly: '0'
+  seq: '1'
+  type: I
+- bind_releases: '0'
+  bl: '*'
+  ci_update: '0'
+  description: ~
+  frozen: '0'
+  id: '5'
+  name: Disponible
+  readonly: '0'
+  seq: '20'
+  type: G

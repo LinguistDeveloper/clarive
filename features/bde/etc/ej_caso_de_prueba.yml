@@ -1,0 +1,449 @@
+---
+color: '#800080'
+description: Ejecucion casos de prueba
+fields:
+- id_category: '26'
+  id_field: status_new
+  params_field: '---
+
+    bd_field: id_category_status
+
+    colspan: ''6''
+
+    display_field: name_status
+
+    field_order: 1
+
+    framed: ''1''
+
+    html: /fields/templates/html/row_body.html
+
+    id_field: status_new
+
+    js: /fields/system/js/field_status.js
+
+    name_field: Status
+
+    origin: system
+
+    relation: status
+
+    section: body
+
+'
+- id_category: '26'
+  id_field: severidad
+  params_field: '---
+
+    allowBlank: ''0''
+
+    anchor: 100%
+
+    bd_field: severidad
+
+    colspan: ''6''
+
+    default_value: Normal
+
+    field_order: 2
+
+    html: /fields/templates/html/pills.html
+
+    id_field: severidad
+
+    js: /fields/templates/js/pills.js
+
+    name_field: Severidad
+
+    options: Grave,#C0392B;Mayor,#F39C12;Normal,#27AE60;Menor,grey
+
+    origin: custom
+
+    section: body
+
+    type: combo
+
+'
+- id_category: '26'
+  id_field: title
+  params_field: '---
+
+    bd_field: title
+
+    field_order: 3
+
+    field_order_html: ''1''
+
+    html: /fields/system/html/field_title.html
+
+    id_field: title
+
+    js: /fields/templates/js/textfield.js
+
+    name_field: Title
+
+    origin: system
+
+    section: head
+
+'
+- id_category: '26'
+  id_field: caso_de_prueba
+  params_field: '---
+
+    bd_field: caso_de_prueba
+
+    field_order: 4
+
+    filter: ''{"labels":[],"categories":["28"],"statuses":[],"priorities":[],"start":0,"limit":25,"typeApplication":""}''
+
+    get_method: get_topics
+
+    html: /fields/system/html/field_topics.html
+
+    id_field: caso_de_prueba
+
+    js: /fields/system/js/list_topics.js
+
+    name_field: Caso de prueba
+
+    origin: custom
+
+    relation: system
+
+    section: details
+
+    set_method: set_topics
+
+    single_mode: !!perl/scalar:JSON::XS::Boolean 1
+
+    type: listbox
+
+'
+- id_category: '26'
+  id_field: proyecto
+  params_field: '---
+
+    bd_field: proyecto
+
+    field_order: 5
+
+    get_method: get_projects
+
+    html: /fields/system/html/field_projects.html
+
+    id_field: proyecto
+
+    js: /fields/system/js/list_projects.js
+
+    name_field: Aplicación
+
+    origin: custom
+
+    relation: system
+
+    section: details
+
+    set_method: set_projects
+
+    single_mode: !!perl/scalar:JSON::XS::Boolean 1
+
+    tree_level: CAM
+
+    type: listbox
+
+'
+- id_category: '26'
+  id_field: precondiciones
+  params_field: '---
+
+    bd_field: precondiciones
+
+    columns: id,index,10;Descripción,textarea,1000;Verificado,checkbox,10
+
+    data: ''1''
+
+    field_order: 6
+
+    field_order_html: ''400''
+
+    html: /fields/templates/html/grid_editor.html
+
+    id_field: precondiciones
+
+    js: /fields/templates/js/grid_editor.js
+
+    name_field: Precondiciones
+
+    origin: custom
+
+    section: head
+
+'
+- id_category: '26'
+  id_field: pasos
+  params_field: "---\nbd_field: pasos\ncolumns: id,index,10;Descripción,textarea,100;Datos
+    de Entrada,textarea,100;Juego\n  de Pruebas,textarea,100;Resultado Esperado,textarea,100;Salida
+    Obtenida,cleditor,100\ndata: '1'\nfield_order: 7\nfield_order_html: '500'\nhtml:
+    /fields/templates/html/grid_editor.html\nid_field: pasos\njs: /fields/templates/js/grid_editor.js\nname_field:
+    Pasos\norigin: custom\nsection: head\ntypeForm: ESP\n"
+- id_category: '26'
+  id_field: ficheros
+  params_field: '---
+
+    bd_field: ficheros
+
+    field_order: 8
+
+    get_method: get_files
+
+    html: /fields/templates/html/upload_files.html
+
+    id_field: ficheros
+
+    js: /fields/templates/js/upload_files.js
+
+    name_field: Ficheros
+
+    origin: custom
+
+    relation: system
+
+    section: details
+
+    type: upload_files
+
+'
+- id_category: '26'
+  id_field: descripcion
+  params_field: '---
+
+    bd_field: description
+
+    field_order: 9
+
+    field_order_html: ''2''
+
+    html: /fields/templates/html/dbl_row_body.html
+
+    id_field: descripcion
+
+    js: /fields/templates/js/html_editor.js
+
+    name_field: Description
+
+    origin: system
+
+    section: head
+
+'
+- id_category: '26'
+  id_field: historial
+  params_field: '---
+
+    bd_field: historial
+
+    field_order: 10
+
+    html: /fields/templates/html/status_changes.html
+
+    id_field: historial
+
+    js: /fields/templates/js/status_changes.js
+
+    name_field: Historial
+
+    origin: custom
+
+    relation: system
+
+    section: details
+
+    type: datefield
+
+'
+- id_category: '26'
+  id_field: moniker
+  params_field: "---\nallowBlank: !!perl/ref\n  =: 1\nbd_field: moniker\nfield_order:
+    -8\nhidden: !!perl/ref\n  =: 1\nhtml: /fields/templates/html/row_body.html\nid_field:
+    moniker\njs: /fields/templates/js/textfield.js\nname_field: Moniker\norigin: system\nsection:
+    body\n"
+- id_category: '26'
+  id_field: category
+  params_field: "---\nbd_field: id_category\nfield_order: -2\nhidden: !!perl/ref\n
+    \ =: 1\nid_field: category\njs: /fields/system/js/field_category.js\nname_field:
+    Category\norigin: system\nrelation: categories\nsection: body\n"
+- id_category: '26'
+  id_field: created_by
+  params_field: '---
+
+    bd_field: created_by
+
+    id_field: created_by
+
+    name_field: Created By
+
+    origin: default
+
+'
+- id_category: '26'
+  id_field: created_on
+  params_field: '---
+
+    bd_field: created_on
+
+    id_field: created_on
+
+    name_field: Created On
+
+    origin: default
+
+'
+- id_category: '26'
+  id_field: modified_by
+  params_field: '---
+
+    bd_field: modified_by
+
+    id_field: modified_by
+
+    name_field: Modified By
+
+    origin: default
+
+'
+- id_category: '26'
+  id_field: modified_on
+  params_field: '---
+
+    bd_field: modified_on
+
+    id_field: modified_on
+
+    name_field: Modified On
+
+    origin: default
+
+'
+- id_category: '26'
+  id_field: labels
+  params_field: '---
+
+    bd_field: labels
+
+    field_order_html: 1
+
+    get_method: get_labels
+
+    id_field: labels
+
+    name_field: Labels
+
+    origin: default
+
+    relation: system
+
+'
+- id_category: '26'
+  id_field: priority
+  params_field: "---\nbd_field: id_priority\nfield_order: -6\nhidden: !!perl/ref\n
+    \ =: 1\nhtml: /fields/system/html/field_priority.html\nid_field: priority\njs:
+    /fields/system/js/field_priority.js\nname_field: Priority\norigin: system\nrelation:
+    priorities\nsection: body\nset_method: set_priority\n"
+- id_category: '26'
+  id_field: description
+  params_field: "---\nbd_field: description\nfield_order: -7\nfield_order_html: 2\nhidden:
+    !!perl/ref\n  =: 1\nhtml: /fields/templates/html/dbl_row_body.html\nid_field:
+    description\njs: /fields/templates/js/html_editor.js\nname_field: Description\norigin:
+    system\nsection: head\n"
+- id_category: '26'
+  id_field: progress
+  params_field: "---\nbd_field: progress\nfield_order: -8\nhidden: !!perl/ref\n  =:
+    1\nhtml: /fields/templates/html/progress_bar.html\nid_field: progress\njs: /fields/templates/js/progress_bar.js\nname_field:
+    Progress\norigin: system\nsection: body\n"
+- id_category: '26'
+  id_field: include_into
+  params_field: '---
+
+    bd_field: include_into
+
+    field_order: 0
+
+    html: /fields/system/html/field_include_into.html
+
+    id_field: include_into
+
+    name_field: Include into
+
+    origin: default
+
+    section: details
+
+'
+- id_category: '26'
+  id_field: dates
+  params_field: '---
+
+    field_order: 9999
+
+    get_method: get_dates
+
+    html: /fields/system/html/field_scheduling.html
+
+    id_field: dates
+
+    name_field: dates
+
+    origin: default
+
+    relation: system
+
+    section: details
+
+'
+forms: ~
+id: '26'
+is_changeset: '0'
+is_release: '0'
+name: Ejecución CP
+statuses:
+- bind_releases: '0'
+  bl: '*'
+  ci_update: '0'
+  description: ~
+  frozen: '0'
+  id: '9'
+  name: En Curso
+  readonly: '0'
+  seq: ~
+  type: G
+- bind_releases: '0'
+  bl: '*'
+  ci_update: '0'
+  description: ~
+  frozen: '0'
+  id: '8'
+  name: No Iniciado
+  readonly: '0'
+  seq: '2'
+  type: I
+- bind_releases: '0'
+  bl: '*'
+  ci_update: '0'
+  description: ~
+  frozen: '0'
+  id: '10'
+  name: Terminado
+  readonly: '0'
+  seq: ~
+  type: F
+- bind_releases: '0'
+  bl: '*'
+  ci_update: '0'
+  description: ~
+  frozen: '0'
+  id: '11'
+  name: Bloqueado
+  readonly: '0'
+  seq: ~
+  type: G
