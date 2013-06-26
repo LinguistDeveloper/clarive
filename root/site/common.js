@@ -2757,3 +2757,34 @@ Baseliner.MonoTextArea = Ext.extend( Ext.form.TextArea, {
     style: 'font-family: Consolas, Courier New, monotype'
 });
     
+Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
+    name: 'item',
+    mode: 'local',
+    triggerAction: 'all',
+    editable: false,
+    anchor: '100%',
+    forceSelection: true,
+    allowBlank: false,
+    selectOnFocus: true,
+    initComponent: function(){
+        var data = [];
+        if( this.data ) {
+            Ext.each( this.data, function(v){
+                data.push( [v] );
+            });
+        }
+        this.store = new Ext.data.ArrayStore({
+            fields: [ this.name ],
+            data : data 
+        });  
+        var f = Ext.apply({
+            name: this.name,
+            fieldLabel: this.name,
+            valueField: this.name,
+            displayField: this.name,
+            value: data[0][0]
+        }, this);
+        Ext.apply( this, f );
+        Baseliner.ComboSingle.superclass.initComponent(this); 
+    }
+});
