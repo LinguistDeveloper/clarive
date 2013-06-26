@@ -9,7 +9,7 @@
     { order_by=>{ -asc=>'ts' } })->hashref->each( sub {
             try {
             my $ed = _load( $_->{event_data} );
-            push @status_changes, { old_status=>$ed->{old_status}, status=>$ed->{status}, username=>$_->{username}, when=>Class::Date->new( $ed->{ts} ) };
+            push @status_changes, { old_status=>$ed->{old_status}, status=>$ed->{status}, username=>$ed->{username}, when=>Class::Date->new( $_->{ts} ) };
             } catch {};
     });
 
