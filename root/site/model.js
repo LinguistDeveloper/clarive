@@ -1520,15 +1520,15 @@ Baseliner.kanban = function(c){
                 return e.column.drop_available; //==undefined ? false : e.column.drop_available;
             },
             'beforedrop': function(e){
-                var col = e.column;
-                Ext.each( kanban.items.items, function(c) {
-                    var el = c.getEl();
-                    el.unmask();
-                    el.setHeight('auto');
-                    //c.doLayout();
-                });
-                // send data to server
-                return true;
+			   var col = e.column;
+			   Ext.each( kanban.items.items, function(c) {
+				   var el = c.getEl();
+				   el.unmask();
+				   el.setHeight('auto');
+				   //c.doLayout();
+			   });
+			   // send data to server
+			   return true;
             },
             'drop': function(e){
                 // update portlet data
