@@ -641,15 +641,18 @@ Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
 
         self.$field = document.createElement('textarea');
         self.$field.className = 'wmd-input';
-        self.$field.style['width'] = self.el.parent().getWidth() + 'px';
+        //self.$field.style['width'] = self.el.getWidth() + 'px';
         self.$field.id = 'wmd-input-' + self.id;
         self.$field.value =  self.value ;
         this.el.dom.appendChild( self.$field );
         
+        self.boot = document.createElement('span');
+        self.boot.id = 'boot';
         self.preview = document.createElement('div');
         self.preview.id = "wmd-preview-" + self.id;
         self.preview.className = "wmd-panel wmd-preview";
-        this.el.dom.appendChild( self.preview );   
+        self.boot.appendChild( self.preview );   
+        this.el.dom.appendChild( self.boot );   
         
         self.converter = Markdown.getSanitizingConverter();
         self.converter.hooks.chain("preBlockGamut", function (text, rbg) {
@@ -675,7 +678,7 @@ Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
         this.redraw();
     },
     onResize : function( w,r ) {
-       this.$field.style['width'] = ( w - 200 ) + 'px';
+       //this.$field.style['width'] = ( w - 200 ) + 'px';
     },
     setSize : Ext.emptyFn,
     setWidth : Ext.emptyFn,

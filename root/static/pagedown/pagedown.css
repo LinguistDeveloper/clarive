@@ -4,13 +4,15 @@
 	background: #d0f0ff;
 }
 
+/*
 .wmd-panel
 {
-	--margin-left: 25%;
-	--margin-right: 25%;
+	margin-left: 25%;
+	margin-right: 25%;
 	width: 50%;
 	min-width: 500px;
 }
+*/
 
 .wmd-button-bar 
 {
@@ -22,13 +24,14 @@
 { 
 	height: 300px;
 	width: 100%;
-	background-color: Gainsboro;
-	border: 1px solid DarkGray;
+	background-color: #fbfbfb;
+	border: 1px solid #a99;
 }
 
 .wmd-preview 
 { 
-	background-color: #c0e0ff; 
+    color: #fff;
+	background-color: #2C3E50; 
 }
 
 .wmd-button-row 

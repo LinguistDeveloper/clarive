@@ -20,7 +20,7 @@ params:
         name: meta.id_field,
         anchor: meta.anchor || '100%',
         height: meta.height || 30,
-        value: 'xxx' || value || ''
+        value: value || ''
     });
     return [
         editor
