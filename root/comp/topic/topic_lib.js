@@ -765,7 +765,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             mid: { header:_('id'), dataindex:'mid', hidden: true },
             name: { header:_('Name'), dataindex:'name', renderer: self.render_topic_name },
             title: { header:_('Title'), dataindex:'title' },
-            status: { header:_('Status'), dataindex:'status', renderer: Baseliner.render_status }
+            status: { header:_('Status'), dataindex:'name_status', renderer: Baseliner.render_status }
         };
         var col_prefs = Ext.isArray( self.columns ) ? self.columns : Ext.isString(self.columns) ? self.columns.split(';') : [];
         if( col_prefs.length > 0 ) {

@@ -219,8 +219,8 @@ sub related : Local {
         if( $p->{with_data} ) {
             my $meta = $c->model('Topic')->get_meta( $_->{mid} );
             $_->{data} = $c->model('Topic')->get_data( $meta, $_->{mid} );
-            $_->{description} = $_->{data}{description};
-            $_->{status} = $_->{data}{name_status};
+            $_->{description} //= $_->{data}{description};
+            $_->{name_status} //= $_->{data}{name_status};
         }
 
         $_->{name} = $_->{categories}{is_release} eq '1' 

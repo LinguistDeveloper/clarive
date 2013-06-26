@@ -674,8 +674,10 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.cm = new Ext.grid.ColumnModel([{
             dataIndex: self.name,
             width: '100%',
+            renderer: function(v){ return String.format('<span style="font: 12px Consolas, Courier New, monotype">{0}</span>', v) },
             editor: new Ext.form.TextField({
                 allowBlank: false, 
+                style: 'font-family: Consolas, Courier New, monotype',
                 renderer: function(v) {  return "a" }
             })
         }]);

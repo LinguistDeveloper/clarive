@@ -1072,9 +1072,9 @@ sub get_topics{
     @topics = map {
         my $meta = $self->get_meta( $_->{mid} );
         my $data = $self->get_data( $meta, $_->{mid} );
-        $_->{description} = $data->{description};
-        $_->{status} = $data->{name_status};
-        $_->{data} = $data;
+        $_->{description} //= $data->{description};
+        $_->{name_status} //= $data->{name_status};
+        $_->{data} //= $data;
         $_
     } @topics;
     return @topics ? \@topics : [];    
