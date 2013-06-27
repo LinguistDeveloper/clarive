@@ -98,8 +98,8 @@ cpanm -n Text::Markdown
 
 ----------------------------------------
 
-* arreglar fecha en status_change.html (event ts) -- usar 1 day ago, 1 week ago, ( y la fecha en pequeño)
-* añadir evento creado en el historial
+X arreglar fecha en status_change.html (event ts) -- usar 1 day ago, 1 week ago, ( y la fecha en pequeño)
+X añadir evento creado en el historial
 
 ** combo correcto o incorrecto en la salida del caso.
 - fechas de cambio de estado en topic_msg
@@ -119,6 +119,7 @@ cpanm -n Text::Markdown
 - Topic comment - permitir Markdown field first
 - CI export and import a la derecha del todo, bajo icono de tools
 - origin=custom fieldlet problem
+- view mason topic_msg errors on screen.
 - slow project and subapl load
 - topic_grid - no subproject seen - should only show the main project
 - graph visualizer access from cigridtree
