@@ -1,9 +1,5 @@
-<%perl>
-    use Baseliner::Utils;
-    my $id = _nowstamp;
-</%perl>
-
 (function(){
+    var id = Ext.id();
     var store_status = new Baseliner.Topic.StoreStatus();
     var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
     
@@ -641,7 +637,7 @@
                 
                 );                
             } else {
-                Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');    
+                Ext.Msg.alert('Error',  _('Select at least one row'));    
             };
         }
     });     
@@ -706,7 +702,7 @@
         var store_admin_status = new Baseliner.Topic.StoreCategoryStatus({
                 listeners: {
                     'load': function( store, rec, obj ) {
-                        statusCbx = Ext.getCmp('status-combo_<%$id%>');
+                        statusCbx = Ext.getCmp('status-combo_' + id);
                         store.filter( { fn   : function(record) {
                         
                                                                     return record.get('name') != statusCbx.getRawValue();
@@ -789,7 +785,7 @@
         
         var combo_status = new Ext.form.ComboBox({
             mode: 'local',
-            id: 'status-combo_<%$id%>',
+            id: 'status-combo_' + id,
             forceSelection: true,
             triggerAction: 'all',
             emptyText: _('select status...'),
@@ -1119,6 +1115,7 @@
     
     var edit_fields = function(rec) {
         var win;
+        var id_drag_drop = Ext.id();
         var title = render_category( rec.data.name, {}, rec);
 
         var treeRoot = new Ext.tree.AsyncTreeNode({
@@ -1138,7 +1135,7 @@
             height:300,         
             rootVisible: false,
             enableDD: true,
-            ddGroup: 'tree_fields_dd',          
+            ddGroup: 'tree_fields_dd' + id_drag_drop,          
             root: treeRoot
         });
         
@@ -1260,7 +1257,7 @@
             title: _('Fields category'),
             hideHeaders: true,
             enableDragDrop : true,
-            ddGroup : 'mygrid-dd',  
+            ddGroup : 'mygrid-dd' + id_drag_drop,  
             viewConfig: {
                 headersDisabled: true,
                 enableRowBody: true,
@@ -1282,7 +1279,7 @@
             var el = this.el.dom; 
             var fields_box_dt = new Baseliner.DropTarget(el, {
                 comp: this,
-                ddGroup: 'tree_fields_dd',
+                ddGroup: 'tree_fields_dd' + id_drag_drop,
                 copy: true,
                 notifyDrop: function(dd, e, id) {
                     var n = dd.dragData.node;
@@ -1489,7 +1486,7 @@
         category_fields_grid.on('viewready', function() {
             var ddrow = new Baseliner.DropTarget(category_fields_grid.getView().mainBody, {  
                 comp: category_fields_grid,
-                ddGroup : 'mygrid-dd',  
+                ddGroup : 'mygrid-dd' + id_drag_drop,  
                 notifyDrop : function(dd, e, data){  
                     var sm = category_fields_grid.getSelectionModel();  
                     var rows = sm.getSelections();  
@@ -2013,7 +2010,6 @@
 
     var color_lbl = '000000';
     var color_label = new Ext.form.TextField({
-        //id:'color_label_<%$id%>',
         width: 25,
         readOnly: true,
         style:'background:#' + color_lbl
@@ -2022,7 +2018,6 @@
     var colorMenu = new Ext.menu.ColorMenu({
         handler: function(cm, color) {
             color_label.el.setStyle('background','#' + color );
-            //eval("Ext.get('color_label_<%$id%>').setStyle('background','#" + color + "')");
             color_lbl = color ;
         }
     });
