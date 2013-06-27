@@ -431,8 +431,11 @@ Options:
     does_all => ['Server', 'Project']
         filters CIs that do all of the roles (AND)
 
-    filter_early => 1|0
+    filter_early => 1|0 (default:0)
         checks CIs filters (does) before recursing. 
+    
+    unique => 1|0 (default:0)
+        no duplicate cis in the list, useful to avoid recursive trees
 
 =cut
 sub related {
@@ -452,9 +455,13 @@ sub related {
     return () if exists $opts{visited}{$mid};
     local $Baseliner::CI::_no_record = $opts{no_record} // 0; # make sure we include a _ci 
     $opts{visited}{ $mid } = 1;
+    local $Baseliner::ci_unique = {} unless defined $Baseliner::ci_unique;
     
     # get my related cis
     my @cis = $self->related_cis( %opts );
+    # unique?
+    @cis = grep { !exists $Baseliner::ci_unique->{$_->{mid}} && ($Baseliner::ci_unique->{$_->{mid}}=1) } @cis
+        if $opts{unique} ;
     # filter before
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
