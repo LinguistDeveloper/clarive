@@ -860,8 +860,11 @@ sub avatar_refresh : Local {
     my $p      = $c->req->params;
     try {
         my $avatar = _file( $c->path_to( "/root/identicon" ), $c->username . '.png' );
+        -e $avatar or _fail _loc "Avatar file not found: %1", $avatar;
         unlink $avatar or _fail $!;
-        $c->stash->{ json } = { success => \1, msg => _loc( 'Avatar refreshed' ) } ;            
+        my $user = $c->model('Baseliner::BaliUser')->search({ username=>$c->username })->first;
+        $user->update({ avatar=>undef });
+        $c->stash->{ json } = { success => \1, msg => _loc( 'Avatar refreshed fo user %1', $c->username ) } ;            
     } catch {
         my $err = shift;
         _error "Error refreshing avatar: " . $err;
@@ -898,7 +901,7 @@ sub identicon {
     my $generate = sub {
             # generate png identicon from random
             require Image::Identicon;
-            my $salt = '1234';
+            my $salt = '1234' . _nowstamp;
             my $identicon = Image::Identicon->new({ salt=>$salt });
             my $image = $identicon->render({ code=> int(rand( 2 ** 32)), size=>32 });
             return $image->{image}->png;
