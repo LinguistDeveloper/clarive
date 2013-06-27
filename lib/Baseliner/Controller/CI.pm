@@ -810,14 +810,14 @@ sub json_tree : Local {
         my @all;
         for my $mid ( _array( $mids ) ) { 
             my $ci = _ci( $mid );
-            my @rels = $ci->$direction( depth=>2, mode=>'tree', %$p );
+            my @rels = $ci->$direction( depth=>2, mode=>'tree', unique=>1, %$p );
             my $recurse;
             $recurse = sub {
                 my $chi = shift;
                 $k++;
                 +{
                     id       => $k . '-' . $chi->{mid},
-                    name     => $chi->{name},
+                    name     => '#' . $chi->{mid} . ' ' . $chi->{name},
                     data => {
                         '$type' => 'icon',
                         icon     => $chi->{_ci}{ci_icon},
@@ -840,7 +840,7 @@ sub json_tree : Local {
         my $ret = @all == 1 
             ? $all[0]
             : {
-                id=>99999,
+                id=>_nowstamp,
                 name=>'search', 
                 data => { icon=>'/static/images/icons/ci.png' },
                 children => \@all
