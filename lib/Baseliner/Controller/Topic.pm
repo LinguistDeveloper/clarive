@@ -572,6 +572,17 @@ sub view : Local {
     };
 }
 
+sub title_row : Local {
+    my ($self, $c ) = @_;
+    my $mid = $c->req->params->{mid};
+    my $row = DB->BaliTopic->search(
+        { mid => $mid }, { join=>'categories', 
+        select=>[qw/mid title categories.name categories.color/], 
+        as=>[qw/mid title category_name category_color/] } );
+    $row = $row->hashref->first;
+    $c->stash->{json} = { success=>$row ? \1 : \0, row => $row };
+    $c->forward('View::JSON');
+}
 
 sub comment : Local {
     my ($self, $c, $action) = @_;
