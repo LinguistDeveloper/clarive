@@ -207,8 +207,6 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         var c = n.attributes.data.click;
         var params = n.attributes.data;
         
-        console.dir(n);
-        
         if(n.attributes.text == _('Topics')){
             params.id_project = n.parentNode.attributes.data.id_project;
         }
