@@ -28,8 +28,8 @@ my $ecat = 26; # ECP
 my $cstatus = 5; # disponible
 my $ccat = 28; # Caso de Prueba
 my $prj_mid = 58; # SCM
-my $res = { 'correcto' => 14, ''=>15 };  # ECP Correcto / Incorrecto
-my $estatus = 15; # en curso
+my $res = { 'correcto' => 14, 'incorrecto'=>15 };  # ECP Correcto / Incorrecto
+my $estatus = 8; # no iniciado
 
 my $i=0;
 my $cup = my $eup = my $cadd = my $eadd = 0;
