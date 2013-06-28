@@ -1175,7 +1175,7 @@ sub save_data {
 
             my $method = $relation{ $field };
 
-            if ($row{$field} != $old_value{$field}){
+            if ($row{$field} ne $old_value{$field}){
                 if($field eq 'id_category_status'){
                     
                     my @projects = $topic->projects->hashref->all;
