@@ -213,7 +213,13 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         if( params.tab_icon == undefined ) params.tab_icon = c.icon;
 
         if( c.type == 'comp' ) {
-            Baseliner.add_tabcomp( c.url, _(c.title), params );
+            if(n.attributes.topic_name) {
+                var topic = n.attributes.topic_name;
+                var title = Baseliner.topic_title( topic.mid, _(topic.category_name), topic.category_color );
+                Baseliner.show_topic( topic.mid, title, { topic_mid: topic.mid, title: title, _parent_grid: undefined } );
+            }
+            else Baseliner.add_tabcomp( c.url, _(c.title), params );
+            
         } else if( c.type == 'html' ) {
             Baseliner.add_tab( c.url, _(c.title), params );
         } else if( c.type == 'iframe' ) {

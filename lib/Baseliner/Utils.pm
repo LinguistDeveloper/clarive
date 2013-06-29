@@ -111,6 +111,7 @@ other => [qw(
     _load_yaml_from_comment
     _markdown
     hash_shallow
+    ago
 )];
 
 # setup I18n
@@ -1274,6 +1275,26 @@ sub _reload_dir {
 sub _load_yaml_from_comment {
     my ($y,$rest) = $_[0] =~ m{^(?:<!--+|/\*)(.*?)(?:---|-->+|\*/)}gs;
     return $y;
+}
+
+sub ago {
+    my ($date) = @_;
+    my $now = Class::Date->now();
+    $date = Class::Date->new( $date );
+    my $d = $now-$date;
+    my $v = 
+       $d <= 1 ? _loc('just now')
+      : $d < 60 ? _loc('%1 seconds ago', int $d )
+      : $d < 3600 ? _loc('%1 minutes ago', int $d/60 )
+      : $d < 7200 ? _loc('1 hour ago' )
+      : $date > $now-'1D' ? _loc('%1 hours ago', int $d/3600 )
+      : $date > $now-'7D' ? _loc('%1 days ago', int $d/(3600*24) )
+      : $date > $now-'1M' ? _loc('%1 weeks ago', int $d/(3600*24*7) )
+      : $date > $now-'1Y' ? _loc('%1 months ago', int $d/(3600*24*7*4.33) )
+      : $date > $now-'2Y' ? _loc('1 year ago')
+      : _loc('%1 years ago', int $d/(2_629_744*12) )
+    ;
+    $v;
 }
 
 {
