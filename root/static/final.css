@@ -176,6 +176,7 @@
 }
 
 .styledCheckboxWrap {
+    padding: 1px;
     position: relative;
     background: url('/static/images/row-check-sprite.png') no-repeat;
     height: 18px;
