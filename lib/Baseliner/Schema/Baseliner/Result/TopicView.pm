@@ -76,11 +76,9 @@ __PACKAGE__->result_source_instance->view_definition(q{
                     LEFT JOIN BALI_POST PS ON PS.MID = REL_PS.TO_MID
                     LEFT JOIN BALI_MASTER_REL REL_USER ON REL_USER.FROM_MID = T.MID AND REL_USER.REL_TYPE = 'topic_users'
                     LEFT JOIN BALI_USER U ON U.MID = REL_USER.TO_MID
-                    
                     LEFT JOIN BALI_MASTER_REL REL_TO_MID ON REL_TO_MID.FROM_MID = T.MID AND REL_TO_MID.REL_TYPE NOT IN( 
                         'topic_post','topic_file_version','topic_project','topic_users' )
                     LEFT JOIN BALI_MASTER TO_MID ON TO_MID.MID = REL_TO_MID.TO_MID
-
                     LEFT JOIN BALI_MASTER_REL REL_FROM_MID ON REL_FROM_MID.TO_MID = T.MID AND REL_FROM_MID.REL_TYPE NOT IN( 
                         'topic_post','topic_file_version','topic_project','topic_users' )
                     LEFT JOIN BALI_MASTER FROM_MID ON FROM_MID.MID = REL_FROM_MID.FROM_MID

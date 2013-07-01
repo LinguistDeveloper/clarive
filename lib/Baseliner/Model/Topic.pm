@@ -1767,13 +1767,13 @@ sub search_query {
             map { _array( $_ ) }
             grep { defined }
             map { $r->{$_} }
-            qw/created_on category_name projects 
-                assignee file_name category_status_name created_by 
-                labels modified_on modified_by/;
+            qw/category_name projects 
+                assignee file_name category_status_name 
+                labels modified_on modified_by created_on created_by contains contained_by/;
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
         my $info = join(', ',@text);
-        my $desc = _strip_html( sprintf "%s %s", $r->{description}, $r->{text} );
+        my $desc = _strip_html( sprintf "%s %s", ($r->{description} // ''), ($r->{text} // '') );
         if( length $desc ) {
             $desc = _utf8 $desc;  # strip html messes up utf8
             $desc =~ s/[^\w\s]//g; 
@@ -1784,7 +1784,9 @@ sub search_query {
             text  => $desc,
             info  => $info,
             url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color} ],
-            type  => 'topic'
+            type  => 'topic',
+            mid   => $r->{topic_mid},
+            id    => $r->{topic_mid},
         }
     } _array( $json->{data} );
 }
