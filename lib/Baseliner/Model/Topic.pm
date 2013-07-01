@@ -975,7 +975,9 @@ sub get_data {
 
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
+        $data->{created_on_epoch} = $row->created_on->epoch;
         $data->{modified_on} = $row->modified_on->dmy . ' ' . $row->modified_on->hms;
+        $data->{modified_on_epoch} = $row->modified_on->epoch;
         #$data->{deadline} = $row->deadline_min ? $row->created_on->clone->add( minutes => $row->deadline_min ):_loc('unassigned');
         $data->{deadline} = _loc('unassigned');
         
