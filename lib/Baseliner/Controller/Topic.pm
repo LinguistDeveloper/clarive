@@ -916,7 +916,9 @@ sub filters_list : Local {
         cls     => 'forum default',
         iconCls => 'icon-no',
         checked => \0,
-        leaf    => 'true'
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+        
     };
     
     if(!$typeApplication){
@@ -929,10 +931,11 @@ sub filters_list : Local {
             cls     => 'forum default',
             iconCls => 'icon-no',
             checked => \0,
-            leaf    => 'true'
+            leaf    => 'true',
+            uiProvider => 'Baseliner.CBTreeNodeUI_system'
         };
     }
-    ##################################################################################
+    #################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
     
@@ -947,7 +950,8 @@ sub filters_list : Local {
                 cls     => 'forum',
                 iconCls => 'icon-no',
                 checked => \0,
-                leaf    => 'true'
+                leaf    => 'true',
+                uiProvider => 'Baseliner.CBTreeNodeUI_system'
             };	
         }  
     }   
