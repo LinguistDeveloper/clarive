@@ -1068,15 +1068,16 @@ sub export : Local {
 sub import : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    my @log;
     try{
-        my @log;
-        my $is_new;
-        my $topic_cat;
         Baseliner->model('Baseliner')->txn_do( sub {
             my $yaml = $p->{yaml} or _fail _loc('Missing parameter yaml');
             my $import = _load( $yaml );
             $import = [ $import ] unless ref $import eq 'ARRAY';
             for my $data ( _array( $import ) ) {
+                next if !defined $data;
+                my $is_new;
+                my $topic_cat;
                 delete $data->{id};
                 my $fields = delete $data->{fields};
                 my $statuses = delete $data->{statuses};
@@ -1093,6 +1094,7 @@ sub import : Local {
                
                 # fields
                 for my $field ( _array( $fields ) ) {
+                    next if !defined $field;
                     delete $field->{id_category};
                     my $params_field = _load( $field->{params_field} );
                     my $frow = $topic_cat->fields->search({ id_field=>$field->{id_field} })->first;
@@ -1107,6 +1109,7 @@ sub import : Local {
                 
                 # statuses
                 for my $status ( _array( $statuses ) ) {
+                    next if !defined $status;
                     delete $status->{id};
                     my $srow = DB->BaliTopicStatus->search({ name=>$status->{name} })->first;
                     if( !$srow ) {
@@ -1134,7 +1137,7 @@ sub import : Local {
         $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
     }
     catch{
-        $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };
+        $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error exporting: %1', shift()) };
     };
     $c->forward('View::JSON');  
 }
