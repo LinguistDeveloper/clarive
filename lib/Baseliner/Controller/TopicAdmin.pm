@@ -1035,18 +1035,29 @@ sub export : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try{
-        my $id = $p->{id_category} or _fail( _loc('Missing parameter id') );
-        # TODO prefetch states and workflow
-        my $status = DB->BaliTopicStatus->search()->hashref->hash_unique_on('id');
-        my $topic = DB->BaliTopicCategories->search({ id=> $id }, { prefetch=>['fields', 'statuses'] })->hashref->first;
-        my $ss = delete $topic->{statuses};
-        for my $st ( @$ss ) {
-            push @{ $topic->{statuses} }, $status->{$st->{id_status} }; #{ name=>'rrr' };
+        $p->{id_category} or _fail( _loc('Missing parameter id') );
+        my $export;
+        my @cats; 
+        for my $id (  _array( $p->{id_category} ) ) {
+            # TODO prefetch states and workflow
+            my $status = DB->BaliTopicStatus->search()->hashref->hash_unique_on('id');
+            my $topic = DB->BaliTopicCategories->search({ id=> $id }, { prefetch=>['fields', 'statuses'] })->hashref->first;
+            my $ss = delete $topic->{statuses};
+            for my $st ( @$ss ) {
+                push @{ $topic->{statuses} }, $status->{$st->{id_status} }; #{ name=>'rrr' };
+            }
+            _fail _loc('Category not found for id %1', $id) unless $topic;
+            push @cats, $topic;
         }
-        _fail _loc('Category not found for id %1', $id) unless $topic;
-        my $yaml = _dump( $topic );
-        utf8::decode( $yaml );
-        $c->stash->{json} = { success => \1, yaml=>$yaml };  
+        if( @cats > 1 ) {
+            my $yaml = _dump( \@cats );
+            utf8::decode( $yaml );
+            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+        } else {
+            my $yaml = _dump( $cats[0] );
+            utf8::decode( $yaml );
+            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+        }
     }
     catch{
         $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };
@@ -1063,62 +1074,64 @@ sub import : Local {
         my $topic_cat;
         Baseliner->model('Baseliner')->txn_do( sub {
             my $yaml = $p->{yaml} or _fail _loc('Missing parameter yaml');
-            my $data = _load( $yaml );
-            delete $data->{id};
-            my $fields = delete $data->{fields};
-            my $statuses = delete $data->{statuses};
-            push @log => "----------------| Category: $data->{name} |----------------";
-            $topic_cat = DB->BaliTopicCategories->search({ name=>$data->{name} })->first;
-            $is_new = !$topic_cat;
-            if( $is_new ) {
-                $topic_cat = DB->BaliTopicCategories->create( $data );
-                push @log => _loc('Created category %1', $data->{name} );
-            } else {
-                $topic_cat->update( $data );
-                push @log => _loc('Updated category %1', $data->{name} );
-            }
-           
-            # fields
-            for my $field ( _array( $fields ) ) {
-                delete $field->{id_category};
-                my $params_field = _load( $field->{params_field} );
-                my $frow = $topic_cat->fields->search({ id_field=>$field->{id_field} })->first;
-                if( $frow ) {
-                    $frow->update( $field );
-                    push @log => _loc('Updated field %1 (%2)', $field->{id_field}, $params_field->{name_field} );
+            my $import = _load( $yaml );
+            $import = [ $import ] unless ref $import eq 'ARRAY';
+            for my $data ( _array( $import ) ) {
+                delete $data->{id};
+                my $fields = delete $data->{fields};
+                my $statuses = delete $data->{statuses};
+                push @log => "----------------| Category: $data->{name} |----------------";
+                $topic_cat = DB->BaliTopicCategories->search({ name=>$data->{name} })->first;
+                $is_new = !$topic_cat;
+                if( $is_new ) {
+                    $topic_cat = DB->BaliTopicCategories->create( $data );
+                    push @log => _loc('Created category %1', $data->{name} );
                 } else {
-                    $topic_cat->fields->create( $field );
-                    push @log => _loc('Created field %1 (%2)', $field->{id_field}, $params_field->{name_field} );
+                    $topic_cat->update( $data );
+                    push @log => _loc('Updated category %1', $data->{name} );
                 }
-            }
-            
-            # statuses
-            for my $status ( _array( $statuses ) ) {
-                delete $status->{id};
-                my $srow = DB->BaliTopicStatus->search({ name=>$status->{name} })->first;
-                if( !$srow ) {
-                    $srow = DB->BaliTopicStatus->create( $status );
-                    $topic_cat->statuses->create({ id_status=>$srow->id });
-                    push @log => _loc('Created status %1', $status->{name} );
-                } else { 
-                    push @log => _loc('Status %1 found. Statuses are not updated by this import.', $status->{name} );
-                    my $srel = $topic_cat->statuses->search({ id_status=>$srow->id })->first;
-                    if( !$srel ) {
-                        $topic_cat->statuses->create({ id_status=>$srow->id });
-                        push @log => _loc("Status '%1' included in category", $status->{name} );
+               
+                # fields
+                for my $field ( _array( $fields ) ) {
+                    delete $field->{id_category};
+                    my $params_field = _load( $field->{params_field} );
+                    my $frow = $topic_cat->fields->search({ id_field=>$field->{id_field} })->first;
+                    if( $frow ) {
+                        $frow->update( $field );
+                        push @log => _loc('Updated field %1 (%2)', $field->{id_field}, $params_field->{name_field} );
                     } else {
-                        push @log => _loc("Status '%1' was already included.", $status->{name} );
+                        $topic_cat->fields->create( $field );
+                        push @log => _loc('Created field %1 (%2)', $field->{id_field}, $params_field->{name_field} );
                     }
                 }
+                
+                # statuses
+                for my $status ( _array( $statuses ) ) {
+                    delete $status->{id};
+                    my $srow = DB->BaliTopicStatus->search({ name=>$status->{name} })->first;
+                    if( !$srow ) {
+                        $srow = DB->BaliTopicStatus->create( $status );
+                        $topic_cat->statuses->create({ id_status=>$srow->id });
+                        push @log => _loc('Created status %1', $status->{name} );
+                    } else { 
+                        push @log => _loc('Status %1 found. Statuses are not updated by this import.', $status->{name} );
+                        my $srel = $topic_cat->statuses->search({ id_status=>$srow->id })->first;
+                        if( !$srel ) {
+                            $topic_cat->statuses->create({ id_status=>$srow->id });
+                            push @log => _loc("Status '%1' included in category", $status->{name} );
+                        } else {
+                            push @log => _loc("Status '%1' was already included.", $status->{name} );
+                        }
+                    }
+                }
+                # TODO workflow ? 
+                push @log => $is_new 
+                    ? _loc('Topic category created with id %1 and name %2:', $topic_cat->id, $topic_cat->name) 
+                    : _loc('Topic category %1 updated', $topic_cat->name) ;
             }
-            
         });   # txn_do end
-        # TODO workflow ? 
         
-        $c->stash->{json} = { success => \1, log=>\@log, msg=>$is_new 
-            ? _loc('Topic category created with id %1 and name %2:', $topic_cat->id, $topic_cat->name) 
-            : _loc('Topic category %1 updated', $topic_cat->name) 
-        };  
+        $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
     }
     catch{
         $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };

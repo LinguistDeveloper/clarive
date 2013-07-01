@@ -1803,7 +1803,7 @@
     });     
     
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
-        singleSelect: true,
+        singleSelect: false,
         sortable: false,
         checkOnly: true
     });
@@ -2746,7 +2746,12 @@
     });
     
     var category_export = function(sel){
-        Baseliner.ajaxEval('/topicadmin/export', { id_category: sel.data.id }, function(res){
+        var sel = check_categories_sm.getSelections();
+        var ids = [];
+        Ext.each( sel, function(s){
+            ids.push( s.data.id );
+        });
+        Baseliner.ajaxEval('/topicadmin/export', { id_category: ids }, function(res){
             if( !res.success ) {
                 Baseliner.error( _('Export'), res.msg );
                 return;
@@ -2762,8 +2767,8 @@
     };
     
     var category_import = function(){
-        var data_paste = new Baseliner.MonoTextArea({ fieldLabel: _('Input Data'), anchor:'100%' });
-        var results = new Baseliner.MonoTextArea({ fieldLabel: _('Results'), anchor:'100%' });
+        var data_paste = new Baseliner.MonoTextArea({ fieldLabel: _('Input Data'), anchor:'100%', height:'100%' });
+        var results = new Baseliner.MonoTextArea({ fieldLabel: _('Results'), anchor:'100%', height:'100%' });
         var win = new Baseliner.Window({
             title: _('Import'),
             width: 800, height: 400, layout:'vbox',
