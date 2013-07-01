@@ -13,7 +13,14 @@
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
 	var id_project = '<% $c->stash->{id_project} %>';
-    var base_params = { start: 0, limit: ps, typeApplication: typeApplication, id_project: id_project ? id_project : undefined, topic_list: params.topic_list ? params.topic_list : undefined };  // for store_topics
+    
+    var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
+        from_mid: params.from_mid,
+        to_mid: params.to_mid,
+        id_project: id_project ? id_project : undefined, 
+        topic_list: params.topic_list ? params.topic_list : undefined 
+    };  // for store_topics
+
     // this grid may be limited for a given category category id 
     var category_id = '<% $c->stash->{category_id} %>';
     if( category_id ) {
@@ -486,38 +493,63 @@
         return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div>";
     };  
     
-    var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var tag_comment_html;
-        var tag_comment_html = new Array();
+    var shorten_title = function(t){
+        if( !t || t.length==0 ) {
+            t = '';
+        } else if( t.length > 12 ) {
+            t = t.substring(0,12) + '\u2026'; 
+        } 
+        return t;
+    }
+    Baseliner.open_topic_grid = function(dir,title,mid){
+       var gridp ={ tab_icon: '/static/images/icons/topic.png' } ;
+       if( dir ) {
+           gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
+           //gridp[ 'tab_icon' ] = '/static/images/icons/' + dir + '.png';
+       }
+       Baseliner.add_tabcomp('/comp/topic/topic_grid.js',  _('#%1 %2', mid, shorten_title( title )), gridp ); 
+    };
+    var render_actions = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var actions_html = new Array();
         var swGo = false;
+        actions_html.push("<span id='boot' style='background: transparent'>");
+        
+        var ref_html = function(dir, refs){
+            var img = dir =='in' ? 'referenced_in' : 'references';
+            var ret = [];
+            // open children
+            ret.push("<a href='#' onclick='javascript:Baseliner.open_topic_grid(\""+dir+"\", \""+rec.data.title+"\", "+rec.data.topic_mid+"); return false'>");
+            ret.push("<span class='label' style='cursor:pointer; color:#333; borderx: 1px #2ECC71 solid; padding-left: 0px; background-color: transparent; font-size:10px; margin-top:0px'>");
+            ret.push("<img src='/static/images/icons/"+img+".png'>");
+            ret.push( refs.length );
+            ret.push("</span>");
+            ret.push("</a>&nbsp;");           
+            return ret.join('');
+        }
+        if( Ext.isArray( rec.data.references ) && rec.data.references.length > 0 ) {
+            swGo = true;
+            actions_html.push( ref_html( 'out', rec.data.references ) );
+        }
         if(rec.data.numcomment){
             swGo = true;
-            tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
-            tag_comment_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>');
-            tag_comment_html.push("</span>");
+            actions_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
+            actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>');
+            actions_html.push("</span>");
         }
         if(rec.data.num_file){
             swGo = true;
-            tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
-            tag_comment_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>');
-            tag_comment_html.push("</span>");           
+            actions_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
+            actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>');
+            actions_html.push("</span>");           
         }
-        var str = swGo ? tag_comment_html.join(""):'';
+        if( Ext.isArray( rec.data.referenced_in ) && rec.data.referenced_in.length > 0 ) {
+            if( swGo )  actions_html.push( '<br>' );
+            swGo = true;
+            actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
+        }
         
-//        if(rec.data.numcomment || rec.data.num_file){
-//            tag_comment_html = [
-//                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
-//                rec.data.numcomment ? rec.data.numcomment: '',
-//                "</span>",
-//                "<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ",
-//                rec.data.numfile ? rec.data.num_file: '',
-//                "</span>"
-//            ].join("");
-//          //tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /></span>";
-//        } else {       
-//            tag_comment_html='';
-//        }
-        
+        actions_html.push("</span>");
+        var str = swGo ? actions_html.join(""):'';
         return str;
     };
     
@@ -665,12 +697,14 @@
             { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
             { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
-            { header: '', report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_comment },         
+            { header: '', report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
             { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
-            { header: _('References'), hidden: true, sortable: true, dataIndex: 'references'},    
-            { header: _('Referenced In'), hidden: true, sortable: true, dataIndex: 'referenced_in'},    
+            { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out'},    
+            { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in'},    
+            { header: _('References'), hidden: true, sortable: false, dataIndex: 'references'},    
+            { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in'},    
             { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
             { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
             { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on'},
@@ -1246,7 +1280,7 @@
         layout : "border",
         defaults: {layout:'fit'},
         title: _('Topics'),
-        tab_icon: '/static/images/icons/topic.png',
+        //tab_icon: '/static/images/icons/topic.png',
         items : [
              
                     {

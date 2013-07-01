@@ -39,6 +39,9 @@ msgstr "hace 1 año"
 msgid "%1 years ago"
 msgstr "hace %1 años"
 
+msgid "Discussion"
+msgstr "Discusión"
+
 msgid "To Open"
 msgstr "Abrir"
 

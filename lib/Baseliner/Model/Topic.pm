@@ -243,6 +243,8 @@ sub topics_for_user {
         project_id
         project_name
         moniker
+        cis_out
+        cis_in
         references
         referenced_in
         file_name
@@ -400,11 +402,11 @@ sub topics_for_user {
             $self->user_workflow( $username );
 
         my @status_ids = keys %tmp;
-        $where->{'category_status_id'} = \@status_ids;
+        $where->{'category_status_id'} = { -in=>\@status_ids };
         
         #$where->{'category_status_type'} = {'!=', 'F'};
         #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
-        $where->{'category_status_type'} = {-not_like, '%F%'}
+        $where->{'category_status_type'} = {-not_like, 'F%'}
     }
       
     if( $p->{priorities}){
@@ -421,6 +423,13 @@ sub topics_for_user {
             }
         }          
         #$where->{'priority_id'} = \@priorities;
+    }
+
+    if( $p->{from_mid} || $p->{to_mid} ){
+        my $rel_where = {};
+        my $dir = length $p->{from_mid} ? ['from_mid','to_mid'] : ['to_mid','from_mid'];
+        $rel_where->{$dir->[0]} = $p->{$dir->[0]};
+        $where->{topic_mid} = { -in => DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1]})->as_query };
     }
 
     #*****************************************************************************************************************************
@@ -460,6 +469,7 @@ sub topics_for_user {
     my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@mids  } })->hashref->all;
     my @rows;
     my %id_label;
+    my (%cis_out, %cis_in );
     my (%references, %referenced_in );
     my %projects;
     my %projects_report;
@@ -485,6 +495,12 @@ sub topics_for_user {
             $projects{ $mid } = {};
             $projects_report{ $mid } = {};
         }
+        if( $_->{cis_out} ) {
+            $cis_out{ $mid }{ $_->{cis_out} } = ();
+        }
+        if( $_->{cis_in} ) {
+            $cis_in{ $mid }{ $_->{cis_in} } = ();
+        }
         if( $_->{references} ) {
             $references{ $mid }{ $_->{references} } = ();
         }
@@ -508,6 +524,8 @@ sub topics_for_user {
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
             labels   => [ keys %{ $id_label{$mid} || {} } ],
             projects => [ keys %{ $projects{$mid} || {} } ],
+            cis_out => [ keys %{ $cis_out{$mid} || {} } ],
+            cis_in => [ keys %{ $cis_in{$mid} || {} } ],
             references => [ keys %{ $references{$mid} || {} } ],
             referenced_in => [ keys %{ $referenced_in{$mid} || {} } ],
             assignee => [ keys %{ $assignee{$mid} || {} } ],
@@ -1773,7 +1791,8 @@ sub search_query {
             map { $r->{$_} }
             qw/category_name projects 
                 assignee file_name category_status_name 
-                labels modified_on modified_by created_on created_by references referenced_in/;
+                labels modified_on modified_by created_on created_by 
+                references referenced_in cis_out cis_in/;  # consider put references in separate, lower priority field
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
         my $info = join(', ',@text);
