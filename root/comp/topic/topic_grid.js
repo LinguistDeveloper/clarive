@@ -49,7 +49,13 @@
             selNodes = tree_filters.getChecked();
             stop_filters = true;  // avoid constant firing
             Ext.each(selNodes, function(node){
-                node.getUI().toggleCheck(false);
+				if(node.attributes.checked3){
+					node.attributes.checked3 = -1;
+					node.getUI().toggleCheck(node.attributes.checked3);
+				}
+				else{
+					node.getUI().toggleCheck(true);
+				}
             });
             stop_filters = false;
             loadfilters();
