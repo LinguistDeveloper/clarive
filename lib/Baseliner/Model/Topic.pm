@@ -243,8 +243,8 @@ sub topics_for_user {
         project_id
         project_name
         moniker
-        contains
-        contained_by
+        references
+        referenced_in
         file_name
         description
         text
@@ -370,8 +370,10 @@ sub topics_for_user {
         }        
         #$where->{'category_id'} = \@categories;
     }else{
+        # all categories, but limited by user permissions
+        #   XXX consider removing this check on root and other special permissions
         my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
-        $where->{'category_id'} = \@categories;
+        $where->{'category_id'} = { -in => \@categories };
     }
     
     my $default_filter;
@@ -455,10 +457,10 @@ sub topics_for_user {
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>$rs_sub->as_query  } })->hashref->all;
+    my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@mids  } })->hashref->all;
     my @rows;
     my %id_label;
-    my (%contains, %contained_by );
+    my (%references, %referenced_in );
     my %projects;
     my %projects_report;
     my %assignee;
@@ -483,11 +485,11 @@ sub topics_for_user {
             $projects{ $mid } = {};
             $projects_report{ $mid } = {};
         }
-        if( $_->{contains} ) {
-            $contains{ $mid }{ $_->{contains} } = ();
+        if( $_->{references} ) {
+            $references{ $mid }{ $_->{references} } = ();
         }
-        if( $_->{contained_by} ) {
-            $contained_by{ $mid }{ $_->{contained_by} } = ();
+        if( $_->{referenced_in} ) {
+            $referenced_in{ $mid }{ $_->{referenced_in} } = ();
         }
         $assignee{ $mid }{ $_->{assignee} } = () if defined $_->{assignee};
     }
@@ -506,8 +508,8 @@ sub topics_for_user {
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
             labels   => [ keys %{ $id_label{$mid} || {} } ],
             projects => [ keys %{ $projects{$mid} || {} } ],
-            contains => [ keys %{ $contains{$mid} || {} } ],
-            contained_by => [ keys %{ $contained_by{$mid} || {} } ],
+            references => [ keys %{ $references{$mid} || {} } ],
+            referenced_in => [ keys %{ $referenced_in{$mid} || {} } ],
             assignee => [ keys %{ $assignee{$mid} || {} } ],
             report_data => {
                 projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
@@ -1769,7 +1771,7 @@ sub search_query {
             map { $r->{$_} }
             qw/category_name projects 
                 assignee file_name category_status_name 
-                labels modified_on modified_by created_on created_by contains contained_by/;
+                labels modified_on modified_by created_on created_by references referenced_in/;
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
         my $info = join(', ',@text);

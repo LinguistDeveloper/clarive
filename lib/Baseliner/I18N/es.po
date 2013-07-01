@@ -27,6 +27,12 @@ msgstr "La categoría %1 no tiene un estado inicial asignado. Contacte al admini
 msgid "Progress"
 msgstr "Avance"
 
+msgid "Referenced In"
+msgstr "Referenciado En"
+
+msgid "References"
+msgstr "Referencias"
+
 msgid "Refresh Node"
 msgstr "Refrescar"
 

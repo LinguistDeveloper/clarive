@@ -663,8 +663,8 @@
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
             { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
-            { header: _('Contains'), hidden: true, sortable: true, dataIndex: 'contains'},    
-            { header: _('Contained By'), hidden: true, sortable: true, dataIndex: 'contained_by'},    
+            { header: _('References'), hidden: true, sortable: true, dataIndex: 'references'},    
+            { header: _('Referenced In'), hidden: true, sortable: true, dataIndex: 'referenced_in'},    
             { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
             { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
             { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on'},
@@ -1239,6 +1239,8 @@
     var panel = new Ext.Panel({
         layout : "border",
         defaults: {layout:'fit'},
+        title: _('Topics'),
+        tab_icon: '/static/images/icons/topic.png',
         items : [
              
                     {

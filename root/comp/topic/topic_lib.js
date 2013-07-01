@@ -156,8 +156,8 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'num_file' },
                 {  name: 'assignee' },
                 {  name: 'moniker' },
-                {  name: 'contains' },
-                {  name: 'contained_by' },
+                {  name: 'references' },
+                {  name: 'referenced_in' },
                 {  name: 'sw_edit'},
                 {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
                 {  name: 'modified_by' }

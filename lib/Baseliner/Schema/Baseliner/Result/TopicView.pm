@@ -47,8 +47,8 @@ __PACKAGE__->result_source_instance->view_definition(q{
             NUM_FILE,
             U.USERNAME ASSIGNEE,
             MA.MONIKER,
-            TO_MID.NAME CONTAINS,
-            FROM_MID.NAME CONTAINED_BY
+            TO_MID.NAME REFERENCES,
+            FROM_MID.NAME REFERENCED_IN
             FROM  BALI_TOPIC T
                     LEFT JOIN BALI_MASTER MA ON T.MID = MA.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON ID_CATEGORY = C.ID
@@ -122,8 +122,8 @@ __PACKAGE__->add_columns(
         num_file
         assignee
         moniker
-        contains
-        contained_by
+        references
+        referenced_in
     )
 );
 
