@@ -810,7 +810,7 @@ sub json_tree : Local {
         my @all;
         for my $mid ( _array( $mids ) ) { 
             my $ci = _ci( $mid );
-            my @rels = $ci->$direction( depth=>2, mode=>'tree', unique=>1, %$p );
+            my @rels = $ci->$direction( depth=>2, mode=>$p->{mode} || 'tree', unique=>1, %$p );
             my $recurse;
             $recurse = sub {
                 my $chi = shift;
