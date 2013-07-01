@@ -243,6 +243,8 @@ sub topics_for_user {
         project_id
         project_name
         moniker
+        contains
+        contained_by
         file_name
         description
         text
@@ -456,6 +458,7 @@ sub topics_for_user {
     my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>$rs_sub->as_query  } })->hashref->all;
     my @rows;
     my %id_label;
+    my (%contains, %contained_by );
     my %projects;
     my %projects_report;
     my %assignee;
@@ -480,6 +483,12 @@ sub topics_for_user {
             $projects{ $mid } = {};
             $projects_report{ $mid } = {};
         }
+        if( $_->{contains} ) {
+            $contains{ $mid }{ $_->{contains} } = ();
+        }
+        if( $_->{contained_by} ) {
+            $contained_by{ $mid }{ $_->{contained_by} } = ();
+        }
         $assignee{ $mid }{ $_->{assignee} } = () if defined $_->{assignee};
     }
     for my $mid (@mids) {
@@ -497,6 +506,8 @@ sub topics_for_user {
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
             labels   => [ keys %{ $id_label{$mid} || {} } ],
             projects => [ keys %{ $projects{$mid} || {} } ],
+            contains => [ keys %{ $contains{$mid} || {} } ],
+            contained_by => [ keys %{ $contained_by{$mid} || {} } ],
             assignee => [ keys %{ $assignee{$mid} || {} } ],
             report_data => {
                 projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
@@ -650,6 +661,7 @@ sub get_system_fields {
                 html             => $pathHTML . 'field_title.html',
                 js               => '/fields/templates/js/textfield.js',
                 field_order      => -1,
+                font_weigth      => 'bold',
                 section          => 'head',
                 field_order_html => 1
             }

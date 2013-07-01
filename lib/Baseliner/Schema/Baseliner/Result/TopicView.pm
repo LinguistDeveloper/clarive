@@ -46,7 +46,9 @@ __PACKAGE__->result_source_instance->view_definition(q{
             PS.TEXT AS TEXT,
             NUM_FILE,
             U.USERNAME ASSIGNEE,
-            MA.MONIKER
+            MA.MONIKER,
+            TO_MID.NAME CONTAINS,
+            FROM_MID.NAME CONTAINED_BY
             FROM  BALI_TOPIC T
                     LEFT JOIN BALI_MASTER MA ON T.MID = MA.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON ID_CATEGORY = C.ID
@@ -74,6 +76,14 @@ __PACKAGE__->result_source_instance->view_definition(q{
                     LEFT JOIN BALI_POST PS ON PS.MID = REL_PS.TO_MID
                     LEFT JOIN BALI_MASTER_REL REL_USER ON REL_USER.FROM_MID = T.MID AND REL_USER.REL_TYPE = 'topic_users'
                     LEFT JOIN BALI_USER U ON U.MID = REL_USER.TO_MID
+                    
+                    LEFT JOIN BALI_MASTER_REL REL_TO_MID ON REL_TO_MID.FROM_MID = T.MID AND REL_TO_MID.REL_TYPE NOT IN( 
+                        'topic_post','topic_file_version','topic_project','topic_users' )
+                    LEFT JOIN BALI_MASTER TO_MID ON TO_MID.MID = REL_TO_MID.TO_MID
+
+                    LEFT JOIN BALI_MASTER_REL REL_FROM_MID ON REL_FROM_MID.TO_MID = T.MID AND REL_FROM_MID.REL_TYPE NOT IN( 
+                        'topic_post','topic_file_version','topic_project','topic_users' )
+                    LEFT JOIN BALI_MASTER FROM_MID ON FROM_MID.MID = REL_FROM_MID.FROM_MID
             WHERE T.ACTIVE = 1
 });
 
@@ -114,6 +124,8 @@ __PACKAGE__->add_columns(
         num_file
         assignee
         moniker
+        contains
+        contained_by
     )
 );
 

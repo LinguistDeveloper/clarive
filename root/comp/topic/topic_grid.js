@@ -663,7 +663,11 @@
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
             { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
+            { header: _('Contains'), hidden: true, sortable: true, dataIndex: 'contains'},    
+            { header: _('Contained By'), hidden: true, sortable: true, dataIndex: 'contained_by'},    
             { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
+            { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
+            { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on'},
             { header: _('Created On'), hidden: true, sortable: true, dataIndex: 'created_on'},
             { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
         ],
