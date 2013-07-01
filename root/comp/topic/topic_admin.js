@@ -2767,13 +2767,13 @@
     };
     
     var category_import = function(){
-        var data_paste = new Baseliner.MonoTextArea({ fieldLabel: _('Input Data'), anchor:'100%', height:'100%' });
-        var results = new Baseliner.MonoTextArea({ fieldLabel: _('Results'), anchor:'100%', height:'100%' });
+        var data_paste = new Baseliner.MonoTextArea({ flex:1 });
+        var results = new Baseliner.MonoTextArea({ flex:1 });
         var win = new Baseliner.Window({
             title: _('Import'),
             width: 800, height: 400, layout:'vbox',
             layout: { type: 'vbox', align: 'stretch' },
-            items: [{ layout:'form', flex:1, items:data_paste }, { layout:'form', flex:1, items:results }],
+            items: [ data_paste, results ],
             tbar:[
                 { text:_('Import'), 
                     icon: '/static/images/icons/import.png',
