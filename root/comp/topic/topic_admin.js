@@ -290,6 +290,7 @@
             check_status_sm,
             { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: false, renderer: render_status },
             { header: _('Description'), dataIndex: 'description', sortable: false },
+            { header: _('Order'), width: 40, dataIndex: 'seq', sortable: false },
             { header: _('Baseline'), dataIndex: 'bl', sortable: false, renderer: Baseliner.render_bl },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_status_type }
         ],
