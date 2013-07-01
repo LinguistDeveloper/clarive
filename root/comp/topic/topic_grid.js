@@ -532,14 +532,14 @@
         }
         if(rec.data.numcomment){
             swGo = true;
-            actions_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
-            actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>');
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
+            actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
             actions_html.push("</span>");
         }
         if(rec.data.num_file){
             swGo = true;
-            actions_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
-            actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>');
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
+            actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>&nbsp;');
             actions_html.push("</span>");           
         }
         if( Ext.isArray( rec.data.referenced_in ) && rec.data.referenced_in.length > 0 ) {
