@@ -169,8 +169,7 @@
 
 
 .styledCheckbox {
-    height: 13px;
-    width: 13px;
+    height: 18px;
     filter: alpha(opacity=0.0);
     opacity: 0.0;
     outline: 0;
@@ -178,30 +177,19 @@
 
 .styledCheckboxWrap {
     position: relative;
-    background: url('/static/images/icons/checkboxes.gif') no-repeat top left;
-    background-size: 12px;
-    margin: 3px;
+    background: url('/static/images/row-check-sprite.png') no-repeat;
+    height: 18px;
+    width: 100%;	
 }
 
-.wrapChecked{ background-position: 0px -12px; }
+.wrapChecked{ background-position: -25px 0px; }
 
-.wrapPartial{ background-position: 0px -24px; }
+.wrapPartial{ background-position: -50px 0px; }
 
 .pruebafieldset fieldset { border: 4px solid ; }
 
 .pruebafieldset legend{ font-size: 35px; }
 
-/*  FF overwrites - FF uses 13px checkboxes */
-
-.styledCheckboxWrap, x:-moz-any-link {
-    background-size: 13px;
-}
-
-.wrapChecked, x:-moz-any-link
-{ background-position: 0px -13px;  }
-
-.wrapPartial, x:-moz-any-link
-{ background-position: 0px -26px; }
 
 /*
 .x-tree-selected {
