@@ -2216,6 +2216,7 @@ Baseliner.CBTreeNodeUI = function () {
 
 Ext.extend(Baseliner.CBTreeNodeUI, Ext.tree.TreeNodeUI, {
     renderElements: function (n, a, targetNode, bulkRender) {
+
         // add some indent caching, this helps performance when rendering a large tree
         this.indentMarkup = n.parentNode ? n.parentNode.ui.getChildIndent() : '';
         a.checked3 = a.checked3 ? a.checked3 : a.checked ? 1 : 0;
@@ -2268,6 +2269,67 @@ Ext.extend(Baseliner.CBTreeNodeUI, Ext.tree.TreeNodeUI, {
             cb.className = 'styledCheckboxWrap' + ( c3 == 0 ? '' : ( c3 == -1 ? ' wrapPartial' : ' wrapChecked') );
             this.onCheckChange();
             this.node.attributes.checked3 = c3;
+        }
+    }
+});
+
+
+Baseliner.CBTreeNodeUI_system = function () {
+    Baseliner.CBTreeNodeUI_system.superclass.constructor.apply(this, arguments);
+};
+
+Ext.extend(Baseliner.CBTreeNodeUI_system, Ext.tree.TreeNodeUI, {
+    renderElements: function (n, a, targetNode, bulkRender) {
+
+        // add some indent caching, this helps performance when rendering a large tree
+        this.indentMarkup = n.parentNode ? n.parentNode.ui.getChildIndent() : '';
+        //a.checked3 = a.checked3 ? a.checked3 : a.checked ? 1 : 0;
+        //a.checked = a.checked ? a.checked : ( a.checked3 == 0 ? false : true );
+
+        var cb = Ext.isBoolean(a.checked),
+            nel,
+            href = this.getHref(a.href),
+            c3class = 'styledCheckboxWrap' + (a.checked ? ' wrapChecked' : ''),
+            buf = ['<li class="x-tree-node"><div ext:tree-node-id="', n.id, '" class="x-tree-node-el x-tree-node-leaf x-unselectable ', a.cls, '" unselectable="on">',
+                '<span class="x-tree-node-indent">', this.indentMarkup, "</span>",
+                '<img src="', this.emptyIcon, '" class="x-tree-ec-icon x-tree-elbow" />',
+                '<img src="', a.icon || this.emptyIcon, '" class="x-tree-node-icon', (a.icon ? " x-tree-node-inline-icon" : ""), (a.iconCls ? " " + a.iconCls : ""), '" unselectable="on" />',
+            cb ? ('<span class="' + c3class + '"><input class="x-tree-node-cb styledCheckbox" type="checkbox" ' + (a.checked ? 'checked="checked" />' : '/>') + '</span>') : '',
+                '<a hidefocus="on" class="x-tree-node-anchor" href="', href, '" tabIndex="1" ',
+            a.hrefTarget ? ' target="' + a.hrefTarget + '"' : "", '><span unselectable="on">', n.text, "</span></a></div>",
+                '<ul class="x-tree-node-ct" style="display:none;"></ul>',
+                "</li>"].join('');
+
+        if (bulkRender !== true && n.nextSibling && (nel = n.nextSibling.ui.getEl())) {
+            this.wrap = Ext.DomHelper.insertHtml("beforeBegin", nel, buf);
+        } else {
+            this.wrap = Ext.DomHelper.insertHtml("beforeEnd", targetNode, buf);
+        }
+
+        this.elNode = this.wrap.childNodes[0];
+        this.ctNode = this.wrap.childNodes[1];
+        var cs = this.elNode.childNodes;
+        this.indentNode = cs[0];
+        this.ecNode = cs[1];
+        this.iconNode = cs[2];
+        var index = 3;
+        if (cb) {
+            this.checkbox = cs[3];
+            // fix for IE6
+            this.checkbox.defaultChecked = this.checkbox.checked;
+            index++;
+        }
+        this.anchor = cs[index];
+        this.textNode = cs[index].firstChild;
+    },
+
+    toggleCheck: function ( value ) {
+        var cb = this.checkbox;
+        if (cb) {
+
+            cb.checked = (value === undefined ? !cb.checked : value);
+            cb.className = 'styledCheckboxWrap' + (  cb.checked ? ' wrapChecked' : '');
+            this.onCheckChange();
         }
     }
 });
