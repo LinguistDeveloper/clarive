@@ -2762,11 +2762,13 @@
     };
     
     var category_import = function(){
-        var data_paste = new Baseliner.MonoTextArea({ });
+        var data_paste = new Baseliner.MonoTextArea({ fieldLabel: _('Input Data'), anchor:'100%' });
+        var results = new Baseliner.MonoTextArea({ fieldLabel: _('Results'), anchor:'100%' });
         var win = new Baseliner.Window({
             title: _('Import'),
-            width: 800, height: 400, layout:'fit',
-            items: data_paste,
+            width: 800, height: 400, layout:'vbox',
+            layout: { type: 'vbox', align: 'stretch' },
+            items: [{ layout:'form', flex:1, items:data_paste }, { layout:'form', flex:1, items:results }],
             tbar:[
                 { text:_('Import'), 
                     icon: '/static/images/icons/import.png',
@@ -2774,9 +2776,16 @@
                         Baseliner.ajaxEval('/topicadmin/import', { yaml: data_paste.getValue() }, function(res){
                             if( !res.success ) {
                                 Baseliner.error( _('Import'), res.msg );
+                                if( ! Ext.isArray( res.log ) ) res.log=[];
+                                results.setValue( res.log.join("\n") + "\n" + res.msg )
+                                results.el.setStyle('font-color', 'red');
                                 return;
                             } else {
+                                if( ! Ext.isArray( res.log ) ) res.log=[];
+                                results.setValue( res.log.join("\n") + "\n" + res.msg )
+                                results.el.setStyle('font-color', 'green');
                                 Baseliner.message(_('Import'), res.msg );
+                                grid_categories.getStore().reload();
                             }
                         });
                     }
