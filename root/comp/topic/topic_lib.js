@@ -593,18 +593,23 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         self.detail.load({
             url: '/topic/view',
-            params: { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id },
+            params: { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id, topic_child_data : true },
             scripts: true,
-            callback: function(x){ 
-                // loading HTML has finished
-                //   careful: errors here will break js in baseliner
-                if( ! self.swEdit ) {
+            callback: function(x, success, res){ 
+                if( !success ) {
+                    self.detail.update( res.responseText );
                     var layout = self.getLayout().setActiveItem( self.detail );
+                } else {
+                    // loading HTML has finished
+                    //   careful: errors here will break js in baseliner
+                    if( ! self.swEdit ) {
+                        var layout = self.getLayout().setActiveItem( self.detail );
+                    }
+                    self.detail.body.parent().setStyle('width', null);
+                    self.detail.body.parent().parent().setStyle('width', null);
+                    self.detail.body.setStyle('width', null);
+                    self.detail.body.setStyle('height', null);
                 }
-                self.detail.body.parent().setStyle('width', null);
-                self.detail.body.parent().parent().setStyle('width', null);
-                self.detail.body.setStyle('width', null);
-                self.detail.body.setStyle('height', null);
             }
         });
         self.detail.body.setStyle('overflow', 'auto');
