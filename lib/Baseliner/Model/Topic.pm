@@ -1218,7 +1218,7 @@ sub save_data {
         }
         $topic->modified_by( $data->{username} );
         $topic->update( \%row );
-        _ci( $topic_mid )->save( moniker=>$moniker, name=>$row{title} );
+        _ci( $topic_mid )->update( moniker=>$moniker, name=>$row{title} );
 
         for my $field (keys %row){
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
