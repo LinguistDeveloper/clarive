@@ -39,6 +39,15 @@ msgstr "hace 1 año"
 msgid "%1 years ago"
 msgstr "hace %1 años"
 
+msgid "Loading Error"
+msgstr "Error de Carga"
+
+msgid "Error loading topic"
+msgstr "Error cargando el tópico"
+
+msgid "Category not found or topic deleted: %1"
+msgstr "Tópico borrado o categoría ya no existe: %1"
+
 msgid "Discussion"
 msgstr "Discusión"
 
@@ -932,6 +941,9 @@ msgstr "Creado"
 
 msgid "Modified On"
 msgstr "Modificado"
+
+msgid "Created By"
+msgstr "Creado Por"
 
 msgid "Created by"
 msgstr "Creado por"
