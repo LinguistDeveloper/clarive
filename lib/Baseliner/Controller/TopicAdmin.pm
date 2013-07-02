@@ -37,6 +37,7 @@ sub update_category : Local {
     my $idsstatus = $p->{idsstatus};
     my $type = $p->{type};
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     my $assign_type = sub {
         my ($category) = @_;
         given ($type) {
@@ -177,6 +178,7 @@ sub update_status : Local {
     my $p = $c->req->params;
     my $action = $p->{action};
 
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     given ($action) {
         when ('add') {
             try{
@@ -255,6 +257,7 @@ sub update_priority : Local {
     my @rsptime = _array $p->{rsptime};
     my @deadline = _array $p->{deadline};
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     given ($action) {
         when ('add') {
             try{
@@ -328,6 +331,7 @@ sub update_label : Local {
     my @projects = split ",", $p->{projects};
     my $username = $c->username;
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     given ($action) {
         when ('add') {
             try{
@@ -403,6 +407,7 @@ sub update_category_admin : Local {
     my $idsstatus_to = $p->{idsstatus_to};
     my $job_type = $p->{job_type};
 
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     foreach my $role (_array $idsroles){
         my $rs = $c->model('Baseliner::BaliTopicCategoriesAdmin')
             ->search( { id_category => $idcategory, id_role => $role, id_status_from => $status_from, id_status_to=>$idsstatus_to} );
@@ -447,6 +452,7 @@ sub list_categories_admin : Local {
     my $cnt;
     my @rows;
 
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     my $rows = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         { id_category => $p->{categoryId} },
         {   
@@ -703,6 +709,7 @@ sub update_fields : Local {
     my @ids_field = _array $p->{fields};
     my @values_field = _array $p->{params};
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     my $category = $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $id_category} );
     if($category->count > 0){
         $category->delete;
@@ -854,6 +861,7 @@ sub update_category_priority : Local {
     my $priority_id = $p->{id};
     my $category_id = $p->{id_category};    
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     given ($action) {
         when ('add') {
 
@@ -892,6 +900,7 @@ sub create_clone : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         my $row = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => $p->{name_field}})->first;
         if(!$row){
@@ -947,6 +956,7 @@ sub list_filters : Local {
 sub duplicate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         my $rs_category = $c->model('Baseliner::BaliTopicCategories')->find({ id => $p->{id_category} });
         if( $rs_category ){
@@ -1006,6 +1016,7 @@ sub delete_row : Local {
     my $id_role = $p->{id_role};
     my $id_status_from = $p->{id_status_from};    
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         my $category_admin = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $id_category, id_role => $id_role, id_status_from => $id_status_from});
         $category_admin->delete();
@@ -1021,6 +1032,7 @@ sub delete_row : Local {
 sub update_system : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         Baseliner::Model::Topic->get_update_system_fields;
         $c->stash->{json} = { success => \1, msg => _loc("System updated") };  
@@ -1069,6 +1081,7 @@ sub import : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         Baseliner->model('Baseliner')->txn_do( sub {
             my $yaml = $p->{yaml} or _fail _loc('Missing parameter yaml');

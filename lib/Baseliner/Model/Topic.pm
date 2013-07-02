@@ -466,7 +466,14 @@ sub topics_for_user {
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@mids  } })->hashref->all;
+    my @mid_data = grep { defined } map { Baseliner->cache_get("topic:view:$_") } @mids; 
+    my $mids_in_cache = { map { $_->{topic_mid} => 1 } @mid_data };
+    my @db_mids = grep { !exists $mids_in_cache->{$_} } @mids; 
+    _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %$mids_in_cache );
+    my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
+    Baseliner->cache_set( "topic:view:".$_->{topic_mid}, $_ ) for @db_mid_data;
+    @mid_data = ( @mid_data, @db_mid_data );
+
     my @rows;
     my %id_label;
     my (%cis_out, %cis_in );
@@ -584,7 +591,7 @@ sub update {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my @field;
                     $topic_mid = $p->{topic_mid};
-                    
+
                     my $meta = $self->get_meta ($topic_mid, $p->{category});
                     my $topic = $self->save_data ($meta, $topic_mid, $p);
                     
@@ -934,6 +941,9 @@ sub get_update_system_fields {
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
 
+    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid");
+    return $cached if $cached;
+
     my $id_cat =  $id_category
         // DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query;
         
@@ -962,6 +972,8 @@ sub get_meta {
     #push @meta, @form_fields;                
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
+
+    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta );
     
     return \@meta;
 }
@@ -1128,6 +1140,9 @@ sub get_files{
 sub save_data {
     my ($self, $meta, $topic_mid, $data ) = @_;
 
+    Baseliner->cache_remove( "topic:view:$topic_mid") if length $topic_mid;
+    Baseliner->cache_remove( "topic:data:$topic_mid") if length $topic_mid;
+    
     my @std_fields =
         map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
         grep { $_->{origin} eq 'system' } _array($meta);
