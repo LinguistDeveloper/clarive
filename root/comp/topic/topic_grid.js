@@ -502,10 +502,10 @@
         return t;
     }
     Baseliner.open_topic_grid = function(dir,title,mid){
-       var gridp ={ tab_icon: '/static/images/icons/topic.png' } ;
+       var gridp ={ tab_icon: '/static/images/icons/topic_references.png' } ;
        if( dir ) {
            gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
-           //gridp[ 'tab_icon' ] = '/static/images/icons/' + dir + '.png';
+           gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.png';
        }
        Baseliner.add_tabcomp('/comp/topic/topic_grid.js',  _('#%1 %2', mid, shorten_title( title )), gridp ); 
     };
