@@ -166,7 +166,7 @@ Ext.onReady(function(){
         );
     } else {
         mains.push( Baseliner.main_toolbar );
-        if( Prefs.site.show_lifecycle ) {
+        if( Prefs.site.show_lifecycle && Baseliner.explorer ) {
             mains.push( Baseliner.explorer );
         } 
         if( Prefs.site.show_calendar ) {
