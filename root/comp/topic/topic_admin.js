@@ -290,6 +290,7 @@
             check_status_sm,
             { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: false, renderer: render_status },
             { header: _('Description'), dataIndex: 'description', sortable: false },
+            { header: _('Order'), width: 40, dataIndex: 'seq', sortable: false },
             { header: _('Baseline'), dataIndex: 'bl', sortable: false, renderer: Baseliner.render_bl },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_status_type }
         ],
@@ -1803,7 +1804,7 @@
     });     
     
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
-        singleSelect: true,
+        singleSelect: false,
         sortable: false,
         checkOnly: true
     });
@@ -2746,7 +2747,12 @@
     });
     
     var category_export = function(sel){
-        Baseliner.ajaxEval('/topicadmin/export', { id_category: sel.data.id }, function(res){
+        var sel = check_categories_sm.getSelections();
+        var ids = [];
+        Ext.each( sel, function(s){
+            ids.push( s.data.id );
+        });
+        Baseliner.ajaxEval('/topicadmin/export', { id_category: ids }, function(res){
             if( !res.success ) {
                 Baseliner.error( _('Export'), res.msg );
                 return;
@@ -2762,11 +2768,13 @@
     };
     
     var category_import = function(){
-        var data_paste = new Baseliner.MonoTextArea({ });
+        var data_paste = new Baseliner.MonoTextArea({ flex:1 });
+        var results = new Baseliner.MonoTextArea({ flex:1 });
         var win = new Baseliner.Window({
             title: _('Import'),
-            width: 800, height: 400, layout:'fit',
-            items: data_paste,
+            width: 800, height: 400, layout:'vbox',
+            layout: { type: 'vbox', align: 'stretch' },
+            items: [ data_paste, results ],
             tbar:[
                 { text:_('Import'), 
                     icon: '/static/images/icons/import.png',
@@ -2774,9 +2782,16 @@
                         Baseliner.ajaxEval('/topicadmin/import', { yaml: data_paste.getValue() }, function(res){
                             if( !res.success ) {
                                 Baseliner.error( _('Import'), res.msg );
+                                if( ! Ext.isArray( res.log ) ) res.log=[];
+                                results.setValue( res.log.join("\n") + "\n" + res.msg )
+                                results.el.setStyle('font-color', 'red');
                                 return;
                             } else {
+                                if( ! Ext.isArray( res.log ) ) res.log=[];
+                                results.setValue( res.log.join("\n") + "\n" + res.msg )
+                                results.el.setStyle('font-color', 'green');
                                 Baseliner.message(_('Import'), res.msg );
+                                grid_categories.getStore().reload();
                             }
                         });
                     }

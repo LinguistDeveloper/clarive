@@ -13,18 +13,26 @@
     <link rel="shortcut icon" href="<% $favicon %>" mce_href="<% $favicon %>"/>
 % }
 
+    <script src="/static/require/require.js"></script>
 
-
+    <!-- Twitter Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/site/960-Grid-System/code/css/960_24_col.css" />
+    <link rel="stylesheet" type="text/css" href="/site/boot.css" /> 
+    
+    
     <!-- Loading masks -->                                            
 % if( $loading_mask ) {
     <div id="bali-loading-mask" style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>
     <div id="bali-loading" style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">
-      <center>
-      <img style="" src="/static/images/loading.gif" />
-      <div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">
+      <img id="bali-loading-img" style="display: block" src="/static/images/loading.gif" />
+      <div id="boot" class="loading-progress" style="display: none; height: 2px">
+          <div class="progress" style="height: 2px" >
+              <div class="bar" style="width: 0%"></div>
+          </div>
+      </div>
+      <div id="bali-loading-text" style="text-align: center; text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">
           <% _loc('Loading') %>
       </div>
-      </center>
     </div>
 % }
 
@@ -32,6 +40,10 @@
     <script type="text/javascript" src="/static/jquery/jquery-1.7.1.min.js"></script>
     <!--JQuery draggable plugin, etc -->
     <script type="text/javascript" src="/static/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+    
+    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
+
+    <script>$('#bali-loading .progress .bar').width('20%');</script>
     
     <!-- ExtJS -->
     <script type="text/javascript" src="/static/ext/adapter/jquery/ext-jquery-adapter<% $debug %>.js"></script>
@@ -62,14 +74,19 @@
     <script type="text/javascript" src="/site/globals.js"></script>
     <script type="text/javascript" src="/site/common.js"></script>
 
-    <!-- Twitter Bootstrap -->
-    <link rel="stylesheet" type="text/css" href="/site/960-Grid-System/code/css/960_24_col.css" />
-    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
-    <link rel="stylesheet" type="text/css" href="/site/boot.css" /> 
+    <script>$('#bali-loading .progress .bar').width('30%');</script>
     <!-- #reset namespace
         <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
     -->
 % if( my $theme_dir = $c->stash->{theme_dir} ) {
     <link rel="stylesheet" type="text/css" href="<% $theme_dir %>/style.css" />
 % }
+
+    <script>
+        requirejs.config({
+            paths:{
+                'd3': '/static/d3/d3.v2'
+            }
+        });
+    </script>
 

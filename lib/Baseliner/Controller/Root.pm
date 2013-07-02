@@ -239,7 +239,17 @@ sub index:Private {
         if( $c->username ) {
             my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
             $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions, username => $c->username );
+            $c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
             $c->stash->{portlets} = [
+                map {
+                    +{
+                       key      => $_->key, 
+                       title    => $_->title, 
+                       url_comp => $_->url_comp, 
+                       url_max  => $_->url_max, 
+                       url      => $_->url,
+                    }
+                }
                 grep { $_->active }
                 $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>\@actions, username => $c->username )
             ];
@@ -256,7 +266,9 @@ sub index:Private {
 
         $c->stash->{show_js_reload} = $ENV{BASELINER_DEBUG} && $c->has_action('action.admin.develop');
         $c->stash->{can_lifecycle} = $c->has_action('action.home.show_lifecycle');
-        $c->stash->{can_menu} = $c->has_action('action.home.show_menu');
+        if( !( $c->stash->{can_menu} = $c->has_action('action.home.show_menu')) ) {
+            delete $c->stash->{menus}
+        }
     }
     $c->stash->{template} = '/site/index.html';
 }

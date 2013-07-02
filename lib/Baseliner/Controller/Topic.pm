@@ -572,6 +572,17 @@ sub view : Local {
     };
 }
 
+sub title_row : Local {
+    my ($self, $c ) = @_;
+    my $mid = $c->req->params->{mid};
+    my $row = DB->BaliTopic->search(
+        { mid => $mid }, { join=>'categories', 
+        select=>[qw/mid title categories.name categories.color/], 
+        as=>[qw/mid title category_name category_color/] } );
+    $row = $row->hashref->first;
+    $c->stash->{json} = { success=>$row ? \1 : \0, row => $row };
+    $c->forward('View::JSON');
+}
 
 sub comment : Local {
     my ($self, $c, $action) = @_;
@@ -905,7 +916,9 @@ sub filters_list : Local {
         cls     => 'forum default',
         iconCls => 'icon-no',
         checked => \0,
-        leaf    => 'true'
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+        
     };
     
     if(!$typeApplication){
@@ -918,10 +931,11 @@ sub filters_list : Local {
             cls     => 'forum default',
             iconCls => 'icon-no',
             checked => \0,
-            leaf    => 'true'
+            leaf    => 'true',
+            uiProvider => 'Baseliner.CBTreeNodeUI_system'
         };
     }
-    ##################################################################################
+    #################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
     
@@ -936,7 +950,8 @@ sub filters_list : Local {
                 cls     => 'forum',
                 iconCls => 'icon-no',
                 checked => \0,
-                leaf    => 'true'
+                leaf    => 'true',
+                uiProvider => 'Baseliner.CBTreeNodeUI_system'
             };	
         }  
     }   

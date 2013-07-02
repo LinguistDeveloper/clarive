@@ -243,6 +243,10 @@ sub topics_for_user {
         project_id
         project_name
         moniker
+        cis_out
+        cis_in
+        references
+        referenced_in
         file_name
         description
         text
@@ -368,8 +372,10 @@ sub topics_for_user {
         }        
         #$where->{'category_id'} = \@categories;
     }else{
+        # all categories, but limited by user permissions
+        #   XXX consider removing this check on root and other special permissions
         my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
-        $where->{'category_id'} = \@categories;
+        $where->{'category_id'} = { -in => \@categories };
     }
     
     my $default_filter;
@@ -396,11 +402,11 @@ sub topics_for_user {
             $self->user_workflow( $username );
 
         my @status_ids = keys %tmp;
-        $where->{'category_status_id'} = \@status_ids;
+        $where->{'category_status_id'} = { -in=>\@status_ids };
         
         #$where->{'category_status_type'} = {'!=', 'F'};
         #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
-        $where->{'category_status_type'} = {-not_like, '%F%'}
+        $where->{'category_status_type'} = {-not_like, 'F%'}
     }
       
     if( $p->{priorities}){
@@ -417,6 +423,13 @@ sub topics_for_user {
             }
         }          
         #$where->{'priority_id'} = \@priorities;
+    }
+
+    if( $p->{from_mid} || $p->{to_mid} ){
+        my $rel_where = {};
+        my $dir = length $p->{from_mid} ? ['from_mid','to_mid'] : ['to_mid','from_mid'];
+        $rel_where->{$dir->[0]} = $p->{$dir->[0]};
+        $where->{topic_mid} = { -in => DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1]})->as_query };
     }
 
     #*****************************************************************************************************************************
@@ -453,9 +466,11 @@ sub topics_for_user {
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>$rs_sub->as_query  } })->hashref->all;
+    my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@mids  } })->hashref->all;
     my @rows;
     my %id_label;
+    my (%cis_out, %cis_in );
+    my (%references, %referenced_in );
     my %projects;
     my %projects_report;
     my %assignee;
@@ -480,6 +495,18 @@ sub topics_for_user {
             $projects{ $mid } = {};
             $projects_report{ $mid } = {};
         }
+        if( $_->{cis_out} ) {
+            $cis_out{ $mid }{ $_->{cis_out} } = ();
+        }
+        if( $_->{cis_in} ) {
+            $cis_in{ $mid }{ $_->{cis_in} } = ();
+        }
+        if( $_->{references} ) {
+            $references{ $mid }{ $_->{references} } = ();
+        }
+        if( $_->{referenced_in} ) {
+            $referenced_in{ $mid }{ $_->{referenced_in} } = ();
+        }
         $assignee{ $mid }{ $_->{assignee} } = () if defined $_->{assignee};
     }
     for my $mid (@mids) {
@@ -497,6 +524,10 @@ sub topics_for_user {
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
             labels   => [ keys %{ $id_label{$mid} || {} } ],
             projects => [ keys %{ $projects{$mid} || {} } ],
+            cis_out => [ keys %{ $cis_out{$mid} || {} } ],
+            cis_in => [ keys %{ $cis_in{$mid} || {} } ],
+            references => [ keys %{ $references{$mid} || {} } ],
+            referenced_in => [ keys %{ $referenced_in{$mid} || {} } ],
             assignee => [ keys %{ $assignee{$mid} || {} } ],
             report_data => {
                 projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
@@ -650,6 +681,7 @@ sub get_system_fields {
                 html             => $pathHTML . 'field_title.html',
                 js               => '/fields/templates/js/textfield.js',
                 field_order      => -1,
+                font_weigth      => 'bold',
                 section          => 'head',
                 field_order_html => 1
             }
@@ -961,7 +993,9 @@ sub get_data {
 
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
+        $data->{created_on_epoch} = $row->created_on->epoch;
         $data->{modified_on} = $row->modified_on->dmy . ' ' . $row->modified_on->hms;
+        $data->{modified_on_epoch} = $row->modified_on->epoch;
         #$data->{deadline} = $row->deadline_min ? $row->created_on->clone->add( minutes => $row->deadline_min ):_loc('unassigned');
         $data->{deadline} = _loc('unassigned');
         
@@ -1755,13 +1789,14 @@ sub search_query {
             map { _array( $_ ) }
             grep { defined }
             map { $r->{$_} }
-            qw/created_on category_name projects 
-                assignee file_name category_status_name created_by 
-                labels modified_on modified_by/;
+            qw/category_name projects 
+                assignee file_name category_status_name 
+                labels modified_on modified_by created_on created_by 
+                references referenced_in cis_out cis_in/;  # consider put references in separate, lower priority field
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
         my $info = join(', ',@text);
-        my $desc = _strip_html( sprintf "%s %s", $r->{description}, $r->{text} );
+        my $desc = _strip_html( sprintf "%s %s", ($r->{description} // ''), ($r->{text} // '') );
         if( length $desc ) {
             $desc = _utf8 $desc;  # strip html messes up utf8
             $desc =~ s/[^\w\s]//g; 
@@ -1772,7 +1807,9 @@ sub search_query {
             text  => $desc,
             info  => $info,
             url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color} ],
-            type  => 'topic'
+            type  => 'topic',
+            mid   => $r->{topic_mid},
+            id    => $r->{topic_mid},
         }
     } _array( $json->{data} );
 }

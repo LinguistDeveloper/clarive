@@ -2,6 +2,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8">
 <%perl>
     my $lang = $c->language;
+    my $to_bool = sub{ 
+        ref $_[0] and return $_[0]; $_[0] eq '1' ? \1 : $_[0] eq '0' ? \0 : $_[0] 
+    };
+    
 </%perl>
 <html>
  <head>
@@ -15,6 +19,8 @@
     <script type="text/javascript" src="/site/panelresizer.js"></script>
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
     <!-- script type="text/javascript" src="/static/pdfjs/pdf.min.js"></script -->
+
+    <script>$('#bali-loading .progress .bar').width('40%');</script>
 
     <!-- DatePickerPlus - Ext -->
     <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus-min.js"></script> 
@@ -93,6 +99,8 @@
     <!-- Editors: Ace, CLEditor, etc. -->
     <script type="text/javascript" src="/site/editors.js"></script>
 
+    <script>$('#bali-loading .progress .bar').width('60%');</script>
+    
     <!--  -->
     <script type="text/javascript" src="/site/explorer.js"></script>
 
@@ -130,7 +138,9 @@
     <link rel="stylesheet" type="text/css" href="/static/sprites.css" />
     
     <script type='text/javascript' src='/static/latinise.js'></script>
-
+    
+    <script>$('#bali-loading .progress .bar').width('80%');</script>
+    
     <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
     <!-- BEGIN <% $include->{name} %> -->
@@ -139,19 +149,67 @@
 % }
     <!-- Hooks End -->
 
-<script type="text/javascript">
-<& /site/main.js &>
-</script>
-
-<!-- Para poder incluir el Widget Spinner de Ext -->
+    <!-- Ext Spinner Widget -->
+    <link rel="stylesheet" href="/static/ex.ux.form.spinner/Spinner.css" type="text/css" /> 
     <script type="text/javascript" src="/static/ex.ux.form.spinner/Spinner.js"></script> 
     <script type="text/javascript" src="/static/ex.ux.form.spinner/SpinnerStrategy.js"></script> 
-    <link rel="stylesheet" href="/static/ex.ux.form.spinner/Spinner.css" type="text/css" /> 
-<!-- SOLO PARA DEPURAR EN IE -->
-<!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->    
+
+    <script type="text/javascript">
+        Prefs = {};
+        Prefs.username = '<% $c->username %>';
+        Prefs.is_logged_in = true;
+        Prefs.logo_file = '<% $c->config->{logo_file} %>';
+        Prefs.logo_filename = '<% $c->config->{logo_filename} || "logo.jpg" %>';
+        Prefs.site = Ext.apply({
+                show_menu: true,
+                show_dashboard : true,
+                show_lifecycle : true,
+                show_tabs : true,
+                show_search : true
+            }, 
+            <% _to_json({ map { $_ => $to_bool->( $c->config->{site}->{$_} ) } keys %{ $c->config->{site} || {} } }) %> 
+        );
+        Prefs.site.toolbar_height = <% $c->config->{toolbar_height} // 28 %>;
+        Prefs.menus = [ <% join ',', _array $c->stash->{menus} %> ];
+        Prefs.stash = <% _to_json({
+                    map { $_ => $to_bool->( $c->stash->{$_} ) }
+                    qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir/
+                })
+            %>;
+        if( Prefs.stash.site_raw ) {
+            Ext.apply(Prefs.site, {
+                    show_tabs : false,
+                    show_portal : false,
+                    show_menu : false,
+                    show_main : false
+            });
+        }
+        
+        $('#bali-loading .progress .bar').width('98%');
+        require(['/site/main.js'], function(main){
+            // after main loaded
+            if( Ext.get('bali-loading') )
+                Ext.get('bali-loading').remove();
+
+            if( Ext.get('bali-loading-mask') )
+                Ext.get('bali-loading-mask').fadeOut({
+                    remove:true,
+                    callback: function(){
+                        /* var bw = $('#bali-browser-warn').show();
+                        var bw = $('#bali-browser-warn-mid').show();
+                        $("#bali-browser-version").html('4.5');
+                        */
+                    }
+                });
+                
+            $('#loading-img').show();
+            $('#bali-loading .loading-progress').hide();
+        });
+    </script>
+
 </head>
 <body>
-<IFRAME id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></IFRAME>
+<iframe id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></iframe>
 <div id='run-panel'></div>
 <div id='main-div'></div>
 

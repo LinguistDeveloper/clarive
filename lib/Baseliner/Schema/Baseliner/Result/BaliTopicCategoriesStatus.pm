@@ -29,5 +29,10 @@ __PACKAGE__->belongs_to(
   "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
   { id => "id_status" },
 );
+__PACKAGE__->belongs_to(
+  "category",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategories",
+  { id => "id_category" },
+);
 
 1;

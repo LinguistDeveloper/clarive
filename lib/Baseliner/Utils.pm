@@ -1280,11 +1280,16 @@ sub _load_yaml_from_comment {
 sub ago {
     my ($date) = @_;
     my $now = Class::Date->now();
-    $date = Class::Date->new( $date );
+    if( ref $date eq 'DateTime' ) {
+        $date = Class::Date->new( $date->epoch );
+    } elsif( ref $date ne 'Class::Date' ) {
+        $date = Class::Date->new( $date );
+    }
     my $d = $now-$date;
     my $v = 
        $d <= 1 ? _loc('just now')
       : $d < 60 ? _loc('%1 seconds ago', int $d )
+      : $d < 120 ? _loc('1 minute ago' )
       : $d < 3600 ? _loc('%1 minutes ago', int $d/60 )
       : $d < 7200 ? _loc('1 hour ago' )
       : $date > $now-'1D' ? _loc('%1 hours ago', int $d/3600 )

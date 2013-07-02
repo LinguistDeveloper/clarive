@@ -804,8 +804,8 @@ $('a').click(function(event) {
     Baseliner.addNewTabComp = function( comp_url, ptitle, params ){
         var req_params = params != undefined ? params : {};
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
-            var id = Baseliner.addNewTabItem( comp, ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: ptitle, params: params, type: 'comp' };
+            var id = Baseliner.addNewTabItem( comp, comp.tab_title || ptitle, params );
+            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' };
             try { 
                 if (Baseliner.explorer.fixed == 0) {
                     Baseliner.explorer.collapse(); 
@@ -824,7 +824,7 @@ $('a').click(function(event) {
         if( params == undefined ) params = {};
         Baseliner.ajaxEval( comp_url, params, function(comp) {
             var id = Baseliner.addNewTabItem( comp, ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: ptitle, params: params, type: 'comp' };
+            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' };
             try { 
                 if (Baseliner.explorer.fixed == 0) {
                     Baseliner.explorer.collapse(); 
@@ -1028,7 +1028,10 @@ $('a').click(function(event) {
                     } else if( xhr.status==404 ) {
                         msg = _("Not found: %1", url );
                     } else if( xhr.status==0 ) {
-                        alert( _('Server not available') );  // an alert does not ask for images from the server
+                        var yn = confirm( _('Server not available. Retry?') );  // an alert does not ask for images from the server
+                        if( yn ) {
+                            the_request();
+                        }
                         return;
                     } else {
                         msg = xhr.responseText || _('Unknown error');
