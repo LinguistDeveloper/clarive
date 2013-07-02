@@ -1034,7 +1034,7 @@
         return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
     };  
 
-    function loadfilters( unselected_node , clear_filters){
+    function loadfilters( unselected_node ){
         var labels_checked = new Array();
         var statuses_checked = new Array();
         var categories_checked = new Array();
