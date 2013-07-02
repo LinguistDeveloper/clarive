@@ -216,11 +216,11 @@ sub related : Local {
     }
     my $rs_topic = DB->BaliTopic->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] })->hashref;
     my @topics = map {
-        if( $p->{with_data} ) {
-            my $meta = $c->model('Topic')->get_meta( $_->{mid} );
-            $_->{data} = $c->model('Topic')->get_data( $meta, $_->{mid} );
+        if( $p->{topic_child_data} ) {
+            #my $meta = $c->model('Topic')->get_meta( $_->{mid} );
+            $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid} );
             $_->{description} //= $_->{data}{description};
-            $_->{name_status} //= $_->{data}{name_status};
+            $_->{name_status} ||= $_->{data}{name_status};
         }
 
         $_->{name} = $_->{categories}{is_release} eq '1' 
@@ -282,7 +282,7 @@ sub json : Local {
     my $ret = {};
     
     my $meta = $c->model('Topic')->get_meta( $topic_mid );
-    my $data = $c->model('Topic')->get_data( $meta, $topic_mid );
+    my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
 
     $meta = get_meta_permissions ($c, $meta, $data);
     
@@ -556,7 +556,7 @@ sub view : Local {
     
     if( $p->{html} ) {
         my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
-        my $data = $c->model('Topic')->get_data( $meta, $topic_mid );
+        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
         $meta = get_meta_permissions ($c, $meta, $data);        
 
         $c->stash->{topic_meta} = $meta;

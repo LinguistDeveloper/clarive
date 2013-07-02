@@ -850,7 +850,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                 mids.push( row.data.mid ); 
             });
             if( mids.length == 0 ) return;
-            var p = { mids: mids, with_data: true };
+            var p = { mids: mids, topic_child_data : true };
             Baseliner.ajaxEval( '/topic/related', Ext.apply(self.topic_grid, p ), function(res){
                 self.store.removeAll();
                 Ext.each( res.data, function(r){

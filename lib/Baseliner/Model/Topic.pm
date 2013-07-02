@@ -979,7 +979,7 @@ sub get_meta {
 }
 
 sub get_data {
-    my ($self, $meta, $topic_mid) = @_;
+    my ($self, $meta, $topic_mid, %opts ) = @_;
     
     my $data;
     if ($topic_mid){
@@ -1027,7 +1027,7 @@ sub get_data {
         
         foreach my $key  (keys %method_fields){
             my $method_get = $method_fields{ $key };
-            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta );
+            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta, %opts );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
@@ -1110,19 +1110,21 @@ sub get_dates {
 }
 
 sub get_topics{
-    my ($self, $topic_mid, $id_field) = @_;
+    my ($self, $topic_mid, $id_field, $meta, %opts) = @_;
     my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->topics->search( {rel_field => $id_field}, { order_by => { '-asc' => ['categories.name', 'mid'] }, prefetch=>['categories'] } );
     rs_hashref ( $rs_rel_topic );
     my @topics = $rs_rel_topic->all;
     @topics = Baseliner->model('Topic')->append_category( @topics );
-    @topics = map {
-        my $meta = $self->get_meta( $_->{mid} );
-        my $data = $self->get_data( $meta, $_->{mid} );
-        $_->{description} //= $data->{description};
-        $_->{name_status} //= $data->{name_status};
-        $_->{data} //= $data;
-        $_
-    } @topics;
+    if( $opts{topic_child_data} ) {
+        @topics = map {
+            #my $meta = $self->get_meta( $_->{mid} );
+            my $data = $self->get_data( undef, $_->{mid} ) ;
+            $_->{description} //= $data->{description};
+            $_->{name_status} //= $data->{name_status};
+            $_->{data} //= $data;
+            $_
+        } @topics;
+    }
     return @topics ? \@topics : [];    
 }
 
@@ -1138,7 +1140,7 @@ sub get_files{
 }
 
 sub save_data {
-    my ($self, $meta, $topic_mid, $data ) = @_;
+    my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
     Baseliner->cache_remove( "topic:view:$topic_mid") if length $topic_mid;
     Baseliner->cache_remove( "topic:data:$topic_mid") if length $topic_mid;
@@ -1165,7 +1167,7 @@ sub save_data {
             if ($_->{method}){
                 #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
                 my $method_set = $_->{method};
-                my $extra_fields = $self->$method_set( $data->{ $_->{name} }, $data, $meta );
+                my $extra_fields = $self->$method_set( $data->{ $_->{name} }, $data, $meta, %opts );
                 foreach my $column (keys %{ $extra_fields || {} } ){
                      $row{ $column } = $extra_fields->{$column};
                 }
