@@ -1,0 +1,12 @@
+<%args>
+    $meta
+    $data
+</%args>
+% my $val = $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}};
+% if( defined $val && !$meta->{hidden} ) {
+    <tr>
+      <th><% _loc($meta->{name_field}) %>:</th>
+      <& /partial/topic_status.html, topic=>$data &>
+    </tr>
+% }
+

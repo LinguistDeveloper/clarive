@@ -1,0 +1,83 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+
+<%perl>
+if( ! $meta->{hidden} ) { 
+    my $names = { name=>'ID', name=>'ID', title=>'Title', name_status=>'Status', created_by=>'Created By', created_on=>'Created On', modified_by=>'Modified By', modified_on=>'Modified On' };
+    
+    my $ix = 0;
+    my @topics = Util->_array( $data->{$meta->{id_field}} );
+    #@topics = map { 
+    #    my $d = Baseliner->model('Topic')->get_data( undef, $_->{mid} ); 
+    #    { %$_, %$d }
+    #} @topics;
+    my $cols = ref $meta->{columns} ? $meta->{columns} : do {
+        [ map { [ split /,/ ] } split /;/, $meta->{columns} ]
+    };
+    
+    my @head =  map { 
+        my $nid=_name_to_id($_->[0]);
+        +{ key=>$nid, name=>( $names->{$nid} // $_->[0] ), width=>$_->[2], type=>$_->[1] }
+    } @$cols; 
+    if( ! @head ) {
+        @head = map { +{ key=>$_, name=>( $names->{$_} // $_ )  } } qw/name title name_status created_by created_on modified_by modified_on/
+    }
+</%perl>
+    
+    <tr>
+        <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
+    </tr>
+    <tr>
+      <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
+     
+% if( @topics && scalar @topics > 0 ) {
+          <table class="table table-bordered" style="margin-top: 10px; width: 100%">
+              <thead>
+                <tr>
+% foreach my $h ( @head ) {
+                    <th style="white-space:nowrap;" width="<% $$h{width} %>"><% _loc( $$h{name} ) %></th>
+% }
+                </tr>
+              </thead>
+              <tbody>
+% foreach my $topic ( @topics ) {
+                <tr>
+% foreach my $h ( @head  ) {
+%    my $val =  $topic->{ $$h{key} };
+%    if( $$h{key} eq 'name' ) {
+            <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html">
+                <& /partial/topic_name.html, topic=>$topic, show_title=>0  &>
+%    } elsif( $$h{key} eq 'title' ) {
+            <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $topic->{title} %></td>
+%    } elsif( $$h{key} eq 'name_status' ) {
+            <& /partial/topic_status.html, topic=>$topic &>
+%    } else {
+            <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html">
+<%
+                            $$h{type} eq 'checkbox' 
+                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/delete.gif">' : '<img src="/static/images/icons/checkbox.png">')
+                            : $$h{type} eq 'index' 
+                            ? ++$ix
+                            : ref $val ? $val : Util->_markdown($val, { tab_width=>2 })
+
+                        %>
+%    }
+             </td>
+% }
+             </tr>
+% }
+              </tbody>
+          </table>
+      </td>
+    </tr>
+% } # if 
+% else { 
+    <tr>
+        <td colspan="2"><% _loc( 'None' ) %></td>
+    </tr>
+% }# data
+
+% } # hidden

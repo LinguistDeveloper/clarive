@@ -1,0 +1,26 @@
+<%args>
+    $topic
+    $title_max_length => 32
+    $title_font_size => '11px'
+    $show_title => 1
+    $show_progress => 1
+</%args>
+<%perl>
+    my $title_short = sub {
+        my ($t) = @_;
+        if( length $t > $title_max_length ) {
+            $t = substr( $t, 0, $title_max_length ) . "\N{U+2026}";
+        } 
+        $t;
+    };
+</%perl>
+
+            <span class="label" onclick="javascript:Baseliner.show_topic_colored(<% $topic->{mid} %>, '<% $topic->{name} %>', '<% $topic->{color} %>')" 
+            style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
+% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
+% if( $show_title ) {
+            &nbsp;&nbsp;<span style="font-weight: bold; font-size: <% $title_font_size %>"><% $title_short->($topic->{title}) %></span>&nbsp;&nbsp;
+% }
+% if( $show_progress && $topic->{progress}){
+            <span class="badge badge-<%$cls%>" style="float:right;"><%$topic->{progress}%>%</span>
+%}
