@@ -29,7 +29,7 @@ sub get_labels {
         #project labels
         my @project_labels = Baseliner->model('Baseliner::BaliLabel')
                         ->search({id => {-in=> Baseliner->model('Baseliner::BaliLabelProject')
-                        ->search({mid_project => {-in => Baseliner->model('Permissions')->user_projects_query( username => $username )}}, 
+                            ->search({ 'exists'=>Baseliner->model( 'Permissions' )->user_projects_query( username=>$username, join_id=>'mid_project' ) },
                                  {select=>'id_label', distinct => 1})->as_query }})->hashref->all;
         push @labels, map {$_} @project_labels;                        
     }
