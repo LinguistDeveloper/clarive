@@ -51,33 +51,34 @@ Ext.onReady(function(){
     Baseliner.help_button.on('click', Baseliner.help_off );
     
 
-    var items = [];
+    var tbar_items = [];
     if( Prefs.logo_file ) { 
-            items.push( '<img src="'+Prefs.logo_file+'" style="border:0px;"/>' );
+            tbar_items.push( '<img src="'+Prefs.logo_file+'" style="border:0px;"/>' );
     } else {
-            items.push( '<img src="'+Prefs.stash.theme_dir+'/images/'+ Prefs.logo_filename +'" style="border:0px;"/>' );
+            tbar_items.push( '<img src="'+Prefs.stash.theme_dir+'/images/'+ Prefs.logo_filename +'" style="border:0px;"/>' );
     }
-    items.push('-');
+    tbar_items.push('-');
+
     if( Prefs.site.show_menu && Prefs.stash.can_menu ) { 
         Ext.each( Prefs.menus, function(menu){
-            items.push( menu );    
+            tbar_items.push( menu );    
         });
     }
-    items.push('->');
+    tbar_items.push('->');
     if( Prefs.site.show_search ) 
-        items.push( search_box );
+        tbar_items.push( search_box );
     
-    items.push( Baseliner.help_button );
+    tbar_items.push( Baseliner.help_button );
 
     if( Prefs.site.show_js_reload && Baseliner.DEBUG )
-        items.push( '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload()" onmouseover="this.style.cursor=\'pointer\'" />' );
+        tbar_items.push( '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload()" onmouseover="this.style.cursor=\'pointer\'" />' );
     
     if( Prefs.site.show_calendar ) 
-        items.push( '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />' );
+        tbar_items.push( '<img src="/static/images/icons/calendar.png" style="border:0px;" onclick="Baseliner.toggleCalendar()" onmouseover="this.style.cursor=\'pointer\'" />' );
             
-    items.push( '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
-    items.push( '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
-    items.push( '-');
+    tbar_items.push( '<img src="/static/images/icons/application_double.gif" style="border:0px;" onclick="Baseliner.detachCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
+    tbar_items.push( '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
+    tbar_items.push( '-');
 
     if( Prefs.is_logged_in ) { 
         var user_menu = [
@@ -98,16 +99,16 @@ Ext.onReady(function(){
             user_menu.push({ text: _('Surrogate...'), handler: function(){ Baseliner.surrogate();}, index: 80, icon: '/static/images/icons/users.gif' });
         }
         
-        items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu });
+        tbar_items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu });
     } else {
-        items.push({ text: _('Login'), handler: function(){ Baseliner.login(); } });
+        tbar_items.push({ text: _('Login'), handler: function(){ Baseliner.login(); } });
     }
     
     Baseliner.main_toolbar = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
         height: Prefs.site.toolbar_height,
-        items: items 
+        items: tbar_items 
     });
 
     var icon_home = '/static/images/icons/home.gif';
