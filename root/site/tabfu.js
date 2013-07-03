@@ -1046,6 +1046,9 @@ $('a').click(function(event) {
                     if( Ext.isObject( comp ) && comp.logged_out ) {
                         login_or_error();
                     }
+                    else if( Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {
+                        Baseliner.error( _('Loading Error'), comp.msg );
+                    }
                     else if( Ext.isFunction( foo ) ) {
                         foo( comp, scope );
                     }

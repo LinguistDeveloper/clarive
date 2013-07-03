@@ -396,17 +396,19 @@ sub topics_for_user {
         #$where->{'category_status_id'} = \@statuses;
         
     }else {
-        ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
-        my %tmp;
-        map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
-            $self->user_workflow( $username );
-
-        my @status_ids = keys %tmp;
-        $where->{'category_status_id'} = { -in=>\@status_ids };
-        
-        #$where->{'category_status_type'} = {'!=', 'F'};
-        #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
-        $where->{'category_status_type'} = {-not_like, 'F%'}
+        if (!$p->{clear_filter}){
+            ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+            my %tmp;
+            map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
+                $self->user_workflow( $username );
+    
+            my @status_ids = keys %tmp;
+            $where->{'category_status_id'} = { -in=>\@status_ids };
+            
+            #$where->{'category_status_type'} = {'!=', 'F'};
+            #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
+            $where->{'category_status_type'} = {-not_like, 'F%'}
+        }
     }
       
     if( $p->{priorities}){
@@ -466,7 +468,14 @@ sub topics_for_user {
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@mids  } })->hashref->all;
+    my @mid_data = grep { defined } map { Baseliner->cache_get("topic:view:$_") } @mids; 
+    my $mids_in_cache = { map { $_->{topic_mid} => 1 } @mid_data };
+    my @db_mids = grep { !exists $mids_in_cache->{$_} } @mids; 
+    _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %$mids_in_cache );
+    my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
+    Baseliner->cache_set( "topic:view:".$_->{topic_mid}, $_ ) for @db_mid_data;
+    @mid_data = ( @mid_data, @db_mid_data );
+
     my @rows;
     my %id_label;
     my (%cis_out, %cis_in );
@@ -584,7 +593,7 @@ sub update {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my @field;
                     $topic_mid = $p->{topic_mid};
-                    
+
                     my $meta = $self->get_meta ($topic_mid, $p->{category});
                     my $topic = $self->save_data ($meta, $topic_mid, $p);
                     
@@ -934,6 +943,9 @@ sub get_update_system_fields {
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
 
+    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid");
+    return $cached if $cached;
+
     my $id_cat =  $id_category
         // DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query;
         
@@ -962,12 +974,14 @@ sub get_meta {
     #push @meta, @form_fields;                
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
+
+    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta );
     
     return \@meta;
 }
 
 sub get_data {
-    my ($self, $meta, $topic_mid) = @_;
+    my ($self, $meta, $topic_mid, %opts ) = @_;
     
     my $data;
     if ($topic_mid){
@@ -1015,7 +1029,7 @@ sub get_data {
         
         foreach my $key  (keys %method_fields){
             my $method_get = $method_fields{ $key };
-            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta );
+            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta, %opts );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
@@ -1098,19 +1112,21 @@ sub get_dates {
 }
 
 sub get_topics{
-    my ($self, $topic_mid, $id_field) = @_;
+    my ($self, $topic_mid, $id_field, $meta, %opts) = @_;
     my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->topics->search( {rel_field => $id_field}, { order_by => { '-asc' => ['categories.name', 'mid'] }, prefetch=>['categories'] } );
     rs_hashref ( $rs_rel_topic );
     my @topics = $rs_rel_topic->all;
     @topics = Baseliner->model('Topic')->append_category( @topics );
-    @topics = map {
-        my $meta = $self->get_meta( $_->{mid} );
-        my $data = $self->get_data( $meta, $_->{mid} );
-        $_->{description} //= $data->{description};
-        $_->{name_status} //= $data->{name_status};
-        $_->{data} //= $data;
-        $_
-    } @topics;
+    if( $opts{topic_child_data} ) {
+        @topics = map {
+            #my $meta = $self->get_meta( $_->{mid} );
+            my $data = $self->get_data( undef, $_->{mid} ) ;
+            $_->{description} //= $data->{description};
+            $_->{name_status} //= $data->{name_status};
+            $_->{data} //= $data;
+            $_
+        } @topics;
+    }
     return @topics ? \@topics : [];    
 }
 
@@ -1126,8 +1142,11 @@ sub get_files{
 }
 
 sub save_data {
-    my ($self, $meta, $topic_mid, $data ) = @_;
+    my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
+    Baseliner->cache_remove( "topic:view:$topic_mid") if length $topic_mid;
+    Baseliner->cache_remove( "topic:data:$topic_mid") if length $topic_mid;
+    
     my @std_fields =
         map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
         grep { $_->{origin} eq 'system' } _array($meta);
@@ -1150,7 +1169,7 @@ sub save_data {
             if ($_->{method}){
                 #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
                 my $method_set = $_->{method};
-                my $extra_fields = $self->$method_set( $data->{ $_->{name} }, $data, $meta );
+                my $extra_fields = $self->$method_set( $data->{ $_->{name} }, $data, $meta, %opts );
                 foreach my $column (keys %{ $extra_fields || {} } ){
                      $row{ $column } = $extra_fields->{$column};
                 }
@@ -1201,7 +1220,7 @@ sub save_data {
         }
         $topic->modified_by( $data->{username} );
         $topic->update( \%row );
-        _ci( $topic_mid )->save( moniker=>$moniker, name=>$row{title} );
+        _ci( $topic_mid )->update( moniker=>$moniker, name=>$row{title} );
 
         for my $field (keys %row){
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
@@ -1209,7 +1228,7 @@ sub save_data {
 
             my $method = $relation{ $field };
 
-            if ($row{$field} != $old_value{$field}){
+            if ($row{$field} ne $old_value{$field}){
                 if($field eq 'id_category_status'){
                     
                     my @projects = $topic->projects->hashref->all;

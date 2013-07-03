@@ -162,6 +162,7 @@ sub upload_cpan : Local {
         my $dir = _dir( $c->path_to( $c->config->{install_dir} // $INSTALL_DIR ) );
         $dir->mkpath unless -d "$dir";
         $p->{filename} ||= 'cpan-' . _md5(rand()) . 'tar.gz';
+        $p->{filename} =~ s{\:\:}{-}g;
         $p->{filepath} = $dir->file( $p->{filename} );
         _debug "CPAN filepath = $p->{filepath}";
         open( my $ff, '>', "$p->{filepath}" )

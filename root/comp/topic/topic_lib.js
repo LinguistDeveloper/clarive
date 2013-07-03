@@ -515,7 +515,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 
                 if (!self.form_is_loaded){
     
-                    Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid }, function(rec) {
+                    Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid, topic_child_data : true }, function(rec) {
                         self.load_form( rec );         
                     });
                 }else{
@@ -562,7 +562,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     show_kanban: function(){
         var self = this;
-        Baseliner.ajaxEval('/topic/children', { mid: self.topic_mid }, function(res){
+        Baseliner.ajaxEval('/topic/children', { mid: self.topic_mid, _whoami: 'show_kanban' }, function(res){
             var topics = res.children;
             self.kanban = Baseliner.kanban({ topics: topics, background: '#888',
                 on_tab: function(){
@@ -593,18 +593,23 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         self.detail.load({
             url: '/topic/view',
-            params: { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id },
+            params: { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id, topic_child_data : true },
             scripts: true,
-            callback: function(x){ 
-                // loading HTML has finished
-                //   careful: errors here will break js in baseliner
-                if( ! self.swEdit ) {
+            callback: function(x, success, res){ 
+                if( !success ) {
+                    self.detail.update( res.responseText );
                     var layout = self.getLayout().setActiveItem( self.detail );
+                } else {
+                    // loading HTML has finished
+                    //   careful: errors here will break js in baseliner
+                    if( ! self.swEdit ) {
+                        var layout = self.getLayout().setActiveItem( self.detail );
+                    }
+                    self.detail.body.parent().setStyle('width', null);
+                    self.detail.body.parent().parent().setStyle('width', null);
+                    self.detail.body.setStyle('width', null);
+                    self.detail.body.setStyle('height', null);
                 }
-                self.detail.body.parent().setStyle('width', null);
-                self.detail.body.parent().parent().setStyle('width', null);
-                self.detail.body.setStyle('width', null);
-                self.detail.body.setStyle('height', null);
             }
         });
         self.detail.body.setStyle('overflow', 'auto');
@@ -768,9 +773,9 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         var cols_keys = ['name', 'title'];
         var cols_templates = {
             mid: { header:_('id'), dataindex:'mid', hidden: true },
-            name: { header:_('Name'), dataindex:'name', renderer: self.render_topic_name },
-            title: { header:_('Title'), dataindex:'title' },
-            status: { header:_('Status'), dataindex:'name_status', renderer: Baseliner.render_status }
+            name: { header:_('Name'), dataindex:'name', width: 80, renderer: self.render_topic_name },
+            title: { header:_('Title'), dataindex:'title', renderer: function(v){ return '<b>'+v+'</b>'; } },
+            name_status: { header:_('Status'), dataindex:'name_status', width: 80, renderer: Baseliner.render_status }
         };
         var col_prefs = Ext.isArray( self.columns ) ? self.columns : Ext.isString(self.columns) ? self.columns.split(';') : [];
         if( col_prefs.length > 0 ) {
@@ -834,7 +839,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                 });
 
                 if( mids.length > 0 ) {
-                    var p = { mids: mids };
+                    var p = { mids: mids, topic_child_data : true, _whoami: 'TopicGrid.refresh1' };
                     Baseliner.ajaxEval( '/topic/related', Ext.apply(self.topic_grid, p ), function(res){
                         Ext.each( res.data, function(r){
                             if( ! r ) return;
@@ -850,7 +855,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                 mids.push( row.data.mid ); 
             });
             if( mids.length == 0 ) return;
-            var p = { mids: mids, with_data: true };
+            var p = { mids: mids, topic_child_data : true, _whoami: 'TopicGrid.refresh2' };
             Baseliner.ajaxEval( '/topic/related', Ext.apply(self.topic_grid, p ), function(res){
                 self.store.removeAll();
                 Ext.each( res.data, function(r){

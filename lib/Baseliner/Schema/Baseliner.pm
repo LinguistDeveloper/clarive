@@ -10,6 +10,7 @@ use Baseliner::Schema::Baseliner::Result::BaliMaster;
 
 
 __PACKAGE__->load_namespaces( default_resultset_class => '+Baseliner::Schema::Baseliner::Base::ResultSet' );
+
 #__PACKAGE__->load_components(qw/Schema::Versioned/);
 #__PACKAGE__->upgrade_directory('sql/');
 
@@ -25,6 +26,14 @@ sub connection {
          $rv->storage->sql_maker->quote_char([ qw/[ ]/ ]);
          $rv->storage->sql_maker->name_sep('.');
      }
+
+     my $lev = substr( $ENV{DBIC_TRACE}, 0, 1 );
+     if( $lev > 1 ) {
+         require Baseliner::Schema::Profiler;
+         $rv->storage->debugobj( Baseliner::Schema::Profiler->new );
+         $rv->storage->debug(1);
+     }
+
      return $rv;
 }
 

@@ -37,6 +37,7 @@ params:
             combo_store: topic_box_store,
             columns: meta.columns,
             name: meta.id_field, 
+            height: meta.height || 250,
             value: data[ meta.id_field ]
         });
 
@@ -47,6 +48,7 @@ params:
             name: meta.name_field,
             hiddenName: meta.id_field,
             store: topic_box_store,
+            height: meta.height || 250,
             disabled: meta ? meta.readonly : true,
             singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
         });

@@ -1041,45 +1041,46 @@
         var priorities_checked = new Array();
         var type;
         var selected_views = { };
-        selNodes = tree_filters.getChecked();
-        if( selNodes.length > 0 ) button_no_filter.show();
-          else button_no_filter.hide();
+		
+		selNodes = tree_filters.getChecked();
+		if( selNodes.length > 0 ) button_no_filter.show();
+		  else button_no_filter.hide();
 		  
 
-        for( var i=0; i<selNodes.length; i++ ) {
-            var node = selNodes[ i ];
-            type = node.parentNode.attributes.id;
+		for( var i=0; i<selNodes.length; i++ ) {
+			var node = selNodes[ i ];
+			type = node.parentNode.attributes.id;
 			//if (type == 'C') console.log(node);
 			var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
-            switch (type){
-                //Views
-                case 'V':   
-                            var d = Ext.util.JSON.decode(node.attributes.filter);
-                            if( d.query !=undefined && selected_views.query !=undefined ) {
-                                d.query = d.query + ' ' + selected_views.query;
-                            }
-                            selected_views = Baseliner.merge(selected_views, d );
-                            break;
-                //Labels
-                case 'L':	labels_checked.push(node_value);
+			switch (type){
+				//Views
+				case 'V':   
+							var d = Ext.util.JSON.decode(node.attributes.filter);
+							if( d.query !=undefined && selected_views.query !=undefined ) {
+								d.query = d.query + ' ' + selected_views.query;
+							}
+							selected_views = Baseliner.merge(selected_views, d );
+							break;
+				//Labels
+				case 'L':	labels_checked.push(node_value);
 							//labels_checked.push(node.attributes.idfilter);
-                            break;
-                //Statuses
-                case 'S':   statuses_checked.push(node_value);
+							break;
+				//Statuses
+				case 'S':   statuses_checked.push(node_value);
 							//statuses_checked.push(node.attributes.idfilter);
-                            break;
-                //Categories
-                case 'C':	categories_checked.push(node_value);
+							break;
+				//Categories
+				case 'C':	categories_checked.push(node_value);
 							//categories_checked.push(node.attributes.idfilter);
-                            break;
-                //Priorities
-                case 'P':	priorities_checked.push(node_value);
+							break;
+				//Priorities
+				case 'P':	priorities_checked.push(node_value);
 							//priorities_checked.push(node.attributes.idfilter);
-                            break;
-            }
-        }
-        //alert('merge views: ' + Ext.util.JSON.encode(selected_views));
-        filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
+							break;
+			}
+		}
+		//alert('merge views: ' + Ext.util.JSON.encode(selected_views));
+		filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
     }
     
     function filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node){
@@ -1124,6 +1125,9 @@
             //delete filter_final['query'];    
         //}
 		//console.dir(filter_final);
+		
+		if (statuses_checked.length == 0) filter_final.clear_filter = 1
+		
         store_topics.baseParams = filter_final;
         search_field.setValue( filter_final.query );
         store_topics.load();
