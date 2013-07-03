@@ -413,7 +413,7 @@ sub _throw_stack {
 }
 
 sub _whereami {
-    Carp::longmess @_;
+    Carp::longmess(@_);
 }
 
 sub _say {
