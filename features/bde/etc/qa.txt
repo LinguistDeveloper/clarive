@@ -99,6 +99,21 @@ cpanm -n Text::CSV
 
 ----------------------------------------
 
+
+- fieldlet de ejecuciones de caso de prueba en HTML: 
+    - agrupar por caso de prueba
+    - salida obtenida
+    
+- secuencia de ECP dentro del Plan se debería poder cambiar con drag and drop.
+- error IE al redimensionar ventana    
+- ECP - poder seleccionar el Plan de Pruebas (single-select) al que pertenece, y hacer el campo obligatorio
+   - set_topic y get_topic tienen que mirar el meta para detectar si es to_mid o from_mid
+
+- cuando se selecciona un caso de prueba en ECP, se tiene que rellenar la ejecución - hasta entonces los demás campos deben estar vacíos
+- las fechas del historico no están bien (ago, pero en el Bde)
+
+----------------------------------
+
 X arreglar fecha en status_change.html (event ts) -- usar 1 day ago, 1 week ago, ( y la fecha en pequeño)
 X añadir evento creado en el historial
 
@@ -134,114 +149,36 @@ X Ci graph related, eliminar duplicados
 
 
 
-my $meta = Baseliner->model('Topic')->get_meta( 67687 );
 
 
-use Text::CSV;
- 
-my @rows;
-my $csv = Text::CSV->new ( { sep_char=>';', binary => 1 } )  # should set binary attribute.
-                or die "Cannot use CSV: ".Text::CSV->error_diag ();
- 
-open my $fh, "<:encoding(iso-8859-15)", $c->path_to("features/bde/etc/ecp1.csv") or die "$!";
-my @cols;
-my %cp;
-use List::MoreUtils qw/zip/;
-while ( my $row = $csv->getline( $fh ) ) {
-    #$row->[2] =~ m/pattern/ or next; # 3rd field should match
-    if( !@cols ) {
-       @cols = map { Util->_name_to_id($_) } @$row;
-       next;
-    }
-    my @data = map { Util->_to_utf8($_) } @$row;
-    my $h = { zip( @cols, @data ) };
-    push @rows, $h;
-}
-my $estatus = 9; # en curso
-my $ecat = 26; # ECP
-my $cstatus = 5; # disponible
-my $ccat = 28; # Caso de Prueba
-my $prj_mid = 58; # SCM
-my $res = { 'correcto' => 
-my $i=0;
-my $cup = my $eup = my $cadd = my $cup = 0;
-for my $r ( @rows ) {
-    #_log _dump( $r );
-    my $pre = [
-       grep {  length join '', values %$_ }
-       map { 
-          +{  
-            descripcion=> $$r{"descripcion_pc$_"}, 
-            verificado =>$$r{"verificado_pc$_"}, 
-           }
-       } 1..3
-    ];
-    my $pasos = [  
-       grep {  length join '', values %$_ }
-       map { 
-           $$r{"salida_obtenida_p$_"} =~ s{
-               (\\\\cntdat.*\.\w{3})
-            }
-            {
-                my $link=$1;
-                $link=~s{\\}{/}g;
-                my $n = ($link=~m{/.*/([^/]+?)\.}) ? $1 : substr( $link, 0, -10) . '...';
-                #$link = URI::Escape::uri_escape( "file:$link" );
-                qq{<a href="file:$link" target="_blank" onclick="javascript:window.open('file:$link');return false">$n</a>}
-            }xei;
-          +{  
-            descripcion=> $$r{"descripcion_p$_"}, 
-            datos_de_entrada=>$$r{"entrada_manual_p$_"}, 
-            juego_de_pruebas => $$r{"sct_test_p$_"}, 
-            resultado_esperado=>$$r{"resultado_esperado_p$_"},
-            salida_obtenida => $$r{"salida_obtenida_p$_"}
-           }
-       } 1..3
-    ];
-    my $title = "$r->{id} $r->{titulo}";
-    # CASO 
-    my $func = DB->BaliTopic->search({ title=>{ -like=>'%'.$$r{funcionalidades}.'%'} },{ select=>'mid' })->first;        
-    my @deps = ();
-    my $cexists = DB->BaliTopic->search({ title=>$title, id_category=>$ccat })->first;
-    my ($cmsg, $emid, $cstatus, $ctitle) = Baseliner->model('Topic')->update({
-            ( $cexists 
-                ? ( action=>'update', topic_mid=>$cexists->mid )
-                : ( action=>'add' ) 
-            ),
-            title => $title,
-            description=>$r->{descripcion},
-            category => $ccat,
-            status_new => $cstatus,
-            username => $c->username || 'baseliner',
-            pasos => _to_json([ map { delete $_->{salida_obtenida}; $_ } _array $pasos]),
-            precondiciones => _to_json([ map { delete $_->{verificado}; $_ } _array $pre),
-            proyecto => $prj_mid,
-            active => 1,
-        });
-    DB->BaliMasterRel->find_or_create({ from_mid=>$cmid, to_mid=>$func->mid, rel_type=>'topic_topic', rel_field=>'funcionalidades' });        
-    for my $dep ( @deps ) {
-    }
 
-    # EJECUCION
-    my $eexists = DB->BaliTopic->search({ title=>$title, id_category=>$ecat })->first;
-    my ($emsg, $emid, $estatus, $etitle) = Baseliner->model('Topic')->update({
-            ( $eexists 
-                ? ( action=>'update', topic_mid=>$eexists->mid )
-                : ( action=>'add' ) 
-            ),
-            title => $title,
-            description=>$r->{descripcion},
-            category => $ecat,
-            username => $c->username || 'baseliner',
-            pasos => _to_json($pasos),
-            precondiciones => _to_json($pre),
-            proyecto => $prj_mid,
-            active => 1,
-            status_new => $estatus,
-        });
-        
-    $eexists ? $eup++ : $eadd++;
-    $cexists ? $cup++ : $cadd++;
-    last if ++$i > 10;
-}
-say "Casos Nuevos: $cadd, Casos Act.: $cup, Ejecuciones Nuevas: $eadd, Ejecuciones Actualizadas: $eup";
+
+
+
+
+
+
+
+
+
+----------------------------------------
+
+//require(['/static/superbox/superbox.js'], function(){   
+Baseliner.loadFile('/site/model.js','js');
+require.config({ urlArgs: "bust="+(new Date()).getTime() });
+var ts = (new Date()).getTime();
+require(['/static/superbox/superbox.js?'+ ts], function(){    
+var topic_box_store = new Baseliner.store.Topics({
+        autoLoad: false, baseParams: { mid: null, show_release: 0, filter: '' } });
+    topic_box = new Baseliner.model.Topics({
+            fieldLabel: _('xx'),
+            name: 'xx',
+            hiddenName: 'xx',
+            store: topic_box_store,
+            height: 250, width: 100,
+            disabled: false,
+            singleMode: true
+     });
+
+new Baseliner.Window({ height: 400, width: 800, layout:'fit', items: topic_box }).show();
+    });
