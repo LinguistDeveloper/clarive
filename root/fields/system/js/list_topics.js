@@ -37,6 +37,7 @@ params:
             combo_store: topic_box_store,
             columns: meta.columns,
             name: meta.id_field, 
+            width: 100,
             height: meta.height || 250,
             value: data[ meta.id_field ]
         });
