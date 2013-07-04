@@ -782,14 +782,18 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             // from get_topics, which puts a lot of values
             Ext.each( col_prefs, function(ck){
                 if( Ext.isObject( ck ) ) {
+                    // user sent me a complete column object
                     cols.push( ck );
                     store_fields.push( ck.dataindex );
                 } else {
+                    // we have a col template string key
                     var ct = cols_templates[ ck ];
                     if( ct ) {
+                        // ok, field is in templates
                         store_fields.push( ck );
                         cols.push( ct );
                     } else {
+                        // if we dont have the field, create a text column with it
                         store_fields.push( ck );
                         ct = { header:_(ck), dataindex: ck, renderer: render_text_field };
                         cols.push( ct );
@@ -801,7 +805,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             Ext.each( cols_keys, function(ck){
                 var ct = cols_templates[ ck ];
                 if( ct ) {
-                    cols.push( ct.dataindex );
+                    cols.push( ct );
                     store_fields.push( ck );
                 }
             });
