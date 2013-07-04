@@ -51,12 +51,15 @@
         for( var i = 0; i < fields.length; i++ ) {
             var field = fields[i];
             
-            if( field.body) {
+            if( field.body) {// some fields only have an html part
+                if( field.body.length==0  ) continue; 
                 var comp = Baseliner.eval_response(
                      field.body,
                     {form: form_topic, topic_data: data, topic_meta:  field, value: '', _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin, html_buttons: rec.html_buttons }
                 );
                 
+                if( !comp ) continue; // invalid field?
+
                 if( comp.xtype == 'hidden' ) {
                         form_topic.add( comp );
                 } else {
