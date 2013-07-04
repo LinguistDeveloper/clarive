@@ -305,7 +305,7 @@ sub topics_for_user {
                     $sSQL .= '(SELECT ROWNUM AS FILA, LEVEL AS NIVEL, FROM_MID FROM BALI_MASTER_REL A START WITH TO_MID = ? CONNECT BY PRIOR FROM_MID = TO_MID AND FROM_MID <> TO_MID) B ';
                     $sSQL .= 'LEFT JOIN BALI_MASTER A ON A.MID = B.FROM_MID';
                     @usuarios_n1 = map {$_->{dni}} $db->array_hash( $sSQL, $usuario_gdi->{mid} );            
-                    Baseliner->cache_set( $usuario_gdi->{mid}, \@usuarios_n1 );
+                    Baseliner->cache_set( $usuario_gdi->{mid}, \@usuarios_n1 ) if $usuario_gdi->{mid};
                 }
                 
                 push (@usuarios_n1, $username);                
@@ -492,7 +492,7 @@ sub topics_for_user {
     for (@mid_data) {
         my $mid = $_->{topic_mid};
         $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
-        $mid_data{ $mid }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
+        $mid_data{ $mid }{is_closed} = defined $_->{status} && $_->{status} eq 'C' ? \1 : \0;
         $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $_->{category_name}};
         $_->{label_id}
             ? $id_label{ $mid }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
@@ -943,7 +943,7 @@ sub get_update_system_fields {
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
 
-    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid");
+    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid") if $topic_mid;
     return $cached if $cached;
 
     my $id_cat =  $id_category
@@ -975,7 +975,7 @@ sub get_meta {
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
 
-    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta );
+    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta ) if $topic_mid;
     
     return \@meta;
 }
