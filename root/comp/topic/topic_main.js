@@ -37,5 +37,14 @@
 
     Baseliner.edit_check( topic_main, true );  // block window closing from the beginning
 
+    //topic_main.tab_title = null; //Baseliner.topic_title( params.topic_mid, _(params.category), params.category_color, params.title );
+    //topic_main.tab_icon = null;
+    
+    topic_main.print_hook = function(){
+        var t = params.topic_mid || topic_main.title;
+        return { title: t , id: topic_main.getLayout().activeItem.body.id };
+    }
+    
     return topic_main;
 })
+

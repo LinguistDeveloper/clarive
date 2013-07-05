@@ -1309,5 +1309,8 @@
     });
     //store_label.load();
     
+    panel.print_hook = function(){
+        return { title: grid_topics.title, id: Baseliner.grid_scroller( grid_topics ).id };
+    };
     return panel;
 })
