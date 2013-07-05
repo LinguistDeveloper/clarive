@@ -24,7 +24,7 @@ Last ci:
 - c1fcc1cb91d5d
 
 gitci -ref f54a460 -b expsv066 -usr infroox -en SCM_QA -st Desarrollo -p 'SCM.N-002374 BAS-EVO QA SGP-2'  -vp '/SCM/'
-Sat.1305
+Sat.1306
 
 --------------------------
 
