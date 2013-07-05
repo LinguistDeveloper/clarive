@@ -5,35 +5,36 @@
 */
 
 // Routing
-Baseliner.route_regex = /^#!\/(\w+)\:(.*)$/;
-Baseliner.route = function (path) {
-    var match = Baseliner.route_regex.exec( path );
-    if( ! match || ! Ext.isArray(match) || match.length < 2 ) return;
-    var action = match[1];
-    var route  = match[2];
-    switch( action ) {
-        case 'tab': 
-            if( Ext.getCmp( route ) ) {
-                Baseliner.tabpanel().setActiveTab( route );
-            } else {
-                // not good, messes up history: Baseliner.route_clean();
-            }
-            break;
-   }
-}
-Baseliner.route_clean = function () {
-    window.location.hash = '';
-}
+if( Prefs.routing ) {
+    Baseliner.route_regex = /^#!\/(\w+)\:(.*)$/;
+    Baseliner.route = function (path) {
+        var match = Baseliner.route_regex.exec( path );
+        if( ! match || ! Ext.isArray(match) || match.length < 2 ) return;
+        var action = match[1];
+        var route  = match[2];
+        switch( action ) {
+            case 'tab': 
+                if( Ext.getCmp( route ) ) {
+                    Baseliner.tabpanel().setActiveTab( route );
+                } else {
+                    // not good, messes up history: Baseliner.route_clean();
+                }
+                break;
+       }
+    }
+    Baseliner.route_clean = function () {
+        window.location.hash = '';
+    }
 
-$(window).bind('hashchange', function(e)
-{
-    Baseliner.route(window.location.hash);
-});
-$('a').click(function(event) {
-    event.preventDefault();
-    $(this).attr('href', '/#!/'+$(this).attr('href'));
-});
-
+    $(window).bind('hashchange', function(e)
+    {
+        Baseliner.route(window.location.hash);
+    });
+    $('a').click(function(event) {
+        event.preventDefault();
+        $(this).attr('href', '/#!/'+$(this).attr('href'));
+    });
+}
 
 /* if (false && typeof history.pushState !== 'undefined') 
 {

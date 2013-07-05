@@ -473,6 +473,8 @@ sub view : Local {
     my $topic_mid = $p->{topic_mid} || $p->{action};
     my $id_category;
     
+    my $category;
+    
     try {
     
     $c->stash->{ii} = $p->{ii};    
@@ -490,7 +492,7 @@ sub view : Local {
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
-        my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
+        $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
         _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
         $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
         $c->stash->{category_meta} = $category->forms;
@@ -513,7 +515,7 @@ sub view : Local {
                 if ($c->is_root){
                     $c->stash->{permissionEdit} = 1;     
                 }else{
-                    if (exists($tmp{$id_category_status})){
+                    if (exists($tmp{$id_category_status}) && exists ($categories_edit{ $category->id })){
                         $c->stash->{permissionEdit} = 1;
                     }
                     else{

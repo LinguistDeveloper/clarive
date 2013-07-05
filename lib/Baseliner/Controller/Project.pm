@@ -540,12 +540,16 @@ sub user_projects : Local {
     #@rows = grep { $_ ne '/' } @rows unless $c->is_root || $p->{include_root};
     #_error \@rows;
     #@rows = grep { $_ =~ $query } @rows if $query;
-   
-    my $user_prjs = $c->model( 'Permissions' )->user_projects_query(
-        username => $username
-    );
     #my $where = $c->is_root ? {} : { id => { -in => $user_prjs } };
-    $where->{id} = { -in => $user_prjs };
+   
+    $where->{'exists'} =  $c->model( 'Permissions' )->user_projects_query( username=>$username, join_id=>'id' )
+        unless $c->is_root;
+
+    # this can be super slow due to IN
+    #my $user_prjs = $c->model( 'Permissions' )->user_projects_query(
+    #    username => $username
+    #);
+    #$where->{id} = { -in => $user_prjs };
     my $from = {};
     my $pager;
     if( $limit ) {

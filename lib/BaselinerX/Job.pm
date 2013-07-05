@@ -46,7 +46,7 @@ register 'action.job.create' => { name=>'Create New Jobs' };
 register 'action.job.cancel' => { name=>'Cancel Jobs' };
 register 'action.job.view_monitor' => { name=>'View job monitor' };
 
-register 'menu.job' => { label => 'Jobs', index=>110, actions => ['action.job.%','action.calendar.%']};
+register 'menu.job' => { label => 'Jobs', index=>110, actions => ['action.job.%','action.calendar.%','acion.sqa.%']};
 
 register 'menu.job.create' => { label => 'Create a new Job', url_comp=>'/job/create', title=>'New Job',
     icon=>'/static/images/icons/job.png', actions=>['action.job.create'] };

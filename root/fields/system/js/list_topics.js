@@ -19,8 +19,8 @@ params:
 	
 	var topics = new Array();
 	
-	if(data && eval('data.' + meta.bd_field)){
-		var eval_topics = eval('data.' + meta.bd_field);
+	if(data && data[ meta.bd_field] ){
+		var eval_topics = data[ meta.bd_field ];
 		for(i=0; i<eval_topics.length;i++){
 			topics.push(eval_topics[i].mid);
 		}
@@ -37,6 +37,7 @@ params:
             combo_store: topic_box_store,
             columns: meta.columns,
             name: meta.id_field, 
+            width: 100,
             height: meta.height || 250,
             value: data[ meta.id_field ]
         });

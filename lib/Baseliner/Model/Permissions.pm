@@ -391,26 +391,28 @@ sub user_projects {
     );
 } ## end sub user_projects
 
+=head2 user_projects_query
+
+Returns a query ready to use as an EXISTS filter.
+
+Before it used to be a query for a IN, which is highly inefficient. 
+
+Usage:
+
+    $where->{'exists'} =  $c->model( 'Permissions' )->user_projects_query( username=>$username, join_id=>'mid' )
+        unless $c->is_root;
+
+join_id: the outside query attribute (id,mid,project_id, etc.)
+    
+
+=cut
 sub user_projects_query {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
+    _throw 'Missing join_id' unless exists $p{join_id};
+    DB->BaliRoleuser->search({ username=>$p{username}, id_project=>{ '=' => \"$p{join_id}" } }, { select=>\'1' })->as_query
+} 
 
-    if ( $self->is_root( $p{username} ) ) {
-        DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
-    } else {
-        my @rs = Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => $p{username}},
-            {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->hashref->all;
-        if ( @rs ) {
-            if ( !$rs[ 0 ]->{id} ) {
-                DB->BaliProject->search( {}, {select => [ 'mid' ], as => [ 'id' ]} )->as_query;
-            } else {
-                Baseliner->model( 'Baseliner::BaliRoleuser' )->search( {username => $p{username}},
-                    {distinct => 1, select => [ 'id_project' ], as => [ 'id' ]} )->as_query;
-            }
-
-        } ## end if ( @rs )
-    } ## end else [ if ( $self->is_root( $p...))]
-} ## end sub user_projects_query
 =head2 user_projects_ids( username=>Str )
 
 Returns an array of project ids for the projects the user has access to.

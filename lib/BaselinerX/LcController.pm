@@ -201,9 +201,8 @@ sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
     my $where = { active=> 1, id_parent=>[undef,''] };
-    #my $rsallprjs = DB->BaliRoleuser->search({ username=>$c->username, ns=>'/' });
-    if( ! $c->is_root ){ #}  && ! $rsallprjs->count ) {
-        $where->{mid} = { -in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username ) };
+    if( ! $c->is_root ){ 
+        $where->{'exists'} =  $c->model( 'Permissions' )->user_projects_query( username=>$c->username, join_id=>'mid' );
     }
     my $rs = Baseliner->model('Baseliner::BaliProject')->search( 
         $where ,
