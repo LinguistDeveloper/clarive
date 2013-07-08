@@ -624,6 +624,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         if (form2.isValid()) {
             form2.submit({
+               url: self.form_topic.url,
                params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) },
                success: function(f,a){
                     Baseliner.message(_('Success'), a.result.msg );
@@ -653,19 +654,22 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_detail.show();
                     
                     if(action == 'add'){
+                        var res = a.result;
                         var tabpanel = Ext.getCmp('main-panel');
                         var objtab = tabpanel.getActiveTab();
-                        var title = objtab.title + ' #' + a.result.topic_mid;
-                        objtab.setTitle( title );
+                        var category = res.category;
+                        var title = Baseliner.topic_title( res.topic_mid, category.name, category.color );
+                        //objtab.setTitle( title );
                         var info = Baseliner.panel_info( objtab );
-                        info.params.topic_mid = a.result.topic_mid;
+                        info.params.topic_mid = res.topic_mid;
                         info.title = title;
+                        self.setTitle( title );    
                     }
                     self.view_is_dirty = true;
-                        
                },
-               failure: function(f,a){
-                   Baseliner.message( _('Error'), a.result.msg );
+               failure: function(f,action){
+                  var res = action.response;
+                  Baseliner.error_win('',{},res,res.responseText );
                }
             });
         }        
@@ -973,6 +977,7 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
             
             for( var i = 0; i < fields.length; i++ ) {
                 var field = fields[i];
+                if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;
                 
                 if( field.body) {// some fields only have an html part
                     if( field.body.length==0  ) continue; 

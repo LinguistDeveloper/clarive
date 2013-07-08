@@ -554,6 +554,7 @@ sub update {
     my $return;
     my $topic_mid;
     my $status;
+    my $category;
     
     given ( $action ) {
         #Casos especiales, por ejemplo la aplicacion GDI
@@ -576,7 +577,8 @@ sub update {
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
-                   { mid => $topic->mid, topic => $topic->title, , category=> $topic->categories->name }   # to the event
+                    $category = { $topic->categories->get_columns };
+                   { mid => $topic->mid, topic => $topic->title, , category=> $category->{name} }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -644,7 +646,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $topic_mid, $status, $p->{title} );
+    return ( $return, $topic_mid, $status, $p->{title}, $category );
 } ## end sub update
 
 sub append_category {

@@ -113,12 +113,13 @@ sub update : Local {
     $p->{username} = $c->username;
     
     try  {    
-        my ($msg, $topic_mid, $status, $title) = $c->model('Topic')->update( $p );
+        my ($msg, $topic_mid, $status, $title, $category) = $c->model('Topic')->update( $p );
         $c->stash->{json} = {
             success      => \1,
             msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
             topic_mid    => $topic_mid,
             topic_status => $status,
+            category     => $category,
             title        => $title
         };
     } catch {
