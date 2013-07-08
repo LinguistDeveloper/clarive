@@ -24,7 +24,6 @@ Last ci:
 - c1fcc1cb91d5d
 
 gitci -ref f54a460 -b expsv066 -usr infroox -en SCM_QA -st Desarrollo -p 'SCM.N-002374 BAS-EVO QA SGP-2'  -vp '/SCM/'
-Sat.1306
 
 --------------------------
 
@@ -130,6 +129,10 @@ X Ci graph related, eliminar duplicados
 - CASCMRepository: viewpath array --> viewpaths
 
 - editor button for GridEditor (grid_editor.js), open a form full screen, recreate the fields. 
+
+- boton de borrar dentro del topico
+- borrar en el grid mira a ver si hay tabs abiertos de los tópicos (tab info tiene el topic_mid), 
+  y los cierra si los encuentra, pregutando al usuario "Topico abierto en tab, desea continuar?"
 
 -- abir más de un formulario en el ci-editor con sub form { [] }
 - Topic comment - permitir Markdown field first
