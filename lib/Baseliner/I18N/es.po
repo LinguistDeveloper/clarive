@@ -66,6 +66,12 @@ msgstr "No hay"
 msgid "Pattern"
 msgstr "Patrón"
 
+msgid "Server not available. Retry?"
+msgstr "Servidor no disponible. ¿Reintentar?"
+
+msgid "Sending Request..."
+msgstr "Enviando Petición..."
+
 msgid "This comment does not exist anymore"
 msgstr "El comentario ha sido borrado"
 

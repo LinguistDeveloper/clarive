@@ -2328,15 +2328,15 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     readOnly: false,
     constructor: function(c){
         //var dragger = new Baseliner.RowDragger({});
-        self.sm = new Baseliner.CheckboxSelectionModel({
+        var sm = new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
-            singleSelect:false
+            singleSelect: false
         });
         //self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
 
         var cols = [
             //dragger,
-            self.sm
+            sm
         ];
         var cols_keys = ['icon', 'mid', 'name', 'versionid', 'collection', 'properties' ];
         var cols_templates = {

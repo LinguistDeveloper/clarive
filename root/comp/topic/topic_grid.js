@@ -1286,15 +1286,14 @@
         title: _('Topics'),
         //tab_icon: '/static/images/icons/topic.png',
         items : [
-             
-                    {
-                        region:'center',
-                        collapsible: false,
-                        items: [
-                            grid_topics
-                        ]
-                    },   
-                    tree_filters
+            {
+                region:'center',
+                collapsible: false,
+                items: [
+                    grid_topics
+                ]
+            },   
+            tree_filters
         ]
     });
     

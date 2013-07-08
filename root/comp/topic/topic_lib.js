@@ -32,6 +32,99 @@ Baseliner.show_topic_from_row = function(r, grid) {
     //Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title ,  );
 }
 
+Baseliner.store.Topics = function(c) {
+     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty:"totalCount", 
+        baseParams: {},
+        id: 'mid', 
+        url: '/topic/related',
+        fields: ['mid','name', 'title','description','color'] 
+     }, c));
+};
+Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
+
+Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
+    minChars: 2,
+    //forceSelection: true,
+    typeAhead: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    allowBlank: true,
+    lazyRender: false,
+    triggerAction: 'all',
+    pageSize: 20,
+    msgTarget: 'under',
+    emptyText: _('Select a topic'),
+    fieldLabel: _('Projects'),
+    name: 'projects',
+    displayField: 'name',
+    hiddenName: 'projects',
+    valueField: 'mid',
+    extraItemCls: 'x-tag',
+    initComponent: function(){
+        var self = this;
+        self.tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+            '<span id="boot" style="width:200px"><span class="label" ', 
+            ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
+            ' >{name}</span></span>',
+            '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+        self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
+            '<span id="boot" style="background:transparent; margin-right: 8px"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;margin-right: 8px"',
+            ' onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{name}</span>{title}</span>',
+            '</tpl>' );
+        Baseliner.TopicBox.superclass.initComponent.call(this);
+    }
+});
+
+// Baseliner.model.Topics is deprecated.
+Baseliner.model.Topics = function(c) {
+    //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
+    var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+        '<span id="boot" style="width:200px"><span class="label" ', 
+        ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
+        ' >{name}</span></span>',
+        '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+    var tpl_field = new Ext.XTemplate( '<tpl for=".">',
+        '<span id="boot" style="background:transparent; margin-right: 8px"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;margin-right: 8px"',
+        ' onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{name}</span>{title}</span>',
+        '</tpl>' );
+    Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        //emptyText: _('Enter or select topics'),
+        triggerAction: 'all',
+        resizable: true,
+        mode: 'local',
+        fieldLabel: _('Topics'),
+        typeAhead: true,
+            name: 'topics',
+            displayField: 'title',
+            hiddenName: 'topics',
+            valueField: 'mid',
+        tpl: tpl_list,
+        displayFieldTpl: tpl_field,
+        extraItemCls: 'x-tag'
+        /*
+        ,listeners: {
+            newitem: function(bs,v, f){
+                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
+                var newObj = {
+                    mid: v,
+                    title: v
+                };
+                bs.addItem(newObj);
+            }
+        }
+        */
+    }, c));
+};
+Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
+
 Baseliner.Topic.StoreProject = Ext.extend(Ext.data.Store, {
     constructor: function(config) {
         config = Ext.apply({
@@ -701,7 +794,7 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
         };
         //self.xxtpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">{name} {title}</div></tpl>');
         self.tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">',
-            '<span id="boot" style="width:200px"><span class="badge" ', 
+            '<span id="boot" style="width:200px"><span class="label" ', 
             ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
             ' >{name}</span></span>',
             '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
@@ -715,8 +808,13 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
 
 Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     height: 200,
+    //enableDragDrop: true,   // XXX this is breaking checkboxes
     initComponent: function(){
         var self = this;
+        self.sm = new Baseliner.CheckboxSelectionModel({
+            checkOnly: true,
+            singleSelect: false
+        });
         self.combo_store = self.combo_store || new Baseliner.store.Topics({});
         if( self.topic_grid == undefined ) self.topic_grid = {};
   
@@ -757,15 +855,12 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         self.combo.on('select', function(combo,rec,ix) {
             self.add_to_grid( rec.data );
         });
+        self.ddGroup = 'bali-grid-data-' + self.id;
         self.viewConfig = {
             headersDisabled: true,
             enableRowBody: true,
             forceFit: true
         };
-        self.sm = new Baseliner.CheckboxSelectionModel({
-            checkOnly: true,
-            singleSelect:false
-        });
 
         var render_text_field = function(v){
             if( !v ) v ='';
@@ -829,6 +924,29 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             Baseliner.show_topic( r.get('mid'), title, { topic_mid: r.get('mid'), title: title, _parent_grid: undefined } );
             
         });        
+        self.on('afterrender', function(){
+            var ddrow = new Baseliner.DropTarget(self.container, {
+                comp: self,
+                ddGroup : self.ddGroup,
+                copy: false,
+                notifyDrop : function(dd, e, data){
+                    var ds = self.store;
+                    var sm = self.getSelectionModel();
+                    var rows = sm.getSelections();
+                    if(dd.getDragData(e)) {
+                        var cindex=dd.getDragData(e).rowIndex;
+                        if(typeof(cindex) != "undefined") {
+                            for(i = 0; i <  rows.length; i++) {
+                                ds.remove(ds.getById(rows[i].id));
+                            }
+                            ds.insert(cindex,data.selections);
+                            sm.clearSelections();
+                        }
+                        self.refresh_field();
+                    }
+                }
+            }); 
+        });
         Baseliner.TopicGrid.superclass.initComponent.call( this );
     },
     refresh : function(initial){
@@ -943,7 +1061,7 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
         
         Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
             Ext.applyIf(this.options, {
-                submitEmptyText:false
+                submitEmptyText: false
             });
         });
 
@@ -999,7 +1117,8 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
                         var cw = field.colWidth || ( colspan / form_columns );
                         var p_style = {};
                         if( Ext.isIE ) p_style['margin-top'] = '8px';
-                        var p = new Ext.Container({ layout:'form', hidden: all_hidden, style: p_style, bodyStyle:'padding-right: 10px', border: false, columnWidth: cw });
+                        p_style['padding-right'] = '10px';
+                        var p = new Ext.Container({ layout:'form', hidden: all_hidden, style: p_style, border: false, columnWidth: cw });
                         if( comp.items ) {
                             if( comp.on_submit ) on_submit_events.push( comp.on_submit );
                             p.add( comp.items ); 

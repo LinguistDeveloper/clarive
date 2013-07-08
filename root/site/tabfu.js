@@ -1625,7 +1625,14 @@ Baseliner.print = function(opts) {
         boot.rel = 'stylesheet';
         boot.type = 'text/css';
         boot.href = url;
-        doc.head.appendChild( boot );
+        if( doc.head ) {
+            doc.head.appendChild( boot );
+        } else {
+            // needed by IE apparently
+            var head = doc.createElement('head');
+            doc.appendChild( head );
+            head.appendChild( boot );
+        }
     }
 
     var title = opts.title || _('Print');
