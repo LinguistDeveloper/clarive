@@ -1014,10 +1014,12 @@ if( Prefs.routing ) {
             }
         }
     
+        if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).mask( _('Sending Request...') );  // so slow, better to mask the whole thing
         var the_request = function() { Ext.Ajax.request({
             url: url,
             params: params,
             callback: function(opts,success,xhr) {
+                if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).unmask();
                 if( !success ) {
                     var msg;
                     if( xhr.status==401 ) {
