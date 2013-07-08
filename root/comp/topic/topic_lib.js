@@ -991,11 +991,15 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
                     if( comp.xtype == 'hidden' ) {
                             self.add( comp );
                     } else {
-                        //if( field.width != undefined ) comp.setWidth( field.width );
-                        //if( field.height != undefined ) comp.setHeight( field.height );
+                        var all_hidden = true;
+                        Ext.each( comp, function(f){
+                            if( f.hidden!=undefined && !f.hidden ) all_hidden = false;
+                        });
                         var colspan =  field.colspan || form_columns;
                         var cw = field.colWidth || ( colspan / form_columns );
-                        var p = new Ext.Panel({ layout:'form', bodyStyle:'padding-right: 10px', border: false, columnWidth: cw });
+                        var p_style = {};
+                        if( Ext.isIE ) p_style['margin-top'] = '8px';
+                        var p = new Ext.Container({ layout:'form', hidden: all_hidden, style: p_style, bodyStyle:'padding-right: 10px', border: false, columnWidth: cw });
                         if( comp.items ) {
                             if( comp.on_submit ) on_submit_events.push( comp.on_submit );
                             p.add( comp.items ); 

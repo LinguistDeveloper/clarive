@@ -24,6 +24,40 @@ Baseliner.store.Topics = function(c) {
 };
 Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
 
+Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
+    minChars: 2,
+    //forceSelection: true,
+    typeAhead: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    allowBlank: true,
+    lazyRender: false,
+    triggerAction: 'all',
+    pageSize: 20,
+    msgTarget: 'under',
+    emptyText: _('Select a topic'),
+    fieldLabel: _('Projects'),
+    name: 'projects',
+    displayField: 'name',
+    hiddenName: 'projects',
+    valueField: 'mid',
+    extraItemCls: 'x-tag',
+    initComponent: function(){
+        var self = this;
+        self.tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
+            '<span id="boot" style="width:200px"><span class="badge" ', 
+            ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
+            ' >{name}</span></span>',
+            '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+        self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
+            '<span id="boot" style="background:transparent; margin-right: 8px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;margin-right: 8px"',
+            ' onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{name}</span>{title}</span>',
+            '</tpl>' );
+        Baseliner.PagingProjects.superclass.initComponent.call(this);
+    }
+});
+
+// Baseliner.model.Topics is deprecated.
 Baseliner.model.Topics = function(c) {
     //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
     var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
@@ -52,7 +86,6 @@ Baseliner.model.Topics = function(c) {
             valueField: 'mid',
         tpl: tpl_list,
         displayFieldTpl: tpl_field,
-        value: '/',
         extraItemCls: 'x-tag'
         /*
         ,listeners: {

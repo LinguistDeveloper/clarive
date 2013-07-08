@@ -13,14 +13,17 @@ params:
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-    
+    var style = { 'font-size': '16px', float: 'left', 'font-weight': meta.font_weight || 'normal', 
+            'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
+    if( Ext.isIE ) style['margin-top'] = '1px';
+
     return [
         {
             xtype:'textfield',
             fieldLabel: _(meta.name_field),
             name: meta.id_field,
             value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ), 
-            style: { 'font-size': '16px', float: 'left', 'font-weight': meta.font_weight || 'normal', 'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' },
+            style: style,
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
             height: meta.height || 30,

@@ -9,6 +9,7 @@ params:
     set_method: 'set_topics'
     field_order: 14
     section: 'details'
+    page_size: 20
     filter: 'none'
     single_mode: 'false'    
 ---
@@ -18,6 +19,7 @@ params:
 	var data = params.topic_data;
 	
 	var topics = new Array();
+    var ps = meta.page_size || 20;
 	
 	if(data && data[ meta.bd_field] ){
 		var eval_topics = data[ meta.bd_field ];
@@ -37,27 +39,26 @@ params:
             combo_store: topic_box_store,
             columns: meta.columns,
             name: meta.id_field, 
-            width: 100,
             height: meta.height || 250,
             value: data[ meta.id_field ]
         });
 
     } else {
-        // Superbox
-        topic_box = new Baseliner.model.Topics({
+        var topic_box = new Baseliner.TopicBox({
             fieldLabel: _(meta.name_field),
-            name: meta.name_field,
-            hiddenName: meta.id_field,
+            pageSize: ps,
+            name: meta.id_field,
+            hiddenName: meta.id_field,          
+            emptyText: _( meta.emptyText ),
+            allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
             store: topic_box_store,
-            height: meta.height || 250,
             disabled: meta ? meta.readonly : true,
             singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
         });
         
         topic_box_store.on('load',function(){
-            topic_box.setValue( topics ) ;            
+            topic_box.setValue(topics) ;            
         });
-	
     }
 	return [
 		topic_box
