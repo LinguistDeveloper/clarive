@@ -4539,3 +4539,9 @@ msgstr "Pase %1 cancelado externamente"
 
 msgid "Fix explorer"
 msgstr "Fijar explorador"
+
+msgid "Related"
+msgstr "Relacionados"
+
+msgid "Related: %1"
+msgstr "Relacionados: %1"

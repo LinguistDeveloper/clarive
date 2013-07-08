@@ -447,6 +447,7 @@ sub related {
         return @$cached if ref $cached eq 'ARRAY';
     }
     my $depth = $opts{depth} // 1;
+    $opts{depth} //= 1;
     $opts{depth_original} //= $depth;
     $opts{mode} //= 'flat';
     $opts{visited} //= {};

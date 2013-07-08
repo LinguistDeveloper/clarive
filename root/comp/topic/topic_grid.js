@@ -502,7 +502,7 @@
         return t;
     }
     Baseliner.open_topic_grid = function(dir,title,mid){
-       var gridp ={ tab_icon: '/static/images/icons/topic_references.png' } ;
+       var gridp ={ tab_icon: '/static/images/icons/topic.png' } ;
        if( dir ) {
            gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
            gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.png';
@@ -1309,5 +1309,8 @@
     });
     //store_label.load();
     
+    panel.print_hook = function(){
+        return { title: grid_topics.title, id: Baseliner.grid_scroller( grid_topics ).id };
+    };
     return panel;
 })

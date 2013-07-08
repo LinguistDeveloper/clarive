@@ -287,10 +287,10 @@ around 'debug' => sub {
         my $cache_type = Baseliner->config->{cache};
         my $cache_defaults = {
                 fastmmap  => [ driver => 'FastMmap', root_dir   => "$ENV{BASELINER_TEMP}/bali-cache", cache_size => '120m' ],
-                memory    => [ 'Memory' ],
-                rawmemory => [ 'RawMemory', datastore => {}, max_size => 1000 ],
-                sharedmem => [ 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
-                redis     => [ 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0 ],
+                memory    => [ driver => 'Memory' ],
+                rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
+                sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
+                redis     => [ driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0 ],
         };
         my $cache_config = ref $cache_type eq 'ARRAY' 
             ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
@@ -312,7 +312,8 @@ around 'debug' => sub {
     sub cache_keys { $ccache->get_keys( @_ ) }
     sub cache_compute { $ccache->compute( @_ ) }
     sub cache_clear { $ccache->clear }
-    sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for grep /$re/ => Baseliner->cache_keys; }
+    sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_),_debug("removed key $_ from cache") for Baseliner->cache_keys_like($re); } 
+    sub cache_keys_like { my $re=$_[1]; grep /$re/ => Baseliner->cache_keys; }
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};

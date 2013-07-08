@@ -364,7 +364,7 @@ sub get_meta_permissions : Local {
         $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
     }
-    
+    _log _dump $meta;
     return $meta
 }
 
@@ -495,43 +495,23 @@ sub view : Local {
  
         $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
         _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
-        $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
+        
         $c->stash->{category_meta} = $category->forms;
         
-        #if ($c->is_root){
-        #    $c->stash->{permissionEdit} = 1;     
-        #}
-        #else{
-            my $id_category_status = $category->topics->id_category_status;
-            #Miramos los estados que tiene en el workflow.
-            my %tmp;
-            ##map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' }
-            map { $tmp{$_->{id_status_from}} = 'id' } 
-                Baseliner->model('Topic')->user_workflow( $c->username );
-            
-            if ((substr $category->topics->status->type, 0, 1) eq "F"){
-                $c->stash->{permissionEdit} = 0;
-            }
-            else{
-                if ($c->is_root){
-                    $c->stash->{permissionEdit} = 1;     
-                }else{
-                    if (exists($tmp{$id_category_status}) && exists ($categories_edit{ $category->id })){
-                        $c->stash->{permissionEdit} = 1;
-                    }
-                    else{
-                        $c->stash->{permissionEdit} = 0;
-                    }
+        my %tmp;
+        if ((substr $category->topics->status->type, 0, 1) eq "F"){
+            $c->stash->{permissionEdit} = 0;
+        }
+        else{
+            if ($c->is_root){
+                $c->stash->{permissionEdit} = 1;     
+            }else{
+                if (exists ($categories_edit{ $category->id })){
+                    $c->stash->{permissionEdit} = 1;
                 }
             }
-            
-            #if ((substr $category->topics->status->type, 0, 1) ne "F" && exists($tmp{$id_category_status})){
-            #    $c->stash->{permissionEdit} = 1;    
-            #}else{
-            #    $c->stash->{permissionEdit} = 0;
-            #}
-        #}
-         
+        }
+                         
         # comments
         $self->list_posts( $c );  # get comments into stash        
         $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );

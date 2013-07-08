@@ -1597,3 +1597,103 @@ Ext.tree.TreeLoader.override({
     }
 });
 
+Baseliner.print_current_tab = function(){
+    var tabpanel = Ext.getCmp('main-panel');
+    var comp = tabpanel.getActiveTab();
+    var title = comp.title;
+    var grid_trans = function(i){
+        return Ext.isFunction(i.getGridEl) ? Baseliner.grid_scroller(i) : i;
+    }
+    if( Ext.isFunction( comp.print_hook ) ) {
+        Baseliner.print(comp.print_hook());
+    } else if( Ext.isObject( comp.print_hook ) ) {
+        Baseliner.print(comp.print_hook);
+    } else {
+        comp = grid_trans(comp);
+        var id = comp.id;
+        Baseliner.print({ title: title, id: id });
+    }
+}
+
+/* 
+ *  Baseliner.print({ title: title, id: el.id });
+ *
+ */
+Baseliner.print = function(opts) {
+    function add_css(doc,url){ 
+        var boot = doc.createElement( 'link' );
+        boot.rel = 'stylesheet';
+        boot.type = 'text/css';
+        boot.href = url;
+        doc.head.appendChild( boot );
+    }
+
+    var title = opts.title || _('Print');
+    var el = opts.el || Ext.get(opts.id).dom;
+    
+    var ww = window.open('about:blank', '_blank'); //, 'resizable=yes, scrollbars=yes' );
+    var dw = ww.document;
+    //dw.write( style_html( el.innerHTML ));
+    var html = el.innerHTML;
+    dw.write( html );
+    dw.close();
+    dw.title = title;
+    add_css( dw, '/site/960-Grid-System/code/css/960_24_col.css' );
+    add_css( dw, '/site/boot.css' );
+    add_css( dw, '/static/ext/resources/css/ext-all.css');
+    add_css( dw, '/static/ext/examples/ux/css/ux-all.css');
+    add_css( dw, '/site/site.css' );
+    add_css( dw, '/static/gritter/css/jquery.gritter.css' );
+    add_css( dw, '/static/themes/bde/style.css' );
+
+    add_css( dw, "/static/datepickerplus/datepickerplus.css" );
+    add_css( dw, "/static/pagedown/pagedown.css" );
+    add_css( dw, "/static/cleditor/jquery.cleditor.css" );
+    add_css( dw, "/static/codemirror/lib/codemirror.css" );
+    add_css( dw, "/static/codemirror/theme/elegant.css" );
+    add_css( dw, "/static/codemirror/theme/night.css" );
+    add_css( dw, "/static/codemirror/theme/eclipse.css" );
+    add_css( dw, "/static/codemirror/theme/lesser-dark.css" );
+    add_css( dw, "/static/codemirror/lib/util/simple-hint.css" );
+    add_css( dw, "/site/portal/portal.css"  );
+    add_css( dw, "/site/portal/sample.css"  );
+    add_css( dw, "/static/livegrid/resources/css/ext-ux-livegrid.css"  );
+    add_css( dw, "/static/valums/fileuploader.css"  );
+    add_css( dw, "/static/superbox/superbox.css"  );
+    add_css( dw, '/static/fullcalendar/fullcalendar.css'  );
+    add_css( dw, '/static/fullcalendar/fullcalendar.print.css' );
+    add_css( dw, '/static/gridtree/css/treegrid.css'  );
+    add_css( dw, "/static/final.css"  );
+    add_css( dw, "/static/sprites.css"  );
+        
+    add_css( dw, '/static/final.css' );
+
+    dw.body.style.overflow = 'auto';
+    dw.body.style['-webkit-print-color-adjust'] = 'exact';
+    dw.body.style['margin'] = '10px';
+    
+    if( opts.cb ) {
+        opts.cb( ww, dw );
+    }
+    
+    // ww.print(); // needs to be called after all styles are loaded
+}
+
+Baseliner.grid_scroller = function( grid ) {
+    // from Ext.GridView
+     var Element  = Ext.Element,
+        el       = Ext.get(grid.getGridEl().dom.firstChild),
+        mainWrap = new Element(el.child('div.x-grid3-viewport')),
+        scroller = new Element(mainWrap.child('div.x-grid3-scroller'));
+    return scroller;
+}
+
+Baseliner.whereami = function(cons){
+    var e = new Error('dummy');
+    var stack = e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+        .replace(/^\s+at\s+/gm, '')
+        .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
+        .split('\n');
+    if( cons ) console.log(stack);
+    return stack;
+}

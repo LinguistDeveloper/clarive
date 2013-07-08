@@ -861,6 +861,15 @@ Baseliner.open_topic_grid_from_folder = function(n){
     });
 }
 
+Baseliner.open_topic_grid_from_release = function(n){
+    var name = n.attributes.data.click.title;
+    var id_release = n.attributes.data.topic_mid;
+    //console.dir(n);
+    Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release }, function(res){
+        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Related: %1', name), { topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
+    });
+}
+
 Baseliner.open_kanban_from_folder = function(n){
     var name = n.text;
     var id_directory = n.attributes.data.id_directory;

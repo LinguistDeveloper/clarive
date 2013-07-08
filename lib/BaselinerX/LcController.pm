@@ -56,6 +56,7 @@ sub tree_project_releases : Local {
     my ($self,$c) = @_;
     my %seen = ();
     my @rels = grep {!$seen{$_->{mid}}++} DB->BaliProject->find( $c->req->params->{id_project} )->releases->search(undef,{ prefetch=>['categories'] })->hashref->all;
+    my @menu_related = $self->menu_related();
     my @tree = map {
        +{
             text => $_->{title},
@@ -69,7 +70,9 @@ sub tree_project_releases : Local {
             },
             data => {
                 topic_mid    => $_->{mid},
+                click       => $self->click_for_topic(  $_->{categories}{name}, $_->{mid} ),
             },
+            menu => \@menu_related
        }
     } @rels;
     #$c->stash->{release_only} = 1;
@@ -172,6 +175,7 @@ sub topic_contents : Local {
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
+        my @menu_related = $self->menu_related();
         push @tree, {
             text       => $_->{topic_topic2}{title},
             topic_name => {
@@ -188,7 +192,8 @@ sub topic_contents : Local {
             },
             icon       => $icon, 
             leaf       => \1,
-            expandable => \1
+            expandable => \1,
+            menu => \@menu_related
         };
     }
 
@@ -585,6 +590,8 @@ sub cs_menu {
     return [] if $bl_state eq '*';
     my ( @menu, @menu_p, @menu_d );
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
+
+    push @menu, $self->menu_related();
 
     push @menu, {
         text => 'Deploy',
@@ -1003,9 +1010,12 @@ sub click_for_topic {
     };
 }
 
+
 sub build_topic_tree {
     my $self = shift;
     my %p    = @_;
+    my @menu_related = $self->menu_related();
+
     return +{
         text     => $p{topic}{title},
         calevent => {
@@ -1038,10 +1048,36 @@ sub build_topic_tree {
             topic_mid => $p{mid},
             click     => $self->click_for_topic( $p{topic}{categories}{name}, $p{mid} )
         },
-        icon       => $p{icon} // '/static/images/icons/topic.png',
+        icon       => $p{icon} // q{/static/images/icons/topic.png},
         leaf       => \0,
-        expandable => \1
+        expandable => \1,
+        menu => \@menu_related
     };
+}
+
+sub topics_for_release : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+
+    my @cis = _ci($p->{id_release})->children( rel_type => "topic_topic", depth => -1);
+
+    my @topics = _unique map { $_->{_ci}->{mid} } @cis;
+    push @topics, $p->{id_release};        
+
+    $c->stash->{json} = { success=>\1, topics=>\@topics };
+    $c->forward('View::JSON');
+}
+
+sub menu_related {
+    my ($self, $mid ) = @_;
+    my @menu;
+        push @menu, {  text => _loc('Related'),
+                        icon => '/static/images/icons/topic.png',
+                        eval => {
+                            handler => 'Baseliner.open_topic_grid_from_release'
+                        }
+                    };    
+    return @menu;
 }
 
 1;

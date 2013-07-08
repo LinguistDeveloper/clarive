@@ -8,13 +8,14 @@ params:
     field_order: 100
     field_order_html: 1000
     section: 'head'
+    data: 1
 ---
 */
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	var ff = params.form.getForm();
-	
+    
 Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
     fullscreen: false,
     autofocus: false,
@@ -187,6 +188,7 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 	});
 	
 	var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
+	var field_hidden = new Ext.form.Hidden({ name: meta.id_field, value: records });
 	
 	var store = new Ext.data.Store({
 		reader: reader,
@@ -210,7 +212,7 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 	
 	
     var button_delete = new Baseliner.Grid.Buttons.Delete({
-        text: _(''),
+        text: '',
         tooltip: _('Delete'),
         cls: 'x-btn-icon',	
         disabled: false,		
@@ -219,9 +221,9 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
             Ext.each( sm.getSelections(), function(r) {
 				var index =store.indexOf(r);
                 grid.store.remove( r );
-				var rows = Ext.util.JSON.decode( ff.findField( meta.id_field ).getValue());
+				var rows = Ext.util.JSON.decode( field_hidden.getValue());
 				rows.splice(index, 1);
-				ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
+				field_hidden.setValue(Ext.util.JSON.encode( rows ));
 				grid.store.commitChanges();
 				grid.getView().refresh();
             });
@@ -241,9 +243,10 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 			afteredit: function(roweditor, changes, record, rowIndex){
 				roweditor.grid.store.commitChanges();
 				delete record.data.id;
-				var rows = Ext.util.JSON.decode( ff.findField( meta.id_field ).getValue());
+				var rows = Ext.util.JSON.decode( field_hidden.getValue());
+                if( !Ext.isArray( rows ) ) rows = [];
 				rows[rowIndex] = record.data;
-				ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
+				field_hidden.setValue(Ext.util.JSON.encode( rows ));
 			}
 		}		
     });	
@@ -279,17 +282,17 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
                 var sm = self.getSelectionModel();
                 var rows_grid = sm.getSelections();
                 if(dd.getDragData(e)) {
-					var rows = Ext.util.JSON.decode( ff.findField( meta.id_field ).getValue());
+					var rows = Ext.util.JSON.decode( field_hidden.getValue());
                     var cindex=dd.getDragData(e).rowIndex;
                     if(typeof(cindex) != "undefined") {
                         for(i = 0; i <  rows_grid.length; i++) {
 							var index = ds.indexOf(ds.getById(rows_grid[i].id));
                             ds.remove(ds.getById(rows_grid[i].id));
 							delete rows[index];
-							ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));
-							rows = Ext.util.JSON.decode( ff.findField( meta.id_field ).getValue());
+							field_hidden.setValue(Ext.util.JSON.encode( rows ));
+							rows = Ext.util.JSON.decode( field_hidden.getValue());
 							rows.splice(cindex, 0, rows_grid[i].data);
-							ff.findField( meta.id_field ).setValue(Ext.util.JSON.encode( rows ));	
+							field_hidden.setValue(Ext.util.JSON.encode( rows ));	
                         }
                         ds.insert(cindex,data.selections);
                         sm.clearSelections();
@@ -301,7 +304,7 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
         }); 
     });
 	return [
-		{ xtype: 'hidden', name: meta.id_field, value: records },
+        field_hidden,
 		{
 		  xtype: 'box',
 		  autoEl: {cn: '<br>' + _(meta.name_field) + ':'},
