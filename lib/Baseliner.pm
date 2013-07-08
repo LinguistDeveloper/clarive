@@ -312,7 +312,7 @@ around 'debug' => sub {
     sub cache_keys { $ccache->get_keys( @_ ) }
     sub cache_compute { $ccache->compute( @_ ) }
     sub cache_clear { $ccache->clear }
-    sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_),_debug("removed key $_ from cache") for Baseliner->cache_keys_like($re); } 
+    sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for Baseliner->cache_keys_like($re); } 
     sub cache_keys_like { my $re=$_[1]; grep /$re/ => Baseliner->cache_keys; }
 
     # Beep
