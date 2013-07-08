@@ -988,6 +988,8 @@ sub get_data {
     
     my $data;
     if ($topic_mid){
+        my $cached = Baseliner->cache_get( "topic:data:$topic_mid" ); 
+        return $cached if defined $cached;
         
         ##************************************************************************************************************************
         ##CAMPOS DE SISTEMA ******************************************************************************************************
@@ -1046,6 +1048,7 @@ sub get_data {
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};
         }
+        Baseliner->cache_set( "topic:data:$topic_mid", $data ); 
     }
     
     return $data;
