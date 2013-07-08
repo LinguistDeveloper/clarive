@@ -98,13 +98,13 @@ cpanm -n Text::CSV
 
 ----------------------------------------
 
-
+- ECP no guarda: Uncaught TypeError: Cannot call method 'getValue' of undefined 
 - fieldlet de ejecuciones de caso de prueba en HTML: 
     - agrupar por caso de prueba
     - salida obtenida
     
 - secuencia de ECP dentro del Plan se debería poder cambiar con drag and drop.
-- error IE al redimensionar ventana    
+X error IE al redimensionar ventana    
 - ECP - poder seleccionar el Plan de Pruebas (single-select) al que pertenece, y hacer el campo obligatorio
    - set_topic y get_topic tienen que mirar el meta para detectar si es to_mid o from_mid
 
