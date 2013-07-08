@@ -389,7 +389,7 @@
         });
         //   Color settings 
         var category_color = new Ext.form.Hidden({ name:'category_color' });
-        category_color.setValue(rec ? rec.data.color : '');
+        category_color.setValue(rec ? rec.data.color : '#999');
         var color = rec ? rec.data.color : '';
 
         var color_pick = new Ext.ColorPalette({ 
